@@ -1,19 +1,5 @@
 # Athena Portable
 
-A single-user agent that treats the web applications a person already uses as her environment.
-This repository is the hackathon rebuild of [athena-everywhere](https://github.com/xkazm04/athena-everywhere):
-an empty tree, new code, the same design, one commit per feature, and the structural debts the
-first build found fixed on day zero.
-
-**Status:** P1 to P5 done, and the MVP path runs end to end: the shell opens real sites, the
-daemon runs beside it, a page reports its own tools through the relay, and the panel's run loop
-carries a turn from a typed command to a decision card to an executed call. P6 is most of the way
-there — eight generic hands on any page, the approvals inbox, tab awareness — with the screenshot
-on a gated proposal still to wire. P8's voice is in: an OpenAI backend behind a push-to-talk key.
-P7 is the one phase not started; tier 3 arrived through the connectors module instead of through
-an activity module and an MCP channel. P9 is in progress, which is the bundle, the demo and the
-docs. The phase table in section 5 is the order of work and section 7 is the bar every commit clears.
-
 ```bash
 uv run ruff check . && uv run ruff format --check .
 uv run mypy                                   # strict on src/athena
@@ -21,14 +7,6 @@ uv run pytest                                 # every test, no provider needed
 pnpm typecheck && pnpm lint && pnpm test      # bridge and panel
 cargo check && cargo clippy --all-targets     # from P4 on
 ```
-
-This README is the solution and architecture review the build is executed against. The full
-chronology is `hackathon/hackathon-build-plan.md` in the reference repository; the phased order
-with its continue-or-stop gates is `hackathon/architecture-timeline.html` there.
-
-`docs/submission.md` is the same story written for a judge rather than a builder: the environment
-argument, the OpenAI engine and voice, and the technical execution in one page.
-
 ---
 
 ## 1. The problem and the user

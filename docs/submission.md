@@ -1,4 +1,4 @@
-# Athena — an agent that works inside the web apps you already use
+# Athena Portable — an agent that works inside the web apps you already use
 
 Built for the OpenAI hackathon. The reasoning engine is **OpenAI Codex**, driven through the user's
 own CLI sign-in. The voice is OpenAI's `gpt-4o-mini-transcribe` and `gpt-4o-mini-tts`.
