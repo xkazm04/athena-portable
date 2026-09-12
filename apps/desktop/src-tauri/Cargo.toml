@@ -24,6 +24,16 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = ["unstable"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# The relay (c19) parks a request on a oneshot and gives up on it with a timer. Tauri already runs
+# on tokio; these two features are what make its channel and its clock ours to name directly.
+tokio = { version = "1", features = ["sync", "time"] }
+# 128 bits from the OS for the per-tab nonce and the tail of every request id. `rand` would be a
+# generator, a distribution and a trait we do not need for `fill`.
+getrandom = "0.3"
+
+[dev-dependencies]
+# `#[tokio::test]`: the relay's timer and its id map are asserted without a window.
+tokio = { version = "1", features = ["macros", "rt"] }
 
 [profile.dev]
 incremental = true

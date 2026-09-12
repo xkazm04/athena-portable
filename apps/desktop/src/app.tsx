@@ -23,6 +23,7 @@ import { hasShell } from "@/lib/ipc";
 import { MODULE_ENTRIES, moduleFor } from "@/modules/registry";
 import { startShell, useShell } from "@/stores/shell";
 import { startTabs } from "@/stores/tabs";
+import { startTools } from "@/stores/tools";
 
 export default function App() {
   const module = useShell((s) => s.module);
@@ -33,6 +34,7 @@ export default function App() {
   useEffect(() => {
     void startShell();
     void startTabs();
+    void startTools();
   }, []);
 
   const active = moduleFor(module);

@@ -9,6 +9,7 @@
  */
 import type { Tab } from "@/lib/ipc";
 import { hostOf } from "@/lib/url";
+import type { TabTools } from "@/stores/tools";
 
 export interface BrowserTab {
   id: number;
@@ -17,6 +18,23 @@ export interface BrowserTab {
   /** The host alone, for the strip: a chip is 11rem and an address is not. */
   host: string;
   focused: boolean;
+}
+
+/**
+ * The focused tab's tier-1 surface (README section 3.4): what the page registered, and how it
+ * answered. It is the one thing this module can say about the rectangle it does not paint, and it
+ * is the first sign a relay is working at all — so it belongs in the strip, which is the only
+ * part of this view that is on screen when a page is.
+ */
+export interface BrowserTools {
+  /** How many tools the page registered. */
+  count: number;
+  /** `webmcp-native`, `webmcp-polyfill`, or null before the page has answered. */
+  transport: string | null;
+  /** The relay's words when the page could not be read, else null. Never paraphrased. */
+  problem: string | null;
+  /** A `bridge_list` is in flight. `0 tools` and "nobody has asked yet" are not one fact. */
+  asking: boolean;
 }
 
 export interface BrowserActions {
@@ -35,6 +53,8 @@ export interface BrowserModel {
    * "could not be read" are different facts and the view renders them differently.
    */
   problem: string | null;
+  /** The focused tab's tools, or null when no tab is focused. */
+  tools: BrowserTools | null;
   actions: BrowserActions;
 }
 
@@ -52,6 +72,7 @@ export const NEW_TAB_URL = "about:blank";
 export function selectBrowser(
   tabs: readonly Tab[],
   loaded: boolean,
+  byTab: Readonly<Record<number, TabTools>>,
   actions: BrowserActions,
 ): BrowserModel {
   const mapped: BrowserTab[] = tabs.map((t) => ({
@@ -61,10 +82,23 @@ export function selectBrowser(
     host: hostOf(t.url),
     focused: t.focused,
   }));
+  const focused = mapped.find((t) => t.focused) ?? null;
   return {
     tabs: mapped,
-    focused: mapped.find((t) => t.focused) ?? null,
+    focused,
     problem: loaded ? null : "the shell has not answered tabs_list yet",
+    tools: focused ? toolsOf(byTab[focused.id]) : null,
     actions,
+  };
+}
+
+/** No entry at all is the same display as an entry in flight: nobody has an answer yet. */
+function toolsOf(entry: TabTools | undefined): BrowserTools {
+  if (!entry) return { count: 0, transport: null, problem: null, asking: true };
+  return {
+    count: entry.tools.length,
+    transport: entry.transport,
+    problem: entry.problem,
+    asking: entry.asking,
   };
 }

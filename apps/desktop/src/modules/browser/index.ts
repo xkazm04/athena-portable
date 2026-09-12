@@ -8,6 +8,7 @@
 import { createElement } from "react";
 
 import { useTabs } from "@/stores/tabs";
+import { useTools } from "@/stores/tools";
 import type { ModuleEntry } from "@/modules/types";
 
 import { fixtureIds, fixtures } from "./fixtures";
@@ -21,6 +22,9 @@ function Live() {
   const close = useTabs((s) => s.close);
   const focus = useTabs((s) => s.focus);
   const navigate = useTabs((s) => s.navigate);
+  // Read, never started: `src/app.tsx` starts this store, because the focused page's tool list
+  // has to stay true while the user is looking at another module (README section 3.5).
+  const byTab = useTools((s) => s.byTab);
 
   // A rejected command is reported and not thrown: a tab that will not open must not take the
   // module down with it, and the strip still lists what is really there because the list only
@@ -33,7 +37,7 @@ function Live() {
     navigate: (id, url) => void navigate(id, url).catch(report("navigate")),
   };
 
-  return createElement(BrowserView, { model: selectBrowser(tabs, loaded, actions) });
+  return createElement(BrowserView, { model: selectBrowser(tabs, loaded, byTab, actions) });
 }
 
 export const entry: ModuleEntry = {

@@ -17,6 +17,7 @@ mod layout;
 mod tabs;
 // ── registrations: modules ────────────────────────────────────────────────────────────────────
 // c19 `mod bridge;`  c20 `mod daemon;`  c21 `mod store;`  c24 `mod hands;`  c27 `mod tray;`
+mod bridge;
 // ──────────────────────────────────────────────────────────────────────────────────────────────
 
 use serde::Serialize;
@@ -99,6 +100,7 @@ async fn layout_select(app: AppHandle, module: String) -> Result<(), String> {
 // ── registrations: commands ───────────────────────────────────────────────────────────────────
 // c19 bridge_list/bridge_call/bridge_reply · c20 daemon_status/daemon_restart
 // c21 store_get/store_set/origins_* · c24 hands_call/screenshot_read · c27 tray_set_pending
+// c19: the three are declared in `bridge.rs` beside the state they read, and registered below.
 // ──────────────────────────────────────────────────────────────────────────────────────────────
 
 pub fn run() {
@@ -108,6 +110,7 @@ pub fn run() {
         // ── registrations: state ──────────────────────────────────────────────────────────────
         // c19 `.manage(Bridge::default())` · c20 `.manage(Daemon::default())`
         // c21 `.manage(Store::open(..))` (in `setup`, it needs a path) · c27 `.manage(Tray::…)`
+        .manage(bridge::Bridge::default())
         // ──────────────────────────────────────────────────────────────────────────────────────
         .invoke_handler(tauri::generate_handler![
             tabs_create,
@@ -118,6 +121,9 @@ pub fn run() {
             layout_module,
             layout_select,
             // ── registrations: handlers (keep one line per command, grouped by module) ────────
+            bridge::bridge_list,
+            bridge::bridge_call,
+            bridge::bridge_reply,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
@@ -137,6 +143,7 @@ pub fn run() {
             // ── registrations: setup ──────────────────────────────────────────────────────────
             // c20 spawns the daemon sidecar here and c27 builds the tray here; both are
             // non-fatal — the shell must come up even when they do not.
+            bridge::smoke_if_asked(&handle);
             // ──────────────────────────────────────────────────────────────────────────────────
 
             Ok(())
