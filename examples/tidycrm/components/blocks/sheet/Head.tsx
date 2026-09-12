@@ -15,11 +15,9 @@
 import { STUDIO } from "@athena/demo-kit/seed";
 
 import { Stat, Stats } from "../Stat";
-import { presenceLine, useAthenaPresence } from "../presence";
 import { outstandingTone, type BkSheet } from "../model";
 
 export function SheetHead({ sheet }: { sheet: BkSheet }) {
-  const presence = useAthenaPresence();
 
   return (
     <header className="bk-head">
@@ -34,11 +32,6 @@ export function SheetHead({ sheet }: { sheet: BkSheet }) {
             {sheet.tableCount} blocks, {sheet.records} records, read at three depths
           </h1>
         </div>
-        {/* A reading, not a caption: `presence.ts` looks for the surface's own injected bridge and
-            counts the registrations actually on the page. */}
-        <p className="bk-presence" data-on={presence.bridged}>
-          {presenceLine(presence)}
-        </p>
       </div>
       <Stats className="bk-mast-figures">
         <Stat value={`${Math.round(sheet.coverage * 100)}%`} label="of records checked" />

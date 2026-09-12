@@ -12,7 +12,11 @@
   container-type: inline-size;
   container-name: bd-root;
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  /* Masthead, stage, foot. The fourth row was the toolbar — the level rail, the role filter and
+     the arguable chip — and it went with the presence line: Athena drives the view from beside
+     the page, so a human's filter row above the board was chrome for somebody who is not the
+     audience. The stage takes the room back. */
+  grid-template-rows: auto 1fr auto;
   gap: var(--bd-s4);
   padding: var(--bd-s4) var(--bd-s5) var(--bd-s4);
 }

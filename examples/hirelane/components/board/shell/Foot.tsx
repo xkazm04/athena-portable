@@ -15,9 +15,15 @@
  * is visible without interaction and it is the claim that matters. The names are the evidence for
  * it, one click away, and they keep their two class bands when opened.
  *
- * The counts come from `components/board/register.ts`, the same derivation the masthead's presence
- * line reads, so the two sentences on this page about the register cannot disagree.
+ * THE PRESENCE READING MOVED HERE. It used to be a sentence in the masthead; the masthead is
+ * gone, because these surfaces are the environment an agent works in rather than a console a
+ * person drives, and a line telling a reader "Athena is not connected" above the fold addresses
+ * somebody who is not the audience. DESIGN-LAW §4.1 is amended to match and is explicit that the
+ * reading may be MOVED and not deleted — §9.13 still requires it on the surface, without
+ * interaction, computed rather than typed. This summary is now the one place that makes any claim
+ * about whether an agent is here, and it reads the same `presence.ts` the masthead did.
  */
+import { useAthenaPresence } from "../presence";
 import type { BdCandidate, BdColumn, BdRole } from "../model";
 import { CAPABILITY_COUNTS, REGISTER } from "../register";
 
@@ -36,6 +42,7 @@ export function BoardFoot({
   level: number;
   nav: { up: () => void };
 }) {
+  const presence = useAthenaPresence();
   return (
     <footer className="bd-foot">
       <div className="bd-crumbs">
@@ -78,6 +85,9 @@ export function BoardFoot({
          */}
         <details className="bd-register">
           <summary>
+            <span className="bd-presence" data-on={presence.bridged}>
+              {presence.bridged ? "Athena is connected" : "Athena is not connected"}
+            </span>
             <span className="bd-register-count">
               {CAPABILITY_COUNTS.all} capabilities offered
             </span>

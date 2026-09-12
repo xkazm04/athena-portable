@@ -263,16 +263,29 @@ database. Anything else must be added to the list here first, with a reason.
   - `A hiring manager without a recruiter.`
   - `Every score points at the sentence that earned it.`
   - `Decisions that reach a candidate stop here first.`
-- **The honesty line, as a READING rather than a string** (amended 2026-09, the readability pass).
-  It was a verbatim sentence: `Athena is not connected yet. Every capability below is registered
-  and waiting.` A verbatim string cannot become false, and this is the one line on the surface that
-  a recorded walkthrough turns on — so the rule that was supposed to enforce honesty was
-  guaranteeing a sentence that would be a lie the moment an agent arrived. It is now a live
-  reading, visible without interaction, of two things the page can actually answer:
-  - whether the surface's own bridge is in the page (`window.__athenaBridge`, plus
-    `detectModelContext()` from `@athena/demo-kit/webmcp`), and
-  - how many capabilities this route registers and how many of them are gated, counted from the
-    manifest rather than typed.
+- **The honesty line is NOT above the fold** (amended 2026-09, the agent-driven pass). This clause
+  has now been changed twice and the history is the argument, so both steps stay written down.
+
+  It began as a verbatim sentence: `Athena is not connected yet. Every capability below is
+  registered and waiting.` A verbatim string cannot become false, and this is the one line on the
+  surface a recorded walkthrough turns on — so the rule meant to enforce honesty was guaranteeing
+  a sentence that would be a lie the moment an agent arrived. The readability pass made it a live
+  reading of two things the page can answer: whether the surface's own bridge is in the page
+  (`window.__athenaBridge`, plus `detectModelContext()` from `@athena/demo-kit/webmcp`), and how
+  many capabilities the route registers and how many are gated, counted from the manifest.
+
+  It is now **removed from the masthead entirely**, in all three example apps, along with the
+  level rail and the filter row beside it. The premise changed: these surfaces are the environment
+  an agent works in, not a console a person drives. A reader who is told "Athena is not connected"
+  above the fold is being addressed as somebody about to connect her, and that person is not the
+  audience — the audience is watching her work the page from beside it.
+
+  **What the removal may not do is make the claim unavailable.** The reading is still computed
+  from the same source and still on the surface without interaction, in the FOOT: hirelane's
+  capability pill and its disclosure, ledgerbox's and tidycrm's foot registers. That is where §7.4
+  wanted the manifest in the first place — "the manifest is not a drawer nobody opens" is a rule
+  about the manifest being present and derived, not about which end of the page it sits at. A
+  variant that deletes the reading rather than moving it fails §9.13 exactly as before.
 
   Not connected, it still says what it always said: `Athena is not connected. All N capabilities
   are registered and waiting — G of them gated.` Connected, it says so. One place per app
@@ -465,7 +478,8 @@ this list is read by a person.
 
 **Honesty and craft**
 13. The honesty line is present as a live reading, visible without interaction, and it is the
-    only place on the surface that claims anything about whether an agent is here.
+    only place on the surface that claims anything about whether an agent is here. Since the
+    agent-driven pass it lives in the FOOT rather than the masthead (§4.1) — moved, not deleted.
 14. Every number on screen traces to a query.
 15. Checked at 390, 768, 1280 and 1920 — and *looked at*, not inferred from markup.
 16. `prefers-reduced-motion` lands on final states.

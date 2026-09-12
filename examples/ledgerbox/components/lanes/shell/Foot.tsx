@@ -7,9 +7,21 @@
  * three, including neither the blue that is a quarter of the marks nor the grey
  * that means "not in play" — so a reader could see two states on the sheet that
  * the key did not admit existed.
+ *
+ * THE PRESENCE READING MOVED HERE from the masthead, with the agent-driven pass that took the
+ * mast's bar and status line down: the sheet is the environment an agent works in, not a console
+ * a person drives, so a line above the fold telling a reader whether Athena is attached addresses
+ * somebody who is not the audience. `DESIGN-LAW.md` §4.1 (in the hirelane app, which the three
+ * share) is explicit that the reading may be MOVED and not deleted — it is still on the surface,
+ * still without interaction, still counted from the manifest rather than typed.
  */
 import { formatMoneyShort } from "@/lib/format";
+import { REGISTER } from "@/lib/manifest";
 import { HEAT_LABEL, type LnLane, type LnMark, type LnSheet } from "../model";
+import { useAthenaPresence } from "../presence";
+import { PresenceLine } from "../PresenceLine";
+
+const GATED = REGISTER.filter((t) => !t.auto).length;
 
 export function Foot({
   sheet,
@@ -24,6 +36,8 @@ export function Foot({
   level: number;
   nav: { home: () => void; up: () => void; openGroup: (id: string) => void };
 }) {
+  const presence = useAthenaPresence();
+
   return (
     <footer className="ln-foot">
       {/*
@@ -120,6 +134,11 @@ export function Foot({
             <em>+</em> a credit fits
           </span>
         </span>
+        <PresenceLine
+          connected={presence.bridged}
+          offered={REGISTER.length}
+          gated={GATED}
+        />
       </div>
     </footer>
   );

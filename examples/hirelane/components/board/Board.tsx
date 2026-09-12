@@ -31,7 +31,6 @@ import { splitGroup, type BdBoard } from "./model";
 import { BoardTools } from "./tools";
 import { BoardFoot } from "./shell/Foot";
 import { BoardMast } from "./shell/Mast";
-import { BoardToolbar } from "./shell/Toolbar";
 import { fade } from "./motion";
 import "./style/index.css";
 
@@ -108,16 +107,6 @@ export function Board({ board }: { board: BdBoard }) {
          */}
         <BoardMast totals={totals} />
 
-        <BoardToolbar
-          board={board}
-          level={level}
-          totals={totals}
-          roleFilter={roleFilter}
-          setRoleFilter={setRoleFilter}
-          onlyBorderline={onlyBorderline}
-          setOnlyBorderline={setOnlyBorderline}
-          nav={nav}
-        />
 
         <div className="bd-stage" ref={stageRef}>
           <LayoutGroup>

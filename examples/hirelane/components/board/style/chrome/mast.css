@@ -73,34 +73,6 @@
  * motion. The dot is deliberately not `--bd-auto`: connectedness is not reversibility, and
  * spending the locked hue here would cost the gate its signal (§4.2).
  */
-.bd-presence {
-  display: flex;
-  align-items: baseline;
-  gap: var(--bd-s2);
-  align-self: end;
-  margin: 0;
-  max-inline-size: var(--bd-measure-narrow);
-  font-size: var(--bd-label);
-  line-height: var(--bd-leading-snug);
-  color: var(--bd-ink-3);
-  text-align: start;
-}
 
-.bd-presence::before {
-  content: "";
-  flex: none;
-  inline-size: var(--bd-swatch);
-  block-size: var(--bd-swatch);
-  border-radius: var(--bd-radius-round);
-  border: var(--bd-rule-1) solid var(--bd-ink-4);
-  translate: 0 var(--bd-s0-5);
-}
 
-.bd-presence[data-on="true"] {
-  color: var(--bd-ink-2);
-}
 
-.bd-presence[data-on="true"]::before {
-  background: var(--bd-ink);
-  border-color: var(--bd-ink);
-}

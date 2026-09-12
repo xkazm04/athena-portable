@@ -160,3 +160,39 @@
   font-family: var(--bd-font);
   color: var(--bd-ink-3);
 }
+
+/*
+ * The presence reading, in the register's own summary.
+ *
+ * It was a sentence in the masthead until the agent-driven pass took the masthead's chrome down;
+ * DESIGN-LAW §4.1 is amended to say it may be moved and not deleted, and §9.13 still wants it
+ * visible without interaction. A dot and three words in the line that already names the register
+ * is the smallest honest place for it — the claim and the count are one sentence now rather than
+ * two that could disagree.
+ */
+.bd-presence {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-s2);
+  color: var(--bd-ink-3);
+}
+
+.bd-presence::before {
+  content: "";
+  flex: none;
+  inline-size: var(--bd-swatch);
+  block-size: var(--bd-swatch);
+  border-radius: var(--bd-radius-round);
+  border: var(--bd-rule-1) solid var(--bd-ink-4);
+}
+
+/* Filled when she is actually here. The hue is the accent, not --bd-auto: presence is not a class
+   of act, and §4.2 keeps the two locked hues for the AUTO/GATED split alone. */
+.bd-presence[data-on="true"] {
+  color: var(--bd-ink-2);
+}
+
+.bd-presence[data-on="true"]::before {
+  background: var(--bd-accent);
+  border-color: var(--bd-accent);
+}

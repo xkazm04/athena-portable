@@ -22,7 +22,6 @@ import { Dossier } from "./Dossier";
 import { Field } from "./Field";
 import { BlocksTools } from "./tools";
 import { useArrival } from "./useArrival";
-import { SheetBar } from "./sheet/Bar";
 import { SheetFoot } from "./sheet/Foot";
 import { SheetHead } from "./sheet/Head";
 import { tableOf, zoneOf, type BkSheet } from "./model";
@@ -58,13 +57,6 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
       <div className="bk-sheet">
         <SheetHead sheet={sheet} />
 
-        <SheetBar
-          sheet={sheet}
-          level={level}
-          showKinds={showKinds}
-          setShowKinds={setShowKinds}
-          nav={nav}
-        />
 
         {/*
           * Both can be mounted at once, stacked in one cell. That overlap is
@@ -94,7 +86,7 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
           ) : null}
         </div>
 
-        <SheetFoot sheet={sheet} zone={zone} table={table} level={level} nav={nav} />
+        <SheetFoot sheet={sheet} zone={zone} table={table} level={level} showKinds={showKinds} nav={nav} />
       </div>
 
       {/* Keyed by the block, so a change of block is a new card and not the same

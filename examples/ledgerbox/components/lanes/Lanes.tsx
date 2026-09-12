@@ -35,7 +35,6 @@ import {
   NO_FILTER,
   laneById,
   markById,
-  matches,
   type LnBooks,
   type LnFilter,
   type LnSheet,
@@ -43,7 +42,6 @@ import {
 import { fade } from "./motion";
 import { Spread, type SpreadMode } from "./Spread";
 import { Swarm } from "./Swarm";
-import { Bar } from "./shell/Bar";
 import { Foot } from "./shell/Foot";
 import { Mast } from "./shell/Mast";
 import { BooksTools, LanesTools } from "./tools";
@@ -62,8 +60,15 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
    */
   const [picked, setPicked] = useState<string[]>([]);
   const [period, setPeriod] = useState<Period>("2026-08");
-  const [flat, setFlat] = useState(false);
-  const [mode, setMode] = useState<SpreadMode>("flat");
+  /*
+   * The two view switches lost their controls with the bar, and neither was ever reachable by a
+   * tool — grep `components/lanes/tools/` and `lib/manifest.ts`: nothing registers them. So they
+   * are the defaults they always opened at, held as constants rather than as state nothing can
+   * move. If an agent is ever given a `set_view`, these become state again and the tool is what
+   * moves them.
+   */
+  const flat = false;
+  const mode: SpreadMode = "flat";
   /**
    * True from the moment a lane is opened until its cards have arrived.
    *
@@ -104,15 +109,7 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
 
   const pickedSet = useMemo(() => new Set(picked), [picked]);
 
-  const shown = useMemo(
-    () => sheet.lanes.reduce((sum, l) => sum + l.marks.filter((m) => matches(m, filter)).length, 0),
-    [sheet.lanes, filter],
-  );
 
-  const shownInLane = useMemo(
-    () => (lane ? lane.marks.filter((m) => matches(m, filter)).length : 0),
-    [lane, filter],
-  );
 
   return (
     <MotionConfig reducedMotion="user">
@@ -147,23 +144,6 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
 
         <Mast sheet={sheet} />
 
-        <Bar
-          sheet={sheet}
-          level={level}
-          filter={filter}
-          setFilter={setFilter}
-          flat={flat}
-          setFlat={setFlat}
-          mode={mode}
-          setMode={setMode}
-          shown={shown}
-          lane={lane}
-          shownInLane={shownInLane}
-          picked={picked.length}
-          period={period}
-          setPeriod={setPeriod}
-          nav={nav}
-        />
 
         <LayoutGroup>
         <div className="ln-stage">

@@ -36,7 +36,7 @@
      largest min-content among the rows — a nowrap headline, a row of filter
      chips — and the whole sheet then runs off the side of a phone. */
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: var(--ln-s2);
   padding: var(--ln-s4) var(--ln-s5) var(--ln-s3);
 }

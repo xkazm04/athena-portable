@@ -12,26 +12,18 @@
  * where this was one candidate among several. The Lanes IS the app now and there is nowhere else
  * to be, so the masthead does not pretend there is.
  *
- * THE PRESENCE LINE IS A READING. It used to say "Athena is not connected" in ink; it now asks
- * `useAthenaPresence`, which looks for the surface's own injected bridge. The capability counts
- * beside it come from the union manifest, so the sentence cannot claim a register the page does
- * not have. The drawing of it is `PresenceLine.tsx`, which takes the answer as three plain props so
- * that the other two surfaces can copy the component rather than the sentence.
+ * THE PRESENCE LINE IS NOT HERE ANY MORE. It moved to `shell/Foot.tsx` with the agent-driven
+ * pass that took the filter bar and the level rail down: the sheet is the environment an agent
+ * works in, not a console a person drives, so a status line above the fold was addressing a
+ * reader who is not the audience. It is moved and not deleted — `PresenceLine.tsx` still draws
+ * the same reading from the same manifest, one region lower.
  */
 import { STUDIO } from "@athena/demo-kit/seed";
 
 import { formatMoneyShort } from "@/lib/format";
-import { REGISTER } from "@/lib/manifest";
-import { PresenceLine } from "../PresenceLine";
-import { useAthenaPresence } from "../presence";
 import type { LnSheet } from "../model";
 
-const AUTO = REGISTER.filter((t) => t.auto).length;
-const GATED = REGISTER.length - AUTO;
-
 export function Mast({ sheet }: { sheet: LnSheet }) {
-  const presence = useAthenaPresence();
-
   return (
     <header className="ln-mast">
       <div>
@@ -40,7 +32,6 @@ export function Mast({ sheet }: { sheet: LnSheet }) {
         </span>
         <h1 className="ln-title ln-display">Six areas of the practice, one clock</h1>
       </div>
-      <PresenceLine connected={presence.bridged} offered={REGISTER.length} gated={GATED} />
       <div className="ln-mast-under">
         <div className="ln-readout">
           <div data-tone="alert">
