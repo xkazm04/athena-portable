@@ -457,6 +457,12 @@ class Approvals:
     def pending(self, limit: int = 20, *, now: datetime | None = None) -> PendingPage:
         """The live inbox, oldest first, bounded and announced.
 
+        Ordered by ``created_at`` and then by ``rowid``, which is insertion order. The tiebreak
+        matters more than it looks: five cards filed inside one millisecond share a timestamp, and
+        the previous tiebreak was ``id`` — random hex, so "oldest first" came out shuffled about
+        four times in five. An inbox whose order is arbitrary is an inbox where the user answers
+        the wrong card.
+
         A row past its expiry is not listed even before the sweep has run, so the panel and the
         table agree about what is answerable at the same instant.
         """
@@ -473,7 +479,7 @@ class Approvals:
             raws = con.execute(
                 f"""SELECT {_COLUMNS} FROM companion_approval
                     WHERE status = 'pending' AND expires_at > ?
-                    ORDER BY created_at ASC, id ASC LIMIT ?""",
+                    ORDER BY created_at ASC, rowid ASC LIMIT ?""",
                 (moment, bound),
             ).fetchall()
         return PendingPage(rows=tuple(_row(raw) for raw in raws), total=total)
