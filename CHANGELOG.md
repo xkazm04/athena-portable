@@ -16,6 +16,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `feat(examples): the journey, four acts run end to end` — `@athena/journey` boots the three apps in scratch directories, drives them through `inject.js` over the `athena-webmcp` protocol, classifies with `gate.js`, approves and declines through a surface fake, models mail and notes connectors behind egress allow-lists, and prints the ledger and the facts it cites.
 - `feat(examples): ledgerbox ships The Lanes` — the newer direction restored from the reference repository as the root page; one manifest carrying the view layer and the books layer, 23 tools, three gated; the page reads the bridge's presence marker; ADR 0018.
 - `fix(examples): the journey records itself on request, and the example-apps ADR is 0017` — `JOURNEY_VIDEO=1` records the run from the spec's own context (the config option a history rewrite carried in never applied); the ADR renumbered out of the 0014 collision.
+- `chore(examples): one React types version, and the review cameras` — the four example packages move to the React types the desktop package pins, so react-three-fiber augments the copy Tidycrm compiles against; per-app screenshot scripts under `examples/journey/scripts/`.
 
 ## P5 — MVP checkpoint (done)
 
