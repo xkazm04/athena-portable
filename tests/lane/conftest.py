@@ -348,7 +348,6 @@ def build_lane(
         recall=Spy("nothing recalled"),
         write_fact=write_fact,
         checkpoint=checkpoint,
-        answer_decision=Spy("relayed"),
     )
     catalog = build_catalog(services, invoices_manifest())
     approvals = FakeApprovals()

@@ -20,11 +20,11 @@ picks a dialect; the factory says how that dialect is actually run. In productio
 login. The gate, the ledger and the round budget are identical either way — ADR 0007 — so what
 the factory changes is who produces the tokens and nothing else.
 
-**Three of Athena's four core tools get their executor here**, bound to this brain. The fourth,
-``core.answer_decision``, is bound to the approval table alone: it *relays* the user's answer onto
-a card in the conversation it was filed under and stops there. It does not replay the gate,
-because a replay executes and nothing gated executes during a turn (ADR 0010); the replay belongs
-to ``POST /decisions/<id>``, after the turn, on the surface that will run what it returns.
+**All three of Athena's core tools get their executor here**, bound to this brain. There is no
+fourth: nothing a model can call answers a decision card (ADR 0004, amended). The user's answer
+arrives on ``POST /decisions/<id>`` — the panel's button today, voice through the same route
+later — and the replay that follows it is ``BrowserLane.answer_decision``, a lane method that is
+not a catalog name and so is not a name the model was ever told about.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ from pathlib import Path
 from typing import Any
 
 from athena.contracts.registry import ExecResult, ExecutorFn, TurnContext
-from athena.core.approvals import ApprovalError, Approvals
+from athena.core.approvals import Approvals
 from athena.core.brain.store import DEFAULT_CONFIDENCE, Brain, ProvenanceError
 from athena.core.catalog import Catalog, CoreServices, build_catalog
 from athena.core.constitution import Constitution, load_or_empty
@@ -53,7 +53,6 @@ __all__ = [
     "ENGINE_DIRNAME",
     "AthenaLocal",
     "TransportFactory",
-    "answer_decision_executor",
     "build_local",
     "checkpoint_executor",
     "recall_executor",
@@ -136,42 +135,6 @@ def checkpoint_executor(brain: Brain) -> ExecutorFn:
     return run
 
 
-def answer_decision_executor(approvals: Approvals) -> ExecutorFn:
-    """``core.answer_decision``: relay the user's spoken answer onto a card, and stop there.
-
-    Two restraints, both structural. It records the verdict and never replays the gate, because a
-    replay executes and nothing gated executes during a turn (ADR 0010) — the surface closes that
-    loop through ``POST /decisions/<id>``. And it may only answer a card filed under *this*
-    conversation, so a relayed answer can never reach a card the user is looking at somewhere else.
-    """
-
-    def run(params: dict[str, Any], ctx: TurnContext) -> ExecResult:
-        approval_id = str(params.get("id", ""))
-        try:
-            grant = approvals.describe(approval_id)
-        except ApprovalError as exc:
-            return ExecResult.failure("unknown_ref", str(exc))
-        if grant.conversation != ctx.conversation_id:
-            return ExecResult.failure(
-                "foreign_origin",
-                f"approval {approval_id} was filed under {grant.conversation}, not this "
-                "conversation",
-            )
-        try:
-            row = approvals.resolve(approval_id, str(params.get("choice", "")))
-        except ApprovalError as exc:
-            return ExecResult.failure("validator_failed", str(exc))
-        return ExecResult(
-            ok=True,
-            output=(
-                f"approval {row.id} is {row.status}; the surface runs what it authorises, "
-                "this turn does not"
-            ),
-        )
-
-    return run
-
-
 # --- one local Athena ----------------------------------------------------------------------------
 
 
@@ -246,7 +209,6 @@ def build_local(
         recall=recall_executor(brain),
         write_fact=write_fact_executor(brain),
         checkpoint=checkpoint_executor(brain),
-        answer_decision=answer_decision_executor(approvals),
     )
     catalog = build_catalog(services)
     gate = PolicyHook(catalog, approvals, policy or Policy())

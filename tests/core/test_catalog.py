@@ -58,10 +58,9 @@ def manifest(app_id: str = "invoices", **overrides: Any) -> HostManifest:
 # --- the core names ------------------------------------------------------------------------------
 
 
-def test_the_four_core_names_are_registered_with_the_classes_the_design_fixes() -> None:
+def test_the_three_core_names_are_registered_with_the_classes_the_design_fixes() -> None:
     catalog = build_catalog(services())
     assert catalog.names() == [
-        "core.answer_decision",
         "core.checkpoint",
         "core.recall",
         "core.write_fact",
@@ -112,7 +111,6 @@ def test_a_core_tool_with_no_service_attached_refuses_instead_of_vanishing() -> 
 def test_a_manifest_merges_under_its_origin_namespaced_by_app_id() -> None:
     catalog = build_catalog(services(), manifest())
     assert catalog.names(Lane.BROWSER) == [
-        "core.answer_decision",
         "core.checkpoint",
         "core.recall",
         "core.write_fact",
@@ -236,6 +234,18 @@ def test_the_block_shows_the_read_cap_and_the_parameters_of_each_name() -> None:
     assert "key: string" in text
     assert 'scope?: ["user", "project", "world"]' in text
     assert '`host.invoices.list_invoices`(status?: ["open", "paid"])' in text
+
+
+def test_no_name_the_model_can_read_answers_a_decision_card() -> None:
+    """ADR 0004, amendment: the block is generated from the registry, and the registry holds no
+    name by which a model resolves an approval — so the model was never told about one."""
+    catalog = build_catalog(services(), manifest())
+    text = catalog.render_capabilities(Lane.BROWSER).text
+    assert "answer_decision" not in text
+    assert "core.answer_decision" not in catalog.names(Lane.BROWSER)
+    verdict = catalog.validate("core.answer_decision", {"id": "apr_1", "choice": "approve"}, CTX)
+    assert not verdict.ok
+    assert verdict.reason == "unknown_ref"
 
 
 def test_a_dropped_origin_leaves_the_block_immediately() -> None:

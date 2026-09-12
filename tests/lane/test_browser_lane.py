@@ -6,6 +6,9 @@ allowed host call becomes a ``tool.call`` the page runs; the answer comes back i
 frame, fenced. Only ``answer_decision`` reaches an executor, and only through the gate, with the
 approval id, after the user has answered.
 
+No name in the catalog answers a card: the surface does, and only the surface (ADR 0004,
+amendment).
+
 Everything runs on a scripted transport: recorded CLI stdout, no binary, no login, no network.
 """
 
@@ -30,7 +33,7 @@ from athena.contracts.channel import (
     TurnSummary,
 )
 from athena.contracts.manifest import HostManifest, HostTool
-from athena.contracts.registry import ToolClass, ToolEntry
+from athena.contracts.registry import Lane, ToolClass, ToolEntry
 from athena.harness.transports import ScriptedTransport, TransportError
 from athena.lane.browser_lane import (
     BrowserLane,
@@ -39,7 +42,17 @@ from athena.lane.browser_lane import (
     marked,
 )
 
-from .conftest import APP_ID, ORIGIN, PAGE_ORIGIN, PROJECT, Harnessed, build_lane, claude_round, op
+from .conftest import (
+    APP_ID,
+    CONVERSATION,
+    ORIGIN,
+    PAGE_ORIGIN,
+    PROJECT,
+    Harnessed,
+    build_lane,
+    claude_round,
+    op,
+)
 
 FACT = {"key": "acme pays late", "value": "31 days", "sources": ["ep_00000001"]}
 
@@ -122,6 +135,40 @@ def test_an_approved_core_tool_runs_here_rather_than_on_the_page(tmp_path: Path)
 
 
 # --- what never happens inside a turn ----------------------------------------------------------
+
+
+def test_a_model_that_tries_to_answer_a_card_is_dropped_and_the_card_stays_pending(
+    tmp_path: Path,
+) -> None:
+    """The defect ADR 0004's amendment closes (README §2 invariant 3).
+
+    ``core.answer_decision`` was an ``AUTO`` core tool, so one op moved a card the user had not
+    looked at to ``approved``. The name is no longer in the catalog, so it is no longer in the
+    generated capability block and an op naming it is dropped as ``unknown_ref`` before any entry
+    is reached. The turn still ends, and the ledger still gets its row.
+    """
+    built = build_lane([], tmp_path)
+    card = built.approvals.create(
+        "host.invoices.pay",
+        {"invoice": "INV-118"},
+        origin=ORIGIN,
+        conversation=CONVERSATION,
+        surface="panel",
+    )
+    answered = op("core.answer_decision", id=card.id, choice="approve")
+    built.transport.rounds = [claude_round(f"They said yes.\n{answered}")]
+
+    events = drain(built.lane, built)
+
+    assert "answer_decision" not in built.catalog.render_capabilities(Lane.BROWSER).text
+    (dropped,) = of(events, ToolResult)
+    assert dropped.ok is False
+    assert dropped.error == "unknown_ref"
+    assert "core.answer_decision" in dropped.output
+    assert of(events, ToolCall) == [], "nothing was addressed, so nothing was called"
+    assert card.status == "pending", "only the surface answers a card"
+    assert events[-1].kind == "turn.finished"
+    assert built.ledger.rows, "the turn is ledgered like any other"
 
 
 def test_an_allowed_auto_host_tool_is_a_tool_call_and_nothing_executes(tmp_path: Path) -> None:

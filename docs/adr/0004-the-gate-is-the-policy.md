@@ -29,9 +29,10 @@ gone and the new ones had not landed.
 
 `core/catalog.py` is the only module that assigns a `ToolClass`.
 
-- Athena's own four names are fixed in code: `core.recall` is `READ` with a 1,600-character cap,
+- Athena's own core names are fixed in code: `core.recall` is `READ` with a 1,600-character cap,
   `core.checkpoint` and `core.answer_decision` are `AUTO`, and `core.write_fact` is `GATED` —
   a fact outlives the turn, and nothing that outlives a turn is written without a card.
+  (`core.answer_decision` was removed by the amendment below; three names remain.)
 - A host tool's class is `HostTool.default_class()` and nothing else: `AUTO` only when
   `reversible` is exactly `True` and `side_effects` is not `external`, `GATED` in every other case,
   including the case where the flag was never declared. No field a host can send is read as a
@@ -77,3 +78,37 @@ The cost of the three registries is that `Catalog.entries` is a computed flat vi
 stored dict, so every lookup rebuilds it. At the size of one catalog — Athena's four names, a page's
 handful, nine hands, a connector's few — that is not worth a cache, and a cache is exactly where a
 stale name would live.
+
+## Amendment, 2026-09-12: no tool a model can call may answer a card
+
+`core.answer_decision` was registered as an `AUTO` core tool so that a spoken "yes" could be
+relayed onto a pending card. It was `AUTO`, so its validator was the only thing between a model's
+own text and a resolved approval — and a model that emitted `OP: core.answer_decision {"id": …,
+"choice": "approve"}` moved a card the user had not looked at to `approved`. Nothing downstream
+recovered from that: `POST /decisions/<id>` and the gate's replay both read the approval row, and
+the row by then said the user had agreed. That is README §2 invariant 3 failing in the one
+direction the invariant exists to prevent — policy decided by the model rather than by the gate —
+and the relay's two restraints (it never replayed the gate, and it refused a card from another
+conversation) were restraints on the blast radius, not on the decision.
+
+**The rule, from here on: no tool callable by a model may resolve, create-and-resolve, or expire
+an approval.** It is not enough for such a tool to be `GATED`, because a card that authorises
+answering cards is a card that authorises answering itself.
+
+The enforcement is structural, not advisory: the name is gone from the catalog, so it is gone from
+`Catalog.render_capabilities` — the capability block is *generated* from the registry, and a name
+the registry does not hold is a name the model was never told about. An `OP:` naming it is dropped
+by `CliHarness._dispatch` as `unknown_ref` before any entry, validator or executor is reached, and
+the turn's ledger row is written as it is for any other turn. `CoreServices` no longer carries an
+`answer_decision` port and `wiring` no longer builds one, so there is no executor to re-attach by
+accident.
+
+A user's answer reaches an approval by exactly one path: the surface calls `POST /decisions/<id>`,
+which calls `BrowserLane.answer_decision`, which resolves the row and replays the gate with the
+approval id (README §3.2 step 6). Voice, when it arrives, goes through that same route rather than
+through a tool — a transcript is a user's words, and it becomes a decision at the surface that
+heard it, not inside a turn.
+
+The cost is that the model cannot close the loop on a card it raised: it can be told a card is
+pending (`pending_lines` puts it in the turn frame) and can say what it is waiting for, and that is
+the whole of its part. That is the intended asymmetry.

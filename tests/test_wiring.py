@@ -8,6 +8,7 @@ tests do that — and nothing spawns a binary.
 
 from __future__ import annotations
 
+from dataclasses import fields
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,7 @@ import pytest
 
 from athena.contracts.registry import Lane, ToolClass, TurnContext
 from athena.core.brain.store import ProvenanceError
+from athena.core.catalog import CoreServices
 from athena.harness.policy import Policy
 from athena.harness.transports import ScriptedTransport, SubprocessTransport
 from athena.wiring import AthenaLocal, build_local
@@ -128,12 +130,11 @@ def test_a_pin_carries_every_other_rule_across(tmp_path: Path) -> None:
         assert after.pinned_origins == {"invoices": "https://invoices.example"}
 
 
-# -- the four core tools ---------------------------------------------------------------------
+# -- the three core tools --------------------------------------------------------------------
 
 
-def test_the_lane_is_handed_athenas_own_four_names(local: AthenaLocal) -> None:
+def test_the_lane_is_handed_athenas_own_three_names(local: AthenaLocal) -> None:
     assert [entry.name for entry in local.lane.tools()] == [
-        "core.answer_decision",
         "core.checkpoint",
         "core.recall",
         "core.write_fact",
@@ -220,9 +221,30 @@ def test_the_brains_own_provenance_rule_is_the_one_the_catalog_asks(local: Athen
         local.brain.write_fact("k", "v", sources=["ep_deadbeef"])
 
 
-def test_answer_decision_relays_a_verdict_and_never_replays_the_gate(local: AthenaLocal) -> None:
-    """ADR 0010 from the other side: the relay records the answer, the *surface* runs what it
-    authorises. Nothing gated executes during a turn, including through this door."""
+def test_no_core_name_can_answer_a_card_and_none_is_offered_to_the_model(
+    local: AthenaLocal,
+) -> None:
+    """README §2 invariant 3, structurally (ADR 0004, amendment).
+
+    ``core.answer_decision`` was an ``AUTO`` core tool, so a model could resolve a card by
+    emitting one op. The name is gone from the catalog and from the generated capability block,
+    which is the same statement said twice: the block *is* the registry.
+    """
+    assert "core.answer_decision" not in local.catalog
+    assert [entry.name for entry in local.lane.tools()] == [
+        "core.checkpoint",
+        "core.recall",
+        "core.write_fact",
+    ]
+    assert "answer_decision" not in local.catalog.render_capabilities(Lane.BROWSER).text
+    # And no port is left for a later commit to re-attach an executor to.
+    assert "answer_decision" not in {field.name for field in fields(CoreServices)}
+
+
+def test_a_card_is_still_pending_after_a_turn_that_tried_to_answer_it(
+    local: AthenaLocal,
+) -> None:
+    """The defect, from the gate's side: the name the model would have called is unaddressable."""
     card = local.approvals.create(
         "host.invoices.pay",
         {"invoice": "7"},
@@ -230,41 +252,36 @@ def test_answer_decision_relays_a_verdict_and_never_replays_the_gate(local: Athe
         conversation=CONVERSATION,
         surface="panel",
     )
-    entry = local.catalog.get("core.answer_decision")
-    assert entry.executor is not None
+    with pytest.raises(ValueError):
+        local.catalog.get("core.answer_decision")
 
-    result = entry.executor({"id": card.id, "choice": "approve"}, ctx())
-
-    assert result.ok
-    assert "the surface runs what it authorises" in result.output
-    assert local.approvals.describe(card.id).status == "approved"
-
-
-def test_answer_decision_may_not_reach_a_card_from_another_conversation(
-    local: AthenaLocal,
-) -> None:
-    card = local.approvals.create(
-        "host.invoices.pay",
-        {"invoice": "7"},
-        origin="host:invoices",
-        conversation="conv_elsewhere",
-        surface="panel",
+    verdict = local.catalog.validate(
+        "core.answer_decision", {"id": card.id, "choice": "approve"}, ctx()
     )
-    entry = local.catalog.get("core.answer_decision")
-    assert entry.executor is not None
 
-    result = entry.executor({"id": card.id, "choice": "approve"}, ctx())
-
-    assert not result.ok
-    assert result.error == "foreign_origin"
+    assert not verdict.ok
+    assert verdict.reason == "unknown_ref"
     assert local.approvals.describe(card.id).status == "pending"
 
 
-def test_an_unknown_card_is_refused_by_name(local: AthenaLocal) -> None:
-    entry = local.catalog.get("core.answer_decision")
-    assert entry.executor is not None
+def test_the_surface_is_the_only_door_and_it_still_opens(local: AthenaLocal) -> None:
+    """The other half: what the model may not do, the surface's own path still does.
 
-    result = entry.executor({"id": "apr_000000000000", "choice": "approve"}, ctx())
+    ``POST /decisions/<id>`` calls exactly this, and the replay runs the *granted* action — here a
+    gated core tool, whose executor exists for this moment and for no other (ADR 0010).
+    """
+    episode = local.brain.append_episode("Acme paid on day 31", "user", session_id=CONVERSATION)
+    card = local.approvals.create(
+        "core.write_fact",
+        {"key": "acme pays late", "value": "31 days", "sources": [episode.id]},
+        origin="core",
+        conversation=CONVERSATION,
+        surface="panel",
+    )
 
-    assert not result.ok
-    assert result.error == "unknown_ref"
+    resolution = local.lane.answer_decision(card.id, "approve", ctx())
+
+    assert resolution.approved
+    assert resolution.result is not None
+    assert resolution.result.ok
+    assert local.approvals.describe(card.id).status == "approved"

@@ -81,7 +81,6 @@ class CoreServices:
     recall: ExecutorFn | None = None
     write_fact: ExecutorFn | None = None
     checkpoint: ExecutorFn | None = None
-    answer_decision: ExecutorFn | None = None
 
 
 RECALL_SCHEMA: dict[str, Any] = {
@@ -116,15 +115,6 @@ CHECKPOINT_SCHEMA: dict[str, Any] = {
     "required": ["text"],
 }
 
-ANSWER_DECISION_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "id": {"type": "string", "maxLength": 64},
-        "choice": {"type": "string", "maxLength": 64},
-    },
-    "required": ["id", "choice"],
-}
-
 
 def _unattached(name: str) -> ExecutorFn:
     """The executor of a core tool whose service was never wired in."""
@@ -136,7 +126,17 @@ def _unattached(name: str) -> ExecutorFn:
 
 
 def core_entries(services: CoreServices) -> list[ToolEntry]:
-    """Athena's own four names (README §3.2, §3.3).
+    """Athena's own three names (README §3.2, §3.3; ADR 0004, amended).
+
+    **Answering a decision card is not one of them, and cannot become one.** README §2 invariant 3
+    says a ``GATED`` tool never executes without a decision the *user* resolved, and a tool that
+    resolves an approval is a tool by which the model resolves it — the grant it needs would be
+    one round of its own text away, and the card the user is looking at would already say
+    ``approved``. So there is no name here for it: a user's answer reaches an approval through the
+    surface (``POST /decisions/<id>``, which voice goes through as well) and
+    :meth:`~athena.lane.browser_lane.BrowserLane.answer_decision`, which is a lane method the model
+    cannot address. An ``OP:`` naming ``core.answer_decision`` is a name the catalog does not hold,
+    so it is dropped as ``unknown_ref`` before any executor exists to reach.
 
     ``write_fact`` is ``GATED`` and not ``AUTO`` because a fact is what the record in act 4 of the
     demo is made of: it outlives the turn, and nothing that outlives a turn is written without the
@@ -179,15 +179,6 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
             validator=schema_validator(CHECKPOINT_SCHEMA),
             executor=services.checkpoint or _unattached("core.checkpoint"),
             description="Write a progress or blocker note as a system episode.",
-        ),
-        ToolEntry(
-            name="core.answer_decision",
-            origin="core",
-            cls=ToolClass.AUTO,
-            params_schema=ANSWER_DECISION_SCHEMA,
-            validator=schema_validator(ANSWER_DECISION_SCHEMA),
-            executor=services.answer_decision or _unattached("core.answer_decision"),
-            description="Relay the user's answer to a pending decision card.",
         ),
     ]
 
