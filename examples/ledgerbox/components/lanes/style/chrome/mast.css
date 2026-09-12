@@ -38,41 +38,63 @@
 /*
  * The presence line, in the slot the two direction links used to occupy.
  *
- * It is the one sentence on the surface that changes when a bridge attaches, so
- * it is drawn as a reading and not as body copy: a mono label with a dot that
- * fills when an agent is actually there. Grey by default, because "registered
- * and waiting" is the shipped state and must not look like a warning.
+ * It is the one sentence on the surface that changes when a bridge attaches, so it is drawn as a
+ * STATUS rather than as body copy: a dot carrying the state colour, one short sentence at a
+ * reading size, and the register underneath it as a quieter second line. It used to be a 12px
+ * mono paragraph wrapping to three lines behind a hollow ring, which reads as a caption.
+ *
+ * Grey by default, because "registered and waiting" is the shipped state and must not look like a
+ * warning. Green — the same `--ln-auto` the reversible acts carry — only when a bridge is here.
  */
 .ln-presence {
   margin: 0;
   align-self: start;
   display: inline-flex;
-  align-items: center;
-  gap: var(--ln-s2);
-  max-inline-size: 44ch;
+  align-items: flex-start;
+  gap: var(--ln-s3);
+  max-inline-size: 34ch;
   color: var(--ln-mute);
-  font-family: var(--ln-font-mono);
-  font-size: var(--ln-label);
-  line-height: 1.5;
+}
+
+.ln-presence-dot {
+  flex: none;
+  inline-size: 10px;
+  block-size: 10px;
+  margin-block-start: 5px;
+  border-radius: 999px;
+  background: var(--ln-faint);
+  box-shadow: 0 0 0 3px rgb(155 178 185 / 14%);
+  transition: background var(--ln-dur-2) var(--ln-ease), box-shadow var(--ln-dur-2) var(--ln-ease);
+}
+
+.ln-presence[data-on="true"] .ln-presence-dot {
+  background: var(--ln-auto);
+  box-shadow: 0 0 0 3px rgb(69 211 162 / 22%);
+}
+
+.ln-presence-lines {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+/* The sentence. A reading size, in ink, so it is the part that is read first. */
+.ln-presence-say {
+  font-size: var(--ln-text-xs);
+  line-height: 1.4;
+  color: var(--ln-mute);
   text-wrap: balance;
 }
 
-.ln-presence::before {
-  content: "";
-  flex: none;
-  inline-size: 8px;
-  block-size: 8px;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-  background: transparent;
-}
-
-.ln-presence[data-on="true"] {
+.ln-presence[data-on="true"] .ln-presence-say {
   color: var(--ln-ink);
 }
 
-.ln-presence[data-on="true"]::before {
-  background: currentColor;
+/* The register, secondary: a count is a footnote to the claim above it. */
+.ln-presence-count {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  color: var(--ln-faint);
 }
-
-

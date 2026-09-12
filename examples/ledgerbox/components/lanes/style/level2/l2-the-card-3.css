@@ -32,6 +32,70 @@
   color: var(--ln-gate);
 }
 
+/*
+ * THE TWO BANDS AT THE GATE.
+ *
+ * The reversible acts and the gated ones were two rows of buttons in the same
+ * void, separated by nothing but an orange outline on the second row — so the
+ * one distinction the whole surface exists to teach was carried by a border
+ * colour. Each row is a band now: a cool, almost-flat one for AUTO, a warmer
+ * one for GATED, each tagged in the mono label face down its leading edge. The
+ * three apps share the shape, so a reader who learns it on the Lanes reads it
+ * unchanged on the Board and the Blocks.
+ *
+ * The tag is a label, not a legend: `.ln-class` beneath both bands still says
+ * in words what AUTO and GATED mean, and the tags are what it is naming.
+ */
+.ln-band {
+  display: flex;
+  align-items: center;
+  gap: var(--ln-s3);
+  /* Tight block padding on purpose: the card's evidence column is what the
+     height belongs to, and two bands at `--ln-s2` took thirty-six pixels off
+     it. The band is a ground behind a row of 44px targets, not a box. */
+  padding: var(--ln-s1) var(--ln-s3);
+  border: 1px solid transparent;
+  border-inline-start-width: 3px;
+  border-radius: var(--ln-radius);
+}
+
+.ln-band > .ln-actions {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.ln-band-tag {
+  flex: none;
+  align-self: center;
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Light. Reversible is the ordinary case and must not shout. */
+.ln-band[data-band="auto"] {
+  background: rgb(69 211 162 / 6%);
+  border-color: rgb(69 211 162 / 18%);
+  border-inline-start-color: var(--ln-auto);
+}
+
+.ln-band[data-band="auto"] .ln-band-tag {
+  color: var(--ln-auto);
+}
+
+/* Warmer. The same hue the gate itself is spent on, and spent on nothing else. */
+.ln-band[data-band="gated"] {
+  background: rgb(255 143 77 / 9%);
+  border-color: rgb(255 143 77 / 26%);
+  border-inline-start-color: var(--ln-gate);
+}
+
+.ln-band[data-band="gated"] .ln-band-tag {
+  color: var(--ln-gate);
+}
+
 .ln-class {
   display: flex;
   flex-wrap: wrap;

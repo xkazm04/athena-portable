@@ -15,12 +15,14 @@
  * THE PRESENCE LINE IS A READING. It used to say "Athena is not connected" in ink; it now asks
  * `useAthenaPresence`, which looks for the surface's own injected bridge. The capability counts
  * beside it come from the union manifest, so the sentence cannot claim a register the page does
- * not have.
+ * not have. The drawing of it is `PresenceLine.tsx`, which takes the answer as three plain props so
+ * that the other two surfaces can copy the component rather than the sentence.
  */
 import { STUDIO } from "@athena/demo-kit/seed";
 
 import { formatMoneyShort } from "@/lib/format";
 import { REGISTER } from "@/lib/manifest";
+import { PresenceLine } from "../PresenceLine";
 import { useAthenaPresence } from "../presence";
 import type { LnSheet } from "../model";
 
@@ -38,11 +40,7 @@ export function Mast({ sheet }: { sheet: LnSheet }) {
         </span>
         <h1 className="ln-title ln-display">Six areas of the practice, one clock</h1>
       </div>
-      <p className="ln-presence" data-on={presence.bridged}>
-        {presence.bridged
-          ? `Athena is connected. ${AUTO} capabilities run on their own; ${GATED} ask first.`
-          : `Athena is not connected. All ${REGISTER.length} capabilities are registered and waiting — ${GATED} of them gated.`}
-      </p>
+      <PresenceLine connected={presence.bridged} offered={REGISTER.length} gated={GATED} />
       <div className="ln-mast-under">
         <div className="ln-readout">
           <div data-tone="alert">

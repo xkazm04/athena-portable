@@ -24,9 +24,10 @@
     gap: var(--ln-s4);
   }
 
+  /* The tracking closes up on a narrow container; the size does not drop below the floor. */
   .ln-readout span {
-    font-size: 11px;
-    letter-spacing: 0.08em;
+    font-size: var(--ln-label);
+    letter-spacing: 0.06em;
   }
 
   /* The seven state chips were four stacked rows — 150px of filter above a

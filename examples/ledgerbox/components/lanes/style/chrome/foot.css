@@ -1,6 +1,13 @@
 /* ------------------------------------------------------------------- foot */
 
+/*
+ * The kit's manifest toggle is `position: fixed` in the bottom-left corner, which is exactly
+ * where the breadcrumb starts and, at 1024, where the legend's second row starts. It sat on top
+ * of both. The footer keeps its full-width rule and indents its CONTENT past the toggle, so the
+ * agent affordance has a gutter of its own instead of a collision.
+ */
 .ln-foot {
+  padding-inline-start: 44px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -160,9 +167,14 @@
   gap: var(--ln-s1) var(--ln-s3);
 }
 
+/* COLOUR and GLYPH name the two encodings, and they were set in `--ln-rule` — a 1px border
+   colour, about 1.3:1 on this ground. A key whose own headings cannot be read is not a key.
+   They are separated from the entries by tracking and by the rule beside them, not by ink. */
 .ln-legend-set > .ln-label {
-  color: var(--ln-rule);
+  color: var(--ln-faint);
   letter-spacing: 0.2em;
+  padding-inline-end: var(--ln-s2);
+  border-inline-end: 1px solid var(--ln-rule);
 }
 
 .ln-legend-set > span:not(.ln-label) {
@@ -182,12 +194,14 @@
 .ln-legend em {
   display: inline-grid;
   place-items: center;
-  inline-size: 15px;
-  block-size: 15px;
+  inline-size: 17px;
+  block-size: 17px;
   border-radius: 999px;
   border: 1px solid var(--tone);
   color: var(--tone);
   font-style: normal;
-  font-size: 10px;
+  /* 12px in a 17px ring. At 10px the three glyphs the whole legend exists to explain were
+     smaller than any other text on the sheet. */
+  font-size: 12px;
 }
 

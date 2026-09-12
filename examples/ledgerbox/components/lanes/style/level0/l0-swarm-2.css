@@ -69,21 +69,25 @@
  * legend a person can hold in their head: `!` money long overdue, `?` an
  * invoice the client is disputing, `+` a credit that would clear it.
  */
+/* 12px in a 16px ring, still centred on the mark's own 10px band: the ring grew by two pixels
+   at each end and the block offset came in by one, so `+3 + 16/2` is the same centre line the
+   mark's `+6 + 10/2` sits on. Below 12px these were the smallest text on the sheet and the
+   legend that explains them was smaller still. */
 .ln-mark-flag {
   position: absolute;
   inset-inline-start: calc(var(--x) * 100%);
-  inset-block-start: calc(var(--row) * var(--ln-row) + 4px);
+  inset-block-start: calc(var(--row) * var(--ln-row) + 3px);
   display: grid;
   place-items: center;
-  inline-size: 14px;
-  block-size: 14px;
-  margin-inline-start: -18px;
+  inline-size: 16px;
+  block-size: 16px;
+  margin-inline-start: -20px;
   border-radius: 999px;
   background: var(--ln-void);
   border: 1px solid var(--tone);
   color: var(--tone);
   font-family: var(--ln-font-mono);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1;
   pointer-events: none;
@@ -179,7 +183,7 @@
 
 .ln-tip-stats dt {
   font-family: var(--ln-font-mono);
-  font-size: 10px;
+  font-size: var(--ln-label);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ln-faint);

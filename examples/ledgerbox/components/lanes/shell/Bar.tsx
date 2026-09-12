@@ -58,24 +58,75 @@ export function Bar({
 }) {
   return (
     <div className="ln-bar">
-      <div className="ln-rail" role="group" aria-label="Zoom level">
-        {LEVELS.map((name, index) => (
-          <button
-            key={name}
-            type="button"
-            className="ln-rung"
-            data-on={index <= level}
-            data-here={index === level}
-            disabled={index >= level}
-            onClick={() => {
-              if (index === 0) nav.home();
-              else nav.up();
-            }}
-          >
-            <span className="ln-rung-no">{["I", "II", "III"][index]}</span>
-            <span className="ln-rung-name">{name}</span>
-          </button>
-        ))}
+      {/*
+       * The rail and the view switch share the top row.
+       *
+       * THE SWITCH USED TO COST A WHOLE LANE. It sat at the end of the filter
+       * row, and labelling it — "Tilted / Flat" and "2D dates / 3D amounts"
+       * were four bare words beside two selects that both carried a mono
+       * subject — pushed that row thirty pixels over and wrapped it onto a
+       * second forty-four-pixel line, which is exactly the failure the toolbar
+       * comment below warns about. It belongs up here anyway: the rail says
+       * which level you are reading and the switch says how that level is
+       * drawn, and they are the same question.
+       */}
+      <div className="ln-bar-top">
+        <div className="ln-rail" role="group" aria-label="Zoom level">
+          {LEVELS.map((name, index) => (
+            <button
+              key={name}
+              type="button"
+              className="ln-rung"
+              data-on={index <= level}
+              data-here={index === level}
+              disabled={index >= level}
+              onClick={() => {
+                if (index === 0) nav.home();
+                else nav.up();
+              }}
+            >
+              <span className="ln-rung-no">{["I", "II", "III"][index]}</span>
+              <span className="ln-rung-name">{name}</span>
+            </button>
+          ))}
+        </div>
+        {/*
+         * THE SWITCH SAYS WHAT IT SWITCHES. "Tilted / Flat" and "2D dates /
+         * 3D amounts" were four bare words in a segmented control, the only
+         * controls on the bar whose subject had to be guessed. They take the
+         * same mono label the CLIENT and CLOSE selects carry; the group's
+         * `aria-label` stays the longer sentence for a screen reader.
+         */}
+        {level === 0 ? (
+          <span className="ln-switch">
+            <span className="ln-label">View</span>
+            <div className="ln-toggle" role="group" aria-label="Overview depth">
+              <button type="button" aria-pressed={!flat} onClick={() => setFlat(false)}>
+                Tilted
+              </button>
+              <button type="button" aria-pressed={flat} onClick={() => setFlat(true)}>
+                Flat
+              </button>
+            </div>
+          </span>
+        ) : null}
+        {level === 1 ? (
+          <span className="ln-switch">
+            <span className="ln-label">Plot</span>
+            <div className="ln-toggle" role="group" aria-label="How the lane is laid out">
+              <button type="button" aria-pressed={mode === "flat"} onClick={() => setMode("flat")}>
+                2D dates
+              </button>
+              <button
+                type="button"
+                aria-pressed={mode === "raised"}
+                onClick={() => setMode("raised")}
+              >
+                3D amounts
+              </button>
+            </div>
+          </span>
+        ) : null}
       </div>
       <div className="ln-tools">
         <div className="ln-chips" role="group" aria-label="Filter by state">
@@ -123,30 +174,6 @@ export function Bar({
             ))}
           </select>
         </label>
-        {level === 0 ? (
-          <div className="ln-toggle" role="group" aria-label="Overview depth">
-            <button type="button" aria-pressed={!flat} onClick={() => setFlat(false)}>
-              Tilted
-            </button>
-            <button type="button" aria-pressed={flat} onClick={() => setFlat(true)}>
-              Flat
-            </button>
-          </div>
-        ) : null}
-        {level === 1 ? (
-          <div className="ln-toggle" role="group" aria-label="How the lane is laid out">
-            <button type="button" aria-pressed={mode === "flat"} onClick={() => setMode("flat")}>
-              2D dates
-            </button>
-            <button
-              type="button"
-              aria-pressed={mode === "raised"}
-              onClick={() => setMode("raised")}
-            >
-              3D amounts
-            </button>
-          </div>
-        ) : null}
         {/*
          * The count counts WHAT IS ON SCREEN. Inside a lane of twelve it
          * went on reporting all 124 invoices in the books, which is the one

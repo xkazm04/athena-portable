@@ -8,6 +8,14 @@
  * in words what it will do and to whom. The gate is asked where the click
  * landed, not in a dialog somewhere else: a question about this invoice belongs
  * on this invoice.
+ *
+ * TWO BANDS, AND THE SAME TWO IN ALL THREE APPS. The four reversible controls
+ * and the three gated ones used to be two undifferentiated rows of buttons,
+ * told apart only by the orange outline on the second row and by the key
+ * underneath. They are the panel's own bands now — a cool one tagged AUTO, a
+ * warmer one tagged GATED — so the moment a reader reaches the gate reads the
+ * same on the Lanes, the Board and the Blocks. The key below them is unchanged:
+ * it is what the two tags mean.
  */
 import { formatMoney } from "@/lib/format";
 import { CATEGORIES, TONES, type Category, type Tone } from "@/lib/constants";
@@ -51,7 +59,9 @@ export function CardFoot({
       <div className="ln-card-foot">
         {actionable ? (
           <>
-            <div className="ln-actions">
+            <div className="ln-band" data-band="auto">
+              <span className="ln-band-tag">Auto</span>
+              <div className="ln-actions">
               <label className="ln-select">
                 <span className="ln-block-label">Tone</span>
                 <select
@@ -96,8 +106,11 @@ export function CardFoot({
               >
                 Refile
               </button>
+              </div>
             </div>
-            <div className="ln-actions">
+            <div className="ln-band" data-band="gated">
+              <span className="ln-band-tag">Gated</span>
+              <div className="ln-actions">
               <Gate
                 // Exact, not `formatMoneyShort`: the short formatter rounds to
                 // whole units, which is right for a headline figure and wrong
@@ -133,6 +146,7 @@ export function CardFoot({
                 onConfirm={() => voidInvoiceAction(mark.id)}
                 disabled={mark.paidCents > 0}
               />
+              </div>
             </div>
             <p className="ln-class">
               <b>AUTO</b> draft, refile, apply a credit — reversible. <i>GATED</i> record,

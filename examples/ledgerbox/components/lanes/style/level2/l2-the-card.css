@@ -137,9 +137,19 @@
   min-inline-size: 0;
 }
 
+/*
+ * The facts panel stays put while the evidence scrolls past it — but STICKY AT
+ * THE TOP OF A SHORT SCROLLPORT MEANS ITS OWN LAST ROWS ARE UNREACHABLE: at
+ * 1024x768 the panel ran past the card's body and the rows below CONTACT could
+ * not be scrolled to, because scrolling the body only moved the column the
+ * panel is pinned inside. It now caps at the scrollport and scrolls on its own.
+ */
 .ln-card-aside {
   position: sticky;
   inset-block-start: 0;
+  max-block-size: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   display: grid;
   gap: var(--ln-s3);
   padding: var(--ln-s4);

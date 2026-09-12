@@ -10,6 +10,16 @@
   border-block: 1px solid var(--ln-rule-soft);
 }
 
+/* The rail and the view switch, on one row. Kept as a wrapper rather than as
+   two children of `.ln-bar` so the filter row still wraps as a whole block
+   underneath them instead of being squeezed in beside them. */
+.ln-bar-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ln-s4);
+}
+
 .ln-rail {
   display: flex;
   align-items: stretch;
@@ -107,6 +117,15 @@
   border: 0;
   color: inherit;
   font-size: var(--ln-text-xs);
+}
+
+/* The switch and its subject. The label sits outside the segmented control so
+   the control keeps its two even halves, and it is the same mono label the
+   CLIENT and CLOSE selects carry — one row, one treatment. */
+.ln-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ln-s2);
 }
 
 .ln-toggle {
