@@ -42,9 +42,9 @@ import secrets
 import sys
 import threading
 import time
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Generator, Iterator, Mapping, Sequence
 from contextlib import contextmanager, suppress
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, TextIO
@@ -53,11 +53,21 @@ from urllib.parse import parse_qs, urlsplit
 from athena.core.approvals import Approvals
 from athena.core.brain import Brain
 from athena.core.brain import paths as brain_paths
-from athena.core.catalog import Catalog, CoreServices, build_catalog
+from athena.core.catalog import Catalog
 from athena.core.ledger import Ledger
 from athena.daemon.ready import announce, failure_line, ready_line
-from athena.daemon.routes import Reply, Request, RouteTable, base_routes, error
+from athena.daemon.routes import (
+    SSE_CONTENT_TYPE,
+    EventStream,
+    Reply,
+    Request,
+    RouteTable,
+    base_routes,
+    error,
+)
 from athena.daemon.sessions import Sessions
+from athena.harness.policy import PolicyHook
+from athena.lane.browser_lane import BrowserLane
 
 __all__ = [
     "ALLOWED_METHODS",
@@ -126,17 +136,27 @@ class DaemonConfig:
 
 @dataclass
 class AthenaDaemon:
-    """One Athena, behind a socket: the brain, the catalog, the gate's table, and the ledger.
+    """One Athena, behind a socket: the brain, the catalog, the gate, the lane and the ledger.
 
     Every route runs against this object, and the writer lock is the only thing serialising them.
     It is deliberately *not* the brain's own lock: what a turn holds for its duration is the right
     to be the one turn, which is coarser than the right to write one memory.
+
+    The gate is held by name as well as through the lane because one route changes it: a merged
+    manifest pins its app to the origin it was published from (policy rule 3), and a pin is a fact
+    about this process rather than a configuration file. Nothing else here touches policy — the
+    daemon carries a request to the gate and carries the answer back.
     """
 
     brain: Brain
     catalog: Catalog
     approvals: Approvals
     ledger: Ledger
+    #: The gate with structural policy in front of it. ``athena.wiring`` builds it and hands the
+    #: same object to the lane, so the pin a manifest sets is the pin the next turn is judged by.
+    gate: PolicyHook
+    #: One turn, composed, run and recorded. The daemon owns no part of a turn but the lock.
+    lane: BrowserLane
     engine: str = "claude_code"
     model: str = ""
     sessions: Sessions = field(default_factory=Sessions)
@@ -151,6 +171,21 @@ class AthenaDaemon:
     @property
     def uptime_s(self) -> float:
         return round(time.monotonic() - self.started, 3)
+
+    def pin(self, app_id: str, page_origin: str) -> None:
+        """Record where one app's manifest was published from (policy rule 3, README §3.4).
+
+        The replacement policy is built with :func:`dataclasses.replace`, so every other field —
+        the disabled origins, the lane allow-lists, the connector port — is carried across. A
+        policy rebuilt from the three fields a caller happened to remember is how a rule quietly
+        stops applying, which is the bug the original repository shipped.
+        """
+        if not app_id or not page_origin:
+            raise ValueError("a pin needs an app id and the origin its manifest came from")
+        policy = self.gate.policy
+        self.gate.policy = replace(
+            policy, pinned_origins={**policy.pinned_origins, app_id: page_origin}
+        )
 
     @contextmanager
     def writing(self) -> Iterator[Brain]:
@@ -220,6 +255,36 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
         def _fail(self, reply: Reply) -> None:
             self._send(*reply)
 
+        def _stream(self, answer: EventStream) -> None:
+            """Write one Server-Sent Event stream, frame by frame (ADR 0012).
+
+            There is no ``Content-Length``: the stream's length is not known when the headers go
+            out, which is the other half of why every response says ``Connection: close`` — the
+            closed socket is the end of the body. Each frame is flushed as it is produced, so a
+            decision card reaches the panel while the turn is still running.
+
+            A client that hangs up mid-turn is ordinary, not an error: the write raises, the loop
+            stops, and the generator is *closed* rather than abandoned — which is what runs the
+            ``with daemon.writing()`` inside it and gives the writer lock back.
+            """
+            self.send_response(answer.status)
+            self._cors()
+            self.send_header("Content-Type", SSE_CONTENT_TYPE)
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.close_connection = True
+            frames = answer.frames
+            try:
+                for frame in frames:
+                    self.wfile.write(frame.encode("utf-8"))
+                    self.wfile.flush()
+            except (BrokenPipeError, ConnectionError):
+                pass
+            finally:
+                if isinstance(frames, Generator):
+                    frames.close()
+
         # -- reading -----------------------------------------------------------------------
 
         def _authorized(self) -> bool:
@@ -287,13 +352,18 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
                 origin=self.headers.get("Origin") or "",
             )
             try:
-                status, payload = route.fn(request)
+                answer = route.fn(request)
             except Exception as exc:  # a route's bug is a 500, never a dropped connection
                 # The type only: an exception's message can quote a request body, and a body
                 # may hold anything the caller put in it.
                 self._fail(error(500, "unknown", type(exc).__name__))
                 return
-            self._send(status, payload)
+            if isinstance(answer, EventStream):
+                # Nothing has been produced yet: a streaming route returns before its first
+                # frame, so everything that could be refused was refused above, as a JSON body.
+                self._stream(answer)
+                return
+            self._send(*answer)
 
     return Handler
 
@@ -377,25 +447,20 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
     port already taken — fails *before* the ready line, and says so on the failure line instead.
     A caller therefore never has to distinguish "not started" from "started and silent".
     """
+    # Local import, and the only one in this module: ``athena.wiring`` composes an
+    # :class:`AthenaDaemon` out of the real classes, so importing it at module scope would make
+    # the package graph a cycle. The daemon is a thing wiring builds; ``serve`` is the entry
+    # point that asks for one.
+    from athena.wiring import build_local
+
     args = build_parser().parse_args(None if argv is None else list(argv))
     try:
         token, token_file = resolve_token(args.token, args.token_file)
-        brain = Brain(args.brain, session_id="daemon")
+        local = build_local(brain_root=args.brain, engine=args.engine, model=args.model)
     except (OSError, ValueError) as exc:
         announce(failure_line("unknown", f"{type(exc).__name__}: {exc}"), stream)
         return 1
     try:
-        services = CoreServices(
-            sources_alive=lambda sources: set(sources) <= brain.live_episode_ids(list(sources))
-        )
-        daemon = AthenaDaemon(
-            brain=brain,
-            catalog=build_catalog(services),
-            approvals=Approvals(brain),
-            ledger=Ledger(brain),
-            engine=args.engine,
-            model=args.model,
-        )
         config = DaemonConfig(
             port=args.port,
             token=token,
@@ -404,9 +469,9 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
             allow_origins=tuple(args.allow_origin),
             token_file=token_file,
         )
-        server = make_server(daemon, config)
+        server = make_server(local.daemon, config)
     except (OSError, ValueError) as exc:
-        brain.close()
+        local.close()
         announce(failure_line("unknown", f"{type(exc).__name__}: {exc}"), stream)
         return 1
     # The socket is bound and nothing has been accepted yet: the port on this line is the port.
@@ -415,7 +480,7 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
             url=bound_url(server, config),
             token_file=config.token_file,
             engine=config.engine,
-            brain=str(daemon.brain.root),
+            brain=str(local.brain.root),
         ),
         stream,
     )
@@ -425,7 +490,7 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
         pass
     finally:
         server.server_close()
-        brain.close()
+        local.close()
     return 0
 
 

@@ -245,6 +245,13 @@ class Ledger:
 
         ``rounds`` is model → tool → model rounds *inside* one turn (README §3.2 step 3): up to
         eight of them are still one row, because one row is one turn's cost and not one HTTP call.
+
+        **Zero is a real number here**, and it is the one exception to "one row per model
+        invocation". A refusal that no model was asked about — the browser lane recording a card
+        the user declined — is a row this ledger must hold, because act 4 of the demo reads the
+        declines back, and the honest count of model rounds behind it is none. Writing ``1``
+        instead would inflate every rollup by one invocation that never happened, so the guard
+        below refuses a *negative* count and nothing else.
         """
         if not engine:
             raise LedgerError("a ledger row must name the engine that ran it")
@@ -252,8 +259,8 @@ class Ledger:
             raise LedgerError(f"not a tool origin: {origin!r}")
         if not surface:
             raise LedgerError("a ledger row must name the surface that asked")
-        if rounds < 1:
-            raise LedgerError(f"a turn is at least one round: {rounds!r}")
+        if rounds < 0:
+            raise LedgerError(f"a round count cannot be negative: {rounds!r}")
         # Normalise on the way in, once. A reader that had to normalise would be trusting that
         # every writer did, which is the same as not having a closed set at all.
         reason = normalize_reason(error_reason)

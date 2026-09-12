@@ -44,14 +44,14 @@ def test_a_daemon_on_port_zero_prints_one_line_with_the_port_it_bound(tmp_path: 
         "--token-file",
         str(token_file),
         "--engine",
-        "fake_engine",
+        "claude_code",
     )
     try:
         assert process.stdout is not None
         payload = json.loads(process.stdout.readline())
 
         assert payload["ok"] is True
-        assert payload["engine"] == "fake_engine"
+        assert payload["engine"] == "claude_code"
         assert payload["token_file"] == str(token_file)
         assert payload["brain"] == str(tmp_path / "brain")
         host, _, port = payload["url"].removeprefix("http://").partition(":")
@@ -71,7 +71,7 @@ def test_a_daemon_on_port_zero_prints_one_line_with_the_port_it_bound(tmp_path: 
             connection.close()
 
         assert reply.status == 200
-        assert body["engine"] == "fake_engine"
+        assert body["engine"] == "claude_code"
         assert process.poll() is None, "the daemon stopped instead of serving"
     finally:
         # Never a ``with`` block: exiting one waits for a process that is still serving forever.
@@ -102,6 +102,32 @@ def test_a_daemon_that_cannot_start_says_why_and_exits_non_zero(tmp_path: Path) 
     assert payload["ok"] is False
     assert payload["reason"] == "unknown"
     assert payload["detail"]
+
+
+def test_an_unknown_engine_fails_before_the_ready_line(tmp_path: Path) -> None:
+    """The engine is chosen while the daemon is being composed, not at the first turn.
+
+    ``athena.wiring.build_local`` refuses a name no dialect answers to, and it refuses it before a
+    socket is bound — so a machine that was told to run an engine that does not exist says so on
+    the failure line rather than accepting a turn and failing it.
+    """
+    process = _spawn(
+        tmp_path,
+        "--port",
+        "0",
+        "--brain",
+        str(tmp_path / "brain"),
+        "--token-file",
+        str(tmp_path / "daemon.json"),
+        "--engine",
+        "no_such_engine",
+    )
+    stdout, _ = process.communicate(timeout=60)
+
+    assert process.returncode != 0
+    payload = json.loads(stdout.strip())
+    assert payload["ok"] is False
+    assert "no_such_engine" in payload["detail"]
 
 
 def test_the_ready_line_is_one_line_even_when_a_value_contains_a_newline() -> None:

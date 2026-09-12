@@ -85,9 +85,14 @@ def test_health_answers_off_a_read_connection_while_the_brain_is_being_written(
 # -- the table -----------------------------------------------------------------------------------
 
 
-def test_the_table_ships_exactly_one_route(daemon: AthenaDaemon) -> None:
-    """``/manifest``, ``/run`` and the read routes arrive in the next two commits, not here."""
-    assert daemon.routes.listing() == ["GET /health"]
+def test_the_table_ships_the_routes_this_commit_added(daemon: AthenaDaemon) -> None:
+    """The read routes — ``/decisions``, ``/ledger``, ``/playbooks`` — arrive in the next one."""
+    assert daemon.routes.listing() == [
+        "GET /health",
+        "POST /manifest",
+        "POST /run",
+        "POST /decisions/<id>",
+    ]
 
 
 def test_a_route_registered_twice_is_a_programming_error(daemon: AthenaDaemon) -> None:

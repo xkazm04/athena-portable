@@ -110,13 +110,37 @@ def test_every_member_of_the_closed_set_survives(ledger: Ledger, reason: str) ->
 
 @pytest.mark.parametrize(
     ("field", "value"),
-    [("engine", ""), ("origin", "invoices"), ("surface", ""), ("rounds", 0)],
+    [("engine", ""), ("origin", "invoices"), ("surface", ""), ("rounds", -1)],
 )
 def test_a_row_that_could_not_be_read_back_is_refused(
     ledger: Ledger, field: str, value: Any
 ) -> None:
     with pytest.raises(LedgerError):
         _record(ledger, **{field: value})
+
+
+def test_a_refusal_nobody_asked_a_model_about_is_a_row_of_zero_rounds(ledger: Ledger) -> None:
+    """The browser lane's decision row: a card the user declined, and no invocation behind it.
+
+    Act 4 of the demo reads these back, so the row has to exist; the honest number of model
+    rounds behind it is none, and writing ``1`` would inflate every rollup by an invocation that
+    never happened.
+    """
+    row = ledger.record(
+        engine="lane",
+        model="",
+        conversation="conv_invoices",
+        origin="host:invoices",
+        surface="panel",
+        trigger="decision",
+        rounds=0,
+        is_error=True,
+        error_reason="user_denied",
+    )
+
+    assert (row.rounds, row.error_reason) == (0, "user_denied")
+    assert ledger.recent(5).rows[0].rounds == 0
+    assert ledger.rollup(by="origin")[0].rounds == 0
 
 
 # -- bounded and announced ---------------------------------------------------------------------
