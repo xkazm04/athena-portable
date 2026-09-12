@@ -38,8 +38,22 @@ Homepage = "https://github.com/xkazm04/athena-portable"
 [tool.hatch.build.targets.wheel]
 packages = ["src/athena"]
 
+# The law ships inside the wheel (ADR 0006). One copy lives at the repository root, where it is
+# reviewable as prose; the wheel carries it at `athena/constitution/`, which is the only source an
+# installed Athena has. The freeze script passes the same mapping to PyInstaller's --add-data.
+[tool.hatch.build.targets.wheel.force-include]
+"constitution" = "athena/constitution"
+
 [tool.hatch.build.targets.sdist]
-include = ["src", "tests", "docs", "README.md", "pyproject.toml"]
+include = [
+  "src",
+  "tests",
+  "docs",
+  "constitution",
+  ".athena-constitution",
+  "README.md",
+  "pyproject.toml",
+]
 
 [tool.ruff]
 line-length = 100
