@@ -496,7 +496,7 @@ class CliHarness:
             conversation=conversation_id,
             origin=f"host:{ctx.app_id}" if ctx.app_id else "core",
             surface=ctx.surface,
-            trigger="cli",
+            trigger=ctx.trigger,
         )
 
 

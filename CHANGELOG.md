@@ -2,6 +2,10 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
+## P8 — Voice (in progress)
+
+- `feat(voice): the gateway and one backend` — `athena.channels.voice`: RFC 6455 in the stdlib, `/voice` on the daemon's port with the token in the header or the `athena-token.<token>` subprotocol, the `VoiceBackend` port with a scripted backend and an OpenAI one over `urllib`; an utterance runs the ordinary browser-lane turn with `surface = voice`, `trigger = voice`; the `TTS:` line or the text capped and announced; barge-in by generation counter; "approve" / "decline" / a label answers the card on top through `decide`; the `voice` event family and `TurnContext.trigger`; ADR 0019.
+
 ## Examples — the studio and the journey (in progress)
 
 - `feat(examples): the shared kit and the studio's world` — `examples/` joins the workspace; `@athena/demo-kit` pruned to `db`, `activity`, `seed`, `ui`, `zoom`, `webmcp`; the seed registry gains `STUDIO`, one billing contact per client and the named cross-app people and aliases; ADR 0017 narrows the example-app non-goal to the three the demo runs on.

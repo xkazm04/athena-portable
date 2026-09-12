@@ -1,6 +1,6 @@
 """The channel events — what a turn emits and every surface renders (README §3.2).
 
-Eight events, one stream. The lane produces them; the daemon writes them to an AG-UI SSE stream;
+Eleven events, one stream. The lane produces them; the daemon writes them to an AG-UI SSE stream;
 the panel, the voice gateway and the MCP server each render the families they can. They are frozen
 dataclasses with a ``kind`` tag, and :meth:`ChannelEvent.to_json` / :func:`event_from_json` are the
 only serialization any transport uses — a second encoder is how two surfaces end up disagreeing
@@ -119,6 +119,44 @@ class TurnSummary(ChannelEvent):
 
 
 # ------------------------------------------------------------------------------------------
+# the voice family
+# ------------------------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class VoiceTranscript(ChannelEvent):
+    """What the microphone said, as the backend heard it. ``final`` marks the end of an
+    utterance; a partial is a hint the surface may show and the gateway may treat as speech."""
+
+    kind: ClassVar[str] = "voice.transcript"
+    text: str = ""
+    final: bool = False
+
+
+@dataclass(frozen=True)
+class VoiceSpeaking(ChannelEvent):
+    """Playback of one spoken reply begins. ``generation`` tags the audio frames that follow, so
+    a surface that heard ``voice.stopped`` for the same generation drops what is still in flight.
+    ``truncated`` says the spoken text was cut to the cap and the text itself says how much."""
+
+    kind: ClassVar[str] = "voice.speaking"
+    generation: int = 0
+    text: str = ""
+    truncated: bool = False
+    sample_rate: int = 16000
+
+
+@dataclass(frozen=True)
+class VoiceStopped(ChannelEvent):
+    """Playback of ``generation`` ended: ``done`` when it played out, ``barge_in`` when the user
+    spoke over it, ``error`` when the backend could not synthesise it."""
+
+    kind: ClassVar[str] = "voice.stopped"
+    generation: int = 0
+    reason: str = "done"
+
+
+# ------------------------------------------------------------------------------------------
 # the decisions family
 # ------------------------------------------------------------------------------------------
 
@@ -171,6 +209,9 @@ EVENT_KINDS: dict[str, type[ChannelEvent]] = {
         TurnSummary,
         DecisionRequested,
         DecisionResolved,
+        VoiceTranscript,
+        VoiceSpeaking,
+        VoiceStopped,
     )
 }
 
@@ -178,6 +219,7 @@ FAMILIES: dict[str, tuple[str, ...]] = {
     "stream": ("text.delta", "tool.call", "tool.result", "turn.finished", "turn.error"),
     "record": ("turn.summary",),
     "decisions": ("decision.requested", "decision.resolved"),
+    "voice": ("voice.transcript", "voice.speaking", "voice.stopped"),
 }
 
 

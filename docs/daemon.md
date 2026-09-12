@@ -6,7 +6,8 @@ to it over HTTP and speaks JSON.
 
 Implements README §3.2 and §3.5. The decisions behind it are ADR 0003 (one writer, a read handle
 per read), ADR 0010 (the lane holds no gated executor), ADR 0011 (threaded, `Connection: close`,
-the token on every route) and ADR 0012 (one turn is one SSE stream of channel events).
+the token on every route), ADR 0012 (one turn is one SSE stream of channel events) and ADR 0019
+(voice is a WebSocket on the same port, and a transport around the same lane).
 
 ## Routes
 
@@ -20,6 +21,7 @@ the token on every route) and ADR 0012 (one turn is one SSE stream of channel ev
 | `GET /ledger?limit=` | recent model invocations, newest first, bounded | read |
 | `GET /ledger/rollup?by=` | spend and errors summed on one dimension | read |
 | `GET /playbooks?origin=` | the procedurals the brain has distilled about one origin | read |
+| `GET /voice` + `Upgrade: websocket` | the voice channel: PCM16 in, events and audio out | writer, per turn |
 
 Every route requires `X-Athena-Token`, including `/health`; the one exception is the CORS
 preflight, which carries no body and reads nothing. Every response says `Connection: close`.
@@ -225,13 +227,62 @@ curl -s "$ATHENA/health"                    -H "X-Athena-Token: $TOKEN"
 {"ok": true, "rows": [{"row_id": 1, "turn_id": "turn_bf71…", "engine": "claude_code", "model": "scripted", "conversation_id": "conv_invoices", "origin": "host:invoices", "surface": "panel", "trigger": "cli", "rounds": 1, "input_tokens": 1840, "output_tokens": 96, "cost_usd": 0.04, "is_error": false, "error_reason": null, "created_at": "…"}], "showing": 1, "total": 1, "footer": ""}
 {"ok": true, "rollup": [{"key": "host:invoices", "turns": 1, "errors": 0, "rounds": 1, "input_tokens": 1840, "output_tokens": 96, "cost_usd": 0.04, "ms": 1}], "showing": 1, "total": 1, "footer": "", "by": "origin"}
 {"ok": true, "items": [], "showing": 0, "total": 0, "footer": "", "origin": "host:invoices"}
-{"ok": true, "engine": "claude_code", "model": "scripted", "brain": ".../demo-brain", "uptime_s": 24.651, "sessions": 1, "tools": 6, "pending": {"showing": 0, "total": 0, "footer": ""}, "routes": ["GET /health", "POST /manifest", "POST /run", "GET /decisions", "GET /ledger", "GET /ledger/rollup", "GET /playbooks", "POST /decisions/<id>"]}
+{"ok": true, "engine": "claude_code", "model": "scripted", "brain": ".../demo-brain", "uptime_s": 24.651, "sessions": 1, "tools": 6, "pending": {"showing": 0, "total": 0, "footer": ""}, "routes": ["GET /health", "POST /manifest", "POST /run", "GET /decisions", "GET /ledger", "GET /ledger/rollup", "GET /playbooks", "POST /decisions/<id>"], "sockets": []}
 ```
 
 `playbooks` is empty and says so honestly: a fresh demo brain has had no sleep cycle, so nothing
 has been distilled about this origin yet. The inbox is empty now that the card was answered.
 
 Stop the daemon with `kill %1`, and delete `demo-brain/` and `demo-engine/` to start over.
+
+## The voice socket
+
+`GET /voice` with `Upgrade: websocket` is the same door with the same token: from the header, or
+— for a browser page that cannot set one — as the subprotocol `athena-token.<token>`, which the
+server echoes. An `Origin` CORS would not allow is refused with `foreign_origin`. It exists only
+when the daemon was started with a voice backend (`--voice-backend auto` finds one whose key is
+in the environment; `none` starts without it), and `/health` lists it under `sockets` (ADR 0019).
+
+**The client sends** text frames of JSON and binary frames of audio:
+
+```
+{"type": "start", "origin": "https://…", "host_state": {…}, "project_id": ""}   the key went down
+<binary>  PCM16, mono, little-endian, 16 kHz, for as long as it is held
+{"type": "stop"}                                                                the key came up
+{"type": "text", "text": "…", "origin": "https://…", "host_state": {…}}          typed, no microphone
+{"type": "tool_result", "call_id": "…", "name": "…", "ok": true, "output": "…", "error": null, "tier": 1}
+```
+
+**The server sends** every channel event of the turn as one text frame — exactly the JSON `/run`
+puts on an SSE frame, `"tool": "athena_decision"` on a card included — plus the voice family, and
+audio as binary frames of a 4-byte big-endian generation number followed by PCM16 at the rate
+`voice.speaking` named:
+
+```
+{"kind": "voice.transcript", "text": "what is overdue", "final": true}
+{"kind": "text.delta", …}  {"kind": "tool.call", …}  {"kind": "decision.requested", …}  {"kind": "turn.finished", "tts": "Two are late.", …}
+{"kind": "voice.speaking", "generation": 1, "text": "Two are late.", "truncated": false, "sample_rate": 24000}
+<binary>  0x00000001 + PCM16 …
+{"kind": "voice.stopped", "generation": 1, "reason": "done"}          or "barge_in", or "error"
+```
+
+What an utterance *is* is decided before it is a turn. A stop word ("stop", "never mind") spoken
+over a reply cancels playback and starts no turn. "approve", "decline", "yes", "no" or an option's
+own label, while a card is waiting, answers the card on top through the same path as
+`POST /decisions/<id>` — the model never sees the word — and any `execute` comes back as a
+`tool.call` for the page. Everything else is a message, and its turn is the ordinary one: the
+ledger row says `surface = voice`, `trigger = voice`, and nothing else differs.
+
+A `tool.call` with a host origin and no `tool.result` behind it in the same turn is the page's to
+run; the client answers with `tool_result` and the turn continues on the answers, bounded at
+eight. A gated call arrives as a `tool.call` refused `pending_approval` and a card — nothing runs.
+The spoken line is the reply's `TTS:` first line, else its text cut to 1,200 characters and
+announced with `(showing N of M)`. A new `start` over a reply, or a partial transcript arriving
+over one, is a barge-in: playback stops at its next chunk and `voice.stopped` says `barge_in`
+for the generation to drop.
+
+`python -c "from athena.channels.voice import connect; …"` is a client with no shell; the tests in
+`tests/channels/` are the reference for one.
 
 ## The real thing
 

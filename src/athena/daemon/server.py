@@ -32,6 +32,12 @@ CORS is the browser's fence and the token is ours. ``chrome-extension://`` origi
 allowed; anything else must be named by ``--allow-origin`` (the shell passes its own UI origins).
 An origin that is not allowed gets no CORS headers at all, and the token check is unaffected
 either way.
+
+**A WebSocket is a route that keeps its connection.** ``GET`` with ``Upgrade: websocket`` on a
+path in :attr:`AthenaDaemon.sockets` is checked for the token exactly like every other request
+— from the header, or from the ``athena-token.<token>`` subprotocol a browser page can send when
+it cannot set a header — and then handed the socket for as long as the peer keeps it (ADR 0019).
+CORS does not fence a WebSocket, so an ``Origin`` that is not allowed is refused outright.
 """
 
 from __future__ import annotations
@@ -42,7 +48,7 @@ import secrets
 import sys
 import threading
 import time
-from collections.abc import Generator, Iterator, Mapping, Sequence
+from collections.abc import Callable, Generator, Iterator, Mapping, Sequence
 from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field, replace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -50,6 +56,9 @@ from pathlib import Path
 from typing import Any, TextIO
 from urllib.parse import parse_qs, urlsplit
 
+from athena.channels.voice.backends import BACKENDS as VOICE_BACKENDS
+from athena.channels.voice.backends import backend_from_name
+from athena.channels.voice.ws import WebSocket, accept_key, protocol_token
 from athena.core.approvals import Approvals
 from athena.core.brain import Brain
 from athena.core.brain import paths as brain_paths
@@ -80,6 +89,8 @@ __all__ = [
     "AthenaDaemon",
     "DaemonConfig",
     "DaemonServer",
+    "SocketFn",
+    "SocketTable",
     "bound_url",
     "build_handler",
     "build_parser",
@@ -105,6 +116,35 @@ MAX_BODY_BYTES = 1_048_576
 #: one worker thread, and daemon threads do not hold the process open, but neither is a reason to
 #: keep one forever.
 IDLE_TIMEOUT_S = 30
+
+
+#: What a WebSocket route is: the accepted socket and the request that opened it, on the
+#: handler thread, for as long as the function keeps it.
+SocketFn = Callable[[WebSocket, Request], None]
+
+
+class SocketTable:
+    """The WebSocket paths the daemon upgrades. Ordered, exact, one function per path."""
+
+    def __init__(self) -> None:
+        self._by_path: dict[str, SocketFn] = {}
+
+    def __contains__(self, path: object) -> bool:
+        return path in self._by_path
+
+    def __len__(self) -> int:
+        return len(self._by_path)
+
+    def add(self, path: str, fn: SocketFn) -> None:
+        if path in self._by_path:
+            raise ValueError(f"{path} is already a socket")
+        self._by_path[path] = fn
+
+    def get(self, path: str) -> SocketFn | None:
+        return self._by_path.get(path)
+
+    def listing(self) -> list[str]:
+        return list(self._by_path)
 
 
 def new_token() -> str:
@@ -164,6 +204,9 @@ class AthenaDaemon:
     lock: threading.Lock = field(default_factory=threading.Lock)
     started: float = field(default_factory=time.monotonic)
     routes: RouteTable = field(init=False)
+    #: The WebSocket paths. Empty until wiring registers a channel — ``/voice`` when a voice
+    #: backend is configured — so a daemon with no backend has no socket to fail on.
+    sockets: SocketTable = field(default_factory=SocketTable)
 
     def __post_init__(self) -> None:
         self.routes = RouteTable(base_routes(self))
@@ -291,6 +334,73 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
             presented = self.headers.get(TOKEN_HEADER) or ""
             return secrets.compare_digest(presented, config.token)
 
+        def _socket_token(self) -> tuple[bool, str | None]:
+            """Whether an upgrade carries the token, and the subprotocol to echo if it came
+            that way. The header wins when both are present; a wrong header is wrong even if
+            the subprotocol is right, so a client cannot probe one while presenting the other."""
+            if self.headers.get(TOKEN_HEADER):
+                return self._authorized(), None
+            carried = protocol_token(self.headers.get("Sec-WebSocket-Protocol") or "")
+            if carried is None:
+                return False, None
+            if not secrets.compare_digest(carried, config.token):
+                return False, None
+            return True, f"athena-token.{carried}"
+
+        def _upgrade(self) -> None:
+            """Hand a WebSocket to its route, or refuse in the one JSON shape (ADR 0019).
+
+            The token is checked before the path, as on every request, so an unauthenticated
+            caller learns nothing from a 404 against a 401. An ``Origin`` that CORS would not
+            allow is refused with ``foreign_origin``: a WebSocket is not fenced by CORS, so the
+            refusal has to be ours. The handler thread is the socket's for the route's whole
+            life; ``Connection: close`` is implied, because there is no next request.
+            """
+            ok, echo = self._socket_token()
+            if not ok:
+                self._fail(error(401, "foreign_token", f"{TOKEN_HEADER} missing or wrong"))
+                return
+            origin = self.headers.get("Origin") or ""
+            if origin and not config.cors_allows(origin):
+                self._fail(error(403, "foreign_origin", f"{origin} may not open a socket"))
+                return
+            url = urlsplit(self.path)
+            fn = daemon.sockets.get(url.path)
+            if fn is None:
+                self._fail(error(404, "unknown", f"no socket at {url.path}"))
+                return
+            key = self.headers.get("Sec-WebSocket-Key") or ""
+            if not key or (self.headers.get("Sec-WebSocket-Version") or "") != "13":
+                self._fail(error(400, "validator_failed", "not a WebSocket 13 upgrade"))
+                return
+            self.send_response(101)
+            self.send_header("Upgrade", "websocket")
+            self.send_header("Connection", "Upgrade")
+            self.send_header("Sec-WebSocket-Accept", accept_key(key))
+            if echo is not None:
+                self.send_header("Sec-WebSocket-Protocol", echo)
+            self.end_headers()
+            self.wfile.flush()
+            self.close_connection = True
+            # A voice socket idles between utterances for as long as the user does; the
+            # per-request idle timeout would cut it off mid-thought.
+            self.connection.settimeout(None)
+            request = Request(
+                method="GET",
+                path=url.path,
+                query={k: v[0] for k, v in parse_qs(url.query).items() if v},
+                origin=origin,
+            )
+            ws = WebSocket(self.rfile, self.wfile, masked=False)
+            try:
+                fn(ws, request)
+            except Exception:  # a channel's bug closes its socket, never the daemon
+                with suppress(Exception):
+                    ws.close(1011, "internal error")
+            finally:
+                with suppress(Exception):
+                    ws.close()
+
         def _body(self) -> dict[str, Any] | None:
             """The decoded JSON object, ``{}`` for no body, ``None`` for anything else."""
             try:
@@ -323,6 +433,9 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
             self.close_connection = True
 
         def do_GET(self) -> None:
+            if (self.headers.get("Upgrade") or "").lower() == "websocket":
+                self._upgrade()
+                return
             self._dispatch("GET")
 
         def do_POST(self) -> None:
@@ -437,6 +550,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--engine", default="claude_code", help="which engine a turn will run on")
     parser.add_argument("--model", default="", help="the model that engine should use, if it asks")
+    parser.add_argument(
+        "--voice-backend",
+        default="auto",
+        choices=list(VOICE_BACKENDS),
+        help="who hears and speaks on /voice: auto picks the provider whose key is set, "
+        "none starts the daemon without a voice channel",
+    )
     return parser
 
 
@@ -456,7 +576,10 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
     args = build_parser().parse_args(None if argv is None else list(argv))
     try:
         token, token_file = resolve_token(args.token, args.token_file)
-        local = build_local(brain_root=args.brain, engine=args.engine, model=args.model)
+        voice = backend_from_name(args.voice_backend)
+        local = build_local(
+            brain_root=args.brain, engine=args.engine, model=args.model, voice=voice
+        )
     except (OSError, ValueError) as exc:
         announce(failure_line("unknown", f"{type(exc).__name__}: {exc}"), stream)
         return 1
@@ -481,6 +604,7 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
             token_file=config.token_file,
             engine=config.engine,
             brain=str(local.brain.root),
+            voice=voice.name if voice is not None else "none",
         ),
         stream,
     )

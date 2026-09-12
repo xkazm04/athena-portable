@@ -66,7 +66,7 @@ from athena.core.approvals import ApprovalError, ApprovalRow
 from athena.core.catalog import CatalogError
 from athena.core.ledger import LedgerError
 from athena.core.recall import recall as recall_bundle
-from athena.daemon.sessions import conversation_for
+from athena.daemon.sessions import Session, conversation_for
 from athena.lane.turn_frame import tool_results_from
 
 if TYPE_CHECKING:
@@ -97,6 +97,7 @@ __all__ = [
     "decisions",
     "drain",
     "error",
+    "event_payload",
     "health",
     "ledger_recent",
     "ledger_rollup",
@@ -104,6 +105,8 @@ __all__ = [
     "playbooks",
     "run",
     "sse_frame",
+    "turn_context",
+    "turn_events",
 ]
 
 #: How many pending approvals ``/health`` counts before it stops counting. The number it reports
@@ -285,10 +288,17 @@ def sse_frame(event: ChannelEvent) -> str:
     names the frontend tool a surface renders it as; it is an extra key on the same frame rather
     than a second frame, so the two readings can never disagree about what the card said.
     """
+    payload = event_payload(event)
+    return f"event: {event.kind}\ndata: {json.dumps(payload, sort_keys=True)}\n\n"
+
+
+def event_payload(event: ChannelEvent) -> dict[str, Any]:
+    """One channel event as the JSON object every transport sends — SSE and the voice socket
+    alike — with the frontend tool name riding a decision card (ADR 0012)."""
     payload = event.to_dict()
     if isinstance(event, DecisionRequested):
         payload["tool"] = DECISION_TOOL
-    return f"event: {event.kind}\ndata: {json.dumps(payload, sort_keys=True)}\n\n"
+    return payload
 
 
 def drain(events: AsyncIterator[ChannelEvent]) -> Iterator[ChannelEvent]:
@@ -340,6 +350,9 @@ def health(daemon: AthenaDaemon) -> Reply:
             "footer": page.footer(),
         },
         "routes": daemon.routes.listing(),
+        # The WebSocket paths, so a shell knows whether push-to-talk has anywhere to go before
+        # it captures a microphone. Empty when no voice backend was configured.
+        "sockets": daemon.sockets.listing(),
     }
 
 
@@ -429,18 +442,7 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
     if project_id and not ids.is_id("project", project_id):
         return error(400, "unknown_ref", f"not a project id: {project_id!r}")
 
-    conversation = conversation_for(session, project_id)
-    ctx = TurnContext(
-        conversation_id=conversation,
-        turn_id=ids.mint("turn"),
-        lane=Lane.BROWSER,
-        surface=str(body.get("surface") or "panel"),
-        session_id=session.origin,
-        app_id=session.app_id,
-        page_origin=session.origin,
-        project_id=project_id or None,
-    )
-    daemon.sessions.touch(session.origin, session.app_id, tools=session.tools)
+    ctx = turn_context(daemon, session, project_id, surface=str(body.get("surface") or "panel"))
     raw_results = body.get("tool_results")
     results = tool_results_from(
         [row for row in raw_results if isinstance(row, Mapping)]
@@ -458,6 +460,36 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
             project=_active_project(body, project_id),
         )
     )
+
+
+def turn_context(
+    daemon: AthenaDaemon,
+    session: Session,
+    project_id: str = "",
+    *,
+    surface: str = "panel",
+    trigger: str = "cli",
+) -> TurnContext:
+    """The context one turn runs under, and the session refreshed for it.
+
+    Shared by ``POST /run`` and the voice gateway, so a spoken turn and a typed one differ in
+    exactly the two words the ledger rolls up by — ``surface`` and ``trigger`` — and in nothing
+    about which conversation, app or page origin the gate judges them against.
+    """
+    conversation = conversation_for(session, project_id)
+    ctx = TurnContext(
+        conversation_id=conversation,
+        turn_id=ids.mint("turn"),
+        lane=Lane.BROWSER,
+        surface=surface,
+        trigger=trigger,
+        session_id=session.origin,
+        app_id=session.app_id,
+        page_origin=session.origin,
+        project_id=project_id or None,
+    )
+    daemon.sessions.touch(session.origin, session.app_id, tools=session.tools)
+    return ctx
 
 
 def _active_project(body: Mapping[str, Any], project_id: str) -> dict[str, Any] | None:
@@ -482,11 +514,28 @@ def _turn_frames(
     results: tuple[Any, ...],
     project: Mapping[str, Any] | None,
 ) -> Generator[str, None, None]:
-    """The turn's frames, with the writer lock held for exactly as long as the turn runs.
+    """The turn's frames: :func:`turn_events`, one SSE frame per event (ADR 0012)."""
+    for event in turn_events(
+        daemon, ctx, message=message, host_state=host_state, results=results, project=project
+    ):
+        yield sse_frame(event)
+
+
+def turn_events(
+    daemon: AthenaDaemon,
+    ctx: TurnContext,
+    *,
+    message: str,
+    host_state: Mapping[str, Any],
+    results: tuple[Any, ...],
+    project: Mapping[str, Any] | None,
+) -> Generator[ChannelEvent, None, None]:
+    """One turn's events, with the writer lock held for exactly as long as the turn runs.
 
     The lock lives here rather than around the route because the route returns before a single
-    frame is produced. A turn that dies mid-stream still releases it: the ``with`` block is inside
-    the generator, and the handler closes the generator when a client hangs up.
+    event is produced. A turn that dies mid-stream still releases it: the ``with`` block is inside
+    the generator, and the handler closes the generator when a client hangs up. The voice gateway
+    drives the same generator, so a spoken turn holds the lock exactly the way a typed one does.
     """
     with daemon.writing():
         try:
@@ -498,12 +547,11 @@ def _turn_frames(
                 active_project=project,
                 pending_decisions=pending_lines(daemon),
             )
-            for event in drain(events):
-                yield sse_frame(event)
+            yield from drain(events)
         except Exception as exc:  # a lane bug ends the stream honestly, never silently
             # The type only: an exception's message can quote a request body, and a body may hold
             # anything the caller put in it.
-            yield sse_frame(TurnError(reason="unknown", detail=type(exc).__name__))
+            yield TurnError(reason="unknown", detail=type(exc).__name__)
 
 
 def pending_lines(daemon: AthenaDaemon, limit: int = PENDING_LINES) -> list[str]:

@@ -9,7 +9,7 @@ first request arrives at a closed port.
 
 Two shapes, and nothing else is ever written to stdout:
 
-``{"ok": true, "url": ..., "token_file": ..., "engine": ..., "brain": ...}``
+``{"ok": true, "url": ..., "token_file": ..., "engine": ..., "brain": ..., "voice": ...}``
     Listening. ``url`` carries the bound port, whatever ``--port`` asked for. ``token_file`` is
     the path the token was minted into, or ``null`` when the token came in on the command line —
     it is a **path**, never the token, because stdout is inherited, logged and screenshotted.
@@ -34,8 +34,14 @@ from athena.contracts.harness import normalize_reason
 __all__ = ["announce", "failure_line", "ready_line"]
 
 
-def ready_line(*, url: str, token_file: str | None, engine: str, brain: str = "") -> str:
-    """The one line a listening daemon prints. One JSON object, no trailing newline."""
+def ready_line(
+    *, url: str, token_file: str | None, engine: str, brain: str = "", voice: str = "none"
+) -> str:
+    """The one line a listening daemon prints. One JSON object, no trailing newline.
+
+    ``voice`` names the backend behind ``/voice`` — ``none`` when there is no voice channel —
+    so a shell knows before its first request whether push-to-talk has anywhere to go.
+    """
     return json.dumps(
         {
             "ok": True,
@@ -43,6 +49,7 @@ def ready_line(*, url: str, token_file: str | None, engine: str, brain: str = ""
             "token_file": token_file,
             "engine": engine,
             "brain": brain,
+            "voice": voice,
         }
     )
 

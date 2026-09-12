@@ -19,6 +19,9 @@ from athena.contracts import (
     TurnError,
     TurnFinished,
     TurnSummary,
+    VoiceSpeaking,
+    VoiceStopped,
+    VoiceTranscript,
     event_from_dict,
     event_from_json,
     family_of,
@@ -68,6 +71,9 @@ EVENTS: list[ChannelEvent] = [
         capture_id="cap_0123456789ab",
     ),
     DecisionResolved(id="apr_0123456789ab", choice="decline", by="user", at="2026-09-12T09:00:00Z"),
+    VoiceTranscript(text="approve", final=True),
+    VoiceSpeaking(generation=3, text="Drafted three chases.", truncated=False, sample_rate=24000),
+    VoiceStopped(generation=3, reason="barge_in"),
 ]
 
 
@@ -110,3 +116,11 @@ def test_unknown_fields_are_dropped_rather_than_crashing_an_older_reader() -> No
 def test_events_are_frozen() -> None:
     with pytest.raises(dataclasses.FrozenInstanceError):
         TextDelta(text="hi").text = "ho"  # type: ignore[misc]
+
+
+def test_the_voice_family_is_its_own_family() -> None:
+    # The gateway renders these and the panel may; neither is a stream event, because a turn
+    # does not emit them — the transport around a turn does.
+    assert family_of("voice.transcript") == "voice"
+    assert family_of("voice.speaking") == "voice"
+    assert family_of("voice.stopped") == "voice"

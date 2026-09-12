@@ -137,3 +137,15 @@ def test_validation_result_reads_as_what_it_is() -> None:
     assert ValidationResult.accept().ok
     rejected = ValidationResult.reject("validator_failed", "amount over the cap")
     assert (rejected.ok, rejected.reason) == (False, "validator_failed")
+
+
+def test_a_turn_context_names_its_trigger_and_defaults_to_the_cli() -> None:
+    # The surface says who renders; the trigger says what set the turn off. The ledger rolls the
+    # record up by both (README §3.4, act 4), so an utterance is ``voice`` on both and a typed
+    # message is ``panel`` / ``cli``.
+    typed = TurnContext(conversation_id="conv_a", turn_id="turn_1")
+    assert typed.trigger == "cli"
+    spoken = TurnContext(
+        conversation_id="conv_a", turn_id="turn_2", surface="voice", trigger="voice"
+    )
+    assert (spoken.surface, spoken.trigger) == ("voice", "voice")

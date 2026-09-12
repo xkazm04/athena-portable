@@ -34,6 +34,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from athena.channels.voice.backends import VoiceBackend
+from athena.channels.voice.gateway import VOICE_PATH, VoiceGateway
 from athena.contracts.registry import ExecResult, ExecutorFn, TurnContext
 from athena.core.approvals import Approvals
 from athena.core.brain.store import DEFAULT_CONFIDENCE, Brain, ProvenanceError
@@ -182,6 +184,7 @@ def build_local(
     workspace: str | Path | None = None,
     policy: Policy | None = None,
     extra_args: tuple[str, ...] | None = None,
+    voice: VoiceBackend | None = None,
 ) -> AthenaLocal:
     """Assemble one local Athena: brain, tables, law, catalog, gate, engine, lane, daemon.
 
@@ -192,6 +195,10 @@ def build_local(
     ``policy`` is the structural policy the gate starts with. It is empty by default and gains a
     pin per app as manifests arrive (``POST /manifest`` → :meth:`AthenaDaemon.pin`), because what
     a session may address is a fact about this process and not a configuration file.
+
+    ``voice`` is the backend that hears and speaks on ``/voice``. ``None`` — the default, and
+    what a machine with no provider key gets — registers no socket at all, so the daemon has no
+    voice channel rather than one that fails on the first utterance (ADR 0019).
     """
     dialect = DIALECTS.get(engine)
     if dialect is None:
@@ -254,6 +261,8 @@ def build_local(
         engine=engine,
         model=model,
     )
+    if voice is not None:
+        daemon.sockets.add(VOICE_PATH, VoiceGateway(daemon, voice))
     return AthenaLocal(
         brain=brain,
         catalog=catalog,
