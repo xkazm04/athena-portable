@@ -20,6 +20,70 @@
   gap: 6px;
 }
 
+/* -- the drawings ---------------------------------------------------------------------------
+ *
+ * The hero and the glyphs are `currentColor`, so the element's colour is the drawing's. At rest
+ * that is the muted tier; a passage whose fact stands done lends its glyph the primary hue. */
+
+.setup-hero {
+  display: block;
+  width: 100%;
+  max-width: 20rem;
+  height: auto;
+  margin-bottom: 6px;
+  color: var(--muted-foreground);
+}
+
+.setup-glyph {
+  display: block;
+  flex: none;
+}
+
+.setup-passage__glyph {
+  display: grid;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: var(--recessed);
+  color: var(--muted-foreground);
+  transition:
+    color var(--duration-fast),
+    border-color var(--duration-fast);
+}
+
+.setup-passage[data-standing="done"] .setup-passage__glyph {
+  border-color: var(--border-default);
+  color: var(--primary);
+}
+
+.setup-passage__body {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.setup-row__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setup-row__glyph {
+  display: grid;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: var(--radius-interactive);
+  background: var(--recessed);
+  color: var(--muted-foreground);
+}
+
 .setup-claims {
   display: flex;
   flex-direction: column;
@@ -31,8 +95,8 @@
 
 .setup-passage {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: flex-start;
+  gap: var(--density-gap);
   padding-top: var(--density-pad);
   border-top: 1px solid var(--border-subtle);
 }

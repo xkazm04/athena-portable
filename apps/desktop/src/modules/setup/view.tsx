@@ -28,10 +28,12 @@ import { engineLabel, probeOf, remedyFor, usable } from "@/lib/engines";
 import { normaliseUrl } from "@/lib/url";
 import { THEME_CHOICES, type ThemeChoice } from "@/stores/settings";
 
+import { GLYPHS, HeroIllustration, type GlyphName } from "./glyphs";
 import type { SetupModel } from "./model";
 import {
   STANDING_TONE,
   WHAT_ATHENA_IS,
+  type Fact,
   brainFact,
   engineFact,
   engineLead,
@@ -64,6 +66,7 @@ function Onboarding({ model }: { model: SetupModel }) {
     <PageShell>
       <div className="setup-letter">
         <header className="setup-letter__head">
+          <HeroIllustration />
           <h1 className="typo-heading-lg">Athena is on this machine.</h1>
           <p className="typo-body">
             She works inside the apps you already have open, and asks before anything that cannot
@@ -79,16 +82,21 @@ function Onboarding({ model }: { model: SetupModel }) {
           ))}
         </ul>
 
-        <Passage title="Choose the engine" fact={engineFact(model).summary}>
+        <Passage glyph="engine" title="Choose the engine" fact={engineFact(model)}>
           <EngineChoice model={model} />
           <EngineDetail model={model} />
         </Passage>
 
-        <Passage title="Open the first app" fact={pageFact(model).summary}>
+        <Passage glyph="page" title="Open the first app" fact={pageFact(model)}>
           <OpenPage model={model} />
         </Passage>
 
-        <Passage title="A microphone, if you want to talk" fact={micFact(model).summary} optional>
+        <Passage
+          glyph="microphone"
+          title="A microphone, if you want to talk"
+          fact={micFact(model)}
+          optional
+        >
           <MicControl model={model} />
         </Passage>
 
@@ -116,28 +124,40 @@ function Onboarding({ model }: { model: SetupModel }) {
   );
 }
 
-/** One thing the machine needs, with its standing beside the title. Not a step: a passage. */
+/**
+ * One thing the machine needs, with its glyph at the left and its standing beside the title.
+ * Not a step: a passage. The glyph takes the primary hue only when the fact stands done, so the
+ * letter's colour is the machine's standing and nothing else.
+ */
 function Passage({
+  glyph,
   title,
   fact,
   optional = false,
   children,
 }: {
+  glyph: GlyphName;
   title: string;
-  fact: string;
+  fact: Fact;
   optional?: boolean;
   children: ReactNode;
 }) {
+  const Drawing = GLYPHS[glyph];
   return (
-    <section className="setup-passage">
-      <div className="setup-passage__head">
-        <h2 className="typo-heading">{title}</h2>
-        <span className="typo-caption">
-          {optional ? "optional — " : ""}
-          {fact}
-        </span>
+    <section className="setup-passage" data-standing={fact.standing}>
+      <span className="setup-passage__glyph">
+        <Drawing size={48} />
+      </span>
+      <div className="setup-passage__body">
+        <div className="setup-passage__head">
+          <h2 className="typo-heading">{title}</h2>
+          <span className="typo-caption">
+            {optional ? "optional — " : ""}
+            {fact.summary}
+          </span>
+        </div>
+        {children}
       </div>
-      {children}
     </section>
   );
 }
@@ -173,7 +193,7 @@ function Settings({ model }: { model: SetupModel }) {
       ) : null}
 
       <div className="setup-list">
-        <Row label="Engine" tone={STANDING_TONE[engine.standing]} fact={engineSentence(model)}>
+        <Row glyph="engine" label="Engine" tone={STANDING_TONE[engine.standing]} fact={engineSentence(model)}>
           <div className="setup-row__stack">
             <EngineChoice model={model} />
             {notice ? (
@@ -191,11 +211,11 @@ function Settings({ model }: { model: SetupModel }) {
           </div>
         </Row>
 
-        <Row label="Page" tone={STANDING_TONE[page.standing]} fact={pageSentence(model)}>
+        <Row glyph="page" label="Page" tone={STANDING_TONE[page.standing]} fact={pageSentence(model)}>
           <OpenPage model={model} compact />
         </Row>
 
-        <Row label="Theme" tone="neutral" fact={THEME_HINTS[model.theme]}>
+        <Row glyph="theme" label="Theme" tone="neutral" fact={THEME_HINTS[model.theme]}>
           <PillGroup
             ariaLabel="Theme"
             value={model.theme}
@@ -209,6 +229,7 @@ function Settings({ model }: { model: SetupModel }) {
         </Row>
 
         <Row
+          glyph="brain"
           label="Brain"
           tone={STANDING_TONE[brain.standing]}
           fact={
@@ -220,15 +241,16 @@ function Settings({ model }: { model: SetupModel }) {
           <BrainField model={model} />
         </Row>
 
-        <Row label="Microphone" tone={STANDING_TONE[mic.standing]} fact={micSentence(model)}>
+        <Row glyph="microphone" label="Microphone" tone={STANDING_TONE[mic.standing]} fact={micSentence(model)}>
           <MicControl model={model} compact />
         </Row>
 
-        <Row label="Voice" tone={STANDING_TONE[voice.standing]} fact={voiceSentence(model)}>
+        <Row glyph="voice" label="Voice" tone={STANDING_TONE[voice.standing]} fact={voiceSentence(model)}>
           <span className="typo-caption">{voice.summary}</span>
         </Row>
 
         <Row
+          glyph="data"
           label="Data"
           tone="neutral"
           fact="One SQLite file: settings, origins, projects, activity and captures. Copy it to move this machine's Athena."
@@ -242,22 +264,32 @@ function Settings({ model }: { model: SetupModel }) {
   );
 }
 
-/** One fact and its control. The hairline between rows is the only structure the list has. */
+/**
+ * One fact and its control. The hairline between rows is the only structure the list has. The
+ * glyph names the fact; the dot beside the label keeps the standing hue, because a graphic in a
+ * status colour would be asked to carry a word's meaning.
+ */
 function Row({
+  glyph,
   label,
   tone,
   fact,
   children,
 }: {
+  glyph: GlyphName;
   label: string;
   tone: Tone;
   fact: string;
   children: ReactNode;
 }) {
+  const Drawing = GLYPHS[glyph];
   return (
     <div className="setup-row">
       <div className="setup-row__fact">
-        <span className="row row--baseline">
+        <span className="setup-row__title">
+          <span className="setup-row__glyph">
+            <Drawing size={22} />
+          </span>
           <StatusDot tone={tone} />
           <span className="typo-title">{label}</span>
         </span>
