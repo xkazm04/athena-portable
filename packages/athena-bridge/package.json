@@ -1,0 +1,34 @@
+{
+  "name": "@athena/bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The two halves of the bridge: the WebMCP polyfill and relay that runs in the page (inject.js) and the gate every surface runs (gate.js). README sections 3.3 and 3.4 tier 1; the wire format is protocol.md.",
+  "files": [
+    "inject.js",
+    "gate.js",
+    "bridge.d.ts",
+    "protocol.md"
+  ],
+  "exports": {
+    "./gate": "./gate.js",
+    "./inject": "./inject.js",
+    "./protocol": "./protocol.md"
+  },
+  "scripts": {
+    "test": "node --test",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^24.6.2",
+    "eslint": "^9.37.0",
+    "jsdom": "^27.0.0",
+    "typescript": "^5.9.3"
+  }
+}
