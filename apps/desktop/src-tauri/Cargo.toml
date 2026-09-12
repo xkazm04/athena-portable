@@ -1,0 +1,35 @@
+[package]
+name = "athena-desktop"
+version = "0.1.0"
+description = "Athena's desktop shell: the chrome, the page webviews and the panel (README 3.1)."
+edition = "2021"
+rust-version = "1.77"
+publish = false
+
+[lib]
+name = "athena_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# `unstable` is what gives one window several webviews: the panel column beside the page
+# (README 3.5's module-first window). Without it a tab would have to be its own OS window.
+tauri = { version = "2", features = ["unstable"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+  "Win32_Foundation",
+  # CreateJobObjectW takes a SECURITY_ATTRIBUTES pointer, which lives behind this feature.
+  "Win32_Security",
+  "Win32_System_JobObjects",
+  "Win32_System_Threading",
+] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

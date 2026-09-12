@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "page-bridge",
+  "description": "The relay's half of the bridge, granted to page webviews on any remote origin. Exactly two permissions: emit an event to the shell and listen for one. A page cannot reach any other command, so the relay is the whole of what a page can do (packages/athena-bridge/protocol.md).",
+  "windows": ["athena"],
+  "webviews": ["page-*"],
+  "remote": {
+    "urls": ["http://*", "https://*"]
+  },
+  "permissions": ["core:event:allow-emit", "core:event:allow-listen", "core:event:allow-unlisten"]
+}

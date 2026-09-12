@@ -1,0 +1,8 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The panel's own webview. Nothing here is granted to a page the user is browsing.",
+  "windows": ["athena"],
+  "webviews": ["panel"],
+  "permissions": ["core:default"]
+}
