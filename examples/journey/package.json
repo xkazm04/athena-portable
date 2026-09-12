@@ -1,0 +1,22 @@
+{
+  "name": "@athena/journey",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The four-act demo journey (README section 1), run end to end against the real example apps in a real Chromium, through the real bridge.",
+  "scripts": {
+    "test": "playwright test",
+    "e2e": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"@athena/journey adds no eslint plugin of its own: tsc --noEmit under strict is its lint (see README)\""
+  },
+  "devDependencies": {
+    "@athena/bridge": "workspace:*",
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.13.3",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}
