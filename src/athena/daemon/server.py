@@ -113,6 +113,13 @@ ALLOWED_METHODS = "GET, POST, OPTIONS"
 #: The largest body a route may be handed. A manifest is kilobytes; this is a cap on nonsense,
 #: refused before anything is read into memory.
 MAX_BODY_BYTES = 1_048_576
+#: How much of a body the handler has already refused it will read and throw away, so that the
+#: refusal reaches the caller instead of aborting the caller's own write. Eight times the cap: an
+#: honest client that sent one manifest too many is answered, and a client that keeps talking
+#: past this is dropped rather than listened to forever.
+DRAIN_LIMIT = 8 * MAX_BODY_BYTES
+#: How much of that is read at a time. Nothing oversized is ever held in memory.
+DRAIN_CHUNK = 65_536
 #: How long a connection may say nothing before the handler gives up on it. An idle socket costs
 #: one worker thread, and daemon threads do not hold the process open, but neither is a reason to
 #: keep one forever.
@@ -411,12 +418,32 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
             if length <= 0:
                 return {}
             if length > MAX_BODY_BYTES:
+                # Refused, but *read past* first. A handler that answers an oversized body and
+                # closes without draining it leaves the caller still sending: the write fails
+                # (``ConnectionAbortedError`` on Windows) and the caller never reads the
+                # refusal, which is indistinguishable from a daemon that died. Bounded and in
+                # chunks, so nothing oversized is ever held here.
+                self._discard(length)
                 return None
             try:
                 payload = json.loads(self.rfile.read(length))
             except (json.JSONDecodeError, UnicodeDecodeError):
                 return None
             return payload if isinstance(payload, dict) else None
+
+        def _discard(self, length: int) -> None:
+            """Read and throw away up to :data:`DRAIN_LIMIT` bytes of a refused body.
+
+            A caller that declared more than that is not drained to the end — the refusal is
+            worth one bounded read and not an unbounded one — and the closed connection is what
+            it gets instead.
+            """
+            remaining = min(length, DRAIN_LIMIT)
+            while remaining > 0:
+                chunk = self.rfile.read(min(DRAIN_CHUNK, remaining))
+                if not chunk:
+                    return
+                remaining -= len(chunk)
 
         # -- verbs -------------------------------------------------------------------------
 
