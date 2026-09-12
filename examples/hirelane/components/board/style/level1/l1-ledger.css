@@ -1,0 +1,133 @@
+/* ------------------------------------------------ L1 card — the ledger rows */
+
+/*
+ * The L1 card's scorecard: five rows, each a criterion's distance from the median of the scored
+ * candidates in this column. `design/ui-pass-brief.md` §2.4 is the brief it was built from and
+ * §2.7 records why it won.
+ *
+ * The card's frame, its monogram row, the fit and band words and the stage fact are all in
+ * `l1-carousel*.css` — this part is only what the ledger adds.
+ */
+
+.bd-slide-inner {
+  grid-template-rows: auto auto 1fr auto;
+}
+
+.bd-led-verdict {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bd-s3);
+  padding-block-end: var(--bd-s2);
+  border-block-end: var(--bd-rule-1) solid var(--bd-rule);
+  min-inline-size: 0;
+}
+
+.bd-led-rows {
+  display: grid;
+  align-content: start;
+  gap: var(--bd-s1);
+  min-block-size: 0;
+}
+
+.bd-led-head {
+  font-size: var(--bd-label);
+  color: var(--bd-ink-4);
+  padding-block-end: var(--bd-s1);
+}
+
+/*
+ * One row per criterion, and the columns are the argument: how heavy it is, what it is, where it
+ * sits on the shared axis, the absolute mark, and how far that is from the rest of this column.
+ * The delta is last because it is what the eye should land on after the name, and last is where a
+ * figure column belongs when the rows above it are prose.
+ */
+.bd-led-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) var(--bd-axis-w) auto auto;
+  align-items: center;
+  gap: var(--bd-s2);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-snug);
+}
+
+/* Weight as a stack of one to three rules, which is the rule ladder used as a quantity rather
+   than as a rank — legible in greyscale, and it cannot be confused with a score. */
+.bd-led-weight {
+  display: grid;
+  gap: var(--bd-s0-5);
+  align-content: center;
+  inline-size: var(--bd-swatch);
+}
+
+.bd-led-weight i {
+  display: block;
+  block-size: var(--bd-rule-1);
+  background: var(--bd-ink-4);
+}
+
+.bd-led-name {
+  color: var(--bd-ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bd-led-axis {
+  position: relative;
+  block-size: var(--bd-s2);
+  background: rgb(255 255 255 / 7%);
+  border-radius: var(--bd-radius-round);
+  overflow: hidden;
+}
+
+.bd-led-fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--score) / 4 * 100%);
+  background: var(--bd-ink-3);
+  border-radius: inherit;
+}
+
+.bd-led-abs,
+.bd-led-delta {
+  font-family: var(--bd-font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bd-led-abs {
+  font-size: var(--bd-text-xs);
+  color: var(--bd-ink-4);
+}
+
+/* The delta is the card's claim, so it is the one figure set at the reading size. Direction is
+   carried by the sign first and by the ink ladder second, so it survives the greyscale test and
+   does not spend a hue the lock has reserved (§4.2). */
+.bd-led-delta {
+  min-inline-size: 4ch;
+  text-align: end;
+  color: var(--bd-ink-3);
+}
+
+.bd-led-delta[data-dir="up"] {
+  color: var(--bd-ink);
+}
+
+.bd-led-delta[data-dir="down"] {
+  color: var(--bd-ink-4);
+}
+
+.bd-led-row[data-gap="true"] .bd-led-axis {
+  /* §9.4 exception: a hairline ring drawn as a shadow spread, not a spacing step. */
+  box-shadow: inset 0 0 0 1px var(--bd-mark);
+}
+
+.bd-led-gapline {
+  font-family: var(--bd-font);
+  font-style: italic;
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-snug);
+  color: var(--bd-mark);
+  padding-block-start: var(--bd-s1);
+}

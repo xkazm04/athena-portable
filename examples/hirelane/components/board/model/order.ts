@@ -77,3 +77,43 @@ export function diff(criteria: BdCriterion[], a: BdCandidate, b: BdCandidate): B
     })
     .sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
 }
+
+/**
+ * Per-criterion median among the SCORED candidates in a column.
+ *
+ * The L1 card prints every criterion as a signed distance from this, because a 3.1 on API design
+ * means nothing until you know whether the rest of the field is above or below it — the argument
+ * `dossier/Bench.tsx` already makes in prose about the overall score, applied to the five
+ * criteria that produce it.
+ *
+ * THE MEDIAN RATHER THAN THE MEAN. In a column of ten, one generously read application moves a
+ * mean enough to shift everybody else's delta, and the card's whole claim is that the number
+ * beside a criterion says something about THIS candidate.
+ *
+ * THE UNSCORED ARE NOT IN THE POPULATION. They are excluded rather than counted as zero — the
+ * same rule the bench defends when it sorts them last. An absent measurement is not a low one and
+ * must not be allowed to drag the middle of the field down. A column where nobody has been scored
+ * yields an empty map, and the card renders that as "no comparison" rather than as a row of
+ * zeroes.
+ */
+export function criterionMedians(candidates: BdCandidate[]): Map<string, number> {
+  const buckets = new Map<string, number[]>();
+  for (const candidate of candidates) {
+    if (!candidate.scored) continue;
+    for (const score of candidate.scores) {
+      const bucket = buckets.get(score.criterionId);
+      if (bucket) bucket.push(score.score);
+      else buckets.set(score.criterionId, [score.score]);
+    }
+  }
+  const out = new Map<string, number>();
+  for (const [id, values] of buckets) {
+    values.sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+    out.set(
+      id,
+      values.length % 2 === 0 ? ((values[mid - 1] ?? 0) + (values[mid] ?? 0)) / 2 : (values[mid] ?? 0),
+    );
+  }
+  return out;
+}

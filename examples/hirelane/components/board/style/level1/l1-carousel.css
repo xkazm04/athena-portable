@@ -1,10 +1,8 @@
 /* ------------------------------------------------------------ L1 carousel */
 
-/* Four rows, and the third is empty unless the strip's legend is mounted — a track with no child
-   collapses, so the layout is the same three rows it always was when there is nothing to legend. */
 .bd-carousel {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   align-content: stretch;
   gap: var(--bd-s3);
   block-size: 100%;
@@ -73,10 +71,9 @@
 /*
  * It is also a SIZE CONTAINER, which is how a card knows how much room it has.
  *
- * The five criteria stack — label over bar — and that needs about 430px of card. At 1024x768 the
- * level has 300, so three of the five were clipped and the comparison the whole level exists for
- * was cut in half. The card answers by changing the shape of a criterion row rather than by
- * dropping criteria: see the compact rule at the foot of this file.
+ * Five criterion rows plus an identity block need room the level does not always have. At
+ * 1024x768 it has about 300px, so the card answers by tightening a row rather than by dropping a
+ * criterion: see the compact rule in `l1-carousel-3.css`.
  */
 .bd-rail-3d {
   position: relative;
@@ -179,20 +176,6 @@
   color: var(--bd-ink-3);
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.bd-slide-verdict {
-  display: flex;
-  align-items: baseline;
-  gap: var(--bd-s3);
-  padding-block-end: var(--bd-s2);
-  border-block-end: var(--bd-rule-1) solid var(--bd-rule);
-  min-inline-size: 0;
-}
-
-.bd-slide-verdict .bd-fit,
-.bd-slide-verdict .bd-band {
   white-space: nowrap;
 }
 

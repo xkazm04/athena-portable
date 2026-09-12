@@ -12,17 +12,13 @@
 /*
  * THE COMPACT CARD, for a level that does not have the height for the tall one.
  *
- * A criterion is three things — which criterion, how it scored, and how that reads against the
- * other four — and the tall card gives the first two a line and the third a bar under it. Five of
- * those need about 430px of card; at 1024x768 this level has 300, and the shipped board's answer
- * was to let them overflow and print over the stage fact at the foot.
+ * At 1024x768 this level has about 300px of card. The ledger's rows are already one line of type
+ * each — the bar is inline beside the name rather than under it, which is most of what the old
+ * label-over-bar card needed a second line for — so the compaction left here is the identity
+ * block and the verdict figure giving up a step, and the rows tightening their gap.
  *
- * Nothing is dropped here. The bar stops being a row of its own and becomes the criterion's own
- * underline, at the rule weight the direction uses for a division, so the row is one line of type
- * plus three pixels instead of two lines plus a gap. The identity block and the verdict figure
- * give up a step each to pay for the rest. Every card in the loupe changes together, so a
- * head-to-head still compares like with like, and the shared 0-4 baseline is untouched — which is
- * the one thing this level may not trade away.
+ * Every card in the loupe changes together, so a head-to-head still compares like with like, and
+ * the shared 0-4 axis is untouched — the one thing this level may not trade away.
  */
 @container bd-rail (max-height: 26rem) {
   .bd-slide-inner {
@@ -47,17 +43,11 @@
     font-size: var(--bd-text-lg);
   }
 
-  .bd-bars {
-    gap: var(--bd-s1);
-  }
-
-  .bd-bar {
+  .bd-led-rows {
     gap: 0;
   }
 
-  /* The criterion's own underline, rather than a track on a line of its own. */
-  .bd-bar-track {
-    block-size: var(--bd-s0-5);
-    border-radius: 0;
+  .bd-led-abs {
+    display: none;
   }
 }

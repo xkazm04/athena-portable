@@ -1,11 +1,9 @@
 # hirelane — the three-layer UI pass: brief, written before the code
 
-**Status: NOT WIRED in part.** This document specifies three layers. **§1 and §3 have landed** —
-ADR 0021 records the theme, ADR 0022 the dossier; where the built result differs from what §3
-specified, §3.6 says so and the code is right. **§2 has not**, and it names files that do not
-exist yet (`components/board/carousel/SlideStrip.tsx`,
-`components/board/carousel/SlideColumn.tsx`, `components/board/carousel/CardVariant.tsx`). Read §1
-and §3 as a record and §2 as a specification.
+**Status: LANDED, and this document is now a record rather than a specification.** All three
+layers shipped — ADR 0021 the theme, ADR 0022 the dossier, and §2.7 below records which L1
+direction won and what was deleted with the other. Where a built result differs from what was
+specified, §2.7 and §3.6 say so and the code is right.
 
 **Baseline.** Commit `e08163c`, *feat(examples): hirelane readability pass* — the state of
 `components/board/` as this was written. Every measurement below was taken against that commit, in
@@ -281,7 +279,7 @@ honestly without the card going blank.
 
 ### 2.6 The tab switcher, and its removal
 
-- `components/board/carousel/CardVariant.tsx` — a `CARD_VARIANTS` map of
+- `CardVariant.tsx` (deleted with the loser) — a `CARD_VARIANTS` map of
   `{ slug, label, Component }` over `Slide` (the incumbent, kept as the third option so the
   comparison has a baseline), `SlideStrip` and `SlideColumn`.
 - `Carousel.tsx` holds the selected slug in state and renders `CARD_VARIANTS[slug].Component` in the
@@ -302,6 +300,31 @@ is a good test of whether two things are really different, not because §5 binds
 "not applicable, single direction".
 
 ---
+
+### 2.7 The winner, and what went with the loser
+
+**The ledger won.** `components/board/carousel/Slide.tsx` is it; the strip, the incumbent card,
+`CardVariant.tsx`, the switcher, the shared legend and `--bd-meter-h` were deleted in the same
+commit, as §2.6 said they would be. Nothing about the deck moved: `pose.ts`, the keyboard
+handling, the dots and the `layoutId` never learned which direction was mounted, which is what
+made the switch a one-file change.
+
+**Why it won, in one sentence each.** The ledger answers the question the level is actually asking
+— not "what did this person score" but "what is distinctive about them against the people they are
+being chosen against" — and it answers it in words a reader can quote in a hiring meeting. The
+strip answered a different and narrower question beautifully: it made three silhouettes comparable
+at a glance and halved the card, but a shape cannot be read aloud, and every criterion name had to
+leave the card to buy that.
+
+**What the strip was right about, and what survives it.** Its legend proved that the five names are
+column-constant, and its measurement — that the old card spent 56% of its height on five
+label-over-bar rows — is why the ledger's rows are one line of type each with the bar inline. The
+compact rule at 1024×768 in `l1-carousel-3.css` inherited that: there is far less to compact now,
+because the row was already one line.
+
+**`criterionMedians` moved into `components/board/model/order.ts`** rather than staying beside the
+card. It is a comparison helper, that file is where comparison lives, and it is the one piece of
+this direction a second direction would want.
 
 ## 3. LAYER TWO — the dossier
 
