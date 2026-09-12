@@ -24,10 +24,10 @@ import Table from "@/components/Table";
 import type { Column } from "@/components/Table";
 import { normaliseUrl } from "@/lib/url";
 
-import { NEW_TAB_URL, type BrowserModel, type BrowserTab } from "./model";
+import { NEW_TAB_URL, type BrowserModel, type BrowserTab, type BrowserTools } from "./model";
 
 export default function BrowserView({ model }: { model: BrowserModel }) {
-  const { actions, focused, problem, tabs } = model;
+  const { actions, focused, problem, tabs, tools } = model;
 
   const go = (typed: string) => {
     const url = normaliseUrl(typed);
@@ -46,6 +46,9 @@ export default function BrowserView({ model }: { model: BrowserModel }) {
           +
         </Button>
         <UrlField key={`${focused?.id ?? "none"}:${focused?.url ?? ""}`} url={focused?.url ?? ""} onGo={go} />
+        {/* The strip is the only band of this view a page does not cover, so the one fact about
+            the page that is worth a permanent 6rem lives here: does the relay see anything. */}
+        <ToolCount tools={tools} />
       </div>
 
       <div className="module-browser__body">
@@ -76,6 +79,8 @@ export default function BrowserView({ model }: { model: BrowserModel }) {
               <p className="typo-caption">
                 {focused.url} — a webview of its own, positioned by the shell, not by this page.
               </p>
+              {/* Tier 1, in the one place there is room to spell it out (README section 3.4). */}
+              <p className="typo-caption">{describe(tools)}</p>
             </div>
           ) : (
             <EmptyState
@@ -101,6 +106,46 @@ export default function BrowserView({ model }: { model: BrowserModel }) {
         </PageShell>
       </div>
     </div>
+  );
+}
+
+/** The same three facts as a sentence, for the one place there is room for one. */
+function describe(tools: BrowserTools | null): string {
+  if (!tools || tools.asking) return "Asking the page what it has registered…";
+  if (tools.problem) return `No bridge on this page: ${tools.problem}. The generic hands are how it is operated.`;
+  if (!tools.count) return `No tools registered — ${tools.transport ?? "no transport"}.`;
+  return `${tools.count} tool${tools.count === 1 ? "" : "s"} registered, over ${tools.transport ?? "no transport"}.`;
+}
+
+/**
+ * The focused page's tier-1 surface in one pill, and it is three facts rather than a number.
+ * `pending` is nobody has asked yet; `warning` is the relay could not read the page, with the
+ * reason verbatim in the title; and a count is a count, where zero is the ordinary answer for
+ * every site that never heard of WebMCP — which is what the nine hands exist for (c24).
+ */
+function ToolCount({ tools }: { tools: BrowserTools | null }) {
+  if (!tools) return null;
+  if (tools.asking) {
+    return (
+      <Badge tone="pending" title="Asking the page what it has registered">
+        tools
+      </Badge>
+    );
+  }
+  if (tools.problem) {
+    return (
+      <Badge tone="warning" title={`The page did not answer: ${tools.problem}`}>
+        no bridge
+      </Badge>
+    );
+  }
+  return (
+    <Badge
+      tone={tools.count ? "success" : "neutral"}
+      title={`${tools.count} tool(s) over ${tools.transport ?? "no transport"}`}
+    >
+      {`${tools.count} tools`}
+    </Badge>
   );
 }
 

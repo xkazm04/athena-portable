@@ -1,0 +1,9 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "page-bridge",
+  "description": "The untrusted page webviews. Exactly one command, `bridge_reply`, and nothing else — no core:default, no window control, no shell, no filesystem. A page can only hand the relay an answer, tagged with the per-tab nonce baked into its initialization script; a wrong nonce, or an id that is not this tab's, is dropped in Rust (`src/bridge.rs`). The remote urls are wide because a tab may be pointed anywhere: the narrowing here is the command list, not the origin list. Both the bare and the `:*` spellings are listed on purpose — a URLPattern built from `http://*` leaves the port empty, which means the scheme's default, so it does not match `http://127.0.0.1:8731`.",
+  "local": true,
+  "remote": { "urls": ["http://*", "http://*:*", "https://*", "https://*:*"] },
+  "webviews": ["page-*"],
+  "permissions": ["allow-bridge-reply"]
+}

@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "ui",
-  "description": "The one privileged webview: the module bar and the selected module, loaded from the dev server or the tauri:// asset protocol. Note `webviews` and no `windows`: a capability that names a window grants every webview inside it, which would hand the whole command surface to the pages. Page webviews are named by no capability in c18 and so can call nothing; c19 gives them exactly one command of their own.",
+  "description": "The one privileged webview: the module bar and the selected module, loaded from the dev server or the tauri:// asset protocol. Note `webviews` and no `windows`: a capability that names a window grants every webview inside it, which would hand the whole command surface to the pages. Page webviews are named by no capability in c18 and so can call nothing; c19 gives them exactly one command of their own, in `page.json`.",
   "local": true,
   "webviews": ["chrome"],
   "permissions": [
@@ -17,6 +17,8 @@
     "allow-tabs-navigate",
     "allow-tabs-list",
     "allow-layout-module",
-    "allow-layout-select"
+    "allow-layout-select",
+    "allow-bridge-list",
+    "allow-bridge-call"
   ]
 }

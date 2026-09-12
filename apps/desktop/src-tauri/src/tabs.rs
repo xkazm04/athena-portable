@@ -157,7 +157,15 @@ pub fn create(app: &AppHandle, url: &str) -> Result<u32, String> {
 
     let app_for_nav = app.clone();
     let app_for_title = app.clone();
+    // The relay's two scripts (c19, ADR 0014), in the order they have to run: `inject.js` first,
+    // at document start, so it reaches `document.modelContext` before the application's own
+    // scripts do, then the forwarder that carries its answers back to Rust. A navigation re-runs
+    // both, which is what makes a page that replaced itself a page with a working bridge.
+    let (inject, relay) = crate::bridge::scripts(app, id);
+
     let builder = tauri::webview::WebviewBuilder::new(&label, WebviewUrl::External(parsed))
+        .initialization_script(inject)
+        .initialization_script(relay)
         // One profile for every tab: passing the same directory to each webview is what makes a
         // login in one tab a login in the next.
         .data_directory(profile_dir(app))

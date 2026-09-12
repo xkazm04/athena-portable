@@ -12,6 +12,13 @@
 /// in `lib.rs`, and `capabilities/ui.json`. Forgetting this one produces `Permission ... not
 /// found` at runtime, so it is the first list to edit, not the last.
 fn main() {
+    // `src/bridge.rs` embeds the bridge package's `inject.js` with `include_str!`, so a change to
+    // that file has to rebuild this crate even though it is nowhere in `src/`. Cargo tracks
+    // `include_str!` through the dep-info file, and this says it a second time out loud: the page
+    // half of the protocol is one file with two consumers and a stale binary is the one failure
+    // that would look like a page with no tools (c19).
+    println!("cargo:rerun-if-changed=../../../packages/athena-bridge/inject.js");
+
     tauri_build::try_build(
         tauri_build::Attributes::new().app_manifest(tauri_build::AppManifest::new().commands(&[
             // tabs.rs (c18)
@@ -24,7 +31,10 @@ fn main() {
             "layout_module",
             "layout_select",
             // ---- later milestones add their commands here, one block per module ----
-            // bridge.rs (c19): bridge_list, bridge_call, bridge_reply
+            // bridge.rs (c19) — the first two are the chrome's, the third is the page's only one
+            "bridge_list",
+            "bridge_call",
+            "bridge_reply",
             // daemon.rs (c20): daemon_status, daemon_restart
             // store.rs  (c21): store_get, store_set, origins_*
             // hands.rs  (c24): hands_call, screenshot_read

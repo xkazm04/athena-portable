@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ledgerbox — the scratch page</title>
+
+    <!-- The `athena:app` meta tags (packages/athena-bridge/protocol.md, "page"). The relay reads
+         these as a *claim*: `app_id` is the slug the catalog namespaces this page's tools under,
+         and none of it opens a permission. -->
+    <meta name="athena:app" content="scratchbox" />
+    <meta name="athena:app-name" content="Scratchbox" />
+    <meta name="athena:app-version" content="0.1.0" />
+
+    <style>
+      body {
+        margin: 0;
+        padding: 32px;
+        font: 14px/1.6 system-ui, sans-serif;
+        background: #12151a;
+        color: #e6e9ef;
+      }
+      h1 { font-size: 18px; margin: 0 0 4px; }
+      p { max-width: 60ch; color: #9aa4b2; }
+      li { margin-bottom: 4px; }
+      code { color: #e6e9ef; }
+    </style>
+  </head>
+  <body>
+    <h1>Scratchbox</h1>
+    <p>
+      A page with three WebMCP tools and nothing else, so the relay can be proved without a real
+      application. <code>scripts/smoke.mjs</code> serves this file and asserts the one line the
+      shell prints under <code>ATHENA_SMOKE=1</code>.
+    </p>
+    <ul>
+      <li><code>invoice_list</code> — reversible, reads a list. The `athena` block says so.</li>
+      <li><code>invoice_send</code> — external side effects, so the gate has one to refuse.</li>
+      <li><code>invoice_explode</code> — throws, because a throw must be a result and not a
+        dropped promise (<code>protocol.md</code>, "Requests").</li>
+    </ul>
+    <p id="state">registered: nothing yet</p>
+
+    <script>
+      // No bundler, no import: this is what a page that adopted WebMCP writes by hand. The
+      // polyfill in `packages/athena-bridge/inject.js` has already installed
+      // `document.modelContext` by the time this runs — it is an initialization script and this
+      // is an ordinary one.
+      (() => {
+        const registry = document.modelContext;
+        if (!registry) {
+          document.getElementById("state").textContent =
+            "no document.modelContext — this page is open outside the shell";
+          return;
+        }
+
+        const INVOICES = [
+          { id: "INV-101", client: "Northwind", days: 42, total: "1,200.00" },
+          { id: "INV-102", client: "Initech", days: 11, total: "480.00" },
+          { id: "INV-103", client: "Northwind", days: 61, total: "2,050.00" },
+        ];
+
+        registry.registerTool({
+          name: "invoice_list",
+          description: "Every invoice, with how many days it has been outstanding.",
+          inputSchema: {
+            type: "object",
+            properties: { over_days: { type: "number" } },
+          },
+          athena: { reversible: true, side_effects: "none" },
+          execute: ({ over_days = 0 }) =>
+            INVOICES.filter((i) => i.days >= over_days)
+              .map((i) => `${i.id} ${i.client} ${i.days}d ${i.total}`)
+              .join("\n"),
+        });
+
+        registry.registerTool({
+          name: "invoice_send",
+          description: "Send a chase for one invoice. Leaves the building.",
+          inputSchema: {
+            type: "object",
+            properties: { id: { type: "string" } },
+            required: ["id"],
+          },
+          athena: { reversible: false, side_effects: "external" },
+          execute: ({ id }) => `pretended to chase ${id}`,
+        });
+
+        registry.registerTool({
+          name: "invoice_explode",
+          description: "Always throws. The relay must report it, not hang on it.",
+          inputSchema: { type: "object" },
+          athena: { reversible: true, side_effects: "none" },
+          execute: () => {
+            throw new Error("the ledger is on fire");
+          },
+        });
+
+        document.getElementById("state").textContent =
+          `registered: ${registry.listTools().map((t) => t.name).join(", ")}`;
+      })();
+    </script>
+  </body>
+</html>

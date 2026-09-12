@@ -33,8 +33,12 @@ export function hasShell(): boolean {
 /**
  * The one call. Every exported command below goes through it, so a change to how the app talks to
  * Rust — a timeout, a log line, a refusal vocabulary — has exactly one place to happen.
+ *
+ * Exported since c19 so a surface with a vocabulary of its own — `lib/bridge.ts` is the first —
+ * can be its own file without importing `invoke`. Rule 1 above is why: the rule is about the
+ * *boundary*, and this function is the boundary.
  */
-async function call<T>(command: string, args: Args = {}): Promise<T> {
+export async function call<T>(command: string, args: Args = {}): Promise<T> {
   if (!hasShell()) {
     throw new Error(`no shell: ${command} needs the Tauri window (this is a plain browser)`);
   }
@@ -71,6 +75,14 @@ export const layoutModule = () => call<string>("layout_module");
 export const layoutSelect = (module: string) => call<void>("layout_select", { module });
 
 // -- events ---------------------------------------------------------------------------------
+
+/**
+ * The other half of the boundary, exported for the same reason `call` is (c19): one subscription
+ * helper, so every listener in the app unwraps the payload the same way and a file with its own
+ * vocabulary never has to import `listen` for itself.
+ */
+export const on = <T>(event: string, f: (payload: T) => void): Promise<UnlistenFn> =>
+  listen<T>(event, (e) => f(e.payload));
 
 /**
  * The whole tab list, not a diff: the list is short, and a diff is a bug surface the strip does
