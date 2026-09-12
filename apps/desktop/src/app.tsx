@@ -19,6 +19,7 @@ import { useEffect } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import ModuleBar from "@/components/ModuleBar";
+import PushToTalk from "@/components/PushToTalk";
 import { hasShell } from "@/lib/ipc";
 import { MODULE_ENTRIES, moduleFor } from "@/modules/registry";
 import { startDaemon } from "@/stores/daemon";
@@ -27,6 +28,7 @@ import { startSettings, useSettings } from "@/stores/settings";
 import { startShell, useShell } from "@/stores/shell";
 import { startTabs } from "@/stores/tabs";
 import { startTools } from "@/stores/tools";
+import { startVoice, useVoice } from "@/stores/voice";
 
 export default function App() {
   const module = useShell((s) => s.module);
@@ -44,6 +46,9 @@ export default function App() {
     // store a *view* starts stops being true the moment the user leaves that view.
     void startSettings();
     void startOrigins();
+    // c32: push-to-talk watches the daemon for `/voice` and owns the Ctrl+Space hotkey. Started
+    // here for the same reason as the rest: the key is in the bar on every module.
+    void startVoice();
   }, []);
 
   const active = moduleFor(module);
@@ -57,6 +62,7 @@ export default function App() {
         onSelect={(id) => void select(id)}
         trailing={
           <>
+            <PushToTalkLive />
             {/* The Settings module owns the three-way choice (system / light / dark) and this
                 is its shortcut: one press flips to the opposite of what is *painted*, and the
                 choice it writes is a definite one, because "the opposite of system" is not a
@@ -79,6 +85,26 @@ export default function App() {
         <Live />
       </main>
     </div>
+  );
+}
+
+/** The bar's hold-to-talk key, bound to the voice store. Renders nothing of its own state. */
+function PushToTalkLive() {
+  const phase = useVoice((s) => s.phase);
+  const available = useVoice((s) => s.available);
+  const reason = useVoice((s) => s.reason);
+  const partial = useVoice((s) => s.partial);
+  const press = useVoice((s) => s.press);
+  const release = useVoice((s) => s.release);
+  return (
+    <PushToTalk
+      phase={phase}
+      available={available}
+      reason={reason}
+      partial={partial}
+      onPress={() => void press()}
+      onRelease={release}
+    />
   );
 }
 

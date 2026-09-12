@@ -749,6 +749,81 @@ select:focus-visible {
   color: var(--foreground);
 }
 
+/* Push-to-talk (c32). A held key is a lit dot and a label; the phases differ by the dot alone,
+ * so the control reads at a glance beside the window buttons without a second colour. */
+.ptt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  max-width: 14rem;
+  padding: 0 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-interactive);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+}
+
+.ptt:hover {
+  background: var(--hover-wash);
+  color: var(--foreground);
+}
+
+.ptt[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ptt__label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ptt__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted-foreground);
+  transition: background var(--duration-fast);
+}
+
+.ptt[data-phase="listening"] {
+  border-color: var(--border-default);
+  color: var(--foreground);
+}
+
+.ptt[data-phase="listening"] .ptt__dot {
+  background: #e81123;
+  animation: ptt-pulse 1s ease-in-out infinite;
+}
+
+.ptt[data-phase="thinking"] .ptt__dot {
+  background: var(--foreground);
+  animation: ptt-pulse 1.4s ease-in-out infinite;
+}
+
+.ptt[data-phase="speaking"] .ptt__dot {
+  background: var(--foreground);
+}
+
+.ptt[data-phase="error"] .ptt__dot {
+  background: #e81123;
+}
+
+@keyframes ptt-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
 .window-btn--close:hover {
   /* Not a theme colour: the fill is the fixed Windows red, so the label on it is fixed too. */
   background: #e81123;

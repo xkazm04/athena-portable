@@ -84,7 +84,10 @@ export default function SetupView({ model }: { model: SetupModel }) {
           <Passage step="page" index={3} title="A page" current={model.step}>
             <PagePassage model={model} />
           </Passage>
-          <Passage step="done" index={4} title="Done" current={model.step}>
+          <Passage step="mic" index={4} title="Microphone" current={model.step}>
+            <MicPassage model={model} />
+          </Passage>
+          <Passage step="done" index={5} title="Done" current={model.step}>
             <p className="passage__lead">
               {ready
                 ? "That is everything the first turn needs."
@@ -353,10 +356,47 @@ function PagePassage({ model }: { model: SetupModel }) {
   );
 }
 
+// -- the microphone ----------------------------------------------------------------------------
+
+/**
+ * One button, asked once. The permission prompt is the point: granted here, it never interrupts
+ * the spoken act. The device's label or the refusal is shown verbatim, and nothing here is
+ * required — a machine with no microphone types its turns.
+ */
+function MicPassage({ model }: { model: SetupModel }) {
+  const lead =
+    model.mic === "granted"
+      ? "The microphone answered. Hold the key in the bar, or Ctrl+Space, to talk."
+      : model.mic === "denied"
+        ? "The webview refused the microphone; push-to-talk stays off until it is allowed."
+        : model.mic === "unsupported"
+          ? "No microphone was found; every turn can still be typed."
+          : "Push-to-talk needs the microphone once; asking now keeps the prompt out of a turn.";
+  return (
+    <>
+      <p className="passage__lead">{lead}</p>
+      <span className="row">
+        <Button
+          size="sm"
+          variant={model.mic === "granted" ? "secondary" : "primary"}
+          onClick={model.actions.checkMic}
+        >
+          {model.mic === "unknown" ? "Check the microphone" : "Check again"}
+        </Button>
+        {model.micDetail ? (
+          <span className="typo-caption" style={{ overflowWrap: "anywhere" }}>
+            {model.micDetail}
+          </span>
+        ) : null}
+      </span>
+    </>
+  );
+}
+
 // -- the rail ----------------------------------------------------------------------------------
 
 /**
- * The four stations in short. The figure that heads them is on the title row instead, so it is
+ * The five stations in short. The figure that heads them is on the title row instead, so it is
  * stated once; this card is the four words a returning reader came for.
  */
 function InShort({

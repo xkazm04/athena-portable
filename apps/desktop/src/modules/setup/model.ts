@@ -3,7 +3,8 @@
  *
  * Four things the machine has to have before Athena is useful, in the order it has to have them:
  * an **engine** the daemon can run a turn on, a **brain** to write the turn down in, a **page**
- * to work beside, and then nothing — setup's job is to end.
+ * to work beside, and then nothing — setup's job is to end. A fifth, the **microphone**, is asked
+ * here so the permission prompt lands in the setup act and not mid-demo; it is never required.
  *
  * **Readiness is derived, never stored.** There is no `setup_complete` row and no step counter in
  * SQLite. `onboarded` exists, and it is a different fact: it says the letter has been read once,
@@ -12,9 +13,10 @@
  * while the engine went missing is not a state this module can reach.
  */
 import type { EngineProbe } from "@/lib/engines";
+import type { MicStanding } from "@/lib/voice";
 
-/** The four passages, which are also the four things. `done` is the end, not a fifth thing. */
-export const STEPS = ["engine", "brain", "page", "done"] as const;
+/** The passages, which are also the things. `done` is the end, not one of them. */
+export const STEPS = ["engine", "brain", "page", "mic", "done"] as const;
 
 export type StepKey = (typeof STEPS)[number];
 
@@ -31,6 +33,8 @@ export interface SetupActions {
   setBrainPath: (path: string) => void;
   /** Opens a tab. The one act of this wizard that changes the world. */
   openPage: (url: string) => void;
+  /** Ask the webview for the microphone once and release it at once. */
+  checkMic: () => void;
   /** Mark the letter read and leave. Setup stays in the bar afterwards. */
   finish: () => void;
 }
@@ -50,6 +54,10 @@ export interface SetupModel {
   onboarded: boolean;
   /** Why the probe could not be read at all, verbatim, or null. */
   problem: string | null;
+  /** What the webview said when asked for the microphone; `unknown` until it was asked. */
+  mic: MicStanding;
+  /** The browser's own words: the device's label, or the refusal. */
+  micDetail: string;
   actions: SetupActions;
 }
 
@@ -63,6 +71,8 @@ export interface SetupSources {
   tabs: readonly { id: number; title: string; url: string }[];
   onboarded: boolean;
   problem: string | null;
+  mic?: MicStanding;
+  micDetail?: string;
   actions: SetupActions;
 }
 
@@ -81,6 +91,8 @@ export function selectSetup(source: SetupSources): SetupModel {
     })),
     onboarded: source.onboarded,
     problem: source.problem,
+    mic: source.mic ?? "unknown",
+    micDetail: source.micDetail ?? "",
     actions: source.actions,
   };
 }
@@ -105,5 +117,6 @@ export const INERT_ACTIONS: SetupActions = {
   chooseEngine: () => {},
   setBrainPath: () => {},
   openPage: () => {},
+  checkMic: () => {},
   finish: () => {},
 };

@@ -103,6 +103,24 @@ export function pageStation(model: SetupModel): Station {
   };
 }
 
+/**
+ * Never required: a machine with no microphone runs every act but the spoken one. `unknown` is
+ * "not asked yet", which is honest and is what a first launch shows.
+ */
+export function micStation(model: SetupModel): Station {
+  const base = { key: "mic" as const, title: "Microphone", required: false };
+  switch (model.mic) {
+    case "granted":
+      return { ...base, standing: "done", summary: model.micDetail || "granted" };
+    case "denied":
+      return { ...base, standing: "missing", summary: model.micDetail || "refused by the webview" };
+    case "unsupported":
+      return { ...base, standing: "missing", summary: model.micDetail || "none on this machine" };
+    default:
+      return { ...base, standing: "unknown", summary: "not asked yet" };
+  }
+}
+
 export function doneStation(model: SetupModel): Station {
   const base = { key: "done" as const, title: "Done", required: false };
   const { done, required } = inPlace(model);
@@ -112,9 +130,15 @@ export function doneStation(model: SetupModel): Station {
   return { ...base, standing: "todo", summary: `${required - done} still to answer` };
 }
 
-/** The four, in the order the machine has to satisfy them. */
+/** The five, in the order the machine has to satisfy them. */
 export function stations(model: SetupModel): Station[] {
-  return [engineStation(model), brainStation(model), pageStation(model), doneStation(model)];
+  return [
+    engineStation(model),
+    brainStation(model),
+    pageStation(model),
+    micStation(model),
+    doneStation(model),
+  ];
 }
 
 /** The headline figure: required stations in place, out of required stations. Derived. */

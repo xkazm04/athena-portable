@@ -50,6 +50,8 @@ const typical = model({
   brainPath: "~/athena/brain",
   tabs: [tab(1, "Invoices — March", "https://invoicing.example.test/invoices")],
   onboarded: false,
+  mic: "granted",
+  micDetail: "Headset Microphone (USB Audio)",
 });
 
 const heavy = model({
@@ -72,6 +74,9 @@ const heavy = model({
     ),
   ),
   onboarded: true,
+  mic: "denied",
+  micDetail:
+    "NotAllowedError: Permission denied by system — the operating system's privacy setting for microphone access is off for this application",
 });
 
 /** The daemon is not running, so the probe cannot answer. Everything else still reads. */

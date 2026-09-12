@@ -1,7 +1,7 @@
 /**
  * The channel events, as the panel reads them — `src/athena/contracts/channel.py`.
  *
- * Eight events, one stream, one decoder. The daemon writes each event's own JSON into an SSE
+ * Eleven events, one stream, one decoder. The daemon writes each event's own JSON into an SSE
  * frame; this file names the shapes and does nothing else. A second encoder is how two surfaces
  * end up disagreeing about what a decision card said.
  *
@@ -17,7 +17,10 @@ export type EventKind =
   | "turn.error"
   | "turn.summary"
   | "decision.requested"
-  | "decision.resolved";
+  | "decision.resolved"
+  | "voice.transcript"
+  | "voice.speaking"
+  | "voice.stopped";
 
 export interface TextDelta {
   kind: "text.delta";
@@ -96,6 +99,29 @@ export interface DecisionResolved {
   at: string;
 }
 
+/** What the microphone said, as the daemon's backend heard it. `final` ends an utterance. */
+export interface VoiceTranscript {
+  kind: "voice.transcript";
+  text: string;
+  final: boolean;
+}
+
+/** Playback of one spoken line begins; the audio frames that follow carry `generation`. */
+export interface VoiceSpeaking {
+  kind: "voice.speaking";
+  generation: number;
+  text: string;
+  truncated: boolean;
+  sample_rate: number;
+}
+
+/** Playback of `generation` ended: `done`, `barge_in`, or `error`. */
+export interface VoiceStopped {
+  kind: "voice.stopped";
+  generation: number;
+  reason: string;
+}
+
 export type ChannelEvent =
   | TextDelta
   | ToolCall
@@ -104,13 +130,17 @@ export type ChannelEvent =
   | TurnError
   | TurnSummary
   | DecisionRequested
-  | DecisionResolved;
+  | DecisionResolved
+  | VoiceTranscript
+  | VoiceSpeaking
+  | VoiceStopped;
 
 /** The families a surface may subscribe to, exactly as `contracts/channel.py` groups them. */
 export const FAMILIES: Readonly<Record<string, readonly EventKind[]>> = Object.freeze({
   stream: ["text.delta", "tool.call", "tool.result", "turn.finished", "turn.error"],
   record: ["turn.summary"],
   decisions: ["decision.requested", "decision.resolved"],
+  voice: ["voice.transcript", "voice.speaking", "voice.stopped"],
 });
 
 const KNOWN = new Set<string>(Object.values(FAMILIES).flat());

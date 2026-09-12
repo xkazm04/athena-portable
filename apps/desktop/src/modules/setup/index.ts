@@ -12,6 +12,7 @@
 import { createElement, useMemo, useState } from "react";
 
 import { ENGINE_IDS, isEngineId } from "@/lib/engines";
+import { checkMicrophone, type MicStanding } from "@/lib/voice";
 import type { ModuleEntry } from "@/modules/types";
 import { useSettings } from "@/stores/settings";
 import { useShell } from "@/stores/shell";
@@ -28,6 +29,11 @@ function Live() {
   const tabs = useTabs((s) => s.tabs);
 
   const [step, setStep] = useState<StepKey>("engine");
+  // Asked on this visit, never stored: a permission is the browser's fact, not the store's.
+  const [mic, setMic] = useState<{ standing: MicStanding; detail: string }>({
+    standing: "unknown",
+    detail: "",
+  });
 
   const actions: SetupActions = useMemo(() => {
     // A rejected command is reported and not thrown: a directory the store will not take must
@@ -42,6 +48,10 @@ function Live() {
       setBrainPath: (path) =>
         void useSettings.getState().setBrainPath(path).catch(report("brain path")),
       openPage: (url) => void useTabs.getState().create(url).catch(report("open")),
+      checkMic: () => {
+        const media = typeof navigator === "undefined" ? undefined : navigator.mediaDevices;
+        void checkMicrophone(media ? (c) => media.getUserMedia(c) : undefined).then(setMic);
+      },
       finish: () => {
         void useSettings.getState().setOnboarded(true).catch(report("onboarded"));
         void useShell.getState().select("browser").catch(report("leave"));
@@ -60,9 +70,11 @@ function Live() {
         tabs,
         onboarded,
         problem: null,
+        mic: mic.standing,
+        micDetail: mic.detail,
         actions,
       }),
-    [step, engine, brainPath, tabs, onboarded, actions],
+    [step, engine, brainPath, tabs, onboarded, mic, actions],
   );
 
   return createElement(SetupView, { model });

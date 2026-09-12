@@ -11,7 +11,15 @@ import { expect, test, vi } from "vitest";
 import type { EngineProbe } from "@/lib/engines";
 
 import { INERT_ACTIONS, selectSetup, type SetupSources } from "./model";
-import { engineLead, engineStation, inPlace, isReady, pageStation, stations } from "./readiness";
+import {
+  engineLead,
+  engineStation,
+  inPlace,
+  isReady,
+  micStation,
+  pageStation,
+  stations,
+} from "./readiness";
 
 const FOUND: EngineProbe[] = [
   { id: "claude_code", state: "found", detail: "2.1.268" },
@@ -121,7 +129,7 @@ test("readiness is derived: take the page away and it goes with it", () => {
 });
 
 test("the four stations come back in the order the machine has to satisfy them", () => {
-  expect(stations(model()).map((s) => s.key)).toEqual(["engine", "brain", "page", "done"]);
+  expect(stations(model()).map((s) => s.key)).toEqual(["engine", "brain", "page", "mic", "done"]);
   expect(stations(model()).filter((s) => s.required)).toHaveLength(3);
 });
 
@@ -146,4 +154,17 @@ test("the actions are the view's only route out, and they are passed through unt
   m.actions.goTo("page");
   expect(actions.openPage).toHaveBeenCalledWith("https://a.test/");
   expect(actions.goTo).toHaveBeenCalledWith("page");
+});
+
+test("the microphone is never required, and `unknown` means it was not asked", () => {
+  expect(micStation(model()).standing).toBe("unknown");
+  expect(micStation(model()).required).toBe(false);
+  expect(micStation(model({ mic: "granted", micDetail: "Headset" })).summary).toBe("Headset");
+  expect(micStation(model({ mic: "denied", micDetail: "Permission denied" })).standing).toBe(
+    "missing",
+  );
+  // Refusing the microphone changes nothing about readiness for a typed turn.
+  expect(isReady(model({ mic: "denied", tabs: [{ id: 1, title: "t", url: "https://a.test" }] }))).toBe(
+    true,
+  );
 });

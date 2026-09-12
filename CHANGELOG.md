@@ -5,6 +5,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 ## P8 — Voice (in progress)
 
 - `feat(voice): the gateway and one backend` — `athena.channels.voice`: RFC 6455 in the stdlib, `/voice` on the daemon's port with the token in the header or the `athena-token.<token>` subprotocol, the `VoiceBackend` port with a scripted backend and an OpenAI one over `urllib`; an utterance runs the ordinary browser-lane turn with `surface = voice`, `trigger = voice`; the `TTS:` line or the text capped and announced; barge-in by generation counter; "approve" / "decline" / a label answers the card on top through `decide`; the `voice` event family and `TurnContext.trigger`; ADR 0019.
+- `feat(desktop): push-to-talk` — a hold-to-talk key in the module bar and `Ctrl+Space` held in the chrome; the microphone as PCM16 at 16 kHz over `/voice` with the token in the subprotocol; a spoken turn lands in the panel's transcript and cards; the page's tools run through the relay and answer the daemon; the player drops a generation on `barge_in`; the Setup wizard gains a microphone passage, never required; the OS-global shortcut deferred and named; ADR 0020.
 
 ## Examples — the studio and the journey (in progress)
 
