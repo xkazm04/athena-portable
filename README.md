@@ -5,7 +5,7 @@ This repository is the hackathon rebuild of [athena-everywhere](https://github.c
 an empty tree, new code, the same design, one commit per feature, and the structural debts the
 first build found fixed on day zero.
 
-**Status:** P1 and P2 done; P3 One turn end to end, in progress. The bridge is in; the lane and the daemon are next.
+**Status:** P1 to P3 done: one gated turn runs end to end over HTTP (`docs/daemon.md`). P4 The shell skeleton, in progress: the window is in; relay, sidecar and store are next.
 yet. The phase table in section 5 is the order of work and section 7 is the bar every commit clears.
 
 ```bash
