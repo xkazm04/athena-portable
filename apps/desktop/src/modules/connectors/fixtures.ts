@@ -9,7 +9,7 @@
  */
 import type { ConnectorView } from "@/lib/api";
 
-import { INERT_ACTIONS, selectConnectors, type ConnectorsModel } from "./model";
+import { INERT_ACTIONS, selectConnectors, type ConnectorProblem, type ConnectorsModel } from "./model";
 
 const NOW = Date.parse("2026-09-12T12:00:00Z");
 
@@ -97,7 +97,7 @@ const NOTION_CONNECTED = notion({
 
 function model(
   items: ConnectorView[],
-  over: { loaded?: boolean; problem?: string | null; ready?: boolean; busy?: Record<string, string>; errors?: Record<string, string> } = {},
+  over: { loaded?: boolean; problem?: ConnectorProblem | null; ready?: boolean; busy?: Record<string, string>; errors?: Record<string, string> } = {},
 ): ConnectorsModel {
   return selectConnectors(
     items,
@@ -167,7 +167,21 @@ const heavy = model(
 const degraded = model([], { loaded: false, ready: false });
 
 /** The list itself refused. Verbatim, and not an empty list. */
-const unreadable = model([], { problem: "unknown_ref: no route for GET /connectors" });
+const unreadable = model([], {
+  problem: { reason: "unknown_ref: no route for GET /connectors", from: "daemon" },
+});
+
+/*
+ * The other half of "could not be read", and it is in here because it is the one that shipped: a
+ * `TypeError` from this shell's own HTTP client, which the note used to report as the daemon
+ * refusing the list. A fixture is the cheapest way to keep the two sentences apart.
+ */
+const unreachable = model([], {
+  problem: {
+    reason: "Failed to execute 'fetch' on 'Window': Illegal invocation",
+    from: "client",
+  },
+});
 
 const needsReauth = model([
   gmail({
@@ -206,8 +220,9 @@ export const fixtures: Record<string, ConnectorsModel> = {
   heavy,
   degraded,
   unreadable,
+  unreachable,
   "needs-reauth": needsReauth,
   "flow-failed": flowFailed,
 };
 
-export const fixtureIds = ["empty", "typical", "heavy", "degraded", "unreadable", "needs-reauth", "flow-failed"] as const;
+export const fixtureIds = ["empty", "typical", "heavy", "degraded", "unreadable", "unreachable", "needs-reauth", "flow-failed"] as const;

@@ -51,8 +51,15 @@ export default function ConnectorsView({ model }: { model: ConnectorsModel }) {
       ) : model.problem ? (
         <ProblemNote
           title="The connector list could not be read."
-          reason={model.problem}
-          detail="The daemon refused the list; the reason above is its own."
+          reason={model.problem.reason}
+          /* Who is refusing is a different fact from why, and this note used to assert the
+             daemon for both — so a bug in this shell's own HTTP client was reported to the
+             reader as the vault turning them away. */
+          detail={
+            model.problem.from === "daemon"
+              ? "The daemon refused the list; the reason above is its own."
+              : "The request never reached the daemon, so the reason above is this shell's rather than the vault's."
+          }
           tone="error"
         />
       ) : !model.loaded ? (

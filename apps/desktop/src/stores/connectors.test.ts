@@ -86,7 +86,27 @@ describe("the list", () => {
     wire(daemon);
     await useConnectors.getState().load();
     expect(useConnectors.getState().loaded).toBe(true);
-    expect(useConnectors.getState().problem).toBe("boom");
+    // A 500 with a body IS the daemon answering, so the problem is attributed to it — which is
+    // what lets the surface say "the daemon refused" without guessing.
+    expect(useConnectors.getState().problem).toEqual({ reason: "boom", from: "daemon" });
+  });
+
+  it("attributes a failure that never reached the daemon to this shell, not to the vault", async () => {
+    // The shape of the bug that shipped: `lib/api.ts` called the global `fetch` with the client as
+    // its receiver, so the request threw in the webview before any socket was opened. Reported as
+    // a refusal it sent a reader to debug the daemon; it was never asked.
+    setConnectorDeps({
+      api: () =>
+        new DaemonApi({ url: "http://daemon", token: "t" }, () => {
+          throw new TypeError("Failed to execute 'fetch' on 'Window': Illegal invocation");
+        }),
+      wait: async () => {},
+    });
+    await useConnectors.getState().load();
+    expect(useConnectors.getState().problem).toEqual({
+      reason: "Failed to execute 'fetch' on 'Window': Illegal invocation",
+      from: "client",
+    });
   });
 
   it("does not claim to have loaded when the daemon is not ready", async () => {

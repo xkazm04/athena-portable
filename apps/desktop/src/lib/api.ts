@@ -22,6 +22,28 @@ import { eventFromJson } from "@/lib/events";
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
+/**
+ * The global `fetch`, called with the receiver it requires.
+ *
+ * THE BUG THIS EXISTS TO PREVENT, because it shipped and cost a live debugging session.
+ *
+ * The default used to be the bare global: `private readonly fetchImpl: FetchLike = fetch`. That
+ * captures the function and stores it as an INSTANCE PROPERTY, so `this.fetchImpl(...)` invokes it
+ * with `this` bound to the `DaemonApi` — and `fetch` is a method of `Window`, which refuses any
+ * other receiver. Every call made through the default threw, always, with:
+ *
+ *     TypeError: Failed to execute 'fetch' on 'Window': Illegal invocation
+ *
+ * A wrapper rather than `fetch.bind(globalThis)` because the binding is then written where it is
+ * read, and the arrow cannot be re-detached by a later refactor the way a bound reference can.
+ *
+ * WHY NO TEST CAUGHT IT. Every test constructs `new DaemonApi(endpoint, daemon.fetchImpl)` with a
+ * fake, so the default parameter — the only one production uses, at `stores/connectors.ts`,
+ * `stores/run.ts` and `stores/voice.ts` — was the single line in this file no test ever executed.
+ * `api.test.ts` now covers it.
+ */
+const globalFetch: FetchLike = (input, init) => fetch(input, init);
+
 export interface Endpoint {
   url: string;
   token: string;
@@ -151,7 +173,7 @@ export class ApiError extends Error {
 export class DaemonApi {
   constructor(
     private readonly endpoint: Endpoint,
-    private readonly fetchImpl: FetchLike = fetch,
+    private readonly fetchImpl: FetchLike = globalFetch,
   ) {}
 
   health(): Promise<Record<string, unknown>> {

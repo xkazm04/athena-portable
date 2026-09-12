@@ -61,8 +61,8 @@ export interface ConnectorsModel {
   ready: boolean;
   /** True once `/connectors` has answered; before that an empty list means nobody asked. */
   loaded: boolean;
-  /** Why the list could not be read, verbatim, or null. */
-  problem: string | null;
+  /** Why the list could not be read, or null. */
+  problem: ConnectorProblem | null;
   actions: ConnectorActions;
 }
 
@@ -175,11 +175,28 @@ export function rowOf(
   };
 }
 
+/**
+ * Why the list could not be read, and WHO is saying so.
+ *
+ * The note used to assert "The daemon refused the list; the reason above is its own" for every
+ * failure, including the ones where the request never left this shell — which is how a
+ * `TypeError: Failed to execute 'fetch' on 'Window': Illegal invocation`, a bug in
+ * `lib/api.ts`'s own default, was reported to a person as the vault refusing them. "The vault said
+ * no" and "we never asked" are different facts and a surface that conflates them sends the reader
+ * to debug the wrong machine.
+ */
+export interface ConnectorProblem {
+  /** The reason, verbatim. Never paraphrased. */
+  reason: string;
+  /** `daemon` when it answered and refused; `client` when the request never reached it. */
+  from: "daemon" | "client";
+}
+
 /** The store snapshots in, the view-model out. Pure; `now` is an argument for the tests. */
 export function selectConnectors(
   items: readonly ConnectorView[],
   loaded: boolean,
-  problem: string | null,
+  problem: ConnectorProblem | null,
   daemonReady: boolean,
   busy: Readonly<Record<string, string>>,
   errors: Readonly<Record<string, string>>,

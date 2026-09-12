@@ -18,6 +18,7 @@ import { create } from "zustand";
 
 import { ApiError, DaemonApi, type ConnectorView } from "@/lib/api";
 import { endpoint, useDaemon } from "@/stores/daemon";
+import type { ConnectorProblem } from "@/modules/connectors/model";
 
 /** How often the flow is asked where it stands while a consent page is open. */
 export const FLOW_POLL_MS = 1500;
@@ -52,8 +53,8 @@ export interface ConnectorsState {
   items: readonly ConnectorView[];
   /** True once `/connectors` has answered once — not the same fact as "nothing is connected". */
   loaded: boolean;
-  /** Why the list could not be read, verbatim, or null. */
-  problem: string | null;
+  /** Why the list could not be read, and whether the daemon is the one saying so. */
+  problem: ConnectorProblem | null;
   /** What is in flight per connector: "connecting", "disconnecting", "probing", "saving". */
   busy: Readonly<Record<string, string>>;
   /** The last refusal per connector, in the daemon's words. Cleared by the next act. */
@@ -70,7 +71,7 @@ export interface ConnectorsState {
 const EMPTY = {
   items: [] as readonly ConnectorView[],
   loaded: false,
-  problem: null as string | null,
+  problem: null as ConnectorProblem | null,
   busy: {} as Record<string, string>,
   errors: {} as Record<string, string>,
 };
@@ -83,6 +84,21 @@ export function resetConnectorsForTests(): void {
 function reasonOf(error: unknown): string {
   if (error instanceof ApiError) return error.message || error.reason;
   return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * The same reason, plus who is giving it.
+ *
+ * An `ApiError` is only ever constructed from a response, so it is proof the daemon answered.
+ * Anything else — a transport failure, or a bug in this shell such as the unbound `fetch` default
+ * that `lib/api.ts` carried — means the request never got there, and the surface must not report
+ * it as a refusal.
+ */
+function problemOf(error: unknown): ConnectorProblem {
+  return {
+    reason: reasonOf(error),
+    from: error instanceof ApiError ? "daemon" : "client",
+  };
 }
 
 export const useConnectors = create<ConnectorsState>((set, get) => {
@@ -150,7 +166,7 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
         set({ items: page.connectors, loaded: true, problem: null });
       } catch (error) {
         // Verbatim: an unreadable list must not render as an empty one.
-        set({ loaded: true, problem: reasonOf(error) });
+        set({ loaded: true, problem: problemOf(error) });
       }
     },
 
