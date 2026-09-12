@@ -38,3 +38,7 @@ apps/desktop/dist/
 Thumbs.db
 .idea/
 .vscode/
+
+# Demo recordings are built artefacts (examples/journey/take/, delivered elsewhere)
+*.mp4
+*.webm
