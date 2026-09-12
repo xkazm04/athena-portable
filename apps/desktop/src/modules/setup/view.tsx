@@ -1,226 +1,316 @@
 /**
- * The Setup wizard's surface — *a letter, not a stepper*.
+ * The Setup module's surface — a pure function of `SetupModel`, in two moods.
  *
- * It is the first thing a person sees, it is this app's one chance to say what Athena is, and its
- * job is to end. None of that is served by four accordion cards with one open at a time. What
- * serves it is a page that reads like a short letter about **this machine**, whose sentences are
- * composed from the view-model: "Claude Code answered its version flag", "Episodes go to the
- * daemon's own directory", "One page is open, on invoicing.example.test". Every sentence is true
- * at render, and a sentence cannot truncate a fact the way a row can.
+ * **Onboarding** is a short letter in one column: what Athena is, in three sentences, then the
+ * two things the first turn needs — an engine that answered, a page to work beside — and one
+ * button. The microphone is one optional line under them. Nothing is numbered, because these are
+ * not a sequence: a person who cannot install an engine can still open a page.
  *
- * Beside it, for the person who has read it before, the same four facts in short: a rail that
- * names each station, its standing and the figure. A returning reader reads the rail and leaves.
+ * **Settings** is the same facts as a list a returning person adjusts: one row per fact, a
+ * hairline between rows, the fact in a sentence on the left and its control on the right. No
+ * cards per item — eleven words of engine and three of theme do not each need a fold.
  *
- * The step is the passage whose left rule is lit, and the rail moves it. **Nothing is gated by
- * it** — no passage is hidden because an earlier one is unanswered, because the machine's
- * problems are not sequential and a person who cannot install an engine can still open a page.
- *
- * Setup ends by leaving into a page, so the closing button's emphasis is *earned*: it is quiet
- * until the machine is actually ready, and then it is the one thing on the page asking to be
- * pressed.
+ * Neither mood claims anything the machine has not said. Readiness is derived at render; a
+ * restart is offered only when a running daemon disagrees with the stored row; a probe's words
+ * are printed as the probe's words.
  */
 import { useState } from "react";
 import type { ReactNode } from "react";
 
-import Badge from "@/components/Badge";
 import Button from "@/components/Button";
-import EmptyState from "@/components/EmptyState";
-import FormField, { TextInput } from "@/components/FormField";
 import PageHeader from "@/components/PageHeader";
 import PageShell from "@/components/PageShell";
 import PillGroup from "@/components/PillGroup";
 import ProblemNote from "@/components/ProblemNote";
-import SectionCard from "@/components/SectionCard";
-import StatusDot from "@/components/StatusDot";
+import StatusDot, { type Tone } from "@/components/StatusDot";
+import { TextInput } from "@/components/FormField";
 import { engineLabel, probeOf, remedyFor, usable } from "@/lib/engines";
 import { normaliseUrl } from "@/lib/url";
+import { THEME_CHOICES, type ThemeChoice } from "@/stores/settings";
 
-import type { SetupModel, StepKey } from "./model";
+import type { SetupModel } from "./model";
 import {
   STANDING_TONE,
   WHAT_ATHENA_IS,
+  brainFact,
+  engineFact,
   engineLead,
-  inPlace,
   isReady,
-  stations,
-  type Station,
+  micFact,
+  notReadyBecause,
+  pageFact,
+  restartNotice,
+  voiceFact,
 } from "./readiness";
 
+import "./setup.css";
+
+const THEME_HINTS: Record<ThemeChoice, string> = {
+  system: "Follow the operating system, and switch when it does.",
+  light: "Always light.",
+  dark: "Always dark.",
+};
+
 export default function SetupView({ model }: { model: SetupModel }) {
-  const all = stations(model);
-  const figure = inPlace(model);
+  return model.mode === "onboarding" ? <Onboarding model={model} /> : <Settings model={model} />;
+}
+
+// -- onboarding: the letter --------------------------------------------------------------------
+
+function Onboarding({ model }: { model: SetupModel }) {
   const ready = isReady(model);
-
-  const go = (step: StepKey) => {
-    model.actions.goTo(step);
-    document
-      .getElementById(`setup-${step}`)
-      ?.scrollIntoView({ block: "start", behavior: "smooth" });
-  };
-
+  const because = notReadyBecause(model);
   return (
     <PageShell>
-      <PageHeader
-        eyebrow="Setup"
-        title="Athena is on this machine"
-        caption={model.onboarded ? "The machine as it stands now." : undefined}
-        meta={
-          <Badge tone={ready ? "success" : "neutral"}>
-            {`${figure.done} of ${figure.required} in place`}
-          </Badge>
-        }
-      />
+      <div className="setup-letter">
+        <header className="setup-letter__head">
+          <h1 className="typo-heading-lg">Athena is on this machine.</h1>
+          <p className="typo-body">
+            She works inside the apps you already have open, and asks before anything that cannot
+            be undone.
+          </p>
+        </header>
 
-      <div className="split split--letter">
-        <article className="stack" style={{ gap: "var(--density-gap)" }}>
-          {model.onboarded ? null : <Claims />}
+        <ul className="setup-claims">
+          {WHAT_ATHENA_IS.map((claim) => (
+            <li key={claim.title} className="typo-body">
+              <span className="typo-title">{claim.title}.</span> {claim.body}
+            </li>
+          ))}
+        </ul>
 
-          <Passage step="engine" index={1} title="Engine" current={model.step}>
-            <EnginePassage model={model} />
-          </Passage>
-          <Passage step="brain" index={2} title="Brain" current={model.step}>
-            <BrainPassage model={model} />
-          </Passage>
-          <Passage step="page" index={3} title="A page" current={model.step}>
-            <PagePassage model={model} />
-          </Passage>
-          <Passage step="mic" index={4} title="Microphone" current={model.step}>
-            <MicPassage model={model} />
-          </Passage>
-          <Passage step="done" index={5} title="Done" current={model.step}>
-            <p className="passage__lead">
-              {ready
-                ? "That is everything the first turn needs."
-                : "Setup stays in the bar; nothing here has to be finished in one sitting."}
-            </p>
-            <span className="row">
-              <Button variant={ready ? "primary" : "secondary"} onClick={model.actions.finish}>
-                {model.onboarded ? "Back to the browser" : "Leave setup"}
-              </Button>
-              <span className="typo-caption">Athena opens on the page you left open.</span>
-            </span>
-          </Passage>
-        </article>
+        <Passage title="Choose the engine" fact={engineFact(model).summary}>
+          <EngineChoice model={model} />
+          <EngineDetail model={model} />
+        </Passage>
 
-        <InShort stations={all} current={model.step} onGo={go} />
+        <Passage title="Open the first app" fact={pageFact(model).summary}>
+          <OpenPage model={model} />
+        </Passage>
+
+        <Passage title="A microphone, if you want to talk" fact={micFact(model).summary} optional>
+          <MicControl model={model} />
+        </Passage>
+
+        <div className="setup-letter__foot">
+          <Button
+            variant={ready ? "primary" : "secondary"}
+            onClick={model.actions.finish}
+            disabledReason={ready ? undefined : because}
+          >
+            Start using Athena
+          </Button>
+          <span className="typo-caption">
+            {ready
+              ? "Athena opens on the page you left open."
+              : "Setup stays in the bar; nothing has to be finished in one sitting."}
+          </span>
+          {!ready ? (
+            <Button variant="ghost" size="sm" onClick={model.actions.finish}>
+              Skip for now
+            </Button>
+          ) : null}
+        </div>
       </div>
     </PageShell>
   );
 }
 
-// -- the three claims --------------------------------------------------------------------------
-
-/** First run only. One sentence each: an introduction is the one place prose is the product. */
-function Claims() {
-  return (
-    <ul className="stack" style={{ listStyle: "none", margin: 0, padding: 0, gap: 4 }}>
-      {WHAT_ATHENA_IS.map((claim) => (
-        <li key={claim.title} className="typo-body">
-          <span className="typo-title">{claim.title}.</span> {claim.body}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-// -- a passage ---------------------------------------------------------------------------------
-
+/** One thing the machine needs, with its standing beside the title. Not a step: a passage. */
 function Passage({
-  step,
-  index,
   title,
-  current,
+  fact,
+  optional = false,
   children,
 }: {
-  step: StepKey;
-  index: number;
   title: string;
-  current: StepKey;
+  fact: string;
+  optional?: boolean;
   children: ReactNode;
 }) {
   return (
-    <section
-      id={`setup-${step}`}
-      className="passage"
-      aria-current={step === current ? "step" : undefined}
-    >
-      <p className="passage__label typo-label">
-        0{index} · {title}
-      </p>
+    <section className="setup-passage">
+      <div className="setup-passage__head">
+        <h2 className="typo-heading">{title}</h2>
+        <span className="typo-caption">
+          {optional ? "optional — " : ""}
+          {fact}
+        </span>
+      </div>
       {children}
     </section>
   );
 }
 
-// -- engine ------------------------------------------------------------------------------------
+// -- settings: the list ----------------------------------------------------------------------
 
-function EnginePassage({ model }: { model: SetupModel }) {
-  const { probes } = model;
-
-  if (probes === null) {
-    return (
-      <>
-        <p className="passage__lead">
-          {model.problem
-            ? "The engine probe could not be read."
-            : "The engine probe has not answered yet."}
-        </p>
-        {model.problem ? (
-          <ProblemNote
-            title="The daemon runs the probe, so nothing is known about what is installed here."
-            reason={model.problem}
-            detail="Athena still starts; the first turn is what will fail, and it will say so."
-          />
-        ) : (
-          <p className="typo-caption">
-            Found will mean the binary answered its version flag — not that it is signed in, and
-            not that the model runs on this machine.
-          </p>
-        )}
-        <EngineChoice model={model} />
-      </>
-    );
-  }
-
-  const found = usable(probes);
-  const chosen = probeOf(probes, model.engine);
-
+function Settings({ model }: { model: SetupModel }) {
+  const notice = restartNotice(model);
+  const engine = engineFact(model);
+  const page = pageFact(model);
+  const brain = brainFact(model);
+  const mic = micFact(model);
+  const voice = voiceFact(model);
   return (
-    <>
-      <p className="passage__lead">{engineLead(found.length, probes.length)}</p>
-      <EngineChoice model={model} />
-      <ul className="stack" style={{ listStyle: "none", margin: 0, padding: 0, gap: 4 }}>
-        {probes.map((probe) => (
-          <li key={probe.id} className="stack" style={{ gap: 1 }}>
-            <span className="row row--baseline">
-              <StatusDot
-                tone={
-                  probe.state === "found"
-                    ? "success"
-                    : probe.state === "not_logged_in"
-                      ? "warning"
-                      : "neutral"
-                }
-              />
-              <span className="typo-title">{engineLabel(probe.id)}</span>
-              {/* The probe's own words, verbatim: a version string, or the reason it cannot be
-                  used. Paraphrasing one is how a surface starts guessing. */}
-              <span className="typo-caption" style={{ overflowWrap: "anywhere" }}>
-                {probe.detail}
-              </span>
-            </span>
-            <span className="typo-caption">{remedyFor(probe)}</span>
-          </li>
-        ))}
-      </ul>
-      {chosen && chosen.state !== "found" ? (
-        <p className="typo-caption">
-          {engineLabel(chosen.id)} is the chosen engine and it cannot run a turn yet.
-        </p>
+    <PageShell>
+      <PageHeader
+        eyebrow="Setup"
+        title="How Athena is set up"
+        caption="The engine, the page, the brain, the voice — and where it all lives."
+        action={
+          <Button variant="ghost" size="sm" onClick={model.actions.reopenOnboarding}>
+            Show the welcome again
+          </Button>
+        }
+      />
+
+      {model.problem ? (
+        <ProblemNote
+          title="No engine probe has answered, so nothing is known about what is installed."
+          reason={model.problem}
+          detail="The daemon runs the probe; the names below are all this page can say on its own."
+        />
       ) : null}
-    </>
+
+      <div className="setup-list">
+        <Row label="Engine" tone={STANDING_TONE[engine.standing]} fact={engineSentence(model)}>
+          <div className="setup-row__stack">
+            <EngineChoice model={model} />
+            {notice ? (
+              <div className="setup-notice" role="status">
+                <p className="typo-body">{notice.title}</p>
+                <p className="typo-caption">{notice.detail}</p>
+                <span className="row">
+                  <Button variant="primary" size="sm" onClick={model.actions.restart}>
+                    {notice.actionLabel}
+                  </Button>
+                </span>
+              </div>
+            ) : null}
+            <EngineDetail model={model} compact />
+          </div>
+        </Row>
+
+        <Row label="Page" tone={STANDING_TONE[page.standing]} fact={pageSentence(model)}>
+          <OpenPage model={model} compact />
+        </Row>
+
+        <Row label="Theme" tone="neutral" fact={THEME_HINTS[model.theme]}>
+          <PillGroup
+            ariaLabel="Theme"
+            value={model.theme}
+            onChange={model.actions.setTheme}
+            options={THEME_CHOICES.map((choice) => ({
+              value: choice,
+              label: choice,
+              hint: THEME_HINTS[choice],
+            }))}
+          />
+        </Row>
+
+        <Row
+          label="Brain"
+          tone={STANDING_TONE[brain.standing]}
+          fact={
+            model.brainPath
+              ? "Episodes, facts and playbooks are written here."
+              : "Episodes go to the daemon's own directory."
+          }
+        >
+          <BrainField model={model} />
+        </Row>
+
+        <Row label="Microphone" tone={STANDING_TONE[mic.standing]} fact={micSentence(model)}>
+          <MicControl model={model} compact />
+        </Row>
+
+        <Row label="Voice" tone={STANDING_TONE[voice.standing]} fact={voiceSentence(model)}>
+          <span className="typo-caption">{voice.summary}</span>
+        </Row>
+
+        <Row
+          label="Data"
+          tone="neutral"
+          fact="One SQLite file: settings, origins, projects, activity and captures. Copy it to move this machine's Athena."
+        >
+          <code className="typo-code setup-path">
+            {model.storePath ?? "the shell has not answered store_path yet"}
+          </code>
+        </Row>
+      </div>
+    </PageShell>
   );
 }
+
+/** One fact and its control. The hairline between rows is the only structure the list has. */
+function Row({
+  label,
+  tone,
+  fact,
+  children,
+}: {
+  label: string;
+  tone: Tone;
+  fact: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="setup-row">
+      <div className="setup-row__fact">
+        <span className="row row--baseline">
+          <StatusDot tone={tone} />
+          <span className="typo-title">{label}</span>
+        </span>
+        <p className="typo-caption">{fact}</p>
+      </div>
+      <div className="setup-row__control">{children}</div>
+    </div>
+  );
+}
+
+// -- the sentences -------------------------------------------------------------------------------
+
+function engineSentence(model: SetupModel): string {
+  if (model.probes === null) {
+    return model.problem
+      ? "The engine probe could not be read."
+      : `${engineLabel(model.engine)} is stored; the probe has not answered yet.`;
+  }
+  const chosen = probeOf(model.probes, model.engine);
+  if (chosen?.state === "found") {
+    return `${engineLabel(model.engine)} runs the turns${
+      model.daemonHealth === "ready" && model.daemonEngine === model.engine ? ", and is running now" : ""
+    }.`;
+  }
+  return `${engineLabel(model.engine)} is chosen and cannot run a turn yet.`;
+}
+
+function pageSentence(model: SetupModel): string {
+  if (model.tabs.length === 0) return "No page is open. Athena works inside one.";
+  if (model.tabs.length === 1) return `One page is open, on ${model.tabs[0].host}.`;
+  return `${model.tabs.length} pages are open.`;
+}
+
+function micSentence(model: SetupModel): string {
+  switch (model.mic) {
+    case "granted":
+      return "The microphone answered. Hold the key in the bar, or Ctrl+Space, to talk.";
+    case "denied":
+      return "The webview refused the microphone; push-to-talk stays off until it is allowed.";
+    case "unsupported":
+      return "No microphone was found; every turn can still be typed.";
+    default:
+      return "Not asked yet. Asking here keeps the prompt out of a turn.";
+  }
+}
+
+function voiceSentence(model: SetupModel): string {
+  if (model.voiceAvailable) return "The daemon can hear and speak.";
+  if (model.daemonHealth !== "ready") return "The daemon is not running, so nothing is known yet.";
+  return "The daemon was started without a voice backend.";
+}
+
+// -- the controls ----------------------------------------------------------------------------------
 
 function EngineChoice({ model }: { model: SetupModel }) {
   return (
@@ -228,69 +318,64 @@ function EngineChoice({ model }: { model: SetupModel }) {
       ariaLabel="Engine"
       value={model.engine}
       onChange={model.actions.chooseEngine}
-      options={model.engineIds.map((id) => ({
-        value: id,
-        label: engineLabel(id),
-        hint: probeOf(model.probes, id)?.detail,
+      disabled={!model.hydrated}
+      options={model.engines.map((e) => ({
+        value: e.id,
+        label: e.label,
+        hint: e.probe?.detail,
+        // A signed-out engine is still choosable: the row is a preference, and the remedy belongs
+        // beside it rather than in place of it.
+        ...(e.probe?.state === "not_found" ? { disabledReason: e.disabledReason } : {}),
       }))}
     />
   );
 }
 
-// -- brain -------------------------------------------------------------------------------------
-
-/**
- * A path, and the one sentence that says what an empty one means. The field is a draft until it
- * is committed, so a half-typed directory is never written: the store is read by the daemon at
- * start-up and a path that exists for three keystrokes is a path Athena would have tried to use.
- */
-function BrainPassage({ model }: { model: SetupModel }) {
-  const [draft, setDraft] = useState<string | null>(null);
-  const value = draft ?? model.brainPath;
-  const dirty = draft !== null && draft !== model.brainPath;
-
-  return (
-    <>
-      <p className="passage__lead">
-        {model.brainPath
-          ? "Episodes, facts and playbooks are written here."
-          : "Episodes go to the daemon's own directory."}
+/** What the probe said, verbatim, and the one thing to do about it. */
+function EngineDetail({ model, compact = false }: { model: SetupModel; compact?: boolean }) {
+  const { probes } = model;
+  if (probes === null) {
+    return compact ? null : (
+      <p className="typo-caption">
+        {model.problem
+          ? `The engine probe could not be read: ${model.problem}`
+          : "Found will mean the binary answered its version flag — not that it is signed in."}
       </p>
-      <FormField
-        label="Brain directory"
-        hint="Markdown on disk is the truth and the index is rebuilt from it, so this directory is portable by copying. Empty means the daemon's default."
-      >
-        {(input) => (
-          <span className="row">
-            <TextInput
-              {...input}
-              value={value}
-              placeholder="the daemon's default"
-              style={{ flex: "1 1 18rem" }}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") model.actions.setBrainPath(value.trim());
-                if (e.key === "Escape") setDraft(null);
-              }}
+    );
+  }
+  const chosen = probeOf(probes, model.engine);
+  const shown = compact ? probes.filter((p) => p.state !== "found" || p.id === model.engine) : probes;
+  return (
+    <div className="stack" style={{ gap: 4 }}>
+      {compact ? null : <p className="typo-caption">{engineLead(usable(probes).length, probes.length)}</p>}
+      {shown.map((probe) => (
+        <div key={probe.id} className="setup-probe">
+          <span className="row row--baseline">
+            <StatusDot
+              tone={
+                probe.state === "found"
+                  ? "success"
+                  : probe.state === "not_logged_in"
+                    ? "warning"
+                    : "neutral"
+              }
             />
-            <Button
-              size="sm"
-              variant={dirty ? "primary" : "secondary"}
-              disabledReason={dirty ? undefined : "Nothing has been typed that is not stored."}
-              onClick={() => model.actions.setBrainPath(value.trim())}
-            >
-              Use this
-            </Button>
+            <span className="typo-data">{engineLabel(probe.id)}</span>
+            <span className="typo-caption" style={{ overflowWrap: "anywhere" }}>
+              {probe.detail}
+            </span>
           </span>
-        )}
-      </FormField>
-    </>
+          {probe.state !== "found" ? <span className="typo-caption">{remedyFor(probe)}</span> : null}
+        </div>
+      ))}
+      {chosen && chosen.state !== "found" && !compact ? (
+        <p className="typo-caption">{engineLabel(chosen.id)} is chosen and cannot run a turn yet.</p>
+      ) : null}
+    </div>
   );
 }
 
-// -- a page ------------------------------------------------------------------------------------
-
-function PagePassage({ model }: { model: SetupModel }) {
+function OpenPage({ model, compact = false }: { model: SetupModel; compact?: boolean }) {
   const [typed, setTyped] = useState("");
   const open = (raw: string) => {
     const url = normaliseUrl(raw);
@@ -298,139 +383,99 @@ function PagePassage({ model }: { model: SetupModel }) {
     model.actions.openPage(url);
     setTyped("");
   };
-
   return (
-    <>
-      <p className="passage__lead">
-        {model.tabs.length === 0
-          ? "Athena works beside a page you already use. Open the first one."
-          : `${model.tabs.length === 1 ? "One page is" : `${model.tabs.length} pages are`} open.`}
-      </p>
-      <FormField
-        label="Open your first app"
-        hint="Any site. A page that registers nothing simply offers no tools, and the generic hands still reach it."
-      >
-        {(input) => (
-          <span className="row">
-            <TextInput
-              {...input}
-              value={typed}
-              placeholder="invoicing.example.test"
-              style={{ flex: "1 1 18rem" }}
-              onChange={(e) => setTyped(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") open(typed);
-              }}
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              disabledReason={typed.trim() ? undefined : "Type an address first."}
-              onClick={() => open(typed)}
-            >
-              Open
-            </Button>
-          </span>
-        )}
-      </FormField>
-      {model.tabs.length === 0 ? (
-        <EmptyState
-          glyph="+"
-          title="No page open"
-          line="The address above opens one, and the Browser module keeps it."
+    <div className="stack" style={{ gap: 6 }}>
+      <span className="row">
+        <TextInput
+          value={typed}
+          placeholder={compact ? "Open another" : "invoicing.example.test"}
+          aria-label="Address of an app to open"
+          style={{ flex: "1 1 14rem" }}
+          onChange={(e) => setTyped(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") open(typed);
+          }}
         />
-      ) : (
-        <ul className="stack" style={{ listStyle: "none", margin: 0, padding: 0, gap: 2 }}>
+        <Button
+          variant={compact ? "secondary" : "primary"}
+          size="sm"
+          disabledReason={typed.trim() ? undefined : "Type an address first."}
+          onClick={() => open(typed)}
+        >
+          Open
+        </Button>
+      </span>
+      {model.tabs.length ? (
+        <ul className="setup-tabs">
           {model.tabs.map((tab) => (
             <li key={tab.id} className="row row--baseline">
               <StatusDot tone="success" />
-              <span className="typo-body truncate" style={{ maxWidth: "26rem" }}>
+              <span className="typo-body truncate" style={{ maxWidth: "22rem" }}>
                 {tab.title}
               </span>
               <span className="typo-caption">{tab.host}</span>
             </li>
           ))}
         </ul>
+      ) : compact ? null : (
+        <p className="typo-caption">
+          Any site. A page that registers nothing simply offers no tools, and the generic hands
+          still reach it.
+        </p>
       )}
-    </>
+    </div>
   );
 }
 
-// -- the microphone ----------------------------------------------------------------------------
-
-/**
- * One button, asked once. The permission prompt is the point: granted here, it never interrupts
- * the spoken act. The device's label or the refusal is shown verbatim, and nothing here is
- * required — a machine with no microphone types its turns.
- */
-function MicPassage({ model }: { model: SetupModel }) {
-  const lead =
-    model.mic === "granted"
-      ? "The microphone answered. Hold the key in the bar, or Ctrl+Space, to talk."
-      : model.mic === "denied"
-        ? "The webview refused the microphone; push-to-talk stays off until it is allowed."
-        : model.mic === "unsupported"
-          ? "No microphone was found; every turn can still be typed."
-          : "Push-to-talk needs the microphone once; asking now keeps the prompt out of a turn.";
+function MicControl({ model, compact = false }: { model: SetupModel; compact?: boolean }) {
   return (
-    <>
-      <p className="passage__lead">{lead}</p>
-      <span className="row">
-        <Button
-          size="sm"
-          variant={model.mic === "granted" ? "secondary" : "primary"}
-          onClick={model.actions.checkMic}
-        >
-          {model.mic === "unknown" ? "Check the microphone" : "Check again"}
-        </Button>
-        {model.micDetail ? (
-          <span className="typo-caption" style={{ overflowWrap: "anywhere" }}>
-            {model.micDetail}
-          </span>
-        ) : null}
-      </span>
-    </>
+    <span className="row">
+      <Button
+        size="sm"
+        variant={model.mic === "granted" ? "secondary" : compact ? "secondary" : "primary"}
+        onClick={model.actions.checkMic}
+      >
+        {model.mic === "unknown" ? "Check the microphone" : "Check again"}
+      </Button>
+      {model.micDetail ? (
+        <span className="typo-caption" style={{ overflowWrap: "anywhere" }}>
+          {model.micDetail}
+        </span>
+      ) : null}
+    </span>
   );
 }
 
-// -- the rail ----------------------------------------------------------------------------------
-
 /**
- * The five stations in short. The figure that heads them is on the title row instead, so it is
- * stated once; this card is the four words a returning reader came for.
+ * A path, committed on Enter or the button. The field is a draft until it is committed, so a
+ * half-typed directory is never written: the store is read by the daemon at start-up, and a path
+ * that exists for three keystrokes is a path Athena would have tried to use.
  */
-function InShort({
-  stations: all,
-  current,
-  onGo,
-}: {
-  stations: Station[];
-  current: StepKey;
-  onGo: (step: StepKey) => void;
-}) {
+function BrainField({ model }: { model: SetupModel }) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const value = draft ?? model.brainPath;
+  const dirty = draft !== null && draft !== model.brainPath;
   return (
-    <SectionCard title="In short">
-      <ol className="rail">
-        {all.map((station) => (
-          <li key={station.key}>
-            <button
-              type="button"
-              className="rail__row focus-ring"
-              aria-current={station.key === current ? "step" : undefined}
-              onClick={() => onGo(station.key)}
-            >
-              {/* Which standing is good news is this module's domain; the dot is not. */}
-              <StatusDot tone={STANDING_TONE[station.standing]} />
-              <span className="rail__text">
-                <span className="typo-title">{station.title}</span>
-                <span className="typo-caption" style={{ overflowWrap: "anywhere" }}>
-                  {station.summary}
-                </span>
-              </span>
-            </button>
-          </li>
-        ))}
-      </ol>
-    </SectionCard>
+    <span className="row">
+      <TextInput
+        value={value}
+        placeholder="the daemon's default"
+        aria-label="Brain directory"
+        style={{ flex: "1 1 16rem" }}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") model.actions.setBrainPath(value.trim());
+          if (e.key === "Escape") setDraft(null);
+        }}
+      />
+      <Button
+        size="sm"
+        variant={dirty ? "primary" : "secondary"}
+        disabledReason={dirty ? undefined : "Nothing has been typed that is not stored."}
+        onClick={() => model.actions.setBrainPath(value.trim())}
+      >
+        Use this
+      </Button>
+    </span>
   );
 }

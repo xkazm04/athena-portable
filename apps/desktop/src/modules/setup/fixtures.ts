@@ -1,14 +1,11 @@
 /**
- * The Setup wizard's fixtures — four view-models, no store, no shell, no daemon.
+ * The Setup module's fixtures — view-models, no store, no shell, no daemon.
  *
- * `empty` is a first launch that has answered nothing yet: no probe, no brain, no tab, and the
- * three claims still on the page. `degraded` is the one failure this surface actually has before
- * a panel exists — the daemon is not running, so the probe cannot answer and the engine passage
- * has nothing to report but the reason.
- *
- * `heavy` is not "more of the same": it is every passage saying something awkward at once, which
- * is the only way a fixture can protect a layout — a signed-out engine with a long detail, a long
- * Windows path, and eight tabs.
+ * `empty` is a first launch that has answered nothing yet: no probe, no page, the letter still
+ * to be read. `typical` is the settings list on a machine that works. `heavy` is every row saying
+ * something awkward at once — a signed-out engine, a pending restart, a long path, a refused
+ * microphone, eight tabs. `degraded` is the daemon offline, so nothing about the engine or the
+ * voice is known. `onboarding` and `settings` are the two moods by name.
  */
 import type { EngineProbe } from "@/lib/engines";
 
@@ -26,45 +23,72 @@ function tab(id: number, title: string, url: string) {
 
 function model(over: Partial<SetupSources>): SetupModel {
   return selectSetup({
-    step: "engine",
+    onboarded: true,
+    hydrated: true,
+    engine: "claude_code",
+    engineIds: ENGINE_IDS,
     probes: [
       probe("claude_code", "found", "2.1.268 (Claude Code)"),
       probe("codex", "not_found", "`codex` is not on the PATH"),
     ],
-    engine: "claude_code",
-    engineIds: ENGINE_IDS,
+    problem: null,
+    theme: "system",
     brainPath: "",
     tabs: [],
-    onboarded: false,
-    problem: null,
+    mic: "unknown",
+    micDetail: "",
+    voiceAvailable: true,
+    voiceReason: "",
+    storePath: "%APPDATA%\\com.athena.portable\\athena.sqlite",
+    daemonHealth: "ready",
+    daemonEngine: "claude_code",
     actions: INERT_ACTIONS,
     ...over,
   });
 }
 
 /** A first launch, one tick in: nothing has answered, so nothing may be asserted. */
-const empty = model({ probes: null });
-
-const typical = model({
-  step: "page",
-  brainPath: "~/athena/brain",
-  tabs: [tab(1, "Invoices — March", "https://invoicing.example.test/invoices")],
+const empty = model({
   onboarded: false,
+  hydrated: false,
+  probes: null,
+  storePath: null,
+  voiceAvailable: false,
+  daemonHealth: "starting",
+  daemonEngine: "",
+});
+
+/** The letter, on a machine where both answers are in. */
+const onboarding = model({
+  onboarded: false,
+  brainPath: "",
+  tabs: [tab(1, "Invoices — March", "https://invoicing.example.test/invoices")],
   mic: "granted",
   micDetail: "Headset Microphone (USB Audio)",
 });
 
+/** The list, on a machine that works. */
+const settings = model({
+  theme: "dark",
+  brainPath: "~/athena/brain",
+  tabs: [tab(1, "Invoices — March", "https://invoicing.example.test/invoices")],
+  mic: "granted",
+  micDetail: "Headset Microphone (USB Audio)",
+});
+
+const typical = settings;
+
 const heavy = model({
-  step: "brain",
+  engine: "codex",
+  theme: "light",
   probes: [
     probe(
       "claude_code",
       "not_logged_in",
       "claude 2.1.268 answered its version flag, and `claude auth status` reports no active session on this machine",
     ),
-    probe("codex", "found", "codex-cli 0.41.0"),
+    probe("codex", "found", "codex-cli 0.41.0 (OpenAI, signed in as a-very-long-account-name)"),
   ],
-  engine: "claude_code",
   brainPath: "C:\\Users\\a-long-account-name\\Documents\\Athena\\brains\\studio-primary\\brain",
   tabs: Array.from({ length: 8 }, (_, i) =>
     tab(
@@ -73,21 +97,35 @@ const heavy = model({
       `https://host-${i + 1}.example.test/a/path/that/is/not/short?page=${i + 1}`,
     ),
   ),
-  onboarded: true,
   mic: "denied",
   micDetail:
     "NotAllowedError: Permission denied by system — the operating system's privacy setting for microphone access is off for this application",
+  voiceAvailable: false,
+  voiceReason: "the daemon was started without a voice backend",
+  daemonEngine: "claude_code",
+  storePath:
+    "C:\\Users\\a-long-account-name\\AppData\\Roaming\\com.athena.portable\\stores\\athena.sqlite",
 });
 
-/** The daemon is not running, so the probe cannot answer. Everything else still reads. */
+/** The daemon never came up, so the probe never answered. Everything else still reads. */
 const degraded = model({
   probes: null,
   problem: "daemon_offline",
   brainPath: "~/athena/brain",
   tabs: [tab(1, "Invoices — March", "https://invoicing.example.test/invoices")],
-  onboarded: true,
+  voiceAvailable: false,
+  voiceReason: "the daemon is not running yet",
+  daemonHealth: "failed",
+  daemonEngine: "",
 });
 
-export const fixtures: Record<string, SetupModel> = { empty, typical, heavy, degraded };
+export const fixtures: Record<string, SetupModel> = {
+  empty,
+  typical,
+  heavy,
+  degraded,
+  onboarding,
+  settings,
+};
 
-export const fixtureIds = ["empty", "typical", "heavy", "degraded"] as const;
+export const fixtureIds = ["empty", "typical", "heavy", "degraded", "onboarding", "settings"] as const;

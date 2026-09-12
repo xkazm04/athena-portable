@@ -1,0 +1,130 @@
+/* The Setup module: a letter on the first run, a list after it.
+ *
+ * Every colour is a token and every gap is one of the density variables; nothing here sets a
+ * width the page shell does not already bound. The letter keeps a reading measure (40rem); the
+ * list is wider (60rem) because its rows put a fact and a control side by side. */
+
+.setup-letter {
+  display: flex;
+  width: 100%;
+  max-width: 40rem;
+  flex-direction: column;
+  gap: calc(var(--density-gap) * 1.5);
+  margin: 0 auto;
+  padding-top: calc(var(--density-gap) * 2);
+}
+
+.setup-letter__head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.setup-claims {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-passage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: var(--density-pad);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.setup-passage__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.setup-letter__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-top: var(--density-pad);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* -- the list ------------------------------------------------------------------------------- */
+
+.setup-list {
+  display: flex;
+  width: 100%;
+  max-width: 60rem;
+  flex-direction: column;
+}
+
+.setup-row {
+  display: grid;
+  gap: 8px var(--density-gap);
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--density-pad-sm) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+@media (min-width: 48rem) {
+  .setup-row {
+    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.setup-row__fact {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.setup-row__control {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setup-row__stack {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setup-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--status-warning);
+  border-radius: var(--radius-interactive);
+  background: var(--card-bg);
+}
+
+.setup-probe {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.setup-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-path {
+  overflow-wrap: anywhere;
+}
