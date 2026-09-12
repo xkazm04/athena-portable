@@ -20,7 +20,10 @@
  * comparison — it is three charts.
  */
 .bd-strip .bd-slide-inner {
-  grid-template-rows: auto auto auto 1fr;
+  /* No `1fr` anywhere: the strip's claim is a SHORTER card, so its content stacks at the top of
+     the frame the rail gives every card and the room it does not need is visibly unused. A
+     stretch row would have spent that room on a gap and hidden the saving. */
+  grid-template-rows: repeat(4, auto);
   align-content: start;
 }
 
@@ -133,13 +136,17 @@
   padding-inline: var(--bd-s4);
 }
 
+/* Breaks between words, never inside one. `overflow-wrap: anywhere` turned "Written
+   communication" into "Written commun / ication" in a 64px column, which is a worse failure than
+   the overflow it was preventing. Hyphens do the honest version when a single word is genuinely
+   too long for its segment. */
 .bd-strip-legend span {
   flex: var(--w) 1 0;
   min-inline-size: 0;
   font-size: var(--bd-label);
   line-height: var(--bd-leading-snug);
   color: var(--bd-ink-3);
-  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 /* ----------------------------------------------------------- B: the ledger */
