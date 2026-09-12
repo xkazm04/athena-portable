@@ -978,7 +978,17 @@ const ACTIONS: Record<string, () => Promise<void>> = {
     await strip.reattach();
     // No presence line at all: nothing here told Athena anything, so there is nothing to report
     // and a green dot claiming a connection would be the one lie the beat must not tell.
-    await strip.set({ app: "kestrel labs · outside", presence: "", command: "", tool: "", args: "", say: null });
+    // The inventory rides in the app label rather than the call line, so it stands for the whole
+    // beat: what Athena has here is the thing the beat is about, and a tool line would scroll it
+    // away the moment she used one of them.
+    await strip.set({
+      app: "kestrel labs · outside · 8 hands · all gated",
+      presence: "",
+      command: "",
+      tool: "",
+      args: "",
+      say: null,
+    });
     const portal = new Surface(OUTSIDE, page, approvals, ledger);
     await portal.settle();
     st.portal = portal;
@@ -987,7 +997,7 @@ const ACTIONS: Record<string, () => Promise<void>> = {
     // two of them reads whose own flags say AUTO. The strip prints the gate's answer, not a claim.
     assertHands(portal);
     expect(portal.manifest().tools.length, "the manifest is exactly the hands").toBe(8);
-    await strip.call("list", `0 tools offered · 8 hands · all gated`);
+    await strip.call("list", "0 tools offered, 8 hands — every one GATED on first sight");
     await ask(
       "page_find",
       `Kestrel's portal has never heard of me. May I look for ${STUDIO.name}'s row on it?`,
@@ -1026,7 +1036,9 @@ const ACTIONS: Record<string, () => Promise<void>> = {
     expect(settled.length, "the portal names exactly one of the two retainers").toBe(1);
     expect(candidate.number(settled[0]!), "the invoice the line names").toBe("LB-2026-0901");
     expect(candidate.invoiceId(settled[0]!)).toBe("inv_0901");
-    await page.waitForTimeout(700);
+    // The evidence is held on screen before the take leaves it: the line is about what this page
+    // says, and a page that flashed past would be a claim the audience has to take on trust.
+    await page.waitForTimeout(2_400);
     st.books = await openApp(LEDGERBOX);
     const books = st.books;
     await act(books, "open_item", { id: candidate.invoiceId(settled[0]!) });

@@ -193,7 +193,7 @@ async function main() {
     if (!args.dry) await writeFile(srtPath, `${srt}\n`);
     let filterPath = path.relative(process.cwd(), srtPath);
     if (filterPath.startsWith('..') || path.isAbsolute(filterPath)) filterPath = srtPath;
-    chains.push(`[0:v]subtitles=${escapeForFilter(filterPath)}:force_style='FontSize=16,MarginV=28,Outline=1,Shadow=0'[vout]`);
+    chains.push(`[0:v]subtitles=${escapeForFilter(filterPath)}:force_style='FontSize=7,MarginV=16,Outline=1,Shadow=0'[vout]`);
     videoLabel = '[vout]';
   }
 
