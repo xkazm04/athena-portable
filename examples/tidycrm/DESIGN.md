@@ -120,7 +120,7 @@ exemption from it — the role still means one thing and is still spent on nothi
 **Adopted:** the `Inter` ban. **Rejected:** the blanket serif ban. The skill's own escape hatch is the
 correct reading — it permits a chosen serif and bans only the default browser stacks (`Times`,
 `Georgia`, `Garamond`). A check print has two voices and the second one is a serif: what the office
-*printed* is drafted sans caps, what a person *wrote* in the margin is a note face.
+*printed* is a drafted sans, what a person *wrote* in the margin is a note face.
 
 | Direction | Printed (display / UI) | Written (margin notes) | Figures |
 |---|---|---|---|
@@ -140,6 +140,17 @@ All three faces are self-hosted through `next/font` at the module scope of the p
 - Headline sizes use `clamp()` so they scale continuously rather than stepping at breakpoints, and
   every fluid term is on `cqi`, never `vw` — an agent sidebar shrinks the body without changing the
   viewport, so a viewport-relative clamp reports a width this surface does not have.
+- **One micro label, and it is not set in caps.** Every small word on the sheet — the word under a
+  figure, a band head, a column name, the two sides of an identity pair — is one style:
+  `--bk-label-size` (13px), sentence case, `--bk-track-label`, `--bk-label-ink`. Tracked-out
+  uppercase at 12px in `--bk-graphite-3` was the sheet's default label and it cost legibility on
+  every word in return for a drafting flavour the figure face and the rules already carry; the ink
+  was also 3.8:1, under AA. `--bk-graphite-3` and `--bk-graphite-4` now carry rules, marks and
+  disabled controls only — text stops at `--bk-graphite-2`.
+- **One figure scale, at all three depths.** A figure and its label are `Stat`
+  (`components/blocks/Stat.tsx`), at `--bk-text-md`, wherever it stands: the mast, the zone key,
+  the block card, the dossier verdict. The arrangement changes between them; the scale does not.
+  Four sizes of one read-out said the three depths were three instruments.
 - **Every figure is monospace and tabular.** `taste-design` §3 makes this conditional on a Density
   dial; `blocks` does not carry one and takes the rule unconditionally, because a survey whose
   columns of counts do not align is not a survey.

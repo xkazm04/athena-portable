@@ -50,3 +50,14 @@
   container-name: bk-dossier;
 }
 
+
+/*
+ * The card takes focus when it opens (Dossier.tsx), so that nothing is focused OUTSIDE the trap —
+ * and a programmatic focus must not paint. Without this the whole dossier arrived inside a
+ * redline frame, which was the close button's double frame moved rather than removed. Every
+ * control inside it keeps its own ring; this suppresses only the container's.
+ */
+.bk-dossier:focus,
+.bk-dossier:focus-visible {
+  outline: none;
+}

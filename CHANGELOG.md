@@ -19,6 +19,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `chore(examples): one React types version, and the review cameras` — the four example packages move to the React types the desktop package pins, so react-three-fiber augments the copy Tidycrm compiles against; per-app screenshot scripts under `examples/journey/scripts/`.
 - `feat(examples): ledgerbox readability pass` — a status component for presence, 12px floor on labels and legend, labelled view toggles moved beside the level rail, AUTO and GATED action bands, a scrolling aside at 1024.
 - `feat(examples): hirelane readability pass` — the carousel overflow fixed, the handwriting face removed, one 12px sentence-case label style, avatar clusters with an overflow count, a live headline and presence line, a capability pill with a disclosure instead of raw tool names, AUTO and GATED as one class component; brief and law amended.
+- `feat(examples): tidycrm readability pass` — one 13px sentence-case label style and one stat scale at all three depths, zone and block cards led by the name, deviations named as deviations, chips for the breakdown and the zone jump, a presence line, AUTO and GATED as one band component.
 
 ## P5 — MVP checkpoint (done)
 

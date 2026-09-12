@@ -1,8 +1,22 @@
 /* ------------------------------------------------------------- responsive */
 
 @container bk-sheet (max-width: 62rem) {
-  .bk-coverage {
+  .bk-stats {
     gap: var(--bk-s4);
+  }
+
+  /*
+   * The presence line stops sharing a row with the headline and goes ABOVE the plate's name.
+   * Under it, it sat between the headline and the six figures — a sentence about the agent in
+   * the middle of the sheet's own read-out, which is the one place it does not belong.
+   */
+  .bk-head-top {
+    display: grid;
+  }
+
+  .bk-presence {
+    order: -1;
+    max-inline-size: none;
   }
 
   .bk-grid-head {
@@ -28,19 +42,21 @@
    * A fixed first track also puts the six figures in one column, which is the
    * only way a stack of counts compares.
    */
-  .bk-coverage {
+  .bk-stats {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--bk-s2);
   }
 
-  .bk-coverage div {
+  /* Two tracks and no stacking: the figure in a fixed first column puts the six of them in one
+     column, which is the only way a stack of counts compares. */
+  .bk-stats > .bk-stat {
     grid-template-columns: 4.5rem minmax(0, 1fr);
     align-items: baseline;
     gap: var(--bk-s3);
   }
 
-  .bk-coverage b {
+  .bk-stats > .bk-stat > b {
     font-size: var(--bk-text-sm);
   }
 

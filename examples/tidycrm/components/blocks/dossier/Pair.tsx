@@ -33,7 +33,7 @@ export function DossierPair({
               <button
                 key={p.id}
                 type="button"
-                className="bk-zone-chip"
+                className="bk-chip bk-zone-chip"
                 aria-pressed={p.id === pair.id}
                 onClick={() => onPickPair(p.id)}
               >

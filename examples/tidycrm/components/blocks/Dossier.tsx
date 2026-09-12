@@ -44,7 +44,17 @@ export function Dossier({ table, onClose }: { table: BkTable; onClose: () => voi
   useEffect(() => {
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    closeRef.current?.focus();
+    /*
+     * The CARD takes focus, not the close button.
+     *
+     * Focusing the close button on arrival was correct for the keyboard and wrong on screen: the
+     * focus ring is a three-pixel redline frame, so every dossier opened wearing a heavy red box
+     * around its one destructive-looking control, which is the loudest thing on a sheet whose red
+     * means "deviates from the specification". The dialog itself is the standard target anyway —
+     * a screen reader reads the card, Tab then lands on close, and the ring appears when someone
+     * has actually reached for it.
+     */
+    sheetRef.current?.focus();
     return () => {
       document.body.style.overflow = previous;
     };
@@ -92,6 +102,7 @@ export function Dossier({ table, onClose }: { table: BkTable; onClose: () => voi
         aria-modal="true"
         aria-labelledby="bk-dossier-title"
         ref={sheetRef}
+        tabIndex={-1}
         onKeyDown={onKeyDown}
       >
         <DossierHead table={table} closeRef={closeRef} onClose={onClose} />

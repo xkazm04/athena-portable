@@ -106,6 +106,35 @@
   --bk-track-caps: 0.14em;
   --bk-track-caps-wide: 0.2em;
 
+  /*
+   * THE ONE LABEL, and the review that produced it.
+   *
+   * Every figure on this sheet used to carry a tracked-out all-caps micro label under it, at
+   * 12px, at --bk-track-caps, in --bk-graphite-3: "OF RECORDS CHECKED", "ROWS CHANGED",
+   * "ERRORS", "THE FOUR CHECKS ON THIS BLOCK", "SURVIVES / FOLDED IN". Six of those on the mast
+   * alone, and the same device again on every zone key, every block card and every region of the
+   * dossier. Two things were wrong with it and neither is a matter of taste:
+   *
+   *   · 0.14em of tracking on uppercase at 12px is a legibility cost paid on EVERY word on the
+   *     sheet, in return for a drafting-office flavour that the figure face, the rules and the
+   *     title block already carry on their own;
+   *   · --bk-graphite-3 on --bk-sheet is 3.8:1, which is not AA for text this size, and it was
+   *     the colour of nearly every word that was not a figure.
+   *
+   * So there is ONE label style now, declared here and used by `.bk-lettering` and by the label
+   * half of `.bk-stat`: sentence case, 13px, all but untracked, and set in --bk-graphite-2 at
+   * 7.5:1. Uppercase survives nowhere on the sheet. --bk-track-caps is kept because the tokens
+   * are law's ramp and removing a step of a scale is a different decision from not using it.
+   */
+  --bk-label-size: 0.8125rem;
+  --bk-track-label: 0.005em;
+
+  /*
+   * THE INK FLOOR FOR TEXT. --bk-graphite-3 (3.8:1) and --bk-graphite-4 (2.2:1) are rule, mark
+   * and disabled-control tones from here on; anything a reader reads stops at --bk-graphite-2.
+   */
+  --bk-label-ink: var(--bk-graphite-2);
+
   /* --- Motion. law's durations and easings verbatim. --- */
   --bk-dur-1: 90ms;
   --bk-dur-2: 160ms;

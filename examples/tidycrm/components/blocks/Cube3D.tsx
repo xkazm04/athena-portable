@@ -28,6 +28,7 @@
 import { Canvas } from "@react-three/fiber";
 import { useMemo, useState, type CSSProperties } from "react";
 
+import { Stat, Stats } from "./Stat";
 import { outstandingTone, ZONE_QUADRANT, type BkSheet } from "./model";
 import { Particles } from "./cube/Particles";
 import { Quadrant } from "./cube/Quadrant";
@@ -137,30 +138,29 @@ export function Cube3D({
               onBlur={() => setHovered(null)}
               onClick={() => onOpen(zone.id)}
             >
+              {/* The name leads. The quarter index is an index, so it sits beside the name at
+                  lettering weight rather than competing with it, and the span it covers is the
+                  quiet line under it. */}
               <span className="bk-zone-key-top">
                 <QuarterGlyph id={zone.id} />
-                <span className="bk-zone-key-id">ZONE {zone.id}</span>
+                <span className="bk-zone-key-name">Zone {zone.id}</span>
               </span>
               <span className="bk-zone-key-span">{zone.span}</span>
 
-              <span className="bk-zone-key-figures">
-                <span>
-                  <b>{zone.tables.length}</b>
-                  <i>blocks</i>
-                </span>
-                <span>
-                  <b>{zone.records}</b>
-                  <i>records</i>
-                </span>
-                <span data-tone={outstandingTone(zone.deviationTotal)}>
-                  <b>{zone.deviationTotal}</b>
-                  <i>outstanding</i>
-                </span>
-                <span data-tone={zone.attention > 0 ? "goldline" : undefined}>
-                  <b>{zone.attention}</b>
-                  <i>awaiting</i>
-                </span>
-              </span>
+              <Stats className="bk-stats-pair bk-zone-key-figures">
+                <Stat value={zone.tables.length} label="blocks" />
+                <Stat value={zone.records} label="records" />
+                <Stat
+                  value={zone.deviationTotal}
+                  label="deviations"
+                  tone={outstandingTone(zone.deviationTotal)}
+                />
+                <Stat
+                  value={zone.attention}
+                  label="pairs awaiting"
+                  tone={zone.attention > 0 ? "goldline" : undefined}
+                />
+              </Stats>
 
               {/* The frontier, drawn rather than counted: how much of the
                   sheet's outstanding work stands in this zone, against the

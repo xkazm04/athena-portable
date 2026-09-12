@@ -48,34 +48,112 @@
 }
 
 
-/* The coverage read-out: the frontier, which is what a check print is for. */
-.bk-coverage {
+/*
+ * THE PRESENCE LINE. One honest sentence about whether an agent is beside the sheet, read from
+ * the page rather than printed as a caption — `components/blocks/presence.ts`. It sits at the end
+ * of the head's top row, opposite the headline, which is where Ledgerbox puts its own.
+ */
+.bk-presence {
+  margin: 0;
+  align-self: start;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--bk-s2);
+  max-inline-size: 40ch;
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-label-size);
+  letter-spacing: var(--bk-track-label);
+  line-height: 1.45;
+  color: var(--bk-label-ink);
+  text-wrap: balance;
+}
+
+.bk-presence::before {
+  content: "";
+  flex: none;
+  align-self: start;
+  margin-block-start: 0.32em;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 999px;
+  border: var(--bk-rule-1) solid currentColor;
+  background: transparent;
+}
+
+.bk-presence[data-on="true"] {
+  color: var(--bk-graphite);
+}
+
+.bk-presence[data-on="true"]::before {
+  background: currentColor;
+}
+
+/*
+ * THE FIGURE, AND ITS LABEL — the one stat, at one scale, everywhere.
+ *
+ * `.bk-stats` is the ARRANGEMENT and `.bk-stat` is the thing arranged. There were four
+ * treatments of this before: the mast at --bk-text-md, the zone key at --bk-text-sm, the L1 cell
+ * at --bk-text-md again but with its own label rule, the dossier verdict at --bk-text-lg. The
+ * three depths are supposed to read as one instrument asking one question of a smaller and
+ * smaller part of the sheet, and four sizes said the opposite.
+ */
+.bk-stats {
   display: flex;
   flex-wrap: wrap;
+  align-items: start;
   gap: var(--bk-s5);
 }
 
-.bk-coverage div {
+/* Two columns, for the arrangements that are a card rather than a row: the zone keys in a 20rem
+   rail. Fixed tracks, never a wrapping flex — with flex, zone D's shorter numbers folded two
+   lines into one and the four keys stopped reading as a column of the same thing. */
+.bk-stats-pair {
   display: grid;
-  gap: var(--bk-s1);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bk-s3);
 }
 
-.bk-coverage b {
+.bk-stat {
+  display: grid;
+  gap: var(--bk-s0);
+  align-content: start;
+  min-inline-size: 0;
+}
+
+/* One line-height and one size, so every figure in a row sits on one baseline whatever its
+   arrangement. */
+.bk-stat > b {
   font-family: var(--bk-font-fig);
   font-size: var(--bk-text-md);
   font-weight: 500;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: var(--bk-leading-snug);
+  color: var(--bk-graphite);
 }
 
-.bk-coverage b[data-tone="redline"] {
+.bk-stat > span {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-label-size);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-label);
+  line-height: 1.3;
+  color: var(--bk-label-ink);
+}
+
+.bk-stat[data-tone="redline"] > b {
   color: var(--bk-redline);
 }
 
-.bk-coverage b[data-tone="goldline"] {
+.bk-stat[data-tone="goldline"] > b {
   color: var(--bk-goldline);
 }
 
-.bk-coverage b[data-tone="greenline"] {
+.bk-stat[data-tone="greenline"] > b {
   color: var(--bk-greenline);
 }
 
+/* A nought that counts nothing. Set back, but never below the rule ink it would then be read
+   against — --bk-graphite-3 is the floor for a figure, and it is not carrying meaning here. */
+.bk-stat[data-quiet="true"] > b {
+  color: var(--bk-graphite-3);
+}

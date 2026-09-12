@@ -24,7 +24,9 @@
   background: none;
   border: var(--bk-rule-1) solid transparent;
   border-radius: var(--bk-radius-0);
-  color: var(--bk-graphite-4);
+  /* A rung nobody has reached is a disabled control, so it may sit under the AA floor — but not
+     at --bk-graphite-4, which is 2.2:1 and was not readable as a word at all. */
+  color: var(--bk-graphite-3);
   /* One step under the body's reading size: a control, and still read. */
   font-size: var(--bk-text-sm);
   cursor: pointer;
@@ -50,3 +52,53 @@
   letter-spacing: var(--bk-track-wide);
 }
 
+
+
+/*
+ * THE CHIP — one small standing fact in a box, and the only shape this direction gives one.
+ *
+ * Three places make chips: the breakdown under the bar, the zone strip at L1, and the pair picker
+ * in the dossier. They were three different things — a bare monospace line, a bordered button, and
+ * a bordered button in another face. The box is declared once here; what follows it in
+ * level1/l1-grid.css adds only what a chip that is also a 44px TARGET needs.
+ */
+.bk-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--bk-s2);
+  padding: var(--bk-s2) var(--bk-s3);
+  background: none;
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-radius: var(--bk-radius-0);
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-xs);
+  line-height: var(--bk-leading-snug);
+  color: var(--bk-graphite-2);
+}
+
+/* The figure a chip carries, in the figure face — the same relationship the stat has. */
+.bk-chip > b {
+  font-family: var(--bk-font-fig);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--bk-graphite);
+}
+
+.bk-chip > b[data-tone="redline"] {
+  color: var(--bk-redline);
+}
+
+.bk-chip > b[data-tone="goldline"] {
+  color: var(--bk-goldline);
+}
+
+.bk-chip > b[data-tone="greenline"] {
+  color: var(--bk-greenline);
+}
+
+/* The breakdown. Not targets — nothing here is clickable — so no 44px floor, just the box. */
+.bk-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bk-s2);
+}

@@ -101,7 +101,9 @@
 
 .bk-quarter-box {
   fill: none;
-  stroke: var(--bk-graphite-4);
+  /* 3:1 against the sheet, which is the floor for a graphic that carries meaning; at
+     --bk-graphite-4 this index was 2.2:1 and effectively invisible. */
+  stroke: var(--bk-graphite-3);
   stroke-width: 1;
 }
 
@@ -116,71 +118,38 @@
   fill: var(--bk-graphite);
 }
 
-.bk-zone-key-id {
-  font-family: var(--bk-font-fig);
+/*
+ * THE NAME LEADS. This was `.bk-zone-key-id`, set in the figure face at --bk-text-md as
+ * `ZONE A` — a monospace code where the card's subject was standing. A zone's name IS "Zone A",
+ * so it is set as a name: the drafted face, the card's largest type, and the quarter index beside
+ * it doing the job an index does.
+ */
+.bk-zone-key-name {
+  font-family: var(--bk-font-draft);
   font-size: var(--bk-text-md);
   font-weight: 500;
-  letter-spacing: var(--bk-track-wide);
-}
-
-.bk-zone-key-span {
-  font-family: var(--bk-font-draft);
-  font-size: var(--bk-text-2xs);
-  font-weight: 600;
-  letter-spacing: var(--bk-track-caps);
-  text-transform: uppercase;
-  color: var(--bk-graphite-4);
-  margin-block-start: calc(var(--bk-s2) * -1);
-}
-
-/*
- * Four figures on fixed tracks, never a wrapping flex. With flex, zone D's
- * shorter numbers folded two lines into one and the four keys stopped being
- * readable as a column of the same thing. Two by two rather than one by four,
- * because "OUTSTANDING" set in drafted caps does not fit a quarter of a rail.
- */
-.bk-zone-key-figures {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--bk-s2) var(--bk-s3);
-}
-
-.bk-zone-key-figures span {
-  display: grid;
-  gap: 0;
-  min-inline-size: 0;
-  color: var(--bk-graphite-3);
-}
-
-.bk-zone-key-figures b {
-  font-family: var(--bk-font-fig);
-  font-size: var(--bk-text-sm);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--bk-track-tight);
   line-height: var(--bk-leading-snug);
   color: var(--bk-graphite);
 }
 
-.bk-zone-key-figures i {
+/* What the zone covers: the one quiet line under the name, in the sheet's one label style. */
+.bk-zone-key-span {
   font-family: var(--bk-font-draft);
-  font-style: normal;
-  font-size: var(--bk-text-2xs);
-  font-weight: 600;
-  letter-spacing: var(--bk-track-caps);
-  text-transform: uppercase;
-  color: var(--bk-graphite-4);
+  font-size: var(--bk-label-size);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-label);
+  line-height: 1.3;
+  color: var(--bk-label-ink);
+  margin-block-start: calc(var(--bk-s2) * -1);
 }
 
-.bk-zone-key-figures span[data-tone="redline"] b {
-  color: var(--bk-redline);
-}
-
-.bk-zone-key-figures span[data-tone="goldline"] b {
-  color: var(--bk-goldline);
-}
-
-.bk-zone-key-figures span[data-tone="greenline"] b {
-  color: var(--bk-greenline);
+/*
+ * The four figures. Arrangement only — `.bk-stats-pair` in chrome/the-sheet-head.css owns the
+ * two tracks and `.bk-stat` owns the scale, so the rail prints the same figure the mast does.
+ */
+.bk-zone-key-figures {
+  margin-block-start: var(--bk-s1);
 }
 
 /* The drawn measure: this zone's outstanding work against the worst zone's. */

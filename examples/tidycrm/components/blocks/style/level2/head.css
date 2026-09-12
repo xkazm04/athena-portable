@@ -29,6 +29,8 @@
 
 .bk-close {
   margin-inline-start: auto;
+  display: inline-grid;
+  place-items: center;
   min-inline-size: var(--bk-s7);
   min-block-size: var(--bk-s7);
   background: var(--bk-sheet);
@@ -43,49 +45,12 @@
   color: var(--bk-sheet);
 }
 
-/* The verdict: the tile's four figures restated at the size they deserve, so
-   the first line of the card is the answer rather than a heading. */
+/* The verdict: arrangement only. The figures are `.bk-stat`s at the sheet's one figure scale —
+   they used to be set a step larger here, which made the same fact look like a different fact
+   depending on which of the three depths the reader was standing at. */
 .bk-verdict {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--bk-s5);
   padding: var(--bk-s3) 0;
   border-block: var(--bk-rule-1) solid var(--bk-rule-ink);
-}
-
-.bk-verdict div {
-  display: grid;
-  gap: var(--bk-s0);
-}
-
-.bk-verdict b {
-  font-family: var(--bk-font-fig);
-  font-size: var(--bk-text-lg);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  line-height: var(--bk-leading-tight);
-  color: var(--bk-graphite);
-}
-
-.bk-verdict div[data-tone="redline"] b {
-  color: var(--bk-redline);
-}
-
-.bk-verdict div[data-tone="goldline"] b {
-  color: var(--bk-goldline);
-}
-
-.bk-verdict div[data-tone="greenline"] b {
-  color: var(--bk-greenline);
-}
-
-.bk-verdict span {
-  font-family: var(--bk-font-draft);
-  font-size: var(--bk-text-2xs);
-  font-weight: 600;
-  letter-spacing: var(--bk-track-caps);
-  text-transform: uppercase;
-  color: var(--bk-graphite-3);
 }
 
 .bk-why {

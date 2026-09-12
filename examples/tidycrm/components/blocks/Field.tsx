@@ -36,6 +36,7 @@ import {
   type BkZone,
 } from "./model";
 import { Cluster } from "./Cluster";
+import { Stat, Stats } from "./Stat";
 import { FieldHead } from "./field/Head";
 import { useLanding } from "./field/useLanding";
 
@@ -107,34 +108,36 @@ export function Field({
             </motion.span>
 
             <span className="bk-cell-body">
+              {/*
+                * The NAME leads and the ident follows it, quieter. The other way round the card
+                * opened on `BLK-04` — a code no reader is looking for — and the company it stands
+                * for came second, in the same box, at a size that had to argue with it.
+                */}
               <span className="bk-cell-head">
-                <span className="bk-tile-ident">{table.ident}</span>
                 <motion.span
                   layoutId={settled ? `table-name-${table.ident}` : undefined}
                   className="bk-tile-name"
                 >
                   {table.name}
                 </motion.span>
+                <span className="bk-tile-ident">{table.ident}</span>
               </span>
 
-              <span className="bk-tile-figures">
-                <span className="bk-tile-fig">
-                  <b>{table.records}</b>
-                  <span>rows</span>
-                </span>
-                <span className="bk-tile-fig" data-zero={table.changed === 0}>
-                  <b>{table.changed}</b>
-                  <span>changed</span>
-                </span>
-                <span
-                  className="bk-tile-fig"
-                  data-tone={table.deviationTotal > 0 ? "redline" : undefined}
-                  data-zero={table.deviationTotal === 0}
-                >
-                  <b>{table.deviationTotal}</b>
-                  <span>errors</span>
-                </span>
-              </span>
+              {/*
+                * `deviations`, not `errors`. Nothing on this sheet is an error: a record deviates
+                * from a specification, and that is the word the plate, the zone head and the
+                * dossier all use for the same figure.
+                */}
+              <Stats className="bk-tile-figures">
+                <Stat value={table.records} label="rows" />
+                <Stat value={table.changed} label="changed" quiet={table.changed === 0} />
+                <Stat
+                  value={table.deviationTotal}
+                  label="deviations"
+                  tone={table.deviationTotal > 0 ? "redline" : undefined}
+                  quiet={table.deviationTotal === 0}
+                />
+              </Stats>
             </span>
           </motion.button>
         ))}

@@ -32,8 +32,8 @@
 }
 
 .bk-root :where(button, select, input, a, [tabindex]):focus-visible {
-  outline: var(--bk-rule-3) solid var(--bk-redline);
-  outline-offset: var(--bk-s1);
+  outline: var(--bk-rule-2) solid var(--bk-redline);
+  outline-offset: var(--bk-s0);
 }
 
 /*
@@ -103,18 +103,26 @@
   scrollbar-color: var(--bk-graphite-3) transparent;
 }
 
-/* Drafted lettering. Uppercase never appears above --bk-text-2xs. */
+/*
+ * Drafted lettering: THE label style, and the only one on the sheet.
+ *
+ * Sentence case, 13px, untracked, --bk-graphite-2. See the note on --bk-label-size in
+ * base/tokens.css for what this replaced and why. Everything that used to letter itself — the
+ * stat labels, the band heads, the side labels of the identity pair, the table's column names —
+ * either carries this class or takes its three values from the same tokens.
+ */
 .bk-lettering {
   margin: 0;
   font-family: var(--bk-font-draft);
-  font-size: var(--bk-text-2xs);
-  font-weight: 600;
-  letter-spacing: var(--bk-track-caps);
-  text-transform: uppercase;
-  color: var(--bk-graphite-3);
+  font-size: var(--bk-label-size);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-label);
+  line-height: 1.35;
+  color: var(--bk-label-ink);
 }
 
 .bk-lettering[data-ink="1"] {
+  font-weight: 600;
   color: var(--bk-graphite);
 }
 

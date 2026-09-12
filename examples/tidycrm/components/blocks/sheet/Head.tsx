@@ -1,17 +1,26 @@
 "use client";
 
 /**
- * The sheet head: what this print is, and the six figures that summarise it.
+ * The sheet head: what this print is, whether an agent is beside it, and the six figures that
+ * summarise it.
  *
- * A colour is a claim, so a zero here is set in graphite whatever it counts. A
- * green nought read as "all clear" when it meant "none", which is the opposite
- * of the truth on a sheet whose whole subject is how much has not been checked.
+ * A colour is a claim, so a zero here is set in graphite whatever it counts. A green nought read
+ * as "all clear" when it meant "none", which is the opposite of the truth on a sheet whose whole
+ * subject is how much has not been checked.
+ *
+ * THE SIX FIGURES ARE `Stat`s, like every other figure in the direction. They used to be this
+ * file's own markup at this file's own size, which is how the plate, the zone head and the block
+ * card ended up printing one idea three ways.
  */
 import { STUDIO } from "@athena/demo-kit/seed";
 
-import type { BkSheet } from "../model";
+import { Stat, Stats } from "../Stat";
+import { presenceLine, useAthenaPresence } from "../presence";
+import { outstandingTone, type BkSheet } from "../model";
 
 export function SheetHead({ sheet }: { sheet: BkSheet }) {
+  const presence = useAthenaPresence();
+
   return (
     <header className="bk-head">
       <div className="bk-head-top">
@@ -25,42 +34,34 @@ export function SheetHead({ sheet }: { sheet: BkSheet }) {
             {sheet.tableCount} blocks, {sheet.records} records, read at three depths
           </h1>
         </div>
+        {/* A reading, not a caption: `presence.ts` looks for the surface's own injected bridge and
+            counts the registrations actually on the page. */}
+        <p className="bk-presence" data-on={presence.bridged}>
+          {presenceLine(presence)}
+        </p>
       </div>
-      <div className="bk-coverage">
-        <div>
-          <b className="bk-fig">{Math.round(sheet.coverage * 100)}%</b>
-          <span className="bk-lettering">of records checked</span>
-        </div>
-        <div>
-          {/* A colour is a claim. A zero has no claim to make, so it is set
-              in graphite: a green 0 read as "all clear" when it meant
-              "none". */}
-          <b className="bk-fig" data-tone={sheet.deviationTotal > 0 ? "redline" : undefined}>
-            {sheet.deviationTotal}
-          </b>
-          <span className="bk-lettering">deviations outstanding</span>
-        </div>
-        <div>
-          <b className="bk-fig" data-tone={sheet.unadjudicated > 0 ? "goldline" : undefined}>
-            {sheet.unadjudicated}
-          </b>
-          <span className="bk-lettering">pairs awaiting a person</span>
-        </div>
-        <div>
-          <b className="bk-fig" data-tone={sheet.clearTables > 0 ? "greenline" : undefined}>
-            {sheet.clearTables}
-          </b>
-          <span className="bk-lettering">blocks fully checked</span>
-        </div>
-        <div>
-          <b className="bk-fig">{sheet.changed}</b>
-          <span className="bk-lettering">rows changed so far</span>
-        </div>
-        <div>
-          <b className="bk-fig">REV {sheet.revision}</b>
-          <span className="bk-lettering">of this print</span>
-        </div>
-      </div>
+      <Stats className="bk-mast-figures">
+        <Stat value={`${Math.round(sheet.coverage * 100)}%`} label="of records checked" />
+        {/* A colour is a claim. A zero has no claim to make, so it is set in graphite: a green 0
+            read as "all clear" when it meant "none". */}
+        <Stat
+          value={sheet.deviationTotal}
+          label="deviations outstanding"
+          tone={outstandingTone(sheet.deviationTotal)}
+        />
+        <Stat
+          value={sheet.unadjudicated}
+          label="pairs awaiting a person"
+          tone={sheet.unadjudicated > 0 ? "goldline" : undefined}
+        />
+        <Stat
+          value={sheet.clearTables}
+          label="blocks fully checked"
+          tone={sheet.clearTables > 0 ? "greenline" : undefined}
+        />
+        <Stat value={sheet.changed} label="rows changed so far" />
+        <Stat value={`Rev ${sheet.revision}`} label="of this print" />
+      </Stats>
     </header>
   );
 }

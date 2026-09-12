@@ -67,7 +67,37 @@
   border-block-start: var(--bk-rule-3) solid var(--bk-graphite);
 }
 
-.bk-title-block .bk-lettering {
+/*
+ * THE TWO CLASS BANDS, which are one component drawn on two grounds.
+ *
+ * AUTO and GATED are both `Band` now — the same ruled head that titles every region of the body
+ * above — so the reader meets one heading device on this card rather than a band in the body and
+ * a stray line of lettering at each foot. What separates the classes is the GROUND: the auto bar
+ * is on the print's own stock, the gate is the inverted title block, and greyscaling the page
+ * leaves that difference untouched.
+ */
+.bk-foot-bar > .bk-band-head,
+.bk-title-block > .bk-band-head {
+  margin-block-start: 0;
+  /* A band in the body is a section title with its clause set to the far edge, across a column
+     narrow enough for the two to stay one thought. The card is 1180px, and at that width the
+     same rule threw "every change lands in `revisions`" a thousand pixels away from the word
+     AUTO it qualifies. Here the clause follows the class name. */
+  justify-content: start;
+  gap: var(--bk-s2);
+}
+
+.bk-title-block .bk-band-head {
+  border-block-end-color: var(--bk-sheet);
+}
+
+.bk-title-block .bk-lettering,
+.bk-title-block .bk-lettering[data-ink="1"] {
+  color: var(--bk-sheet);
+}
+
+.bk-title-block .bk-band-note {
+  /* 6.9:1 on --bk-graphite: the clause is quieter than the class name, and still read. */
   color: var(--bk-graphite-4);
 }
 

@@ -37,28 +37,10 @@
   gap: var(--bk-s2);
 }
 
-/* The zone jump. A letter and the figure the choice turns on, nothing else —
-   and both of those are figures, so this one is set in the figure face. */
+/* The zone jump. A word and the figure the choice turns on: the chip from chrome/rail-and-bar.css
+   with the count in the figure face, which `.bk-chip > b` already draws. */
 .bk-zone-jump {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--bk-s2);
-  font-family: var(--bk-font-fig);
   transition: border-color var(--bk-dur-2) var(--bk-ease);
-}
-
-.bk-zone-jump b {
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--bk-graphite);
-}
-
-.bk-zone-jump b[data-tone="redline"] {
-  color: var(--bk-redline);
-}
-
-.bk-zone-jump b[data-tone="greenline"] {
-  color: var(--bk-greenline);
 }
 
 .bk-zone-jump:hover {
@@ -69,18 +51,10 @@
   border-inline-start: var(--bk-rule-3) solid var(--bk-graphite);
 }
 
+/* A chip that is also a TARGET. The box is `.bk-chip`; this is the 44px floor and the pressed
+   state, which is all a button adds to it. */
 .bk-zone-chip {
   min-block-size: var(--bk-s7);
-  padding: var(--bk-s2) var(--bk-s3);
-  background: none;
-  border: var(--bk-rule-1) solid var(--bk-rule-ink);
-  border-radius: var(--bk-radius-0);
-  /* The drafted face, because a chip carries a phrase as often as a code. The
-     figure faces live on `.bk-zone-jump` below, where the content really is an
-     index and a count. */
-  font-family: var(--bk-font-draft);
-  font-size: var(--bk-text-xs);
-  color: var(--bk-graphite-2);
   cursor: pointer;
 }
 
@@ -89,26 +63,11 @@
   color: var(--bk-graphite);
 }
 
+/* A code, standing beside the name it belongs to rather than above it. Quieter than the name by
+   size and face; not by an ink that stops being readable. */
 .bk-ident {
   font-family: var(--bk-font-fig);
   font-size: var(--bk-text-2xs);
   letter-spacing: var(--bk-track-wide);
-  color: var(--bk-graphite-3);
+  color: var(--bk-graphite-2);
 }
-
-.bk-marks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--bk-s2);
-  font-family: var(--bk-font-fig);
-  font-size: var(--bk-text-2xs);
-}
-
-.bk-mark {
-  color: var(--bk-redline);
-}
-
-.bk-mark[data-kind="duplicate"] {
-  color: var(--bk-goldline);
-}
-

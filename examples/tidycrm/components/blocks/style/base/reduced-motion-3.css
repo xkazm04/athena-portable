@@ -101,57 +101,33 @@
   min-inline-size: 0;
 }
 
-.bk-tile-ident {
-  font-family: var(--bk-font-fig);
-  font-size: var(--bk-text-2xs);
-  letter-spacing: var(--bk-track-wide);
-  color: var(--bk-graphite-3);
-}
-
+/* The name leads the card; the code follows it. Order is in the markup (Field.tsx) — what is
+   here is only that neither may push the other out of the cell. */
 .bk-tile-name {
   font-size: var(--bk-text-md);
   font-weight: 500;
   letter-spacing: var(--bk-track-tight);
+  line-height: var(--bk-leading-snug);
   color: var(--bk-graphite);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.bk-tile-figures {
-  display: flex;
-  gap: var(--bk-s4);
-}
-
-.bk-tile-fig {
-  display: grid;
-  gap: 0;
-}
-
-.bk-tile-fig b {
+.bk-tile-ident {
   font-family: var(--bk-font-fig);
-  font-size: var(--bk-text-md);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  line-height: var(--bk-leading-snug);
-  color: var(--bk-graphite);
-}
-
-.bk-tile-fig span {
-  font-family: var(--bk-font-draft);
   font-size: var(--bk-text-2xs);
-  font-weight: 600;
-  letter-spacing: var(--bk-track-caps);
-  text-transform: uppercase;
-  color: var(--bk-graphite-3);
+  letter-spacing: var(--bk-track-wide);
+  line-height: 1.3;
+  color: var(--bk-graphite-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.bk-tile-fig[data-tone="redline"] b {
-  color: var(--bk-redline);
-}
-
-.bk-tile-fig[data-zero="true"] b {
-  color: var(--bk-graphite-4);
+/* Arrangement only: three figures in a row, on one baseline, at the one stat scale. */
+.bk-tile-figures {
+  gap: var(--bk-s4);
 }
 
 /* ============================================================ responsive */

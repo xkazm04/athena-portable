@@ -11,6 +11,7 @@ import { motion } from "motion/react";
 import type { RefObject } from "react";
 
 import { Cluster } from "../Cluster";
+import { Stat, Stats } from "../Stat";
 import { outstandingTone, type BkTable } from "../model";
 
 export function DossierHead({
@@ -29,7 +30,8 @@ export function DossierHead({
         <motion.span layoutId={`cluster-${table.ident}`} className="bk-dossier-cluster">
           <Cluster marks={table.marks} />
         </motion.span>
-        <span className="bk-ident">{table.ident}</span>
+        {/* The name leads here too, the way it does on the cell it grew out of; the block code
+            and the domain are the quiet identifiers that follow it. */}
         <motion.h2
           layoutId={`table-name-${table.ident}`}
           className="bk-dossier-title"
@@ -37,7 +39,8 @@ export function DossierHead({
         >
           {table.name}
         </motion.h2>
-        <span className="bk-lettering">{table.domain}</span>
+        <span className="bk-ident">{table.ident}</span>
+        <span className="bk-ident">{table.domain}</span>
         <button
           type="button"
           className="bk-close"
@@ -48,34 +51,30 @@ export function DossierHead({
           ✕
         </button>
       </div>
-      {/* The verdict, at the size the tile promised. */}
-      <div className="bk-verdict">
-        <div>
-          <b>{table.records}</b>
-          <span>total rows</span>
-        </div>
-        <div>
-          <b>{table.changed}</b>
-          <span>rows changed</span>
-        </div>
-        <div data-tone={outstandingTone(table.outstanding)}>
-          <b>{table.outstanding}</b>
-          <span>rows outstanding</span>
-        </div>
-        {/* Green is a claim that the check passed, so it is spent only on a
-            block where every record is clear. A part-checked block is a
-            figure, not a verdict. */}
-        <div data-tone={table.coverage >= 0.999 ? "greenline" : undefined}>
-          <b>{Math.round(table.coverage * 100)}%</b>
-          <span>checked</span>
-        </div>
+      {/* The verdict, in the one figure scale the plate and the cell also print in. */}
+      <Stats className="bk-verdict">
+        <Stat value={table.records} label="total rows" />
+        <Stat value={table.changed} label="rows changed" quiet={table.changed === 0} />
+        <Stat
+          value={table.outstanding}
+          label="rows outstanding"
+          tone={outstandingTone(table.outstanding)}
+        />
+        {/* Green is a claim that the check passed, so it is spent only on a block where every
+            record is clear. A part-checked block is a figure, not a verdict. */}
+        <Stat
+          value={`${Math.round(table.coverage * 100)}%`}
+          label="checked"
+          tone={table.coverage >= 0.999 ? "greenline" : undefined}
+        />
         {table.attention ? (
-          <div data-tone="goldline">
-            <b>{table.pairs.length + table.pairsHidden}</b>
-            <span>awaiting a person</span>
-          </div>
+          <Stat
+            value={table.pairs.length + table.pairsHidden}
+            label="pairs awaiting a person"
+            tone="goldline"
+          />
         ) : null}
-      </div>
+      </Stats>
     </div>
   );
 }

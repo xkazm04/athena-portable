@@ -39,12 +39,13 @@
   min-inline-size: 0;
 }
 
+/* The two sides of the pair. A label, so it is THE label — its authority comes from the rule
+   under it and from being set in the full ink, not from being tracked out in caps. */
 .bk-side-label {
   font-family: var(--bk-font-draft);
-  font-size: var(--bk-text-2xs);
+  font-size: var(--bk-label-size);
   font-weight: 600;
-  letter-spacing: var(--bk-track-caps);
-  text-transform: uppercase;
+  letter-spacing: var(--bk-track-label);
   color: var(--bk-graphite);
   padding-block-end: var(--bk-s1);
   border-block-end: var(--bk-rule-1) solid var(--bk-graphite);
@@ -59,11 +60,10 @@
 
 .bk-field-label {
   font-family: var(--bk-font-draft);
-  font-size: var(--bk-text-2xs);
-  font-weight: 600;
-  letter-spacing: var(--bk-track-caps);
-  text-transform: uppercase;
-  color: var(--bk-graphite-3);
+  font-size: var(--bk-label-size);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-label);
+  color: var(--bk-label-ink);
 }
 
 .bk-field[data-differs="true"] {

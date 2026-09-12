@@ -11,6 +11,7 @@
  * It arrives last of the four beats, because it is the only part of this level
  * that was never inside the cube and so has nothing to arrive from.
  */
+import { Stat, Stats } from "../Stat";
 import { outstandingTone, type BkSheet, type BkZone } from "../model";
 
 export function FieldHead({
@@ -41,12 +42,12 @@ export function FieldHead({
         <button
           key={other.id}
           type="button"
-          className="bk-zone-chip bk-zone-jump"
+          className="bk-chip bk-zone-chip bk-zone-jump"
           aria-pressed={other.id === zone.id}
-          aria-label={`Zone ${other.id}, ${other.tables.length} blocks, ${other.deviationTotal} outstanding`}
+          aria-label={`Zone ${other.id}, ${other.tables.length} blocks, ${other.deviationTotal} deviations outstanding`}
           onClick={() => onOpenZone(other.id)}
         >
-          <span>ZONE {other.id}</span>
+          <span>Zone {other.id}</span>
           <b data-tone={outstandingTone(other.deviationTotal)}>
             {other.deviationTotal}
           </b>
@@ -59,34 +60,25 @@ export function FieldHead({
       * opened, which left the reader comparing twelve blocks with no idea
       * how the zone they are standing in compares to the other three.
       */}
-    <div className="bk-coverage bk-grid-verdict">
-      <div>
-        <b className="bk-fig">{zone.records}</b>
-        <span className="bk-lettering">records in this zone</span>
-      </div>
-      <div>
-        <b className="bk-fig">{Math.round(zone.coverage * 100)}%</b>
-        <span className="bk-lettering">carry nothing outstanding</span>
-      </div>
-      <div>
-        <b className="bk-fig" data-tone={outstandingTone(zone.deviationTotal)}>
-          {zone.deviationTotal}
-        </b>
-        <span className="bk-lettering">deviations outstanding</span>
-      </div>
-      <div>
-        <b className="bk-fig" data-tone={zone.attention > 0 ? "goldline" : undefined}>
-          {zone.attention}
-        </b>
-        <span className="bk-lettering">blocks awaiting a person</span>
-      </div>
-      <div>
-        <b className="bk-fig" data-tone={zone.clear > 0 ? "greenline" : undefined}>
-          {zone.clear}
-        </b>
-        <span className="bk-lettering">blocks fully checked</span>
-      </div>
-    </div>
+    <Stats className="bk-grid-verdict">
+      <Stat value={zone.records} label="records in this zone" />
+      <Stat value={`${Math.round(zone.coverage * 100)}%`} label="carry nothing outstanding" />
+      <Stat
+        value={zone.deviationTotal}
+        label="deviations outstanding"
+        tone={outstandingTone(zone.deviationTotal)}
+      />
+      <Stat
+        value={zone.attention}
+        label="blocks awaiting a person"
+        tone={zone.attention > 0 ? "goldline" : undefined}
+      />
+      <Stat
+        value={zone.clear}
+        label="blocks fully checked"
+        tone={zone.clear > 0 ? "greenline" : undefined}
+      />
+    </Stats>
   </div>
   );
 }

@@ -46,10 +46,12 @@
   margin-block-start: 0;
 }
 
+/* The clause beside a band's name. The note is prose, so it keeps the reading face — what it no
+   longer keeps is an ink that is 3.8:1 against the sheet. */
 .bk-band-note {
   font-family: var(--bk-font-note);
   font-size: var(--bk-text-xs);
-  color: var(--bk-graphite-3);
+  color: var(--bk-graphite-2);
 }
 
 /* The four checks, passed and failed. Listing both is what a check print IS:
@@ -97,7 +99,7 @@
   font-family: var(--bk-font-fig);
   font-size: var(--bk-text-2xs);
   letter-spacing: var(--bk-track-wide);
-  color: var(--bk-graphite-3);
+  color: var(--bk-graphite-2);
   white-space: nowrap;
 }
 
@@ -121,7 +123,7 @@
   font-family: var(--bk-font-fig);
   font-size: var(--bk-text-2xs);
   font-weight: 400;
-  color: var(--bk-graphite-3);
+  color: var(--bk-graphite-2);
 }
 
 .bk-spelling[data-differs="true"] {
@@ -165,12 +167,12 @@
   inset-block-start: 0;
   z-index: 1;
   background: var(--bk-vellum);
+  /* Column names are labels, so they are THE label: sentence case, 13px, --bk-graphite-2. */
   font-family: var(--bk-font-draft);
-  font-size: var(--bk-text-2xs);
+  font-size: var(--bk-label-size);
   font-weight: 600;
-  letter-spacing: var(--bk-track-caps);
-  text-transform: uppercase;
-  color: var(--bk-graphite-3);
+  letter-spacing: var(--bk-track-label);
+  color: var(--bk-graphite-2);
   border-block-end: var(--bk-rule-2) solid var(--bk-graphite);
 }
 

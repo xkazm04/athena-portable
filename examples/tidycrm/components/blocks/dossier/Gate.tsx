@@ -19,6 +19,7 @@ import {
 import { STALE_MONTHS } from "@/lib/constants";
 import { RULE_LABELS } from "@/lib/normalize";
 import type { BkPair, BkTable } from "../model";
+import { Band } from "./parts";
 import type { useArm, useRun } from "../useRun";
 
 /*
@@ -52,9 +53,9 @@ export function DossierGate({
   {/* Everything here writes a revision, so undo can replay it — which is
       what buys the AUTO class, not harmlessness. */}
   <div className="bk-foot-bar">
-    <p className="bk-lettering" data-ink="1">
-      AUTO — every change lands in `revisions` and undo replays it
-    </p>
+    {/* The same band that titles every region of the body above, so the two classes are one
+        device read twice rather than two kinds of heading. */}
+    <Band label="Auto" note="— every change lands in `revisions`, and undo replays it" />
     <div className="bk-actions">
       <button
         type="button"
@@ -109,7 +110,7 @@ export function DossierGate({
    * region on it, so the class is a PLACE and not a badge.
    */}
   <div className="bk-title-block">
-    <p className="bk-lettering">GATED — destroys identity, and cannot be replayed backwards</p>
+    <Band label="Gated" note="— destroys identity, and cannot be replayed backwards" />
     {armed === "merge" && pair ? (
       <div className="bk-arm">
         <p className="bk-arm-q">
