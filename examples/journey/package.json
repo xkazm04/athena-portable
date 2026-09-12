@@ -8,7 +8,9 @@
     "test": "playwright test",
     "e2e": "playwright test",
     "typecheck": "tsc --noEmit",
-    "lint": "echo \"@athena/journey adds no eslint plugin of its own: tsc --noEmit under strict is its lint (see README)\""
+    "lint": "echo \"@athena/journey adds no eslint plugin of its own: tsc --noEmit under strict is its lint (see README)\"",
+    "narrate": "node scripts/narrate.mjs",
+    "compose": "node scripts/compose.mjs"
   },
   "devDependencies": {
     "@athena/bridge": "workspace:*",

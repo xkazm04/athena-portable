@@ -32,7 +32,12 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 
 import { comparisonOrder, type BdColumn, type BdRole } from "./model";
 import { CARD, VISIBLE } from "./carousel/pose";
-import { Slide } from "./carousel/Slide";
+import {
+  CARD_VARIANTS,
+  CardSwitcher,
+  criterionMedians,
+  type CardSlug,
+} from "./carousel/CardVariant";
 
 export function Carousel({
   role,
@@ -49,6 +54,23 @@ export function Carousel({
 }) {
   const ordered = useMemo(() => comparisonOrder(column), [column]);
   const railRef = useRef<HTMLDivElement | null>(null);
+
+  /*
+   * WHICH CARD DESIGN. Scaffolding, and `carousel/CardVariant.tsx` says so at the top: when a
+   * direction is chosen, this state, the switcher, the legend below and the losing variants go in
+   * the commit that renames the winner to `Slide.tsx`.
+   */
+  const [cardSlug, setCardSlug] = useState<CardSlug>("card");
+  const Card = (CARD_VARIANTS.find((v) => v.slug === cardSlug) ?? CARD_VARIANTS[0]).Component;
+
+  /* Once per column, not once per card. Only the ledger reads it, but every variant is handed the
+     same props so the deck never learns which one is mounted. */
+  const medians = useMemo(() => criterionMedians(ordered), [ordered]);
+
+  /* The rubric, in its own order, for the strip's shared legend. Taken from the first candidate
+     because a column is one role and every applicant in it was read against the same five
+     criteria in the same order — the fact the strip is built on. */
+  const rubric = ordered[0]?.scores ?? [];
 
   const found = ordered.findIndex((c) => c.id === focusId);
   /** Arrive with one card either side, so the loupe is full on the first frame
@@ -95,7 +117,13 @@ export function Carousel({
   }, [move]);
 
   return (
-    <section className="bd-carousel">
+    <section
+      className="bd-carousel"
+      /* The card width the two step sizes in pose.ts are solved from. It sits on the section
+         rather than on the rail because the strip's legend has to line up with a card and so has
+         to read the same number; declared on the rail it was out of reach. */
+      style={{ "--card": `${CARD}px` } as CSSProperties}
+    >
       <div className="bd-carousel-head">
         <div>
           <h2 className="bd-carousel-title">
@@ -116,19 +144,17 @@ export function Carousel({
         role="listbox"
         aria-label={`${role.title} at ${column.label}`}
         tabIndex={0}
-        /* The card width the two step sizes in pose.ts are solved from. The rail draws at the
-           width the poses assume, or the loupe set gains a gap it was never given. */
-        style={{ "--card": `${CARD}px` } as CSSProperties}
       >
         {ordered.map((candidate, i) => {
           const offset = i - at;
           if (Math.abs(offset) > VISIBLE) return null;
           return (
-            <Slide
+            <Card
               key={candidate.id}
               candidate={candidate}
               column={column}
               offset={offset}
+              medians={medians}
               onFocus={() => {
                 setLive(i);
                 onFocus(candidate.id);
@@ -138,6 +164,28 @@ export function Carousel({
           );
         })}
       </div>
+
+      {/*
+       * THE STRIP'S LEGEND — the five criterion names, printed once for the whole rail.
+       *
+       * This is the half of variant A that is not on the card. Every applicant in a column is read
+       * against one role's rubric in one order, so the names were being rendered once per visible
+       * card to say the same five things; here they are aligned to the same five segment positions
+       * every card uses, with the same weight-driven widths, so a name sits under the part of the
+       * signal it explains.
+       */}
+      {cardSlug === "strip" && rubric.length > 0 ? (
+        <div className="bd-strip-legend" aria-hidden>
+          {rubric.map((score) => (
+            <span
+              key={score.criterionId}
+              style={{ "--w": score.weight } as CSSProperties}
+            >
+              {score.short}
+            </span>
+          ))}
+        </div>
+      ) : null}
 
       <div className="bd-carousel-nav">
         <button
@@ -176,6 +224,7 @@ export function Carousel({
         <span className="bd-hint">
           ← → to move · click the centre card to open
         </span>
+        <CardSwitcher value={cardSlug} onChange={setCardSlug} />
       </div>
     </section>
   );

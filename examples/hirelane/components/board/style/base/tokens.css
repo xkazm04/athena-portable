@@ -244,6 +244,19 @@
   --bd-dossier-w: 1180px;
   --bd-col-min: 150px;
 
+  /*
+   * Two more measured values, both belonging to the L1 card variants in `design/ui-pass-brief.md`
+   * §2 and both scaffolding: they go with whichever variants lose.
+   *
+   * `--bd-meter-h` is the strip's 0-4 axis. It is a height a SHAPE is read at rather than a gap
+   * between two things, so it is not on the spacing scale and §1.1 has no step for it; 84 is where
+   * a one-step difference between two adjacent segments is still visible at the far edge of the
+   * loupe. `--bd-axis-w` is the ledger's inline bar, sized so a 0 and a 4 are told apart in a
+   * column of five without the bar competing with the figure beside it.
+   */
+  --bd-meter-h: 84px;
+  --bd-axis-w: 56px;
+
   --bd-measure-narrow: var(--hl-measure-narrow);
   --bd-measure-prose: var(--hl-measure-prose);
 

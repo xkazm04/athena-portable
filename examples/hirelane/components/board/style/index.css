@@ -22,6 +22,8 @@
 @import "./level1/l1-carousel.css";
 @import "./level1/l1-carousel-2.css";
 @import "./level1/l1-carousel-3.css";
+/* Scaffolding — the two L1 card directions and their switcher. Goes with the losers. */
+@import "./level1/l1-variants.css";
 @import "./level2/l2-dossier.css";
 @import "./level2/l2-dossier-2.css";
 @import "./level2/l2-dossier-3.css";

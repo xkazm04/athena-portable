@@ -180,3 +180,48 @@ half of the contract with the three app agents; what a tool answers is theirs, s
 spec reads a field directly and each adapter accepts more than one spelling and throws — rather
 than defaulting — when it finds none. A silent `?? 0` is a beat that passes while asserting
 nothing.
+
+## Recording a take
+
+`docs/demo.md` section 1 is the plan: narration is made first, the video is paced to it, and
+ffmpeg lays one back on the other. Three commands, in order, from this directory.
+
+```bash
+# 1. narrate — one ElevenLabs mp3 per beat of script/journey.en.json, durations measured
+pnpm narrate                       # needs ELEVENLABS_API_KEY
+pnpm narrate -- --dry              # no network: estimated durations only, so the recorder can run
+pnpm narrate -- --only 1.3,1.4 --force   # re-cut two beats after a script edit
+
+# 2. record — the journey in recording mode, one beat at a time, held for max(clip, settle)
+JOURNEY_VIDEO=1 JOURNEY_SCRIPT=script/journey.en.json pnpm test
+
+# 3. compose — the clips onto the video at the offsets the recorder logged
+pnpm compose -- --captions
+```
+
+Everything the three write lands in `take/`, which is not committed:
+
+| Path | Written by | What it is |
+|---|---|---|
+| `take/audio/<beat id>.mp3` | narrate | one clip per beat, e.g. `take/audio/1.3.mp3` |
+| `take/audio/durations.json` | narrate | `{ "<beat id>": <ms> }` — what the recorder paces to |
+| `take/audio/manifest.json` | narrate | the three voice choices, the model, and per-beat chars and ms |
+| `take/take.json` | the recorder | the video path, its size, and each beat's `start_ms`/`end_ms`/`caption` |
+| `take/journey.mp4` | compose | the cut: H.264 yuv420p, AAC 48 kHz, faststart |
+| `take/journey.srt` | compose | the caption strip, with `--captions` |
+
+**The key.** `narrate.mjs` reads `ELEVENLABS_API_KEY` from the environment, or from a `.env` file
+here or at the repository root; both are ignored by git and the key is never printed. Without it
+the script exits 2 naming the variable — only `--dry` runs without one. `ELEVENLABS_VOICE_NARRATOR`,
+`ELEVENLABS_VOICE_MIRA` and `ELEVENLABS_VOICE_ATHENA` (a voice id or a name) override the three
+voices it would otherwise pick from the account library by the hints in the script's `voices`
+block; `ELEVENLABS_MODEL` overrides `eleven_multilingual_v2`. Synthesis skips a beat whose mp3 is
+already on disk unless `--force`, and refuses to spend more than 20,000 characters without `--yes`.
+
+**Re-takes.** A script edit is `pnpm narrate -- --only <ids> --force`, then the recorder, then
+compose: no editing session. `pnpm compose -- --dry` prints the ffmpeg command without running it.
+A beat whose mp3 is missing is skipped with a warning rather than failing the cut, and a clip
+longer than its beat is trimmed with a 200 ms fade so two clips can never overlap.
+
+Both scripts need `ffmpeg` and `ffprobe` on `PATH` and nothing else: they are plain Node ESM with
+no dependencies beyond the runtime.

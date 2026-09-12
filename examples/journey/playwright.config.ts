@@ -7,8 +7,22 @@
  */
 import { defineConfig, devices } from "@playwright/test";
 
+/**
+ * The take (`tests/take.spec.ts`, docs/demo.md section 1) is a recording, not a gate.
+ *
+ * It boots the same three apps and drives the same beats, but it holds every one of them for the
+ * length of its narration clip — twenty minutes of wall clock to produce one `.webm`. That has no
+ * business in `pnpm test`, so a bare `playwright test` ignores it and only two things bring it
+ * back: naming its file on the command line, or `JOURNEY_TAKE=1`. Reading `process.argv` here is
+ * what lets `pnpm exec playwright test tests/take.spec.ts` mean what it obviously means, with no
+ * second project to keep in step and no environment variable to remember.
+ */
+const takeWanted =
+  process.env.JOURNEY_TAKE === "1" || process.argv.some((argument) => argument.includes("take.spec"));
+
 export default defineConfig({
   testDir: "./tests",
+  ...(takeWanted ? {} : { testIgnore: ["**/take.spec.ts"] }),
   fullyParallel: false,
   workers: 1,
   retries: 0,

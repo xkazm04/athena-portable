@@ -1,0 +1,432 @@
+{
+  "title": "Athena — four acts, one studio",
+  "language": "en",
+  "words_per_second": 2.5,
+  "breath_ms": 1000,
+  "voices": {
+    "narrator": {
+      "hint": "neutral English, calm, stability high"
+    },
+    "mira": {
+      "hint": "conversational, warm"
+    },
+    "athena": {
+      "hint": "clear, slightly slower"
+    }
+  },
+  "acts": [
+    {
+      "id": "act0",
+      "title": "Three tabs, one studio",
+      "estimate_s": 40,
+      "beats": [
+        {
+          "id": "0.1",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "Halden Studio is two people and fifteen clients. Their books, their hiring pipeline and their contact list are three web apps, and none of them has an agent.",
+          "screen": "Ledgerbox at the books, the presence line grey",
+          "settle_ms": 600,
+          "estimate_s": 12
+        },
+        {
+          "id": "0.2",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "Athena arrives beside the page. Each app tells her what it can do, and says which of those actions reach a person or cannot be undone. Those are gated. She never decides that herself.",
+          "screen": "The bridge attaches; the presence line turns on: \"Athena is connected. 23 capabilities offered, 3 gated\"",
+          "settle_ms": 600,
+          "estimate_s": 14
+        },
+        {
+          "id": "0.3",
+          "app": "hirelane",
+          "voice": "narrator",
+          "line": "The same happens on the other two tabs. Sixteen capabilities here, twenty-two there. Nothing runs yet.",
+          "screen": "Quick cut to Hirelane and Tidycrm, each presence line lighting up",
+          "settle_ms": 600,
+          "estimate_s": 8
+        }
+      ]
+    },
+    {
+      "id": "act1",
+      "title": "The books",
+      "estimate_s": 95,
+      "beats": [
+        {
+          "id": "1.1",
+          "app": "ledgerbox",
+          "voice": "mira",
+          "line": "Reconcile August and chase anything over thirty days.",
+          "screen": "Command field; the text types as Mira speaks",
+          "settle_ms": 600,
+          "estimate_s": 5
+        },
+        {
+          "id": "1.2",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "Nineteen credits on the statement are unapplied. Fourteen fit exactly one invoice. I'll match those first.",
+          "screen": "`read_books`, `read_credits` in the strip; the unmatched chip lights",
+          "settle_ms": 600,
+          "estimate_s": 8
+        },
+        {
+          "id": "1.3",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "Each match is reversible, so it runs on its own. She opens the invoice, applies the credit, and the card shows what changed.",
+          "screen": "`open_group(\"retainer\")`, `open_item(inv)`, `match_bank_line`: the card's lead figure flips to settled",
+          "settle_ms": 1200,
+          "estimate_s": 10
+        },
+        {
+          "id": "1.4",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "Fourteen matched.",
+          "screen": "Two more matches on camera, one line in the strip: \"and 11 more\"",
+          "settle_ms": 600,
+          "estimate_s": 3
+        },
+        {
+          "id": "1.5",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "One credit from Kestrel Labs fits two identical retainers. I can't tell which. I'll leave it for you.",
+          "screen": "`read_credits(only: ambiguous)`; the Kestrel credit with two candidate invoices",
+          "settle_ms": 600,
+          "estimate_s": 8
+        },
+        {
+          "id": "1.6",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "This one arrived as Pinegrove Coop. That's Pinegrove Collective's bank name. I'll remember that.",
+          "screen": "`open_item(inv_0930)`, match; the strip shows \"counterparty: PINEGROVE COOP\"; a fact card: \"Pinegrove Collective pays as PINEGROVE COOP\"",
+          "settle_ms": 1200,
+          "estimate_s": 9
+        },
+        {
+          "id": "1.7",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "Forty-four invoices are past due. Twenty-nine are over thirty days.",
+          "screen": "`navigate(\"overdue\")`: the Late chip presses, the sheet dims to 44",
+          "settle_ms": 600,
+          "estimate_s": 6
+        },
+        {
+          "id": "1.8",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "A draft is a whole message, addressed to the client's billing contact. Writing it is reversible. Sending it is not.",
+          "screen": "`open_item`, `draft_reminder(firm)` on the oldest: the draft block appears on the card",
+          "settle_ms": 1200,
+          "estimate_s": 9
+        },
+        {
+          "id": "1.9",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "Ready to send to Nils Eriksen at Halcyon Works. Shall I?",
+          "screen": "`send_reminder`: the strip shows a decision card, the page's own gate arms with the recipient",
+          "settle_ms": 1200,
+          "estimate_s": 5
+        },
+        {
+          "id": "1.10",
+          "app": "ledgerbox",
+          "voice": "mira",
+          "line": "Yes.",
+          "screen": "Mira approves; the card resolves; \"Reminders sent 1\" in the aside",
+          "settle_ms": 1200,
+          "estimate_s": 3
+        },
+        {
+          "id": "1.11",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "Verdant Supply, forty-nine days, gentle tone.",
+          "screen": "Second draft, gentle; second card; approved",
+          "settle_ms": 1200,
+          "estimate_s": 5
+        },
+        {
+          "id": "1.12",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "Solstice Partners paid eighty percent of theirs in August and went quiet. I'd hold off.",
+          "screen": "Solstice card: `paid_ratio 0.8` visible in the strip",
+          "settle_ms": 1200,
+          "estimate_s": 8
+        },
+        {
+          "id": "1.13",
+          "app": "ledgerbox",
+          "voice": "mira",
+          "line": "Agreed, skip them.",
+          "screen": "Mira declines the Solstice card; the ledger row reads user_denied",
+          "settle_ms": 1200,
+          "estimate_s": 3
+        },
+        {
+          "id": "1.14",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "August is closed. I'll file the summary in your notes.",
+          "screen": "`export_summary(\"2026-08\")`; the notes connector card: \"create page: August 2026 close\"",
+          "settle_ms": 1200,
+          "estimate_s": 6
+        },
+        {
+          "id": "1.15",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "The close is a page in her notes, written through a connector that sits behind the same gate as everything else.",
+          "screen": "Approved; the page appears in the fake notes list",
+          "settle_ms": 600,
+          "estimate_s": 8
+        }
+      ]
+    },
+    {
+      "id": "act2",
+      "title": "The pipeline",
+      "estimate_s": 80,
+      "beats": [
+        {
+          "id": "2.1",
+          "app": "hirelane",
+          "voice": "mira",
+          "line": "Screen this week's backend applicants, and book the ones worth talking to.",
+          "screen": "Hirelane; the command types",
+          "settle_ms": 600,
+          "estimate_s": 6
+        },
+        {
+          "id": "2.2",
+          "app": "hirelane",
+          "voice": "athena",
+          "line": "Eleven applied. Six are borderline: the rubric can't decide them on its own.",
+          "screen": "`set_filter(arguable)`, `open_group(\"screening::role_backend\")`: the carousel opens",
+          "settle_ms": 1200,
+          "estimate_s": 7
+        },
+        {
+          "id": "2.3",
+          "app": "hirelane",
+          "voice": "narrator",
+          "line": "Every score points at the sentence that earned it. The rubric has five criteria and no column for age, school or nationality, because there is none in the data.",
+          "screen": "`open_item` on the first; `score_against_rubric`; the criterion bars fill with the quoted sentence",
+          "settle_ms": 1200,
+          "estimate_s": 12
+        },
+        {
+          "id": "2.4",
+          "app": "hirelane",
+          "voice": "athena",
+          "line": "Wren Okafor works at Kestrel Labs, the client whose credit I left unmatched this morning. Context only. It changes nothing about the score.",
+          "screen": "`open_item(app1_012)`: Wren Okafor's dossier; the strip shows \"employer: Kestrel Labs\" and cites act 1",
+          "settle_ms": 1200,
+          "estimate_s": 10
+        },
+        {
+          "id": "2.5",
+          "app": "hirelane",
+          "voice": "athena",
+          "line": "Three of them have already sent availability.",
+          "screen": "`search_mail` in the strip: three availability replies from the fake inbox",
+          "settle_ms": 600,
+          "estimate_s": 4
+        },
+        {
+          "id": "2.6",
+          "app": "hirelane",
+          "voice": "athena",
+          "line": "I've held slots with the two interviewers who are free Thursday.",
+          "screen": "`propose_slots` on two dossiers: slots appear held",
+          "settle_ms": 1200,
+          "estimate_s": 6
+        },
+        {
+          "id": "2.7",
+          "app": "hirelane",
+          "voice": "athena",
+          "line": "Two invitations to send. From your inbox, signed by you.",
+          "screen": "`send_scheduling_email`: decision card, the dossier gate arms",
+          "settle_ms": 1200,
+          "estimate_s": 5
+        },
+        {
+          "id": "2.8",
+          "app": "hirelane",
+          "voice": "mira",
+          "line": "Send them.",
+          "screen": "Mira approves both; two messages recorded",
+          "settle_ms": 600,
+          "estimate_s": 3
+        },
+        {
+          "id": "2.9",
+          "app": "hirelane",
+          "voice": "athena",
+          "line": "One rejection, encouraging wording.",
+          "screen": "`send_rejection` card for one applicant, template \"encouraging\"",
+          "settle_ms": 1200,
+          "estimate_s": 4
+        },
+        {
+          "id": "2.10",
+          "app": "hirelane",
+          "voice": "mira",
+          "line": "Not yet. I want to read that one myself.",
+          "screen": "Mira declines; user_denied",
+          "settle_ms": 600,
+          "estimate_s": 4
+        },
+        {
+          "id": "2.11",
+          "app": "hirelane",
+          "voice": "narrator",
+          "line": "The shortlist, with each quoted sentence, goes onto the hiring page in her notes.",
+          "screen": "`read_shortlist`; the notes card \"append: Backend Engineer shortlist\"; approved",
+          "settle_ms": 1200,
+          "estimate_s": 7
+        }
+      ]
+    },
+    {
+      "id": "act3",
+      "title": "The contact list",
+      "estimate_s": 70,
+      "beats": [
+        {
+          "id": "3.1",
+          "app": "tidycrm",
+          "voice": "mira",
+          "line": "Before the campaign, clean the list and fix the phone numbers.",
+          "screen": "Tidycrm; the command types",
+          "settle_ms": 600,
+          "estimate_s": 5
+        },
+        {
+          "id": "3.2",
+          "app": "tidycrm",
+          "voice": "athena",
+          "line": "One hundred and twenty numbers weren't in international format. Fixed, and every change is in the revisions log.",
+          "screen": "`preview_normalize` then `normalize_fields(phone_e164)`: one summary toast",
+          "settle_ms": 600,
+          "estimate_s": 9
+        },
+        {
+          "id": "3.3",
+          "app": "tidycrm",
+          "voice": "narrator",
+          "line": "The list is read at three depths. A zone, then a block, one company per block.",
+          "screen": "`open_group(\"A\")`: the cube flattens (2.9 s)",
+          "settle_ms": 2900,
+          "estimate_s": 7
+        },
+        {
+          "id": "3.4",
+          "app": "tidycrm",
+          "voice": "athena",
+          "line": "Pinegrove is spelled three ways here, including Pinegrove Coop.",
+          "screen": "`open_item` on the Pinegrove block; the dossier shows three spellings",
+          "settle_ms": 1200,
+          "estimate_s": 5
+        },
+        {
+          "id": "3.5",
+          "app": "tidycrm",
+          "voice": "athena",
+          "line": "That's the bank name I learned this morning. Resolved to Pinegrove Collective.",
+          "screen": "`preview_company`, `resolve_company`: the spellings collapse; the strip cites act 1's fact",
+          "settle_ms": 600,
+          "estimate_s": 6
+        },
+        {
+          "id": "3.6",
+          "app": "tidycrm",
+          "voice": "athena",
+          "line": "Sixty near-duplicates. Forty-three the rules agree on. Seventeen I'd leave to you.",
+          "screen": "`read_pairs`: 43 confident, 17 uncertain",
+          "settle_ms": 600,
+          "estimate_s": 8
+        },
+        {
+          "id": "3.7",
+          "app": "tidycrm",
+          "voice": "narrator",
+          "line": "A merge destroys a record, so each one is a gate. Two on screen, the rest approved as a batch.",
+          "screen": "Two merges on camera through the block's gate; then \"and 41 more\"",
+          "settle_ms": 600,
+          "estimate_s": 9
+        },
+        {
+          "id": "3.8",
+          "app": "tidycrm",
+          "voice": "athena",
+          "line": "The campaign list is two hundred fifty-four contacts at your fifteen clients. I've left Solstice out, for the same reason as this morning.",
+          "screen": "`export(clients)`: the companies list; Solstice highlighted and left out",
+          "settle_ms": 600,
+          "estimate_s": 10
+        },
+        {
+          "id": "3.9",
+          "app": "tidycrm",
+          "voice": "mira",
+          "line": "Good.",
+          "screen": "Notes card: append to the close page; approved",
+          "settle_ms": 1200,
+          "estimate_s": 2
+        }
+      ]
+    },
+    {
+      "id": "act4",
+      "title": "The record",
+      "estimate_s": 35,
+      "beats": [
+        {
+          "id": "4.1",
+          "app": "record",
+          "voice": "narrator",
+          "line": "Everything she did is one table. Every call, its app, whether it was gated, and what the answer was.",
+          "screen": "The ledger table: 140-odd rows, by app and tier",
+          "settle_ms": 600,
+          "estimate_s": 9
+        },
+        {
+          "id": "4.2",
+          "app": "record",
+          "voice": "narrator",
+          "line": "Two declines. Both recorded as the user's decision, not as errors.",
+          "screen": "The two declines highlighted: user_denied",
+          "settle_ms": 600,
+          "estimate_s": 6
+        },
+        {
+          "id": "4.3",
+          "app": "record",
+          "voice": "narrator",
+          "line": "And three things she now knows, each pointing at the moment she learned it. One of them she used twice today.",
+          "screen": "The three facts with the rows they cite",
+          "settle_ms": 600,
+          "estimate_s": 9
+        },
+        {
+          "id": "4.4",
+          "app": "record",
+          "voice": "narrator",
+          "line": "Athena. Your agent, in the apps you already have.",
+          "screen": "Title card: Athena",
+          "settle_ms": 1200,
+          "estimate_s": 5
+        }
+      ]
+    }
+  ]
+}

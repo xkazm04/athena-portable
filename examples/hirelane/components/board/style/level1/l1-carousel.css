@@ -1,8 +1,10 @@
 /* ------------------------------------------------------------ L1 carousel */
 
+/* Four rows, and the third is empty unless the strip's legend is mounted — a track with no child
+   collapses, so the layout is the same three rows it always was when there is nothing to legend. */
 .bd-carousel {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   align-content: stretch;
   gap: var(--bd-s3);
   block-size: 100%;
