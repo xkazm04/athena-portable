@@ -2,9 +2,14 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
-## P4 — The shell skeleton (in progress)
+## P5 — MVP checkpoint (in progress)
+
+## P4 — The shell skeleton
 
 - `feat(desktop): the window, the module bar, and the browser module` — Tauri v2 multi-webview, `layout.rs` owns every rectangle, the module contract and `preview.html?module=&fixture=&theme=`, the house-style token layer; popups allowed after measuring that Tauri denies them by default; ADR 0013.
+- `feat(desktop): the relay` — `inject.js` as every page webview's initialization script straight from the bridge package, a forwarder with the tab id and a nonce, `bridge_list` / `bridge_call` with the id map and the 35 s timer, `bridge_reply` as the page's only command, `bridge:toolchange`; the `ATHENA_SMOKE=1` line proven on a scratch page; ADR 0014.
+- `feat(desktop): the sidecar, with exit hygiene` — a minted token file, the frozen binary or the `uv run athena serve` fallback, the bounded ready-line wait, the `/health` poll, restart on engine change, tree kill and a Windows job object with `KILL_ON_JOB_CLOSE`; all three exit paths walked by hand; `scripts/build-sidecar.py`; ADR 0015.
+- `feat(desktop): the store, settings and setup modules` — one SQLite store with every table now (settings, origins, projects, project_pages, project_runs, activity, captures with an LRU sweep), four generic commands with `null` as the only empty value, the Settings and Setup modules with four fixtures each; ADR 0016.
 
 ## P3 — One turn end to end, no browser
 
