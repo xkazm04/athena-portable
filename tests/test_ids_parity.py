@@ -25,9 +25,7 @@ from athena.contracts.ids import (
     is_id,
 )
 
-IDS_TS = (
-    Path(__file__).resolve().parents[1] / "apps" / "desktop" / "src" / "lib" / "ids.ts"
-)
+IDS_TS = Path(__file__).resolve().parents[1] / "apps" / "desktop" / "src" / "lib" / "ids.ts"
 
 #: `//` line comments and `/* */` blocks, so a prefix mentioned in prose is not read as a member.
 _LINE_COMMENT = re.compile(r"^\s*//.*$", re.MULTILINE)
@@ -40,7 +38,8 @@ def _source() -> str:
 
 def _object(name: str) -> str:
     """The body of ``export const <name> = Object.freeze({ … });``."""
-    match = re.search(rf"export const {name} = Object\.freeze\((\{{.*?\}})\);", _source(), re.DOTALL)
+    pattern = rf"export const {name} = Object\.freeze\((\{{.*?\}})\);"
+    match = re.search(pattern, _source(), re.DOTALL)
     assert match is not None, f"{name} is not frozen and exported from ids.ts"
     return match.group(1)
 
