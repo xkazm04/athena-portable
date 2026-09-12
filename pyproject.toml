@@ -32,6 +32,12 @@ dev = [
   "mypy>=1.11",
 ]
 
+# One console script, and it is the only entry point a person types. ``athena serve`` hands its
+# flags straight to ``athena.daemon.server.serve``; ``athena doctor`` and ``athena brain
+# reconcile`` are the other two verbs this build has.
+[project.scripts]
+athena = "athena.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/xkazm04/athena-portable"
 

@@ -7,7 +7,7 @@ knows nothing about Athena; a route is added by appending to the table rather th
 handler; and a test can append a route of its own to prove a property of the *server* — that a
 slow route does not stall a fast one — without the daemon shipping a debug route to production.
 
-Three routes write today; the read routes land in the next commit.
+Three routes write and five read.
 
 ``POST /manifest``
     A page describes itself. Refused whole on any problem (``manifest_invalid``, 400), merged
@@ -24,10 +24,10 @@ Three routes write today; the read routes land in the next commit.
     The user's answer. An approval replays the gate with the approval id and the surface receives
     an ``execute`` instruction for a host tool, or the core tool's own result.
 
-``GET /health``
-    What is running and what is waiting on the user, bounded and announced. ``GET /decisions``,
-    ``GET /ledger``, ``GET /ledger/rollup`` and ``GET /playbooks`` join it next, on the same
-    terms: bounded, announced, and served off ``Brain.read_connection()``.
+``GET /health``, ``GET /decisions``, ``GET /ledger``, ``GET /ledger/rollup``, ``GET /playbooks``
+    What is running, what is waiting on the user, what was spent, and what the brain has
+    distilled about one origin. Every one is bounded and carries an honest
+    ``showing`` / ``total`` / ``footer``; every one is served off ``Brain.read_connection()``.
 
 **Read routes take no lock.** A read reads through a fresh read-only handle per call (ADR 0003)
 and what it reports is consistent as of the last completed write. Only a route that *writes*
@@ -62,8 +62,10 @@ from athena.contracts.channel import ChannelEvent, DecisionRequested, TurnError
 from athena.contracts.harness import normalize_reason
 from athena.contracts.manifest import HostManifest
 from athena.contracts.registry import Lane, TurnContext, parse_origin
-from athena.core.approvals import ApprovalError
+from athena.core.approvals import ApprovalError, ApprovalRow
 from athena.core.catalog import CatalogError
+from athena.core.ledger import LedgerError
+from athena.core.recall import recall as recall_bundle
 from athena.daemon.sessions import conversation_for
 from athena.lane.turn_frame import tool_results_from
 
@@ -79,6 +81,7 @@ __all__ = [
     "MAX_LIMIT",
     "PENDING_CEILING",
     "PENDING_LINES",
+    "PLAYBOOK_KINDS",
     "SSE_CONTENT_TYPE",
     "EventStream",
     "Reply",
@@ -91,10 +94,14 @@ __all__ = [
     "bounded",
     "capped",
     "decide",
+    "decisions",
     "drain",
     "error",
     "health",
+    "ledger_recent",
+    "ledger_rollup",
     "manifest",
+    "playbooks",
     "run",
     "sse_frame",
 ]
@@ -129,6 +136,10 @@ SSE_CONTENT_TYPE = "text/event-stream"
 #: How much of a free-text answer beside a decision button reaches the record. The same cap a
 #: ``READ`` answer is held to, and it announces what it cut like every other bounded thing here.
 ANSWER_CAP = 1600
+
+#: What ``GET /playbooks`` reports: the rules the brain has distilled, never raw episodes. A
+#: playbook is a procedural — "when X, do Y" — and a fact is not one.
+PLAYBOOK_KINDS: frozenset[str] = frozenset({"procedural"})
 
 #: A status and the JSON body that goes with it.
 Reply = tuple[int, dict[str, Any]]
@@ -631,19 +642,148 @@ def _decision_ctx(daemon: AthenaDaemon, grant_origin: str, conversation: str) ->
     )
 
 
+# --- the read routes -----------------------------------------------------------------------------
+
+
+def decisions(daemon: AthenaDaemon, request: Request) -> Reply:
+    """The inbox: every card still waiting on the user, oldest first (README §3.2 step 4).
+
+    One list across origins and projects, because a card knows its conversation and not its page.
+    Read only — answering still goes through ``POST /decisions/<id>`` and the gate. ``total`` is
+    the live pending population up to :data:`PENDING_CEILING`, and the footer says what was shown.
+    """
+    limit = bounded(request.query.get("limit"))
+    page = daemon.approvals.pending(PENDING_CEILING)
+    rows = [_decision_row(row) for row in page.rows[:limit]]
+    return 200, announced(rows, page.total, "pending")
+
+
+def _decision_row(row: ApprovalRow) -> dict[str, Any]:
+    return {
+        "id": row.id,
+        "action": row.action,
+        "params": dict(row.params),
+        "rationale": row.summary,
+        "options": list(row.options),
+        "origin": row.origin,
+        "conversation_id": row.conversation,
+        "surface": row.surface,
+        "created_at": row.created_at,
+        "expires_at": row.expires_at,
+    }
+
+
+def ledger_recent(daemon: AthenaDaemon, request: Request) -> Reply:
+    """Recent model invocations, newest first (README §2 invariant 6).
+
+    One row per invocation, failures included — that is all the ledger has ever held. The per-call
+    record is the episode, and keeping the two apart is what lets this page be believed.
+    """
+    limit = bounded(request.query.get("limit"))
+    page = daemon.ledger.recent(limit)
+    rows = [
+        {
+            "row_id": row.row_id,
+            "turn_id": row.turn_id,
+            "created_at": row.created_at,
+            "engine": row.engine,
+            "model": row.model,
+            "conversation_id": row.conversation,
+            "origin": row.origin,
+            "surface": row.surface,
+            "trigger": row.trigger,
+            "rounds": row.rounds,
+            "input_tokens": row.input_tokens,
+            "output_tokens": row.output_tokens,
+            "cost_usd": row.cost_usd,
+            "cost_estimated": row.cost_estimated,
+            "ms": row.ms,
+            "is_error": row.is_error,
+            "error_reason": row.error_reason,
+        }
+        for row in page.rows
+    ]
+    return 200, announced(rows, page.total, "rows")
+
+
+def ledger_rollup(daemon: AthenaDaemon, request: Request) -> Reply:
+    """What was spent, summed on one dimension, dearest first.
+
+    ``by`` is a key of ``ledger.ROLLUP_KEYS`` and nothing else reaches SQL; an unknown dimension
+    is refused with the list of the ones that exist rather than answered with an empty table.
+    """
+    by = request.query.get("by", "model")
+    try:
+        rows = daemon.ledger.rollup(by)
+    except LedgerError as exc:
+        return error(400, "unknown_ref", str(exc))
+    items = [
+        {
+            "key": row.key,
+            "turns": row.turns,
+            "errors": row.errors,
+            "rounds": row.rounds,
+            "input_tokens": row.input_tokens,
+            "output_tokens": row.output_tokens,
+            "cost_usd": row.cost_usd,
+            "ms": row.ms,
+        }
+        for row in rows[:MAX_LIMIT]
+    ]
+    reply = announced(items, len(rows), "rollup")
+    reply["by"] = by
+    return 200, reply
+
+
+def playbooks(daemon: AthenaDaemon, request: Request) -> Reply:
+    """What the brain has distilled about one origin: its rules, never its raw episodes.
+
+    Ordinary recall with the origin as the query, cut to the procedural kind. This route curates
+    nothing — the brain is what puts a procedural there and this only asks for it back — and it
+    writes nothing, so a panel polling it costs one read connection and no lock.
+
+    ``total`` is how many procedurals *the recall produced*, not how many the brain holds. The
+    number is only honest with that sentence attached, which is why the keyword lane is given the
+    route's own ceiling: a default page of six would otherwise come back as a total of six.
+    """
+    origin = request.query.get("origin", "").strip()
+    if not origin:
+        return error(400, "validator_failed", "playbooks needs an origin to look up")
+    limit = bounded(request.query.get("limit"))
+    trace = recall_bundle(daemon.brain, origin, episode_budget=0, keyword_slots=MAX_LIMIT)
+    found = [memory for memory in trace.items if memory.kind in PLAYBOOK_KINDS]
+    items = [
+        {
+            "id": memory.id,
+            "kind": memory.kind,
+            "excerpt": memory.excerpt,
+            "path": memory.path,
+            "citations": len(daemon.brain.sources_of(memory.id)),
+        }
+        for memory in found[:limit]
+    ]
+    reply = announced(items, len(found), "items")
+    reply["origin"] = origin
+    return 200, reply
+
+
 # --- the table -----------------------------------------------------------------------------------
 
 
 def base_routes(daemon: AthenaDaemon) -> list[Route]:
     """Every route this daemon answers, in the order a reader should meet them.
 
-    The exact paths come before the one prefix path, so the read routes the next commit adds —
-    ``GET /decisions`` among them — can never be shadowed by ``POST /decisions/<id>``.
+    The exact paths come before the one prefix path, so ``GET /decisions`` is the inbox and
+    ``POST /decisions/<id>`` is one answer, and neither can shadow the other.
     """
     return [
         Route("GET", "/health", lambda request: health(daemon)),
         Route("POST", "/manifest", lambda request: manifest(daemon, request)),
         Route("POST", "/run", lambda request: run(daemon, request)),
+        Route("GET", "/decisions", lambda request: decisions(daemon, request)),
+        Route("GET", "/ledger", lambda request: ledger_recent(daemon, request)),
+        Route("GET", "/ledger/rollup", lambda request: ledger_rollup(daemon, request)),
+        Route("GET", "/playbooks", lambda request: playbooks(daemon, request)),
         Route(
             "POST",
             DECISION_PREFIX,

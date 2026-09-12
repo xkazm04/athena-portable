@@ -19,6 +19,20 @@ the write lock; :meth:`read_connection` hands out a fresh read-only handle per c
 The daemon is threaded, so a long turn holds the writer while eight read routes answer from their
 own handles — and, in WAL, without waiting for it. What a read handle sees is defined in
 :meth:`read_connection`: the state as of the last completed write.
+
+**Every pure read takes a read handle, including this class's own.** :meth:`node`,
+:meth:`read_body`, :meth:`counts`, :meth:`sources_of` and :meth:`live_episode_ids` once read
+through the writer connection, which was correct on one thread and wrong on several: a daemon read
+route calling one of them would have been a second thread on a connection the writer lock does not
+cover for reads, and it would have seen a half-written transaction's rows. They open their own
+handle now, so the answer is what every other reader gets — the state as of the last completed
+write — and ``tests/core/test_brain_connections.py`` asserts exactly that from a worker thread
+while a write transaction is open.
+
+The one place this matters to a *writer* is provenance: :meth:`_require_provenance` asks
+:meth:`live_episode_ids` before the transaction it guards is opened, so it reads committed
+episodes, which is the only thing "a live episode of this brain" can honestly mean. An episode
+written inside the same uncommitted transaction is not yet a memory anything can cite.
 """
 
 from __future__ import annotations
@@ -28,7 +42,7 @@ import json
 import sqlite3
 import threading
 from collections.abc import Iterator, Sequence
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -296,11 +310,12 @@ class Brain:
         if not candidates:
             return set()
         marks = ",".join("?" for _ in candidates)
-        rows = self._con.execute(
-            f"""SELECT id FROM companion_node
-                WHERE kind = 'episode' AND importance > 0 AND id IN ({marks})""",
-            tuple(candidates),
-        ).fetchall()
+        with closing(self.read_connection()) as con:
+            rows = con.execute(
+                f"""SELECT id FROM companion_node
+                    WHERE kind = 'episode' AND importance > 0 AND id IN ({marks})""",
+                tuple(candidates),
+            ).fetchall()
         return {str(row[0]) for row in rows}
 
     def _require_provenance(self, sources: Sequence[str]) -> list[str]:
@@ -324,10 +339,11 @@ class Brain:
         return list(dict.fromkeys(sources))
 
     def sources_of(self, node_id: str) -> list[str]:
-        rows = self._con.execute(
-            "SELECT source_id FROM companion_provenance WHERE node_id = ? ORDER BY source_id",
-            (node_id,),
-        ).fetchall()
+        with closing(self.read_connection()) as con:
+            rows = con.execute(
+                "SELECT source_id FROM companion_provenance WHERE node_id = ? ORDER BY source_id",
+                (node_id,),
+            ).fetchall()
         return [str(row[0]) for row in rows]
 
     # -- distilled memories --------------------------------------------------------------------
@@ -512,9 +528,10 @@ class Brain:
     # -- reads ---------------------------------------------------------------------------------
 
     def node(self, node_id: str) -> NodeRow | None:
-        row = self._con.execute(
-            f"SELECT {NODE_COLUMNS} FROM companion_node WHERE id = ?", (node_id,)
-        ).fetchone()
+        with closing(self.read_connection()) as con:
+            row = con.execute(
+                f"SELECT {NODE_COLUMNS} FROM companion_node WHERE id = ?", (node_id,)
+            ).fetchone()
         return None if row is None else node_from_row(row)
 
     def read_body(self, node_id: str) -> str:
@@ -523,9 +540,10 @@ class Brain:
         Stripped, so this is the exact inverse of the writer: ``render`` normalised the body to
         one trailing newline on the way in and this takes it back off.
         """
-        row = self._con.execute(
-            "SELECT file_path FROM companion_node WHERE id = ?", (node_id,)
-        ).fetchone()
+        with closing(self.read_connection()) as con:
+            row = con.execute(
+                "SELECT file_path FROM companion_node WHERE id = ?", (node_id,)
+            ).fetchone()
         if row is None:
             raise KeyError(node_id)
         _, body = frontmatter.parse((self.root / str(row[0])).read_text(encoding="utf-8"))
@@ -533,9 +551,10 @@ class Brain:
 
     def counts(self) -> dict[str, int]:
         """How many live memories of each kind. The doctor's brain stage prints this."""
-        rows = self._con.execute(
-            "SELECT kind, COUNT(*) FROM companion_node WHERE importance > 0 GROUP BY kind"
-        ).fetchall()
+        with closing(self.read_connection()) as con:
+            rows = con.execute(
+                "SELECT kind, COUNT(*) FROM companion_node WHERE importance > 0 GROUP BY kind"
+            ).fetchall()
         return {str(kind): int(count) for kind, count in rows}
 
 

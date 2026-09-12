@@ -45,15 +45,22 @@ HOME_ENV = "ATHENA_HOME"
 
 
 def athena_home() -> Path:
-    """``$ATHENA_HOME`` if set, else ``~/.athena``."""
+    """``$ATHENA_HOME`` if set, else ``~/.athena``. Always absolute — see :func:`brain_root`."""
     env = os.environ.get(HOME_ENV)
-    return Path(env).expanduser() if env else Path.home() / ".athena"
+    return (Path(env).expanduser() if env else Path.home() / ".athena").absolute()
 
 
 def brain_root(root: str | Path | None = None) -> Path:
-    """Resolve the brain root: an explicit argument wins, then the environment, then the default."""
+    """Resolve the brain root: an explicit argument wins, then the environment, then the default.
+
+    **The answer is always absolute**, and that is not tidiness. ``Brain.read_connection`` opens a
+    read-only handle through a ``file:`` URI, and ``Path.as_uri`` raises on a relative path — so
+    ``athena serve --brain demo-brain`` bound a socket happily and then failed every read route
+    and every turn with a bare ``ValueError``. It is ``absolute()`` rather than ``resolve()``: the
+    cwd is prepended once, here, and a symlinked brain directory stays the path the user typed.
+    """
     if root is not None:
-        return Path(root).expanduser()
+        return Path(root).expanduser().absolute()
     return athena_home() / "brain"
 
 

@@ -6,7 +6,8 @@ should be able to read them one at a time:
 - :mod:`athena.daemon.server` — the socket, the token, CORS, one request per connection, and the
   ``AthenaDaemon`` object every route runs against.
 - :mod:`athena.daemon.routes` — the route table and the routes themselves: ``/health``,
-  ``/manifest``, ``/run`` and ``/decisions/<id>``; the read routes append to the same table.
+  ``/manifest``, ``/run`` and ``/decisions/<id>`` write; ``/decisions``, ``/ledger``,
+  ``/ledger/rollup`` and ``/playbooks`` read, each bounded and off a read connection.
 - :mod:`athena.daemon.sessions` — who is talking, keyed by origin, in memory.
 - :mod:`athena.daemon.ready` — the one JSON line a spawned daemon prints once it is listening.
 
@@ -24,6 +25,7 @@ from athena.daemon.routes import (
     MAX_LIMIT,
     PENDING_CEILING,
     PENDING_LINES,
+    PLAYBOOK_KINDS,
     SSE_CONTENT_TYPE,
     EventStream,
     Reply,
@@ -36,10 +38,14 @@ from athena.daemon.routes import (
     bounded,
     capped,
     decide,
+    decisions,
     drain,
     error,
     health,
+    ledger_recent,
+    ledger_rollup,
     manifest,
+    playbooks,
     run,
     sse_frame,
 )
@@ -78,6 +84,7 @@ __all__ = [
     "MAX_LIMIT",
     "PENDING_CEILING",
     "PENDING_LINES",
+    "PLAYBOOK_KINDS",
     "SSE_CONTENT_TYPE",
     "TOKEN_FILENAME",
     "TOKEN_HEADER",
@@ -102,13 +109,17 @@ __all__ = [
     "capped",
     "conversation_for",
     "decide",
+    "decisions",
     "drain",
     "error",
     "failure_line",
     "health",
+    "ledger_recent",
+    "ledger_rollup",
     "make_server",
     "manifest",
     "new_token",
+    "playbooks",
     "ready_line",
     "resolve_token",
     "run",

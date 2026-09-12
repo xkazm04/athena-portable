@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -136,3 +137,25 @@ def test_a_key_with_a_line_break_writes_neither_file_nor_row(tmp_path: Path) -> 
 
         assert brain.counts() == before
         assert not list((brain.root / "semantic" / "user").glob("*.md"))
+
+
+def test_a_relative_brain_root_becomes_absolute_so_a_read_handle_can_be_opened(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``read_connection`` opens a ``file:`` URI, and ``Path.as_uri`` raises on a relative path.
+
+    A daemon started with ``--brain demo-brain`` used to bind its socket and then fail every read
+    route and every turn with a bare ``ValueError``, which is the worst shape a failure can take:
+    after the ready line, and with nothing in it that names the cause.
+    """
+    monkeypatch.chdir(tmp_path)
+
+    with Brain("demo-brain") as brain:
+        assert brain.root.is_absolute()
+        assert brain.root == tmp_path / "demo-brain"
+        episode = brain.append_episode("said in a relative brain", role="user")
+
+        with closing(brain.read_connection()) as con:
+            assert con.execute("SELECT COUNT(*) FROM companion_node").fetchone()[0] == 1
+        assert brain.counts() == {"episode": 1}
+        assert brain.read_body(episode.id) == "said in a relative brain"

@@ -85,12 +85,16 @@ def test_health_answers_off_a_read_connection_while_the_brain_is_being_written(
 # -- the table -----------------------------------------------------------------------------------
 
 
-def test_the_table_ships_the_routes_this_commit_added(daemon: AthenaDaemon) -> None:
-    """The read routes — ``/decisions``, ``/ledger``, ``/playbooks`` — arrive in the next one."""
+def test_the_table_ships_every_route_the_daemon_answers(daemon: AthenaDaemon) -> None:
+    """Three that write, five that read, and the one prefix path last so nothing shadows it."""
     assert daemon.routes.listing() == [
         "GET /health",
         "POST /manifest",
         "POST /run",
+        "GET /decisions",
+        "GET /ledger",
+        "GET /ledger/rollup",
+        "GET /playbooks",
         "POST /decisions/<id>",
     ]
 
