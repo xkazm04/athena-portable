@@ -1,6 +1,6 @@
 // One truncation envelope for every WebMCP tool result.
 //
-// CLAUDE.md: any bounded output carries `(showing N of M)`. What a tool result carries is the
+// AGENTS.md: any bounded output carries `(showing N of M)`. What a tool result carries is the
 // machine-readable half of that sentence, and it has to be the SAME half everywhere or the one
 // question it exists to answer - how many did I not see - needs a parser per app.
 

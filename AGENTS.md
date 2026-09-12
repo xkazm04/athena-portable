@@ -1,4 +1,4 @@
-# CLAUDE.md — agent guidance for athena-portable
+# AGENTS.md — agent guidance for athena-portable
 
 ## What this is
 

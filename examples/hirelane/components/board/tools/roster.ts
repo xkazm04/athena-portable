@@ -31,7 +31,7 @@ export const SHORTLIST_PAGE = 12;
 /** The stages an applicant has been advanced INTO. A shortlist is the people who got there. */
 const ADVANCED = new Set(["interview", "offer"]);
 
-/** The truncation sentence this repo says once, everywhere (CLAUDE.md, README invariant 4). */
+/** The truncation sentence this repo says once, everywhere (AGENTS.md, README invariant 4). */
 function showingOf(showing: number, of: number): string {
   return `(showing ${showing} of ${of})`;
 }

@@ -249,7 +249,7 @@ function ShippedCapabilities() {
    * `merge_contacts` all address a record by id, and until this existed nothing here handed one
    * out — `read_state` returns counts — so an agent asked to merge the worst duplicate could only
    * refuse or invent an id, and the two GATED tools on this surface were unreachable from a
-   * conversation. Bounded and announced, like every other read (CLAUDE.md).
+   * conversation. Bounded and announced, like every other read (AGENTS.md).
    */
   useWebMCPTool({
     name: "read_pairs",

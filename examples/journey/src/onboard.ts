@@ -88,7 +88,7 @@ function stageOf(report: DoctorReport, name: string): DoctorStage | null {
 /**
  * Run the doctor once, for one engine.
  *
- * `uv run python -m athena.cli doctor` from the repository root, exactly as `CLAUDE.md` runs it.
+ * `uv run python -m athena.cli doctor` from the repository root, exactly as `AGENTS.md` runs it.
  * The command prints JSON on stdout and a non-zero exit means "a stage failed", not "no report",
  * so the output is parsed either way and only an unparseable one throws.
  */

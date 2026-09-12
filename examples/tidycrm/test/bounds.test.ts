@@ -1,5 +1,5 @@
 /**
- * Bounded outputs announce their bound (CLAUDE.md), and a figure that is not a list does not
+ * Bounded outputs announce their bound (AGENTS.md), and a figure that is not a list does not
  * need one - it needs to be uncapped.
  *
  *   node --experimental-transform-types --import ./test/register.mjs --test "test/**\/*.test.ts"

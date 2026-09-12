@@ -69,7 +69,7 @@ export const STALE_MONTHS = 18;
 /** Design 5.1 caps any array that addresses UI. The manifest and the server use this one number. */
 export const MAX_IDS = 500;
 
-/** `read_conflicts` returns at most this many domains, and says so (CLAUDE.md). */
+/** `read_conflicts` returns at most this many domains, and says so (AGENTS.md). */
 export const MAX_DOMAINS = 20;
 
 /** `preview_company` lists at most this many per-contact rewrites, and says so. */

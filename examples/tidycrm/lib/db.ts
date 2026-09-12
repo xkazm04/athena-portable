@@ -276,7 +276,7 @@ export function listOpenPairs(limit = 60): MergePair[] {
  * How many open pairs there are, as opposed to how many `listOpenPairs` returned.
  *
  * `listOpenPairs` is capped, and a capped figure that does not say so is how a reader comes to
- * believe the sheet holds 200 pairs when it holds more (CLAUDE.md: announce truncation).
+ * believe the sheet holds 200 pairs when it holds more (AGENTS.md: announce truncation).
  */
 export function countOpenPairs(): number {
   return (

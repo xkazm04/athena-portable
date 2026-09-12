@@ -1,7 +1,7 @@
 /**
  * The truncation contract for WebMCP tool results, in one exported helper.
  *
- * CLAUDE.md states the rule once: any bounded output carries `(showing N of M)`. Before this
+ * AGENTS.md states the rule once: any bounded output carries `(showing N of M)`. Before this
  * helper every app invented its own shape: `{showing, of, items}` in the kit's own zoom
  * tools, `{matched, showing, results}` in three search helpers, and a pre-formatted English
  * sentence (`showing: "showing 5 of 22 (page 0)"`) in ledgerbox's strip. An agent had to parse
@@ -19,7 +19,7 @@
  * count and the cut drifted apart in the first place.
  */
 
-/** A bounded projection of a list, with its own budget stated (design 5.1, CLAUDE.md). */
+/** A bounded projection of a list, with its own budget stated (design 5.1, AGENTS.md). */
 export interface Bounded<T> {
   /** How many are in `items`. */
   showing: number;

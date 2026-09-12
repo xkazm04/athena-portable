@@ -55,7 +55,7 @@ function refresh(): void {
  * unreachable from a conversation and the gate could never be exercised. This is the read the
  * onboarding contract puts first ("Reads first; then reversible writes; then the irreversible").
  *
- * Capped and announced, per CLAUDE.md: a capped figure that does not say so is how a reader comes
+ * Capped and announced, per AGENTS.md: a capped figure that does not say so is how a reader comes
  * to believe the queue holds what it returned.
  */
 export async function listPairsAction(
@@ -129,7 +129,7 @@ export async function previewMergeAction(pairId: string): Promise<PairPreview | 
 /**
  * The company-name conflict, as `read_conflicts` hands it over.
  *
- * Bounded and announced (CLAUDE.md). With no domain it is the list of every domain still spelled
+ * Bounded and announced (AGENTS.md). With no domain it is the list of every domain still spelled
  * more than one way, worst first; with a domain it is that one domain whether or not it is still
  * in conflict, which is what makes it `resolve_company`'s preview as well as its index.
  */
