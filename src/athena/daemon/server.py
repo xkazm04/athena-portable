@@ -59,6 +59,7 @@ from urllib.parse import parse_qs, urlsplit
 from athena.channels.voice.backends import BACKENDS as VOICE_BACKENDS
 from athena.channels.voice.backends import backend_from_name
 from athena.channels.voice.ws import WebSocket, accept_key, protocol_token
+from athena.connectors.vault import Vault
 from athena.core.approvals import Approvals
 from athena.core.brain import Brain
 from athena.core.brain import paths as brain_paths
@@ -551,6 +552,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--engine", default="claude_code", help="which engine a turn will run on")
     parser.add_argument("--model", default="", help="the model that engine should use, if it asks")
     parser.add_argument(
+        "--no-connectors",
+        action="store_true",
+        help="start without the connector vault: no /connectors routes, no connector tools",
+    )
+    parser.add_argument(
         "--voice-backend",
         default="auto",
         choices=list(VOICE_BACKENDS),
@@ -577,8 +583,9 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
     try:
         token, token_file = resolve_token(args.token, args.token_file)
         voice = backend_from_name(args.voice_backend)
+        vault = None if args.no_connectors else Vault()
         local = build_local(
-            brain_root=args.brain, engine=args.engine, model=args.model, voice=voice
+            brain_root=args.brain, engine=args.engine, model=args.model, voice=voice, vault=vault
         )
     except (OSError, ValueError) as exc:
         announce(failure_line("unknown", f"{type(exc).__name__}: {exc}"), stream)

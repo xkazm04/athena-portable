@@ -2,6 +2,10 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
+## Connectors (in progress)
+
+- `feat(connectors): Gmail and Notion behind one vault, entering the catalog like a page` — one JSON spec per service; the vault brokers every call with a host allow-list, a timeout, a cap and redaction; a token or grant is probed before it is sealed (keyring, DPAPI or an owner-only file); PKCE over a one-shot loopback listener; writes behind a switch and an egress allow-list, reads fenced and capped; `/connectors` routes; `Policy(connectors=vault)`; ADR 0021.
+
 ## Desktop — the second pass (in progress)
 
 - `feat(desktop): the Browser is about apps, and its ledger is the origins table` — the doorway when nothing is open, a ledger of registered apps with a standing derived from the tabs and the relay, register-then-open; `browser.css`; ADR 0022.

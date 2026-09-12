@@ -1,0 +1,77 @@
+{
+  "id": "gmail",
+  "label": "Gmail",
+  "description": "Search, read and send mail on the connected Google account.",
+  "auth": {
+    "type": "oauth",
+    "authorize_url": "https://accounts.google.com/o/oauth2/v2/auth",
+    "token_url": "https://oauth2.googleapis.com/token",
+    "revoke_url": "https://oauth2.googleapis.com/revoke",
+    "pkce": true,
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.send"
+    ],
+    "extra_auth_params": { "access_type": "offline", "prompt": "consent" },
+    "guide": "Athena does not ship a Google client: a tool distributed as source cannot keep one secret, so you register your own once and it stays yours.\n\n1. In the Google Cloud console, create or pick a project.\n2. APIs & Services, Library: enable the Gmail API.\n3. OAuth consent screen: External, and add yourself as a test user. Google shows an \"unverified app\" page for a client you registered yourself; that is expected.\n4. Credentials, Create credentials, OAuth client ID, Desktop app. Copy the client id and the client secret.\n5. Paste both here and press Connect. Your browser opens Google's consent page and the answer comes back to a loopback port that closes as soon as it is used.\n\nThe read scope lets Athena search and read; the send scope lets her send and nothing else. Sending stays off until you turn writes on and add the recipients you allow.\n\nTo revoke: https://myaccount.google.com/permissions, or Disconnect here, which also revokes the grant with Google."
+  },
+  "api_hosts": ["gmail.googleapis.com", "www.googleapis.com", "oauth2.googleapis.com"],
+  "probe": {
+    "method": "GET",
+    "url": "https://gmail.googleapis.com/gmail/v1/users/me/profile",
+    "identity_field": "emailAddress"
+  },
+  "egress": "recipients",
+  "tools": [
+    {
+      "name": "search_mail",
+      "description": "Search the connected mailbox; returns sender, subject, date and a snippet per message.",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "maxLength": 400 },
+          "max_results": { "type": "integer", "minimum": 1, "maximum": 10 }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      },
+      "reversible": true,
+      "side_effects": "none"
+    },
+    {
+      "name": "read_mail",
+      "description": "Read one message by id; returns its headers and plain-text body.",
+      "params_schema": {
+        "type": "object",
+        "properties": { "message_id": { "type": "string", "maxLength": 200 } },
+        "required": ["message_id"],
+        "additionalProperties": false
+      },
+      "reversible": true,
+      "side_effects": "none"
+    },
+    {
+      "name": "send_mail",
+      "description": "Send a mail from the connected account to allowed recipients.",
+      "params_schema": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "array",
+            "items": { "type": "string", "maxLength": 320 },
+            "minItems": 1,
+            "maxItems": 5
+          },
+          "subject": { "type": "string", "maxLength": 400 },
+          "body": { "type": "string", "maxLength": 8000 },
+          "cc": { "type": "array", "items": { "type": "string", "maxLength": 320 }, "maxItems": 5 }
+        },
+        "required": ["to", "subject", "body"],
+        "additionalProperties": false
+      },
+      "reversible": false,
+      "side_effects": "external",
+      "egress_params": ["to", "cc"]
+    }
+  ]
+}

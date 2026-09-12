@@ -38,6 +38,11 @@ dev = [
 build = [
   "pyinstaller>=6.10",
 ]
+# The platform keystore for connector credentials (ADR 0021). Optional: without it the vault
+# seals with DPAPI on Windows and an owner-only file elsewhere, and the record says which.
+connectors = [
+  "keyring>=25",
+]
 
 # One console script, and it is the only entry point a person types. ``athena serve`` hands its
 # flags straight to ``athena.daemon.server.serve``; ``athena doctor`` and ``athena brain

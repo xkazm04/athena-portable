@@ -36,6 +36,8 @@ from typing import Any
 
 from athena.channels.voice.backends import VoiceBackend
 from athena.channels.voice.gateway import VOICE_PATH, VoiceGateway
+from athena.connectors.service import Service, services_for
+from athena.connectors.vault import Vault
 from athena.contracts.registry import ExecResult, ExecutorFn, TurnContext
 from athena.core.approvals import Approvals
 from athena.core.brain.store import DEFAULT_CONFIDENCE, Brain, ProvenanceError
@@ -161,9 +163,13 @@ class AthenaLocal:
     frames: FrameBuilder
     lane: BrowserLane
     daemon: AthenaDaemon
+    #: The connector vault, or ``None`` for a deployment with none (README §4).
+    vault: Vault | None = None
 
     def close(self) -> None:
-        """Close the brain. Everything else holds no handle of its own."""
+        """Close the brain and cancel any consent flow. Everything else holds no handle."""
+        if self.vault is not None:
+            self.vault.close()
         self.brain.close()
 
     def __enter__(self) -> AthenaLocal:
@@ -185,6 +191,7 @@ def build_local(
     policy: Policy | None = None,
     extra_args: tuple[str, ...] | None = None,
     voice: VoiceBackend | None = None,
+    vault: Vault | None = None,
 ) -> AthenaLocal:
     """Assemble one local Athena: brain, tables, law, catalog, gate, engine, lane, daemon.
 
@@ -199,6 +206,12 @@ def build_local(
     ``voice`` is the backend that hears and speaks on ``/voice``. ``None`` — the default, and
     what a machine with no provider key gets — registers no socket at all, so the daemon has no
     voice channel rather than one that fails on the first utterance (ADR 0019).
+
+    ``vault`` is the connector vault (README §4, ADR 0021). When one is given, structural policy
+    asks it whether a connector is live on every call, each live connector's tools are merged
+    into the catalog under ``connector:<id>``, the ``/connectors`` routes are served, and a
+    connect or disconnect re-merges at once. ``None`` — a test's default — is a deployment with
+    no connector it may ever call, which is what rule 4 refuses closed.
     """
     dialect = DIALECTS.get(engine)
     if dialect is None:
@@ -218,6 +231,8 @@ def build_local(
         checkpoint=checkpoint_executor(brain),
     )
     catalog = build_catalog(services)
+    if vault is not None and policy is None:
+        policy = Policy(connectors=vault)
     gate = PolicyHook(catalog, approvals, policy or Policy())
 
     ledger_hook = LedgerHook(ledger)
@@ -263,6 +278,8 @@ def build_local(
     )
     if voice is not None:
         daemon.sockets.add(VOICE_PATH, VoiceGateway(daemon, voice))
+    if vault is not None:
+        _wire_connectors(daemon, catalog, vault)
     return AthenaLocal(
         brain=brain,
         catalog=catalog,
@@ -276,7 +293,30 @@ def build_local(
         frames=frames,
         lane=lane,
         daemon=daemon,
+        vault=vault,
     )
+
+
+def _wire_connectors(daemon: AthenaDaemon, catalog: Catalog, vault: Vault) -> None:
+    """Merge every live connector now, re-merge on change, and serve the routes (ADR 0021).
+
+    A merge with an empty tool list is how a disconnect leaves the catalog: ``list_tools`` on a
+    dead connector yields nothing, and the origin's set is replaced with nothing.
+    """
+    from athena.daemon.connectors import connector_routes
+
+    services: dict[str, Service] = services_for(vault)
+
+    def merge(connector_id: str) -> None:
+        service = services.get(connector_id)
+        if service is not None:
+            catalog.merge_connector(connector_id, service)
+
+    for connector_id in services:
+        merge(connector_id)
+    vault.on_change(merge)
+    for route in connector_routes(daemon, vault):
+        daemon.routes.add(route)
 
 
 def _default_args(dialect: CliDialect) -> tuple[str, ...]:

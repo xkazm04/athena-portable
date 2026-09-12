@@ -22,6 +22,10 @@ the token on every route), ADR 0012 (one turn is one SSE stream of channel event
 | `GET /ledger/rollup?by=` | spend and errors summed on one dimension | read |
 | `GET /playbooks?origin=` | the procedurals the brain has distilled about one origin | read |
 | `GET /voice` + `Upgrade: websocket` | the voice channel: PCM16 in, events and audio out | writer, per turn |
+| `GET /connectors` | every connector spec with its connection record, never a credential | read |
+| `POST /connectors/<id>/connect` | a pasted token, or an OAuth client that starts the consent flow | writer |
+| `POST /connectors/<id>/flow` | where the consent flow stands | read |
+| `POST /connectors/<id>/disconnect`, `.../probe`, `.../settings` | revoke and destroy; re-check; the switches and the allow-list | writer |
 
 Every route requires `X-Athena-Token`, including `/health`; the one exception is the CORS
 preflight, which carries no body and reads nothing. Every response says `Connection: close`.
@@ -283,6 +287,34 @@ for the generation to drop.
 
 `python -c "from athena.channels.voice import connect; …"` is a client with no shell; the tests in
 `tests/channels/` are the reference for one.
+
+## The connectors
+
+A connector is one JSON spec under `src/athena/connectors/builtin/` (Gmail and Notion ship) whose
+tools enter the catalog under `connector:<id>` exactly as a page's manifest does, with the class
+the catalog derives from `reversible` and `side_effects` (ADR 0021). Credentials live in the vault
+under `ATHENA_HOME/connectors/`, sealed by the keystore, DPAPI or an owner-only file, and never in
+a brain. `--no-connectors` starts the daemon without the vault.
+
+```bash
+curl -s "$ATHENA/connectors" -H "X-Athena-Token: $TOKEN"
+curl -s -X POST "$ATHENA/connectors/notion/connect" -H "X-Athena-Token: $TOKEN"   -H "Content-Type: application/json" -d '{"token": "ntn_..."}'
+curl -s -X POST "$ATHENA/connectors/notion/settings" -H "X-Athena-Token: $TOKEN"   -H "Content-Type: application/json" -d '{"writes_enabled": true, "allowlist": ["<page id>"]}'
+curl -s -X POST "$ATHENA/connectors/gmail/connect" -H "X-Athena-Token: $TOKEN"   -H "Content-Type: application/json" -d '{"client_id": "...", "client_secret": "..."}'
+curl -s -X POST "$ATHENA/connectors/gmail/flow" -H "X-Athena-Token: $TOKEN"
+```
+
+A pasted token is probed against the provider before it is sealed; a refused one is a `409
+validator_failed` with no value in its detail. A Gmail connect answers a `flow` whose
+`authorize_url` the daemon has already opened in the browser; the consent lands on a one-shot
+loopback listener of the flow's own, and `flow` says `awaiting_consent`, `exchanging`, `done`
+or `failed`. A connect is in the catalog for the very next turn (`/health` counts its tools); a
+disconnect refuses the very next call, because structural policy asks the vault on every one.
+
+A read (`connector.notion.search`, `connector.gmail.read_mail`) comes back fenced and capped at
+1,600 characters. A write (`send_mail`, `append_to_page`, `create_page`) is `GATED` — a card — and
+runs only while the connector's writes switch is on and every recipient or page it names is on
+the allow-list. Nothing that lists, shows or rotates a credential is a tool.
 
 ## The real thing
 
