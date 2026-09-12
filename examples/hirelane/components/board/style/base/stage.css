@@ -1,0 +1,32 @@
+/* ------------------------------------------------------------------ stage */
+
+/*
+ * The stage holds what it is given at the top of the room.
+ *
+ * Centring was tried and is wrong: it pushed the board away from the filters
+ * that operate it and left a gap in the middle of the reading order. The board
+ * belongs directly under its own controls, and the room belongs under the
+ * board, lit by the third bloom, with the register's two class bands closing
+ * the page beneath it.
+ */
+.bd-stage {
+  position: relative;
+  overflow-x: clip;
+  min-block-size: 0;
+  display: grid;
+  grid-template: minmax(0, 1fr) / 1fr;
+  align-items: start;
+}
+
+/* The layer is the room; what it holds decides how much of it to take. It has
+   to be a DEFINITE height, or the board's own `min/max-block-size: …100%…`
+   resolve against an indefinite parent and are simply dropped. */
+.bd-layer {
+  grid-area: 1 / 1;
+  align-self: stretch;
+  inline-size: 100%;
+  min-inline-size: 0;
+  block-size: 100%;
+  min-block-size: 0;
+}
+

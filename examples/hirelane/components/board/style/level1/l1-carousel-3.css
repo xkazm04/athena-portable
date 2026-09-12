@@ -1,0 +1,13 @@
+.bd-dot[aria-current="true"] {
+  background: var(--bd-ink);
+  transform: scale(1.4);
+}
+
+.bd-hint {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-label);
+  letter-spacing: var(--bd-track-caps);
+  text-transform: uppercase;
+  color: var(--bd-ink-4);
+}
+

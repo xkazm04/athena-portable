@@ -1,0 +1,90 @@
+/*
+ * hirelane scale layer — DESIGN-LAW.md §1.
+ *
+ * Round 1 of this repo's design experiment measured the shared token contract in
+ * @athena/demo-kit and found 15 custom properties: one radius, one gap, one shadow, and no
+ * spacing, type or motion scale at all. It is a theming hook, not a design system. Every direction
+ * built against it had to invent seven to nine tokens of its own, so no two directions could be
+ * compared on rhythm, and none could be reviewed against a rule.
+ *
+ * This file is the missing layer, at app level. It only ADDS custom properties on :root. It
+ * declares no class selector, redefines no `--dk-*`, and touches nothing the shipped design reads,
+ * so `/` renders identically with or without it. Variants consume `--hl-*` and alias `--dk-*` from
+ * it inside their own `[data-variant]` block (§1.6) — the fifteen-line seam, never a fork.
+ *
+ * The law: no raw pixel value in a variant stylesheet outside its own token block.
+ */
+
+:root {
+  /* --- Spacing (§1.1). Ten steps. Adjacent regions of different rank differ by >= 2 steps. --- */
+  --hl-space-1: 4px;
+  --hl-space-2: 8px;
+  --hl-space-3: 12px;
+  --hl-space-4: 16px;
+  --hl-space-5: 24px;
+  --hl-space-6: 32px;
+  --hl-space-7: 48px;
+  --hl-space-8: 64px;
+  --hl-space-9: 96px;
+  --hl-space-10: 128px;
+
+  /* --- Type size (§1.2). Fluid from `lg` up; the reading sizes stay fixed on purpose. --- */
+  --hl-text-2xs: 0.6875rem;
+  --hl-text-xs: 0.75rem;
+  --hl-text-sm: 0.8125rem;
+  --hl-text-base: 0.9375rem;
+  --hl-text-md: 1.0625rem;
+  --hl-text-lg: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --hl-text-xl: clamp(1.6rem, 1.3rem + 1.4vw, 2.25rem);
+  --hl-text-2xl: clamp(2.2rem, 1.6rem + 2.8vw, 3.5rem);
+  --hl-text-3xl: clamp(3rem, 2rem + 5vw, 5.5rem);
+
+  /* Leading and tracking are separate scales; display sizes take tight of both. */
+  --hl-leading-tight: 1.05;
+  --hl-leading-snug: 1.2;
+  --hl-leading-normal: 1.5;
+  --hl-leading-relaxed: 1.7;
+
+  --hl-track-tight: -0.03em;
+  --hl-track-normal: 0em;
+  --hl-track-wide: 0.06em;
+  --hl-track-caps: 0.12em;
+
+  /* --- Motion (§1.3). One signature motion per direction; everything else is feedback. --- */
+  --hl-dur-1: 90ms;
+  --hl-dur-2: 160ms;
+  --hl-dur-3: 260ms;
+  --hl-dur-4: 420ms;
+  --hl-dur-5: 700ms;
+  --hl-dur-6: 1200ms;
+  --hl-stagger: 40ms;
+
+  --hl-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --hl-ease-entrance: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --hl-ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --hl-ease-snap: cubic-bezier(0.85, 0, 0.15, 1);
+
+  /* --- Elevation (§1.4). Layered, never a single blur. A direction may refuse all of it. --- */
+  --hl-elev-0: none;
+  --hl-elev-1: 0 1px 2px rgb(0 0 0 / 4%), 0 1px 1px rgb(0 0 0 / 3%);
+  --hl-elev-2: 0 2px 4px rgb(0 0 0 / 5%), 0 4px 12px rgb(0 0 0 / 5%);
+  --hl-elev-3: 0 4px 8px rgb(0 0 0 / 6%), 0 12px 28px rgb(0 0 0 / 8%);
+  --hl-elev-4: 0 8px 16px rgb(0 0 0 / 8%), 0 32px 64px rgb(0 0 0 / 12%);
+
+  /* --- Rule weight (§1.5). A semantic ladder in this app: see DESIGN-LAW.md §7. --- */
+  --hl-rule-1: 1px;
+  --hl-rule-2: 2px;
+  --hl-rule-3: 3px;
+
+  --hl-radius-0: 0px;
+  --hl-radius-1: 3px;
+  --hl-radius-2: 6px;
+  --hl-radius-3: 10px;
+  --hl-radius-4: 18px;
+  --hl-radius-round: 999px;
+
+  /* Running prose is clamped. An evidence quote at 120ch is not evidence anyone reads. */
+  --hl-measure-narrow: 44ch;
+  --hl-measure-prose: 62ch;
+  --hl-measure-wide: 78ch;
+}

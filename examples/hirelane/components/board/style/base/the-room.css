@@ -1,0 +1,142 @@
+/* --------------------------------------------------------------- the room */
+
+.bd-root {
+  position: relative;
+  isolation: isolate;
+  min-block-size: 100svh;
+  background: var(--bd-void);
+  color: var(--bd-ink);
+  font-family: var(--bd-font);
+  font-size: var(--bd-text-base);
+  line-height: var(--bd-leading-normal);
+  container-type: inline-size;
+  container-name: bd-root;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: var(--bd-s4);
+  padding: var(--bd-s4) var(--bd-s5) var(--bd-s4);
+}
+
+/*
+ * The blooms. Three soft grey lights behind the content, none of them centred
+ * and none of them coloured: the pastels are reserved for meaning, so the
+ * atmosphere has to be built out of value alone.
+ */
+.bd-blooms,
+.bd-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/*
+ * The third bloom is the floor. It used to sit at 4% and 108% down, which put
+ * almost all of it off the bottom of the page; with the board centred, the
+ * space under it is a third of the screen and needs to read as lit room rather
+ * than as the page having ended. Raised and brought up, it gives the board
+ * something to stand on.
+ */
+.bd-blooms {
+  background:
+    radial-gradient(46% 38% at 16% 4%, rgb(255 255 255 / 7%) 0%, transparent 70%),
+    radial-gradient(38% 44% at 88% 22%, rgb(255 255 255 / 5%) 0%, transparent 72%),
+    radial-gradient(86% 46% at 50% 96%, rgb(255 255 255 / 7%) 0%, transparent 72%);
+}
+
+.bd-grain {
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.bd-root > *:not(.bd-blooms):not(.bd-grain) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Except the stage, which holds the dossier's fixed layer and must therefore
+   sit above the footer. Same specificity as the rule above and later in the
+   file, which is what makes it win. */
+.bd-root > .bd-stage:not(.bd-blooms) {
+  z-index: 2;
+}
+
+.bd-root * {
+  box-sizing: border-box;
+}
+
+.bd-root button,
+.bd-root select,
+.bd-root textarea,
+.bd-root input {
+  font: inherit;
+  color: inherit;
+}
+
+.bd-root :where(button, select, textarea, input, a, [tabindex]):focus-visible {
+  outline: var(--bd-rule-w2) solid var(--bd-accent);
+  outline-offset: var(--bd-s1);
+}
+
+.bd-fig {
+  font-family: var(--bd-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Every scroll surface, themed. A default scrollbar on a near-black panel is a
+   bright grey rail and the loudest thing on the card. */
+.bd-root :where(*) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bd-rule-2) transparent;
+}
+
+.bd-root ::-webkit-scrollbar {
+  inline-size: var(--bd-scrollbar);
+  block-size: var(--bd-scrollbar);
+}
+
+.bd-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bd-root ::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 18%);
+  border-radius: var(--bd-radius-round);
+  border: var(--bd-rule-w3) solid transparent;
+  background-clip: content-box;
+}
+
+.bd-root ::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 30%);
+  background-clip: content-box;
+}
+
+/* The gated region inverts, so its scrollbar has to invert with it. */
+.bd-gate-panel :where(*) {
+  scrollbar-color: var(--bd-gate-edge) transparent;
+}
+
+.bd-block-label {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-label);
+  font-weight: 500;
+  letter-spacing: var(--bd-track-caps);
+  text-transform: uppercase;
+  color: var(--bd-ink-3);
+  margin: 0;
+}
+
+/* The second voice. A note a person wrote, and nothing else, ever. */
+/*
+ * The second voice. Caveat's drawn size sits well below its point size, so
+ * setting it on the body step made it the smallest thing on the page rather
+ * than an aside a person would actually read. It gets a step of its own.
+ */
+.bd-hand {
+  font-family: var(--bd-font-hand);
+  font-size: var(--bd-text-hand);
+  line-height: var(--bd-leading-snug);
+  color: var(--bd-mark);
+}
+

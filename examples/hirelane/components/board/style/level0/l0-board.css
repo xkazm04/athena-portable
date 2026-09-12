@@ -1,0 +1,190 @@
+/* ---------------------------------------------------------------- L0 board */
+
+/*
+ * The kanban, kept: one column per stage, because position is the fact a
+ * pipeline carries and a column states it without a label.
+ *
+ * What changed is what goes inside a column. A role is now a ROW — one band,
+ * a title line and a line of faces — so a column stacks as many roles as the
+ * org has open rather than holding two and running out of shape. It also makes
+ * the level below reachable: the carousel is a horizontal run of cards, a row
+ * is that run before it opened, so the faces grow into the cards where they
+ * already stand.
+ */
+/*
+ * The board is as tall as the tallest column needs and no taller.
+ *
+ * It used to be `block-size: 100%`, which stretched five columns to fill the
+ * viewport: at 1440x900 that was 167px of content inside a 474px box, and at
+ * 1920x1080 the same content inside 680px. An empty container reads as content
+ * that failed to load; a column that ends where its rows end reads as the
+ * whole of what is there. The room below the board is not waste — the third
+ * bloom sits at `50% 108%` and lights it, which is the dark room the direction
+ * is named for.
+ *
+ * `align-items: stretch` still holds, so all five columns match the tallest and
+ * their feet land on one line. `max-block-size: 100%` keeps the cap: fifteen
+ * open roles still cost the board a scrollbar rather than the page's shape.
+ */
+.bd-board {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--bd-s3);
+  align-items: stretch;
+  align-content: stretch;
+  /* A floor as well as a ceiling. Sized purely to content, a two-role pipeline
+     drew a 330px strip across a 1080 screen and left four hundred pixels of
+     nothing under it; 28rem is about the height a stage column reads as a
+     column at, so the board keeps its proportions when the data is thin without
+     going back to filling the viewport when it is not. The cap is what keeps
+     fifteen open roles inside the page, scrolling the column rather than the
+     board. */
+  min-block-size: 28rem;
+  max-block-size: 100%;
+}
+
+.bd-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-s2);
+  min-inline-size: 0;
+  min-block-size: 0;
+  padding: var(--bd-s3);
+  background: var(--bd-glass);
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-block-start: var(--bd-rule-w3) solid var(--bd-rule-2);
+  border-radius: var(--bd-radius-3);
+  /* §9.4 exception: a blur radius, not a length on the spacing scale. */
+  backdrop-filter: blur(8px);
+}
+
+/* The stage carrying the work is the one the accent rule is spent on. */
+.bd-column[data-role="screening"] {
+  border-block-start-color: var(--bd-accent);
+}
+
+.bd-column-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bd-s2);
+  padding-block-end: var(--bd-s2);
+  border-block-end: var(--bd-rule-1) solid var(--bd-rule);
+}
+
+.bd-column-name {
+  margin: 0;
+  font-family: var(--bd-font-display);
+  font-size: var(--bd-text-base);
+  font-weight: 600;
+  letter-spacing: var(--bd-track-tight);
+  color: var(--bd-ink);
+}
+
+.bd-column-figures {
+  display: flex;
+  gap: var(--bd-s1);
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-4);
+  flex: none;
+}
+
+/* The rows scroll inside the column, so fifteen open roles cost the board
+   nothing but a scrollbar. */
+.bd-column-body {
+  display: grid;
+  align-content: start;
+  gap: var(--bd-s1);
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bd-rule-2) transparent;
+}
+
+/* A role, as one band: who it is on the first line, who is in it on the
+   second. Two lines rather than two columns, because a stage column is 250px
+   wide and a name and a queue cannot both have it. */
+.bd-group-row {
+  display: grid;
+  gap: var(--bd-s2);
+  inline-size: 100%;
+  padding: var(--bd-s2);
+  background: none;
+  border: var(--bd-rule-1) solid transparent;
+  border-radius: var(--bd-radius-2);
+  text-align: start;
+  cursor: pointer;
+  transition: background var(--bd-dur-2) var(--bd-ease), border-color var(--bd-dur-2) var(--bd-ease);
+}
+
+.bd-group-row:hover {
+  background: var(--bd-glass);
+  border-color: var(--bd-rule);
+}
+
+.bd-group-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bd-s2);
+  min-inline-size: 0;
+}
+
+.bd-group-label b {
+  font-size: var(--bd-text-sm);
+  font-weight: 600;
+  color: var(--bd-ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bd-group-label span {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-4);
+  flex: none;
+}
+
+/*
+ * The pile. Three arrangements, picked by the row from its own count, and the
+ * overlap is handed in as a custom property because it grows with the count —
+ * a row of six is airy, a row of fourteen is dense, and both are about as wide.
+ */
+.bd-pile {
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
+}
+
+.bd-pile-item {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-s2);
+  border-radius: var(--bd-radius-round);
+  min-inline-size: 0;
+}
+
+.bd-pile-name {
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bd-pile[data-stacking="full"],
+.bd-pile[data-stacking="first"] {
+  flex-wrap: wrap;
+  gap: var(--bd-s2) var(--bd-s4);
+}
+
+.bd-pile[data-stacking="full"] .bd-pile-item,
+.bd-pile[data-stacking="first"] .bd-pile-item {
+  padding: var(--bd-s1) var(--bd-s3) var(--bd-s1) var(--bd-s1);
+  background: var(--bd-glass);
+}
+

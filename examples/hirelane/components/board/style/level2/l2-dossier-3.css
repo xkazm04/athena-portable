@@ -1,0 +1,160 @@
+.bd-btn {
+  min-block-size: var(--bd-control);
+  padding: 0 var(--bd-s4);
+  background: var(--bd-glass);
+  border: var(--bd-rule-1) solid var(--bd-rule-2);
+  border-radius: var(--bd-radius-round);
+  color: var(--bd-ink);
+  font-size: var(--bd-text-sm);
+  cursor: pointer;
+  transition: transform var(--bd-dur-1) var(--bd-ease), background var(--bd-dur-1) var(--bd-ease);
+}
+
+.bd-btn:hover:not(:disabled) {
+  background: var(--bd-glass-2);
+}
+
+.bd-btn:active:not(:disabled) {
+  /* §9.4 exception: a one-pixel optical nudge, not a spacing step. */
+  transform: translateY(1px);
+}
+
+.bd-btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.bd-class-auto {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-s2);
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-label);
+  letter-spacing: var(--bd-track-caps);
+  text-transform: uppercase;
+  color: var(--bd-auto);
+}
+
+.bd-class-auto::before {
+  content: "";
+  inline-size: var(--bd-swatch);
+  block-size: var(--bd-swatch);
+  border-radius: var(--bd-radius-round);
+  background: var(--bd-auto);
+}
+
+.bd-note-field {
+  flex: 1 1 20rem;
+  display: grid;
+  gap: var(--bd-s1);
+  padding: var(--bd-s2) var(--bd-s3);
+  border: var(--bd-rule-1) solid var(--bd-rule-2);
+  border-radius: var(--bd-radius-2);
+  background: var(--bd-glass);
+}
+
+.bd-note-input {
+  inline-size: 100%;
+  background: none;
+  border: 0;
+  color: inherit;
+  font-size: var(--bd-text-sm);
+  resize: vertical;
+  max-block-size: 8em;
+}
+
+.bd-select {
+  min-block-size: var(--bd-control);
+  padding: 0 var(--bd-s3);
+  background: var(--bd-glass);
+  border: var(--bd-rule-1) solid var(--bd-rule-2);
+  border-radius: var(--bd-radius-round);
+  color: var(--bd-ink);
+  font-size: var(--bd-text-sm);
+}
+
+.bd-select option {
+  background: var(--bd-sheet);
+  color: var(--bd-ink);
+}
+
+/*
+ * The GATED region. A physically separate block at the foot: inverted to the
+ * one light surface on a dark page, at the heaviest rule in the ladder.
+ * Greyscale the page and it is still the only region like it.
+ */
+.bd-gate-panel {
+  display: grid;
+  gap: var(--bd-s3);
+  padding: var(--bd-s4) var(--bd-s5);
+  /* The one light surface on a dark page — the structural half of the gate —
+     but warmed toward the coral it is entitled to, so it belongs to this app
+     rather than interrupting it. */
+  background: var(--bd-gate-sheet);
+  color: var(--bd-gate-ink);
+  border-block-start: var(--bd-rule-w3) solid var(--bd-gate);
+  border-end-start-radius: var(--bd-radius-3);
+  border-end-end-radius: var(--bd-radius-3);
+  flex: none;
+}
+
+.bd-gate-panel .bd-block-label {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-s2);
+  color: var(--bd-gate-ink-2);
+}
+
+.bd-gate-panel .bd-btn {
+  background: var(--bd-gate-wash);
+  border-color: var(--bd-gate-edge);
+  color: var(--bd-gate-ink);
+}
+
+.bd-gate-panel .bd-btn:hover:not(:disabled) {
+  background: var(--bd-gate-lit);
+  border-color: var(--bd-gate-edge-2);
+}
+
+.bd-gate-panel .bd-btn[data-fire="true"] {
+  background: var(--bd-gate-fire);
+  border-color: var(--bd-gate-fire);
+  color: var(--bd-gate-lit);
+}
+
+.bd-gate-panel .bd-btn[data-fire="true"]:hover:not(:disabled) {
+  background: var(--bd-gate-fire-2);
+  border-color: var(--bd-gate-fire-2);
+}
+
+.bd-gate-panel .bd-select {
+  background: var(--bd-gate-wash-2);
+  border-color: var(--bd-gate-edge);
+  color: var(--bd-gate-ink);
+}
+
+.bd-gate-panel .bd-select option {
+  background: var(--bd-gate-lit);
+  color: var(--bd-gate-ink);
+}
+
+.bd-gate-panel .bd-hand {
+  color: var(--bd-gate-ink-2);
+}
+
+.bd-arm {
+  display: grid;
+  gap: var(--bd-s2);
+  padding: var(--bd-s3) var(--bd-s4);
+  border: var(--bd-rule-w2) solid var(--bd-gate-edge-2);
+  border-radius: var(--bd-radius-2);
+  background: var(--bd-gate-wash-3);
+}
+
+.bd-arm-q {
+  margin: 0;
+  max-inline-size: var(--bd-measure-prose);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-relaxed);
+}
+

@@ -1,0 +1,92 @@
+/* ------------------------------------------------------------- responsive */
+
+@container bd-dossier (max-width: 60rem) {
+  .bd-dossier-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bd-bench {
+    position: static;
+  }
+}
+
+/*
+ * Five columns for as long as a face-line fits in one.
+ *
+ * The threshold used to be 86rem, and the container is the root's CONTENT box —
+ * so a 1366 laptop measured 82rem and every machine narrower than about 1408px
+ * saw the five-stage pipeline wrapped into 3 + 2. A pipeline that wraps is not
+ * a pipeline; DESIGN-LAW §3 requires the ordered buckets to keep their order.
+ * The real floor is the pile's own room: `PILE_ROOM` is 200px, the column pads
+ * by 12 each side and the board gaps by 12, so five columns need about 1198px
+ * of container. 75rem is that, with the rounding in the reader's favour, and it
+ * keeps the board intact on a 1280 screen.
+ */
+@container bd-root (max-width: 75rem) {
+  .bd-board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bd-column-body {
+    overflow-y: visible;
+  }
+}
+
+@container bd-root (max-width: 62rem) {
+  .bd-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container bd-root (max-width: 48rem) {
+  .bd-root {
+    padding: var(--bd-s3);
+  }
+
+  .bd-honesty {
+    grid-column: 1;
+  }
+
+  /* Five columns cannot survive a phone, so the stages stack and each one
+     shows its rows in full. */
+  .bd-board {
+    grid-template-columns: minmax(0, 1fr);
+    block-size: auto;
+  }
+
+  .bd-column-body {
+    overflow-y: visible;
+  }
+
+  /* The margin note has no margin to sit in at this width, so it goes under the
+     heading instead of taking a third of the line away from it. */
+  .bd-carousel-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bd-carousel-head .bd-hand {
+    grid-column: 1;
+    justify-self: start;
+    max-inline-size: var(--bd-measure-narrow);
+  }
+
+  .bd-roles {
+    flex-wrap: wrap;
+    border-radius: var(--bd-radius-3);
+  }
+
+  /* The carousel cannot bend at this width without becoming illegible, so it
+     degrades to a single card with the arrows under it. Same data, same order,
+     one at a time. */
+  .bd-rail-3d {
+    block-size: var(--bd-rail-h);
+    perspective: none;
+    mask-image: none;
+  }
+
+  .bd-slide {
+    inline-size: min(var(--bd-card-narrow), 88cqi);
+    margin-inline-start: calc(min(var(--bd-card-narrow), 88cqi) / -2);
+  }
+}
+

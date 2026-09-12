@@ -1,0 +1,191 @@
+/*
+ * Faces alone, each tucked under the one before it.
+ *
+ * Three things make a 12-17px strip of a 32px disc readable, and all three are
+ * needed. The RING is a solid ground-coloured collar, thick enough to survive
+ * being the only gap between two discs. The PAINT ORDER runs forward, set from
+ * the component, so the whole face belongs to the strongest candidate. And the
+ * GLYPH is one letter pushed into the strip that is still showing: two centred
+ * mono characters in that space rendered as half-letters, which is why the
+ * board used to print "BI" for Bo Eriksen.
+ */
+.bd-pile[data-stacking="pile"] .bd-pile-item + .bd-pile-item {
+  margin-inline-start: calc(var(--overlap, var(--bd-s3)) * -1);
+}
+
+/*
+ * The collar is what makes a pile eleven people rather than one smeared shape.
+ * Two pixels was enough when the marks were pastel and the eye had hue to cut
+ * on; against a monochrome mark whose brightest fill is 88% white it is not, and
+ * two adjacent lit discs merge. Three pixels of the page's own black, plus a
+ * hairline on the disc itself, restores the edge without adding a colour.
+ */
+.bd-pile[data-stacking="pile"] .bd-mono {
+  box-shadow:
+    /* §9.4 exception: ring geometry inside a box-shadow, not a spacing step. */
+    0 0 0 3px var(--bd-void),
+    inset 0 0 0 1px rgb(255 255 255 / 22%);
+}
+
+/* The visible strip of a tucked face is its trailing edge, because the face
+   before it covers the leading one. So the letter goes there, at the size that
+   strip can hold, and the drawn marks are pushed the same way so each one
+   shows its own edge rather than five overlapping middles. */
+.bd-pile[data-stacking="pile"] .bd-mono[data-kind="initials"] {
+  place-items: center end;
+  padding-inline-end: var(--bd-s1);
+  font-size: var(--bd-text-xs);
+}
+
+.bd-pile[data-stacking="pile"] .bd-pile-item:first-child .bd-mono[data-kind="initials"] {
+  place-items: center;
+  padding-inline-end: 0;
+  font-size: var(--bd-text-sm);
+}
+
+.bd-pile-item[data-borderline="true"] .bd-mono {
+  border-color: var(--bd-mark);
+}
+
+.bd-pile-more {
+  margin-inline-start: var(--bd-s3);
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-3);
+  flex: none;
+}
+
+.bd-empty {
+  margin: 0;
+  padding: var(--bd-s3);
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-4);
+  border: var(--bd-rule-1) dashed var(--bd-rule);
+  border-radius: var(--bd-radius-2);
+}
+
+/*
+ * The fit rule: the group's scored candidates as ticks on the rubric's own 0-4
+ * line, with the two stored fit floors ruled across it.
+ *
+ * The line is not a chart and has no axis furniture, because it is answering
+ * one question — which of these ten groups is worth opening — and a count
+ * cannot. Five ticks left of the promising floor and three above the strong one
+ * are different afternoons. It is bar length and rule weight only: no hue is
+ * spent here, so the reserved two keep meaning what they mean (DESIGN-LAW §4.2).
+ */
+.bd-group-scale {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-s2);
+  min-inline-size: 0;
+}
+
+.bd-scale {
+  position: relative;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: var(--bd-s4);
+  border-block-end: var(--bd-rule-1) solid var(--bd-rule-2);
+}
+
+/* A floor is a hairline standing on the baseline. The strong floor is the
+   heavier of the two, so the ladder reads without a legend. */
+.bd-scale-floor {
+  position: absolute;
+  inset-block: var(--bd-s1) 0;
+  inset-inline-start: calc(var(--at) * 100%);
+  inline-size: var(--bd-rule-1);
+  background: var(--bd-rule-2);
+}
+
+.bd-scale-floor[data-strong="true"] {
+  inset-block-start: 0;
+  inline-size: var(--bd-rule-w2);
+  background: var(--bd-ink-4);
+}
+
+/* A person. Not a data point: it is the only mark on the line that is drawn
+   rather than ruled, so the eye counts people and reads the floors as ground. */
+.bd-scale-tick {
+  position: absolute;
+  inset-block-end: calc(var(--bd-s2) * -0.375);
+  inset-inline-start: calc(var(--at) * 100%);
+  inline-size: calc(var(--bd-s2) * 0.75);
+  block-size: calc(var(--bd-s2) * 0.75);
+  margin-inline-start: calc(var(--bd-s2) * -0.375);
+  border-radius: var(--bd-radius-round);
+  background: var(--bd-ink-2);
+}
+
+/* The arguable are the ones a person flagged, so they take `mark` — the same
+   hue the borderline tab carries everywhere else in the direction. */
+.bd-scale-tick[data-borderline="true"] {
+  background: var(--bd-mark);
+  /* §9.4 exception: a hairline ring drawn as a shadow spread, not a spacing step. */
+  box-shadow: 0 0 0 2px rgb(242 217 155 / 22%);
+}
+
+.bd-scale-note {
+  flex: none;
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-label);
+  letter-spacing: var(--bd-track-caps);
+  text-transform: uppercase;
+  color: var(--bd-ink-4);
+}
+
+/*
+ * The column's foot: the one fact true in this stage and in no other, in the
+ * vocabulary the level below uses for the same thing. `margin-block-start:auto`
+ * pins it to the bottom of the column, and because every column stretches to
+ * the tallest, the five facts land on one line across the board.
+ */
+.bd-column-foot {
+  margin: auto 0 0;
+  padding-block-start: var(--bd-s2);
+  border-block-start: var(--bd-rule-1) solid var(--bd-rule);
+  /* Two lines of floor. A narrow column wraps its fact and a wide one does not,
+     and without a floor the five hairlines above the five feet sat at five
+     different heights — the one place on this board where a ragged line is
+     obvious, because the feet are the only thing all five columns share. */
+  min-block-size: calc(2 * var(--bd-label) * 1.2);
+  font-size: var(--bd-label);
+  line-height: var(--bd-leading-snug);
+  letter-spacing: var(--bd-track-caps);
+  text-transform: uppercase;
+  color: var(--bd-ink-4);
+}
+
+/* The face: either a drawn mark or the initials, and the two are the same size
+   and the same shape so a row of them stays a row. */
+.bd-mono {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  /* --face, not --bd-s6: components/board/columns/stacking.ts SOLVES the tuck from this number,
+     so the face has to be drawn at the side the solve assumed. Columns.tsx pushes it in. */
+  inline-size: var(--face);
+  block-size: var(--face);
+  border-radius: var(--bd-radius-round);
+  background: var(--bd-glass-2);
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-sm);
+  letter-spacing: 0.02em;
+  color: var(--bd-ink);
+  flex: none;
+}
+
+.bd-mono[data-size="lg"] {
+  inline-size: var(--bd-s7);
+  block-size: var(--bd-s7);
+  font-size: var(--bd-text-base);
+}
+
+.bd-mono svg {
+  inline-size: 100%;
+  block-size: 100%;
+  display: block;
+}
+

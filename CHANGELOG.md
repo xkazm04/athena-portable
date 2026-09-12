@@ -6,6 +6,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 - `feat(examples): the shared kit and the studio's world` — `examples/` joins the workspace; `@athena/demo-kit` pruned to `db`, `activity`, `seed`, `ui`, `zoom`, `webmcp`; the seed registry gains `STUDIO`, one billing contact per client and the named cross-app people and aliases; ADR 0014 narrows the example-app non-goal to the three the demo runs on.
 - `feat(examples): ledgerbox, the books of act 1` — the Strip at `/`, variants removed; reads carry the client contact, `paid_ratio`, ambiguity and short-by on credits, the bank alias on a match; drafts are whole messages from the studio inbox; the close exports a titled markdown page.
+- `feat(examples): hirelane, the pipeline of act 2` — the Board at `/` with both tool sets mounted; `read_applicants` and `read_shortlist`; the Kestrel Labs applicant pinned from the registry; scheduling and rejection mail as complete envelopes from the studio inbox; no protected column, no protected parameter.
 
 ## P5 — MVP checkpoint (done)
 

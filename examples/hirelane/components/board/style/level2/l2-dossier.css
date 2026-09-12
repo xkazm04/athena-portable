@@ -1,0 +1,194 @@
+/* ----------------------------------------------------------- L2 dossier */
+
+/*
+ * A near-full-width spread, laid out the way the peer-comparison bench in the
+ * sibling hiring product is: a verdict band across the top, the evidence in
+ * ruled section bands down the main column, and the rest of this group standing
+ * beside it in a sticky rail — so "advance or reject" is answered against who
+ * else is actually available rather than in isolation.
+ */
+.bd-dossier-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--bd-s4);
+  background: var(--bd-scrim);
+  /* §9.4 exception: a blur radius, not a length on the spacing scale. */
+  backdrop-filter: blur(6px);
+}
+
+.bd-dossier {
+  inline-size: min(var(--bd-dossier-w), 100%);
+  /* §9.4 exception: a viewport clamp, not a spacing step. */
+  max-block-size: min(92svh, 1000px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgb(255 255 255 / 7%), rgb(255 255 255 / 3%)), var(--bd-ground);
+  border: var(--bd-rule-1) solid var(--bd-rule-2);
+  border-radius: var(--bd-radius-3);
+  box-shadow: var(--bd-elev-lift);
+  container-type: inline-size;
+  container-name: bd-dossier;
+}
+
+.bd-dossier-head {
+  display: grid;
+  gap: var(--bd-s3);
+  padding: var(--bd-s4) var(--bd-s5);
+  border-block-end: var(--bd-rule-1) solid var(--bd-rule);
+  flex: none;
+}
+
+.bd-dossier-top {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-s3);
+}
+
+.bd-dossier-name {
+  margin: 0;
+  font-family: var(--bd-font-display);
+  font-size: var(--bd-text-xl);
+  font-weight: 600;
+  letter-spacing: var(--bd-track-tight);
+  line-height: var(--bd-leading-tight);
+  color: var(--bd-ink);
+}
+
+.bd-dossier-sub {
+  margin: var(--bd-s0) 0 0;
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-3);
+}
+
+.bd-close {
+  margin-inline-start: auto;
+  min-inline-size: var(--bd-control);
+  min-block-size: var(--bd-control);
+  background: var(--bd-glass);
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-radius: var(--bd-radius-round);
+  color: var(--bd-ink-2);
+  cursor: pointer;
+  flex: none;
+}
+
+/* The verdict band: the numbers that decide, on one line. */
+.bd-verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--bd-s5);
+  padding: var(--bd-s3) var(--bd-s4);
+  background: var(--bd-glass);
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-radius: var(--bd-radius-2);
+}
+
+.bd-verdict div {
+  display: grid;
+  gap: var(--bd-s0);
+}
+
+.bd-verdict b {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-lg);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--bd-ink);
+}
+
+/* A cell whose value is a word, not a figure. The mono face and the figure size
+   belong to numbers that get compared down a column; a fit band is prose and
+   takes the text face one step smaller, so the number keeps the emphasis. */
+.bd-verdict div[data-word="true"] b {
+  font-family: var(--bd-font);
+  font-size: var(--bd-text-md);
+  font-weight: 600;
+  line-height: var(--bd-leading-snug);
+}
+
+.bd-verdict span {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-label);
+  letter-spacing: var(--bd-track-caps);
+  text-transform: uppercase;
+  color: var(--bd-ink-4);
+}
+
+/* The denominator: present, subordinate. */
+.bd-verdict .bd-of {
+  font-size: var(--bd-text-sm);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--bd-ink-4);
+}
+
+.bd-verdict .bd-hand {
+  margin-inline-start: auto;
+  max-inline-size: 34ch;
+  text-align: end;
+}
+
+/* The two columns. */
+/*
+ * The two columns.
+ *
+ * The last band of content fades under the reversible panel rather than being
+ * chopped by it. The rubric, criterion by criterion, is four sections down this
+ * column and there was nothing on the surface to say so; a pane whose content
+ * visibly continues past its own edge is the cheapest honest way to say "there
+ * is more here" without inventing a control for it.
+ */
+.bd-dossier-body {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: var(--bd-s5);
+  padding: var(--bd-s4) var(--bd-s5);
+  align-items: start;
+  mask-image: linear-gradient(180deg, #000 0, #000 calc(100% - var(--bd-s5)), transparent 100%);
+}
+
+.bd-main {
+  display: grid;
+  gap: 0;
+  min-inline-size: 0;
+}
+
+/* A ruled section band, which is what gives the long column its structure. */
+.bd-band-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bd-s3);
+  padding-block: var(--bd-s3) var(--bd-s2);
+  border-block-end: var(--bd-rule-1) solid var(--bd-rule);
+  margin-block-start: var(--bd-s4);
+}
+
+.bd-band-head:first-child {
+  margin-block-start: 0;
+}
+
+.bd-section {
+  padding-block: var(--bd-s3);
+  display: grid;
+  gap: var(--bd-s3);
+}
+
+.bd-prose {
+  margin: 0;
+  max-inline-size: var(--bd-measure-prose);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-relaxed);
+  color: var(--bd-ink-2);
+  white-space: pre-wrap;
+}
+

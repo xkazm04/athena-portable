@@ -1,0 +1,17 @@
+/* ------------------------------------------------------------------ toast */
+
+/*
+ * Nothing. Deliberately.
+ *
+ * `ToastProvider` mounts its stack as a SIBLING of the direction's wrapper, so the `--dk-*`
+ * aliases declared on `[data-variant="board"]` never reached it and it drew in the kit's light
+ * defaults over a near-black page. The answer used to be four `.dk-*` class rules here - the
+ * surface, the ink, the dismiss button and the two outcome edges, restated in raw hex.
+ *
+ * That is the exact thing DESIGN-LAW §1.6 forbids: "redefining any `.dk-*` class selector in a
+ * variant stylesheet ... every one of them was a variant reaching past the token seam. If a
+ * `.dk-*` component looks wrong in your direction, you have the wrong token values." It was the
+ * wrong token SCOPE. base/tokens.css now declares the block at document root as well as on the
+ * wrapper, the toast stack inherits it like any other element, and this file has nothing left to
+ * say. Keep it that way: a rule here is a token that belongs somewhere else.
+ */

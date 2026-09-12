@@ -1,0 +1,47 @@
+/* ------------------------------------------------------------------- mast */
+
+/* One column. The masthead carried a nav in its second track; the direction
+   index it linked to was reviewed out and the board is the root route, so there
+   is nowhere else to be and no track to reserve for saying so. */
+.bd-mast {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  column-gap: var(--bd-s5);
+  row-gap: var(--bd-s2);
+  padding-block-end: var(--bd-s3);
+  border-block-end: var(--bd-rule-1) solid var(--bd-rule);
+}
+
+.bd-mast-id {
+  min-inline-size: 0;
+}
+
+.bd-title {
+  margin: var(--bd-s2) 0 0;
+  text-wrap: balance;
+  font-family: var(--bd-font-display);
+  font-size: var(--bd-text-xl);
+  font-weight: 600;
+  letter-spacing: var(--bd-track-tight);
+  line-height: var(--bd-leading-tight);
+  color: var(--bd-ink);
+  transition: font-size var(--bd-dur-4) var(--bd-ease), opacity var(--bd-dur-3) var(--bd-ease);
+}
+
+.bd-root[data-level="1"] .bd-title,
+.bd-root[data-level="2"] .bd-title {
+  font-size: var(--bd-text-lg);
+  opacity: 0.6;
+}
+
+/* The honesty line, verbatim and visible without interaction (DESIGN-LAW §4.1). */
+.bd-honesty {
+  grid-column: 1;
+  margin: 0;
+  max-inline-size: var(--bd-measure-prose);
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-4);
+}
+
+
