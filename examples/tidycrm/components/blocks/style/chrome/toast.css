@@ -1,0 +1,29 @@
+/* ------------------------------------------------------------------ toast */
+
+/*
+ * `ToastProvider` mounts its stack as a sibling of the direction's wrapper, so
+ * the `--dk-*` aliases declared on `[data-variant="blocks"]` never reach it. The
+ * ramp itself does: it is declared on `:root:has([data-variant="blocks"])` in
+ * base/tokens.css, an ancestor of both, so these are roles and not literals.
+ */
+:root:has([data-variant="blocks"]) .dk-toast {
+  background: var(--bk-sheet);
+  border: 1px solid var(--bk-rule-ink);
+  border-radius: 0;
+  color: var(--bk-graphite);
+  box-shadow: none;
+}
+
+:root:has([data-variant="blocks"]) .dk-toast .dk-btn {
+  color: var(--bk-graphite-2);
+  background: none;
+  border-color: transparent;
+}
+
+:root:has([data-variant="blocks"]) .dk-toast-success {
+  border-inline-start: 3px solid var(--bk-greenline);
+}
+
+:root:has([data-variant="blocks"]) .dk-toast-error {
+  border-inline-start: 3px solid var(--bk-redline);
+}

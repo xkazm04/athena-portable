@@ -1,0 +1,52 @@
+/* ----------------------------------------------------------- rail and bar */
+
+.bk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bk-s4);
+  padding-block: var(--bk-s2);
+  border-block: var(--bk-rule-1) solid var(--bk-rule-ink);
+}
+
+.bk-rail {
+  display: flex;
+  gap: var(--bk-s1);
+}
+
+.bk-rung {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bk-s2);
+  min-block-size: var(--bk-s7);
+  padding: var(--bk-s2) var(--bk-s3);
+  background: none;
+  border: var(--bk-rule-1) solid transparent;
+  border-radius: var(--bk-radius-0);
+  color: var(--bk-graphite-4);
+  /* One step under the body's reading size: a control, and still read. */
+  font-size: var(--bk-text-sm);
+  cursor: pointer;
+  transition: color var(--bk-dur-2) var(--bk-ease);
+}
+
+.bk-rung[data-on="true"] {
+  color: var(--bk-graphite-2);
+}
+
+.bk-rung[data-here="true"] {
+  color: var(--bk-graphite);
+  border-color: var(--bk-graphite);
+}
+
+.bk-rung:disabled {
+  cursor: default;
+}
+
+.bk-rung-no {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-2xs);
+  letter-spacing: var(--bk-track-wide);
+}
+

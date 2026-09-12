@@ -1,0 +1,168 @@
+/*
+ * tidycrm scale layer — a corrected vendoring of `examples/hirelane/design/hl-scales.css`.
+ *
+ * WHY THIS FILE EXISTS
+ * The shared token contract in `@athena/demo-kit/ui/demo-kit.css` is fifteen custom properties:
+ * one radius, one gap, one shadow, and no spacing, type, motion or elevation scale at all. It is a
+ * theming hook, not a design system. Every direction built against it invented seven to nine
+ * tokens of its own, so no two directions in this repo can be compared on rhythm and none can be
+ * reviewed against a rule. hirelane's `hl-scales.css` is the artifact that fills that hole; this is
+ * that artifact, ported, with three defects fixed and one addition.
+ *
+ * WHAT CHANGED, AND WHY — the full diff is in `design/pass3-scale-brief.md`:
+ *
+ *   1. SCOPE. The original declares on `:root` and is imported from `app/globals.css`. Here
+ *      `app/globals.css` is owned by the parent session and off limits, so this file declares on
+ *      `[data-variant="scale"]` and is imported by the variant's own shell. This is strictly
+ *      safer: a `:root` scale layer is a global side effect that every other variant in the app
+ *      inherits whether or not it opted in.
+ *
+ *   2. FLUID TYPE IS MEASURED ON THE CONTAINER, NOT THE VIEWPORT. The original clamps with `vw`.
+ *      Three agents independently measured that the CopilotKit sidebar shrinks `body` to roughly
+ *      800px inside a 1280 viewport and 288px inside 768, so a `vw` clamp overstates the space it
+ *      is sizing for by about a third — the headline is correct on a spec sheet and wrong on the
+ *      screen. Every fluid step below uses `cqi`, and the variant wrapper declares
+ *      `container-type: inline-size`, so the type is sized by the box it is actually in.
+ *
+ *   3. THE TYPE FLOOR IS RAISED. The original's smallest step is 11px and its own §1.2 caps
+ *      all-caps labels at that step, which is the single defect the owner of this repo has
+ *      rejected twice ("typography size is mishandled with defaults too small"). The whole reading
+ *      ramp moves up two notches: nothing here is below 13px, and `--tc-text-sm` (15px) is
+ *      declared the floor for anything a person clicks, types into or reads at length. Caps labels
+ *      take `--tc-text-2xs` at 13px, not 11px.
+ *
+ *   4. ADDED — DENSITY MODES. The original has scales but no way to shift a whole surface along
+ *      them together, so density has to be re-decided component by component. The semantic rungs
+ *      at the foot of this file bind four gaps to four steps, and `[data-density]` moves all four
+ *      by one rung at once. The rule that adjacent regions of different rank differ by at least two
+ *      spacing steps holds in all three modes. Density never touches reading type — see the note
+ *      above the block.
+ *
+ * This file declares no class selector, redefines no `--dk-*`, and touches nothing the shipped
+ * design reads. `/` renders identically with or without it.
+ */
+
+[data-variant="scale"] {
+  /* --- Spacing. Ten steps, geometric with a flat head. Unchanged from the generator. --- */
+  --tc-space-1: 4px;
+  --tc-space-2: 8px;
+  --tc-space-3: 12px;
+  --tc-space-4: 16px;
+  --tc-space-5: 24px;
+  --tc-space-6: 32px;
+  --tc-space-7: 48px;
+  --tc-space-8: 64px;
+  --tc-space-9: 96px;
+  --tc-space-10: 128px;
+
+  /*
+   * --- Type size. Nine steps. Fluid from `lg` up, on `cqi`, never `vw` (defect 2).
+   * The reading steps are fixed on purpose; they are raised two notches from the
+   * generator's (defect 3). Generator -> here: 11->13, 12->14, 13->15, 15->17, 17->19.
+   */
+  --tc-text-2xs: 0.8125rem; /* 13px — the floor. Caps labels live here. */
+  --tc-text-xs: 0.875rem;   /* 14px */
+  --tc-text-sm: 0.9375rem;  /* 15px — the floor for anything interactive. */
+  --tc-text-base: 1.0625rem; /* 17px — running text. */
+  --tc-text-md: 1.1875rem;  /* 19px */
+  --tc-text-lg: clamp(1.375rem, 1.15rem + 1.1cqi, 1.75rem);
+  --tc-text-xl: clamp(1.75rem, 1.35rem + 2.2cqi, 2.5rem);
+  --tc-text-2xl: clamp(2.375rem, 1.7rem + 4.2cqi, 3.75rem);
+  --tc-text-3xl: clamp(3.25rem, 2.1rem + 7.5cqi, 6rem);
+
+  /* Leading and tracking are separate scales. Display sizes take tight of both. */
+  --tc-leading-tight: 1.02;
+  --tc-leading-snug: 1.2;
+  --tc-leading-normal: 1.5;
+  --tc-leading-relaxed: 1.65;
+
+  --tc-track-tight: -0.035em;
+  --tc-track-normal: 0em;
+  --tc-track-wide: 0.06em;
+  --tc-track-caps: 0.14em;
+
+  /* --- Motion. Six durations, four easings, one stagger. Chosen by role; see the brief §5. --- */
+  --tc-dur-1: 90ms;
+  --tc-dur-2: 160ms;
+  --tc-dur-3: 260ms;
+  --tc-dur-4: 420ms;
+  --tc-dur-5: 700ms;
+  --tc-dur-6: 1200ms;
+  --tc-stagger: 40ms;
+
+  --tc-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --tc-ease-entrance: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --tc-ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --tc-ease-snap: cubic-bezier(0.85, 0, 0.15, 1);
+
+  /*
+   * --- Elevation. Five steps, layered, never a single blur.
+   * Changed from the generator's soft-only ladder: every step here is a HARD, unblurred offset
+   * plane plus a soft ambient. The direction is a printed statistical plate, where depth comes
+   * from one card sitting on another and the edge staying sharp, not from a diffuse glow. Still a
+   * ladder, still layered, still five steps — the generator's rule, a different material.
+   */
+  --tc-elev-0: none;
+  --tc-elev-1: 1px 1px 0 var(--tc-edge), 0 1px 2px rgb(21 24 29 / 5%);
+  --tc-elev-2: 2px 2px 0 var(--tc-edge), 0 3px 8px rgb(21 24 29 / 6%);
+  --tc-elev-3: 4px 4px 0 var(--tc-edge), 0 10px 24px rgb(21 24 29 / 9%);
+  --tc-elev-4: 7px 7px 0 var(--tc-edge), 0 24px 56px rgb(21 24 29 / 14%);
+
+  /* --- Rule weight. A semantic ladder: hairline / region / authority. --- */
+  --tc-rule-1: 1px;
+  --tc-rule-2: 2px;
+  --tc-rule-3: 3px;
+
+  --tc-radius-0: 0px;
+  --tc-radius-1: 2px;
+  --tc-radius-2: 4px;
+  --tc-radius-3: 8px;
+  --tc-radius-4: 14px;
+  --tc-radius-round: 999px;
+
+  /* Running prose is clamped. A cause list at 120ch is not a cause list anyone reads. */
+  --tc-measure-narrow: 42ch;
+  --tc-measure-prose: 60ch;
+  --tc-measure-wide: 76ch;
+
+  /*
+   * --- Semantic rungs (addition 4).
+   * Regions of different rank are separated by `--tc-gap-region`; groups inside a region by
+   * `--tc-gap-group`; rows by `--tc-gap-item`; a label from its value by `--tc-gap-pair`.
+   * `normal` binds them to steps 8 / 5 / 3 / 1 — differences of 3, 2 and 2 steps, so the
+   * "at least two steps between adjacent ranks" rule holds by construction.
+   *
+   * DENSITY MOVES SPACE AND QUANTISATION. IT DOES NOT SHRINK READING TYPE. A density control that
+   * made body text smaller would reintroduce, under a friendlier name, the exact defect this file
+   * exists to fix. Only the two display steps move with the mode.
+   */
+  --tc-gap-region: var(--tc-space-8);
+  --tc-gap-group: var(--tc-space-5);
+  --tc-gap-item: var(--tc-space-3);
+  --tc-gap-pair: var(--tc-space-1);
+  --tc-pad-region: var(--tc-space-6);
+  --tc-display-1: var(--tc-text-2xl);
+  --tc-display-2: var(--tc-text-lg);
+}
+
+/* compact — steps 7 / 4 / 2 / 1: differences of 3 and 2. Rule holds. */
+[data-variant="scale"][data-density="compact"] {
+  --tc-gap-region: var(--tc-space-7);
+  --tc-gap-group: var(--tc-space-4);
+  --tc-gap-item: var(--tc-space-2);
+  --tc-gap-pair: var(--tc-space-1);
+  --tc-pad-region: var(--tc-space-5);
+  --tc-display-1: var(--tc-text-xl);
+  --tc-display-2: var(--tc-text-md);
+}
+
+/* open — steps 9 / 6 / 4 / 1: differences of 3 and 2. Rule holds. */
+[data-variant="scale"][data-density="open"] {
+  --tc-gap-region: var(--tc-space-9);
+  --tc-gap-group: var(--tc-space-6);
+  --tc-gap-item: var(--tc-space-4);
+  --tc-gap-pair: var(--tc-space-1);
+  --tc-pad-region: var(--tc-space-7);
+  --tc-display-1: var(--tc-text-3xl);
+  --tc-display-2: var(--tc-text-xl);
+}

@@ -1,0 +1,136 @@
+/* --- foot ---------------------------------------------------------------- */
+
+/* The follow-up bar: what may be done, at the foot, on the print's own stock. */
+.bk-foot-bar {
+  flex: none;
+  display: grid;
+  gap: var(--bk-s3);
+  padding: var(--bk-s4) var(--bk-s5);
+  background: var(--bk-vellum);
+  border-block-start: var(--bk-rule-2) solid var(--bk-graphite);
+}
+
+.bk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bk-s2);
+  align-items: center;
+}
+
+.bk-btn {
+  min-block-size: var(--bk-s7);
+  padding: var(--bk-s2) var(--bk-s4);
+  background: var(--bk-sheet);
+  border: var(--bk-rule-1) solid var(--bk-graphite);
+  border-radius: var(--bk-radius-0);
+  font-family: var(--bk-font-draft);
+  /* These are the consequential controls, the gate among them. Read, not
+     glanced at: one step under the body's reading size and no further. */
+  font-size: var(--bk-text-sm);
+  color: var(--bk-graphite);
+  cursor: pointer;
+  transition: background var(--bk-dur-1) var(--bk-ease);
+}
+
+.bk-btn:hover:not(:disabled) {
+  background: var(--bk-graphite);
+  color: var(--bk-sheet);
+}
+
+.bk-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.bk-btn:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.bk-btn[data-auto="true"] {
+  border-inline-start: var(--bk-rule-3) solid var(--bk-greenline);
+}
+
+/*
+ * The title block: inverted, bottom of the dossier, holding the only
+ * irreversible acts. the `law` direction established that the gate is a PLACE and carries
+ * no colour of its own — it is a physically separate region drawn differently
+ * from the drawing, and a print is not issued until it is signed there.
+ * Greyscale the sheet and this is still the only inverted box on it.
+ */
+.bk-title-block {
+  flex: none;
+  display: grid;
+  gap: var(--bk-s3);
+  padding: var(--bk-s4) var(--bk-s5);
+  background: var(--bk-graphite);
+  color: var(--bk-sheet);
+  border-block-start: var(--bk-rule-3) solid var(--bk-graphite);
+}
+
+.bk-title-block .bk-lettering {
+  color: var(--bk-graphite-4);
+}
+
+.bk-title-block .bk-btn {
+  background: none;
+  border-color: var(--bk-graphite-3);
+  color: var(--bk-sheet);
+}
+
+.bk-title-block .bk-btn:hover:not(:disabled) {
+  background: var(--bk-sheet);
+  color: var(--bk-graphite);
+  border-color: var(--bk-sheet);
+}
+
+.bk-title-block .bk-btn[data-fire="true"] {
+  background: var(--bk-sheet);
+  color: var(--bk-graphite);
+  border-color: var(--bk-sheet);
+}
+
+.bk-title-block .bk-btn[data-fire="true"]:hover:not(:disabled) {
+  background: var(--bk-redline);
+  color: var(--bk-sheet);
+  border-color: var(--bk-redline);
+}
+
+.bk-arm {
+  display: grid;
+  gap: var(--bk-s3);
+  padding: var(--bk-s3) var(--bk-s4);
+  border: var(--bk-rule-2) solid var(--bk-sheet);
+}
+
+.bk-arm-q {
+  margin: 0;
+  max-inline-size: var(--bk-measure-prose);
+  font-family: var(--bk-font-note);
+  font-size: var(--bk-text-sm);
+  line-height: var(--bk-leading-relaxed);
+}
+
+.bk-select {
+  min-block-size: var(--bk-s7);
+  padding: var(--bk-s2) var(--bk-s3);
+  background: var(--bk-sheet);
+  border: var(--bk-rule-1) solid var(--bk-graphite);
+  border-radius: var(--bk-radius-0);
+  color: var(--bk-graphite);
+  font-size: var(--bk-text-xs);
+}
+
+@container bk-dossier (max-width: 62rem) {
+  .bk-dossier-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bk-pair-aside {
+    position: static;
+  }
+
+  .bk-pair-sides {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

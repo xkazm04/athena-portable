@@ -1,0 +1,178 @@
+/* Scaled, not sized: `calc()` percentage math is banned by DESIGN §6, and a
+   transform is the one thing this app is allowed to animate anyway. */
+.bk-zone-key-measure i {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  background: var(--bk-graphite-2);
+  transform: scaleX(var(--of, 0));
+  transform-origin: left center;
+  transition: background var(--bk-dur-2) var(--bk-ease);
+}
+
+.bk-zone-key:hover .bk-zone-key-measure i,
+.bk-zone-key[data-on="true"] .bk-zone-key-measure i {
+  background: var(--bk-graphite);
+}
+
+.bk-zone-key[data-worst="true"] .bk-zone-key-measure i {
+  background: var(--bk-redline);
+}
+
+.bk-cube-caption {
+  grid-column: 1 / -1;
+  margin: 0;
+  max-inline-size: var(--bk-measure-wide);
+  font-family: var(--bk-font-note);
+  font-size: var(--bk-text-sm);
+  line-height: var(--bk-leading-relaxed);
+  color: var(--bk-graphite-2);
+}
+
+/* ================================================================= L1 tiles */
+
+/*
+ * One tile is one block is one table. Four figures and nothing else: the
+ * coverage bars, deviation breakdowns and clauses the ruled list carried are
+ * all one click away, and taking them out is what lets twelve blocks sit on one
+ * screen at a size worth clicking.
+ */
+/*
+ * The cluster field. Four columns, because the cube flattens into four columns,
+ * and one cell per block in the same order — the two agree through `FLAT_COLS`
+ * so the hand-off from canvas to DOM lands rather than cuts.
+ */
+.bk-cells {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  gap: var(--bk-s4);
+}
+
+.bk-cell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--bk-s3);
+  padding: var(--bk-s3);
+  background: var(--bk-sheet);
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-inline-start: var(--bk-rule-3) solid var(--bk-rule-ink);
+  border-radius: var(--bk-radius-0);
+  text-align: start;
+  cursor: pointer;
+  /*
+   * The pivot is the cluster's own centre, written in by the measurement, so
+   * the cell scales around its dots rather than around its corner. Nothing here
+   * touches the box: the cell keeps its final size and padding through the
+   * whole arrival, because a cell whose layout changes mid-move drags its
+   * cluster off the dots it is supposed to be standing on.
+   */
+  transform-origin: var(--ox, 50%) var(--oy, 50%);
+  /* One wave across the grid, `--i` being the cell's own place in it: the
+     travel is staggered tightly so twelve blocks read as a shoal, and the
+     ground behind them arrives on the slower `--bk-stagger` beat. */
+  transition:
+    transform var(--bk-beat-spread) var(--bk-ease-in) calc(var(--i, 0) * var(--bk-stagger-tight)),
+    background-color var(--bk-beat-dress) var(--bk-ease) calc(var(--i, 0) * var(--bk-stagger)),
+    border-color var(--bk-beat-dress) var(--bk-ease) calc(var(--i, 0) * var(--bk-stagger));
+}
+
+.bk-cell:hover {
+  background: var(--bk-vellum);
+  border-color: var(--bk-graphite);
+}
+
+.bk-cell[data-tone="redline"] {
+  border-inline-start-color: var(--bk-redline);
+}
+
+.bk-cell[data-tone="goldline"] {
+  border-inline-start-color: var(--bk-goldline);
+}
+
+.bk-cell[data-tone="greenline"] {
+  border-inline-start-color: var(--bk-greenline);
+}
+
+.bk-cell-cluster {
+  display: block;
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+  flex: none;
+}
+
+.bk-cell-body {
+  display: grid;
+  gap: var(--bk-s3);
+  min-inline-size: 0;
+}
+
+.bk-cell-head {
+  display: grid;
+  gap: var(--bk-s0);
+  min-inline-size: 0;
+}
+
+.bk-cluster {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+/* The three states, in the print's own ink — the same three the cube uses. */
+.bk-cluster-dot[data-mark="0"] {
+  fill: var(--bk-graphite);
+}
+
+.bk-cluster-dot[data-mark="1"] {
+  fill: var(--bk-redline);
+}
+
+.bk-cluster-dot[data-mark="2"] {
+  fill: var(--bk-goldline);
+}
+
+.bk-dossier-cluster {
+  display: block;
+  inline-size: 3.25rem;
+  block-size: 3.25rem;
+  flex: none;
+}
+
+/*
+ * The arrival, in four beats. `Blocks.tsx` owns the clock; these rules own what
+ * each beat looks like. The order matters more than any single duration: the
+ * dots arrive first and alone, they travel, and only then does anything appear
+ * that was not already in the cube.
+ */
+
+/*
+ * Beat one — land. Every cell is pushed onto the cluster the canvas is drawing
+ * for it, and there is nothing else to see: no ground, no rule, no text. The
+ * grid is not painted at all until the measurement has been written, or the
+ * first frame would show twelve cells in the wrong place, which is the cut this
+ * whole mechanism exists to avoid.
+ */
+.bk-cells[data-phase="land"]:not([data-measured="true"]) {
+  visibility: hidden;
+}
+
+.bk-cells[data-phase="land"] .bk-cell {
+  transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(var(--s, 1));
+  transition: none;
+}
+
+/*
+ * Beat two — spread. The transform is simply dropped, so each block travels
+ * from the plate to its place in the grid under the transition the cell already
+ * carries, staggered by its own index. Still undressed: what moves is twelve
+ * clusters of dots, not twelve cards.
+ */
+.bk-cells[data-phase="land"] .bk-cell,
+.bk-cells[data-phase="spread"] .bk-cell {
+  background-color: transparent;
+  border-color: transparent;
+  cursor: default;
+}
+

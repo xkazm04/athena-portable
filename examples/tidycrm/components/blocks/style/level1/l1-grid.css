@@ -1,0 +1,114 @@
+/* ---------------------------------------------------------------- L1 grid */
+
+.bk-grid {
+  display: grid;
+  gap: var(--bk-s4);
+}
+
+/*
+ * Title and jump strip on one row, the zone's verdict ruled off beneath them.
+ * A grid rather than a wrapping flex, so the strip stays pinned to the end edge
+ * instead of sliding under a two-line heading.
+ */
+.bk-grid-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--bk-s3) var(--bk-s4);
+  padding-block-end: var(--bk-s3);
+  border-block-end: var(--bk-rule-2) solid var(--bk-graphite);
+}
+
+.bk-grid-title {
+  display: grid;
+  gap: var(--bk-s2);
+  min-inline-size: 0;
+}
+
+.bk-grid-verdict {
+  grid-column: 1 / -1;
+  padding-block-start: var(--bk-s3);
+  border-block-start: var(--bk-rule-1) solid var(--bk-rule-ink);
+}
+
+.bk-zone-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bk-s2);
+}
+
+/* The zone jump. A letter and the figure the choice turns on, nothing else —
+   and both of those are figures, so this one is set in the figure face. */
+.bk-zone-jump {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--bk-s2);
+  font-family: var(--bk-font-fig);
+  transition: border-color var(--bk-dur-2) var(--bk-ease);
+}
+
+.bk-zone-jump b {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--bk-graphite);
+}
+
+.bk-zone-jump b[data-tone="redline"] {
+  color: var(--bk-redline);
+}
+
+.bk-zone-jump b[data-tone="greenline"] {
+  color: var(--bk-greenline);
+}
+
+.bk-zone-jump:hover {
+  border-color: var(--bk-graphite);
+}
+
+.bk-zone-jump[aria-pressed="true"] {
+  border-inline-start: var(--bk-rule-3) solid var(--bk-graphite);
+}
+
+.bk-zone-chip {
+  min-block-size: var(--bk-s7);
+  padding: var(--bk-s2) var(--bk-s3);
+  background: none;
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-radius: var(--bk-radius-0);
+  /* The drafted face, because a chip carries a phrase as often as a code. The
+     figure faces live on `.bk-zone-jump` below, where the content really is an
+     index and a count. */
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-xs);
+  color: var(--bk-graphite-2);
+  cursor: pointer;
+}
+
+.bk-zone-chip[aria-pressed="true"] {
+  border-color: var(--bk-graphite);
+  color: var(--bk-graphite);
+}
+
+.bk-ident {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-2xs);
+  letter-spacing: var(--bk-track-wide);
+  color: var(--bk-graphite-3);
+}
+
+.bk-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bk-s2);
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-2xs);
+}
+
+.bk-mark {
+  color: var(--bk-redline);
+}
+
+.bk-mark[data-kind="duplicate"] {
+  color: var(--bk-goldline);
+}
+

@@ -1,0 +1,120 @@
+/* ------------------------------------------------------------- the sheet */
+
+.bk-root {
+  min-block-size: 100svh;
+  background: var(--bk-vellum);
+  color: var(--bk-graphite);
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-base);
+  line-height: var(--bk-leading-normal);
+  padding: var(--bk-s3);
+  container-type: inline-size;
+  container-name: bk-root;
+}
+
+.bk-root * {
+  box-sizing: border-box;
+}
+
+/*
+ * A reset, and it has to weigh nothing.
+ *
+ * Written as `.bk-root button` this is specificity (0,1,1) — heavier than any
+ * single-class rule — so `font: inherit` beat every `font-size` the stylesheet
+ * declared on a control. Every button in the direction rendered at the body's
+ * 17px: the level rail, the chips, the dossier's actions and the gate, all one
+ * size, none of them the size this file asked for. Wrapped in `:where()` the
+ * whole selector is (0,0,0) and the type scale is in force again.
+ */
+:where(.bk-root) :where(button, select, input) {
+  font: inherit;
+  color: inherit;
+}
+
+.bk-root :where(button, select, input, a, [tabindex]):focus-visible {
+  outline: var(--bk-rule-3) solid var(--bk-redline);
+  outline-offset: var(--bk-s1);
+}
+
+/*
+ * The print itself. Capped and centred, per DESIGN §6 — at 1920 it ran the full
+ * width of the window and the twelve cells stretched to 430px for content that
+ * wants 300. A sheet has an edge; the board it lies on is the vellum around it.
+ */
+.bk-sheet {
+  position: relative;
+  max-inline-size: 1600px;
+  margin-inline: auto;
+  background: var(--bk-sheet);
+  border: var(--bk-rule-2) solid var(--bk-graphite);
+  padding: var(--bk-s4);
+  display: grid;
+  gap: var(--bk-s5);
+  container-type: inline-size;
+  container-name: bk-sheet;
+}
+
+@container bk-root (min-width: 48rem) {
+  .bk-root {
+    padding: var(--bk-s5);
+  }
+
+  .bk-sheet {
+    padding: var(--bk-s6);
+    gap: var(--bk-s6);
+  }
+}
+
+.bk-fig {
+  font-family: var(--bk-font-fig);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Every scroll surface, in the print's own ink. A default scrollbar on vellum
+   is a blue-grey rail from another operating system. */
+.bk-root :where(*) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bk-graphite-4) transparent;
+}
+
+.bk-root ::-webkit-scrollbar {
+  inline-size: 10px;
+  block-size: 10px;
+}
+
+.bk-root ::-webkit-scrollbar-track {
+  background: var(--bk-vellum);
+}
+
+.bk-root ::-webkit-scrollbar-thumb {
+  background: var(--bk-graphite-4);
+  border: 3px solid var(--bk-vellum);
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+.bk-root ::-webkit-scrollbar-thumb:hover {
+  background: var(--bk-graphite-3);
+  background-clip: content-box;
+}
+
+/* The title block inverts, so its scrollbar inverts with it. */
+.bk-title-block :where(*) {
+  scrollbar-color: var(--bk-graphite-3) transparent;
+}
+
+/* Drafted lettering. Uppercase never appears above --bk-text-2xs. */
+.bk-lettering {
+  margin: 0;
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--bk-track-caps);
+  text-transform: uppercase;
+  color: var(--bk-graphite-3);
+}
+
+.bk-lettering[data-ink="1"] {
+  color: var(--bk-graphite);
+}
+

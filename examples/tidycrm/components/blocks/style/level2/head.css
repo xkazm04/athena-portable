@@ -1,0 +1,99 @@
+/* --- head ---------------------------------------------------------------- */
+
+.bk-dossier-head {
+  flex: none;
+  display: grid;
+  gap: var(--bk-s2);
+  padding: var(--bk-s4) var(--bk-s5);
+  background: var(--bk-vellum);
+  border-block-end: var(--bk-rule-2) solid var(--bk-graphite);
+}
+
+.bk-dossier-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--bk-s3);
+}
+
+.bk-dossier-title {
+  margin: 0;
+  /* The second rank, like .bk-h2 and for the same reason: this is a block's
+     heading, one step below the sheet's own title, which is still legible
+     through the scrim behind the card. */
+  font-size: var(--bk-text-lg);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-tight);
+  line-height: var(--bk-leading-tight);
+}
+
+.bk-close {
+  margin-inline-start: auto;
+  min-inline-size: var(--bk-s7);
+  min-block-size: var(--bk-s7);
+  background: var(--bk-sheet);
+  border: var(--bk-rule-1) solid var(--bk-graphite);
+  border-radius: var(--bk-radius-0);
+  color: var(--bk-graphite);
+  cursor: pointer;
+}
+
+.bk-close:hover {
+  background: var(--bk-graphite);
+  color: var(--bk-sheet);
+}
+
+/* The verdict: the tile's four figures restated at the size they deserve, so
+   the first line of the card is the answer rather than a heading. */
+.bk-verdict {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bk-s5);
+  padding: var(--bk-s3) 0;
+  border-block: var(--bk-rule-1) solid var(--bk-rule-ink);
+}
+
+.bk-verdict div {
+  display: grid;
+  gap: var(--bk-s0);
+}
+
+.bk-verdict b {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-lg);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--bk-leading-tight);
+  color: var(--bk-graphite);
+}
+
+.bk-verdict div[data-tone="redline"] b {
+  color: var(--bk-redline);
+}
+
+.bk-verdict div[data-tone="goldline"] b {
+  color: var(--bk-goldline);
+}
+
+.bk-verdict div[data-tone="greenline"] b {
+  color: var(--bk-greenline);
+}
+
+.bk-verdict span {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--bk-track-caps);
+  text-transform: uppercase;
+  color: var(--bk-graphite-3);
+}
+
+.bk-why {
+  margin: 0;
+  max-inline-size: var(--bk-measure-wide);
+  font-family: var(--bk-font-note);
+  font-size: var(--bk-text-base);
+  line-height: var(--bk-leading-relaxed);
+  color: var(--bk-graphite-2);
+}
+

@@ -1,0 +1,107 @@
+/* --- the identity pair, beside the rest ---------------------------------- */
+
+.bk-pair-aside {
+  position: sticky;
+  inset-block-start: 0;
+  display: grid;
+  gap: 0;
+  align-content: start;
+  padding: var(--bk-s4);
+  background: var(--bk-vellum);
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-inline-start: var(--bk-rule-3) solid var(--bk-goldline);
+  min-inline-size: 0;
+}
+
+.bk-pair-why {
+  margin: var(--bk-s3) 0;
+  font-family: var(--bk-font-note);
+  font-size: var(--bk-text-sm);
+  line-height: var(--bk-leading-relaxed);
+  color: var(--bk-graphite-2);
+}
+
+.bk-pair {
+  display: grid;
+  gap: var(--bk-s3);
+}
+
+.bk-pair-sides {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--bk-s3);
+}
+
+.bk-side {
+  display: grid;
+  gap: var(--bk-s2);
+  align-content: start;
+  min-inline-size: 0;
+}
+
+.bk-side-label {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--bk-track-caps);
+  text-transform: uppercase;
+  color: var(--bk-graphite);
+  padding-block-end: var(--bk-s1);
+  border-block-end: var(--bk-rule-1) solid var(--bk-graphite);
+}
+
+.bk-field {
+  display: grid;
+  gap: 0;
+  font-size: var(--bk-text-xs);
+  overflow-wrap: anywhere;
+}
+
+.bk-field-label {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--bk-track-caps);
+  text-transform: uppercase;
+  color: var(--bk-graphite-3);
+}
+
+.bk-field[data-differs="true"] {
+  color: var(--bk-redline);
+}
+
+.bk-evidence {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bk-evidence li {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: var(--bk-s3);
+  align-items: baseline;
+  padding-block: var(--bk-s2);
+  border-block-start: var(--bk-rule-1) solid var(--bk-rule-ink);
+  font-size: var(--bk-text-xs);
+}
+
+.bk-evidence li[data-total="true"] {
+  border-block-start: var(--bk-rule-2) solid var(--bk-graphite);
+  font-weight: 500;
+}
+
+.bk-evidence-weight {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-2xs);
+  color: var(--bk-graphite-2);
+}
+
+.bk-evidence-detail {
+  font-family: var(--bk-font-note);
+  color: var(--bk-graphite-2);
+  overflow-wrap: anywhere;
+}
+

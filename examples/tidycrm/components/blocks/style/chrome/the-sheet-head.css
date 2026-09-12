@@ -1,0 +1,81 @@
+/* ---------------------------------------------------------- the sheet head */
+
+.bk-head {
+  display: grid;
+  gap: var(--bk-s3);
+  padding-block-end: var(--bk-s4);
+  border-block-end: var(--bk-rule-2) solid var(--bk-graphite);
+}
+
+.bk-head-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bk-s4);
+}
+
+.bk-h1 {
+  margin: 0;
+  font-size: var(--bk-text-xl);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-tight);
+  line-height: var(--bk-leading-snug);
+}
+
+/*
+ * The second rank. A zone's heading and a block's heading are the same rank as
+ * each other and one step below the sheet's own title — at every width, not
+ * only on a phone. Two headings at one size is not a hierarchy: at L1 the sheet
+ * title and the zone title sat one above the other at the same size and weight,
+ * leaving the rule between them to carry the whole distinction.
+ */
+.bk-h2 {
+  margin: 0;
+  font-size: var(--bk-text-lg);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-tight);
+  line-height: var(--bk-leading-snug);
+}
+
+.bk-lede {
+  margin: 0;
+  max-inline-size: var(--bk-measure-wide);
+  font-family: var(--bk-font-note);
+  font-size: var(--bk-text-base);
+  line-height: var(--bk-leading-relaxed);
+  color: var(--bk-graphite-2);
+}
+
+
+/* The coverage read-out: the frontier, which is what a check print is for. */
+.bk-coverage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bk-s5);
+}
+
+.bk-coverage div {
+  display: grid;
+  gap: var(--bk-s1);
+}
+
+.bk-coverage b {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-md);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.bk-coverage b[data-tone="redline"] {
+  color: var(--bk-redline);
+}
+
+.bk-coverage b[data-tone="goldline"] {
+  color: var(--bk-goldline);
+}
+
+.bk-coverage b[data-tone="greenline"] {
+  color: var(--bk-greenline);
+}
+

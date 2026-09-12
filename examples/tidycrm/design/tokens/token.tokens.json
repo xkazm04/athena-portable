@@ -1,0 +1,268 @@
+{
+  "$description": "RETIRED (2026-09): the `token` direction was reviewed out in f9664e6, so nothing below reaches a rendered page -- there is no app/v/token/ route, no components/token/ tree, no npm script that builds this file and no emitted CSS anywhere in the repo. Kept as the record of pass 3 beside design/build-tokens.mjs and design/pass3-token-brief.md, not as a source of truth for any shipped surface. The live value authority is components/blocks/style/base/tokens.css for the shipped `blocks` direction. tidycrm direction `token`. DTCG, four-tier (primitive -> ladder -> semantic role -> component), derived from design/pass3-token-brief.md: the Bauhaus weaving workshop and Anni Albers' `On Weaving` (1965), the woven draft. Built with `node design/build-tokens.mjs token ../components/token/token.tokens.css --refs`. The --refs flag is what makes this file different in kind from signal/broadsheet: every role token below is a REFERENCE into a numeric ladder, and the builder preserves it as var(), so a relational operation like `shift the whole reading ramp one rung` is one line of CSS instead of nine literals.",
+
+  "primitive": {
+    "$description": "Named dyes and the undyed ground. Never referenced from a component: the builder does not emit these, so there is no name to reach for.",
+    "indigo": {
+      "$description": "The vat. Structure only - the ground, the warp thread, the rules. Carries no state meaning.",
+      "950": { "$type": "color", "$value": "#12131f", "$description": "The field. Never #000000." },
+      "900": { "$type": "color", "$value": "#191b2b", "$description": "Beam and panel ground." },
+      "800": { "$type": "color", "$value": "#21243a", "$description": "Raised: a column under the cursor." },
+      "700": { "$type": "color", "$value": "#2c3050", "$description": "The unwoven track behind the warp." },
+      "600": { "$type": "color", "$value": "#3b4170", "$description": "Hairline. Decorative containment." },
+      "500": { "$type": "color", "$value": "#565da0", "$description": "The warp thread itself, and essential control borders. 3.6:1 on indigo.950." }
+    },
+    "flax": {
+      "$description": "Undyed linen. The reading colour.",
+      "50": { "$type": "color", "$value": "#f0ebe0", "$description": "Primary text. 14.9:1 on indigo.950." },
+      "200": { "$type": "color", "$value": "#cfc7b6", "$description": "Secondary. 10.6:1." },
+      "400": { "$type": "color", "$value": "#9a9384", "$description": "Tertiary, metadata. 5.6:1." }
+    },
+    "woad": {
+      "$description": "The European indigo plant - a lighter, greener blue than the vat, so it separates from the ground it sits on.",
+      "400": { "$type": "color", "$value": "#7b93d6" },
+      "200": { "$type": "color", "$value": "#b3c1ea" }
+    },
+    "weld": {
+      "$description": "Reseda luteola. The oldest European yellow dye.",
+      "500": { "$type": "color", "$value": "#d9a520" },
+      "300": { "$type": "color", "$value": "#efcd77" }
+    },
+    "walnut": {
+      "$description": "Juglans hull. A brown that is not a grey.",
+      "400": { "$type": "color", "$value": "#a8815c" },
+      "200": { "$type": "color", "$value": "#cfb094" }
+    },
+    "madder": {
+      "$description": "Rubia tinctorum. RESERVED: deviation, and nothing else in the system may spend it.",
+      "500": { "$type": "color", "$value": "#c0392f" },
+      "300": { "$type": "color", "$value": "#e07a70", "$description": "The text weight of madder. 6.4:1 on indigo.950." }
+    },
+    "verdigris": {
+      "$description": "RESERVED: healed by an agent, and nothing else in the system may spend it.",
+      "500": { "$type": "color", "$value": "#2f8f72" },
+      "300": { "$type": "color", "$value": "#6fc3a6", "$description": "The text weight. 8.1:1 on indigo.950." }
+    }
+  },
+
+  "step": {
+    "$description": "THE READING LADDER. Nine numbered rungs, each a real neighbour of the next, so `two rungs apart` and `one rung up` are expressible operations. Roles in `font.size` reference these by number and never carry a literal. Base body is rung 2 (17px), a rung above the 16px default the owner has twice called too small; nothing in the system sits below rung 0 (13px). Rungs 7 and 8 are container-fluid: they read `cqi`, never `vw`, because the CopilotKit sidebar makes the viewport lie by about a third.",
+    "0": { "$type": "dimension", "$value": "0.8125rem" },
+    "1": { "$type": "dimension", "$value": "0.9375rem" },
+    "2": { "$type": "dimension", "$value": "1.0625rem" },
+    "3": { "$type": "dimension", "$value": "1.1875rem" },
+    "4": { "$type": "dimension", "$value": "1.375rem" },
+    "5": { "$type": "dimension", "$value": "1.75rem" },
+    "6": { "$type": "dimension", "$value": "2.25rem" },
+    "7": { "$type": "dimension", "$value": "clamp(2.5rem, 5.5cqi, 3.5rem)" },
+    "8": { "$type": "dimension", "$value": "clamp(3rem, 9cqi, 5.25rem)" }
+  },
+
+  "space": {
+    "$description": "THE MEASURE LADDER. Twelve numbered rungs. `gap.*` roles below reference these by number, so a density mode re-points the roles rather than restating twelve literals.",
+    "0": { "$type": "dimension", "$value": "0" },
+    "1": { "$type": "dimension", "$value": "2px" },
+    "2": { "$type": "dimension", "$value": "4px" },
+    "3": { "$type": "dimension", "$value": "8px" },
+    "4": { "$type": "dimension", "$value": "12px" },
+    "5": { "$type": "dimension", "$value": "16px" },
+    "6": { "$type": "dimension", "$value": "20px" },
+    "7": { "$type": "dimension", "$value": "26px" },
+    "8": { "$type": "dimension", "$value": "34px" },
+    "9": { "$type": "dimension", "$value": "44px" },
+    "10": { "$type": "dimension", "$value": "60px" },
+    "11": { "$type": "dimension", "$value": "84px" }
+  },
+
+  "gap": {
+    "$description": "Semantic measure roles. Every one is a reference into `space`, which is the whole point: `[data-density]` re-points these six and the entire surface loosens or tightens.",
+    "hair": { "$type": "dimension", "$value": "{space.2}" },
+    "tight": { "$type": "dimension", "$value": "{space.3}" },
+    "item": { "$type": "dimension", "$value": "{space.4}" },
+    "stack": { "$type": "dimension", "$value": "{space.6}" },
+    "group": { "$type": "dimension", "$value": "{space.8}" },
+    "band": { "$type": "dimension", "$value": "{space.10}" },
+    "inset": { "$type": "dimension", "$value": "{space.6}" },
+    "inset-lg": { "$type": "dimension", "$value": "{space.8}" }
+  },
+
+  "semantic": {
+    "surface": {
+      "field": { "$type": "color", "$value": "{primitive.indigo.950}" },
+      "beam": { "$type": "color", "$value": "{primitive.indigo.900}" },
+      "raised": { "$type": "color", "$value": "{primitive.indigo.800}" },
+      "track": { "$type": "color", "$value": "{primitive.indigo.700}" },
+      "scrim": { "$type": "color", "$value": "rgba(9, 10, 17, 0.86)" }
+    },
+    "text": {
+      "primary": { "$type": "color", "$value": "{primitive.flax.50}" },
+      "secondary": { "$type": "color", "$value": "{primitive.flax.200}" },
+      "tertiary": { "$type": "color", "$value": "{primitive.flax.400}" },
+      "on-dye": { "$type": "color", "$value": "{primitive.indigo.950}", "$description": "Dark ink on a dye fill." }
+    },
+    "border": {
+      "hair": { "$type": "color", "$value": "{primitive.indigo.600}" },
+      "warp": { "$type": "color", "$value": "{primitive.indigo.500}", "$description": "The warp thread. Also the essential-control border weight, 3.6:1." },
+      "live": { "$type": "color", "$value": "{primitive.flax.200}" }
+    },
+    "dye": {
+      "$description": "One dye per defect class, bound by name. A hue that means nothing is decoration and is banned.",
+      "duplicate": { "$type": "color", "$value": "{primitive.woad.400}" },
+      "phone": { "$type": "color", "$value": "{primitive.weld.500}" },
+      "stale": { "$type": "color", "$value": "{primitive.walnut.400}" },
+      "conflict": { "$type": "color", "$value": "{primitive.madder.500}" },
+      "duplicate-soft": { "$type": "color", "$value": "{primitive.woad.200}" },
+      "phone-soft": { "$type": "color", "$value": "{primitive.weld.300}" },
+      "stale-soft": { "$type": "color", "$value": "{primitive.walnut.200}" },
+      "conflict-soft": { "$type": "color", "$value": "{primitive.madder.300}" }
+    },
+    "state": {
+      "$description": "RESERVED PAIR. `deviation` is the only madder in the system; `healed` is the only verdigris. Both appear on key data nodes and nowhere else.",
+      "deviation": { "$type": "color", "$value": "{primitive.madder.500}" },
+      "deviation-text": { "$type": "color", "$value": "{primitive.madder.300}" },
+      "healed": { "$type": "color", "$value": "{primitive.verdigris.500}" },
+      "healed-text": { "$type": "color", "$value": "{primitive.verdigris.300}" },
+      "bare": { "$type": "color", "$value": "{primitive.indigo.500}", "$description": "Unwoven warp: not a colour, the absence of one." }
+    },
+    "governance": {
+      "$description": "Fixed across every direction in this app. AUTO is bought by reversibility, not by harmlessness.",
+      "auto": { "$type": "color", "$value": "{primitive.verdigris.500}" },
+      "gated": { "$type": "color", "$value": "{primitive.weld.500}" },
+      "fired": { "$type": "color", "$value": "{primitive.madder.500}" }
+    }
+  },
+
+  "component": {
+    "cell": {
+      "$description": "One intersection of the draft: block x pass.",
+      "bare": { "$type": "color", "$value": "{semantic.state.bare}" },
+      "set": { "$type": "color", "$value": "{semantic.state.healed}" },
+      "edge": { "$type": "color", "$value": "{semantic.border.hair}" }
+    },
+    "shuttle": {
+      "$description": "The pass travelling across the warp while a dispatch runs.",
+      "body": { "$type": "color", "$value": "{semantic.border.live}" },
+      "trail": { "$type": "color", "$value": "{semantic.state.healed}" }
+    },
+    "selvedge": {
+      "$description": "The gate: the finished edge that cannot be unpicked.",
+      "armed": { "$type": "color", "$value": "{semantic.governance.gated}" },
+      "fired": { "$type": "color", "$value": "{semantic.governance.fired}" }
+    }
+  },
+
+  "font": {
+    "family": {
+      "display": { "$type": "fontFamily", "$value": "var(--font-token-display), system-ui, sans-serif" },
+      "body": { "$type": "fontFamily", "$value": "var(--font-token-body), system-ui, sans-serif" },
+      "fig": { "$type": "fontFamily", "$value": "var(--font-token-fig), ui-monospace, monospace" }
+    },
+    "size": {
+      "$description": "Roles. Every one references a rung of `step`, never a literal. Neighbours are therefore knowable: `micro` and `body` are two rungs apart, and shifting the whole ramp up is nine re-pointings in one CSS block.",
+      "micro": { "$type": "dimension", "$value": "{step.0}" },
+      "label": { "$type": "dimension", "$value": "{step.1}" },
+      "body": { "$type": "dimension", "$value": "{step.2}" },
+      "lead": { "$type": "dimension", "$value": "{step.3}" },
+      "sub": { "$type": "dimension", "$value": "{step.4}" },
+      "head": { "$type": "dimension", "$value": "{step.5}" },
+      "section": { "$type": "dimension", "$value": "{step.6}" },
+      "figure": { "$type": "dimension", "$value": "{step.7}" },
+      "display": { "$type": "dimension", "$value": "{step.8}" }
+    },
+    "weight": {
+      "regular": { "$type": "fontWeight", "$value": 400 },
+      "medium": { "$type": "fontWeight", "$value": 500 },
+      "semibold": { "$type": "fontWeight", "$value": 600 },
+      "bold": { "$type": "fontWeight", "$value": 700 }
+    },
+    "leading": {
+      "display": { "$type": "number", "$value": 0.95 },
+      "head": { "$type": "number", "$value": 1.08 },
+      "sub": { "$type": "number", "$value": 1.25 },
+      "body": { "$type": "number", "$value": 1.55 },
+      "tight": { "$type": "number", "$value": 1.2 }
+    },
+    "tracking": {
+      "display": { "$type": "dimension", "$value": "-0.028em" },
+      "head": { "$type": "dimension", "$value": "-0.018em" },
+      "normal": { "$type": "dimension", "$value": "0" },
+      "kicker": { "$type": "dimension", "$value": "0.22em", "$description": "Wide-tracked capitals. The widest tracking in the system." }
+    }
+  },
+
+  "radius": {
+    "$description": "A draft is a grid of squares. Radius exists only where a control must read as pressable.",
+    "0": { "$type": "dimension", "$value": "0" },
+    "1": { "$type": "dimension", "$value": "2px" },
+    "2": { "$type": "dimension", "$value": "5px" },
+    "3": { "$type": "dimension", "$value": "10px" },
+    "pill": { "$type": "dimension", "$value": "9999px" }
+  },
+
+  "shape": {
+    "$description": "Radius roles, referenced into the ladder above.",
+    "cell": { "$type": "dimension", "$value": "{radius.0}" },
+    "control": { "$type": "dimension", "$value": "{radius.2}" },
+    "panel": { "$type": "dimension", "$value": "{radius.3}" },
+    "chip": { "$type": "dimension", "$value": "{radius.1}" }
+  },
+
+  "border-width": {
+    "hair": { "$type": "dimension", "$value": "1px" },
+    "warp": { "$type": "dimension", "$value": "2px" },
+    "beam": { "$type": "dimension", "$value": "3px" }
+  },
+
+  "shadow": {
+    "flat": { "$type": "shadow", "$value": "none" },
+    "beam": { "$type": "shadow", "$value": "0 1px 0 0 {semantic.border.hair}, 0 18px 40px -26px rgba(0,0,0,0.9)" },
+    "panel": { "$type": "shadow", "$value": "0 0 0 1px {semantic.border.hair}, 0 40px 90px -30px rgba(0,0,0,0.92)" },
+    "focus": { "$type": "shadow", "$value": "0 0 0 2px {semantic.surface.field}, 0 0 0 4px {semantic.border.live}" }
+  },
+
+  "motion": {
+    "duration": {
+      "1": { "$type": "duration", "$value": "110ms" },
+      "2": { "$type": "duration", "$value": "180ms" },
+      "3": { "$type": "duration", "$value": "280ms" },
+      "4": { "$type": "duration", "$value": "440ms" },
+      "5": { "$type": "duration", "$value": "720ms" },
+      "6": { "$type": "duration", "$value": "1400ms" },
+      "hold": { "$type": "duration", "$value": "900ms", "$description": "How long an irreversible act is held before it fires." },
+      "stagger": { "$type": "duration", "$value": "34ms", "$description": "One warp column of the shuttle pass." }
+    },
+    "easing": {
+      "out": { "$type": "cubicBezier", "$value": [0.16, 1, 0.3, 1] },
+      "in": { "$type": "cubicBezier", "$value": [0.7, 0, 0.84, 0] },
+      "snap": { "$type": "cubicBezier", "$value": [0.34, 1.32, 0.44, 1] },
+      "linear": { "$type": "cubicBezier", "$value": [0, 0, 1, 1] }
+    },
+    "pace": {
+      "$description": "Motion roles, referenced into the numbered duration ladder so `slow everything by one rung` is expressible.",
+      "tap": { "$type": "duration", "$value": "{motion.duration.1}" },
+      "shift": { "$type": "duration", "$value": "{motion.duration.2}" },
+      "settle": { "$type": "duration", "$value": "{motion.duration.3}" },
+      "travel": { "$type": "duration", "$value": "{motion.duration.4}" },
+      "weave": { "$type": "duration", "$value": "{motion.duration.5}" },
+      "breathe": { "$type": "duration", "$value": "{motion.duration.6}" }
+    }
+  },
+
+  "size": {
+    "module": { "$type": "dimension", "$value": "10px", "$description": "The draft cell. Every bespoke glyph is drawn on this module." },
+    "stroke": { "$type": "dimension", "$value": "2px", "$description": "Fixed glyph stroke weight." },
+    "target": { "$type": "dimension", "$value": "44px" },
+    "icon": { "$type": "dimension", "$value": "18px" },
+    "warp": { "$type": "dimension", "$value": "clamp(26px, 3.4cqi, 46px)", "$description": "Width of one warp column in the draft." },
+    "weft": { "$type": "dimension", "$value": "22px", "$description": "Height of one weft row." },
+    "beam": { "$type": "dimension", "$value": "clamp(88px, 14cqi, 132px)", "$description": "Height of the coverage figure block on the head-beam." },
+    "panel-min": { "$type": "dimension", "$value": "min(560px, 92cqi)" },
+    "measure": { "$type": "dimension", "$value": "62ch" }
+  },
+
+  "z": {
+    "field": { "$type": "number", "$value": 0 },
+    "beam": { "$type": "number", "$value": 30 },
+    "panel": { "$type": "number", "$value": 70 }
+  }
+}

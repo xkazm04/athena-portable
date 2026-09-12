@@ -1,0 +1,193 @@
+/* --- body ---------------------------------------------------------------- */
+
+.bk-dossier-body {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--bk-s5);
+  padding: var(--bk-s5);
+  padding-block-end: var(--bk-s6);
+  align-items: start;
+}
+
+/*
+ * A block with nothing to adjudicate has no pair panel, and the two-track grid
+ * then printed its only column at 58% of the sheet and left the other 42% blank
+ * — the widest, emptiest thing in the direction. The track exists only when
+ * something is standing in it.
+ */
+.bk-dossier-body:not(:has(.bk-pair-aside)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.bk-dossier-main {
+  display: grid;
+  gap: 0;
+  min-inline-size: 0;
+}
+
+/* A ruled section band, which is what gives the column its structure. */
+.bk-band-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bk-s3);
+  padding-block: var(--bk-s2);
+  border-block-end: var(--bk-rule-2) solid var(--bk-graphite);
+  margin-block-start: var(--bk-s5);
+}
+
+.bk-dossier-main > .bk-band-head:first-child,
+.bk-pair-aside > .bk-band-head:first-child {
+  margin-block-start: 0;
+}
+
+.bk-band-note {
+  font-family: var(--bk-font-note);
+  font-size: var(--bk-text-xs);
+  color: var(--bk-graphite-3);
+}
+
+/* The four checks, passed and failed. Listing both is what a check print IS:
+   a record of what was verified as well as what was not. */
+.bk-checks {
+  display: grid;
+  gap: 0;
+}
+
+.bk-check {
+  display: grid;
+  grid-template-columns: var(--bk-s5) minmax(0, 1fr) auto;
+  gap: var(--bk-s3);
+  align-items: baseline;
+  padding-block: var(--bk-s3);
+  border-block-end: var(--bk-rule-1) solid var(--bk-rule-ink);
+  font-size: var(--bk-text-sm);
+}
+
+/* Set in the drafted face rather than the figure face: Martian Mono carries no
+   check or cross, so the mono stack fell through to a system face and printed a
+   thin capital X beside a run of tabular figures. */
+.bk-check-mark {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-md);
+  font-weight: 600;
+  line-height: var(--bk-leading-tight);
+  text-align: center;
+  color: var(--bk-greenline);
+}
+
+.bk-check[data-failed="true"] .bk-check-mark {
+  color: var(--bk-redline);
+}
+
+.bk-check[data-kind="duplicate"][data-failed="true"] .bk-check-mark {
+  color: var(--bk-goldline);
+}
+
+.bk-check-text {
+  min-inline-size: 0;
+}
+
+.bk-check-count {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-2xs);
+  letter-spacing: var(--bk-track-wide);
+  color: var(--bk-graphite-3);
+  white-space: nowrap;
+}
+
+.bk-spellings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bk-s2);
+  padding-block: var(--bk-s3);
+}
+
+.bk-spelling {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--bk-s2);
+  padding: var(--bk-s1) var(--bk-s3);
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  font-size: var(--bk-text-xs);
+}
+
+.bk-spelling b {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-2xs);
+  font-weight: 400;
+  color: var(--bk-graphite-3);
+}
+
+.bk-spelling[data-differs="true"] {
+  border-color: var(--bk-redline);
+  color: var(--bk-redline);
+}
+
+/*
+ * The example rows. The one table on this sheet allowed its own horizontal
+ * scroll, with a header that stays put while it moves — a ruled table whose
+ * column names scroll away is a table you have to keep counting.
+ */
+/* Capped against the window as well as in rems: on a short screen the dossier
+   body is barely taller than 20rem, and a 20rem scroller inside it left the
+   reader driving one scrollbar from inside another. */
+.bk-table-wrap {
+  margin-block: var(--bk-s3);
+  max-block-size: min(20rem, 34svh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+}
+
+.bk-table {
+  inline-size: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--bk-text-xs);
+}
+
+.bk-table th,
+.bk-table td {
+  padding: var(--bk-s2) var(--bk-s3);
+  text-align: start;
+  border-block-end: var(--bk-rule-1) solid var(--bk-rule-ink);
+  white-space: nowrap;
+}
+
+.bk-table th {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  background: var(--bk-vellum);
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--bk-track-caps);
+  text-transform: uppercase;
+  color: var(--bk-graphite-3);
+  border-block-end: var(--bk-rule-2) solid var(--bk-graphite);
+}
+
+.bk-table tbody tr:last-child td {
+  border-block-end: 0;
+}
+
+.bk-table td[data-bad="true"] {
+  color: var(--bk-redline);
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.bk-table td[data-fig="true"] {
+  font-family: var(--bk-font-fig);
+  font-variant-numeric: tabular-nums;
+}
+
