@@ -22,6 +22,21 @@ export const FILTER_LABEL: Record<Filter, string> = {
   disputed: "Disputed",
 };
 
+/**
+ * What `read_credits` may be narrowed to - the split the reconciliation beat turns on: the credits
+ * with exactly one reading, and the one with two. An enum, like every parameter that addresses the
+ * app (design 5.1); it lives here rather than in the registration file because `lib/manifest.ts`
+ * is the one place the union's parameters are written down.
+ */
+export const CREDIT_FILTERS = ["all", "ambiguous", "unambiguous"] as const;
+export type CreditFilter = (typeof CREDIT_FILTERS)[number];
+
+/** Invoices one `select` call may tick. Design 5.1 wants a cap on every array parameter. */
+export const SELECT_MAX = 50;
+
+/** Invoices one page of `read_inbox` returns. */
+export const INBOX_PAGE = 20;
+
 /** Book-keeping categories. `categorize(ids, category)` addresses these. */
 export const CATEGORIES = [
   "uncategorized",

@@ -21,7 +21,6 @@ process.chdir(mkdtempSync(join(tmpdir(), "ledgerbox-test-")));
 const { COUNTED_OUT, db, getInvoice, inPeriod, listInvoices, summarize, unappliedLines } =
   await import("../lib/db");
 const { markPaidAction, matchAction, unmatchAction } = await import("../app/actions");
-const { markPaidForm } = await import("../app/form-actions");
 const { parseDollars } = await import("../lib/format");
 
 const paymentCount = (invoiceId: string): number =>
@@ -87,10 +86,12 @@ test("a typed amount is parsed or refused, never passed on as NaN", async () => 
   assert.equal(nan.message, "That is not an amount.");
   assert.equal(paymentCount(target.id), before, "nothing is written for an amount that is not one");
 
-  const form = new FormData();
-  form.set("id", target.id);
-  form.set("amount", "$1,250.00");
-  const ok = await markPaidForm({ ok: true, message: "", seq: 0 }, form);
+  // And the formatted amount survives the reading the `mark_paid` tool does before it calls the
+  // action. The form adapter that used to own this parse went with the Strip; `parseDollars` is
+  // the one reading left, and it is the one the tool applies.
+  const cents = parseDollars("$1,250.00");
+  assert.equal(cents, 125_000);
+  const ok = await markPaidAction(target.id, cents!);
   assert.equal(ok.ok, true, ok.message);
   assert.equal(paymentCount(target.id), before + 1);
   assert.equal(

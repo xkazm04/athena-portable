@@ -1,0 +1,35 @@
+/*
+ * The Lanes - the whole stylesheet, as an ordered list of small ones.
+ *
+ * THE ORDER IS THE CASCADE, so this file is not an index: it IS the sheet.
+ * Every part below was cut from one two-thousand-line stylesheet at its own
+ * section banners and, inside an over-long section, at the last top-level rule
+ * boundary that still fit. No rule was ever split. Concatenating the parts in
+ * this order reproduces the original, and the script that cut them asserted
+ * exactly that before it wrote anything.
+ *
+ * To move a rule, move it. To add one, add it to the part that owns its
+ * concern. Do not reorder these imports unless you mean to change the cascade.
+ */
+
+@import "./base/tokens.css";
+@import "./base/the-sheet.css";
+@import "./chrome/mast.css";
+@import "./chrome/rail-and-toolbar.css";
+@import "./base/stage.css";
+@import "./level0/l0-swarm.css";
+@import "./level0/l0-swarm-2.css";
+@import "./level0/l0-swarm-3.css";
+@import "./level1/l1-spread.css";
+@import "./level1/l1-spread-2.css";
+@import "./level2/l2-the-card.css";
+@import "./level2/l2-the-card-2.css";
+@import "./level2/l2-the-card-3.css";
+@import "./chrome/foot.css";
+@import "./base/heat-in-one-place.css";
+@import "./chrome/responsive.css";
+@import "./chrome/responsive-2.css";
+@import "./chrome/responsive-3.css";
+@import "./base/reduced-motion.css";
+@import "./chrome/toast.css";
+@import "./chrome/ticked.css";

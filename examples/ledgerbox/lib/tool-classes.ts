@@ -1,10 +1,10 @@
 /**
- * Design 5.1: the class of every capability the Strip registers, as data, in one table.
+ * Design 5.1: the class of every capability the one shipped page registers, as data, in one table.
  *
  * `reversible && side_effects !== "external"` is the whole rule, and it is a property of WHAT THE
  * TOOL DOES - so the two flags belong to the tool, not to the call site that happens to register
- * it. Holding them here rather than inline in `StripTools.tsx` buys one thing that matters: a test
- * can read the same declarations the app registers and check them against `annotationsFor`,
+ * it. Holding them here rather than inline in the two registration files buys one thing that
+ * matters: a test can read the same declarations the app registers and check them against `annotationsFor`,
  * instead of restating the intended class in a second list that drifts.
  *
  * A read is `{ reversible: true, sideEffects: "none" }` and becomes `readOnlyHint`. A reversible
@@ -22,6 +22,16 @@ const PERMANENT: ToolClass = { reversible: false, sideEffects: "data" };
 const REACHES_A_PERSON: ToolClass = { reversible: false, sideEffects: "external" };
 
 export const TOOL_CLASSES = {
+  // The Lanes' own layer. Four of them are registered by `useZoomTools` in the kit, which carries
+  // the same two flags in its own source; they are named here because this table is what the
+  // register on the surface and the class test both read, and a tool that is on the page but not
+  // in the table would be a class nobody declared.
+  read_view: READ,
+  open_group: READ,
+  open_item: READ,
+  zoom_out: READ,
+  search_invoices: READ,
+  set_filter: READ,
   read_books: READ,
   read_inbox: READ,
   read_invoice: READ,

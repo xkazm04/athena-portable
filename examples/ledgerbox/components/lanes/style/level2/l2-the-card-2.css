@@ -1,0 +1,193 @@
+.ln-meta div {
+  display: grid;
+  gap: 3px;
+  min-inline-size: 0;
+}
+
+.ln-meta dt {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  /* The accent rather than another grey: a label and its value should differ in
+     hue as well as in size, or the pair reads as one dim block. */
+  color: var(--ln-accent);
+  opacity: 0.85;
+}
+
+.ln-meta dd {
+  margin: 0;
+  font-size: var(--ln-text-md);
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+/* "none — and 51 days late" is one fact, so it sets on one line as one fact,
+   with the consequence held back from the value it qualifies. */
+.ln-meta-aside {
+  font-style: normal;
+  font-size: var(--ln-text-sm);
+  color: var(--ln-alert);
+}
+
+.ln-meta-aside::before {
+  content: " — ";
+  color: var(--ln-faint);
+}
+
+.ln-lines {
+  display: grid;
+  gap: 1px;
+}
+
+.ln-line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--ln-s3);
+  padding-block: var(--ln-s2);
+  border-block-end: 1px solid var(--ln-rule-soft);
+  font-size: var(--ln-text-sm);
+  color: var(--ln-ink);
+}
+
+.ln-line span:last-child {
+  font-family: var(--ln-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ln-mute);
+}
+
+.ln-truncated {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  letter-spacing: 0.1em;
+  color: var(--ln-faint);
+}
+
+.ln-note {
+  margin: 0;
+  font-size: var(--ln-text-sm);
+  line-height: 1.65;
+  color: rgb(255 255 255 / 82%);
+  max-inline-size: 62ch;
+}
+
+.ln-note[data-kind="dispute"] {
+  color: var(--ln-alert);
+  border-inline-start: 2px solid var(--ln-alert);
+  padding-inline-start: var(--ln-s3);
+}
+
+.ln-note[data-kind="caution"] {
+  color: var(--ln-risk);
+  border-inline-start: 2px solid var(--ln-risk);
+  padding-inline-start: var(--ln-s3);
+}
+
+/* A proposed match. Confidence is never a bare number here: it is the list of
+   signals that fired, which is what it actually is. */
+.ln-candidate {
+  display: grid;
+  gap: var(--ln-s2);
+  padding: var(--ln-s3);
+  background: var(--ln-surface);
+  border: 1px solid var(--ln-rule);
+  border-radius: var(--ln-radius-card);
+}
+
+.ln-candidate-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ln-s2);
+  font-size: var(--ln-text-sm);
+  color: var(--ln-ink);
+}
+
+.ln-candidate-memo {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-text-xs);
+  color: var(--ln-mute);
+  overflow-wrap: anywhere;
+}
+
+.ln-confidence {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ln-accent);
+}
+
+.ln-evidence {
+  margin: 0;
+  padding-inline-start: var(--ln-s4);
+  display: grid;
+  gap: 3px;
+  font-size: var(--ln-text-xs);
+  color: rgb(255 255 255 / 78%);
+}
+
+.ln-draft {
+  margin: 0;
+  padding: var(--ln-s3);
+  background: var(--ln-surface);
+  border: 1px solid var(--ln-rule);
+  border-radius: var(--ln-radius-card);
+  font-size: var(--ln-text-sm);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: rgb(255 255 255 / 82%);
+  max-block-size: 15em;
+  overflow-y: auto;
+}
+
+/* The action panel. */
+.ln-card-foot {
+  padding: var(--ln-s3) var(--ln-s5) var(--ln-s4);
+  border-block-start: 1px solid var(--ln-rule);
+  background: linear-gradient(180deg, transparent, rgb(4 7 8 / 55%));
+  display: grid;
+  gap: var(--ln-s2);
+  flex: none;
+}
+
+.ln-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ln-s2);
+  align-items: center;
+}
+
+.ln-btn {
+  min-block-size: 44px;
+  padding: var(--ln-s2) var(--ln-s4);
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid var(--ln-rule);
+  border-radius: var(--ln-radius);
+  color: var(--ln-ink);
+  font-size: var(--ln-text-xs);
+  cursor: pointer;
+  transition: transform var(--ln-dur-1) var(--ln-ease), border-color var(--ln-dur-1) var(--ln-ease);
+}
+
+.ln-btn:hover:not(:disabled) {
+  border-color: var(--ln-mute);
+}
+
+.ln-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.ln-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ln-btn[data-kind="primary"] {
+  background: var(--ln-ink);
+  border-color: var(--ln-ink);
+  color: var(--ln-void);
+}
+

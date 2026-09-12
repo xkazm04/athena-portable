@@ -1,0 +1,6 @@
+.ln-tip-status {
+  font-size: var(--ln-text-xs);
+  line-height: 1.45;
+  color: rgb(255 255 255 / 80%);
+}
+

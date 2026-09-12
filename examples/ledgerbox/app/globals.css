@@ -4,11 +4,12 @@
 /*
  * Ledgerbox - one design, one token contract.
  *
- * The Strip declares its semantic tokens in `components/edge/edge.css`, imported from
- * `app/(shipped)/layout.tsx` - which is also where the `[data-variant="edge"]` wrapper is set -
- * and re-points the kit's `--dk-*` hooks at them so the toasts, manifest drawer and activity log
- * land in the same palette. The design owns its own shell and fonts inside that route group.
- * Below is only what sits underneath it: figures, focus and reduced motion.
+ * The Lanes declares its semantic tokens in `components/lanes/style/base/tokens.css`, imported
+ * through `components/lanes/style/index.css` by the direction itself - which is also where the
+ * `[data-variant="lanes"]` wrapper is set - and re-points the kit's `--dk-*` hooks at them so the
+ * toasts land in the same palette. The design owns its own stage; the faces load in
+ * `app/layout.tsx`, because there is one design and it is the root route. Below is only what sits
+ * underneath it: figures, focus and reduced motion.
  */
 
 html,

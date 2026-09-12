@@ -1,0 +1,162 @@
+/*
+ * One invoice at L1. The typography here is the difference between a card and a
+ * data cell: the client is the title and it is set in near-white at reading
+ * size, the amount is the second voice in the state's own colour, and the
+ * status clause is white held back to 80% rather than a grey that disappears
+ * into the ground.
+ */
+.ln-node {
+  position: relative;
+  min-block-size: 8.5rem;
+  padding: var(--ln-s3) var(--ln-s4) var(--ln-s4);
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: var(--ln-s1);
+  align-content: start;
+  text-align: start;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 7%), transparent 46%),
+    var(--ln-surface);
+  border: 1px solid var(--ln-rule);
+  border-block-start: 2px solid var(--tone);
+  border-radius: var(--ln-radius-card);
+  color: inherit;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition:
+    background var(--ln-dur-2) var(--ln-ease),
+    border-color var(--ln-dur-2) var(--ln-ease);
+}
+
+/*
+ * Settled and out-of-play invoices sit lower on the sheet.
+ *
+ * Nineteen of Design's twenty-six are settled, and at the same elevation as the
+ * seven that want something they won the page by sheer number. They keep every
+ * fact — the client, the figure, the clause — and give up the lit top edge and
+ * the raised ground, which is the same argument the heat ramp makes about
+ * colour one level up: the state whose right answer is 'nothing' should not be
+ * the loudest thing in the room. Hover restores them in full.
+ */
+.ln-node[data-heat="good"],
+.ln-node[data-heat="inert"] {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 3%), transparent 46%),
+    var(--ln-deep);
+  border-color: var(--ln-rule-soft);
+  border-block-start-color: color-mix(in srgb, var(--tone) 50%, transparent);
+}
+
+.ln-node[data-heat="good"] .ln-node-status,
+.ln-node[data-heat="inert"] .ln-node-status {
+  color: rgb(255 255 255 / 62%);
+}
+
+/* Hover is a surface change, never a transform: motion owns the transform of
+   every node, so a CSS one here would either be ignored or fight it. */
+.ln-node:hover {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 11%), transparent 46%),
+    var(--ln-raise);
+  border-color: var(--tone);
+}
+
+.ln-node:hover .ln-node-status {
+  color: rgb(255 255 255 / 80%);
+}
+
+/*
+ * The balance as a LENGTH, against the largest balance in this lane.
+ *
+ * Twelve identical boxes cannot be compared by eye, and reading twelve figures
+ * one after another is arithmetic rather than comparison. The meter sits on the
+ * card's bottom edge where it reads as a rule under the card rather than as a
+ * chart inside it, and it is present in both modes — the tilt then adds the
+ * physical version of the same fact instead of being the only way to get it.
+ */
+.ln-node-meter {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--lift) * 100%);
+  block-size: 3px;
+  background: var(--tone);
+  opacity: 0.55;
+  transition: opacity var(--ln-dur-2) var(--ln-ease);
+}
+
+.ln-node:hover .ln-node-meter {
+  opacity: 0.9;
+}
+
+/* In `raised` mode a plinth grows out of the card's foot, its height the
+   balance. Drawn on a pseudo-element, which is the one place motion cannot
+   reach and therefore the right home for something that must survive being
+   animated. */
+.ln-field[data-mode="raised"] .ln-node::after {
+  content: "";
+  position: absolute;
+  inset-inline: -1px;
+  inset-block-end: -1px;
+  block-size: calc(var(--lift) * 12px + 2px);
+  background: linear-gradient(180deg, var(--tone), rgb(0 0 0 / 45%));
+  opacity: 0.7;
+}
+
+.ln-node-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ln-s2);
+  min-inline-size: 0;
+}
+
+.ln-node-top > :first-child {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ln-node-top > :last-child {
+  flex: none;
+}
+
+.ln-node-no {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  letter-spacing: 0.08em;
+  color: var(--ln-faint);
+  white-space: nowrap;
+}
+
+.ln-node-money {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-text-md);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--tone);
+}
+
+.ln-node-client {
+  font-size: var(--ln-text-md);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ln-node-status {
+  font-size: var(--ln-text-sm);
+  line-height: 1.45;
+  color: rgb(255 255 255 / 80%);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  max-block-size: 4.4em;
+  overflow: hidden;
+}
+

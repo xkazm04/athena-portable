@@ -4,11 +4,13 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## Examples — the studio and the journey (in progress)
 
-- `feat(examples): the shared kit and the studio's world` — `examples/` joins the workspace; `@athena/demo-kit` pruned to `db`, `activity`, `seed`, `ui`, `zoom`, `webmcp`; the seed registry gains `STUDIO`, one billing contact per client and the named cross-app people and aliases; ADR 0014 narrows the example-app non-goal to the three the demo runs on.
+- `feat(examples): the shared kit and the studio's world` — `examples/` joins the workspace; `@athena/demo-kit` pruned to `db`, `activity`, `seed`, `ui`, `zoom`, `webmcp`; the seed registry gains `STUDIO`, one billing contact per client and the named cross-app people and aliases; ADR 0017 narrows the example-app non-goal to the three the demo runs on.
 - `feat(examples): ledgerbox, the books of act 1` — the Strip at `/`, variants removed; reads carry the client contact, `paid_ratio`, ambiguity and short-by on credits, the bank alias on a match; drafts are whole messages from the studio inbox; the close exports a titled markdown page.
 - `feat(examples): hirelane, the pipeline of act 2` — the Board at `/` with both tool sets mounted; `read_applicants` and `read_shortlist`; the Kestrel Labs applicant pinned from the registry; scheduling and rejection mail as complete envelopes from the studio inbox; no protected column, no protected parameter.
 - `feat(examples): tidycrm, the contact list of act 3` — the Blocks at `/`, the AG-UI proxy removed; `read_conflicts`, `preview_company`, `resolve_company` through the revisions log; the registry contacts as anchors; a `clients` segment and a titled markdown export.
 - `feat(examples): the journey, four acts run end to end` — `@athena/journey` boots the three apps in scratch directories, drives them through `inject.js` over the `athena-webmcp` protocol, classifies with `gate.js`, approves and declines through a surface fake, models mail and notes connectors behind egress allow-lists, and prints the ledger and the facts it cites.
+- `feat(examples): ledgerbox ships The Lanes` — the newer direction restored from the reference repository as the root page; one manifest carrying the view layer and the books layer, 23 tools, three gated; the page reads the bridge's presence marker; ADR 0018.
+- `fix(examples): the journey records itself on request, and the example-apps ADR is 0017` — `JOURNEY_VIDEO=1` records the run from the spec's own context (the config option a history rewrite carried in never applied); the ADR renumbered out of the 0014 collision.
 
 ## P5 — MVP checkpoint (done)
 

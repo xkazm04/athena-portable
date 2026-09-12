@@ -1,0 +1,31 @@
+/* ------------------------------------------------------------------ stage */
+
+/*
+ * The stage holds both zoom layers in the same box, stacked. The L0 layer
+ * scales toward the lane you picked as it leaves, and the L1 layer scales up
+ * from that same origin as it arrives — so the level change reads as one
+ * continuous move into the sheet rather than as two views swapping.
+ */
+.ln-stage {
+  position: relative;
+  overflow-x: clip;
+  overflow-y: auto;
+  /* Reserved always, so the gutter does not jump by ten pixels when a level
+     that scrolls follows one that does not. */
+  scrollbar-gutter: stable;
+  min-block-size: 0;
+  /* Both layers occupy ONE cell, so the outgoing and incoming levels overlap
+     during the zoom instead of stacking and shoving the footer down. The stage
+     takes the height of whichever is taller, which is the level you are
+     arriving at. */
+  display: grid;
+  grid-template: 1fr / 1fr;
+  align-items: start;
+}
+
+.ln-layer {
+  grid-area: 1 / 1;
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+

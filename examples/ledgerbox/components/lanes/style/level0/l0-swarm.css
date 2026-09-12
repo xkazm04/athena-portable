@@ -1,0 +1,192 @@
+/* ---------------------------------------------------------------- L0 swarm */
+
+/*
+ * The axis is two bands, not one: the months sit on the upper line and the
+ * now-marker's own label on the lower one. They shared a baseline before, so at
+ * these dates "NOW" printed straight through "SEP".
+ */
+.ln-axis {
+  position: relative;
+  block-size: 30px;
+  margin-inline-start: calc(var(--ln-gutter, 186px) + var(--ln-bleed));
+  margin-inline-end: var(--ln-bleed);
+  border-block-end: 1px solid var(--ln-rule-soft);
+}
+
+.ln-axis-month {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: calc(var(--x) * 100%);
+  transform: translateX(-50%);
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-text-xs);
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ln-mute);
+}
+
+.ln-axis-now,
+.ln-now {
+  position: absolute;
+  inset-inline-start: calc(var(--todayX) * 100%);
+  inline-size: 1px;
+  background: linear-gradient(180deg, transparent, var(--ln-accent) 12%, var(--ln-accent) 88%, transparent);
+  opacity: 0.5;
+}
+
+.ln-axis-now {
+  inset-block: 0;
+}
+
+.ln-axis-now::after {
+  content: "NOW";
+  position: absolute;
+  inset-block-start: 16px;
+  inset-inline-start: 5px;
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  line-height: 1;
+  letter-spacing: 0.16em;
+  color: var(--ln-accent);
+}
+
+.ln-now {
+  inset-block: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.ln-stack {
+  perspective: 1600px;
+  perspective-origin: 50% 0%;
+  /* The tilt lifts the far lanes, and the top padding is the room it needs so
+     the first lane's head is not shaved by the stage's scroll box. */
+  padding-block: var(--ln-s3) var(--ln-s1);
+  padding-inline: var(--ln-bleed);
+}
+
+/*
+ * Only ever seen in the compact layout. The stylesheet has claimed since the
+ * first cut that "the compact lane says so in its own label rather than
+ * pretending the swarm still reads" — and nothing rendered it, so the one thing
+ * the narrow layout genuinely loses was lost silently.
+ */
+.ln-compact-note {
+  display: none;
+  margin-block-end: var(--ln-s3);
+  padding-inline-end: var(--ln-s3);
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  color: var(--ln-faint);
+  border-inline-start: 2px solid var(--ln-rule);
+  padding-inline-start: var(--ln-s3);
+}
+
+.ln-lanes {
+  display: grid;
+  gap: 6px;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--ln-tilt));
+  transition: transform var(--ln-dur-4) var(--ln-ease-out);
+}
+
+.ln-lane {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--ln-gutter, 186px) 1fr;
+  align-items: stretch;
+  gap: var(--ln-s3);
+  transform: translateZ(calc(var(--i) * 4px));
+  transform-style: preserve-3d;
+}
+
+/*
+ * The lane's spine, and it is a MEASUREMENT rather than a decoration.
+ *
+ * It was a `border-inline-start` on the head painted in `lane.heat` — a box
+ * vertically centred inside a taller lane, so under the tilt it read as a stray
+ * diagonal slash beside the name, and since every one of the six lanes holds at
+ * least one long-overdue invoice, all six were the same red and it said
+ * nothing. What it says now is how much of the lane's outstanding money is
+ * already late: 51% in Design, 97% in Reimbursable, and that difference is the
+ * whole reason to open one lane before the other. Full height, so the six read
+ * against each other; two colours and a hard stop, so it is a bar and not a
+ * gradient pretending to be one.
+ */
+.ln-lane::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    var(--ln-alert) 0 calc(var(--late, 0) * 100%),
+    var(--ln-rule) calc(var(--late, 0) * 100%) 100%
+  );
+  opacity: 0.8;
+  transition: opacity var(--ln-dur-1) var(--ln-ease);
+}
+
+.ln-lane:hover::before {
+  opacity: 1;
+}
+
+/* The gutter. The lane name is the one text at L0 allowed to be big. */
+.ln-lane-head {
+  border: 0;
+  background: none;
+  text-align: start;
+  padding: var(--ln-s1) 0 var(--ln-s1) var(--ln-s3);
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  align-content: center;
+  min-block-size: 44px;
+}
+
+.ln-lane-name {
+  font-family: var(--ln-font-display);
+  font-size: var(--ln-text-lg);
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  color: #fff;
+  transition: color var(--ln-dur-1) var(--ln-ease);
+}
+
+.ln-lane-head:hover .ln-lane-name {
+  color: var(--ln-ink);
+}
+
+.ln-lane-figures {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-text-xs);
+  letter-spacing: 0.01em;
+  color: var(--ln-mute);
+}
+
+.ln-lane-late {
+  color: var(--tone, var(--ln-mute));
+  font-weight: 500;
+}
+
+/* The track: the positioned box the marks live in. */
+.ln-track {
+  position: relative;
+  block-size: calc(var(--rows) * var(--ln-row) + 8px);
+  border: 0;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 5%), transparent 42%),
+    var(--ln-surface);
+  border-radius: var(--ln-radius);
+  cursor: pointer;
+  padding: 0;
+  transform-style: preserve-3d;
+  transition: background var(--ln-dur-2) var(--ln-ease);
+}
+

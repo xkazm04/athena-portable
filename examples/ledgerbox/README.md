@@ -7,10 +7,12 @@ posted yet. The studio's name, its shared inbox and every client's billing conta
 than three demos.
 
 It ships **without** Athena. The shipped surface registers its own capabilities on
-`document.modelContext` through `@athena/demo-kit/webmcp` — `components/edge/StripTools.tsx`, with
-the class of every tool held as data in `lib/tool-classes.ts` — so Act 1 of the demo adds an agent
-to an app that already describes itself. There is no app-wide registrar and no chat: every tool
-carries the design 5.1 flags (`reversible`, `sideEffects`) that classify it AUTO or GATED.
+`document.modelContext` through `@athena/demo-kit/webmcp` — two files on one page,
+`components/lanes/tools/LanesTools.tsx` for the view and `components/lanes/tools/BooksTools.tsx`
+for the money, with the parameters of both in `lib/manifest.ts` and the class of every tool held as
+data in `lib/tool-classes.ts`. Act 1 of the demo therefore adds an agent to an app that already
+describes itself. There is no app-wide registrar and no chat: every tool carries the design 5.1
+flags (`reversible`, `sideEffects`) that classify it AUTO or GATED.
 
 ## The books
 
@@ -36,13 +38,14 @@ means picking the payment out of a real month, not out of a list of payments.
 
 ## The three acts it stages
 
-1. **Onboard.** The manifest is generated from the code; an agent reading it finds the seventeen
+1. **Onboard.** The manifest is generated from the code; an agent reading it finds the twenty-three
    tools below with no patch to the app.
 2. **Command.** *"Reconcile August and chase anything over 30 days."* `read_credits` returns the
    fourteen credits with exactly one reading and the one with two; `match_bank_line` applies the
    fourteen and hands back the trading name when a credit arrived under one. `navigate("overdue")`
-   moves the inbox while the long job runs; `read_books` returns a `screen` object — the current
-   filter, the period and how many invoices are ticked — so the agent knows where the user is.
+   lights the late invoices on the sheet while the long job runs; `read_books` returns a `screen`
+   object — the level, the filter, the period and how many invoices are ticked — so the agent knows
+   where the user is.
 3. **See results.** Every read carries its own evidence: a credit says whether it is `ambiguous` and
    names `candidate_invoice_ids`, says `short_by` when it falls short, and says
    `counterparty_alias` when the memo used a trading name. Every invoice says `paid_ratio` and
@@ -53,32 +56,66 @@ means picking the payment out of a real month, not out of a list of payments.
 The app never says "skip this client". It says what is true and leaves the decision on the other
 side of the seam.
 
+## The design
+
+Ledgerbox ships one design, **The Lanes**, and it is the root route. Six chronological swimlanes,
+one per area of the practice, all reading one clock on a single-hue lit ground under a condensed
+poster masthead. A mark is worth its width and late by the tail it drags into the now-line; the
+three largest balances in each lane print their amount and the few asking for something carry a
+glyph, so the swarm has a focus without 124 labels in it.
+
+Three levels, and every one of them zooms through the point you clicked rather than swapping views:
+
+| Level | Shows | The agent's verb |
+|---|---|---|
+| **L0** the swarm | all six lanes on one time axis | `read_view`, `zoom_out` |
+| **L1** one lane spread | one area's invoices as cards, packed by date or standing up by balance | `open_group` |
+| **L2** one invoice lifted | the card: lines, the credits that could settle it, any draft, and the three gates | `open_item` / `open_invoice` |
+
+The Strip — the older quarter-as-a-film-strip direction that used to be the root, with its own
+invoice stage at `/invoices/[id]` and a direction index at `/v` — is gone, and so is everything
+under `components/edge/`. One design, one page, one register.
+
 ## Host manifest
 
-`reversible && side_effects !== "external"` is the whole classification rule (design 5.1), and the
-flags live in `lib/tool-classes.ts` — one table, read by the registrations in `StripTools.tsx` and
-by the class test. Anything that reaches a person or makes a permanent statement about money is
+`reversible && side_effects !== "external"` is the whole classification rule (design 5.1). The flags
+live in `lib/tool-classes.ts` — one table, read by `lib/manifest.ts`, by both registration files and
+by the class tests. Anything that reaches a person or makes a permanent statement about money is
 GATED by what it is.
 
-| Tool | Class | Reversible | Side effects | What it does |
-|---|---|---|---|---|
-| `read_books` | **A** | yes | none | Each period's totals, the inbox counts, the studio, and what is on screen now |
-| `read_inbox(filter?, page?)` | **A** | yes | none | Invoices under a filter, paged, with a `showing N of M` envelope |
-| `read_invoice(id)` | **A** | yes | none | One invoice and the credits that could settle it, capped and counted |
-| `read_credits(only?)` | **A** | yes | none | Unapplied credits: `ambiguous`, `candidate_invoice_ids`, `counterparty_alias`, `short_by`, `could_be[]` |
-| `read_clients` | **A** | yes | none | The client book: contact, email, bank alias, what each still owes and when they last paid |
-| `navigate(view)` | **A** | yes | none | Scrubs the strip to the inbox, or to overdue / unmatched / disputed |
-| `open_invoice(id)` | **A** | yes | none | Opens one invoice on the stage |
-| `select(ids)` | **A** | yes | none | Ticks up to 50 invoices so the dock offers bulk actions |
-| `set_period(period)` | **A** | yes | none | Points the reports and exports at an accounting period |
-| `categorize(ids, category)` | **A** | yes | data | Files up to 100 invoices under a book-keeping category |
-| `match_bank_line(invoice_id, line_id)` | **A** | yes | data | Applies a bank credit, records the payment, and names the trading name it arrived under |
-| `unmatch(invoice_id, line_id)` | **A** | yes | data | Takes a credit back off an invoice, restoring the balance |
-| `draft_reminder(id, tone)` | **A** | yes | data | Writes a `gentle` or `firm` draft and returns the whole message: `to`, `subject`, `body`. Nothing is sent |
-| `mark_paid(id, amount)` | **G** | no | data | Records a payment against the books |
-| `send_reminder(id)` | **G** | no | external | Sends the saved draft to the client's billing contact (simulated, logged with the recipient) |
-| `void_invoice(id)` | **G** | no | data | Voids an invoice, permanently |
-| `export_summary(period)` | **A** | yes | data | Files the period summary and returns a page: `title`, `markdown`, `body` |
+**The view layer** (`components/lanes/tools/LanesTools.tsx`; the first four come from the kit's
+`useZoomTools`, so "open a group" means here what it means in every other three-level direction):
+
+| Tool | Class | Parameters | What comes back |
+|---|---|---|---|
+| `read_view` | **A** | – | `level`, `level_name`, `area_open`, `invoice_open`, `areas: {showing, of, items}`, and a `detail` object for the level you are on |
+| `open_group(id)` | **A** | `id` — an area id from `read_view` | `{ok, level: 1, opened}` — or `{ok: false, error, available[]}` |
+| `open_item(id, group?)` | **A** | `id`, optional `group` | `{ok, level: 2, opened}` |
+| `zoom_out` | **A** | – | `{ok, level, level_name}` |
+| `search_invoices(…)` | **A** | `text`, `area`, `state` (enum), `overdue_by`, `balance_over`, `unmatched` | `{showing, of, items[]}` worst first, each item a mark read plus `area_label` |
+| `set_filter(state?, client?)` | **A** | `state` (enum), `client` | `{ok, state, client, lit, dimmed, note}`; no arguments reads the filter without moving it |
+
+**The books layer** (`components/lanes/tools/BooksTools.tsx`):
+
+| Tool | Class | Parameters | What comes back |
+|---|---|---|---|
+| `read_books` | **A** | – | `periods[]`, `studio`, and `screen` — `level`, `area_open`, `invoice_open`, `filter`, `client`, `period`, `selected` |
+| `read_inbox(filter?, page?)` | **A** | `filter` (enum), `page` | `{showing, of, page, items[], filter}` |
+| `read_invoice(id)` | **A** | `id` | `{invoice, note, per_credit_cap, candidate_lines: {showing, of, items}}` |
+| `read_credits(only?)` | **A** | `only` — all / ambiguous / unambiguous | `{showing, of, items[], only}`; each credit carries `ambiguous`, `candidate_invoice_ids`, `counterparty_alias`, `short_by`, `could_be[]` |
+| `read_clients` | **A** | – | `{showing, of, items[]}` — contact, email, `bank_alias`, what each still owes and when they last paid |
+| `navigate(view)` | **A** | `view` — inbox / overdue / unmatched / disputed | `{ok, view, level: 0, state, state_label, lit, dimmed, note}` |
+| `open_invoice(id)` | **A** | `id` | `{ok, level: 2, opened: {id, number, client, area}}` |
+| `select(ids)` | **A** | `ids` (max 50) | a sentence saying how many were ticked, how many were over the cap and how many are not in the books |
+| `set_period(period)` | **A** | `period` (enum) | a sentence naming the period |
+| `categorize(ids, category)` | **A** | `ids` (max 100), `category` (enum) | the action's message |
+| `match_bank_line(invoice_id, line_id)` | **A** | both ids | the message, plus `counterparty_alias` when the credit arrived under a trading name |
+| `unmatch(invoice_id, line_id)` | **A** | both ids | the action's message |
+| `draft_reminder(id, tone)` | **A** | `id`, `tone` — gentle / firm | the whole message: `draft.to`, `to_name`, `from`, `subject`, `body`, `tone` |
+| `mark_paid(id, amount)` | **G** | `id`, `amount` in dollars | the action's message |
+| `send_reminder(id)` | **G** | `id` | `{ok, message, to, subject}` |
+| `void_invoice(id)` | **G** | `id` | the action's message |
+| `export_summary(period)` | **A** | `period` (enum) | `{ok, message, period, title, markdown, body}` |
 
 There are no host readables. What a readable would carry is returned inside `read_books`'s `screen`
 object instead. Every parameter that addresses UI is an enum, every array carries `maxItems`, and
@@ -90,15 +127,32 @@ Every mutating action logs to `activity` and stores an `undo` payload when it is
 address it reached, not just the client's name, because in the demo the send itself is carried by a
 connector outside the page.
 
-## The design
+### What each tool moves on screen
 
-Ledgerbox ships one design, **The Strip**: the quarter as a film strip you scrub. Invoices are cards
-pinned to their due day, an overdue card drags a red tail to the "today" beam, unplaced credits are
-coins on a lower lane. The month title and the running total follow the scroll, and settling a coin
-on the invoice stage moves it physically between trays.
+A tool has to walk the path a click walks, or the recording shows an agent talking about a page
+that never changed. Ids come out of `read_view`: the six areas are its `areas.items[].id`
+(`design`, `development`, `consulting`, `retainer`, `reimbursable`, `uncategorized`), and an
+invoice id is `inv_NNNN` — from `read_view`'s detail at L1, from `search_invoices`, or from
+`read_inbox`.
 
-The full design notes — metaphor, type, palette tokens, motion vocabulary, signature moment, what it
-gives up — are in `components/edge/README.md`.
+- `open_group` zooms L0 into one lane. `open_item` and `open_invoice` are the **same move**: the
+  mark morphs into the L2 card, `.ln-root` gains `data-level="2"`, and the card names the client.
+- `navigate` returns to the overview and lights a subset of the swarm — `overdue` presses the Late
+  chip, `unmatched` presses Credit waiting, `disputed` presses Disputed, `inbox` clears it. It dims
+  rather than removes, and says how many it dimmed. `set_filter` moves the same two chips plus the
+  client select.
+- `select` rings the ticked marks in the accent at L0 and L1 and prints `N ticked` on the toolbar.
+- `set_period` and `export_summary` move the **Close** select on the toolbar.
+- `match_bank_line` rebuilds the sheet under the open card: the lead figure flips from *Still owed*
+  to *Settled* when the credit covers the balance, the card's `data-heat` goes to `good`, and a
+  partial payment leaves a **Credits already applied** block with the memo and an Unapply button.
+  `unmatch` puts the balance back, live, on the same card.
+- `draft_reminder` adds the **Draft reminder, ⟨tone⟩, not sent** block to the open card.
+  `send_reminder` clears it and raises *Reminders sent* in the card's aside.
+- `categorize` moves the invoice into another lane; `void_invoice` turns its mark grey (`inert`).
+- The masthead's presence line is a reading, not a caption: `components/lanes/presence.ts` looks
+  for the surface's injected bridge (`window.__athenaBridge`) and the line switches to "Athena is
+  connected" with a filled dot when one is there.
 
 ## Run it
 
@@ -118,9 +172,12 @@ app ships no chat, no runtime endpoint and no provider to host one.
 | `lib/match.ts` | the matching heuristic, the evidence clauses, the shortfall and the alias |
 | `lib/db.ts` | queries, derived invoice state, period summaries, candidate scoring both ways, `unappliedCredits` |
 | `lib/reminder.ts` | the addressable reminder: `to`, `from`, `subject`, `body`, composed once |
-| `lib/export.ts` | the close, as plain text for the reports view and as Markdown for a page |
-| `lib/tool-classes.ts` | the design 5.1 class of every capability, as data |
+| `lib/export.ts` | the close, as plain text for the readout and as Markdown for a page |
+| `lib/tool-classes.ts` | the design 5.1 class of every capability, as data — the single source of the flags |
+| `lib/manifest.ts` | the union both registration files spread: every tool's parameters, with the class read from the table |
+| `lib/lanes/` | the server build: `buildSheet()` (the picture) and `buildBooks()` (the ledger the tools answer from) |
 | `app/actions.ts` | one server action per mutating capability, with `applyUndo` |
-| `components/edge/StripTools.tsx` | the Strip's tools on `document.modelContext` |
-| `components/edge/` | the whole UI — shell, inbox, invoice stage, statement, reports, activity — plus its css tokens |
-| `test/books.test.ts`, `test/journey.test.ts` | the money rules, and act 1's read surface |
+| `app/page.tsx` | the one route: one server read, two props |
+| `components/lanes/` | the whole UI — swarm, spread, card, shell, style — plus its three zoom levels |
+| `components/lanes/tools/` | the two registration files and the pure read and search layer behind them |
+| `test/books.test.ts`, `test/journey.test.ts`, `test/tools.test.ts` | the money rules, act 1's read surface, and the union manifest |

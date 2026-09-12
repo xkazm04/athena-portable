@@ -1,0 +1,32 @@
+/* ---------------------------------------------------------- reduced motion */
+
+/*
+ * Reduced motion removes the transitions and the perspective. It does NOT hide
+ * anything: every fact reachable through a tilt is reachable without one.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-variant="lanes"] {
+    --ln-tilt: 0deg;
+  }
+
+  .ln-root *,
+  .ln-root *::before,
+  .ln-root *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
+  .ln-stack,
+  .ln-spread,
+  .ln-card-layer {
+    perspective: none;
+  }
+
+  .ln-card-tilt,
+  .ln-lane,
+  .ln-mark,
+  .ln-tail {
+    transform: none;
+  }
+}
+

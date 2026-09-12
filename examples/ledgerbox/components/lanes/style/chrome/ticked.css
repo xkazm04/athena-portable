@@ -1,0 +1,38 @@
+/* ---------------------------------------------------------------- ticked */
+
+/*
+ * What `select` draws: a ring, not a colour.
+ *
+ * Every hue on this sheet already means one thing — the state of the invoice —
+ * and a ticked mark is not a state of the invoice, it is a working set someone
+ * (or something) assembled. So it is a ring in the accent, outside the mark,
+ * at both levels that draw marks. It survives the greyscale test on shape
+ * alone, and it stacks with the dim of a filtered-out mark rather than fighting
+ * it: a ticked invoice the filter has dimmed stays visibly ticked.
+ *
+ * Last in the cascade on purpose (see `style/index.css`): the ring has to beat
+ * the heat rules that set `box-shadow` on the same elements.
+ */
+.ln-mark[data-picked="true"] {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 45%),
+    0 0 0 2px var(--ln-ground),
+    0 0 0 4px var(--ln-accent);
+  z-index: 5;
+}
+
+.ln-node[data-picked="true"] {
+  border-color: var(--ln-accent);
+  box-shadow: 0 0 0 2px var(--ln-accent);
+}
+
+/* The count, beside the filter count on the toolbar. It is the only place a
+   person can see how big the working set is without counting rings. */
+.ln-picked {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ln-accent);
+  white-space: nowrap;
+}

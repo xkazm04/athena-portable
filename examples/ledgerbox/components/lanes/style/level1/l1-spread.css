@@ -1,0 +1,191 @@
+/* -------------------------------------------------------------- L1 spread */
+
+.ln-spread {
+  position: relative;
+  padding-block: var(--ln-s4) var(--ln-s7);
+  perspective: 1800px;
+  perspective-origin: 50% 20%;
+}
+
+.ln-spread-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ln-s2) var(--ln-s4);
+  margin-block-end: var(--ln-s3);
+}
+
+/* The lane's figures, in the masthead's own device — poster numerals over
+   tracked-out caps. One size smaller than the sheet's, because a lane is one
+   sixth of the claim the sheet makes. */
+.ln-spread-figures {
+  gap: var(--ln-s6);
+  margin-block-end: var(--ln-s4);
+}
+
+/* `.ln-readout` is on the same element (spread/Head.tsx), and `.ln-readout b` in
+   chrome/foot.css matches at the same specificity from a later import — the
+   order is the cascade here, so at (0,1,1) this declaration lost at every
+   width. Qualifying it with the class already on the element wins on
+   specificity instead, without reordering the imports index.css forbids
+   reordering. */
+.ln-readout.ln-spread-figures b {
+  font-size: var(--ln-text-figure);
+}
+
+.ln-spread-narrowed {
+  margin-block-start: var(--ln-s3);
+  color: var(--ln-mute);
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+.ln-spread-title {
+  margin: 0;
+  font-family: var(--ln-font-display);
+  font-size: var(--ln-text-figure);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.9;
+  color: #fff;
+}
+
+.ln-spread-blurb {
+  margin: 0;
+  max-inline-size: 58ch;
+  color: var(--ln-mute);
+  font-size: var(--ln-text-sm);
+  line-height: 1.55;
+}
+
+/* The other lanes collapse to rails rather than vanishing, so the sheet keeps
+   its shape and moving sideways never goes back through L0. */
+/*
+ * The five lanes you are not in.
+ *
+ * They keep the position and the order they had at L0, because that continuity
+ * is the whole reason they are rails rather than a menu — but each one now
+ * states the thing that decides whether you would rather be in it. The spine is
+ * the same late-share bar the L0 gutter draws, so one encoding covers both
+ * levels, and the figure on the right is the money behind it.
+ */
+.ln-rails {
+  display: grid;
+  gap: 2px;
+  margin-block-end: var(--ln-s4);
+}
+
+.ln-rail-strip {
+  display: grid;
+  grid-template-columns: var(--ln-gutter, 186px) minmax(0, 1fr) 8.5rem;
+  gap: var(--ln-s3);
+  align-items: center;
+  border: 0;
+  border-radius: var(--ln-radius);
+  background: none;
+  padding: var(--ln-s1) var(--ln-s2) var(--ln-s1) 0;
+  cursor: pointer;
+  min-block-size: 30px;
+  transition: background var(--ln-dur-1) var(--ln-ease);
+}
+
+.ln-rail-strip:hover {
+  background: rgb(255 255 255 / 4%);
+}
+
+.ln-rail-name {
+  position: relative;
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ln-mute);
+  text-align: start;
+  padding-inline-start: var(--ln-s3);
+  transition: color var(--ln-dur-1) var(--ln-ease);
+}
+
+/* The same two-part measure as the lane spine at L0: the red run is the share
+   of this lane's outstanding money that is already late. */
+.ln-rail-name::before {
+  content: "";
+  position: absolute;
+  inset-block: -3px;
+  inset-inline-start: 0;
+  inline-size: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    var(--ln-alert) 0 calc(var(--late, 0) * 100%),
+    var(--ln-rule) calc(var(--late, 0) * 100%) 100%
+  );
+}
+
+.ln-rail-strip:hover .ln-rail-name {
+  color: var(--ln-ink);
+}
+
+.ln-rail-bar {
+  position: relative;
+  block-size: 7px;
+  background: var(--ln-surface);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ln-rail-bar i {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--x) * 100%);
+  inline-size: 4px;
+  border-radius: 1px;
+  background: var(--tone);
+  opacity: 0.85;
+}
+
+.ln-rail-strip:hover .ln-rail-bar {
+  background: var(--ln-raise);
+}
+
+.ln-rail-figure {
+  font-size: var(--ln-text-xs);
+  color: var(--ln-faint);
+  text-align: end;
+  white-space: nowrap;
+  transition: color var(--ln-dur-1) var(--ln-ease);
+}
+
+.ln-rail-strip:hover .ln-rail-figure {
+  color: var(--ln-mute);
+}
+
+/*
+ * The spread. A wrapped grid in due-date order: the cards run left to right and
+ * then down, and the number of rows is however many that takes. That is the
+ * rule the previous greedy packing had but could not show.
+ */
+/*
+ * The spread. A wrapped grid in due-date order.
+ *
+ * The column floor went from 15rem to 17.5rem: at six columns a lane of twelve
+ * came to two short rows sitting under 210px of empty stage, which reads as an
+ * unfinished page rather than as a lane. Five columns is the widest count that
+ * still leaves the status clause — most of the reason to be at this level at
+ * all — a line it can be read on rather than three fragments of one.
+ */
+.ln-field {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
+  gap: var(--ln-s3);
+  align-content: start;
+  transform-style: preserve-3d;
+}
+
+/* Raised mode lifts the top row by up to 26px and shears the outer columns, so
+   the field is given the room in advance rather than climbing into the rails. */
+.ln-field[data-mode="raised"] {
+  padding-block: var(--ln-s5) var(--ln-s4);
+  padding-inline: var(--ln-s3);
+}
+

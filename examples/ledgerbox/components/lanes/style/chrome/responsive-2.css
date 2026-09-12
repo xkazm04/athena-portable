@@ -1,0 +1,109 @@
+@container ln-shell (max-width: 42rem) {
+  .ln-stage {
+    overflow-y: visible;
+    scrollbar-gutter: auto;
+  }
+
+  /* Masthead: one column, the presence line first as a quiet row of its own.
+     Side by side, the studio line wrapped onto four lines and then ran under
+     it. */
+  .ln-mast {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ln-presence {
+    order: -1;
+    max-inline-size: none;
+  }
+
+  /* Three figures, three columns, no ragged wrap. */
+  .ln-readout {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: start;
+    gap: var(--ln-s4);
+  }
+
+  .ln-readout span {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  /* The seven state chips were four stacked rows — 150px of filter above a
+     136px stage. One row that scrolls sideways is the shape a phone already
+     knows, and it keeps every chip a 44px target. */
+  .ln-chips {
+    flex: 1 1 100%;
+    /* Without this the row of chips reports its full 570px as a minimum and
+       pushes the whole sheet sideways instead of scrolling inside itself. */
+    min-inline-size: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block-end: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ln-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ln-chip {
+    flex: none;
+  }
+
+  .ln-tools {
+    align-items: stretch;
+  }
+
+  .ln-tools .ln-select {
+    flex: 1 1 12rem;
+  }
+
+  /* A single column, so nothing inside the toolbar can widen the sheet. As a
+     wrapping flex row `.ln-tools` reported the full 550px of chips as its
+     minimum and pushed the whole page sideways, scrolling row and all. */
+  .ln-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ln-s2);
+  }
+
+  .ln-tools,
+  .ln-rail {
+    min-inline-size: 0;
+  }
+
+  .ln-rail {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ln-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ln-rung {
+    flex: none;
+  }
+
+  /* The glyphs are not drawn at this width, so the half of the legend that
+     explains them is describing something that is not there. */
+  .ln-legend-set:last-child {
+    display: none;
+  }
+
+  .ln-axis {
+    display: none;
+  }
+
+  .ln-lane,
+  .ln-rail-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .ln-lanes,
+  .ln-lane {
+    transform: none;
+  }
+}

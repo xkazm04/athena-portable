@@ -1,0 +1,113 @@
+@container ln-shell (max-width: 42rem) {
+
+  .ln-track {
+    block-size: auto;
+    min-block-size: 44px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 4px;
+    padding: var(--ln-s2);
+  }
+
+  .ln-mark {
+    position: static;
+    inline-size: 16px;
+    block-size: 16px;
+    transform: none;
+  }
+
+  .ln-mark:hover,
+  .ln-mark[data-open="true"] {
+    transform: none;
+  }
+
+  .ln-tail,
+  .ln-now,
+  .ln-mark-flag {
+    display: none;
+  }
+
+  /* Stated, not silently dropped: at this width a mark has no position on a
+     time axis and no tail, so lateness has stopped having length. */
+  .ln-compact-note {
+    display: block;
+  }
+
+  .ln-field {
+    grid-template-columns: minmax(0, 1fr);
+    transform: none;
+  }
+
+  .ln-node {
+    min-block-size: 0;
+  }
+
+  .ln-spread-figures {
+    gap: var(--ln-s4);
+  }
+
+  /*
+   * The card scrolls as ONE column here.
+   *
+   * On the wide layout the evidence scrolls under a pinned head and a pinned
+   * action panel, which is right when there is room for all three. At 390px the
+   * stacked actions are 450px on their own, so the pinned pair left the body
+   * nothing: the card opened on the word LINES and no lines. One scroll, in
+   * reading order, and the actions are where you arrive.
+   */
+  .ln-card {
+    /* BLOCK, not flex. As a flex column the head, the evidence and the action
+       panel all shrank to share one fixed height, and with the body no longer
+       scrolling on its own the three of them simply drew on top of each other.
+       Stacked blocks in one scroller is the whole point of this layout. */
+    display: block;
+    max-block-size: 92svh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .ln-card-tilt {
+    display: block;
+  }
+
+  .ln-card-head,
+  .ln-card-body,
+  .ln-card-foot {
+    padding-inline: var(--ln-s4);
+  }
+
+  .ln-card-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: visible;
+    min-block-size: 0;
+  }
+
+  /* The close control leaves the eyebrow's wrap flow and pins to the corner, so
+     a long state label stops running underneath it. */
+  .ln-card-head {
+    position: relative;
+    padding-inline-end: var(--ln-s8);
+  }
+
+  .ln-close {
+    position: absolute;
+    inset-block-start: var(--ln-s3);
+    inset-inline-end: var(--ln-s3);
+    margin-inline-start: 0;
+  }
+
+  .ln-card-figures {
+    gap: var(--ln-s3) var(--ln-s5);
+  }
+
+  .ln-actions {
+    align-items: stretch;
+  }
+
+  .ln-card-aside {
+    position: static;
+  }
+}
+

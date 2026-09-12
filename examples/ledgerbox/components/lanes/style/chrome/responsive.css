@@ -1,0 +1,80 @@
+/* ------------------------------------------------------------- responsive */
+
+/*
+ * Two steps, at 58rem and 42rem of the SHELL, and each one switches as a whole.
+ *
+ * Below 58rem the gutter narrows and the inline amounts go; below 42rem the
+ * time axis is abandoned and each lane becomes a wrapped row of marks in
+ * due-date order. That is a real loss — lateness stops having length — so the
+ * compact lane says so in its own label rather than pretending the swarm still
+ * reads.
+ *
+ * Container queries, not viewport ones: the CopilotKit sidebar takes a third of
+ * the frame on this route, and a viewport query would size for a width this
+ * surface does not have.
+ *
+ * EVERY rule in the three responsive files queries `ln-shell`, and that is not
+ * a style preference. `.ln-root` is also a container, but it sits inside the
+ * shell behind its own side padding — and these rules CHANGE that padding, so
+ * an `ln-root` query moves its own trigger point as it fires. Each step used to
+ * be declared half on one container and half on the other, which split two
+ * steps into four: the inline amounts went 16px of shell width before the
+ * gutter they were competing with narrowed, and between roughly 665px and 672px
+ * the root had switched to document mode with `--ln-gutter: 0px` while
+ * `.ln-lane` was still the wide two-column grid — a lane name in the display
+ * face over a zero-width column, drawn across the marks it labels.
+ *
+ * `.ln-root` keeps `container-type: inline-size`: the `cqi` terms in the type
+ * clamps read it and must go on reading the sheet's real width.
+ */
+@container ln-shell (max-width: 58rem) {
+  .ln-root {
+    --ln-gutter: 116px;
+  }
+
+  .ln-mark-amount {
+    display: none;
+  }
+
+  /* The rail's own figure is the first thing to go: the bar still carries the
+     share, and the name is what you are aiming at. */
+  .ln-rail-strip {
+    grid-template-columns: var(--ln-gutter, 116px) minmax(0, 1fr);
+  }
+
+  .ln-rail-figure {
+    display: none;
+  }
+
+  .ln-card-body {
+    grid-template-columns: minmax(0, 1fr) 16rem;
+  }
+}
+
+/*
+ * Below 42rem the sheet stops being a frame and becomes a document. The rest of
+ * this step is in responsive-2.css and responsive-3.css, on the same container
+ * at the same width, so it switches with this block rather than beside it.
+ *
+ * The fixed-height composition — furniture pinned top and bottom, one scrolling
+ * stage between them — is a desktop idea, and it is a good one there. On a
+ * 390px phone the same chrome is 85% of the screen and the stage was 136px
+ * tall: one lane, behind a wall of controls. The page scrolls as a page here,
+ * the chrome is cut to what a thumb needs, and everything the compact layout
+ * can no longer draw says so rather than being quietly dropped.
+ */
+@container ln-shell (max-width: 42rem) {
+  .ln-root {
+    --ln-gutter: 0px;
+    --ln-bleed: 0px;
+    block-size: auto;
+    min-block-size: 100svh;
+    overflow: visible;
+    /* Every row sizes to its content. Left as `minmax(0, 1fr)` the stage got
+       whatever 100svh had spare — 401px — and then spilled its 923px of lanes
+       straight over the footer, which went on eating the clicks. */
+    grid-template-rows: auto auto auto auto;
+    padding: var(--ln-s3);
+  }
+}
+

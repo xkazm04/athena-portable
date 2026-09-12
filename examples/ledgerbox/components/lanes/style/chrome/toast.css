@@ -1,0 +1,36 @@
+/* ------------------------------------------------------------------ toast */
+
+/*
+ * `ToastProvider` mounts its stack as a sibling of the direction's wrapper, so
+ * the `--dk-*` aliases declared on `[data-variant="lanes"]` never reach it and
+ * it drew in the kit's light defaults over a near-black page. Selecting it from
+ * the root, conditioned on this direction being present, is the only seam that
+ * does not leak into the other routes.
+ */
+:root:has(.ln-root) .dk-toast {
+  background: var(--ln-raise, #16252b);
+  border-color: var(--ln-rule, #23383f);
+  color: var(--ln-ink, #f4fafa);
+  border-radius: var(--ln-radius-card, 8px);
+  box-shadow: 0 18px 40px -20px rgb(0 0 0 / 80%);
+  font-family: var(--ln-font, ui-sans-serif), system-ui, sans-serif;
+}
+
+:root:has(.ln-root) .dk-toast .dk-btn {
+  color: var(--ln-mute, #c6d8dc);
+  background: none;
+  border-color: transparent;
+}
+
+:root:has(.ln-root) .dk-toast-success {
+  border-inline-start: 3px solid var(--ln-auto, #45d3a2);
+}
+
+/* `--ln-alert`, not `--ln-gate`: a refusal is not a held decision. The error a
+   Lanes reader is most likely to see is the one the Void gate returns, so
+   painting it in the gate's hue drew the failure as part of the control that
+   produced it, with the gate frame still on screen beside it in the same
+   colour. `--ln-alert` is the ramp's declared colour for trouble. */
+:root:has(.ln-root) .dk-toast-error {
+  border-inline-start: 3px solid var(--ln-alert, #ff6a5e);
+}

@@ -1,0 +1,78 @@
+/* ------------------------------------------------------------------ mast */
+
+.ln-mast {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--ln-s2) var(--ln-s5);
+}
+
+.ln-title {
+  margin: var(--ln-s1) 0 0;
+  font-size: var(--ln-text-display);
+  /* One line, always. The size clamps down rather than the line breaking: a
+     poster line that wraps is two lines of a different design. */
+  white-space: nowrap;
+  /* The headline is the one place white goes fully opaque. */
+  color: #fff;
+  transition: font-size var(--ln-dur-4) var(--ln-ease), opacity var(--ln-dur-3) var(--ln-ease);
+}
+
+.ln-root[data-level="1"] .ln-title,
+.ln-root[data-level="2"] .ln-title {
+  font-size: var(--ln-text-md);
+  color: var(--ln-mute);
+}
+
+/* Claim and figures share a row beneath the headline, which is the reference's
+   own arrangement and half the height of stacking them. */
+.ln-mast-under {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ln-s5);
+}
+
+/*
+ * The presence line, in the slot the two direction links used to occupy.
+ *
+ * It is the one sentence on the surface that changes when a bridge attaches, so
+ * it is drawn as a reading and not as body copy: a mono label with a dot that
+ * fills when an agent is actually there. Grey by default, because "registered
+ * and waiting" is the shipped state and must not look like a warning.
+ */
+.ln-presence {
+  margin: 0;
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ln-s2);
+  max-inline-size: 44ch;
+  color: var(--ln-mute);
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.ln-presence::before {
+  content: "";
+  flex: none;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: transparent;
+}
+
+.ln-presence[data-on="true"] {
+  color: var(--ln-ink);
+}
+
+.ln-presence[data-on="true"]::before {
+  background: currentColor;
+}
+
+

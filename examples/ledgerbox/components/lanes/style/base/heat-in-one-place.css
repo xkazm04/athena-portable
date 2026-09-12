@@ -1,0 +1,22 @@
+/* ------------------------------------------------------ heat, in one place */
+
+[data-heat="good"] {
+  --tone: var(--ln-good);
+}
+
+[data-heat="watch"] {
+  --tone: var(--ln-watch);
+}
+
+[data-heat="risk"] {
+  --tone: var(--ln-risk);
+}
+
+[data-heat="alert"] {
+  --tone: var(--ln-alert);
+}
+
+[data-heat="inert"] {
+  --tone: var(--ln-inert);
+}
+

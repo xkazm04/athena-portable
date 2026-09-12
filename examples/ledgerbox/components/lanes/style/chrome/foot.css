@@ -1,0 +1,193 @@
+/* ------------------------------------------------------------------- foot */
+
+.ln-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ln-s4);
+  min-block-size: 52px;
+  padding-block-start: var(--ln-s2);
+  border-block-start: 1px solid var(--ln-rule-soft);
+}
+
+.ln-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ln-s3);
+  font-size: var(--ln-text-xs);
+  color: var(--ln-mute);
+}
+
+.ln-crumb b {
+  font-weight: 500;
+  color: var(--ln-ink);
+}
+
+/* An ancestor crumb: a real control, dressed as the trail it is part of. The
+   chevron is the only thing that separates it from the crumb you are standing
+   on, which is the distinction that matters. */
+.ln-crumb-up {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ln-s2);
+  padding: 0;
+  min-block-size: 30px;
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ln-crumb-up b {
+  color: var(--ln-mute);
+  border-block-end: 1px solid transparent;
+  transition: color var(--ln-dur-1) var(--ln-ease), border-color var(--ln-dur-1) var(--ln-ease);
+}
+
+.ln-crumb-up:hover b {
+  color: var(--ln-ink);
+  border-block-end-color: var(--ln-rule);
+}
+
+.ln-crumb-up::after {
+  content: "/";
+  color: var(--ln-rule);
+}
+
+.ln-crumb i {
+  font-style: normal;
+  color: var(--ln-faint);
+  margin-inline-start: var(--ln-s2);
+}
+
+.ln-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ln-s2);
+  background: none;
+  border: 1px solid var(--ln-rule);
+  border-radius: var(--ln-radius);
+  color: var(--ln-mute);
+  padding: var(--ln-s2) var(--ln-s3);
+  min-block-size: 44px;
+  cursor: pointer;
+  font-size: var(--ln-text-xs);
+}
+
+.ln-back kbd {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  border: 1px solid var(--ln-rule);
+  border-radius: 2px;
+  padding: 1px 4px;
+}
+
+/* The readout: the reference's stat row, and the largest type on the page after
+   the masthead itself. */
+.ln-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ln-s6);
+  transition: opacity var(--ln-dur-3) var(--ln-ease);
+}
+
+.ln-root[data-level="1"] .ln-mast .ln-readout,
+.ln-root[data-level="2"] .ln-mast .ln-readout {
+  display: none;
+}
+
+.ln-readout div {
+  display: grid;
+  gap: 2px;
+}
+
+.ln-readout b {
+  font-family: var(--ln-font-display);
+  font-size: var(--ln-text-figure-lg);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 0.86;
+  color: #fff;
+}
+
+.ln-readout div[data-tone="alert"] b {
+  color: var(--ln-alert);
+}
+
+.ln-readout span {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ln-faint);
+}
+
+/*
+ * Two legends side by side: what the COLOUR of a mark says, and what a GLYPH on
+ * one says. They are different encodings — every mark has a colour, only the few
+ * that want something get a glyph — and the single mixed row that used to be
+ * here read as one list with two of its five colours simply missing.
+ */
+/*
+ * At L2 the ramp is hidden but its ROW IS KEPT.
+ *
+ * One invoice is on screen and its state is spelled out in words in the card's
+ * own eyebrow, so the legend is answering a question nobody is asking — but
+ * removing the row changed the footer's height between levels, which resized
+ * the stage underneath the morph that was in flight. Hidden, not gone.
+ */
+.ln-root[data-level="2"] .ln-legend {
+  visibility: hidden;
+}
+
+.ln-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ln-s2) var(--ln-s5);
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  letter-spacing: 0.08em;
+  color: var(--ln-faint);
+}
+
+.ln-legend-set {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ln-s1) var(--ln-s3);
+}
+
+.ln-legend-set > .ln-label {
+  color: var(--ln-rule);
+  letter-spacing: 0.2em;
+}
+
+.ln-legend-set > span:not(.ln-label) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ln-s1);
+}
+
+.ln-legend i {
+  inline-size: 14px;
+  block-size: 7px;
+  border-radius: 2px;
+  background: var(--tone);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 30%);
+}
+
+.ln-legend em {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 15px;
+  block-size: 15px;
+  border-radius: 999px;
+  border: 1px solid var(--tone);
+  color: var(--tone);
+  font-style: normal;
+  font-size: 10px;
+}
+

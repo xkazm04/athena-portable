@@ -1,0 +1,72 @@
+.ln-btn[data-kind="gate"] {
+  border-color: var(--ln-gate);
+  color: var(--ln-gate);
+}
+
+.ln-btn[data-kind="danger"] {
+  background: var(--ln-gate);
+  border-color: var(--ln-gate);
+  color: var(--ln-void);
+}
+
+.ln-btn[data-kind="ghost"] {
+  background: none;
+  border-color: transparent;
+  color: var(--ln-mute);
+}
+
+/* The held gate: asked in place, never a modal over a modal. */
+.ln-gate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ln-s2);
+  padding: var(--ln-s2) var(--ln-s3);
+  border: 1px solid var(--ln-gate);
+  border-radius: var(--ln-radius);
+}
+
+.ln-gate-q {
+  font-size: var(--ln-text-xs);
+  line-height: 1.5;
+  color: var(--ln-gate);
+}
+
+.ln-class {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ln-s2) var(--ln-s3);
+  margin: 0;
+  font-size: var(--ln-label);
+  line-height: 1.5;
+  color: var(--ln-faint);
+}
+
+.ln-class b {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  letter-spacing: 0.14em;
+  font-weight: 500;
+  color: var(--ln-auto);
+}
+
+.ln-class i {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  letter-spacing: 0.14em;
+  font-style: normal;
+  color: var(--ln-gate);
+}
+
+.ln-close {
+  margin-inline-start: auto;
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid var(--ln-rule);
+  border-radius: var(--ln-radius);
+  color: var(--ln-mute);
+  min-block-size: 40px;
+  min-inline-size: 40px;
+  cursor: pointer;
+}
+

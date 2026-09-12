@@ -1,0 +1,179 @@
+/*
+ * `lanes` — The Lanes. Scoped entirely to [data-variant="lanes"].
+ *
+ * THE IDEA. The books are six swimlanes, one per area of the practice, all
+ * reading the same time axis. At L0 you are reading a swarm: where the mass
+ * sits, which lane is dragging tails into the now-line. Zooming into a lane
+ * spreads it across the whole sheet. Opening a card lifts it off the sheet.
+ *
+ * WHAT THE SURFACE BORROWS FROM THE REFERENCE. The Vanguard hero this direction
+ * was pointed at gets its quality from three things, and all three are here:
+ *
+ * 1. ONE HUE BATHES THE WHOLE FIELD. Not a palette — a single coloured light
+ *    thrown across a near-black ground, brightest off-centre, falling to black
+ *    at every edge. Depth is that bath plus a vignette plus grain, never a drop
+ *    shadow.
+ * 2. VIOLENT SCALE CONTRAST IN THE TYPE. A very large heavy condensed face in
+ *    caps with the leading closed up, and directly beneath it an 11px mono
+ *    label tracked out to 0.2em. Nothing occupies the middle of that range.
+ * 3. FIGURES ARE THE HERO. The big numbers are set in the display face at
+ *    poster size with a tiny caps label under each, which is how a stat row
+ *    reads as a claim rather than as a table.
+ *
+ * THREE RULES THIS FILE KEEPS.
+ *
+ * 1. Position is data, and it arrives as custom properties. Every mark carries
+ *    `--x` (0-1 on the time axis), `--w` (0-1 of the lane width) and `--row`
+ *    from the server. CSS decides what to DO with them, which is how the
+ *    compact layout at the bottom can abandon the time axis on a narrow screen
+ *    without the markup changing or an `!important` appearing.
+ * 2. The 3D at L0 and L1 is material, not data. Switching it off loses no
+ *    fact — which is the test for whether the 3D was decoration. Only the L2
+ *    card is dimensional on purpose.
+ * 3. Nothing emits its own light. One light source, expressed as inset
+ *    highlights on the top edge of raised surfaces. A surface that glows has no
+ *    shading and stops reading as a surface.
+ */
+
+[data-variant="lanes"] {
+  /* The UA draws three things this sheet does not: the option list of the
+     toolbar's client select and of the card's two pickers. Without this they
+     are painted on the light default surface while their text inherits
+     `--ln-ink` (#f4fafa) — near-white on white, about 1.05:1. The kit's own
+     surfaces state the same declaration for the same reason. */
+  color-scheme: dark;
+
+  /* --- Ground. Near-black, with the hue arriving as light rather than as a
+         surface colour (see `.ln-bath`). --- */
+  --ln-void: #040708;
+  --ln-deep: #070c0e;
+  --ln-ground: #091012;
+  --ln-surface: #0e1a1e;
+  --ln-raise: #16252b;
+  --ln-rule: #23383f;
+  --ln-rule-soft: #172830;
+
+  /* --- Ink. Lifted from the previous ramp: the two lower steps were dark
+         enough that a label set in them was decoration rather than text. --- */
+  --ln-ink: #f4fafa;
+  --ln-mute: #c6d8dc;
+  --ln-faint: #9bb2b9;
+
+  /* --- The five states. `watch` is cold on purpose: money inside its terms is
+         not a warning, and colouring it amber would make the sheet shout.
+         `good` is DARKER than the other four, and that is the hierarchy rather
+         than an oversight: forty of the hundred and twenty-four marks are
+         settled, and at full chroma the money already collected was the loudest
+         thing on a sheet whose whole job is finding the money that is not. It
+         stays green and it still clears 5:1 on this ground — nothing is hidden,
+         it just stops competing. --- */
+  --ln-good: #3f9e82;
+  --ln-watch: #74bcd6;
+  --ln-risk: #f5b544;
+  --ln-alert: #ff6a5e;
+  --ln-inert: #35474e;
+
+  --ln-accent: #74bcd6;
+  /* The one hue reserved for a held gate. Spent on nothing else. */
+  --ln-gate: #ff8f4d;
+  /* "This action is reversible" is a different claim from "this invoice is
+     settled", so the AUTO badge and a success toast keep the bright green the
+     heat ramp gave up. */
+  --ln-auto: #45d3a2;
+
+  /* --- Scale. Eight steps; adjacent ranks differ by two or more. --- */
+  --ln-s1: 4px;
+  --ln-s2: 8px;
+  --ln-s3: 12px;
+  --ln-s4: 16px;
+  --ln-s5: 24px;
+  --ln-s6: 32px;
+  --ln-s7: 48px;
+  --ln-s8: 72px;
+
+  /*
+   * Type. Fluid sizes read the CONTAINER, not the viewport: the CopilotKit
+   * sidebar takes a third of the frame on these routes, and a `vw` clamp would
+   * report a width this surface does not have.
+   *
+   * Note the hole in the middle of the scale. `label` and `display` are the two
+   * ends the reference plays against each other, and every reading size below
+   * was raised a step: at L1 and L2 the previous 11px secondary text was not
+   * readable against this ground.
+   */
+  --ln-label: 0.75rem;
+  --ln-text-xs: 0.875rem;
+  --ln-text-sm: 0.9375rem;
+  --ln-text-base: 1rem;
+  --ln-text-md: 1.125rem;
+  --ln-text-lg: clamp(1.25rem, 1.05rem + 1cqi, 1.5rem);
+  /* The stat-row figures and the L2 money: poster scale, display face.
+     THE RANK IS THE NAME: `-lg` is the masthead and is the larger of the pair at
+     every container width; `figure` is the lane and card figures under it. They
+     used to cross — `figure` capped at 44px against `-lg`'s 41.6px — so above a
+     ~933px container the token called `-lg` was the smaller one and the level
+     showing one invoice carried the biggest number on the screen. */
+  --ln-text-figure: clamp(1.6rem, 1.05rem + 2.1cqi, 2.4rem);
+  --ln-text-figure-lg: clamp(1.9rem, 1.3rem + 2.3cqi, 2.6rem);
+  /* The masthead. Caps, closed leading, tracked in rather than out. */
+  --ln-text-display: clamp(1.35rem, 0.55rem + 3.1cqi, 3.5rem);
+
+  --ln-radius: 3px;
+  --ln-radius-card: 8px;
+
+  /*
+   * ONE NUMBER OWNS THE HEIGHT OF THE SWARM.
+   *
+   * A lane is `rows x --ln-row` tall, and nineteen packed rows across six lanes
+   * is most of the sheet. At 30px the lanes plus the chrome came to 1270px
+   * against a 1000px viewport, so the sixth lane and the legend that explains
+   * the three glyphs sat below the fold on every desktop — a legend for marks
+   * you could see, on a screen you had to leave to read it. At 26 the whole
+   * sheet holds the frame down to roughly 900px tall, and below that the stage
+   * scrolls on its own while the masthead, the toolbar and the legend stay put.
+   */
+  --ln-row: 26px;
+  --ln-mark-h: 10px;
+
+  /* --- Motion. Springs for anything that moves in space, fades for anything
+         that only appears. Durations live here; springs live in motion.ts. --- */
+  --ln-dur-1: 120ms;
+  --ln-dur-2: 200ms;
+  --ln-dur-3: 320ms;
+  --ln-dur-4: 520ms;
+  --ln-ease: cubic-bezier(0.2, 0, 0, 1);
+  --ln-ease-out: cubic-bezier(0.05, 0.7, 0.1, 1);
+
+  /* The tilt. Flat view sets it to 0deg and nothing else changes. Kept small:
+     perspective scales the near lanes up, and much past this the gutter labels
+     push into the stage's clip. */
+  --ln-tilt: 5deg;
+  --ln-bleed: 34px;
+
+  --ln-font-display: var(--font-ln-display), "Haettenschweiler", "Arial Narrow", sans-serif;
+  --ln-font: var(--font-ln-text), ui-sans-serif, system-ui, sans-serif;
+  --ln-font-mono: var(--font-ln-mono), ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* --- The --dk-* bridge. Aliased, never forked: the kit's toasts, manifest
+         drawer and activity log land in this palette without being restyled. --- */
+  --dk-accent: var(--ln-accent);
+  --dk-accent-contrast: var(--ln-deep);
+  --dk-surface: var(--ln-surface);
+  --dk-surface-2: var(--ln-raise);
+  --dk-ink: var(--ln-ink);
+  --dk-ink-soft: var(--ln-mute);
+  --dk-line: var(--ln-rule);
+  --dk-radius: var(--ln-radius);
+  --dk-gap: var(--ln-s3);
+  --dk-font: var(--ln-font);
+  --dk-font-display: var(--ln-font-display);
+  --dk-font-mono: var(--ln-font-mono);
+  --dk-shadow: none;
+  --dk-gated: var(--ln-gate);
+  --dk-auto: var(--ln-auto);
+}
+
+[data-variant="lanes"][data-flat="true"] {
+  --ln-tilt: 0deg;
+}
+

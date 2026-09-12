@@ -1,0 +1,157 @@
+/* --------------------------------------------------------------- the sheet */
+
+/*
+ * The shell around the sheet, and it exists for exactly one reason: a container
+ * query CANNOT apply to its own container. `.ln-root` names itself `ln-root`,
+ * which serves every descendant, and silently served nothing to the handful of
+ * narrow rules that have to change the root itself — its height model, its
+ * padding, the gutter it hands down. Those query the shell instead.
+ */
+.ln-shell {
+  container-type: inline-size;
+  container-name: ln-shell;
+}
+
+.ln-root {
+  position: relative;
+  isolation: isolate;
+  /*
+   * The sheet IS the frame, not a document inside one. Masthead, toolbar and
+   * the footer legend are furniture; only the stage between them scrolls, and
+   * only when the level genuinely does not fit. That is what keeps the glyph
+   * legend on screen beside the glyphs it explains.
+   */
+  block-size: 100svh;
+  overflow: hidden;
+  background: var(--ln-void);
+  color: var(--ln-ink);
+  font-family: var(--ln-font);
+  font-size: var(--ln-text-base);
+  line-height: 1.5;
+  container-type: inline-size;
+  container-name: ln-root;
+  display: grid;
+  /* One column, and it is never allowed to be widened by an item asking for
+     more. Without the explicit `minmax(0, 1fr)` the implicit column takes the
+     largest min-content among the rows — a nowrap headline, a row of filter
+     chips — and the whole sheet then runs off the side of a phone. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: var(--ln-s2);
+  padding: var(--ln-s4) var(--ln-s5) var(--ln-s3);
+}
+
+/*
+ * The bath, the vignette and the grain — the three layers that stop a dark page
+ * from reading as a flat rectangle. All three sit behind the content and are
+ * pointer-transparent, and none of them carries data.
+ *
+ * The bath is deliberately off-centre: a light thrown from the upper left, not
+ * a symmetrical glow behind the middle of the screen, which is the tell of a
+ * gradient applied for its own sake.
+ */
+.ln-bath,
+.ln-vignette,
+.ln-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ln-bath {
+  background:
+    radial-gradient(78% 58% at 22% -6%, #1d4a56 0%, #12303a 34%, transparent 72%),
+    radial-gradient(60% 48% at 88% 8%, #123c46 0%, transparent 66%),
+    radial-gradient(120% 90% at 50% 120%, #0d2029 0%, transparent 70%);
+  opacity: 0.9;
+}
+
+.ln-vignette {
+  background: radial-gradient(120% 85% at 50% 42%, transparent 42%, rgb(4 7 8 / 72%) 100%);
+}
+
+/* Grain via inline SVG turbulence, so there is no image request. */
+.ln-grain {
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Everything above the three ground layers. `.ln-tip` is excluded because it
+   is PORTALLED here and positions itself against the viewport — and because
+   three `:not()` clauses give this selector a specificity of (0,4,0), which
+   quietly beat the tip's own `position: fixed` and dropped the read-out into
+   the grid as an implicit fifth row. */
+.ln-root > *:not(.ln-bath):not(.ln-vignette):not(.ln-grain):not(.ln-tip) {
+  position: relative;
+  z-index: 1;
+}
+
+.ln-root * {
+  box-sizing: border-box;
+}
+
+.ln-root button,
+.ln-root select,
+.ln-root input {
+  font: inherit;
+  color: inherit;
+}
+
+.ln-root :where(button, select, input, a, [tabindex]):focus-visible {
+  outline: 2px solid var(--ln-accent);
+  outline-offset: 2px;
+}
+
+.num {
+  font-family: var(--ln-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Every scroll surface in the direction, themed. A default scrollbar on a
+   near-black panel is a bright grey rail and the loudest thing on the card. */
+.ln-root :where(*) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ln-rule) transparent;
+}
+
+.ln-root ::-webkit-scrollbar {
+  inline-size: 10px;
+  block-size: 10px;
+}
+
+.ln-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ln-root ::-webkit-scrollbar-thumb {
+  background: var(--ln-rule);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.ln-root ::-webkit-scrollbar-thumb:hover {
+  background: var(--ln-faint);
+  background-clip: content-box;
+}
+
+/* The two ends of the type scale, as classes, so no component invents a size. */
+.ln-label {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ln-faint);
+}
+
+.ln-display {
+  font-family: var(--ln-font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.012em;
+  line-height: 0.86;
+}
+

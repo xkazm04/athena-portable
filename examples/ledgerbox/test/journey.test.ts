@@ -197,6 +197,15 @@ test("every capability's annotations match the class the app claims for it", () 
   // is readOnlyHint, a reversible data write is BOTH hints false (branch 4, AUTO - not unknown),
   // and anything irreversible or outward is consequential.
   const expected: Record<string, { readOnly: boolean; gated: boolean }> = {
+    // The Lanes' own layer - the four zoom verbs, the search and the filter. They move the view
+    // and nothing else, which is why they are all AUTO; `test/tools.test.ts` checks that the
+    // union they belong to has no duplicate name.
+    read_view: AUTO,
+    open_group: AUTO,
+    open_item: AUTO,
+    zoom_out: AUTO,
+    search_invoices: AUTO,
+    set_filter: AUTO,
     read_books: AUTO,
     read_inbox: AUTO,
     read_invoice: AUTO,
@@ -219,7 +228,7 @@ test("every capability's annotations match the class the app claims for it", () 
   assert.deepEqual(
     Object.keys(TOOL_CLASSES).sort(),
     Object.keys(expected).sort(),
-    "the table and this list name the same seventeen tools",
+    "the table and this list name the same twenty-three tools",
   );
 
   for (const [name, want] of Object.entries(expected)) {
