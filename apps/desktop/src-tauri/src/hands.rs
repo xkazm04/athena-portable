@@ -110,22 +110,36 @@ pub fn is_hand(name: &str) -> bool {
     HANDS.iter().any(|hand| hand.name == name)
 }
 
-/// The hands as manifest tools, for the panel to append to whatever the page registered.
+/// The hands as **WebMCP tools**, in the shape `inject.js` reports a page's own tools in.
 ///
-/// Shaped for `HostManifest.from_dict`, so the daemon merges them through the same path and
-/// derives the same classes. A hand a page already registered under the same name is *not*
-/// filtered here: the panel drops it, because only the panel knows what the page offered.
-pub fn manifest_tools() -> Vec<Value> {
+/// One shape rather than two, and this is the one, because it is the shape both consumers already
+/// take. `gate.js`'s `flagsOf` reads the `athena` block and `manifestOf` turns a list of these into
+/// a host manifest — so a surface appends the hands to whatever the page listed, hands the single
+/// list to `manifestOf`, and the classes come out of the same derivation for both. A second,
+/// manifest-shaped emitter here would be a second place the flags are spelled, and the day they
+/// disagree is the day a hand is `AUTO` on one surface and `GATED` on another.
+///
+/// A hand a page already registered under the same name is *not* filtered here: only the caller
+/// knows what the page offered.
+pub fn webmcp_tools() -> Vec<Value> {
     HANDS
         .iter()
         .map(|hand| {
             json!({
                 "name": hand.name,
+                "title": hand.name,
                 "description": hand.description,
-                "params_schema": schema_for(hand.name),
-                "reversible": hand.reversible,
-                "side_effects": hand.side_effects,
-                "transport": "hands",
+                "inputSchema": schema_for(hand.name),
+                // The standard hints, so a surface that reads only those still classifies a hand
+                // correctly. They agree with the `athena` block below by construction.
+                "annotations": {
+                    "readOnlyHint": hand.side_effects == "none",
+                    "consequentialHint": !hand.reversible,
+                },
+                "athena": {
+                    "reversible": hand.reversible,
+                    "side_effects": hand.side_effects,
+                },
             })
         })
         .collect()
@@ -341,16 +355,30 @@ mod tests {
     }
 
     #[test]
-    fn the_manifest_is_shaped_for_host_manifest_from_dict() {
-        let tools = manifest_tools();
+    fn the_tools_are_shaped_the_way_a_page_reports_its_own() {
+        let tools = webmcp_tools();
         assert_eq!(tools.len(), HANDS.len());
         for tool in &tools {
             assert!(tool["name"].is_string());
-            // Never absent: the manifest validator refuses a tool that does not declare it, and
-            // a hand that arrived without one would be refused whole with the page's own tools.
-            assert!(tool["reversible"].is_boolean());
-            assert!(tool["side_effects"].is_string());
-            assert_eq!(tool["params_schema"]["type"], "object");
+            assert_eq!(tool["inputSchema"]["type"], "object");
+            // Never absent: `flagsOf` falls through to `{reversible: false, side_effects:
+            // "external"}` when a tool declares nothing, and a hand that arrived without the block
+            // would be classified from a claim it never made.
+            assert!(tool["athena"]["reversible"].is_boolean());
+            assert!(tool["athena"]["side_effects"].is_string());
+        }
+    }
+
+    #[test]
+    fn the_standard_hints_agree_with_the_athena_block() {
+        // A surface that reads only the annotations must reach the same class as one that reads
+        // the block. `flagsOf` prefers the block, so a disagreement would be invisible until a
+        // surface that has only the hints ran a gated hand without a card.
+        for tool in webmcp_tools() {
+            let reversible = tool["athena"]["reversible"].as_bool().unwrap();
+            let external = tool["athena"]["side_effects"] == "none";
+            assert_eq!(tool["annotations"]["consequentialHint"], !reversible);
+            assert_eq!(tool["annotations"]["readOnlyHint"], external);
         }
     }
 
@@ -370,8 +398,8 @@ mod tests {
     fn an_array_parameter_would_need_max_items() {
         // The manifest validator refuses an unbounded array. None of the hands takes one; this is
         // the test that notices the day one does.
-        for tool in manifest_tools() {
-            let props = tool["params_schema"]["properties"].clone();
+        for tool in webmcp_tools() {
+            let props = tool["inputSchema"]["properties"].clone();
             for (name, schema) in props.as_object().cloned().unwrap_or_default() {
                 if schema["type"] == "array" {
                     assert!(schema.get("maxItems").is_some(), "{name}");
@@ -446,6 +474,47 @@ mod tests {
                 script.contains(hand.name),
                 "hands.js is missing {}",
                 hand.name
+            );
+        }
+    }
+
+    #[test]
+    fn the_script_claims_the_same_two_flags_for_every_hand() {
+        // The parity test this repository already has for the refusal vocabulary
+        // (`tests/test_refusal_parity.py`), applied to the one other thing declared twice. A drift
+        // here is a hand that is AUTO on one surface and GATED on another, and nothing else would
+        // notice: a surface reads its flags from the script, the daemon from this table.
+        let script = crate::hands_script();
+        for hand in HANDS {
+            let declared = format!(
+                "{}: [{}, \"{}\"]",
+                hand.name, hand.reversible, hand.side_effects
+            );
+            assert!(
+                script.contains(&declared),
+                "hands.js does not declare `{declared}`"
+            );
+        }
+    }
+
+    #[test]
+    fn the_script_declares_no_hand_this_module_does_not() {
+        // The other direction: a hand added to the script and not here is one the daemon would
+        // never classify, so the page would answer a call the catalog does not hold.
+        let script = crate::hands_script();
+        let table = script
+            .split("const FLAGS = {")
+            .nth(1)
+            .and_then(|rest| rest.split("};").next())
+            .expect("hands.js declares a FLAGS table");
+        for line in table.lines() {
+            let name = line.split(':').next().map(str::trim).unwrap_or("");
+            if name.is_empty() || name.starts_with("//") || name.starts_with('*') {
+                continue;
+            }
+            assert!(
+                is_hand(name),
+                "hands.js declares {name}, which this module does not"
             );
         }
     }

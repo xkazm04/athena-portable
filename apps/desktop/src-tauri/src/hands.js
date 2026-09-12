@@ -51,10 +51,29 @@
   /** Elements whose text is markup, not content. */
   const NOT_TEXT = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "SVG", "HEAD"]);
 
-  /** What `page_find` is willing to hand back a ref to. Anything else is scenery. */
+  /** What `page_find` hands back a ref to by default: the things a person can press or type in. */
   const OPERABLE =
     "a[href],button,input,select,textarea,summary,[role=button],[role=link]," +
     "[role=checkbox],[role=tab],[role=menuitem],[role=option],[contenteditable=true]";
+
+  /**
+   * The parts of a page that hold *content* rather than controls, addressable by asking for one
+   * of them by name.
+   *
+   * Without this a `page_read` can only be the whole document: refs come from `page_find`, and
+   * `page_find` only offered controls. A model that wanted one row of a table had to read the
+   * page and hope the answer was small enough to reason over — which on a real remittance page it
+   * is not, because the row it wants and the footnote that contradicts it are both on it.
+   *
+   * They are behind an explicit `role` rather than in the default list because a bare `page_find`
+   * should answer "what can I do here", and forty table rows is not that.
+   */
+  const STRUCTURE = new Set([
+    "table", "thead", "tbody", "tr", "td", "th",
+    "ul", "ol", "li", "dl",
+    "section", "article", "main", "aside", "nav", "header", "footer",
+    "h1", "h2", "h3", "h4", "p", "form", "figure", "blockquote",
+  ]);
 
   // ---- the ref map ----------------------------------------------------------------------------
 
@@ -199,6 +218,18 @@
 
   // ---- the hands ------------------------------------------------------------------------------
 
+  /** One line each, for the capability block a model actually reads. */
+  const DESCRIPTIONS = {
+    page_read: "The visible text of the page, or of one element you have a ref for.",
+    page_find: "Operable elements whose label matches a query, each with a ref to act on.",
+    page_wait: "Wait, up to a bound, for text to appear on the page.",
+    page_scroll: "Bring a ref into view, or move the page by one screen.",
+    page_click: "Click the element a ref names.",
+    page_fill: "Put a value into the field a ref names.",
+    page_select: "Choose an option, by its visible label, in the select a ref names.",
+    page_submit: "Submit the form the ref sits in.",
+  };
+
   const ok = (output, extra) => ({ ok: true, output: String(output ?? ""), ...extra });
   const no = (reason, detail) => ({ ok: false, reason, error: detail || reason });
 
@@ -225,9 +256,12 @@
     page_find(input) {
       const query = squash(input.query).toLowerCase();
       const wanted = squash(input.role).toLowerCase();
-      const all = Array.from(document.querySelectorAll(OPERABLE)).filter(shown);
+      // Asking for a structural role searches content; asking for anything else, or for nothing,
+      // searches the controls. So `page_find` with no role still answers "what can I do here".
+      const selector = STRUCTURE.has(wanted) ? wanted : OPERABLE;
+      const all = Array.from(document.querySelectorAll(selector)).filter(shown);
       const matched = all.filter((el) => {
-        if (wanted && roleOf(el).toLowerCase() !== wanted) return false;
+        if (wanted && !STRUCTURE.has(wanted) && roleOf(el).toLowerCase() !== wanted) return false;
         if (!query) return true;
         return labelOf(el).toLowerCase().includes(query);
       });
@@ -420,5 +454,47 @@
     };
   }
 
-  window.__athenaHands = { version: 1, names: Object.keys(HANDS) };
+  /**
+   * What each hand claims about itself, in the two flags every tool in this system carries.
+   *
+   * `hands.rs` holds the same table and a test asserts the two agree, the way
+   * `tests/test_refusal_parity.py` pins `gate.js`'s refusal vocabulary to the Python's. Two
+   * declarations because nothing imports across the boundary, and a test because a drift here is
+   * a hand that is `AUTO` on one surface and `GATED` on another.
+   *
+   * `[reversible, side_effects]`. No hand claims `external`: it cannot know whether the button it
+   * presses sends an email, and guessing low is how a chase goes out unasked.
+   */
+  const FLAGS = {
+    page_read: [true, "none"],
+    page_find: [true, "none"],
+    page_wait: [true, "none"],
+    page_scroll: [true, "internal"],
+    page_click: [false, "internal"],
+    page_fill: [false, "internal"],
+    page_select: [false, "internal"],
+    page_submit: [false, "internal"],
+  };
+
+  /**
+   * The hands as WebMCP tool descriptors — the shape `inject.js` reports a page's own tools in.
+   *
+   * A surface appends these to whatever the page listed and hands the one list to `gate.js`'s
+   * `manifestOf`, so a hand and a page tool are classified by the same derivation. The standard
+   * annotations are filled in beside the `athena` block so a surface that reads only the hints
+   * still reaches the same class.
+   */
+  const tools = Object.keys(HANDS).map((name) => {
+    const [reversible, sideEffects] = FLAGS[name];
+    return {
+      name,
+      title: name,
+      description: DESCRIPTIONS[name] ?? "",
+      inputSchema: { type: "object" },
+      annotations: { readOnlyHint: sideEffects === "none", consequentialHint: !reversible },
+      athena: { reversible, side_effects: sideEffects },
+    };
+  });
+
+  window.__athenaHands = { version: 1, names: Object.keys(HANDS), tools };
 })();

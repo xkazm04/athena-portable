@@ -150,6 +150,33 @@ describe("reading", () => {
     expect(answer.matches?.[0].label).toBe("tone");
   });
 
+  it("reaches content when asked for a structural role, and reads one part of it", async () => {
+    // Without this a `page_read` can only be the whole document, because refs come from
+    // `page_find` and `page_find` only offered controls. A real remittance page puts the row a
+    // model wants and a footnote that contradicts it on the same page.
+    document.body.innerHTML = `<table><tbody>
+      <tr><td>Halden Studio</td><td>LB-2026-0901</td></tr>
+      <tr><td>Marlow &amp; Vine</td><td>MV-88213</td></tr>
+    </tbody></table><p>LB-2026-0900 is scheduled for April.</p>`;
+
+    const rows = await ask("page_find", { role: "tr", query: "halden" });
+    expect(rows.matches).toHaveLength(1);
+
+    const read = await ask("page_read", { ref: rows.matches![0].ref });
+
+    expect(read.output).toContain("LB-2026-0901");
+    expect(read.output, "the footnote is on the page but not in this row").not.toContain("LB-2026-0900");
+  });
+
+  it("still answers controls when no role is given", async () => {
+    // A bare `page_find` means "what can I do here", and forty table rows is not that.
+    const answer = await ask("page_find", {});
+    const roles = new Set((answer.matches ?? []).map((m) => m.role));
+
+    expect(roles.has("tr")).toBe(false);
+    expect(roles.has("button")).toBe(true);
+  });
+
   it("does not offer a hidden control", async () => {
     // A model cannot press what a person cannot see, and offering it is how a turn wastes a round.
     const answer = await ask("page_find", { query: "hidden" });

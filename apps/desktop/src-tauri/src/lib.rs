@@ -60,10 +60,13 @@ async fn hands_call(
     hands::call(&app, tab_id, &name, input).await
 }
 
-/// The hands as manifest tools, for the panel to append to whatever the page registered.
+/// The hands, shaped exactly as `inject.js` reports a page's own tools.
+///
+/// The panel appends these to whatever the page listed and hands the one list to `gate.js`'s
+/// `manifestOf`, so a hand and a page tool are classified by the same derivation.
 #[tauri::command]
 fn hands_list() -> Vec<serde_json::Value> {
-    hands::manifest_tools()
+    hands::webmcp_tools()
 }
 
 /// Emit to the privileged webview only.
