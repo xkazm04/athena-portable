@@ -1,5 +1,8 @@
 # Athena — an agent whose environment is the web apps you already have
 
+Built for the OpenAI hackathon. The engine is **OpenAI Codex**, running on the user's own CLI
+sign-in, and the voice is OpenAI's `gpt-4o-mini-transcribe` and `gpt-4o-mini-tts`.
+
 ## The problem
 
 A freelancer or a two-person studio runs on software they do not control: an invoicing tool, a
@@ -24,8 +27,8 @@ instruction. She is answering about the invoice on screen, not about an invoice 
 through them: `match_bank_line`, `send_reminder`, `merge_contacts`. The app's own rules apply,
 its own audit log fills in, and its undo still works. Nothing is scraped or simulated.
 
-**Where an app offers nothing, she still works.** Eight generic hands — read, find, click, fill,
-select, submit, scroll, wait — operate any page as a person would. In our own testing they found
+**Where an app offers nothing, she still works.** Eight generic hands — read, find, wait, scroll,
+click, fill, select, submit — operate any page as a person would. In our own testing they found
 371 operable elements on a Wikipedia article and 230 on Hacker News, neither of which has heard
 of us. That is the difference between an agent for software that adopted a protocol and an agent
 for the web a person actually has open.
@@ -34,6 +37,26 @@ for the web a person actually has open.
 bank statement that one client pays under a different trading name, and two apps later that fact
 settles a naming conflict in a CRM. A chatbot with the same transcript could not have done it:
 it was never in the first app to learn it, and never in the third to apply it.
+
+## Built on OpenAI
+
+**Codex is a first-class engine, not an adapter.** The harness speaks two CLI dialects — Codex and
+Claude Code — behind one contract, and Codex is selected with a single flag on the daemon or the
+doctor. Both run under the same gate, the same ledger, the same prompt composer and the same
+`OP:` call grammar, so the engine is a configuration choice and can never become a second policy.
+Each dialect is exercised against a recorded transcript in the test suite, so a change in either
+CLI's event format is a red test rather than a surprise on stage.
+
+**The engine bills the user's own subscription.** Athena drives the Codex CLI the user is already
+signed in to, so no model API key is typed, pasted or stored to run a turn. The setup screen probes
+for the CLI and reports what it found.
+
+**Voice is OpenAI end to end.** A WebSocket gateway takes PCM16 from a push-to-talk key,
+`gpt-4o-mini-transcribe` turns an utterance into a turn, and `gpt-4o-mini-tts` speaks the reply's
+first line. One utterance is one turn and one ledger row; speaking over a reply is a barge-in that
+cancels playback by generation counter rather than starting a second turn. The backend reads
+`OPENAI_API_KEY` from the environment and is the only part of the system that wants a key; with no
+key the gateway degrades to text rather than failing.
 
 ## How the environment shaped the architecture
 
@@ -68,17 +91,6 @@ copying a directory. A fact is refused at write unless it cites live episodes. O
 lock and a fresh read-only connection per request — with the starvation test written before the
 server that had to pass it.
 
-**The engine is the user's own CLI subscription.** No API key is typed at setup. Two dialects
-behind one harness: **OpenAI Codex** and Claude Code, both driven by the same gate, the same
-ledger and the same grammar, so the engine is a configuration choice and never a second policy.
-Both are exercised against recorded transcripts, so a drift in either CLI's event format is a red
-test rather than a surprise on stage.
-
-**Voice is OpenAI end to end.** A WebSocket gateway takes PCM16 from a push-to-talk key,
-`gpt-4o-mini-transcribe` turns an utterance into a turn, and `gpt-4o-mini-tts` speaks the reply's
-first line. One utterance is one turn and one ledger row; speaking over a reply is a barge-in that
-cancels playback by generation counter rather than starting a second turn.
-
 **The surface is a Tauri v2 desktop shell** — Rust, with the `unstable` multi-webview API so one
 window holds the chrome, the panel and a page webview per tab. The panel is React 19 with zustand
 and Vite. A Rust module owns every rectangle; another owns the sidecar's lifecycle, killing the
@@ -92,8 +104,16 @@ that froze its globals reports zero tools instead of erroring inside someone els
 every response, threaded so a ninety-second turn never stalls a read.
 
 **Everything is under one gate.** Ruff, mypy strict, pytest, ESLint, tsc, Vitest, cargo clippy and
-cargo test: 653 Python tests, 133 panel tests, 66 Rust tests and 24 bridge tests. Twenty-four
-architecture decision records explain the choices a later reader could question.
+cargo test.
+
+| Suite | Tests |
+|---|---|
+| Python core, harness, daemon, channels | 654 |
+| Panel (Vitest) | 133 |
+| Rust shell (cargo test) | 66 |
+| Page bridge (node --test) | 24 |
+
+Twenty-four architecture decision records explain the choices a later reader could question.
 
 **The demo is a test.** Three Next.js applications — one studio's books, hiring pipeline and
 contact list — plus a static page that has never heard of Athena, are booted by Playwright and
@@ -103,8 +123,8 @@ names the approval that let it through, and every fact cites a live row.
 
 ## The experience
 
-**Setup is one screen and no key.** The engine probe finds the CLI the user is already signed in
-to. Readiness is three-valued — healthy, broken, or not yet asked — because "not healthy" is two
+**Setup is one screen and no model key.** The engine probe finds the CLI the user is already signed
+in to. Readiness is three-valued — healthy, broken, or not yet asked — because "not healthy" is two
 different situations and telling someone to install a CLI they already have is worse than telling
 them nothing yet. Every check names its own remediation.
 
@@ -117,7 +137,7 @@ inside it, because a card that scrolls away is a card answered late — which in
 turn that silently did nothing.
 
 **Every bounded answer says what it left out**, in the same four words everywhere: `(showing N of
-M)`. Every refusal comes from one closed vocabulary of fourteen reasons, declared in Python and in
+M)`. Every refusal comes from one closed vocabulary of fifteen reasons, declared in Python and in
 JavaScript with a test that fails when the two drift.
 
 **Cost is visible.** One ledger row per turn, failures and declines included, with the model, the
@@ -127,5 +147,7 @@ tools, the generic hands, and third-party connectors.
 ## What it is not
 
 No scraping, no simulated clicks on a canvas, no browser extension the user has to trust with
-every site. No API key stored anywhere. No cloud: the brain, the ledger and the approvals are files
-on the user's machine, and the agent is a sidecar that dies with the window.
+every site. No model API key: the engine is the user's own Codex sign-in, and the one key in the
+system is the voice backend's, read from the environment and never written to disk by us. No cloud:
+the brain, the ledger and the approvals are files on the user's machine, and the agent is a sidecar
+that dies with the window.
