@@ -1,0 +1,72 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "athena-portable"
+version = "0.1.0"
+description = "A single-user agent that treats the web applications a person already uses as her environment."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "Athena Portable contributors" }]
+keywords = ["agent", "browser", "webmcp", "memory", "approvals", "voice", "mcp"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+# Invariant 5 (README §2): no provider is mandatory. The core is stdlib-only — CPython ships
+# sqlite3 with FTS5 — and every engine, transport or cloud SDK is an extra imported lazily by
+# the package that needs it, behind an error that names the extra. See docs/adr/0002.
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "ruff>=0.6",
+  "mypy>=1.11",
+]
+
+[project.urls]
+Homepage = "https://github.com/xkazm04/athena-portable"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/athena"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "docs", "README.md", "pyproject.toml"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["RUF012"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["athena"]
+mypy_path = "src"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# --strict-markers makes the registration below binding. Without it a typo in a marker is a
+# warning, and a negative selector such as -m "not provider" then happily selects the test the
+# typo was meant to exclude — which is how a live provider gets reached inside CI.
+addopts = "-q --strict-markers"
+markers = [
+  "provider: needs a live model provider (never run in CI)",
+  "eval: golden-turn evaluation suite (opt-in)",
+]

@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Node
+node_modules/
+.pnpm-store/
+*.tsbuildinfo
+
+# Rust
+target/
+
+# Tauri
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/binaries/
+apps/desktop/dist/
+
+# Environment and local state
+.env
+.env.*
+!.env.example
+.athena/
+*.db
+*.db-wal
+*.db-shm
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

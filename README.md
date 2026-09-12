@@ -5,6 +5,17 @@ This repository is the hackathon rebuild of [athena-everywhere](https://github.c
 an empty tree, new code, the same design, one commit per feature, and the structural debts the
 first build found fixed on day zero.
 
+**Status:** P1 Foundation, in progress. The repository and its gate exist; nothing is demonstrable
+yet. The phase table in section 5 is the order of work and section 7 is the bar every commit clears.
+
+```bash
+uv run ruff check . && uv run ruff format --check .
+uv run mypy                                   # strict on src/athena
+uv run pytest                                 # every test, no provider needed
+pnpm typecheck && pnpm lint && pnpm test      # bridge and panel
+cargo check && cargo clippy --all-targets     # from P4 on
+```
+
 This README is the solution and architecture review the build is executed against. The full
 chronology is `hackathon/hackathon-build-plan.md` in the reference repository; the phased order
 with its continue-or-stop gates is `hackathon/architecture-timeline.html` there.
