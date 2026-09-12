@@ -27,6 +27,9 @@ export default defineConfig({
     environment: "node",
     root: app,
     include: ["e2e/**/*.e2e.test.ts"],
+    // A browser opens a fresh connection per `Connection: close` answer; Node pools them.
+    // `support/setup.ts` closes that gap, and the reason it has to is written there.
+    setupFiles: ["e2e/support/setup.ts"],
     // A daemon spawn goes through `uv run`, which resolves an environment before Python starts.
     testTimeout: 180_000,
     hookTimeout: 180_000,

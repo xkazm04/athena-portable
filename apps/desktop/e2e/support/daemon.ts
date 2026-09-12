@@ -18,11 +18,15 @@
  *     spawns a grandchild, so `child.kill()` alone leaves a Python holding the port. An orphan
  *     holding a port is the one outcome this work must never produce.
  */
-import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { spawn, spawnSync, type ChildProcessByStdio } from "node:child_process";
+import type { Readable } from "node:stream";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+/** The daemon's handle: stdin is closed, and both answers are pipes we read. */
+type Child = ChildProcessByStdio<null, Readable, Readable>;
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -115,7 +119,7 @@ export async function startDaemon(options: DaemonOptions): Promise<Daemon> {
     // process to lose track of when the tree is killed.
     windowsHide: true,
     detached: process.platform !== "win32",
-  }) as ChildProcessWithoutNullStreams;
+  }) as Child;
 
   let err = "";
   child.stderr.setEncoding("utf-8");
@@ -157,7 +161,7 @@ export async function startDaemon(options: DaemonOptions): Promise<Daemon> {
 
 /** Read stdout until one line parses as the ready line's JSON object. */
 function firstJsonLine(
-  child: ChildProcessWithoutNullStreams,
+  child: Child,
   stderr: () => string,
 ): Promise<ReadyLine> {
   return new Promise((resolvePromise, reject) => {
@@ -217,7 +221,7 @@ function firstJsonLine(
  * `tests/daemon/test_ready.py` is the precedent for terminating rather than wrapping the handle
  * in something that waits.
  */
-async function killTree(child: ChildProcessWithoutNullStreams): Promise<void> {
+async function killTree(child: Child): Promise<void> {
   const pid = child.pid;
   const ended = new Promise<void>((resolveEnded) => {
     if (child.exitCode !== null || child.signalCode !== null) {
