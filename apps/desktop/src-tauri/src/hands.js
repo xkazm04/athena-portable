@@ -156,11 +156,33 @@
       el.getAttribute?.("title"),
       el.tagName === "INPUT" && el.type === "submit" ? el.value : "",
       FIELD.has(el.tagName) ? "" : textOf(el),
+      // An icon link has no text at all. Wikipedia and Hacker News both put one in their first
+      // twenty controls, and a row a model cannot name is a row it cannot choose.
+      el.querySelector?.("img[alt]")?.getAttribute("alt"),
       el.getAttribute?.("name"),
       el.getAttribute?.("id"),
+      hrefTail(el),
     ];
     const found = candidates.map(squash).find(Boolean) ?? "";
     return found.length > LABEL_CAP ? `${found.slice(0, LABEL_CAP)}…` : found;
+  }
+
+  /**
+   * The last meaningful part of a link's target, as a last-resort label.
+   *
+   * Not the whole href: a tracking URL is three hundred characters of query string and none of it
+   * is a name. The last path segment is what a person reads off a status bar.
+   */
+  function hrefTail(el) {
+    const href = el.getAttribute?.("href");
+    if (!href || href.startsWith("javascript:") || href === "#") return "";
+    try {
+      const path = new URL(href, location.href).pathname;
+      const tail = path.split("/").filter(Boolean).pop() ?? "";
+      return decodeURIComponent(tail).replace(/[_-]+/g, " ");
+    } catch {
+      return "";
+    }
   }
 
   function roleOf(el) {
@@ -249,6 +271,12 @@
       const el = found.el;
       const value = String(input.value ?? "");
       if (el.disabled || el.readOnly) return no("validator_failed", "that field cannot be typed in");
+      // A select has a `value` and assigning an option it does not hold silently deselects it, so
+      // this hand would report success and do nothing — the one failure a hand must never have.
+      // Found on a real page whose "Filter by client" control is a select, not a text field.
+      if (el.tagName === "SELECT") {
+        return no("validator_failed", "that is a select; use page_select to choose an option");
+      }
       if (el.isContentEditable) {
         el.textContent = value;
       } else if ("value" in el) {

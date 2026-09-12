@@ -203,6 +203,19 @@ describe("acting", () => {
     expect(seen).toEqual(["input", "change"]);
   });
 
+  it("refuses to fill a select, and says which hand to use", async () => {
+    // A select has a `value`, so assigning to it looks like it worked; an option it does not hold
+    // silently deselects instead. Found against a real page whose client filter is a select.
+    const before = (document.getElementById("tone") as HTMLSelectElement).value;
+
+    const answer = await ask("page_fill", { ref: await refFor("", "select"), value: "Northwind" });
+
+    expect(answer.ok).toBe(false);
+    expect(answer.reason).toBe("validator_failed");
+    expect(answer.error).toContain("page_select");
+    expect((document.getElementById("tone") as HTMLSelectElement).value).toBe(before);
+  });
+
   it("selects an option by its visible label", async () => {
     const answer = await ask("page_select", { ref: await refFor("", "select"), value: "Firm" });
 
