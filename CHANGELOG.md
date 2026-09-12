@@ -8,6 +8,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `feat(examples): ledgerbox, the books of act 1` — the Strip at `/`, variants removed; reads carry the client contact, `paid_ratio`, ambiguity and short-by on credits, the bank alias on a match; drafts are whole messages from the studio inbox; the close exports a titled markdown page.
 - `feat(examples): hirelane, the pipeline of act 2` — the Board at `/` with both tool sets mounted; `read_applicants` and `read_shortlist`; the Kestrel Labs applicant pinned from the registry; scheduling and rejection mail as complete envelopes from the studio inbox; no protected column, no protected parameter.
 - `feat(examples): tidycrm, the contact list of act 3` — the Blocks at `/`, the AG-UI proxy removed; `read_conflicts`, `preview_company`, `resolve_company` through the revisions log; the registry contacts as anchors; a `clients` segment and a titled markdown export.
+- `feat(examples): the journey, four acts run end to end` — `@athena/journey` boots the three apps in scratch directories, drives them through `inject.js` over the `athena-webmcp` protocol, classifies with `gate.js`, approves and declines through a surface fake, models mail and notes connectors behind egress allow-lists, and prints the ledger and the facts it cites.
 
 ## P5 — MVP checkpoint (in progress)
 
