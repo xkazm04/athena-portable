@@ -1,0 +1,239 @@
+/*
+ * ledgerbox scale layer — vendored from `examples/hirelane/design/hl-scales.css` and corrected.
+ *
+ * RETIRED (2026-09), and this is the first thing to know about it. No route mounts
+ * `[data-variant="scale"]`, so not one declaration below applies to any rendered page; nothing
+ * imports this file, and `components/scale/scale.css`, which the LAW clause at the end of this
+ * header names, was never created. THE LIVE VALUE AUTHORITY IS `components/edge/edge.css` for the
+ * shipped `edge` direction and `components/lanes/style/base/tokens.css` for `lanes`. This file is
+ * kept as the type study those two were argued against — `components/edge/edge.css:27` and `:252`
+ * and `components/edge/README.md:42` cite it by line for decisions that DID ship, which is why it
+ * stays. Read it as a record; change a value in it and nothing moves.
+ *
+ * WHY THIS FILE EXISTS
+ * The shared contract in @athena/demo-kit is 15 custom properties: one radius, one gap, one
+ * shadow, and no spacing, type or motion scale at all. It is a theming hook, not a design system.
+ * The hirelane pass built the missing layer. This is that layer, carried across to ledgerbox with
+ * three corrections. It is NOT imported from `app/globals.css` — every declaration below is scoped
+ * to `[data-variant="scale"]`, so it cannot leak into `/`, `/v/waterline` or `/v/law`.
+ *
+ * WHAT CHANGED FROM THE ORIGINAL, AND WHY
+ *
+ *  1. Fluid type moved from `vw` to `cqi`.  The original clamps read `clamp(2.2rem, 1.6rem +
+ *     2.8vw, 3.5rem)`. Three round-2 agents measured that the CopilotKit sidebar leaves `body` at
+ *     roughly 800px inside a 1280 viewport and 288px inside 768 — so `vw` overstates the space the
+ *     type actually has by about a third, and understates nothing. Every clamp here resolves
+ *     against `cqi` on the `[data-variant="scale"]` container instead, and this direction contains
+ *     zero `@media (width…)` rules.
+ *
+ *  2. The type floor came up.  The original floor is `0.6875rem` (11px), its base is 15px, and it
+ *     caps all-caps labels at 11px. The owner has now rejected small default type twice, most
+ *     recently on the variant that was kept. Floor here is 13px, base is 16px, and no interactive
+ *     control is below 15px — enforced by a guard rule at the bottom of this file rather than left
+ *     to discipline.
+ *
+ *  3. The elevation ladder was rebuilt for a dark ground.  This is a defect I found rather than
+ *     one I was handed: the original is five steps of `rgb(0 0 0 / 4–12%)`, which is correct over
+ *     paper and completely invisible over `#0d0c10`. Depth on a dark ground comes from a drawn
+ *     top light edge plus an ambient bloom, not from a black blur. Each step below is a two-layer
+ *     shadow with an inset hairline of light on the upper edge.
+ *
+ * WHAT DID NOT CHANGE
+ * Ten spacing steps, six motion durations, four easings, the stagger, three rule weights, six
+ * radii and three measures are carried over at their original values. They were not wrong; they
+ * were simply missing from the shared contract.
+ *
+ * THE ADDITION: DENSITY AS A MODE
+ * The method says density is not a set of ad-hoc overrides, it is the whole surface shifted up or
+ * down one rung. So components never touch `--lb-space-*` or `--lb-text-*` directly. They read the
+ * pointers `--lb-step-*` and `--lb-type-*`, and `[data-density]` re-points all of them at once.
+ * Compact clamps at the floors above, so a density change can never produce 11px type.
+ *
+ * THE LAW: no raw pixel value anywhere in `components/scale/scale.css` outside its own token
+ * block, except 1px hairlines that must not scale.
+ */
+
+/*
+ * A NOTE ON WHERE THE CONTAINER IS DECLARED, because it cost me an hour.
+ * The obvious move is `container-type: inline-size` right here on the token wrapper. Do not.
+ * `container-type` applies layout containment, which makes the element a containing block for
+ * every `position: fixed` descendant — so a fixed dock or modal scrim inside it resolves against
+ * a wrapper that is as tall as the document and lands at the bottom of the page instead of the
+ * bottom of the viewport, with no error anywhere. The containers are therefore declared in
+ * `components/scale/scale.css` on the inner regions that actually need them (`lb`, `lb-dock`,
+ * `lb-sheet`), and the wrapper stays a plain inheriting element. `cqi` in the clamps below is
+ * substituted at the point of use, so it resolves against whichever of those contains the element
+ * doing the using — which is the behaviour we want anyway.
+ */
+
+[data-variant="scale"] {
+  /* --- Spacing (10 steps). Adjacent regions of different rank differ by >= 2 steps. --- */
+  --lb-space-0: 0px;
+  --lb-space-1: 4px;
+  --lb-space-2: 8px;
+  --lb-space-3: 12px;
+  --lb-space-4: 16px;
+  --lb-space-5: 24px;
+  --lb-space-6: 32px;
+  --lb-space-7: 48px;
+  --lb-space-8: 64px;
+  --lb-space-9: 96px;
+  --lb-space-10: 128px;
+
+  /* --- Type size (9 steps). Reading sizes fixed; display sizes fluid on `cqi`, never `vw`. --- */
+  --lb-text-2xs: 0.8125rem; /* 13px — the hard floor. Was 11px upstream. */
+  --lb-text-xs: 0.875rem; /*  14px */
+  --lb-text-sm: 0.9375rem; /* 15px — the floor for anything you can click or type into. */
+  --lb-text-base: 1rem; /*    16px — was 15px upstream. */
+  --lb-text-md: 1.125rem; /*  18px */
+  --lb-text-lg: clamp(1.1875rem, 1.05rem + 0.7cqi, 1.5rem);
+  --lb-text-xl: clamp(1.5rem, 1.25rem + 1.3cqi, 2.125rem);
+  --lb-text-2xl: clamp(2rem, 1.5rem + 2.6cqi, 3.5rem);
+  --lb-text-3xl: clamp(2.75rem, 1.9rem + 5.2cqi, 6rem);
+
+  /* Leading and tracking are separate scales. Display sizes take tight of both. */
+  --lb-leading-tight: 1.04;
+  --lb-leading-snug: 1.22;
+  --lb-leading-normal: 1.5;
+  --lb-leading-relaxed: 1.68;
+
+  --lb-track-tight: -0.03em;
+  --lb-track-normal: 0em;
+  --lb-track-wide: 0.05em;
+  --lb-track-caps: 0.1em;
+
+  /* --- Motion (6 durations). Duration is chosen by role, never by feel. See scale.css §M. --- */
+  --lb-dur-1: 90ms; /*   press / hover feedback */
+  --lb-dur-2: 160ms; /*  toggle, chip, focus */
+  --lb-dur-3: 260ms; /*  node expand, filter collapse */
+  --lb-dur-4: 420ms; /*  re-order, sheet open */
+  --lb-dur-5: 700ms; /*  figures settling, a gate arming */
+  --lb-dur-6: 1200ms; /* an agent stage completing, lane drift */
+  --lb-stagger: 40ms;
+
+  --lb-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --lb-ease-entrance: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --lb-ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --lb-ease-snap: cubic-bezier(0.85, 0, 0.15, 1);
+
+  /* --- Elevation (5 steps), rebuilt for a dark ground: light edge + ambient bloom. --- */
+  --lb-elev-0: none;
+  --lb-elev-1: inset 0 1px 0 rgb(255 255 255 / 5%), 0 1px 2px rgb(0 0 0 / 40%);
+  --lb-elev-2: inset 0 1px 0 rgb(255 255 255 / 7%), 0 2px 6px rgb(0 0 0 / 45%),
+    0 8px 20px rgb(0 0 0 / 25%);
+  --lb-elev-3: inset 0 1px 0 rgb(255 255 255 / 9%), 0 6px 14px rgb(0 0 0 / 50%),
+    0 20px 44px rgb(0 0 0 / 34%);
+  --lb-elev-4: inset 0 1px 0 rgb(255 255 255 / 12%), 0 14px 30px rgb(0 0 0 / 55%),
+    0 48px 96px rgb(0 0 0 / 45%);
+
+  /* --- Rule weight (3). In this direction rule weight carries LANE RANK, not gate class. --- */
+  --lb-rule-1: 1px;
+  --lb-rule-2: 2px;
+  --lb-rule-3: 3px;
+
+  --lb-radius-0: 0px;
+  --lb-radius-1: 3px;
+  --lb-radius-2: 6px;
+  --lb-radius-3: 10px;
+  --lb-radius-4: 18px;
+  --lb-radius-round: 999px;
+
+  /* Running prose is clamped. An evidence quote at 120ch is not evidence anyone reads. */
+  --lb-measure-narrow: 44ch;
+  --lb-measure-prose: 62ch;
+  --lb-measure-wide: 78ch;
+
+  /* ---------------------------------------------------------------------------------------
+   * Pointers. Components read ONLY these. `[data-density]` re-points the whole set at once.
+   * --------------------------------------------------------------------------------------- */
+  --lb-step-1: var(--lb-space-1);
+  --lb-step-2: var(--lb-space-2);
+  --lb-step-3: var(--lb-space-3);
+  --lb-step-4: var(--lb-space-4);
+  --lb-step-5: var(--lb-space-5);
+  --lb-step-6: var(--lb-space-6);
+  --lb-step-7: var(--lb-space-7);
+  --lb-step-8: var(--lb-space-8);
+  --lb-step-9: var(--lb-space-9);
+  --lb-step-10: var(--lb-space-10);
+
+  --lb-type-2xs: var(--lb-text-2xs);
+  --lb-type-xs: var(--lb-text-xs);
+  --lb-type-sm: var(--lb-text-sm);
+  --lb-type-base: var(--lb-text-base);
+  --lb-type-md: var(--lb-text-md);
+  --lb-type-lg: var(--lb-text-lg);
+  --lb-type-xl: var(--lb-text-xl);
+  --lb-type-2xl: var(--lb-text-2xl);
+  --lb-type-3xl: var(--lb-text-3xl);
+}
+
+/* One rung down. Note the floors hold: 2xs and xs cannot fall below 13px, sm below 15px. */
+[data-variant="scale"][data-density="compact"] {
+  --lb-step-1: var(--lb-space-1);
+  --lb-step-2: var(--lb-space-1);
+  --lb-step-3: var(--lb-space-2);
+  --lb-step-4: var(--lb-space-3);
+  --lb-step-5: var(--lb-space-4);
+  --lb-step-6: var(--lb-space-5);
+  --lb-step-7: var(--lb-space-6);
+  --lb-step-8: var(--lb-space-7);
+  --lb-step-9: var(--lb-space-8);
+  --lb-step-10: var(--lb-space-9);
+
+  --lb-type-2xs: var(--lb-text-2xs);
+  --lb-type-xs: var(--lb-text-2xs);
+  --lb-type-sm: var(--lb-text-sm);
+  --lb-type-base: var(--lb-text-sm);
+  --lb-type-md: var(--lb-text-base);
+  --lb-type-lg: var(--lb-text-md);
+  --lb-type-xl: var(--lb-text-lg);
+  --lb-type-2xl: var(--lb-text-xl);
+  --lb-type-3xl: var(--lb-text-2xl);
+}
+
+/* One rung up. Nothing is capped, because too-large has never been this repo's failure. */
+[data-variant="scale"][data-density="roomy"] {
+  --lb-step-1: var(--lb-space-2);
+  --lb-step-2: var(--lb-space-3);
+  --lb-step-3: var(--lb-space-4);
+  --lb-step-4: var(--lb-space-5);
+  --lb-step-5: var(--lb-space-6);
+  --lb-step-6: var(--lb-space-7);
+  --lb-step-7: var(--lb-space-8);
+  --lb-step-8: var(--lb-space-9);
+  --lb-step-9: var(--lb-space-10);
+  --lb-step-10: var(--lb-space-10);
+
+  --lb-type-2xs: var(--lb-text-xs);
+  --lb-type-xs: var(--lb-text-sm);
+  --lb-type-sm: var(--lb-text-base);
+  --lb-type-base: var(--lb-text-md);
+  --lb-type-md: var(--lb-text-lg);
+  --lb-type-lg: var(--lb-text-xl);
+  --lb-type-xl: var(--lb-text-2xl);
+  --lb-type-2xl: var(--lb-text-3xl);
+  --lb-type-3xl: var(--lb-text-3xl);
+}
+
+/*
+ * The floor, enforced rather than trusted. `max()` here means a component may ask for a larger
+ * control but cannot ask for a smaller one, at any density, ever. This is the whole of correction
+ * (2) made mechanical.
+ */
+[data-variant="scale"] :is(button, a[href], input, select, textarea, summary, [role="button"]) {
+  font-size: max(var(--lb-text-sm), 1em);
+}
+
+/* Durations collapse in one place, so no component has to remember. */
+@media (prefers-reduced-motion: reduce) {
+  [data-variant="scale"] {
+    --lb-dur-1: 1ms;
+    --lb-dur-2: 1ms;
+    --lb-dur-3: 1ms;
+    --lb-dur-4: 1ms;
+    --lb-dur-5: 1ms;
+    --lb-dur-6: 1ms;
+    --lb-stagger: 0ms;
+  }
+}

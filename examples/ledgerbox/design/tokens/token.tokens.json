@@ -1,0 +1,398 @@
+{
+  "$description": "RETIRED (2026-09): the 'token' direction was reviewed out with the other cut variants, so nothing below reaches a rendered page -- there is no app/v/token/ route, no components/token/ tree, no npm script that builds this file and no emitted CSS anywhere in the repo. Kept as the record of pass 3 beside design/build-tokens.mjs and design/pass3-token-brief.md, not as a source of truth for any shipped surface. The live value authority is components/edge/edge.css for the shipped edge direction and components/lanes/style/base/tokens.css for lanes; the /v index gets its own set in app/globals.css. ledgerbox direction 'token'. DTCG, three-tier (primitive -> semantic -> component). Source direction: Otl Aicher's visual system for the Games of the XX Olympiad, Munich 1972 -- its restricted spectrum with red and gold excluded on principle, its rule that colour identifies place while form identifies activity, its 0/45/90 pictogram grid, and its single-family (Univers only) typography. See design/pass3-token-brief.md. Built by design/build-tokens.mjs, which is vendored here with a `ladder` group and `$modes` support. Colour values are my renderings of the published spectrum from reproductions; they are not transcriptions of the specified inks.",
+
+  "primitive": {
+    "ladder": {
+      "$description": "The numeric spine. Dense rungs with neighbours, so relational operations ('one rung up', 'two steps apart') are writable. Role tokens point at these with var(), never with a DTCG alias -- an alias resolves at build time and erases the relationship from the output.",
+      "space": {
+        "01": { "$type": "dimension", "$value": "2px" },
+        "02": { "$type": "dimension", "$value": "4px" },
+        "03": { "$type": "dimension", "$value": "6px" },
+        "04": { "$type": "dimension", "$value": "8px" },
+        "05": { "$type": "dimension", "$value": "12px" },
+        "06": { "$type": "dimension", "$value": "16px" },
+        "07": { "$type": "dimension", "$value": "20px" },
+        "08": { "$type": "dimension", "$value": "28px" },
+        "09": { "$type": "dimension", "$value": "40px" },
+        "10": { "$type": "dimension", "$value": "56px" },
+        "11": { "$type": "dimension", "$value": "80px" },
+        "12": { "$type": "dimension", "$value": "112px" }
+      },
+      "type": {
+        "$description": "Rung 01 is 13px, the absolute floor -- the owner has rejected small default type twice. Rung 03 is 15px, the floor for anything interactive. Rung 05 is 17px, the body base. Display rungs are clamp() on cqi and NEVER vw: the CopilotKit sidebar leaves body at ~800px inside a 1280 viewport, so vw overstates the space the type has by about a third.",
+        "01": { "$type": "dimension", "$value": "0.8125rem" },
+        "02": { "$type": "dimension", "$value": "0.875rem" },
+        "03": { "$type": "dimension", "$value": "0.9375rem" },
+        "04": { "$type": "dimension", "$value": "1rem" },
+        "05": { "$type": "dimension", "$value": "1.0625rem" },
+        "06": { "$type": "dimension", "$value": "1.1875rem" },
+        "07": { "$type": "dimension", "$value": "1.375rem" },
+        "08": { "$type": "dimension", "$value": "clamp(1.625rem, 1.35rem + 1.2cqi, 2.125rem)" },
+        "09": { "$type": "dimension", "$value": "clamp(2rem, 1.6rem + 2cqi, 2.875rem)" },
+        "10": { "$type": "dimension", "$value": "clamp(2.5rem, 1.85rem + 3.2cqi, 3.875rem)" },
+        "11": { "$type": "dimension", "$value": "clamp(3.25rem, 2.2rem + 5cqi, 5.5rem)" },
+        "12": { "$type": "dimension", "$value": "clamp(4rem, 2.4rem + 7.2cqi, 7rem)" }
+      }
+    },
+
+    "hellblau": {
+      "$description": "The lead colour of the Munich system. Here: Athena, and work she may do unattended.",
+      "700": { "$type": "color", "$value": "#1a6b9c" },
+      "500": { "$type": "color", "$value": "#4a9fd0" },
+      "300": { "$type": "color", "$value": "#8cc4e3" },
+      "100": { "$type": "color", "$value": "#d9ecf7" }
+    },
+    "violett": {
+      "$description": "Reserved for GATED, irreversible acts.",
+      "700": { "$type": "color", "$value": "#4e3372" },
+      "500": { "$type": "color", "$value": "#7a58a8" },
+      "300": { "$type": "color", "$value": "#ac93cb" },
+      "100": { "$type": "color", "$value": "#e8e0f2" }
+    },
+    "orange": {
+      "$description": "Reserved for attention -- a human is required. Never a band identity, never decoration. It is also the hottest hue available, because red is excluded.",
+      "700": { "$type": "color", "$value": "#a8540c" },
+      "500": { "$type": "color", "$value": "#ee8b23" },
+      "300": { "$type": "color", "$value": "#f6bd80" },
+      "100": { "$type": "color", "$value": "#fdead6" }
+    },
+    "hellgruen": {
+      "700": { "$type": "color", "$value": "#4b7a1f" },
+      "500": { "$type": "color", "$value": "#86bd41" },
+      "300": { "$type": "color", "$value": "#bbdd93" },
+      "100": { "$type": "color", "$value": "#e9f4da" }
+    },
+    "dunkelgruen": {
+      "$description": "900 is the darkest ink in the system. There is no #000000 anywhere in this file.",
+      "900": { "$type": "color", "$value": "#12271c" },
+      "700": { "$type": "color", "$value": "#1f4a30" },
+      "500": { "$type": "color", "$value": "#2f6b46" },
+      "300": { "$type": "color", "$value": "#8ab29a" },
+      "100": { "$type": "color", "$value": "#dfeae3" }
+    },
+    "silber": {
+      "900": { "$type": "color", "$value": "#41494c" },
+      "700": { "$type": "color", "$value": "#5f6c70" },
+      "500": { "$type": "color", "$value": "#97a3a7" },
+      "300": { "$type": "color", "$value": "#c6ced1" },
+      "100": { "$type": "color", "$value": "#e4eaec" },
+      "50": { "$type": "color", "$value": "#f2f6f7" },
+      "0": { "$type": "color", "$value": "#ffffff" }
+    }
+  },
+
+  "semantic": {
+    "surface": {
+      "page": { "$type": "color", "$value": "#e9eff1" },
+      "wash": { "$type": "color", "$value": "{primitive.hellblau.100}" },
+      "panel": { "$type": "color", "$value": "{primitive.silber.0}" },
+      "raised": { "$type": "color", "$value": "{primitive.silber.50}" },
+      "sunken": { "$type": "color", "$value": "{primitive.silber.100}" },
+      "inverse": { "$type": "color", "$value": "{primitive.dunkelgruen.900}" },
+      "scrim": { "$type": "color", "$value": "rgba(18, 39, 28, 0.5)" }
+    },
+    "text": {
+      "primary": { "$type": "color", "$value": "{primitive.dunkelgruen.900}", "$description": "15.9:1 on panel." },
+      "secondary": { "$type": "color", "$value": "{primitive.silber.900}", "$description": "9.0:1 on panel." },
+      "tertiary": { "$type": "color", "$value": "{primitive.silber.700}", "$description": "5.5:1 on panel. The floor for any text that carries meaning." },
+      "on-inverse": { "$type": "color", "$value": "{primitive.silber.50}" },
+      "on-action": { "$type": "color", "$value": "{primitive.silber.0}" }
+    },
+    "line": {
+      "hair": { "$type": "color", "$value": "{primitive.silber.300}" },
+      "rule": { "$type": "color", "$value": "{primitive.silber.500}" },
+      "strong": { "$type": "color", "$value": "{primitive.silber.700}" },
+      "inverse": { "$type": "color", "$value": "rgba(242, 246, 247, 0.22)" }
+    },
+
+    "governance": {
+      "$description": "The app's central distinction, and it is structural before it is chromatic: a gated control also carries a 45-degree stop hatch, which survives greyscale. Reversibility buys the AUTO class, not harmlessness -- AUTO actions write an undo payload, GATED ones have nothing to store.",
+      "auto": { "$type": "color", "$value": "{primitive.hellblau.700}" },
+      "auto-soft": { "$type": "color", "$value": "{primitive.hellblau.100}" },
+      "gated": { "$type": "color", "$value": "{primitive.violett.700}" },
+      "gated-soft": { "$type": "color", "$value": "{primitive.violett.100}" }
+    },
+
+    "state": {
+      "$description": "Invoice condition. Full chroma, always. Note what is absent: there is no red token in this file, because the source direction excludes red. Overdue is orange plus length plus position.",
+      "attention": { "$type": "color", "$value": "{primitive.orange.700}" },
+      "attention-mid": { "$type": "color", "$value": "{primitive.orange.500}" },
+      "attention-soft": { "$type": "color", "$value": "{primitive.orange.100}" },
+      "settled": { "$type": "color", "$value": "{primitive.dunkelgruen.500}" },
+      "settled-soft": { "$type": "color", "$value": "{primitive.dunkelgruen.100}" },
+      "terms": { "$type": "color", "$value": "{primitive.hellgruen.700}" },
+      "terms-mid": { "$type": "color", "$value": "{primitive.hellgruen.500}" },
+      "terms-soft": { "$type": "color", "$value": "{primitive.hellgruen.100}" },
+      "inert": { "$type": "color", "$value": "{primitive.silber.700}" },
+      "inert-soft": { "$type": "color", "$value": "{primitive.silber.100}" }
+    },
+
+    "area": {
+      "$description": "Hue means AREA, always, whatever the banding axis is -- colour identifies place, form identifies activity. Bands use the tint; only the rule and the label mark use full chroma. `uncategorized` deliberately has no hue: unfiled money has no identity yet, and it is distinguished by a dashed rule instead, which is what you do when the spectrum runs out.",
+      "design": { "$type": "color", "$value": "{primitive.hellblau.500}" },
+      "design-tint": { "$type": "color", "$value": "{primitive.hellblau.100}" },
+      "development": { "$type": "color", "$value": "{primitive.dunkelgruen.500}" },
+      "development-tint": { "$type": "color", "$value": "{primitive.dunkelgruen.100}" },
+      "consulting": { "$type": "color", "$value": "{primitive.violett.500}" },
+      "consulting-tint": { "$type": "color", "$value": "{primitive.violett.100}" },
+      "retainer": { "$type": "color", "$value": "{primitive.hellgruen.500}" },
+      "retainer-tint": { "$type": "color", "$value": "{primitive.hellgruen.100}" },
+      "reimbursable": { "$type": "color", "$value": "{primitive.silber.700}" },
+      "reimbursable-tint": { "$type": "color", "$value": "{primitive.silber.100}" },
+      "uncategorized": { "$type": "color", "$value": "{primitive.silber.500}" },
+      "uncategorized-tint": { "$type": "color", "$value": "{primitive.silber.50}" }
+    },
+
+    "focus": { "$type": "color", "$value": "{primitive.hellblau.700}" }
+  },
+
+  "component": {
+    "band": {
+      "ground": { "$type": "color", "$value": "{semantic.surface.panel}" },
+      "label-bg": { "$type": "color", "$value": "{semantic.surface.panel}" },
+      "label-text": { "$type": "color", "$value": "{semantic.text.primary}" },
+      "label-meta": { "$type": "color", "$value": "{semantic.text.tertiary}" },
+      "baseline": { "$type": "color", "$value": "{semantic.line.hair}" }
+    },
+    "segment": {
+      "fill": { "$type": "color", "$value": "{semantic.surface.raised}" },
+      "fill-hover": { "$type": "color", "$value": "{primitive.silber.100}" },
+      "text": { "$type": "color", "$value": "{semantic.text.primary}" },
+      "meta": { "$type": "color", "$value": "{semantic.text.tertiary}" },
+      "edge": { "$type": "color", "$value": "{semantic.line.hair}" },
+      "cocked-edge": { "$type": "color", "$value": "{semantic.state.attention}" }
+    },
+    "mast": {
+      "bg": { "$type": "color", "$value": "rgba(255, 255, 255, 0.82)" },
+      "figure": { "$type": "color", "$value": "{semantic.text.primary}" },
+      "caption": { "$type": "color", "$value": "{semantic.text.tertiary}" },
+      "map-track": { "$type": "color", "$value": "{semantic.surface.sunken}" }
+    },
+    "gate": {
+      "$description": "The gate is armed, then issued -- two separately named acts, never a confirm().",
+      "rest-border": { "$type": "color", "$value": "{semantic.governance.gated}" },
+      "rest-text": { "$type": "color", "$value": "{semantic.governance.gated}" },
+      "armed-bg": { "$type": "color", "$value": "{semantic.governance.gated}" },
+      "armed-text": { "$type": "color", "$value": "{semantic.text.on-action}" },
+      "hatch": { "$type": "color", "$value": "rgba(78, 51, 114, 0.22)" }
+    },
+    "run": {
+      "$description": "The dispatch trace: Athena working an item, one stage at a time.",
+      "track": { "$type": "color", "$value": "{semantic.surface.sunken}" },
+      "auto": { "$type": "color", "$value": "{semantic.governance.auto}" },
+      "gated": { "$type": "color", "$value": "{semantic.governance.gated}" },
+      "done": { "$type": "color", "$value": "{semantic.state.settled}" },
+      "blocked": { "$type": "color", "$value": "{semantic.state.attention}" }
+    },
+    "sheet": {
+      "bg": { "$type": "color", "$value": "{semantic.surface.panel}" },
+      "rail": { "$type": "color", "$value": "{semantic.surface.raised}" },
+      "quote": { "$type": "color", "$value": "{semantic.text.secondary}" }
+    }
+  },
+
+  "font": {
+    "family": {
+      "$description": "One superfamily, differentiated by weight -- Aicher used Univers and nothing else across the entire Games. Chivo is the closest freely-licensed neo-grotesque that ships a matching monospace in the same superfamily, which is what the one-family rule needs. Univers itself is not available.",
+      "sans": { "$type": "fontFamily", "$value": "var(--font-token-sans), system-ui, sans-serif" },
+      "mono": { "$type": "fontFamily", "$value": "var(--font-token-mono), ui-monospace, SFMono-Regular, monospace" }
+    },
+    "size": {
+      "$description": "Roles are POINTERS into primitive.ladder.type, not aliases. A DTCG alias would be resolved to a literal at build time and the relationship would be gone from the CSS; a var() survives and can be re-pointed by $modes at runtime.",
+      "micro": { "$type": "dimension", "$value": "var(--ladder-type-01)" },
+      "label": { "$type": "dimension", "$value": "var(--ladder-type-02)" },
+      "ui": { "$type": "dimension", "$value": "var(--ladder-type-03)" },
+      "meta": { "$type": "dimension", "$value": "var(--ladder-type-04)" },
+      "body": { "$type": "dimension", "$value": "var(--ladder-type-05)" },
+      "lead": { "$type": "dimension", "$value": "var(--ladder-type-06)" },
+      "sub": { "$type": "dimension", "$value": "var(--ladder-type-07)" },
+      "head": { "$type": "dimension", "$value": "var(--ladder-type-08)" },
+      "title": { "$type": "dimension", "$value": "var(--ladder-type-09)" },
+      "display": { "$type": "dimension", "$value": "var(--ladder-type-10)" },
+      "hero": { "$type": "dimension", "$value": "var(--ladder-type-11)" }
+    },
+    "weight": {
+      "regular": { "$type": "fontWeight", "$value": 400 },
+      "medium": { "$type": "fontWeight", "$value": 500 },
+      "semibold": { "$type": "fontWeight", "$value": 600 },
+      "bold": { "$type": "fontWeight", "$value": 700 },
+      "black": { "$type": "fontWeight", "$value": 900 }
+    },
+    "leading": {
+      "flush": { "$type": "number", "$value": 1 },
+      "tight": { "$type": "number", "$value": 1.08 },
+      "snug": { "$type": "number", "$value": 1.24 },
+      "normal": { "$type": "number", "$value": 1.5 },
+      "relaxed": { "$type": "number", "$value": 1.65 }
+    },
+    "tracking": {
+      "tight": { "$type": "dimension", "$value": "-0.03em" },
+      "normal": { "$type": "dimension", "$value": "0" },
+      "wide": { "$type": "dimension", "$value": "0.04em" },
+      "caps": { "$type": "dimension", "$value": "0.11em" }
+    }
+  },
+
+  "space": {
+    "$description": "Roles are pointers into primitive.ladder.space, same reasoning as font.size.",
+    "hair": { "$type": "dimension", "$value": "var(--ladder-space-01)" },
+    "tight": { "$type": "dimension", "$value": "var(--ladder-space-02)" },
+    "snug": { "$type": "dimension", "$value": "var(--ladder-space-03)" },
+    "gap": { "$type": "dimension", "$value": "var(--ladder-space-04)" },
+    "gutter": { "$type": "dimension", "$value": "var(--ladder-space-05)" },
+    "pad": { "$type": "dimension", "$value": "var(--ladder-space-06)" },
+    "room": { "$type": "dimension", "$value": "var(--ladder-space-07)" },
+    "band": { "$type": "dimension", "$value": "var(--ladder-space-08)" },
+    "section": { "$type": "dimension", "$value": "var(--ladder-space-09)" },
+    "major": { "$type": "dimension", "$value": "var(--ladder-space-10)" },
+    "page": { "$type": "dimension", "$value": "var(--ladder-space-11)" },
+    "vast": { "$type": "dimension", "$value": "var(--ladder-space-12)" }
+  },
+
+  "radius": {
+    "$description": "The Munich system is rectilinear. Radius is small and it is not one value everywhere.",
+    "none": { "$type": "dimension", "$value": "0" },
+    "chip": { "$type": "dimension", "$value": "2px" },
+    "panel": { "$type": "dimension", "$value": "3px" },
+    "sheet": { "$type": "dimension", "$value": "6px" },
+    "round": { "$type": "dimension", "$value": "999px" }
+  },
+
+  "border-width": {
+    "hair": { "$type": "dimension", "$value": "1px" },
+    "rule": { "$type": "dimension", "$value": "2px", "$description": "The band's top rule -- the sticky label sits on this." },
+    "bar": { "$type": "dimension", "$value": "3px" },
+    "stop": { "$type": "dimension", "$value": "4px", "$description": "A gated control's edge." }
+  },
+
+  "shadow": {
+    "$description": "Layered, tinted with the ink rather than black, because the ground is light.",
+    "flat": { "$type": "shadow", "$value": "none" },
+    "e1": { "$type": "shadow", "$value": "0 1px 2px rgba(18, 39, 28, 0.06), 0 1px 1px rgba(18, 39, 28, 0.04)" },
+    "e2": { "$type": "shadow", "$value": "0 2px 4px rgba(18, 39, 28, 0.05), 0 8px 18px -8px rgba(18, 39, 28, 0.16)" },
+    "e3": { "$type": "shadow", "$value": "0 6px 12px rgba(18, 39, 28, 0.07), 0 22px 44px -18px rgba(18, 39, 28, 0.24)" },
+    "e4": { "$type": "shadow", "$value": "0 14px 28px rgba(18, 39, 28, 0.09), 0 56px 96px -36px rgba(18, 39, 28, 0.32)" },
+    "inset-top": { "$type": "shadow", "$value": "inset 0 1px 0 rgba(255, 255, 255, 0.9)" },
+    "focus-ring": { "$type": "shadow", "$value": "0 0 0 2px {semantic.surface.panel}, 0 0 0 4px {semantic.focus}" }
+  },
+
+  "motion": {
+    "duration": {
+      "press": { "$type": "duration", "$value": "90ms" },
+      "quick": { "$type": "duration", "$value": "170ms" },
+      "wipe": { "$type": "duration", "$value": "300ms", "$description": "The signature: a 45-degree clip-path sweep. Nothing on this page cross-fades." },
+      "reflow": { "$type": "duration", "$value": "460ms", "$description": "The field re-laying under a filter, a regroup or a scale change." },
+      "settle": { "$type": "duration", "$value": "760ms" },
+      "stage": { "$type": "duration", "$value": "1150ms", "$description": "One dispatch stage completing." }
+    },
+    "easing": {
+      "standard": { "$type": "cubicBezier", "$value": [0.2, 0, 0, 1] },
+      "entrance": { "$type": "cubicBezier", "$value": [0.05, 0.7, 0.1, 1] },
+      "exit": { "$type": "cubicBezier", "$value": [0.3, 0, 0.8, 0.15] },
+      "snap": { "$type": "cubicBezier", "$value": [0.85, 0, 0.15, 1] }
+    },
+    "stagger": { "$type": "duration", "$value": "26ms" }
+  },
+
+  "size": {
+    "target": { "$type": "dimension", "$value": "44px", "$description": "WCAG 2.5.8. Also the minimum segment width, which is why the field states its own scale." },
+    "icon": { "$type": "dimension", "$value": "18px" },
+    "icon-lg": { "$type": "dimension", "$value": "22px" },
+    "label": { "$type": "dimension", "$value": "212px", "$description": "Sticky band label width at full size." },
+    "label-narrow": { "$type": "dimension", "$value": "150px" },
+    "band": { "$type": "dimension", "$value": "92px", "$description": "Band height. Every band is the same height: rank is not drawn as size here." },
+    "band-open": { "$type": "dimension", "$value": "212px" },
+    "map": { "$type": "dimension", "$value": "72px", "$description": "Height of the field map in the masthead." },
+    "measure": { "$type": "dimension", "$value": "62ch" },
+    "measure-narrow": { "$type": "dimension", "$value": "44ch" }
+  },
+
+  "z": {
+    "base": { "$type": "number", "$value": 0 },
+    "sticky": { "$type": "number", "$value": 20 },
+    "mast": { "$type": "number", "$value": 30 },
+    "scrim": { "$type": "number", "$value": 60 },
+    "sheet": { "$type": "number", "$value": 70 }
+  },
+
+  "$modes": {
+    "density": {
+      "compact": {
+        "$description": "One rung down, everywhere at once. The floors hold by construction: `ui` stays on rung 03 (15px) because nothing interactive may go below it, and `micro` stays on rung 01 (13px) because that is the floor of the whole system.",
+        "font": {
+          "size": {
+            "micro": { "$type": "dimension", "$value": "var(--ladder-type-01)" },
+            "label": { "$type": "dimension", "$value": "var(--ladder-type-01)" },
+            "ui": { "$type": "dimension", "$value": "var(--ladder-type-03)" },
+            "meta": { "$type": "dimension", "$value": "var(--ladder-type-03)" },
+            "body": { "$type": "dimension", "$value": "var(--ladder-type-04)" },
+            "lead": { "$type": "dimension", "$value": "var(--ladder-type-05)" },
+            "sub": { "$type": "dimension", "$value": "var(--ladder-type-06)" },
+            "head": { "$type": "dimension", "$value": "var(--ladder-type-07)" },
+            "title": { "$type": "dimension", "$value": "var(--ladder-type-08)" },
+            "display": { "$type": "dimension", "$value": "var(--ladder-type-09)" },
+            "hero": { "$type": "dimension", "$value": "var(--ladder-type-10)" }
+          }
+        },
+        "space": {
+          "hair": { "$type": "dimension", "$value": "var(--ladder-space-01)" },
+          "tight": { "$type": "dimension", "$value": "var(--ladder-space-01)" },
+          "snug": { "$type": "dimension", "$value": "var(--ladder-space-02)" },
+          "gap": { "$type": "dimension", "$value": "var(--ladder-space-03)" },
+          "gutter": { "$type": "dimension", "$value": "var(--ladder-space-04)" },
+          "pad": { "$type": "dimension", "$value": "var(--ladder-space-05)" },
+          "room": { "$type": "dimension", "$value": "var(--ladder-space-06)" },
+          "band": { "$type": "dimension", "$value": "var(--ladder-space-07)" },
+          "section": { "$type": "dimension", "$value": "var(--ladder-space-08)" },
+          "major": { "$type": "dimension", "$value": "var(--ladder-space-09)" },
+          "page": { "$type": "dimension", "$value": "var(--ladder-space-10)" },
+          "vast": { "$type": "dimension", "$value": "var(--ladder-space-11)" }
+        },
+        "size": {
+          "band": { "$type": "dimension", "$value": "72px" },
+          "band-open": { "$type": "dimension", "$value": "180px" },
+          "label": { "$type": "dimension", "$value": "168px" },
+          "map": { "$type": "dimension", "$value": "56px" }
+        }
+      },
+      "roomy": {
+        "$description": "One rung up. Nothing is capped: too-large has never been this repo's failure.",
+        "font": {
+          "size": {
+            "micro": { "$type": "dimension", "$value": "var(--ladder-type-02)" },
+            "label": { "$type": "dimension", "$value": "var(--ladder-type-03)" },
+            "ui": { "$type": "dimension", "$value": "var(--ladder-type-04)" },
+            "meta": { "$type": "dimension", "$value": "var(--ladder-type-05)" },
+            "body": { "$type": "dimension", "$value": "var(--ladder-type-06)" },
+            "lead": { "$type": "dimension", "$value": "var(--ladder-type-07)" },
+            "sub": { "$type": "dimension", "$value": "var(--ladder-type-08)" },
+            "head": { "$type": "dimension", "$value": "var(--ladder-type-09)" },
+            "title": { "$type": "dimension", "$value": "var(--ladder-type-10)" },
+            "display": { "$type": "dimension", "$value": "var(--ladder-type-11)" },
+            "hero": { "$type": "dimension", "$value": "var(--ladder-type-12)" }
+          }
+        },
+        "space": {
+          "hair": { "$type": "dimension", "$value": "var(--ladder-space-02)" },
+          "tight": { "$type": "dimension", "$value": "var(--ladder-space-03)" },
+          "snug": { "$type": "dimension", "$value": "var(--ladder-space-04)" },
+          "gap": { "$type": "dimension", "$value": "var(--ladder-space-05)" },
+          "gutter": { "$type": "dimension", "$value": "var(--ladder-space-06)" },
+          "pad": { "$type": "dimension", "$value": "var(--ladder-space-07)" },
+          "room": { "$type": "dimension", "$value": "var(--ladder-space-08)" },
+          "band": { "$type": "dimension", "$value": "var(--ladder-space-09)" },
+          "section": { "$type": "dimension", "$value": "var(--ladder-space-10)" },
+          "major": { "$type": "dimension", "$value": "var(--ladder-space-11)" },
+          "page": { "$type": "dimension", "$value": "var(--ladder-space-12)" },
+          "vast": { "$type": "dimension", "$value": "var(--ladder-space-12)" }
+        },
+        "size": {
+          "band": { "$type": "dimension", "$value": "116px" },
+          "band-open": { "$type": "dimension", "$value": "256px" },
+          "label": { "$type": "dimension", "$value": "248px" },
+          "map": { "$type": "dimension", "$value": "92px" }
+        }
+      }
+    }
+  }
+}
