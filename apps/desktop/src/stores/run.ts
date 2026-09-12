@@ -106,8 +106,11 @@ export interface ToolRow {
   transport: string;
 }
 
+/** Where the loop is. `awaiting_decision` means a card is pinned and the turn is parked on it. */
+export type RunStatus = "idle" | "streaming" | "awaiting_decision" | "error";
+
 export interface RunState {
-  status: "idle" | "streaming" | "awaiting_decision" | "error";
+  status: RunStatus;
   transcript: TranscriptItem[];
   pendingDecision: Decision | null;
   /** The last refusal, kept until the next `send` clears it. Both halves, never paraphrased. */
