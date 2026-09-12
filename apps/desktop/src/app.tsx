@@ -28,6 +28,7 @@ import { startSettings, useSettings } from "@/stores/settings";
 import { startShell, useShell } from "@/stores/shell";
 import { startTabs } from "@/stores/tabs";
 import { startTools } from "@/stores/tools";
+import { startSmoke } from "@/smoke";
 
 export default function App() {
   const module = useShell((s) => s.module);
@@ -48,6 +49,10 @@ export default function App() {
     // c22: the one run loop (ADR 0017). It is started here because a turn, a card and a tool list
     // must all stay true while the user is looking at another module.
     void startRun();
+    // c23: `ATHENA_SMOKE=turn` drives one gated turn through those same stores and exits. It
+    // returns immediately in every shell that was not armed with the variable, which is all of
+    // them but the one `scripts/smoke.mjs` starts.
+    void startSmoke();
   }, []);
 
   const active = moduleFor(module);

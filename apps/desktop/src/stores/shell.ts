@@ -13,6 +13,7 @@
 import { create } from "zustand";
 
 import { hasShell, layoutModule, layoutSelect, onLayoutChanged } from "@/lib/ipc";
+import { DEFAULT_MODULE_ID } from "@/modules/types";
 
 export type Theme = "dark" | "light";
 
@@ -28,7 +29,14 @@ export function applyTheme(theme: Theme): void {
 }
 
 export interface ShellState {
-  /** The module id the window is on. `browser` is the launch default (`layout.rs`). */
+  /**
+   * The module id the window is on.
+   *
+   * It starts on `DEFAULT_MODULE_ID`, which is the same word `src-tauri/src/layout.rs` spells as
+   * `DEFAULT_MODULE`. The two have to agree: Rust owns the selection because the rectangles
+   * depend on it, this store is the mirror, and a mirror whose initial value guesses a different
+   * module paints one shape for the frame before `layoutModule()` answers.
+   */
   module: string;
   theme: Theme;
   select: (module: string) => Promise<void>;
@@ -36,7 +44,7 @@ export interface ShellState {
 }
 
 export const useShell = create<ShellState>((set) => ({
-  module: "browser",
+  module: DEFAULT_MODULE_ID,
   theme: "dark",
   select: async (module) => {
     await layoutSelect(module);

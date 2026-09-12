@@ -20,6 +20,8 @@
     "allow-layout-select",
     "allow-bridge-list",
     "allow-bridge-call",
+    "allow-smoke-mode",
+    "allow-smoke-say",
     "allow-daemon-status",
     "allow-daemon-restart",
     "allow-store-get",

@@ -12,6 +12,7 @@ import type { DaemonStatus } from "@/lib/daemon";
 import {
   EMPTY_DAEMON,
   endpoint,
+  engineProbes,
   reduce,
   resetDaemonForTests,
   useDaemon,
@@ -29,6 +30,7 @@ function event(over: Partial<DaemonStatus> = {}): DaemonStatus {
     error: "",
     source: "uv",
     brain: "/app/brain",
+    engines: null,
     ...over,
   };
 }
@@ -111,4 +113,47 @@ test("the store applies the same reduction the listener does", () => {
   useDaemon.setState((s) => reduce(s, event({ health: "ready", url: "http://127.0.0.1:1" })));
   expect(useDaemon.getState().health).toBe("ready");
   expect(endpoint(useDaemon.getState())).toEqual({ url: "http://127.0.0.1:1", token: TOKEN });
+});
+
+// -- the engine probe (c23) ----------------------------------------------------------------------
+
+test("the probe is carried across, and `null` is not an empty list", () => {
+  // Nothing asked yet: the Setup wizard's "the probe has not answered" station, which is a
+  // different sentence from "none of the two answered".
+  expect(engineProbes(play([event({ health: "starting" })]))).toBeNull();
+
+  const view = play([
+    event({
+      health: "ready",
+      url: "http://127.0.0.1:51057",
+      engines: [
+        { id: "claude_code", state: "found", detail: "2.1.268 (Claude Code)" },
+        { id: "codex", state: "not_found", detail: "codex is not on PATH" },
+      ],
+    }),
+  ]);
+  expect(engineProbes(view)).toEqual([
+    { id: "claude_code", state: "found", detail: "2.1.268 (Claude Code)" },
+    { id: "codex", state: "not_found", detail: "codex is not on PATH" },
+  ]);
+
+  // Asked, and nothing is installed. A real answer, and not the same one as `null`.
+  expect(engineProbes(play([event({ health: "ready", engines: [] })]))).toEqual([]);
+});
+
+test("a state this build has never heard of reads as `unknown` rather than reaching a switch", () => {
+  const view = play([
+    event({ health: "ready", engines: [{ id: "gemini", state: "rate_limited", detail: "later" }] }),
+  ]);
+  expect(engineProbes(view)).toEqual([{ id: "gemini", state: "unknown", detail: "later" }]);
+});
+
+test("a respawn withdraws the probe, because a fresh daemon has not made the claim yet", () => {
+  const answered = play([
+    event({ health: "ready", engines: [{ id: "codex", state: "found", detail: "0.41.0" }] }),
+  ]);
+  expect(engineProbes(answered)).toHaveLength(1);
+
+  const respawned = play([event({ health: "starting", engine: "codex" })], answered);
+  expect(engineProbes(respawned)).toBeNull();
 });

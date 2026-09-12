@@ -1,25 +1,43 @@
 /**
- * The relay's smoke — README section 8, layer 2: *the smoke needs a machine with WebView2 and a
+ * The shell's smoke — README section 8, layer 2: *the smoke needs a machine with WebView2 and a
  * Rust toolchain, and prints one assertable line per claim*.
  *
- * It serves `scratch/webmcp-page.html`, starts the shell with `ATHENA_SMOKE=1` pointed at it, and
- * asserts the one line the shell prints before it exits:
+ * It serves `scratch/`, starts the shell pointed at a page in it, and asserts the lines the shell
+ * prints before it exits. Two modes, chosen with `ATHENA_SMOKE`, because there are two claims:
  *
- *     [smoke] tab 1: ok=true tools=3 transport=webmcp-polyfill
+ * ```text
+ * ATHENA_SMOKE=1     the relay (c19)
+ *   [smoke] tab 1: ok=true tools=3 transport=webmcp-polyfill
  *
- * That line is the whole of c19's claim: `inject.js` ran in a page webview before the page's own
- * scripts, the page answered `list` over `window.postMessage`, the forwarder carried the answer
- * back through `bridge_reply`, and the relay matched it to the request that was waiting.
+ * ATHENA_SMOKE=turn  the panel's run loop (c23)
+ *   [smoke] turn: manifest tools=3
+ *   [smoke] turn: tool.call invoice_list ok=true
+ *   [smoke] turn: decision apr_… declined
+ *   [smoke] turn: ledger user_denied=1
+ * ```
+ *
+ * The relay's line says `inject.js` ran in a page webview before the page's own scripts, the page
+ * answered `list` over `window.postMessage`, and the relay matched the answer to the request that
+ * was waiting. The turn's four say the whole of P5: the page's tools reached the daemon's
+ * catalog, the gate let the AUTO one through and the page ran it, the GATED one became a card,
+ * the user's answer resolved the row, and the decline is in the ledger under a reason from the
+ * closed set.
+ *
+ * The turn mode points the sidecar at `scratch/gated-round.jsonl` through `ATHENA_ENGINE_SCRIPT`,
+ * so the daemon replays a recorded round instead of spawning `claude` (`athena serve --script`).
+ * A smoke whose verdict depends on what a model felt like saying is not a smoke.
  *
  * Usage, from `apps/desktop`:
  *
- *     node scripts/smoke.mjs                       # `pnpm tauri dev`, which compiles first
- *     node scripts/smoke.mjs --binary <path>       # a debug binary that is already built
- *     node scripts/smoke.mjs --url https://…       # a real site instead of the scratch page
- *     node scripts/smoke.mjs --timeout 900         # a cold Rust build on a slow machine
+ *     node scripts/smoke.mjs                            # the relay; `pnpm tauri dev` compiles first
+ *     ATHENA_SMOKE=turn node scripts/smoke.mjs          # one gated turn, end to end
+ *     node scripts/smoke.mjs --binary <path>            # a debug binary that is already built
+ *     node scripts/smoke.mjs --url https://…            # a real site instead of the scratch page
+ *     node scripts/smoke.mjs --timeout 900              # a cold Rust build on a slow machine
+ *     ATHENA_SMOKE=turn node scripts/smoke.mjs --script <path>   # another recorded round
  *
  * It is a local gate and not part of `pnpm test`: everything it needs — a Rust toolchain, a
- * WebView2 runtime, a window server — is exactly what CI does not have.
+ * WebView2 runtime, a window server, a Python daemon — is exactly what CI does not have.
  */
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
@@ -32,25 +50,65 @@ const SCRATCH = path.join(APP_DIR, "scratch");
 const PAGE = "webmcp-page.html";
 /** What `scratch/webmcp-page.html` registers. Asserted only when that page is the one served. */
 const SCRATCH_TOOLS = 3;
+/** The recorded round the turn mode replays. One AUTO call, then one GATED proposal. */
+const SCRIPT = path.join(SCRATCH, "gated-round.jsonl");
 
-/** The line the shell prints, and the only thing this script believes. */
-const LINE = /\[smoke\] tab (\d+): ok=(true|false)(.*)$/m;
+/** The relay's line, and the only thing `ATHENA_SMOKE=1` believes. */
+const RELAY_LINE = /\[smoke\] tab (\d+): ok=(true|false)(.*)$/m;
+/** Every line the turn mode prints, kept in the order the shell printed them. */
+const TURN_LINE = /\[smoke\] (turn: .*)$/;
+
+/**
+ * The four claims of a turn, each with what makes it true.
+ *
+ * A claim is its own regex rather than a shared parser, because the failure a person needs is
+ * "this line did not say what it had to", and the line is the evidence.
+ */
+const TURN_CLAIMS = [
+  {
+    name: "manifest",
+    of: /^turn: manifest tools=(\d+)$/,
+    holds: ([, tools], scratch) =>
+      scratch ? Number(tools) === SCRATCH_TOOLS : Number(tools) > 0,
+    want: (scratch) => (scratch ? `tools=${SCRATCH_TOOLS}` : "tools > 0"),
+  },
+  {
+    name: "tool.call",
+    of: /^turn: tool\.call (\S+) ok=(true|false)$/,
+    holds: ([, , ok]) => ok === "true",
+    want: () => "ok=true — the page ran the AUTO call",
+  },
+  {
+    name: "decision",
+    of: /^turn: decision (\S+) (\S+)$/,
+    holds: ([, , status]) => status === "declined",
+    want: () => "declined — the gated call became a card the user answered",
+  },
+  {
+    name: "ledger",
+    of: /^turn: ledger user_denied=(\d+)$/,
+    holds: ([, count]) => Number(count) === 1,
+    want: () => "user_denied=1",
+  },
+];
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".jsonl": "application/json; charset=utf-8",
   ".svg": "image/svg+xml",
 };
 
 function args(argv) {
-  const out = { url: null, binary: null, timeout: 300 };
+  const out = { url: null, binary: null, timeout: null, script: null };
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i];
     if (flag === "--url") out.url = argv[++i];
     else if (flag === "--binary") out.binary = argv[++i];
     else if (flag === "--timeout") out.timeout = Number(argv[++i]);
+    else if (flag === "--script") out.script = argv[++i];
     else throw new Error(`unknown argument ${flag}`);
   }
   return out;
@@ -79,7 +137,10 @@ function serve() {
   return new Promise((resolve) => {
     server.listen(0, "127.0.0.1", () => {
       const { port } = server.address();
-      resolve({ server, url: `http://127.0.0.1:${port}/${PAGE}` });
+      // `localhost` and not `127.0.0.1`, though they are the same socket: `HostManifest.validate`
+      // takes a page origin only over https or `http://localhost`, so a manifest from the dotted
+      // spelling is refused whole — correctly, and it would make the turn mode untestable here.
+      resolve({ server, url: `http://localhost:${port}/${PAGE}` });
     });
   });
 }
@@ -94,34 +155,58 @@ function killTree(child) {
   }
 }
 
+/** Every claim, against the lines the shell actually printed. Returns the failures. */
+function judge(lines, scratch) {
+  const failures = [];
+  for (const claim of TURN_CLAIMS) {
+    const found = lines.map((line) => claim.of.exec(line)).find(Boolean);
+    if (!found) {
+      failures.push(`${claim.name}: no line — wanted ${claim.want(scratch)}`);
+    } else if (!claim.holds(found, scratch)) {
+      failures.push(`${found[0]} — wanted ${claim.want(scratch)}`);
+    }
+  }
+  return failures;
+}
+
 async function main() {
   const options = args(process.argv.slice(2));
+  const mode = (process.env.ATHENA_SMOKE || "1").trim();
+  const turn = mode === "turn";
+  const timeout = options.timeout ?? (turn ? 600 : 300);
   const { server, url: served } = await serve();
   const url = options.url ?? served;
+  const scratch = options.url === null;
 
   const command = options.binary
     ? { file: options.binary, argv: [] }
     : { file: process.platform === "win32" ? "pnpm.cmd" : "pnpm", argv: ["tauri", "dev"] };
 
-  console.log(`[smoke.mjs] serving ${SCRATCH}`);
+  const env = { ...process.env, ATHENA_SMOKE: mode, ATHENA_START_URL: url };
+  if (turn) {
+    // The daemon replays this instead of spawning the engine, so the turn is the same turn every
+    // time. An explicit `--script`, or an `ATHENA_ENGINE_SCRIPT` already in the environment,
+    // wins: this is the default and not an override.
+    env.ATHENA_ENGINE_SCRIPT = options.script ?? env.ATHENA_ENGINE_SCRIPT ?? SCRIPT;
+  }
+
+  console.log(`[smoke.mjs] mode ${mode}, serving ${SCRATCH}`);
   console.log(`[smoke.mjs] ATHENA_START_URL=${url}`);
-  console.log(`[smoke.mjs] ${command.file} ${command.argv.join(" ")} (up to ${options.timeout}s)`);
+  if (turn) console.log(`[smoke.mjs] ATHENA_ENGINE_SCRIPT=${env.ATHENA_ENGINE_SCRIPT}`);
+  console.log(`[smoke.mjs] ${command.file} ${command.argv.join(" ")} (up to ${timeout}s)`);
 
   // Node refuses to spawn a `.cmd` without a shell (EINVAL) since the 2024 argument-injection
   // fix, and `pnpm` on Windows is a `.cmd`. The whole line goes as one string rather than as a
   // command plus an argv, because passing both is what the deprecation warning is about — and
   // there is nothing user-supplied in it either way.
   const shell = /\.(cmd|bat)$/i.test(command.file);
-  const spawnOptions = {
-    cwd: APP_DIR,
-    env: { ...process.env, ATHENA_SMOKE: "1", ATHENA_START_URL: url },
-    stdio: ["ignore", "pipe", "pipe"],
-  };
+  const spawnOptions = { cwd: APP_DIR, env, stdio: ["ignore", "pipe", "pipe"] };
   const child = shell
     ? spawn([command.file, ...command.argv].join(" "), { ...spawnOptions, shell: true })
     : spawn(command.file, command.argv, spawnOptions);
 
   let seen = null;
+  const turnLines = [];
   const watch = (stream, where) => {
     let rest = "";
     stream.setEncoding("utf8");
@@ -131,8 +216,10 @@ async function main() {
       rest = lines.pop() ?? "";
       for (const line of lines) {
         console.log(`[${where}] ${line}`);
-        const match = LINE.exec(line);
-        if (match && seen === null) seen = match;
+        const relay = RELAY_LINE.exec(line);
+        if (relay && seen === null) seen = relay;
+        const claim = TURN_LINE.exec(line);
+        if (claim) turnLines.push(claim[1].trim());
       }
     });
   };
@@ -140,9 +227,9 @@ async function main() {
   watch(child.stderr, "err");
 
   const timer = setTimeout(() => {
-    console.error(`[smoke.mjs] FAIL — nothing said in ${options.timeout}s`);
+    console.error(`[smoke.mjs] FAIL — nothing said in ${timeout}s`);
     killTree(child);
-  }, options.timeout * 1000);
+  }, timeout * 1000);
 
   const code = await new Promise((resolve) => {
     child.on("error", (e) => {
@@ -155,6 +242,26 @@ async function main() {
   killTree(child);
   server.close();
 
+  if (turn) return verdictForTurn(turnLines, scratch, code);
+  return verdictForRelay(seen, options.url !== null, code);
+}
+
+function verdictForTurn(lines, scratch, code) {
+  if (lines.length === 0) {
+    console.error(`[smoke.mjs] FAIL — the shell printed no turn line at all (exit ${code})`);
+    process.exit(1);
+  }
+  const failures = judge(lines, scratch);
+  if (failures.length > 0) {
+    for (const failure of failures) console.error(`[smoke.mjs] FAIL — ${failure}`);
+    process.exit(1);
+  }
+  console.log(`[smoke.mjs] PASS — ${TURN_CLAIMS.length} claims, one gated turn in the shell:`);
+  for (const line of lines) console.log(`[smoke.mjs]   ${line}`);
+  process.exit(0);
+}
+
+function verdictForRelay(seen, ownUrl, code) {
   if (!seen) {
     console.error(`[smoke.mjs] FAIL — the shell never printed a smoke line (exit ${code})`);
     process.exit(1);
@@ -165,7 +272,7 @@ async function main() {
   // `ok` and a transport are the relay's claim on any page. The count is only an assertion on the
   // scratch page, which registers exactly three; a real site is entitled to have none, and that
   // is what the nine generic hands are for.
-  const expected = options.url ? null : SCRATCH_TOOLS;
+  const expected = ownUrl ? null : SCRATCH_TOOLS;
   const counted = tools ? Number(tools[1]) : null;
   if (ok !== "true" || counted === null || !transport || (expected !== null && counted !== expected)) {
     console.error(`[smoke.mjs] FAIL — ${line.trim()}`);

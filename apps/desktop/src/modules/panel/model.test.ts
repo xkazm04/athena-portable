@@ -183,6 +183,36 @@ test("a card nothing is waiting on is stale rather than pending, and offers no a
   expect(collapsedLine(model.lines[0].card!)).toContain("not answered here");
 });
 
+test("the answer later in the record resolves the card that raised it", () => {
+  // A card is two lines: the turn raises it, and the user's answer lands after the turn has
+  // ended. Only the second carries a choice, so without the join the first reads "not answered
+  // here" with the answer to it directly below — which the window showed by hand.
+  const model = selectPanel(
+    sources({
+      transcript: [
+        decisionItem("l1"),
+        { id: "l2", kind: "decision", text: "approved", at: 2, meta: { id: DECISION.id, choice: "approve", status: "approved" } },
+      ],
+    }),
+  );
+  expect(model.lines[0].card?.state).toBe("resolved");
+  expect(collapsedLine(model.lines[0].card!)).toBe("approve · host.invoices.send_reminder");
+  // The answer line itself names no action, so it stays the plain line it is.
+  expect(model.lines[1].card).toBeNull();
+});
+
+test("an answer to another approval leaves this card stale", () => {
+  const model = selectPanel(
+    sources({
+      transcript: [
+        decisionItem("l1"),
+        { id: "l2", kind: "decision", text: "approved", at: 2, meta: { id: "apr_someone_else", choice: "approve" } },
+      ],
+    }),
+  );
+  expect(model.lines[0].card?.state).toBe("stale");
+});
+
 test("a decision line with nothing usable in it is a plain line, not a thrown render", () => {
   const line: TranscriptItem = { id: "l1", kind: "decision", text: "…", at: 0, meta: { action: 7 } };
   expect(decisionFromItem(line, null)).toBeNull();

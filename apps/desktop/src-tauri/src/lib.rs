@@ -132,6 +132,8 @@ pub fn run() {
             bridge::bridge_list,
             bridge::bridge_call,
             bridge::bridge_reply,
+            bridge::smoke_mode,
+            bridge::smoke_say,
             daemon::daemon_status,
             daemon::daemon_restart,
             store::store_get,
@@ -143,6 +145,15 @@ pub fn run() {
         ])
         .setup(|app| {
             let handle = app.handle().clone();
+
+            // Before the chrome webview exists, and that ordering is the whole of it: the
+            // webview starts loading the moment it is added, React mounts, and the app root
+            // reads the `origins` and `settings` tables straight away. A store managed *after*
+            // that is a store the first read misses — the Origins module then shows "the store
+            // did not open" for the life of the window, because a store's answer is latched and
+            // nothing asks again. Managed state has no window in it, so nothing here needs one.
+            store::init(&handle);
+
             build_shell(&handle)?;
 
             // A start page, for launching the shell straight at something: the first non-flag
@@ -158,8 +169,8 @@ pub fn run() {
 
             // ── registrations: setup ──────────────────────────────────────────────────────────
             // c20 spawns the daemon sidecar here and c27 builds the tray here; both are
-            // non-fatal — the shell must come up even when they do not.
-            store::init(&handle);
+            // non-fatal — the shell must come up even when they do not. c21's store is opened
+            // above, before the webview that reads it is created.
             bridge::smoke_if_asked(&handle);
             daemon::start_at_launch(&handle);
             // ──────────────────────────────────────────────────────────────────────────────────

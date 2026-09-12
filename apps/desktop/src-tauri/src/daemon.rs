@@ -68,6 +68,16 @@ const SHUTDOWN_GRACE: Duration = Duration::from_millis(150);
 /// The largest `/health` body the probe will read before it stops caring. The answer is a few
 /// hundred bytes; this is a cap on nonsense.
 const HEALTH_BODY_CAP: u64 = 64 * 1024;
+/// How long the poll keeps asking `/health` for the engine probe *after* the daemon is ready.
+/// The probe spawns `claude --version` on a thread beside the server, so it lands a moment after
+/// the first 200; the daemon is `ready` throughout, and a probe that never answers is a Setup
+/// screen that says "not probed" rather than a shell that waited for one.
+const ENGINES_BUDGET: Duration = Duration::from_secs(30);
+
+/// The environment variable a developer points at a recorded transcript. The daemon replays it
+/// instead of spawning the engine (`athena serve --script`), which is what makes
+/// `ATHENA_SMOKE=turn` and the demo walk-through the same turn every time.
+pub const SCRIPT_ENV: &str = "ATHENA_ENGINE_SCRIPT";
 
 /// Where the token is written and where `--token-file` is pointed. The daemon reads it back.
 const TOKEN_FILENAME: &str = "daemon.json";
@@ -226,7 +236,16 @@ pub fn await_ready(
 /// sidecar_entry.py` prepends it, so nothing that spawns the binary can point it at `doctor` or
 /// `brain`), while the dev fallback puts `run athena serve` in front of these. Keeping the flags
 /// in one function is what makes the two shapes provably the same daemon.
-pub fn serve_args(token_file: &Path, brain: &Path, engine: &str) -> Vec<String> {
+///
+/// `script` is the dev affordance: a recorded transcript the daemon replays instead of spawning
+/// the engine. It is passed through untouched — the daemon refuses a path that is not a file on
+/// its failure line, which is the one place that check belongs.
+pub fn serve_args(
+    token_file: &Path,
+    brain: &Path,
+    engine: &str,
+    script: Option<&str>,
+) -> Vec<String> {
     let mut args: Vec<String> = vec![
         "--port".into(),
         // The kernel picks the port, so two shells never fight over 17490 and the panel never
@@ -248,7 +267,23 @@ pub fn serve_args(token_file: &Path, brain: &Path, engine: &str) -> Vec<String> 
         args.push("--allow-origin".into());
         args.push(origin.into());
     }
+    if let Some(path) = script.map(str::trim).filter(|s| !s.is_empty()) {
+        args.push("--script".into());
+        args.push(path.to_string());
+    }
     args
+}
+
+/// The transcript to replay, if a developer asked for one.
+///
+/// Debug builds only, or a release build that has already opted into the dev fallback with
+/// `ATHENA_DEV_FALLBACK`. A shipped shell that replayed a file on the strength of an environment
+/// variable would be a shell whose transcript is a lie about what ran.
+fn script_from_env() -> Option<String> {
+    if !cfg!(debug_assertions) && std::env::var_os("ATHENA_DEV_FALLBACK").is_none() {
+        return None;
+    }
+    std::env::var(SCRIPT_ENV).ok().filter(|s| !s.trim().is_empty())
 }
 
 // ==============================================================================================
@@ -402,13 +437,14 @@ fn app_data(app: &AppHandle) -> PathBuf {
 // `/health`
 // ==============================================================================================
 
-/// The status code of one `GET /health`, with the token.
+/// The status code and body of one `GET /health`, with the token.
 ///
 /// A hand-written request rather than an HTTP client: the daemon is HTTP/1.1 on loopback and
 /// answers `Connection: close` on every response, this shell will never point the call anywhere
-/// else, and the alternative is a TLS-capable dependency for one probe. The body is drained
-/// rather than dropped, because a half-read socket makes `http.server` log a reset on every poll.
-fn health_once(url: &str, token: &str, timeout: Duration) -> std::io::Result<u16> {
+/// else, and the alternative is a TLS-capable dependency for one probe. The body was always
+/// drained — a half-read socket makes `http.server` log a reset on every poll — so it is returned
+/// rather than thrown away: the engine probe rides on it and nothing else has to ask twice.
+fn health_once(url: &str, token: &str, timeout: Duration) -> std::io::Result<(u16, String)> {
     let authority = url
         .strip_prefix("http://")
         .unwrap_or(url)
@@ -434,7 +470,9 @@ fn health_once(url: &str, token: &str, timeout: Duration) -> std::io::Result<u16
     reader.read_line(&mut status)?;
     let mut drain = Vec::new();
     let _ = reader.take(HEALTH_BODY_CAP).read_to_end(&mut drain);
-    status_code(&status).ok_or_else(|| std::io::Error::other(format!("not HTTP: {status:?}")))
+    let code = status_code(&status)
+        .ok_or_else(|| std::io::Error::other(format!("not HTTP: {status:?}")))?;
+    Ok((code, body_of(&String::from_utf8_lossy(&drain))))
 }
 
 /// `HTTP/1.1 200 OK` -> `200`. Pure, and the one place the status line is believed.
@@ -444,6 +482,47 @@ fn status_code(line: &str) -> Option<u16> {
         return None;
     }
     parts.next()?.parse().ok()
+}
+
+/// Everything after the blank line that ends the headers.
+///
+/// The status line has already been read, so what is left is `header\r\n…\r\n\r\nbody`. Both
+/// spellings of the separator are looked for: the daemon writes `\r\n`, and being strict about a
+/// framing detail on loopback would trade a working probe for nothing.
+fn body_of(rest: &str) -> String {
+    for separator in ["\r\n\r\n", "\n\n"] {
+        if let Some(at) = rest.find(separator) {
+            return rest[at + separator.len()..].to_string();
+        }
+    }
+    String::new()
+}
+
+/// The `engines` block of a `/health` body, or `None`.
+///
+/// `None` covers three cases that are one case to a caller: the daemon has not probed yet
+/// (`"engines": null`), the body is not JSON, or this daemon is older than the field. All three
+/// mean *nothing is known*, which is exactly what the surfaces render `null` as — and never an
+/// empty list, which would claim the probe answered and found nothing.
+fn engines_of(body: &str) -> Option<Vec<EngineProbe>> {
+    let json = serde_json::from_str::<serde_json::Value>(body).ok()?;
+    let rows = json.get("engines")?.as_array()?;
+    let string = |row: &serde_json::Value, key: &str| -> String {
+        row.get(key)
+            .and_then(serde_json::Value::as_str)
+            .unwrap_or_default()
+            .to_string()
+    };
+    Some(
+        rows.iter()
+            .map(|row| EngineProbe {
+                id: string(row, "id"),
+                state: string(row, "state"),
+                detail: string(row, "detail"),
+            })
+            .filter(|probe| !probe.id.is_empty())
+            .collect(),
+    )
 }
 
 // ==============================================================================================
@@ -602,6 +681,19 @@ pub enum Health {
 /// It carries the token. That is why `crate::ui_emit` exists and why nothing in this crate calls
 /// `app.emit`: a broadcast reaches the page webviews, and a page webview is whatever site the
 /// user navigated to.
+/// One engine, as `GET /health` reports it (`athena.daemon.server.engine_probe`).
+///
+/// The shell does not probe: the daemon knows what is on its own PATH and whether a credential
+/// file is beside it, and `lib/engines.ts` renders exactly these three fields. This struct is that
+/// row and adds nothing — `state` is passed through as a string so a daemon that grows a fourth
+/// answer reaches the surface instead of being dropped in Rust.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct EngineProbe {
+    pub id: String,
+    pub state: String,
+    pub detail: String,
+}
+
 #[derive(Clone, Debug, Serialize)]
 pub struct DaemonStatus {
     /// `http://127.0.0.1:<port>` once the ready line arrived; `null` before that.
@@ -616,6 +708,9 @@ pub struct DaemonStatus {
     pub source: String,
     /// The brain directory the daemon opened, off the ready line.
     pub brain: String,
+    /// What the daemon's engine probe found, or `null` while it has not answered — which is a
+    /// different fact from an empty list and the Setup wizard shows a different sentence for each.
+    pub engines: Option<Vec<EngineProbe>>,
 }
 
 impl Default for DaemonStatus {
@@ -628,6 +723,7 @@ impl Default for DaemonStatus {
             error: String::new(),
             source: "none".to_string(),
             brain: String::new(),
+            engines: None,
         }
     }
 }
@@ -765,7 +861,11 @@ pub fn start(app: &AppHandle, engine: &str) -> Result<(), String> {
         .map_err(|e| format!("cannot write the daemon token file: {e}"))?;
     let brain = brain_dir(app);
     std::fs::create_dir_all(&brain).map_err(|e| format!("cannot create the brain: {e}"))?;
-    let args = serve_args(&token_file, &brain, engine);
+    let script = script_from_env();
+    if let Some(path) = &script {
+        eprintln!("[daemon] replaying {path} instead of spawning {engine}");
+    }
+    let args = serve_args(&token_file, &brain, engine, script.as_deref());
 
     let (source, mut command) = match sidecar_path(app) {
         Some(path) => {
@@ -805,6 +905,9 @@ pub fn start(app: &AppHandle, engine: &str) -> Result<(), String> {
         s.error = String::new();
         s.source = source.to_string();
         s.brain = brain.to_string_lossy().to_string();
+        // A fresh process probes again: what was true of the last daemon's PATH is a claim this
+        // one has not made yet.
+        s.engines = None;
     });
 
     command
@@ -915,24 +1018,31 @@ fn poll_health(app: &AppHandle, generation: u64, url: &str, token: &str) {
             return;
         }
         let why = match health_once(url, token, HEALTH_REQUEST_TIMEOUT) {
-            Ok(200) => {
+            Ok((200, body)) => {
                 eprintln!("[daemon] ready at {url}");
+                let engines = engines_of(&body);
                 app.state::<Daemon>().edit(app, |s| {
                     s.health = Health::Ready;
                     s.error = String::new();
+                    s.engines = engines.clone();
                 });
+                if engines.is_none() {
+                    // The daemon is ready; its engine probe is a spawn on a thread beside the
+                    // server and lands a moment later. Keep asking for it alone.
+                    poll_engines(app, generation, url, token);
+                }
                 return;
             }
             // A 401 is not a slow start: the daemon is up and does not accept this token, which
             // no amount of waiting fixes. Anything else is worth retrying inside the budget.
-            Ok(401) => {
+            Ok((401, _)) => {
                 app.state::<Daemon>().edit(app, |s| {
                     s.health = Health::Failed;
                     s.error = "the daemon refused this shell's token".to_string();
                 });
                 return;
             }
-            Ok(code) => format!("{url}/health answered {code}"),
+            Ok((code, _)) => format!("{url}/health answered {code}"),
             Err(e) => format!("{url}/health did not answer: {e}"),
         };
         if Instant::now() >= deadline {
@@ -943,6 +1053,29 @@ fn poll_health(app: &AppHandle, generation: u64, url: &str, token: &str) {
             return;
         }
         std::thread::sleep(HEALTH_INTERVAL);
+    }
+}
+
+/// Keep asking `/health` for the engine probe, after the daemon is already ready.
+///
+/// It never changes `health` or `error`: the daemon *is* ready, and a probe that never answers
+/// leaves the Setup wizard saying "the probe has not answered yet", which is true. The budget is
+/// what stops the supervisor thread waiting on a CLI that is not going to answer before it goes
+/// back to watching the pipe.
+fn poll_engines(app: &AppHandle, generation: u64, url: &str, token: &str) {
+    let deadline = Instant::now() + ENGINES_BUDGET;
+    while Instant::now() < deadline {
+        std::thread::sleep(HEALTH_INTERVAL);
+        if app.state::<Daemon>().current_generation() != generation {
+            return;
+        }
+        let Ok((200, body)) = health_once(url, token, HEALTH_REQUEST_TIMEOUT) else {
+            continue;
+        };
+        if let Some(engines) = engines_of(&body) {
+            app.state::<Daemon>().edit(app, |s| s.engines = Some(engines));
+            return;
+        }
     }
 }
 
@@ -1095,6 +1228,7 @@ mod tests {
             Path::new("/app/daemon.json"),
             Path::new("/app/brain"),
             "codex",
+            None,
         );
         let pair = |flag: &str| {
             args.iter()
@@ -1115,13 +1249,80 @@ mod tests {
             args.iter().filter(|a| *a == "--allow-origin").count(),
             UI_ORIGINS.len()
         );
+        // No script unless one was asked for: the ordinary spawn runs the real engine.
+        assert!(!args.iter().any(|a| a == "--script"), "{args:?}");
     }
 
     #[test]
     fn an_empty_engine_falls_back_rather_than_passing_nothing() {
-        let args = serve_args(Path::new("t.json"), Path::new("b"), "   ");
+        let args = serve_args(Path::new("t.json"), Path::new("b"), "   ", None);
         let i = args.iter().position(|a| a == "--engine").expect("--engine");
         assert_eq!(args[i + 1], DEFAULT_ENGINE);
+    }
+
+    #[test]
+    fn a_recorded_transcript_rides_through_as_one_flag() {
+        let args = serve_args(
+            Path::new("t.json"),
+            Path::new("b"),
+            "claude_code",
+            Some("  scratch/gated-round.jsonl  "),
+        );
+        let i = args.iter().position(|a| a == "--script").expect("--script");
+        assert_eq!(args[i + 1], "scratch/gated-round.jsonl", "trimmed, not quoted");
+        // An empty variable is not a request for an empty path.
+        for blank in ["", "   "] {
+            let args = serve_args(Path::new("t.json"), Path::new("b"), "claude_code", Some(blank));
+            assert!(!args.iter().any(|a| a == "--script"), "{blank:?} -> {args:?}");
+        }
+    }
+
+    // -- `/health` -------------------------------------------------------------------------------
+
+    #[test]
+    fn the_engine_probe_is_read_off_the_health_body() {
+        let body = r#"{"ok": true, "engines": [
+            {"id": "claude_code", "state": "found", "detail": "2.1.268 (Claude Code)"},
+            {"id": "codex", "state": "not_found", "detail": "codex is not on PATH"}
+        ]}"#;
+        let engines = engines_of(body).expect("a list");
+        assert_eq!(
+            engines,
+            vec![
+                EngineProbe {
+                    id: "claude_code".to_string(),
+                    state: "found".to_string(),
+                    detail: "2.1.268 (Claude Code)".to_string(),
+                },
+                EngineProbe {
+                    id: "codex".to_string(),
+                    state: "not_found".to_string(),
+                    detail: "codex is not on PATH".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn a_probe_that_has_not_answered_is_not_an_empty_list() {
+        // Three ways to know nothing, and all three are `None`: an empty list would claim the
+        // probe answered and found no engine, which is a sentence the Setup wizard shows.
+        for body in [
+            r#"{"ok": true, "engines": null}"#,
+            r#"{"ok": true}"#,
+            "not json at all",
+        ] {
+            assert_eq!(engines_of(body), None, "{body:?}");
+        }
+        assert_eq!(engines_of(r#"{"engines": []}"#), Some(vec![]));
+    }
+
+    #[test]
+    fn the_body_is_what_follows_the_blank_line() {
+        let crlf = "Content-Type: application/json\r\n\r\n{\"ok\": true}";
+        assert_eq!(body_of(crlf), "{\"ok\": true}");
+        assert_eq!(body_of("Content-Length: 0\r\n\r\n"), "");
+        assert_eq!(body_of("headers with no end"), "");
     }
 
     // -- the dev fallback's root -----------------------------------------------------------------
@@ -1206,8 +1407,10 @@ mod tests {
             head
         });
 
-        let code = health_once(&url, "deadbeef", Duration::from_secs(5)).expect("a code");
+        let (code, body) = health_once(&url, "deadbeef", Duration::from_secs(5)).expect("a code");
         assert_eq!(code, 200);
+        // The body comes back rather than being dropped: the engine probe rides on it.
+        assert_eq!(body, "{}");
         let head = server.join().expect("server");
         assert!(head.starts_with("GET /health HTTP/1.1"), "{head}");
         assert!(head.contains("X-Athena-Token: deadbeef"), "{head}");

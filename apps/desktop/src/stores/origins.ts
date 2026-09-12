@@ -104,12 +104,19 @@ export const useOrigins = create<OriginsState>((set, get) => ({
       // never the snapshot the caller took before it awaited.
       const base = await get().load(origin);
       const fields = typeof patch === "function" ? patch(base) : patch;
-      const record: OriginRow = { ...base, ...fields, origin };
+      const local: OriginRow = { ...base, ...fields, origin };
       await originWrite(origin, {
-        enabled: record.enabled,
-        overrides: record.overrides ?? {},
+        enabled: local.enabled,
+        overrides: local.overrides ?? {},
         last_seen: new Date().toISOString(),
       });
+      // Read back what the table now holds. The two sightings are the store's own columns —
+      // `first_seen` defaults to `datetime('now')` in SQLite and is never sent from here — so a
+      // record built only from what was written carries the empty strings `blankOrigin` uses for
+      // "not stored yet", and the Origins module renders both dates as an em dash for a row it
+      // has just created. A read that fails is not a failed save: the local record stands.
+      const stored = await originRead(origin).catch(() => null);
+      const record: OriginRow = stored ? { ...local, ...stored, overrides: local.overrides } : local;
       set((s) => ({
         records: { ...s.records, [origin]: record },
         known: s.known.includes(origin) ? s.known : [...s.known, origin],

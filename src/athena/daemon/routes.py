@@ -324,6 +324,13 @@ def health(daemon: AthenaDaemon) -> Reply:
     repository (README §2, invariant 4): ``total`` counts the live rows, ``showing`` counts the
     rows this page actually looked at, and ``footer`` is the ``(showing N of M)`` sentence — empty
     when the page is the whole inbox, which is the usual case.
+
+    ``engines`` is the engine probe (``athena.harness.engines.probe_all``) as the surfaces render
+    it, and it is ``None`` — not an empty list — until the probe has answered. The two are
+    different facts and a setup screen owes the user the difference: nothing found and nothing
+    asked yet look identical in an empty list. The probe spawns a binary, so it never runs on this
+    request path; :meth:`~athena.daemon.server.AthenaDaemon.probe_engines` fills it in beside the
+    server.
     """
     page = daemon.approvals.pending(HEALTH_PENDING_LIMIT)
     return 200, {
@@ -334,6 +341,7 @@ def health(daemon: AthenaDaemon) -> Reply:
         "uptime_s": daemon.uptime_s,
         "sessions": len(daemon.sessions),
         "tools": len(daemon.catalog),
+        "engines": daemon.engine_probes(),
         "pending": {
             "showing": page.shown,
             "total": page.total,

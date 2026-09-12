@@ -181,7 +181,8 @@ export interface PanelSources {
  */
 export function selectPanel(source: PanelSources): PanelModel {
   const pendingId = source.pendingDecision?.id ?? null;
-  const lines = source.transcript.map((item) => line(item, pendingId, source.captures));
+  const answers = answeredIn(source.transcript);
+  const lines = source.transcript.map((item) => line(item, pendingId, answers, source.captures));
 
   const pending = source.pendingDecision
     ? (lines.find((l) => l.card?.id === pendingId)?.card ??
@@ -239,6 +240,7 @@ function toolRow(tool: ToolRow, trust: PanelTrust | null): PanelTool {
 function line(
   item: TranscriptItem,
   pendingId: string | null,
+  answers: ReadonlyMap<string, string>,
   captures: Readonly<Record<string, string>>,
 ): PanelLine {
   return {
@@ -246,8 +248,27 @@ function line(
     kind: item.kind,
     text: item.text,
     at: item.at,
-    card: item.kind === "decision" ? decisionFromItem(item, pendingId, captures) : null,
+    card:
+      item.kind === "decision" ? decisionFromItem(item, pendingId, answers, captures) : null,
   };
+}
+
+/**
+ * Which approval each answer in the record resolved, and to what.
+ *
+ * A card is two lines, not one: the turn raises it and the user's answer lands later, and only
+ * the second carries a choice. Without this join the first would read *not answered here* with
+ * the answer to it one line below — which is a record contradicting itself on the demo path.
+ */
+function answeredIn(transcript: readonly TranscriptItem[]): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const item of transcript) {
+    if (item.kind !== "decision") continue;
+    const id = str(item.meta?.id);
+    const choice = str(item.meta?.choice);
+    if (id && choice) out.set(id, choice);
+  }
+  return out;
 }
 
 // -- the decision card ------------------------------------------------------------------------
@@ -265,13 +286,16 @@ export const PARAM_BUDGET = 120;
 export function decisionFromItem(
   item: TranscriptItem,
   pendingId: string | null,
+  answers: ReadonlyMap<string, string> = new Map(),
   captures: Readonly<Record<string, string>> = {},
 ): DecisionCard | null {
   const meta = item.meta ?? {};
   const action = str(meta.action);
   if (!action) return null;
   const id = str(meta.id) ?? item.id;
-  const choice = str(meta.choice);
+  // The line's own choice first, then the one a later line recorded for this approval. `stale` is
+  // left for what it means: a card this panel never answered at all.
+  const choice = str(meta.choice) ?? answers.get(id) ?? null;
   return {
     id,
     state: choice ? "resolved" : id === pendingId ? "pending" : "stale",

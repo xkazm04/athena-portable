@@ -1,0 +1,28 @@
+# SYNTHETIC. One recorded round of `claude -p - --output-format stream-json` per invocation,
+# written by hand from the documented event shape exactly as `tests/fixtures/` is — not captured
+# from a run. `athena serve --script <this file>` replays it through `ScriptedTransport`, which is
+# what makes `ATHENA_SMOKE=turn` a deterministic claim about the shell rather than about a model.
+#
+# It is written against `apps/desktop/scratch/webmcp-page.html`, whose `athena:app` meta is
+# `scratchbox`, so the two actions below are that page's own tools under the catalog's namespace.
+# Lines starting with '#' and blank lines are not events. A blank line separates two rounds.
+#
+# Round 1 — one AUTO call. `invoice_list` is `reversible: true, side_effects: none`, so the
+# manifest's own flags make it AUTO and the gate lets it through to the page (README section 3.3).
+{"type": "system", "subtype": "init", "session_id": "01J9SCRIPTEDROUND", "model": "scripted", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "Reading the invoices on this page.\nTTS: \"Reading the invoices on this page.\"\nOP: {\"op\":\"propose_action\",\"action\":\"host.scratchbox.invoice_list\",\"params\":{\"over_days\":30},\"rationale\":\"the user asked which invoices are past thirty days\"}"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1180, "num_turns": 1, "total_cost_usd": 0.0, "usage": {"input_tokens": 1840, "output_tokens": 64}}
+
+# Round 2 — one GATED proposal. `invoice_send` is `reversible: false, side_effects: external`, so
+# it is GATED whatever the page would prefer: the gate files an approval row, the lane emits a
+# decision card, and the turn stops on the user.
+{"type": "system", "subtype": "init", "session_id": "01J9SCRIPTEDROUND", "model": "scripted", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_02", "role": "assistant", "content": [{"type": "text", "text": "INV-103 is the oldest at sixty-one days. I would like to chase it.\nTTS: \"INV-103 is sixty-one days late.\"\nOP: {\"op\":\"propose_action\",\"action\":\"host.scratchbox.invoice_send\",\"params\":{\"id\":\"INV-103\"},\"rationale\":\"INV-103 is sixty-one days outstanding, the oldest on the page\"}"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1420, "num_turns": 1, "total_cost_usd": 0.0, "usage": {"input_tokens": 2100, "output_tokens": 88}}
+
+# Round 3 — whatever the user did with the card, the chore is over. It exists so a run that
+# carries a result into one more round (an approval that executed on the page) ends on a sentence
+# rather than on `ScriptedTransport` refusing a round it does not have.
+{"type": "system", "subtype": "init", "session_id": "01J9SCRIPTEDROUND", "model": "scripted", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_03", "role": "assistant", "content": [{"type": "text", "text": "That is everything I can do on this page.\nTTS: \"That is everything I can do here.\""}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 640, "num_turns": 1, "total_cost_usd": 0.0, "usage": {"input_tokens": 2240, "output_tokens": 24}}

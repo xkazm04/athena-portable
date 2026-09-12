@@ -2,9 +2,10 @@
  * The Setup wizard's `ModuleEntry` — the one file in this directory that knows a store exists.
  *
  * Three stores meet here and none of them is started here: `settings` (the engine, the brain
- * path, whether the letter has been read), `tabs` (whether a page is open), and — one commit from
- * now — the sidecar's, which is what will feed `probes`. Until it does, `null` is passed, and
- * `null` already means what it has to mean: the probe has not answered.
+ * path, whether the letter has been read), `tabs` (whether a page is open), and the sidecar's,
+ * which feeds `probes`. `null` still reaches the model while the daemon is starting, and `null`
+ * means what it has always meant here: the probe has not answered, which is a different fact from
+ * nothing being installed and the wizard shows a different station for each.
  *
  * The step is React state rather than a stored row, because it is a fact about *this* visit to
  * this surface and nothing outside the surface acts on it.
@@ -13,6 +14,7 @@ import { createElement, useMemo, useState } from "react";
 
 import { ENGINE_IDS, isEngineId } from "@/lib/engines";
 import type { ModuleEntry } from "@/modules/types";
+import { engineProbes, useDaemon } from "@/stores/daemon";
 import { useSettings } from "@/stores/settings";
 import { useShell } from "@/stores/shell";
 import { useTabs } from "@/stores/tabs";
@@ -26,8 +28,12 @@ function Live() {
   const brainPath = useSettings((s) => s.brainPath);
   const onboarded = useSettings((s) => s.onboarded);
   const tabs = useTabs((s) => s.tabs);
+  const engines = useDaemon((s) => s.engines);
+  const daemonError = useDaemon((s) => s.lastError);
 
   const [step, setStep] = useState<StepKey>("engine");
+
+  const probes = useMemo(() => engineProbes({ engines }), [engines]);
 
   const actions: SetupActions = useMemo(() => {
     // A rejected command is reported and not thrown: a directory the store will not take must
@@ -53,16 +59,16 @@ function Live() {
     () =>
       selectSetup({
         step,
-        probes: null,
+        probes,
         engine,
         engineIds: ENGINE_IDS,
         brainPath,
         tabs,
         onboarded,
-        problem: null,
+        problem: daemonError || null,
         actions,
       }),
-    [step, engine, brainPath, tabs, onboarded, actions],
+    [step, probes, engine, brainPath, tabs, onboarded, daemonError, actions],
   );
 
   return createElement(SetupView, { model });

@@ -142,6 +142,27 @@ export const storePath = () => call<string>("store_path");
 export const capturesSweep = (capBytes: number | null = null) =>
   call<SweepResult>("captures_sweep", { cap_bytes: capBytes });
 
+// -- the smoke (c23) ---------------------------------------------------------------------------
+
+/**
+ * What `ATHENA_SMOKE` armed this shell with, or `""`.
+ *
+ * `1` is the relay's claim and is made in Rust (`src-tauri/src/bridge.rs`); `turn` is the panel's
+ * and is made here, because the thing under test is the run store and a second copy of the loop
+ * written in Rust would be a test of the copy.
+ */
+export const smokeMode = () => call<string>("smoke_mode");
+
+/**
+ * One line of a smoke run, on the shell process's stdout — and, with a code, the end of the run.
+ *
+ * A `console.log` in a webview is not on this process's stdout, and stdout is what
+ * `scripts/smoke.mjs` reads. Rust adds the `[smoke]` prefix, so every line in this repository has
+ * the same shape whichever side of the IPC made the claim.
+ */
+export const smokeSay = (line: string, exit: number | null = null) =>
+  call<void>("smoke_say", { line, exit });
+
 // -- events ---------------------------------------------------------------------------------
 
 /**

@@ -8,11 +8,12 @@
  * Adding a module is one line here plus its directory. Nothing else in the app enumerates them,
  * which is what keeps a merge between two module authors to one line of conflict.
  *
- * One id is known outside this list: `browser`. Rust knows it too (`src-tauri/src/layout.rs`),
+ * Two ids are known outside this list. `browser` is Rust's too (`src-tauri/src/layout.rs`),
  * because the window's rectangles depend on which module is selected — the Browser module hands
- * the area under the chrome to a page webview and every other module keeps it.
+ * the area under the chrome to a page webview and every other module keeps it. `panel` is the
+ * launch module, spelled here, in `layout.rs` and in `stores/shell.ts`, and all three must agree.
  */
-import type { ModuleEntry } from "./types";
+import { DEFAULT_MODULE_ID, type ModuleEntry } from "./types";
 
 import { entry as browser } from "./browser";
 import { entry as origins } from "./origins";
@@ -28,14 +29,12 @@ export const MODULE_REGISTRY: Readonly<Record<string, ModuleEntry>> = Object.fro
 );
 
 /**
- * The fallback for an id nothing answers to, and the harness's own default.
+ * The launch module, the fallback for an id nothing answers to, and the harness's own default.
  *
- * It stays `browser` while `src-tauri/src/layout.rs` spells the same word: the launch module is
- * Rust's, because the window's rectangles depend on it, and two files disagreeing about which
- * module the window comes up on is the kind of drift the bar-height contract already warns about.
- * Panel leads the bar, which is where "the home module" is actually said.
+ * Declared in `./types` and re-exported here so the list and the default read as one thing; see
+ * that file for why it cannot be declared beside the list.
  */
-export const DEFAULT_MODULE_ID = "browser";
+export { DEFAULT_MODULE_ID };
 
 export function isModuleId(id: string | null): boolean {
   return id !== null && id in MODULE_REGISTRY;

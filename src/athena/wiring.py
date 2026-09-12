@@ -45,7 +45,7 @@ from athena.daemon.server import AthenaDaemon
 from athena.harness.cli_harness import CLAUDE_EXTRA_ARGS, DIALECTS, CliDialect, CliHarness
 from athena.harness.hooks import LedgerHook, TruncationHook
 from athena.harness.policy import Policy, PolicyHook
-from athena.harness.transports import SubprocessTransport, Transport
+from athena.harness.transports import ScriptedTransport, SubprocessTransport, Transport
 from athena.lane.browser_lane import BrowserLane
 from athena.lane.turn_frame import FrameBuilder
 
@@ -56,6 +56,7 @@ __all__ = [
     "build_local",
     "checkpoint_executor",
     "recall_executor",
+    "scripted_factory",
     "write_fact_executor",
 ]
 
@@ -274,3 +275,24 @@ def _default_args(dialect: CliDialect) -> tuple[str, ...]:
     """The arguments a dialect is always given. The Claude CLI's own tools stay off inside
     Athena: a page is operated through the gate, never through a shell."""
     return CLAUDE_EXTRA_ARGS if dialect.name == "claude_code" else ()
+
+
+def scripted_factory(script: str | Path) -> TransportFactory:
+    """A transport that replays a recorded transcript instead of spawning the engine (ADR 0007).
+
+    This is the same seam ``tests/daemon/`` runs a whole gated turn on, reachable from outside a
+    test: ``athena serve --script <file>`` boots a daemon whose turns are a fixture. Everything
+    else about the turn is the real thing — the two halves of the prompt, the round loop, the
+    gate, the approval row, the ledger row — because the only thing the factory changes is who
+    produces the tokens.
+
+    The file is read **now**, so a path that is not there fails on the daemon's failure line
+    rather than at the first turn, and one transport is held for the life of the process: its
+    rounds are consumed in order, so round three of a conversation is line three of the file and a
+    turn the script does not have is a refusal rather than an empty reply.
+    """
+    path = Path(script).expanduser()
+    if not path.is_file():
+        raise OSError(f"--script: there is no transcript at {path}")
+    replay = ScriptedTransport.from_transcript(path)
+    return lambda _dialect: replay

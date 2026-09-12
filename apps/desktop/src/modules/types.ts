@@ -27,6 +27,20 @@
  */
 import type { ReactElement } from "react";
 
+/**
+ * The module the window comes up on, and the fallback for an id nothing answers to.
+ *
+ * It lives here, in the leaf every module's `index.ts` already imports, rather than in
+ * `registry.ts` beside the list: `stores/shell.ts` holds it as the mirror's initial value and the
+ * registry imports every module, several of which import that store — so reading it off the
+ * registry would be a cycle whose value is `undefined` for exactly as long as it matters.
+ *
+ * `src-tauri/src/layout.rs` spells the same word as `DEFAULT_MODULE`, and a test in each language
+ * says so. The two have to agree because Rust owns the selection: the window's rectangles depend
+ * on it, and a chrome that guessed a different module paints the wrong shape for one frame.
+ */
+export const DEFAULT_MODULE_ID = "panel";
+
 /** What every `view.tsx` default-exports. */
 export type View<M> = (props: { model: M }) => ReactElement;
 

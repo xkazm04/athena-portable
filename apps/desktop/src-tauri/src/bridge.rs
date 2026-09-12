@@ -385,19 +385,55 @@ fn random_token() -> String {
 }
 
 // ==============================================================================================
-// The smoke (README section 8, layer 2). `ATHENA_SMOKE=1` turns the shell into a one-claim
-// command-line tool: open the start url, ask the page what it has, print one assertable line,
-// exit. `scripts/smoke.mjs` is what runs it against `scratch/webmcp-page.html`.
+// The smoke (README section 8, layer 2). `ATHENA_SMOKE` turns the shell into a one-claim
+// command-line tool: open the start url, make the claim, print assertable lines, exit.
+// `scripts/smoke.mjs` is what runs it against `scratch/webmcp-page.html`.
+//
+// Two modes, because there are two claims and they live on two sides of the IPC.
+//
+// * `ATHENA_SMOKE=1` is the relay's: one `list` against a freshly opened tab, made here, in Rust.
+// * `ATHENA_SMOKE=turn` is the panel's: one gated turn driven through the run store, so the thing
+//   under test is the store the headless test already drives (`src/stores/run.ts`) and not a
+//   second copy of the loop written in Rust. The chrome webview asks [`smoke_mode`] what it was
+//   armed with and hands its lines back through [`smoke_say`], because a `console.log` in a
+//   webview is not on this process's stdout and stdout is what `smoke.mjs` reads.
 // ==============================================================================================
+
+/// What `ATHENA_SMOKE` was set to, trimmed. Empty when the shell was not armed at all.
+fn smoke_env() -> String {
+    std::env::var("ATHENA_SMOKE")
+        .unwrap_or_default()
+        .trim()
+        .to_string()
+}
+
+/// The mode the chrome webview should run, or `""`. Read once, on mount.
+#[tauri::command(rename_all = "snake_case")]
+pub async fn smoke_mode() -> String {
+    smoke_env()
+}
+
+/// One line of a smoke run, on this process's stdout, and optionally the end of the run.
+///
+/// It is the chrome webview's only way to say something `scripts/smoke.mjs` can read. The prefix
+/// is added here so every smoke line in this repository has the same shape whichever side made
+/// the claim, and `exit` is the verdict: `Some(0)` passed, `Some(1)` failed, `None` keeps going.
+#[tauri::command(rename_all = "snake_case")]
+pub async fn smoke_say(app: AppHandle, line: String, exit: Option<i32>) {
+    println!("[smoke] {}", line.trim());
+    if let Some(code) = exit {
+        app.exit(code);
+    }
+}
 
 /// Arm the smoke, if the environment asked for it. Called from `setup` after the start url's tab
 /// has been created, which is why the tab it asks about is always tab 1.
+///
+/// Only the relay's mode runs here. `turn` is armed by the same variable and driven by the chrome
+/// webview, which polls [`smoke_mode`] on mount — so this returns without starting a `list` that
+/// would exit the process before the panel had a daemon.
 pub fn smoke_if_asked(app: &AppHandle) {
-    if std::env::var("ATHENA_SMOKE")
-        .ok()
-        .filter(|v| !v.is_empty())
-        .is_none()
-    {
+    if smoke_env() != "1" {
         return;
     }
     let app = app.clone();

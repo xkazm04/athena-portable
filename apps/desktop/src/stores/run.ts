@@ -531,25 +531,31 @@ async function stream(
   return { failed: false, card, results: out };
 }
 
-/** A card arrived: the turn is over and the user is the next move. */
+/**
+ * A card arrived: the turn is over and the user is the next move.
+ *
+ * The card goes into **both** places and whole into both. `pendingDecision` is the slot a surface
+ * asks "is something waiting"; the transcript item is the record, and the record is what a
+ * surface reads a card's *content* from once the turn has moved on — a pending slot empties the
+ * moment the daemon answers, while an append-only line does not (`modules/panel/model.ts`,
+ * `selectPanel`). So the item carries every field the card is made of, not an id and a name: a
+ * line with half the card in it is a card rendered with no parameters and no buttons.
+ */
 function showCard(frame: DecisionRequestedFrame): void {
-  useRun.setState({
-    status: "awaiting_decision",
-    pendingDecision: {
-      id: frame.id,
-      action: frame.action,
-      params: frame.params,
-      summary: frame.rationale,
-      options: frame.options.map((o) => o.id),
-      captureId: frame.capture_id,
-      origin: frame.origin,
-      surface: frame.surface,
-      createdAt: deps.now(),
-    },
-  });
-  note("decision", `${bare(frame.action)} needs your approval — ${frame.rationale}`, {
+  const decision: Decision = {
     id: frame.id,
     action: frame.action,
+    params: frame.params,
+    summary: frame.rationale,
+    options: frame.options.map((o) => o.id),
+    captureId: frame.capture_id,
+    origin: frame.origin,
+    surface: frame.surface,
+    createdAt: deps.now(),
+  };
+  useRun.setState({ status: "awaiting_decision", pendingDecision: decision });
+  note("decision", `${bare(frame.action)} needs your approval — ${frame.rationale}`, {
+    ...decision,
   });
 }
 

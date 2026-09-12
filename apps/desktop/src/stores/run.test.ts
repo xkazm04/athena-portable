@@ -354,3 +354,20 @@ test("clear empties the transcript and leaves the card in the daemon's inbox", a
   // Only the daemon may resolve an approval row. Clearing a view is not an answer.
   expect(h.daemon.pending.map((row) => row.id)).toEqual(["apr_0f4ed49f9446"]);
 });
+
+test("the card's transcript line carries the whole card, because the record is what a surface reads", async () => {
+  // `modules/panel/model.ts::selectPanel` prefers the card it can build from the transcript over
+  // the pending slot, on purpose: the slot empties the moment the daemon answers and an
+  // append-only line does not. A line carrying only an id and a name is therefore a card
+  // rendered with no parameters and no buttons — which is what the window showed by hand before
+  // this assertion existed.
+  const h = harness(["gated-turn"]);
+  await runActions.send("pay invoice 7");
+
+  const card = useRun.getState().pendingDecision;
+  const item = useRun.getState().transcript.filter((i) => i.kind === "decision").at(-1);
+  expect(item?.meta).toEqual({ ...card });
+  expect(item?.meta?.params).toEqual({ invoice: "7" });
+  expect(item?.meta?.options).toEqual(["approve", "decline"]);
+  expect(h.bridge.calls).toEqual([]);
+});

@@ -28,6 +28,12 @@ browser sends ``OPTIONS`` with no custom headers by definition, so requiring the
 make every cross-origin request impossible rather than make anything safer. The preflight carries
 no body, reads nothing and says only which methods and headers are allowed.
 
+**The engine probe runs beside the server, never on a request.** ``GET /health`` reports what
+``athena.harness.engines.probe_all`` found, and finding it means spawning ``claude --version``:
+seconds on a cold npm shim, and ``/health`` is what a shell polls for readiness. So
+:meth:`AthenaDaemon.probe_engines` runs once on a thread ``serve`` starts, and the route reports
+``None`` until it has answered — which is a third answer, distinct from "nothing is installed".
+
 CORS is the browser's fence and the token is ours. ``chrome-extension://`` origins are always
 allowed; anything else must be named by ``--allow-origin`` (the shell passes its own UI origins).
 An origin that is not allowed gets no CORS headers at all, and the token check is unaffected
@@ -38,6 +44,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import secrets
 import sys
 import threading
@@ -66,6 +73,7 @@ from athena.daemon.routes import (
     error,
 )
 from athena.daemon.sessions import Sessions
+from athena.harness.engines import EngineStatus, probe_all
 from athena.harness.policy import PolicyHook
 from athena.lane.browser_lane import BrowserLane
 
@@ -75,6 +83,7 @@ __all__ = [
     "DEFAULT_PORT",
     "EXTENSION_SCHEME",
     "MAX_BODY_BYTES",
+    "SCRIPT_ENV",
     "TOKEN_FILENAME",
     "TOKEN_HEADER",
     "AthenaDaemon",
@@ -83,6 +92,7 @@ __all__ = [
     "bound_url",
     "build_handler",
     "build_parser",
+    "engine_probe",
     "make_server",
     "new_token",
     "resolve_token",
@@ -105,6 +115,27 @@ MAX_BODY_BYTES = 1_048_576
 #: one worker thread, and daemon threads do not hold the process open, but neither is a reason to
 #: keep one forever.
 IDLE_TIMEOUT_S = 30
+#: The environment variable that names a recorded transcript to replay instead of spawning the
+#: engine. ``--script`` wins over it; the shell's sidecar sets it from ``ATHENA_ENGINE_SCRIPT``.
+SCRIPT_ENV = "ATHENA_SCRIPTED_TRANSPORT"
+
+
+def engine_probe(status: EngineStatus) -> dict[str, str]:
+    """One :class:`~athena.harness.engines.EngineStatus` in the vocabulary the surfaces render.
+
+    Three states and no fourth, matching ``apps/desktop/src/lib/engines.ts``: a binary that did
+    not answer is ``not_found``, one that answered with no credential beside it is
+    ``not_logged_in``, and anything else is ``found``. ``logged_in`` of ``None`` means the probe
+    could not tell, which is not evidence of being signed out — so it reads as ``found`` and the
+    detail says what the probe actually saw.
+    """
+    if not status.available:
+        state = "not_found"
+    elif status.logged_in is False:
+        state = "not_logged_in"
+    else:
+        state = "found"
+    return {"id": status.name, "state": state, "detail": status.detail}
 
 
 def new_token() -> str:
@@ -164,6 +195,10 @@ class AthenaDaemon:
     lock: threading.Lock = field(default_factory=threading.Lock)
     started: float = field(default_factory=time.monotonic)
     routes: RouteTable = field(init=False)
+    #: What the engine probe found, or ``None`` while it has not answered. Its own lock, because
+    #: it is written by the thread ``serve`` starts and read by every ``/health``.
+    _probes: list[dict[str, str]] | None = field(default=None, init=False, repr=False)
+    _probe_lock: threading.Lock = field(default_factory=threading.Lock, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.routes = RouteTable(base_routes(self))
@@ -171,6 +206,30 @@ class AthenaDaemon:
     @property
     def uptime_s(self) -> float:
         return round(time.monotonic() - self.started, 3)
+
+    # -- the engine probe -----------------------------------------------------------------------
+
+    def engine_probes(self) -> list[dict[str, str]] | None:
+        """What is installed on this machine, or ``None`` while the probe has not answered."""
+        with self._probe_lock:
+            return None if self._probes is None else [dict(row) for row in self._probes]
+
+    def probe_engines(self) -> list[dict[str, str]]:
+        """Probe every engine and remember the answer. Blocking — it spawns each CLI once."""
+        found = [engine_probe(status) for status in probe_all()]
+        with self._probe_lock:
+            self._probes = found
+        return found
+
+    def probe_engines_later(self) -> threading.Thread:
+        """Run :meth:`probe_engines` off the request path, so ``/health`` never waits on a spawn.
+
+        A daemon thread: a probe still running when the daemon is asked to stop must not be the
+        reason the process stays up.
+        """
+        thread = threading.Thread(target=self.probe_engines, name="engine-probe", daemon=True)
+        thread.start()
+        return thread
 
     def pin(self, app_id: str, page_origin: str) -> None:
         """Record where one app's manifest was published from (policy rule 3, README §3.4).
@@ -437,6 +496,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--engine", default="claude_code", help="which engine a turn will run on")
     parser.add_argument("--model", default="", help="the model that engine should use, if it asks")
+    parser.add_argument(
+        "--script",
+        default=None,
+        metavar="PATH",
+        help=(
+            "replay a recorded transcript instead of spawning the engine, for a deterministic "
+            f"demo or smoke run; ${SCRIPT_ENV} says the same thing"
+        ),
+    )
     return parser
 
 
@@ -444,19 +512,26 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
     """Run the daemon until it is interrupted. The exit code of ``athena serve``.
 
     Everything that can fail — an unreadable token file, a brain root that is not a directory, a
-    port already taken — fails *before* the ready line, and says so on the failure line instead.
-    A caller therefore never has to distinguish "not started" from "started and silent".
+    port already taken, a ``--script`` that names no file — fails *before* the ready line, and
+    says so on the failure line instead. A caller therefore never has to distinguish "not started"
+    from "started and silent".
     """
     # Local import, and the only one in this module: ``athena.wiring`` composes an
     # :class:`AthenaDaemon` out of the real classes, so importing it at module scope would make
     # the package graph a cycle. The daemon is a thing wiring builds; ``serve`` is the entry
     # point that asks for one.
-    from athena.wiring import build_local
+    from athena.wiring import build_local, scripted_factory
 
     args = build_parser().parse_args(None if argv is None else list(argv))
+    script = args.script or os.environ.get(SCRIPT_ENV, "")
     try:
         token, token_file = resolve_token(args.token, args.token_file)
-        local = build_local(brain_root=args.brain, engine=args.engine, model=args.model)
+        local = build_local(
+            brain_root=args.brain,
+            engine=args.engine,
+            model=args.model,
+            transport=scripted_factory(script) if script else None,
+        )
     except (OSError, ValueError) as exc:
         announce(failure_line("unknown", f"{type(exc).__name__}: {exc}"), stream)
         return 1
@@ -474,6 +549,9 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
         local.close()
         announce(failure_line("unknown", f"{type(exc).__name__}: {exc}"), stream)
         return 1
+    # Off the request path and before the first poll, so a setup screen has an answer about as
+    # soon as it has a daemon (see the module docstring).
+    local.daemon.probe_engines_later()
     # The socket is bound and nothing has been accepted yet: the port on this line is the port.
     announce(
         ready_line(

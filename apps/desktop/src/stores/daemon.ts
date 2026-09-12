@@ -18,10 +18,12 @@ import {
   daemonRestart,
   daemonStatus,
   onDaemonStatus,
+  type DaemonEngine,
   type DaemonHealth,
   type DaemonSource,
   type DaemonStatus,
 } from "@/lib/daemon";
+import type { EngineProbe, EngineState } from "@/lib/engines";
 import { hasShell } from "@/lib/ipc";
 
 /** The reduced view. `DaemonStatus` plus what the store remembers across events. */
@@ -37,6 +39,15 @@ export interface DaemonView {
    */
   lastError: string;
   source: DaemonSource;
+  /**
+   * The daemon's engine probe, or `null` while it has not answered.
+   *
+   * It is the daemon's because the daemon is the process that knows: `GET /health` carries the
+   * list, `daemon.rs` keeps asking for it after the first 200, and this store is where the two
+   * surfaces that render it — Setup and Settings — read it from. `null` is not an empty list: one
+   * is "nothing has been asked yet" and the other is "asked, and nothing is installed".
+   */
+  engines: DaemonEngine[] | null;
   /** True once Rust has answered once. Before that "stopped" means "nobody asked yet". */
   loaded: boolean;
 }
@@ -48,6 +59,7 @@ export const EMPTY_DAEMON: DaemonView = {
   health: "stopped",
   lastError: "",
   source: "none",
+  engines: null,
   loaded: false,
 };
 
@@ -57,6 +69,11 @@ export const EMPTY_DAEMON: DaemonView = {
  *
  * A `ready` event clears the error, because the daemon answering `/health` is the only evidence
  * that whatever went wrong is over. Every other event keeps the last one it was given.
+ *
+ * The probe is the one other thing the store remembers across events, and for the same reason:
+ * Rust clears it on a respawn — a fresh daemon has made no claim about this machine's PATH yet —
+ * and then fills it in a moment after the first 200, so a `null` arriving *after* an answer is
+ * the new process asking again and not the old answer being withdrawn.
  */
 export function reduce(previous: DaemonView, status: DaemonStatus): DaemonView {
   return {
@@ -66,8 +83,31 @@ export function reduce(previous: DaemonView, status: DaemonStatus): DaemonView {
     health: status.health,
     lastError: status.health === "ready" ? "" : status.error || previous.lastError,
     source: status.source,
+    engines: status.engines ?? null,
     loaded: true,
   };
+}
+
+/**
+ * The engine probe as the Setup wizard and the Settings module read it (`lib/engines.ts`).
+ *
+ * A `state` the daemon invented collapses to `unknown` here rather than reaching a switch that
+ * has no case for it: "I do not know" is one of the four the surfaces already render, and it is
+ * the honest reading of a word this build has never heard of.
+ */
+export function engineProbes(view: Pick<DaemonView, "engines">): EngineProbe[] | null {
+  if (view.engines === null) return null;
+  return view.engines.map((row) => ({
+    id: row.id,
+    state: isEngineState(row.state) ? row.state : "unknown",
+    detail: row.detail,
+  }));
+}
+
+const ENGINE_STATES: readonly string[] = ["found", "not_found", "not_logged_in", "unknown"];
+
+function isEngineState(state: string): state is EngineState {
+  return ENGINE_STATES.includes(state);
 }
 
 /**

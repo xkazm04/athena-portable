@@ -35,6 +35,10 @@ fn main() {
             "bridge_list",
             "bridge_call",
             "bridge_reply",
+            // bridge.rs (c23) — the smoke's two: which mode the shell was armed with, and one
+            // line of a run on this process's stdout. The chrome webview's, never a page's.
+            "smoke_mode",
+            "smoke_say",
             // daemon.rs (c20): daemon_status, daemon_restart
             // bridge.rs (c19): bridge_list, bridge_call, bridge_reply
             // daemon.rs (c20) — the sidecar's URL, token and health, and a restart on an

@@ -23,6 +23,20 @@ export type DaemonHealth = "stopped" | "starting" | "ready" | "failed";
 /** Which of the two shapes is running: the frozen binary, the dev fallback, or nothing yet. */
 export type DaemonSource = "sidecar" | "uv" | "none";
 
+/**
+ * One engine as the daemon's own probe reported it, off `GET /health`.
+ *
+ * The shell never probes: the daemon knows what is on its PATH and whether a credential file sits
+ * beside it, and this is that answer carried across. `EngineProbe` in `lib/engines.ts` is the
+ * same three fields, which is why the Setup wizard and the Settings module can take this list
+ * without a translation step.
+ */
+export interface DaemonEngine {
+  id: string;
+  state: string;
+  detail: string;
+}
+
 /** `DaemonStatus` in `src-tauri/src/daemon.rs`, field for field. */
 export interface DaemonStatus {
   /** `http://127.0.0.1:<port>`, once the ready line arrived. `null`, never `undefined`. */
@@ -36,6 +50,13 @@ export interface DaemonStatus {
   source: DaemonSource;
   /** The brain directory the daemon opened. */
   brain: string;
+  /**
+   * What the daemon's engine probe found, or `null` while it has not answered.
+   *
+   * `null` and `[]` are different facts and the surfaces show different sentences for each: one
+   * is "nothing has been asked yet", the other is "the probe answered and named no engine".
+   */
+  engines: DaemonEngine[] | null;
 }
 
 /** What the shell knows right now. Called once by the store; after that, listen. */

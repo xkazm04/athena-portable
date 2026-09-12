@@ -52,8 +52,14 @@ pub const STRIP_HEIGHT: f64 = 40.0;
 /// The chrome's height in browser mode: both bands. 76, on the 4px rhythm.
 pub const CHROME_HEIGHT: f64 = BAR_HEIGHT + STRIP_HEIGHT;
 
-/// The module the window comes up on. `registry.ts` spells the same id as `DEFAULT_MODULE_ID`.
-pub const DEFAULT_MODULE: &str = "browser";
+/// The module the window comes up on. `registry.ts` spells the same id as `DEFAULT_MODULE_ID` and
+/// `stores/shell.ts` holds it as the mirror's initial value; all three have to agree, because the
+/// window's rectangles depend on the selection and a store that guessed a different one would
+/// paint one shape over the other for a frame.
+///
+/// It is Panel and not Browser: the conversation with Athena is what the window is for, and a
+/// shell that opens on an empty tab strip opens on the one module that has nothing to say yet.
+pub const DEFAULT_MODULE: &str = "panel";
 
 /// The one module id Rust knows, because the rectangles depend on it. Every other id is a string
 /// this file passes through untouched — adding a module is a TypeScript change, not a Rust one.
@@ -235,11 +241,21 @@ mod tests {
     }
 
     #[test]
-    fn the_selection_starts_on_the_browser_and_is_whatever_the_chrome_last_said() {
+    fn the_selection_starts_on_the_launch_module_and_is_whatever_the_chrome_last_said() {
         let selection = Selection::default();
         assert_eq!(selection.get(), DEFAULT_MODULE);
-        assert!(selection.is_browser());
+        assert_eq!(
+            DEFAULT_MODULE, "panel",
+            "the launch module is spelled here, in `registry.ts` and in `stores/shell.ts`; \
+             changing one of the three is what makes the first frame paint twice"
+        );
+        assert!(
+            !selection.is_browser(),
+            "the window comes up in module mode, so the first frame has no page rectangle"
+        );
 
+        selection.set(BROWSER_MODULE);
+        assert!(selection.is_browser());
         selection.set("settings");
         assert_eq!(selection.get(), "settings");
         assert!(
