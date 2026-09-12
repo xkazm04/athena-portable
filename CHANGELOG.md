@@ -11,6 +11,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `feat(desktop): the Browser is about apps, and its ledger is the origins table` — the doorway when nothing is open, a ledger of registered apps with a standing derived from the tabs and the relay, register-then-open; `browser.css`; ADR 0022.
 - `feat(desktop): the Panel is a conversation` — a 46rem column, bubbles and prose, deltas grouped in the model, activity folded to chips, cards at the end of the stream, the tool table as a disclosure, a docked composer, suggestions from the page's read tools, the voice partial in the composer; `panel.css`.
 - `feat(desktop): Setup and Settings become one module` — one view-model with an onboarding letter and a settings list, the restart wired to the daemon store, readiness without stations; the settings directory removed; `setup.css`.
+- `fix(desktop): the run loop holds a host call until the turn ends` — a gated proposal arrives as a `tool.call` followed by a `pending_approval` result and the card; running it on arrival ran the gated action before the answer. Calls are held, a result releases them, what remains at `turn.finished` runs.
 - `chore(desktop): the mark in the bar, the icon set, and the stylesheet without the old panel and letter` — the reference build's logo as the window, taskbar and bar mark; the dead `.transcript`/`.composer`/`.panel-card`/`.passage`/`.rail` blocks removed.
 
 ## P8 — Voice (in progress)

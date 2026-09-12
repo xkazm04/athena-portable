@@ -294,6 +294,44 @@ const CARD: Event = {
   capture_id: null,
 };
 
+describe("a gated call", () => {
+  it("is never run on the page: the daemon refused it pending approval in the same turn", async () => {
+    // The real frame order for a gated proposal: the call, the card, the refusal. Only a host
+    // call with no result behind it at turn.finished is the page's to run.
+    const daemon = fakeDaemon({
+      runs: [
+        [
+          hostCall("c1", "host.ledgerbox.list_overdue"),
+          hostCall("c2", "host.ledgerbox.chase", { invoice: "INV-118" }),
+          CARD,
+          {
+            kind: "tool.result",
+            call_id: "c2",
+            name: "host.ledgerbox.chase",
+            ok: false,
+            output: "host.ledgerbox.chase is gated; approval apr_0000000000a1 is waiting",
+            truncated: false,
+            error: "pending_approval",
+            tier: 1,
+            ms: 0,
+          },
+          finished("I need your approval."),
+        ],
+        [finished("Three are late.")],
+      ],
+    });
+    const page = fakePage();
+    wire(daemon, page);
+
+    await useRun.getState().send("chase the oldest");
+
+    expect(page.calls.map((c) => c.name)).toEqual(["list_overdue"]);
+    expect(useRun.getState().cards.map((c) => c.id)).toEqual(["apr_0000000000a1"]);
+    const carried = daemon.runs()[1].body?.tool_results as Array<{ call_id: string }>;
+    expect(carried.map((r) => r.call_id)).toEqual(["c1"]);
+  });
+});
+
 describe("the card", () => {
   it("arrives mid-turn and waits on the user", async () => {
     const daemon = fakeDaemon({ runs: [[CARD, finished("I need your approval.")]] });

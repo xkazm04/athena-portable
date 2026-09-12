@@ -193,6 +193,18 @@ export const useRun = create<RunState>((set) => {
     set({ phase: "running" });
   }
 
+  /**
+   * Host calls of the turn in progress that the daemon has not answered itself.
+   *
+   * A `tool.call` is not yet an instruction. The harness emits one for *every* proposal, and a
+   * gated one is followed in the same turn by a `tool.result` refusing it `pending_approval` and
+   * by the card. Running a host call the moment it arrives would run the gated action on the
+   * page before the user has answered — which is the one thing this whole system exists to
+   * prevent. So a call is held here, a result for its id releases it, and what is still held at
+   * `turn.finished` is what the page runs (ADR 0010).
+   */
+  let proposed = new Map<string, ExecuteRow>();
+
   async function apply(event: ChannelEvent): Promise<void> {
     switch (event.kind) {
       case "text.delta":
@@ -200,10 +212,12 @@ export const useRun = create<RunState>((set) => {
         break;
       case "tool.call":
         // Tier 0 has an executor in the daemon and its result arrives as `tool.result`; only a
-        // host tool reaches the surface.
-        if (event.origin !== "core") await onPage(event as ExecuteRow);
+        // host tool reaches the surface, and only once the turn has ended without the daemon
+        // answering it.
+        if (event.origin !== "core") proposed.set(event.call_id, event as ExecuteRow);
         break;
       case "tool.result":
+        proposed.delete(event.call_id);
         push({
           id: event.call_id,
           kind: "tool",
@@ -222,10 +236,15 @@ export const useRun = create<RunState>((set) => {
         set({ summary: event });
         break;
       case "turn.error":
+        proposed = new Map();
         set({ phase: "error", error: { reason: event.reason, detail: event.detail } });
         break;
-      case "turn.finished":
+      case "turn.finished": {
+        const calls = [...proposed.values()];
+        proposed = new Map();
+        for (const call of calls) await onPage(call);
         break;
+      }
     }
   }
 
@@ -325,6 +344,7 @@ export const useRun = create<RunState>((set) => {
 
     clear() {
       outstanding = [];
+      proposed = new Map();
       set({ ...EMPTY });
     },
   };
