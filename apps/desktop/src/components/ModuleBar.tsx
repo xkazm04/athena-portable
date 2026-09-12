@@ -20,16 +20,20 @@ export default function ModuleBar({
   items,
   active,
   onSelect,
+  leading,
   trailing,
 }: {
   items: readonly BarItem[];
   active: string;
   onSelect: (id: string) => void;
+  /** The app's mark, at the head of the bar. Nothing, in the preview harness. */
+  leading?: ReactNode;
   /** The window buttons, in the shell. Nothing, in the preview harness. */
   trailing?: ReactNode;
 }) {
   return (
     <nav className="module-bar" aria-label="Module" data-tauri-drag-region>
+      {leading}
       {items.map((item) => (
         <button
           key={item.id}

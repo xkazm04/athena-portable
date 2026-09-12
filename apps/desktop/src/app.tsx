@@ -18,6 +18,7 @@
 import { useEffect } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
+import mark from "@/assets/athena-mark.png";
 import ModuleBar from "@/components/ModuleBar";
 import PushToTalk from "@/components/PushToTalk";
 import { hasShell } from "@/lib/ipc";
@@ -60,10 +61,15 @@ export default function App() {
         items={MODULE_ENTRIES.map((m) => ({ id: m.id, label: m.label }))}
         active={active.id}
         onSelect={(id) => void select(id)}
+        leading={
+          // The same mark the window and the taskbar carry, so the bar names the app the way
+          // the operating system does. Decorative here: the bar's label is the module list.
+          <img className="module-bar__mark" src={mark} alt="" aria-hidden="true" draggable={false} />
+        }
         trailing={
           <>
             <PushToTalkLive />
-            {/* The Settings module owns the three-way choice (system / light / dark) and this
+            {/* The Setup module owns the three-way choice (system / light / dark) and this
                 is its shortcut: one press flips to the opposite of what is *painted*, and the
                 choice it writes is a definite one, because "the opposite of system" is not a
                 theme. Both go through the same `settings` row, so the bar and the module can

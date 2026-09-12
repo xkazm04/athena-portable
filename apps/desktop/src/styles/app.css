@@ -700,6 +700,16 @@ select:focus-visible {
   user-select: none;
 }
 
+.module-bar__mark {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-right: 4px;
+  border-radius: 4px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
 .module-bar__spacer {
   flex: 1 1 auto;
   min-width: 0;
@@ -982,84 +992,6 @@ select:focus-visible {
   align-items: baseline;
 }
 
-/* -- The Setup letter (c21) -------------------------------------------------------------------
- *
- * A passage, not a stepper: the lit left rule *is* the step. A band with a hairline under a
- * heading would turn the letter back into the four-accordion wizard the module-first window was
- * meant to replace.
- */
-.passage {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 6px;
-  padding-left: 14px;
-  border-left: 2px solid var(--border-subtle);
-  scroll-margin-top: 64px;
-  transition: border-color var(--duration-fast);
-}
-
-.passage[aria-current="step"] {
-  border-left-color: var(--primary);
-}
-
-.passage__label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--muted-foreground);
-}
-
-.passage__lead {
-  font-size: 0.9375rem;
-  font-weight: 500;
-  line-height: 1.45;
-}
-
-/* The four facts in short, for the person who has read the letter before. */
-.rail {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.rail__row {
-  display: flex;
-  width: 100%;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 5px 8px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-interactive);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-}
-
-.rail__row:hover {
-  background: var(--hover-wash);
-}
-
-.rail__row[aria-current="step"] {
-  border-color: var(--border-default);
-  background: var(--card-raised);
-}
-
-/* The dot sits on the first line's baseline rather than in the middle of a two-line row. */
-.rail__row .status-dot {
-  margin-top: 6px;
-}
-
-.rail__text {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 1px;
-}
-
 /* -- The preview harness's own chrome --------------------------------------------------------- */
 .harness {
   display: flex;
@@ -1089,88 +1021,6 @@ select:focus-visible {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-}
-
-/* -- The Panel module: the turn, its cards and what the page offers ---------------------------
- *
- * Three stacked bands and one rule running through them: the cards are above the transcript, and
- * the composer is below both and always present. A card is the only thing on this surface waiting
- * on a person, and a card that scrolls away with the conversation is a card answered late.
- *
- * Nothing here sets a width or a gutter — `PageShell` owns those — and every colour is a token.
- */
-.panel-cards {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3, 12px);
-}
-
-.panel-card__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3, 12px);
-}
-
-.panel-card__answers {
-  display: flex;
-  gap: var(--space-2, 8px);
-}
-
-.transcript {
-  list-style: none;
-  margin: 0;
-  padding: var(--space-3, 12px);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3, 12px);
-  /* The turn is the thing being watched, so it gets the height and scrolls on its own rather
-   * than pushing the composer off the bottom of a long conversation. */
-  max-height: 46vh;
-  overflow-y: auto;
-}
-
-.transcript__row {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2, 8px);
-}
-
-.transcript__row p {
-  margin: 0;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.transcript__row--user p {
-  font-weight: 600;
-}
-
-.transcript__row--tool p {
-  padding: var(--space-2, 8px);
-  border-radius: var(--radius-sm, 6px);
-  background: var(--surface-raised, rgb(0 0 0 / 6%));
-}
-
-.transcript__row--working p {
-  color: var(--foreground-muted);
-  font-style: italic;
-}
-
-.composer {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--space-2, 8px);
-}
-
-.composer__field {
-  flex: 1 1 auto;
-  min-width: 0;
-  resize: vertical;
-  padding: var(--space-2, 8px);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm, 6px);
-  background: var(--background);
-  color: var(--foreground);
 }
 
 @media (prefers-reduced-motion: reduce) {
