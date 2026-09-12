@@ -31,6 +31,13 @@ dev = [
   "ruff>=0.6",
   "mypy>=1.11",
 ]
+# Freezing the daemon into the desktop shell's sidecar (`scripts/build-sidecar.py`). Deliberately
+# *not* in `dev`: the shell falls back to `uv run athena serve` when no binary is there, so the
+# daily loop never runs PyInstaller, and a 20 MB toolchain has no business in the environment CI
+# and every contributor installs. See ADR 0015.
+build = [
+  "pyinstaller>=6.10",
+]
 
 # One console script, and it is the only entry point a person types. ``athena serve`` hands its
 # flags straight to ``athena.daemon.server.serve``; ``athena doctor`` and ``athena brain

@@ -17,6 +17,7 @@ mod layout;
 mod tabs;
 // ── registrations: modules ────────────────────────────────────────────────────────────────────
 // c19 `mod bridge;`  c20 `mod daemon;`  c21 `mod store;`  c24 `mod hands;`  c27 `mod tray;`
+mod daemon;
 // ──────────────────────────────────────────────────────────────────────────────────────────────
 
 use serde::Serialize;
@@ -99,6 +100,8 @@ async fn layout_select(app: AppHandle, module: String) -> Result<(), String> {
 // ── registrations: commands ───────────────────────────────────────────────────────────────────
 // c19 bridge_list/bridge_call/bridge_reply · c20 daemon_status/daemon_restart
 // c21 store_get/store_set/origins_* · c24 hands_call/screenshot_read · c27 tray_set_pending
+// c20: `daemon.rs` declares its own two commands beside the state they read, so the only line
+// this file needs for them is the pair in the handler list below (ADR 0015).
 // ──────────────────────────────────────────────────────────────────────────────────────────────
 
 pub fn run() {
@@ -108,6 +111,7 @@ pub fn run() {
         // ── registrations: state ──────────────────────────────────────────────────────────────
         // c19 `.manage(Bridge::default())` · c20 `.manage(Daemon::default())`
         // c21 `.manage(Store::open(..))` (in `setup`, it needs a path) · c27 `.manage(Tray::…)`
+        .manage(daemon::Daemon::default())
         // ──────────────────────────────────────────────────────────────────────────────────────
         .invoke_handler(tauri::generate_handler![
             tabs_create,
@@ -118,6 +122,8 @@ pub fn run() {
             layout_module,
             layout_select,
             // ── registrations: handlers (keep one line per command, grouped by module) ────────
+            daemon::daemon_status,
+            daemon::daemon_restart,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
@@ -137,6 +143,7 @@ pub fn run() {
             // ── registrations: setup ──────────────────────────────────────────────────────────
             // c20 spawns the daemon sidecar here and c27 builds the tray here; both are
             // non-fatal — the shell must come up even when they do not.
+            daemon::start_at_launch(&handle);
             // ──────────────────────────────────────────────────────────────────────────────────
 
             Ok(())
@@ -147,6 +154,7 @@ pub fn run() {
             // ── registrations: exit ───────────────────────────────────────────────────────────
             // c20 kills the daemon's process tree on `ExitRequested | Exit` here. Nothing in c18
             // owns a child process, so there is nothing to clean up yet.
+            daemon::on_app_event(_app, &_event);
             // ──────────────────────────────────────────────────────────────────────────────────
         });
 }

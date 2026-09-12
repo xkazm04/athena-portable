@@ -25,7 +25,11 @@ fn main() {
             "layout_select",
             // ---- later milestones add their commands here, one block per module ----
             // bridge.rs (c19): bridge_list, bridge_call, bridge_reply
-            // daemon.rs (c20): daemon_status, daemon_restart
+            // daemon.rs (c20) — the sidecar's URL, token and health, and a restart on an
+            // engine change. The names are the function names in `daemon.rs`, wherever the
+            // function is declared.
+            "daemon_status",
+            "daemon_restart",
             // store.rs  (c21): store_get, store_set, origins_*
             // hands.rs  (c24): hands_call, screenshot_read
         ])),

@@ -17,6 +17,8 @@
     "allow-tabs-navigate",
     "allow-tabs-list",
     "allow-layout-module",
-    "allow-layout-select"
+    "allow-layout-select",
+    "allow-daemon-status",
+    "allow-daemon-restart"
   ]
 }

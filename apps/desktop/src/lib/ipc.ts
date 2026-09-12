@@ -34,7 +34,7 @@ export function hasShell(): boolean {
  * The one call. Every exported command below goes through it, so a change to how the app talks to
  * Rust — a timeout, a log line, a refusal vocabulary — has exactly one place to happen.
  */
-async function call<T>(command: string, args: Args = {}): Promise<T> {
+export async function call<T>(command: string, args: Args = {}): Promise<T> {
   if (!hasShell()) {
     throw new Error(`no shell: ${command} needs the Tauri window (this is a plain browser)`);
   }

@@ -21,6 +21,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import ModuleBar from "@/components/ModuleBar";
 import { hasShell } from "@/lib/ipc";
 import { MODULE_ENTRIES, moduleFor } from "@/modules/registry";
+import { startDaemon } from "@/stores/daemon";
 import { startShell, useShell } from "@/stores/shell";
 import { startTabs } from "@/stores/tabs";
 
@@ -33,6 +34,7 @@ export default function App() {
   useEffect(() => {
     void startShell();
     void startTabs();
+    void startDaemon();
   }, []);
 
   const active = moduleFor(module);
