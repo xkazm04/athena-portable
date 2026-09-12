@@ -1,0 +1,501 @@
+/*
+ * The panel's stylesheet. One file, because the panel is one 380 px column (README §3.5).
+ *
+ * Two rules run through everything below. Nothing is wider than the column, so every long string —
+ * a url, a tool name, a page's output — wraps or is clipped rather than pushing the layout sideways.
+ * And the three tool classes have three distinct colours, because `GATED` is a promise about what
+ * cannot happen without the user and a promise that looks like everything else is not read.
+ */
+
+:root {
+  --ink: #1b1a19;
+  --ink-soft: #6a6560;
+  --paper: #fbfaf8;
+  --line: #e3dfd8;
+  --accent: #5b4bd6;
+  --gated: #b4531a;
+  --read: #2a6f5a;
+  --auto: #3a5ba0;
+  --danger: #a32020;
+  --radius: 8px;
+  --gap: 10px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #eceae6;
+    --ink-soft: #a09a92;
+    --paper: #16151a;
+    --line: #2f2d36;
+    --accent: #a79bff;
+    --gated: #ec9a5f;
+    --read: #6cc4a4;
+    --auto: #8fb0f0;
+    --danger: #ef7b7b;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 13px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* --- the shell of the panel ---------------------------------------------------------------- */
+
+.panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  max-width: 380px;
+}
+
+.module-bar {
+  display: flex;
+  gap: 2px;
+  padding: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.module-tab {
+  flex: 1;
+  padding: 6px 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.module-tab.is-active {
+  background: var(--line);
+}
+
+.panel-body {
+  overflow-y: auto;
+  padding: var(--gap);
+}
+
+.module {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* Everything in a 380 px column wraps rather than widening it. */
+.module,
+.module * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.empty,
+.note,
+.setting-help {
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.error {
+  margin: 0;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+/* --- the browser module -------------------------------------------------------------------- */
+
+.address-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.address {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+}
+
+.go,
+.send,
+.save,
+.probe,
+.cancel {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.go[disabled],
+.send[disabled],
+.save[disabled],
+.probe[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.tabs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tab {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.tab.is-active {
+  border-color: var(--accent);
+}
+
+.tab-face {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tab-title {
+  font-weight: 600;
+}
+
+.tab-origin,
+.badge,
+.tier,
+.tool-tier,
+.summary {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.badge-quiet {
+  font-style: italic;
+}
+
+.tab-close {
+  border: 0;
+  background: transparent;
+  padding: 0 10px;
+  cursor: pointer;
+  color: var(--ink-soft);
+}
+
+/* --- the decision card --------------------------------------------------------------------- */
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.card {
+  border: 1px solid var(--gated);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: color-mix(in srgb, var(--gated) 8%, transparent);
+  display: grid;
+  gap: 8px;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card-action {
+  font-weight: 600;
+}
+
+.card-origin {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.card-why {
+  margin: 0;
+}
+
+.card-params {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.card-params dt {
+  color: var(--ink-soft);
+}
+
+.card-params dd {
+  margin: 0;
+}
+
+.card-answers {
+  display: flex;
+  gap: 6px;
+}
+
+.answer {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  cursor: pointer;
+}
+
+.answer-approve {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* --- the transcript ------------------------------------------------------------------------ */
+
+.transcript {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.entry-text {
+  margin: 0;
+}
+
+.entry-user .entry-text {
+  font-weight: 600;
+}
+
+.entry-tool .entry-text {
+  font-family: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.entry-failed .entry-text {
+  color: var(--danger);
+}
+
+.entry-working {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.composer {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.composer-field {
+  flex: 1;
+  min-height: 54px;
+  resize: vertical;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+}
+
+/* --- the tool list ------------------------------------------------------------------------- */
+
+.tool-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tool {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+}
+
+.tool-name {
+  font-family: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  font-size: 12px;
+}
+
+.tool-why,
+.tool-tier {
+  grid-column: 2;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.tool-class {
+  align-self: start;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+
+.tool-gated {
+  background: var(--gated);
+}
+
+.tool-read {
+  background: var(--read);
+}
+
+.tool-auto {
+  background: var(--auto);
+}
+
+/* --- setup and settings -------------------------------------------------------------------- */
+
+.checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+}
+
+.check-detail,
+.check-fix {
+  grid-column: 2;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.check-fix {
+  color: var(--gated);
+}
+
+.check-healthy .check-mark {
+  color: var(--read);
+}
+
+.check-broken .check-mark {
+  color: var(--danger);
+}
+
+.check-unknown .check-mark {
+  color: var(--ink-soft);
+}
+
+.setting {
+  display: grid;
+  gap: 2px;
+}
+
+.setting-label {
+  font-weight: 600;
+}
+
+.field {
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+}
+
+.setup-foot,
+.settings-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.daemon-address,
+.saved-at {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.problems {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--danger);
+}
+
+/* --- the preview harness ------------------------------------------------------------------- */
+
+.is-preview {
+  padding: 16px;
+}
+
+.preview-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.preview-fixtures {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.preview-fixtures a.is-active {
+  font-weight: 700;
+}
+
+/* The column the module actually lives in. A module that only looks right wider than this is
+   a module that does not fit. */
+.preview-column {
+  width: 380px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--gap);
+}
+
+.preview-entry ul {
+  margin: 4px 0 0;
+}

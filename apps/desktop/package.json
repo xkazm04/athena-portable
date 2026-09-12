@@ -1,0 +1,26 @@
+{
+  "name": "@athena/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Athena's desktop shell: the Tauri window and the 380 px panel (README sections 3.1 and 3.5).",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "node scripts/build.mjs && node --test \"test/*.test.js\"",
+    "preview": "node scripts/build.mjs && node scripts/serve-preview.mjs"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "@types/node": "^24.6.2",
+    "eslint": "^9.37.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "jsdom": "^27.0.0",
+    "@types/jsdom": "^21.1.7"
+  }
+}
