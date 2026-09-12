@@ -414,6 +414,19 @@ class Catalog:
             "- READ: answers synchronously, capped, and the answer returns as a system episode.",
             "- AUTO: fires immediately once its validator passes.",
             "",
+            "### How to address one",
+            "",
+            "You have no tool-call API here. You act by writing an `OP:` line on its own line in",
+            "your reply, and that is the only way anything runs:",
+            "",
+            '    OP: {"op":"propose_action","action":"<name from the list above>",'
+            '"params":{...},"rationale":"<why, in one clause>"}',
+            "",
+            "The line must be one line of compact JSON. Everything else you write is what the user",
+            "reads. Write the op even when the name is GATED: that is what files the card. Do not",
+            "look for these names anywhere but this list, and do not ask the user to run them for",
+            "you — a name listed here is a name you address with an `OP:` line.",
+            "",
         ]
         for cls in (ToolClass.GATED, ToolClass.READ, ToolClass.AUTO):
             group = [entry for entry in entries if entry.cls is cls]
