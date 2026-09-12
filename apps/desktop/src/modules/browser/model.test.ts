@@ -13,7 +13,7 @@ import type { TabTools } from "@/stores/tools";
 
 import type { OriginRow } from "@/lib/store";
 
-import { appOf, selectBrowser, tabOn, type BrowserActions, type OriginsSnapshot } from "./model";
+import { appOf, monogramOf, selectBrowser, tabOn, type BrowserActions, type OriginsSnapshot } from "./model";
 
 const INERT: BrowserActions = {
   open: () => {},
@@ -183,4 +183,28 @@ test("the tab on an origin is the focused one when several are, by origin and no
   expect(tabOn("https://a.test", tabs)?.id).toBe(2);
   expect(tabOn("https://c.test", tabs)).toBeNull();
   expect(tabOn("https://b.test", [tab(3, "https://b.test/x")])?.id).toBe(3);
+});
+
+test("the tile letter is the host's first, past www, and a host with none gets a mark", () => {
+  expect(monogramOf("ledgerbox.local")).toBe("L");
+  expect(monogramOf("www.example.test")).toBe("E");
+  expect(monogramOf("127.0.0.1:3004")).toBe("1");
+  expect(monogramOf("")).toBe("?");
+});
+
+test("the tools cell is filled only by a page that answered with tools", () => {
+  const row: OriginRow = {
+    origin: "https://tab-1.test",
+    enabled: true,
+    overrides: {},
+    first_seen: "",
+    last_seen: "",
+  };
+  const open = [tab(1, "https://tab-1.test/x", "", true)];
+  expect(appOf(row, open, UNASKED).tools).toBeNull();
+  expect(appOf(row, open, { 1: registered(1, ["a", "b"], "webmcp-native") }).tools).toEqual({
+    count: 2,
+    transport: "webmcp-native",
+  });
+  expect(appOf(row, [], UNASKED).monogram).toBe("T");
 });

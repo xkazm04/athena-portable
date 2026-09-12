@@ -5,14 +5,13 @@
  * this module is selected and a tab is open, the chrome webview is clipped to the module bar plus
  * `--strip-height` and a page webview fills everything under it, so the only part of this view
  * the user sees is the tab strip. With no tab open there is no page webview, the chrome webview
- * gets the whole window, and the rest of this view — the doorway and the ledger of apps — is
- * what fills it. The preview harness always shows all of it.
+ * gets the whole window, and the ledger of apps is what fills it. The preview harness always
+ * shows all of it.
  *
- * The doorway is the one bold thing here: a drawing of the window this module is, and the
- * address at the size of a title, because opening an app is the whole of what a person does on
- * this surface when nothing is open. The ledger under it is the quieter, longer-lived part —
- * every origin Athena has been told about, where each stands right now, and a field to tell her
- * about another.
+ * The ledger is the page. There is no illustration: the way in is one field at the size of a
+ * title at the top of the ledger, because registering an app is the whole of what a person does
+ * on this surface when nothing is open, and under it every origin Athena has been told about,
+ * one row each, with where it stands right now. The rows are the quieter, longer-lived part.
  */
 import { useState } from "react";
 
@@ -21,9 +20,7 @@ import Button from "@/components/Button";
 import PageHeader from "@/components/PageHeader";
 import PageShell from "@/components/PageShell";
 import SectionCard from "@/components/SectionCard";
-import type { Tone } from "@/components/StatusDot";
-import Table from "@/components/Table";
-import type { Column } from "@/components/Table";
+import StatusDot, { type Tone } from "@/components/StatusDot";
 import { normaliseUrl } from "@/lib/url";
 
 import "./browser.css";
@@ -83,113 +80,30 @@ export default function BrowserView({ model }: { model: BrowserModel }) {
               <p className="well">{problem}</p>
               <p className="typo-caption">The shell answers once the window has finished starting.</p>
             </SectionCard>
-          ) : focused ? (
+          ) : null}
+
+          <Ledger
+            apps={apps}
+            loaded={appsLoaded}
+            problem={appsProblem}
+            focusedTab={focused?.id ?? null}
+            onOpen={actions.openApp}
+            onEnable={actions.setEnabled}
+            onForget={actions.forget}
+            onRegister={actions.register}
+          />
+
+          {focused ? (
             <div className="page-stand-in">
               <p className="typo-title">The page draws here</p>
               <p className="typo-caption">{focused.url}</p>
               {/* Tier 1, in the one place there is room to spell it out (README section 3.4). */}
               <p className="typo-caption">{describe(tools)}</p>
             </div>
-          ) : (
-            <Doorway onOpen={(url) => actions.open(url)} />
-          )}
-
-          <Ledger
-            apps={apps}
-            loaded={appsLoaded}
-            problem={appsProblem}
-            onOpen={actions.openApp}
-            onEnable={actions.setEnabled}
-            onForget={actions.forget}
-            onRegister={actions.register}
-          />
+          ) : null}
         </PageShell>
       </div>
     </div>
-  );
-}
-
-// -- the doorway ---------------------------------------------------------------------------------
-
-/**
- * What a person sees when nothing is open: the window this module is, drawn, and the address at
- * the size of a title. The drawing is the one illustration in the app, and it is of the thing
- * itself — a bar, two tabs, one lit page — rather than a metaphor for it.
- */
-function Doorway({ onOpen }: { onOpen: (url: string) => void }) {
-  const [typed, setTyped] = useState("");
-  const open = () => {
-    const url = normaliseUrl(typed);
-    if (!url) return;
-    setTyped("");
-    onOpen(url);
-  };
-  return (
-    <section className="doorway" aria-labelledby="doorway-title">
-      <WindowArt />
-      <div className="doorway__body">
-        <h2 id="doorway-title" className="doorway__title">
-          Open an app
-        </h2>
-        <div className="doorway__row">
-          <input
-            className="input doorway__field focus-ring"
-            value={typed}
-            placeholder="invoicing.example.test"
-            aria-label="Address of the app to open"
-            spellCheck={false}
-            autoFocus
-            onChange={(e) => setTyped(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") open();
-            }}
-          />
-          <Button variant="primary" disabledReason={typed.trim() ? undefined : "Type an address first."} onClick={open}>
-            Open
-          </Button>
-        </div>
-        <p className="typo-caption">
-          Any site works. A page that registers tools shows them in the strip; one that registers
-          nothing is operated by the generic hands. Nothing runs there until you say so.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-/** A window with two tabs and one lit page, in the current text colour and the primary hue. */
-function WindowArt() {
-  return (
-    <svg
-      className="doorway__art"
-      viewBox="0 0 320 220"
-      role="img"
-      aria-label="A window with two tabs; the open page is lit"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect className="paper" x="12" y="14" width="296" height="192" rx="12" />
-      <path d="M12 46h296" />
-      <rect x="26" y="24" width="72" height="16" rx="5" />
-      <rect className="lit" x="106" y="24" width="72" height="16" rx="5" />
-      <circle cx="288" cy="32" r="3" fill="currentColor" />
-      <circle cx="276" cy="32" r="3" fill="currentColor" />
-      <g className="lit">
-        <rect x="32" y="66" width="120" height="10" rx="3" />
-        <rect x="32" y="88" width="256" height="1" />
-        <rect x="32" y="104" width="92" height="8" rx="3" />
-        <rect x="140" y="104" width="148" height="8" rx="3" />
-        <rect x="32" y="122" width="72" height="8" rx="3" />
-        <rect x="140" y="122" width="108" height="8" rx="3" />
-        <rect x="32" y="140" width="112" height="8" rx="3" />
-        <rect x="140" y="140" width="80" height="8" rx="3" />
-        <rect x="200" y="164" width="88" height="22" rx="6" />
-      </g>
-      <path d="M212 175h64" className="lit" strokeDasharray="3 4" />
-    </svg>
   );
 }
 
@@ -204,7 +118,7 @@ const STANDING_TONE: Record<AppStanding, Tone> = {
 };
 
 const STANDING_WORD: Record<AppStanding, string> = {
-  closed: "closed",
+  closed: "not opened",
   reading: "reading",
   ready: "ready",
   hands: "hands",
@@ -212,14 +126,15 @@ const STANDING_WORD: Record<AppStanding, string> = {
 };
 
 /**
- * Every origin Athena has been told about, and where each stands now. A row is a fact about the
- * tabs and the relay at this render, never a stored word; the standing beside the host is the
- * same one the strip's pill shows when that page is on screen.
+ * Every origin Athena has been told about, and where each stands now, with the way in at the
+ * top. A row is a fact about the tabs and the relay at this render, never a stored word; the
+ * standing beside the host is the same one the strip's pill shows when that page is on screen.
  */
 function Ledger({
   apps,
   loaded,
   problem,
+  focusedTab,
   onOpen,
   onEnable,
   onForget,
@@ -228,100 +143,170 @@ function Ledger({
   apps: readonly RegisteredApp[];
   loaded: boolean;
   problem: string | null;
+  focusedTab: number | null;
   onOpen: (origin: string) => void;
   onEnable: (origin: string, enabled: boolean) => void;
   onForget: (origin: string) => void;
   onRegister: (url: string) => void;
 }) {
-  const columns: readonly Column<RegisteredApp>[] = [
-    {
-      key: "app",
-      head: "App",
-      render: (app) => (
-        <span className="app-cell">
-          <button type="button" className="tab-chip__label focus-ring typo-title" onClick={() => onOpen(app.origin)}>
-            {app.host}
-          </button>
-          <span className="typo-caption app-cell__origin">{app.origin}</span>
-        </span>
-      ),
-    },
-    {
-      key: "standing",
-      head: "Standing",
-      render: (app) => (
-        <span className="app-cell">
-          <Badge tone={STANDING_TONE[app.standing]}>{STANDING_WORD[app.standing]}</Badge>
-          <span className="typo-caption">{app.summary}</span>
-        </span>
-      ),
-    },
-    {
-      key: "overrides",
-      head: "Pinned",
-      render: (app) => (
-        <span className="typo-data">{app.overrides ? `${app.overrides} tool${app.overrides === 1 ? "" : "s"}` : "—"}</span>
-      ),
-    },
-    {
-      key: "seen",
-      head: "Last seen",
-      render: (app) => <span className="typo-caption">{whenSeen(app.lastSeen)}</span>,
-    },
-    {
-      key: "actions",
-      head: "",
-      align: "right",
-      render: (app) => (
-        <span className="app-actions">
-          <Button size="sm" variant="secondary" onClick={() => onOpen(app.origin)}>
-            {app.tabId === null ? "Open" : "Show"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => onEnable(app.origin, !app.enabled)}>
-            {app.enabled ? "Switch off" : "Switch on"}
-          </Button>
-          <Button size="sm" variant="ghost" aria-label={`Forget ${app.host}`} onClick={() => onForget(app.origin)}>
-            Forget
-          </Button>
-        </span>
-      ),
-    },
-  ];
-
+  const none = loaded && !problem && apps.length === 0;
   return (
-    <SectionCard
-      title="Registered apps"
-      note={problem ? "could not be read" : loaded ? `${apps.length} registered` : "reading the table"}
-      padded={false}
-    >
+    <section className="ledger" aria-labelledby="ledger-title">
+      <header className="ledger__head">
+        <h2 id="ledger-title" className="typo-heading">
+          Registered apps
+        </h2>
+        <Badge tone={problem ? "error" : loaded ? (apps.length ? "success" : "neutral") : "pending"}>
+          {problem ? "could not be read" : loaded ? `${apps.length} registered` : "reading the table"}
+        </Badge>
+      </header>
+
+      <div className="ledger__lead">
+        <RegisterField lead={none} onRegister={onRegister} />
+      </div>
+
       {problem ? (
-        <div style={{ padding: "var(--density-pad-sm)" }}>
+        <div className="ledger__foot">
+          {/* Verbatim, never paraphrased: a reason we cannot explain is still a reason. */}
           <p className="well">{problem}</p>
           <p className="typo-caption">
             The origins table did not answer. Apps still open; their standing is not shown.
           </p>
         </div>
       ) : (
-        <Table
-          columns={columns}
-          rows={apps}
-          rowKey={(app) => app.origin}
-          empty={
-            loaded
-              ? "No app is registered yet. Register one below, or open a page and switch it on."
-              : "The origins table has not answered yet."
-          }
-        />
+        <ol className="ledger__rows">
+          {apps.map((app) => (
+            <AppRow
+              key={app.origin}
+              app={app}
+              onScreen={app.tabId !== null && app.tabId === focusedTab}
+              onOpen={onOpen}
+              onEnable={onEnable}
+              onForget={onForget}
+            />
+          ))}
+        </ol>
       )}
-      <div style={{ padding: "var(--density-pad-sm)", borderTop: "1px solid var(--border-subtle)" }}>
-        <RegisterField onRegister={onRegister} />
-      </div>
-    </SectionCard>
+
+      {none ? (
+        <p className="ledger__foot typo-caption">
+          No app is registered yet. Register one above, or open a page and switch it on.
+        </p>
+      ) : !loaded && !problem ? (
+        <p className="ledger__foot typo-caption">The origins table has not answered yet.</p>
+      ) : null}
+    </section>
   );
 }
 
-/** The way to tell Athena about an app before it is open: the row is written and a tab opens. */
-function RegisterField({ onRegister }: { onRegister: (url: string) => void }) {
+/**
+ * One app. The tile carries the host's first letter and lights in the primary hue when the page
+ * has answered with tools; the acts stay quiet until the row is hovered or holds focus, and
+ * "Forget" asks once more before it deletes, because a forgotten origin is a first sight again.
+ */
+function AppRow({
+  app,
+  onScreen,
+  onOpen,
+  onEnable,
+  onForget,
+}: {
+  app: RegisteredApp;
+  onScreen: boolean;
+  onOpen: (origin: string) => void;
+  onEnable: (origin: string, enabled: boolean) => void;
+  onForget: (origin: string) => void;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  const classes = ["app-row", `app-row--${app.standing}`];
+  if (onScreen) classes.push("app-row--focused");
+  return (
+    <li className={classes.join(" ")}>
+      <div className="app-row__id">
+        <span className="app-row__tile" aria-hidden="true">
+          {app.monogram}
+        </span>
+        <span className="app-row__name">
+          <button
+            type="button"
+            className="app-row__host focus-ring typo-title"
+            title={app.tabId === null ? `Open ${app.host}` : `Show ${app.host}`}
+            onClick={() => onOpen(app.origin)}
+          >
+            {app.host}
+          </button>
+          <span className="app-row__origin typo-caption" title={app.origin}>
+            {app.origin}
+          </span>
+        </span>
+      </div>
+
+      <div className="app-row__standing">
+        <span className="app-row__standing-word typo-data">
+          <StatusDot tone={STANDING_TONE[app.standing]} />
+          {STANDING_WORD[app.standing]}
+        </span>
+        {app.summary !== STANDING_WORD[app.standing] ? (
+          <span className="typo-caption">{app.summary}</span>
+        ) : null}
+      </div>
+
+      <div className="app-row__cell">
+        <span className="typo-data">
+          {app.tools ? `${app.tools.count} tool${app.tools.count === 1 ? "" : "s"}` : "—"}
+        </span>
+        <span className="typo-caption">
+          {app.tools
+            ? (app.tools.transport ?? "no transport")
+            : app.overrides
+              ? `${app.overrides} pinned`
+              : ""}
+        </span>
+      </div>
+
+      <div className="app-row__cell">
+        <span className="typo-caption">{whenSeen(app.lastSeen)}</span>
+      </div>
+
+      <div className="app-row__acts" data-open={confirming ? "true" : undefined}>
+        {confirming ? (
+          <>
+            <Button size="sm" variant="primary" onClick={() => onForget(app.origin)}>
+              Yes, forget
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
+              Keep
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button size="sm" variant="ghost" onClick={() => onOpen(app.origin)}>
+              {app.tabId === null ? "Open" : "Show"}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => onEnable(app.origin, !app.enabled)}>
+              {app.enabled ? "Switch off" : "Switch on"}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              aria-label={`Forget ${app.host}`}
+              onClick={() => setConfirming(true)}
+            >
+              Forget
+            </Button>
+          </>
+        )}
+      </div>
+    </li>
+  );
+}
+
+/**
+ * The way in. Registering writes the origin row *and* opens a tab, in that order, so Athena
+ * reads a page she is already allowed to act on. `lead` is the empty ledger: the field is then
+ * the largest thing on the surface, because it is the only act there is.
+ */
+function RegisterField({ lead, onRegister }: { lead: boolean; onRegister: (url: string) => void }) {
   const [typed, setTyped] = useState("");
   const register = () => {
     const url = normaliseUrl(typed);
@@ -330,22 +315,32 @@ function RegisterField({ onRegister }: { onRegister: (url: string) => void }) {
     onRegister(url);
   };
   return (
-    <div className="register">
-      <input
-        className="input register__field focus-ring typo-body"
-        value={typed}
-        placeholder="Register an app by its address"
-        aria-label="Address of the app to register"
-        spellCheck={false}
-        onChange={(e) => setTyped(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") register();
-        }}
-      />
-      <Button variant="secondary" size="sm" disabledReason={typed.trim() ? undefined : "Type an address first."} onClick={register}>
-        Register and open
-      </Button>
-      <span className="typo-caption">Registering switches the origin on and opens it, so Athena can read what it offers.</span>
+    <div className={lead ? "register register--lead" : "register"}>
+      <div className="register__row">
+        <input
+          className="input register__field focus-ring"
+          value={typed}
+          placeholder="invoicing.example.test"
+          aria-label="Address of the app to register"
+          spellCheck={false}
+          autoFocus={lead}
+          onChange={(e) => setTyped(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") register();
+          }}
+        />
+        <Button
+          variant="primary"
+          disabledReason={typed.trim() ? undefined : "Type an address first."}
+          onClick={register}
+        >
+          Register and open
+        </Button>
+      </div>
+      <p className="typo-caption">
+        Any site. Registering switches the origin on and opens it, so Athena can read what it
+        offers; nothing runs there until you say so.
+      </p>
     </div>
   );
 }

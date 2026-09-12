@@ -1,101 +1,227 @@
-/* The Browser module's own styles. Tokens only; the frame, the table and the badges are the
- * catalog's. What is here is the one thing no other module has: the doorway — the hero a person
- * sees when nothing is open — and the ledger of apps under it. */
+/* The Browser module's own styles. Tokens only; the frame and the badges are the catalog's. What
+ * is here is the ledger — every app Athena has been told about, one row each — and the way in at
+ * the top of it. There is no illustration: the ledger is the page. */
 
-/* -- The doorway: an illustration and one large field ------------------------------------------
+/* -- The way in: one field at title size, first in the ledger ---------------------------------
  *
- * Two columns where there is room: the drawing on the left keeps its measure, the field and the
- * sentence on the right take the rest. The drawing is `currentColor` in the muted tier, with the
- * lit page in the primary hue, so both themes paint it from the same tokens. */
-.doorway {
-  display: grid;
-  gap: var(--density-gap);
-  grid-template-columns: minmax(0, 1fr);
-  align-items: center;
-  padding: var(--density-pad) 0;
-}
-
-@media (min-width: 60rem) {
-  .doorway {
-    grid-template-columns: minmax(14rem, 22rem) minmax(0, 36rem);
-    column-gap: calc(var(--density-gap) * 2);
-  }
-}
-
-.doorway__art {
-  width: 100%;
-  max-width: 22rem;
-  height: auto;
-  color: var(--muted-foreground);
-}
-
-.doorway__art .lit {
-  color: var(--primary);
-}
-
-.doorway__art .paper {
-  fill: var(--card-bg);
-}
-
-.doorway__body {
+ * Registering an app is the one act this surface exists for when nothing is open, so the field
+ * is the largest thing on it. With apps registered it stays at the top and steps down a size,
+ * because then the rows are what a person came for. */
+.register {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 10px;
-}
-
-.doorway__title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.015em;
-}
-
-/* The address, at the size of a title: it is the one act this surface exists for. */
-.doorway__field {
-  width: 100%;
-  padding: 10px 14px;
-  font-size: 1.25rem;
-  line-height: 1.3;
-  border-radius: var(--radius-card);
-}
-
-.doorway__row {
-  display: flex;
-  align-items: stretch;
   gap: 8px;
 }
 
-.doorway__row .btn {
-  flex: none;
-}
-
-/* -- The ledger of apps ------------------------------------------------------------------------ */
-.app-cell {
+.register__row {
   display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.app-cell__origin {
-  overflow-wrap: anywhere;
-}
-
-.app-actions {
-  display: inline-flex;
-  gap: 4px;
-  white-space: nowrap;
-}
-
-.register {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: stretch;
   gap: 8px;
 }
 
 .register__field {
   flex: 1 1 18rem;
   min-width: 0;
+  padding: 9px 14px;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  border-radius: var(--radius-card);
+}
+
+.register--lead .register__field {
+  padding: 12px 16px;
+  font-size: 1.375rem;
+}
+
+.register__row .btn {
+  flex: none;
+}
+
+/* -- The ledger ----------------------------------------------------------------------------- */
+.ledger {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-elevation-1);
+}
+
+.ledger__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: var(--density-pad-sm) var(--density-pad-sm) 0;
+}
+
+.ledger__head .badge {
+  margin-left: auto;
+}
+
+.ledger__lead {
+  padding: 10px var(--density-pad-sm) var(--density-pad-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ledger__rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ledger__foot {
+  padding: 10px var(--density-pad-sm) var(--density-pad-sm);
+}
+
+/* One row: the tile and the name, the standing, what the page answered, when it was last seen,
+ * and the acts. A grid rather than a table because the first cell is two lines beside a tile,
+ * and a table cell cannot say which of its lines is the name. */
+.app-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px 16px;
+  padding: 10px var(--density-pad-sm) 10px calc(var(--density-pad-sm) + 3px);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--duration-fast);
+}
+
+.app-row:last-child {
+  border-bottom: none;
+}
+
+.app-row:hover,
+.app-row:focus-within {
+  background: var(--hover-wash);
+}
+
+/* The page on screen: a rule at the edge, the way the strip lights its chip. */
+.app-row--focused::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--primary);
+}
+
+@media (min-width: 60rem) {
+  .app-row {
+    grid-template-columns: minmax(14rem, 1.6fr) minmax(10rem, 1.4fr) minmax(7rem, 0.8fr) 6.5rem auto;
+    align-items: center;
+  }
+}
+
+.app-row__id {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-row__tile {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-default);
+  border-radius: 9px;
+  background: var(--recessed);
+  color: var(--muted-foreground);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.app-row--ready .app-row__tile {
+  color: var(--primary);
+  border-color: var(--border-emphasis);
+}
+
+.app-row__name {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.app-row__host {
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-row__host:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.app-row__origin {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-row__standing {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.app-row__standing-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app-row__cell {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* The acts are quiet until the row is hovered, and never hidden from a keyboard: focus-within
+ * shows them at the same time it shows the wash. */
+.app-row__acts {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+
+.app-row:hover .app-row__acts,
+.app-row:focus-within .app-row__acts,
+.app-row__acts[data-open="true"] {
+  opacity: 1;
+}
+
+@media (max-width: 59.99rem) {
+  .app-row__acts {
+    justify-content: flex-start;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-row__acts,
+  .app-row {
+    transition: none;
+  }
 }

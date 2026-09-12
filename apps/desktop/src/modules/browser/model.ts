@@ -67,6 +67,10 @@ export interface RegisteredApp {
   summary: string;
   /** The open tab on this origin, if there is one. */
   tabId: number | null;
+  /** The first letter of the host, for the tile beside the name. "?" for a host with none. */
+  monogram: string;
+  /** What the open page answered, or null while nothing has: a count and the transport. */
+  tools: { count: number; transport: string | null } | null;
 }
 
 export interface BrowserActions {
@@ -188,6 +192,8 @@ export function appOf(
     lastSeen: row.last_seen ?? "",
     overrides: Object.keys(row.overrides ?? {}).length,
     tabId: tab?.id ?? null,
+    monogram: monogramOf(hostOf(row.origin)),
+    tools: null as { count: number; transport: string | null } | null,
   };
   if (!row.enabled) {
     return { ...base, standing: "disabled", summary: "switched off; nothing runs here" };
@@ -202,7 +208,15 @@ export function appOf(
     ...base,
     standing: "ready",
     summary: `${tools.count} tool${tools.count === 1 ? "" : "s"} over ${tools.transport ?? "no transport"}`,
+    tools: { count: tools.count, transport: tools.transport },
   };
+}
+
+/** The letter on the tile: the first of the host past any `www.`, upper-cased; "?" for none. */
+export function monogramOf(host: string): string {
+  const bare = host.replace(/^www\./, "");
+  const letter = bare.match(/[a-z0-9]/i)?.[0];
+  return letter ? letter.toUpperCase() : "?";
 }
 
 export function originOf(url: string): string {
