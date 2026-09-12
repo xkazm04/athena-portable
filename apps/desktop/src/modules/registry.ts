@@ -15,11 +15,12 @@
 import type { ModuleEntry } from "./types";
 
 import { entry as browser } from "./browser";
+import { entry as panel } from "./panel";
 import { entry as settings } from "./settings";
 import { entry as setup } from "./setup";
 
 /** In bar order: what the window does, then what it is configured to be. */
-export const MODULE_ENTRIES: readonly ModuleEntry[] = [browser, settings, setup];
+export const MODULE_ENTRIES: readonly ModuleEntry[] = [browser, panel, settings, setup];
 
 export const MODULE_REGISTRY: Readonly<Record<string, ModuleEntry>> = Object.fromEntries(
   MODULE_ENTRIES.map((m) => [m.id, m]),

@@ -1016,6 +1016,88 @@ select:focus-visible {
   overflow-y: auto;
 }
 
+/* -- The Panel module: the turn, its cards and what the page offers ---------------------------
+ *
+ * Three stacked bands and one rule running through them: the cards are above the transcript, and
+ * the composer is below both and always present. A card is the only thing on this surface waiting
+ * on a person, and a card that scrolls away with the conversation is a card answered late.
+ *
+ * Nothing here sets a width or a gutter — `PageShell` owns those — and every colour is a token.
+ */
+.panel-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+}
+
+.panel-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+}
+
+.panel-card__answers {
+  display: flex;
+  gap: var(--space-2, 8px);
+}
+
+.transcript {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+  /* The turn is the thing being watched, so it gets the height and scrolls on its own rather
+   * than pushing the composer off the bottom of a long conversation. */
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.transcript__row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2, 8px);
+}
+
+.transcript__row p {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.transcript__row--user p {
+  font-weight: 600;
+}
+
+.transcript__row--tool p {
+  padding: var(--space-2, 8px);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--surface-raised, rgb(0 0 0 / 6%));
+}
+
+.transcript__row--working p {
+  color: var(--foreground-muted);
+  font-style: italic;
+}
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2, 8px);
+}
+
+.composer__field {
+  flex: 1 1 auto;
+  min-width: 0;
+  resize: vertical;
+  padding: var(--space-2, 8px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--background);
+  color: var(--foreground);
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition-duration: 1ms !important;
