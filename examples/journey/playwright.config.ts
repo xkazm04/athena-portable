@@ -21,5 +21,8 @@ export default defineConfig({
     headless: true,
     viewport: { width: 1440, height: 900 },
     actionTimeout: 30_000,
+    // JOURNEY_VIDEO=1 records the run as one .webm per act page under test-results/; off by
+    // default because the gate runs this suite and a video is a demo asset, not evidence.
+    video: process.env.JOURNEY_VIDEO ? { mode: "on", size: { width: 1440, height: 900 } } : "off",
   },
 });
