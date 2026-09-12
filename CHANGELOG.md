@@ -10,7 +10,12 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `feat(examples): tidycrm, the contact list of act 3` — the Blocks at `/`, the AG-UI proxy removed; `read_conflicts`, `preview_company`, `resolve_company` through the revisions log; the registry contacts as anchors; a `clients` segment and a titled markdown export.
 - `feat(examples): the journey, four acts run end to end` — `@athena/journey` boots the three apps in scratch directories, drives them through `inject.js` over the `athena-webmcp` protocol, classifies with `gate.js`, approves and declines through a surface fake, models mail and notes connectors behind egress allow-lists, and prints the ledger and the facts it cites.
 
-## P5 — MVP checkpoint (in progress)
+## P5 — MVP checkpoint (done)
+
+- `fix(core): the capability block teaches the OP grammar it always assumed` — found by a live turn against a real CLI: the model read the block, hunted for a native tool API, and asked the user to run the tool instead.
+- `feat(desktop): the panel module, an AG-UI client of the daemon` — `lib/api.ts` with `fetch` as an argument, `stores/run.ts` as the only run loop with its host-tool and approval continuations bounded at eight, the Panel module with the card's own parameters and the tool list; 14 headless tests against a fake daemon and a fake page.
+- `fix(core): the approvals inbox is ordered by insertion, not by a random id` — five cards in one millisecond came back shuffled.
+- `docs: the phase-1 status, written at the MVP checkpoint` — what runs, what only a hand-run found, how to launch it, and what P6 inherits.
 
 ## P4 — The shell skeleton
 
