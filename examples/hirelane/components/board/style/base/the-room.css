@@ -119,7 +119,7 @@
 }
 
 /* The gated region inverts, so its scrollbar has to invert with it. */
-.bd-gate-panel :where(*) {
+.bd-zone[data-class="GATED"] :where(*) {
   scrollbar-color: var(--bd-gate-edge) transparent;
 }
 
@@ -173,10 +173,10 @@
  *     distinction blurred. Those keep the ink ladder; the class keeps --bd-auto and --bd-gate.
  *     §4.2 is not broken by accent existing - it is neither locked hue - but it IS broken the
  *     moment accent appears inside the region those two are doing their work in.
- *   - THE GATED PANEL, the one light surface in the room. Pastel sky on #fbf4f2 measures 1.9:1.
- *     `level2/l2-dossier-3.css` overrides `.bd-gate-panel .bd-block-label` to --bd-gate-ink-2, and
- *     that override wins because `style/index.css` imports this file second and the dossier
- *     thirteenth. Do not reorder those imports.
+ *   - THE GATED ZONE of the action bar, the one light surface in the room. Pastel sky on #fbf4f2
+ *     measures 1.9:1. `level2/l2-dossier-3.css` overrides the `.bd-block-label` inside it to
+ *     --bd-gate-ink-2, and that override wins because `style/index.css` imports this file second
+ *     and the dossier thirteenth. Do not reorder those imports.
  *
  * Scoped by region rather than applied to `.bd-block-label` wholesale, because the two exclusions
  * above both use that class and a blanket rule would have to be undone twice.

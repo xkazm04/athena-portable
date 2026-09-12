@@ -34,10 +34,18 @@
   container-name: bd-dossier;
 }
 
+/*
+ * ONE ROW, not an identity row plus a figure band.
+ *
+ * The head was 190px of an 828px modal - 22.9% - to carry a name, a sub-line and four short
+ * figures, because the figures were a separately bordered box UNDER the name rather than beside
+ * it. Meanwhile the reading column below was showing 406px of its own 1401px. Folded into the
+ * identity row the same content is ~96px, and the 94px goes to the evidence, which is what this
+ * direction exists to show. `design/ui-pass-brief.md` §3 has the full measurement.
+ */
 .bd-dossier-head {
   display: grid;
-  gap: var(--bd-s3);
-  padding: var(--bd-s4) var(--bd-s5);
+  padding: var(--bd-s3) var(--bd-s5);
   border-block-end: var(--bd-rule-1) solid var(--bd-rule);
   flex: none;
 }
@@ -45,7 +53,12 @@
 .bd-dossier-top {
   display: flex;
   align-items: center;
-  gap: var(--bd-s3);
+  gap: var(--bd-s4);
+}
+
+/* The name, the sub-line and the remark, as one block that may not push the figures off the row. */
+.bd-dossier-id {
+  min-inline-size: 0;
 }
 
 .bd-dossier-name {
@@ -77,15 +90,20 @@
 }
 
 /* The verdict band: the numbers that decide, on one line. */
+/*
+ * The figures, beside the name rather than in a box beneath it.
+ *
+ * No border and no ground: inside the identity row they are already grouped by position, and a
+ * second frame around four numbers on a pane that is itself a frame was depth spent on nothing.
+ * `margin-inline-start: auto` is what pushes them to the far end of the row, ahead of the close
+ * button; the identity block's `min-inline-size: 0` is what stops a long name shoving them off it.
+ */
 .bd-verdict {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--bd-s5);
-  padding: var(--bd-s3) var(--bd-s4);
-  background: var(--bd-glass);
-  border: var(--bd-rule-1) solid var(--bd-rule);
-  border-radius: var(--bd-radius-2);
+  margin-inline-start: auto;
+  flex: none;
 }
 
 .bd-verdict div {
@@ -125,10 +143,10 @@
   color: var(--bd-ink-4);
 }
 
-.bd-verdict .bd-hand {
-  margin-inline-start: auto;
-  max-inline-size: 34ch;
-  text-align: end;
+/* The remark, under the sub-line it belongs to. Clamped so it cannot push the figures around. */
+.bd-dossier-id .bd-hand {
+  margin: var(--bd-s0) 0 0;
+  max-inline-size: var(--bd-measure-prose);
 }
 
 /* The two columns. */

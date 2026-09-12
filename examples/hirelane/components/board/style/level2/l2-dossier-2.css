@@ -171,14 +171,90 @@
   flex: none;
 }
 
-/* The AUTO region: on the glass, lightest rule, reversible. */
-.bd-auto-panel {
+/*
+ * THE ACTION BAR — one row, two zones, where there used to be two stacked panels.
+ *
+ * The measurement that moved them is in `design/ui-pass-brief.md` §3: at 1440x900 the reversible
+ * panel was 121px and the gated one 109px, together 230px of an 828px modal, while the reading
+ * column between them and the head was showing 406px of its own 1401px of evidence. Half the pane
+ * was chrome and 71% of the content was behind a scroll.
+ *
+ * WHY NOT ONE ROW OF SIX BUTTONS, which is the obvious merge and is forbidden. DESIGN-LAW §7.1:
+ * "turn the page greyscale: the gated actions must still be identifiable." Six identical controls
+ * in a row fail that on the first look. So the classes keep the two structural devices they
+ * already had and simply stop being stacked: the reversible half stays on the glass at the
+ * lightest rule, and the irreversible half stays the one LIGHT surface in the room at the only
+ * 3px weight in the direction - beside its neighbour now rather than beneath it, with the heavy
+ * rule moved from block-start to inline-start because that is the edge the two now meet on.
+ */
+.bd-actbar {
   display: grid;
-  gap: var(--bd-s3);
-  padding: var(--bd-s3) var(--bd-s5) var(--bd-s4);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
   border-block-start: var(--bd-rule-1) solid var(--bd-rule);
-  background: rgb(255 255 255 / 2%);
+  border-end-start-radius: var(--bd-radius-3);
+  border-end-end-radius: var(--bd-radius-3);
+  overflow: hidden;
   flex: none;
+}
+
+/*
+ * THE CLASS SITS ABOVE ITS CONTROLS, not beside them, and that is a stability decision.
+ *
+ * Inline, the two zones competed for one line and the longest string won: "Scheduling opens at
+ * Interview" - a DISABLED button explaining why it is disabled - took 250px of the gated zone,
+ * which pushed the reversible zone's four controls onto three wrapped rows and made the bar 173px.
+ * The lengths that did it are all data or state: a candidate's name, a stage label, a precondition
+ * sentence. A layout a long name can break is a layout that will break.
+ *
+ * Stacked, each zone is a 12px line plus one row of controls and nothing can push a control onto
+ * a second row that was not already going to be there. It also gives the class sentences their
+ * full wording back - §7.4's "who it reaches and what cannot be undone", said on the surface
+ * rather than shortened into a `title`, which is what the bar had to do while they were inline.
+ */
+.bd-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--bd-s2);
+  padding: var(--bd-s3) var(--bd-s5);
+  min-inline-size: 0;
+}
+
+.bd-zone[data-class="AUTO"] {
+  background: rgb(255 255 255 / 2%);
+}
+
+.bd-zone[data-class="GATED"] {
+  background: var(--bd-gate-sheet);
+  color: var(--bd-gate-ink);
+  border-inline-start: var(--bd-rule-w3) solid var(--bd-gate);
+}
+
+/*
+ * ARMING TAKES THE WHOLE BAR, and that is a property the stacked layout could not have.
+ *
+ * There, "Score again" sat live and adjacent while a rejection was one click away. Here the
+ * reversible zone is gone for as long as an irreversible act is armed, so the only controls on
+ * the surface are the one that fires and the one that cancels. `:has()` rather than a hoisted
+ * flag: the armed state belongs to Gate.tsx, and `Dossier.tsx` keys that component by the
+ * candidate so consent is voided on a bench click (§7.3) - threading the same fact up to a
+ * parent and back down would put a second copy of it somewhere it could disagree.
+ */
+.bd-actbar:has(.bd-arm) {
+  grid-template-columns: minmax(0, 1fr);
+  border-block-start: 0;
+}
+
+.bd-actbar:has(.bd-arm) .bd-zone[data-class="AUTO"] {
+  display: none;
+}
+
+.bd-actbar:has(.bd-arm) .bd-zone[data-class="GATED"] {
+  align-items: flex-start;
+  border-inline-start: 0;
+  border-block-start: var(--bd-rule-w3) solid var(--bd-gate);
 }
 
 .bd-actions {
@@ -186,5 +262,19 @@
   flex-wrap: wrap;
   gap: var(--bd-s2);
   align-items: center;
+  min-inline-size: 0;
+}
+
+/*
+ * Controls in the bar take the tighter of the two padding steps.
+ *
+ * Seven of them share one row with two class sentences, and at --bd-s4 they needed about 124px
+ * more than the row had, so the reversible zone wrapped. --bd-s3 is the step below on the same
+ * scale (§1.1), it is what the chip and the rung in the toolbar already use, and it buys 56px
+ * across the bar. The reach target is untouched: --bd-control still sets the height, which is the
+ * dimension that matters for hitting one.
+ */
+.bd-actbar .bd-btn {
+  padding: 0 var(--bd-s3);
 }
 

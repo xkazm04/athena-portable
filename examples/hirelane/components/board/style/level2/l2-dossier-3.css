@@ -74,32 +74,47 @@
 
 /* Inside the inverted panel the coral is the ground's own hue, so the sentence
    takes the panel's ink and the dot keeps the hue. */
-.bd-gate-panel .bd-class[data-class="GATED"] {
+.bd-zone[data-class="GATED"] .bd-class[data-class="GATED"] {
   color: var(--bd-gate-ink-2);
 }
 
-.bd-gate-panel .bd-class[data-class="GATED"]::before {
+.bd-zone[data-class="GATED"] .bd-class[data-class="GATED"]::before {
   background: var(--bd-gate-fire);
 }
 
+/*
+ * The note field, which is now only mounted while somebody is writing one.
+ *
+ * It used to be a permanent 469x62 textarea in the reversible panel - the least-used control in
+ * the dossier and the largest thing in it. As a disclosure it takes the row it needs and gives it
+ * back, so the bar's idle height is a single control tall. `flex: 1 1 16rem` rather than a fixed
+ * width: it shares the zone with "File it" and "Cancel" and should take whatever is left.
+ */
 .bd-note-field {
-  flex: 1 1 20rem;
-  display: grid;
-  gap: var(--bd-s1);
-  padding: var(--bd-s2) var(--bd-s3);
+  flex: 1 1 16rem;
+  display: flex;
+  align-items: baseline;
+  gap: var(--bd-s2);
+  min-block-size: var(--bd-control);
+  padding: 0 var(--bd-s3);
   border: var(--bd-rule-1) solid var(--bd-rule-2);
-  border-radius: var(--bd-radius-2);
+  border-radius: var(--bd-radius-round);
   background: var(--bd-glass);
 }
 
+.bd-note-field .bd-block-label {
+  flex: none;
+}
+
+/* An input rather than a textarea: a note filed from a one-row bar is a sentence, and `resize`
+   on a control inside a bar would let the reader drag the bar's own height around. */
 .bd-note-input {
-  inline-size: 100%;
+  flex: 1 1 auto;
+  min-inline-size: 0;
   background: none;
   border: 0;
   color: inherit;
   font-size: var(--bd-text-sm);
-  resize: vertical;
-  max-block-size: 8em;
 }
 
 .bd-select {
@@ -118,67 +133,60 @@
 }
 
 /*
- * The GATED region. A physically separate block at the foot: inverted to the
- * one light surface on a dark page, at the heaviest rule in the ladder.
- * Greyscale the page and it is still the only region like it.
+ * The GATED region's ground and heavy rule now live on `.bd-zone[data-class="GATED"]` in
+ * `l2-dossier-2.css`, beside the bar that positions it — the region did not stop being a region
+ * when it stopped being a band, it stopped being a SEPARATE BLOCK and became a zone of one bar.
+ * What stays in this file is everything the region does to what is drawn inside it, which is the
+ * inversion's real work: the ink, the buttons, the fire state, the select and its native option
+ * list. Every one of those still reads `--bd-gate-*` and none of them is a new colour (§4.2).
  */
-.bd-gate-panel {
-  display: grid;
-  gap: var(--bd-s3);
-  padding: var(--bd-s4) var(--bd-s5);
-  /* The one light surface on a dark page — the structural half of the gate —
-     but warmed toward the coral it is entitled to, so it belongs to this app
-     rather than interrupting it. */
-  background: var(--bd-gate-sheet);
-  color: var(--bd-gate-ink);
-  border-block-start: var(--bd-rule-w3) solid var(--bd-gate);
-  border-end-start-radius: var(--bd-radius-3);
-  border-end-end-radius: var(--bd-radius-3);
-  flex: none;
-}
 
-.bd-gate-panel .bd-block-label {
+.bd-zone[data-class="GATED"] .bd-block-label {
   color: var(--bd-gate-ink-2);
 }
 
-.bd-gate-panel .bd-btn {
+.bd-zone[data-class="GATED"] .bd-btn {
   background: var(--bd-gate-wash);
   border-color: var(--bd-gate-edge);
   color: var(--bd-gate-ink);
 }
 
-.bd-gate-panel .bd-btn:hover:not(:disabled) {
+.bd-zone[data-class="GATED"] .bd-btn:hover:not(:disabled) {
   background: var(--bd-gate-lit);
   border-color: var(--bd-gate-edge-2);
 }
 
-.bd-gate-panel .bd-btn[data-fire="true"] {
+.bd-zone[data-class="GATED"] .bd-btn[data-fire="true"] {
   background: var(--bd-gate-fire);
   border-color: var(--bd-gate-fire);
   color: var(--bd-gate-lit);
 }
 
-.bd-gate-panel .bd-btn[data-fire="true"]:hover:not(:disabled) {
+.bd-zone[data-class="GATED"] .bd-btn[data-fire="true"]:hover:not(:disabled) {
   background: var(--bd-gate-fire-2);
   border-color: var(--bd-gate-fire-2);
 }
 
-.bd-gate-panel .bd-select {
+.bd-zone[data-class="GATED"] .bd-select {
   background: var(--bd-gate-wash-2);
   border-color: var(--bd-gate-edge);
   color: var(--bd-gate-ink);
 }
 
-.bd-gate-panel .bd-select option {
+.bd-zone[data-class="GATED"] .bd-select option {
   background: var(--bd-gate-lit);
   color: var(--bd-gate-ink);
 }
 
-.bd-gate-panel .bd-hand {
+.bd-zone[data-class="GATED"] .bd-hand {
   color: var(--bd-gate-ink-2);
 }
 
+/* The armed strip takes the bar it is in — `.bd-actbar:has(.bd-arm)` has already hidden the
+   reversible zone, so this is the only thing on the row and it should use the row. */
 .bd-arm {
+  flex: 1 1 auto;
+  min-inline-size: 0;
   display: grid;
   gap: var(--bd-s2);
   padding: var(--bd-s3) var(--bd-s4);

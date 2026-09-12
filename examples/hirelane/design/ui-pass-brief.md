@@ -1,11 +1,11 @@
 # hirelane — the three-layer UI pass: brief, written before the code
 
-**Status: NOT WIRED in part.** This document specifies three layers. **§1 has landed** —
-`design/check-contrast.mjs` exists, the ink ladder is retuned and the accent is spent; ADR 0021
-records the decision. **§2 and §3 have not**, and they name files that do not exist yet
-(`components/board/carousel/SlideStrip.tsx`, `components/board/carousel/SlideColumn.tsx`,
-`components/board/carousel/CardVariant.tsx`, `components/board/dossier/Bar.tsx`). Read §1 as a
-record and §2–§3 as a specification.
+**Status: NOT WIRED in part.** This document specifies three layers. **§1 and §3 have landed** —
+ADR 0021 records the theme, ADR 0022 the dossier; where the built result differs from what §3
+specified, §3.6 says so and the code is right. **§2 has not**, and it names files that do not
+exist yet (`components/board/carousel/SlideStrip.tsx`,
+`components/board/carousel/SlideColumn.tsx`, `components/board/carousel/CardVariant.tsx`). Read §1
+and §3 as a record and §2 as a specification.
 
 **Baseline.** Commit `e08163c`, *feat(examples): hirelane readability pass* — the state of
 `components/board/` as this was written. Every measurement below was taken against that commit, in
@@ -402,6 +402,39 @@ evidence column's own structure. This layer moves chrome and returns room; it do
 written in the room it returns.
 
 ---
+
+### 3.6 What the build changed about this spec — written after, and marked as such
+
+Three things above were wrong or incomplete, and the code is the authority on all three.
+
+- **The bar is 95px, not 64px, and the class sits *above* its controls rather than beside them.**
+  The one-row sketch in §3.2 was measured as a drawing, not as a layout. Built inline it came out
+  at **173px**, because the two zones competed for one line and the longest string won:
+  "Scheduling opens at Interview" — a disabled button explaining why it is disabled — took 250px
+  and wrapped the reversible zone's controls onto three rows. Every length that did it is data or
+  state. Stacking the class line above each zone's controls made the height independent of name
+  and stage length, and had the side benefit of giving both class sentences their full §7.4
+  wording back, which the inline sketch had shortened to fit.
+- **No `dossier/Bar.tsx` was added.** `.bd-actbar` is a wrapper element in `Dossier.tsx` around the
+  two existing components. A third component to hold two components would have had to own the
+  armed state to lay itself out, and that state belongs to `Gate.tsx`, which is keyed by the
+  candidate so consent is voided on a bench click (§7.3). `:has(.bd-arm)` reads the fact where it
+  already lives instead of copying it.
+- **§3 did not mention the phone, and the phone was broken.** At 390×844 the first build of this
+  bar left head 307px, bar 366px and the body showing **3%**. Fixed at
+  `bd-root (max-width: 48rem)` and `bd-dossier (max-width: 40rem)`: a full-height sheet, the close
+  button ordered up beside the monogram, and each zone's controls scrolling sideways on one row
+  instead of wrapping. 226 / 200 / 14%. A spec that specifies one width has specified one width.
+
+Measured result, against §3.1's baseline:
+
+| | before | after |
+|---|---|---|
+| head | 190px | 116px |
+| action chrome | 230px (two panels) | 95px (one bar) |
+| total chrome | 420px (50.7%) | 211px (25.5%) |
+| body | 406px | 615px |
+| body visible | 29% | 44% (56% at 1920) |
 
 ## 4. Order, and why
 

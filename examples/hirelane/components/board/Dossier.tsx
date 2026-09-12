@@ -127,18 +127,31 @@ export function Dossier({
         </div>
 
         {/*
+         * ONE BAR, TWO ZONES. `design/ui-pass-brief.md` §3 has the measurement that moved them:
+         * as two stacked panels these were 230px of an 828px modal - 27.8% - while the reading
+         * column beneath the head was showing 406px of its own 1401px, which is 29% of the
+         * evidence this direction exists to put in front of a reader.
+         *
+         * They are not merged into one row of six buttons, and that is DESIGN-LAW §7.1 rather
+         * than taste: the class has to survive the page going greyscale, and six identical
+         * controls fail that immediately. The reversible half sits on the glass; the irreversible
+         * half is the one light surface in the room, at the only 3px rule in the direction, now
+         * beside its neighbour instead of beneath it. Arming takes the whole bar - see Gate.tsx.
+         *
          * Keyed by the candidate, and that is load-bearing rather than tidy.
          *
          * The dossier itself is mounted under a constant key so the morph reads as one pane, and
          * the bench rail changes `candidate` without leaving level 2 - so React would reconcile
-         * these two panels across a change of person and every piece of state in them would
+         * these two zones across a change of person and every piece of state in them would
          * survive it. For the gate that means an ARMED irreversible act, still one click away,
          * now naming somebody nobody consented for. Consent is void the moment the thing it
-         * approved is not the thing about to happen, so the panels remount and arming starts over.
+         * approved is not the thing about to happen, so the zones remount and arming starts over.
          * The note draft does not follow the reader to the next person either.
          */}
-        <DossierActs key={candidate.id} candidate={candidate} />
-        <DossierGate key={candidate.id} candidate={candidate} openSlots={openSlots} />
+        <div className="bd-actbar">
+          <DossierActs key={`auto:${candidate.id}`} candidate={candidate} />
+          <DossierGate key={`gate:${candidate.id}`} candidate={candidate} openSlots={openSlots} />
+        </div>
       </motion.div>
     </div>
   );

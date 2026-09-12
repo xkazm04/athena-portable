@@ -34,7 +34,7 @@ export function DossierVerdict({
           className="bd-mono"
           size="lg"
         />
-        <div>
+        <div className="bd-dossier-id">
           <h2 className="bd-dossier-name" id="bd-dossier-title">
             {candidate.name}
           </h2>
@@ -42,6 +42,58 @@ export function DossierVerdict({
             {role.title} · {STAGE_LABEL[candidate.stage]} · applied{" "}
             {fmtDate(candidate.appliedAt)}
           </p>
+          {/*
+           * The remark sits under the sub-line rather than floating at the far
+           * end of a figure band, which is where it used to be. Read there it
+           * looked like a caption ON the figures; read here it is what it is,
+           * a remark about the person — and it costs no row of its own.
+           */}
+          {candidate.scored ? (
+            <p className="bd-hand">
+              {candidate.bandDrivers.length > 0
+                ? `read it as ${BAND_LABEL[candidate.band]} — nothing quoted for ${candidate.bandDrivers.join(", ")}`
+                : `every criterion has a quote behind it`}
+            </p>
+          ) : (
+            <p className="bd-hand">nobody has scored this one yet</p>
+          )}
+        </div>
+        {/*
+         * The four figures, folded into the identity row.
+         *
+         * They were a separately bordered box under it, which cost the pane a
+         * 74px band plus its own gap to say four short things that fit beside
+         * the name. `design/ui-pass-brief.md` §3 has the measurement: the head
+         * was 190px of an 828px modal while the reading column below it was
+         * showing 29% of itself.
+         *
+         * Figures in the mono face at figure size; words in the text face,
+         * smaller. Set identically, the phrase "not scored" was the largest
+         * thing in the band and out-shouted the number it qualifies — a word
+         * borrowing the authority the tabular figures are there to carry.
+         */}
+        <div className="bd-verdict">
+          <div>
+            <b>
+              {fmtScore(candidate.scored, candidate.overall)}
+              <span className="bd-of"> / {SCORE_MAX}</span>
+            </b>
+            <span>weighted</span>
+          </div>
+          <div data-word="true">
+            <b>{FIT_LABEL[candidate.fit]}</b>
+            <span>fit</span>
+          </div>
+          <div>
+            <b>
+              {candidate.meta.evidenced}/{candidate.meta.criteriaCount}
+            </b>
+            <span>evidenced</span>
+          </div>
+          <div>
+            <b>{candidate.years}</b>
+            <span>years</span>
+          </div>
         </div>
         <button
           type="button"
@@ -52,44 +104,6 @@ export function DossierVerdict({
         >
           ✕
         </button>
-      </div>
-      {/*
-       * Figures in the mono face at figure size; words in the text face,
-       * smaller. Set identically, the phrase "not scored" was the largest
-       * thing in the band and out-shouted the number it qualifies — a word
-       * borrowing the authority the tabular figures are there to carry.
-       */}
-      <div className="bd-verdict">
-        <div>
-          <b>
-            {fmtScore(candidate.scored, candidate.overall)}
-            <span className="bd-of"> / {SCORE_MAX}</span>
-          </b>
-          <span>weighted</span>
-        </div>
-        <div data-word="true">
-          <b>{FIT_LABEL[candidate.fit]}</b>
-          <span>fit</span>
-        </div>
-        <div>
-          <b>
-            {candidate.meta.evidenced}/{candidate.meta.criteriaCount}
-          </b>
-          <span>criteria evidenced</span>
-        </div>
-        <div>
-          <b>{candidate.years}</b>
-          <span>years</span>
-        </div>
-        {candidate.scored ? (
-          <p className="bd-hand">
-            {candidate.bandDrivers.length > 0
-              ? `read it as ${BAND_LABEL[candidate.band]} — nothing quoted for ${candidate.bandDrivers.join(", ")}`
-              : `every criterion has a quote behind it`}
-          </p>
-        ) : (
-          <p className="bd-hand">nobody has scored this one yet</p>
-        )}
       </div>
     </div>
   );

@@ -8,6 +8,88 @@
   .bd-bench {
     position: static;
   }
+
+  /*
+   * The action bar stacks, and the gated zone's heavy rule follows it.
+   *
+   * Two zones on one row need room for seven controls; below this they do not have it, and a
+   * gated act wrapping into the reversible zone's line would put an irreversible control on the
+   * same visual row as a reversible one, which is the distinction §7.1 asks the structure to
+   * carry. Stacked, the 3px weight moves back to the edge the two now meet on - block-start
+   * instead of inline-start - so the inversion still announces itself before any colour.
+   */
+  .bd-actbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bd-zone[data-class="GATED"] {
+    border-inline-start: 0;
+    border-block-start: var(--bd-rule-w3) solid var(--bd-gate);
+  }
+
+  /* The figures drop under the name rather than squeezing it to nothing. */
+  .bd-dossier-top {
+    flex-wrap: wrap;
+  }
+
+  .bd-verdict {
+    margin-inline-start: 0;
+    flex-basis: 100%;
+    order: 1;
+  }
+}
+
+/*
+ * THE PHONE. Measured at 390x844 before this block existed: head 307px, bar 366px, and the
+ * reading column showing 3% of itself. A pane that is 87% chrome is not a small version of the
+ * dossier, it is a different and useless object, so three things change rather than one.
+ *
+ * 1. IT BECOMES A SHEET. At this width there is nothing to see behind a centred card, so the
+ *    scrim's gutter and the card's corners are spent on nothing. Full height, and the ~70px goes
+ *    to the evidence.
+ * 2. THE CLOSE BUTTON STOPS TAKING A ROW. In the wrapped identity row its `margin-inline-start:
+ *    auto` put it on a line of its own under the name. Ordered up beside the monogram it costs
+ *    nothing, and it lands where a thumb expects it.
+ * 3. THE CONTROLS SCROLL RATHER THAN WRAP. Seven of them cannot sit on a 358px row and wrapping
+ *    them cost 184px. One row per zone that scrolls sideways keeps each zone a single control
+ *    tall; the cut-off edge is the affordance, and the thin scrollbar the room already themes is
+ *    the second one. The AUTO/GATED structure is untouched - two zones, the light one still
+ *    inverted under its 3px rule - so §7.1's greyscale test reads the same here as at 1440.
+ */
+@container bd-dossier (max-width: 40rem) {
+  .bd-dossier-top {
+    align-items: flex-start;
+  }
+
+  /* The monogram first, the close button pushed to the far end of the same line, and the name
+     block wrapped underneath. Ordered, because the DOM puts close last for the tab order and the
+     tab order is right — it is the focus trap's first stop (`Dossier.tsx` focuses it on open). */
+  .bd-dossier-top > :first-child {
+    order: -2;
+  }
+
+  .bd-close {
+    order: -1;
+    margin-inline-start: auto;
+  }
+
+  .bd-dossier-id {
+    flex: 1 1 100%;
+    order: 0;
+  }
+
+  .bd-zone .bd-actions {
+    inline-size: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding-block-end: var(--bd-s1);
+  }
+
+  .bd-zone .bd-btn,
+  .bd-zone .bd-select {
+    flex: none;
+  }
 }
 
 /*
@@ -87,6 +169,26 @@
   .bd-slide {
     inline-size: min(var(--bd-card-narrow), 88cqi);
     margin-inline-start: calc(min(var(--bd-card-narrow), 88cqi) / -2);
+  }
+
+  /*
+   * The dossier becomes a SHEET, and these two rules live here rather than in the
+   * `@container bd-dossier` block below because a container cannot style itself — the pane is
+   * `container-name: bd-dossier`, so its own max-block-size and corners have to be set from the
+   * container above it. The descendants that change with it are in that block.
+   *
+   * At this width there is nothing to see behind a centred card, so the scrim's gutter and the
+   * card's corners are spent on nothing; the ~70px they cost goes to the evidence instead.
+   */
+  .bd-dossier-layer {
+    padding: 0;
+  }
+
+  .bd-dossier {
+    /* §9.4 exception: a viewport clamp, not a spacing step. */
+    max-block-size: 100svh;
+    border-radius: 0;
+    border-inline: 0;
   }
 }
 
