@@ -2,7 +2,13 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
-## P5 — MVP checkpoint (in progress)
+## P5 — MVP checkpoint
+
+- `feat(desktop): the run loop, an AG-UI client of the daemon` — `lib/daemon-client.ts` for every route, `stores/run.ts` as the only run loop; a tightening rides on the manifest so the daemon holds the class; the headless test against a fake daemon (one AUTO round trip, one gated decline ledgered `user_denied`); ADR 0017.
+- `feat(desktop): the panel and origins modules` — the tool list, the chat pane and the decision card as pure views over the run store; Origins with tighten-only overrides and Forget as an inline-confirmed row delete; six and five fixtures; ADR 0018.
+- `fix(desktop): export RunStatus from the run store` — the one type the two halves disagreed on.
+- `feat(desktop): the panel drives one gated turn in the shell` — a recorded engine the daemon replays (`--engine scripted`), `GET /health` gains engine probes, Settings restarts the daemon, Panel is the launch module, `ATHENA_SMOKE=turn` prints four assertable lines; two defects the window found are fixed; ADR 0019.
+- `docs(desktop): phase 1 status and what is verified` — `docs/desktop.md`: the verification table with a command per row, the by-hand rows dated, the layout table, the dev affordances, the module list, what is not yet built.
 
 ## P4 — The shell skeleton
 
