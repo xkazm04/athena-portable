@@ -221,7 +221,7 @@ packages/athena-bridge/  inject.js, gate.js, protocol.md, test/
 apps/desktop/
   src-tauri/src/         lib.rs, tabs.rs, bridge.rs, hands.rs, hands.js, daemon.rs, store.rs, tray.rs, layout.rs
   src/                   app.tsx, lib/, stores/, modules/<name>/{model,fixtures,view,index}, preview.tsx
-examples/                demo-kit/, ledgerbox/, hirelane/, tidycrm/, journey/ (ADR 0014)
+examples/                demo-kit/, ledgerbox/, hirelane/, tidycrm/, journey/ (ADR 0017)
 scripts/                 build-sidecar.py, sidecar_entry.py
 tests/                   core/, harness/, lane/, daemon/, test_contracts.py, test_ids_parity.py
 docs/                    design.md, adr/, demo.md
@@ -253,5 +253,5 @@ committed files.
 The Strands API engine, the sleep cycle, Athena registering herself as a WebMCP tool on pages,
 speech-to-speech voice models, telemetry mirrors, cloud deployment, per-project browsing profiles,
 the connectors themselves (section 4), and example host apps beyond the three the demo runs on
-(`examples/`, ADR 0014). Real sites are the environment; a scratch page proves a claim, the three
+(`examples/`, ADR 0017). Real sites are the environment; a scratch page proves a claim, the three
 example apps rehearse the demo, a real app proves it.

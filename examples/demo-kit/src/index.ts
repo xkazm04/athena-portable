@@ -1,5 +1,5 @@
 /**
- * `@athena/demo-kit` - the shared scaffold for the three example host apps (ADR 0014).
+ * `@athena/demo-kit` - the shared scaffold for the three example host apps (ADR 0017).
  *
  * Import from the subpaths, not from here, so a client component never drags the server-only SQLite
  * module into its bundle:

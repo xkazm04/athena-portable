@@ -1,6 +1,6 @@
 # Examples - the studio the demo runs on
 
-Three small Next.js apps that ship WITHOUT Athena, plus the journey that drives them (ADR 0014).
+Three small Next.js apps that ship WITHOUT Athena, plus the journey that drives them (ADR 0017).
 They are one studio's tabs: Halden Studio's books, its hiring pipeline and its contact list. Every
 seed reads the same world from `@athena/demo-kit/seed` — the studio, its fifteen clients with one
 billing contact each, and the named people and aliases the four acts of README §1 pull on — so a

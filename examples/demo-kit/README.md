@@ -1,7 +1,7 @@
 # `@athena/demo-kit`
 
 The shared scaffold for the three example host apps (`ledgerbox`, `hirelane`, `tidycrm`; ADR
-0014). They ship **without** Athena: each registers its capabilities on `document.modelContext`
+0017). They ship **without** Athena: each registers its capabilities on `document.modelContext`
 (WebMCP) so an agent beside the page can read them through `packages/athena-bridge`. One scaffold
 means the apps differ in domain, not plumbing, and one seed registry means they are one studio.
 

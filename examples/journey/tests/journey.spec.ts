@@ -24,7 +24,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
 import { HIRELANE, LEDGERBOX, TIDYCRM, urlOf, type AppSpec } from "../src/apps.ts";
 import { Approvals } from "../src/approvals.ts";
@@ -82,6 +82,7 @@ const notebook = new ConnectorSurface(notes, approvals, ledger);
 const STUDIO_NOTES = "page_studio";
 
 const booted: Booted[] = [];
+let context: BrowserContext;
 let page: Page;
 
 async function shot(name: string): Promise<void> {
@@ -108,10 +109,18 @@ test.beforeAll(async ({ browser }) => {
   for (const app of [LEDGERBOX, HIRELANE, TIDYCRM]) {
     booted.push(await boot(app, (line) => console.log(`[boot] ${line}`)));
   }
-  page = await browser.newPage();
+  // JOURNEY_VIDEO=1 records the whole run as one .webm next to the screenshots: a demo asset
+  // (README section 5, P9), not evidence, so it is off in the gate.
+  context = await browser.newContext(
+    process.env.JOURNEY_VIDEO ? { recordVideo: { dir: SHOTS, size: { width: 1440, height: 900 } } } : {},
+  );
+  page = await context.newPage();
 });
 
 test.afterAll(async () => {
+  const video = page?.video();
+  await context?.close();
+  if (video) await video.saveAs(join(SHOTS, "journey.webm"));
   for (const one of booted) await shutdown(one);
 });
 
