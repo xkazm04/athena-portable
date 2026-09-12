@@ -65,6 +65,7 @@ function answered(tabId: number, url: string, count: number, transport = "webmcp
     })),
     transport,
     appId: null,
+    appVersion: null,
     problem: null,
     asking: false,
   };

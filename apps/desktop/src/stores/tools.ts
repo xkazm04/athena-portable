@@ -30,6 +30,8 @@ export interface TabTools {
   transport: string | null;
   /** The page's `athena:app` slug, when it published one. */
   appId: string | null;
+  /** `athena:app-version`, carried because a manifest publishes it (`lib/manifest.ts`). */
+  appVersion: string | null;
   /**
    * Why the page could not be read, verbatim, or null. A page with no bridge answers nothing and
    * its request times out, so `timeout` here means "this page has no tools", which is a fact and
@@ -53,6 +55,7 @@ function blank(tabId: number, url: string): TabTools {
     tools: [],
     transport: null,
     appId: null,
+    appVersion: null,
     problem: null,
     asking: true,
   };
@@ -76,6 +79,7 @@ export const useTools = create<ToolsState>((set, get) => ({
             tools: reply.tools,
             transport: reply.page.transport,
             appId: reply.page.app_id,
+            appVersion: reply.page.app_version,
             problem: null,
             asking: false,
           }

@@ -78,10 +78,22 @@ export interface Resolution {
   events: Array<Record<string, unknown>>;
 }
 
+/**
+ * `GET /decisions`, field for field.
+ *
+ * THE BUG THIS SHAPE HAD. The list used to be declared `decisions`, and the route answers
+ * `announced(rows, total, "pending")` — so the key on the wire is `pending` and every read of
+ * `page.decisions` was `undefined`. Nothing rendered it yet, so nothing was visibly broken; the
+ * first surface to poll the inbox would have shown an empty one over a full table.
+ * `apps/desktop/e2e/client.e2e.test.ts` asserts the real key against the real route.
+ */
 export interface DecisionPage {
-  decisions: Array<Record<string, unknown>>;
+  ok: boolean;
+  pending: Array<Record<string, unknown>>;
   showing: number;
   total: number;
+  /** `(showing N of M)` when the page was cut, `""` when it is the whole population. */
+  footer: string;
 }
 
 export type ConnectorAct = "connect" | "flow" | "disconnect" | "probe" | "settings";
@@ -262,6 +274,15 @@ export class DaemonApi {
  * Written by hand because `/run` is a POST. A frame may carry several `data:` lines and the spec
  * joins them with a newline — a parser that took only the first would truncate any event whose
  * JSON contained one.
+ *
+ * THE FRAMING BUG THIS CARRIED. The boundary used to be `indexOf("\n\n")` and the lines were cut
+ * on `"\n"` alone. The SSE grammar allows CRLF, LF or a bare CR as the line terminator, so a
+ * `\r\n\r\n`-framed stream contains no `"\n\n"` at all: **every frame of such a stream was
+ * buffered into one**, and the single `data:` payload that came out at end-of-body was a
+ * concatenation with `\r` still on it — a `JSON.parse` throw part-way through the first turn, and
+ * for a one-frame body a payload that only parsed because `JSON.parse` tolerates trailing space.
+ * The daemon writes LF, so nothing on this machine produced it; a proxy, a different transport or
+ * a second server would. `apps/desktop/e2e/run.e2e.test.ts` asserts both terminators.
  */
 export async function* sseFrames(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
   const reader = body.getReader();
@@ -272,12 +293,14 @@ export async function* sseFrames(body: ReadableStream<Uint8Array>): AsyncGenerat
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      let split = buffer.indexOf("\n\n");
-      while (split !== -1) {
-        const data = dataOf(buffer.slice(0, split));
-        buffer = buffer.slice(split + 2);
+      for (;;) {
+        // The boundary is a blank line under any of the three terminators. Searched on the whole
+        // accumulated buffer, so a chunk that ends between the `\r` and the `\n` is harmless.
+        const split = BOUNDARY.exec(buffer);
+        if (split === null) break;
+        const data = dataOf(buffer.slice(0, split.index));
+        buffer = buffer.slice(split.index + split[0].length);
         if (data !== null) yield data;
-        split = buffer.indexOf("\n\n");
       }
     }
     const last = dataOf(buffer);
@@ -287,9 +310,12 @@ export async function* sseFrames(body: ReadableStream<Uint8Array>): AsyncGenerat
   }
 }
 
+/** A blank line, under every terminator the SSE grammar allows. */
+const BOUNDARY = /\r\n\r\n|\n\n|\r\r/;
+
 function dataOf(frame: string): string | null {
   const lines = frame
-    .split("\n")
+    .split(/\r\n|\n|\r/)
     .filter((line) => line.startsWith("data:"))
     .map((line) => line.slice(5).replace(/^ /, ""));
   return lines.length ? lines.join("\n") : null;

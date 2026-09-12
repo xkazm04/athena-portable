@@ -1,0 +1,9 @@
+# SYNTHETIC, for apps/desktop/e2e. One blank line separates two provider rounds; a '#'
+# line is a note. Written in the `claude -p - --output-format stream-json` shape that
+# tests/fixtures/claude_code_turn.ndjson records, so the harness's own decoder is what
+# reads it and a drift in the event format is a red test here too.
+# prose only, no OP: the turn ends without touching the page.
+{"type": "system", "subtype": "init", "session_id": "01J9E2ESESSION", "model": "scripted-opus", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "This page offers two tools: one I may use, one you must approve.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "TTS: \"One I may use, one you must approve.\"\n"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1200, "num_turns": 1, "total_cost_usd": 0.0123, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9E2ESESSION"}

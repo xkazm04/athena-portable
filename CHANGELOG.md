@@ -2,6 +2,11 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
+## End to end — the seams, driven for the first time (in progress)
+
+- `fix(desktop): the panel never published a manifest, and three other seams the fakes hid` — `lib/manifest.ts` publishes the focused page's tools through `manifestOf`, without which `POST /run` refused every real turn `foreign_origin` before the stream opened; `GET /decisions` answers `pending`, not `decisions`; `TabTools` carries the app version a manifest needs; `apps/desktop/e2e/` drives the real client, run loop, connector store and voice socket against a real daemon on an ephemeral port.
+- `ci: the gate runs the suites it can run` — the javascript job stops iterating `@athena/journey`, a browser end-to-end suite that boots four servers and wants a Chromium the runner does not install.
+
 ## The hands (in progress)
 
 - `feat(desktop): the ninth hand takes the picture` — `page_screenshot` as a hand the shell answers rather than the page, dispatched off a `runner` field so `hands.js` stays the whole of what a page can do; `PrintWindow` with `PW_RENDERFULLCONTENT` cropped to `layout`'s page rectangle, through two coordinate conversions — the scale factor and the window frame's inset; a non-focused tab refused with `validator_failed` naming the tab that is focused; `Store::put_capture` files the PNG through the same writer as everything else and the hand answers with the row id; `tabs::origin_of` and `Tabs::url_for`; `ATHENA_SMOKE_HANDS=1` runs one hand of each kind against a real window; ADR 0025.

@@ -26,6 +26,7 @@ import { create } from "zustand";
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
 import { bridgeCall } from "@/lib/bridge";
 import type { Args } from "@/lib/ipc";
+import { manifestBodyOf } from "@/lib/manifest";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { isTerminal, type ChannelEvent, type DecisionRequested, type TurnSummary } from "@/lib/events";
 import { useTabs } from "@/stores/tabs";
@@ -69,6 +70,14 @@ export interface RunDeps {
     name: string,
     input: Record<string, unknown>,
   ) => Promise<{ ok: boolean; output: string; error?: string | null }>;
+  /**
+   * The focused page's manifest body, or `null` when there is nothing to register.
+   *
+   * README §3.3: a page's tools enter the catalog through a manifest, and `POST /run` refuses an
+   * origin it has no session for — so this is not an optimisation, it is the step without which
+   * no turn can start. Optional only so a test that is about something else may leave it out.
+   */
+  manifest?: () => Record<string, unknown> | null;
 }
 
 export interface RunState {
@@ -123,6 +132,19 @@ const LIVE: RunDeps = {
     // IPC's own wire type and the cast is the one place a gate-approved object meets it.
     const reply = await bridgeCall(tabId, name, input as Args);
     return reply as { ok: boolean; output: string; error?: string | null };
+  },
+  manifest: () => {
+    const tab = focusedTab();
+    if (!tab) return null;
+    const found = useTools.getState().byTab[tab.id];
+    if (!found) return null;
+    return manifestBodyOf({
+      origin: originOf(tab.url),
+      appId: found.appId,
+      appVersion: found.appVersion,
+      transport: found.transport,
+      tools: found.tools,
+    });
   },
 };
 
@@ -283,7 +305,37 @@ export const useRun = create<RunState>((set) => {
    * not said anything new, and putting words in their transcript that they did not write is worse
    * than a sentence the model can read as a prompt to continue.
    */
+  /**
+   * Register the focused page with the daemon before asking it anything about that page.
+   *
+   * README §3.3 step one: a page's tools enter the catalog through a manifest, and `POST /run`
+   * refuses an origin it has no session for with `foreign_origin`. It is published once per
+   * exchange rather than once per process: `merge_manifest` replaces the origin's entries and
+   * refreshes the session, so a daemon that restarted between two messages is registered again
+   * by the next one instead of refusing every turn until the window is reopened.
+   *
+   * A page with nothing to register — no `athena:app` id, or no tools — is not an error here.
+   * The turn goes out and the daemon says what it thinks of it, in its own words.
+   */
+  async function publish(): Promise<boolean> {
+    const body = deps.manifest?.() ?? null;
+    if (body === null) return true;
+    const api = deps.api();
+    if (!api) {
+      fail(new ApiError(0, "unknown_ref", "the daemon is not ready"));
+      return false;
+    }
+    try {
+      await api.manifest(body);
+    } catch (error) {
+      fail(error);
+      return false;
+    }
+    return true;
+  }
+
   async function exchange(first: string): Promise<void> {
+    if (!(await publish())) return;
     let message = first;
     for (let step = 0; step <= MAX_CONTINUATIONS; step += 1) {
       if (!(await consume(message))) return;

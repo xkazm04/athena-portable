@@ -47,6 +47,7 @@ function registered(id: number, names: string[], transport = "webmcp-polyfill"):
     })),
     transport,
     appId: null,
+    appVersion: null,
     problem: null,
     asking: false,
   };

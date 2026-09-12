@@ -32,6 +32,7 @@ import { DaemonApi, type ExecuteRow } from "@/lib/api";
 import { bridgeCall } from "@/lib/bridge";
 import type { ChannelEvent, DecisionRequested, ToolCall } from "@/lib/events";
 import type { Args } from "@/lib/ipc";
+import { manifestBodyOf } from "@/lib/manifest";
 import {
   Player,
   VoiceSocket,
@@ -66,6 +67,15 @@ export interface VoiceDeps {
     name: string,
     input: Record<string, unknown>,
   ) => Promise<{ ok: boolean; output: string; error?: string | null }>;
+  /**
+   * The focused page's manifest body, or `null` when there is nothing to register.
+   *
+   * The gateway refuses an origin it has no session for exactly as `POST /run` does —
+   * `foreign_origin: '<origin>' has sent no manifest; open the page first` — so a spoken turn
+   * needs the same first step a typed one does (`lib/manifest.ts`, README section 3.3). Act 2 of
+   * the demo is a spoken turn, and without this it could never have started.
+   */
+  manifest?: () => Record<string, unknown> | null;
 }
 
 export interface VoiceState {
@@ -135,6 +145,20 @@ const LIVE: VoiceDeps = {
   call: async (tabId, name, input) => {
     const reply = await bridgeCall(tabId, name, input as Args);
     return reply as { ok: boolean; output: string; error?: string | null };
+  },
+  manifest: () => {
+    const { tabs } = useTabs.getState();
+    const tab = tabs.find((t) => t.focused) ?? tabs[0];
+    if (!tab) return null;
+    const found = useTools.getState().byTab[tab.id];
+    if (!found) return null;
+    return manifestBodyOf({
+      origin: originOf(tab.url),
+      appId: found.appId,
+      appVersion: found.appVersion,
+      transport: found.transport,
+      tools: found.tools,
+    });
   },
 };
 
@@ -267,6 +291,31 @@ export const useVoice = create<VoiceState>((set, get) => {
     if (get().phase === "idle") set({ phase: "thinking" });
   }
 
+  /**
+   * Register the focused page before speaking about it, for the reason `stores/run.ts` gives.
+   *
+   * It goes over HTTP and not over the socket: `POST /manifest` is the one route that merges a
+   * manifest, and a second way to register a page would be a second place the catalog is
+   * written. A refusal is reported and the utterance is not sent — an unregistered page cannot
+   * answer anything, and a spoken sentence that vanishes is worse than one that says why.
+   */
+  async function publish(): Promise<boolean> {
+    const body = deps.manifest?.() ?? null;
+    if (body === null) return true;
+    const found = deps.endpoint();
+    if (!found) {
+      fail("the daemon is not ready");
+      return false;
+    }
+    try {
+      await new DaemonApi(found).manifest(body);
+    } catch (error) {
+      fail(error instanceof Error ? error.message : String(error));
+      return false;
+    }
+    return true;
+  }
+
   async function ensureSocket(): Promise<VoiceSocket | null> {
     if (socket?.open) return socket;
     const found = deps.endpoint();
@@ -309,6 +358,7 @@ export const useVoice = create<VoiceState>((set, get) => {
         fail("open a page first — Athena works inside the app you are looking at");
         return;
       }
+      if (!(await publish())) return;
       const live = await ensureSocket();
       if (!live) return;
       if (state.generation !== null) player?.drop(state.generation);
@@ -340,6 +390,7 @@ export const useVoice = create<VoiceState>((set, get) => {
         fail("open a page first — Athena works inside the app you are looking at");
         return;
       }
+      if (!(await publish())) return;
       const live = await ensureSocket();
       if (!live) return;
       if (get().generation !== null) player?.drop(get().generation as number);

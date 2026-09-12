@@ -1,0 +1,7 @@
+# SYNTHETIC, for apps/desktop/e2e. One blank line separates two provider rounds; a '#'
+# line is a note. The `claude -p - --output-format stream-json` shape.
+# one spoken round: prose and the line the daemon synthesises.
+{"type": "system", "subtype": "init", "session_id": "01J9E2EVOICE", "model": "scripted-opus", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "Three invoices are past thirty days.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "TTS: \"Three invoices are past thirty days.\"\n"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1200, "num_turns": 1, "total_cost_usd": 0.0123, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9E2EVOICE"}

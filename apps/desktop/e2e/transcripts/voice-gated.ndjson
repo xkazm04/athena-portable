@@ -1,0 +1,13 @@
+# SYNTHETIC, for apps/desktop/e2e. One blank line separates two provider rounds; a '#'
+# line is a note. The `claude -p - --output-format stream-json` shape.
+# a spoken gated proposal, then the continuation the approval produces.
+{"type": "system", "subtype": "init", "session_id": "01J9E2EVOICE", "model": "scripted-opus", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "Paying INV-118 needs your approval.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "TTS: \"Paying INV-118 needs your approval.\"\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "OP: {\"op\": \"propose_action\", \"action\": \"host.ledgerbox.pay\", \"params\": {\"invoice\": \"INV-118\"}, \"rationale\": \"thirty-one days late\"}"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1200, "num_turns": 1, "total_cost_usd": 0.0123, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9E2EVOICE"}
+
+{"type": "system", "subtype": "init", "session_id": "01J9E2EVOICE", "model": "scripted-opus", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "INV-118 is paid.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "TTS: \"INV-118 is paid.\"\n"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1200, "num_turns": 1, "total_cost_usd": 0.0123, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9E2EVOICE"}
