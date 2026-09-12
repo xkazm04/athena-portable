@@ -141,9 +141,9 @@ file cards on the same approval table and block until the user answers.
 
 ## 4. Third-party connectors: the seam this build reserves
 
-Connectors are built by a separate team in the reference repository (`src/athena/connectors/`,
-`docs/connectors/design.md`). This build does not port them; it reserves the seam so they land
-without a merge fight. The principles below are fixed here so the two halves agree.
+Connectors were designed in the reference repository (`src/athena/connectors/`,
+`docs/connectors/design.md`). This build first reserved the seam and then filled it with Gmail
+and Notion, written against the principles below rather than pasted (ADR 0021).
 
 - **A connector is data, not code.** One JSON spec per service (Gmail, Notion and Exa in the MVP)
   declares its auth methods, the hosts the broker will ever dial, the probe that admits a
@@ -166,11 +166,11 @@ without a merge fight. The principles below are fixed here so the two halves agr
 - **Structural policy checks liveness on every call.** A `connector:` entry is permitted only if
   the vault says the connection is live now; a disconnect takes effect on the next call.
 
-What this build ships for it: the origin kind and `ConnectorPort` declared in the catalog commit
-(P1), the `connector_enabled` rule in structural policy (P2), and tier 3 rendered in the activity
-explorer and the approvals inbox, empty and labelled so, when the record lands (P7). Nothing in the
-demo depends on a connector; if one is ready, act 2's chase drafts go through the mail connector and
-the card names it as the thing that will act.
+What this build ships for it: the origin kind and `ConnectorPort` (P1), the `connector_enabled`
+rule in structural policy (P2), and — after the second pass — the vault, the two builtin specs,
+the consent flow, the `/connectors` routes and the desktop's Connectors module (ADR 0021).
+Nothing in the demo depends on a connector; with one connected, act 2's chase drafts can go
+through the mail connector and the card names it as the thing that will act.
 
 ---
 
