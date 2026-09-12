@@ -39,6 +39,15 @@ export interface StripState {
   say?: string | null;
 }
 
+/** The manifest a page just listed: the headline, and the names in their two classes. */
+export interface StripManifest {
+  /** `Ledgerbox · 23 capabilities` — the app and the count, as the surface listed them. */
+  readonly question: string;
+  readonly detail: string;
+  readonly auto: readonly string[];
+  readonly gated: readonly string[];
+}
+
 /** A decision card: the question a GATED call is waiting on, and the two answers. */
 export interface StripCard {
   readonly title: string;
@@ -88,6 +97,14 @@ const SOURCE = String.raw`(() => {
     ".card .kind { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #ffd79a; font-weight: 700; margin-bottom: 6px; }",
     ".card.fact { border-left-color: #8fd0ff; }",
     ".card.fact .kind { color: #8fd0ff; }",
+    ".card.manifest { border-left-color: #a6e77f; }",
+    ".card.manifest .kind { color: #a6e77f; }",
+    ".card .group { margin-top: 9px; }",
+    ".card .group .head { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: #8aa0bd; }",
+    ".card .group.gated .head { color: #ffd79a; }",
+    ".card .group .names { margin-top: 3px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px;",
+    "  line-height: 1.5; color: #e4e9f2; word-break: break-word; }",
+    ".card .group.gated .names { color: #ffd79a; }",
     ".card .q { font-size: 15px; line-height: 1.35; }",
     ".card .detail { margin-top: 6px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: #97a3b8;",
     "  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }",
@@ -217,10 +234,20 @@ const SOURCE = String.raw`(() => {
       mount();
       if (!nodes) return -1;
       var card = el("div", "card " + (spec.kind || "decision"));
-      card.appendChild(el("div", "kind", spec.kind === "fact" ? "remembered" : "decision"));
+      var kind = spec.kind === "fact" ? "remembered" : spec.kind === "manifest" ? "manifest" : "decision";
+      card.appendChild(el("div", "kind", kind));
       card.appendChild(el("div", "q", spec.question));
       if (spec.detail) card.appendChild(el("div", "detail", spec.detail));
-      if (spec.kind !== "fact") {
+      // A manifest card is the page's own list, in two groups: what the gate called ordinary and
+      // what it called consequential, the second named tool by tool.
+      var groups = spec.groups || [];
+      for (var g = 0; g < groups.length; g += 1) {
+        var group = el("div", "group " + (groups[g].gated ? "gated" : "auto"));
+        group.appendChild(el("div", "head", groups[g].head));
+        group.appendChild(el("div", "names", groups[g].names));
+        card.appendChild(group);
+      }
+      if (spec.kind === "decision") {
         var row = el("div", "row");
         var yes = el("button", "btn yes", "Approve");
         var no = el("button", "btn no", "Decline");
@@ -244,6 +271,12 @@ const SOURCE = String.raw`(() => {
       var answer = el("div", "answer " + (choice === "approve" ? "approved" : "declined"),
         choice === "approve" ? "Approved by Mira" : "Declined by Mira — recorded as user_denied");
       card.appendChild(answer);
+    },
+    /** What one card says on screen, so the runner can assert the picture and not its intent. */
+    cardText: function (index) {
+      if (!nodes) return "";
+      var card = nodes.cards.children[index];
+      return card ? card.textContent || "" : "";
     },
     /** Drop every card, after the 150 ms fade the stylesheet already declares. */
     clearCards: function () {
@@ -269,7 +302,13 @@ interface StripApi {
   read(): StripState;
   type(text: string, ms: number): Promise<void>;
   send(): void;
-  card(spec: { kind: string; question: string; detail: string }): number;
+  card(spec: {
+    kind: string;
+    question: string;
+    detail: string;
+    groups?: readonly { head: string; names: string; gated: boolean }[];
+  }): number;
+  cardText(index: number): string;
   answer(index: number, choice: "approve" | "decline"): void;
   clearCards(): Promise<void>;
 }
@@ -355,6 +394,35 @@ export class Strip {
       (spec) => (window as unknown as WithStrip).__athenaStrip.card({ kind: "fact", question: spec.question, detail: spec.detail }),
       { question: claim, detail: cites },
     );
+  }
+
+  /**
+   * "Ledgerbox listed 23 capabilities", with the names in the two groups the gate put them in.
+   *
+   * The card is the manifest arriving, which is the only moment in the film where the audience can
+   * see that the classes are the *page's* list read through the gate rather than a caption. So the
+   * runner hands it the names it read off the surface and gets back what the card actually says,
+   * and the take asserts on that text rather than on the numbers it meant to print.
+   */
+  async manifest(card: StripManifest): Promise<string> {
+    const index = await this.page.evaluate(
+      (spec) =>
+        (window as unknown as WithStrip).__athenaStrip.card({
+          kind: "manifest",
+          question: spec.question,
+          detail: spec.detail,
+          groups: spec.groups,
+        }),
+      {
+        question: card.question,
+        detail: card.detail,
+        groups: [
+          { head: `AUTO · ${card.auto.length}`, names: card.auto.join("  "), gated: false },
+          { head: `GATED · ${card.gated.length}`, names: card.gated.join("  "), gated: true },
+        ],
+      },
+    );
+    return this.page.evaluate((at) => (window as unknown as WithStrip).__athenaStrip.cardText(at), index);
   }
 
   async clearCards(): Promise<void> {

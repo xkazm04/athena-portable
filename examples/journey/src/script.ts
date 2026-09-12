@@ -23,6 +23,8 @@ export const PACKAGE_ROOT: string = resolve(here, "..");
 /** Where the take's own output goes: the video, the offsets, and the narration clips. */
 export const TAKE_DIR: string = resolve(PACKAGE_ROOT, "take");
 export const DURATIONS_PATH: string = resolve(TAKE_DIR, "audio", "durations.json");
+/** `scripts/narrate.mjs`'s own record of what it read aloud, beat by beat. */
+export const NARRATION_MANIFEST_PATH: string = resolve(TAKE_DIR, "audio", "manifest.json");
 
 export type Voice = "narrator" | "mira" | "athena";
 
@@ -76,15 +78,49 @@ export function beatsOf(script: Script): Beat[] {
  * case for a rehearsal: the take then paces itself from the script's own words-per-second, which
  * is what docs/demo.md section 2 states the estimates are.
  */
-export function loadDurations(path = DURATIONS_PATH): Record<string, number> {
+export function loadDurations(script?: Script, path = DURATIONS_PATH): Record<string, number> {
   if (!existsSync(path)) return {};
   const parsed = JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
+  const narrated = script === undefined ? {} : narratedLengths();
   const measured: Record<string, number> = {};
   for (const [id, value] of Object.entries(parsed)) {
     const ms = typeof value === "number" ? value : Number(value);
-    if (Number.isFinite(ms) && ms > 0) measured[id] = ms;
+    if (!Number.isFinite(ms) || ms <= 0) continue;
+    if (script !== undefined && isStale(id, script, narrated)) continue;
+    measured[id] = ms;
   }
   return measured;
+}
+
+/** `{ "<beat id>": <characters read aloud> }` from the narration manifest, when there is one. */
+function narratedLengths(path = NARRATION_MANIFEST_PATH): Record<string, number> {
+  if (!existsSync(path)) return {};
+  const parsed = JSON.parse(readFileSync(path, "utf8")) as { beats?: { id?: string; chars?: number }[] };
+  const lengths: Record<string, number> = {};
+  for (const beat of parsed.beats ?? []) {
+    if (typeof beat.id === "string" && typeof beat.chars === "number") lengths[beat.id] = beat.chars;
+  }
+  return lengths;
+}
+
+/**
+ * Was this clip recorded from a line the script no longer has?
+ *
+ * A rewritten beat keeps its id, so `durations.json` goes on offering the old clip's length for
+ * the new words and the take holds a twelve-second picture under a four-second line — a drift the
+ * recorder cannot see and the compose step discovers as audio over the wrong beat. The narration
+ * manifest says how many characters were read for each id, so the two can simply be compared: a
+ * clip whose line has changed length is not this line's clip, and the beat falls back to the
+ * script's own words-per-second estimate until `narrate.mjs` is run again.
+ *
+ * Silent about beats the manifest never mentions — a manifest for one script says nothing about
+ * the other, and the long take's clips are not stale because the cut was narrated last.
+ */
+function isStale(id: string, script: Script, narrated: Record<string, number>): boolean {
+  const chars = narrated[id];
+  if (chars === undefined) return false;
+  const beat = beatsOf(script).find((one) => one.id === id);
+  return beat !== undefined && beat.line.length !== chars;
 }
 
 /** How long the voice takes over this beat: the measured clip, or the script's own estimate. */

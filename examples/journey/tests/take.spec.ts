@@ -38,6 +38,7 @@ import { ConnectorSurface } from "../src/connector-surface.ts";
 import { FakeMail } from "../src/connectors/fake-mail.ts";
 import { FakeNotes } from "../src/connectors/fake-notes.ts";
 import { Ledger, type LedgerRow } from "../src/ledger.ts";
+import { onboardPage, onboardRows, pressStart, runDoctors, type EngineReport } from "../src/onboard.ts";
 import { recordPage } from "../src/record-page.ts";
 import { installBridge } from "../src/relay.ts";
 import {
@@ -88,7 +89,7 @@ import {
 test.describe.configure({ timeout: 25 * 60 * 1000 });
 
 const script = loadScript();
-const durations = loadDurations();
+const durations = loadDurations(script);
 const beats = beatsOf(script);
 
 const VIDEO = join(TAKE_DIR, "journey.webm");
@@ -123,6 +124,14 @@ interface Mark {
 
 const marks: Mark[] = [];
 const booted: Booted[] = [];
+/**
+ * What `athena doctor` said about this machine, one report per engine.
+ *
+ * Filled in `beforeAll`, before the take's first page, because O1 renders it and a beat that
+ * shelled out to `uv` inside its own hold would spend the narration on a subprocess. Empty when
+ * the script has no onboarding beat — the long take does not, and it must not pay for one.
+ */
+const doctors: EngineReport[] = [];
 let context: BrowserContext;
 let page: Page;
 let strip: Strip;
@@ -219,6 +228,36 @@ function presenceOf(surface: Surface): string {
   return `${own.length} offered · ${gated.length} gated`;
 }
 
+/**
+ * The manifest arriving, as the card O2 and O3 hold up.
+ *
+ * Every number and every name on the card is read off the surface that just listed them — the
+ * count is `names()` minus the hands, and the two groups are the gate's own answer for each of
+ * those names. The card's rendered text comes back so the take can assert on *what the audience
+ * sees* rather than on the arguments it passed: a card that printed the wrong count would then be
+ * a red beat, which is the only way a recording can be trusted about a number.
+ */
+async function manifestCard(surface: Surface, app: AppSpec, label: string): Promise<number> {
+  const own = surface.names().filter((name) => !surface.isHand(name));
+  const gated = own.filter((name) => surface.classOf(name) === "GATED").sort();
+  const auto = own.filter((name) => surface.classOf(name) !== "GATED").sort();
+  const shown = await strip.manifest({
+    question: `${label} listed ${own.length} capabilities`,
+    detail: `host:${app.id} · list → manifest · ${gated.length} gated by the gate, not by the page`,
+    auto,
+    gated,
+  });
+  expect(shown, `the card prints the count ${label} actually listed`).toContain(String(own.length));
+  for (const name of gated) expect(shown, `${name} is named on the card as gated`).toContain(name);
+  return own.length;
+}
+
+/** How long this beat is held for, so a beat with two pictures can give each of them a share. */
+function holdOf(id: string): number {
+  const beat = beats.find((one) => one.id === id);
+  return beat === undefined ? 0 : holdMsOf(beat, script, durations);
+}
+
 /** One AUTO read, with the strip saying what is being called before it is called. */
 async function shown<T>(surface: Surface, name: string, params: Record<string, unknown> = {}): Promise<T> {
   await strip.call(name, argLine(params));
@@ -246,6 +285,14 @@ test.beforeAll(async ({ browser }) => {
     booted.push(await boot(app, (line) => console.log(`[boot] ${line}`)));
   }
   mkdirSync(TAKE_DIR, { recursive: true });
+  // Before the take's first page: the real doctor, once per engine, because its engine stage is
+  // per-engine. O1 renders nothing this did not print.
+  if (beats.some((beat) => beat.app === "onboard")) {
+    doctors.push(...runDoctors());
+    for (const one of doctors) {
+      console.log(`[doctor] ${one.engine}: ${one.report.stages.map((stage) => `${stage.name}=${stage.status}`).join(" ")}`);
+    }
+  }
   // The video is what this spec is *for*, so it is not behind an environment variable the way the
   // journey's is. One context, one page, one file: recordVideo writes a video per page, and a
   // second tab would be a second video the compose step has no offsets for.
@@ -900,16 +947,87 @@ const ACTIONS: Record<string, () => Promise<void>> = {
   // A drift in the seed is then a red beat in `take.json` rather than a film that lies.
 
   O1: async () => {
-    // One page, three applications in turn: the presence line goes to "attaching…" and then to
-    // what the application offered and how much of it the gate called consequential.
-    const board = await openApp(HIRELANE);
-    assertClasses(board, HIRELANE);
-    await page.waitForTimeout(1_200);
-    const crm = await openApp(TIDYCRM);
-    assertClasses(crm, TIDYCRM);
-    await page.waitForTimeout(1_200);
+    // First launch, before any page: the letter the desktop shell shows, rendered by the runner
+    // from the doctor this run actually executed. Every row is a stage of that report and there is
+    // no row for a stage the report does not carry — see `src/onboard.ts`.
+    const startedAt = Date.now();
+    await strip.clearCards();
+    const rows = onboardRows(doctors);
+    expect(doctors.length, "athena doctor ran before the first page").toBeGreaterThan(0);
+    expect(rows.length, "the letter is built out of the doctor's stages").toBeGreaterThan(0);
+    for (const row of rows) {
+      const stages = doctors.flatMap((one) => one.report.stages).filter((stage) => stage.name === row.from);
+      expect(stages.length, `${row.label} was read from a stage the doctor printed`).toBeGreaterThan(0);
+      expect(
+        stages.some((stage) => stage.detail.includes(row.value) || row.value === "[redacted — the detail looked like a credential]"),
+        `${row.label}'s value is the doctor's own words`,
+      ).toBe(true);
+    }
+    await page.setContent(onboardPage(rows, "uv run python -m athena.cli doctor --engine claude_code --engine codex"));
+    await strip.reattach();
+    await strip.set({
+      app: "athena · first launch",
+      presence: `${rows.length} rows, every one from athena doctor`,
+      command: "",
+      tool: "",
+      args: "",
+      connector: null,
+      say: null,
+    });
+    // The button is pressed at the *end* of the beat, and the take moves to O2 on the release.
+    const wait = holdOf("O1") - 150 - (Date.now() - startedAt);
+    if (wait > 0) await page.waitForTimeout(wait);
+    await pressStart(page);
+  },
+
+  O2: async () => {
+    // The first page. `openApp` navigates, puts the strip back and lists what the page offers; the
+    // card is that list arriving, in the two classes the gate put it in.
     st.books = await openApp(LEDGERBOX);
     assertClasses(st.books, LEDGERBOX);
+    const startedAt = Date.now();
+    const count = await manifestCard(st.books, LEDGERBOX, "Ledgerbox");
+    expect(count, "the count on the card is the page's own list").toBe(
+      st.books.names().filter((name) => !st.books!.isHand(name)).length,
+    );
+    // Up for the beat, then gone: the presence line carries the same fact for the rest of the film.
+    const wait = holdOf("O2") - 900 - (Date.now() - startedAt);
+    if (wait > 0) await page.waitForTimeout(wait);
+    await strip.clearCards();
+  },
+
+  O3: async () => {
+    // Two more pages in one beat, so each gets a third of it and the last third walks back to the
+    // books — O4 opens on Ledgerbox and a beat that arrived there late would open on the wrong page.
+    const startedAt = Date.now();
+    const third = Math.max(1_200, Math.round(holdOf("O3") / 3));
+    const board = await openApp(HIRELANE);
+    assertClasses(board, HIRELANE);
+    const hirelane = await manifestCard(board, HIRELANE, "Hirelane");
+    expect(hirelane).toBe(board.names().filter((name) => !board.isHand(name)).length);
+    // At least long enough to read, even when the navigation ate most of the third: a card that
+    // flashed would be a claim about the manifest rather than a look at it.
+    const cardAt = Date.now();
+    const afterBoard = Math.max(2_000, third - (cardAt - startedAt));
+    await page.waitForTimeout(afterBoard);
+    await strip.clearCards();
+
+    const crm = await openApp(TIDYCRM);
+    assertClasses(crm, TIDYCRM);
+    const tidycrm = await manifestCard(crm, TIDYCRM, "TidyCRM");
+    expect(tidycrm).toBe(crm.names().filter((name) => !crm.isHand(name)).length);
+    const afterCrm = Math.max(2_000, third * 2 - (Date.now() - startedAt));
+    await page.waitForTimeout(afterCrm);
+    await strip.clearCards();
+
+    st.books = await openApp(LEDGERBOX);
+    assertClasses(st.books, LEDGERBOX);
+  },
+
+  O4: async () => {
+    // Nothing happens, on purpose: the books, attached, and a surface waiting to be told something.
+    await strip.clearCards();
+    await strip.set({ app: "ledgerbox", presence: presenceOf(st.books!), command: "", sent: false, tool: "", args: "", connector: null, say: null });
   },
 
   B1: async () => {

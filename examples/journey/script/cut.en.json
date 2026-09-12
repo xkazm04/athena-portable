@@ -17,15 +17,39 @@
   "acts": [
     {
       "id": "open",
-      "title": "Open",
+      "title": "Onboarding",
       "beats": [
         {
           "id": "O1",
+          "app": "onboard",
+          "voice": "narrator",
+          "line": "First launch. Athena looks for an engine you already have: Claude Code and Codex are both here, signed in through your subscription. No key is typed, and nothing is uploaded. The brain is a folder on this disk.",
+          "screen": "The onboarding letter, rendered by the surface from a live `athena doctor` run: engine rows (claude_code and codex, versions, signed in), the brain path, the constitution; the button 'Start using Athena' is pressed at the end of the beat",
+          "settle_ms": 600
+        },
+        {
+          "id": "O2",
           "app": "ledgerbox",
           "voice": "narrator",
-          "line": "Three web apps, no agent, and none coming. Athena attaches to whatever is already open: each app tells her what it offers and which actions are gated. She never decides that herself.",
-          "screen": "Three tabs in turn (ledgerbox, hirelane, tidycrm), each presence line lighting up as the bridge attaches; end on ledgerbox",
+          "line": "Then the pages. Ledgerbox is open in a tab, so Athena attaches to it. The app tells her what it offers: twenty-three capabilities, three of them gated because they reach a person or cannot be undone. She never decides that herself.",
+          "screen": "Ledgerbox; the bridge attaches; the strip shows the manifest arriving as a card: the tool names in two groups, AUTO and GATED (mark_paid, send_reminder, void_invoice); the presence line turns on",
           "settle_ms": 1200
+        },
+        {
+          "id": "O3",
+          "app": "tidycrm",
+          "voice": "narrator",
+          "line": "The pipeline and the contact list attach the same way: sixteen capabilities, then twenty-two. Three tabs, one studio, and nothing has run yet.",
+          "screen": "Hirelane, then Tidycrm: the manifest card and the presence line on each; end back on Ledgerbox",
+          "settle_ms": 1200
+        },
+        {
+          "id": "O4",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "Three chores, one morning: close the books and chase the late invoices, screen this week's applicants, and clean the contact list before a campaign. Every action she takes runs through one gate, and what she learns in one tab she carries into the next.",
+          "screen": "Ledgerbox at the books, quiet; the strip reads 'waiting for a command'",
+          "settle_ms": 600
         }
       ]
     },
