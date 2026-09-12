@@ -1,0 +1,48 @@
+@import "tailwindcss";
+@import "@athena/demo-kit/ui/demo-kit.css";
+
+/*
+ * Demo app - one design, one token contract.
+ *
+ * Give the design a name, set it once in `lib/constants.ts` (`app/layout.tsx` writes it onto
+ * `<html>` as `data-variant`), and re-point the `--dk-*` hooks below. Everything the kit draws for
+ * you - the toasts, the activity log and its actor chips, the badges, the manifest drawer, the
+ * shell - reads these and nothing else, so they follow your palette without you touching a kit
+ * component. Tailwind `data-[variant=<name>]:` utilities reach the same block from markup.
+ *
+ * Each of the four shipped apps does exactly this and ships one design. The kit's
+ * `ThemeVariantSwitcher` is for a prototyping round with several live directions at once; a round
+ * is over when the switcher is gone and the winner is the sole render, which is where all four
+ * ended up. Start where they ended.
+ */
+[data-variant="plain"] {
+  /* The one colour that means "this app". Nav highlight, primary button, athena's actor chip. */
+  --dk-accent: #2f6f4f;
+  --dk-accent-contrast: #ffffff;
+
+  /* Grounds and ink. `surface` is cards, header, toasts; `surface-2` is the page behind them. */
+  --dk-surface: #ffffff;
+  --dk-surface-2: #f5f5f4;
+  --dk-ink: #1c1917;
+  --dk-ink-soft: #57534e;
+  --dk-line: #e7e5e4;
+
+  /* The two consequence colours. Badges and toasts rank AUTO/GATED from these, so keep them
+   * distinguishable from each other and from --dk-accent. */
+  --dk-auto: #15803d;
+  --dk-gated: #b45309;
+
+  /* Shape and rhythm. --dk-gap is the single spacing step every kit component reads. */
+  --dk-radius: 8px;
+  --dk-gap: 12px;
+  --dk-shadow: 0 1px 2px rgb(0 0 0 / 6%);
+
+  /* Type. --dk-font-display is headings and the brand; --dk-font-mono is timestamps and ids. */
+  --dk-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --dk-font-display: var(--dk-font);
+  --dk-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+}
+
+body {
+  margin: 0;
+}

@@ -2,11 +2,17 @@
   "name": "athena-portable",
   "version": "0.1.0",
   "private": true,
-  "description": "pnpm workspace for the page bridge and the desktop shell.",
+  "description": "pnpm workspace for the page bridge, the desktop shell and the example host apps (examples/*).",
   "scripts": {
     "typecheck": "pnpm -r --if-present run typecheck",
     "lint": "pnpm -r --if-present run lint",
-    "test": "pnpm -r --if-present run test"
+    "test": "pnpm -r --if-present run test",
+    "dev:ledgerbox": "pnpm --filter ledgerbox dev",
+    "dev:hirelane": "pnpm --filter hirelane dev",
+    "dev:tidycrm": "pnpm --filter tidycrm dev"
   },
-  "packageManager": "pnpm@11.1.1"
+  "packageManager": "pnpm@11.1.1",
+  "engines": {
+    "node": ">=22.5"
+  }
 }

@@ -1,0 +1,51 @@
+{
+  "name": "@athena/demo-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared scaffold for the three example host apps (ADR 0014): SQLite seed, activity log, WebMCP capability layer, UI primitives.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./db": "./src/db/index.ts",
+    "./activity": "./src/activity/index.ts",
+    "./activity/ui": "./src/activity/ActivityLog.tsx",
+    "./ui": "./src/ui/index.ts",
+    "./seed": "./src/seed/index.ts",
+    "./zoom": "./src/zoom/index.ts",
+    "./ui/demo-kit.css": "./src/ui/demo-kit.css",
+    "./webmcp": "./src/webmcp/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit && node --test test/*.test.ts",
+    "test": "node --test test/*.test.ts",
+    "lint": "echo \"@athena/demo-kit is linted by the apps that consume it\"",
+    "build": "echo \"@athena/demo-kit ships TypeScript source; consumers use transpilePackages\""
+  },
+  "peerDependencies": {
+    "next": "^16.3.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "dependencies": {
+    "@ag-ui/client": "0.0.59",
+    "@ag-ui/core": "0.0.59",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "rxjs": "7.8.1",
+    "server-only": "0.0.1",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}
