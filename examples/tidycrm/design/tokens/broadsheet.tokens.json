@@ -1,0 +1,687 @@
+{
+  "$description": "RETIRED (2026-09): the 'broadsheet' direction was claimed by DESIGN.md and never built -- there is no /v/broadsheet route, no components/broadsheet/ tree, no npm script that builds this file and no emitted CSS anywhere in the repo. Kept as the record of the pass beside design/build-tokens.mjs, not as a source of truth for any shipped surface. The live value authority is components/blocks/style/base/tokens.css for the shipped 'blocks' direction. tidycrm variant B 'broadsheet'. DTCG tokens, 3-tier (primitive -> semantic -> component), derived from design-systems/library/wired/DESIGN.md via the Library Contract in taste/aesthetic-systems.md. The source palette is six values and the source has exactly one shadow token; both facts are preserved. Built by design/build-tokens.mjs.",
+  "primitive": {
+    "paper": {
+      "0": {
+        "$type": "color",
+        "$value": "#ffffff",
+        "$description": "Paper White. Treat it like newsprint stock: uninterrupted, never tinted."
+      }
+    },
+    "ink": {
+      "900": {
+        "$type": "color",
+        "$value": "#000000",
+        "$description": "WIRED Black. Ribbons, dividers, control borders."
+      },
+      "800": {
+        "$type": "color",
+        "$value": "#1a1a1a",
+        "$description": "Page Ink. Headlines AND body, the same ink for unity. Also the inverted footer fill."
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#757575",
+        "$description": "Caption Gray. Bylines, timestamps, credits. Measured 4.61:1 on paper, passes AA."
+      },
+      "400": {
+        "$type": "color",
+        "$value": "#999999",
+        "$description": "Disabled Gray. Inactive only, 2.85:1."
+      }
+    },
+    "rule": {
+      "300": {
+        "$type": "color",
+        "$value": "#e2e8f0",
+        "$description": "Hairline tint for quiet separators. 1.23:1, decorative only."
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#4a5568",
+        "$description": "Alternate column-rule colour."
+      }
+    },
+    "blue": {
+      "600": {
+        "$type": "color",
+        "$value": "#057dbc",
+        "$description": "Link Blue. The single brand accent. Never a background, never decorated. 4.50:1 on paper."
+      },
+      "400": {
+        "$type": "color",
+        "$value": "#4aa8e0",
+        "$description": "Raised from #057dbc for the inverted footer, where the spec value measured 3.87:1 and failed. Now 6.60:1 on ink.800."
+      }
+    },
+    "red": {
+      "600": {
+        "$type": "color",
+        "$value": "#c62828",
+        "$description": "Darkened from the spec's #e53e3e, which measured 4.13:1 on paper and failed AA. Now 5.62:1."
+      }
+    }
+  },
+  "semantic": {
+    "surface": {
+      "page": {
+        "$type": "color",
+        "$value": "{primitive.paper.0}"
+      },
+      "card": {
+        "$type": "color",
+        "$value": "{primitive.paper.0}",
+        "$description": "There are no cards. A tile is separated by rules and whitespace, so it shares the page surface."
+      },
+      "raised": {
+        "$type": "color",
+        "$value": "{primitive.paper.0}"
+      },
+      "sunken": {
+        "$type": "color",
+        "$value": "{primitive.paper.0}"
+      },
+      "inverted": {
+        "$type": "color",
+        "$value": "{primitive.ink.800}",
+        "$description": "The only inversion in the system: ribbons and the footer block."
+      },
+      "ribbon": {
+        "$type": "color",
+        "$value": "{primitive.ink.900}"
+      },
+      "scrim": {
+        "$type": "color",
+        "$value": "rgba(26, 26, 26, 0.72)"
+      }
+    },
+    "text": {
+      "primary": {
+        "$type": "color",
+        "$value": "{primitive.ink.800}",
+        "$description": "17.40:1."
+      },
+      "secondary": {
+        "$type": "color",
+        "$value": "{primitive.ink.500}",
+        "$description": "4.61:1."
+      },
+      "tertiary": {
+        "$type": "color",
+        "$value": "{primitive.ink.400}",
+        "$description": "2.85:1. Disabled and decorative only, never body copy."
+      },
+      "on-inverted": {
+        "$type": "color",
+        "$value": "{primitive.paper.0}"
+      },
+      "on-action": {
+        "$type": "color",
+        "$value": "{primitive.paper.0}"
+      },
+      "link": {
+        "$type": "color",
+        "$value": "{primitive.blue.600}"
+      },
+      "link-inverted": {
+        "$type": "color",
+        "$value": "{primitive.blue.400}"
+      }
+    },
+    "border": {
+      "default": {
+        "$type": "color",
+        "$value": "{primitive.rule.300}",
+        "$description": "Quiet hr separator."
+      },
+      "column": {
+        "$type": "color",
+        "$value": "{primitive.rule.500}",
+        "$description": "Editorial column rule."
+      },
+      "strong": {
+        "$type": "color",
+        "$value": "{primitive.ink.900}",
+        "$description": "Buttons, inputs, ribbons. 21:1."
+      }
+    },
+    "action": {
+      "primary": {
+        "$type": "color",
+        "$value": "{primitive.ink.900}",
+        "$description": "The primary action is an inversion, not a colour."
+      },
+      "primary-hover": {
+        "$type": "color",
+        "$value": "{primitive.ink.800}"
+      },
+      "primary-active": {
+        "$type": "color",
+        "$value": "{primitive.ink.800}"
+      },
+      "destructive": {
+        "$type": "color",
+        "$value": "{primitive.red.600}"
+      },
+      "destructive-hover": {
+        "$type": "color",
+        "$value": "{primitive.ink.900}"
+      }
+    },
+    "feedback": {
+      "success": {
+        "$type": "color",
+        "$value": "{primitive.ink.800}",
+        "$description": "The source has no success green. Status is carried by an icon and a word, per the colour-usage rule that colour is never the only indicator."
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "{primitive.ink.900}"
+      },
+      "error": {
+        "$type": "color",
+        "$value": "{primitive.red.600}"
+      },
+      "info": {
+        "$type": "color",
+        "$value": "{primitive.blue.600}"
+      }
+    },
+    "governance": {
+      "$description": "tidycrm's own semantic category: AUTO (reversible, the agent may run it) vs GATED (irreversible, a human stands in front of it). In a palette with no green and no amber this is expressed as ink weight plus a mono word, which is the source's own idiom.",
+      "auto": {
+        "$type": "color",
+        "$value": "{primitive.ink.500}"
+      },
+      "gated": {
+        "$type": "color",
+        "$value": "{primitive.ink.900}"
+      },
+      "destructive": {
+        "$type": "color",
+        "$value": "{primitive.red.600}"
+      }
+    },
+    "defect": {
+      "duplicate": {
+        "$type": "color",
+        "$value": "{primitive.ink.900}"
+      },
+      "phone": {
+        "$type": "color",
+        "$value": "{primitive.blue.600}"
+      },
+      "stale": {
+        "$type": "color",
+        "$value": "{primitive.ink.400}"
+      },
+      "conflict": {
+        "$type": "color",
+        "$value": "{primitive.red.600}"
+      },
+      "merged": {
+        "$type": "color",
+        "$value": "{primitive.ink.500}"
+      }
+    }
+  },
+  "component": {
+    "button": {
+      "primary-bg": {
+        "$type": "color",
+        "$value": "{semantic.surface.page}",
+        "$description": "Resting is paper with a 2px black rule. Hover inverts to solid black."
+      },
+      "primary-bg-hover": {
+        "$type": "color",
+        "$value": "{semantic.action.primary}"
+      },
+      "primary-text": {
+        "$type": "color",
+        "$value": "{semantic.text.primary}"
+      },
+      "primary-text-hover": {
+        "$type": "color",
+        "$value": "{semantic.text.on-inverted}"
+      },
+      "primary-border": {
+        "$type": "color",
+        "$value": "{semantic.border.strong}"
+      },
+      "secondary-bg": {
+        "$type": "color",
+        "$value": "transparent"
+      },
+      "secondary-text": {
+        "$type": "color",
+        "$value": "{semantic.text.primary}"
+      },
+      "secondary-border": {
+        "$type": "color",
+        "$value": "{semantic.text.secondary}"
+      },
+      "destructive-bg": {
+        "$type": "color",
+        "$value": "{semantic.action.destructive}"
+      },
+      "destructive-text": {
+        "$type": "color",
+        "$value": "{semantic.text.on-action}"
+      }
+    },
+    "input": {
+      "bg": {
+        "$type": "color",
+        "$value": "{semantic.surface.page}"
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{semantic.border.strong}"
+      },
+      "border-error": {
+        "$type": "color",
+        "$value": "{semantic.feedback.error}"
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{semantic.text.primary}"
+      },
+      "placeholder": {
+        "$type": "color",
+        "$value": "{semantic.text.secondary}"
+      }
+    },
+    "kicker": {
+      "$description": "The mono ALL-CAPS line above every headline. In this app it carries provenance: the rule that fired and its weight.",
+      "text": {
+        "$type": "color",
+        "$value": "{semantic.text.primary}"
+      },
+      "muted": {
+        "$type": "color",
+        "$value": "{semantic.text.secondary}"
+      },
+      "accent": {
+        "$type": "color",
+        "$value": "{semantic.text.link}"
+      }
+    },
+    "gate": {
+      "arm-border": {
+        "$type": "color",
+        "$value": "{semantic.border.strong}"
+      },
+      "fire-bg": {
+        "$type": "color",
+        "$value": "{semantic.action.destructive}"
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{semantic.text.primary}"
+      }
+    }
+  },
+  "font": {
+    "family": {
+      "display": {
+        "$type": "fontFamily",
+        "$value": "var(--font-broadsheet-display), Georgia, serif",
+        "$description": "Playfair Display, the spec's own named substitute for WiredDisplay."
+      },
+      "serif": {
+        "$type": "fontFamily",
+        "$value": "var(--font-broadsheet-serif), Georgia, serif",
+        "$description": "Source Serif 4 for BreveText. The spec says it works at the token values without adjustment."
+      },
+      "sans": {
+        "$type": "fontFamily",
+        "$value": "var(--font-broadsheet-sans), system-ui, sans-serif",
+        "$description": "Work Sans for Apercu. Likewise no adjustment."
+      },
+      "mono": {
+        "$type": "fontFamily",
+        "$value": "var(--font-broadsheet-mono), Monaco, 'Courier New', monospace"
+      }
+    },
+    "size": {
+      "micro": {
+        "$type": "dimension",
+        "$value": "0.6875rem"
+      },
+      "ribbon": {
+        "$type": "dimension",
+        "$value": "0.75rem"
+      },
+      "kicker": {
+        "$type": "dimension",
+        "$value": "0.8125rem"
+      },
+      "caption": {
+        "$type": "dimension",
+        "$value": "0.875rem"
+      },
+      "body": {
+        "$type": "dimension",
+        "$value": "1rem"
+      },
+      "sub": {
+        "$type": "dimension",
+        "$value": "1.0625rem"
+      },
+      "deck": {
+        "$type": "dimension",
+        "$value": "1.1875rem"
+      },
+      "section": {
+        "$type": "dimension",
+        "$value": "1.25rem"
+      },
+      "grid": {
+        "$type": "dimension",
+        "$value": "1.625rem",
+        "$description": "The spec's 26px grid-block headline. Never a 32px safe middle ground."
+      },
+      "hero": {
+        "$type": "dimension",
+        "$value": "clamp(2.5rem, 6.5vw, 4rem)",
+        "$description": "The spec's 64px hero, made fluid."
+      }
+    },
+    "weight": {
+      "regular": {
+        "$type": "fontWeight",
+        "$value": 400
+      },
+      "medium": {
+        "$type": "fontWeight",
+        "$value": 500
+      },
+      "bold": {
+        "$type": "fontWeight",
+        "$value": 700
+      }
+    },
+    "leading": {
+      "hero": {
+        "$type": "number",
+        "$value": 1.05,
+        "$description": "The spec's 0.93 loosened by the substitution note's +0.10 to +0.12 for Playfair Display."
+      },
+      "grid": {
+        "$type": "number",
+        "$value": 1.18,
+        "$description": "The spec's 1.08, loosened by the same correction."
+      },
+      "section": {
+        "$type": "number",
+        "$value": 1.2
+      },
+      "deck": {
+        "$type": "number",
+        "$value": 1.47
+      },
+      "body": {
+        "$type": "number",
+        "$value": 1.5
+      },
+      "kicker": {
+        "$type": "number",
+        "$value": 1.23
+      },
+      "caption": {
+        "$type": "number",
+        "$value": 2.2,
+        "$description": "The photo-caption leading. Unusually open, and deliberate."
+      }
+    },
+    "tracking": {
+      "hero": {
+        "$type": "dimension",
+        "$value": "-0.008em",
+        "$description": "Negative on the largest type. Never neutral."
+      },
+      "section": {
+        "$type": "dimension",
+        "$value": "-0.014em"
+      },
+      "normal": {
+        "$type": "dimension",
+        "$value": "0"
+      },
+      "kicker": {
+        "$type": "dimension",
+        "$value": "0.071em",
+        "$description": "0.92px at 13px, uppercase."
+      },
+      "ribbon": {
+        "$type": "dimension",
+        "$value": "0.1em",
+        "$description": "1.2px at 12px, uppercase."
+      }
+    }
+  },
+  "space": {
+    "0": {
+      "$type": "dimension",
+      "$value": "0"
+    },
+    "hair": {
+      "$type": "dimension",
+      "$value": "1px"
+    },
+    "1": {
+      "$type": "dimension",
+      "$value": "4px"
+    },
+    "2": {
+      "$type": "dimension",
+      "$value": "8px"
+    },
+    "3": {
+      "$type": "dimension",
+      "$value": "12px"
+    },
+    "4": {
+      "$type": "dimension",
+      "$value": "16px"
+    },
+    "5": {
+      "$type": "dimension",
+      "$value": "24px"
+    },
+    "6": {
+      "$type": "dimension",
+      "$value": "32px"
+    },
+    "7": {
+      "$type": "dimension",
+      "$value": "40px"
+    },
+    "8": {
+      "$type": "dimension",
+      "$value": "48px"
+    },
+    "9": {
+      "$type": "dimension",
+      "$value": "64px"
+    },
+    "10": {
+      "$type": "dimension",
+      "$value": "88px"
+    }
+  },
+  "radius": {
+    "none": {
+      "$type": "dimension",
+      "$value": "0",
+      "$description": "Law. The strictest corner discipline of any major editorial property."
+    },
+    "pill": {
+      "$type": "dimension",
+      "$value": "1920px",
+      "$description": "Inline text pills only, e.g. a LIVE flag."
+    },
+    "round": {
+      "$type": "dimension",
+      "$value": "50%",
+      "$description": "Round icon buttons and avatars only."
+    }
+  },
+  "border-width": {
+    "hair": {
+      "$type": "dimension",
+      "$value": "1px"
+    },
+    "rule": {
+      "$type": "dimension",
+      "$value": "2px",
+      "$description": "Buttons, inputs, ribbons."
+    },
+    "heavy": {
+      "$type": "dimension",
+      "$value": "4px",
+      "$description": "The masthead rule under the section ribbon."
+    }
+  },
+  "shadow": {
+    "none": {
+      "$type": "shadow",
+      "$value": "none",
+      "$description": "The source ships exactly one shadow token and it is transparent. Depth is rules and inversion."
+    },
+    "focus-ring": {
+      "$type": "shadow",
+      "$value": "0 0 0 2px {semantic.surface.page}, 0 0 0 4px {semantic.border.strong}",
+      "$description": "Added. The source admits it signals focus by the caret alone and under-serves keyboard users."
+    }
+  },
+  "motion": {
+    "duration": {
+      "instant": {
+        "$type": "duration",
+        "$value": "120ms",
+        "$description": "Nav hover. Instant or ~120ms, no bouncy easing."
+      },
+      "fast": {
+        "$type": "duration",
+        "$value": "150ms",
+        "$description": "The button inversion. Colour and background only."
+      },
+      "base": {
+        "$type": "duration",
+        "$value": "260ms"
+      },
+      "slow": {
+        "$type": "duration",
+        "$value": "420ms"
+      },
+      "spin": {
+        "$type": "duration",
+        "$value": "700ms",
+        "$description": "One rotation of the loading indicator."
+      },
+      "hold": {
+        "$type": "duration",
+        "$value": "900ms",
+        "$description": "How long an irreversible action must be held before it fires."
+      }
+    },
+    "easing": {
+      "out": {
+        "$type": "cubicBezier",
+        "$value": [
+          0.22,
+          0.61,
+          0.36,
+          1
+        ]
+      },
+      "in": {
+        "$type": "cubicBezier",
+        "$value": [
+          0.55,
+          0.06,
+          0.68,
+          0.19
+        ]
+      },
+      "in-out": {
+        "$type": "cubicBezier",
+        "$value": [
+          0.45,
+          0.05,
+          0.55,
+          0.95
+        ]
+      }
+    }
+  },
+  "size": {
+    "target": {
+      "$type": "dimension",
+      "$value": "44px",
+      "$description": "The source's own mono nav links are ~32px; its guidance says pad to 44px in derivative work."
+    },
+    "icon": {
+      "$type": "dimension",
+      "$value": "16px"
+    },
+    "icon-lg": {
+      "$type": "dimension",
+      "$value": "20px"
+    },
+    "measure": {
+      "$type": "dimension",
+      "$value": "68ch",
+      "$description": "Body measure, inside the 60-75ch rule."
+    },
+    "container": {
+      "$type": "dimension",
+      "$value": "1440px"
+    },
+    "spinner": {
+      "$type": "dimension",
+      "$value": "13px",
+      "$description": "In-control loading indicator, set to the kicker size."
+    },
+    "bar": {
+      "$type": "dimension",
+      "$value": "10px",
+      "$description": "Ruled ledger bar height."
+    },
+    "fade": {
+      "$type": "dimension",
+      "$value": "28px",
+      "$description": "Width of the edge fade that cues a horizontally scrolling region."
+    },
+    "table-min": {
+      "$type": "dimension",
+      "$value": "760px",
+      "$description": "Minimum width of the record table before it scrolls rather than crushes."
+    },
+    "ribbon": {
+      "$type": "dimension",
+      "$value": "40px",
+      "$description": "Section-ribbon height. The source specifies 32-40px."
+    },
+    "column-min": {
+      "$type": "dimension",
+      "$value": "240px",
+      "$description": "Minimum editorial column width before the grid reflows."
+    }
+  },
+  "z": {
+    "base": {
+      "$type": "number",
+      "$value": 0
+    },
+    "sticky": {
+      "$type": "number",
+      "$value": 20
+    },
+    "overlay": {
+      "$type": "number",
+      "$value": 60
+    }
+  }
+}

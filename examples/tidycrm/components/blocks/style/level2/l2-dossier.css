@@ -1,0 +1,52 @@
+/* -------------------------------------------------------------- L2 dossier */
+
+/*
+ * The dossier is laid over the sheet the way a checker lays a marked-up print
+ * on the drawing: the plate stays visible behind it, because the point is that
+ * this block is part of that survey.
+ *
+ * THE SIZING RULE, which is what the rebuild is about. The card is a flex
+ * column of three: a head that does not scroll, a body that does, and a foot
+ * that does not. A flex child's default `min-height: auto` refuses to shrink
+ * below its content, so without `min-block-size: 0` the body simply grew and
+ * the foot printed over the bottom of it — which is exactly the table cut in
+ * half. The three `flex` declarations below are load-bearing; none is cosmetic.
+ */
+.bk-dossier-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  /* Room above and below, because the survey has to stay visible around the
+     card — this is a marked-up print laid ON the drawing, not a page of its
+     own. The inline padding stays tighter so a phone keeps its measure. */
+  padding-block: var(--bk-s5);
+  padding-inline: var(--bk-s4);
+  /* The ink the sheet is dimmed with, mixed from the role rather than
+     restated as a triple: 29 28 26 IS --bk-graphite, and written raw the scrim
+     stops tracking the ramp the moment the ink moves. */
+  background: color-mix(in srgb, var(--bk-graphite) 46%, transparent);
+}
+
+/*
+ * `100%` here is the layer's own grid area — the window less the layer's
+ * padding — so the card takes every row it can get instead of stopping at a
+ * fixed 90svh and leaving a band of dimmed sheet above and below it. The head
+ * and the two feet are fixed, so every pixel this wins goes to the body, which
+ * is the part that was cutting a table in half.
+ */
+.bk-dossier {
+  inline-size: min(1180px, 100%);
+  max-block-size: min(100%, 62rem);
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow: hidden;
+  background: var(--bk-sheet);
+  border: var(--bk-rule-3) solid var(--bk-graphite);
+  border-radius: var(--bk-radius-0);
+  container-type: inline-size;
+  container-name: bk-dossier;
+}
+

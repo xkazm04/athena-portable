@@ -1,0 +1,725 @@
+{
+  "$description": "RETIRED (2026-09): the 'signal' direction was claimed by DESIGN.md and never built -- there is no /v/signal route, no components/signal/ tree, no npm script that builds this file and no emitted CSS anywhere in the repo. Kept as the record of the pass beside design/build-tokens.mjs, not as a source of truth for any shipped surface. The live value authority is components/blocks/style/base/tokens.css for the shipped 'blocks' direction. tidycrm variant A 'signal'. DTCG tokens, 3-tier (primitive -> semantic -> component), derived from design-systems/library/voltagent/DESIGN.md via the Library Contract in taste/aesthetic-systems.md. Primitives are never referenced from components. Built by design/build-tokens.mjs.",
+  "primitive": {
+    "void": {
+      "900": {
+        "$type": "color",
+        "$value": "#050507",
+        "$description": "Abyss Black. The page canvas."
+      }
+    },
+    "carbon": {
+      "900": {
+        "$type": "color",
+        "$value": "#101010",
+        "$description": "Carbon Surface. Card and button background."
+      },
+      "800": {
+        "$type": "color",
+        "$value": "#181717",
+        "$description": "Raised carbon, one step above a card."
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#201f1e",
+        "$description": "Table zebra / hover fill."
+      }
+    },
+    "char": {
+      "600": {
+        "$type": "color",
+        "$value": "#3d3a39",
+        "$description": "Warm Charcoal Border. The signature containment colour."
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#6b6764",
+        "$description": "Raised from the spec's #3d3a39 so essential control borders clear WCAG 3:1 (measured 3.40:1 on carbon.900)."
+      }
+    },
+    "emerald": {
+      "600": {
+        "$type": "color",
+        "$value": "#10b981",
+        "$description": "Tailwind Emerald. Pressed state."
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#00d992",
+        "$description": "Emerald Signal Green. The power-on indicator of the whole interface."
+      },
+      "400": {
+        "$type": "color",
+        "$value": "#2fd6a1",
+        "$description": "VoltAgent Mint. CTA text on dark surfaces."
+      }
+    },
+    "snow": {
+      "50": {
+        "$type": "color",
+        "$value": "#f2f2f2",
+        "$description": "Snow White. Primary text. The spec forbids pure #ffffff as default body text."
+      },
+      "0": {
+        "$type": "color",
+        "$value": "#ffffff",
+        "$description": "Pure White. Max-contrast headings only."
+      }
+    },
+    "parchment": {
+      "300": {
+        "$type": "color",
+        "$value": "#b8b3b0",
+        "$description": "Warm Parchment. Secondary body text."
+      }
+    },
+    "steel": {
+      "400": {
+        "$type": "color",
+        "$value": "#8b949e",
+        "$description": "Steel Slate. Tertiary text, metadata, timestamps."
+      }
+    },
+    "coral": {
+      "500": {
+        "$type": "color",
+        "$value": "#fb565b",
+        "$description": "Danger Coral. Destructive actions."
+      },
+      "300": {
+        "$type": "color",
+        "$value": "#fd9c9f",
+        "$description": "Danger Rose. Destructive hover."
+      }
+    },
+    "amber": {
+      "500": {
+        "$type": "color",
+        "$value": "#ffba00",
+        "$description": "Warning Amber. Reserved here for the human gate."
+      },
+      "300": {
+        "$type": "color",
+        "$value": "#ffdd80",
+        "$description": "Warning Pale."
+      }
+    },
+    "indigo": {
+      "400": {
+        "$type": "color",
+        "$value": "#818cf8",
+        "$description": "Soft Purple. Secondary categorisation only."
+      }
+    },
+    "teal": {
+      "400": {
+        "$type": "color",
+        "$value": "#4cb3d4",
+        "$description": "Info Teal."
+      }
+    }
+  },
+  "semantic": {
+    "surface": {
+      "page": {
+        "$type": "color",
+        "$value": "{primitive.void.900}"
+      },
+      "card": {
+        "$type": "color",
+        "$value": "{primitive.carbon.900}"
+      },
+      "raised": {
+        "$type": "color",
+        "$value": "{primitive.carbon.800}"
+      },
+      "sunken": {
+        "$type": "color",
+        "$value": "{primitive.carbon.700}"
+      },
+      "scrim": {
+        "$type": "color",
+        "$value": "rgba(5, 5, 7, 0.82)"
+      }
+    },
+    "text": {
+      "primary": {
+        "$type": "color",
+        "$value": "{primitive.snow.50}",
+        "$description": "17.00:1 on surface.card."
+      },
+      "secondary": {
+        "$type": "color",
+        "$value": "{primitive.parchment.300}",
+        "$description": "9.16:1."
+      },
+      "tertiary": {
+        "$type": "color",
+        "$value": "{primitive.steel.400}",
+        "$description": "6.19:1."
+      },
+      "max": {
+        "$type": "color",
+        "$value": "{primitive.snow.0}"
+      },
+      "on-action": {
+        "$type": "color",
+        "$value": "{primitive.void.900}",
+        "$description": "Dark ink on the emerald fill. 11.00:1."
+      },
+      "link": {
+        "$type": "color",
+        "$value": "{primitive.emerald.500}"
+      }
+    },
+    "border": {
+      "default": {
+        "$type": "color",
+        "$value": "{primitive.char.600}",
+        "$description": "Decorative card edge only. 1.69:1 by design."
+      },
+      "strong": {
+        "$type": "color",
+        "$value": "{primitive.char.500}",
+        "$description": "Essential control borders. 3.40:1."
+      },
+      "accent": {
+        "$type": "color",
+        "$value": "{primitive.emerald.500}",
+        "$description": "Level 3 of the border-weight depth ladder."
+      }
+    },
+    "action": {
+      "primary": {
+        "$type": "color",
+        "$value": "{primitive.emerald.500}"
+      },
+      "primary-hover": {
+        "$type": "color",
+        "$value": "{primitive.emerald.400}"
+      },
+      "primary-active": {
+        "$type": "color",
+        "$value": "{primitive.emerald.600}"
+      },
+      "destructive": {
+        "$type": "color",
+        "$value": "{primitive.coral.500}"
+      },
+      "destructive-hover": {
+        "$type": "color",
+        "$value": "{primitive.coral.300}"
+      }
+    },
+    "feedback": {
+      "success": {
+        "$type": "color",
+        "$value": "{primitive.emerald.500}"
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "{primitive.amber.500}"
+      },
+      "error": {
+        "$type": "color",
+        "$value": "{primitive.coral.500}"
+      },
+      "info": {
+        "$type": "color",
+        "$value": "{primitive.teal.400}"
+      }
+    },
+    "governance": {
+      "$description": "The app's own semantic category. tidycrm's central visual idea is whether an action is AUTO (reversible, the agent may run it) or GATED (irreversible, a human stands in front of it). Giving that a semantic tier is what lets every component express it without a badge.",
+      "auto": {
+        "$type": "color",
+        "$value": "{primitive.emerald.500}"
+      },
+      "gated": {
+        "$type": "color",
+        "$value": "{primitive.amber.500}"
+      },
+      "destructive": {
+        "$type": "color",
+        "$value": "{primitive.coral.500}"
+      }
+    },
+    "defect": {
+      "$description": "Per-defect hues for the index and the charts. Kept inside the source palette rather than invented.",
+      "duplicate": {
+        "$type": "color",
+        "$value": "{primitive.indigo.400}"
+      },
+      "phone": {
+        "$type": "color",
+        "$value": "{primitive.teal.400}"
+      },
+      "stale": {
+        "$type": "color",
+        "$value": "{primitive.steel.400}"
+      },
+      "conflict": {
+        "$type": "color",
+        "$value": "{primitive.amber.500}"
+      },
+      "merged": {
+        "$type": "color",
+        "$value": "{primitive.emerald.500}"
+      }
+    }
+  },
+  "component": {
+    "button": {
+      "primary-bg": {
+        "$type": "color",
+        "$value": "{semantic.action.primary}"
+      },
+      "primary-bg-hover": {
+        "$type": "color",
+        "$value": "{semantic.action.primary-hover}"
+      },
+      "primary-text": {
+        "$type": "color",
+        "$value": "{semantic.text.on-action}"
+      },
+      "secondary-bg": {
+        "$type": "color",
+        "$value": "transparent"
+      },
+      "secondary-text": {
+        "$type": "color",
+        "$value": "{semantic.text.max}"
+      },
+      "secondary-border": {
+        "$type": "color",
+        "$value": "{semantic.border.strong}"
+      },
+      "destructive-bg": {
+        "$type": "color",
+        "$value": "{semantic.action.destructive}"
+      },
+      "destructive-text": {
+        "$type": "color",
+        "$value": "{semantic.text.on-action}"
+      }
+    },
+    "input": {
+      "bg": {
+        "$type": "color",
+        "$value": "{semantic.surface.card}"
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{semantic.border.strong}"
+      },
+      "border-error": {
+        "$type": "color",
+        "$value": "{semantic.feedback.error}"
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{semantic.text.primary}"
+      },
+      "placeholder": {
+        "$type": "color",
+        "$value": "{semantic.text.tertiary}"
+      }
+    },
+    "lane": {
+      "$description": "The async work lane: the strip that shows the agent working.",
+      "track": {
+        "$type": "color",
+        "$value": "{semantic.surface.sunken}"
+      },
+      "fill": {
+        "$type": "color",
+        "$value": "{semantic.action.primary}"
+      },
+      "pending": {
+        "$type": "color",
+        "$value": "{semantic.border.default}"
+      }
+    },
+    "gate": {
+      "$description": "The merge-vs-delete gate.",
+      "arm-border": {
+        "$type": "color",
+        "$value": "{semantic.governance.gated}"
+      },
+      "fire-bg": {
+        "$type": "color",
+        "$value": "{semantic.action.destructive}"
+      },
+      "text": {
+        "$type": "color",
+        "$value": "{semantic.text.primary}"
+      }
+    }
+  },
+  "font": {
+    "family": {
+      "display": {
+        "$type": "fontFamily",
+        "$value": "var(--font-signal-display), system-ui, sans-serif"
+      },
+      "sans": {
+        "$type": "fontFamily",
+        "$value": "var(--font-signal-body), system-ui, sans-serif"
+      },
+      "mono": {
+        "$type": "fontFamily",
+        "$value": "var(--font-signal-mono), SFMono-Regular, Menlo, monospace"
+      }
+    },
+    "size": {
+      "micro": {
+        "$type": "dimension",
+        "$value": "0.75rem"
+      },
+      "caption": {
+        "$type": "dimension",
+        "$value": "0.875rem"
+      },
+      "body": {
+        "$type": "dimension",
+        "$value": "1rem"
+      },
+      "feature": {
+        "$type": "dimension",
+        "$value": "1.25rem"
+      },
+      "sub": {
+        "$type": "dimension",
+        "$value": "1.5rem"
+      },
+      "section": {
+        "$type": "dimension",
+        "$value": "2.25rem"
+      },
+      "display": {
+        "$type": "dimension",
+        "$value": "3.75rem"
+      },
+      "hero": {
+        "$type": "dimension",
+        "$value": "clamp(2.75rem, 7vw, 5.5rem)"
+      },
+      "nano": {
+        "$type": "dimension",
+        "$value": "0.625rem",
+        "$description": "Chip and micro-label size, below the caption step."
+      }
+    },
+    "weight": {
+      "regular": {
+        "$type": "fontWeight",
+        "$value": 400
+      },
+      "medium": {
+        "$type": "fontWeight",
+        "$value": 500
+      },
+      "semibold": {
+        "$type": "fontWeight",
+        "$value": 600
+      },
+      "bold": {
+        "$type": "fontWeight",
+        "$value": 700
+      }
+    },
+    "leading": {
+      "display": {
+        "$type": "number",
+        "$value": 1.0
+      },
+      "section": {
+        "$type": "number",
+        "$value": 1.11
+      },
+      "sub": {
+        "$type": "number",
+        "$value": 1.33
+      },
+      "body": {
+        "$type": "number",
+        "$value": 1.5
+      },
+      "caption": {
+        "$type": "number",
+        "$value": 1.43
+      }
+    },
+    "tracking": {
+      "display": {
+        "$type": "dimension",
+        "$value": "-0.0175em"
+      },
+      "section": {
+        "$type": "dimension",
+        "$value": "-0.025em"
+      },
+      "normal": {
+        "$type": "dimension",
+        "$value": "0"
+      },
+      "kicker": {
+        "$type": "dimension",
+        "$value": "0.18em",
+        "$description": "The spec's 2.52px at 14px, the widest tracking in the system."
+      }
+    }
+  },
+  "space": {
+    "0": {
+      "$type": "dimension",
+      "$value": "0"
+    },
+    "1": {
+      "$type": "dimension",
+      "$value": "4px"
+    },
+    "2": {
+      "$type": "dimension",
+      "$value": "8px"
+    },
+    "3": {
+      "$type": "dimension",
+      "$value": "12px"
+    },
+    "4": {
+      "$type": "dimension",
+      "$value": "16px"
+    },
+    "5": {
+      "$type": "dimension",
+      "$value": "20px"
+    },
+    "6": {
+      "$type": "dimension",
+      "$value": "24px"
+    },
+    "7": {
+      "$type": "dimension",
+      "$value": "32px"
+    },
+    "8": {
+      "$type": "dimension",
+      "$value": "40px"
+    },
+    "9": {
+      "$type": "dimension",
+      "$value": "48px"
+    },
+    "10": {
+      "$type": "dimension",
+      "$value": "64px"
+    },
+    "11": {
+      "$type": "dimension",
+      "$value": "96px"
+    }
+  },
+  "radius": {
+    "inline": {
+      "$type": "dimension",
+      "$value": "4px",
+      "$description": "Inline code spans."
+    },
+    "control": {
+      "$type": "dimension",
+      "$value": "6px",
+      "$description": "Buttons and links."
+    },
+    "code": {
+      "$type": "dimension",
+      "$value": "6.4px",
+      "$description": "The spec's deliberate micro-distinction for pre blocks."
+    },
+    "card": {
+      "$type": "dimension",
+      "$value": "8px",
+      "$description": "Content cards. The spec forbids anything larger."
+    },
+    "pill": {
+      "$type": "dimension",
+      "$value": "9999px"
+    },
+    "seg": {
+      "$type": "dimension",
+      "$value": "2px",
+      "$description": "Work-lane segment and chip-key corner. Below the inline step."
+    }
+  },
+  "border-width": {
+    "contained": {
+      "$type": "dimension",
+      "$value": "1px",
+      "$description": "Depth level 1: untouched."
+    },
+    "accent": {
+      "$type": "dimension",
+      "$value": "2px",
+      "$description": "Depth level 3: the agent has an opinion."
+    },
+    "emphasized": {
+      "$type": "dimension",
+      "$value": "3px",
+      "$description": "Depth level 2: a gate stands here."
+    }
+  },
+  "shadow": {
+    "flat": {
+      "$type": "shadow",
+      "$value": "none"
+    },
+    "ambient": {
+      "$type": "shadow",
+      "$value": "rgba(92, 88, 85, 0.2) 0px 0px 15px"
+    },
+    "dramatic": {
+      "$type": "shadow",
+      "$value": "rgba(0, 0, 0, 0.7) 0px 20px 60px, rgba(148, 163, 184, 0.1) 0px 0px 0px 1px inset"
+    },
+    "glow": {
+      "$type": "shadow",
+      "$value": "0 0 0 1px {semantic.border.accent}, 0 0 24px -6px {semantic.border.accent}"
+    },
+    "focus-ring": {
+      "$type": "shadow",
+      "$value": "0 0 0 2px {semantic.surface.page}, 0 0 0 4px {semantic.action.primary}"
+    }
+  },
+  "motion": {
+    "duration": {
+      "instant": {
+        "$type": "duration",
+        "$value": "120ms"
+      },
+      "fast": {
+        "$type": "duration",
+        "$value": "200ms"
+      },
+      "base": {
+        "$type": "duration",
+        "$value": "320ms"
+      },
+      "slow": {
+        "$type": "duration",
+        "$value": "560ms"
+      },
+      "pulse": {
+        "$type": "duration",
+        "$value": "2600ms",
+        "$description": "The power-on heartbeat. The spec forbids fast motion."
+      },
+      "spin": {
+        "$type": "duration",
+        "$value": "700ms",
+        "$description": "One rotation of the loading indicator."
+      },
+      "hold": {
+        "$type": "duration",
+        "$value": "900ms",
+        "$description": "How long an irreversible action must be held before it fires."
+      }
+    },
+    "easing": {
+      "out": {
+        "$type": "cubicBezier",
+        "$value": [
+          0.16,
+          1,
+          0.3,
+          1
+        ]
+      },
+      "in": {
+        "$type": "cubicBezier",
+        "$value": [
+          0.7,
+          0,
+          0.84,
+          0
+        ]
+      },
+      "in-out": {
+        "$type": "cubicBezier",
+        "$value": [
+          0.65,
+          0,
+          0.35,
+          1
+        ]
+      }
+    }
+  },
+  "size": {
+    "target": {
+      "$type": "dimension",
+      "$value": "44px",
+      "$description": "WCAG 2.5.8 recommended target."
+    },
+    "icon": {
+      "$type": "dimension",
+      "$value": "16px"
+    },
+    "icon-lg": {
+      "$type": "dimension",
+      "$value": "20px"
+    },
+    "container": {
+      "$type": "dimension",
+      "$value": "1280px"
+    },
+    "spinner": {
+      "$type": "dimension",
+      "$value": "14px",
+      "$description": "In-control loading indicator. Sized to sit on the caption line."
+    },
+    "bar": {
+      "$type": "dimension",
+      "$value": "6px",
+      "$description": "Proportional bar height in the defect mix."
+    },
+    "fade": {
+      "$type": "dimension",
+      "$value": "32px",
+      "$description": "Width of the edge fade that cues a horizontally scrolling region."
+    },
+    "table-min": {
+      "$type": "dimension",
+      "$value": "720px",
+      "$description": "Minimum width of the index table before it scrolls rather than crushes."
+    },
+    "lane": {
+      "$type": "dimension",
+      "$value": "44px",
+      "$description": "Work-lane track height at desktop."
+    },
+    "lane-compact": {
+      "$type": "dimension",
+      "$value": "32px",
+      "$description": "Work-lane track height under 640px."
+    },
+    "gate-min": {
+      "$type": "dimension",
+      "$value": "220px",
+      "$description": "Minimum capability-card width before the manifest grid reflows."
+    }
+  },
+  "z": {
+    "base": {
+      "$type": "number",
+      "$value": 0
+    },
+    "sticky": {
+      "$type": "number",
+      "$value": 20
+    },
+    "overlay": {
+      "$type": "number",
+      "$value": 60
+    }
+  }
+}

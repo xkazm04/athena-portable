@@ -1,0 +1,83 @@
+/* ------------------------------------------------------------- responsive */
+
+@container bk-sheet (max-width: 62rem) {
+  .bk-coverage {
+    gap: var(--bk-s4);
+  }
+
+  .bk-grid-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
+ * The phone. What this block exists to prevent is the sheet's numbers pushing
+ * the plate off the screen: six figures at one per line and a level rail whose
+ * three labels each wrapped to two put the cube 745px down the page, which on a
+ * 390-wide phone means the subject of the direction is not on it.
+ */
+@container bk-sheet (max-width: 34rem) {
+  .bk-head {
+    gap: var(--bk-s2);
+  }
+
+  /*
+   * Six figures, six lines, each label beside its figure rather than under it.
+   * Stacked with the label below, three of the six wrapped their caps onto a
+   * second line and the read-out alone ran 216px before the plate could start.
+   * A fixed first track also puts the six figures in one column, which is the
+   * only way a stack of counts compares.
+   */
+  .bk-coverage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--bk-s2);
+  }
+
+  .bk-coverage div {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--bk-s3);
+  }
+
+  .bk-coverage b {
+    font-size: var(--bk-text-sm);
+  }
+
+  .bk-bar {
+    display: grid;
+    justify-content: stretch;
+    gap: var(--bk-s2);
+  }
+
+  .bk-rail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Tighter, but never below the 44px target: the rung keeps `--bk-s7`. */
+  .bk-rung {
+    gap: var(--bk-s1);
+    justify-content: center;
+    padding: var(--bk-s2) var(--bk-s1);
+    font-size: var(--bk-text-xs);
+  }
+
+  .bk-grid-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bk-zone-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bk-zone-jump {
+    justify-content: space-between;
+  }
+
+  .bk-pair-sides {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

@@ -1,0 +1,95 @@
+/* ------------------------------------------------------------- sheet foot */
+
+.bk-foot {
+  display: grid;
+  gap: var(--bk-s3);
+  padding-block-start: var(--bk-s4);
+  border-block-start: var(--bk-rule-1) solid var(--bk-rule-ink);
+}
+
+.bk-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bk-s3);
+  font-size: var(--bk-text-xs);
+  color: var(--bk-graphite-2);
+}
+
+.bk-crumb b {
+  font-weight: 500;
+  color: var(--bk-graphite);
+}
+
+.bk-crumb i {
+  font-style: normal;
+  color: var(--bk-graphite-3);
+  margin-inline-start: var(--bk-s2);
+}
+
+.bk-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bk-s2);
+  min-block-size: var(--bk-s7);
+  padding: var(--bk-s2) var(--bk-s3);
+  background: none;
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-radius: var(--bk-radius-0);
+  font-size: var(--bk-text-xs);
+  color: var(--bk-graphite-2);
+  cursor: pointer;
+}
+
+.bk-back kbd {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-2xs);
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  padding: 0 var(--bk-s1);
+}
+
+/* A drawing's legend is lettering, not figures. Set in the figure face its four
+   clauses ran a fifth wider than the sheet and broke a swatch onto its own
+   line. */
+.bk-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bk-s2) var(--bk-s4);
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-2xs);
+  color: var(--bk-graphite-3);
+}
+
+.bk-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bk-s2);
+}
+
+.bk-legend i {
+  inline-size: var(--bk-s2);
+  block-size: var(--bk-s2);
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.bk-legend span[data-tone="redline"] {
+  color: var(--bk-redline);
+}
+
+.bk-legend span[data-tone="goldline"] {
+  color: var(--bk-goldline);
+}
+
+.bk-legend span[data-tone="ink"] {
+  color: var(--bk-graphite);
+}
+
+/* The one legend entry that is not about a dot: its swatch is the cell's own
+   inner rule, drawn at the weight the cell draws it. */
+.bk-legend-edge i {
+  inline-size: var(--bk-rule-3);
+  block-size: var(--bk-s3);
+  border-radius: var(--bk-radius-0);
+}
+

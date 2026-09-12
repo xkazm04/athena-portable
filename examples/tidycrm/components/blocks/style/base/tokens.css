@@ -1,0 +1,173 @@
+/*
+ * `blocks` — The Blocks. Scoped to [data-variant="blocks"], but for the colour
+ * ramp, which is declared one level up so the toast stack can reach it — see
+ * THE RAMP below.
+ *
+ * FOLLOWS the `law` direction (reviewed out; its brief survives at
+ * `design/pass3-law-brief.md`). That direction settled how this app should look: a
+ * drawing-office check print, graphite on vellum, hatch meaning unsurveyed,
+ * redline reserved for a deviation from the specification and greenline for a
+ * check that passed, no shadows anywhere and no rounded corner on anything.
+ * This file keeps that palette, that type system and that polarity, verbatim
+ * where it can. What it changes is the STRUCTURE: `law` is one flat plate of 46
+ * blocks, and this is the same survey read at three depths.
+ *
+ * THE ONE DECLARED DEVIATION from law's colour lock, written down here because
+ * that lock requires it. `law` runs on two hue-bearing tokens: redline for a
+ * deviation, greenline for a check that passed. This direction adds a third,
+ * `--bk-goldline`, for exactly one fact: an identity pair nobody has
+ * adjudicated. It earns its place because it is a genuinely different KIND of
+ * finding. A phone outside `+1XXXXXXXXXX` deviates from a specification and a
+ * rule can repair it; an unadjudicated duplicate deviates from nothing, and no
+ * automatic act may resolve it, because merging destroys a record. Marking both
+ * in redline would say a rule could fix both. Gold appears on nothing else.
+ *
+ * THE SECOND DECLARED DEVIATION is achromatic and belongs to one element: the
+ * cube's canvas is lit by `--bk-plate-lift`, a white fall-off that lets the
+ * particle field's edge dissolve into the sheet instead of stopping at a border.
+ * It is declared because this lock is only worth having if the list is true, and
+ * a value on the surface that appears in no list makes the whole file
+ * unauditable. It is not a shadow: it lights the ground rather than casting the
+ * plate above it, and the shadowless declaration below stands.
+ *
+ * Every fluid value is on `cqi`, never `vw`, and every responsive rule is
+ * `@container`, never `@media (width…)`: the CopilotKit sidebar shrinks the body
+ * to roughly 800px at a 1280 viewport, so a viewport-relative clamp reports a
+ * width this surface does not have.
+ */
+
+/*
+ * THE RAMP, declared one level up.
+ *
+ * Every other token here is scoped to the direction's wrapper, because nothing
+ * outside it needs them. The colour is the exception: `ToastProvider` mounts its
+ * stack as a SIBLING of that wrapper, so a palette declared on the wrapper never
+ * reaches the one surface that reports a failed write, and `chrome/toast.css`
+ * used to restate six of these values as literals to get at them. Declared on
+ * the root instead, the same values are inherited by the direction's subtree AND
+ * by the toast stack, so a palette edit is one edit again.
+ *
+ * The values are law's ramp verbatim, plus the one declared addition above.
+ */
+:root:has([data-variant="blocks"]) {
+  /* --- Colour. law's ramp, unchanged, plus the one declared addition. --- */
+  --bk-vellum: #e7e2d6;
+  --bk-sheet: #f4f1e9;
+  --bk-graphite: #1d1c1a;
+  --bk-graphite-2: #4f4d48;
+  --bk-graphite-3: #7e7a72;
+  --bk-graphite-4: #a8a49a;
+  --bk-rule-ink: #c6c1b4;
+  --bk-redline: #b3261e;
+  --bk-greenline: #2e6b40;
+  --bk-goldline: #8a6a12;
+
+  /* THE SECOND DECLARED DEVIATION, and the only achromatic one. The WebGL
+     canvas needs its field to fall off into the sheet at the edge, which a flat
+     fill cannot do, so the plate's ground carries a lift no other surface has.
+     It is white at 55% over --bk-sheet and it appears on the canvas and nowhere
+     else — see base/reduced-motion.css's .bk-cube-canvas. */
+  --bk-plate-lift: rgb(255 255 255 / 55%);
+}
+
+[data-variant="blocks"] {
+  /* --- Spacing: ten steps, adjacent ranks differ by two or more. --- */
+  /* The half-step, and the only one: a label sitting hard under its figure,
+     nowhere else. 2 -> 4 keeps the ranks-differ-by-two property. */
+  --bk-s0: 2px;
+  --bk-s1: 4px;
+  --bk-s2: 8px;
+  --bk-s3: 12px;
+  --bk-s4: 16px;
+  --bk-s5: 24px;
+  --bk-s6: 32px;
+  --bk-s7: 48px;
+  --bk-s8: 64px;
+  --bk-s9: 96px;
+
+  /* --- Type. The reading sizes start at 17px, as law rebased them: the owner
+         has complained about default-small type, and this sheet is read. --- */
+  --bk-text-2xs: 0.75rem;
+  --bk-text-xs: 0.875rem;
+  --bk-text-sm: 1rem;
+  --bk-text-base: 1.0625rem;
+  --bk-text-md: 1.25rem;
+  --bk-text-lg: clamp(1.4rem, 1.15rem + 1.4cqi, 1.75rem);
+  --bk-text-xl: clamp(1.9rem, 1.4rem + 3cqi, 2.75rem);
+  --bk-text-2xl: clamp(2.6rem, 1.7rem + 5.5cqi, 4.25rem);
+
+  --bk-leading-tight: 1;
+  --bk-leading-snug: 1.15;
+  --bk-leading-normal: 1.5;
+  --bk-leading-relaxed: 1.65;
+
+  --bk-track-tight: -0.025em;
+  --bk-track-wide: 0.06em;
+  --bk-track-caps: 0.14em;
+  --bk-track-caps-wide: 0.2em;
+
+  /* --- Motion. law's durations and easings verbatim. --- */
+  --bk-dur-1: 90ms;
+  --bk-dur-2: 160ms;
+  --bk-dur-3: 260ms;
+  --bk-dur-4: 420ms;
+  --bk-dur-5: 700ms;
+  --bk-dur-6: 1200ms;
+
+  /*
+   * The L0 -> L1 arrival. These mirror `LAND` / `SPREAD` / `DRESS` in
+   * `Blocks.tsx`, which owns the clock: the constants there decide when a beat
+   * starts, these decide how long its transitions take, and they have to agree
+   * or a beat begins before the one before it has finished.
+   */
+  --bk-beat-spread: 620ms;
+  --bk-beat-dress: 420ms;
+  /* Lettering is quicker than ground: a rule can afford to be drawn, a word
+     that takes 420ms to appear reads as a fade rather than as writing. */
+  --bk-beat-dress-text: 320ms;
+  --bk-stagger: 30ms;
+  /* The travel's own stagger, tighter than --bk-stagger so twelve blocks read
+     as a shoal while their grounds arrive on the slower beat behind them. */
+  --bk-stagger-tight: 16ms;
+  /* How far behind its own cell's ground each later part of the dressing is. */
+  --bk-dress-name: 90ms;
+  --bk-dress-figures: 190ms;
+  --bk-ease: cubic-bezier(0.2, 0, 0, 1);
+  --bk-ease-in: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --bk-ease-snap: cubic-bezier(0.85, 0, 0.15, 1);
+
+  /* --- Shadowless by declaration. A drawing sheet has no drop shadows on it;
+         depth is rule weight, inversion and hatch density. --- */
+  --bk-elev-0: none;
+
+  --bk-rule-1: 1px;
+  --bk-rule-2: 2px;
+  --bk-rule-3: 3px;
+  --bk-radius-0: 0px;
+  --bk-measure-narrow: 44ch;
+  --bk-measure-prose: 62ch;
+  --bk-measure-wide: 78ch;
+
+  --bk-font-draft: var(--font-bk-draft), ui-sans-serif, system-ui, sans-serif;
+  --bk-font-note: var(--font-bk-note), "Iowan Old Style", serif;
+  --bk-font-fig: var(--font-bk-fig), ui-monospace, monospace;
+
+  /* --- The --dk-* bridge. Alias, never fork. The gate carries no colour: it is
+         a place, the inverted title block, exactly as in law. --- */
+  --dk-accent: var(--bk-graphite);
+  --dk-accent-contrast: var(--bk-sheet);
+  --dk-surface: var(--bk-sheet);
+  --dk-surface-2: var(--bk-vellum);
+  --dk-ink: var(--bk-graphite);
+  --dk-ink-soft: var(--bk-graphite-2);
+  --dk-line: var(--bk-rule-ink);
+  --dk-radius: var(--bk-radius-0);
+  --dk-gap: var(--bk-s3);
+  --dk-font: var(--bk-font-draft);
+  --dk-font-display: var(--bk-font-draft);
+  --dk-font-mono: var(--bk-font-fig);
+  --dk-shadow: var(--bk-elev-0);
+  --dk-gated: var(--bk-graphite);
+  --dk-auto: var(--bk-greenline);
+}
+

@@ -1,0 +1,193 @@
+/* --------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-root *,
+  .bk-root *::before,
+  .bk-root *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ================================================================== L0 cube */
+
+/*
+ * The WebGL plate. One cube, quartered, with the zone keys beside it as real
+ * DOM controls — a canvas is not reachable by keyboard and a survey plate has
+ * to be, so the four buttons are the accessible path to the same four places
+ * and double as the read-out.
+ */
+/*
+ * The plate and its rail are one instrument, so they are one row and they end
+ * at the same rule. `stretch` rather than `center`: the rail's height is set by
+ * four keys and the canvas takes whatever that is, which keeps the two boxes
+ * squared to each other at every width instead of floating past one another.
+ */
+.bk-cube-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: var(--bk-s5);
+  align-items: stretch;
+}
+
+.bk-cube-canvas {
+  position: relative;
+  min-block-size: clamp(340px, 44cqi, 560px);
+  /* The paper the cube is drawn on: a faint tooth, and a vignette so the
+     particles at the edge of the field fall off into the sheet rather than
+     stopping at a hard border. The lift is the ramp's second declared
+     deviation, named in base/tokens.css so the lock's list is the whole list. */
+  background:
+    radial-gradient(70% 60% at 50% 45%, var(--bk-plate-lift) 0%, transparent 70%),
+    var(--bk-sheet);
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  /* Not `grab`: nothing here is draggable, and a cursor that promises a drag
+     the scene does not support is a lie told sixty times a second. The pointer
+     appears only over a quadrant, which is the thing that IS clickable. */
+  cursor: default;
+}
+
+.bk-cube-wrap[data-hover="true"] .bk-cube-canvas {
+  cursor: pointer;
+}
+
+.bk-cube-canvas canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.bk-zone-keys {
+  display: grid;
+  gap: var(--bk-s2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bk-zone-key {
+  display: grid;
+  gap: var(--bk-s2);
+  inline-size: 100%;
+  padding: var(--bk-s3);
+  background: none;
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-inline-start: var(--bk-rule-3) solid var(--bk-rule-ink);
+  border-radius: var(--bk-radius-0);
+  text-align: start;
+  cursor: pointer;
+  transition: border-color var(--bk-dur-2) var(--bk-ease), background var(--bk-dur-2) var(--bk-ease);
+}
+
+.bk-zone-key:hover,
+.bk-zone-key[data-on="true"] {
+  border-color: var(--bk-graphite);
+  border-inline-start-color: var(--bk-graphite);
+  background: var(--bk-vellum);
+}
+
+.bk-zone-key-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--bk-s2);
+}
+
+/* The quarter index. Four squares, one filled: which part of the cube this is. */
+.bk-quarter {
+  inline-size: 15px;
+  block-size: 15px;
+  flex: none;
+}
+
+.bk-quarter-box {
+  fill: none;
+  stroke: var(--bk-graphite-4);
+  stroke-width: 1;
+}
+
+.bk-quarter-on {
+  fill: var(--bk-graphite-3);
+  stroke: none;
+  transition: fill var(--bk-dur-2) var(--bk-ease);
+}
+
+.bk-zone-key:hover .bk-quarter-on,
+.bk-zone-key[data-on="true"] .bk-quarter-on {
+  fill: var(--bk-graphite);
+}
+
+.bk-zone-key-id {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-md);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-wide);
+}
+
+.bk-zone-key-span {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--bk-track-caps);
+  text-transform: uppercase;
+  color: var(--bk-graphite-4);
+  margin-block-start: calc(var(--bk-s2) * -1);
+}
+
+/*
+ * Four figures on fixed tracks, never a wrapping flex. With flex, zone D's
+ * shorter numbers folded two lines into one and the four keys stopped being
+ * readable as a column of the same thing. Two by two rather than one by four,
+ * because "OUTSTANDING" set in drafted caps does not fit a quarter of a rail.
+ */
+.bk-zone-key-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bk-s2) var(--bk-s3);
+}
+
+.bk-zone-key-figures span {
+  display: grid;
+  gap: 0;
+  min-inline-size: 0;
+  color: var(--bk-graphite-3);
+}
+
+.bk-zone-key-figures b {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--bk-leading-snug);
+  color: var(--bk-graphite);
+}
+
+.bk-zone-key-figures i {
+  font-family: var(--bk-font-draft);
+  font-style: normal;
+  font-size: var(--bk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--bk-track-caps);
+  text-transform: uppercase;
+  color: var(--bk-graphite-4);
+}
+
+.bk-zone-key-figures span[data-tone="redline"] b {
+  color: var(--bk-redline);
+}
+
+.bk-zone-key-figures span[data-tone="goldline"] b {
+  color: var(--bk-goldline);
+}
+
+.bk-zone-key-figures span[data-tone="greenline"] b {
+  color: var(--bk-greenline);
+}
+
+/* The drawn measure: this zone's outstanding work against the worst zone's. */
+.bk-zone-key-measure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  block-size: var(--bk-rule-2);
+  background: var(--bk-rule-ink);
+}
+

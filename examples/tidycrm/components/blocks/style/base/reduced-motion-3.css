@@ -1,0 +1,188 @@
+/*
+ * Beat three — dress. Three things, not one, and in this order inside every
+ * cell: the ground and the inner rule (on `.bk-cell` above), then the ident and
+ * the name, then the figures. Each part carries its own offset behind its cell's
+ * ground, and every cell carries `--i * --bk-stagger` behind its neighbour, so
+ * what crosses the grid is one wave rather than twelve simultaneous fades.
+ *
+ * Previously `.bk-cell-body` faded in whole, which made the dressing a single
+ * event and lost the thing the beat is for: a block acquiring, in order, the
+ * parts it only has at this depth.
+ */
+.bk-cell-head,
+.bk-tile-figures {
+  transition:
+    opacity var(--bk-beat-dress-text) var(--bk-ease) var(--bk-dress-at, 0ms),
+    transform var(--bk-beat-dress-text) var(--bk-ease) var(--bk-dress-at, 0ms);
+}
+
+.bk-cell-head {
+  --bk-dress-at: calc(var(--i, 0) * var(--bk-stagger) + var(--bk-dress-name));
+}
+
+.bk-tile-figures {
+  --bk-dress-at: calc(var(--i, 0) * var(--bk-stagger) + var(--bk-dress-figures));
+}
+
+.bk-cells[data-phase="land"] .bk-cell-head,
+.bk-cells[data-phase="spread"] .bk-cell-head,
+.bk-cells[data-phase="land"] .bk-tile-figures,
+.bk-cells[data-phase="spread"] .bk-tile-figures {
+  opacity: 0;
+}
+
+.bk-cells[data-phase="land"] .bk-cell-head,
+.bk-cells[data-phase="spread"] .bk-cell-head {
+  transform: translateX(-8px);
+}
+
+.bk-cells[data-phase="land"] .bk-tile-figures,
+.bk-cells[data-phase="spread"] .bk-tile-figures {
+  transform: translateY(6px);
+}
+
+/*
+ * Beat four — the heading, last and alone, because it is the only part of this
+ * level that was never inside the cube and so has nothing to arrive from. Its
+ * box is reserved the whole way through, so nothing below it moves when it
+ * lands.
+ *
+ * The delay lives on the SHOWN state, not on the hidden one. Written the other
+ * way the heading also took 420ms to leave, which meant it was still on screen
+ * during `land` — over the top of the cells being measured onto the canvas,
+ * which is the one moment nothing may be moving.
+ */
+.bk-grid-head {
+  transition:
+    opacity var(--bk-dur-5) var(--bk-ease) var(--bk-beat-dress),
+    transform var(--bk-dur-5) var(--bk-ease) var(--bk-beat-dress);
+}
+
+.bk-grid[data-phase="land"] .bk-grid-head,
+.bk-grid[data-phase="spread"] .bk-grid-head {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition-delay: 0ms;
+}
+
+/* The cube holds its flattened pose under the cells, then leaves before they
+   start moving away from it. */
+.bk-stage {
+  display: grid;
+  grid-template: minmax(0, 1fr) / 1fr;
+  min-block-size: 0;
+}
+
+.bk-stage > * {
+  grid-area: 1 / 1;
+  min-inline-size: 0;
+}
+
+.bk-cube-hold {
+  transition: opacity var(--bk-dur-3) var(--bk-ease);
+}
+
+.bk-cube-hold[data-out="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* While a zone is opening, the plate's own furniture is no longer the subject:
+   the keys and the caption step back so the flatten is the only thing moving. */
+.bk-cube-wrap[data-opening]:not([data-opening=""]) .bk-zone-keys {
+  opacity: 0.25;
+  transition: opacity var(--bk-dur-4) var(--bk-ease);
+}
+
+.bk-tile-head {
+  display: grid;
+  gap: var(--bk-s0);
+  min-inline-size: 0;
+}
+
+.bk-tile-ident {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-2xs);
+  letter-spacing: var(--bk-track-wide);
+  color: var(--bk-graphite-3);
+}
+
+.bk-tile-name {
+  font-size: var(--bk-text-md);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-tight);
+  color: var(--bk-graphite);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bk-tile-figures {
+  display: flex;
+  gap: var(--bk-s4);
+}
+
+.bk-tile-fig {
+  display: grid;
+  gap: 0;
+}
+
+.bk-tile-fig b {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-md);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: var(--bk-leading-snug);
+  color: var(--bk-graphite);
+}
+
+.bk-tile-fig span {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--bk-track-caps);
+  text-transform: uppercase;
+  color: var(--bk-graphite-3);
+}
+
+.bk-tile-fig[data-tone="redline"] b {
+  color: var(--bk-redline);
+}
+
+.bk-tile-fig[data-zero="true"] b {
+  color: var(--bk-graphite-4);
+}
+
+/* ============================================================ responsive */
+
+@container bk-sheet (max-width: 62rem) {
+  .bk-cube-wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bk-zone-keys {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container bk-sheet (max-width: 62rem) {
+  .bk-cells {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container bk-sheet (max-width: 34rem) {
+  .bk-zone-keys {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bk-cells {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bk-tile-figures {
+    gap: var(--bk-s3);
+  }
+}
+

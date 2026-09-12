@@ -1,0 +1,69 @@
+/*
+ * The dossier on a phone.
+ *
+ * Queried off `bk-root` rather than off the card, because a container cannot
+ * query itself and the card is what has to change. On a 390 screen the head
+ * alone is 400px, so pinning a head and two feet around the body left a 30px
+ * window on the part that carries the evidence. Here the whole card scrolls as
+ * one sheet — which is also what a print is.
+ */
+@container bk-root (max-width: 36rem) {
+  .bk-dossier {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .bk-dossier-body {
+    overflow: visible;
+    min-block-size: auto;
+    padding: var(--bk-s4);
+    padding-block-end: var(--bk-s5);
+    gap: var(--bk-s4);
+  }
+
+  .bk-dossier-head,
+  .bk-foot-bar,
+  .bk-title-block {
+    padding: var(--bk-s4);
+  }
+
+  /* The dossier title used to drop to --bk-text-lg here. It is that rank at
+     every width now (level2/head.css), so there is nothing left to override. */
+
+  /* Kept, not hidden: this is the element the cell's cluster morphs into. */
+  .bk-dossier-cluster {
+    inline-size: 2rem;
+    block-size: 2rem;
+  }
+
+  .bk-verdict {
+    gap: var(--bk-s3) var(--bk-s5);
+  }
+
+  .bk-verdict b {
+    font-size: var(--bk-text-md);
+  }
+
+  .bk-table-wrap {
+    max-block-size: 16rem;
+  }
+
+  /* Full-width actions: a 44px target beside another 44px target on a 330px
+     sheet leaves a two-word label, which is not what these buttons say. */
+  .bk-actions {
+    display: grid;
+  }
+
+  /* The clause takes the width and its count sits under it, rather than the two
+     splitting a 330px sheet and the clause wrapping to four lines. */
+  .bk-check {
+    grid-template-columns: var(--bk-s5) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--bk-s1) var(--bk-s3);
+  }
+
+  .bk-check-count {
+    grid-column: 2;
+  }
+}
+
