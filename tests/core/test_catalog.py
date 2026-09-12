@@ -270,4 +270,25 @@ def _class_section_of(text: str, name: str) -> str:
 def test_an_empty_catalog_still_renders_an_honest_block() -> None:
     block = Catalog().render_capabilities(Lane.BROWSER)
     assert "(showing 0 of 0)" in block.text
-    assert "### " not in block.text
+    # No class groups, because there is nothing to group. The grammar section stays: a model with
+    # no names to address still needs to know that names are addressed with an ``OP:`` line.
+    for cls in (ToolClass.GATED, ToolClass.READ, ToolClass.AUTO):
+        assert f"### {cls.value}" not in block.text
+
+
+def test_the_block_teaches_the_one_way_to_address_a_name() -> None:
+    """The names and how to call them are stated in the same place, or neither is stated.
+
+    The engine has no tool-call API: an ``OP:`` line is the only way anything runs
+    (``harness/op_grammar.py``). A capability block that listed names without the grammar was a
+    prompt that taught a model what it could reach and not how — and against a real CLI the model
+    read the block, hunted for a native tool API, reported none found, and asked the user to run
+    the tool instead. The turn cost money and did nothing.
+    """
+    text = build_catalog(services()).render_capabilities(Lane.BROWSER).text
+
+    assert "OP:" in text
+    assert '"op":"propose_action"' in text
+    assert '"rationale"' in text
+    # Named explicitly, because "propose" reads as "ask the user to do it" otherwise.
+    assert "do not ask the user to run them" in text
