@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "The page side of the bridge: the WebMCP polyfill and relay that runs in the page (inject.js). README section 3.4 tier 1; the wire format is protocol.md.",
+  "description": "The two halves of the bridge: the WebMCP polyfill and relay that runs in the page (inject.js) and the gate every surface runs (gate.js). README sections 3.3 and 3.4 tier 1; the wire format is protocol.md.",
   "files": [
     "inject.js",
+    "gate.js",
     "bridge.d.ts",
     "protocol.md"
   ],
   "exports": {
+    "./gate": "./gate.js",
     "./inject": "./inject.js",
     "./protocol": "./protocol.md"
   },

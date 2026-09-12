@@ -8,6 +8,7 @@ speaks the same messages.
 | File | Where it runs | Job |
 |---|---|---|
 | `inject.js` | the page's main world, at document start | polyfill `document.modelContext`, answer `list` and `call`, post `toolchange` |
+| `gate.js` | the surface — the panel, an extension — never the page | annotations → flags → `AUTO`/`GATED`, the refusal vocabulary, the untrusted fence, bounded output, the per-origin budget |
 
 `inject.js` decides nothing. It lists what the page registered and runs what it is told to run.
 Whether a tool is `AUTO` or `GATED` is decided by the surface's gate and by the catalog behind it
@@ -131,3 +132,30 @@ non-extensible `window`. `inject.js` installs nothing in that case and throws no
 message listener, so `list` never answers, and the surface shows a page with zero tools rather
 than an error in someone else's application. The same silence covers a frame and a page whose
 `window.top` is unreachable. See ADR 0007.
+
+## The surface's half
+
+`gate.js` is the other side of the same conversation and never runs in a page. It is a plain ES
+module with no DOM, so the answers below are covered by `node --test` and are the same answers on
+every surface.
+
+| Export | Answers |
+|---|---|
+| `flagsOf(tool)` | what the page claimed: the `athena` block, else the standard annotations, else unknown |
+| `classify(flags)` | `AUTO` only when reversible and the side effects stay inside the app; otherwise `GATED` |
+| `decide(tool, overrides)` | the class for this origin — a stored override may tighten `AUTO` to `GATED` and is refused when it tries to loosen |
+| `manifestOf(page, tools)` | the README §3.3 host manifest, shaped for `HostManifest.from_dict` |
+| `REFUSAL_REASONS` | the closed refusal vocabulary, frozen |
+| `fence(text, label, nonce)` | the page's text, wrapped so it cannot close the block from the inside |
+| `bounded(items, limit)` | at most `limit` items, with `(showing N of M)` iff some were cut |
+| `Budget.take(origin)` | one call claimed, or a `budget_exhausted` refusal naming the origin and the ceiling |
+
+The order for anything a page said is **bound, then fence**: the markers and the preamble are the
+fence's own and are not part of what was bounded. Both markers are neutralised inside the body
+first, whatever nonce they carry, because a surface may hold one nonce for a whole session and a
+previous turn's prompt can reach a page through a tool that echoes its input.
+
+Three of these are ports, and the Python is the authority: `classify` is
+`HostTool.default_class` (`src/athena/contracts/manifest.py`), `REFUSAL_REASONS` is `ERROR_REASONS`
+(`src/athena/contracts/harness.py`), and `fence` is `wrap_untrusted` (`src/athena/core/fence.py`).
+`tests/test_refusal_parity.py` reads this package and fails when a declaration drifts. See ADR 0008.

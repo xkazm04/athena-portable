@@ -15,5 +15,5 @@
     "noUnusedParameters": true,
     "skipLibCheck": true
   },
-  "include": ["bridge.d.ts", "inject.js", "eslint.config.js", "test"]
+  "include": ["bridge.d.ts", "inject.js", "gate.js", "eslint.config.js", "test"]
 }
