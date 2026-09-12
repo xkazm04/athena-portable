@@ -2,6 +2,10 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
+## Examples — the studio and the journey (in progress)
+
+- `feat(examples): the shared kit and the studio's world` — `examples/` joins the workspace; `@athena/demo-kit` pruned to `db`, `activity`, `seed`, `ui`, `zoom`, `webmcp`; the seed registry gains `STUDIO`, one billing contact per client and the named cross-app people and aliases; ADR 0014 narrows the example-app non-goal to the three the demo runs on.
+
 ## P5 — MVP checkpoint (in progress)
 
 ## P4 — The shell skeleton

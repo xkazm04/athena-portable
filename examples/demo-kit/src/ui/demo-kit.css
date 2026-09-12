@@ -1,0 +1,210 @@
+/*
+ * @athena/demo-kit shared styles.
+ *
+ * Every value below is a `--dk-*` custom property with a plain default. An app re-declares them
+ * under `[data-variant="..."]` (or with Tailwind `data-[variant=x]:` utilities) to make its three
+ * design directions look radically different while the components stay identical.
+ *
+ * That promise used to cover colour and corner radius only: the rules underneath typed raw
+ * lengths for every padding, margin, gap and font-size, so an app could retheme the kit but could
+ * not shift its density or its reading ramp without overriding class rules one at a time - which
+ * is why two apps wrote their own scale layer (`hirelane/design/hl-scales.css`, then
+ * `tidycrm/design/tc-scales.css` vendoring it). The spacing and type scales below close that hole:
+ * no rule in this file types a length any more, and an app aliases the steps instead of replacing
+ * them (hirelane/DESIGN-LAW.md section 1.6 describes exactly that seam).
+ *
+ * Import once, from the app's own globals.css:
+ *   @import "@athena/demo-kit/ui/demo-kit.css";
+ */
+
+:root {
+  --dk-accent: #2f6f4f;
+  --dk-accent-contrast: #ffffff;
+  --dk-surface: #ffffff;
+  --dk-surface-2: #f5f5f4;
+  --dk-ink: #1c1917;
+  --dk-ink-soft: #57534e;
+  --dk-line: #e7e5e4;
+  --dk-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --dk-font-display: var(--dk-font);
+  --dk-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+  --dk-gated: #b45309;
+  --dk-auto: #15803d;
+
+  /* --- Spacing. A 2px grid, thirteen steps. Every padding, margin, gap and inset below spends
+   * one of these; re-point a step and every rule that spends it moves together. The defaults are
+   * exactly the lengths this file used to type, so a kit that redeclares nothing renders as it
+   * always did. Steps 11-13 are the page-scale end of the ramp - the kit itself only spends 13. */
+  --dk-space-1: 2px;
+  --dk-space-2: 4px;
+  --dk-space-3: 6px;
+  --dk-space-4: 8px;
+  --dk-space-5: 10px;
+  --dk-space-6: 12px;
+  --dk-space-7: 14px;
+  --dk-space-8: 16px;
+  --dk-space-9: 18px;
+  --dk-space-10: 20px;
+  --dk-space-11: 24px;
+  --dk-space-12: 32px;
+  --dk-space-13: 48px;
+
+  /* Optical insets - four shapes are padded half a grid step in, because their padding is read
+   * against a curve or a rule rather than against the grid, and snapping them to the grid would
+   * have been a silent visual change. Tokens all the same, so a density pass still moves them. */
+  --dk-inset-meta: 3px; /* the activity meta line riding under its summary */
+  --dk-inset-control: 5px; /* segmented control and pill button, vertical */
+  --dk-inset-pill: 7px; /* badge, horizontal */
+  --dk-inset-cell: 9px; /* table cell, vertical */
+
+  /* `--dk-gap` predates the scale and is kept as the name components reach for when they want
+   * "the" spacing step. It is now step 6 rather than a literal, so moving the scale moves it. */
+  --dk-gap: var(--dk-space-6);
+
+  /* --- Type. Five steps, and deliberately no step below 12px: the kit shipped four rules at 11px
+   * (nav badge, badge, chip, manifest meta) and an 11px floor is the one defect the owner of this
+   * repo has rejected twice - `tidycrm/design/tc-scales.css:26-31` records both rejections. Those
+   * four rules now take `--dk-text-xs`, so they render one step larger than they used to. That is
+   * the single intended visual change in this file. `md` is the step the kit does not currently
+   * spend; it is here so an app's ramp has a rung between body and display. */
+  --dk-text-xs: 12px;
+  --dk-text-sm: 13px;
+  --dk-text-base: 14px;
+  --dk-text-md: 16px;
+  --dk-text-lg: 20px;
+
+  /* --- Shape and elevation. `sm` is the nested radius a control inside a rounded box takes;
+   * `pill` is the fully-round end. `--dk-shadow-lg` is the drawer's cast - it used to be typed
+   * inline at `.dk-manifest-open`, an ad-hoc value in the file that owns the shadow token. */
+  --dk-radius: 8px;
+  --dk-radius-sm: calc(var(--dk-radius) - var(--dk-space-1));
+  --dk-radius-pill: 999px;
+  --dk-shadow: 0 1px 2px rgb(0 0 0 / 6%);
+  --dk-shadow-lg: 0 0 40px rgb(0 0 0 / 12%);
+}
+
+.dk-shell {
+  min-height: 100dvh;
+  background: var(--dk-surface-2);
+  color: var(--dk-ink);
+  font-family: var(--dk-font);
+}
+.dk-header {
+  display: flex;
+  align-items: center;
+  gap: var(--dk-gap);
+  padding: var(--dk-space-6) var(--dk-space-10);
+  background: var(--dk-surface);
+  border-bottom: 1px solid var(--dk-line);
+}
+.dk-brand { display: flex; flex-direction: column; }
+.dk-brand-name { font-family: var(--dk-font-display); font-weight: 650; letter-spacing: -0.01em; }
+.dk-brand-tagline { font-size: var(--dk-text-xs); color: var(--dk-ink-soft); }
+.dk-nav { display: flex; gap: var(--dk-space-2); margin-inline-start: auto; }
+.dk-nav-link {
+  padding: var(--dk-space-3) var(--dk-space-5);
+  border-radius: var(--dk-radius);
+  color: var(--dk-ink-soft);
+  text-decoration: none;
+  font-size: var(--dk-text-base);
+}
+.dk-nav-link:hover { background: var(--dk-surface-2); }
+.dk-nav-link-active { color: var(--dk-accent); background: color-mix(in oklab, var(--dk-accent) 10%, transparent); }
+.dk-nav-badge { margin-inline-start: var(--dk-space-3); font-size: var(--dk-text-xs); color: var(--dk-ink-soft); }
+.dk-header-end { display: flex; align-items: center; gap: var(--dk-space-4); }
+.dk-toolbar {
+  display: flex; align-items: center; gap: var(--dk-gap);
+  padding: var(--dk-space-5) var(--dk-space-10); background: var(--dk-surface); border-bottom: 1px solid var(--dk-line);
+}
+.dk-main { padding: var(--dk-space-10); max-width: 1200px; margin: 0 auto; }
+
+.dk-variants { display: inline-flex; gap: var(--dk-space-1); padding: var(--dk-space-1); background: var(--dk-surface-2); border-radius: var(--dk-radius); }
+.dk-variant { border: 0; background: transparent; padding: var(--dk-inset-control) var(--dk-space-5); border-radius: var(--dk-radius-sm); font: inherit; font-size: var(--dk-text-sm); color: var(--dk-ink-soft); cursor: pointer; }
+.dk-variant-active { background: var(--dk-surface); color: var(--dk-ink); box-shadow: var(--dk-shadow); }
+
+.dk-table-wrap { overflow-x: auto; background: var(--dk-surface); border: 1px solid var(--dk-line); border-radius: var(--dk-radius); }
+.dk-table { width: 100%; border-collapse: collapse; font-size: var(--dk-text-base); }
+.dk-table-caption { text-align: start; padding: var(--dk-space-5) var(--dk-space-6); color: var(--dk-ink-soft); font-size: var(--dk-text-sm); }
+.dk-table th, .dk-table td { padding: var(--dk-inset-cell) var(--dk-space-6); border-bottom: 1px solid var(--dk-line); text-align: start; }
+.dk-table td[data-align="end"], .dk-table th[data-align="end"] { text-align: end; }
+.dk-table thead th { font-weight: 600; color: var(--dk-ink-soft); font-size: var(--dk-text-xs); text-transform: uppercase; letter-spacing: 0.04em; }
+.dk-table-sort { border: 0; background: transparent; font: inherit; color: inherit; cursor: pointer; padding: 0; }
+.dk-table-check { width: 36px; }
+.dk-table-row-clickable { cursor: pointer; }
+.dk-table-row:hover { background: var(--dk-surface-2); }
+.dk-table-row-selected { background: color-mix(in oklab, var(--dk-accent) 8%, transparent); }
+.dk-table-row-active { outline: 2px solid color-mix(in oklab, var(--dk-accent) 40%, transparent); outline-offset: calc(var(--dk-space-1) * -1); }
+
+.dk-detail { background: var(--dk-surface); border: 1px solid var(--dk-line); border-radius: var(--dk-radius); padding: var(--dk-space-10); }
+.dk-detail-head { display: flex; align-items: start; gap: var(--dk-gap); }
+.dk-detail-title { font-family: var(--dk-font-display); font-size: var(--dk-text-lg); margin: 0; }
+.dk-detail-subtitle { color: var(--dk-ink-soft); font-size: var(--dk-text-base); margin: var(--dk-space-2) 0 0; }
+.dk-detail-actions { margin-inline-start: auto; display: flex; gap: var(--dk-space-4); }
+.dk-detail-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--dk-gap); margin: var(--dk-space-9) 0 0; }
+.dk-detail-field dt { font-size: var(--dk-text-xs); color: var(--dk-ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+.dk-detail-field dd { margin: var(--dk-space-1) 0 0; }
+.dk-detail-body { margin-top: var(--dk-space-9); }
+
+/* A route heading is a different rank from a component heading, so it gets its own pair rather
+ * than borrowing .dk-detail-title. Both spend --dk-gap, so a design that re-points the spacing
+ * step moves the page header with everything else. */
+.dk-page-title { font-family: var(--dk-font-display); font-size: var(--dk-text-lg); margin: 0 0 var(--dk-gap); }
+.dk-page-lede { color: var(--dk-ink-soft); font-size: var(--dk-text-base); margin: 0 0 var(--dk-gap); }
+
+.dk-empty { text-align: center; padding: var(--dk-space-13) var(--dk-space-10); color: var(--dk-ink-soft); background: var(--dk-surface); border: 1px dashed var(--dk-line); border-radius: var(--dk-radius); }
+.dk-empty-title { color: var(--dk-ink); font-weight: 600; margin: 0; }
+.dk-empty-desc { margin: var(--dk-space-3) 0 0; font-size: var(--dk-text-base); }
+.dk-empty-action { margin-top: var(--dk-space-7); }
+
+.dk-btn { font: inherit; font-size: var(--dk-text-sm); padding: var(--dk-space-3) var(--dk-space-6); border-radius: var(--dk-radius); border: 1px solid var(--dk-line); background: var(--dk-surface); color: var(--dk-ink); cursor: pointer; }
+.dk-btn:hover { background: var(--dk-surface-2); }
+.dk-btn:disabled { opacity: 0.55; cursor: default; }
+.dk-btn-primary { background: var(--dk-accent); color: var(--dk-accent-contrast); border-color: transparent; }
+.dk-btn-ghost { border-color: transparent; background: transparent; color: var(--dk-ink-soft); }
+
+.dk-badge { font-size: var(--dk-text-xs); padding: var(--dk-space-1) var(--dk-inset-pill); border-radius: var(--dk-radius-pill); border: 1px solid var(--dk-line); color: var(--dk-ink-soft); white-space: nowrap; }
+.dk-badge-reversible, .dk-badge-auto { color: var(--dk-auto); border-color: color-mix(in oklab, var(--dk-auto) 35%, transparent); }
+.dk-badge-final, .dk-badge-gated { color: var(--dk-gated); border-color: color-mix(in oklab, var(--dk-gated) 35%, transparent); }
+/* Domain emphasis - the one ranked value in a column of otherwise equal ones. Deliberately the
+ * accent and not --dk-auto: the auto/gated ramp above means a tool's consequence class and must
+ * not be borrowed to mean "this row is live". */
+.dk-badge-accent { color: var(--dk-accent); border-color: color-mix(in oklab, var(--dk-accent) 35%, transparent); }
+.dk-badge-undone { text-decoration: line-through; }
+.dk-chip { font-size: var(--dk-text-xs); padding: var(--dk-space-1) var(--dk-space-4); border-radius: var(--dk-radius-pill); background: var(--dk-surface-2); color: var(--dk-ink-soft); white-space: nowrap; }
+.dk-chip-athena { background: color-mix(in oklab, var(--dk-accent) 15%, transparent); color: var(--dk-accent); }
+/* The three actors ActivityLog models must read as three ranks: athena carries the accent, `You`
+ * is the firmer of the two non-agent chips, `System` the quietest. The hairline is an inset shadow
+ * rather than a border so every chip keeps the same box. */
+.dk-chip-user { background: color-mix(in oklab, var(--dk-ink) 8%, transparent); color: var(--dk-ink); }
+.dk-chip-system { background: transparent; box-shadow: inset 0 0 0 1px var(--dk-line); color: var(--dk-ink-soft); }
+
+.dk-activity { list-style: none; margin: 0; padding: 0; background: var(--dk-surface); border: 1px solid var(--dk-line); border-radius: var(--dk-radius); }
+.dk-activity-row { display: flex; gap: var(--dk-gap); align-items: start; padding: var(--dk-space-5) var(--dk-space-7); border-bottom: 1px solid var(--dk-line); }
+.dk-activity-row:last-child { border-bottom: 0; }
+.dk-activity-row-undone { opacity: 0.55; }
+.dk-activity-body { flex: 1; min-width: 0; }
+.dk-activity-summary { margin: 0; font-size: var(--dk-text-base); }
+.dk-activity-meta { margin: var(--dk-inset-meta) 0 0; font-size: var(--dk-text-xs); color: var(--dk-ink-soft); font-family: var(--dk-font-mono); }
+.dk-activity-error { margin: var(--dk-space-2) 0 0; font-size: var(--dk-text-xs); color: var(--dk-gated); }
+.dk-activity-actions { display: flex; align-items: center; gap: var(--dk-space-4); }
+.dk-activity-empty { color: var(--dk-ink-soft); }
+
+.dk-toasts { position: fixed; inset-block-end: var(--dk-space-8); inset-inline-end: var(--dk-space-8); display: grid; gap: var(--dk-space-4); z-index: 60; }
+.dk-toast { display: flex; align-items: center; gap: var(--dk-space-5); background: var(--dk-surface); border: 1px solid var(--dk-line); border-radius: var(--dk-radius); padding: var(--dk-space-4) var(--dk-space-6); box-shadow: var(--dk-shadow); font-size: var(--dk-text-base); }
+.dk-toast-success { border-color: color-mix(in oklab, var(--dk-auto) 45%, transparent); }
+.dk-toast-error { border-color: color-mix(in oklab, var(--dk-gated) 45%, transparent); }
+/* `warn` is the fourth tone ToastTone offers. Deliberately weaker than error's 45% so the two
+ * consequences rank instead of reading the same; `info` stays the unstyled base. */
+.dk-toast-warn { border-color: color-mix(in oklab, var(--dk-gated) 30%, transparent); }
+
+.dk-manifest-toggle { position: fixed; inset-block-end: var(--dk-space-8); inset-inline-start: var(--dk-space-8); z-index: 55; font: inherit; font-size: var(--dk-text-xs); font-family: var(--dk-font-mono); padding: var(--dk-inset-control) var(--dk-space-5); border-radius: var(--dk-radius-pill); border: 1px solid var(--dk-line); background: var(--dk-surface); color: var(--dk-ink-soft); cursor: pointer; }
+.dk-manifest { position: fixed; inset-block: 0; inset-inline-start: 0; width: min(420px, 92vw); z-index: 70; background: var(--dk-surface); border-inline-end: 1px solid var(--dk-line); padding: var(--dk-space-9); overflow-y: auto; transform: translateX(-101%); transition: transform 160ms ease; }
+.dk-manifest-open { transform: none; box-shadow: var(--dk-shadow-lg); }
+.dk-manifest-head { display: flex; align-items: center; justify-content: space-between; }
+.dk-manifest-note { font-size: var(--dk-text-xs); color: var(--dk-ink-soft); margin: var(--dk-space-5) 0 var(--dk-space-7); }
+.dk-manifest-subhead { font-size: var(--dk-text-xs); text-transform: uppercase; letter-spacing: 0.04em; color: var(--dk-ink-soft); margin: var(--dk-space-9) 0 var(--dk-space-3); }
+.dk-manifest-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--dk-space-4); }
+.dk-manifest-item { display: flex; gap: var(--dk-space-5); align-items: start; font-size: var(--dk-text-sm); }
+.dk-manifest-item code { font-family: var(--dk-font-mono); font-size: var(--dk-text-xs); }
+.dk-manifest-item p { margin: var(--dk-space-1) 0 0; color: var(--dk-ink-soft); }
+.dk-manifest-meta { font-size: var(--dk-text-xs); font-family: var(--dk-font-mono); }

@@ -1,3 +1,10 @@
 packages:
   - "packages/*"
   - "apps/*"
+  - "examples/*"
+
+# Build scripts must be opted into explicitly (pnpm >= 10). unrs-resolver picks its prebuilt native
+# binary at install time and eslint-config-next's import resolver needs it.
+allowBuilds:
+  unrs-resolver: true
+  "@scarf/scarf": false
