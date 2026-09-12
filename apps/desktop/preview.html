@@ -1,0 +1,20 @@
+<!doctype html>
+<!-- The module preview harness (README section 3.5, "no automation seam for the panel").
+
+       pnpm --filter athena-desktop dev
+       http://127.0.0.1:1431/preview.html?module=browser&fixture=heavy&theme=dark
+
+     No Tauri, no IPC, no daemon. Only one shell can run at a time — a WebView2 profile belongs to
+     one process — so this is how a module is checked against every fixture in both themes while
+     somebody else has the shell. -->
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Athena — module preview</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/preview.tsx"></script>
+  </body>
+</html>

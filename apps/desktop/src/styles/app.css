@@ -1,0 +1,761 @@
+/* The token contract, light and dark — README section 3.1 (surfaces), and the house style the
+ * first build settled on (`docs/athena-desktop/house-style.md` in the reference repository).
+ *
+ * This is the whole stylesheet of the app. The first build copied a 5,600-line design system out
+ * of another product and then spent four sections of its house style arguing with the document
+ * brightness filter that came with it; nothing is painted through a filter here, so a ratio
+ * computed from these values is the ratio that reaches the screen.
+ *
+ * What is carried over is the contract, not the file:
+ *
+ *   1. **Tokens, never literals.** A component spells `var(--card-bg)`, never a hex. The two
+ *      themes are the only place a colour is chosen.
+ *   2. **The type ramp is the hierarchy** (`house-style` §2.1 and the catalog's rule 1). Six
+ *      tiers, and dimming is not one of them: `--muted-foreground` is for structural
+ *      micro-labels — a term, a timestamp, a URL beside its title — and never for prose.
+ *   3. **Surfaces layer in three rungs** (§3.3): canvas → card → a row or well recessed inside
+ *      the card. A row painted in its card's own fill is invisible.
+ *   4. **Density is a variable.** `--density-gap`, `--density-pad`, `--density-pad-sm`. Never a
+ *      one-off padding in a component.
+ *
+ * The typeface is the platform's own. The first build bundled two variable faces after measuring
+ * that naming a family nobody has installed falls silently through to `serif`; the cheaper form
+ * of the same lesson is to name only families the target machines actually ship.
+ */
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background: #0c1116;
+  --foreground: #e7edf3;
+  --muted-foreground: #93a1b1;
+  --card-bg: #141b23;
+  --card-raised: #18212b;
+  --recessed: #0a0e13;
+  --primary: #22d3ee;
+  --primary-fg: #04222a;
+  --border-subtle: rgba(34, 211, 238, 0.08);
+  --border-default: rgba(34, 211, 238, 0.16);
+  --border-emphasis: rgba(34, 211, 238, 0.3);
+  --hover-wash: rgba(255, 255, 255, 0.06);
+
+  --status-success: #4ade80;
+  --status-warning: #fbbf24;
+  --status-error: #f87171;
+  --status-info: #60a5fa;
+  --status-pending: #c4b5fd;
+  --status-neutral: #93a1b1;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --background: #eceef2;
+  --foreground: #101720;
+  /* 4.7:1 on the canvas: the muted tier is still read, it is just not the tier that leads. */
+  --muted-foreground: #576273;
+  --card-bg: #ffffff;
+  --card-raised: #ffffff;
+  --recessed: #e3e7ed;
+  --primary: #0e7490;
+  --primary-fg: #ffffff;
+  --border-subtle: rgba(14, 116, 144, 0.1);
+  --border-default: rgba(14, 116, 144, 0.22);
+  --border-emphasis: rgba(14, 116, 144, 0.38);
+  --hover-wash: rgba(0, 0, 0, 0.05);
+
+  /* Re-seated for a near-white canvas: the dark roster's inks measure 2-3:1 here. Each of these
+   * clears 4.5:1 on `--card-bg` so a status word is read at prose contrast and the hue is a
+   * second channel rather than the only one. */
+  --status-success: #157347;
+  --status-warning: #8a5300;
+  --status-error: #be1b1b;
+  --status-info: #1d4ed8;
+  --status-pending: #6d28d9;
+  --status-neutral: #576273;
+}
+
+:root {
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "JetBrains Mono", Consolas, monospace;
+
+  --radius-interactive: 6px;
+  --radius-input: 6px;
+  --radius-card: 10px;
+
+  --shadow-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.18);
+  --duration-fast: 150ms;
+
+  /* §3.2. Every gap and pad in the app is one of these three. */
+  --density-gap: 16px;
+  --density-pad: 16px;
+  --density-pad-sm: 12px;
+
+  /* The two numbers `src-tauri/src/layout.rs` also spells. Editing one without the other is how
+   * the chrome and its rectangle drift apart; both files carry this sentence. */
+  --bar-height: 36px;
+  --strip-height: 40px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.overflow-hidden {
+  overflow: hidden;
+}
+
+/* The rhythm is `--density-gap` and the flex gaps under it, so nothing carries a margin of its
+ * own: a user-agent `h1` margin is 21px of space no token asked for, and it is what put a hole
+ * between a page title and its caption the first time this stylesheet was looked at. */
+h1,
+h2,
+h3,
+p,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+#root {
+  height: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* -- The type ramp -------------------------------------------------------------------------
+ *
+ * Top to bottom. `typo-caption` is *already* the muted tier; `typo-caption` plus a muted colour
+ * is a double-mute and is always wrong.
+ */
+.typo-heading-lg {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.typo-heading {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.typo-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.typo-body {
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.typo-caption {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.typo-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.typo-data {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.typo-code {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.muted {
+  color: var(--muted-foreground);
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* -- Focus ---------------------------------------------------------------------------------
+ * One ring, on every interactive element, and never `outline: none` without one.
+ */
+.focus-ring:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* -- The frame (§3.1) ----------------------------------------------------------------------
+ * One width, one gutter, one rhythm. A module never writes a width, a gutter or a scroll.
+ */
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--density-gap);
+  width: 100%;
+  max-width: 120rem;
+  margin: 0 auto;
+  padding: 0 var(--density-pad) var(--density-pad);
+}
+
+.page-shell--fill {
+  height: 100%;
+  min-height: 0;
+}
+
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px var(--density-gap);
+  padding: 10px 0;
+  background: var(--background);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.page-header__eyebrow {
+  color: var(--muted-foreground);
+  text-transform: none;
+}
+
+.page-header__titles {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-header__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.page-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.page-section__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* -- Rung two: the card --------------------------------------------------------------------- */
+.section-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--density-pad-sm);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-elevation-1);
+}
+
+.section-card--flat {
+  background: transparent;
+  box-shadow: none;
+  border-color: var(--border-subtle);
+}
+
+.section-card--absent {
+  background: transparent;
+  box-shadow: none;
+  border-style: dashed;
+}
+
+.section-card--padless {
+  padding: 0;
+}
+
+/* -- Rung three: a row or well recessed inside a card ---------------------------------------- */
+.well {
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-interactive);
+  background: var(--recessed);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  overflow-x: auto;
+}
+
+/* -- Table (§3.2, "a table, not stacked rows") ----------------------------------------------- */
+.table-scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 4px 8px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  border-bottom: 1px solid var(--border-default);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 4px 8px;
+  vertical-align: baseline;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.table tbody tr:hover td {
+  background: var(--hover-wash);
+}
+
+.table td.is-right,
+.table th.is-right {
+  text-align: right;
+}
+
+.table__empty {
+  padding: 12px 8px;
+  color: var(--muted-foreground);
+}
+
+/* -- Controls -------------------------------------------------------------------------------
+ * Weight is a signal (catalog rule 2): a label pinned smaller than the prose around it gives the
+ * control no rank, so the size falls through to the document and only the weight is set.
+ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-interactive);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast),
+    border-color var(--duration-fast),
+    color var(--duration-fast);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--primary);
+  color: var(--primary-fg);
+}
+
+.btn--secondary {
+  background: var(--card-bg);
+  border-color: var(--border-default);
+  color: var(--foreground);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  border-color: var(--border-emphasis);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--muted-foreground);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background: var(--hover-wash);
+  color: var(--foreground);
+}
+
+.btn--sm {
+  padding: 2px 8px;
+  font-size: 0.8125rem;
+}
+
+.input {
+  min-width: 0;
+  padding: 3px 8px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-input);
+  background: var(--card-bg);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.input:focus {
+  border-color: var(--border-emphasis);
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--status-error);
+}
+
+/* -- Saying things --------------------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 7px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--recessed);
+  /* §4b of the house style: the label stays `--foreground` in every tone and the hue rides the
+   * dot beside it. A hue on 12px text is the pair that kept measuring under AA. */
+  color: var(--foreground);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--status-neutral);
+}
+
+.status-dot--success {
+  background: var(--status-success);
+}
+.status-dot--warning {
+  background: var(--status-warning);
+}
+.status-dot--error {
+  background: var(--status-error);
+}
+.status-dot--info {
+  background: var(--status-info);
+}
+.status-dot--pending {
+  background: var(--status-pending);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.empty-state__glyph {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--recessed);
+  color: var(--muted-foreground);
+}
+
+/* -- The window: a bar, and one module under it ----------------------------------------------
+ *
+ * The app root is these two rectangles and nothing else. The module area is the only scroll in
+ * the document; the bar never scrolls away, because it is what says which module you are on.
+ */
+.app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.app-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.window-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* The Browser module's own frame. Its first child is the tab strip and that is a contract with
+ * `src-tauri/src/layout.rs`: in browser mode the chrome webview is clipped to the bar plus the
+ * strip, and everything below is covered by a page webview. */
+.module-browser {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.module-browser__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* -- The chrome: the module bar, and the Browser module's tab strip ---------------------------
+ *
+ * Both heights are also constants in `src-tauri/src/layout.rs`. The window has no HTML container
+ * — the webviews are siblings the Rust side positions — so these two numbers are a contract
+ * between a stylesheet and a Rust file, and they are edited together or not at all.
+ */
+.module-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--bar-height);
+  padding: 0 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--background);
+  user-select: none;
+}
+
+.module-bar__spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: stretch;
+}
+
+.module-bar__item {
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-interactive);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast),
+    color var(--duration-fast);
+}
+
+.module-bar__item:hover {
+  background: var(--hover-wash);
+  color: var(--foreground);
+}
+
+.module-bar__item[aria-current="page"] {
+  background: var(--card-raised);
+  border-color: var(--border-default);
+  color: var(--foreground);
+  box-shadow: var(--shadow-elevation-1);
+}
+
+.window-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 24px;
+  padding: 0 8px;
+  border: none;
+  border-radius: var(--radius-interactive);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.window-btn:hover {
+  background: var(--hover-wash);
+  color: var(--foreground);
+}
+
+.window-btn--close:hover {
+  /* Not a theme colour: the fill is the fixed Windows red, so the label on it is fixed too. */
+  background: #e81123;
+  color: #fff;
+}
+
+.tab-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--strip-height);
+  padding: 0 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--background);
+  user-select: none;
+}
+
+/* The rail scrolls sideways rather than squeezing: a chip has a minimum readable width, so a row
+ * that divides itself between however many tabs are open stops being a tab strip at about eight.
+ * The bar itself is dropped — 5px of scrollbar inside a 40px row sits on the band's border. */
+.tab-rail {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: stretch;
+  padding: 4px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tab-rail::-webkit-scrollbar {
+  height: 0;
+}
+
+.tab-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 11rem;
+  height: 100%;
+  flex: none;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-interactive);
+  color: var(--foreground);
+}
+
+.tab-chip:hover {
+  background: var(--hover-wash);
+}
+
+.tab-chip--focused,
+.tab-chip--focused:hover {
+  /* Colour alone cannot carry "this is the one": the fill, the edge and the elevation do. */
+  background: var(--card-raised);
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-elevation-1);
+}
+
+.tab-chip__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.tab-chip__close {
+  padding: 0 3px;
+  border: none;
+  border-radius: var(--radius-interactive);
+  background: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.tab-chip__close:hover {
+  color: var(--status-error);
+}
+
+.url-field {
+  flex: none;
+  width: 19rem;
+  user-select: text;
+}
+
+/* -- The page area the shell does not paint --------------------------------------------------
+ *
+ * In the window this rectangle belongs to a page webview and this element is clipped away
+ * unseen; in the preview harness there is no page webview, so it says what would be there.
+ * Same view, both times — a module's view is a pure function of its view-model, and "am I in
+ * Tauri" is not one of its fields.
+ */
+.page-stand-in {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 12rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--recessed);
+  text-align: center;
+}
+
+/* -- The preview harness's own chrome --------------------------------------------------------- */
+.harness {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.harness__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-default);
+  background: var(--card-bg);
+}
+
+.harness__field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.harness__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}

@@ -1,0 +1,29 @@
+[package]
+name = "athena-desktop"
+version = "0.1.0"
+description = "Athena — the shell: one window, a module bar, and a page webview per tab"
+authors = ["Athena Portable contributors"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.80.0"
+publish = false
+
+[lib]
+name = "athena_desktop_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# `unstable` is what puts several webviews in one window, which is the whole shape of this shell
+# (README section 3.1): one chrome webview and one page webview per tab, positioned by
+# `layout.rs`. It is a Tauri feature flag, not a nightly toolchain flag — the crate builds on
+# stable rustc. README section 9's first risk row is about this API surface, and c18 is where it
+# is retired.
+tauri = { version = "2", features = ["unstable"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.dev]
+incremental = true
