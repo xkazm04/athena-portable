@@ -24,6 +24,7 @@ EXPECTED_PREFIXES = {
     "fact": "fact_",
     "procedural": "proc_",
     "approval": "apr_",
+    "turn": "turn_",
     "conversation": "conv_",
     "project": "proj_",
     "capture": "cap_",
@@ -74,9 +75,17 @@ def test_an_episode_id_keeps_the_rust_writers_shape() -> None:
     assert len(mint("episode")) == len("ep_") + 8
 
 
+def test_a_turn_is_a_kind_because_three_tables_join_on_it() -> None:
+    # The ledger's turn_id column, the events a surface rendered and the tripwires a harness
+    # flagged all name the same turn. A harness minting its own would be the second place ids
+    # are made, which is the finding this module answers.
+    assert is_id("turn", mint("turn"))
+    assert kind_of(mint("turn")) == "turn"
+
+
 def test_an_unknown_kind_names_the_kinds_that_exist() -> None:
     with pytest.raises(KeyError, match="unknown id kind"):
-        mint("turn")
+        mint("hunch")
 
 
 def test_a_project_conversation_carries_the_project_prefix_exactly_once() -> None:

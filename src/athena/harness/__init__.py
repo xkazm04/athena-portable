@@ -6,6 +6,24 @@ One package sits between the lane and whatever produces tokens. It owns the thre
 provider, and an engine is a configuration choice rather than a second policy (ADR 0007).
 """
 
+from athena.harness.cli_harness import (
+    CLAUDE,
+    CLAUDE_EXTRA_ARGS,
+    CODEX,
+    DIALECTS,
+    MAX_ROUNDS,
+    TURN_TIMEOUT_S,
+    CliDialect,
+    CliHarness,
+    Decoded,
+)
+from athena.harness.engines import (
+    ENGINES,
+    EngineStatus,
+    build_harness,
+    probe,
+    probe_all,
+)
 from athena.harness.hooks import (
     Cancel,
     GateDecision,
@@ -31,12 +49,32 @@ from athena.harness.ports import (
     Row,
     stream_of,
 )
+from athena.harness.transports import (
+    CliRequest,
+    ScriptedTransport,
+    SubprocessTransport,
+    Transport,
+    TransportError,
+    rounds_from_transcript,
+)
 
 __all__ = [
+    "CLAUDE",
+    "CLAUDE_EXTRA_ARGS",
+    "CODEX",
+    "DIALECTS",
+    "ENGINES",
+    "MAX_ROUNDS",
+    "TURN_TIMEOUT_S",
     "ApprovalsPort",
     "Cancel",
     "Card",
     "CatalogPort",
+    "CliDialect",
+    "CliHarness",
+    "CliRequest",
+    "Decoded",
+    "EngineStatus",
     "FlagPort",
     "GateDecision",
     "GateHook",
@@ -53,9 +91,17 @@ __all__ = [
     "ParsedTurn",
     "Proceed",
     "Row",
+    "ScriptedTransport",
+    "SubprocessTransport",
+    "Transport",
+    "TransportError",
     "TruncationHook",
     "TurnFlag",
+    "build_harness",
     "parse_op",
     "parse_turn",
+    "probe",
+    "probe_all",
+    "rounds_from_transcript",
     "stream_of",
 ]

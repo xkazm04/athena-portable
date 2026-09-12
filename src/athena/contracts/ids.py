@@ -18,11 +18,17 @@ import re
 import secrets
 
 #: kind → prefix. Read by the TypeScript half; keep it a flat dict of literals.
+#:
+#: ``turn`` is a kind and not a local ``uuid4`` because a turn id is the join between three
+#: things a reader has to line up after the fact: the ledger's ``turn_id`` column, the events a
+#: surface rendered, and the tripwires a harness flagged against it. A harness that minted its
+#: own would be the second place ids are made, which is the finding this module exists to answer.
 ID_PREFIXES: dict[str, str] = {
     "episode": "ep_",
     "fact": "fact_",
     "procedural": "proc_",
     "approval": "apr_",
+    "turn": "turn_",
     "conversation": "conv_",
     "project": "proj_",
     "capture": "cap_",

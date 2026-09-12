@@ -1,0 +1,8 @@
+# SYNTHETIC. Written by hand from the documented shape of `codex exec --json`, not captured
+# from a run. Same turn as claude_code_turn.ndjson, in the other dialect: the two must parse
+# to the same TurnResult, which is what tests/harness/test_cli_harness.py asserts.
+# Lines starting with '#' and blank lines are not events. A blank line separates two rounds.
+{"type": "thread.started", "thread_id": "01J9CODEXTHREAD"}
+{"type": "turn.started"}
+{"type": "item.completed", "item": {"id": "item_0", "type": "agent_message", "text": "Three invoices are past thirty days.\nTTS: \"Three invoices are past thirty days.\"\nOP: {\"op\":\"propose_action\",\"action\":\"host.invoices.chase\",\"params\":{\"invoice\":\"INV-118\"},\"rationale\":\"thirty-one days late\"}"}}
+{"type": "turn.completed", "usage": {"input_tokens": 1840, "output_tokens": 96, "cached_input_tokens": 0}}

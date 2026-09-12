@@ -1,0 +1,9 @@
+# SYNTHETIC. Written by hand from the documented shape of `claude -p - --output-format
+# stream-json`, not captured from a run. It exists so a drift in the event format is a red
+# test rather than a surprise on stage; replace it with a real capture when one is recorded.
+# Lines starting with '#' and blank lines are not events. A blank line separates two rounds.
+{"type": "system", "subtype": "init", "session_id": "01J9CLAUDESESSION", "model": "claude-opus-5", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "Three invoices are past thirty days.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "TTS: \"Three invoices are past thirty days.\"\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "OP: {\"op\":\"propose_action\",\"action\":\"host.invoices.chase\",\"params\":{\"invoice\":\"INV-118\"},\"rationale\":\"thirty-one days late\"}"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 4210, "num_turns": 1, "total_cost_usd": 0.0412, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9CLAUDESESSION"}
