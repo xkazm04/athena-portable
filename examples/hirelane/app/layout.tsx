@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Caveat, JetBrains_Mono, Plus_Jakarta_Sans, Sora } from "next/font/google";
+import { JetBrains_Mono, Plus_Jakarta_Sans, Sora } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { HostCapabilities } from "@/components/HostCapabilities";
@@ -12,17 +12,17 @@ export const metadata: Metadata = {
 };
 
 /*
- * Four faces, each with one job.
+ * Three faces, each with one job.
  *
  * `Sora` carries the display voice: geometric, wide-apertured, and legible at the sizes this
  * rework raised everything to. `Plus Jakarta Sans` is the text face — the review said the previous
  * pairing did not help readability, and this is the direct answer. `JetBrains Mono` is every
  * figure, because a score is compared down a column and a proportional digit makes that a guess.
  *
- * `Caveat` is the fourth and it is rationed. It appears on marginal notes and on nothing else —
- * never on a number, a label or a control — so a hand-written line can never be mistaken for a
- * machine-produced fact. That restriction is what makes it the app's second voice rather than a
- * decorative font.
+ * `Caveat` was a fourth, carrying the surface's annotations. It is gone. The rationing was right
+ * and the second voice is still marked as one — italic, in `--bd-mark`, in the text face — but the
+ * face itself put every note on the page below the legibility floor the rest of this pairing was
+ * chosen to raise, which is the complaint the whole rework exists to answer.
  *
  * They load here rather than in a per-direction layout because there is one direction and it is
  * the root route. `data-variant="board"` still comes from the direction's own wrapper in
@@ -49,14 +49,7 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
-const hand = Caveat({
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  variable: "--font-bd-hand",
-  display: "swap",
-});
-
-const FONTS = [display, text, mono, hand].map((f) => f.variable).join(" ");
+const FONTS = [display, text, mono].map((f) => f.variable).join(" ");
 
 /**
  * The root owns html/body, the providers, the faces and the capability manifest.

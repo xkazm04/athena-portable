@@ -41,6 +41,30 @@ superseded by this section; §§2-8 stand except where this section replaces the
 | **Source direction** | **The lit contact sheet.** A dark viewing surface with the frames laid on it, the three under the loupe held at full size and the rest angled away into the dark. What is written on the sheet is written by hand in soft pencil-crayon: annotations are the only place a second voice appears, and they never carry a fact the database does not hold. |
 | **Why this source** | A hiring board is a comparison surface, and a contact sheet is the genre built for exactly that: same frame, same size, same light, laid side by side, with the ones you are actually choosing between brought forward and everything else angled off. It also gives the annotation its natural home — on a contact sheet the marks in the margin are a person's, not the machine's, which is precisely the distinction this app exists to make visible. |
 
+## 1c. REVISION — the readability pass (2026-09)
+
+The dark rework was reviewed again, beside the two sibling tabs, and several of its own answers
+were named as the reason this app read worst of the three. §§1b, 2, 3 and 7 stand except where this
+section replaces them.
+
+| What was named | What it is now |
+|---|---|
+| **Eight tracked-out all-caps micro labels at 11px** — `11 SCORED`, `16 DAYS IS THE LONGEST WAIT`, `24 OF 55 CRITERIA EVIDENCED`, `THEIR ANSWER`, `IN THEIR OWN WORDS`, `WORTH A LOOK`, `AUTO — REVERSIBLE, EACH WRITES AN UNDO`, `[ ] GATED — REACHES ADA OKAFOR` | **One label style.** `--bd-label`, 12px, sentence case, the text face, `--bd-ink-3` or better. Capitals and tracking encoded nothing; they were a texture applied to whatever happened to be small. A figure line keeps the mono face for its digits and nothing else. |
+| **The handwriting face** on every annotation | Gone, and `Caveat` is no longer loaded. The second voice is still marked — italic, `--bd-mark`, the text face at the reading size, and the only italic on the surface — but the face itself put every note below the legibility floor the rest of the rework raised. See §3. |
+| **The L0 pile**, up to fourteen faces with the tuck solved to fit the column | A **cluster**: six faces at a fixed 8px tuck, each showing its whole monogram, and a `+N` counting the rest exactly. |
+| **The fit rule**, a 180px tick line under every group | Words. `6 of 7 scored · best 2.6 · 6 arguable` — the three figures the ticks were being scanned for, at the label size. A structural device has to encode something a reader can decode. |
+| **Five columns stretched to the tallest**, so Offer's one card sat in four fifths of a dark panel | `align-items: start`. Ragged feet, honest columns. |
+| **The capability register**, sixteen tool names in monospace across the page foot | A count and a disclosure — `16 capabilities offered · 3 gated`, with the names one click behind it. See §7 and DESIGN-LAW §4.1. |
+| **The masthead**, a slogan headline over a hardcoded "Athena is not connected yet" | The headline states — `40 applicants, 2 open roles, 6 still arguable` — the slogan is the deck under it, and the presence line is a reading. |
+| **L1 card bodies overflowing their own track**, printing the criterion rows over the stage fact at the foot | Fixed twice over: the foot gave back the height, and a card in a short rail lays its criteria on one line each with the bar as the row's own underline, so nothing is dropped and nothing is clipped at 1440x900 or at 1024x768. |
+| **Seven control shapes** across the chrome | One: `--bd-control` high, `--bd-radius-round`, `--bd-text-sm`, one focus ring. |
+
+The minimum type size on the surface is 12px and every label clears WCAG AA against the panel it
+sits on, which is why `--bd-ink-4` moved from `#6b6b77` (3.8:1 on `--bd-void`) to `#83838f`
+(5.3:1). Files: `components/board/presence.ts`, `components/board/register.ts`,
+`components/board/columns/facts.tsx`, `components/board/columns/stacking.ts`,
+`components/board/style/base/tokens.css`.
+
 ## 2. LAW FOUR §4.2 — the colour lock
 
 Ground/ink pair plus **four** hue-bearing tokens. Two are spoken for by law and appear nowhere else.
@@ -66,16 +90,27 @@ unscored are expressed by absence: no bar at all, and an em dash where a number 
 `lucide-react` is **not used**. Four marks, all bespoke inline SVG, all drawn for this app:
 
 1. **The gap** — a ruled line broken in the middle, drawn at the criterion with no evidence.
-2. **The gate** — a two-stroke bracket that closes when the control is armed.
-3. **The stage ladder** — five rungs, the reached ones inked.
-4. **The monogram** — initials in a disc. Type, not an icon; there is no photograph in this database
+2. **The stage ladder** — five rungs, the reached ones inked.
+3. **The monogram** — initials in a disc. Type, not an icon; there is no photograph in this database
    and nothing standing in for one.
 
-**Type, revised.** `Sora` for display, `Plus Jakarta Sans` for text, `JetBrains Mono` for every
-figure, and `Caveat` for annotations only. The handwriting face is the "hand-written" half of the
-brief and it is rationed: it appears on a marginal note and on nothing else, never on a number,
-a label or a control, so it cannot be mistaken for a machine-produced fact. The reading sizes start
-at 15px and the board's own names at 17px, which is the readability complaint answered directly.
+There was a fourth, **the gate** — a two-stroke bracket that closed when the control armed. Removed
+in the readability pass (§1c): it rendered as `[ ]` in front of the gated band's sentence, which
+reads as an unchecked checkbox, i.e. a control, in front of the one region on the surface whose
+whole point is that nothing in it is armed until you arm it. The class band carries its state in
+words and in the surface it is drawn on, which is what §7.1 asks for.
+
+**Type, revised twice.** `Sora` for display, `Plus Jakarta Sans` for text, `JetBrains Mono` for
+every figure. The reading sizes start at 15px and the board's own names at 17px, which is the first
+readability complaint answered directly.
+
+There was a fourth face, `Caveat`, for annotations only, rationed so it could never be mistaken for
+a machine-produced fact. The rationing was right and the face was wrong: its drawn size sits well
+below its point size and its stroke contrast is low on a near-black ground, so every note on the
+surface — the margin note at L1, the band notes and the bench note at L2 — landed under the
+legibility floor this whole pairing was chosen to raise. The second voice is kept and re-marked:
+the text face, italic, at the reading size, in `--bd-mark`, and the only italic on the surface. The
+distinction survives; the illegibility does not (§1c).
 
 ## 4. LAW THREE — the container model gate
 
@@ -132,7 +167,7 @@ to be opposite to. Each row is checked against the code named beside it:
 | Primary object | a face in a group, a group in a stage column | `components/board/Columns.tsx` and `components/board/columns/` |
 | Depth grammar | one bloom and one lift; hairline rules; no drop shadow on a card, and no WebGL | `tokens.css` ships exactly one elevation, `--bd-elev-lift` |
 | Primary axis | stage, across columns | `lib/constants.ts` `STAGES` |
-| Type voice | Sora display / Plus Jakarta Sans text / JetBrains Mono figures, plus Caveat for annotation only | `app/layout.tsx` — the four `next/font/google` faces |
+| Type voice | Sora display / Plus Jakarta Sans text / JetBrains Mono figures | `app/layout.tsx` — the three `next/font/google` faces |
 | Unscored | no bar at all, and an em dash where a number would be | `components/board/carousel/Slide.tsx:107` |
 | Comparison | signed diff list, widest gap first, each side quoting its own evidence | `components/board/model/order.ts` `diff()` |
 
@@ -141,8 +176,17 @@ to be opposite to. Each row is checked against the code named beside it:
 Above the fold this direction uses only: `Hirelane`; `role.title`, `role.team`, `role.brief`,
 `role.question` from the database; `STAGE_LABEL` and `SCORE_LABEL` strings verbatim; counts and
 scores from the stored scorecards; the orienting line **"Every score points at the sentence that
-earned it."**; and the honesty line verbatim, once, visible without interaction: **"Athena is not
-connected yet. Every capability below is registered and waiting."**
+earned it."**, now set as the deck under a headline that states rather than as the headline itself;
+and the honesty line as a live reading, visible without interaction — **"Athena is not connected.
+All 16 capabilities are registered and waiting — 3 of them gated."** when no bridge is in the page,
+and the connected form when one is.
+
+The honesty line was a verbatim string and DESIGN-LAW §4.1 required it to be. Both were amended in
+the readability pass, and the law carries the reasoning: a sentence that cannot become false is not
+an honesty mechanism, it is a caption — and this is the one line on the surface a recorded
+walkthrough turns on. `components/board/presence.ts` is the reading and
+`components/board/register.ts` is the count the masthead and the foot both read, so the page cannot
+claim sixteen capabilities in one place and something else in the other.
 
 ## 7. LAW SEVEN — where the gate lives
 
@@ -154,8 +198,12 @@ The three GATED acts (`decide_stage` to offer or rejected, `send_scheduling_emai
 `--hl-rule-3` — and each arms before it fires, naming the candidate and what cannot be taken back.
 Greyscale the page and the three are still the only inverted block on it.
 
-The capability register (§7.4) is in the board's own footer, not only in the kit's drawer: seven
-capabilities, each with its class, read from the same rule the manifest uses.
+The capability register (§7.4) is in the board's own footer, not only in the kit's drawer — but
+the claim on the surface is the COUNT, not the identifiers: `16 capabilities offered · 3 gated`,
+visible without interaction, with the names one click behind a disclosure that keeps their two
+class bands. Sixteen `snake_case` symbols set in monospace across the page foot is a protocol dump;
+it cost the level above it the hundred and eighty pixels its cards needed, and nobody reads it. The
+class of every capability is still computed from the manifest's own rule, never typed (§1c).
 
 ## 8. LAW EIGHT — data honesty
 

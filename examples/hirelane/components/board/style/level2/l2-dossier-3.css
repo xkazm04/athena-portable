@@ -24,23 +24,62 @@
   cursor: default;
 }
 
-.bd-class-auto {
+/*
+ * THE CLASS BAND, and there is one component rather than two.
+ *
+ * The reversible half used to say `AUTO — REVERSIBLE, EACH WRITES AN UNDO` in
+ * tracked mono caps behind a mint dot, and the irreversible half said
+ * `[ ] GATED — REACHES ADA OKAFOR` in a different rule with a bracket glyph in
+ * front of it. Two idioms for one distinction is the distinction weakened: a
+ * reader has to learn both before either means anything.
+ *
+ * One rule now, switched by `data-class`. The swatch carries the locked hue,
+ * the sentence carries the meaning, and the SURFACE around it carries the class
+ * — the mint band sits on the glass at the lightest rule, the coral band on the
+ * one light sheet in the room at the heaviest. Greyscale the page and that is
+ * still true, which is the test (§7.1); the dot is the colour half, not the
+ * signal.
+ */
+.bd-class {
   display: inline-flex;
   align-items: center;
   gap: var(--bd-s2);
-  font-family: var(--bd-font-mono);
   font-size: var(--bd-label);
-  letter-spacing: var(--bd-track-caps);
-  text-transform: uppercase;
-  color: var(--bd-auto);
+  font-weight: 500;
 }
 
-.bd-class-auto::before {
+.bd-class::before {
   content: "";
   inline-size: var(--bd-swatch);
   block-size: var(--bd-swatch);
   border-radius: var(--bd-radius-round);
+  flex: none;
+}
+
+.bd-class[data-class="AUTO"] {
+  color: var(--bd-auto);
+}
+
+.bd-class[data-class="AUTO"]::before {
   background: var(--bd-auto);
+}
+
+.bd-class[data-class="GATED"] {
+  color: var(--bd-gate);
+}
+
+.bd-class[data-class="GATED"]::before {
+  background: var(--bd-gate);
+}
+
+/* Inside the inverted panel the coral is the ground's own hue, so the sentence
+   takes the panel's ink and the dot keeps the hue. */
+.bd-gate-panel .bd-class[data-class="GATED"] {
+  color: var(--bd-gate-ink-2);
+}
+
+.bd-gate-panel .bd-class[data-class="GATED"]::before {
+  background: var(--bd-gate-fire);
 }
 
 .bd-note-field {
@@ -99,9 +138,6 @@
 }
 
 .bd-gate-panel .bd-block-label {
-  display: flex;
-  align-items: center;
-  gap: var(--bd-s2);
   color: var(--bd-gate-ink-2);
 }
 

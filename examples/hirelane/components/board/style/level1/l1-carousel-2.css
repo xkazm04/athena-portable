@@ -3,11 +3,8 @@
 }
 
 .bd-fit {
-  font-family: var(--bd-font-mono);
-  font-size: 0.75rem;
-  letter-spacing: var(--bd-track-caps);
-  text-transform: uppercase;
-  color: var(--bd-ink-3);
+  font-size: var(--bd-label);
+  color: var(--bd-ink-2);
   padding-block-start: var(--bd-s1);
 }
 
@@ -32,12 +29,26 @@
   margin-inline-start: auto;
 }
 
-/* The five criteria, on one shared 0-4 baseline. */
+/*
+ * The five criteria, on one shared 0-4 baseline.
+ *
+ * THE BUG THIS FIXES. `.bd-slide-inner` is a four-row grid and this is its `1fr` row, so when the
+ * rail was short the five criterion rows were taller than the track they were in — and a grid item
+ * that overflows its row paints over the next one. The result was the shipped board's worst
+ * defect: "Operational ownership" printed on top of "3 of 5 criteria evidenced" on every card at
+ * every width. `overflow: hidden` makes the row clip instead of overlap, and `space-between` lets
+ * the five rows give up their gaps before anything is clipped at all.
+ *
+ * It is a backstop, not the fix. The fix is that the foot gave back a hundred and eighty pixels
+ * (see `chrome/the-foot.css`) and the rail's ceiling rose with it, so the whole card fits at
+ * 1440x900 and at 1024x768 with the bars never reaching this clip.
+ */
 .bd-bars {
   display: grid;
   gap: var(--bd-s2);
-  align-content: start;
+  align-content: space-between;
   min-block-size: 0;
+  overflow: hidden;
 }
 
 .bd-bar {

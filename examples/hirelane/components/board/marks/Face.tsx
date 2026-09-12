@@ -23,20 +23,11 @@ export function Face({
   initials,
   className,
   size,
-  glyph,
 }: {
   id: string;
   initials: string;
   className?: string;
   size?: "lg";
-  /**
-   * What the initials variant prints, when it is not the full monogram.
-   *
-   * A face tucked into a pile shows a 12-17px strip of itself, and two centred
-   * mono glyphs in that strip render as half-letters. The caller that knows the
-   * geometry passes the one letter that fits; everybody else gets the monogram.
-   */
-  glyph?: string;
 }) {
   return (
     <span
@@ -47,7 +38,7 @@ export function Face({
       {hasPortrait(id) ? (
         <Portrait id={id} initials={initials} />
       ) : (
-        <span aria-hidden>{glyph ?? initials}</span>
+        <span aria-hidden>{initials}</span>
       )}
     </span>
   );

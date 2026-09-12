@@ -5,15 +5,21 @@
  * of three arrangements from its own count: one or two get a full name, three
  * or four a first name, five or more just faces.
  *
- * The tuck is SOLVED, not tabulated. The line is `FACE + (n - 1) * (FACE -
- * overlap)` wide, so the overlap that makes it exactly `PILE_ROOM` falls
- * straight out of that — which is what keeps eleven faces inside a 250px column
- * without wrapping to a second line or shrinking to dots.
+ * Past the cap the row stops drawing and counts: `+5` is an exact statement about five people,
+ * where five more overlapping slivers were a texture. That is the whole of the L0 readability fix
+ * — a cluster you can count, and an overflow that does not pretend to be a portrait.
  */
 import type { BdCandidate } from "../model";
 
-/** Faces drawn before the row stops and counts the rest. */
-export const PILE_CAP = 14;
+/**
+ * Faces drawn before the row stops and counts the rest.
+ *
+ * It was fourteen, and the eleven-strong Backend queue drew all eleven — which is what made the
+ * row an unreadable heap of half-discs. A cluster is a count you can take in at a glance plus an
+ * overflow that states the rest exactly; six and a `+5` says "eleven" better than eleven
+ * overlapping slivers do, and it says it in a third of the width.
+ */
+export const PILE_CAP = 6;
 /**
  * The face's own side, in pixels, and the ONLY place it is written.
  *
@@ -25,8 +31,16 @@ export const PILE_CAP = 14;
  * and no test. Columns.tsx pushes it into CSS as `--face`, the way `--overlap` already goes.
  */
 export const FACE = 32;
-/** How much of a column's width the line of faces may occupy. */
-const PILE_ROOM = 200;
+/**
+ * How far each face tucks under the one before it, in pixels.
+ *
+ * It used to be solved from a target line width, which is the right arithmetic for a line that has
+ * to hold everybody: eleven faces inside 200px means each one shows a 17px sliver of a 32px disc,
+ * and eleven slivers are one smeared shape. The row is capped at six now, so the tuck is a fixed,
+ * deliberate overlap — every face shows three-quarters of itself and its whole monogram — and the
+ * people past the sixth are counted rather than drawn.
+ */
+const OVERLAP = 8;
 
 type Stacking = "full" | "first" | "pile";
 
@@ -36,36 +50,12 @@ export function stackingFor(count: number): Stacking {
   return "pile";
 }
 
-/**
- * How far each face tucks under the one before it, in pixels.
- *
- * Solved rather than tabulated: the line is `FACE + (n - 1) * (FACE - overlap)`
- * wide, so the overlap that makes it exactly `PILE_ROOM` falls straight out of
- * that. Six is the floor, because below it the tuck stops reading as a stack;
- * twenty is the ceiling, because past it a face is a sliver and the row becomes
- * one smeared shape.
- */
 export function overlapFor(count: number): number {
-  if (count < 2) return 0;
-  const exact = FACE - (PILE_ROOM - FACE) / (count - 1);
-  return Math.round(Math.min(20, Math.max(6, exact)));
+  return count < 2 ? 0 : OVERLAP;
 }
 
 export function labelFor(candidate: BdCandidate, stacking: Stacking): string | null {
   if (stacking === "full") return candidate.name;
   if (stacking === "first") return candidate.name.split(" ")[0] ?? candidate.name;
   return null;
-}
-
-/**
- * The one letter a tucked face can actually carry.
- *
- * A piled face shows a 12-17px strip of a 32px disc, and two centred mono
- * glyphs in that strip render as half-letters — the board was printing "BI" for
- * Bo Eriksen and "XH" for Xan Haddad. One glyph, aligned into the strip that is
- * still visible, is the most identity the geometry allows, and it is honest:
- * the row's job at this count is how many, not who. Who is one click away.
- */
-export function pileGlyph(initials: string): string {
-  return initials.slice(0, 1);
 }

@@ -1,12 +1,16 @@
 /* -------------------------------------------------------------- the foot */
 
 /*
- * Two rows, always. As a wrapping flex row the footer changed height with the
- * breadcrumb: at L1 the extra crumb pushed the whole capability register onto a
- * second line and off the bottom of the page, so the one thing DESIGN-LAW §7.4
- * insists on being visible without interaction stopped being visible. A grid
- * with a row for each keeps the page's closing band the same height at every
- * level, which is also what lets the stage above it size itself once.
+ * ONE ROW NOW.
+ *
+ * It was two: a breadcrumb, and under it a hundred and eighty pixels of monospace tool names in
+ * two class bands. That band is the reason the carousel one level up had no room for its own
+ * cards — the fixed foot took the height, the stage took what was left, and the criterion rows
+ * overflowed the card and printed over the line beneath them. The register is a disclosure now
+ * and the foot is one line, so L1 got that height back.
+ *
+ * The height is still constant across levels, which is what lets the stage above size itself
+ * once: the crumbs wrap within the row rather than adding a row.
  */
 .bd-foot {
   display: grid;
@@ -19,7 +23,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--bd-s3);
+  gap: var(--bd-s2) var(--bd-s3);
   font-size: var(--bd-text-sm);
   color: var(--bd-ink-3);
 }
@@ -31,22 +35,30 @@
 
 .bd-crumb i {
   font-style: normal;
-  color: var(--bd-ink-4);
+  color: var(--bd-ink-3);
   margin-inline-start: var(--bd-s2);
 }
 
-.bd-back {
+.bd-back,
+.bd-register > summary {
   display: inline-flex;
   align-items: center;
   gap: var(--bd-s2);
   min-block-size: var(--bd-control);
-  padding: 0 var(--bd-s3);
+  padding: 0 var(--bd-s4);
   background: none;
   border: var(--bd-rule-1) solid var(--bd-rule);
   border-radius: var(--bd-radius-round);
-  font-size: var(--bd-text-xs);
+  font-size: var(--bd-text-sm);
   color: var(--bd-ink-3);
   cursor: pointer;
+  transition: color var(--bd-dur-2) var(--bd-ease), border-color var(--bd-dur-2) var(--bd-ease);
+}
+
+.bd-back:hover,
+.bd-register > summary:hover {
+  color: var(--bd-ink);
+  border-color: var(--bd-rule-2);
 }
 
 .bd-back kbd {
@@ -58,17 +70,61 @@
 }
 
 /*
- * The capability register. §7.4: the manifest is not a drawer nobody opens.
- *
- * Two clusters, not seven pills. The classes are separated by the rule ladder
- * before any colour is spent — AUTO on a hairline, GATED on the heaviest weight
- * the direction has — so desaturating the page leaves the distinction intact,
- * which a strip of identically-shaped badges in two hues did not.
+ * The capability line. §7.4: the manifest is not a drawer nobody opens — and the claim it makes
+ * is not a list of identifiers, it is "sixteen acts are offered here and three of them reach a
+ * person". That sentence is visible without interaction. The names are the evidence for it and
+ * they open in place.
  */
 .bd-register {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--bd-s3) var(--bd-s6);
+  position: relative;
+  margin-inline-start: auto;
+}
+
+.bd-register > summary {
+  list-style: none;
+  white-space: nowrap;
+}
+
+.bd-register > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* The disclosure's own state, said by the glyph rather than by a hue. */
+.bd-register > summary::after {
+  content: "▸";
+  color: var(--bd-ink-4);
+}
+
+.bd-register[open] > summary::after {
+  content: "▾";
+}
+
+/* The gated count is the half of the sentence that has to survive a glance, so it carries the
+   locked hue and the heaviest rule in the ladder — the same pair the dossier's gated region is
+   drawn with, and the only other place either is spent. */
+.bd-register-gated {
+  padding-inline-start: var(--bd-s3);
+  border-inline-start: var(--bd-rule-w3) solid var(--bd-gate);
+  color: var(--bd-ink-2);
+}
+
+/* Opens UPWARD, over the board, because there is nothing below the foot but the edge of the
+   page. Absolute rather than in flow: in flow it would take height from the stage above it and
+   the level would resize under the reader's hand as they opened a disclosure. */
+.bd-register-body {
+  position: absolute;
+  inset-block-end: calc(var(--bd-control) + var(--bd-s2));
+  inset-inline-end: 0;
+  inline-size: max-content;
+  display: grid;
+  gap: var(--bd-s3);
+  max-inline-size: min(var(--bd-dossier-w), 88cqi);
+  padding: var(--bd-s4);
+  background: var(--bd-sheet);
+  border: var(--bd-rule-1) solid var(--bd-rule-2);
+  border-radius: var(--bd-radius-2);
+  box-shadow: var(--bd-elev-lift);
+  z-index: 30;
 }
 
 .bd-register-group {
@@ -86,10 +142,6 @@
   border-block-start: var(--bd-rule-w3) solid var(--bd-gate);
 }
 
-.bd-register-group[data-class="GATED"] .bd-block-label {
-  color: var(--bd-ink-2);
-}
-
 .bd-register-group ul {
   display: flex;
   flex-wrap: wrap;
@@ -99,17 +151,12 @@
   list-style: none;
   font-family: var(--bd-font-mono);
   font-size: var(--bd-text-xs);
-  color: var(--bd-ink-4);
-}
-
-.bd-register-group[data-class="GATED"] ul {
-  color: var(--bd-ink-3);
+  color: var(--bd-ink-2);
 }
 
 /* An empty band still renders, so the reader is told what an agent CANNOT do here. Set as prose,
    because it is a sentence rather than a capability name. */
 .bd-register-group li[data-empty="true"] {
   font-family: var(--bd-font);
-  color: var(--bd-ink-4);
+  color: var(--bd-ink-3);
 }
-

@@ -100,16 +100,13 @@ export function Board({ board }: { board: BdBoard }) {
         <div className="bd-grain" aria-hidden />
 
         {/*
-         * DESIGN-LAW §4.1 allows exactly ONE orienting line above the fold and
-         * the headline already is one, so the masthead carries the headline,
-         * the honesty line and nothing else. What the second paragraph used to
-         * explain — that a stage is two queues and the group is the unit worth
-         * opening — is now said by the board itself: a column per stage, a row
-         * per role, and a foot on every column naming the one fact true in it.
-         * Structure explaining structure costs no vertical room, and the room
-         * it gives back goes to the candidates.
+         * The masthead reads `totals` because its headline is STATE now rather
+         * than a slogan — the same three figures the crumb carries, at the top
+         * of the page where the reader arrives. DESIGN-LAW §4.1 still allows
+         * exactly one orienting line above the fold, and that is now the deck
+         * under the headline rather than the headline itself.
          */}
-        <BoardMast />
+        <BoardMast totals={totals} />
 
         <BoardToolbar
           board={board}

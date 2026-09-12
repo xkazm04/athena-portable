@@ -12,26 +12,26 @@
  * already stand.
  */
 /*
- * The board is as tall as the tallest column needs and no taller.
+ * EVERY COLUMN ENDS WHERE ITS ROWS END.
  *
- * It used to be `block-size: 100%`, which stretched five columns to fill the
- * viewport: at 1440x900 that was 167px of content inside a 474px box, and at
- * 1920x1080 the same content inside 680px. An empty container reads as content
- * that failed to load; a column that ends where its rows end reads as the
- * whole of what is there. The room below the board is not waste — the third
- * bloom sits at `50% 108%` and lights it, which is the dark room the direction
- * is named for.
+ * `align-items: stretch` matched all five columns to the tallest so their foot
+ * lines landed on one rule, which is a real gain — and it cost more than it
+ * bought. Offer holds one card; stretched to Applied's two roles it was four
+ * fifths empty, and a large empty panel reads as content that failed to load
+ * rather than as a stage nobody has reached yet. The five feet are ragged now
+ * and the five columns are honest about how much is in them, which is the whole
+ * claim a kanban makes.
  *
- * `align-items: stretch` still holds, so all five columns match the tallest and
- * their feet land on one line. `max-block-size: 100%` keeps the cap: fifteen
- * open roles still cost the board a scrollbar rather than the page's shape.
+ * The board keeps its `min-block-size` so a thin pipeline still holds the page's
+ * proportions, and `max-block-size: 100%` still caps it: fifteen open roles cost
+ * a scrolling column rather than the page's shape.
  */
 .bd-board {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--bd-s3);
-  align-items: stretch;
-  align-content: stretch;
+  align-items: start;
+  align-content: start;
   /* A floor as well as a ceiling. Sized purely to content, a two-role pipeline
      drew a 330px strip across a 1080 screen and left four hundred pixels of
      nothing under it; 28rem is about the height a stage column reads as a

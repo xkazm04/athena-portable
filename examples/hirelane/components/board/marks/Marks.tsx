@@ -1,7 +1,14 @@
 /**
  * The domain marks. DESIGN-LAW §4.3: every domain concept gets a mark drawn for
  * this app, and `lucide-react` is for utility glyphs only. This direction uses
- * no library glyph at all — these three are the whole inventory.
+ * no library glyph at all — these two are the whole inventory.
+ *
+ * There was a third, `GateMark`: a two-stroke bracket that closed when the
+ * irreversible control armed. It is gone. It rendered as `[ ]` in front of the
+ * gated band's sentence, which reads as an unchecked checkbox — a control — in
+ * front of the one region on the surface whose whole point is that it is NOT a
+ * control until you arm it. The class band carries its state in words and in
+ * the surface it is drawn on, which is what §7.1 actually asks for.
  *
  * Server- and client-safe: pure SVG, no state.
  */
@@ -23,32 +30,6 @@ export function GapMark({ className }: { className?: string }) {
       focusable="false"
     >
       <path d="M0 2h17M31 2h17" stroke="currentColor" strokeWidth="2" fill="none" />
-    </svg>
-  );
-}
-
-/**
- * The gate — a two-stroke bracket, open when idle and closed when armed.
- *
- * The shape carries the state, so the distinction survives the greyscale test
- * without the reserved hue having to do the work on its own.
- */
-export function GateMark({ armed, className }: { armed: boolean; className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 14 14"
-      width="14"
-      height="14"
-      aria-hidden
-      focusable="false"
-    >
-      <path
-        d={armed ? "M3 1H1v12h2M11 1h2v12h-2M5 7h4" : "M3 1H1v12h2M11 1h2v12h-2"}
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
-      />
     </svg>
   );
 }

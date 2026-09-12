@@ -26,12 +26,12 @@
   color: var(--bd-ink);
 }
 
+/* A figure line, so the digits take the mono face and the words around them do not. */
 .bd-criterion-score {
-  font-family: var(--bd-font-mono);
   font-size: var(--bd-label);
-  letter-spacing: var(--bd-track-caps);
-  text-transform: uppercase;
-  color: var(--bd-ink-3);
+  font-family: var(--bd-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--bd-ink-2);
 }
 
 .bd-evidence {
@@ -65,11 +65,8 @@
 }
 
 .bd-facts dt {
-  font-family: var(--bd-font-mono);
   font-size: var(--bd-label);
-  letter-spacing: var(--bd-track-caps);
-  text-transform: uppercase;
-  color: var(--bd-ink-4);
+  color: var(--bd-ink-3);
 }
 
 .bd-facts dd {

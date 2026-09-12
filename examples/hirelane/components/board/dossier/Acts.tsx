@@ -33,7 +33,9 @@ export function DossierActs({ candidate }: { candidate: BdCandidate }) {
 
   return (
     <div className="bd-auto-panel">
-      <span className="bd-class-auto">AUTO — reversible, each writes an undo</span>
+      <span className="bd-class" data-class="AUTO">
+        Auto — reversible. Each of these writes an undo.
+      </span>
       <div className="bd-actions">
         <button
           type="button"

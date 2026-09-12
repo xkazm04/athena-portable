@@ -22,11 +22,14 @@
  *
  *   1-2   the room to say who these people are: face and full name
  *   3-4   face and first name
- *   5+    faces alone, each tucked under the one before it by whatever distance
- *         makes the whole line fit the column
+ *   5+    a cluster: six faces, each tucked an eighth under the one before it,
+ *         and a `+N` that counts the rest exactly
  *
- * That last rule is what keeps a queue of eleven inside a 250px column without
- * wrapping to a second line or shrinking to dots: the pile tightens instead.
+ * The cluster is capped rather than tightened, which is the readability fix.
+ * Solving the tuck to fit eleven faces in the column's 200px did keep the row
+ * on one line, and it did it by showing a 17px sliver of each 32px disc - a
+ * heap of half-initials that answered neither "who" nor "how many". Six whole
+ * faces and a `+5` answer both.
  */
 import type { CSSProperties } from "react";
 import { motion } from "motion/react";
@@ -40,13 +43,12 @@ import {
   type BdRole,
 } from "./model";
 import { settle, throwOut } from "./motion";
-import { FitRule, stageFact } from "./columns/facts";
+import { GroupRead, stageFact } from "./columns/facts";
 import {
   FACE,
   PILE_CAP,
   labelFor,
   overlapFor,
-  pileGlyph,
   stackingFor,
 } from "./columns/stacking";
 
@@ -167,9 +169,6 @@ export function Columns({
                                 id={candidate.id}
                                 initials={candidate.initials}
                                 className="bd-mono"
-                                glyph={
-                                  stacking === "pile" ? pileGlyph(candidate.initials) : undefined
-                                }
                               />
                               {name ? <span className="bd-pile-name">{name}</span> : null}
                             </motion.span>
@@ -178,7 +177,7 @@ export function Columns({
                         {hidden > 0 ? <span className="bd-pile-more">+{hidden}</span> : null}
                       </span>
 
-                      <FitRule candidates={candidates} />
+                      <GroupRead candidates={candidates} />
                     </motion.button>
                   );
                 })
@@ -186,11 +185,7 @@ export function Columns({
             </div>
 
             {/* The stage's own fact, on the line every column's foot shares. */}
-            {fact ? (
-              <p className="bd-column-foot">
-                <span className="bd-fig">{fact}</span>
-              </p>
-            ) : null}
+            {fact ? <p className="bd-column-foot">{fact}</p> : null}
           </motion.section>
         );
       })}

@@ -1,11 +1,16 @@
 /* ------------------------------------------------------------------- mast */
 
-/* One column. The masthead carried a nav in its second track; the direction
-   index it linked to was reviewed out and the board is the root route, so there
-   is nowhere else to be and no track to reserve for saying so. */
+/*
+ * Two tracks: what is on the board on the left, whether an agent is beside it on the right.
+ *
+ * The masthead carried one column and three stacked lines, and the third of them was the
+ * hardcoded "Athena is not connected yet" — sixty pixels of the board's height spent on a caption.
+ * Set beside the identity block it costs nothing vertically and lands where the same reading
+ * lands in the sibling tab.
+ */
 .bd-mast {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   column-gap: var(--bd-s5);
   row-gap: var(--bd-s2);
@@ -17,6 +22,13 @@
   min-inline-size: 0;
 }
 
+/*
+ * The headline STATES. It was a slogan; the slogan is the deck below it now.
+ *
+ * `em` is the only emphasis on it, and it is spent on the one figure this app exists for: the
+ * applicants a person flagged as arguable. Italic rather than a hue, because the four hues are
+ * locked and none of them is "look here" (§4.2).
+ */
 .bd-title {
   margin: var(--bd-s2) 0 0;
   text-wrap: balance;
@@ -29,19 +41,66 @@
   transition: font-size var(--bd-dur-4) var(--bd-ease), opacity var(--bd-dur-3) var(--bd-ease);
 }
 
+.bd-title em {
+  font-style: normal;
+  color: var(--bd-mark);
+}
+
 .bd-root[data-level="1"] .bd-title,
 .bd-root[data-level="2"] .bd-title {
   font-size: var(--bd-text-lg);
   opacity: 0.6;
 }
 
-/* The honesty line, verbatim and visible without interaction (DESIGN-LAW §4.1). */
-.bd-honesty {
-  grid-column: 1;
-  margin: 0;
+/* The one orienting line DESIGN-LAW §4.1 allows, now that the h1 is state. */
+.bd-deck {
+  margin: var(--bd-s1) 0 0;
   max-inline-size: var(--bd-measure-prose);
   font-size: var(--bd-text-sm);
-  color: var(--bd-ink-4);
+  color: var(--bd-ink-2);
 }
 
+.bd-root[data-level="1"] .bd-deck,
+.bd-root[data-level="2"] .bd-deck {
+  display: none;
+}
 
+/*
+ * The presence line: a READING, not a caption (DESIGN-LAW §8).
+ *
+ * `data-on` is the bridge, and it is the only thing on this surface allowed to change state
+ * without the reader having done something — so it changes by a dot and a value step, never by
+ * motion. The dot is deliberately not `--bd-auto`: connectedness is not reversibility, and
+ * spending the locked hue here would cost the gate its signal (§4.2).
+ */
+.bd-presence {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bd-s2);
+  align-self: end;
+  margin: 0;
+  max-inline-size: var(--bd-measure-narrow);
+  font-size: var(--bd-label);
+  line-height: var(--bd-leading-snug);
+  color: var(--bd-ink-3);
+  text-align: start;
+}
+
+.bd-presence::before {
+  content: "";
+  flex: none;
+  inline-size: var(--bd-swatch);
+  block-size: var(--bd-swatch);
+  border-radius: var(--bd-radius-round);
+  border: var(--bd-rule-1) solid var(--bd-ink-4);
+  translate: 0 var(--bd-s0-5);
+}
+
+.bd-presence[data-on="true"] {
+  color: var(--bd-ink-2);
+}
+
+.bd-presence[data-on="true"]::before {
+  background: var(--bd-ink);
+  border-color: var(--bd-ink);
+}

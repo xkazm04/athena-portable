@@ -15,15 +15,17 @@
  * FOUR THINGS THIS FILE IS ANSWERING.
  *
  * 1. READABILITY. The reading sizes start at 15px and the board's own names at
- *    17px. Nothing that carries a fact is set below 13px, and the only 11px
- *    type on the surface is a tracked-out caps label whose job is to name the
- *    thing beneath it.
+ *    17px. Nothing on the surface is set below 12px, and 12px is ONE thing:
+ *    `--bd-label`, sentence case, in the text face. There is no tracked-out
+ *    caps micro label anywhere any more — the second review named it, at eight
+ *    different sites, as the thing that made the board unreadable.
  * 2. THE GROUND. No paper. Depth is a bloom, a glass plane and a hairline —
  *    never a drop shadow on a white card, which is the tell the first pass had.
- * 3. THE SECOND VOICE. Annotations are set in a handwriting face in a pastel,
- *    and they appear nowhere near a number or a control. That is the whole of
- *    the "hand-written" half of the brief, and rationing it is what keeps it
- *    from reading as decoration.
+ * 3. THE SECOND VOICE. An annotation is still a person's remark rather than a
+ *    machine's figure, and it is still marked as one — but by italic and
+ *    `--bd-mark` in the text face at the reading size, not by a handwriting
+ *    face. Caveat's drawn size and low stroke contrast put every note on this
+ *    surface below the legibility floor the rest of the file is defending.
  * 4. THE GREYSCALE TEST. Desaturate the page and the irreversible acts are
  *    still the only inverted, heaviest-ruled region on it, because the class is
  *    carried by structure before any colour is applied (§7.1).
@@ -60,7 +62,11 @@
   --bd-ink: #ffffff;
   --bd-ink-2: #c9c9d1;
   --bd-ink-3: #93939f;
-  --bd-ink-4: #6b6b77;
+  /* Raised from #6b6b77 in the readability pass. At 12px on --bd-void the old
+     value measured 3.8:1 and failed WCAG AA; this measures 5.3:1, and 4.9:1 on
+     a --bd-glass panel, which is the floor every label on the surface now sits
+     above. */
+  --bd-ink-4: #83838f;
   --bd-rule: rgb(255 255 255 / 11%);
   --bd-rule-2: rgb(255 255 255 / 18%);
 
@@ -112,14 +118,20 @@
   /*
    * Type, rebased upward. The imported scale bottoms out at 11px and puts the
    * reading size at 15px; the review said that was too small, so every step a
-   * fact can land on moves up one and `2xs` is reserved for caps labels alone.
+   * fact can land on moves up one.
+   *
+   * `--bd-label` is the ONE label step, and it is 12px rather than 11. The
+   * surface used to carry three label idioms - a tracked-out mono caps micro
+   * label, a mono caps figure caption and a handwriting annotation - and the
+   * second review named all three as unreadable. There is one now: sentence
+   * case, the text face, 12px, `--bd-ink-3` or better. A structural device has
+   * to encode information; tracking and capitals encoded nothing here.
    */
-  --bd-label: 0.6875rem;
+  --bd-label: 0.75rem;
   --bd-text-xs: 0.8125rem;
   --bd-text-sm: 0.9375rem;
   --bd-text-base: 1.0625rem;
   --bd-text-md: 1.1875rem;
-  --bd-text-hand: 1.375rem;
   --bd-text-lg: clamp(1.35rem, 1.1rem + 1.2cqi, 1.75rem);
   --bd-text-xl: clamp(1.9rem, 1.4rem + 2.4cqi, 2.75rem);
   --bd-text-2xl: clamp(2.4rem, 1.6rem + 4cqi, 3.75rem);
@@ -188,7 +200,10 @@
    * role here, not a rounded-off approximation of one.
    */
   --bd-stage-min: 300px;
-  --bd-stage-max: 480px;
+  /* Raised with the foot. The foot was two rows and 180px of it was a list of tool names; with
+     that behind a disclosure the level has the height, and a card that holds five criterion rows
+     and the stage fact under them needs 520 to do it without clipping. */
+  --bd-stage-max: 520px;
   --bd-rail-h: 440px;
   --bd-perspective: 1500px;
   --bd-dot: 7px;
@@ -205,7 +220,6 @@
   --bd-font-display: var(--font-bd-display), ui-sans-serif, system-ui, sans-serif;
   --bd-font: var(--font-bd-text), ui-sans-serif, system-ui, sans-serif;
   --bd-font-mono: var(--font-bd-mono), ui-monospace, "Cascadia Mono", monospace;
-  --bd-font-hand: var(--font-bd-hand), "Segoe Script", cursive;
 
   /* --- The --dk-* bridge (§1.6). Alias, never fork. --- */
   --dk-accent: var(--bd-accent);

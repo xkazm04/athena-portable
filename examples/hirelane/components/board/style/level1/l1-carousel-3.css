@@ -4,10 +4,60 @@
 }
 
 .bd-hint {
-  font-family: var(--bd-font-mono);
   font-size: var(--bd-label);
-  letter-spacing: var(--bd-track-caps);
-  text-transform: uppercase;
-  color: var(--bd-ink-4);
+  color: var(--bd-ink-3);
 }
 
+
+/*
+ * THE COMPACT CARD, for a level that does not have the height for the tall one.
+ *
+ * A criterion is three things — which criterion, how it scored, and how that reads against the
+ * other four — and the tall card gives the first two a line and the third a bar under it. Five of
+ * those need about 430px of card; at 1024x768 this level has 300, and the shipped board's answer
+ * was to let them overflow and print over the stage fact at the foot.
+ *
+ * Nothing is dropped here. The bar stops being a row of its own and becomes the criterion's own
+ * underline, at the rule weight the direction uses for a division, so the row is one line of type
+ * plus three pixels instead of two lines plus a gap. The identity block and the verdict figure
+ * give up a step each to pay for the rest. Every card in the loupe changes together, so a
+ * head-to-head still compares like with like, and the shared 0-4 baseline is untouched — which is
+ * the one thing this level may not trade away.
+ */
+@container bd-rail (max-height: 26rem) {
+  .bd-slide-inner {
+    gap: var(--bd-s1);
+  }
+
+  .bd-slide-inner .bd-mono[data-size="lg"] {
+    inline-size: var(--bd-s6);
+    block-size: var(--bd-s6);
+    font-size: var(--bd-text-sm);
+  }
+
+  .bd-slide-name {
+    font-size: var(--bd-text-md);
+  }
+
+  .bd-slide-sub {
+    font-size: var(--bd-text-xs);
+  }
+
+  .bd-overall {
+    font-size: var(--bd-text-lg);
+  }
+
+  .bd-bars {
+    gap: var(--bd-s1);
+  }
+
+  .bd-bar {
+    gap: 0;
+  }
+
+  /* The criterion's own underline, rather than a track on a line of its own. */
+  .bd-bar-track {
+    block-size: var(--bd-s0-5);
+    border-radius: 0;
+  }
+}

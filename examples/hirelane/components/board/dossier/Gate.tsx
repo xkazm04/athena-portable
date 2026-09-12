@@ -23,7 +23,6 @@ import {
   type RejectionTemplate,
 } from "@/lib/constants";
 import { fmtWhen } from "../format";
-import { GateMark } from "../marks/Marks";
 import type { BdCandidate } from "../model";
 import { useArm, useRun } from "../useRun";
 
@@ -48,9 +47,8 @@ export function DossierGate({
 
   return (
 <div className="bd-gate-panel">
-  <span className="bd-block-label">
-    <GateMark armed={armed !== null} /> GATED — reaches {candidate.name}, and cannot be
-    taken back
+  <span className="bd-class" data-class="GATED">
+    Gated — reaches {candidate.name}, and cannot be taken back.
   </span>
   {armed === "offer" ? (
     <div className="bd-arm">

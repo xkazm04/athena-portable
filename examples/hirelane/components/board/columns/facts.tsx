@@ -4,23 +4,14 @@
  * The two things a row says beyond a count.
  *
  * `stageFact` is the one fact true in this stage and no other, in the same
- * vocabulary the carousel uses one level down. `FitRule` is the group's scored
- * candidates as ticks on the rubric's own 0-4 line with both stored floors
- * ruled across it — because L0's real question is not "who is in this group"
- * but "which of these ten do I open", and a count alone cannot answer it.
+ * vocabulary the carousel uses one level down. `GroupRead` answers L0's real
+ * question — not "who is in this group" but "which of these ten do I open" —
+ * in the three figures that decide it.
  *
  * Both obey the same rule: when there is nothing to say they draw nothing. A
  * group nobody has scored has no line, not an empty one.
  */
-import type { CSSProperties } from "react";
-
-import {
-  FIT_PROMISING,
-  FIT_STRONG,
-  SCORE_MAX,
-  type BdCandidate,
-  type StageRole,
-} from "../model";
+import type { BdCandidate, StageRole } from "../model";
 
 /**
  * The one fact that is true in this stage and in no other, aggregated over the
@@ -56,53 +47,48 @@ export function stageFact(role: StageRole, candidates: BdCandidate[]): string | 
 }
 
 /**
- * The group's scored candidates as ticks on the rubric's own 0-4 line, with the
- * two stored fit floors ruled across it.
+ * What a reader needs to decide which of ten groups to open, in words.
  *
- * L0's real question is not "who is in this group" — it is "which of these ten
- * groups do I open", and a count alone cannot answer it. A group whose five
- * ticks all sit left of the promising floor is a different afternoon from one
- * with three above the strong floor, and that difference was invisible before.
- * The floors are `FIT_PROMISING` and `FIT_STRONG` from the model, not values
- * typed in here, so the line means exactly what the fit band means.
+ * It was a tick line: the group's scored candidates plotted on the rubric's own 0-4 baseline with
+ * the two stored fit floors ruled across it. The arithmetic was right and nobody could read it.
+ * At a column's width the whole instrument is 180px wide and 8px tall, it carries no axis, no
+ * legend and no label, and the review of the shipped board called it what it looked like: a
+ * decoration under every row. A structural device has to encode something a reader can decode.
  *
- * When nobody in the group has been scored there is no line at all — the same
- * rule the cards follow (brief §2: "the unscored are expressed by absence").
+ * The same three facts, said: how many of this group have been read, the best weighted score in
+ * it, and how many a person flagged as arguable. `best` is what the ticks were really being
+ * scanned for — is there anything above the strong floor in here — and it answers that exactly
+ * rather than to within a few pixels of tick position. It is on the rubric's own 0-4 scale, which
+ * every other score on this surface is on, so the denominator is not reprinted under every row.
+ *
+ * The absence rule is unchanged (brief §2): a group nobody has scored and nobody has flagged says
+ * nothing here rather than printing a zero.
  */
-export function FitRule({ candidates }: { candidates: BdCandidate[] }) {
+export function GroupRead({ candidates }: { candidates: BdCandidate[] }) {
   const scored = candidates.filter((c) => c.scored);
   const arguable = candidates.filter((c) => c.borderline).length;
-
-  /* Absence, not a zero. A group nobody has scored and nobody has flagged has
-     nothing to say here, and printing "0 scored" under every such row repeats
-     the column head once per role for no gain. */
   if (scored.length === 0 && arguable === 0) return null;
 
+  const best = scored.reduce((n, c) => Math.max(n, c.overall), 0);
+
   return (
-    <span className="bd-group-scale">
+    <span className="bd-group-read">
       {scored.length > 0 ? (
-        <span className="bd-scale" aria-hidden>
-          <i className="bd-scale-floor" style={{ "--at": FIT_PROMISING / SCORE_MAX } as CSSProperties} />
-          <i
-            className="bd-scale-floor"
-            data-strong="true"
-            style={{ "--at": FIT_STRONG / SCORE_MAX } as CSSProperties}
-          />
-          {scored.map((c) => (
-            <i
-              key={c.id}
-              className="bd-scale-tick"
-              data-borderline={c.borderline}
-              style={{ "--at": c.overall / SCORE_MAX } as CSSProperties}
-            />
-          ))}
+        <span>
+          <span className="bd-fig">{scored.length}</span> of{" "}
+          <span className="bd-fig">{candidates.length}</span> scored
         </span>
       ) : null}
-      <span className="bd-scale-note">
-        {scored.length > 0 ? `${scored.length} scored` : null}
-        {scored.length > 0 && arguable > 0 ? " · " : null}
-        {arguable > 0 ? `${arguable} arguable` : null}
-      </span>
+      {scored.length > 0 ? (
+        <span>
+          best <span className="bd-fig">{best.toFixed(1)}</span>
+        </span>
+      ) : null}
+      {arguable > 0 ? (
+        <span data-arguable="true">
+          <span className="bd-fig">{arguable}</span> arguable
+        </span>
+      ) : null}
     </span>
   );
 }

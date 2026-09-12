@@ -113,11 +113,8 @@
 }
 
 .bd-verdict span {
-  font-family: var(--bd-font-mono);
   font-size: var(--bd-label);
-  letter-spacing: var(--bd-track-caps);
-  text-transform: uppercase;
-  color: var(--bd-ink-4);
+  color: var(--bd-ink-3);
 }
 
 /* The denominator: present, subordinate. */

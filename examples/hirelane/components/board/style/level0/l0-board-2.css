@@ -1,24 +1,21 @@
 /*
- * Faces alone, each tucked under the one before it.
+ * The cluster: six faces at an eighth's tuck, and a `+N` counting the rest.
  *
- * Three things make a 12-17px strip of a 32px disc readable, and all three are
- * needed. The RING is a solid ground-coloured collar, thick enough to survive
- * being the only gap between two discs. The PAINT ORDER runs forward, set from
- * the component, so the whole face belongs to the strongest candidate. And the
- * GLYPH is one letter pushed into the strip that is still showing: two centred
- * mono characters in that space rendered as half-letters, which is why the
- * board used to print "BI" for Bo Eriksen.
+ * It was up to fourteen faces, with the tuck solved to fit them all inside the
+ * column's 200px — so each disc showed a 17px strip of itself and the row was a
+ * heap of half-initials that answered neither "who" nor "how many". Capped and
+ * loosened, every face shows three quarters of itself and its whole monogram.
+ * The collar below still gives each disc its own edge, and the paint order
+ * still runs forward, so the whole face belongs to the strongest candidate.
  */
 .bd-pile[data-stacking="pile"] .bd-pile-item + .bd-pile-item {
   margin-inline-start: calc(var(--overlap, var(--bd-s3)) * -1);
 }
 
 /*
- * The collar is what makes a pile eleven people rather than one smeared shape.
- * Two pixels was enough when the marks were pastel and the eye had hue to cut
- * on; against a monochrome mark whose brightest fill is 88% white it is not, and
- * two adjacent lit discs merge. Three pixels of the page's own black, plus a
- * hairline on the disc itself, restores the edge without adding a colour.
+ * The collar is what makes a cluster six people rather than one smeared shape:
+ * three pixels of the page's own black, plus a hairline on the disc itself, so
+ * two adjacent lit discs keep an edge without a colour being spent on it.
  */
 .bd-pile[data-stacking="pile"] .bd-mono {
   box-shadow:
@@ -27,31 +24,31 @@
     inset 0 0 0 1px rgb(255 255 255 / 22%);
 }
 
-/* The visible strip of a tucked face is its trailing edge, because the face
-   before it covers the leading one. So the letter goes there, at the size that
-   strip can hold, and the drawn marks are pushed the same way so each one
-   shows its own edge rather than five overlapping middles. */
+/* The monogram is centred again, at a reading size. The one-letter,
+   trailing-edge variant existed because a tucked face showed 17px of itself; at
+   an 8px tuck it shows 24, which holds two glyphs. */
 .bd-pile[data-stacking="pile"] .bd-mono[data-kind="initials"] {
-  place-items: center end;
-  padding-inline-end: var(--bd-s1);
   font-size: var(--bd-text-xs);
 }
 
-.bd-pile[data-stacking="pile"] .bd-pile-item:first-child .bd-mono[data-kind="initials"] {
-  place-items: center;
-  padding-inline-end: 0;
-  font-size: var(--bd-text-sm);
+/* A drawn mark is generative geometry and reads as texture at this size, so in
+   a cluster it stands back: the monograms beside it are identities, and a
+   smudge should not out-shout a name. */
+.bd-pile[data-stacking="pile"] .bd-mono[data-kind="drawn"] {
+  opacity: 0.7;
 }
 
 .bd-pile-item[data-borderline="true"] .bd-mono {
   border-color: var(--bd-mark);
 }
 
+/* The overflow is an exact statement about people nobody drew, so it is set as
+   a figure and at the ink the names beside it carry. */
 .bd-pile-more {
   margin-inline-start: var(--bd-s3);
   font-family: var(--bd-font-mono);
   font-size: var(--bd-text-sm);
-  color: var(--bd-ink-3);
+  color: var(--bd-ink-2);
   flex: none;
 }
 
@@ -65,74 +62,40 @@
 }
 
 /*
- * The fit rule: the group's scored candidates as ticks on the rubric's own 0-4
- * line, with the two stored fit floors ruled across it.
+ * The group read: the three figures that decide whether to open a row.
  *
- * The line is not a chart and has no axis furniture, because it is answering
- * one question — which of these ten groups is worth opening — and a count
- * cannot. Five ticks left of the promising floor and three above the strong one
- * are different afternoons. It is bar length and rule weight only: no hue is
- * spent here, so the reserved two keep meaning what they mean (DESIGN-LAW §4.2).
+ * It replaced a tick line plotting every scored candidate on the rubric's 0-4 baseline. See
+ * `components/board/columns/facts.tsx` for why: the instrument was 180px wide, 8px tall, carried
+ * no axis and no label, and read as a decoration under every row. Words at the one label size,
+ * with the figures in the mono face so they line up down the board.
  */
-.bd-group-scale {
+.bd-group-read {
   display: flex;
-  align-items: center;
-  gap: var(--bd-s2);
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--bd-s1) var(--bd-s3);
   min-inline-size: 0;
-}
-
-.bd-scale {
-  position: relative;
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  block-size: var(--bd-s4);
-  border-block-end: var(--bd-rule-1) solid var(--bd-rule-2);
-}
-
-/* A floor is a hairline standing on the baseline. The strong floor is the
-   heavier of the two, so the ladder reads without a legend. */
-.bd-scale-floor {
-  position: absolute;
-  inset-block: var(--bd-s1) 0;
-  inset-inline-start: calc(var(--at) * 100%);
-  inline-size: var(--bd-rule-1);
-  background: var(--bd-rule-2);
-}
-
-.bd-scale-floor[data-strong="true"] {
-  inset-block-start: 0;
-  inline-size: var(--bd-rule-w2);
-  background: var(--bd-ink-4);
-}
-
-/* A person. Not a data point: it is the only mark on the line that is drawn
-   rather than ruled, so the eye counts people and reads the floors as ground. */
-.bd-scale-tick {
-  position: absolute;
-  inset-block-end: calc(var(--bd-s2) * -0.375);
-  inset-inline-start: calc(var(--at) * 100%);
-  inline-size: calc(var(--bd-s2) * 0.75);
-  block-size: calc(var(--bd-s2) * 0.75);
-  margin-inline-start: calc(var(--bd-s2) * -0.375);
-  border-radius: var(--bd-radius-round);
-  background: var(--bd-ink-2);
-}
-
-/* The arguable are the ones a person flagged, so they take `mark` — the same
-   hue the borderline tab carries everywhere else in the direction. */
-.bd-scale-tick[data-borderline="true"] {
-  background: var(--bd-mark);
-  /* §9.4 exception: a hairline ring drawn as a shadow spread, not a spacing step. */
-  box-shadow: 0 0 0 2px rgb(242 217 155 / 22%);
-}
-
-.bd-scale-note {
-  flex: none;
-  font-family: var(--bd-font-mono);
   font-size: var(--bd-label);
-  letter-spacing: var(--bd-track-caps);
-  text-transform: uppercase;
+  color: var(--bd-ink-3);
+}
+
+.bd-group-read .bd-fig {
+  color: var(--bd-ink-2);
+}
+
+/* Three clauses of one sentence, so they are punctuated rather than merely spaced. */
+.bd-group-read > span + span::before {
+  content: "· ";
   color: var(--bd-ink-4);
+  margin-inline-start: calc(var(--bd-s2) * -1);
+  padding-inline-end: var(--bd-s1);
+}
+
+/* The arguable are the ones a person flagged, so they take `mark` — the same hue the borderline
+   tab carries everywhere else in the direction, and the only hue spent on this line. */
+.bd-group-read span[data-arguable="true"],
+.bd-group-read span[data-arguable="true"] .bd-fig {
+  color: var(--bd-mark);
 }
 
 /*
@@ -149,12 +112,14 @@
      and without a floor the five hairlines above the five feet sat at five
      different heights — the one place on this board where a ragged line is
      obvious, because the feet are the only thing all five columns share. */
-  min-block-size: calc(2 * var(--bd-label) * 1.2);
+  min-block-size: calc(2 * var(--bd-label) * 1.35);
   font-size: var(--bd-label);
   line-height: var(--bd-leading-snug);
-  letter-spacing: var(--bd-track-caps);
-  text-transform: uppercase;
-  color: var(--bd-ink-4);
+  /* The text face with lining figures, not the mono face. The whole line used to be wrapped in
+     `.bd-fig` so a sentence — "16 days is the longest wait" — was set in monospace, which is the
+     face this direction reserves for figures that get compared down a column. */
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--bd-ink-3);
 }
 
 /* The face: either a drawn mark or the initials, and the two are the same size

@@ -78,7 +78,9 @@ export function BoardToolbar({
           {onlyBorderline ? "Showing the arguable" : "Only the arguable"}
         </button>
         <span className="bd-count">
-          {totals.scored} of {totals.applicants} scored · {totals.borderline} arguable
+          <span className="bd-fig">{totals.scored}</span> of{" "}
+          <span className="bd-fig">{totals.applicants}</span> scored ·{" "}
+          <span className="bd-fig">{totals.borderline}</span> arguable
         </span>
       </div>
     </div>

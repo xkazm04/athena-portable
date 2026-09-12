@@ -68,8 +68,18 @@
  * below the fold at 900px — a level whose whole instruction is "← → to move"
  * was hiding the control that says so.
  */
+/*
+ * It is also a SIZE CONTAINER, which is how a card knows how much room it has.
+ *
+ * The five criteria stack — label over bar — and that needs about 430px of card. At 1024x768 the
+ * level has 300, so three of the five were clipped and the comparison the whole level exists for
+ * was cut in half. The card answers by changing the shape of a criterion row rather than by
+ * dropping criteria: see the compact rule at the foot of this file.
+ */
 .bd-rail-3d {
   position: relative;
+  container-type: size;
+  container-name: bd-rail;
   block-size: 100%;
   min-block-size: var(--bd-stage-min);
   max-block-size: var(--bd-stage-max);

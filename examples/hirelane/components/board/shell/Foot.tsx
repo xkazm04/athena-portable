@@ -1,28 +1,25 @@
 "use client";
 
 /**
- * The breadcrumb and the capability register.
+ * The breadcrumb and the capability line.
  *
- * The register is two class bands rather than one row of pills, because seven
- * identically shaped chips in two hues fail the greyscale test — and the class
- * of a capability is exactly the thing that must survive being printed in black
- * and white. Grouped and set at opposite ends of the rule ladder, it passes.
+ * WHAT THIS USED TO BE. Two bands printing all sixteen tool names in monospace, across the full
+ * width of the page, under two tracked-caps headings — `AUTO — REVERSIBLE` over
+ * `navigate score_against_rubric add_note move_stage …`. It was a hundred and eighty pixels of
+ * identifiers nobody reads, it took the room the carousel needed one level up, and it ran under
+ * the dev overlay in the corner. `score_against_rubric` is a symbol in a protocol; a reader wants
+ * to know how many acts an agent is offered here and how many of them reach a person.
+ *
+ * SO: the counts are the line, and the names are behind a disclosure — which is still "on the
+ * surface" in the sense DESIGN-LAW §7.4 means, because the claim (sixteen, three of them gated)
+ * is visible without interaction and it is the claim that matters. The names are the evidence for
+ * it, one click away, and they keep their two class bands when opened.
+ *
+ * The counts come from `components/board/register.ts`, the same derivation the masthead's presence
+ * line reads, so the two sentences on this page about the register cannot disagree.
  */
-import { CAPABILITIES, isAuto } from "@/lib/manifest";
 import type { BdCandidate, BdColumn, BdRole } from "../model";
-
-/**
- * The manifest is not a drawer nobody opens (DESIGN-LAW §7.4), so the class of every capability is
- * on the surface — and it is the class of the capabilities THIS ROUTE HAS.
- *
- * Neither half of that used to be true. This was a hand-typed table of seven, under a comment
- * claiming it was derived. Then it was the board's own six, which was honest for as long as the
- * acts were mounted on a different route. They are mounted together now, on the one shipped route,
- * so the register is the union — `CAPABILITIES` in `lib/manifest.ts`, which is the same list both
- * registration files spread from. The class is computed, never typed, and the GATED band has three
- * rows in it because three of these acts reach a person and cannot be taken back.
- */
-const REGISTER = CAPABILITIES.map((c) => ({ name: c.name, auto: isAuto(c) }));
+import { CAPABILITY_COUNTS, REGISTER } from "../register";
 
 export function BoardFoot({
   totals,
@@ -70,43 +67,53 @@ export function BoardFoot({
             <span aria-hidden>←</span> back <kbd>Esc</kbd>
           </button>
         ) : null}
-      </div>
-      {/*
-       * The register, in its two classes rather than as a row of equal pills.
-       *
-       * DESIGN-LAW §7.1 asks for the distinction to survive the greyscale
-       * test, and a strip where every entry carried the same 3px rule in a
-       * different hue did not — remove the colour and the two classes were
-       * identical. Grouped, labelled and set at opposite ends of the rule
-       * ladder, it reads as the things that can be taken back against the
-       * things that reach a person, which is the only sentence this app is
-       * trying to say.
-       *
-       * The empty-band case is kept and it still renders when it happens: an
-       * empty band is the honest answer to "what can an agent do here", and
-       * omitting it would leave the reader to assume the acts that end
-       * somebody's application are simply elsewhere on the page.
-       */}
-      <div className="bd-register">
-        <div className="bd-register-group" data-class="AUTO">
-          <p className="bd-block-label">AUTO — reversible</p>
-          <ul>
-            {REGISTER.filter((t) => t.auto).map((tool) => (
-              <li key={tool.name}>{tool.name}</li>
-            ))}
-          </ul>
-        </div>
-        <div className="bd-register-group" data-class="GATED">
-          <p className="bd-block-label">GATED — reaches a person, and cannot be taken back</p>
-          <ul>
-            {REGISTER.filter((t) => !t.auto).map((tool) => (
-              <li key={tool.name}>{tool.name}</li>
-            ))}
-            {REGISTER.every((t) => t.auto) ? (
-              <li data-empty="true">none here — the acts that reach a candidate are in the dossier</li>
-            ) : null}
-          </ul>
-        </div>
+
+        {/*
+         * The register, as one sentence and a disclosure.
+         *
+         * The two classes still separate before any colour is spent: AUTO on a hairline, GATED on
+         * the heaviest weight the direction has. Desaturate the page and the distinction survives,
+         * which is what §7.1 asks and what a strip of identically-shaped badges in two hues could
+         * not do.
+         */}
+        <details className="bd-register">
+          <summary>
+            <span className="bd-register-count">
+              {CAPABILITY_COUNTS.all} capabilities offered
+            </span>
+            <span className="bd-register-gated">{CAPABILITY_COUNTS.gated} gated</span>
+          </summary>
+          <div className="bd-register-body">
+            <div className="bd-register-group" data-class="AUTO">
+              <p className="bd-class" data-class="AUTO">
+                Auto — reversible, and each writes an undo
+              </p>
+              <ul>
+                {REGISTER.filter((t) => t.auto).map((tool) => (
+                  <li key={tool.name}>{tool.name}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="bd-register-group" data-class="GATED">
+              <p className="bd-class" data-class="GATED">
+                Gated — reaches a person, and cannot be taken back
+              </p>
+              <ul>
+                {REGISTER.filter((t) => !t.auto).map((tool) => (
+                  <li key={tool.name}>{tool.name}</li>
+                ))}
+                {/* An empty band still renders: "nothing here reaches anybody" is the honest
+                    answer to what an agent can do, and omitting it would leave a reader to assume
+                    the acts that end an application are simply somewhere else. */}
+                {REGISTER.every((t) => t.auto) ? (
+                  <li data-empty="true">
+                    none here — the acts that reach a candidate are in the dossier
+                  </li>
+                ) : null}
+              </ul>
+            </div>
+          </div>
+        </details>
       </div>
     </footer>
   );

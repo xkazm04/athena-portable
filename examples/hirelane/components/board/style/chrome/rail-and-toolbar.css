@@ -25,16 +25,24 @@
   gap: var(--bd-s1);
 }
 
+/*
+ * ONE CONTROL SHAPE. The rail's rungs, the role filter, the arguable chip, the back button, the
+ * register's summary, the carousel's arrows and the dossier's buttons are now the same height
+ * (`--bd-control`), the same radius (`--bd-radius-round`), the same text step and the same focus
+ * ring. The rung was the odd one — a 3px radius beside six pill controls — which made the level
+ * rail read as a different kind of thing from the filters it sits beside, when it is exactly the
+ * same kind of thing.
+ */
 .bd-rung {
   display: flex;
   align-items: center;
   gap: var(--bd-s2);
   white-space: nowrap;
   min-block-size: var(--bd-control);
-  padding: var(--bd-s2) var(--bd-s3);
+  padding: var(--bd-s2) var(--bd-s4);
   background: none;
   border: var(--bd-rule-1) solid transparent;
-  border-radius: var(--bd-radius-1);
+  border-radius: var(--bd-radius-round);
   color: var(--bd-ink-4);
   font-size: var(--bd-text-sm);
   cursor: pointer;
@@ -114,11 +122,16 @@
   border-color: var(--bd-mark);
 }
 
+/* The filtered count, in the one label style. Figures keep the mono face so a
+   number still lines up with every other number on the surface; the words
+   around them do not, because `26 OF 40 SCORED` was never more structural than
+   "26 of 40 scored". */
 .bd-count {
-  font-family: var(--bd-font-mono);
   font-size: var(--bd-label);
-  letter-spacing: var(--bd-track-caps);
-  text-transform: uppercase;
-  color: var(--bd-ink-4);
+  color: var(--bd-ink-3);
+}
+
+.bd-count .bd-fig {
+  color: var(--bd-ink-2);
 }
 

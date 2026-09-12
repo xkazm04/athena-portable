@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   // Next 16 writes AGENTS.md / CLAUDE.md into the app directory on first dev run. The repository
   // has its own, so keep it off.
   agentRules: false,
+  // The dev overlay's badge is fixed to the bottom-left corner, which is where this app's
+  // breadcrumb is. Three of these apps are recorded side by side as one studio's tabs, and a
+  // framework badge sitting on top of the pipeline crumb is in every frame of it.
+  devIndicators: false,
 };
 
 export default nextConfig;

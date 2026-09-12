@@ -257,12 +257,27 @@ database. Anything else must be added to the list here first, with a reason.
 - The role's own words: `role.title`, `role.team`, `role.brief`, `role.question` — from the DB.
 - Stage labels from `STAGE_LABEL`, score labels from `SCORE_LABEL`. Exact strings, no synonyms.
 - Counts and scores from the counts on the board payload (`lib/board/`) and the stored scorecards.
-- Exactly one orienting line, chosen from:
+- Exactly one orienting line, chosen from the three below. It is a DECK, under the headline: the
+  headline itself states (what is in the pipeline), because a slogan set at the largest size on the
+  page is the loudest thing on it and it says nothing that changes.
   - `A hiring manager without a recruiter.`
   - `Every score points at the sentence that earned it.`
   - `Decisions that reach a candidate stop here first.`
-- The honesty line, verbatim, once per variant, visible without interaction:
-  `Athena is not connected yet. Every capability below is registered and waiting.`
+- **The honesty line, as a READING rather than a string** (amended 2026-09, the readability pass).
+  It was a verbatim sentence: `Athena is not connected yet. Every capability below is registered
+  and waiting.` A verbatim string cannot become false, and this is the one line on the surface that
+  a recorded walkthrough turns on — so the rule that was supposed to enforce honesty was
+  guaranteeing a sentence that would be a lie the moment an agent arrived. It is now a live
+  reading, visible without interaction, of two things the page can actually answer:
+  - whether the surface's own bridge is in the page (`window.__athenaBridge`, plus
+    `detectModelContext()` from `@athena/demo-kit/webmcp`), and
+  - how many capabilities this route registers and how many of them are gated, counted from the
+    manifest rather than typed.
+
+  Not connected, it still says what it always said: `Athena is not connected. All N capabilities
+  are registered and waiting — G of them gated.` Connected, it says so. One place per app
+  (`components/board/presence.ts` here, `components/lanes/presence.ts` in the sibling tab), one
+  derivation, and the tense rule below is unchanged: registration, never work done.
 - The two class words, used only in their manifest sense: `AUTO`, `GATED`.
 
 **Forbidden anywhere:** any sentence in which Athena has done, is doing, or will shortly do
@@ -449,7 +464,8 @@ this list is read by a person.
 12. `gate` and `auto` hues appear nowhere decorative.
 
 **Honesty and craft**
-13. The honesty line is present, verbatim, visible without interaction.
+13. The honesty line is present as a live reading, visible without interaction, and it is the
+    only place on the surface that claims anything about whether an agent is here.
 14. Every number on screen traces to a query.
 15. Checked at 390, 768, 1280 and 1920 — and *looked at*, not inferred from markup.
 16. `prefers-reduced-motion` lands on final states.
