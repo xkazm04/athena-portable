@@ -62,6 +62,71 @@ export interface DecisionPage {
   total: number;
 }
 
+export type ConnectorAct = "connect" | "flow" | "disconnect" | "probe" | "settings";
+
+/** `ConnectionRecord.view()` in `src/athena/connectors/vault.py`, field for field. */
+export interface ConnectionView {
+  id: string;
+  status: "disconnected" | "connected" | "needs_reauth";
+  identity: string;
+  connected_at: string;
+  enabled: boolean;
+  writes_enabled: boolean;
+  allowlist: string[];
+  health: "healthy" | "broken" | "unknown";
+  health_at: string;
+  health_detail: string;
+  seal: "keyring" | "dpapi" | "file" | "";
+  expires_at: string;
+  last_used_at: string;
+}
+
+/** `OAuthFlow.view()`: where a consent flow stands. */
+export interface FlowView {
+  id: string;
+  connector: string;
+  phase: "awaiting_consent" | "exchanging" | "done" | "failed";
+  detail: string;
+  authorize_url: string;
+}
+
+export interface ConnectorToolView {
+  name: string;
+  description: string;
+  reversible: boolean | null;
+  side_effects: string;
+}
+
+/** `Vault.view()`: one spec with its record. */
+export interface ConnectorView {
+  id: string;
+  label: string;
+  description: string;
+  auth: "token" | "oauth";
+  guide: string;
+  api_hosts: string[];
+  egress: "recipients" | "resources" | "none";
+  tools: ConnectorToolView[];
+  connection: ConnectionView;
+  live: boolean;
+  seal_available: boolean;
+  flow: FlowView | null;
+}
+
+export interface ConnectorPage {
+  ok: boolean;
+  connectors: ConnectorView[];
+  showing: number;
+  total: number;
+  footer: string;
+}
+
+export interface ConnectorReply {
+  ok: boolean;
+  connector: ConnectorView;
+  flow?: FlowView | null;
+}
+
 export interface TurnBody {
   origin: string;
   message: string;
@@ -109,6 +174,19 @@ export class DaemonApi {
 
   ledger(): Promise<Record<string, unknown>> {
     return this.json("GET", "/ledger");
+  }
+
+  /** Every connector spec with its connection record. Never a credential (ADR 0021). */
+  connectors(): Promise<ConnectorPage> {
+    return this.json("GET", "/connectors");
+  }
+
+  /**
+   * One act on one connector: `connect`, `flow`, `disconnect`, `probe` or `settings`. A refused
+   * credential is a 409 in the gate's vocabulary with no value in its detail.
+   */
+  connectorAct(id: string, act: ConnectorAct, body: Record<string, unknown> = {}): Promise<ConnectorReply> {
+    return this.json("POST", `/connectors/${encodeURIComponent(id)}/${act}`, body);
   }
 
   /** Run a turn and yield its channel events as they arrive. */

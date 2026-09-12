@@ -1,0 +1,163 @@
+/* The Connectors module: one card per service, the two decisions a person makes inline.
+ *
+ * Tokens only. The cards sit in one column up to 60rem because each carries a form, and a form
+ * beside a form is two things to read at once. */
+
+.connectors {
+  display: flex;
+  width: 100%;
+  max-width: 60rem;
+  flex-direction: column;
+  gap: var(--density-gap);
+}
+
+.connector__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+.connector__sentence {
+  overflow-wrap: anywhere;
+}
+
+.connector__tools {
+  display: grid;
+  gap: 8px var(--density-gap);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 48rem) {
+  .connector__tools {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.connector__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.connector__tool {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+}
+
+/* The two decisions, one under the other, each a label on the left and its control on the right. */
+.connector__decisions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.connector__decision {
+  display: grid;
+  gap: 4px var(--density-gap);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (min-width: 48rem) {
+  .connector__decision {
+    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+  }
+}
+
+.connector__allowlist {
+  width: 100%;
+  min-height: 4.5em;
+  resize: vertical;
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+/* -- connecting ------------------------------------------------------------------------------ */
+
+.connector__connect {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.connector__fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.connector__fields .field {
+  flex: 1 1 14rem;
+}
+
+.connector__flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+.connector__link {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* -- the guide, folded ----------------------------------------------------------------------- */
+
+.connector__guide {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+}
+
+.connector__guide summary {
+  cursor: pointer;
+  color: var(--muted-foreground);
+  list-style: none;
+}
+
+.connector__guide summary::-webkit-details-marker {
+  display: none;
+}
+
+.connector__guide summary::before {
+  content: "›";
+  display: inline-block;
+  margin-right: 6px;
+  transition: transform var(--duration-fast);
+}
+
+.connector__guide[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.connector__guide-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 66ch;
+  padding-top: 6px;
+  overflow-wrap: anywhere;
+}
+
+.connector__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}

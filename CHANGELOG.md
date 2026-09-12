@@ -5,6 +5,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 ## Connectors (in progress)
 
 - `feat(connectors): Gmail and Notion behind one vault, entering the catalog like a page` — one JSON spec per service; the vault brokers every call with a host allow-list, a timeout, a cap and redaction; a token or grant is probed before it is sealed (keyring, DPAPI or an owner-only file); PKCE over a one-shot loopback listener; writes behind a switch and an egress allow-list, reads fenced and capped; `/connectors` routes; `Policy(connectors=vault)`; ADR 0021.
+- `feat(desktop): the Connectors module` — one card per service: a standing derived at render, the seal sentence, reads and writes with GATED on writes only, the writes switch, the allow-list saved on purpose, a token field or the OAuth client pair with the consent flow's phase, the guide folded; `stores/connectors.ts` mirrors the daemon and keeps no credential; `connectors.css`.
 
 ## Desktop — the second pass (in progress)
 
