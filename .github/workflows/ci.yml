@@ -75,7 +75,13 @@ jobs:
         run: pnpm lint
 
       - name: test
-        run: pnpm test
+        # Not the root script: `pnpm test` iterates every workspace, and @athena/journey is a
+        # browser end-to-end suite that boots four servers and wants a Chromium this runner does
+        # not install. It is run by hand before a demo. Everything else runs here: the bridge,
+        # the panel's vitest, the kit and the three apps. The panel's `test:e2e` is its own
+        # script because it spawns the Python daemon, which this job has no environment for;
+        # the daemon's own end-to-end suite runs in the python job, under pytest.
+        run: pnpm -r --if-present --filter '!@athena/journey' run test
 
   rust:
     name: rust shell
