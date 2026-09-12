@@ -20,6 +20,8 @@ and each file's header carries the argument for its own shape.
 | `ProblemNote` | A surface that could not be read, with the reason verbatim. Never the same component as `EmptyState`: "nothing here" and "could not be read" are different facts. |
 | `Badge` | A small labelled pill. Its label is `--foreground` in every tone; the hue rides the `StatusDot` inside it. |
 | `StatusDot` | The hue of a state, beside the word that says the same thing. A graphic needs 3:1, not 4.5:1. |
+| `ClassPill` | A tool's class as a pill, and `ClassPicker`, the tighten-only control behind it. The hue rides the dot, never the word. The rule it enforces is the gate's (`@/lib/classes`, ADR 0018), never this component's. |
+| `ConfirmInline` | A destructive act that asks once, in place: the trigger becomes a note naming what is lost, with the safe option focused. **Never a modal** — the row is the context. |
 | `EmptyState` | "Nothing here yet": glyph, title, one line saying what would put something here, optional action. Not the same fact as "could not be read". |
 | `ModuleBar` | The thin band that says which module the window is on. Pure: a list, a selection, a callback. Its height is a contract with `src-tauri/src/layout.rs`. |
 

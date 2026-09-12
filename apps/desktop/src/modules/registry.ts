@@ -15,17 +15,26 @@
 import type { ModuleEntry } from "./types";
 
 import { entry as browser } from "./browser";
+import { entry as origins } from "./origins";
+import { entry as panel } from "./panel";
 import { entry as settings } from "./settings";
 import { entry as setup } from "./setup";
 
 /** In bar order: what the window does, then what it is configured to be. */
-export const MODULE_ENTRIES: readonly ModuleEntry[] = [browser, settings, setup];
+export const MODULE_ENTRIES: readonly ModuleEntry[] = [panel, browser, origins, settings, setup];
 
 export const MODULE_REGISTRY: Readonly<Record<string, ModuleEntry>> = Object.fromEntries(
   MODULE_ENTRIES.map((m) => [m.id, m]),
 );
 
-/** The module the window comes up on, and the fallback for an id nothing answers to. */
+/**
+ * The fallback for an id nothing answers to, and the harness's own default.
+ *
+ * It stays `browser` while `src-tauri/src/layout.rs` spells the same word: the launch module is
+ * Rust's, because the window's rectangles depend on it, and two files disagreeing about which
+ * module the window comes up on is the kind of drift the bar-height contract already warns about.
+ * Panel leads the bar, which is where "the home module" is actually said.
+ */
 export const DEFAULT_MODULE_ID = "browser";
 
 export function isModuleId(id: string | null): boolean {
