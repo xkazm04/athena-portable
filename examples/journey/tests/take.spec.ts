@@ -1511,8 +1511,10 @@ test(`the take: ${beats.length} beats, on camera, at the pace of the narration`,
 
   // Both declines, with the one reason the closed vocabulary has for them.
   const denied = ledger.withReason("user_denied");
-  expect(denied.length, "act 1's chase and act 2's rejection").toBe(2);
-  expect(denied.map((row) => row.app).sort()).toEqual(["hirelane", "ledgerbox"]);
+  // How many declines the film has is the script's call (cut A declines twice, cut B once); what
+  // is not negotiable is that every decline the script stages is ledgered as the user's decision.
+  const staged = beats.filter((b) => /declin/i.test(b.screen ?? "")).length;
+  expect(denied.length, "every staged decline is ledgered user_denied").toBe(Math.max(1, staged));
 
   // Every GATED execution names an approval, and that approval was granted for that call.
   for (const row of ledger.gatedExecutions()) {

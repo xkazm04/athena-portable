@@ -1,0 +1,171 @@
+{
+  "title": "Athena — cut B, concept first",
+  "language": "en",
+  "words_per_second": 2.5,
+  "breath_ms": 500,
+  "voices": {
+    "narrator": {
+      "hint": "neutral English, calm, stability high"
+    },
+    "mira": {
+      "hint": "conversational, warm"
+    },
+    "athena": {
+      "hint": "clear, slightly slower"
+    }
+  },
+  "acts": [
+    {
+      "id": "onboarding",
+      "title": "onboarding",
+      "beats": [
+        {
+          "id": "O1",
+          "app": "onboard",
+          "voice": "narrator",
+          "line": "Athena runs on an engine you already have, signed in as you. No key, nothing uploaded, and her memory is a folder on this disk.",
+          "screen": "The onboarding letter, rendered by the surface from a live `athena doctor` run: engine rows (claude_code and codex, versions, signed in), the brain path, the constitution; the button 'Start using Athena' is pressed at the end of the beat",
+          "settle_ms": 600
+        },
+        {
+          "id": "O2",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "She attaches to the tabs you already have open. Each app says what it offers and which actions are gated. She never decides that herself.",
+          "screen": "Ledgerbox; the bridge attaches; the strip shows the manifest arriving as a card: the tool names in two groups, AUTO and GATED (mark_paid, send_reminder, void_invoice); the presence line turns on",
+          "settle_ms": 1200
+        }
+      ]
+    },
+    {
+      "id": "books",
+      "title": "books",
+      "beats": [
+        {
+          "id": "B1",
+          "app": "ledgerbox",
+          "voice": "mira",
+          "line": "Reconcile August and chase anything over thirty days.",
+          "screen": "Command types into the strip",
+          "settle_ms": 600
+        },
+        {
+          "id": "B3",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "Reversible work just runs. And she notices: Pinegrove banks under another name. That is now something she knows.",
+          "screen": "open_item(inv_0930), match_bank_line(bl_00122): counterparty_alias in the strip; fact card 'Pinegrove Collective pays as PINEGROVE COOP'",
+          "settle_ms": 1200
+        },
+        {
+          "id": "B4",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "One credit fits two invoices, so she reads the customer's own portal.",
+          "screen": "read_credits(ambiguous): bl_00118 with candidates inv_0900 and inv_0901 lit in the strip; nothing matched",
+          "settle_ms": 600
+        },
+        {
+          "id": "B5",
+          "app": "outside",
+          "voice": "narrator",
+          "line": "That page offers her nothing, so she uses hands like a person would, and on a page nobody has trusted, even looking waits for you.",
+          "screen": "Navigate to Kestrel's supplier portal (the journey's outside page on 3005). No presence line. The strip shows eight generic hands, every one GATED; page_find for the studio's row waits on a decision card and is approved",
+          "settle_ms": 1200
+        },
+        {
+          "id": "B6",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "The remittance names the invoice. Matched.",
+          "screen": "page_read of the remittance row (approved), the row highlighted; back to ledgerbox, open_item(inv_0901), match_bank_line(bl_00118): settled",
+          "settle_ms": 1200
+        },
+        {
+          "id": "B7",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "Solstice paid eighty percent in August and went quiet. I'd hold off.",
+          "screen": "navigate(overdue); open_item(inv_0920): paid_ratio 0.8 in the strip; draft_reminder(gentle); send_reminder decision card shown",
+          "settle_ms": 1200
+        },
+        {
+          "id": "B8",
+          "app": "ledgerbox",
+          "voice": "mira",
+          "line": "Agreed.",
+          "screen": "The card is declined; the ledger row reads user_denied",
+          "settle_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "carry",
+      "title": "carry",
+      "beats": [
+        {
+          "id": "P1",
+          "app": "hirelane",
+          "voice": "mira",
+          "line": "Screen this week's backend applicants and book the ones worth talking to.",
+          "screen": "Hirelane; command types",
+          "settle_ms": 600
+        },
+        {
+          "id": "P3",
+          "app": "hirelane",
+          "voice": "narrator",
+          "line": "In the pipeline, an applicant works at Kestrel Labs, this morning's client. Context she names, and a score it does not touch.",
+          "screen": "open_item(app1_012): Wren Okafor's dossier; the strip shows employer Kestrel Labs and cites the B4 row",
+          "settle_ms": 1200
+        },
+        {
+          "id": "C1",
+          "app": "tidycrm",
+          "voice": "mira",
+          "line": "Clean the list and export the campaign audience.",
+          "screen": "Tidycrm; command types",
+          "settle_ms": 600
+        },
+        {
+          "id": "C2",
+          "app": "tidycrm",
+          "voice": "narrator",
+          "line": "In the contact list, Pinegrove is spelled three ways. The bank name from the books settles it.",
+          "screen": "open_group(A) (3 s), open_item on the Pinegrove block: three spellings; preview_company then resolve_company(pinegrove-collective.example, Pinegrove Collective); the strip cites the B3 fact",
+          "settle_ms": 3000
+        },
+        {
+          "id": "C4",
+          "app": "tidycrm",
+          "voice": "narrator",
+          "line": "And Solstice stays out of the campaign, for the reason you gave an hour ago.",
+          "screen": "export(clients): the companies list; Solstice's contacts held out by the runner's decision citing B8; the export is also appended to the notes page through the connector fake (strip tag 'connector: notes', one tier 3 row)",
+          "settle_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "record",
+      "title": "record",
+      "beats": [
+        {
+          "id": "R1",
+          "app": "record",
+          "voice": "narrator",
+          "line": "Everything is one table: every call, its tier, whether it was gated, the decision you made, and three facts each citing where she learned them.",
+          "screen": "The record page: the ledger grouped by app and tier (1 page, 2 hand, 3 conn), the two user_denied rows highlighted, the three facts with their citations",
+          "settle_ms": 600
+        },
+        {
+          "id": "R2",
+          "app": "record",
+          "voice": "narrator",
+          "line": "Athena. Your agent, in the apps you already have.",
+          "screen": "Title card",
+          "settle_ms": 600
+        }
+      ]
+    }
+  ]
+}

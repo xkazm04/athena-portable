@@ -44,6 +44,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `feat(examples): the take — narrate, record, compose` — `narrate.mjs` (ElevenLabs, one clip per beat, measured durations), `tests/take.spec.ts` (the beats of `script/journey.en.json` played one at a time through the real bridge and gate, a surface strip the runner injects, act 4 rendered from the live ledger and brain, `take/take.json` offsets), `compose.mjs` (clips laid at offsets, captions, mp4); docs/demo.md section 1.
 - `feat(examples): the two-minute cut` — `script/cut.en.json`, 18 beats keyed O1 to R2; the recorder plays the cut through the apps, the portal with the hands, and the record page with three tiers; `narrate.mjs` takes `JOURNEY_SCRIPT`; captions at a readable size; the delivered take is 2:01 with narration in three voices.
 - `feat(examples): the take opens with onboarding` — O1 the letter rendered from a live `athena doctor` run (engines, brain, constitution; nothing fabricated, secrets redacted), O2 and O3 each page's manifest arriving as a card with the gated tools named, O4 the quiet books; counts and rows asserted against the surface and the doctor; a stale clip is dropped when its line changed.
+- `feat(examples): cut B, concept first` — `script/cutb.en.json`: onboarding, one spoken command, one full gate exchange, the narrator carrying the three claims while Athena works; the take's decline count follows the script.
 
 ## P5 — MVP checkpoint (done)
 
