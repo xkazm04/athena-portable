@@ -5,7 +5,8 @@
   "identifier": "dev.athena.portable",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:1420"
+    "beforeDevCommand": "pnpm build",
+    "beforeBuildCommand": "pnpm build"
   },
   "app": {
     "withGlobalTauri": true,
@@ -16,7 +17,13 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "app", "deb"],
-    "icon": ["icons/icon.png"]
+    "targets": [
+      "msi",
+      "app",
+      "deb"
+    ],
+    "icon": [
+      "icons/icon.png"
+    ]
   }
 }

@@ -28,6 +28,15 @@ const HANDSHAKE_TIMEOUT: Duration = Duration::from_secs(30);
 /// What `athena serve` prints on its first line of stdout.
 const HANDSHAKE_KIND: &str = "athena.daemon";
 
+/// Names the interpreter to run the daemon under, overriding everything below it.
+const PYTHON_ENV: &str = "ATHENA_PYTHON";
+
+/// Where a checkout's virtual environment keeps its interpreter.
+#[cfg(windows)]
+const VENV_PYTHON: &str = ".venv/Scripts/python.exe";
+#[cfg(not(windows))]
+const VENV_PYTHON: &str = ".venv/bin/python";
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Handshake {
     pub kind: String,
@@ -82,9 +91,14 @@ impl Spawn {
     }
 
     /// The checkout, for development: the same daemon, run as a module.
+    ///
+    /// The interpreter is not simply `python`. A checkout keeps its dependencies in `.venv`, and
+    /// the `python` on PATH is usually a different interpreter with no `athena` in it — so a shell
+    /// started from a checkout would spawn a daemon that exits with `ModuleNotFoundError` and
+    /// report "the daemon did not print a handshake", which names the wrong problem entirely.
     pub fn from_checkout() -> Self {
         Self {
-            program: "python".into(),
+            program: checkout_python(),
             args: vec![
                 "-m".into(),
                 "athena".into(),
@@ -92,6 +106,37 @@ impl Spawn {
                 "--port".into(),
                 "0".into(),
             ],
+        }
+    }
+}
+
+/// The interpreter a checkout's daemon should run under.
+///
+/// `ATHENA_PYTHON` wins, then the `.venv` of the nearest checkout above the working directory,
+/// then whatever `python` resolves to. The env var is first because a developer with two
+/// environments needs a way to say which, and editing a Rust constant is not one.
+pub fn checkout_python() -> String {
+    if let Ok(named) = std::env::var(PYTHON_ENV) {
+        if !named.trim().is_empty() {
+            return named;
+        }
+    }
+    checkout_root()
+        .map(|root| root.join(VENV_PYTHON))
+        .filter(|path| path.is_file())
+        .map(|path| path.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "python".into())
+}
+
+/// The nearest directory at or above the working directory that holds a `pyproject.toml`.
+pub fn checkout_root() -> Option<std::path::PathBuf> {
+    let mut here = std::env::current_dir().ok()?;
+    loop {
+        if here.join("pyproject.toml").is_file() {
+            return Some(here);
+        }
+        if !here.pop() {
+            return None;
         }
     }
 }
@@ -291,8 +336,43 @@ mod tests {
     #[test]
     fn the_checkout_spawn_runs_the_daemon_as_a_module() {
         let spawn = Spawn::from_checkout();
-        assert_eq!(spawn.program, "python");
         assert!(spawn.args.iter().any(|arg| arg == "athena"));
         assert!(spawn.args.iter().any(|arg| arg == "serve"));
+        assert!(
+            spawn.args.iter().any(|arg| arg == "0"),
+            "the daemon binds a free port"
+        );
+    }
+
+    #[test]
+    fn the_interpreter_is_whatever_athena_python_names() {
+        // Serialised against the other env-reading test by running in one function: Rust tests
+        // share a process, and two tests setting the same variable race.
+        let original = std::env::var(PYTHON_ENV).ok();
+
+        std::env::set_var(PYTHON_ENV, "C:/envs/athena/python.exe");
+        assert_eq!(checkout_python(), "C:/envs/athena/python.exe");
+
+        // Blank is not a choice; it falls through to the checkout and then to PATH.
+        std::env::set_var(PYTHON_ENV, "   ");
+        assert_ne!(checkout_python(), "   ");
+
+        std::env::remove_var(PYTHON_ENV);
+        let found = checkout_python();
+        assert!(
+            found.ends_with("python") || found.ends_with("python.exe"),
+            "expected an interpreter path, got {found}"
+        );
+
+        if let Some(value) = original {
+            std::env::set_var(PYTHON_ENV, value);
+        }
+    }
+
+    #[test]
+    fn the_checkout_root_is_the_nearest_directory_with_a_pyproject() {
+        // The tests run from `src-tauri`, three levels below the repository root.
+        let root = checkout_root().expect("the tests run inside the checkout");
+        assert!(root.join("pyproject.toml").is_file());
     }
 }

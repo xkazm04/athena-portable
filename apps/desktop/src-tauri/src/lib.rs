@@ -126,20 +126,59 @@ fn tab_open(
     shell: tauri::State<'_, Shell>,
     url: String,
 ) -> Result<Tab, String> {
-    let tab = shell.tabs().open(url.clone());
+    let tab = open_page(&app, &shell, &url)?;
+    show_only(&app, &tab.label);
+    remember_tabs(&shell);
+    Ok(tab)
+}
+
+/// Create one page webview, with the bridge injected at document start.
+///
+/// Shared by `tab_open` and the launch restore so a restored tab is the same thing as a typed one:
+/// two construction paths would eventually differ by an injection or a position.
+fn open_page(app: &tauri::AppHandle, shell: &Shell, url: &str) -> Result<Tab, String> {
+    let parsed: tauri::Url = url.parse().map_err(|_| format!("not a url: {url}"))?;
     let window = app.get_window(WINDOW).ok_or("the window is gone")?;
     let size = window.inner_size().map_err(|e| e.to_string())?;
     let scale = window.scale_factor().unwrap_or(1.0);
     let (page, _) = layout::split(size.width as f64 / scale, size.height as f64 / scale);
 
-    let parsed = url.parse().map_err(|_| format!("not a url: {url}"))?;
+    let tab = shell.tabs().open(url.to_string());
     let builder = tauri::webview::WebviewBuilder::new(&tab.label, WebviewUrl::External(parsed))
         .initialization_script(bridge::injection_script(&tab.label));
-    window
-        .add_child(builder, page.position(), page.size())
-        .map_err(|e| e.to_string())?;
-    show_only(&app, &tab.label);
+    if let Err(error) = window.add_child(builder, page.position(), page.size()) {
+        // The bookkeeping must not keep a tab whose webview was never created, or the panel shows
+        // a tab that can never answer and the relay routes replies to a label nothing holds.
+        shell.tabs().close(&tab.label);
+        return Err(error.to_string());
+    }
     Ok(tab)
+}
+
+/// Write the open tabs back to the store, so the next launch reopens them.
+fn remember_tabs(shell: &Shell) {
+    let urls: Vec<String> = shell
+        .tabs()
+        .all()
+        .iter()
+        .map(|tab| tab.url.clone())
+        .collect();
+    let mut settings = shell
+        .settings
+        .lock()
+        .expect("the settings lock is never poisoned");
+    if settings.tabs == urls {
+        return;
+    }
+    settings.tabs = urls;
+    let path = shell
+        .settings_path
+        .lock()
+        .expect("the settings path lock is never poisoned")
+        .clone();
+    // A failed write is not worth interrupting anything for: the worst outcome is a launch that
+    // reopens yesterday's tabs.
+    let _ = store::save(&path, &settings);
 }
 
 #[tauri::command]
@@ -153,6 +192,7 @@ fn tab_close(app: tauri::AppHandle, shell: tauri::State<'_, Shell>, label: Strin
         if let Some(next) = shell.tabs().active_label().map(str::to_string) {
             show_only(&app, &next);
         }
+        remember_tabs(&shell);
     }
     closed
 }
@@ -415,6 +455,31 @@ pub fn run() {
                     on_reply(&replies, &replies.state::<Shell>(), reply);
                 }
             });
+
+            // Something to look at on first launch. A window with a 380 px column and a large
+            // empty rectangle beside it reads as a crash, not as an empty browser.
+            let wanted: Vec<String> = if settings.tabs.is_empty() {
+                vec![settings.home_url.clone()]
+            } else {
+                settings.tabs.clone()
+            };
+            let shell_state = app.state::<Shell>();
+            let mut first: Option<String> = None;
+            for url in wanted {
+                match open_page(&handle, &shell_state, &url) {
+                    Ok(tab) => first.get_or_insert(tab.label),
+                    Err(error) => {
+                        eprintln!("athena: could not reopen {url}: {error}");
+                        continue;
+                    }
+                };
+            }
+            if let Some(label) = first {
+                show_only(&handle, &label);
+            }
+            // Lay everything out once more, now that every webview exists and the window has a
+            // real size. The rects computed while the window was still being built are a guess.
+            relayout(&handle);
 
             let resized = handle.clone();
             window.on_window_event(move |event| {

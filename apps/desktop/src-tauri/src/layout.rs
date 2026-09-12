@@ -17,8 +17,12 @@ pub const PANEL_WIDTH: f64 = 380.0;
 pub const MIN_WIDTH: f64 = PANEL_WIDTH + 640.0;
 pub const MIN_HEIGHT: f64 = 600.0;
 
-/// The chrome strip above the page: the address line and the tab row.
-pub const CHROME_HEIGHT: f64 = 76.0;
+/// There is no chrome strip above the page, and that is a design decision rather than an omission.
+///
+/// README §3.5 makes the browser *one module among them* in the panel: the address line and the
+/// tab row are the Pages module, inside the 380 px column. A second strip across the top would be
+/// a second place the same two controls live, and the page would lose the height for nothing.
+pub const CHROME_HEIGHT: f64 = 0.0;
 
 /// A rectangle in logical pixels, which is what a webview's position and size are set in.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -75,6 +79,18 @@ mod tests {
         assert_eq!(page.width, 1440.0 - PANEL_WIDTH);
         assert_eq!(page.y, CHROME_HEIGHT);
         assert_eq!(page.height, 900.0 - CHROME_HEIGHT);
+    }
+
+    #[test]
+    fn the_page_and_the_panel_together_cover_the_whole_window() {
+        // Any gap is a strip of nothing on screen, which reads as a rendering fault rather than
+        // as empty space — the first launch showed exactly that.
+        let (page, panel) = split(1440.0, 900.0);
+
+        assert_eq!(page.x, 0.0);
+        assert_eq!(page.y, 0.0);
+        assert_eq!(page.height, 900.0);
+        assert_eq!(page.width + panel.width, 1440.0);
     }
 
     #[test]
