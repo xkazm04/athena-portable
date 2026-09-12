@@ -166,6 +166,10 @@ pub fn create(app: &AppHandle, url: &str) -> Result<u32, String> {
     let builder = tauri::webview::WebviewBuilder::new(&label, WebviewUrl::External(parsed))
         .initialization_script(inject)
         .initialization_script(relay)
+        // The hands, after the relay that carries their answers out. Order matters only in that
+        // all three run before the page's own scripts, which is what `initialization_script`
+        // promises (README section 3.4 tier 2).
+        .initialization_script(crate::hands_script())
         // One profile for every tab: passing the same directory to each webview is what makes a
         // login in one tab a login in the next.
         .data_directory(profile_dir(app))

@@ -50,7 +50,12 @@ fn main() {
             "store_delete",
             "store_path",
             "captures_sweep",
-            // hands.rs  (c24): hands_call, screenshot_read
+            // hands.rs (c24) — the generic hands of README section 3.4 tier 2. `hands_call`
+            // runs one on a tab; `hands_list` is the catalogue the panel appends to a page's
+            // manifest. Both are the chrome's; a page webview is named by no capability that
+            // grants them, which is what stops a site operating itself through them.
+            "hands_call",
+            "hands_list",
         ])),
     )
     .expect("failed to run tauri-build");

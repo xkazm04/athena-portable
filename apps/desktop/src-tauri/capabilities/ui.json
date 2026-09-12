@@ -3,7 +3,9 @@
   "identifier": "ui",
   "description": "The one privileged webview: the module bar and the selected module, loaded from the dev server or the tauri:// asset protocol. Note `webviews` and no `windows`: a capability that names a window grants every webview inside it, which would hand the whole command surface to the pages. Page webviews are named by no capability in c18 and so can call nothing; c19 gives them exactly one command of their own, in `page.json`.",
   "local": true,
-  "webviews": ["chrome"],
+  "webviews": [
+    "chrome"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",
@@ -27,6 +29,8 @@
     "allow-store-list",
     "allow-store-delete",
     "allow-store-path",
-    "allow-captures-sweep"
+    "allow-captures-sweep",
+    "allow-hands-call",
+    "allow-hands-list"
   ]
 }

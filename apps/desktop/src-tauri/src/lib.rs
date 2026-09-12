@@ -19,6 +19,7 @@ mod tabs;
 // c19 `mod bridge;`  c20 `mod daemon;`  c21 `mod store;`  c24 `mod hands;`  c27 `mod tray;`
 mod bridge;
 mod daemon;
+mod hands;
 mod store;
 // ──────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,36 @@ pub const MAIN_WINDOW: &str = "main";
 /// The privileged webview: the module bar and the selected module. `capabilities/ui.json` grants
 /// the app's commands by this label, and page webviews are granted nothing.
 pub const CHROME_WEBVIEW: &str = "chrome";
+
+/// The hands' page-world script, injected beside `inject.js` and the relay (README section 3.4).
+///
+/// `include_str!` rather than a copy, for the reason `INJECT_JS` is one: a second copy of a
+/// capability is a second thing to keep correct, and the test that asserts the two halves declare
+/// the same eight names reads this one.
+pub fn hands_script() -> &'static str {
+    include_str!("hands.js")
+}
+
+/// Run one generic hand on one tab (README section 3.4 tier 2).
+///
+/// Never `Err`: a hand that rejected would reach the panel as a thrown promise rather than as a
+/// tool result the model can read, and a refusal the model cannot read is one it will make again.
+/// The gate has already allowed this call; the shell carries it.
+#[tauri::command]
+async fn hands_call(
+    app: AppHandle,
+    tab_id: u32,
+    name: String,
+    input: serde_json::Value,
+) -> hands::HandResult {
+    hands::call(&app, tab_id, &name, input).await
+}
+
+/// The hands as manifest tools, for the panel to append to whatever the page registered.
+#[tauri::command]
+fn hands_list() -> Vec<serde_json::Value> {
+    hands::manifest_tools()
+}
 
 /// Emit to the privileged webview only.
 ///
@@ -140,6 +171,8 @@ pub fn run() {
             store::store_delete,
             store::store_path,
             store::captures_sweep,
+            hands_call,
+            hands_list,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

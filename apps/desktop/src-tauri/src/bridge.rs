@@ -44,6 +44,15 @@ use crate::tabs;
 /// The one namespace on the wire (`protocol.md`, "Envelope"). Anything without it is not ours.
 pub const NS: &str = "athena-webmcp";
 
+/// The generic hands' namespace (README section 3.4 tier 2, `hands.js`).
+///
+/// A second namespace rather than a second `type` on the first, because `inject.js` answers an
+/// unrecognised `type` with `{ok:false, error:"Unknown request …"}` — so a hand sent under the
+/// page's namespace would be answered *twice*, once by the page's polyfill and once by the hands
+/// script, and which arrived first would decide the result. The relay forwards both namespaces
+/// and routes by id, which is minted here and unique across them.
+pub const HANDS_NS: &str = "athena-hands";
+
 /// A request, addressed at the page's listener.
 const DIR_PAGE: &str = "to-page";
 
@@ -176,12 +185,14 @@ pub fn scripts(app: &AppHandle, tab: u32) -> (&'static str, String) {
 /// broken out of, and the nonce lives only in this closure's scope.
 fn relay_script(tab: u32, nonce: &str) -> String {
     let ns = json_literal(NS);
+    let hands_ns = json_literal(HANDS_NS);
     let dir = json_literal(DIR_EXT);
     let nonce = json_literal(nonce);
     format!(
         r#"(() => {{
   "use strict";
   const NS = {ns};
+  const HANDS = {hands_ns};
   const DIR = {dir};
   const TAB = {tab};
   const NONCE = {nonce};
@@ -193,7 +204,7 @@ fn relay_script(tab: u32, nonce: &str) -> String {
     if (event.source !== window) return;
     const msg = event.data;
     if (!msg || typeof msg !== "object") return;
-    if (msg.__ns !== NS || msg.dir !== DIR) return;
+    if ((msg.__ns !== NS && msg.__ns !== HANDS) || msg.dir !== DIR) return;
     const payload = {{}};
     for (const key of Object.keys(msg)) {{
       if (key !== "__ns" && key !== "dir") payload[key] = msg[key];
@@ -214,7 +225,12 @@ fn relay_script(tab: u32, nonce: &str) -> String {
 
 /// Send one `to-page` message and wait for its answer, with the relay's own 35 s deadline.
 pub async fn ask(app: &AppHandle, tab: u32, body: Value) -> Result<Value, String> {
-    ask_with(app, tab, body, CALL_TIMEOUT).await
+    ask_with(app, tab, NS, body, CALL_TIMEOUT).await
+}
+
+/// [`ask`] on the hands' namespace. Same pending map, same deadline, same id space.
+pub async fn ask_hands(app: &AppHandle, tab: u32, body: Value) -> Result<Value, String> {
+    ask_with(app, tab, HANDS_NS, body, CALL_TIMEOUT).await
 }
 
 /// [`ask`] with a deadline of its own. Only the smoke shortens it: the protocol's two-timer
@@ -222,6 +238,7 @@ pub async fn ask(app: &AppHandle, tab: u32, body: Value) -> Result<Value, String
 async fn ask_with(
     app: &AppHandle,
     tab: u32,
+    ns: &str,
     body: Value,
     timeout: Duration,
 ) -> Result<Value, String> {
@@ -231,7 +248,7 @@ async fn ask_with(
 
     let bridge = app.state::<Bridge>();
     let (id, rx) = bridge.park(tab);
-    let script = post_script(&envelope(DIR_PAGE, &id, body))?;
+    let script = post_script(&envelope(ns, DIR_PAGE, &id, body))?;
     if let Err(e) = webview.eval(script) {
         bridge.forget(&id);
         return Err(format!("cannot reach tab {tab}: {e}"));
@@ -323,8 +340,8 @@ pub async fn bridge_reply(
 // ==============================================================================================
 
 /// The protocol's envelope with `body`'s fields at the top level beside it.
-fn envelope(dir: &str, id: &str, body: Value) -> Value {
-    let mut message = json!({ "__ns": NS, "dir": dir, "id": id });
+fn envelope(ns: &str, dir: &str, id: &str, body: Value) -> Value {
+    let mut message = json!({ "__ns": ns, "dir": dir, "id": id });
     if let (Some(target), Some(source)) = (message.as_object_mut(), body.as_object()) {
         for (key, value) in source {
             target.insert(key.clone(), value.clone());
@@ -418,7 +435,7 @@ async fn smoke(app: AppHandle, tab: u32) {
     let mut last = "the page never answered".to_string();
     for _ in 0..ATTEMPTS {
         tokio::time::sleep(EVERY).await;
-        match ask_with(&app, tab, json!({ "type": "list" }), PER_TRY).await {
+        match ask_with(&app, tab, NS, json!({ "type": "list" }), PER_TRY).await {
             Ok(reply) if reply.get("ok").and_then(Value::as_bool) == Some(true) => {
                 let tools = reply
                     .get("tools")
@@ -577,7 +594,7 @@ mod tests {
     #[test]
     fn a_payload_full_of_teeth_survives_becoming_javascript() {
         let nasty = "</script><script>alert(\"x\")</script>\u{2028}\u{2029}\"quoted\"\n\\ ☕";
-        let message = envelope(DIR_PAGE, "1:0-abc", json!({ "type": "call", "input": nasty }));
+        let message = envelope(NS, DIR_PAGE, "1:0-abc", json!({ "type": "call", "input": nasty }));
         let script = post_script(&message).expect("the message encodes");
 
         assert!(script.starts_with("window.postMessage("));

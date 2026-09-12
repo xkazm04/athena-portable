@@ -47,9 +47,11 @@ export default defineConfig({
     },
   },
   test: {
-    // Node, not jsdom: every test here is either pure logic or a `renderToStaticMarkup`, and a
-    // DOM implementation nobody asked for is a dependency and a second set of quirks.
+    // Node, not jsdom: nearly every test here is pure logic or a `renderToStaticMarkup`, and a
+    // DOM implementation nobody asked for is a dependency and a second set of quirks. The one
+    // exception opts in with a `@vitest-environment jsdom` comment: `src-tauri/src/hands.test.ts`
+    // drives the page-world hands script, which is a DOM and nothing else.
     environment: "node",
-    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx", "src-tauri/src/*.test.ts"],
   },
 });
