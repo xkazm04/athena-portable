@@ -35,6 +35,13 @@ from athena.harness.hooks import (
     TurnFlag,
 )
 from athena.harness.op_grammar import Op, OpError, ParsedTurn, parse_op, parse_turn
+from athena.harness.policy import (
+    RULES,
+    ConnectorStatePort,
+    Policy,
+    PolicyDecision,
+    PolicyHook,
+)
 from athena.harness.ports import (
     ApprovalsPort,
     Card,
@@ -65,6 +72,7 @@ __all__ = [
     "DIALECTS",
     "ENGINES",
     "MAX_ROUNDS",
+    "RULES",
     "TURN_TIMEOUT_S",
     "ApprovalsPort",
     "Cancel",
@@ -73,6 +81,7 @@ __all__ = [
     "CliDialect",
     "CliHarness",
     "CliRequest",
+    "ConnectorStatePort",
     "Decoded",
     "EngineStatus",
     "FlagPort",
@@ -89,6 +98,9 @@ __all__ = [
     "Op",
     "OpError",
     "ParsedTurn",
+    "Policy",
+    "PolicyDecision",
+    "PolicyHook",
     "Proceed",
     "Row",
     "ScriptedTransport",
