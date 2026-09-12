@@ -66,6 +66,8 @@ jobs:
 
       # Every script iterates the workspaces with --if-present, so these pass while
       # packages/ and apps/ are still empty and start asserting the moment they are not.
+      # From c18 that is the bridge *and* the desktop shell: `apps/desktop` declares all three
+      # scripts, so its tsc, its eslint and its vitest run here without a line of their own.
       - name: typecheck
         run: pnpm typecheck
 
@@ -74,3 +76,64 @@ jobs:
 
       - name: test
         run: pnpm test
+
+  rust:
+    name: rust shell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Tauri v2's Linux prerequisites. The shell is developed on Windows against WebView2 and
+      # checked here against WebKitGTK, which is the cheap way to keep a platform-specific API
+      # from reaching main unnoticed.
+      - name: Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            libxdo-dev \
+            libssl-dev \
+            patchelf \
+            build-essential \
+            file \
+            wget
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # `generate_context!` embeds `frontendDist`, so a missing `dist/` is a compile error rather
+      # than a runtime one. Building the bundle first is what makes `cargo check` mean anything.
+      - name: Build the frontend bundle
+        run: pnpm --filter athena-desktop build
+
+      - name: cargo check
+        working-directory: apps/desktop/src-tauri
+        run: cargo check
+
+      - name: cargo clippy
+        working-directory: apps/desktop/src-tauri
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: cargo test
+        working-directory: apps/desktop/src-tauri
+        run: cargo test

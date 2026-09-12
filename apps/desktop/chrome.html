@@ -1,0 +1,18 @@
+<!doctype html>
+<!-- The shell document: the module bar and whichever module is selected (README section 3.1).
+     Tauri loads it into the `chrome` webview, whose rectangle is owned by `src-tauri/src/layout.rs`
+     and is either the whole window or the 76px chrome band — see that file's diagram.
+
+     `overflow-hidden` on the body because the window's scroll belongs to the module area, which
+     owns it through `PageShell`. A scrollbar on this document would scroll the module bar away. -->
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Athena</title>
+  </head>
+  <body class="overflow-hidden">
+    <div id="root"></div>
+    <script type="module" src="/src/chrome.tsx"></script>
+  </body>
+</html>
