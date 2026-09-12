@@ -43,6 +43,13 @@ fn main() {
             "daemon_status",
             "daemon_restart",
             // store.rs  (c21): store_get, store_set, origins_*
+            // store.rs (c21) — one key/value surface over every table, not one command per table
+            "store_get",
+            "store_set",
+            "store_list",
+            "store_delete",
+            "store_path",
+            "captures_sweep",
             // hands.rs  (c24): hands_call, screenshot_read
         ])),
     )

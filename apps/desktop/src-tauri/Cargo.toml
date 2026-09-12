@@ -47,6 +47,11 @@ windows-sys = { version = "0.61", features = [
     "Win32_System_JobObjects",
     "Win32_System_Threading",
 ] }
+# The shell's own store (c21). `bundled` compiles SQLite's amalgamation into the binary rather
+# than linking whatever the machine happens to have: the store is one file in the app data
+# directory and a bundle that installs on a machine with no SQLite is the whole point of
+# freezing the daemon beside it.
+rusqlite = { version = "0.40.2", features = ["bundled"] }
 
 [profile.dev]
 incremental = true

@@ -485,6 +485,144 @@ select:focus-visible {
   background: var(--status-pending);
 }
 
+/* -- The value rail (c21) --------------------------------------------------------------------
+ *
+ * The chosen option keeps its word at `--foreground` and takes its hue on the edge and the fill,
+ * for the reason §4b gives the badge: a status colour on 12px type keeps measuring under AA.
+ */
+.pill-group {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--recessed);
+}
+
+.pill {
+  padding: 3px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast),
+    color var(--duration-fast),
+    border-color var(--duration-fast);
+}
+
+.pill:hover:not(:disabled) {
+  background: var(--hover-wash);
+  color: var(--foreground);
+}
+
+.pill[aria-checked="true"] {
+  border-color: var(--border-emphasis);
+  background: var(--card-raised);
+  color: var(--foreground);
+  box-shadow: var(--shadow-elevation-1);
+}
+
+.pill:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* -- Fields (c21) ---------------------------------------------------------------------------- */
+.field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field__input {
+  width: 100%;
+  padding: 5px 9px;
+}
+
+.field__error {
+  color: var(--status-error);
+}
+
+/* -- A term and its value (c21) --------------------------------------------------------------- */
+.facts {
+  display: flex;
+  min-width: 0;
+  margin: 0;
+}
+
+.facts--rows {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.facts--inline {
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px var(--density-gap);
+}
+
+.fact {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.facts--inline .fact {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.fact__value {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* -- A surface that could not be read (c21) ---------------------------------------------------
+ *
+ * Severity rides a left rule rather than the fill: a card washed in a status hue paints every
+ * word inside it against that hue, and the words are the part that has to be read.
+ */
+.problem-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: var(--density-pad-sm);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--status-warning);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+}
+
+.problem-note--error {
+  border-left-color: var(--status-error);
+}
+
+.problem-note__mark {
+  color: var(--status-warning);
+}
+
+.problem-note--error .problem-note__mark {
+  color: var(--status-error);
+}
+
+.problem-note__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  overflow-wrap: anywhere;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -720,6 +858,131 @@ select:focus-visible {
   border-radius: var(--radius-card);
   background: var(--recessed);
   text-align: center;
+}
+
+/* -- Two columns where there is room, one where there is not (c21) -----------------------------
+ *
+ * The window is 1440 wide and its minimum is 900, so a module that is one column at every width
+ * throws away the fold the module-first window was built to get back (README section 3.5). One
+ * breakpoint, at 60rem, and everything below it stacks — which is also the shape the preview
+ * harness is checked in at 700px.
+ */
+.split {
+  display: grid;
+  gap: var(--density-gap);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 60rem) {
+  .split {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  /* Prose keeps its measure, so the rail is placed against the letter rather than at the far
+     edge of a 120rem shell. A line of 66 characters is where reading stops being comfortable. */
+  .split--letter {
+    grid-template-columns: minmax(0, 66ch) minmax(0, 20rem);
+    column-gap: calc(var(--density-gap) * 2);
+  }
+}
+
+/* The two rhythms inside a card or a passage. Nothing writes a one-off gap. */
+.stack {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.row--baseline {
+  align-items: baseline;
+}
+
+/* -- The Setup letter (c21) -------------------------------------------------------------------
+ *
+ * A passage, not a stepper: the lit left rule *is* the step. A band with a hairline under a
+ * heading would turn the letter back into the four-accordion wizard the module-first window was
+ * meant to replace.
+ */
+.passage {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 14px;
+  border-left: 2px solid var(--border-subtle);
+  scroll-margin-top: 64px;
+  transition: border-color var(--duration-fast);
+}
+
+.passage[aria-current="step"] {
+  border-left-color: var(--primary);
+}
+
+.passage__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted-foreground);
+}
+
+.passage__lead {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+/* The four facts in short, for the person who has read the letter before. */
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rail__row {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-interactive);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rail__row:hover {
+  background: var(--hover-wash);
+}
+
+.rail__row[aria-current="step"] {
+  border-color: var(--border-default);
+  background: var(--card-raised);
+}
+
+/* The dot sits on the first line's baseline rather than in the middle of a two-line row. */
+.rail__row .status-dot {
+  margin-top: 6px;
+}
+
+.rail__text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
 }
 
 /* -- The preview harness's own chrome --------------------------------------------------------- */

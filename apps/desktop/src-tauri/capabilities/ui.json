@@ -21,6 +21,12 @@
     "allow-bridge-list",
     "allow-bridge-call",
     "allow-daemon-status",
-    "allow-daemon-restart"
+    "allow-daemon-restart",
+    "allow-store-get",
+    "allow-store-set",
+    "allow-store-list",
+    "allow-store-delete",
+    "allow-store-path",
+    "allow-captures-sweep"
   ]
 }

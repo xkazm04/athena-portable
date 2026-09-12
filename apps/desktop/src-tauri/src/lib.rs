@@ -19,6 +19,7 @@ mod tabs;
 // c19 `mod bridge;`  c20 `mod daemon;`  c21 `mod store;`  c24 `mod hands;`  c27 `mod tray;`
 mod bridge;
 mod daemon;
+mod store;
 // ──────────────────────────────────────────────────────────────────────────────────────────────
 
 use serde::Serialize;
@@ -104,6 +105,8 @@ async fn layout_select(app: AppHandle, module: String) -> Result<(), String> {
 // c19: the three are declared in `bridge.rs` beside the state they read, and registered below.
 // c20: `daemon.rs` declares its own two commands beside the state they read, so the only line
 // this file needs for them is the pair in the handler list below (ADR 0015).
+// c21's six are `store.rs`'s own `pub` functions — one table description, not one command per
+// table — so they are named in the handler list below rather than wrapped here.
 // ──────────────────────────────────────────────────────────────────────────────────────────────
 
 pub fn run() {
@@ -115,6 +118,7 @@ pub fn run() {
         // c21 `.manage(Store::open(..))` (in `setup`, it needs a path) · c27 `.manage(Tray::…)`
         .manage(bridge::Bridge::default())
         .manage(daemon::Daemon::default())
+        // c21: `store::init` manages it from `setup`, where the app data path is resolvable.
         // ──────────────────────────────────────────────────────────────────────────────────────
         .invoke_handler(tauri::generate_handler![
             tabs_create,
@@ -130,6 +134,12 @@ pub fn run() {
             bridge::bridge_reply,
             daemon::daemon_status,
             daemon::daemon_restart,
+            store::store_get,
+            store::store_set,
+            store::store_list,
+            store::store_delete,
+            store::store_path,
+            store::captures_sweep,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
@@ -149,6 +159,7 @@ pub fn run() {
             // ── registrations: setup ──────────────────────────────────────────────────────────
             // c20 spawns the daemon sidecar here and c27 builds the tray here; both are
             // non-fatal — the shell must come up even when they do not.
+            store::init(&handle);
             bridge::smoke_if_asked(&handle);
             daemon::start_at_launch(&handle);
             // ──────────────────────────────────────────────────────────────────────────────────
