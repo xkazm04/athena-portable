@@ -1022,3 +1022,423 @@ select:focus-visible {
     animation-duration: 1ms !important;
   }
 }
+
+/* -- The Panel and Origins surfaces (c22) ------------------------------------------------------
+ *
+ * Two columns where there is room and one where there is not, exactly as `.split` does — but the
+ * Panel's columns scroll independently, which `.split` must not start doing for every module that
+ * spends it. This is the one module whose body is a viewport-height workspace (the exception
+ * `PageShell fill` exists for), and the rule it follows is the one the first build wrote down:
+ * below the breakpoint nothing here scrolls on its own except the transcript, and the page scroll
+ * is the shell's.
+ */
+.panel {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--density-gap);
+  /* Stacked, the module area is the one scroll and neither column has its own — `PageShell fill`
+   * gives this module a definite height, and a column that kept a share of it left the rail
+   * hanging out of the bottom of the window with the conversation squeezed to one line. */
+  overflow-y: auto;
+}
+
+.panel__rail {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--density-gap);
+}
+
+@media (min-width: 60rem) {
+  .panel {
+    display: grid;
+    align-items: stretch;
+    overflow: visible;
+    /* The rail is narrow because it is a reference and the conversation is the act. 22rem is a
+       tool name, a tier, a class pill and a line of description without a second wrap. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+  }
+
+  .panel__rail {
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+/* The chat column is the module's workspace rather than a section of content: it takes the height
+ * it is given and puts its own scroll on the transcript. `SectionCard` is the app's content
+ * surface and has no way to be handed a height, so this one band spells the same three tokens it
+ * would have given us. */
+.chat {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  /* Its natural height when the columns are stacked; the full row height when they are not, which
+   * a stretched grid item takes without asking. */
+  flex: none;
+  flex-direction: column;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-elevation-1);
+}
+
+.chat__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px var(--density-pad-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.chat__foot {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--density-pad-sm);
+  border-top: 1px solid var(--border-subtle);
+  /* Natural height, and the transcript above gives way to it: the card and the composer are what
+   * the user has to reach, and a record that kept its own share pushed both off the pane. */
+  flex: none;
+}
+
+/* What scrolls in a tall card is its *evidence*, never its options. The pin bounds the card and
+ * `.decision__body` takes the scroll, so approve and decline are on screen at every card height
+ * and the composer under them never moves. */
+.chat__pin {
+  display: flex;
+  min-height: 0;
+  max-height: 46vh;
+}
+
+.chat__pin > .decision {
+  min-height: 0;
+  max-height: 100%;
+  flex: 1 1 auto;
+}
+
+.decision__body {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.composer .input {
+  flex: 1 1 auto;
+  padding: 5px 9px;
+}
+
+/* -- The record --------------------------------------------------------------------------------
+ *
+ * One rail down the left, and every kind of line hanging off it. The kinds are told apart by
+ * their mark, their tier and their measure — not by a wash of colour behind them, which on six
+ * kinds is six backgrounds and no hierarchy.
+ */
+.transcript {
+  display: flex;
+  /* A floor, not zero: the pinned card under it is as tall as its parameters and its evidence,
+     and a transcript allowed to shrink to nothing left the record as one clipped line. The card
+     scrolls inside the foot instead; the record keeps its five lines. */
+  min-height: 9rem;
+  max-height: 60vh;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: var(--density-pad-sm);
+  overflow-y: auto;
+  list-style: none;
+}
+
+@media (min-width: 60rem) {
+  .transcript {
+    max-height: none;
+  }
+}
+
+.entry {
+  display: flex;
+  min-width: 0;
+  gap: 8px;
+  padding: 3px 0 3px 10px;
+  border-left: 2px solid var(--border-subtle);
+}
+
+.entry__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+
+/* The mark is the kind, in one glyph, on its own column so every line's text starts at the same
+ * x whatever its kind. `aria-hidden`: the kind is also a word in the line's own label. */
+.entry__mark {
+  width: 0.9rem;
+  flex: none;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
+.entry--user {
+  padding-top: 10px;
+  border-left-color: var(--primary);
+}
+
+.entry--assistant {
+  border-left-color: var(--border-default);
+}
+
+.entry--tool-call .entry__mark {
+  color: var(--status-info);
+}
+
+.entry--tool-result .entry__mark {
+  color: var(--status-success);
+}
+
+.entry--error {
+  border-left-color: var(--status-error);
+}
+
+.entry--error .entry__mark,
+.entry--error .entry__text {
+  color: var(--status-error);
+}
+
+.entry--summary {
+  border-left-color: var(--status-pending);
+}
+
+/* Prose keeps its measure even in a column that is wider than one. */
+.entry__prose {
+  max-width: 68ch;
+  white-space: pre-wrap;
+}
+
+/* -- The decision card -------------------------------------------------------------------------
+ *
+ * The one surface in the app that is about an irreversible act, so it is the one that takes the
+ * warning rule — on its edge, never as a fill behind the parameters the user has to read (§4).
+ */
+.decision {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--density-pad-sm);
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--status-warning);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+}
+
+.decision--resolved,
+.decision--stale {
+  gap: 4px;
+  border-left-color: var(--border-default);
+  background: transparent;
+  box-shadow: none;
+}
+
+.decision__action {
+  overflow-wrap: anywhere;
+}
+
+/* At its real proportions and no taller than a third of the fold: it is evidence beside the act,
+ * not the subject of the page. */
+.decision__capture {
+  display: block;
+  /* `align-self`, because the card is a stretch column and a 320px picture stretched to the full
+     width of it is a letterboxed band with the page in the middle of it. */
+  align-self: flex-start;
+  max-width: 100%;
+  max-height: 22vh;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-input);
+  background: var(--recessed);
+  object-fit: contain;
+}
+
+/* One parameter per row: the key on the muted micro-label tier, the value in the machine's own
+ * spelling. A long value is cut to the budget and offered whole by the button beside it. */
+.params {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+
+.param {
+  display: grid;
+  min-width: 0;
+  gap: 0 8px;
+  grid-template-columns: minmax(0, 8rem) minmax(0, 1fr);
+  align-items: baseline;
+  padding: 3px 6px;
+  border-radius: var(--radius-interactive);
+  background: var(--recessed);
+}
+
+@media (max-width: 44rem) {
+  .param {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.param__value {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* -- The tool list ------------------------------------------------------------------------------
+ *
+ * A hairline list rather than a `Table`, and that is a measurement rather than a preference: four
+ * columns in a 22rem rail leaves a tool name six characters of width. The Origins module, which
+ * has the whole page, uses the table.
+ */
+.tool-list {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tool-row {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-interactive);
+}
+
+.tool-row:hover {
+  background: var(--hover-wash);
+}
+
+/* A tool that is `GATED` because nobody has ruled on this page yet (README section 3.3). The
+ * whole of act 1 of the demo is this state, so it is marked rather than left to be inferred from
+ * nine identical pills. */
+.tool-row--first-sight {
+  border-color: var(--border-default);
+  background: var(--recessed);
+}
+
+.class-pill {
+  cursor: pointer;
+}
+
+.class-pill:hover {
+  border-color: var(--border-emphasis);
+}
+
+/* -- Origins ------------------------------------------------------------------------------------
+ *
+ * The rail holds one origin at a time. It is sticky at width because the table it belongs to is
+ * twelve rows long and the row you picked is at the top of it.
+ */
+@media (min-width: 60rem) {
+  .origins__rail {
+    position: sticky;
+    top: 56px;
+  }
+}
+
+.origin-row {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.origin-row:hover .origin-row__host {
+  text-decoration: underline;
+}
+
+.origin-row__host {
+  max-width: 18rem;
+}
+
+/* The standing permission (c22). Off is the resting state and still has to be findable, so its
+ * track carries a real edge rather than a tint: WCAG 1.4.11 asks 3:1 of a control with no words
+ * in it, and `--border-default` on the canvas is not that. The knob is `--foreground`, which is
+ * light on the dark theme and dark on the light one, so it clears its track in both directions. */
+.switch {
+  position: relative;
+  display: inline-flex;
+  width: 34px;
+  height: 20px;
+  flex: none;
+  align-items: center;
+  padding: 0;
+  border: 1px solid var(--muted-foreground);
+  border-radius: 999px;
+  background: var(--recessed);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast),
+    border-color var(--duration-fast);
+}
+
+.switch[aria-checked="true"] {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.switch__knob {
+  position: absolute;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  /* Off is the resting state, so the knob is the muted tier rather than full ink: the position
+   * is what says which way the switch is set, and a solid knob on a recessed track reads as a
+   * control that has been pressed. */
+  background: var(--muted-foreground);
+  box-shadow: var(--shadow-elevation-1);
+  transition: transform var(--duration-fast);
+}
+
+.switch[aria-checked="true"] .switch__knob {
+  /* The knob rides on the accent fill, so it takes the accent's own foreground. */
+  background: var(--primary-fg);
+  transform: translateX(14px);
+}
+
+/* One tool and its ruling, inside the detail rail. */
+.override-row {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-interactive);
+  background: var(--recessed);
+}
