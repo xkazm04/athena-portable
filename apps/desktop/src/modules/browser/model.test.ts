@@ -11,9 +11,20 @@ import { expect, test, vi } from "vitest";
 import type { Tab } from "@/lib/ipc";
 import type { TabTools } from "@/stores/tools";
 
-import { selectBrowser, type BrowserActions } from "./model";
+import type { OriginRow } from "@/lib/store";
 
-const INERT: BrowserActions = { open: () => {}, focus: () => {}, close: () => {}, navigate: () => {} };
+import { appOf, selectBrowser, tabOn, type BrowserActions, type OriginsSnapshot } from "./model";
+
+const INERT: BrowserActions = {
+  open: () => {},
+  focus: () => {},
+  close: () => {},
+  navigate: () => {},
+  register: () => {},
+  openApp: () => {},
+  setEnabled: () => {},
+  forget: () => {},
+};
 
 /** No tab has been asked yet. The commonest snapshot: the shell answers `tabs_list` first. */
 const UNASKED: Record<number, TabTools> = {};
@@ -70,6 +81,7 @@ test("no tabs is not the same fact as no answer", () => {
 
 test("the actions are the view's only route out, and they are passed through untouched", () => {
   const actions: BrowserActions = {
+    ...INERT,
     open: vi.fn(),
     focus: vi.fn(),
     close: vi.fn(),
@@ -102,4 +114,73 @@ test("a tab nobody has asked about yet is asking, and is not a page with no tool
     1: { ...registered(1, []), problem: "timeout" },
   }, INERT);
   expect(silent.tools).toEqual({ count: 0, transport: "webmcp-polyfill", problem: "timeout", asking: false });
+});
+
+
+// -- the registered apps ---------------------------------------------------------------------
+
+function row(origin: string, over: Partial<OriginRow> = {}): OriginRow {
+  return {
+    origin,
+    enabled: true,
+    overrides: {},
+    first_seen: "2026-09-01T00:00:00Z",
+    last_seen: "2026-09-12T00:00:00Z",
+    ...over,
+  };
+}
+
+function snapshot(rows: OriginRow[], problem: string | null = null, loaded = true): OriginsSnapshot {
+  return {
+    records: Object.fromEntries(rows.map((r) => [r.origin, r])),
+    known: rows.map((r) => r.origin),
+    loaded,
+    problem,
+  };
+}
+
+test("an app's standing is a fact about the tabs and the relay, in order of what is known", () => {
+  const tabs = [tab(1, "https://a.test/invoices", "A", true), tab(2, "https://b.test/")];
+  const byTab = { 1: registered(1, ["x", "y"], "webmcp-native"), 2: { ...registered(2, []), problem: "timeout" } };
+
+  expect(appOf(row("https://a.test"), tabs, byTab)).toMatchObject({
+    standing: "ready",
+    summary: "2 tools over webmcp-native",
+    tabId: 1,
+    host: "a.test",
+  });
+  expect(appOf(row("https://b.test"), tabs, byTab)).toMatchObject({ standing: "hands", tabId: 2 });
+  expect(appOf(row("https://c.test"), tabs, byTab)).toMatchObject({ standing: "closed", tabId: null, summary: "not opened" });
+  // Open, but the relay has not answered: reading, not "no tools".
+  expect(appOf(row("https://a.test"), tabs, {})).toMatchObject({ standing: "reading" });
+  // Switched off outranks everything else: nothing runs there whatever the page offers.
+  expect(appOf(row("https://a.test", { enabled: false }), tabs, byTab)).toMatchObject({ standing: "disabled" });
+});
+
+test("the overrides are counted, and a row the store never stamped has no last-seen", () => {
+  const app = appOf(row("https://a.test", { overrides: { pay: "GATED", chase: "AUTO" }, last_seen: "" }), [], {});
+  expect(app.overrides).toBe(2);
+  expect(app.lastSeen).toBe("");
+});
+
+test("the apps come in the order the table answered, and a problem is carried verbatim", () => {
+  const rows = [row("https://b.test"), row("https://a.test")];
+  const model = selectBrowser([], true, UNASKED, INERT, snapshot(rows));
+  expect(model.apps.map((a) => a.origin)).toEqual(["https://b.test", "https://a.test"]);
+  expect(model.appsLoaded).toBe(true);
+  expect(model.appsProblem).toBeNull();
+
+  const refused = selectBrowser([], true, UNASKED, INERT, snapshot([], "database is locked"));
+  expect(refused.apps).toEqual([]);
+  expect(refused.appsProblem).toBe("database is locked");
+
+  // No snapshot at all is "nobody has asked", not "no apps".
+  expect(selectBrowser([], true, UNASKED, INERT).appsLoaded).toBe(false);
+});
+
+test("the tab on an origin is the focused one when several are, by origin and not by page", () => {
+  const tabs = [tab(1, "https://a.test/one"), tab(2, "https://a.test/two", "", true), tab(3, "https://b.test/")];
+  expect(tabOn("https://a.test", tabs)?.id).toBe(2);
+  expect(tabOn("https://c.test", tabs)).toBeNull();
+  expect(tabOn("https://b.test", [tab(3, "https://b.test/x")])?.id).toBe(3);
 });

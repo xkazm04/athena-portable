@@ -5,29 +5,39 @@
  * this module is selected and a tab is open, the chrome webview is clipped to the module bar plus
  * `--strip-height` and a page webview fills everything under it, so the only part of this view
  * the user sees is the tab strip. With no tab open there is no page webview, the chrome webview
- * gets the whole window, and the rest of this view — the header, the stand-in, the empty state —
- * is what fills it. The preview harness always shows all of it.
+ * gets the whole window, and the rest of this view — the doorway and the ledger of apps — is
+ * what fills it. The preview harness always shows all of it.
  *
- * That is why the strip is first and why its height is a variable both this stylesheet and that
- * Rust file spell. Everything below it is written to be read in the two places it can be seen:
- * the harness, and the window with no tab open.
+ * The doorway is the one bold thing here: a drawing of the window this module is, and the
+ * address at the size of a title, because opening an app is the whole of what a person does on
+ * this surface when nothing is open. The ledger under it is the quieter, longer-lived part —
+ * every origin Athena has been told about, where each stands right now, and a field to tell her
+ * about another.
  */
 import { useState } from "react";
 
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
-import EmptyState from "@/components/EmptyState";
 import PageHeader from "@/components/PageHeader";
 import PageShell from "@/components/PageShell";
 import SectionCard from "@/components/SectionCard";
+import type { Tone } from "@/components/StatusDot";
 import Table from "@/components/Table";
 import type { Column } from "@/components/Table";
 import { normaliseUrl } from "@/lib/url";
 
-import { NEW_TAB_URL, type BrowserModel, type BrowserTab, type BrowserTools } from "./model";
+import "./browser.css";
+import {
+  NEW_TAB_URL,
+  type AppStanding,
+  type BrowserModel,
+  type BrowserTab,
+  type BrowserTools,
+  type RegisteredApp,
+} from "./model";
 
 export default function BrowserView({ model }: { model: BrowserModel }) {
-  const { actions, focused, problem, tabs, tools } = model;
+  const { actions, apps, appsLoaded, appsProblem, focused, problem, tabs, tools } = model;
 
   const go = (typed: string) => {
     const url = normaliseUrl(typed);
@@ -55,8 +65,8 @@ export default function BrowserView({ model }: { model: BrowserModel }) {
         <PageShell fill>
           <PageHeader
             eyebrow="Browser"
-            title="The pages Athena can see"
-            caption="One webview per tab, one profile, one of them on screen."
+            title="The apps Athena works in"
+            caption="Open one, and she reads what it offers."
             meta={
               <>
                 <Badge tone={problem ? "error" : tabs.length ? "success" : "neutral"}>
@@ -76,38 +86,286 @@ export default function BrowserView({ model }: { model: BrowserModel }) {
           ) : focused ? (
             <div className="page-stand-in">
               <p className="typo-title">The page draws here</p>
-              <p className="typo-caption">
-                {focused.url} — a webview of its own, positioned by the shell, not by this page.
-              </p>
+              <p className="typo-caption">{focused.url}</p>
               {/* Tier 1, in the one place there is room to spell it out (README section 3.4). */}
               <p className="typo-caption">{describe(tools)}</p>
             </div>
           ) : (
-            <EmptyState
-              glyph="+"
-              title="No tab open"
-              line="Open one from the strip above, or launch the shell with ATHENA_START_URL."
-              action={
-                <Button variant="primary" onClick={() => actions.open(NEW_TAB_URL)}>
-                  New tab
-                </Button>
-              }
-            />
+            <Doorway onOpen={(url) => actions.open(url)} />
           )}
 
-          <SectionCard title="Open tabs" note={`${tabs.length} open`} padded={false}>
-            <Table
-              columns={columns(actions)}
-              rows={tabs}
-              rowKey={(t) => t.id}
-              empty="No tab is open. The + in the strip opens one."
-            />
-          </SectionCard>
+          <Ledger
+            apps={apps}
+            loaded={appsLoaded}
+            problem={appsProblem}
+            onOpen={actions.openApp}
+            onEnable={actions.setEnabled}
+            onForget={actions.forget}
+            onRegister={actions.register}
+          />
         </PageShell>
       </div>
     </div>
   );
 }
+
+// -- the doorway ---------------------------------------------------------------------------------
+
+/**
+ * What a person sees when nothing is open: the window this module is, drawn, and the address at
+ * the size of a title. The drawing is the one illustration in the app, and it is of the thing
+ * itself — a bar, two tabs, one lit page — rather than a metaphor for it.
+ */
+function Doorway({ onOpen }: { onOpen: (url: string) => void }) {
+  const [typed, setTyped] = useState("");
+  const open = () => {
+    const url = normaliseUrl(typed);
+    if (!url) return;
+    setTyped("");
+    onOpen(url);
+  };
+  return (
+    <section className="doorway" aria-labelledby="doorway-title">
+      <WindowArt />
+      <div className="doorway__body">
+        <h2 id="doorway-title" className="doorway__title">
+          Open an app
+        </h2>
+        <div className="doorway__row">
+          <input
+            className="input doorway__field focus-ring"
+            value={typed}
+            placeholder="invoicing.example.test"
+            aria-label="Address of the app to open"
+            spellCheck={false}
+            autoFocus
+            onChange={(e) => setTyped(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") open();
+            }}
+          />
+          <Button variant="primary" disabledReason={typed.trim() ? undefined : "Type an address first."} onClick={open}>
+            Open
+          </Button>
+        </div>
+        <p className="typo-caption">
+          Any site works. A page that registers tools shows them in the strip; one that registers
+          nothing is operated by the generic hands. Nothing runs there until you say so.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/** A window with two tabs and one lit page, in the current text colour and the primary hue. */
+function WindowArt() {
+  return (
+    <svg
+      className="doorway__art"
+      viewBox="0 0 320 220"
+      role="img"
+      aria-label="A window with two tabs; the open page is lit"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect className="paper" x="12" y="14" width="296" height="192" rx="12" />
+      <path d="M12 46h296" />
+      <rect x="26" y="24" width="72" height="16" rx="5" />
+      <rect className="lit" x="106" y="24" width="72" height="16" rx="5" />
+      <circle cx="288" cy="32" r="3" fill="currentColor" />
+      <circle cx="276" cy="32" r="3" fill="currentColor" />
+      <g className="lit">
+        <rect x="32" y="66" width="120" height="10" rx="3" />
+        <rect x="32" y="88" width="256" height="1" />
+        <rect x="32" y="104" width="92" height="8" rx="3" />
+        <rect x="140" y="104" width="148" height="8" rx="3" />
+        <rect x="32" y="122" width="72" height="8" rx="3" />
+        <rect x="140" y="122" width="108" height="8" rx="3" />
+        <rect x="32" y="140" width="112" height="8" rx="3" />
+        <rect x="140" y="140" width="80" height="8" rx="3" />
+        <rect x="200" y="164" width="88" height="22" rx="6" />
+      </g>
+      <path d="M212 175h64" className="lit" strokeDasharray="3 4" />
+    </svg>
+  );
+}
+
+// -- the ledger ----------------------------------------------------------------------------------
+
+const STANDING_TONE: Record<AppStanding, Tone> = {
+  closed: "neutral",
+  reading: "pending",
+  ready: "success",
+  hands: "info",
+  disabled: "warning",
+};
+
+const STANDING_WORD: Record<AppStanding, string> = {
+  closed: "closed",
+  reading: "reading",
+  ready: "ready",
+  hands: "hands",
+  disabled: "off",
+};
+
+/**
+ * Every origin Athena has been told about, and where each stands now. A row is a fact about the
+ * tabs and the relay at this render, never a stored word; the standing beside the host is the
+ * same one the strip's pill shows when that page is on screen.
+ */
+function Ledger({
+  apps,
+  loaded,
+  problem,
+  onOpen,
+  onEnable,
+  onForget,
+  onRegister,
+}: {
+  apps: readonly RegisteredApp[];
+  loaded: boolean;
+  problem: string | null;
+  onOpen: (origin: string) => void;
+  onEnable: (origin: string, enabled: boolean) => void;
+  onForget: (origin: string) => void;
+  onRegister: (url: string) => void;
+}) {
+  const columns: readonly Column<RegisteredApp>[] = [
+    {
+      key: "app",
+      head: "App",
+      render: (app) => (
+        <span className="app-cell">
+          <button type="button" className="tab-chip__label focus-ring typo-title" onClick={() => onOpen(app.origin)}>
+            {app.host}
+          </button>
+          <span className="typo-caption app-cell__origin">{app.origin}</span>
+        </span>
+      ),
+    },
+    {
+      key: "standing",
+      head: "Standing",
+      render: (app) => (
+        <span className="app-cell">
+          <Badge tone={STANDING_TONE[app.standing]}>{STANDING_WORD[app.standing]}</Badge>
+          <span className="typo-caption">{app.summary}</span>
+        </span>
+      ),
+    },
+    {
+      key: "overrides",
+      head: "Pinned",
+      render: (app) => (
+        <span className="typo-data">{app.overrides ? `${app.overrides} tool${app.overrides === 1 ? "" : "s"}` : "—"}</span>
+      ),
+    },
+    {
+      key: "seen",
+      head: "Last seen",
+      render: (app) => <span className="typo-caption">{whenSeen(app.lastSeen)}</span>,
+    },
+    {
+      key: "actions",
+      head: "",
+      align: "right",
+      render: (app) => (
+        <span className="app-actions">
+          <Button size="sm" variant="secondary" onClick={() => onOpen(app.origin)}>
+            {app.tabId === null ? "Open" : "Show"}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => onEnable(app.origin, !app.enabled)}>
+            {app.enabled ? "Switch off" : "Switch on"}
+          </Button>
+          <Button size="sm" variant="ghost" aria-label={`Forget ${app.host}`} onClick={() => onForget(app.origin)}>
+            Forget
+          </Button>
+        </span>
+      ),
+    },
+  ];
+
+  return (
+    <SectionCard
+      title="Registered apps"
+      note={problem ? "could not be read" : loaded ? `${apps.length} registered` : "reading the table"}
+      padded={false}
+    >
+      {problem ? (
+        <div style={{ padding: "var(--density-pad-sm)" }}>
+          <p className="well">{problem}</p>
+          <p className="typo-caption">
+            The origins table did not answer. Apps still open; their standing is not shown.
+          </p>
+        </div>
+      ) : (
+        <Table
+          columns={columns}
+          rows={apps}
+          rowKey={(app) => app.origin}
+          empty={
+            loaded
+              ? "No app is registered yet. Register one below, or open a page and switch it on."
+              : "The origins table has not answered yet."
+          }
+        />
+      )}
+      <div style={{ padding: "var(--density-pad-sm)", borderTop: "1px solid var(--border-subtle)" }}>
+        <RegisterField onRegister={onRegister} />
+      </div>
+    </SectionCard>
+  );
+}
+
+/** The way to tell Athena about an app before it is open: the row is written and a tab opens. */
+function RegisterField({ onRegister }: { onRegister: (url: string) => void }) {
+  const [typed, setTyped] = useState("");
+  const register = () => {
+    const url = normaliseUrl(typed);
+    if (!url) return;
+    setTyped("");
+    onRegister(url);
+  };
+  return (
+    <div className="register">
+      <input
+        className="input register__field focus-ring typo-body"
+        value={typed}
+        placeholder="Register an app by its address"
+        aria-label="Address of the app to register"
+        spellCheck={false}
+        onChange={(e) => setTyped(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") register();
+        }}
+      />
+      <Button variant="secondary" size="sm" disabledReason={typed.trim() ? undefined : "Type an address first."} onClick={register}>
+        Register and open
+      </Button>
+      <span className="typo-caption">Registering switches the origin on and opens it, so Athena can read what it offers.</span>
+    </div>
+  );
+}
+
+/** A timestamp as a person says it. Verbatim date when it cannot be parsed. */
+function whenSeen(iso: string): string {
+  if (!iso) return "never";
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return iso;
+  const minutes = Math.round((Date.now() - at.getTime()) / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+  const days = Math.round(hours / 24);
+  if (days < 30) return `${days} d ago`;
+  return at.toISOString().slice(0, 10);
+}
+
+// -- the strip -----------------------------------------------------------------------------------
 
 /** The same three facts as a sentence, for the one place there is room for one. */
 function describe(tools: BrowserTools | null): string {
@@ -147,37 +405,6 @@ function ToolCount({ tools }: { tools: BrowserTools | null }) {
       {`${tools.count} tools`}
     </Badge>
   );
-}
-
-function columns(actions: BrowserModel["actions"]): readonly Column<BrowserTab>[] {
-  return [
-    {
-      key: "title",
-      head: "Title",
-      render: (t) => (
-        <button type="button" className="tab-chip__label focus-ring typo-body" onClick={() => actions.focus(t.id)}>
-          {t.title}
-        </button>
-      ),
-    },
-    { key: "host", head: "Host", render: (t) => <span className="typo-data">{t.host}</span> },
-    { key: "url", head: "Address", render: (t) => <span className="typo-caption truncate">{t.url}</span> },
-    {
-      key: "state",
-      head: "On screen",
-      render: (t) => (t.focused ? <Badge tone="success">focused</Badge> : <span className="typo-caption">—</span>),
-    },
-    {
-      key: "close",
-      head: "",
-      align: "right",
-      render: (t) => (
-        <Button size="sm" variant="ghost" aria-label={`Close ${t.title}`} onClick={() => actions.close(t.id)}>
-          ×
-        </Button>
-      ),
-    },
-  ];
 }
 
 /**

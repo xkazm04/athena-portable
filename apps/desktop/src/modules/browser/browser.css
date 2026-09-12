@@ -1,0 +1,101 @@
+/* The Browser module's own styles. Tokens only; the frame, the table and the badges are the
+ * catalog's. What is here is the one thing no other module has: the doorway — the hero a person
+ * sees when nothing is open — and the ledger of apps under it. */
+
+/* -- The doorway: an illustration and one large field ------------------------------------------
+ *
+ * Two columns where there is room: the drawing on the left keeps its measure, the field and the
+ * sentence on the right take the rest. The drawing is `currentColor` in the muted tier, with the
+ * lit page in the primary hue, so both themes paint it from the same tokens. */
+.doorway {
+  display: grid;
+  gap: var(--density-gap);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  padding: var(--density-pad) 0;
+}
+
+@media (min-width: 60rem) {
+  .doorway {
+    grid-template-columns: minmax(14rem, 22rem) minmax(0, 36rem);
+    column-gap: calc(var(--density-gap) * 2);
+  }
+}
+
+.doorway__art {
+  width: 100%;
+  max-width: 22rem;
+  height: auto;
+  color: var(--muted-foreground);
+}
+
+.doorway__art .lit {
+  color: var(--primary);
+}
+
+.doorway__art .paper {
+  fill: var(--card-bg);
+}
+
+.doorway__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.doorway__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+/* The address, at the size of a title: it is the one act this surface exists for. */
+.doorway__field {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  border-radius: var(--radius-card);
+}
+
+.doorway__row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.doorway__row .btn {
+  flex: none;
+}
+
+/* -- The ledger of apps ------------------------------------------------------------------------ */
+.app-cell {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.app-cell__origin {
+  overflow-wrap: anywhere;
+}
+
+.app-actions {
+  display: inline-flex;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.register {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.register__field {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
