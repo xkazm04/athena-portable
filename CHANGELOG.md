@@ -2,10 +2,40 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
-## P3 — One turn end to end, no browser (in progress)
+## P5 — MVP checkpoint (done)
 
-- `feat(bridge): inject.js, the page's half` — the `document.modelContext` polyfill, list/call over postMessage, toolchange, the 30 s abort, degrade to "no bridge"; ADR 0008.
-- `feat(bridge): gate.js, the surface's half` — class derivation that only tightens, the refusal vocabulary pinned to `ERROR_REASONS` by `tests/test_refusal_parity.py`, the fence, bounded output, the per-origin budget; ADR 0009.
+- `feat(panel): the module-first panel, its run loop and the seams that drive it` — four modules as
+  view-model, fixtures and pure view; the run loop that carries a host tool's answer into the next
+  frame and an approved card's instruction onto the page, bounded at eight continuations;
+  `preview.html?module=&fixture=`; 27 headless tests against `dist/`; ADR 0013.
+- `fix(core): the capability block teaches the OP grammar it always assumed` — found by a live turn:
+  the model read the block, went looking for a native tool API and asked the user to run the tool.
+- `docs: the phase-1 status, written at the MVP checkpoint` — what runs, what only a hand-run found,
+  and what P6 inherits.
+
+## P4 — The shell skeleton
+
+- `feat(desktop): the shell skeleton — window, tabs, relay and sidecar` — one Tauri window with the
+  380 px panel column and a page webview per tab; exit hygiene as kill-and-reap plus a Windows job
+  object; the relay's Rust half with a 35 s sweep deliberately longer than the page's own abort;
+  tabs that never reuse a label and settings that repair rather than refuse. ADR 0012.
+
+## P3 — One turn end to end, no browser (done)
+
+- `feat(bridge): inject.js, the page's half` — the `document.modelContext` polyfill, list/call over
+  postMessage, toolchange, the 30 s abort, degrade to "no bridge"; ADR 0008.
+- `feat(bridge): gate.js, the surface's half` — class derivation that only tightens, the refusal
+  vocabulary pinned to `ERROR_REASONS` by `tests/test_refusal_parity.py`, the fence, bounded output,
+  the per-origin budget; ADR 0009.
+- `feat(harness): structural policy in front of the catalog, not inside the gate` — lane, origin and
+  connector-liveness rules reaching the gate through `CatalogPort`; ADR 0010.
+- `feat(lane): the browser lane, one turn streamed and no gated executor held` — compose, run, relay,
+  record; the gated path closed later on `resolve` with the gate replayed against the approval id.
+- `feat(daemon): the threading server, with the starvation test that shaped it` — ThreadingHTTPServer,
+  `Connection: close`, a constant-time token, CORS from an allow-list; writing the test first found
+  the brain's thread-bound writer. ADR 0011.
+- `feat(daemon): the routes, the wiring and the sidecar entry point` — ten routes that decide nothing,
+  a streaming `/run`, a resolve that takes a choice and nothing else, and a one-line JSON handshake.
 
 ## P2 — The gate and the model
 
