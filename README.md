@@ -5,7 +5,7 @@ This repository is the hackathon rebuild of [athena-everywhere](https://github.c
 an empty tree, new code, the same design, one commit per feature, and the structural debts the
 first build found fixed on day zero.
 
-**Status:** P1 Foundation, in progress. The repository and its gate exist; nothing is demonstrable
+**Status:** P1 Foundation done; P2 The gate and the model, in progress. Nothing is demonstrable yet.
 yet. The phase table in section 5 is the order of work and section 7 is the bar every commit clears.
 
 ```bash
