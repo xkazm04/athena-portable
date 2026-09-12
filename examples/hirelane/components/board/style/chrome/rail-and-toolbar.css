@@ -53,9 +53,19 @@
   color: var(--bd-ink-2);
 }
 
+/*
+ * The rung you are standing on, in the accent — "structure: the open group, the level rail" is
+ * the job `design/board-brief.md` §2 gives --bd-accent, and the level rail is the half of it that
+ * had never been built. White ink on a glass pill said "here" using the same two devices every
+ * other pressed control on the surface uses; the hue says it in one the reader is not reading
+ * anywhere else.
+ *
+ * The rule ladder is untouched: this is still --bd-rule-1, because a rung is a division and §7.1
+ * reserves the heavier weights for the region holding the irreversible acts.
+ */
 .bd-rung[data-here="true"] {
-  color: var(--bd-ink);
-  border-color: var(--bd-rule);
+  color: var(--bd-accent);
+  border-color: var(--bd-accent);
   background: var(--bd-glass);
 }
 

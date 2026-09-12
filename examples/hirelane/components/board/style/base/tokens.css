@@ -60,13 +60,43 @@
      copied a fourth time, and it would not move when the ground does. */
   --bd-scrim: color-mix(in srgb, var(--bd-void) 74%, transparent);
   --bd-ink: #ffffff;
+  /*
+   * THE INK LADDER, AGAINST THE SURFACE TEXT ACTUALLY SITS ON.
+   *
+   * The readability pass raised `--bd-ink-4` from #6b6b77 and recorded the result as 3.8:1 to
+   * 5.3:1. Both figures are right, and both were measured against `--bd-void` - the page's own
+   * backdrop, which almost nothing is set on. Text sits on the GLASS: `--bd-glass` is white at 4%
+   * over `--bd-ground`, `--bd-glass-2` is 7%, and a carousel card's gradient tops out at 8% over
+   * the void. Composited, the same two rungs measured:
+   *
+   *     --bd-ink-3  #93939f   5.65:1   passes AA, fails AAA
+   *     --bd-ink-4  #83838f   4.59:1   clears AA by 0.09, fails AAA
+   *
+   * So the pass was real - #6b6b77 measured 3.27 on a glass panel and was a genuine AA failure at
+   * eighteen sites - and it stopped one step short. `--bd-ink-4` carries 12 and 13px text: the
+   * slide's stage fact, the capability register, the fit band, the crumb detail, the keyboard
+   * hint. Small text is where AAA earns its keep, and nine hundredths is not a margin.
+   *
+   * The shape was also wrong, which is the half no single rung shows. 10.43 / 5.65 / 4.59 puts the
+   * two QUIET rungs 1.23x apart - closer to each other than either is to `--bd-ink-2` - so the
+   * ladder spent its range getting darker than legible instead of separating the tiers a reader
+   * has to tell apart. This file already makes that argument about `--bd-control`: four numbers
+   * that close together cannot be read as a rank.
+   *
+   * Retuned, every rung clears AA, the top three clear AAA, and the steps are an even ~1.34x:
+   *
+   *     --bd-ink-2  #c9c9d1  10.43:1   prose and values
+   *     --bd-ink-3  #aeaeb9   7.81:1   labels, captions, the stage fact
+   *     --bd-ink-4  #9494a0   5.73:1   the quietest rung: disabled, denominators, hints
+   *
+   * No call site moves - each tier keeps the meaning it already had. `design/check-contrast.mjs`
+   * composites every surface in this block and asserts each rung against the worst of them, and
+   * `lint` runs it, so the next retune that drops a rung below its floor is a red run rather than
+   * something a third review notices in a screenshot.
+   */
   --bd-ink-2: #c9c9d1;
-  --bd-ink-3: #93939f;
-  /* Raised from #6b6b77 in the readability pass. At 12px on --bd-void the old
-     value measured 3.8:1 and failed WCAG AA; this measures 5.3:1, and 4.9:1 on
-     a --bd-glass panel, which is the floor every label on the surface now sits
-     above. */
-  --bd-ink-4: #83838f;
+  --bd-ink-3: #aeaeb9;
+  --bd-ink-4: #9494a0;
   --bd-rule: rgb(255 255 255 / 11%);
   --bd-rule-2: rgb(255 255 255 / 18%);
 

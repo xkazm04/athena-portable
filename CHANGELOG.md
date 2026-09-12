@@ -20,6 +20,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 - `feat(examples): ledgerbox readability pass` — a status component for presence, 12px floor on labels and legend, labelled view toggles moved beside the level rail, AUTO and GATED action bands, a scrolling aside at 1024.
 - `feat(examples): hirelane readability pass` — the carousel overflow fixed, the handwriting face removed, one 12px sentence-case label style, avatar clusters with an overflow count, a live headline and presence line, a capability pill with a disclosure instead of raw tool names, AUTO and GATED as one class component; brief and law amended.
 - `feat(examples): tidycrm readability pass` — one 13px sentence-case label style and one stat scale at all three depths, zone and block cards led by the name, deviations named as deviations, chips for the breakdown and the zone jump, a presence line, AUTO and GATED as one band component.
+- `feat(examples): hirelane contrast is measured, and the label tier carries the accent` — `design/check-contrast.mjs` composites the translucent planes and scores every token against the worst of them, chained into `lint`; the ink ladder retuned to clear AAA on the three text rungs and AA on the fourth; `--bd-accent` spent where the brief always declared it, on the level rail's rung and the region titles, and kept out of the AUTO/GATED legend and the light gated panel; `design/ui-pass-brief.md` specifies the L1 and L2 layers still to come; ADR 0021.
 
 ## P5 — MVP checkpoint (done)
 

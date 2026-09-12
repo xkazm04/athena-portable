@@ -7,8 +7,8 @@
     "dev": "next dev --port 3002",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . && node design/check-law.mjs",
-    "design:check": "node design/check-law.mjs",
+    "lint": "eslint . && node design/check-law.mjs && node design/check-contrast.mjs",
+    "design:check": "node design/check-law.mjs && node design/check-contrast.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --import ./test/register.mjs --test \"test/**/*.test.ts\""
   },
