@@ -1,0 +1,193 @@
+{
+  "title": "Athena — the two-minute cut",
+  "language": "en",
+  "words_per_second": 2.5,
+  "breath_ms": 500,
+  "voices": {
+    "narrator": {
+      "hint": "neutral English, calm, stability high"
+    },
+    "mira": {
+      "hint": "conversational, warm"
+    },
+    "athena": {
+      "hint": "clear, slightly slower"
+    }
+  },
+  "acts": [
+    {
+      "id": "open",
+      "title": "Open",
+      "beats": [
+        {
+          "id": "O1",
+          "app": "ledgerbox",
+          "voice": "narrator",
+          "line": "Three web apps, no agent, and none coming. Athena attaches to whatever is already open: each app tells her what it offers and which actions are gated. She never decides that herself.",
+          "screen": "Three tabs in turn (ledgerbox, hirelane, tidycrm), each presence line lighting up as the bridge attaches; end on ledgerbox",
+          "settle_ms": 1200
+        }
+      ]
+    },
+    {
+      "id": "books",
+      "title": "Books",
+      "beats": [
+        {
+          "id": "B1",
+          "app": "ledgerbox",
+          "voice": "mira",
+          "line": "Reconcile August and chase anything over thirty days.",
+          "screen": "Command types into the strip",
+          "settle_ms": 600
+        },
+        {
+          "id": "B3",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "This one banks as Pinegrove Coop. That's Pinegrove Collective. I'll remember that.",
+          "screen": "open_item(inv_0930), match_bank_line(bl_00122): counterparty_alias in the strip; fact card 'Pinegrove Collective pays as PINEGROVE COOP'",
+          "settle_ms": 1200
+        },
+        {
+          "id": "B4",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "One credit fits two identical Kestrel retainers. I won't guess.",
+          "screen": "read_credits(ambiguous): bl_00118 with candidates inv_0900 and inv_0901 lit in the strip; nothing matched",
+          "settle_ms": 600
+        },
+        {
+          "id": "B5",
+          "app": "outside",
+          "voice": "narrator",
+          "line": "Kestrel's own portal. It has never heard of Athena and offers her nothing, so she reads it the way a person would. On a page you have never trusted, even looking is a decision.",
+          "screen": "Navigate to Kestrel's supplier portal (the journey's outside page on 3005). No presence line. The strip shows eight generic hands, every one GATED; page_find for the studio's row waits on a decision card and is approved",
+          "settle_ms": 1200
+        },
+        {
+          "id": "B6",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "Their remittance settles it: LB-2026-0901. Matched.",
+          "screen": "page_read of the remittance row (approved), the row highlighted; back to ledgerbox, open_item(inv_0901), match_bank_line(bl_00118): settled",
+          "settle_ms": 1200
+        },
+        {
+          "id": "B7",
+          "app": "ledgerbox",
+          "voice": "athena",
+          "line": "Solstice paid eighty percent in August and went quiet. I'd hold off.",
+          "screen": "navigate(overdue); open_item(inv_0920): paid_ratio 0.8 in the strip; draft_reminder(gentle); send_reminder decision card shown",
+          "settle_ms": 1200
+        },
+        {
+          "id": "B8",
+          "app": "ledgerbox",
+          "voice": "mira",
+          "line": "Agreed.",
+          "screen": "The card is declined; the ledger row reads user_denied",
+          "settle_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "pipeline",
+      "title": "Pipeline",
+      "beats": [
+        {
+          "id": "P1",
+          "app": "hirelane",
+          "voice": "mira",
+          "line": "Screen this week's backend applicants and book the ones worth talking to.",
+          "screen": "Hirelane; command types",
+          "settle_ms": 600
+        },
+        {
+          "id": "P3",
+          "app": "hirelane",
+          "voice": "athena",
+          "line": "Wren Okafor works at Kestrel Labs, this morning's client. Context only. It changes no score.",
+          "screen": "open_item(app1_012): Wren Okafor's dossier; the strip shows employer Kestrel Labs and cites the B4 row",
+          "settle_ms": 1200
+        },
+        {
+          "id": "P4a",
+          "app": "hirelane",
+          "voice": "athena",
+          "line": "Two invitations, from your inbox.",
+          "screen": "propose_slots on two advancing applicants; send_scheduling_email decision card for the first",
+          "settle_ms": 1200
+        },
+        {
+          "id": "P4b",
+          "app": "hirelane",
+          "voice": "mira",
+          "line": "Send them.",
+          "screen": "Both scheduling cards approved, visibly, one after the other; messages recorded",
+          "settle_ms": 600
+        },
+        {
+          "id": "P5",
+          "app": "hirelane",
+          "voice": "mira",
+          "line": "Not that one yet.",
+          "screen": "send_rejection card for one applicant, declined; user_denied",
+          "settle_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "contacts",
+      "title": "Contacts",
+      "beats": [
+        {
+          "id": "C1",
+          "app": "tidycrm",
+          "voice": "mira",
+          "line": "Clean the list and export the campaign audience.",
+          "screen": "Tidycrm; command types",
+          "settle_ms": 600
+        },
+        {
+          "id": "C2",
+          "app": "tidycrm",
+          "voice": "athena",
+          "line": "Pinegrove is spelled three ways. The bank name I learned this morning settles it.",
+          "screen": "open_group(A) (3 s), open_item on the Pinegrove block: three spellings; preview_company then resolve_company(pinegrove-collective.example, Pinegrove Collective); the strip cites the B3 fact",
+          "settle_ms": 3000
+        },
+        {
+          "id": "C4",
+          "app": "tidycrm",
+          "voice": "athena",
+          "line": "Two hundred fifty-four contacts. Solstice left out, for this morning's reason.",
+          "screen": "export(clients): the companies list; Solstice's contacts held out by the runner's decision citing B8; the export is also appended to the notes page through the connector fake (strip tag 'connector: notes', one tier 3 row)",
+          "settle_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "record",
+      "title": "Record",
+      "beats": [
+        {
+          "id": "R1",
+          "app": "record",
+          "voice": "narrator",
+          "line": "One table. Every call, its tier — her own tools, her hands, her connectors — and whether it was gated. Two declines, recorded as your decisions. Three facts, each citing where she learned it.",
+          "screen": "The record page: the ledger grouped by app and tier (1 page, 2 hand, 3 conn), the two user_denied rows highlighted, the three facts with their citations",
+          "settle_ms": 600
+        },
+        {
+          "id": "R2",
+          "app": "record",
+          "voice": "narrator",
+          "line": "Athena. Your agent, in the apps you already have.",
+          "screen": "Title card",
+          "settle_ms": 600
+        }
+      ]
+    }
+  ]
+}

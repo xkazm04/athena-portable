@@ -28,7 +28,7 @@ const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const JOURNEY = path.resolve(HERE, '..');
 const REPO = path.resolve(JOURNEY, '..', '..');
-const SCRIPT_PATH = path.join(JOURNEY, 'script', 'journey.en.json');
+const SCRIPT_PATH = process.env.JOURNEY_SCRIPT ? path.resolve(JOURNEY, process.env.JOURNEY_SCRIPT) : path.join(JOURNEY, 'script', 'journey.en.json');
 const AUDIO_DIR = path.join(JOURNEY, 'take', 'audio');
 
 const API = 'https://api.elevenlabs.io/v1';

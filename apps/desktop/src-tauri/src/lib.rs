@@ -18,6 +18,7 @@ mod tabs;
 // ── registrations: modules ────────────────────────────────────────────────────────────────────
 // c19 `mod bridge;`  c20 `mod daemon;`  c21 `mod store;`  c24 `mod hands;`  c27 `mod tray;`
 mod bridge;
+mod capture;
 mod daemon;
 mod hands;
 mod store;

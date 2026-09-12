@@ -1,5 +1,5 @@
 /**
- * docs/demo.md section 1 — "the take": the forty-two beats of the script, played on camera.
+ * docs/demo.md section 1 — "the take": the beats of the script, played on camera.
  *
  * This is the same journey `tests/journey.spec.ts` asserts, through the same bridge, the same
  * gate, the same approvals, the same ledger, the same brain and the same connector fakes — run at
@@ -16,21 +16,28 @@
  * and the take carries on, because losing twenty minutes of video to one moved field is the one
  * outcome a recorder must not have; the test then fails at the end if any beat errored.
  *
+ * There are two scripts and therefore two tables of beats below, keyed by the script's own ids:
+ * `script/journey.en.json` is the forty-two-beat long take (ids `0.1`…`4.4`) and is still the
+ * default, and `script/cut.en.json` is the two-minute cut (ids `O1`…`R2`). `JOURNEY_SCRIPT`
+ * chooses; the ids never collide, the loop plays exactly the beats the chosen script lists, and
+ * nothing else in this file knows which of the two is running.
+ *
  * Run it with `pnpm exec playwright test tests/take.spec.ts` (see `playwright.config.ts`: the take
- * is ignored by a bare `playwright test`, so `pnpm test` is still the journey and nothing else).
+ * is ignored by a bare `playwright test`, so `pnpm test` is still the journey and nothing else),
+ * and `JOURNEY_SCRIPT=script/cut.en.json` for the cut.
  */
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
-import { HIRELANE, LEDGERBOX, TIDYCRM, urlOf, type AppSpec } from "../src/apps.ts";
+import { HIRELANE, LEDGERBOX, OUTSIDE, TIDYCRM, urlOf, type AppSpec } from "../src/apps.ts";
 import { Approvals } from "../src/approvals.ts";
 import { boot, shutdown, type Booted } from "../src/boot.ts";
 import { Brain } from "../src/brain.ts";
 import { ConnectorSurface } from "../src/connector-surface.ts";
 import { FakeMail } from "../src/connectors/fake-mail.ts";
 import { FakeNotes } from "../src/connectors/fake-notes.ts";
-import { Ledger } from "../src/ledger.ts";
+import { Ledger, type LedgerRow } from "../src/ledger.ts";
 import { recordPage } from "../src/record-page.ts";
 import { installBridge } from "../src/relay.ts";
 import {
@@ -43,7 +50,7 @@ import {
   loadScript,
   scriptPath,
 } from "../src/script.ts";
-import { STUDIO_NOTES, assertClasses } from "../src/stage.ts";
+import { STUDIO_NOTES, assertClasses, assertHands } from "../src/stage.ts";
 import { Strip, argLine } from "../src/strip.ts";
 import { Surface } from "../src/surface.ts";
 import {
@@ -57,6 +64,7 @@ import {
   aliasFromMatch,
   applicant,
   bodyOf,
+  candidate,
   companyByName,
   companyDomain,
   conflict,
@@ -69,13 +77,14 @@ import {
   itemsOf,
   outbound,
   pair,
+  refsFrom,
   safe,
   slotIdFrom,
   unambiguousMatch,
   type Row,
 } from "../src/contracts.ts";
 
-/** Twenty-five minutes: forty-two beats at their held length, plus three cold Next dev boots. */
+/** Twenty-five minutes: every beat at its held length, plus three cold Next dev boots. */
 test.describe.configure({ timeout: 25 * 60 * 1000 });
 
 const script = loadScript();
@@ -95,7 +104,7 @@ const HEIGHT = 900;
  */
 const VIDEO_OFFSET_UNCERTAINTY_MS = 300;
 
-/** The record, the memory and the approval table — one of each, shared by all forty-two beats. */
+/** The record, the memory and the approval table — one of each, shared by every beat. */
 const ledger = new Ledger();
 const approvals = new Approvals();
 const brain = new Brain();
@@ -147,6 +156,19 @@ const st: {
   uncertain: Row[];
   campaign: number;
   held: number;
+  // --- the two-minute cut (script/cut.en.json) ---------------------------------------------
+  /** The Kestrel credit no rule settles, and the ledger row B4 read it on — P3 cites that row. */
+  ambiguous?: Row;
+  ambiguousRow?: LedgerRow;
+  /** The outside portal's surface: eight hands and nothing else. */
+  portal?: Surface;
+  /** The ref `page_find` minted for the studio's remittance row, and what `page_read` saw. */
+  remittanceRef: string;
+  remittance: string;
+  /** B8's refusal row — the decision C4's fact cites. */
+  declineRow?: LedgerRow;
+  /** The two scheduling cards P4a raises and P4b answers, one after the other. */
+  cards: number[];
 } = {
   credits: [],
   easy: [],
@@ -167,6 +189,9 @@ const st: {
   uncertain: [],
   campaign: 0,
   held: 0,
+  remittanceRef: "",
+  remittance: "",
+  cards: [],
 };
 
 /** Navigate, put the strip back, and list what the new page offers — the surface's whole arrival. */
@@ -215,7 +240,9 @@ async function ask(title: string, question: string, detail: string): Promise<voi
 test.beforeAll(async ({ browser }) => {
   notes.seed([{ id: STUDIO_NOTES, parent: null, title: "Halden Studio — weekly record" }]);
   notes.allow(STUDIO_NOTES);
-  for (const app of [LEDGERBOX, HIRELANE, TIDYCRM]) {
+  // The fourth is Kestrel's own supplier portal (`outside/`), static HTML that publishes nothing:
+  // the cut's B5 walks the one page onto it and Athena has eight generic hands there and no tools.
+  for (const app of [LEDGERBOX, HIRELANE, TIDYCRM, OUTSIDE]) {
     booted.push(await boot(app, (line) => console.log(`[boot] ${line}`)));
   }
   mkdirSync(TAKE_DIR, { recursive: true });
@@ -273,7 +300,8 @@ test.afterAll(async () => {
 /**
  * What each beat does on screen, keyed by the script's own beat id.
  *
- * One entry per row of docs/demo.md section 2. A beat that is only a person speaking has an entry
+ * One entry per row of docs/demo.md section 2 for the long take, then one per beat of
+ * `script/cut.en.json` for the two-minute cut. A beat that is only a person speaking has an entry
  * too, because "the strip shows Mira typing and nothing else happens" is a thing the take has to
  * do rather than a thing it may skip.
  */
@@ -854,9 +882,459 @@ const ACTIONS: Record<string, () => Promise<void>> = {
     await strip.reattach();
     await strip.set({ app: "", presence: "", command: "", tool: "", args: "", say: null });
   },
+
+  // === the two-minute cut — script/cut.en.json, ids O1…R2 =====================================
+  //
+  // The same journey, the same gate and the same record, told in twenty-one lines instead of
+  // forty-two. Two things change and neither is a softening. First, everything the long take
+  // spends a beat on because it is *interesting* — the fourteen ordinary matches, the eleven
+  // scorings, the forty-three merges — still runs, and still writes its rows, but off camera
+  // inside the beat whose line it belongs to: the picture carries it and no line claims it.
+  // Second, the cut has a beat the long take does not: the credit no rule settles is settled
+  // from Kestrel's own portal, on the same page rather than in a second tab, because one video
+  // per page is the whole of what the compose step can lay audio onto.
+  //
+  // Every entity a line names is the entity on screen, and that is asserted rather than trusted:
+  // `bl_00122`/`inv_0930` for Pinegrove, `bl_00118` fitting `inv_0900` and `inv_0901`,
+  // `LB-2026-0901` on the remittance, `inv_0920` at `paid_ratio` 0.8, `app1_012` for Wren Okafor.
+  // A drift in the seed is then a red beat in `take.json` rather than a film that lies.
+
+  O1: async () => {
+    // One page, three applications in turn: the presence line goes to "attaching…" and then to
+    // what the application offered and how much of it the gate called consequential.
+    const board = await openApp(HIRELANE);
+    assertClasses(board, HIRELANE);
+    await page.waitForTimeout(1_200);
+    const crm = await openApp(TIDYCRM);
+    assertClasses(crm, TIDYCRM);
+    await page.waitForTimeout(1_200);
+    st.books = await openApp(LEDGERBOX);
+    assertClasses(st.books, LEDGERBOX);
+  },
+
+  B1: async () => {
+    const books = st.books!;
+    await shown<Row>(books, "read_books");
+    const answer = await shown<Row>(books, "read_credits");
+    st.credits = itemsOf(answer);
+    st.easy = st.credits.filter((row) => unambiguousMatch(row) !== null);
+    // The credit that arrived under a trading name is held back for B3: it is the one the cut
+    // stops on, and spending it in the batch would spend it off camera.
+    st.pinegrove =
+      st.easy.find((row) =>
+        `${safe(() => credit.alias(row) ?? "", "")} ${safe(() => credit.memo(row), "")}`
+          .toUpperCase()
+          .includes(PINEGROVE_ALIAS.bank),
+      ) ?? null;
+    expect(st.pinegrove, `a credit banked as ${PINEGROVE_ALIAS.bank}`).toBeTruthy();
+    await strip.call("read_credits", `${st.credits.length} unapplied · ${st.easy.length} fit exactly one invoice`);
+  },
+
+  B3: async () => {
+    const books = st.books!;
+    const line = st.pinegrove!;
+    const target = unambiguousMatch(line)!;
+    // The line names Pinegrove, so the screen has to be Pinegrove's own credit and invoice.
+    expect(credit.id(line), "the credit the line is about").toBe("bl_00122");
+    expect(target, "the invoice it settles").toBe("inv_0930");
+    await act(books, "open_item", { id: target });
+    const result = await books.run("match_bank_line", { invoice_id: target, line_id: credit.id(line) });
+    const alias = aliasFromMatch(result.output) ?? credit.alias(line) ?? PINEGROVE_ALIAS.bank;
+    await strip.call("match_bank_line", `${target} ← ${credit.id(line)} · counterparty: ${alias}`);
+    st.matchedSeqs.push(result.row.seq);
+    // Invariant 2: the citation is a precondition of the write. The row is the match above.
+    const fact = brain.writeFact(`Pinegrove Collective pays as ${PINEGROVE_ALIAS.bank}`, [result.row], "ledgerbox");
+    expect(fact.cites).toEqual([result.row.seq]);
+    await strip.fact(fact.claim, `cites ledger #${result.row.seq} match_bank_line`);
+    // The other thirteen are the same reversible call thirteen times. The cut has no line for
+    // them, so they run inside this beat's hold rather than taking one of their own.
+    for (const row of st.easy.filter((one) => one !== line)) {
+      const batched = await books.run("match_bank_line", {
+        invoice_id: unambiguousMatch(row)!,
+        line_id: credit.id(row),
+      });
+      st.matchedSeqs.push(batched.row.seq);
+    }
+  },
+
+  B4: async () => {
+    const books = st.books!;
+    const answer = await shown<Row>(books, "read_credits", { only: "ambiguous" });
+    const open = itemsOf(answer);
+    st.ambiguousRow = ledger.rows.at(-1)!;
+    expect(open.length, "exactly one credit a person has to decide").toBe(1);
+    st.ambiguous = open[0]!;
+    expect(credit.id(st.ambiguous), "the credit the line is about").toBe("bl_00118");
+    expect(credit.memo(st.ambiguous)).toMatch(/kestrel/i);
+    const twins = credit.candidates(st.ambiguous).map((row) => candidate.invoiceId(row));
+    expect(twins.sort(), "two identical retainers").toEqual(["inv_0900", "inv_0901"]);
+    await strip.call("read_credits", `only=ambiguous · ${credit.id(st.ambiguous)} fits ${twins.join(" and ")} — left for a person`);
+  },
+
+  B5: async () => {
+    // The same page walks off the studio's applications and onto a page nobody instrumented.
+    // One video per page is why this is a navigation rather than the journey's second tab.
+    await page.goto(urlOf(OUTSIDE, "/remittances.html"), { waitUntil: "domcontentloaded" });
+    await strip.reattach();
+    // No presence line at all: nothing here told Athena anything, so there is nothing to report
+    // and a green dot claiming a connection would be the one lie the beat must not tell.
+    await strip.set({ app: "kestrel labs · outside", presence: "", command: "", tool: "", args: "", say: null });
+    const portal = new Surface(OUTSIDE, page, approvals, ledger);
+    await portal.settle();
+    st.portal = portal;
+    expect(portal.names().filter((name) => !portal.isHand(name)), "a page that registered nothing").toEqual([]);
+    // README section 3.3: every hand is GATED on first sight for an origin nobody has trusted,
+    // two of them reads whose own flags say AUTO. The strip prints the gate's answer, not a claim.
+    assertHands(portal);
+    expect(portal.manifest().tools.length, "the manifest is exactly the hands").toBe(8);
+    await strip.call("list", `0 tools offered · 8 hands · all gated`);
+    await ask(
+      "page_find",
+      `Kestrel's portal has never heard of me. May I look for ${STUDIO.name}'s row on it?`,
+      `hands:${OUTSIDE.id} / page_find role=tr query=${STUDIO.name}`,
+    );
+    await page.waitForTimeout(1_400);
+    await strip.answer(st.card, "approve");
+    await strip.call("page_find", `role=tr  query=${STUDIO.name}`);
+    const rows = await portal.approveAndRun("page_find", { role: "tr", query: STUDIO.name });
+    expect(rows.row.tier, "a hand is tier 2 in the record").toBe(2);
+    const found = refsFrom(rows.output);
+    expect(found.length, `exactly one remittance row for ${STUDIO.name}`).toBe(1);
+    st.remittanceRef = found[0]!;
+    await strip.call("page_find", `1 row · ${st.remittanceRef}`);
+  },
+
+  B6: async () => {
+    const portal = st.portal!;
+    await ask(
+      "page_read",
+      "Read that one row? The rest of the page is other suppliers' payments.",
+      `hands:${OUTSIDE.id} / page_read ref=${st.remittanceRef}`,
+    );
+    await page.waitForTimeout(800);
+    await strip.answer(st.card, "approve");
+    const seen = await portal.approveAndRun("page_read", { ref: st.remittanceRef });
+    st.remittance = seen.output;
+    expect(st.remittance).toContain(STUDIO.name);
+    // hands.js mints refs and never marks them, so the row is held up in the strip rather than
+    // outlined in a page the runner has no business reaching into outside the bridge.
+    await strip.call("page_read", `${st.remittanceRef} · ${st.remittance.replace(/\s+/g, " ").trim().slice(0, 60)}`);
+    // Matched on the number the studio prints on the invoice, which is what a customer quotes
+    // back; the id is ours and a third-party page has no reason to know it.
+    const twins = credit.candidates(st.ambiguous!);
+    const settled = twins.filter((row) => st.remittance.includes(candidate.number(row)));
+    expect(settled.length, "the portal names exactly one of the two retainers").toBe(1);
+    expect(candidate.number(settled[0]!), "the invoice the line names").toBe("LB-2026-0901");
+    expect(candidate.invoiceId(settled[0]!)).toBe("inv_0901");
+    await page.waitForTimeout(700);
+    st.books = await openApp(LEDGERBOX);
+    const books = st.books;
+    await act(books, "open_item", { id: candidate.invoiceId(settled[0]!) });
+    // No card on the match, and that is the gate working rather than a gap: the question was
+    // whether to look at a new origin at all, and it was asked twice before a word was read.
+    expect(books.classOf("match_bank_line"), "a reversible internal write").toBe("AUTO");
+    const decided = await books.run("match_bank_line", {
+      invoice_id: candidate.invoiceId(settled[0]!),
+      line_id: credit.id(st.ambiguous!),
+    });
+    expect(decided.row.tier, "the match happened in the app, not on the outside page").toBe(1);
+    await strip.call("match_bank_line", `inv_0901 ← bl_00118 · settled from their remittance`);
+  },
+
+  B7: async () => {
+    const books = st.books!;
+    await act(books, "navigate", { view: "overdue" });
+    await books.settle();
+    st.overdue = [];
+    for (let index = 0; index < 6; index += 1) {
+      const answer = await books.read<Row>("read_inbox", { filter: "overdue", page: index });
+      const bounds = safe(() => Number((answer as Row).of ?? 0), 0);
+      st.overdue.push(...itemsOf(answer));
+      if (st.overdue.length >= bounds || itemsOf(answer).length === 0) break;
+    }
+    // The same decision the journey takes, from the same signal: a client who has paid most of an
+    // invoice and gone quiet is not chased, and the rule is `paid_ratio` and not a name list.
+    const older = st.overdue.filter((row) => invoice.daysOverdue(row) > 30);
+    st.quiet = older.find((row) => invoice.client(row) === QUIET_CLIENT && invoice.mostlyPaid(row));
+    expect(st.quiet, `${QUIET_CLIENT}'s mostly-paid invoice is on the overdue strip`).toBeTruthy();
+    const row = st.quiet!;
+    expect(invoice.id(row), "the invoice the line is about").toBe("inv_0920");
+    expect(safe(() => invoice.paidRatio(row), 0)).toBeCloseTo(0.8, 2);
+    await act(books, "open_item", { id: invoice.id(row) });
+    await strip.call(
+      "open_item",
+      `${invoice.id(row)} · ${invoice.client(row)} · paid_ratio ${invoice.paidRatio(row).toFixed(2)} · quiet since August`,
+    );
+    const answer = await shown<Row>(books, "draft_reminder", { id: invoice.id(row), tone: "gentle" });
+    const composed = draft.of(answer);
+    st.drafts.set(invoice.id(row), composed);
+    expect(draft.to(composed)).toBe(contactEmailFor(QUIET_CLIENT));
+    await ask(
+      "send_reminder",
+      `${invoice.client(row)} paid eighty percent of this in August and went quiet. Chase them anyway?`,
+      `host:ledgerbox / send_reminder id=${invoice.id(row)}`,
+    );
+    await strip.call("send_reminder", `${invoice.id(row)} · waiting for a decision`);
+  },
+
+  B8: async () => {
+    const books = st.books!;
+    const row = st.quiet!;
+    await strip.answer(st.card, "decline");
+    // Declined *and then attempted*: a decline that is only "the runner did not call it" proves
+    // the runner's manners rather than the gate's. Nothing moves, and the row says why.
+    const refusal = await books.declineAndRun("send_reminder", { id: invoice.id(row) });
+    expect(refusal.reason).toBe("user_denied");
+    expect(mail.sentTo(contactEmailFor(QUIET_CLIENT)).length, `${QUIET_CLIENT} received nothing`).toBe(0);
+    st.declineRow = refusal.row;
+    await strip.call("send_reminder", `refused · user_denied · ledger #${refusal.row.seq}`);
+  },
+
+  P1: async () => {
+    st.board = await openApp(HIRELANE);
+    assertClasses(st.board, HIRELANE);
+    // Nothing in this pipeline may be parameterised on who someone is rather than what they did,
+    // asserted over the whole manifest so a tool added tomorrow cannot smuggle one in.
+    const manifestText = JSON.stringify(st.board.manifest()).toLowerCase();
+    for (const word of FORBIDDEN_PARAMETERS) {
+      expect(manifestText.includes(`"${word}"`), `no parameter named ${word}`).toBe(false);
+    }
+  },
+
+  P3: async () => {
+    const board = st.board!;
+    // What the cut's removed P2 did, done silently here: the beat's line is about one dossier, so
+    // the filtering and the eleven scorings are the picture and none of them is announced.
+    await board.run("set_filter", { arguable: true });
+    const view = await board.read<Row>("read_view");
+    const groups = safe(() => itemsOf(view.groups), [] as Row[]);
+    const wanted =
+      groups.find((row) => String(row.id).includes(`screening::${BACKEND_ROLE}`)) ??
+      groups.find((row) => String(row.id).includes(BACKEND_ROLE));
+    if (wanted) await board.run("open_group", { id: String(wanted.id) });
+    st.applied = itemsOf(await board.read<Row>("read_applicants", { role_id: BACKEND_ROLE, stage: "applied" }));
+    expect(st.applied.length, "applicants in `applied` on the backend role").toBeGreaterThan(0);
+    for (const person of st.applied) {
+      await board.run("score_against_rubric", { applicant_id: applicant.id(person) });
+    }
+    const band = await board.read<Row>("read_applicants", { role_id: BACKEND_ROLE, borderline: true });
+    st.band = itemsOf(band);
+    expect(st.band.length, "a borderline band the rubric leaves open").toBeGreaterThan(1);
+    // Keyed on the address: two other borderline applicants share a name with this one, so a beat
+    // that matched on the name would match the wrong person and still pass.
+    const wren = st.band.find((row) => safe(() => applicant.email(row), "") === KESTREL_APPLICANT.email);
+    expect(wren, `${KESTREL_APPLICANT.email} is one of the borderline applicants`).toBeTruthy();
+    expect(applicant.id(wren!), "the applicant the line is about").toBe("app1_012");
+    expect(applicant.name(wren!)).toBe(KESTREL_APPLICANT.name);
+    await act(board, "open_item", { id: applicant.id(wren!) });
+    await strip.call(
+      "open_item",
+      `${applicant.id(wren!)} · ${applicant.name(wren!)} · employer ${applicant.employer(wren!)} · scored ${safe(
+        () => applicant.score(wren!) ?? 0,
+        0,
+      )} — context only, the score does not move`,
+    );
+    // The fact cites the call in another application that taught it: B4's ambiguous credit.
+    const fact = brain.writeFact(
+      `${applicant.name(wren!)} <${KESTREL_APPLICANT.email}> works at Kestrel Labs, the client whose credit the books left for a person`,
+      [st.ambiguousRow!, ledger.rows.at(-1)!],
+      "hirelane",
+    );
+    await strip.fact(fact.claim, `cites ledger #${fact.cites.join(", #")} — the B4 read, and this dossier`);
+  },
+
+  P4a: async () => {
+    const board = st.board!;
+    st.advancing = st.band.slice(0, 2);
+    for (const person of st.advancing) {
+      await board.run("move_stage", { applicant_id: applicant.id(person), stage: "interview" });
+      const proposed = await shown<Row>(board, "propose_slots", { applicant_id: applicant.id(person) });
+      st.slots.set(applicant.id(person), slotIdFrom(proposed));
+    }
+    await strip.call("propose_slots", `${st.slots.size} slots held`);
+    st.cards = [];
+    await strip.clearCards();
+    st.cards.push(
+      await strip.decision({
+        title: "send_scheduling_email",
+        question: `Invite ${applicant.name(st.advancing[0]!)}? From your inbox, signed by you.`,
+        detail: `host:hirelane / send_scheduling_email applicant_id=${applicant.id(st.advancing[0]!)}`,
+      }),
+    );
+    await strip.call("send_scheduling_email", "waiting for a decision");
+  },
+
+  P4b: async () => {
+    const board = st.board!;
+    const send = async (person: Row): Promise<void> => {
+      const composed = await board.approveAndRun("send_scheduling_email", {
+        applicant_id: applicant.id(person),
+        slot_id: st.slots.get(applicant.id(person))!,
+      });
+      const to = outbound.to(JSON.parse(composed.output) as Row);
+      expect(to).toBe(applicant.email(person));
+      // The allow-list is built from the address the app itself composed to, and checked after
+      // the approval is proved: the switch layers on the gate and never replaces it.
+      mail.allow(to);
+      await strip.call("send_mail", `to ${to}`, "mail");
+      const posted = await mailer.approveAndRun("send_mail", {
+        to,
+        subject: outbound.subject(JSON.parse(composed.output) as Row),
+        body: outbound.body(JSON.parse(composed.output) as Row),
+      });
+      expect(posted.target).toBe(to);
+    };
+    // Both cards are answered on camera, one after the other, and the second is raised beside the
+    // first rather than instead of it: "send them" is one decision about two messages.
+    await strip.answer(st.cards[0]!, "approve");
+    await send(st.advancing[0]!);
+    st.cards.push(
+      await strip.decision({
+        title: "send_scheduling_email",
+        question: `And ${applicant.name(st.advancing[1]!)}?`,
+        detail: `host:hirelane / send_scheduling_email applicant_id=${applicant.id(st.advancing[1]!)}`,
+      }),
+    );
+    await page.waitForTimeout(700);
+    await strip.answer(st.cards[1]!, "approve");
+    await send(st.advancing[1]!);
+    await strip.call("send_scheduling_email", "2 invitations recorded");
+  },
+
+  P5: async () => {
+    const board = st.board!;
+    st.rejected = st.band.at(-1)!;
+    const rejected = st.rejected;
+    await ask(
+      "send_rejection",
+      `One rejection, encouraging wording — ${applicant.name(rejected)}. Send it?`,
+      `host:hirelane / send_rejection template=encouraging`,
+    );
+    await page.waitForTimeout(700);
+    await strip.answer(st.card, "decline");
+    const refusal = await board.declineAndRun("send_rejection", {
+      applicant_id: applicant.id(rejected),
+      template: "encouraging",
+    });
+    expect(refusal.reason).toBe("user_denied");
+    expect(mail.sentTo(applicant.email(rejected)).length, "nothing left the inbox").toBe(0);
+    await strip.call("send_rejection", `refused · user_denied · ledger #${refusal.row.seq}`);
+  },
+
+  C1: async () => {
+    st.crm = await openApp(TIDYCRM);
+    assertClasses(st.crm, TIDYCRM);
+  },
+
+  C2: async () => {
+    const crm = st.crm!;
+    const view = await crm.read<Row>("read_view");
+    const zones = safe(() => itemsOf(view.zones), [] as Row[]);
+    st.zone = zones.length > 0 ? String(zones[0]!.id) : "A";
+    await act(crm, "open_group", { id: st.zone });
+    // The cube spends about three seconds turning its records into the grid; the beat's settle is
+    // that number, from the script.
+    await page.waitForTimeout(3_000);
+    const conflicts = itemsOf(await crm.read<Row>("read_conflicts", { limit: 20 }));
+    const domain = companyDomain("Pinegrove Collective");
+    const pinegrove = conflicts.find((row) => safe(() => conflict.domain(row), "") === domain);
+    expect(pinegrove, "a pinegrove company-name conflict").toBeTruthy();
+    st.pinegroveDomain = conflict.domain(pinegrove!);
+    expect(st.pinegroveDomain, "the domain the line resolves").toBe("pinegrove-collective.example");
+    expect(conflict.spellings(pinegrove!)).toContain(PINEGROVE_ALIAS.crm);
+    // Found by the *domain* and not by the word: this sheet also carries a "Pinegrove Labs" on a
+    // different domain, and a block picked by its spelling would be the wrong company — which is
+    // the mistake this whole thread exists to avoid.
+    const blocks = itemsOf(await crm.read<Row>("search_blocks", { text: st.pinegroveDomain }));
+    const block = blocks.find((row) => String(row.domain ?? "").toLowerCase() === st.pinegroveDomain) ?? blocks[0];
+    if (block) {
+      await act(crm, "open_item", { id: String(block.ident ?? block.id), group: String(block.zone ?? st.zone) });
+      await strip.call(
+        "open_item",
+        `${st.pinegroveDomain} · ${conflict.spellings(pinegrove!).length} spellings, including ${PINEGROVE_ALIAS.crm}`,
+      );
+    }
+    // What decides it is the fact B3 wrote, and the canonical name comes from the registry it was
+    // learned against — deliberately not the app's own consensus, which is a misspelling.
+    const learned = brain.recall("pinegrove");
+    const canonical = companyByName("Pinegrove Collective")!.name;
+    await shown<Row>(crm, "preview_company", { domain: st.pinegroveDomain, canonical_name: canonical });
+    await act(crm, "resolve_company", { domain: st.pinegroveDomain, canonical_name: canonical });
+    await strip.call("resolve_company", `→ ${canonical} · from ${learned.id}, cites ledger #${learned.cites.join(", #")}`);
+    const settled = itemsOf(await crm.read<Row>("read_conflicts", { limit: 20 })).find(
+      (row) => safe(() => conflict.domain(row), "") === st.pinegroveDomain,
+    );
+    if (settled) expect(conflict.consensus(settled)).toBe(canonical);
+    // The cut has no line for the duplicates, so the merges happen here, in this beat's tail, and
+    // each of them still carries its own approval: a merge destroys a record, on camera or not.
+    const queue = itemsOf(await crm.read<Row>("read_pairs", { limit: 100 }));
+    expect(queue.length).toBeGreaterThan(0);
+    st.confident = queue.filter(isConfidentPair);
+    st.uncertain = queue.filter((row) => !isConfidentPair(row));
+    for (const row of st.confident) {
+      const merged = await crm.approveAndRun("merge_contacts", { keep_id: pair.keep(row), drop_id: pair.drop(row) });
+      expect(merged.row.approval, "no merge without an approval, batched or not").toBeTruthy();
+    }
+  },
+
+  C4: async () => {
+    const crm = st.crm!;
+    // The uncertain ones are closed as kept rather than merged: the rules do not agree, so a
+    // person does, later.
+    for (const row of st.uncertain) {
+      await crm.run("resolve_pair", { pair_id: pair.id(row), verdict: "skipped" });
+    }
+    const exported = await shown<Row>(crm, "export", { segment: CAMPAIGN_SEGMENT });
+    const companies = itemsOf(exported);
+    expect(companies.length, "companies in the campaign segment").toBeGreaterThan(1);
+    // Held out by domain, not by spelling: this client is filed under four spellings and the
+    // domain is the key the three applications share.
+    const quiet = companies.filter((row) => safe(() => contact.domain(row), "") === companyDomain(QUIET_CLIENT));
+    const campaign = companies.filter((row) => !quiet.includes(row));
+    st.campaign = campaign.length;
+    st.held = quiet.length;
+    expect(campaign.every((row) => safe(() => contact.domain(row), "") !== companyDomain(QUIET_CLIENT))).toBe(true);
+    // "This morning's reason" is a row in the record, and the fact names it: the decline itself.
+    const fact = brain.writeFact(
+      `${QUIET_CLIENT} was not chased and is held out of the campaign for the same reason`,
+      [st.declineRow!],
+      "tidycrm",
+    );
+    await strip.call("export", `segment=${CAMPAIGN_SEGMENT} · ${campaign.length} companies · ${QUIET_CLIENT} held out`);
+    await strip.fact(fact.claim, `cites ledger #${fact.cites.join(", #")} — B8's decline`);
+    // And the result is filed through the connector, at the same gate and behind the same egress
+    // allow-list: one tier 3 row, announced by the strip's tag and nothing else.
+    await strip.call("append_to_page", `${st.campaign} companies, ${st.held} held back → ${STUDIO_NOTES}`, "notes");
+    const filed = await notebook.approveAndRun("append_to_page", {
+      page_id: STUDIO_NOTES,
+      text: `TidyCRM campaign: ${st.campaign} companies, ${st.held} held back (${QUIET_CLIENT}).`,
+    });
+    expect(filed.target).toBe(STUDIO_NOTES);
+  },
+
+  R1: async () => {
+    await strip.clearCards();
+    await page.setContent(recordPage("record", ledger, brain));
+    await strip.reattach();
+    await strip.set({
+      app: "the record",
+      presence: `${ledger.rows.length} rows · ${ledger.withReason("user_denied").length} declined · ${brain.facts.length} facts`,
+      say: null,
+      command: "",
+      tool: "",
+      args: "",
+      connector: null,
+    });
+  },
+
+  R2: async () => {
+    await page.setContent(recordPage("title", ledger, brain));
+    await strip.reattach();
+    await strip.set({ app: "", presence: "", command: "", tool: "", args: "", say: null });
+  },
 };
 
-test("the take: forty-two beats, on camera, at the pace of the narration", async () => {
+test(`the take: ${beats.length} beats, on camera, at the pace of the narration`, async () => {
   console.log(`script: ${scriptPath()} — ${beats.length} beats, ${Object.keys(durations).length} measured clips`);
 
   for (const beat of beats) {

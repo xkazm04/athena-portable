@@ -31,6 +31,9 @@ tokio = { version = "1", features = ["sync", "time"] }
 # generator, a distribution and a trait we do not need for `fill`. The daemon token (c20) is 32
 # bytes from the same source: a guessable token is an open daemon (ADR 0015).
 getrandom = "0.3"
+# The one image format the captures table holds (c24). Pure Rust, so no C toolchain joins the
+# build, and only the encoder is used: nothing in this crate ever reads a PNG back.
+png = "0.17"
 
 [dev-dependencies]
 # `#[tokio::test]`: the relay's timer and its id map are asserted without a window.
@@ -44,6 +47,11 @@ windows-sys = { version = "0.61", features = [
     "Win32_Foundation",
     # `CreateJobObjectW` takes a `SECURITY_ATTRIBUTES *`, so the job object API is gated on it.
     "Win32_Security",
+    # The capture (c24): a DIB section to draw into, and `PrintWindow` — which lives under
+    # `Storage::Xps` rather than beside the other window calls, because printing a window and
+    # drawing one to a device context are the same operation to Windows.
+    "Win32_Graphics_Gdi",
+    "Win32_Storage_Xps",
     "Win32_System_JobObjects",
     "Win32_System_Threading",
 ] }
