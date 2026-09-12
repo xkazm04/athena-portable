@@ -10,7 +10,7 @@ import type { ToolRow } from "@/lib/api";
 import type { DecisionRequested } from "@/lib/events";
 import type { FixtureId } from "@/modules/types";
 
-import type { PanelModel } from "./model";
+import { NO_VOICE, selectPanel, type PanelModel } from "./model";
 
 const NO_ACTIONS = { send: () => {}, answer: () => {}, clear: () => {} };
 
@@ -64,25 +64,36 @@ const CARD: DecisionRequested = {
   capture_id: null,
 };
 
-const base: PanelModel = {
+type Run = Parameters<typeof selectPanel>[0];
+
+const EMPTY_RUN: Run = {
   phase: "idle",
   transcript: [],
   cards: [],
   tools: [],
   summary: null,
   error: null,
-  origin: ORIGIN,
-  ready: true,
-  blocked: "",
-  actions: NO_ACTIONS,
 };
 
-export const fixtures: Record<string, PanelModel> = {
-  empty: { ...base, tools: [] },
+/** Every fixture goes through the selector, so a fixture is a model the app can really reach. */
+function model(
+  run: Partial<Run>,
+  over: { ready?: boolean; origin?: string | null; tools?: ToolRow[]; voice?: PanelModel["voice"] } = {},
+): PanelModel {
+  return selectPanel(
+    { ...EMPTY_RUN, ...run },
+    over.ready ?? true,
+    over.origin === undefined ? ORIGIN : over.origin,
+    over.tools ?? TOOLS,
+    NO_ACTIONS,
+    over.voice ?? NO_VOICE,
+  );
+}
 
-  typical: {
-    ...base,
-    tools: TOOLS,
+export const fixtures: Record<string, PanelModel> = {
+  empty: model({}, { tools: [] }),
+
+  typical: model({
     transcript: [
       { id: "u1", kind: "user", text: "Which invoices are more than thirty days overdue?" },
       { id: "a1", kind: "assistant", text: "Let me read the list." },
@@ -106,22 +117,29 @@ export const fixtures: Record<string, PanelModel> = {
       duration_ms: 5400,
       rounds: 2,
     },
-  },
+  }),
 
   /** The state the whole gate exists for: something is waiting on the user. */
-  "card waiting": {
-    ...base,
-    tools: TOOLS,
+  "card waiting": model({
     transcript: [
       { id: "u1", kind: "user", text: "Chase the oldest one." },
       { id: "a1", kind: "assistant", text: "INV-118 is the oldest. I need your approval." },
     ],
     cards: [CARD],
-  },
+  }),
 
-  heavy: {
-    ...base,
-    tools: TOOLS,
+  /** The key is held: the composer shows what is being heard so far. */
+  voice: model(
+    {
+      transcript: [
+        { id: "u1", kind: "user", text: "Which invoices are overdue?" },
+        { id: "a1", kind: "assistant", text: "Three: INV-118, INV-120 and INV-131." },
+      ],
+    },
+    { voice: { phase: "listening", available: true, partial: "chase the oldest" } },
+  ),
+
+  heavy: model({
     phase: "acting",
     transcript: Array.from({ length: 14 }, (_, i) => ({
       id: `e${i}`,
@@ -144,22 +162,22 @@ export const fixtures: Record<string, PanelModel> = {
         rationale: "It has come up twice this month.",
       },
     ],
-  },
+  }),
 
-  degraded: {
-    ...base,
-    ready: false,
-    origin: null,
-    blocked: "Athena's daemon is not running yet.",
-    phase: "error",
-    error: { reason: "engine_error", detail: "the CLI reported an error and stopped" },
-  },
+  degraded: model(
+    {
+      phase: "error",
+      error: { reason: "engine_error", detail: "the CLI reported an error and stopped" },
+    },
+    { ready: false, origin: null },
+  ),
 };
 
 export const fixtureIds: readonly FixtureId[] = [
   "empty",
   "typical",
   "card waiting",
+  "voice",
   "heavy",
   "degraded",
 ];

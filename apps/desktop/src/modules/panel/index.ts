@@ -11,6 +11,7 @@ import { endpoint, useDaemon } from "@/stores/daemon";
 import { useRun } from "@/stores/run";
 import { useTabs } from "@/stores/tabs";
 import { useTools, type TabTools } from "@/stores/tools";
+import { useVoice } from "@/stores/voice";
 import type { ModuleEntry } from "@/modules/types";
 import type { ToolRow } from "@/lib/api";
 // @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover these two.
@@ -25,6 +26,9 @@ function Live() {
   const daemon = useDaemon();
   const tabs = useTabs((s) => s.tabs);
   const byTab = useTools((s) => s.byTab);
+  const voicePhase = useVoice((s) => s.phase);
+  const voiceAvailable = useVoice((s) => s.available);
+  const voicePartial = useVoice((s) => s.partial);
 
   const focused = tabs.find((tab) => tab.focused) ?? tabs[0];
   const origin = focused ? originOf(focused.url) : null;
@@ -42,7 +46,10 @@ function Live() {
   };
 
   const ready = endpoint(daemon) !== null;
-  return createElement(PanelView, { model: selectPanel(run, ready, origin, tools, actions) });
+  const voice = { phase: voicePhase, available: voiceAvailable, partial: voicePartial };
+  return createElement(PanelView, {
+    model: selectPanel(run, ready, origin, tools, actions, voice),
+  });
 }
 
 /**
