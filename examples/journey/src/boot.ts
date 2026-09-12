@@ -20,9 +20,12 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
+import { fileURLToPath } from "node:url";
 import { urlOf, type AppSpec } from "./apps.ts";
+
+const here = dirname(fileURLToPath(import.meta.url));
 
 /** First response from `next dev` includes a cold compile; four minutes is not generous. */
 const READY_TIMEOUT_MS = 240_000;
@@ -86,6 +89,19 @@ function spawnNext(app: AppSpec, cwd: string): ChildProcess {
   });
 }
 
+/**
+ * Serve the static site (`outside/`). Same spawn shape as `spawnNext` on purpose: one child, no
+ * shell, so the tree kill in `shutdown` is the same code for both kinds.
+ */
+function spawnStatic(app: AppSpec): ChildProcess {
+  const serve = resolve(here, "..", "scripts", "serve-outside.mjs");
+  return spawn(process.execPath, [serve, app.dir, String(app.port)], {
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+    detached: process.platform !== "win32",
+  });
+}
+
 export async function boot(app: AppSpec, log: (line: string) => void = () => {}): Promise<Booted> {
   const busy = await listening(urlOf(app));
   if (busy && keepApps()) {
@@ -103,8 +119,10 @@ export async function boot(app: AppSpec, log: (line: string) => void = () => {})
   }
   if (keepApps()) throw new Error(`${app.id}: JOURNEY_KEEP_APPS=1 but nothing is listening on ${app.port}`);
 
-  const cwd = scratchFor(app);
-  const child = spawnNext(app, cwd);
+  // A static spec has no database, so it has no scratch directory either: there is nothing for a
+  // previous run to have seeded over.
+  const cwd = app.kind === "static" ? null : scratchFor(app);
+  const child = app.kind === "static" ? spawnStatic(app) : spawnNext(app, cwd as string);
   const tail: string[] = [];
   const keep = (chunk: Buffer) => {
     tail.push(chunk.toString());
@@ -121,7 +139,7 @@ export async function boot(app: AppSpec, log: (line: string) => void = () => {})
   while (Date.now() < deadline) {
     if (dead) throw new Error(`${app.id}: ${dead}\n${tail.join("")}`);
     if (await listening(urlOf(app))) {
-      log(`${app.id}: ready on ${app.port}, database in ${cwd}`);
+      log(`${app.id}: ready on ${app.port}${cwd ? `, database in ${cwd}` : ", static"}`);
       return { app, child, adopted: false, cwd };
     }
     await delay(PROBE_INTERVAL_MS);

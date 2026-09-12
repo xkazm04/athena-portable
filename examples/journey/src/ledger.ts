@@ -8,7 +8,14 @@
  */
 import { REFUSAL_REASONS } from "@athena/bridge/gate";
 
-export type Tier = 1 | 3;
+/**
+ * The three tiers of README section 3.4: 1 is a page's own WebMCP tool, 2 a generic hand the shell
+ * runs on a page that registered nothing, 3 a third-party connector.
+ *
+ * 2 arrives with the outside page the journey now boots. Until then the record could only show a
+ * demo made of pages that had agreed to cooperate, which is the smaller half of the claim.
+ */
+export type Tier = 1 | 2 | 3;
 export type Outcome = "ok" | "refused" | "skipped";
 
 export interface LedgerRow {
@@ -61,7 +68,9 @@ export class Ledger {
     const body = this.rows.map((r) => [
       String(r.seq),
       r.app,
-      r.tier === 1 ? "1 page" : "3 conn",
+      // The tier is what the record is *for*: it says where a call happened, and "on a page the
+      // user is looking at" and "on a page that never offered us anything" are different answers.
+      r.tier === 1 ? "1 page" : r.tier === 2 ? "2 hand" : "3 conn",
       r.tool,
       r.cls,
       r.outcome,

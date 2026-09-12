@@ -24,6 +24,16 @@ export const EXAMPLES = resolve(here, "..", "..");
  */
 export const PORT_OFFSET = Number(process.env.JOURNEY_PORT_OFFSET ?? 0);
 
+/**
+ * How a spec is served.
+ *
+ * `next` is one of the studio's three applications. `static` is the fourth thing the journey
+ * boots and the only one that is not ours: a directory of hand-written HTML with no script in it
+ * at all (`outside/`). The distinction is not cosmetic — a `static` spec registers no tools, so
+ * everything Athena does on it is a generic hand (README section 3.4, tier 2).
+ */
+export type AppKind = "next" | "static";
+
 export interface AppSpec {
   /** The slug the catalog namespaces tools under (`host.<app_id>.<name>`). */
   readonly id: string;
@@ -31,6 +41,7 @@ export interface AppSpec {
   readonly port: number;
   /** The tools this act asserts are GATED. Every other tool the page lists must be AUTO. */
   readonly gated: readonly string[];
+  readonly kind: AppKind;
 }
 
 export const LEDGERBOX: AppSpec = {
@@ -38,6 +49,7 @@ export const LEDGERBOX: AppSpec = {
   dir: resolve(EXAMPLES, "ledgerbox"),
   port: 3001 + PORT_OFFSET,
   gated: ["mark_paid", "send_reminder", "void_invoice"],
+  kind: "next",
 };
 
 export const HIRELANE: AppSpec = {
@@ -45,6 +57,7 @@ export const HIRELANE: AppSpec = {
   dir: resolve(EXAMPLES, "hirelane"),
   port: 3002 + PORT_OFFSET,
   gated: ["decide_stage", "send_scheduling_email", "send_rejection"],
+  kind: "next",
 };
 
 export const TIDYCRM: AppSpec = {
@@ -52,9 +65,35 @@ export const TIDYCRM: AppSpec = {
   dir: resolve(EXAMPLES, "tidycrm"),
   port: 3004 + PORT_OFFSET,
   gated: ["merge_contacts", "delete_contacts", "undo"],
+  kind: "next",
 };
 
+/**
+ * The page that has never heard of Athena — README section 3.4, tier 2.
+ *
+ * Kestrel Labs' own supplier portal: four files of static HTML with no `document.modelContext`, no
+ * `athena:app` meta tag and no script element. It is in the journey because the three applications
+ * above all publish WebMCP tools, and a demo made only of pages that agreed to cooperate proves
+ * the smaller half of the claim. Here Athena has eight generic hands and nothing else, and act 1's
+ * one undecided credit is what she uses them to settle.
+ *
+ * `gated` is empty because the page lists no tools at all; the hands' classes come from the same
+ * derivation as any page's, through `gate.js`.
+ */
+export const OUTSIDE: AppSpec = {
+  id: "kestrel-portal",
+  // `here` is `src/`; the site is a sibling of it, at `examples/journey/outside`.
+  dir: resolve(here, "..", "outside"),
+  port: 3005 + PORT_OFFSET,
+  gated: [],
+  kind: "static",
+};
+
+/** The three the studio owns. */
 export const APPS: readonly AppSpec[] = [LEDGERBOX, HIRELANE, TIDYCRM];
+
+/** Everything the journey boots, ours and not. */
+export const ALL: readonly AppSpec[] = [...APPS, OUTSIDE];
 
 export function urlOf(app: AppSpec, path = "/"): string {
   return `http://localhost:${app.port}${path}`;

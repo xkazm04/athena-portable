@@ -27,7 +27,7 @@ import type { Page } from "@playwright/test";
 import { originOf, type AppSpec } from "./apps.ts";
 import { ApprovalError, type Approvals, type Card } from "./approvals.ts";
 import type { Ledger, LedgerRow } from "./ledger.ts";
-import { call, installBridge, list } from "./relay.ts";
+import { call, hand, handTools, installBridge, list } from "./relay.ts";
 
 export interface Result {
   readonly output: string;
@@ -45,6 +45,7 @@ export interface Refused {
 
 export class Surface {
   private tools: GateTool[] = [];
+  private handNames = new Set<string>();
   private identity: PageIdentity = {};
   private decisions = new Map<string, Decision>();
   /**
@@ -84,9 +85,13 @@ export class Surface {
     for (;;) {
       await this.refresh();
       const count = this.tools.length;
-      if (count > 0 && count === previous) return;
+      // A page of its own beyond the hands is what "settled" means for one of the studio's apps.
+      // An uninstrumented page never registers one and is settled the moment the hands are in;
+      // waiting for a tool it will never publish would be thirty seconds of nothing on every run.
+      const wanted = this.app.kind === "static" ? this.handNames.size : count - this.handNames.size;
+      if (wanted > 0 && count === previous) return;
       if (Date.now() > deadline) {
-        if (count > 0) return;
+        if (wanted > 0) return;
         throw new Error(`${this.app.id}: no tools on ${this.page.url()} within ${timeoutMs} ms`);
       }
       previous = count;
@@ -94,12 +99,43 @@ export class Surface {
     }
   }
 
-  /** Re-run `list` and rebuild the manifest — what a surface does on every `toolchange`. */
+  /**
+   * Re-run `list`, append the hands, and rebuild the manifest.
+   *
+   * One list, not two, and that is the production shape: the panel appends the shell's hands to
+   * whatever the page registered and hands the single list to `manifestOf`, so a hand and a page
+   * tool are classified by the same derivation and land in the same manifest under the same
+   * origin. A page that registered nothing therefore has a manifest of exactly the hands, which
+   * is what makes a page nobody instrumented operable at all.
+   *
+   * README section 3.3: the hands are `GATED` on first sight for every new origin whatever their
+   * flags imply, so they carry that override. `decide` honours a tightening override and refuses
+   * a loosening one, so this can only ever narrow what may run without a card.
+   */
   async refresh(): Promise<void> {
     const answer = await list(this.page);
     this.identity = answer.page;
-    this.tools = answer.tools;
-    this.decisions = new Map(this.tools.map((tool) => [tool.name, decide(tool, null)]));
+    this.handNames = new Set(await handTools(this.page).then((tools) => tools.map((t) => t.name)));
+    // A hand a page already registered under the same name is the page's: it knows its own
+    // application and the generic one would be a worse answer with the same spelling.
+    const own = new Set(answer.tools.map((tool) => tool.name));
+    const hands = (await handTools(this.page)).filter((tool) => !own.has(tool.name));
+    for (const tool of hands) this.handNames.add(tool.name);
+    this.tools = [...answer.tools, ...hands];
+    const overrides = Object.fromEntries([...this.handNames].map((name) => [name, "GATED"]));
+    this.decisions = new Map(
+      this.tools.map((tool) => [tool.name, decide(tool, this.isHand(tool.name) ? overrides : null)]),
+    );
+  }
+
+  /** Is this name one of the shell's generic hands rather than one of the page's own tools? */
+  isHand(name: string): boolean {
+    return this.handNames.has(name);
+  }
+
+  /** The tier a call on this name is recorded at: the page's own tools are 1, the hands are 2. */
+  tierOf(name: string): 1 | 2 {
+    return this.isHand(name) ? 2 : 1;
   }
 
   get origin(): string {
@@ -154,11 +190,15 @@ export class Surface {
     const ticket = this.budget.take(this.origin);
     if (!ticket.ok) throw new Error(`${this.origin}: ${ticket.message}`);
 
-    const answer = await call(this.page, name, params);
+    const tier = this.tierOf(name);
+    // Two transports, one gate. A hand goes to the hands namespace and a page tool to the page's,
+    // and everything either side of this line — the class, the approval, the budget, the row — is
+    // the same code for both.
+    const answer = tier === 2 ? await hand(this.page, name, params) : await call(this.page, name, params);
     if (answer.ok !== true) {
       const row = this.ledger.write({
         app: this.app.id,
-        tier: 1,
+        tier,
         tool: name,
         cls,
         outcome: "refused",
@@ -170,7 +210,7 @@ export class Surface {
     }
     const row = this.ledger.write({
       app: this.app.id,
-      tier: 1,
+      tier,
       tool: name,
       cls,
       outcome: "ok",
@@ -217,7 +257,7 @@ export class Surface {
       if (error instanceof ApprovalError) {
         const row = this.ledger.write({
           app: this.app.id,
-          tier: 1,
+          tier: this.tierOf(name),
           tool: name,
           cls: "GATED",
           outcome: "refused",

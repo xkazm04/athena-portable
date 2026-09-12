@@ -26,7 +26,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
-import { HIRELANE, LEDGERBOX, TIDYCRM, urlOf, type AppSpec } from "../src/apps.ts";
+import { HIRELANE, LEDGERBOX, OUTSIDE, TIDYCRM, urlOf, type AppSpec } from "../src/apps.ts";
 import { Approvals } from "../src/approvals.ts";
 import { boot, shutdown, type Booted } from "../src/boot.ts";
 import { Brain } from "../src/brain.ts";
@@ -35,6 +35,7 @@ import { FakeMail } from "../src/connectors/fake-mail.ts";
 import { FakeNotes } from "../src/connectors/fake-notes.ts";
 import { Ledger } from "../src/ledger.ts";
 import { Surface } from "../src/surface.ts";
+import { STUDIO_NOTES, assertClasses, assertHands, eventually } from "../src/stage.ts";
 import {
   BACKEND_ROLE,
   CAMPAIGN_SEGMENT,
@@ -47,11 +48,13 @@ import {
   applicant,
   bodyOf,
   boundsOf,
+  candidate,
   companyByName,
   companyDomain,
   conflict,
   contact,
   contactEmailFor,
+  refsFrom,
   credit,
   draft,
   invoice,
@@ -78,9 +81,6 @@ const notes = new FakeNotes();
 const mailer = new ConnectorSurface(mail, approvals, ledger);
 const notebook = new ConnectorSurface(notes, approvals, ledger);
 
-/** The Notion page the studio keeps its weekly record on — the only parent a write may reach. */
-const STUDIO_NOTES = "page_studio";
-
 const booted: Booted[] = [];
 let context: BrowserContext;
 let page: Page;
@@ -94,19 +94,27 @@ async function open(app: AppSpec, path = "/"): Promise<Surface> {
   return Surface.open(app, page, approvals, ledger, urlOf(app, path));
 }
 
-/** Exactly the tools this act names are GATED, and everything else the page registers is AUTO. */
-function assertClasses(surface: Surface, app: AppSpec): void {
-  expect(surface.names().length, `${app.id} registered tools`).toBeGreaterThan(0);
-  expect(surface.gatedNames().sort()).toEqual([...app.gated].sort());
-  for (const name of surface.names()) {
-    if (!app.gated.includes(name)) expect(surface.classOf(name), `${name} should be AUTO`).toBe("AUTO");
-  }
+/**
+ * The same, in a **second tab**.
+ *
+ * The four acts share one page because they are one person moving between three applications, and
+ * a surface that navigated away would lose the tools it had just listed. The outside page is the
+ * one thing opened *beside* the app rather than instead of it: act 1 is mid-reconciliation when it
+ * goes to look something up, and coming back to a Ledgerbox that had been navigated away and
+ * re-listed would be a different beat than the one the demo shows.
+ *
+ * The caller closes it. A tab left open is a webview the next act's `page_find` could reach.
+ */
+async function openBeside(app: AppSpec, path = "/"): Promise<{ surface: Surface; close: () => Promise<void> }> {
+  const beside = await context.newPage();
+  const surface = await Surface.open(app, beside, approvals, ledger, urlOf(app, path));
+  return { surface, close: () => beside.close() };
 }
 
 test.beforeAll(async ({ browser }) => {
   notes.seed([{ id: STUDIO_NOTES, parent: null, title: "Halden Studio — weekly record" }]);
   notes.allow(STUDIO_NOTES);
-  for (const app of [LEDGERBOX, HIRELANE, TIDYCRM]) {
+  for (const app of [LEDGERBOX, HIRELANE, TIDYCRM, OUTSIDE]) {
     booted.push(await boot(app, (line) => console.log(`[boot] ${line}`)));
   }
   // JOURNEY_VIDEO=1 records the whole run as one .webm next to the screenshots: a demo asset
@@ -190,6 +198,74 @@ test("the demo journey: four acts, one studio, one record", async () => {
     expect(credit.candidates(ambiguous[0]!).length).toBeGreaterThan(1);
     expect(left.map((c) => credit.id(c))).toContain(credit.id(ambiguous[0]!));
     expect(matched.map((m) => m.line)).not.toContain(credit.id(ambiguous[0]!));
+
+    // Beat 4a. The page nobody instrumented (README section 3.4, tier 2).
+    //
+    // Act 1 has one credit it will not guess at, and a finance person would not guess either —
+    // they would look at the customer's own remittance advice, which Kestrel publishes. That page
+    // has no WebMCP, no meta tag and no script: eight generic hands are the whole of what Athena
+    // has on it, and every one of them is GATED on first sight for an origin nobody has trusted.
+    const { surface: portal, close: closePortal } = await openBeside(OUTSIDE, "/remittances.html");
+    expect(portal.names().filter((n) => !portal.isHand(n)), "a page that registered nothing").toEqual([]);
+    assertHands(portal);
+    expect(portal.manifest().tools.length, "the manifest is exactly the hands").toBe(8);
+
+    // Beat 4b. Find the studio's own remittance row and read *that*, not the page.
+    //
+    // Reading the whole page would be the wrong answer twice over: it is most of a screen of
+    // other suppliers' payments, and a footnote further down names the retainer that has *not*
+    // been paid yet. The row is the evidence; the page is where it happens to live. Both calls
+    // are GATED, because this is an origin nobody has trusted and even looking at it is a
+    // decision the user made — which is the whole of what "GATED on first sight" buys.
+    const rows = await portal.approveAndRun("page_find", { role: "tr", query: STUDIO.name });
+    expect(rows.row.tier, "a hand is tier 2 in the record").toBe(2);
+    const ourRow = refsFrom(rows.output);
+    expect(ourRow.length, `exactly one remittance row for ${STUDIO.name}`).toBe(1);
+
+    const seen = await portal.approveAndRun("page_read", { ref: ourRow[0]! });
+    const remittance = seen.output;
+    expect(remittance).toContain(STUDIO.name);
+    // The page is a fixture of a real company's portal, and the journey is what keeps it honest:
+    // if Ledgerbox renumbers its retainers or the seed renames the client, this fails rather than
+    // the demo quietly stopping making sense.
+    const twins = credit.candidates(ambiguous[0]!);
+    expect(twins.length, "two retainers, identical but for their number").toBe(2);
+    // Matched on the number the studio prints on the invoice, which is what a customer quotes
+    // back. The id is ours and a third-party page has no reason to know it.
+    const settled = twins.filter((row) => remittance.includes(candidate.number(row)));
+    expect(settled.length, "the portal names exactly one of the two retainers").toBe(1);
+
+    // Beat 4c. The match itself needs no card, and that is the gate working rather than a gap.
+    //
+    // Ledgerbox classes `match_bank_line` AUTO because a match is reversible and stays inside the
+    // app; what the user was asked about was *the new origin* — twice, before Athena read a word
+    // of it. The decision the gate exists for was "may she look at this page at all", and once
+    // that is answered the bookkeeping is ordinary. A card on the match as well would be a second
+    // question about something the user already settled.
+    expect(books.classOf("match_bank_line"), "a reversible internal write").toBe("AUTO");
+    const decided = await books.run("match_bank_line", {
+      invoice_id: candidate.invoiceId(settled[0]!),
+      line_id: credit.id(ambiguous[0]!),
+    });
+    expect(decided.row.tier, "the match happened in the app, not on the outside page").toBe(1);
+    const outsideFact = brain.writeFact(
+      `Kestrel Labs settled ${candidate.number(settled[0]!)} on their published remittance advice`,
+      [seen.row, decided.row],
+      "act 1",
+    );
+    expect(outsideFact.cites.length, "the fact cites the read and the match").toBe(2);
+
+    await closePortal();
+
+    // And the credit a person had to decide is now decided, so the lane is empty.
+    const afterOutside = await eventually(
+      async () => itemsOf(await books.read<Row>("read_credits")).filter((c) => credit.ambiguous(c)),
+      (rows) => rows.length === 0,
+    );
+    expect(
+      afterOutside.map((c) => `${credit.id(c)} ${credit.memo(c)}`),
+      "nothing is left waiting on a person",
+    ).toEqual([]);
 
     // Beat 5. The trading name the bank pays Pinegrove under, learned once, written citing the
     // match that taught it. A fact with no live episode behind it is refused at write.
@@ -518,11 +594,21 @@ test("the demo journey: four acts, one studio, one record", async () => {
   // --- act 4 ------------------------------------------------------------------------------------
 
   await act("act 4: the record — one row per call, both declines, every gate accounted for", async () => {
-    // Beat 1. Three applications and two connectors, tier 1 and tier 3, in one ledger.
+    // Beat 1. Three applications, one page that never agreed to anything, and two connectors —
+    // all three tiers of README section 3.4 in one ledger. Tier 2 is the one that says the demo is
+    // not only about pages that adopted WebMCP.
     const apps = new Set(ledger.rows.map((row) => row.app));
-    for (const id of ["ledgerbox", "hirelane", "tidycrm"]) expect(apps.has(id), `${id} in the record`).toBe(true);
-    expect(ledger.rows.some((row) => row.tier === 1)).toBe(true);
-    expect(ledger.rows.some((row) => row.tier === 3)).toBe(true);
+    for (const id of ["ledgerbox", "hirelane", "tidycrm", "kestrel-portal"]) {
+      expect(apps.has(id), `${id} in the record`).toBe(true);
+    }
+    for (const tier of [1, 2, 3] as const) {
+      expect(ledger.rows.some((row) => row.tier === tier), `tier ${tier} in the record`).toBe(true);
+    }
+    // And a hand is only ever tier 2, wherever it ran: the record says where a call happened, and
+    // a hand happens on the page rather than in an application that offered it.
+    for (const row of ledger.rows.filter((r) => r.tool.startsWith("page_"))) {
+      expect(row.tier, `${row.tool} on ${row.app}`).toBe(2);
+    }
 
     // Beat 2. Both declines are in the record, with the one reason the vocabulary has for them.
     const denied = ledger.withReason("user_denied");

@@ -168,9 +168,32 @@ export const credit = {
   },
 };
 
+/**
+ * The refs in a `page_find` answer, in the order it listed them.
+ *
+ * A hand's `output` is the lines a model reads — `ref  role  label`, one per match, with the
+ * `(showing N of M)` footer when it cut. That is deliberately not JSON: it is what goes into a
+ * prompt, and a wall of braces is a worse thing for a model to reason over than a table. So the
+ * ref is read back off the line, which is what the model does too.
+ *
+ * Split on whitespace rather than on lines: a ref is the first token of its line and the only
+ * token anywhere that starts with `ref_`, so there is nothing a line boundary adds.
+ */
+export function refsFrom(output: string): string[] {
+  return output.split(/\s+/).filter((token) => token.startsWith("ref_"));
+}
+
 export const candidate = {
   invoiceId: (row: Row): string => str(pick(row, ["invoice_id", "id"], "candidate invoice id")),
   confidence: (row: Row): string => str(pick(row, ["confidence", "verdict"], "confidence")),
+  /**
+   * The invoice number as the studio prints it on the invoice — `LB-2026-0901`.
+   *
+   * The id is ours and the number is the one the *customer* quotes back, so it is the number that
+   * appears on their remittance advice. Act 1's outside beat matches on this and never on the id:
+   * a third-party page has no reason to know what we call a row internally.
+   */
+  number: (row: Row): string => str(pick(row, ["number", "invoice_number"], "candidate number")),
 };
 
 /**
