@@ -1,153 +1,157 @@
-# Athena — an agent whose environment is the web apps you already have
+# Athena — an agent that works inside the web apps you already use
 
-Built for the OpenAI hackathon. The engine is **OpenAI Codex**, running on the user's own CLI
-sign-in, and the voice is OpenAI's `gpt-4o-mini-transcribe` and `gpt-4o-mini-tts`.
+Built for the OpenAI hackathon. The reasoning engine is **OpenAI Codex**, driven through the user's
+own CLI sign-in. The voice is OpenAI's `gpt-4o-mini-transcribe` and `gpt-4o-mini-tts`.
+
+## What it is, in one paragraph
+
+Athena is a desktop application that holds your web apps in tabs and an agent in a column beside
+them. The agent sees the page you are looking at and can operate it: when the page offers its own
+actions, she calls them; when it offers nothing, she reads, clicks, types and submits the way a
+person would. Anything irreversible or anything that leaves the app stops and asks you first. Every
+call and every cost is written to a local record. Nothing is installed into the websites, no
+extension is granted access to your browsing, and no data leaves your machine except the model and
+voice calls themselves.
 
 ## The problem
 
-A freelancer or a two-person studio runs on software they do not control: an invoicing tool, a
-bank portal, a CRM, a support inbox. None of those apps has an agent, none is going to get one,
-and the user will not switch tools to get one. Every week the same cross-app chore: read state in
-one app, decide, act in another, and keep a record of what was done and why.
+Most people's work lives in software they do not control: an invoicing tool, a bank portal, a CRM,
+a support inbox. None of those products has an agent, most never will, and nobody switches tools to
+get one. The work that costs the most time is the work that crosses them — read state in one app,
+decide, act in another, and keep a record of what was done and why.
 
-A chatbot cannot do that work, because the work is inside the apps. A per-app copilot cannot do it
-either, because the work spans them. Athena can, because the apps are her environment rather than
-her plug-ins.
+A chatbot cannot do that work, because the work is inside the apps. A copilot built into one app
+cannot either, because the work spans them. Athena can, because the apps are her environment rather
+than her integrations.
 
-## Why being *in* the environment is the whole point
+## What she can actually do
 
-A standalone chatbot is told about the world. Athena is in it, and four things follow that a chat
-window cannot have.
+**Operate a page that was built for agents.** A web app can publish its own actions — the same
+capability model as a tool-using API, but declared by the page. Athena calls those in the app's own
+vocabulary, so the app's validation runs, its audit trail fills in and its undo still works.
+Nothing is scraped and nothing is faked.
 
-**She sees live state, not a description of it.** The turn carries the open tabs, the focused
-page, its title and its url — bounded, and fenced so the page's own text can never be read as an
-instruction. She is answering about the invoice on screen, not about an invoice someone pasted.
+**Operate a page that was not.** Eight generic abilities — read, find, wait, scroll, click, fill,
+select, submit — work on any website. They read the page's accessibility structure rather than its
+markup, so they describe a page in terms of what can be done to it rather than in terms of HTML.
+On unmodified public sites in our own testing this found 371 operable elements on a Wikipedia
+article and 230 on a Hacker News front page. This is the difference between an agent for software
+that adopted a protocol and an agent for the web a person already has open.
 
-**She acts through the app's own vocabulary.** A page that publishes WebMCP tools is operated
-through them: `match_bank_line`, `send_reminder`, `merge_contacts`. The app's own rules apply,
-its own audit log fills in, and its undo still works. Nothing is scraped or simulated.
+**Reach a service with no page at all.** Third-party APIs enter through the same door as a page:
+each is described as a set of actions with the same two safety flags, so an email or calendar
+service is governed by exactly the mechanism a website is.
 
-**Where an app offers nothing, she still works.** Eight generic hands — read, find, wait, scroll,
-click, fill, select, submit — operate any page as a person would. In our own testing they found
-371 operable elements on a Wikipedia article and 230 on Hacker News, neither of which has heard
-of us. That is the difference between an agent for software that adopted a protocol and an agent
-for the web a person actually has open.
+**Remember across apps and across sessions.** Long-term memory is markdown files on disk with a
+full-text index over them. A remembered fact is refused at write time unless it cites the actual
+observations it came from, so the memory can always be traced back to something that happened. A
+fact learned while working in one app is available in the next one, which is where most of the
+value of an agent that spans apps actually comes from.
 
-**Memory crosses the tab boundary, which is where the value is.** In the demo Athena learns from a
-bank statement that one client pays under a different trading name, and two apps later that fact
-settles a naming conflict in a CRM. A chatbot with the same transcript could not have done it:
-it was never in the first app to learn it, and never in the third to apply it.
+**Be spoken to.** Hold a key, say what you want, hear the first line of the answer back. One
+utterance is one turn.
 
-## Built on OpenAI
+**Show its work.** One row per model call — including failures and refusals — with the engine, the
+rounds, the tokens and the cost. The record groups calls by app and by which of the three
+capability layers served them: the page's own actions, the generic abilities, or a connected API.
 
-**Codex is a first-class engine, not an adapter.** The harness speaks two CLI dialects — Codex and
-Claude Code — behind one contract, and Codex is selected with a single flag on the daemon or the
-doctor. Both run under the same gate, the same ledger, the same prompt composer and the same
-`OP:` call grammar, so the engine is a configuration choice and can never become a second policy.
-Each dialect is exercised against a recorded transcript in the test suite, so a change in either
-CLI's event format is a red test rather than a surprise on stage.
+## The architecture, and why it has this shape
 
-**The engine bills the user's own subscription.** Athena drives the Codex CLI the user is already
-signed in to, so no model API key is typed, pasted or stored to run a turn. The setup screen probes
-for the CLI and reports what it found.
+Being a guest inside software that belongs to someone else is the constraint that produced every
+important decision here.
 
-**Voice is OpenAI end to end.** A WebSocket gateway takes PCM16 from a push-to-talk key,
-`gpt-4o-mini-transcribe` turns an utterance into a turn, and `gpt-4o-mini-tts` speaks the reply's
-first line. One utterance is one turn and one ledger row; speaking over a reply is a barge-in that
-cancels playback by generation counter rather than starting a second turn. The backend reads
-`OPENAI_API_KEY` from the environment and is the only part of the system that wants a key; with no
-key the gateway degrades to text rather than failing.
+**Approval is structural, not advisory.** Every action carries two facts: is it reversible, and do
+its effects leave the app. An action runs unattended only if it is reversible *and* stays inside.
+Everything else stops and files a decision card. A web page cannot mark its own destructive action
+as safe, and the model is never asked to decide — the policy is computed from the declaration, in
+one place, before anything runs.
 
-## How the environment shaped the architecture
+**A gated action has no way to run before it is approved.** The agent's turn ends at the proposal.
+When the user answers, the action is re-checked and the approval is proved against that exact
+action with those exact parameters, so a granted approval cannot be spent on a different call.
 
-Being a guest in someone else's application forced four decisions that a chat product would never
-have to make, and they are the design.
+**The page executes its own actions; the agent never does.** The runtime holds no executor for a
+page's tools. It emits the call, the page runs it, and the result comes back as quoted data inside
+a fence the model cannot break out of. A page's output is evidence, never instruction — which is
+the defence against a website trying to talk to the agent reading it.
 
-**The gate is the policy, and a model never decides it.** Every tool a page publishes carries two
-flags: is this reversible, and do its effects leave the app. A tool is `AUTO` only if it is
-reversible and stays inside; everything else is `GATED` and files a decision card that a person
-answers. The page cannot argue its way out of that, and neither can the model. A manifest that
-fails validation is refused whole rather than half-merged.
+**Identity is bound to origin.** One application is one web origin. A second origin claiming the
+same identity is refused. Generic abilities start gated on every site the user has not yet trusted,
+so even reading an unfamiliar page is a decision the first time.
 
-**A gated action has no executor until it is approved.** The turn emits the proposal and stops.
-When the user answers, the gate is *replayed* with the approval id and the grant is proved against
-that exact action and those exact parameters, so an approved card can never be spent on a
-different call.
-
-**The page executes its own tools.** The agent's runtime holds no executor for them. It emits the
-call, the surface runs it on the page, and the answer rides the next turn's frame inside a
-nonce-tagged fence. A page's output is data, never an instruction.
-
-**Nothing is trusted twice.** One application is bound to one web origin; a second origin claiming
-the same identity is refused. Generic hands are `GATED` on first sight for every new origin.
-Element references are minted only by the page itself and retired on navigation, so a model can
-never compose a selector to reach something it was not just shown.
+**References expire.** An element reference is minted only by the page itself and retired the
+moment the page navigates, so the model can never construct a handle to something it was not just
+shown.
 
 ## Technical execution
 
-**The agent core is Python 3.11+ and the standard library, with no runtime dependencies at all.**
-Memory is markdown on disk with SQLite FTS5 as a rebuildable index, so a brain is portable by
-copying a directory. A fact is refused at write unless it cites live episodes. One writer behind a
-lock and a fresh read-only connection per request — with the starvation test written before the
-server that had to pass it.
+**Agent core** — Python 3.11+ with **zero runtime dependencies**. Memory is markdown on disk with
+SQLite FTS5 as a rebuildable index, so a user's entire memory is portable by copying a folder. One
+writer behind a lock, a fresh read-only connection per request, and the writer-starvation test was
+written before the server that had to pass it.
 
-**The surface is a Tauri v2 desktop shell** — Rust, with the `unstable` multi-webview API so one
-window holds the chrome, the panel and a page webview per tab. The panel is React 19 with zustand
-and Vite. A Rust module owns every rectangle; another owns the sidecar's lifecycle, killing the
-Python daemon with a Windows job object so a force-quit cannot orphan it.
+**Engine** — two command-line dialects behind one contract: **OpenAI Codex** and Claude Code. Both
+run under the same approval gate, the same record, the same prompt composition and the same call
+grammar, so the engine is a configuration choice and can never become a second policy. Each dialect
+is replayed against a recorded transcript in the test suite, so a change in either CLI's output
+format fails a test rather than a demo. Because the engine is the CLI the user already signed in
+to, running a turn needs no model API key at all.
 
-**The bridge is plain JavaScript in the page's main world**, polyfilling `document.modelContext`
-and answering over `postMessage` with two layered timeouts. It degrades rather than fails: a page
-that froze its globals reports zero tools instead of erroring inside someone else's application.
+**Voice** — a WebSocket gateway on the agent's own port. PCM16 audio from a push-to-talk key,
+`gpt-4o-mini-transcribe` to turn an utterance into a turn, `gpt-4o-mini-tts` to speak the reply's
+first line. Talking over a reply cancels playback rather than starting a second turn. This is the
+one component that reads an `OPENAI_API_KEY`, and without one it degrades to text instead of
+failing.
 
-**The channel is HTTP and SSE on loopback**, token-checked on every route, `Connection: close` on
-every response, threaded so a ninety-second turn never stalls a read.
+**Desktop shell** — Tauri v2 in Rust, using the `unstable` multi-webview API so a single window
+holds the app chrome, the agent panel and one web view per tab. The panel is React 19 with zustand
+and Vite. One Rust module owns every rectangle in the window; another owns the Python sidecar's
+lifetime and kills it through a Windows job object, so force-quitting the window cannot orphan a
+background process.
 
-**Everything is under one gate.** Ruff, mypy strict, pytest, ESLint, tsc, Vitest, cargo clippy and
-cargo test.
+**Page bridge** — plain JavaScript injected into the page's main world, polyfilling the
+`document.modelContext` interface and answering over `postMessage` behind two layered timeouts. It
+degrades rather than breaks: a page that has frozen its own globals simply reports no tools instead
+of throwing inside someone else's application.
+
+**Transport** — HTTP and server-sent events on loopback only, token-checked on every route,
+threaded so a ninety-second turn never blocks a status read.
+
+**Quality bar** — Ruff, mypy strict, pytest, ESLint, tsc, Vitest, cargo clippy and cargo test, with
+a documented architecture decision record for every choice a later reader could question.
 
 | Suite | Tests |
 |---|---|
-| Python core, harness, daemon, channels | 654 |
+| Python core, engine harness, daemon, voice | 654 |
 | Panel (Vitest) | 133 |
 | Rust shell (cargo test) | 66 |
 | Page bridge (node --test) | 24 |
 
-Twenty-four architecture decision records explain the choices a later reader could question.
+An end-to-end suite boots real web applications — three instrumented and one that has never heard
+of Athena — and drives them through the real bridge and the real gate in a real browser, asserting
+that a refused action moved nothing, that every gated execution names the approval that permitted
+it, and that every remembered fact cites a real observation.
 
-**The demo is a test.** Three Next.js applications — one studio's books, hiring pipeline and
-contact list — plus a static page that has never heard of Athena, are booted by Playwright and
-driven through the real bridge and the real gate. Four acts, thirty-odd numbered beats, asserted:
-both declines are attempted after being declined and prove nothing moved, every gated execution
-names the approval that let it through, and every fact cites a live row.
+## Why it feels usable rather than impressive
 
-## The experience
+**Setup is one screen and no key.** The app looks for the CLI you are already signed in to.
+Readiness is three-valued — working, broken, or not yet checked — because "not working" and "not
+asked yet" are different situations, and telling someone to install software they already have is
+worse than telling them nothing yet. Every failed check names its own fix.
 
-**Setup is one screen and no model key.** The engine probe finds the CLI the user is already signed
-in to. Readiness is three-valued — healthy, broken, or not yet asked — because "not healthy" is two
-different situations and telling someone to install a CLI they already have is worse than telling
-them nothing yet. Every check names its own remediation.
+**The agent sits beside the page, not in front of it.** You watch the work happen on the thing you
+were already looking at.
 
-**The panel is a column beside the page, not a window in front of it.** The user watches Athena
-work on the thing they are looking at.
+**A decision card shows the parameters, not a summary of them.** Approving "send the reminder"
+without seeing which invoice is not consent to anything. Cards sit above the conversation rather
+than scrolling away inside it.
 
-**A decision card shows the parameters, not a summary of them.** Approving "send a chase" without
-seeing which invoice is not consent to anything. Cards sit above the conversation rather than
-inside it, because a card that scrolls away is a card answered late — which in this system means a
-turn that silently did nothing.
+**Every shortened answer says what it left out**, in the same four words everywhere: `(showing N of
+M)`. Every refusal comes from one closed list of fifteen reasons, declared once in Python and once
+in JavaScript, with a test that fails the build when the two drift apart.
 
-**Every bounded answer says what it left out**, in the same four words everywhere: `(showing N of
-M)`. Every refusal comes from one closed vocabulary of fifteen reasons, declared in Python and in
-JavaScript with a test that fails when the two drift.
+## Non-goals
 
-**Cost is visible.** One ledger row per turn, failures and declines included, with the model, the
-rounds, the tokens and what it cost. The record shows every call by app and by tier: the page's own
-tools, the generic hands, and third-party connectors.
-
-## What it is not
-
-No scraping, no simulated clicks on a canvas, no browser extension the user has to trust with
-every site. No model API key: the engine is the user's own Codex sign-in, and the one key in the
-system is the voice backend's, read from the environment and never written to disk by us. No cloud:
-the brain, the ledger and the approvals are files on the user's machine, and the agent is a sidecar
-that dies with the window.
+No scraping and no pixel-guessing. No browser extension asking for access to everything you visit.
+No cloud account: memory, approvals and the cost record are files on your machine, and the agent
+process dies with the window.
