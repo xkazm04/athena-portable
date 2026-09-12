@@ -1,7 +1,7 @@
 # hirelane — the three-layer UI pass: brief, written before the code
 
 **Status: LANDED, and this document is now a record rather than a specification.** All three
-layers shipped — ADR 0021 the theme, ADR 0022 the dossier, and §2.7 below records which L1
+layers shipped — ADR 0023 the theme, ADR 0022 the dossier, and §2.7 below records which L1
 direction won and what was deleted with the other. Where a built result differs from what was
 specified, §2.7 and §3.6 say so and the code is right.
 

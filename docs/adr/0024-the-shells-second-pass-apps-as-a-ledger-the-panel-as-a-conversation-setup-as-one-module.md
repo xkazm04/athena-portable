@@ -1,4 +1,4 @@
-# 0022. The shell's second pass: apps as a ledger, the panel as a conversation, setup as one module
+# 0024. The shell's second pass: apps as a ledger, the panel as a conversation, setup as one module
 
 Date: 2026-09-12
 

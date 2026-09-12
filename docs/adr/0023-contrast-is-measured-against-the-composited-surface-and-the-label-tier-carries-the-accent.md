@@ -1,4 +1,4 @@
-# 0021. Contrast is measured against the composited surface, and the label tier carries the accent
+# 0023. Contrast is measured against the composited surface, and the label tier carries the accent
 
 Date: 2026-09-12
 
