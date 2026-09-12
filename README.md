@@ -5,8 +5,23 @@ This repository is the hackathon rebuild of [athena-everywhere](https://github.c
 an empty tree, new code, the same design, one commit per feature, and the structural debts the
 first build found fixed on day zero.
 
-**Status:** P1 to P4 done: the shell opens real sites, the daemon runs beside it, a page reports its tools through the relay. P5 MVP checkpoint, in progress: the panel run loop and the decision card are next.
-yet. The phase table in section 5 is the order of work and section 7 is the bar every commit clears.
+**Status:** P1 to P5 done — the MVP checkpoint. The shell opens real sites with the daemon beside
+it, a page reports its own tools through the relay, and the panel runs one gated turn on them: the
+`AUTO` call executes in the page, the `GATED` one becomes a decision card, and the user's answer
+closes it through the approval table and the ledger. Three commands see it:
+
+```bash
+uv sync --extra dev && pnpm install --frozen-lockfile
+cd apps/desktop
+ATHENA_SMOKE=turn node scripts/smoke.mjs
+```
+
+That builds the shell, serves the scratch page, runs the turn against a recorded engine, declines
+the card, and prints four assertable lines. `docs/desktop.md` is the phase-1 status: one row per
+claim with the command that checks it, the window's geometry, and what is not built yet. Phases 6
+to 9 — hands, projects, the approvals inbox, other agents, the record, voice, the bundle — are not
+here yet. The phase table in section 5 is the order of work and section 7 is the bar every commit
+clears.
 
 ```bash
 uv run ruff check . && uv run ruff format --check .
