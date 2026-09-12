@@ -1,0 +1,12 @@
+This file marks the directory beside it as Athena's own source checkout, so that
+`athena.core.constitution` may read the `constitution/` next to this marker.
+
+A running Athena reads her law from the copy shipped inside the wheel
+(`athena/constitution/`, force-included by pyproject.toml) or from a frozen bundle. The checkout
+is the third and last source, and it is guarded by this marker for one reason: without it, the
+loader would walk three directories above `src/athena/core/` and read a `constitution/` out of
+whatever happens to sit there — site-packages' parent, a PyInstaller extraction directory, a
+temporary directory someone else can write into. A directory that merely contains a
+`constitution/` is not Athena's source tree. This file says which one is.
+
+See docs/adr/0006-two-output-prompt-composer.md.
