@@ -28,12 +28,25 @@ serde_json = "1"
 # on tokio; these two features are what make its channel and its clock ours to name directly.
 tokio = { version = "1", features = ["sync", "time"] }
 # 128 bits from the OS for the per-tab nonce and the tail of every request id. `rand` would be a
-# generator, a distribution and a trait we do not need for `fill`.
+# generator, a distribution and a trait we do not need for `fill`. The daemon token (c20) is 32
+# bytes from the same source: a guessable token is an open daemon (ADR 0015).
 getrandom = "0.3"
 
 [dev-dependencies]
 # `#[tokio::test]`: the relay's timer and its id map are asserted without a window.
 tokio = { version = "1", features = ["macros", "rt"] }
+
+# Exit hygiene (c20, README section 3.5). The job object with `KILL_ON_JOB_CLOSE` is what makes a
+# hard kill of the shell take the daemon with it; there is no portable API for that, so this is
+# the one Windows-only dependency in the crate.
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    # `CreateJobObjectW` takes a `SECURITY_ATTRIBUTES *`, so the job object API is gated on it.
+    "Win32_Security",
+    "Win32_System_JobObjects",
+    "Win32_System_Threading",
+] }
 
 [profile.dev]
 incremental = true

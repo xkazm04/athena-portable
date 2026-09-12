@@ -19,6 +19,8 @@
     "allow-layout-module",
     "allow-layout-select",
     "allow-bridge-list",
-    "allow-bridge-call"
+    "allow-bridge-call",
+    "allow-daemon-status",
+    "allow-daemon-restart"
   ]
 }
