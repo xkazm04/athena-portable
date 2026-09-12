@@ -136,7 +136,10 @@ async fn layout_select(app: AppHandle, module: String) -> Result<(), String> {
 
 // ── registrations: commands ───────────────────────────────────────────────────────────────────
 // c19 bridge_list/bridge_call/bridge_reply · c20 daemon_status/daemon_restart
-// c21 store_get/store_set/origins_* · c24 hands_call/screenshot_read · c27 tray_set_pending
+// c21 store_get/store_set/origins_* · c24 hands_call/hands_list · c27 tray_set_pending
+// c24 has no command of its own for reading a capture back: `page_screenshot` answers with the
+// `captures` row id and `store_get("captures", id)` is the read. A second command would be a
+// second way to reach one table.
 // c19: the three are declared in `bridge.rs` beside the state they read, and registered below.
 // c20: `daemon.rs` declares its own two commands beside the state they read, so the only line
 // this file needs for them is the pair in the handler list below (ADR 0015).
@@ -198,6 +201,8 @@ pub fn run() {
             // non-fatal — the shell must come up even when they do not.
             store::init(&handle);
             bridge::smoke_if_asked(&handle);
+            // c24's own smoke: one page hand and the shell's capture, against a real window.
+            hands::smoke_if_asked(&handle);
             daemon::start_at_launch(&handle);
             // ──────────────────────────────────────────────────────────────────────────────────
 

@@ -518,6 +518,29 @@ impl Store {
         .map_err(|e| e.to_string())
     }
 
+    /// File one capture and answer with its minted id (c24).
+    ///
+    /// The shell's own door into the `captures` table, because the shell is the only thing that
+    /// produces a capture and it holds the PNG as bytes. Everything else about the row is
+    /// [`Store::set`]'s: the id is minted there, and `bytes` is measured there from the blob
+    /// rather than taken on trust.
+    ///
+    /// Base64 rather than a second binding path, even though both ends of this call are Rust.
+    /// `Kind::Blob` already has exactly one spelling on the way in, and a native path beside it
+    /// would be a second place a blob column is written — which is the kind of duplication that
+    /// stays correct right up until one side gains a column.
+    pub fn put_capture(&self, tab_id: u32, origin: &str, png: &[u8]) -> Result<String, String> {
+        self.set(
+            "captures",
+            "",
+            &serde_json::json!({
+                "tab_id": tab_id,
+                "origin": origin,
+                "png": b64_encode(png),
+            }),
+        )
+    }
+
     /// Evict the least recently written captures until the table fits under `cap_bytes`.
     ///
     /// Least recently *written* rather than least recently read, and the difference is stated
@@ -883,14 +906,19 @@ pub fn init(app: &AppHandle) {
     }
 }
 
-fn store(app: &AppHandle) -> Result<tauri::State<'_, Store>, String> {
+/// The open store, or one error text shared by every caller.
+///
+/// `pub(crate)` because the shell writes to the store from outside this file too: a capture is
+/// produced by `hands.rs` and filed here (c24). The commands below and that caller get the same
+/// sentence when the store did not open, which is the sentence that says where to look.
+pub(crate) fn opened(app: &AppHandle) -> Result<tauri::State<'_, Store>, String> {
     app.try_state::<Store>()
         .ok_or_else(|| "the store did not open; see the shell's log".to_string())
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn store_get(app: AppHandle, table: String, key: String) -> Result<Value, String> {
-    store(&app)?.get(&table, &key)
+    opened(&app)?.get(&table, &key)
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -900,29 +928,29 @@ pub async fn store_set(
     key: String,
     value: Value,
 ) -> Result<String, String> {
-    store(&app)?.set(&table, &key, &value)
+    opened(&app)?.set(&table, &key, &value)
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn store_list(app: AppHandle, table: String, filter: Value) -> Result<Value, String> {
-    store(&app)?.list(&table, &filter)
+    opened(&app)?.list(&table, &filter)
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn store_delete(app: AppHandle, table: String, key: String) -> Result<(), String> {
-    store(&app)?.delete(&table, &key)
+    opened(&app)?.delete(&table, &key)
 }
 
 /// The file itself, for the Settings module's read-only line.
 #[tauri::command(rename_all = "snake_case")]
 pub async fn store_path(app: AppHandle) -> Result<String, String> {
-    Ok(store(&app)?.path().display().to_string())
+    Ok(opened(&app)?.path().display().to_string())
 }
 
 /// Bring the `captures` table under a cap. `null` means [`CAPTURES_CAP_BYTES`].
 #[tauri::command(rename_all = "snake_case")]
 pub async fn captures_sweep(app: AppHandle, cap_bytes: Option<i64>) -> Result<Value, String> {
-    store(&app)?.captures_sweep(cap_bytes.unwrap_or(CAPTURES_CAP_BYTES))
+    opened(&app)?.captures_sweep(cap_bytes.unwrap_or(CAPTURES_CAP_BYTES))
 }
 
 // ==============================================================================================
@@ -1145,6 +1173,44 @@ mod tests {
         assert_eq!(total("2026-09-12T00:00:00"), 4);
         assert_eq!(total("2026-09-12T00:00:00.000Z"), 4);
         assert_eq!(total("2026-09-12 06:00:00"), 2);
+    }
+
+    #[test]
+    fn filing_a_capture_mints_an_id_and_measures_the_blob() {
+        // The shell's own door into the table (c24). It goes through `set`, so the id, the
+        // timestamp and the measured `bytes` are the same ones every other writer gets.
+        let t = temp();
+        let png = vec![0x89, b'P', b'N', b'G', 13, 10, 26, 10, 0, 0];
+
+        let id = t
+            .store
+            .put_capture(7, "https://a.test", &png)
+            .expect("a capture is filed");
+        assert!(id.starts_with("cap_"), "minted id was {id}");
+
+        let row = t.store.get("captures", &id).unwrap();
+        assert_eq!(row["tab_id"], json!(7));
+        assert_eq!(row["origin"], json!("https://a.test"));
+        assert_eq!(row["bytes"], json!(png.len()));
+        assert!(row["ts"].as_str().is_some_and(|ts| !ts.is_empty()));
+
+        // The bytes come back byte for byte: a card shows the picture that was taken.
+        let stored = b64_decode(row["png"].as_str().expect("base64")).expect("decodable");
+        assert_eq!(stored, png);
+    }
+
+    #[test]
+    fn two_captures_of_the_same_page_are_two_rows() {
+        // A second look at the same tab is a second piece of evidence, not a correction of the
+        // first: a card cites one id, and overwriting would change what an answered card showed.
+        let t = temp();
+        let shot = |png: &[u8]| t.store.put_capture(1, "https://a.test", png).unwrap();
+        let first = shot(&[1, 2, 3]);
+        let second = shot(&[4, 5, 6]);
+
+        assert_ne!(first, second);
+        let all = t.store.list("captures", &json!({})).unwrap();
+        assert_eq!(all["total"], json!(2));
     }
 
     #[test]

@@ -76,6 +76,20 @@ impl Tabs {
         state.focused
     }
 
+    /// Where one tab currently is. `None` when there is no such tab.
+    ///
+    /// The list already carries it, but a caller that wants one url should not have to clone the
+    /// whole list and search it — and a capture (c24) wants exactly one, to record which origin
+    /// the picture is of.
+    pub fn url_for(&self, id: u32) -> Option<String> {
+        let state = self.inner.lock().expect("tabs poisoned");
+        state
+            .list
+            .iter()
+            .find(|t| t.id == id)
+            .map(|t| t.url.clone())
+    }
+
     pub fn labels_with_focus(&self) -> Vec<(String, bool)> {
         let state = self.inner.lock().expect("tabs poisoned");
         state
@@ -131,6 +145,22 @@ impl Tabs {
         if let Some(tab) = state.list.iter_mut().find(|t| t.id == id) {
             tab.title = title.to_string();
         }
+    }
+}
+
+/// `scheme://host[:port]` for a tab's url, or an empty string when it has none yet.
+///
+/// The one identity the whole build keys trust on: the `origins` table, the bridge's nonce, and
+/// README section 3.3's rule that an application is one origin and a second origin claiming its
+/// name is refused. A capture records it so a picture can be said to be *of* somewhere.
+///
+/// An unparseable or opaque url answers with an empty string rather than with the url. A row that
+/// held `about:blank` in the origin column would read as an origin, and the empty string cannot
+/// be mistaken for one.
+pub fn origin_of(url: &str) -> String {
+    match Url::parse(url) {
+        Ok(parsed) if parsed.has_host() => parsed.origin().ascii_serialization(),
+        _ => String::new(),
     }
 }
 
@@ -308,6 +338,52 @@ mod tests {
             Some(first),
             "focus is back where it was, not on the last tab in the list"
         );
+    }
+
+    #[test]
+    fn one_tabs_url_can_be_asked_for_without_reading_the_whole_list() {
+        let tabs = Tabs::default();
+        let id = tabs.add("https://a.test/one");
+        tabs.add("https://b.test/two");
+
+        assert_eq!(tabs.url_for(id).as_deref(), Some("https://a.test/one"));
+        assert_eq!(tabs.url_for(9_999), None, "no such tab is not an empty url");
+
+        tabs.set_url(id, "https://a.test/elsewhere");
+        assert_eq!(
+            tabs.url_for(id).as_deref(),
+            Some("https://a.test/elsewhere"),
+            "it follows the page rather than the address it was opened at"
+        );
+    }
+
+    #[test]
+    fn an_origin_is_scheme_host_and_port_and_nothing_else() {
+        // The identity every trust decision is keyed on: the `origins` table, the bridge's nonce,
+        // and a capture's own row.
+        assert_eq!(origin_of("https://a.test/path?q=1#frag"), "https://a.test");
+        assert_eq!(origin_of("http://a.test:3001/x"), "http://a.test:3001");
+        assert_eq!(
+            origin_of("https://a.test:443/x"),
+            "https://a.test",
+            "the default port is not part of the name"
+        );
+        assert_ne!(
+            origin_of("https://a.test/"),
+            origin_of("https://b.test/"),
+            "two hosts are two applications"
+        );
+    }
+
+    #[test]
+    fn a_url_with_no_host_has_no_origin_rather_than_a_made_up_one() {
+        // An opaque url in the origin column would read as an origin. The empty string cannot be
+        // mistaken for one, which is the point.
+        let none = |url: &str| assert_eq!(origin_of(url), "", "{url} is not an origin");
+        none("about:blank");
+        none("data:text/html,<p>hi");
+        none("not a url at all");
+        none("");
     }
 
     #[test]

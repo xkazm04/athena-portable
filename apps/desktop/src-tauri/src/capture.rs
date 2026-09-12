@@ -77,23 +77,33 @@ pub fn crop(
     Some(out)
 }
 
-/// The page's rectangle in *physical* pixels, which is what a captured bitmap is measured in.
+/// The page's rectangle in *physical* pixels, measured from the top-left of the **window**.
 ///
-/// `layout` works in logical pixels because that is what a webview's position is set in; a bitmap
-/// has no idea what a logical pixel is. Multiplying here rather than carrying two rectangles keeps
-/// one source for the geometry.
+/// Two conversions, and the second one is the one that is easy to miss.
+///
+/// `layout` works in logical pixels because that is what a webview's position is set in, and a
+/// bitmap has no idea what a logical pixel is — so every figure is multiplied by the scale factor
+/// here rather than in two callers.
+///
+/// And `layout`'s rectangles are measured inside the *client* area, while `PrintWindow` draws the
+/// whole window, frame included. On Windows 11 that frame is a couple of logical pixels, which is
+/// exactly small enough to look like a slightly wrong picture rather than an obviously wrong one:
+/// the first run of the smoke came back with a black band down the left edge. `inset` closes it —
+/// the client area's offset within the window, which the caller reads off the window itself.
 pub fn page_rect_physical(
     width: f64,
     height: f64,
     scale: f64,
     page_shown: bool,
+    inset: (i32, i32),
 ) -> Option<(u32, u32, u32, u32)> {
     // `None` when no page is showing: in any module but Browser the main area is the panel, and a
     // picture of Athena's own words is not evidence about anything.
     let rect = layout::rects(width, height, page_shown).page?;
+    let (inset_x, inset_y) = (f64::from(inset.0.max(0)), f64::from(inset.1.max(0)));
     Some((
-        (rect.x * scale).round().max(0.0) as u32,
-        (rect.y * scale).round().max(0.0) as u32,
+        (rect.x * scale + inset_x).round().max(0.0) as u32,
+        (rect.y * scale + inset_y).round().max(0.0) as u32,
         (rect.width * scale).round().max(1.0) as u32,
         (rect.height * scale).round().max(1.0) as u32,
     ))
@@ -111,7 +121,9 @@ pub fn capture(_app: &tauri::AppHandle) -> Result<Shot, String> {
 mod windows_capture {
     use super::{bgra_to_rgba, crop, encode, page_rect_physical, Shot};
 
-    use tauri::{Manager, WebviewWindow};
+    use crate::layout::Selection;
+    use crate::tabs::Tabs;
+    use tauri::{Manager, Window};
     use windows_sys::Win32::Foundation::HWND;
     use windows_sys::Win32::Graphics::Gdi::{
         CreateCompatibleDC, CreateDIBSection, DeleteDC, DeleteObject, GetDC, ReleaseDC,
@@ -128,29 +140,52 @@ mod windows_capture {
 
     /// Capture the focused page of the main window.
     pub fn capture(app: &tauri::AppHandle) -> Result<Shot, String> {
-        let window: WebviewWindow = app
-            .get_webview_window(crate::MAIN_WINDOW)
+        // `get_window`, not `get_webview_window`: the shell's window is built with
+        // `WindowBuilder` and its content is child webviews (ADR 0013's module-first window), so
+        // it is not a webview window and the other accessor answers `None` for it.
+        let window: Window = app
+            .get_window(crate::MAIN_WINDOW)
             .ok_or("the window is gone")?;
         // `hwnd()` answers with the `windows` crate's newtype; this crate speaks `windows-sys`,
         // where the same handle is a bare pointer.
         let hwnd: HWND = window.hwnd().map_err(|e| e.to_string())?.0 as HWND;
-        let size = window.inner_size().map_err(|e| e.to_string())?;
         let scale = window.scale_factor().unwrap_or(1.0);
 
-        let shot = window_bitmap(hwnd, size.width, size.height)?;
+        // The bitmap is the size of the whole window, because that is what `PrintWindow` draws
+        // into it. The rectangles come from the client area, so the difference between the two
+        // origins is the offset every one of them needs.
+        let outer = window.outer_size().map_err(|e| e.to_string())?;
+        let client = window.inner_size().map_err(|e| e.to_string())?;
+        let inset = match (window.inner_position(), window.outer_position()) {
+            (Ok(inner), Ok(whole)) => (inner.x - whole.x, inner.y - whole.y),
+            // A window that will not say where it is gets no offset rather than no picture: the
+            // crop is then a frame's width out, which is a slightly wrong picture and is still
+            // better evidence than none.
+            _ => (0, 0),
+        };
+
+        // Asked before the bitmap is drawn, so a call with nothing to photograph costs nothing.
+        // `layout` shows a page only in the Browser module and only with a tab focused; in any
+        // other module the main area is the panel, and a picture of Athena's own words is not
+        // evidence about the thing being approved.
+        let page_shown =
+            app.state::<Selection>().is_browser() && app.state::<Tabs>().focused().is_some();
         let (x, y, w, h) = page_rect_physical(
-            size.width as f64 / scale,
-            size.height as f64 / scale,
+            client.width as f64 / scale,
+            client.height as f64 / scale,
             scale,
-            true,
+            page_shown,
+            inset,
         )
-        .ok_or("no page is showing")?;
+        .ok_or("no page is on screen to capture")?;
+
+        let shot = window_bitmap(hwnd, outer.width, outer.height)?;
         // A page larger than the window it is in cannot happen, but a rounding error at a
         // fractional scale factor can put the rectangle one pixel outside — in which case the
         // whole window is a worse picture than none, so it is the whole window.
-        let (pixels, width, height) = match crop(&shot, size.width, size.height, x, y, w, h) {
+        let (pixels, width, height) = match crop(&shot, outer.width, outer.height, x, y, w, h) {
             Some(cropped) => (cropped, w, h),
-            None => (shot, size.width, size.height),
+            None => (shot, outer.width, outer.height),
         };
         Ok(Shot {
             png: encode(&pixels, width, height)?,
@@ -280,8 +315,11 @@ mod tests {
     fn the_page_rectangle_is_scaled_into_physical_pixels() {
         // A logical rectangle and a bitmap are measured in different units, and the bitmap's are
         // the ones a crop is in.
-        let (x, y, w, h) = page_rect_physical(1000.0, 800.0, 2.0, true).expect("a page is showing");
-        let logical = layout::rects(1000.0, 800.0, true).page.expect("a page rect");
+        let (x, y, w, h) =
+            page_rect_physical(1000.0, 800.0, 2.0, true, (0, 0)).expect("a page is showing");
+        let logical = layout::rects(1000.0, 800.0, true)
+            .page
+            .expect("a page rect");
 
         assert_eq!(x, (logical.x * 2.0) as u32);
         assert_eq!(y, (logical.y * 2.0) as u32);
@@ -292,7 +330,8 @@ mod tests {
     #[test]
     fn a_captured_page_is_never_zero_sized() {
         // A window dragged smaller than its own minimum still has to yield a picture.
-        let (_, _, w, h) = page_rect_physical(1.0, 1.0, 1.0, true).expect("a page is showing");
+        let (_, _, w, h) =
+            page_rect_physical(1.0, 1.0, 1.0, true, (0, 0)).expect("a page is showing");
         assert!(w >= 1 && h >= 1);
     }
 
@@ -300,6 +339,33 @@ mod tests {
     fn no_page_showing_means_no_capture() {
         // In any module but Browser the main area is the panel, and a picture of Athena's own
         // words is not evidence about the thing being approved.
-        assert!(page_rect_physical(1440.0, 900.0, 1.0, false).is_none());
+        assert!(page_rect_physical(1440.0, 900.0, 1.0, false, (0, 0)).is_none());
+    }
+
+    #[test]
+    fn the_frames_inset_moves_the_rectangle_and_not_its_size() {
+        // `PrintWindow` draws the whole window and `layout` measures the client area inside it.
+        // Without this the crop is a frame's width out, which is what the first smoke run showed
+        // as a black band down the left edge of the picture.
+        let flush = page_rect_physical(1440.0, 900.0, 1.0, true, (0, 0)).expect("a page");
+        let inset = page_rect_physical(1440.0, 900.0, 1.0, true, (8, 31)).expect("a page");
+
+        assert_eq!(inset.0, flush.0 + 8);
+        assert_eq!(inset.1, flush.1 + 31);
+        assert_eq!(
+            (inset.2, inset.3),
+            (flush.2, flush.3),
+            "the page is no bigger for sitting further in"
+        );
+    }
+
+    #[test]
+    fn a_negative_inset_is_no_inset() {
+        // A window that reports its client area outside its own frame is reporting nonsense, and
+        // the honest answer to nonsense is to do nothing with it.
+        assert_eq!(
+            page_rect_physical(1440.0, 900.0, 1.0, true, (-40, -40)),
+            page_rect_physical(1440.0, 900.0, 1.0, true, (0, 0))
+        );
     }
 }

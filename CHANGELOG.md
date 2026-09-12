@@ -2,6 +2,10 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
+## The hands (in progress)
+
+- `feat(desktop): the ninth hand takes the picture` — `page_screenshot` as a hand the shell answers rather than the page, dispatched off a `runner` field so `hands.js` stays the whole of what a page can do; `PrintWindow` with `PW_RENDERFULLCONTENT` cropped to `layout`'s page rectangle, through two coordinate conversions — the scale factor and the window frame's inset; a non-focused tab refused with `validator_failed` naming the tab that is focused; `Store::put_capture` files the PNG through the same writer as everything else and the hand answers with the row id; `tabs::origin_of` and `Tabs::url_for`; `ATHENA_SMOKE_HANDS=1` runs one hand of each kind against a real window; ADR 0025.
+
 ## Connectors (in progress)
 
 - `feat(connectors): Gmail and Notion behind one vault, entering the catalog like a page` — one JSON spec per service; the vault brokers every call with a host allow-list, a timeout, a cap and redaction; a token or grant is probed before it is sealed (keyring, DPAPI or an owner-only file); PKCE over a one-shot loopback listener; writes behind a switch and an egress allow-list, reads fenced and capped; `/connectors` routes; `Policy(connectors=vault)`; ADR 0021.
