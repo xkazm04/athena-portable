@@ -22,7 +22,7 @@ executor for a host tool and the catalog refuses to build one.
 from __future__ import annotations
 
 import time
-from collections.abc import AsyncIterator, Mapping
+from collections.abc import AsyncGenerator, Mapping
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
 
@@ -71,7 +71,7 @@ GATE_ENGINE = "gate"
 class EpisodePort(Protocol):
     """The brain, as the lane writes to it. One method, because the lane only ever appends."""
 
-    def append_episode(self, content: str, role: str = ..., **kwargs: Any) -> Any: ...
+    def append_episode(self, content: str, role: str = ...) -> Any: ...
 
 
 @runtime_checkable
@@ -150,8 +150,13 @@ class BrowserLane:
 
     # -- the turn ---------------------------------------------------------------------------------
 
-    async def run(self, request: TurnRequest) -> AsyncIterator[ChannelEvent]:
-        """Compose, run, relay, record. The last event is ``turn.finished`` or ``turn.error``."""
+    async def run(self, request: TurnRequest) -> AsyncGenerator[ChannelEvent, None]:
+        """Compose, run, relay, record. The last event is ``turn.finished`` or ``turn.error``.
+
+        An async *generator* and not merely an iterator, so a caller driving it from a thread can
+        close it deterministically — the daemon's request thread does exactly that, and a turn
+        abandoned without ``aclose`` would leave the engine's subprocess pipe open.
+        """
         turn_id = ids.mint("turn")
         ctx = request.context(turn_id, lane=self.lane)
         bound = self._policy_catalog.for_ctx(ctx)
