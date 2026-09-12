@@ -1,0 +1,124 @@
+/* -------------------------------------------------------- rail and toolbar */
+
+/*
+ * `.bd-toolbar`, and the rename is the fix. This row used to be `.bd-bar`,
+ * which is also the class on a criterion bar inside a carousel card six
+ * hundred lines below; that rule's `display: grid` won on source order, so the
+ * level rail and the filters stacked instead of sitting on one line. A class
+ * name that means two things in one stylesheet is a bug waiting for a
+ * screenshot.
+ */
+.bd-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bd-s2) var(--bd-s5);
+}
+
+/* Wraps as whole rungs. Left to break inside, "One candidate" set as two
+   stacked words on a phone and the rail read as a paragraph. */
+.bd-rail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-s1);
+}
+
+.bd-rung {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-s2);
+  white-space: nowrap;
+  min-block-size: var(--bd-control);
+  padding: var(--bd-s2) var(--bd-s3);
+  background: none;
+  border: var(--bd-rule-1) solid transparent;
+  border-radius: var(--bd-radius-1);
+  color: var(--bd-ink-4);
+  font-size: var(--bd-text-sm);
+  cursor: pointer;
+  transition: color var(--bd-dur-2) var(--bd-ease), background var(--bd-dur-2) var(--bd-ease);
+}
+
+.bd-rung[data-on="true"] {
+  color: var(--bd-ink-2);
+}
+
+.bd-rung[data-here="true"] {
+  color: var(--bd-ink);
+  border-color: var(--bd-rule);
+  background: var(--bd-glass);
+}
+
+.bd-rung:disabled {
+  cursor: default;
+}
+
+.bd-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-s2);
+}
+
+.bd-roles {
+  display: inline-flex;
+  gap: var(--bd-s1);
+  padding: var(--bd-s1);
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-radius: var(--bd-radius-round);
+  background: var(--bd-glass);
+}
+
+.bd-roles button {
+  min-block-size: var(--bd-control);
+  white-space: nowrap;
+  padding: 0 var(--bd-s4);
+  background: none;
+  border: 0;
+  border-radius: var(--bd-radius-round);
+  color: var(--bd-ink-3);
+  font-size: var(--bd-text-sm);
+  cursor: pointer;
+  transition: color var(--bd-dur-2) var(--bd-ease), background var(--bd-dur-2) var(--bd-ease);
+}
+
+.bd-roles button:hover {
+  color: var(--bd-ink);
+}
+
+.bd-roles button[aria-pressed="true"] {
+  background: var(--bd-ink);
+  color: var(--bd-void);
+}
+
+.bd-chip {
+  min-block-size: var(--bd-control);
+  padding: 0 var(--bd-s4);
+  background: none;
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-radius: var(--bd-radius-round);
+  color: var(--bd-ink-3);
+  font-size: var(--bd-text-sm);
+  cursor: pointer;
+  transition: color var(--bd-dur-2) var(--bd-ease), border-color var(--bd-dur-2) var(--bd-ease);
+}
+
+.bd-chip:hover {
+  color: var(--bd-ink);
+}
+
+.bd-chip[aria-pressed="true"] {
+  color: var(--bd-mark);
+  border-color: var(--bd-mark);
+}
+
+.bd-count {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-label);
+  letter-spacing: var(--bd-track-caps);
+  text-transform: uppercase;
+  color: var(--bd-ink-4);
+}
+

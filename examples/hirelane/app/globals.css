@@ -1,0 +1,74 @@
+@import "tailwindcss";
+@import "@athena/demo-kit/ui/demo-kit.css";
+/* The app's spacing, type, motion, elevation, rule and measure scales - the layer `--dk-*` does
+   not have. Additive only: it declares custom properties on :root and nothing else, so the
+   shipped design is unaffected. See ../DESIGN-LAW.md §1 and ../design/hl-scales.css. */
+@import "../design/hl-scales.css";
+
+/*
+ * Base: what the design stands on. A direction's own tokens, chrome and surfaces live in its own
+ * stylesheet under its own `[data-variant]` - for the one direction that ships, that is
+ * components/board/style/base/tokens.css - including the --dk-* hooks the kit's shared components
+ * read. Nothing below is direction-specific.
+ */
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--dk-surface-2);
+  color: var(--dk-ink);
+  font-family: var(--dk-font);
+}
+
+/*
+ * `data-variant` used to sit on <html>, so the document background came from the design's own
+ * tokens. Each design direction now owns a wrapper inside <body> instead (under app/v), which
+ * paints the viewport but not the overscroll gutter. This rule hands the document back the right
+ * ground colour.
+ *
+ * It is a `var()`, and that is the whole point. This line used to be a hand-copied hex, and it
+ * said `#f2efe9` — the warm bone sheet of the first pass — long after that pass was replaced by a
+ * near-black room, so every overscroll bounce, and the browser's own UI where it samples this,
+ * flashed the old design's paper. Replacing one stale literal with a fresher literal would only
+ * re-arm it. `--bd-void` is declared at document root as well as on the wrapper
+ * (components/board/style/base/tokens.css), so the seam is closed by the token rather than
+ * by a second copy of its value.
+ */
+.h-root {
+  min-height: 100svh;
+}
+html:has(.h-root[data-variant="board"]) {
+  background: var(--bd-void);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--dk-accent);
+  outline-offset: 2px;
+}
+
+input, select, textarea, button { font: inherit; }
+textarea { line-height: 1.5; }
+
+/* Reduced motion is a first-class path: decorative CSS motion is neutralised here globally;
+   motion/react components read useReducedMotion for their own branches. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

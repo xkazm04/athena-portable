@@ -1,0 +1,193 @@
+.bd-criterion {
+  display: grid;
+  gap: var(--bd-s2);
+  padding: var(--bd-s3);
+  background: var(--bd-glass);
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-inline-start: var(--bd-rule-w2) solid var(--bd-rule);
+  border-radius: var(--bd-radius-2);
+}
+
+.bd-criterion[data-gap="true"] {
+  border-inline-start-color: var(--bd-mark);
+}
+
+.bd-criterion-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bd-s3);
+}
+
+.bd-criterion-name {
+  font-size: var(--bd-text-base);
+  font-weight: 600;
+  color: var(--bd-ink);
+}
+
+.bd-criterion-score {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-label);
+  letter-spacing: var(--bd-track-caps);
+  text-transform: uppercase;
+  color: var(--bd-ink-3);
+}
+
+.bd-evidence {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--bd-s2);
+}
+
+.bd-evidence li {
+  padding-inline-start: var(--bd-s3);
+  border-inline-start: var(--bd-rule-1) solid var(--bd-rule-2);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-relaxed);
+  color: var(--bd-ink-2);
+  max-inline-size: var(--bd-measure-prose);
+}
+
+.bd-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--bd-col-min), 1fr));
+  gap: var(--bd-s3);
+  margin: 0;
+}
+
+.bd-facts div {
+  display: grid;
+  gap: var(--bd-s0);
+  min-inline-size: 0;
+}
+
+.bd-facts dt {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-label);
+  letter-spacing: var(--bd-track-caps);
+  text-transform: uppercase;
+  color: var(--bd-ink-4);
+}
+
+.bd-facts dd {
+  margin: 0;
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-2);
+  overflow-wrap: anywhere;
+}
+
+/*
+ * The bench: everyone else in this group, ranked.
+ *
+ * It is capped and scrolls its own list. Uncapped it simply ran off the bottom
+ * of the pane at the ninth name with nothing to say there was a tenth, which is
+ * the opposite of what a peer rail is for — the reader needs to know how deep
+ * the field is before deciding against it.
+ */
+.bd-bench {
+  position: sticky;
+  inset-block-start: 0;
+  align-self: start;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--bd-s3);
+  /* Short enough to clear the pane's own bottom fade — a rail that ends inside
+     the fade looks truncated, which is the fault the fade exists to prevent. */
+  max-block-size: min(40svh, 26rem);
+  padding: var(--bd-s4);
+  background: var(--bd-glass);
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-radius: var(--bd-radius-2);
+}
+
+.bd-bench-list {
+  display: grid;
+  align-content: start;
+  gap: var(--bd-s1);
+  margin: 0;
+  padding: 0;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+}
+
+.bd-bench-row {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-s2);
+  inline-size: 100%;
+  padding: var(--bd-s2);
+  background: none;
+  border: var(--bd-rule-1) solid transparent;
+  border-radius: var(--bd-radius-1);
+  cursor: pointer;
+  text-align: start;
+  transition: background var(--bd-dur-1) var(--bd-ease);
+}
+
+.bd-bench-row:hover {
+  background: var(--bd-glass);
+}
+
+.bd-bench-row[data-self="true"] {
+  border-color: var(--bd-accent);
+  background: var(--bd-glass);
+}
+
+.bd-rank {
+  display: grid;
+  place-items: center;
+  inline-size: var(--bd-avatar-sm);
+  block-size: var(--bd-avatar-sm);
+  border-radius: var(--bd-radius-round);
+  background: var(--bd-glass-2);
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-label);
+  color: var(--bd-ink-2);
+  flex: none;
+}
+
+.bd-bench-name {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bd-bench-row[data-self="true"] .bd-bench-name {
+  color: var(--bd-ink);
+  font-weight: 600;
+}
+
+.bd-bench-score {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--bd-ink-3);
+  flex: none;
+}
+
+/* The AUTO region: on the glass, lightest rule, reversible. */
+.bd-auto-panel {
+  display: grid;
+  gap: var(--bd-s3);
+  padding: var(--bd-s3) var(--bd-s5) var(--bd-s4);
+  border-block-start: var(--bd-rule-1) solid var(--bd-rule);
+  background: rgb(255 255 255 / 2%);
+  flex: none;
+}
+
+.bd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-s2);
+  align-items: center;
+}
+

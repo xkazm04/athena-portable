@@ -1,0 +1,15 @@
+/* --------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .bd-rail-3d {
+    perspective: none;
+  }
+
+  .bd-root *,
+  .bd-root *::before,
+  .bd-root *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+

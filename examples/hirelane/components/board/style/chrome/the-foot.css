@@ -1,0 +1,115 @@
+/* -------------------------------------------------------------- the foot */
+
+/*
+ * Two rows, always. As a wrapping flex row the footer changed height with the
+ * breadcrumb: at L1 the extra crumb pushed the whole capability register onto a
+ * second line and off the bottom of the page, so the one thing DESIGN-LAW §7.4
+ * insists on being visible without interaction stopped being visible. A grid
+ * with a row for each keeps the page's closing band the same height at every
+ * level, which is also what lets the stage above it size itself once.
+ */
+.bd-foot {
+  display: grid;
+  gap: var(--bd-s3);
+  padding-block-start: var(--bd-s3);
+  border-block-start: var(--bd-rule-1) solid var(--bd-rule);
+}
+
+.bd-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-s3);
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-3);
+}
+
+.bd-crumb b {
+  font-weight: 600;
+  color: var(--bd-ink);
+}
+
+.bd-crumb i {
+  font-style: normal;
+  color: var(--bd-ink-4);
+  margin-inline-start: var(--bd-s2);
+}
+
+.bd-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-s2);
+  min-block-size: var(--bd-control);
+  padding: 0 var(--bd-s3);
+  background: none;
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-radius: var(--bd-radius-round);
+  font-size: var(--bd-text-xs);
+  color: var(--bd-ink-3);
+  cursor: pointer;
+}
+
+.bd-back kbd {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-label);
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-radius: var(--bd-radius-1);
+  padding: 0 var(--bd-s1);
+}
+
+/*
+ * The capability register. §7.4: the manifest is not a drawer nobody opens.
+ *
+ * Two clusters, not seven pills. The classes are separated by the rule ladder
+ * before any colour is spent — AUTO on a hairline, GATED on the heaviest weight
+ * the direction has — so desaturating the page leaves the distinction intact,
+ * which a strip of identically-shaped badges in two hues did not.
+ */
+.bd-register {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-s3) var(--bd-s6);
+}
+
+.bd-register-group {
+  display: grid;
+  gap: var(--bd-s2);
+  padding-block-start: var(--bd-s2);
+  min-inline-size: 0;
+}
+
+.bd-register-group[data-class="AUTO"] {
+  border-block-start: var(--bd-rule-1) solid var(--bd-auto);
+}
+
+.bd-register-group[data-class="GATED"] {
+  border-block-start: var(--bd-rule-w3) solid var(--bd-gate);
+}
+
+.bd-register-group[data-class="GATED"] .bd-block-label {
+  color: var(--bd-ink-2);
+}
+
+.bd-register-group ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-s1) var(--bd-s3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-xs);
+  color: var(--bd-ink-4);
+}
+
+.bd-register-group[data-class="GATED"] ul {
+  color: var(--bd-ink-3);
+}
+
+/* An empty band still renders, so the reader is told what an agent CANNOT do here. Set as prose,
+   because it is a sentence rather than a capability name. */
+.bd-register-group li[data-empty="true"] {
+  font-family: var(--bd-font);
+  color: var(--bd-ink-4);
+}
+

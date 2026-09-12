@@ -1,0 +1,295 @@
+{
+  "$description": "NOT WIRED (2026-09): the 'token' direction was reviewed out before it was built — there is no /v/token route, no components/token/ tree, no npm script that builds this file and no emitted CSS anywhere in the repo. Kept as the vendored DTCG example beside design/build-tokens.mjs, not as a source of truth for any shipped surface; the shipped direction's tokens are components/board/style/base/tokens.css. hirelane direction 'token' — DTCG, three-tier (primitive -> semantic -> component), plus two ordinal ladders. Named source direction: Otl Aicher's identity system for the Munich 1972 Olympic Games (the 'Heitere Spiele'). Three things are taken from it and every value below is derived from one of them: (1) the deliberately red-free rainbow, with red withheld and reserved for emergency; (2) the pictogram construction grid, which permits only 0-degree, 45-degree and 90-degree strokes, so this direction has almost no corner radius and cuts corners at 45 degrees instead; (3) Univers, whose actual innovation was a matrix indexed by weight AND width, reproduced here with Archivo Variable's wght and wdth axes. Built by design/build-tokens.mjs.",
+
+  "primitive": {
+    "$description": "Never emitted. A component has no name with which to reach this tier.",
+    "silver": {
+      "$description": "Aicher's Silber, the ground of the whole system. Not white: the page is a grey card and the content planes are the white printed on it.",
+      "100": { "$type": "color", "$value": "#F3F2EF" },
+      "200": { "$type": "color", "$value": "#E4E3DE" },
+      "300": { "$type": "color", "$value": "#CFCEC7" },
+      "400": { "$type": "color", "$value": "#A9A8A0" }
+    },
+    "paper": {
+      "0": { "$type": "color", "$value": "#FFFFFF" }
+    },
+    "graphite": {
+      "$description": "Aicher excluded black from the Munich palette along with red. The darkest ink here is a graphite, never #000000.",
+      "900": { "$type": "color", "$value": "#1B1B18", "$description": "17.26:1 on paper, 13.43:1 on silver.200." },
+      "700": { "$type": "color", "$value": "#4A4A45", "$description": "8.91:1 on paper, 6.93:1 on silver.200." },
+      "600": { "$type": "color", "$value": "#63635C", "$description": "6.05:1 on paper, 4.71:1 on silver.200. The tertiary floor; nothing lighter carries text." }
+    },
+    "blau": {
+      "$description": "Hellblau, the dominant colour of the Games.",
+      "300": { "$type": "color", "$value": "#8FCDEA" },
+      "500": { "$type": "color", "$value": "#0E86C6", "$description": "4.00:1 on paper. A mark and a fill, never small text on white." },
+      "700": { "$type": "color", "$value": "#0A5F8E", "$description": "6.91:1 on paper. The text-carrying blue, and the fill that carries white text (6.91:1)." }
+    },
+    "gruen": {
+      "$description": "Hellgruen.",
+      "500": { "$type": "color", "$value": "#7AB51D" },
+      "700": { "$type": "color", "$value": "#4B7211", "$description": "5.65:1 on paper." }
+    },
+    "dgruen": {
+      "$description": "Dunkelgruen.",
+      "500": { "$type": "color", "$value": "#2E8062" },
+      "700": { "$type": "color", "$value": "#1F5C46", "$description": "7.84:1 on paper." }
+    },
+    "violett": {
+      "500": { "$type": "color", "$value": "#7D5AA6", "$description": "5.41:1 on paper." },
+      "700": { "$type": "color", "$value": "#573A7A", "$description": "9.16:1 on paper." }
+    },
+    "rot": {
+      "$description": "THE WITHHELD COLOUR. Aicher kept red out of the Munich rainbow so that it would still mean emergency when it appeared. This direction keeps that bargain literally: red is spent on exactly one thing, the irreversible act that reaches a candidate, and appears nowhere else on the surface.",
+      "500": { "$type": "color", "$value": "#D8231F", "$description": "5.02:1 on paper; white on it reads 5.02:1." },
+      "700": { "$type": "color", "$value": "#9E1512", "$description": "8.17:1 on paper." }
+    }
+  },
+
+  "semantic": {
+    "surface": {
+      "page": { "$type": "color", "$value": "{primitive.silver.200}" },
+      "plane": { "$type": "color", "$value": "{primitive.paper.0}" },
+      "tint": { "$type": "color", "$value": "{primitive.silver.100}" },
+      "sunken": { "$type": "color", "$value": "{primitive.silver.300}" },
+      "ink": { "$type": "color", "$value": "{primitive.graphite.900}", "$description": "The inverted plane. Used for the dispatch strip only." },
+      "scrim": { "$type": "color", "$value": "rgba(27, 27, 24, 0.62)" }
+    },
+    "text": {
+      "primary": { "$type": "color", "$value": "{primitive.graphite.900}" },
+      "secondary": { "$type": "color", "$value": "{primitive.graphite.700}" },
+      "tertiary": { "$type": "color", "$value": "{primitive.graphite.600}" },
+      "on-ink": { "$type": "color", "$value": "{primitive.silver.100}" },
+      "on-fill": { "$type": "color", "$value": "{primitive.paper.0}" }
+    },
+    "line": {
+      "hair": { "$type": "color", "$value": "{primitive.silver.300}", "$description": "Decorative division." },
+      "rule": { "$type": "color", "$value": "{primitive.silver.400}", "$description": "Lane top rule." },
+      "strong": { "$type": "color", "$value": "{primitive.graphite.700}", "$description": "Essential control edge. 6.93:1 on the page ground." }
+    },
+    "system": {
+      "$description": "Hellblau, Aicher's dominant. In this direction blue is not decoration and not a station: it is the colour of the machinery itself - the wordmark, the focus ring, the dispatch beam, and any mark Athena would make. Stations get the rest of the rainbow; the gate gets the withheld red; blue gets the agent.",
+      "mark": { "$type": "color", "$value": "{primitive.blau.500}" },
+      "ink": { "$type": "color", "$value": "{primitive.blau.700}" },
+      "beam": { "$type": "color", "$value": "{primitive.blau.300}" }
+    },
+    "governance": {
+      "$description": "The app's central visual idea and the reason the source direction was chosen. Three roles, fixed, and no other element on the surface may spend these hues.",
+      "auto": { "$type": "color", "$value": "{primitive.blau.700}", "$description": "Reversible. Every write lands in the activity log and undo replays it, so the system may run it unattended. Same hue as `system`, because auto IS the system acting." },
+      "held": { "$type": "color", "$value": "{primitive.rot.500}", "$description": "Held at the post. Same hue as `irreversible` ON PURPOSE: arming does not change what the act is, only whether it has happened, so the distinction is MATERIAL (hairline plus a 45-degree hatch) and never a second hue. Aicher spent one warning colour, not a gradient of them." },
+      "irreversible": { "$type": "color", "$value": "{primitive.rot.500}", "$description": "The withheld colour, spent, as a solid fill. This act reached a person and cannot be replayed backwards." }
+    },
+    "station": {
+      "$description": "One hue per pipeline state, assigned by argument rather than taste. Submitted has no hue at all, because nothing has been judged yet. Blue is unavailable (it is the machine) and red is unavailable (it is the wall), so what is left of Aicher's rainbow - hellgruen, violett, dunkelgruen - is spent in his own published order across the three states that have been judged.",
+      "submitted": { "$type": "color", "$value": "{primitive.graphite.600}", "$description": "MEASURED FIX. This was silver.400, which reads 2.20:1 on the plane - and the whole ISOTYPE argument is that you count the signs, so a sign too faint to count breaks the direction rather than softening it. graphite.600 is 6.05:1 and still carries no hue, which is the only property the assignment actually needed." },
+      "screened": { "$type": "color", "$value": "{primitive.gruen.500}" },
+      "interview": { "$type": "color", "$value": "{primitive.violett.500}" },
+      "offer": { "$type": "color", "$value": "{primitive.dgruen.500}" },
+      "closed": { "$type": "color", "$value": "{primitive.silver.300}" }
+    },
+    "station-ink": {
+      "$description": "The text-carrying twin of each station hue, for a label set on the page ground rather than on the fill.",
+      "submitted": { "$type": "color", "$value": "{primitive.graphite.700}" },
+      "screened": { "$type": "color", "$value": "{primitive.gruen.700}" },
+      "interview": { "$type": "color", "$value": "{primitive.violett.700}" },
+      "offer": { "$type": "color", "$value": "{primitive.dgruen.700}" },
+      "closed": { "$type": "color", "$value": "{primitive.graphite.600}" }
+    },
+    "evidence": {
+      "$description": "SCORE IS INK, NOT HUE. Evidence is achromatic on purpose: a unit that has been earned is printed, a unit that has not is left blank, and the one criterion with no evidence at all is a notch cut out of the row rather than a colour. This is what lets the same evidence drawing sit inside four differently-coloured stations without arguing with any of them - and it is the Neurath rule, that a difference in quantity is shown by a difference in the number of signs and never by a difference in the sign.",
+      "present": { "$type": "color", "$value": "{primitive.graphite.900}" },
+      "half": { "$type": "color", "$value": "{primitive.graphite.600}" },
+      "absent": { "$type": "color", "$value": "{primitive.silver.300}" },
+      "gap": { "$type": "color", "$value": "{primitive.silver.400}", "$description": "Drawn as a 45-degree notch in the row, not as a warm colour. The shape carries it." }
+    }
+  },
+
+  "component": {
+    "$description": "Tier 3 keeps its aliases live in the CSS: --tk-color-marker-fill is `var(--tk-color-surface-plane)`, not a repeated hex, so re-pointing a component at a different semantic role is a one-line edit that the cascade honours.",
+    "lane": {
+      "rule": { "$type": "color", "$value": "{semantic.line.rule}" },
+      "label-bg": { "$type": "color", "$value": "{semantic.surface.page}" },
+      "label-ink": { "$type": "color", "$value": "{semantic.text.primary}" }
+    },
+    "marker": {
+      "$description": "One candidate on the track.",
+      "fill": { "$type": "color", "$value": "{semantic.surface.plane}" },
+      "edge": { "$type": "color", "$value": "{semantic.line.hair}" },
+      "edge-focus": { "$type": "color", "$value": "{semantic.line.strong}" },
+      "misreg": { "$type": "color", "$value": "{semantic.line.rule}", "$description": "The offset second impression. Depth here is a print artefact, not a shadow. MEASURED FIX: this was surface.sunken (#CFCEC7), which sits 1.12:1 against the page ground - the second impression was there in the DOM and invisible on screen. line.rule (#A9A8A0) reads at 1.65:1 against the ground, which is what a misregistration actually looks like." }
+    },
+    "gate": {
+      "idle-edge": { "$type": "color", "$value": "{semantic.line.strong}" },
+      "held-edge": { "$type": "color", "$value": "{semantic.governance.held}" },
+      "held-ink": { "$type": "color", "$value": "{semantic.governance.held}" },
+      "fired-bg": { "$type": "color", "$value": "{semantic.governance.irreversible}" },
+      "fired-ink": { "$type": "color", "$value": "{semantic.text.on-fill}" }
+    },
+    "dispatch": {
+      "$description": "The strip that shows Athena working. Inverted, because the only inverted region on the surface is the one where a machine is acting.",
+      "bg": { "$type": "color", "$value": "{semantic.surface.ink}" },
+      "ink": { "$type": "color", "$value": "{semantic.text.on-ink}" },
+      "beam": { "$type": "color", "$value": "{semantic.system.beam}" }
+    }
+  },
+
+  "ladder": {
+    "$description": "THE ORDINAL AXIS. This is the correction wave 2 asked for. Both ladders are emitted as custom properties in their own right, and every role token below is a live `var()` alias onto one of them, so 'one step larger' and 'one rung tighter' are expressible in a component's CSS without knowing any value.",
+    "step": {
+      "$description": "Type. Eleven rungs, ratio ~1.15 at the reading end opening to ~1.25 at the display end. Floor is 13px and the build fails below it. Steps 6 and up are fluid in `cqi`, never `vw`.",
+      "0": { "$type": "dimension", "$value": "0.8125rem", "$description": "13px. The absolute floor of this direction. Caps micro-labels only." },
+      "1": { "$type": "dimension", "$value": "0.875rem", "$description": "14px." },
+      "2": { "$type": "dimension", "$value": "0.9375rem", "$description": "15px. The interactive floor: no control's label is smaller than this." },
+      "3": { "$type": "dimension", "$value": "1rem", "$description": "16px. Reading size." },
+      "4": { "$type": "dimension", "$value": "1.125rem", "$description": "18px." },
+      "5": { "$type": "dimension", "$value": "1.3125rem", "$description": "21px." },
+      "6": { "$type": "dimension", "$value": "clamp(1.5rem, 1.36rem + 0.7cqi, 1.75rem)" },
+      "7": { "$type": "dimension", "$value": "clamp(1.75rem, 1.5rem + 1.25cqi, 2.25rem)" },
+      "8": { "$type": "dimension", "$value": "clamp(2.125rem, 1.7rem + 2.1cqi, 3rem)" },
+      "9": { "$type": "dimension", "$value": "clamp(2.625rem, 1.95rem + 3.4cqi, 4rem)" },
+      "10": { "$type": "dimension", "$value": "clamp(3.25rem, 2.2rem + 5.2cqi, 5.5rem)" }
+    },
+    "rung": {
+      "$description": "Space. Eleven rungs on a 4px grid, doubling every three rungs above rung 4.",
+      "0": { "$type": "dimension", "$value": "0px" },
+      "1": { "$type": "dimension", "$value": "2px" },
+      "2": { "$type": "dimension", "$value": "4px" },
+      "3": { "$type": "dimension", "$value": "8px" },
+      "4": { "$type": "dimension", "$value": "12px" },
+      "5": { "$type": "dimension", "$value": "16px" },
+      "6": { "$type": "dimension", "$value": "24px" },
+      "7": { "$type": "dimension", "$value": "32px" },
+      "8": { "$type": "dimension", "$value": "48px" },
+      "9": { "$type": "dimension", "$value": "72px" },
+      "10": { "$type": "dimension", "$value": "112px" }
+    }
+  },
+
+  "font": {
+    "family": {
+      "$description": "Univers was a matrix, not a font: Frutiger indexed it by weight AND width, which is why a Munich sign, a Munich ticket and a Munich results board are recognisably one system set at three widths. Archivo Variable is the only face in next/font with both a wght (100-900) and a wdth (62-125) axis, so it reproduces the actual mechanism rather than the look.",
+      "grotesk": { "$type": "fontFamily", "$value": "var(--font-tk-grotesk), 'Helvetica Neue', Arial, system-ui, sans-serif" },
+      "figure": { "$type": "fontFamily", "$value": "var(--font-tk-figure), ui-monospace, SFMono-Regular, Menlo, monospace" }
+    },
+    "stretch": {
+      "$description": "The width axis, as percentages usable directly in `font-stretch`. This is the Univers row index.",
+      "condensed": { "$type": "number", "$value": "78%", "$description": "Lane labels and column heads, where the room is narrow and the word must not wrap." },
+      "normal": { "$type": "number", "$value": "100%" },
+      "extended": { "$type": "number", "$value": "118%", "$description": "Display only. Aicher's own headline setting is wide, not merely large." }
+    },
+    "size": {
+      "$description": "Role names, each a live alias onto a ladder step. Nine roles over eleven steps, and the relation between any two of them is now readable off the ladder index.",
+      "micro": { "$type": "dimension", "$value": "{ladder.step.0}" },
+      "meta": { "$type": "dimension", "$value": "{ladder.step.1}" },
+      "control": { "$type": "dimension", "$value": "{ladder.step.2}" },
+      "body": { "$type": "dimension", "$value": "{ladder.step.3}" },
+      "lede": { "$type": "dimension", "$value": "{ladder.step.4}" },
+      "name": { "$type": "dimension", "$value": "{ladder.step.5}", "$description": "A candidate's name. Two steps above body, because it is the only proper noun on the card." },
+      "station": { "$type": "dimension", "$value": "{ladder.step.6}", "$description": "A column head." },
+      "count": { "$type": "dimension", "$value": "{ladder.step.8}", "$description": "The number of candidates at a station." },
+      "title": { "$type": "dimension", "$value": "{ladder.step.9}" },
+      "display": { "$type": "dimension", "$value": "{ladder.step.10}" }
+    },
+    "weight": {
+      "regular": { "$type": "fontWeight", "$value": 400 },
+      "medium": { "$type": "fontWeight", "$value": 500 },
+      "semibold": { "$type": "fontWeight", "$value": 600 },
+      "bold": { "$type": "fontWeight", "$value": 700 }
+    },
+    "leading": {
+      "flush": { "$type": "number", "$value": 1 },
+      "display": { "$type": "number", "$value": 1.04 },
+      "head": { "$type": "number", "$value": 1.18 },
+      "body": { "$type": "number", "$value": 1.55 },
+      "prose": { "$type": "number", "$value": 1.68 }
+    },
+    "tracking": {
+      "display": { "$type": "dimension", "$value": "-0.022em" },
+      "normal": { "$type": "dimension", "$value": "0" },
+      "sign": { "$type": "dimension", "$value": "0.14em", "$description": "The signage setting. Caps labels only, and only at font.size.micro or meta." }
+    }
+  },
+
+  "space": {
+    "$description": "Role names aliased onto the rung ladder, same mechanism as type.",
+    "hair": { "$type": "dimension", "$value": "{ladder.rung.1}" },
+    "tight": { "$type": "dimension", "$value": "{ladder.rung.2}" },
+    "inline": { "$type": "dimension", "$value": "{ladder.rung.3}" },
+    "card": { "$type": "dimension", "$value": "{ladder.rung.4}" },
+    "gutter": { "$type": "dimension", "$value": "{ladder.rung.5}" },
+    "cell": { "$type": "dimension", "$value": "{ladder.rung.6}" },
+    "lane": { "$type": "dimension", "$value": "{ladder.rung.7}", "$description": "Between two swimlanes." },
+    "band": { "$type": "dimension", "$value": "{ladder.rung.8}" },
+    "section": { "$type": "dimension", "$value": "{ladder.rung.9}" },
+    "page": { "$type": "dimension", "$value": "{ladder.rung.10}" }
+  },
+
+  "radius": {
+    "$description": "Aicher's pictogram grid permits 0, 45 and 90 degrees and nothing else, so this direction has essentially no corner radius. Where a corner needs to be softened it is CUT at 45 degrees with `clip-path`, using size.chamfer. The one round form in the system is the station node, which is a circle on purpose.",
+    "none": { "$type": "dimension", "$value": "0px" },
+    "tick": { "$type": "dimension", "$value": "2px" },
+    "node": { "$type": "dimension", "$value": "9999px" }
+  },
+
+  "border-width": {
+    "hair": { "$type": "dimension", "$value": "1px" },
+    "rule": { "$type": "dimension", "$value": "2px" },
+    "sign": { "$type": "dimension", "$value": "4px", "$description": "The lane top rule and the armed gate edge." }
+  },
+
+  "shadow": {
+    "$description": "Four of the five are `none`-adjacent on purpose. Depth in this system is misregistration and figure/ground, not blur. The one real shadow exists because an overlay genuinely leaves the page.",
+    "flat": { "$type": "shadow", "$value": "none" },
+    "seated": { "$type": "shadow", "$value": "0 1px 0 0 {semantic.line.hair}" },
+    "lifted": { "$type": "shadow", "$value": "0 2px 0 0 {semantic.line.hair}, 0 6px 14px -10px rgba(27, 27, 24, 0.5)" },
+    "overlay": { "$type": "shadow", "$value": "0 24px 60px -12px rgba(27, 27, 24, 0.42), 0 2px 0 0 {semantic.line.rule}" },
+    "focus": { "$type": "shadow", "$value": "0 0 0 2px {semantic.surface.page}, 0 0 0 4px {semantic.line.strong}" }
+  },
+
+  "motion": {
+    "duration": {
+      "$description": "Named after transit events, because in this direction a state change is a journey between two stations and not a fade.",
+      "tick": { "$type": "duration", "$value": "90ms", "$description": "Press feedback." },
+      "slide": { "$type": "duration", "$value": "220ms", "$description": "A control changes state in place." },
+      "depart": { "$type": "duration", "$value": "320ms", "$description": "Something leaves." },
+      "travel": { "$type": "duration", "$value": "560ms", "$description": "A marker moves from one station to the next. The signature motion." },
+      "settle": { "$type": "duration", "$value": "760ms", "$description": "A number counts to its value." },
+      "arm": { "$type": "duration", "$value": "900ms", "$description": "How long the irreversible gate must be held before it fires." },
+      "scan": { "$type": "duration", "$value": "1100ms", "$description": "One pass of Athena's beam across a lane." }
+    },
+    "easing": {
+      "$description": "Named after the phase of a journey. Not `in`/`out`/`in-out`: those three names are owned by Tailwind v4's theme and redefining them inside a subtree silently changes every `ease-out` utility under it.",
+      "depart": { "$type": "cubicBezier", "$value": [0.32, 0, 0.67, 0] },
+      "arrive": { "$type": "cubicBezier", "$value": [0.16, 1, 0.3, 1] },
+      "transit": { "$type": "cubicBezier", "$value": [0.65, 0, 0.35, 1] },
+      "berth": { "$type": "cubicBezier", "$value": [0.34, 1.4, 0.64, 1], "$description": "A small overshoot as a marker lands in a station. The only springy curve in the system." },
+      "linear": { "$type": "cubicBezier", "$value": [0, 0, 1, 1], "$description": "The scan beam only. A machine sweeping at constant rate is the one honest use of linear." }
+    },
+    "stagger": { "$type": "duration", "$value": "38ms" }
+  },
+
+  "size": {
+    "hit": { "$type": "dimension", "$value": "44px", "$description": "WCAG 2.5.8. Every interactive element clears it." },
+    "chamfer": { "$type": "dimension", "$value": "10px", "$description": "The 45-degree corner cut that stands in for a border radius." },
+    "chamfer-sm": { "$type": "dimension", "$value": "6px" },
+    "misreg": { "$type": "dimension", "$value": "3px", "$description": "Offset of the second colour impression. The whole depth system." },
+    "node": { "$type": "dimension", "$value": "12px", "$description": "Diameter of a station node on the track." },
+    "node-lg": { "$type": "dimension", "$value": "18px" },
+    "rail": { "$type": "dimension", "$value": "6px", "$description": "Thickness of the track a lane runs along." },
+    "icon": { "$type": "dimension", "$value": "18px" },
+    "icon-lg": { "$type": "dimension", "$value": "24px" },
+    "lane-label": { "$type": "dimension", "$value": "168px", "$description": "Width of the sticky lane label at and above the two-column container step." },
+    "station-min": { "$type": "dimension", "$value": "232px", "$description": "Narrowest a station column may be before the board stops being four columns." },
+    "marker-min": { "$type": "dimension", "$value": "196px" },
+    "board-gutter": { "$type": "dimension", "$value": "20px" },
+    "beam": { "$type": "dimension", "$value": "96px", "$description": "Width of the scan beam's bright head." }
+  },
+
+  "z": {
+    "base": { "$type": "number", "$value": 0 },
+    "rail": { "$type": "number", "$value": 5 },
+    "sticky": { "$type": "number", "$value": 20 },
+    "dispatch": { "$type": "number", "$value": 40 },
+    "overlay": { "$type": "number", "$value": 60 }
+  }
+}

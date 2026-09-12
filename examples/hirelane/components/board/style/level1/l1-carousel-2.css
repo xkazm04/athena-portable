@@ -1,0 +1,193 @@
+.bd-overall[data-unscored="true"] {
+  color: var(--bd-ink-4);
+}
+
+.bd-fit {
+  font-family: var(--bd-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: var(--bd-track-caps);
+  text-transform: uppercase;
+  color: var(--bd-ink-3);
+  padding-block-start: var(--bd-s1);
+}
+
+/* Fit is length and rule weight, never a hue: strong takes the heaviest
+   underline, thin the lightest, unscored none at all. */
+.bd-fit[data-fit="strong"] {
+  border-block-start: var(--bd-rule-w3) solid var(--bd-ink);
+  color: var(--bd-ink);
+}
+
+.bd-fit[data-fit="promising"] {
+  border-block-start: var(--bd-rule-w2) solid var(--bd-ink-3);
+}
+
+.bd-fit[data-fit="thin"] {
+  border-block-start: var(--bd-rule-1) solid var(--bd-ink-4);
+}
+
+.bd-band {
+  font-size: 0.8125rem;
+  color: var(--bd-ink-4);
+  margin-inline-start: auto;
+}
+
+/* The five criteria, on one shared 0-4 baseline. */
+.bd-bars {
+  display: grid;
+  gap: var(--bd-s2);
+  align-content: start;
+  min-block-size: 0;
+}
+
+.bd-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--bd-s1);
+}
+
+.bd-bar-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--bd-s2);
+  font-size: var(--bd-text-sm);
+  /* A criterion label is one line and never two; set at the body's 1.5 it was
+     spending seven pixels a row on leading that nothing occupied. */
+  line-height: var(--bd-leading-snug);
+  color: var(--bd-ink-2);
+}
+
+.bd-bar-top b {
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bd-bar-top span {
+  font-family: var(--bd-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--bd-ink-3);
+  flex: none;
+}
+
+.bd-bar-track {
+  position: relative;
+  block-size: var(--bd-s2);
+  background: rgb(255 255 255 / 7%);
+  border-radius: var(--bd-radius-round);
+  overflow: hidden;
+}
+
+.bd-bar-fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--score) / 4 * 100%);
+  background: var(--bd-ink-2);
+  border-radius: inherit;
+  transition: inline-size var(--bd-dur-4) var(--bd-ease-in);
+}
+
+/* Weight as fill density rather than another hue, so the colour lock holds and
+   the heaviest criterion still reads as the heaviest. */
+.bd-bar-track[data-weight="1"] .bd-bar-fill {
+  background: var(--bd-ink-4);
+}
+
+.bd-bar-track[data-weight="2"] .bd-bar-fill {
+  background: var(--bd-ink-3);
+}
+
+.bd-bar-track[data-weight="3"] .bd-bar-fill {
+  background: var(--bd-ink);
+}
+
+.bd-bar-track[data-gap="true"] {
+  /* §9.4 exception: a hairline ring drawn as a shadow spread, not a spacing step. */
+  box-shadow: inset 0 0 0 1px var(--bd-mark);
+}
+
+.bd-bar-gap {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline: 0;
+  block-size: var(--bd-s0);
+  transform: translateY(-50%);
+  color: var(--bd-mark);
+}
+
+.bd-slide-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-s2);
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-xs);
+  letter-spacing: 0.04em;
+  color: var(--bd-ink-4);
+}
+
+.bd-pips {
+  display: inline-flex;
+  gap: var(--bd-s0-5);
+}
+
+.bd-pips i {
+  inline-size: var(--bd-dot);
+  block-size: var(--bd-dot);
+  border: var(--bd-rule-1) solid var(--bd-ink-4);
+  border-radius: var(--bd-radius-round);
+}
+
+.bd-pips i[data-on="true"] {
+  background: var(--bd-ink-2);
+  border-color: var(--bd-ink-2);
+}
+
+/* Carousel chrome. */
+.bd-carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bd-s4);
+}
+
+.bd-arrow {
+  min-inline-size: var(--bd-control);
+  min-block-size: var(--bd-control);
+  background: var(--bd-glass);
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-radius: var(--bd-radius-round);
+  color: var(--bd-ink-2);
+  font-size: var(--bd-text-md);
+  cursor: pointer;
+}
+
+.bd-arrow:hover:not(:disabled) {
+  color: var(--bd-ink);
+  border-color: var(--bd-rule-2);
+}
+
+.bd-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.bd-dots {
+  display: flex;
+  gap: var(--bd-s2);
+  align-items: center;
+}
+
+.bd-dot {
+  inline-size: var(--bd-dot);
+  block-size: var(--bd-dot);
+  padding: 0;
+  border: 0;
+  border-radius: var(--bd-radius-round);
+  background: rgb(255 255 255 / 22%);
+  cursor: pointer;
+}
+

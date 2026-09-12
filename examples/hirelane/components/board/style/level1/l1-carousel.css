@@ -1,0 +1,194 @@
+/* ------------------------------------------------------------ L1 carousel */
+
+.bd-carousel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: stretch;
+  gap: var(--bd-s3);
+  block-size: 100%;
+  min-block-size: 0;
+  padding-block-end: var(--bd-s2);
+}
+
+.bd-carousel .bd-rail-3d {
+  align-self: center;
+}
+
+/*
+ * A grid, not a wrapping flex row. `justify-content: space-between` on a flex
+ * row lets a long annotation grow past its own share of the line, and a
+ * handwriting face at 22px does exactly that — the note ran under the page's
+ * right padding and `.bd-stage { overflow-x: clip }` sliced it mid-word.
+ * A track it cannot leave is the fix.
+ */
+.bd-carousel-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--bd-s3) var(--bd-s5);
+}
+
+/* Ragged right, not flush. A right-aligned block ends hard on the page's edge
+   and every line then looks as though it has been cut off — which is exactly
+   what a reader concluded about this note. A margin annotation is written
+   left-to-right anyway. */
+.bd-carousel-head .bd-hand {
+  grid-column: 2;
+  max-inline-size: min(30ch, 34cqi);
+  justify-self: end;
+  text-align: start;
+  margin: 0;
+}
+
+.bd-carousel-title {
+  margin: 0;
+  font-family: var(--bd-font-display);
+  font-size: var(--bd-text-lg);
+  font-weight: 600;
+  letter-spacing: var(--bd-track-tight);
+  color: var(--bd-ink);
+}
+
+.bd-carousel-wait {
+  margin: var(--bd-s1) 0 0;
+  max-inline-size: var(--bd-measure-prose);
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-3);
+}
+
+/*
+ * The rail. Cards are absolutely centred and then pushed out along x by their
+ * distance from the focus, so the three under the loupe stay full size and
+ * everything past them angles away into the dark. Perspective lives here; each
+ * card carries only its own transform.
+ */
+/*
+ * The rail takes the room the level has left rather than a fixed 470px. At
+ * 470 inside a 474px stage the arrows, the dots and the keyboard hint were all
+ * below the fold at 900px — a level whose whole instruction is "← → to move"
+ * was hiding the control that says so.
+ */
+.bd-rail-3d {
+  position: relative;
+  block-size: 100%;
+  min-block-size: var(--bd-stage-min);
+  max-block-size: var(--bd-stage-max);
+  perspective: var(--bd-perspective);
+  perspective-origin: 50% 50%;
+  overflow: hidden;
+  /* The dark the side cards recede into. */
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.bd-slide {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  inline-size: var(--card);
+  margin-inline-start: calc(var(--card) / -2);
+  block-size: 100%;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background: none;
+  text-align: start;
+}
+
+.bd-slide-inner {
+  block-size: 100%;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  /*
+   * The card is sized to the room the level has, and the room is a viewport
+   * minus a masthead, a toolbar and a footer. Every step in here was one size
+   * looser than it needed to be, and together they pushed the stage-specific
+   * fact — the one thing this level shows that no other does — out through
+   * `overflow: hidden`. Tightened, the whole card fits at 900px with room to
+   * spare, and nothing was removed to make it.
+   */
+  gap: var(--bd-s2);
+  padding: var(--bd-s4);
+  background: linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 3%));
+  border: var(--bd-rule-1) solid var(--bd-rule);
+  border-radius: var(--bd-radius-3);
+  /* §9.4 exception: a blur radius, not a length on the spacing scale. */
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.bd-slide[data-focus="true"] .bd-slide-inner {
+  border-color: var(--bd-rule-2);
+  box-shadow: var(--bd-elev-lift);
+}
+
+/* Out of the loupe, out of focus. The backdrop blur comes off with it — one
+   blur per card is the budget, and a card nobody can read does not need to
+   sample what is behind it. */
+.bd-slide[data-depth="far"] .bd-slide-inner {
+  /* §9.4 exception: a blur radius, not a length on the spacing scale. */
+  filter: blur(2.5px);
+  backdrop-filter: none;
+  background: linear-gradient(180deg, rgb(255 255 255 / 6%), rgb(255 255 255 / 2%));
+}
+
+.bd-slide[data-borderline="true"] .bd-slide-inner {
+  border-block-start: var(--bd-rule-w3) solid var(--bd-mark);
+}
+
+.bd-slide-who {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-s3);
+  min-inline-size: 0;
+}
+
+/* The name and headline share the row with the monogram, and both must
+   truncate rather than push the card's own width. */
+.bd-slide-text {
+  display: grid;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.bd-slide-name {
+  font-family: var(--bd-font-display);
+  font-size: var(--bd-text-lg);
+  font-weight: 600;
+  letter-spacing: var(--bd-track-tight);
+  color: var(--bd-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bd-slide-sub {
+  font-size: var(--bd-text-sm);
+  color: var(--bd-ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bd-slide-verdict {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bd-s3);
+  padding-block-end: var(--bd-s2);
+  border-block-end: var(--bd-rule-1) solid var(--bd-rule);
+  min-inline-size: 0;
+}
+
+.bd-slide-verdict .bd-fit,
+.bd-slide-verdict .bd-band {
+  white-space: nowrap;
+}
+
+.bd-overall {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-xl);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--bd-ink);
+}
+

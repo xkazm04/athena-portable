@@ -1,0 +1,244 @@
+/*
+ * `board` — The Board. Scoped entirely to [data-variant="board"].
+ *
+ * See design/board-brief.md, and in particular §1b, the revision written before
+ * this rework. DESIGN-LAW §1: no raw value appears below outside this token
+ * block, and every step is an alias of an `--hl-*` scale from
+ * design/hl-scales.css. §1.6: the `--dk-*` hooks are aliased at the bottom of
+ * the block and never forked.
+ *
+ * THE IDEA, AFTER THE REVIEW. A lit contact sheet in a dark room. Near-black
+ * ground, a few soft grey blooms behind the content, every panel a dull sheet
+ * of glass laid on it. The frames you are choosing between are held forward at
+ * full size and everything else is angled off into the dark.
+ *
+ * FOUR THINGS THIS FILE IS ANSWERING.
+ *
+ * 1. READABILITY. The reading sizes start at 15px and the board's own names at
+ *    17px. Nothing that carries a fact is set below 13px, and the only 11px
+ *    type on the surface is a tracked-out caps label whose job is to name the
+ *    thing beneath it.
+ * 2. THE GROUND. No paper. Depth is a bloom, a glass plane and a hairline —
+ *    never a drop shadow on a white card, which is the tell the first pass had.
+ * 3. THE SECOND VOICE. Annotations are set in a handwriting face in a pastel,
+ *    and they appear nowhere near a number or a control. That is the whole of
+ *    the "hand-written" half of the brief, and rationing it is what keeps it
+ *    from reading as decoration.
+ * 4. THE GREYSCALE TEST. Desaturate the page and the irreversible acts are
+ *    still the only inverted, heaviest-ruled region on it, because the class is
+ *    carried by structure before any colour is applied (§7.1).
+ */
+
+/*
+ * TWO SCOPES, ONE DECLARATION.
+ *
+ * The direction's wrapper is where these belong, and for everything drawn inside it that is the
+ * only scope that matters. But two things are drawn OUTSIDE it: the document's own overscroll
+ * gutter (`html`, above the wrapper), and the kit's toast stack, which `ToastProvider` mounts as a
+ * SIBLING of the wrapper. Neither can read a custom property declared on the wrapper, and the
+ * previous answers to that were a hand-copied hex in app/globals.css and four `.dk-*` class
+ * overrides in chrome/toast.css - the token seam being reached past in two directions at once,
+ * which DESIGN-LAW §1.6 forbids for exactly this reason.
+ *
+ * Declaring the same block at document root when the direction is present fixes both at the seam
+ * instead. One direction ships today; when a second one does, these root-scope declarations are
+ * the thing to revisit.
+ */
+[data-variant="board"],
+:root:has([data-variant="board"]) {
+  /* --- Ground and ink. Not counted against the colour lock. --- */
+  --bd-void: #060607;
+  --bd-ground: #0a0a0c;
+  /* Opaque, for the two places a translucent glass plane cannot go: a native <option> list and
+     the kit's toast, both of which are painted by the browser outside the board's own stack. */
+  --bd-sheet: #14141a;
+  --bd-glass: rgb(255 255 255 / 4%);
+  --bd-glass-2: rgb(255 255 255 / 7%);
+  /* The dossier's scrim: --bd-void, thinned. A hand-typed rgb(6 6 7 / 74%) is the ground colour
+     copied a fourth time, and it would not move when the ground does. */
+  --bd-scrim: color-mix(in srgb, var(--bd-void) 74%, transparent);
+  --bd-ink: #ffffff;
+  --bd-ink-2: #c9c9d1;
+  --bd-ink-3: #93939f;
+  --bd-ink-4: #6b6b77;
+  --bd-rule: rgb(255 255 255 / 11%);
+  --bd-rule-2: rgb(255 255 255 / 18%);
+
+  /*
+   * The colour lock (§4.2), revised: four pastels. On a near-black ground a
+   * saturated hue reads as a warning light, and only two things here are
+   * entitled to read that way.
+   */
+  --bd-auto: #9fe3c0;
+  --bd-gate: #ffab9c;
+  --bd-accent: #a8c8f0;
+  --bd-mark: #f2d99b;
+
+  /*
+   * The gated region's sub-palette. NOT four more hues against the lock - it is the structural
+   * inversion §7.1 requires, named. The panel is the one light surface on a dark page, which is
+   * the half of the AUTO/GATED signal that survives being printed in black and white, so its sheet
+   * is deliberately not a tint of --bd-gate: deriving it from the hue would flatten the very
+   * contrast the inversion depends on.
+   *
+   * They live here rather than in the panel's own stylesheet because that is what the lock is for.
+   * Painted from literals, `--bd-gate` moved 1 of 11 paint sites when it was retuned - the 3px
+   * rule above the panel - and left the sheet, the ink, the borders, the fire button and the
+   * scrollbar coral, so the region stopped agreeing with the foot's AUTO/GATED legend and with
+   * the toast that reports the act. §4.2: no new colour may be introduced in a component file.
+   */
+  --bd-gate-sheet: linear-gradient(180deg, #fbf4f2, #f4eae7);
+  --bd-gate-wash: rgb(255 255 255 / 70%);
+  --bd-gate-wash-2: rgb(255 255 255 / 80%);
+  --bd-gate-wash-3: rgb(255 255 255 / 55%);
+  --bd-gate-lit: #ffffff;
+  --bd-gate-ink: #1b1416;
+  --bd-gate-ink-2: #8a5c52;
+  --bd-gate-edge: #d8b3a9;
+  --bd-gate-edge-2: #b8776a;
+  --bd-gate-fire: #8f3423;
+  --bd-gate-fire-2: #7a2a1b;
+
+  /* --- Scales: aliases of the app layer, never new numbers (§1). --- */
+  --bd-s1: var(--hl-space-1);
+  --bd-s2: var(--hl-space-2);
+  --bd-s3: var(--hl-space-3);
+  --bd-s4: var(--hl-space-4);
+  --bd-s5: var(--hl-space-5);
+  --bd-s6: var(--hl-space-6);
+  --bd-s7: var(--hl-space-7);
+  --bd-s8: var(--hl-space-8);
+
+  /*
+   * Type, rebased upward. The imported scale bottoms out at 11px and puts the
+   * reading size at 15px; the review said that was too small, so every step a
+   * fact can land on moves up one and `2xs` is reserved for caps labels alone.
+   */
+  --bd-label: 0.6875rem;
+  --bd-text-xs: 0.8125rem;
+  --bd-text-sm: 0.9375rem;
+  --bd-text-base: 1.0625rem;
+  --bd-text-md: 1.1875rem;
+  --bd-text-hand: 1.375rem;
+  --bd-text-lg: clamp(1.35rem, 1.1rem + 1.2cqi, 1.75rem);
+  --bd-text-xl: clamp(1.9rem, 1.4rem + 2.4cqi, 2.75rem);
+  --bd-text-2xl: clamp(2.4rem, 1.6rem + 4cqi, 3.75rem);
+
+  --bd-leading-tight: var(--hl-leading-tight);
+  --bd-leading-snug: var(--hl-leading-snug);
+  --bd-leading-normal: var(--hl-leading-normal);
+  --bd-leading-relaxed: var(--hl-leading-relaxed);
+
+  --bd-track-tight: var(--hl-track-tight);
+  --bd-track-caps: var(--hl-track-caps);
+
+  --bd-dur-1: var(--hl-dur-1);
+  --bd-dur-2: var(--hl-dur-2);
+  --bd-dur-3: var(--hl-dur-3);
+  --bd-dur-4: var(--hl-dur-4);
+  --bd-ease: var(--hl-ease-standard);
+  --bd-ease-in: var(--hl-ease-entrance);
+
+  /* Depth on a dark ground is a bloom and a hairline, never a grey blur. */
+  --bd-elev-0: none;
+  --bd-elev-lift: 0 30px 70px -34px rgb(0 0 0 / 90%);
+
+  /* The rule ladder is semantic here (§7.1): 1 is a division, 2 a heading, and
+     3 is reserved for the region holding the irreversible acts. */
+  --bd-rule-1: var(--hl-rule-1);
+  --bd-rule-w2: var(--hl-rule-2);
+  --bd-rule-w3: var(--hl-rule-3);
+
+  /*
+   * The minimum reach target, and the direction commits to ONE.
+   *
+   * The chrome carried four values inside a 6px band - 38, 40, 42, 44 - three of them on a single
+   * flex row. Four numbers that close together cannot be read as a rank; they say nothing at all,
+   * which is the visual-craft test failed. And the two smallest were the level rail and the role
+   * filter, the controls this direction is actually driven by, sitting under the 44x44 the
+   * carousel had already adopted two levels away.
+   *
+   * 32 + 12 off the spacing scale, because the scale has no step between 32 and 48 and §1 forbids
+   * typing the number. If a deliberate chrome/content rank is ever wanted, declare a SECOND token
+   * with a legible gap - 36 against 44, not 38 against 42 - and write the pair into the brief.
+   */
+  --bd-control: calc(var(--hl-space-6) + var(--hl-space-3));
+
+  --bd-radius-1: var(--hl-radius-1);
+  --bd-radius-2: var(--hl-radius-2);
+  --bd-radius-3: var(--hl-radius-3);
+  --bd-radius-round: var(--hl-radius-round);
+
+  /*
+   * SUB-SCALE. The spacing scale bottoms out at 4px and §1.1 does not admit anything below it, but
+   * three places genuinely need less: the gap between 7px pips, the 2px baseline a gap mark is
+   * drawn on, and a label sitting directly on the value under it. Named here, so they move when
+   * the rhythm is retuned instead of staying behind.
+   */
+  --bd-s0: 2px;
+  --bd-s0-5: 3px;
+
+  /*
+   * GEOMETRY, which is not spacing and must not be folded onto the spacing scale.
+   *
+   * These are measured values with reasons - the rail height that keeps the arrows and the
+   * keyboard hint above the fold at 900px, the perspective the deck's bend was tuned at, the
+   * diameter at which a pip still reads as a mark rather than as dust. §9.1 asks for zero raw
+   * pixels outside this block, and the answer for a number the scale should not own is a named
+   * role here, not a rounded-off approximation of one.
+   */
+  --bd-stage-min: 300px;
+  --bd-stage-max: 480px;
+  --bd-rail-h: 440px;
+  --bd-perspective: 1500px;
+  --bd-dot: 7px;
+  --bd-swatch: 8px;
+  --bd-avatar-sm: 22px;
+  --bd-scrollbar: 10px;
+  --bd-card-narrow: 300px;
+  --bd-dossier-w: 1180px;
+  --bd-col-min: 150px;
+
+  --bd-measure-narrow: var(--hl-measure-narrow);
+  --bd-measure-prose: var(--hl-measure-prose);
+
+  --bd-font-display: var(--font-bd-display), ui-sans-serif, system-ui, sans-serif;
+  --bd-font: var(--font-bd-text), ui-sans-serif, system-ui, sans-serif;
+  --bd-font-mono: var(--font-bd-mono), ui-monospace, "Cascadia Mono", monospace;
+  --bd-font-hand: var(--font-bd-hand), "Segoe Script", cursive;
+
+  /* --- The --dk-* bridge (§1.6). Alias, never fork. --- */
+  --dk-accent: var(--bd-accent);
+  --dk-accent-contrast: var(--bd-void);
+  --dk-surface: var(--bd-sheet);
+  --dk-surface-2: var(--bd-ground);
+  --dk-ink: var(--bd-ink);
+  --dk-ink-soft: var(--bd-ink-2);
+  /* One step up from --bd-rule: the only kit component this direction mounts is the toast, and it
+     floats over the room rather than dividing it, so its edge has to carry itself. */
+  --dk-line: var(--bd-rule-2);
+  --dk-radius: var(--bd-radius-3);
+  --dk-gap: var(--bd-s3);
+  --dk-font: var(--bd-font);
+  --dk-font-display: var(--bd-font-display);
+  --dk-font-mono: var(--bd-font-mono);
+  --dk-shadow: var(--bd-elev-lift);
+  /*
+   * NOT --bd-gate and --bd-auto, and this is the colour lock rather than a preference.
+   *
+   * The kit spends these two on `.dk-toast-success` and `.dk-toast-error`, which are OUTCOME
+   * classes - ok versus not-ok - with no relationship to the AUTO/GATED split. Every toast in this
+   * direction comes through one call site, `useRun.ts`'s `result.ok ? "success" : "error"`, so
+   * aliasing the locked hues here is total and it is backwards: the three GATED actions report
+   * success, so an irreversible rejection would arrive in the colour of a reversible act, and all
+   * six failures - `Write something first.` among them - would arrive in the colour reserved for
+   * an act that reaches a person and cannot be un-sent. §4.2: "Used for nothing else, ever. If
+   * those two hues appear as decoration anywhere in the UI, the gate signal is destroyed."
+   *
+   * So the toast reports its outcome in rule weight on a neutral edge, and the class is carried
+   * where it is true: the two dossier panels and the register in the foot.
+   */
+  --dk-gated: var(--bd-ink-2);
+  --dk-auto: var(--bd-rule-2);
+}
+
