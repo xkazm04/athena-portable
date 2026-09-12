@@ -1,0 +1,18 @@
+event: text.delta
+data: {"kind": "text.delta", "text": "I will need your approval for that."}
+
+event: tool.call
+data: {"call_id": "turn_bf71a3_00", "kind": "tool.call", "name": "host.invoices.pay", "origin": "host:invoices", "params": {"invoice": "7"}, "tier": 1}
+
+event: decision.requested
+data: {"action": "host.invoices.pay", "decision_kind": "approve", "expires_at": "2026-09-13T09:00:00+00:00", "id": "apr_0f4ed49f9446", "kind": "decision.requested", "options": [{"id": "approve", "label": "approve"}, {"id": "decline", "label": "decline"}], "origin": "host:invoices", "params": {"invoice": "7"}, "rationale": "the invoice the user named", "surface": "panel", "tool": "athena_decision"}
+
+event: tool.result
+data: {"call_id": "turn_bf71a3_00", "error": "pending_approval", "kind": "tool.result", "name": "host.invoices.pay", "ok": false, "output": "host.invoices.pay is gated; approval apr_0f4ed49f9446 is waiting on the user", "tier": 1, "truncated": false}
+
+event: turn.summary
+data: {"cost_usd": 0.04, "engine": "claude_code", "input_tokens": 1840, "kind": "turn.summary", "model": "scripted", "output_tokens": 96, "rounds": 1}
+
+event: turn.finished
+data: {"kind": "turn.finished", "text": "I will need your approval for that.", "tts": null}
+

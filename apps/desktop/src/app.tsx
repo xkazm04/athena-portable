@@ -23,6 +23,7 @@ import { hasShell } from "@/lib/ipc";
 import { MODULE_ENTRIES, moduleFor } from "@/modules/registry";
 import { startDaemon } from "@/stores/daemon";
 import { startOrigins } from "@/stores/origins";
+import { startRun } from "@/stores/run";
 import { startSettings, useSettings } from "@/stores/settings";
 import { startShell, useShell } from "@/stores/shell";
 import { startTabs } from "@/stores/tabs";
@@ -44,6 +45,9 @@ export default function App() {
     // store a *view* starts stops being true the moment the user leaves that view.
     void startSettings();
     void startOrigins();
+    // c22: the one run loop (ADR 0017). It is started here because a turn, a card and a tool list
+    // must all stay true while the user is looking at another module.
+    void startRun();
   }, []);
 
   const active = moduleFor(module);

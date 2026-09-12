@@ -10,6 +10,9 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@athena/bridge':
+        specifier: workspace:*
+        version: link:../../packages/athena-bridge
       '@tauri-apps/api':
         specifier: ^2.11.1
         version: 2.11.1

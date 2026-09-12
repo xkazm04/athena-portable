@@ -1,0 +1,9 @@
+event: text.delta
+data: {"kind": "text.delta", "text": "Three invoices are past thirty days; the chase note is drafted."}
+
+event: turn.summary
+data: {"cost_usd": 0.02, "engine": "claude_code", "input_tokens": 2410, "kind": "turn.summary", "model": "scripted", "output_tokens": 61, "rounds": 1}
+
+event: turn.finished
+data: {"kind": "turn.finished", "text": "Three invoices are past thirty days; the chase note is drafted.", "tts": null}
+

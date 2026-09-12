@@ -1,0 +1,12 @@
+event: text.delta
+data: {"kind": "text.delta", "text": "Let me read the overdue list first."}
+
+event: tool.call
+data: {"call_id": "turn_bf71a3_00", "kind": "tool.call", "name": "host.invoices.chase", "origin": "host:invoices", "params": {"invoice": "7"}, "tier": 1}
+
+event: turn.summary
+data: {"cost_usd": 0.04, "engine": "claude_code", "input_tokens": 1840, "kind": "turn.summary", "model": "scripted", "output_tokens": 96, "rounds": 1}
+
+event: turn.finished
+data: {"kind": "turn.finished", "text": "Let me read the overdue list first.", "tts": null}
+

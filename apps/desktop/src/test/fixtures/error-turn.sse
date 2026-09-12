@@ -1,0 +1,6 @@
+event: text.delta
+data: {"kind": "text.delta", "text": "Opening the engine."}
+
+event: turn.error
+data: {"detail": "the claude CLI exited 1 before it wrote anything", "kind": "turn.error", "reason": "engine_error"}
+
