@@ -21,6 +21,8 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import ModuleBar from "@/components/ModuleBar";
 import { hasShell } from "@/lib/ipc";
 import { MODULE_ENTRIES, moduleFor } from "@/modules/registry";
+import { startOrigins } from "@/stores/origins";
+import { startSettings, useSettings } from "@/stores/settings";
 import { startShell, useShell } from "@/stores/shell";
 import { startTabs } from "@/stores/tabs";
 
@@ -28,11 +30,16 @@ export default function App() {
   const module = useShell((s) => s.module);
   const select = useShell((s) => s.select);
   const theme = useShell((s) => s.theme);
-  const setTheme = useShell((s) => s.setTheme);
+  const themeChoice = useSettings((s) => s.theme);
+  const setTheme = useSettings((s) => s.setTheme);
 
   useEffect(() => {
     void startShell();
     void startTabs();
+    // c21: the settings rows and the origins table. Both are read here and nowhere else — a
+    // store a *view* starts stops being true the moment the user leaves that view.
+    void startSettings();
+    void startOrigins();
   }, []);
 
   const active = moduleFor(module);
@@ -46,14 +53,17 @@ export default function App() {
         onSelect={(id) => void select(id)}
         trailing={
           <>
-            {/* The Settings module takes the theme over in c21 and writes it to the store table;
-                until then this is how both halves of the token contract are reachable. */}
+            {/* The Settings module owns the three-way choice (system / light / dark) and this
+                is its shortcut: one press flips to the opposite of what is *painted*, and the
+                choice it writes is a definite one, because "the opposite of system" is not a
+                theme. Both go through the same `settings` row, so the bar and the module can
+                never disagree. */}
             <button
               type="button"
               className="window-btn typo-label focus-ring"
-              title="Theme"
-              aria-label={`Theme: ${theme}`}
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              title={`Theme: ${themeChoice}`}
+              aria-label={`Theme: ${themeChoice}`}
+              onClick={() => void setTheme(theme === "dark" ? "light" : "dark")}
             >
               {theme === "dark" ? "◗" : "◖"}
             </button>

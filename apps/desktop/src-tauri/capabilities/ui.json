@@ -17,6 +17,12 @@
     "allow-tabs-navigate",
     "allow-tabs-list",
     "allow-layout-module",
-    "allow-layout-select"
+    "allow-layout-select",
+    "allow-store-get",
+    "allow-store-set",
+    "allow-store-list",
+    "allow-store-delete",
+    "allow-store-path",
+    "allow-captures-sweep"
   ]
 }

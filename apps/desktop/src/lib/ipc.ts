@@ -70,6 +70,74 @@ export const tabsList = () => call<Tab[]>("tabs_list");
 export const layoutModule = () => call<string>("layout_module");
 export const layoutSelect = (module: string) => call<void>("layout_select", { module });
 
+// -- the store (c21) ---------------------------------------------------------------------------
+
+/**
+ * The tables `src-tauri/src/store.rs` describes, in its order. Rust refuses any other name, and
+ * this list is the same list — a table is added in both files or in neither.
+ *
+ * There is deliberately **no command per table**. One key/value surface over a described schema
+ * is what lets c24, c25 and c27 add a module without adding a pair of Rust commands, and it is
+ * the Rust half of the answer to "seven people editing one panel" (README section 9).
+ */
+export const STORE_TABLES = [
+  "settings",
+  "origins",
+  "projects",
+  "project_pages",
+  "project_runs",
+  "activity",
+  "captures",
+] as const;
+
+export type StoreTable = (typeof STORE_TABLES)[number];
+
+/**
+ * A bounded read. `showing` and `total` are the two halves of `(showing N of M)`; Rust counts
+ * the total through the same `WHERE` as the page, so the footer is never a guess.
+ */
+export interface StorePage<Row> {
+  rows: Row[];
+  showing: number;
+  total: number;
+}
+
+/** What `captures_sweep` reports back. `bytes` is what the table holds once the sweep is done. */
+export interface SweepResult {
+  removed: number;
+  freed: number;
+  bytes: number;
+  cap_bytes: number;
+}
+
+/**
+ * The four raw store commands, plus the path and the sweep.
+ *
+ * These are the *wire*: a table name, a key, and `Wire` in and out. `lib/store.ts` is the layer
+ * above them that knows what a row of each table looks like, and it is what a store imports.
+ * Nothing here interprets a value, which is why `storeGetRow` is generic and unchecked: the
+ * shell carries settings between the panel and the sidecar and reads none of them.
+ */
+export const storeGetRow = <T>(table: StoreTable, key: string) =>
+  call<T | null>("store_get", { table, key });
+
+/** Answers the key the row was written under — the only way an appended row learns its id. */
+export const storeSetRow = (table: StoreTable, key: string, value: Wire) =>
+  call<string>("store_set", { table, key, value });
+
+export const storeListRows = <Row>(table: StoreTable, filter: Args = {}) =>
+  call<StorePage<Row>>("store_list", { table, filter });
+
+export const storeDeleteRow = (table: StoreTable, key: string) =>
+  call<void>("store_delete", { table, key });
+
+/** The store file itself, for the read-only line in Settings. */
+export const storePath = () => call<string>("store_path");
+
+/** `null` asks Rust for its own cap constant, which is the only place that number lives. */
+export const capturesSweep = (capBytes: number | null = null) =>
+  call<SweepResult>("captures_sweep", { cap_bytes: capBytes });
+
 // -- events ---------------------------------------------------------------------------------
 
 /**

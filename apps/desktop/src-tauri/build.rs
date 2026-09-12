@@ -26,7 +26,13 @@ fn main() {
             // ---- later milestones add their commands here, one block per module ----
             // bridge.rs (c19): bridge_list, bridge_call, bridge_reply
             // daemon.rs (c20): daemon_status, daemon_restart
-            // store.rs  (c21): store_get, store_set, origins_*
+            // store.rs (c21) — one key/value surface over every table, not one command per table
+            "store_get",
+            "store_set",
+            "store_list",
+            "store_delete",
+            "store_path",
+            "captures_sweep",
             // hands.rs  (c24): hands_call, screenshot_read
         ])),
     )
