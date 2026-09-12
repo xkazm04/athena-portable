@@ -125,8 +125,18 @@ class Brain:
         # ``write_txn`` the only thing that opens a transaction — an implicit BEGIN that Python
         # starts on the first INSERT and commits on some later statement is exactly the
         # half-written index a read handle must never see.
+        # ``check_same_thread=False`` because the daemon is threaded (README §3.5) and every
+        # request runs on a worker thread that did not construct this brain. It is safe for the
+        # reason the design already gives: *every* mutation goes through ``write_txn``, which
+        # holds ``_write_lock`` for the whole transaction, so exactly one thread is ever inside
+        # this connection. sqlite3's own thread check would be a second, weaker guard over the
+        # same invariant — and the one it enforces is "the constructing thread", which is a
+        # property the daemon cannot have.
         self._con = sqlite3.connect(
-            str(self.db_path), timeout=BUSY_TIMEOUT_MS / 1000, isolation_level=None
+            str(self.db_path),
+            timeout=BUSY_TIMEOUT_MS / 1000,
+            isolation_level=None,
+            check_same_thread=False,
         )
         self._con.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
         # WAL is what lets a reader hold a snapshot while the writer commits. Without it the

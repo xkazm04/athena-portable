@@ -111,3 +111,37 @@ def test_a_write_does_not_block_a_concurrent_read(tmp_path: Path) -> None:
         assert seen["before"] == 1
         assert seen["during"] == 1, "an open read snapshot changed underneath the reader"
         assert seen["after"] == 3
+
+
+def test_a_write_from_another_thread_is_serialised_rather_than_refused(tmp_path: Path) -> None:
+    """The daemon is threaded, so no request runs on the thread that built the brain.
+
+    The writer connection allows other threads because ``write_txn`` already holds a lock for the
+    whole transaction — one thread is ever inside it. What this asserts is the pair: a write from
+    a foreign thread succeeds, and two of them do not interleave.
+    """
+    brain = Brain(tmp_path / "brain", session_id="sess_threads")
+    order: list[str] = []
+    lock = threading.Lock()
+
+    def write(label: str) -> None:
+        with brain.write_txn():
+            with lock:
+                order.append(f"{label}:in")
+            time.sleep(0.02)
+            with lock:
+                order.append(f"{label}:out")
+        brain.append_episode(f"written from {label}", role="assistant")
+
+    threads = [threading.Thread(target=write, args=(f"t{i}",)) for i in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(10)
+
+    assert brain.counts()["episode"] == 4
+    # Every transaction closed before the next one opened: no ``in`` follows an ``in``.
+    assert all(
+        order[i].endswith(":in") == order[i + 1].endswith(":out") for i in range(0, len(order), 2)
+    )
+    brain.close()
