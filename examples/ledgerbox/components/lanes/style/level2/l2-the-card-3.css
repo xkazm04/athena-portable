@@ -134,3 +134,278 @@
   cursor: pointer;
 }
 
+
+/* ------------------------------------------------- L2 the decision dialog */
+
+/*
+ * "Decide next step" — the one control the card's foot still carries, and the
+ * list it opens.
+ *
+ * The two bands this replaced are described in `card/Foot.tsx`. What the shape
+ * has to earn back is the one thing the bands did carry: that the classes are a
+ * structural distinction and not a colour. It is carried here by the RULE DOWN
+ * THE LEADING EDGE of each row and by the class word set in the mono face
+ * beside it, both of which survive greyscale, and by the fact that a gated row's
+ * control arms before it issues while an auto row's does not.
+ */
+.ln-decide-cta {
+  justify-self: start;
+}
+
+.ln-decide-layer {
+  position: fixed;
+  inset: 0;
+  /* Above the card layer (60), because it is a dialog over a dialog and the one
+     the reader is acting in is the one on top. */
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: var(--ln-s4);
+  /* Lighter than the card's own scrim: this is a dialog over a dialog, and
+     the invoice it belongs to should stay visible behind it. */
+  background: rgb(4 7 8 / 58%);
+  backdrop-filter: blur(4px);
+}
+
+.ln-decide {
+  inline-size: min(920px, 100%);
+  max-block-size: min(86svh, 820px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  gap: var(--ln-s4);
+  align-content: start;
+  padding: var(--ln-s5);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 8%), transparent 22%),
+    var(--ln-raise);
+  border: 1px solid var(--ln-rule);
+  border-radius: var(--ln-radius-card);
+  box-shadow: 0 40px 90px -40px rgb(0 0 0 / 90%);
+}
+
+.ln-decide-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--ln-s2) var(--ln-s3);
+}
+
+.ln-decide-title {
+  margin: 0;
+  font-family: var(--ln-font-display);
+  font-size: var(--ln-text-lg);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  color: #fff;
+}
+
+/* The heading takes focus on open, so it needs a ring of its own — a
+   `tabindex="-1"` element gets none by default and the dialog would open with
+   no visible focus at all. */
+.ln-decide-title:focus-visible {
+  outline: 2px solid var(--ln-accent);
+  outline-offset: 4px;
+}
+
+.ln-decide-sub {
+  grid-column: 1;
+  margin: 0;
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-text-xs);
+  letter-spacing: 0.04em;
+  color: var(--ln-mute);
+}
+
+.ln-decide-head .ln-close {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin-inline-start: 0;
+}
+
+/*
+ * THE CONVERSATION SLOT, HELD OPEN AND EMPTY.
+ *
+ * Athena is not connected to this app, and the honest rendering of that is a
+ * seat with nobody in it rather than the absence of a seat — a dashed edge, the
+ * sentence, and no control implying that typing into it would reach anyone.
+ * `design/pass3-law-brief.md` §4.1: the present tense of registration, never the
+ * past tense of work.
+ */
+.ln-talk {
+  display: grid;
+  gap: var(--ln-s2);
+  padding: var(--ln-s4);
+  border: 1px dashed var(--ln-rule);
+  border-radius: var(--ln-radius-card);
+  background: rgb(255 255 255 / 2%);
+}
+
+.ln-talk-say {
+  margin: 0;
+  font-size: var(--ln-text-sm);
+  line-height: 1.5;
+  color: var(--ln-ink);
+}
+
+.ln-talk-note {
+  margin: 0;
+  font-size: var(--ln-text-xs);
+  line-height: 1.55;
+  color: var(--ln-faint);
+  max-inline-size: 62ch;
+}
+
+/* The list of acts. */
+.ln-acts {
+  display: grid;
+  gap: var(--ln-s2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * ONE ACT, ONE ROW, AND ITS PARAMETERS INSIDE IT.
+ *
+ * The class word and the leading rule are the first column; what the act is and
+ * what it reaches are the second; the act's own parameters are the third and the
+ * control that takes it is the fourth. A picker that is an argument to a verb is
+ * now physically inside that verb's row, which is the whole complaint about the
+ * bands answered in the layout rather than in a label.
+ */
+.ln-act {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--ln-s3);
+  padding: var(--ln-s3);
+  background: var(--ln-deep);
+  border: 1px solid var(--ln-rule);
+  border-inline-start-width: 3px;
+  border-radius: var(--ln-radius);
+}
+
+.ln-act[data-class="auto"] {
+  border-inline-start-color: var(--ln-auto);
+}
+
+.ln-act[data-class="gated"] {
+  border-inline-start-color: var(--ln-gate);
+  background: rgb(255 143 77 / 6%);
+}
+
+.ln-act-class {
+  align-self: start;
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  inline-size: 5.5ch;
+}
+
+.ln-act[data-class="auto"] .ln-act-class {
+  color: var(--ln-auto);
+}
+
+.ln-act[data-class="gated"] .ln-act-class {
+  color: var(--ln-gate);
+}
+
+.ln-act-said {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.ln-act-said b {
+  font-size: var(--ln-text-sm);
+  font-weight: 500;
+  color: #fff;
+}
+
+/* What it reaches. The clause that used to be hidden inside the armed state of
+   a gate, said before the reader has pressed anything. */
+.ln-act-said i {
+  font-style: normal;
+  font-size: var(--ln-text-xs);
+  line-height: 1.45;
+  color: var(--ln-mute);
+}
+
+/* The real capability name, because an act a person can take and an act an
+   agent can call are the same act and the surface should say so. */
+.ln-act-said code {
+  font-size: var(--ln-label);
+  letter-spacing: 0.08em;
+  color: var(--ln-faint);
+}
+
+.ln-act-take {
+  display: flex;
+  align-items: center;
+  gap: var(--ln-s2);
+}
+
+/*
+ * THE SELECTS, STYLED AS THE CARD'S OWN CONTROLS.
+ *
+ * `tone` and `file under` were bare UA `<select>`s: a light rounded box on a
+ * near-black card, with no focus ring of the direction's own, no mono label
+ * treatment, and a dark option list only because `color-scheme: dark` on the
+ * root happened to reach them. They read the tokens now — the same ground, rule
+ * and ink as every other control on the card, a real `:focus-within` ring, and
+ * a drawn chevron rather than the platform's.
+ */
+.ln-field-select {
+  display: grid;
+  gap: 3px;
+  min-inline-size: 8.5rem;
+}
+
+.ln-field-label {
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ln-faint);
+}
+
+.ln-field-select select {
+  appearance: none;
+  min-block-size: 44px;
+  padding-block: var(--ln-s2);
+  padding-inline: var(--ln-s3) var(--ln-s6);
+  background-color: rgb(255 255 255 / 5%);
+  /* The chevron, drawn in ink rather than left to the platform. Two strokes on
+     a 45° grid, which is the one geometry rule the direction's bespoke marks
+     already keep. */
+  /* The 45deg half is the LEFT stroke and therefore the one further from the
+     edge: swapped, the two halves draw a caret pointing the wrong way, which is
+     what the first capture put beside both pickers. */
+  background-image: linear-gradient(45deg, transparent 50%, var(--ln-mute) 50%),
+    linear-gradient(135deg, var(--ln-mute) 50%, transparent 50%);
+  background-position:
+    calc(100% - var(--ln-s5)) calc(50% - 1px),
+    calc(100% - var(--ln-s5) + var(--ln-s1)) calc(50% - 1px);
+  background-size: var(--ln-s1) var(--ln-s1);
+  background-repeat: no-repeat;
+  border: 1px solid var(--ln-rule);
+  border-radius: var(--ln-radius);
+  color: var(--ln-ink);
+  font-size: var(--ln-text-xs);
+  cursor: pointer;
+  transition: border-color var(--ln-dur-1) var(--ln-ease);
+}
+
+.ln-field-select select:hover {
+  border-color: var(--ln-mute);
+}
+
+.ln-field-select:focus-within .ln-field-label {
+  color: var(--ln-accent);
+}

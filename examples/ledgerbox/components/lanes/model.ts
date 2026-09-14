@@ -13,12 +13,19 @@
  * This file is the door. Everything importing `./model` keeps working, and the
  * three parts behind it can each be read in one sitting:
  *
- *   sheet    what the server hands down, and the geometry that is part of it
- *   books    the ledger the tool layer answers from, beside the picture
- *   packing  how many sub-rows a lane needs, decided once for both levels
- *   filters  what the swarm is lit by, and how a lane finds its own marks
+ *   sheet     what the server hands down, and the geometry that is part of it
+ *   books     the ledger the tool layer answers from, beside the picture
+ *   packing   how many sub-rows a lane needs, decided once for both levels
+ *   filters   what the swarm is lit by, and how a lane finds its own marks
+ *   attention how present one mark is — the filter and "does this want a
+ *             decision", answered in one place so there is one dimming system
+ *   status    one invoice's standing, in a word and a glyph
+ *   legend    the footer key, which is also the filter panel
  */
 export * from "./model/sheet";
 export * from "./model/books";
 export * from "./model/packing";
 export * from "./model/filters";
+export * from "./model/attention";
+export * from "./model/status";
+export * from "./model/legend";

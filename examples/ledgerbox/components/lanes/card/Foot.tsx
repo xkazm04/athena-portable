@@ -1,32 +1,30 @@
 "use client";
 
 /**
- * The acts, and the gate in front of three of them.
+ * The foot of the card: one call to action, and the key underneath it.
  *
- * Recording a payment, sending a reminder and voiding an invoice all reach
- * outside this app or cannot be replayed backwards, so each arms first and says
- * in words what it will do and to whom. The gate is asked where the click
- * landed, not in a dialog somewhere else: a question about this invoice belongs
- * on this invoice.
+ * IT USED TO BE TWO BANDS. A cool one tagged AUTO holding four controls, a
+ * warmer one tagged GATED holding three, and two bare `<select>`s wedged in
+ * among the first four with nothing saying which verb they were arguments to.
+ * The review's words were "footer bars Auto/Gated have terrible UX, not clear
+ * what belongs to what". Both halves of that are layout faults rather than
+ * copy faults: a row of peers cannot express "this picker is a parameter of
+ * that button", and a band tagged with a class cannot express what the class
+ * MEANS for the particular act you are hovering.
  *
- * TWO BANDS, AND THE SAME TWO IN ALL THREE APPS. The four reversible controls
- * and the three gated ones used to be two undifferentiated rows of buttons,
- * told apart only by the orange outline on the second row and by the key
- * underneath. They are the panel's own bands now — a cool one tagged AUTO, a
- * warmer one tagged GATED — so the moment a reader reaches the gate reads the
- * same on the Lanes, the Board and the Blocks. The key below them is unchanged:
- * it is what the two tags mean.
+ * So the acts are a list now, one level in — `Decide.tsx` — and what is left
+ * here is the one control that opens it plus the key that says what the two
+ * class words mean. The card's own height goes back to the evidence, which is
+ * what a reader is at this level for.
+ *
+ * NOTHING ABOUT THE ACTS THEMSELVES MOVED. Same five server actions, same three
+ * gates, same classes read from `lib/tool-classes.ts`. This file got smaller;
+ * the contract did not change.
  */
-import { formatMoney } from "@/lib/format";
-import { CATEGORIES, TONES, type Category, type Tone } from "@/lib/constants";
-import {
-  categorizeAction,
-  draftReminderAction,
-  markPaidAction,
-  sendReminderAction,
-  voidInvoiceAction,
-} from "@/app/actions";
-import { Gate } from "../Gate";
+import { useRef, useState } from "react";
+
+import { type Category, type Tone } from "@/lib/constants";
+import { Decide } from "./Decide";
 import type { LnDetail, LnMark } from "../model";
 import type { useRun } from "../useRun";
 
@@ -55,110 +53,62 @@ export function CardFoot({
   pending: Run["pending"];
   run: Run["run"];
 }) {
+  const [deciding, setDeciding] = useState(false);
+  /**
+   * The opener, kept so the dialog can hand focus back to it (round-1 rule 5).
+   *
+   * This is the ONE place that knows where "back" is from the decision list, so
+   * it is the one place that restores it — the same argument the card makes
+   * about the node it grew out of, one level in.
+   */
+  const ctaRef = useRef<HTMLButtonElement | null>(null);
+
   return (
-      <div className="ln-card-foot">
-        {actionable ? (
-          <>
-            <div className="ln-band" data-band="auto">
-              <span className="ln-band-tag">Auto</span>
-              <div className="ln-actions">
-              <label className="ln-select">
-                <span className="ln-block-label">Tone</span>
-                <select
-                  value={tone}
-                  onChange={(event) => setTone(event.target.value as Tone)}
-                  aria-label="Reminder tone"
-                >
-                  {TONES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                type="button"
-                className="ln-btn"
-                disabled={pending}
-                onClick={() => run(() => draftReminderAction(mark.id, tone))}
-              >
-                Draft a {tone} reminder
-              </button>
-              <label className="ln-select">
-                <span className="ln-block-label">File under</span>
-                <select
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value as Category)}
-                  aria-label="Book-keeping category"
-                >
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                type="button"
-                className="ln-btn"
-                disabled={pending || category === mark.category}
-                onClick={() => run(() => categorizeAction([mark.id], category))}
-              >
-                Refile
-              </button>
-              </div>
-            </div>
-            <div className="ln-band" data-band="gated">
-              <span className="ln-band-tag">Gated</span>
-              <div className="ln-actions">
-              <Gate
-                // Exact, not `formatMoneyShort`: the short formatter rounds to
-                // whole units, which is right for a headline figure and wrong
-                // on the one control that moves money. What is written is
-                // `balanceCents` to the cent, so that is what the label and the
-                // armed question both have to say.
-                label={`Record ${formatMoney(mark.balanceCents)} received`}
-                confirmLabel="Record it"
-                question={`This writes ${formatMoney(mark.balanceCents)} against the books and cannot be replayed backwards.`}
-                onConfirm={() => markPaidAction(mark.id, mark.balanceCents)}
-                disabled={!owed}
-              />
-              <Gate
-                label={detail?.draft ? "Send the drafted reminder" : "Send a reminder"}
-                confirmLabel="Send it"
-                question={`This reaches ${detail?.email ?? "the client"}. You cannot un-send it.`}
-                onConfirm={() => sendReminderAction(mark.id)}
-                disabled={!detail?.draft}
-              />
-              {/*
-                `voidInvoiceAction` refuses any invoice with payments applied,
-                so the control has to say so before it is pressed rather than
-                after. `mark_paid` through the tool layer hits the same guard.
-              */}
-              <Gate
-                label="Void this invoice"
-                confirmLabel="Void it"
-                question={
-                  mark.paidCents > 0
-                    ? "Unapply the credits on this invoice first."
-                    : "Voiding writes off the balance. There is no undo."
-                }
-                onConfirm={() => voidInvoiceAction(mark.id)}
-                disabled={mark.paidCents > 0}
-              />
-              </div>
-            </div>
-            <p className="ln-class">
-              <b>AUTO</b> draft, refile, apply a credit — reversible. <i>GATED</i> record,
-              send, void — each reaches a person or cannot be replayed backwards.
-            </p>
-          </>
-        ) : (
+    <div className="ln-card-foot">
+      {actionable ? (
+        <>
+          <button
+            type="button"
+            className="ln-btn ln-decide-cta"
+            data-kind="primary"
+            ref={ctaRef}
+            onClick={() => setDeciding(true)}
+            aria-haspopup="dialog"
+            aria-expanded={deciding}
+          >
+            Decide next step
+          </button>
           <p className="ln-class">
-            Nothing is owed on this invoice, so there is nothing here to press. The three gated
-            acts appear on invoices that still carry a balance.
+            <b>AUTO</b> draft, refile, apply a credit — reversible. <i>GATED</i> record, send,
+            void — each reaches a person or cannot be replayed backwards.
           </p>
-        )}
-      </div>
+          {deciding ? (
+            <Decide
+              mark={mark}
+              detail={detail}
+              owed={owed}
+              tone={tone}
+              setTone={setTone}
+              category={category}
+              setCategory={setCategory}
+              pending={pending}
+              run={run}
+              onClose={() => {
+                setDeciding(false);
+                /* Next frame: the dialog is still committing its unmount, and a
+                   focus call into a node that is about to lose its subtree
+                   lands on the body instead. */
+                requestAnimationFrame(() => ctaRef.current?.focus());
+              }}
+            />
+          ) : null}
+        </>
+      ) : (
+        <p className="ln-class">
+          Nothing is owed on this invoice, so there is nothing here to press. The three gated
+          acts appear on invoices that still carry a balance.
+        </p>
+      )}
+    </div>
   );
 }

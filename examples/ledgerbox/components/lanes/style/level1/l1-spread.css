@@ -10,8 +10,8 @@
 /*
  * THE CHROME ARRIVES; THE TITLE TRAVELS.
  *
- * The lane's blurb, its three figures and the five rails have no counterpart at
- * L0, so they fade up in place over `--ln-dur-2` rather than being cut in. The
+ * The lane's blurb, its three figures and its clock have no counterpart at L0,
+ * so they fade up in place over `--ln-dur-2` rather than being cut in. The
  * spread's own `<h2>` is deliberately NOT in this list: it is the element
  * carrying the `layoutId` from the L0 gutter, and fading it would put a second
  * animation on top of the one move the reader is supposed to be following.
@@ -21,7 +21,7 @@
  */
 .ln-spread-blurb,
 .ln-spread-figures,
-.ln-rails {
+.ln-clock {
   /* Held back by one step, so the lane's name has crossed this band and landed
      in the head before the figures under it come up. Without the delay the
      traveller flew through three poster numerals fading in underneath it, which
@@ -38,20 +38,110 @@
   }
 }
 
+/*
+ * THE HEAD IS TWO HALVES, AND IT USED TO BE FOUR STACKED BANDS.
+ *
+ * Title, blurb, figures and then five rails — every lane you were not in,
+ * redrawn mark by mark — came to 260px of chrome above a field of cards, which
+ * is what "use of spacing in top area is inefficient" measured. The claim is on
+ * the left and the open lane's own clock is on the right, side by side, and
+ * everything the rails cost has gone back to the cards.
+ */
 .ln-spread-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--ln-s2) var(--ln-s4);
-  margin-block-end: var(--ln-s3);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--ln-s4) var(--ln-s6);
+  margin-block-end: var(--ln-s4);
+}
+
+.ln-spread-claim {
+  display: grid;
+  gap: var(--ln-s2);
+  align-content: start;
+  min-inline-size: 0;
 }
 
 /* The lane's figures, in the masthead's own device — poster numerals over
    tracked-out caps. One size smaller than the sheet's, because a lane is one
    sixth of the claim the sheet makes. */
 .ln-spread-figures {
-  gap: var(--ln-s6);
-  margin-block-end: var(--ln-s4);
+  gap: var(--ln-s5);
+  margin-block-start: var(--ln-s1);
+}
+
+/*
+ * THE LANE'S CLOCK — the one thing L1 lost when it stopped being a time axis.
+ *
+ * The same encoding as L0 and no other: position is the due date, width is the
+ * balance, colour is the state, the hairline is the now-line. It is a figure
+ * with a caption because it is a reading and not a control — every mark on it is
+ * a card two inches below, and a second way to open the same twelve invoices is
+ * a second thing to learn.
+ */
+.ln-clock {
+  margin: 0;
+  display: grid;
+  gap: var(--ln-s2);
+  align-content: start;
+  min-inline-size: 0;
+  padding: var(--ln-s3) var(--ln-s4);
+  background: var(--ln-deep);
+  border: 1px solid var(--ln-rule-soft);
+  border-radius: var(--ln-radius);
+}
+
+.ln-clock-axis {
+  position: relative;
+  block-size: 14px;
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ln-faint);
+}
+
+.ln-clock-axis span {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: calc(var(--x) * 100%);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.ln-clock-track {
+  position: relative;
+  block-size: calc(var(--rows) * var(--ln-clock-row) + var(--ln-s1));
+  background: var(--ln-surface);
+  border-radius: 2px;
+}
+
+.ln-clock-track i {
+  position: absolute;
+  inset-inline-start: calc(var(--x) * 100%);
+  inset-block-start: calc(var(--row) * var(--ln-clock-row) + 3px);
+  inline-size: max(5px, calc(var(--w) * 100%));
+  block-size: var(--ln-clock-mark);
+  border-radius: 1px;
+  background: var(--tone);
+}
+
+.ln-clock-now {
+  position: absolute;
+  inset-block: -2px;
+  inset-inline-start: calc(var(--todayX) * 100%);
+  inline-size: 1px;
+  background: var(--ln-accent);
+  opacity: 0.6;
+}
+
+.ln-clock figcaption {
+  font-size: var(--ln-label);
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: var(--ln-faint);
+  text-wrap: pretty;
 }
 
 /* `.ln-readout` is on the same element (spread/Head.tsx), and `.ln-readout b` in
@@ -90,106 +180,15 @@
   line-height: 1.55;
 }
 
-/* The other lanes collapse to rails rather than vanishing, so the sheet keeps
-   its shape and moving sideways never goes back through L0. */
 /*
- * The five lanes you are not in.
- *
- * They keep the position and the order they had at L0, because that continuity
- * is the whole reason they are rails rather than a menu — but each one now
- * states the thing that decides whether you would rather be in it. The spine is
- * the same late-share bar the L0 gutter draws, so one encoding covers both
- * levels, and the figure on the right is the money behind it.
+ * THE RAILS ARE GONE. Five collapsed lanes, each redrawing every one of its own
+ * marks, sat between the head and the field: roughly a hundred of the sheet's
+ * hundred and twenty-four marks drawn for lanes the reader had just left, for
+ * 130px of the frame. "Swimlanes do not belong on L1" was the review's word for
+ * it and it was right — the sideways move they bought is Escape and a click,
+ * which is one press more and a hundred marks less. Their height went to the
+ * cards.
  */
-.ln-rails {
-  display: grid;
-  gap: 2px;
-  margin-block-end: var(--ln-s4);
-}
-
-.ln-rail-strip {
-  display: grid;
-  grid-template-columns: var(--ln-gutter, 186px) minmax(0, 1fr) 8.5rem;
-  gap: var(--ln-s3);
-  align-items: center;
-  border: 0;
-  border-radius: var(--ln-radius);
-  background: none;
-  padding: var(--ln-s1) var(--ln-s2) var(--ln-s1) 0;
-  cursor: pointer;
-  min-block-size: 30px;
-  transition: background var(--ln-dur-1) var(--ln-ease);
-}
-
-.ln-rail-strip:hover {
-  background: rgb(255 255 255 / 4%);
-}
-
-.ln-rail-name {
-  position: relative;
-  font-family: var(--ln-font-mono);
-  font-size: var(--ln-label);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ln-mute);
-  text-align: start;
-  padding-inline-start: var(--ln-s3);
-  transition: color var(--ln-dur-1) var(--ln-ease);
-}
-
-/* The same two-part measure as the lane spine at L0: the red run is the share
-   of this lane's outstanding money that is already late. */
-.ln-rail-name::before {
-  content: "";
-  position: absolute;
-  inset-block: -3px;
-  inset-inline-start: 0;
-  inline-size: 3px;
-  border-radius: 2px;
-  background: linear-gradient(
-    to bottom,
-    var(--ln-alert) 0 calc(var(--late, 0) * 100%),
-    var(--ln-rule) calc(var(--late, 0) * 100%) 100%
-  );
-}
-
-.ln-rail-strip:hover .ln-rail-name {
-  color: var(--ln-ink);
-}
-
-.ln-rail-bar {
-  position: relative;
-  block-size: 7px;
-  background: var(--ln-surface);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.ln-rail-bar i {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: calc(var(--x) * 100%);
-  inline-size: 4px;
-  border-radius: 1px;
-  background: var(--tone);
-  opacity: 0.85;
-}
-
-.ln-rail-strip:hover .ln-rail-bar {
-  background: var(--ln-raise);
-}
-
-.ln-rail-figure {
-  font-size: var(--ln-text-xs);
-  color: var(--ln-faint);
-  text-align: end;
-  white-space: nowrap;
-  transition: color var(--ln-dur-1) var(--ln-ease);
-}
-
-.ln-rail-strip:hover .ln-rail-figure {
-  color: var(--ln-mute);
-}
 
 /*
  * The spread. A wrapped grid in due-date order: the cards run left to right and

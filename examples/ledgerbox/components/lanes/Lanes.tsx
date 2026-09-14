@@ -281,14 +281,24 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
                   picked={pickedSet}
                   mode={mode}
                   onOpenItem={(id) => nav.openItem(spreadLane.id, id)}
-                  onOpenLane={nav.openGroup}
                 />
               </motion.div>
             ) : null}
 
         </div>
 
-        <Foot sheet={sheet} lane={lane} mark={mark} level={level} nav={nav} />
+        {/* The legend is also the filter panel, so the footer takes the filter
+            and the setter the tools already move. One `setFilter`, whether the
+            press came from a person's thumb or from `set_filter`. */}
+        <Foot
+          sheet={sheet}
+          lane={lane}
+          mark={mark}
+          level={level}
+          nav={nav}
+          filter={filter}
+          setFilter={setFilter}
+        />
 
         {/*
          * The card layer lives HERE, after the footer, and that placement is

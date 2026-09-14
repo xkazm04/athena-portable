@@ -23,22 +23,25 @@
  * each of the two things the L2 card also shows, so the amount and the client
  * name fly to their new positions instead of cross-fading.
  */
-import { useMemo, type CSSProperties } from "react";
+import { useCallback, useMemo, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { formatMoneyShort } from "@/lib/format";
-import { chronological, matches, type LnFilter, type LnLane, type LnSheet } from "./model";
+import {
+  PRESENCE_OPACITY,
+  chronological,
+  matches,
+  presenceOf,
+  statusOf,
+  type LnFilter,
+  type LnLane,
+  type LnSheet,
+} from "./model";
 import { fade, instant, lift, move, revealDelay, zoom } from "./motion";
+import { StatusGlyph } from "./spread/Glyph";
 import { SpreadHead } from "./spread/Head";
 
 export type SpreadMode = "flat" | "raised";
-
-/** `LB-2026-0058` -> `0058`. Every invoice shares the prefix, so it carries no
- *  information at this width and costs the digits that do. */
-function shortNumber(number: string): string {
-  const parts = number.split("-");
-  return parts[parts.length - 1] ?? number;
-}
 
 export function Spread({
   sheet,
@@ -48,7 +51,6 @@ export function Spread({
   picked,
   mode,
   onOpenItem,
-  onOpenLane,
 }: {
   sheet: LnSheet;
   lane: LnLane;
@@ -65,7 +67,6 @@ export function Spread({
   picked: ReadonlySet<string>;
   mode: SpreadMode;
   onOpenItem: (id: string) => void;
-  onOpenLane: (laneId: string) => void;
 }) {
   const reduced = useReducedMotion();
   const ordered = useMemo(() => chronological(lane), [lane]);
@@ -77,15 +78,59 @@ export function Spread({
   );
   const shown = ordered.filter((m) => matches(m, filter)).length;
 
+  /**
+   * ONE TAB STOP FOR THE WHOLE FIELD, and the arrows inside it.
+   *
+   * L0 has had this since the first cut and L1 never did: forty cards were forty
+   * tab stops between the head and the footer, so nobody reached the footer by
+   * keyboard and nobody walked the lane by keyboard either. It is the same
+   * pattern the swarm uses, one level down — a roving `tabIndex`, the arrows
+   * moving between peers, Home and End to the ends of the lane.
+   *
+   * UP AND DOWN ARE A COLUMN, not a guess at one. The field is a wrapped
+   * `auto-fill` grid, so the column count is whatever the container gave it
+   * this frame; it is measured off the cards' own `offsetTop` rather than
+   * assumed, which means it stays right at every width and in both modes
+   * without a media query anywhere near it.
+   */
+  const [roving, setRoving] = useState(0);
+  const rove = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+    const keys = ["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"];
+    if (!keys.includes(event.key)) return;
+    const nodes = [...event.currentTarget.querySelectorAll<HTMLElement>(".ln-node")];
+    const here = nodes.indexOf(document.activeElement as HTMLElement);
+    if (here < 0 || nodes.length === 0) return;
+    // The first card on the second row is the width of a row, in cards.
+    const top = nodes[0]?.offsetTop;
+    const wrapAt = nodes.findIndex((n) => n.offsetTop !== top);
+    const columns = wrapAt > 0 ? wrapAt : nodes.length;
+    const clamp = (n: number) => Math.max(0, Math.min(nodes.length - 1, n));
+    let next = here;
+    if (event.key === "ArrowRight") next = clamp(here + 1);
+    else if (event.key === "ArrowLeft") next = clamp(here - 1);
+    else if (event.key === "ArrowDown") next = clamp(here + columns);
+    else if (event.key === "ArrowUp") next = clamp(here - columns);
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = nodes.length - 1;
+    if (next === here) return;
+    event.preventDefault();
+    // Focusing is enough: the card's own `onFocus` moves the stop, so there is
+    // exactly one place that decides where it is.
+    nodes[next]?.focus();
+  }, []);
+
   return (
     <div className="ln-spread" data-live={live}>
-      <SpreadHead sheet={sheet} lane={lane} live={live} onOpenLane={onOpenLane} />
+      <SpreadHead sheet={sheet} lane={lane} live={live} filter={filter} />
 
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={lane.id}
           className="ln-field"
           data-mode={mode}
+          role="group"
+          aria-label={`${lane.label}, ${lane.count} invoices in due order. Use the arrow keys to move between them.`}
+          onKeyDown={rove}
           /*
            * NINE DEGREES, NOT THIRTEEN, and a much longer perspective.
            *
@@ -99,7 +144,8 @@ export function Spread({
           transition={zoom}
         >
           {ordered.map((mark, index) => {
-            const dim = !matches(mark, filter);
+            const presence = presenceOf(mark, filter);
+            const status = statusOf(mark);
             // How far this card stands up in `raised` mode: its share of the
             // largest balance in the lane.
             const standing = maxBalance > 0 ? Math.max(0, mark.balanceCents) / maxBalance : 0;
@@ -131,8 +177,16 @@ export function Spread({
              */
             const body = (
               <>
+                {/*
+                 * THE STANDING, WHERE THE ID USED TO BE. `#0058` in the corner
+                 * the eye reaches first was four digits every invoice in the
+                 * books shares a prefix with — an address, printed where a fact
+                 * belongs. The glyph says what is the matter with this invoice;
+                 * the id has dropped to the quiet mono line below, which is
+                 * where you look when you are about to name it to somebody.
+                 */}
                 <span className="ln-node-top">
-                  <span className="ln-node-no">#{shortNumber(mark.number)}</span>
+                  <StatusGlyph status={status} />
                   {live ? (
                     <motion.span layoutId={`money-${mark.id}`} className="ln-node-money">
                       {money}
@@ -148,6 +202,7 @@ export function Spread({
                 ) : (
                   <span className="ln-node-client">{mark.clientName}</span>
                 )}
+                <span className="ln-node-no num">{mark.number}</span>
                 <span className="ln-node-status">{mark.status}</span>
                 {/*
                  * The balance, as a length, against the largest balance in this
@@ -165,13 +220,21 @@ export function Spread({
               type: "button" as const,
               className: "ln-node",
               "data-heat": mark.heat,
-              "data-dim": dim,
+              "data-presence": presence,
               "data-picked": picked.has(mark.id),
+              /* One stop for the field; the arrows walk the rest. See `rove`. */
+              tabIndex: index === roving ? 0 : -1,
+              onFocus: () => setRoving((r) => (r === index ? r : index)),
               onClick: () => onOpenItem(mark.id),
               "aria-label": `Open ${mark.number}, ${mark.clientName}. ${mark.status}${
                 picked.has(mark.id) ? " Ticked." : ""
               }`,
             };
+            /* The card's presence is the mark's, mapped by the one table in
+               `model/attention.ts` — motion owns the inline opacity here while
+               the card morphs, so this is the one place the number rather than
+               the token is read. */
+            const opacity = PRESENCE_OPACITY[presence];
             return live ? (
               <motion.button
                 key={mark.id}
@@ -180,9 +243,16 @@ export function Spread({
                 style={{ "--lift": standing } as CSSProperties}
                 initial={reduced ? false : { opacity: 0 }}
                 animate={{
-                  opacity: dim ? 0.22 : 1,
+                  opacity,
                   y: mode === "raised" ? -standing * 26 : 0,
                 }}
+                /* A receding card is still a card. Pointing at one or tabbing
+                   to it brings it back to full, which is the promise the L0
+                   marks make and the same one has to hold here — and it has to
+                   be said in motion's own vocabulary, because an inline opacity
+                   is not something a `:hover` rule can outrank. */
+                whileHover={{ opacity: 1 }}
+                whileFocus={{ opacity: 1 }}
                 transition={{ ...lift, layout: arrive, opacity: arrive }}
               >
                 {body}
@@ -191,7 +261,7 @@ export function Spread({
               <button
                 key={mark.id}
                 {...shared}
-                style={{ "--lift": standing, opacity: dim ? 0.22 : 1 } as CSSProperties}
+                style={{ "--lift": standing, opacity } as CSSProperties}
               >
                 {body}
               </button>

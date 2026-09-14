@@ -12,8 +12,12 @@
  */
 import type { CSSProperties } from "react";
 
-import { markWidth, type LnLane, type LnMark } from "../model";
+import { SHOUT_AT, markWidth, type LnLane, type LnMark } from "../model";
 
+/** The 45-day line, re-exported from where it now lives: `model/status.ts` owns
+ *  it, because the L1 card's standing glyph reads it too and a component file
+ *  cannot be imported by the model without a cycle. */
+export { SHOUT_AT };
 
 /**
  * How many amounts each lane prints.
@@ -25,12 +29,6 @@ import { markWidth, type LnLane, type LnMark } from "../model";
  * labels land on the money that is actually at stake.
  */
 const LABELS_PER_LANE = 3;
-
-/**
- * At or past this many days a mark is worth interrupting someone about — the
- * footer key publishes this as "45+ days", and the key is the contract.
- */
-export const SHOUT_AT = 45;
 
 /** The glyph a mark carries, or none. Ordered by how much it wants you. */
 export function flagOf(mark: LnMark): string | null {

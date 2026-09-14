@@ -111,3 +111,35 @@
   }
 }
 
+
+/*
+ * The decision list at phone width.
+ *
+ * Four columns — class, clause, parameters, control — is 520px of minimum on a
+ * 390px screen. The row becomes two: the class word and what the act reaches on
+ * the first, its parameters and its control on the second. The leading rule
+ * stays, because that is the half of the AUTO/GATED distinction that is
+ * structural.
+ */
+@container ln-shell (max-width: 42rem) {
+  .ln-decide {
+    padding: var(--ln-s4);
+  }
+
+  .ln-act {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .ln-act-params,
+  .ln-act-take {
+    grid-column: 1 / -1;
+  }
+
+  .ln-act-take {
+    flex-wrap: wrap;
+  }
+
+  .ln-spread-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -36,14 +36,20 @@
     display: none;
   }
 
-  /* The rail's own figure is the first thing to go: the bar still carries the
-     share, and the name is what you are aiming at. */
-  .ln-rail-strip {
-    grid-template-columns: var(--ln-gutter, 116px) minmax(0, 1fr);
+  /* The reading under each lane's name is two lines at 186px and six at 116px,
+     which is a paragraph in a gutter rather than a key. It goes, and the axis
+     caption with it — the axis is still labelled, and at this width the legend
+     in the footer is the nearest thing to a key. */
+  .ln-lane-reading,
+  .ln-axis-caption {
+    display: none;
   }
 
-  .ln-rail-figure {
-    display: none;
+  /* The head's two halves become two rows: at this width the claim's own
+     figures and the clock beside them are each about 230px, which is narrower
+     than one poster numeral and one month label respectively. */
+  .ln-spread-head {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .ln-card-body {

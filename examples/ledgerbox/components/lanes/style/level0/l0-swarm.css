@@ -7,23 +7,68 @@
  */
 .ln-axis {
   position: relative;
-  block-size: 30px;
-  margin-inline-start: calc(var(--ln-gutter, 186px) + var(--ln-bleed));
+  block-size: 34px;
+  margin-inline-start: calc(var(--ln-gutter) + var(--ln-bleed));
   margin-inline-end: var(--ln-bleed);
-  border-block-end: 1px solid var(--ln-rule-soft);
+  border-block-end: 1px solid var(--ln-rule);
+}
+
+/*
+ * THE TICK, AND THE LABEL ON IT.
+ *
+ * A month name floating over a hairline says where a month is named, not where
+ * it starts — and this axis is the whole claim of the level, so the reader
+ * should never have to guess at it. The rule is drawn from the label down to
+ * the axis line at exactly the `--x` the server computed for the first of the
+ * month, and the label is centred on that rule rather than on nothing.
+ */
+.ln-axis-tick {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--x) * 100%);
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  pointer-events: none;
+}
+
+.ln-axis-tick::after {
+  content: "";
+  position: absolute;
+  inset-block-end: 0;
+  inline-size: 1px;
+  block-size: 9px;
+  background: var(--ln-rule);
 }
 
 .ln-axis-month {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: calc(var(--x) * 100%);
   transform: translateX(-50%);
   font-family: var(--ln-font-mono);
   font-size: var(--ln-text-xs);
+  font-weight: 500;
   line-height: 1;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ln-mute);
+  white-space: nowrap;
+}
+
+/* What the axis IS, in the gutter it already owns. The sheet stated the unit of
+   every other encoding — width is the balance, the tail is the lateness — and
+   never once stated the one running under all six lanes. */
+.ln-axis-caption {
+  position: absolute;
+  inset-block-start: 0;
+  /* Clear of the first month's tick, whose label is centred on the axis's own
+     start edge and therefore reaches half a label's width to the left of it. */
+  inset-inline-end: calc(100% + var(--ln-s6));
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ln-faint);
+  white-space: nowrap;
 }
 
 .ln-axis-now,
@@ -64,6 +109,31 @@
      the first lane's head is not shaved by the stage's scroll box. */
   padding-block: var(--ln-s3) var(--ln-s1);
   padding-inline: var(--ln-bleed);
+
+  /*
+   * THE SWARM FILLS THE FRAME IT IS GIVEN.
+   *
+   * `--ln-rows-all` is written here by `Swarm.tsx` — the packed rows of all six
+   * lanes added up — so the row height is the height the sheet has left after
+   * its chrome, shared out over the rows that actually exist. At 1440x900 that
+   * lands on roughly the floor, which is the composition this level was tuned
+   * at; at 2560x1440 it is twice that, and the marks are readable at arm's
+   * length because they are twice as tall rather than because a second set of
+   * numbers was typed for a second monitor.
+   *
+   * Declared HERE and not in the token block because a custom property that
+   * references another is substituted where it is DECLARED: `--ln-mark-h`
+   * written beside `--ln-row` on the root would have resolved against the
+   * root's own floor and inherited that one value everywhere.
+   */
+  --ln-row: clamp(
+    var(--ln-row-min),
+    calc((100svh - var(--ln-swarm-chrome)) / var(--ln-rows-all)),
+    var(--ln-row-max)
+  );
+  /* A mark is a band inside its row, and the ratio is what keeps the lane
+     reading as a lane rather than as a stack of stripes. */
+  --ln-mark-h: clamp(10px, calc(var(--ln-row) * 0.4), 22px);
 }
 
 /*
@@ -93,12 +163,26 @@
   transition: transform var(--ln-dur-4) var(--ln-ease-out);
 }
 
+/*
+ * A LANE IS EXACTLY AS TALL AS ITS TRACK, and that is now stated rather than
+ * implied.
+ *
+ * The head and the track share a grid row, so the taller of the two decided the
+ * lane — and the moment the gutter gained a reading under the name, six heads
+ * of three text rows each took 200px off a swarm whose whole point is fitting.
+ * The height is the packed rows and nothing else; the head clips into it, with
+ * a floor that guarantees the name and the two figure lines. The reading is what
+ * the floor gives up first, which is the right order: it is the same sentence on
+ * every lane and the name is not.
+ */
 .ln-lane {
   position: relative;
   display: grid;
-  grid-template-columns: var(--ln-gutter, 186px) 1fr;
+  grid-template-columns: var(--ln-gutter) 1fr;
   align-items: stretch;
   gap: var(--ln-s3);
+  block-size: calc(var(--rows) * var(--ln-row) + var(--ln-s2));
+  min-block-size: 4.6rem;
   transform: translateZ(calc(var(--i) * 4px));
   transform-style: preserve-3d;
 }
@@ -145,8 +229,18 @@
   cursor: pointer;
   display: grid;
   gap: 2px;
-  align-content: center;
+  /* From the top, not the middle: the lane is a fixed height now and the head
+     clips into it, so whatever is cut has to be the last thing written rather
+     than both ends of the block. */
+  align-content: start;
   min-block-size: 44px;
+  overflow: hidden;
+  /* A CLIP THAT FADES RATHER THAN GUILLOTINES. The head is allowed to be taller
+     than its lane on the two shortest lanes, and a hard cut through the middle
+     of a line of type reads as a rendering fault rather than as an editorial
+     decision. The last few pixels fall away instead, which says "there is more
+     of this" in the way a scroll shadow does. */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--ln-s2)), transparent);
 }
 
 .ln-lane-name {
@@ -189,10 +283,43 @@
   font-weight: 500;
 }
 
-/* The track: the positioned box the marks live in. */
+/*
+ * WHAT THE LINE IS.
+ *
+ * One sentence per lane, under its name and its figures: the horizontal is a
+ * due date, it runs June to October, the width is the balance and the colour is
+ * the state. It reads as a key rather than as a caption — same mono face as the
+ * figures, held back to `--ln-faint`.
+ *
+ * IT IS CLAMPED AT THREE LINES AND IT CANNOT GROW THE LANE. The head shares a
+ * grid row with the track, so a paragraph in the gutter sets a floor on the
+ * height of every short lane — which is how the first cut of this took 200px
+ * off the swarm and pushed the sixth lane under the fold on a laptop. The clamp
+ * plus `min-block-size: 0` on the head is what keeps it a key rather than a
+ * column. On the narrow steps it goes: at 116px of gutter it is nine lines of
+ * two words.
+ */
+.ln-lane-reading {
+  margin-block-start: 3px;
+  font-family: var(--ln-font-mono);
+  font-size: var(--ln-label);
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  color: var(--ln-faint);
+  text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  min-block-size: 0;
+}
+
+/* The track: the positioned box the marks live in. Its height is the lane's,
+   which is the packed rows — one statement, on `.ln-lane` above. */
 .ln-track {
   position: relative;
-  block-size: calc(var(--rows) * var(--ln-row) + 8px);
+  block-size: 100%;
   border: 0;
   background:
     linear-gradient(180deg, rgb(255 255 255 / 5%), transparent 42%),

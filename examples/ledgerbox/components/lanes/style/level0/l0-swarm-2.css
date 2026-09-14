@@ -13,10 +13,37 @@
  * would be noise, but zero labels was the complaint, and the answer is not
  * "all or nothing" but "the ones that matter".
  */
+/*
+ * PRESENCE, AS ONE DECLARATION.
+ *
+ * Everything a mark is drawn out of — the bar, its tail, its amount and its
+ * glyph — reads the same `data-presence`, which `model/attention.ts` decided
+ * once. There is one opacity channel on this sheet and this is it: the filter
+ * and "does this invoice want a decision" are two reasons to be at a value, not
+ * two systems. `--ln-row-centre` is the other thing this block owns: with a
+ * fluid row height, a mark that sat at a typed `+6px` would drift off its own
+ * band on a big monitor, so every layer is positioned from the row's middle.
+ */
+.ln-mark,
+.ln-tail,
+.ln-mark-amount,
+.ln-mark-flag {
+  --ln-row-centre: calc(var(--row) * var(--ln-row) + var(--ln-row) / 2);
+  opacity: var(--ln-presence-lit);
+}
+
+[data-presence="quiet"] {
+  opacity: var(--ln-presence-quiet);
+}
+
+[data-presence="dim"] {
+  opacity: var(--ln-presence-dim);
+}
+
 .ln-mark {
   position: absolute;
   inset-inline-start: calc(var(--x) * 100%);
-  inset-block-start: calc(var(--row) * var(--ln-row) + 6px);
+  inset-block-start: calc(var(--ln-row-centre) - var(--ln-mark-h) / 2);
   inline-size: max(8px, calc(var(--w) * 100%));
   block-size: var(--ln-mark-h);
   border-radius: 2px;
@@ -32,8 +59,19 @@
     box-shadow var(--ln-dur-2) var(--ln-ease);
 }
 
-.ln-mark[data-dim="true"] {
-  opacity: 0.14;
+/*
+ * A QUIET MARK IS STILL A MARK, and pointing at it proves it.
+ *
+ * Receding by default is only honest if the reader can always overrule it: hover
+ * or keyboard focus lifts any mark to full, whichever of the two reasons it was
+ * receding for. Last in this block so it beats both presence rules above at the
+ * same specificity.
+ */
+.ln-mark:hover,
+.ln-mark:focus-visible,
+.ln-mark[data-open="true"],
+.ln-mark[data-picked="true"] {
+  opacity: var(--ln-presence-lit);
 }
 
 .ln-mark:hover,
@@ -44,13 +82,15 @@
   z-index: 4;
 }
 
-/* The amount, printed just above its mark. */
+/* The amount, printed just above its mark. At 12px it was below this app's own
+   13px floor and the owner's flattest note about this level; it reads the type
+   scale now like everything else. */
 .ln-mark-amount {
   position: absolute;
   inset-inline-start: calc(var(--x) * 100%);
-  inset-block-start: calc(var(--row) * var(--ln-row) - 9px);
+  inset-block-start: calc(var(--ln-row-centre) - var(--ln-mark-h) / 2 - 1.15em);
   font-family: var(--ln-font-mono);
-  font-size: 0.75rem;
+  font-size: var(--ln-text-xs);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
@@ -60,59 +100,63 @@
   transition: opacity var(--ln-dur-2) var(--ln-ease);
 }
 
-.ln-mark-amount[data-dim="true"] {
-  opacity: 0.12;
-}
-
 /*
  * The call-to-action glyph. Three meanings and no more, so the sheet has a
  * legend a person can hold in their head: `!` money long overdue, `?` an
  * invoice the client is disputing, `+` a credit that would clear it.
  */
-/* 12px in a 16px ring, still centred on the mark's own 10px band: the ring grew by two pixels
-   at each end and the block offset came in by one, so `+3 + 16/2` is the same centre line the
-   mark's `+6 + 10/2` sits on. Below 12px these were the smallest text on the sheet and the
-   legend that explains them was smaller still. */
+/*
+ * The ring is the mark's own band plus a step at each end, so the glyph grows
+ * with the lane on a bigger monitor instead of staying a 16px dot on a 2560
+ * screen — which is half of "icons and text are very small and hard to read".
+ * It is centred on the row's middle, like everything else in this block.
+ */
 .ln-mark-flag {
+  --ln-flag-size: max(18px, calc(var(--ln-mark-h) + var(--ln-s2)));
   position: absolute;
   inset-inline-start: calc(var(--x) * 100%);
-  inset-block-start: calc(var(--row) * var(--ln-row) + 3px);
+  inset-block-start: calc(var(--ln-row-centre) - var(--ln-flag-size) / 2);
   display: grid;
   place-items: center;
-  inline-size: 16px;
-  block-size: 16px;
-  margin-inline-start: -20px;
+  inline-size: var(--ln-flag-size);
+  block-size: var(--ln-flag-size);
+  margin-inline-start: calc(-1 * var(--ln-flag-size) - var(--ln-s1));
   border-radius: 999px;
   background: var(--ln-void);
   border: 1px solid var(--tone);
   color: var(--tone);
   font-family: var(--ln-font-mono);
-  font-size: 12px;
+  font-size: var(--ln-label);
   font-weight: 500;
   line-height: 1;
   pointer-events: none;
   transition: opacity var(--ln-dur-2) var(--ln-ease);
 }
 
-.ln-mark-flag[data-dim="true"] {
-  opacity: 0.12;
-}
-
-/* Lateness as physical length: a tail from the due date to the now-line. */
+/* Lateness as physical length: a tail from the due date to the now-line. It
+   holds the mark's own presence and then halves it, so the tail is always the
+   quieter half of the pair it belongs to. */
 .ln-tail {
   position: absolute;
   inset-inline-start: calc(var(--x) * 100% + max(8px, var(--w) * 100%));
-  inset-block-start: calc(var(--row) * var(--ln-row) + 11px);
+  inset-block-start: var(--ln-row-centre);
   inline-size: max(0px, calc((var(--todayX) - var(--x)) * 100% - max(8px, var(--w) * 100%)));
   block-size: 1px;
   background: var(--tone);
-  opacity: 0.42;
   transform: translateZ(1px);
   pointer-events: none;
 }
 
-.ln-tail[data-dim="true"] {
-  opacity: 0.07;
+.ln-tail[data-presence="lit"] {
+  opacity: 0.42;
+}
+
+.ln-tail[data-presence="quiet"] {
+  opacity: calc(var(--ln-presence-quiet) * 0.42);
+}
+
+.ln-tail[data-presence="dim"] {
+  opacity: calc(var(--ln-presence-dim) * 0.42);
 }
 
 /*

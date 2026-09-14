@@ -100,8 +100,16 @@
    * ends the reference plays against each other, and every reading size below
    * was raised a step: at L1 and L2 the previous 11px secondary text was not
    * readable against this ground.
+   *
+   * THE FLOOR IS 13px AND IT IS NOW ACTUALLY 13px. `--ln-label` was 12px, which
+   * is below the floor `design/pass3-law-brief.md` §1.2 sets for this app and
+   * the exact defect the owner has now named twice — "icons and text are very
+   * small and hard to read". It carried the axis months, the mark amounts, the
+   * legend, every caps label on the card and the class key: a measured 76
+   * elements under 13px on the settled L0. One step up here moves all of them,
+   * which is the point of having the token.
    */
-  --ln-label: 0.75rem;
+  --ln-label: 0.8125rem;
   --ln-text-xs: 0.875rem;
   --ln-text-sm: 0.9375rem;
   --ln-text-base: 1rem;
@@ -122,18 +130,56 @@
   --ln-radius-card: 8px;
 
   /*
-   * ONE NUMBER OWNS THE HEIGHT OF THE SWARM.
+   * ONE NUMBER OWNS THE HEIGHT OF THE SWARM, AND IT IS NOW THE SCREEN'S.
    *
-   * A lane is `rows x --ln-row` tall, and nineteen packed rows across six lanes
-   * is most of the sheet. At 30px the lanes plus the chrome came to 1270px
-   * against a 1000px viewport, so the sixth lane and the legend that explains
-   * the three glyphs sat below the fold on every desktop — a legend for marks
-   * you could see, on a screen you had to leave to read it. At 26 the whole
-   * sheet holds the frame down to roughly 900px tall, and below that the stage
-   * scrolls on its own while the masthead, the toolbar and the legend stay put.
+   * A lane is `rows x --ln-row` tall. At a flat 26px the swarm was 661px on
+   * every monitor: on a 1440-tall screen that is 46% of the frame and 468px of
+   * dead band, which is the owner's "does not spread with larger monitor
+   * sizes". The row is fluid instead — the height left over after the chrome,
+   * divided by the number of packed rows the sheet actually has. `Swarm.tsx`
+   * writes `--ln-rows-all` from the sheet, so the divisor is a fact about the
+   * books rather than a number typed here; the ceiling stops one four-row lane
+   * from becoming a poster, and the floor is the last resort on a short frame,
+   * where the stage scrolls rather than the marks becoming hairlines.
+   *
+   * `--ln-swarm-chrome` is everything the lanes do not get: the masthead, the
+   * axis, the footer and the stage's own padding. MEASURED, not guessed — 268px
+   * of it at 1920 and 2560, 302 at 1440 where the footer's filter panel takes a
+   * row of its own, plus the axis and the stack's padding inside the stage.
+   * The margin over the measurement is what stops the sixth lane from being
+   * shaved by a rounding error.
    */
-  --ln-row: 26px;
+  --ln-row-min: 20px;
+  --ln-row-max: 58px;
+  --ln-swarm-chrome: 460px;
+  --ln-rows-all: 20;
+  --ln-row: var(--ln-row-min);
   --ln-mark-h: 10px;
+  /* The L1 head's clock: the same picture as a lane at L0, at the size a head
+     can carry. Fixed rather than fluid — it is a thumbnail of the level you came
+     from, and a thumbnail that grows to half a screen is not one. */
+  --ln-clock-row: 13px;
+  --ln-clock-mark: 7px;
+  /* The gutter the lane names and their readings live in. Fluid, so the reading
+     under each name gets a second line's worth of room on a wide monitor rather
+     than the same 186px it had on a laptop. The two narrow steps in
+     `chrome/responsive.css` override it and still win: they are declared later. */
+  --ln-gutter: clamp(186px, 12cqi, 264px);
+
+  /*
+   * PRESENCE — one dimming system, three values, and no second opinion.
+   *
+   * Every mark and every card on this sheet is drawn at one of these, decided
+   * once in `model/attention.ts` from the filter AND from whether the invoice
+   * is asking for a decision. `lit` is a mark that wants something; `quiet` is
+   * one with nothing outstanding, present but not competing; `dim` is one the
+   * filter has put away. The kit's `emphasis()` decides the same thing one
+   * level up, for a whole lane, and these are its per-mark counterpart — the
+   * mark's own opacity is the product of the two.
+   */
+  --ln-presence-lit: 1;
+  --ln-presence-quiet: 0.3;
+  --ln-presence-dim: 0.11;
 
   /* --- Motion. Springs for anything that moves in space, fades for anything
          that only appears.

@@ -88,18 +88,38 @@
     flex: none;
   }
 
-  /* The glyphs are not drawn at this width, so the half of the legend that
-     explains them is describing something that is not there. */
-  .ln-legend-set:last-child {
+  /* The tail and the width are not drawn at this width — the compact lane is a
+     wrapped row of equal squares — so the half of the key that explains them is
+     describing something that is not there. The chips stay: narrowing the sheet
+     is MORE useful on a phone, not less, and they get their full 44px back. */
+  .ln-legend-key {
     display: none;
+  }
+
+  .ln-legend-chip {
+    min-block-size: 44px;
+  }
+
+  .ln-legend-set {
+    min-inline-size: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ln-legend-set::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ln-legend-chip {
+    flex: none;
   }
 
   .ln-axis {
     display: none;
   }
 
-  .ln-lane,
-  .ln-rail-strip {
+  .ln-lane {
     grid-template-columns: 1fr;
   }
 

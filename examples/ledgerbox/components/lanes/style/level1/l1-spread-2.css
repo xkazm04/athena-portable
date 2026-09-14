@@ -10,7 +10,7 @@
   min-block-size: 8.5rem;
   padding: var(--ln-s3) var(--ln-s4) var(--ln-s4);
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto auto 1fr;
   gap: var(--ln-s1);
   align-content: start;
   text-align: start;
@@ -122,12 +122,60 @@
   flex: none;
 }
 
-.ln-node-no {
+/*
+ * THE STANDING, IN THE CORNER THE ID USED TO HAVE.
+ *
+ * A drawn glyph in the state's own colour, with its meaning beside it in words —
+ * an icon on its own is a rebus, and this one has nine readings. The pair is the
+ * first thing on the card because "what is the matter with this invoice" is the
+ * question the level exists to answer twelve times over.
+ *
+ * It inherits `--tone` from the card's `data-heat`, so shape and colour are one
+ * encoding rather than two tables agreeing.
+ */
+.ln-node-status-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ln-s2);
+  min-inline-size: 0;
+  font-size: var(--ln-text-md);
+  color: var(--tone);
+}
+
+.ln-node-status-say {
   font-family: var(--ln-font-mono);
   font-size: var(--ln-label);
-  letter-spacing: 0.08em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The settled and the out-of-play states keep the glyph and lose the shout: the
+   same argument the card's own elevation makes one rule up. */
+.ln-node[data-heat="good"] .ln-node-status-mark,
+.ln-node[data-heat="inert"] .ln-node-status-mark {
+  opacity: 0.75;
+}
+
+/*
+ * The id, demoted to a line of its own under the client.
+ *
+ * It is the invoice's ADDRESS — what you read out to somebody, what you paste
+ * into a tool call — and an address belongs where you look for one, not in the
+ * first position on the card. Mono, tracked, and the full number rather than the
+ * last four digits, because the whole point of keeping it is that it is the
+ * thing you can say out loud.
+ */
+.ln-node-no {
+  font-size: var(--ln-label);
+  letter-spacing: 0.1em;
   color: var(--ln-faint);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ln-node-money {

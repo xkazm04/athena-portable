@@ -133,75 +133,161 @@
 }
 
 /*
- * Two legends side by side: what the COLOUR of a mark says, and what a GLYPH on
- * one says. They are different encodings — every mark has a colour, only the few
- * that want something get a glyph — and the single mixed row that used to be
- * here read as one list with two of its five colours simply missing.
- */
-/*
- * At L2 the ramp is hidden but its ROW IS KEPT.
+ * THE LEGEND IS THE FILTER PANEL.
  *
- * One invoice is on screen and its state is spelled out in words in the card's
- * own eyebrow, so the legend is answering a question nobody is asking — but
- * removing the row changed the footer's height between levels, which resized
- * the stage underneath the morph that was in flight. Hidden, not gone.
+ * It used to be two inert rows — five colours and three glyphs — beside a sheet
+ * a reader could not narrow, because the state filter went out with the toolbar
+ * and came back only as a tool. Each entry is a toggle now: the swatch it
+ * already carried, the word it already carried, and the count of invoices in
+ * that state, which is the only new thing on the row and the one that turns a
+ * key into a control.
+ *
+ * At L2 the ramp is hidden but its ROW IS KEPT. One invoice is on screen and its
+ * state is spelled out in the card's own eyebrow, so the panel is answering a
+ * question nobody is asking — but removing the row changed the footer's height
+ * between levels, which resized the stage underneath the morph in flight.
+ * Hidden, not gone.
  */
 .ln-root[data-level="2"] .ln-legend {
   visibility: hidden;
 }
 
 .ln-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ln-s2) var(--ln-s5);
+  display: grid;
+  gap: var(--ln-s1) var(--ln-s5);
   font-family: var(--ln-font-mono);
   font-size: var(--ln-label);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--ln-faint);
 }
 
 .ln-legend-set {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ln-s1) var(--ln-s3);
-}
-
-/* COLOUR and GLYPH name the two encodings, and they were set in `--ln-rule` — a 1px border
-   colour, about 1.3:1 on this ground. A key whose own headings cannot be read is not a key.
-   They are separated from the entries by tracking and by the rule beside them, not by ink. */
-.ln-legend-set > .ln-label {
-  color: var(--ln-faint);
-  letter-spacing: 0.2em;
-  padding-inline-end: var(--ln-s2);
-  border-inline-end: 1px solid var(--ln-rule);
-}
-
-.ln-legend-set > span:not(.ln-label) {
-  display: inline-flex;
   align-items: center;
   gap: var(--ln-s1);
 }
 
+/* SHOW names what the row does, and it is separated from the entries by tracking
+   and by the rule beside it, not by ink. */
+.ln-legend-set > .ln-label {
+  color: var(--ln-faint);
+  letter-spacing: 0.2em;
+  padding-inline-end: var(--ln-s3);
+  margin-inline-end: var(--ln-s1);
+  border-inline-end: 1px solid var(--ln-rule);
+}
+
+/*
+ * One entry. A 30px target rather than 44: the panel is eight of these on one
+ * footer row and the sheet above it is what the height belongs to — the same
+ * argument the action bands made one level down. The hit area is the whole chip
+ * including its count, and the two narrow steps give it back its full height.
+ */
+.ln-legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ln-s2);
+  min-block-size: 30px;
+  padding: 2px var(--ln-s2) 2px var(--ln-s2);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--ln-faint);
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  transition:
+    color var(--ln-dur-1) var(--ln-ease),
+    background var(--ln-dur-1) var(--ln-ease),
+    border-color var(--ln-dur-1) var(--ln-ease);
+}
+
+.ln-legend-chip:hover {
+  color: var(--ln-ink);
+  border-color: var(--ln-rule);
+}
+
+/*
+ * PRESSED IS A RING IN THE STATE'S OWN COLOUR, not a fill in the accent.
+ *
+ * Every hue in this footer already means a state, and a pressed chip painted in
+ * the accent would introduce a ninth colour that means "pressed" — so the chip
+ * keeps its own tone and gains the ring and the ink. It survives greyscale on
+ * the ring alone.
+ */
+.ln-legend-chip[aria-pressed="true"] {
+  color: var(--ln-ink);
+  background: rgb(255 255 255 / 7%);
+  border-color: var(--tone, var(--ln-ink));
+}
+
+.ln-legend-chip b {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--ln-mute);
+}
+
+.ln-legend-chip[aria-pressed="true"] b {
+  color: var(--tone, var(--ln-ink));
+}
+
 .ln-legend i {
+  flex: none;
   inline-size: 14px;
-  block-size: 7px;
+  block-size: 8px;
   border-radius: 2px;
   background: var(--tone);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 30%);
 }
 
 .ln-legend em {
+  flex: none;
   display: inline-grid;
   place-items: center;
-  inline-size: 17px;
-  block-size: 17px;
+  inline-size: 18px;
+  block-size: 18px;
+  margin-inline-start: calc(-1 * var(--ln-s1));
   border-radius: 999px;
   border: 1px solid var(--tone);
   color: var(--tone);
   font-style: normal;
-  /* 12px in a 17px ring. At 10px the three glyphs the whole legend exists to explain were
-     smaller than any other text on the sheet. */
-  font-size: 12px;
+  font-size: var(--ln-label);
+}
+
+/* The second row of the panel: what the press did, and what is registered.
+   Side by side rather than stacked — two one-line readings in the footer's own
+   quiet register, and 40px of swarm back at 1440. */
+.ln-legend-under {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ln-s2) var(--ln-s5);
+}
+
+/* What the press did. A filter that dims rather than removes is the right
+   behaviour and the hardest one to perceive — nothing leaves the screen — so
+   this count is the whole of the feedback, and it is a live region. */
+.ln-legend-say {
+  margin: 0;
+  font-size: var(--ln-label);
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  color: var(--ln-mute);
+}
+
+.ln-legend-key {
+  font-size: var(--ln-label);
+  letter-spacing: 0.04em;
+  color: var(--ln-faint);
+}
+
+/* The presence line shares the row, so it gives up the narrow measure that made
+   it wrap to three lines beside the chips. */
+.ln-legend-under .ln-presence {
+  max-inline-size: 44ch;
+  margin-inline-start: auto;
 }
 

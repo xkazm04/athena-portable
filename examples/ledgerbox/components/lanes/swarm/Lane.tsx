@@ -18,7 +18,14 @@ import { motion, useReducedMotion } from "motion/react";
 import type { CSSProperties } from "react";
 
 import { formatMoney, formatMoneyShort } from "@/lib/format";
-import { matches, type LnFilter, type LnLane, type LnMark } from "../model";
+import {
+  PRESENCE_OPACITY,
+  matches,
+  presenceOf,
+  type LnFilter,
+  type LnLane,
+  type LnMark,
+} from "../model";
 import { instant, move } from "../motion";
 import { flagOf, labelledIn, markVars } from "./marks";
 
@@ -47,6 +54,7 @@ export function Lane({
   live,
   presence,
   traveling,
+  reading,
   filter,
   picked,
   todayX,
@@ -70,6 +78,9 @@ export function Lane({
   presence: number;
   /** This lane's name is the element flying to the spread's head. */
   traveling: boolean;
+  /** One line saying what the line is. Composed once by the swarm, because it
+   *  reads the axis and every lane gets the same sentence. */
+  reading: string;
   filter: LnFilter;
   /** Ticked invoices, ringed at this level. */
   picked: ReadonlySet<string>;
@@ -135,6 +146,11 @@ export function Lane({
       ) : (
         <span className="ln-lane-figures">nothing late</span>
       )}
+      {/* What the line IS. Not a caption on the lane's contents — a statement of
+          the encoding, which is the one thing six bands of coloured bars cannot
+          say for themselves. It goes in the head so it is read with the name and
+          leaves with it when the gutter narrows. */}
+      <span className="ln-lane-reading">{reading}</span>
     </button>
     {/*
      * The track is a GROUP, not a button. It used to carry
@@ -153,21 +169,45 @@ export function Lane({
       onKeyDown={rove}
     >
       {(byDate.get(lane.id) ?? lane.marks).map((mark, index) => {
-        const dim = !matches(mark, filter);
+        /*
+         * HOW PRESENT THIS MARK IS — one reading, decided in `model/attention.ts`
+         * and drawn as one `opacity`. `lit` is an invoice asking for a decision,
+         * `quiet` is one with nothing outstanding, `dim` is one the filter has
+         * put away. It replaces the boolean `data-dim` the filter used to set on
+         * its own: the filter is still half of the answer, and "does this want
+         * anything" is the other half, and a surface with two dimming systems
+         * has neither.
+         */
+        const presence = presenceOf(mark, filter);
         const late = mark.daysOverdue > 0 && mark.balanceCents > 0;
         const flag = flagOf(mark);
         const open = hoveredId === mark.id;
+        /*
+         * THE MARK'S OWN OPACITY HAS TO BE A NUMBER HERE, not the token.
+         *
+         * A `layoutId` element is projected by motion, which writes an inline
+         * `opacity` on it every commit — so the stylesheet's `[data-presence]`
+         * rule was overruled on all 124 marks and the whole attention pass was
+         * invisible, at opacity 1, in the first capture. The tail, the amount
+         * and the glyph are plain spans and still read the token; these are the
+         * same three values, and `test/lanes.test.ts` asserts the two spellings
+         * agree.
+         *
+         * Hover and the read-out lift it back to full, which is the promise
+         * receding by default has to make.
+         */
+        const opacity = open || picked.has(mark.id) ? 1 : PRESENCE_OPACITY[presence];
         /* Everything about a mark except who owns its `layoutId`. Written once
            so the live and the receding spelling cannot drift apart. */
         const markProps = {
           type: "button" as const,
           className: "ln-mark",
           "data-heat": mark.heat,
-          "data-dim": dim,
+          "data-presence": presence,
           "data-open": open,
           "data-picked": picked.has(mark.id),
           tabIndex: index === (roving[lane.id] ?? 0) ? 0 : -1,
-          style: markVars(mark, todayX),
+          style: { ...markVars(mark, todayX), opacity },
           onMouseEnter: (event: React.MouseEvent<HTMLButtonElement>) =>
             enter(mark, lane, event.currentTarget),
           onFocus: (event: React.FocusEvent<HTMLButtonElement>) => {
@@ -190,15 +230,15 @@ export function Lane({
               <span
                 className="ln-tail"
                 data-heat={mark.heat}
-                data-dim={dim}
+                data-presence={presence}
                 style={markVars(mark, todayX)}
                 aria-hidden
               />
             ) : null}
-            {labelled.has(mark.id) && !dim ? (
+            {labelled.has(mark.id) && presence !== "dim" ? (
               <span
                 className="ln-mark-amount"
-                data-dim={dim}
+                data-presence={presence}
                 style={markVars(mark, todayX)}
                 aria-hidden
               >
@@ -211,7 +251,7 @@ export function Lane({
               <span
                 className="ln-mark-flag"
                 data-heat={mark.heat}
-                data-dim={dim}
+                data-presence={presence}
                 style={markVars(mark, todayX)}
                 aria-hidden
               >
@@ -219,7 +259,14 @@ export function Lane({
               </span>
             ) : null}
             {live ? (
-              <motion.button layoutId={mark.id} {...markProps} />
+              <motion.button
+                layoutId={mark.id}
+                {...markProps}
+                animate={{ opacity }}
+                whileHover={{ opacity: 1 }}
+                whileFocus={{ opacity: 1 }}
+                transition={travel}
+              />
             ) : (
               <button {...markProps} />
             )}

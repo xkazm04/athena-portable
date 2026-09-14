@@ -82,8 +82,22 @@
    is PORTALLED here and positions itself against the viewport — and because
    three `:not()` clauses give this selector a specificity of (0,4,0), which
    quietly beat the tip's own `position: fixed` and dropped the read-out into
-   the grid as an implicit fifth row. */
-.ln-root > *:not(.ln-bath):not(.ln-vignette):not(.ln-grain):not(.ln-tip) {
+   the grid as an implicit fifth row.
+   `.ln-flight` is excluded for exactly that reason, and it is the whole of the
+   swarm's "dead band on a big monitor". The completion signal round 1 added is
+   a zero-size `position: absolute` span — except that this selector overrode
+   its position, put it in the flow as the SECOND grid item, and handed it the
+   `minmax(0, 1fr)` row meant for the stage. The stage fell into the trailing
+   `auto` track and became content-sized: measured at 2560x1440, a 468px empty
+   row above a 696px swarm. It draws nothing, so it belongs out of the flow.
+   `.ln-decide-layer` is the third: the L2 decision dialog is portalled HERE
+   rather than to the body, because the body is outside the `--ln-*` tokens, and
+   a fixed overlay this rule turns into a relative grid item is a dialog laid
+   out in the footer's row. Any portal into the root joins this list. */
+.ln-root
+  > *:not(.ln-bath):not(.ln-vignette):not(.ln-grain):not(.ln-tip):not(.ln-flight):not(
+    .ln-decide-layer
+  ) {
   position: relative;
   z-index: 1;
 }

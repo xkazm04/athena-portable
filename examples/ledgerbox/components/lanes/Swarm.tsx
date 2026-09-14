@@ -114,19 +114,49 @@ export function Swarm({
     setHover(null);
   }, []);
 
+  /**
+   * How many packed rows the whole sheet has, handed to CSS.
+   *
+   * The lane height used to be a flat 26px per row on every monitor, so the
+   * swarm was 661px at 1440 and 661px at 2560 — half a screen of dead band and
+   * marks the owner could not read at arm's length. `--ln-row` is now the height
+   * left after the chrome divided by THIS, so the sheet grows with the frame
+   * and the divisor is a fact about the books rather than a number in a
+   * stylesheet. One write, on the element every lane inherits from.
+   */
+  const rowsAll = useMemo(
+    () => sheet.lanes.reduce((n, lane) => n + lane.rows, 0),
+    [sheet.lanes],
+  );
+
+  /** `Jun` → `Oct`, for the reading under each lane's name. */
+  const firstMonth = months[0]?.label ?? "";
+  const lastMonth = months[months.length - 1]?.label ?? "";
+
   return (
-    <div className="ln-stack">
-      <div className="ln-axis" style={{ "--todayX": todayX } as CSSProperties} aria-hidden>
+    <div className="ln-stack" style={{ "--ln-rows-all": rowsAll } as CSSProperties}>
+      {/*
+       * THE AXIS IS NOW LABELLED, not implied.
+       *
+       * It used to be five month abbreviations floating on a hairline at 12px,
+       * with nothing under them: no tick, so a reader had to guess whether the
+       * label sat at the start of the month or in the middle of it, and no
+       * statement anywhere that the horizontal position of a mark is its DUE
+       * DATE. Both are now printed. The ticks are drawn from the same `m.x` the
+       * label uses, so the label and the rule it names cannot drift apart.
+       */}
+      <div className="ln-axis" style={{ "--todayX": todayX } as CSSProperties}>
+        <span className="ln-axis-caption">Due date, 2026 →</span>
         {months.map((m) => (
           <span
             key={`${m.label}-${m.x}`}
-            className="ln-axis-month"
+            className="ln-axis-tick"
             style={{ "--x": m.x } as CSSProperties}
           >
-            {m.label}
+            <span className="ln-axis-month">{m.label}</span>
           </span>
         ))}
-        <span className="ln-axis-now" />
+        <span className="ln-axis-now" aria-hidden />
       </div>
 
       {/* Shown only by the compact layout, which abandons the time axis. Saying
@@ -158,6 +188,12 @@ export function Swarm({
                travels to the spread's head, so the copy left behind here would
                be the same word twice for the length of the flight. */
             traveling={!live && focus.group === lane.id}
+            /* What the line IS, said under its name. The review's flattest note
+               was "not understandable what each line inside a swimlane means",
+               and it was fair: six bands of coloured bars with a name and two
+               figures never once stated that the horizontal is a due date or
+               that the colour is a state. */
+            reading={`by due date, ${firstMonth}→${lastMonth} · colour is the state`}
             filter={filter}
             picked={picked}
             todayX={todayX}

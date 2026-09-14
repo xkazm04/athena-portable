@@ -1,12 +1,20 @@
 "use client";
 
 /**
- * The breadcrumb and the legend.
+ * The breadcrumb, and the legend that is also the filter.
  *
- * The legend lists ALL FIVE colours and all three glyphs. It used to list
- * three, including neither the blue that is a quarter of the marks nor the grey
- * that means "not in play" — so a reader could see two states on the sheet that
- * the key did not admit existed.
+ * THE LEGEND IS A CONTROL NOW. It named eight readings of the sheet and let a
+ * reader do nothing with any of them, while the one thing that could narrow the
+ * sheet — the state filter — had gone with the toolbar and survived only as a
+ * capability an agent could call. Each entry is a toggle: pressing it lights its
+ * own invoices and dims the rest, at L0 and at L1 both, because both levels draw
+ * from the same `presenceOf`. Pressing it again, or pressing Everything, is the
+ * way back.
+ *
+ * It adds no vocabulary. `model/legend.ts` builds the panel out of
+ * `STATE_FILTERS` — the same enum `set_filter` and `navigate` address — so a
+ * press and a call end in one `setFilter`, and the counts beside each entry are
+ * counted off the sheet rather than estimated.
  *
  * THE PRESENCE READING MOVED HERE from the masthead, with the agent-driven pass that took the
  * mast's bar and status line down: the sheet is the environment an agent works in, not a console
@@ -15,9 +23,21 @@
  * share) is explicit that the reading may be MOVED and not deleted — it is still on the surface,
  * still without interaction, still counted from the manifest rather than typed.
  */
+import { useMemo } from "react";
+
 import { formatMoneyShort } from "@/lib/format";
 import { REGISTER } from "@/lib/manifest";
-import { HEAT_LABEL, type LnLane, type LnMark, type LnSheet } from "../model";
+import {
+  HEAT_LABEL,
+  LEGEND,
+  legendCounts,
+  legendSay,
+  toggleState,
+  type LnFilter,
+  type LnLane,
+  type LnMark,
+  type LnSheet,
+} from "../model";
 import { useAthenaPresence } from "../presence";
 import { PresenceLine } from "../PresenceLine";
 
@@ -29,14 +49,23 @@ export function Foot({
   mark,
   level,
   nav,
+  filter,
+  setFilter,
 }: {
   sheet: LnSheet;
   lane: LnLane | undefined;
   mark: LnMark | undefined;
   level: number;
   nav: { home: () => void; up: () => void; openGroup: (id: string) => void };
+  filter: LnFilter;
+  setFilter: (next: LnFilter) => void;
 }) {
   const presence = useAthenaPresence();
+  /* Counted off the sheet, once per client narrowing — 124 invoices against
+     eight predicates is a thousand comparisons, which is nothing, but it is
+     nothing on every keystroke without this. */
+  const counts = useMemo(() => legendCounts(sheet, filter.client), [sheet, filter.client]);
+  const total = sheet.totals.invoiceCount;
 
   return (
     <footer className="ln-foot">
@@ -97,48 +126,67 @@ export function Foot({
         ) : null}
       </div>
       {/*
-       * Two legends, because the sheet has two encodings and conflating
-       * them is what made the old one incomplete. COLOUR is the state every
-       * mark carries — and it was missing the blue, which is a quarter of
-       * the marks and the whole right-hand half of the sheet. GLYPH is the
-       * separate, sparser claim that a mark is asking for something.
+       * The key, and the control, as one row.
+       *
+       * Every entry is a real button with `aria-pressed`, so the panel is
+       * keyboard-operable by being made of controls rather than by a handler
+       * that reimplements what a button already does. Its accessible name
+       * carries the count and the clause — "Late, 54 of 124 invoices, past its
+       * due date and still owed" — because a swatch and a word is a legend and
+       * a reader who cannot see the swatch still has to be able to filter.
        */}
       <div className="ln-legend">
-        <span className="ln-legend-set">
-          <span className="ln-label">colour</span>
-          <span data-heat="alert">
-            <i /> long overdue
+        <div className="ln-legend-set" role="group" aria-label="Light a state, dim the rest">
+          <span className="ln-label">show</span>
+          {LEGEND.map((entry) => {
+            const on = filter.state === entry.state;
+            const count = counts[entry.state] ?? 0;
+            return (
+              <button
+                key={entry.state}
+                type="button"
+                className="ln-legend-chip"
+                data-state={entry.state}
+                data-heat={entry.heat ?? undefined}
+                aria-pressed={on}
+                onClick={() => setFilter(toggleState(filter, entry.state))}
+                aria-label={`${entry.label}, ${count} of ${total} invoices — ${entry.says}`}
+              >
+                {entry.heat ? <i aria-hidden /> : null}
+                {entry.glyph ? <em aria-hidden>{entry.glyph}</em> : null}
+                <span aria-hidden>{entry.label}</span>
+                <b className="num" aria-hidden>
+                  {count}
+                </b>
+              </button>
+            );
+          })}
+        </div>
+        {/*
+         * What the press did, said once, politely. A filter that dims rather
+         * than removes is the right behaviour and the hardest one to perceive —
+         * nothing leaves the screen — so the count is the feedback.
+         */}
+        {/* The press and the register share a row: two quiet second lines under
+            the chips rather than two stacked bands, which is 40px of the swarm
+            given back at 1440. */}
+        <div className="ln-legend-under">
+          <p className="ln-legend-say" role="status">
+            {legendSay(filter.state, counts[filter.state] ?? 0, total)}
+          </p>
+          {/* The half of the old key a row of filter chips cannot say for
+              itself: the chips carry the colour, the sheet also encodes money
+              as width and lateness as length. Outside the live region, because
+              it never changes. */}
+          <span className="ln-legend-key">
+            Width is the balance; the tail is how late.
           </span>
-          <span data-heat="risk">
-            <i /> late
-          </span>
-          <span data-heat="watch">
-            <i /> within terms
-          </span>
-          <span data-heat="good">
-            <i /> settled
-          </span>
-          <span data-heat="inert">
-            <i /> not in play
-          </span>
-        </span>
-        <span className="ln-legend-set">
-          <span className="ln-label">glyph</span>
-          <span data-heat="alert">
-            <em>!</em> 45+ days
-          </span>
-          <span data-heat="alert">
-            <em>?</em> disputed
-          </span>
-          <span data-heat="watch">
-            <em>+</em> a credit fits
-          </span>
-        </span>
-        <PresenceLine
-          connected={presence.bridged}
-          offered={REGISTER.length}
-          gated={GATED}
-        />
+          <PresenceLine
+            connected={presence.bridged}
+            offered={REGISTER.length}
+            gated={GATED}
+          />
+        </div>
       </div>
     </footer>
   );
