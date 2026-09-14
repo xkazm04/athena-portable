@@ -60,6 +60,26 @@ Each rule names the round that earned it and the app(s) it was proven in.
    three.)*
 9. **What is no longer seen stops costing.** A canvas under a DOM level renders on demand only; a
    settled scene draws zero frames. *(R1, tidycrm: 793 draw calls/s at rest → 0.)*
+10. **In one continuous space, rule 1 inverts.** When the level change is a camera move through a
+    world that stays on screen, there is nothing to echo: the level you left is still visible,
+    further away. Rules 1–3 are rules for 2D layouts that swap, and now say so. *(R3, tidycrm,
+    ledgerbox, atlas — all three found it independently.)*
+11. **One element has exactly one owner of its transform.** A camera projection and a shared-id
+    morph cannot share an element; when a box's position comes from a camera, the next level is
+    measured out of it, not morphed through it. *(R3, tidycrm, atlas.)*
+12. **A pose is two things: where you stand and where you look.** Two of its numbers are the level,
+    two are the framing. Any primitive that treats them as one — a snap list, a reset, a preset —
+    changes the reader's level while appearing to change their view. *(R3, atlas; hirelane's board
+    variant hit the same thing as "poseFor must agree with bands".)*
+13. **Type is screen-space, geometry is world-space, and the inverse scale is quantised.** A
+    rendering band is not a navigation level: detail can change without the nav moving.
+    Un-quantised counter-scaling relaid out 1,400 elements a frame. *(R3, ledgerbox.)*
+14. **Camera distance can be the level only when `poseFor` and `resolveGroup` are exact inverses.**
+    That, not hysteresis, is what stops the flapping. *(R3, hirelane constellation, ledgerbox.)*
+15. **A place needs a floor size, and continuous zoom keeps the data's own geometry.** A sparse
+    month leaves an empty near band; a set drawn at a third of the viewport reads as thumbnails, not
+    rooms. Spatial directions need a minimum scale the data is laid out to, not the data's own.
+    *(R3, ledgerbox near band, hirelane rooms — observed in review, the fix is round-4 work.)*
 
 ## 2. Round log
 
@@ -269,4 +289,42 @@ loops), the echo container for rule 1, and the round-2 gap fixes the directions 
 | Hirelane | Three directions behind a switcher: the board with a free camera (control), cutaway rooms (place-based navigation), a constellation (semantic zoom in a second domain) | All three prototyped |
 | Atlas | The machine: strata as planes, systems as blocks, edges as pipes, a real turn travelling through, text only at L2 | All three renderers prototyped: WebGL, CSS 3D, hybrid |
 
-**Outcome:** *(filled after review)*
+**Outcome** — commits `a8e5116` (kit camera), `26351a1` (ledgerbox), `0ea2b32` (hirelane),
+`03c37fb` (tidycrm), and the atlas commit that follows in the log. All gates green (kit 136,
+ledgerbox 55, hirelane 69, tidycrm 84, atlas 63 tests; atlas builds static). Four apps run.
+
+| Axis | Ledgerbox map | Hirelane (board / rooms / constellation) | Tidycrm one space | Atlas machine |
+|---|---|---|---|---|
+| Composition per level | 5 → 4 | 4 / 3 / 3 | 4 | 4 → 4 |
+| Transition choreography | 4 → 5 | 4 / 4 / 4 | 4 → 5 | 3 → 4 |
+| User control | 5 | 5 / 4 / 4 | 5 | 3 → 4 |
+| Continuity | 4 → 5 | 4 / 5 / 4 | 4 → 5 | 4 → 5 |
+| Motion cost | 4 | 5 / 5 / 5 | 5 | 5 |
+
+Composition went *down* in ledgerbox and is low in two hirelane directions, and that is the point of
+the round: continuous zoom keeps time's own sparseness, and the rooms set is too small to be a
+place. Both are rule 15 and both are fixable; neither was learnable by polishing round 2.
+
+**What each concept taught** is in rules 10–15 above. The shortest version: a real camera makes
+rule 1 literally true and deletes the hand-off, the published plane, the measurement and half the
+beats — and in the same move makes shared-element morphs impossible, because one element has one
+owner of its transform.
+
+**Round-3 kit gaps, consolidated (round-4 kit work):**
+1. The rig's zoom math is orthographic: `zoomAt` needs `unitsPerPixel(pose, frame)` for a
+   perspective camera; `CameraPose.pan` is 2-D and a fly into a sub-volume needs 3; pan bounds
+   depend on zoom, so `bounds.pan` must be a function of the pose.
+2. Semantic zoom in a 3-level scene: `resolveItem` assumes an item is "under the camera", which is
+   false for items inside a container; the hook does not fly on a camera-driven change; no
+   `enabled`; and a `snap` list carrying `zoom` silently defeats it (rule 12).
+3. `Echo.tsx` in the zoom barrel breaks every app's `node --test` (JSX in Node); it needs its own
+   entry point.
+4. Focus does not follow L0↔L1 — written for the third time; a `useChoice(key, param, values)`
+   switcher hook exists in three copies; `nav.highlight` still has no expiry.
+5. The resolve callbacks get a pose but no frame.
+
+**Owner picks pending:** the hirelane direction (rooms proved the lesson; board reads best today)
+and the atlas renderer (hybrid reads best and keeps text selectable).
+
+**Carried:** URL sync (four rounds, still nowhere); atlas L1 stubs for edges leaving the stratum;
+ledgerbox near-band density and dead space; rooms floor size; pinch on a perspective camera.
