@@ -38,7 +38,8 @@ import {
 } from "@/data";
 import { READ_CAP } from "@/lib/constants";
 
-import { TURN } from "../scene/turn";
+import { VIEW_META, type ViewId } from "../canvas/plan";
+import { GATE_STOP, TURN } from "../canvas/turn";
 
 /** The one sentence AGENTS.md requires of any bounded output. */
 export const announce = (showing: number, of: number): string => `(showing ${showing} of ${of})`;
@@ -226,23 +227,43 @@ export function lensRead(conceptId: string | null) {
   };
 }
 
-/** What the current level actually shows — the figures a reader would see. For `read_view`. */
-export function viewDetail(focus: Focus, conceptId: string | null) {
+/**
+ * What the current level actually shows — the figures a reader would see. For `read_view`.
+ *
+ * ROUND 4 CLOSES ROUND 2'S GAP 8. `useZoomTools` has exactly two tiers and Atlas's model has
+ * three (layer → system → component), so `read_view` at L1 used to hand an agent sixty-eight flat
+ * component ids with no hint that they were grouped. It now answers `systems`, each with its OWN
+ * components nested inside it, bounded per system as well as in total — so one call tells an agent
+ * the shape of the layer it is standing in and not just its contents.
+ *
+ * Every projection also carries the VIEW, because the same focus looks different in four
+ * arrangements and an agent that cannot tell which one is on the sheet cannot describe what a
+ * reader is seeing.
+ */
+export function viewDetail(focus: Focus, conceptId: string | null, view: ViewId) {
   const lens = lensFor(conceptId);
   const marked = lens.concept
     ? { id: lens.concept.id, part: lens.concept.part, name: lens.concept.name, components: lens.components.size }
     : null;
+  const arrangement = {
+    id: view,
+    label: VIEW_META[view].label,
+    shows: VIEW_META[view].note,
+    runs: VIEW_META[view].runs,
+  };
 
   if (focus.level === 2) {
-    return { lens: marked, component: componentRead(focus.item) };
+    return { view: arrangement, lens: marked, component: componentRead(focus.item) };
   }
   if (focus.level === 1) {
     const layer = layerById(focus.group);
-    if (!layer) return { lens: marked, error: `No layer ${focus.group}.` };
+    if (!layer) return { view: arrangement, lens: marked, error: `No layer ${focus.group}.` };
     return {
+      view: arrangement,
       lens: marked,
       layer: { id: layer.id, name: layer.name, blurb: layer.blurb, source: layer.source },
       edges: layerLinks(layer.id),
+      /* The middle tier, nested. This is the structure the flat list never had. */
       systems: systemsOf(layer.id).map((s) => ({
         id: s.id,
         part: s.part,
@@ -250,13 +271,14 @@ export function viewDetail(focus: Focus, conceptId: string | null) {
         blurb: s.blurb,
         home: s.home,
         status: s.status,
-        components: componentsOf(s.id).length,
         lit: litIn(lens, s.id),
+        components: announced(componentsOf(s.id), componentRow),
       })),
       components: announced(componentsOfLayer(layer.id), componentRow),
     };
   }
   return {
+    view: arrangement,
     lens: marked,
     counts: COUNTS,
     adrs: ADRS.length,
@@ -291,13 +313,16 @@ export function turnRead(at: number) {
       kind: s.kind,
       component: s.part,
       system: s.block,
+      layer: s.layer,
       file: componentById(s.part)?.file ?? null,
       source: s.cite,
       waitsHere: s.kind === "wait",
+      revisit: s.revisit,
     })),
     at: at + 1,
     of: TURN.length,
     here: TURN[at]?.label ?? null,
-    note: "The light stops at each of these in order. It waits at the gate until a decision resolves it. set_turn moves it; play_turn runs it.",
+    gate: GATE_STOP + 1,
+    note: "The path is drawn all at once in the turn view; the step control lights one stop at a time. The turn WAITS at the gate until a decision resolves it. set_turn moves the step; set_view('turn') puts the path on the sheet.",
   };
 }

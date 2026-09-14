@@ -136,19 +136,54 @@ test("set_lens with nothing set reads as no lens, and offers the concepts", () =
 });
 
 test("read_view's detail is honest at all three levels", () => {
-  const l0 = viewDetail({ level: 0, group: null, item: null }, null);
+  const l0 = viewDetail({ level: 0, group: null, item: null }, null, "layers");
   assert.equal(l0.counts?.components, COMPONENTS.length);
   assert.equal(l0.stack?.length, LAYERS.length);
 
   const layer = LAYERS[0]!;
-  const l1 = viewDetail({ level: 1, group: layer.id, item: null }, null);
+  const l1 = viewDetail({ level: 1, group: layer.id, item: null }, null, "layers");
   assert.equal(l1.layer?.id, layer.id);
   assert.ok((l1.systems?.length ?? 0) > 0);
   assert.ok(l1.components?.footer.startsWith("(showing "));
 
   const component = COMPONENTS[0]!;
-  const l2 = viewDetail({ level: 2, group: component.system, item: component.id }, null);
+  const l2 = viewDetail({ level: 2, group: component.system, item: component.id }, null, "layers");
   assert.equal(l2.component?.ok, true);
+});
+
+/**
+ * ROUND 2's GAP 8, CLOSED. `useZoomTools` has two tiers and this model has three, so `read_view`
+ * at L1 used to answer a flat list of the layer's components with no hint that they were grouped
+ * by system. It now nests them, and the two answers have to agree: the components listed under the
+ * systems must be exactly the components listed flat, or an agent reading one and acting on the
+ * other is acting on a different set.
+ */
+test("read_view at L1 groups the components by system, and the grouping agrees with the flat list", () => {
+  for (const layer of LAYERS) {
+    const out = viewDetail({ level: 1, group: layer.id, item: null }, null, "layers");
+    const systems = out.systems ?? [];
+    assert.ok(systems.length > 0, `${layer.id} answers no systems`);
+    const nested: string[] = [];
+    for (const s of systems) {
+      assert.ok(s.components.footer.startsWith("(showing "), `${s.id} does not announce its bound`);
+      assert.equal(s.components.of, s.components.items.length, `${s.id} is truncated at the cap`);
+      for (const c of s.components.items) {
+        assert.equal(c.system, s.id, `${c.id} is listed under the wrong system`);
+        nested.push(c.id);
+      }
+    }
+    const flat = (out.components?.items ?? []).map((c) => c.id);
+    assert.deepEqual(nested.sort(), [...flat].sort(), `${layer.id}: nested and flat disagree`);
+  }
+});
+
+test("read_view names the arrangement on the sheet, at every level", () => {
+  for (const view of ["layers", "turn", "trust", "packages"] as const) {
+    const out = viewDetail({ level: 0, group: null, item: null }, null, view);
+    assert.equal(out.view.id, view);
+    assert.ok(out.view.label.length > 0);
+    assert.ok(out.view.runs.length > 0, "a view that does not say what its runs mean");
+  }
 });
 
 test("read_view carries the lens at every level, so an agent never loses the mark", () => {
@@ -158,7 +193,7 @@ test("read_view carries the lens at every level, so an agent never loses the mar
     { level: 1 as const, group: LAYERS[0]!.id, item: null },
     { level: 2 as const, group: COMPONENTS[0]!.system, item: COMPONENTS[0]!.id },
   ]) {
-    const out = viewDetail(focus, concept.id);
+    const out = viewDetail(focus, concept.id, "layers");
     assert.equal(out.lens?.id, concept.id);
   }
 });

@@ -1,48 +1,53 @@
 /*
- * `plate` — the token file, and the only file in this app allowed to contain a raw `px` or `ms`.
+ * `blueprint` — the token file, and the only file in this app allowed to contain a raw `px` or `ms`.
  *
  * DESIGN.md is the law; this is the authority for every value it rules about. `design/check-tokens.mjs`
  * runs in `pnpm --filter atlas lint` and fails on a raw `px` or `ms` in any other stylesheet or in
  * any `.ts`/`.tsx` file, which is how "one clock per level change, in one module" (layered-UI
- * formula §1 rule 4) is enforced rather than merely intended. JS reads the four `--at-dur-*` values
- * back out of this cascade with the kit's `useTokens`/`cssMs`/`secs`.
+ * formula §1 rule 4) is enforced rather than merely intended. JS reads the `--at-dur-*` values back
+ * out of this cascade with the kit's `useTokens`/`cssMs`/`secs`.
  *
  * The block ends with an alias layer re-pointing the kit's `--dk-*` hooks at these values, so the
  * shared shell, toasts and badges follow the direction without knowing it exists. Alias, never fork.
  */
 
-[data-variant="plate"] {
+[data-variant="blueprint"] {
   /* ---------------------------------------------------------------- grounds --
-   * A cyanotype: the paper is blue because of the chemistry, so there is one polarity and no
-   * light variant is owed. Four grounds, one pigment family, no warm/cool fluctuation.
+   * A cyanotype. The paper is blue because of the chemistry, so there is one polarity and no
+   * light variant is owed. Four grounds, one pigment family, no warm/cool fluctuation — and a
+   * ground deep enough that a white line on it is the brightest thing in the room.
    */
-  --at-ground: #061420; /* the table the sheet lies on */
-  --at-plate: #0b2236; /* the sheet */
-  --at-plate-2: #10314c; /* a cell, a band, a pane — anything drawn ON the sheet */
-  --at-plate-3: #17456a; /* a cell under the pointer, or the one cell that is open */
+  --at-ground: #041320; /* the table the sheet lies on */
+  --at-plate: #07203a; /* the sheet */
+  --at-plate-2: #0c2f4f; /* a block, a region, a pane — anything drawn ON the sheet */
+  --at-plate-3: #12456e; /* a block under the pointer, or the one block that is open */
 
   /* ------------------------------------------------------------------- inks --
-   * Four weights of the drawn line. Prose ink stops at `--at-line-1`; `--at-line-2` is the
-   * lowest tier and carries rule work, skimmable figures and disabled chrome — never a sentence
-   * a reader has to follow. `--at-line-3` is rules only and never carries text at all.
+   * Four weights of the drawn line, from the rule that only carries geometry to the white line
+   * that carries the name of the thing. Prose ink stops at `--at-line-1`; `--at-line-2` carries
+   * rule work, skimmable figures and disabled chrome — never a sentence a reader has to follow.
+   * `--at-line-3` is rules only and never carries text at all.
    */
-  --at-line-3: #2d5c85;
-  --at-line-2: #6d9cc0;
-  --at-line-1: #a8cade;
-  --at-line-0: #eaf4fb; /* the white line: the name of the thing */
+  --at-line-3: #235d8c;
+  --at-line-2: #74b0d6;
+  --at-line-1: #b6dcf0;
+  --at-line-0: #f2fbff; /* the white line: the name of the thing */
+
+  /* The one cyan: a run that is live, a port that is connected, a figure that is a measurement.
+     It is a WEIGHT of the ink family and not a second accent — the accent is below, and there
+     is exactly one of it. */
+  --at-cyan: #4fd6e8;
 
   /* ---------------------------------------------------------------- the mark --
    * ONE accent, and it means ONE thing: the lens. Nothing else on this surface may take it —
-   * not a hover, not a selection, not a count, not an error. If it is orange, a chosen concept
-   * put it there. `--at-mark-soft` is a tint of the same hue for the tick's fill, not a second
-   * accent.
+   * not a hover, not a selection, not a count, not an error. If it is orange, a chosen claim
+   * put it there. `--at-mark-soft` is a tint of the same hue, not a second accent.
    */
   --at-mark: #ff7a4d;
   --at-mark-soft: #ff7a4d2e;
 
   /* ----------------------------------------------------------------- spacing --
-   * Nine steps on a 4px grid, and the cyanotype grid under the plate is the same grid at 4x.
-   * Every margin, padding and gap in the app is one of these.
+   * Nine steps on a 4px grid, and the sheet's ruled grid is the same grid at 4x.
    */
   --at-space-0: 0px;
   --at-space-1: 4px;
@@ -81,21 +86,24 @@
   --at-measure: 62ch; /* prose only; nothing else is measure-clamped */
 
   /* ------------------------------------------------------------------- shape --
-   * Depth is rule weight, not shadow. A plotted line does not round.
+   * Depth is rule weight, not shadow. A plotted line does not round and does not blur.
    */
   --at-radius-0: 0px;
   --at-elev-0: none;
   --at-rule-1: 1px; /* at rest */
-  --at-rule-2: 2px; /* lit by the lens */
-  --at-rule-3: 3px; /* open: the one cell the reader is inside */
+  --at-rule-2: 2px; /* lit by the lens, or open */
+  --at-rule-3: 3px; /* the one block the reader is inside */
 
   /* -------------------------------------------------------------- the sheet --
-   * The cyanotype grid, and the flat scrim behind the pane. Frosted glass is not a thing
-   * that happens to paper, so there is no blur token and never will be.
+   * The ruled grid, in WORLD units: it is drawn on the element the camera transforms, so it
+   * scales and pans with the drawing — a sheet of paper, not a backdrop. Two rules, a fine one
+   * and a heavy one every fifth, which is what makes a zoom legible as a zoom.
    */
-  --at-grid: 16px;
-  --at-grid-ink: #ffffff0a;
-  --at-scrim: #061420cc;
+  --at-grid: 40px;
+  --at-grid-major: 200px;
+  --at-grid-ink: #7ec8ff14;
+  --at-grid-ink-major: #7ec8ff2b;
+  --at-scrim: #041320d9;
 
   /* ------------------------------------------------------------------ sizes --
    * The few structural measurements, so no other file needs a raw length.
@@ -107,27 +115,31 @@
   --at-bp-mid: 900px;
 
   --at-mast-h: 56px;
-  --at-claims-w: 15rem; /* the lens rail */
-  --at-transport-h: 8.5rem; /* the turn's controls and its stop list */
+  --at-claims-w: 15rem;
+  --at-turnbar-h: 7rem;
   --at-stage-min: 26rem;
-  --at-band-h: 64px;
-  --at-cell-min: 14rem;
-  --at-col-min: 17rem;
-  --at-pane-w: 46rem;
-  --at-rail-w: 5rem;
+  --at-pane-w: 42rem;
   --at-tick: 6px;
+  --at-port: 7px;
+  --at-hair: 1.5px;
+
+  /* THE SCREEN-SPACE SCALE (formula §1 rule 13). The quantised inverse of the camera's zoom,
+   * written onto `.at-world` by `canvas/Canvas.tsx` on every band change and never per frame.
+   * Every label in the drawing scales by it, so type is screen-space while geometry is
+   * world-space. `1` is the value the server renders and the value a label falls back to. */
+  --at-cs: 1;
 
   /* ------------------------------------------------------------------ motion --
-   * ONE CLOCK (formula §1 rule 4). These four durations and two easings are the entire motion
-   * vocabulary of this app, and no JavaScript in it types a millisecond: `components/atlas/motion.ts`
-   * reads them back out of this cascade. `--at-dur-move` is the level change and is the one
-   * number with a budget — the rubric gives a DOM level change 400ms.
+   * ONE CLOCK (formula §1 rule 4). These five durations and two easings are the entire motion
+   * vocabulary of this app, and no JavaScript in it types a millisecond:
+   * `components/atlas/motion.ts` reads them back out of this cascade. `--at-dur-move` is the
+   * level change and is the one number with a budget — the rubric gives a DOM level change 400ms.
    */
   --at-dur-hair: 90ms; /* rule weight and ground, on hover or focus */
   --at-dur-ink: 150ms; /* text in and out — the second beat of every staged move */
-  --at-dur-lens: 220ms; /* the lens spreading down the stack */
+  --at-dur-lens: 220ms; /* the accent spreading through the drawing */
   --at-dur-move: 320ms; /* the level change, and the camera's flight to a focus */
-  --at-dur-beat: 620ms; /* ONE BEAT OF THE TURN — the only clock that is content, not chrome */
+  --at-dur-view: 560ms; /* THE SIGNATURE MOTION: the same blocks, re-arranged */
   --at-ease: cubic-bezier(0.2, 0, 0, 1);
   --at-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -156,29 +168,7 @@
   --dk-dur-fade: var(--at-dur-ink);
   --dk-ease: var(--at-ease);
 
-  /* ------------------------------------------------------------------- scene --
-   * The machine's own colours and weights. A stratum plane, a block wall, a block lid, a pipe
-   * and the travelling light — five roles, and the WebGL variant reads the first four back out
-   * of this cascade at mount (`render/webgl/Webgl.tsx`) so a material cannot invent a sixth.
-   */
-  --at-plane: #0e2a42;
-  --at-plane-edge: #1f4d74;
-  --at-wall: #12314a;
-  --at-wall-lit: #1b5079;
-  --at-lid: #163c5c;
-  --at-pipe: #2d5c85;
-  --at-pipe-up: #4d82ab;
-  --at-glow: #ff7a4d;
-  --at-glow-soft: #ff7a4d33;
-
-  /* The billboard angles, written once per frame by the css3d renderer onto the world element.
-   * Declared here because they are part of the contract between that renderer and its
-   * stylesheet, and because `design/check-tokens.mjs` requires every --at-* a file uses to be
-   * declared somewhere a human can find it. */
-  --at-c3-yaw: 0deg;
-  --at-c3-pitch: 0deg;
-
-  /* Where the L2 pane grows from — a projected screen point, written by `Atlas.tsx`. */
+  /* Where the L2 pane grows from — the middle of the part's client rect, written by `Atlas.tsx`. */
   --at-pane-ox: 50%;
   --at-pane-oy: 50%;
 }
@@ -188,19 +178,21 @@
  *
  * Not a `0.01ms` animation — every law document in this repository names that as the wrong
  * branch. The durations go to zero here, which is the value `cssMs` reads into JS as well, so the
- * CSS transition and the `motion` transition take the same branch from the same source. The echo
- * layer is additionally not rendered at all (`components/atlas/Atlas.tsx`), because an element
- * that fades in zero milliseconds still costs a commit.
+ * CSS transition and the `motion` transition take the same branch from the same source. The view
+ * switch goes to zero with the rest: the blocks are simply in their new places, which is the
+ * final state of the move and not a faster version of it.
+ *
+ * ROUND 3 HAD AN EXCEPTION HERE and round 4 does not need it. The turn was a light on a clock, so
+ * `--at-dur-beat` was deliberately not zeroed — the turn is content, not a transition. The turn is
+ * now twelve stops a reader steps through with a button, which has no duration to exempt. A
+ * sequence a reader is reading should not be a transition in the first place.
  */
 @media (prefers-reduced-motion: reduce) {
-  [data-variant="plate"] {
+  [data-variant="blueprint"] {
     --at-dur-hair: 0ms;
     --at-dur-ink: 0ms;
     --at-dur-lens: 0ms;
     --at-dur-move: 0ms;
-    /* --at-dur-beat is NOT zeroed. The turn is content, not a transition: a reader who asked for
-       no motion gets the twelve stops as stills on the same clock (`scene/useTurn.ts` snaps
-       between them instead of interpolating), because zeroing it would show them an empty
-       machine and call that accessibility. */
+    --at-dur-view: 0ms;
   }
 }

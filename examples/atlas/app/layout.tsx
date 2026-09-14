@@ -26,9 +26,9 @@ const fig = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Atlas — Athena Portable at three altitudes",
+  title: "Atlas — Athena Portable as a blueprint",
   description:
-    "This repository's own architecture, read at three depths: the claims it makes, the layers it is made of, and the module that enforces one of them. Ships without Athena.",
+    "This repository's own architecture as a 2D blueprint: nineteen system blocks on one ruled sheet, four arrangements of the same blocks, read at three depths. Ships without Athena.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

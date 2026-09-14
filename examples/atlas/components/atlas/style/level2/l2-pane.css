@@ -78,14 +78,22 @@
   gap: var(--at-space-5);
 }
 
-/* A block inside the pane: a small heading and its content. Four of them, always in this order:
-   what it enforces, the invariants it carries, who calls it, what it calls. */
-.at-block {
+/*
+ * A SECTION inside the pane: a small heading and its content. Six of them, always in this order:
+ * what it enforces, the claims it carries, who calls it, what it reaches, which ADR decided it.
+ *
+ * Named `at-pane-section` and not `at-block`, which is what round 3 called it. `at-block` now
+ * means a SYSTEM BLOCK ON THE SHEET and carries `position: absolute` from `canvas/canvas.css`;
+ * the two collided on the first capture and stacked the whole pane's contents on one line. A
+ * class name is a namespace, and two namespaces in one stylesheet is a bug waiting for a
+ * screenshot.
+ */
+.at-pane-section {
   display: grid;
   gap: var(--at-space-2);
 }
 
-.at-block-head {
+.at-pane-section-head {
   display: flex;
   gap: var(--at-space-2);
   align-items: baseline;
@@ -163,6 +171,11 @@
 .at-link:focus-visible {
   outline: var(--at-rule-2) solid var(--at-line-0);
   outline-offset: calc(var(--at-rule-2) * -1);
+}
+
+.at-link-name {
+  color: var(--at-line-0);
+  font-weight: 600;
 }
 
 .at-link-kind {

@@ -1,71 +1,76 @@
 "use client";
 
 /**
- * ATLAS — this repository as a machine you can walk around, with a real turn running through it.
+ * ATLAS — this repository's architecture as a 2D BLUEPRINT you pan, zoom and re-arrange.
  *
- * ROUND 3, AND WHAT CHANGED. Round 2 built a website about an architecture: bands, columns, rows,
- * prose. The owner's correction was that the goal is "a visual multi-layer model representing the
- * app solution, with text as a secondary informative element", so this round throws the pages away
- * and builds the thing itself:
+ * ROUND 4, AND WHY. The owner's verdict on round 3, verbatim in spirit: *"designing app
+ * architecture as a 'building' is not the right direction; looking at it as a 2D diagram of
+ * components in a canvas with switchable views in blueprint structure would fit much better. For
+ * 3D we don't have any good practice or idea what to invent; we should not chase it."* So the
+ * machine, the three renderers, `three`, the CSS-3D faces, the projection and the travelling light
+ * are all gone, and what is left is the thing an architecture drawing has always been: rectangles
+ * with ports, orthogonal runs, a ruled sheet, and a legend.
  *
- *   the six strata of README §3.1   six planes stacked in depth
- *   the systems that realise them   blocks standing on their plane, with volume
- *   the modules inside a system     parts inside a block
- *   the edges between them          pipes routed between blocks, up the stack = reaches
- *   README §3.2, "how a turn flows" a LIGHT that travels the pipes, stops twelve times, and
- *                                   WAITS at the gate until a decision resolves it
+ * FOUR THINGS MAKE THE SURFACE, and each is one module:
  *
- * THE THREE LEVELS ARE THREE DISTANCES, not three screens. `useAtlasCamera` (the camera
- * contract's §3) makes the wheel and the level the same gesture: far is L0, closer is one stratum
- * cut open, closer still is one part with the pane risen out of it. A tool call, a click on the
- * rail and a reader's wheel all end at the same `nav` and therefore at the same flight.
+ *   the sheet      `canvas/plan.ts` — nineteen blocks sized from the model, laid out four ways.
+ *   the camera     `canvas/useCanvasCamera.ts` — the kit's rig and semantic zoom, orthographic,
+ *                  which is exactly the arithmetic a drawing wants and was the wrong arithmetic
+ *                  for round 3's perspective machine.
+ *   the detail     three bands. Far: layers as regions, systems as blocks, system runs. Near:
+ *                  the open layer's blocks show their components with component runs and stubs.
+ *                  Closest: one component's pane, the only prose in the app.
+ *   the views      four arrangements of the SAME blocks. A switch is a layout transition, which is
+ *                  this app's one signature motion.
  *
- * THREE RENDERINGS, ONE MACHINE. The owner asked to choose between the techniques from live
- * builds, so `/` mounts one of `render/webgl`, `render/css3d`, `render/hybrid` at a time behind a
- * switch. They share the model, the layout, the turn, the lens, the pane, the tools, the camera
- * and the bands; the ONLY thing that differs is how a scene unit becomes a pixel.
+ * WHERE THE FIFTEEN RULES OF THE FORMULA ARE:
  *
- * WHERE THE NINE RULES OF THE FORMULA ARE, since this is still their test app:
- *
- *   1. the level you leave carries the camera — literally, now: the camera IS the level change
- *      (`rig.flyTo(poseFor(focus))`), so there is no echo to render and rule 1's own primitive is
- *      not needed by this direction. Noted in KIT-GAPS round 3.
- *   2. one claimant per shared id — no `layoutId` survives: a shared-element morph out of a
- *      `matrix3d` face measures a rectangle that is not where the reader sees the part, so L2
- *      grows from a projected origin instead (`machine/Pane.tsx`).
- *   3. box, then ink — the pane, and the blocks that lift their parts before the parts are legible.
- *   4. one clock — `motion.ts` reads every duration off `tokens.css`, the turn included, in beats.
- *   5. the overlay owns its Escape — `useOverlayEscape` in the pane, untouched from round 2.
- *   6. a move in flight is abortable — every flight is `rig.flyTo`, and any input cancels it.
- *   7. presence comes from the model — `weightsFor` maps `emphasis()` and nothing re-derives it.
- *   8. reduced motion lands on final state — flights are instant and the turn is a set of stills.
- *   9. what is no longer seen stops costing — `frameloop="demand"`; the camera's rAF stops when
- *      the pose settles; the transport's stops when it is paused.
+ *   1/10. the level you leave carries the camera — inverted, as rule 10 says it inverts: this is
+ *         one continuous space, the level you left is still on screen, and there is no echo.
+ *   2.    one claimant per shared id — no `layoutId` at all; see rule 11.
+ *   3.    box, then ink — the pane grows, then fills; the parts arrive after the band has changed.
+ *   4.    one clock — `motion.ts`, five tokens, no millisecond typed in JS.
+ *   5.    an overlay owns its Escape — `useOverlayEscape` in the pane.
+ *   6.    a move in flight is abortable — every flight is `rig.flyTo`; any input cancels it.
+ *   7.    presence comes from the model — `presenceStyle` in `canvas/Block.tsx`.
+ *   8.    reduced motion lands on final state — durations go to zero in the token file.
+ *   9.    what is no longer seen stops costing — the camera's loop stops when the pose settles,
+ *         and the only thing that ever moves is one `transform` on one element.
+ *   11.   one owner of a transform — the world owns the camera's, a block owns its position's,
+ *         and the pane is MEASURED out of a part rather than morphed through it.
+ *   12.   a pose is where you stand and where you look — `zoom` is the level, `pan` the framing,
+ *         and there is no snap list anywhere in this app.
+ *   13.   type is screen-space, quantised — `--at-cs` in `canvas/Canvas.tsx`.
+ *   14.   `poseFor` and `resolveGroup` are exact inverses — `canvas/poses.ts`, asserted in the test.
+ *   15.   a place needs a floor size — `homeZoom` is clamped, so a 2560 display gets more sheet
+ *         rather than a bigger sheet.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MotionConfig } from "motion/react";
 import { useLevelFlight, useZoomNav, type Focus } from "@athena/demo-kit/zoom";
 
-import { COUNTS, componentById, highlightIds, layerById, lensFor, type Lens } from "@/data";
+import {
+  COUNTS,
+  componentById,
+  highlightIds,
+  layerById,
+  lensFor,
+  systemById,
+  type Lens,
+} from "@/data";
 
 import { Mast } from "./Mast";
 import { useAtlasMotion } from "./motion";
-import { Claims } from "./machine/Claims";
-import { Pane } from "./machine/Pane";
-import { Transport } from "./machine/Transport";
-import { Css3d } from "./render/css3d/Css3d";
-import { Hybrid } from "./render/hybrid/Hybrid";
-import { RenderSwitcher, useRenderVariant } from "./render/Switcher";
-import { Webgl } from "./render/webgl/Webgl";
-import { weightsFor, type SceneProps } from "./render/contract";
-import { SCENE, partAt } from "./scene/layout";
-import { project, viewOf } from "./scene/project";
-import { useAtlasCamera } from "./scene/rig";
-import { TURN_BLOCKS, TURN_PARTS } from "./scene/turn";
-import { useTurnTransport } from "./scene/useTurn";
+import { Claims } from "./chrome/Claims";
+import { Legend } from "./chrome/Legend";
+import { TurnBar } from "./chrome/TurnBar";
+import { Pane } from "./pane/Pane";
+import { Canvas } from "./canvas/Canvas";
+import { VIEW_META, type ViewId } from "./canvas/plan";
+import { TURN, stopAt } from "./canvas/turn";
+import { useCanvasCamera } from "./canvas/useCanvasCamera";
+import { useView } from "./canvas/useView";
 import { AtlasTools } from "./tools/AtlasTools";
-
-const RENDERERS = { webgl: Webgl, css3d: Css3d, hybrid: Hybrid } as const;
 
 export function Atlas() {
   const nav = useZoomNav();
@@ -75,9 +80,10 @@ export function Atlas() {
      exactly as it is for a click, and rule 6's abort works the same for both. */
   const flight = useLevelFlight(nav, { fallbackToken: "--at-dur-move" });
 
-  const [variant, chooseVariant] = useRenderVariant();
+  const [view, chooseView] = useView();
   const [hover, setHover] = useState<string | null>(null);
-  const stageRef = useRef<HTMLDivElement | null>(null);
+  const [stop, setStopAt] = useState(0);
+  const [runsHidden, setRunsHidden] = useState(true);
 
   /* ------------------------------------- the lens ------------------------------------- */
 
@@ -88,8 +94,8 @@ export function Atlas() {
   }, []);
 
   /* `nav.highlight` is rebuilt on every nav state change, so it is read through a ref: this
-     effect must run when the LENS changes and not when the nav does. (KIT-GAPS round 2 #6, still
-     open in round 3.) */
+     effect must run when the LENS changes and not when the nav does. (KIT-GAPS round 2 #6, open
+     in rounds 3 and 4.) */
   const highlight = useRef(nav.highlight);
   useEffect(() => {
     highlight.current = nav.highlight;
@@ -98,37 +104,27 @@ export function Atlas() {
     highlight.current(highlightIds(lensFor(lensId)));
   }, [lensId]);
 
-  /* ------------------------------------- the turn ------------------------------------- */
-
-  const transport = useTurnTransport({ beatMs: m.beatMs, reduced: m.reduced });
-
   /* ------------------------------------ the camera ------------------------------------ */
 
   const focus: Focus = nav.state.focus;
-  const { rig } = useAtlasCamera(nav, flight);
+  const camera = useCanvasCamera(nav, flight, view);
 
-  /* ------------------------------------ the weights ------------------------------------ */
-
-  const live = transport.stops[transport.stop];
-  const weights = useMemo(
-    () =>
-      weightsFor({
-        focus,
-        lens,
-        liveBlock: live?.block ?? null,
-        livePart: live?.part ?? null,
-        turnBlocks: TURN_BLOCKS,
-        turnParts: TURN_PARTS,
-        hover,
-      }),
-    [focus, hover, lens, live?.block, live?.part],
+  /* A view switch is not a level change: the reader keeps their focus and the blocks travel. The
+     camera re-frames the same focus in the new arrangement, which is a fly and not a cut. */
+  const setView = useCallback(
+    (next: ViewId) => {
+      if (next === view) return;
+      chooseView(next);
+      camera.refit(next);
+    },
+    [camera, chooseView, view],
   );
 
   /* -------------------------------------- opening -------------------------------------- */
 
-  const onOpenStratum = useCallback(
+  const onOpenLayer = useCallback(
     (id: string) => {
-      if (nav.state.focus.level === 1 && nav.state.focus.group === id) return;
+      if (nav.state.focus.level >= 1 && nav.state.focus.group === id) return;
       nav.openGroup(id);
     },
     [nav],
@@ -136,59 +132,43 @@ export function Atlas() {
 
   const onOpenPart = useCallback(
     (id: string) => {
-      const part = partAt(id);
-      if (!part) return;
-      const layer = SCENE.blocks.find((b) => b.id === part.block)?.layer;
+      const layer = systemById(componentById(id)?.system ?? "")?.layer;
       if (layer) nav.openItem(layer, id);
     },
     [nav],
   );
 
+  const setStop = useCallback((index: number) => {
+    setStopAt(Math.min(TURN.length - 1, Math.max(0, index)));
+  }, []);
+
   /**
    * Where the open part is on screen, so the pane can rise out of it.
    *
-   * A FUNCTION, not a piece of state, and the pane calls it once in a layout effect. Two reasons,
-   * and the second is the real one: measuring the DOM and the camera in a render is a read of two
-   * mutable systems React does not own, and turning that into `setState` inside an effect is the
-   * cascading-render shape the compiler correctly refuses. Handing the pane a measurement it can
-   * take at the moment it mounts puts the read where it belongs — in a layout effect, in the
-   * component that needs it, once.
+   * A FUNCTION, not a piece of state, and the pane calls it once in a layout effect: measuring the
+   * DOM in a render is a read of a mutable system React does not own, and turning that into
+   * `setState` inside an effect is the cascading-render shape the compiler correctly refuses.
    *
-   * It is not tracked afterwards on purpose: the camera holds still at L2 (the rig has flown
-   * there and nothing moves it), and a pane whose transform origin chased the camera would be a
-   * pane that slides when a reader nudges the scene.
+   * On a 2D sheet this is an honest `getBoundingClientRect` again — round 3 had to project a point
+   * through the camera because the part was a `matrix3d` face whose client rect was the bounding
+   * box of a projected quadrilateral.
    */
   const open = componentById(focus.item);
   const measureOrigin = useCallback((): { x: number; y: number } | null => {
     const id = nav.state.focus.item;
-    const part = id ? partAt(id) : undefined;
-    const box = stageRef.current?.getBoundingClientRect();
-    if (!part || !box) return null;
-    const p = project({ x: part.x, y: part.y + part.h, z: part.z }, viewOf(rig.get()), {
-      w: box.width,
-      h: box.height,
-    });
-    return p.visible ? { x: box.left + p.x, y: box.top + p.y } : null;
-  }, [nav, rig]);
+    if (!id) return null;
+    const el = document.querySelector<HTMLElement>(`[data-component="${id}"]`);
+    if (!el) return null;
+    const box = el.getBoundingClientRect();
+    if (box.width === 0 && box.height === 0) return null;
+    return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+  }, [nav]);
 
   /* ------------------------------------- the mount ------------------------------------- */
 
-  const Renderer = RENDERERS[variant];
-  const sceneProps: SceneProps = {
-    rig,
-    transport,
-    focus,
-    lens,
-    weights,
-    hover,
-    onHover: setHover,
-    onOpenStratum,
-    onOpenPart,
-    reduced: m.reduced,
-    scene: SCENE,
-  };
-
   const layer = layerById(focus.group);
+  const here = stopAt(stop);
+  const hovered = componentById(hover) ?? systemById(hover ?? "");
 
   return (
     <MotionConfig reducedMotion="user">
@@ -197,43 +177,69 @@ export function Atlas() {
         lens={lens}
         lensId={lensId}
         setLens={setLens}
-        transport={transport}
+        view={view}
+        setView={setView}
+        stop={stop}
+        setStop={setStop}
       />
-      <div className="at-app" data-level={focus.level} data-render={variant}>
-        <Mast nav={nav} lens={lens} setLens={setLens} counts={COUNTS}>
-          <RenderSwitcher variant={variant} onChoose={chooseVariant} />
-        </Mast>
+      <div
+        className="at-app"
+        data-level={focus.level}
+        data-view={view}
+        data-band={camera.band}
+        data-reduced={m.reduced ? "" : undefined}
+      >
+        <Mast nav={nav} lens={lens} setLens={setLens} counts={COUNTS} view={view} setView={setView} />
 
         <div className="at-body">
           <Claims lens={lens} setLens={setLens} />
 
-          <main className="at-stage" ref={stageRef}>
-            {/* One renderer at a time, keyed by variant so a switch tears the old one down —
-                a WebGL context that is merely hidden is a WebGL context still allocated. */}
-            <Renderer key={variant} {...sceneProps} />
+          <main className="at-stage">
+            <Canvas
+              view={view}
+              camera={camera}
+              focus={focus}
+              lens={lens}
+              stop={stop}
+              runsHidden={view === "packages" ? runsHidden : false}
+              onOpenLayer={onOpenLayer}
+              onOpenPart={onOpenPart}
+              onHover={setHover}
+            />
 
             {/* The reading line: what the camera is looking at, in words, for the reader who
                 needs the name of the thing under the pointer and for the capture to assert on. */}
             <p className="at-readout" data-level={focus.level}>
               <span className="at-readout-level">
                 {focus.level === 0
-                  ? "The whole machine"
+                  ? VIEW_META[view].label
                   : focus.level === 1
                     ? layer?.name
                     : open?.name}
               </span>
               <span className="at-label">
                 {focus.level === 0
-                  ? "Drag to orbit · wheel to come closer · Home to reset"
+                  ? VIEW_META[view].note
                   : focus.level === 1
                     ? layer?.blurb
                     : open?.file}
               </span>
+              {hovered ? <span className="at-readout-hover">{hovered.name}</span> : null}
             </p>
+
+            <Legend
+              view={view}
+              band={camera.band}
+              runsHidden={runsHidden}
+              onToggleRuns={() => setRunsHidden((h) => !h)}
+            />
           </main>
         </div>
 
-        <Transport transport={transport} />
+        {view === "turn" ? <TurnBar stop={stop} setStop={setStop} /> : null}
+        <p className="at-sr" aria-live="polite">
+          {view === "turn" ? `Stop ${stop + 1} of ${TURN.length}: ${here.label}` : ""}
+        </p>
 
         {open ? (
           <Pane component={open} nav={nav} lens={lens} setLens={setLens} origin={measureOrigin} />

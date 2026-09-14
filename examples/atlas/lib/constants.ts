@@ -14,16 +14,18 @@ export const APP_VERSION = "0.1.0";
 /**
  * The name of this app's design. One name, one `[data-variant]` block in
  * `components/atlas/style/base/tokens.css`, set statically on `<html>` in `app/layout.tsx`.
- * `ThemeVariantSwitcher` is not mounted: this round has one direction on purpose (DESIGN.md §0).
+ * `ThemeVariantSwitcher` is not mounted and there is no renderer switch either: round 4 has ONE
+ * direction on purpose (DESIGN.md §0). The switcher in the mast chooses an ARRANGEMENT of the one
+ * drawing, which is a different kind of choice — the same design, four layouts.
  */
-export const VARIANT = "plate";
+export const VARIANT = "blueprint";
 
 /**
  * What the three levels are called, L0 first — the same three words the level rail prints and the
  * same three the `read_view` tool answers with, so an agent and a reader are talking about the
  * same thing.
  */
-export const LEVELS = ["The plate", "One layer", "One component"] as const;
+export const LEVELS = ["The sheet", "One layer", "One component"] as const;
 
 /** Singular nouns for the zoom tools' generated descriptions. */
 export const NOUNS = ["layer", "component"] as const;

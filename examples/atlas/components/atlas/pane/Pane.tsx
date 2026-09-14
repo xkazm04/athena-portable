@@ -10,11 +10,16 @@
  *
  * IT RISES OUT OF THE PART. The camera holds still at L2 (the rig has already flown to the part
  * and stays there), and the pane grows from the part's own position on screen — `origin` is the
- * projected point, handed in by the scene, and it becomes the `transform-origin` of a scale. That
- * is rule 3 in its L2 form: the box travels first, the ink arrives after it has landed
- * (`m.inkIn`, delayed by a whole move). No `layoutId` here: the part it grows from is a face of a
- * box in a 3D scene, and a shared-element morph measuring a `matrix3d` gets a rectangle that is
- * nowhere near where the reader sees the part.
+ * middle of the part's client rect, and it becomes the `transform-origin` of a scale. That is
+ * rule 3 in its L2 form: the box travels first, the ink arrives after it has landed (`m.inkIn`,
+ * delayed by a whole move).
+ *
+ * STILL NO `layoutId`, AND FOR A BETTER REASON THAN ROUND 3'S. Round 3 could not morph because a
+ * `matrix3d` face measures a rectangle that is nowhere near where the reader sees the part. On a
+ * 2D sheet `getBoundingClientRect` is honest again — but the part's position comes from the
+ * CAMERA, and formula rule 11 says one element has exactly one owner of its transform. So the
+ * next level is measured out of it, not morphed through it, which is what rule 11 asks for and is
+ * a cheaper thing to be right about than a shared id.
  *
  * It owns its own Escape and hands focus back to whatever opened it (formula §1 rule 5,
  * `useOverlayEscape`).
@@ -135,13 +140,13 @@ export function Pane({
             </p>
           </header>
 
-          <section className="at-block">
-            <h3 className="at-block-head">What it enforces</h3>
+          <section className="at-pane-section">
+            <h3 className="at-pane-section-head">What it enforces</h3>
             <p className="at-prose">{component.enforces}</p>
           </section>
 
-          <section className="at-block">
-            <h3 className="at-block-head">
+          <section className="at-pane-section">
+            <h3 className="at-pane-section-head">
               Claims it carries <span className="at-fig">{component.concepts.length}</span>
             </h3>
             {component.concepts.length === 0 ? (
@@ -170,8 +175,8 @@ export function Pane({
             )}
           </section>
 
-          <section className="at-block">
-            <h3 className="at-block-head">
+          <section className="at-pane-section">
+            <h3 className="at-pane-section-head">
               Who calls it <span className="at-fig">{into.length}</span>
             </h3>
             {into.length === 0 ? (
@@ -181,8 +186,8 @@ export function Pane({
             )}
           </section>
 
-          <section className="at-block">
-            <h3 className="at-block-head">
+          <section className="at-pane-section">
+            <h3 className="at-pane-section-head">
               What it reaches <span className="at-fig">{out.length}</span>
             </h3>
             {out.length === 0 ? (
@@ -192,8 +197,8 @@ export function Pane({
             )}
           </section>
 
-          <section className="at-block">
-            <h3 className="at-block-head">
+          <section className="at-pane-section">
+            <h3 className="at-pane-section-head">
               Decided in <span className="at-fig">{component.adrs.length}</span>
             </h3>
             {component.adrs.length === 0 ? (
@@ -249,7 +254,7 @@ function Link({
     >
       <span className="at-link-kind">{kind}</span>
       <span>
-        <span className="at-part-name">{other.name}</span>{" "}
+        <span className="at-link-name">{other.name}</span>{" "}
         <span className="at-part">{layer?.name}</span>
       </span>
       <span className="at-link-note">{note}</span>

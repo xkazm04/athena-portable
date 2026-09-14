@@ -44,8 +44,48 @@
   overflow: hidden;
 }
 
-.at-render-switch {
+.at-views {
   flex-shrink: 0;
+  display: flex;
+  border: var(--at-rule-1) solid var(--at-line-3);
+}
+
+/*
+ * The view switcher: a segmented control, and a RADIO GROUP rather than four buttons.
+ *
+ * Four arrangements of one drawing are four values of one property. The arrow keys walk them
+ * (`useRoving` in `Mast.tsx`), only the current one is in the tab order, and the chosen one is
+ * drawn as the sheet itself — the ink and the ground swap, which is the plainest way to say "this
+ * is the one on the board" without spending the accent, which means the lens and nothing else.
+ */
+.at-view-btn {
+  padding: var(--at-space-1) var(--at-space-3);
+  border: 0;
+  border-inline-end: var(--at-rule-1) solid var(--at-line-3);
+  background: none;
+  color: var(--at-line-2);
+  font: inherit;
+  font-size: var(--at-text-label);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--at-dur-hair) var(--at-ease),
+    color var(--at-dur-hair) var(--at-ease);
+}
+
+.at-view-btn:last-child {
+  border-inline-end: 0;
+}
+
+.at-view-btn:hover {
+  color: var(--at-line-0);
+  background: var(--at-plate-2);
+}
+
+.at-view-btn[aria-checked="true"] {
+  background: var(--at-line-1);
+  color: var(--at-ground);
+  font-weight: 600;
 }
 
 .at-mast-brand {

@@ -14,6 +14,288 @@ workaround is here instead.
 cost a workaround (#5, #6, #8), 5 that are documentation or ergonomics (#9–#13). Nothing in the
 nine rules was *impossible*; rules 1, 3 and 5-adjacent focus were the expensive ones.
 
+**The running score: 13 (round 2, first build) → 11 (round 3, the machine) → 10 (round 4, the
+blueprint).** The count falls slowly and the *composition* is what moved: round 2's expensive gaps
+were the formula's own rules (the echo, staged ink, focus); round 4's are all about things the kit
+has no concept for — a second axis, a composable binding, focus after a move nobody clicked. Five
+of round 4's ten are unchanged repeats from earlier rounds, which is the more useful number: **the
+gaps that survive three rounds are the ones worth the kit's time.**
+
+---
+
+## Round 4 — the blueprint (2026-09-14)
+
+Round 4 rebuilt Atlas as a **2D drawing**: one ruled sheet, nineteen system blocks with ports,
+orthogonal runs, four switchable arrangements of the same blocks, and three bands of detail driven
+by the camera. The owner's verdict retired the machine and the three renderers; `three`,
+`@react-three/*` and the whole `scene/` directory went with them.
+
+**Score for round 4: 10 gaps.** Four cost real code (#R4-1, #R4-2, #R4-3, #R4-5), three cost a
+workaround (#R4-6, #R4-7, #R4-10), three are documentation or a rule the formula does not yet have
+(#R4-4, #R4-8, #R4-9). Five of the ten are round 2's or round 3's, unchanged, and they say so.
+
+**The three that matter**, before the list:
+
+*(a)* **The kit has a level axis and no vocabulary for a second, orthogonal one** (R4-1). A view is
+not a level: the reader stays exactly where they are in the model and the drawing re-arranges under
+them. That one missing concept opens three holes at once — a camera move that must not bump the
+flight, a choice that needs a URL, a snapshot and a fallback, and a tool the four level verbs know
+nothing about. Every surface in `examples/` has now grown one of these (three renderer switches, a
+prototype switcher, a view switcher) and all four wrote it themselves.
+
+*(b)* **`rig.bind` is a prop bag that cannot be composed** (R4-2). On any surface where the canvas is
+*also* a focus container, two of its eight members need wrapping — `ref` (to measure the element)
+and `onKeyDown` (to decide whether the arrows are the camera's or the drawing's) — so the surface
+explodes the bag by hand and re-types the other six. The kit's one real safety, the non-passive
+wheel listener, rides on the member most likely to be dropped.
+
+*(c)* **Focus still does not follow a level change nobody clicked** (R4-4). Fourth round. An agent
+tool opening a component lands the pane correctly and Escape returns focus to *whatever was focused
+before*, which in the capture is the view switcher in the mast — a control on the other side of the
+screen from the thing the reader just closed.
+
+**And the good news, stated first because a gap list read alone is misleading:** the camera is
+*orthographic*, which is exactly what a blueprint needs, and round 3's single biggest finding —
+that `resolveItem` has no honest answer — **is not a kit gap at all.** It was a fact about a
+container scene. On a sheet the items are laid out in the plane, "which item is under the camera"
+has an answer, and the wheel walks all three levels. The contract's headline claim is true here,
+and it took a 2D surface to show that.
+
+---
+
+### R4-1. There is no second axis: a view switch is three holes in a row
+
+**What.** The nav model is `level x group x item` and nothing else. Atlas's fourth axis — which of
+four arrangements is on the sheet — is orthogonal to all three, and the kit has no place to put it,
+so the app wrote:
+
+- **the camera move.** A view switch re-frames the SAME focus in the new arrangement, so it must fly
+  the camera without bumping `nav.state.flight` — a flight would make it a level change, would arm
+  an abort, and would make Escape mean "undo the view switch". `useSemanticZoom` only flies when the
+  nav moves, so the app calls `rig.flyTo(poseFor(focus, nextView, frame))` itself
+  (`canvas/useCanvasCamera.ts`, `refit`), and must also keep the view in a ref because the hook holds
+  the three resolve callbacks across renders.
+- **the choice.** `?view=`, `localStorage`, `replaceState`, and — the part that is genuinely fiddly —
+  the value is not knowable on the server, so a lazy `useState` initialiser is a hydration mismatch
+  and an effect chasing it is a cascading render the lint rule correctly refuses. The answer is
+  `useSyncExternalStore` with a server snapshot, which is about forty lines nobody should write
+  twice (`canvas/useView.ts`).
+- **the tool.** `useZoomTools` generates four verbs and cannot be told a fifth exists, so `set_view`
+  is hand-written and `read_view`'s payload had to be hand-extended to name the arrangement — an
+  agent reading `read_view` alone would otherwise describe a drawing it cannot see the shape of.
+
+Round 3's gap 4 named `useChoice(key, param, values)` as "a switcher hook in three copies". This is
+the fourth copy and it is now clear the hook is the smallest part of the problem.
+
+**Written in.** `canvas/useView.ts` (whole file), `canvas/useCanvasCamera.ts` (`refit` + the view
+ref), `tools/AtlasTools.tsx` (`set_view`), `tools/read.ts` (`viewDetail`'s `view` block).
+
+**Proposal.** `useChoice(key, { param, values, fallback })` returning `[value, set]` with the
+`useSyncExternalStore` shape already right; a `rig.reframe(pose)` that flies without claiming a
+flight; and `ZoomToolsSpec.axes` — a list of `{ name, values, read, set }` the kit registers as
+tools and mentions in `read_view`.
+
+---
+
+### R4-2. `rig.bind` cannot be composed, so a real surface takes it apart
+
+**What.** Round 3 logged this as "`bind.ref` is a deviation that fails silently" (R3-3) and proposed
+`composeRefs`. Round 4 shows it is bigger than the ref. Atlas's canvas is the camera's element AND
+the drawing's focus container, so:
+
+- `bind.ref` must be composed with the app's own ref (to measure the frame and to answer "is the
+  canvas itself focused") — `composeRefs` again, second round running, still ~6 lines;
+- `bind.onKeyDown` must be *conditional*: the camera's arrows only when the canvas itself has focus,
+  the drawing's roving arrows otherwise, and `+`/`-`/`Home` always the camera's.
+
+Neither can be done through a spread, so the app writes out all eight members of `bind` by hand,
+including `tabIndex`, `style` and `data-camera`, and any member the kit adds later is silently
+missing. The failure mode is the round-3 one: everything still works and the page also scrolls.
+
+**Written in.** `canvas/Canvas.tsx` — `composeRefs` (~6 lines) plus the explicit eight-prop spread
+and the `onKeyDown` router (~15 lines).
+
+**Proposal.** `rig.bind` should be a function, not an object: `rig.bind({ ref, onKeyDown })` returns
+the merged props, composing what it is given with what it owns. Or, minimally, `rig.attach(el)` and
+`rig.keys(event)` as two methods the surface calls from its own handlers, so there is nothing to
+collide with.
+
+---
+
+### R4-3. Two kit hooks return `{ onKeyDown }` and there is no way to run both
+
+**What.** `useRoving(ref, { selector, columns })` and `useCameraRig(...).bind` both hand back an
+`onKeyDown` for the same element, and a surface that wants both must decide the precedence itself.
+The precedence is not obvious and it is not the same on every surface — Atlas's rule ("arrows move
+focus unless the canvas itself is focused; `+`/`-`/`Home` are always the camera's") is a design
+decision the app should be making, but *how* to express it is plumbing the kit should own.
+
+`useRoving` helpfully declines to `preventDefault` a key that moved nothing, which is what makes the
+fall-through possible at all — so the ingredients are there and the recipe is not.
+
+**Written in.** `canvas/Canvas.tsx`, the `onKeyDown` router.
+
+**Proposal.** `composeHandlers(...handlers)` in the kit, documented with exactly this case: run in
+order, stop at the first `defaultPrevented`. Three lines, and it makes "who owns the arrow keys" a
+one-line declaration instead of a paragraph in a docstring.
+
+---
+
+### R4-4. Focus does not follow a level change nobody clicked. Fourth round
+
+**What.** Round 1 named it, round 2 fixed only the overlay half (#3), round 3 named it again as
+"written for the third time". Round 4's evidence is in the capture: `open_item` from an agent tool
+opens the pane, Escape closes it, and `useOverlayEscape` returns focus to the opener — which, for a
+tool-driven open, is whatever the reader last touched. In `shots/round4-atlas/log.txt` that is
+`at-view-btn`, the view switcher in the mast, three hundred pixels from the block that just closed.
+
+The pane names a `returnFocusTo` (`[data-component="..."]`, which exists and is on screen), and it
+is only consulted when the opener is gone. There is no way to say "prefer the origin over the opener
+when the opener was never a control the reader pressed".
+
+**Written in.** Nowhere — no workaround was attempted this round, deliberately, so the gap is
+measured rather than papered over. Round 2's Atlas wrote a twelve-line landing effect and then
+needed a second guard because it raced `useOverlayEscape`'s restore; that race is the reason not to
+write it a second time.
+
+**Proposal.** `useLevelFocus(nav, { arrival })` in the kit, which knows about `useOverlayEscape` and
+yields to it, plus an `origin` preference on the overlay hook that wins when the opener is not a
+focusable the reader chose. Two halves of one rule, in one place, instead of two that race.
+
+---
+
+### R4-5. The resolve callbacks get a pose and no frame
+
+**What.** Round 3's consolidated gap 5, unchanged and now load-bearing. `poseFor(focus)` has to
+answer "the zoom that fits the whole sheet", which depends on the canvas's size; the contract hands
+it a pose and nothing else. Atlas measures the element with a `ResizeObserver` and reads the size
+through a ref inside the callback — which works, and which means the callback is no longer pure and
+no longer testable without faking a frame. The test therefore calls a `poseFor(focus, view, frame)`
+that the app wrapped around it.
+
+There is a second consequence: the first paint has no measured frame, so the home pose fits nothing,
+and the app needs a one-shot re-fit on the first animation frame after the observer answers — with a
+guard so it never fires after the reader has moved.
+
+**Written in.** `canvas/useCanvasCamera.ts` (the observer, the ref, the one-shot re-fit — ~25 lines),
+`canvas/poses.ts` (the `frame` parameter threaded through `poseFor` and `homeZoom`).
+
+**Proposal.** `SemanticZoomOptions`' three callbacks take `(pose, frame)`, and the rig exposes the
+frame it already measures for `zoomAt` (`rig.frame()`). It has the number; it is the only thing that
+does.
+
+---
+
+### R4-6. `emphasis()` still has two tiers, and this is the third round of saying so
+
+**What.** Round 2 #9, round 3 #7, unchanged. The model is layer -> **system** -> component; the kit
+answers for a group and for an item and has nothing to say about the tier between them. Atlas gives
+a block its LAYER's presence with a floor, so a receding layer's blocks stay drawn rather than
+vanishing and a lit part inside one is not taken down with it.
+
+`presenceStyle`'s `{ scale: false }` option, added after round 2, worked first time and is the
+reason this is a workaround rather than real code: a block's transform is its POSITION, which is
+data, and the navigation channel must not write a `scale` into it.
+
+**Written in.** `canvas/Block.tsx`, the `presenceStyle(emphasis(focus, block.layer, null), ...)`
+line.
+
+**Proposal.** As rounds 2 and 3: an optional path, `emphasis(focus, [group, sub, item])`.
+
+---
+
+### R4-7. `read_view` at L1 still has to be nested by hand
+
+**What.** Round 2 #8 and round 3 #9, unchanged: `useZoomTools` has exactly two tiers, so `items()`
+flattens sixty-eight components into one list and an agent at L1 is handed a flat array with no hint
+that they are grouped by system. Round 4 closes it *in the app* — `viewDetail` now answers `systems`
+with each system's own bounded component list nested inside, and a test asserts the nested and flat
+answers name exactly the same set — but `useZoomTools` still generates the flat one beside it, so
+the payload carries the same components twice.
+
+**Written in.** `tools/read.ts` (`viewDetail`'s L1 branch), `test/tools.test.ts` (the agreement
+test).
+
+**Proposal.** Optional `subgroups?: (group: string) => ZoomGroup[]` in `ZoomToolsSpec`, folded into
+`read_view` and accepted by `open_item`'s lookup.
+
+---
+
+### R4-8. Nothing in the kit knows the difference between a band and a level
+
+**What.** A rendering band is not a navigation level — formula rule 13 says so — and
+`useSemanticZoom` returns both (`level` from the zoom, and the nav's own `focus.level`) without ever
+saying that they can disagree, or for how long. They disagree on every frame of a fly: the camera
+crosses the band before it arrives, so `[data-band]` flips a class while `[data-level]` is still
+behind it, which is *exactly what you want* (the detail crossfades while the camera is still moving)
+and is nowhere written down.
+
+Atlas leans on it deliberately: the parts fade in on the band, the pane opens on the level. A surface
+that assumed the two were the same would either remount the world mid-fly or hold the detail back
+until the camera stopped. The capture shows the two apart in three separate frames.
+
+**Written in.** Nowhere — no workaround was needed. Logged because the formula has the rule and the
+kit's own API is silent about its consequence.
+
+**Proposal.** Document `SemanticZoom.level` as "the rendering band, which leads the nav during a
+fly", and say that a surface should drive detail from it and structure from `nav.state.focus`.
+
+---
+
+### R4-9. `useTokens` reads an unknown or unmounted token as `0`
+
+**What.** Round 2 #10, round 3 #10, unchanged. The SSR-safe default is right and the consequence is
+that a typo'd token name produces a `0 ms` transition, which is indistinguishable from the
+reduced-motion branch. Atlas still carries a lint-time check that every `var(--at-*)` in the app is
+declared in the token file, because the runtime cannot tell you.
+
+Round 3's second half of this gap is **closed by the redesign**: `FALLBACK_BEAT` and the lint check
+that kept it equal to `--at-dur-beat` are both gone, because the turn no longer has a clock. One
+fewer number to keep in two places, for a reason that had nothing to do with the kit.
+
+**Written in.** `design/check-tokens.mjs` (check 2).
+
+**Proposal.** In development only, `console.warn` from `useTokens` naming any token that read `""`
+on a mounted element.
+
+---
+
+### R4-10. Every member of `ZoomNav` still changes identity on every nav state change
+
+**What.** Round 2 #6, unchanged. `useWorldNav` builds the whole `Nav` inside one `useMemo` keyed on
+`state`, so `nav.highlight` is a new function after every hover and every level change. Atlas's lens
+is expressed downward through `nav.highlight` in an effect keyed on the lens; putting `nav` in that
+effect's deps would re-dispatch a highlight on every render the highlight caused.
+
+**Written in.** `Atlas.tsx`, the `highlight` ref and its mirroring effect (5 lines that exist only
+for this).
+
+**Proposal.** Hoist the dispatch-only members into `useCallback`s outside the state-dependent memo.
+`dispatch` is already stable, so `openGroup`, `openItem`, `up`, `home`, `abort`, `hover` and
+`highlight` can all be.
+
+---
+
+### What the kit got right this round, for the record
+
+- **The rig is orthographic, and that is the whole camera.** Drag-pan, wheel-at-pointer, pinch,
+  keys, `Home`, bounds, inertia and the token-read fly are all the kit's; `useCanvasCamera.ts` is a
+  hundred lines of which about fifteen are camera. Pinning `yaw` and `pitch` to `[0, 0]` is how the
+  owner's "no 3D" verdict is expressed to a hook that does not need to know about it.
+- **`useSemanticZoom` walks all three bands here**, which it could not in round 3, and the `driving`
+  marker worked first time again: a wheel that crosses a band dispatches, a tool that opens a
+  component flies, and neither echoes the other.
+- **`presenceStyle({ scale: false })`** — round 2's ledgerbox gap, fixed in round 3, used in anger
+  in round 4. It is the only spelling of "this channel does not speak for the transform", and a
+  surface whose layout IS a transform needs it.
+- **`useRoving`'s refusal to `preventDefault` a key that moved nothing** is what makes composing it
+  with the camera possible at all. It is a small decision in a small file and it is the reason gap
+  R4-3 is a missing helper rather than a redesign.
+- **The four structural classes are no longer copied.** Round 2 logged that every app hand-copies
+  `.dk-levels` / `.dk-echo` / `.dk-flight` / `.dk-overlay` (#12). This round has none of them: one
+  continuous space needs no level stack, no echo and no flight signal, so the gap simply does not
+  arise. That is worth knowing about the shape of the gap as much as about the gap.
+
 ---
 
 ## Round 3 — the camera contract, and the machine (2026-09-14)

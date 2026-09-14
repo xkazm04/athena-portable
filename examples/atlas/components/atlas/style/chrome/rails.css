@@ -1,0 +1,205 @@
+/*
+ * The two rails that sit beside the drawing rather than on it: the legend, and the turn's step
+ * control.
+ *
+ * Neither is ever allowed to occlude the sheet's middle — a drawing is the subject and a control
+ * is a question asked about it. The legend is a single line along the top of the stage; the step
+ * control is a strip under the whole app, and it exists only in the view it is about.
+ */
+
+/* --------------------------------------- the legend --------------------------------------- */
+
+.at-legend {
+  position: absolute;
+  inset-block-start: var(--at-space-3);
+  inset-inline-start: var(--at-space-5);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--at-space-5);
+  padding: var(--at-space-2) var(--at-space-4);
+  border: var(--at-rule-1) solid var(--at-line-3);
+  background: color-mix(in srgb, var(--at-ground) 84%, transparent);
+}
+
+.at-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--at-space-2);
+  white-space: nowrap;
+}
+
+.at-legend-run {
+  width: var(--at-space-6);
+  height: var(--at-space-3);
+  overflow: visible;
+}
+
+.at-legend-run path {
+  fill: var(--at-line-1);
+  stroke: var(--at-line-1);
+  stroke-width: 1.4;
+  vector-effect: non-scaling-stroke;
+}
+
+.at-legend-swatch {
+  width: var(--at-space-4);
+  height: var(--at-space-3);
+  border: var(--at-rule-1) solid var(--at-line-2);
+}
+
+.at-legend-swatch[data-status="planned"] {
+  border-style: dashed;
+}
+
+.at-legend-swatch[data-mark] {
+  border-color: var(--at-mark);
+  background: var(--at-mark-soft);
+}
+
+.at-legend-band b {
+  color: var(--at-line-0);
+}
+
+.at-legend-toggle {
+  padding: var(--at-space-1) var(--at-space-3);
+  border: var(--at-rule-1) solid var(--at-line-3);
+  background: none;
+  color: var(--at-line-1);
+  font: inherit;
+  font-size: var(--at-text-label);
+  cursor: pointer;
+  transition: background var(--at-dur-hair) var(--at-ease);
+}
+
+.at-legend-toggle:hover,
+.at-legend-toggle[aria-pressed="true"] {
+  background: var(--at-plate-2);
+  color: var(--at-line-0);
+}
+
+/* ------------------------------------- the step control ------------------------------------- */
+
+.at-turnbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: var(--at-space-5);
+  row-gap: var(--at-space-2);
+  padding: var(--at-space-3) var(--at-space-5);
+  min-height: var(--at-turnbar-h);
+  border-block-start: var(--at-rule-1) solid var(--at-line-3);
+  background: var(--at-ground);
+}
+
+.at-turnbar-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--at-space-2);
+  grid-row: 1;
+}
+
+.at-step-btn {
+  width: var(--at-space-6);
+  height: var(--at-space-6);
+  border: var(--at-rule-1) solid var(--at-line-3);
+  background: none;
+  color: var(--at-line-1);
+  font: inherit;
+  cursor: pointer;
+}
+
+.at-step-btn:hover:not(:disabled) {
+  background: var(--at-plate-2);
+  color: var(--at-line-0);
+}
+
+.at-step-btn:disabled {
+  color: var(--at-line-3);
+  cursor: default;
+}
+
+.at-turnbar-scrub input {
+  width: var(--at-space-8);
+  accent-color: var(--at-cyan);
+}
+
+.at-turnbar-read {
+  grid-row: 1;
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--at-space-3);
+  min-width: 0;
+}
+
+.at-turnbar-n {
+  color: var(--at-cyan);
+  flex: 0 0 auto;
+}
+
+.at-turnbar-label {
+  color: var(--at-line-0);
+  font-size: var(--at-text-md);
+  line-height: var(--at-leading-tight);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.at-turnbar-stops {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  gap: var(--at-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.at-turnbar-dot {
+  width: var(--at-space-6);
+  height: var(--at-space-5);
+  border: var(--at-rule-1) solid var(--at-line-3);
+  background: none;
+  color: var(--at-line-2);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background var(--at-dur-hair) var(--at-ease),
+    border-color var(--at-dur-hair) var(--at-ease);
+}
+
+.at-turnbar-dot:hover {
+  border-color: var(--at-line-1);
+  color: var(--at-line-0);
+}
+
+/* The gate is the one stop where nothing happens until a human answers. It is drawn heavier than
+   its neighbours for that reason alone, and the ledger beside it because it is written whatever
+   the answer was (README §2, invariant 6). */
+.at-turnbar-dot[data-gate] {
+  border-color: var(--at-line-1);
+  border-width: var(--at-rule-2);
+}
+
+.at-turnbar-dot[data-ledger] {
+  border-block-end-width: var(--at-rule-3);
+}
+
+.at-turnbar-dot[data-here] {
+  background: var(--at-cyan);
+  border-color: var(--at-cyan);
+  color: var(--at-ground);
+}
+
+@media (max-width: 900px) {
+  .at-legend {
+    gap: var(--at-space-3);
+    inset-inline-end: var(--at-space-3);
+    inset-inline-start: var(--at-space-3);
+    overflow-x: auto;
+  }
+}

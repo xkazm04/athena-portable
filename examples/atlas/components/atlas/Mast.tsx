@@ -1,36 +1,46 @@
 "use client";
 
 /**
- * The title block: the one thing that does not change between levels.
+ * The title block of the drawing: the one thing that does not change between levels or views.
  *
  * Rubric axis 4 asks what visibly persists across depths. Here: the level rail (where you are and
- * every level you can step back to), the lens read-out, and the model's own counts. It never
- * unmounts and it never animates, which is also why it is not inside the `LayoutGroup` — chrome
- * that holds still is continuity; chrome that travels is a second thing to follow.
+ * every level you can step back to), the view switcher (which arrangement is on the sheet), the
+ * lens read-out, and the model's own counts. It never unmounts and it never animates — chrome that
+ * holds still is continuity; chrome that travels is a second thing to follow.
+ *
+ * THE SWITCHER IS A RADIO GROUP, not four buttons. Four arrangements of one drawing are four
+ * values of one property, and a reader on a keyboard should be able to walk them with the arrow
+ * keys and commit with none — which is what a radio group is and what `useRoving` gives it. It is
+ * in the mast because the view is a fact about the whole surface rather than about anything on it.
  */
-import type { ZoomNav } from "@athena/demo-kit/zoom";
+import { useRef } from "react";
+import { useRoving, type ZoomNav } from "@athena/demo-kit/zoom";
 
 import { LEVELS } from "@/lib/constants";
 import { componentById, layerById, type Lens, type ModelCounts } from "@/data";
+
+import { VIEWS, VIEW_META, type ViewId } from "./canvas/plan";
 
 export function Mast({
   nav,
   lens,
   setLens,
   counts,
-  children,
+  view,
+  setView,
 }: {
   nav: ZoomNav;
   lens: Lens;
   setLens: (id: string | null) => void;
   counts: ModelCounts;
-  /** The rendering switch. Temporary furniture, and it lives in the mast because it is about
-   *  the whole surface rather than about anything in the scene. */
-  children?: React.ReactNode;
+  view: ViewId;
+  setView: (next: ViewId) => void;
 }) {
   const focus = nav.state.focus;
   const layer = layerById(focus.group);
   const open = componentById(focus.item);
+  const switcher = useRef<HTMLDivElement | null>(null);
+  const roving = useRoving(switcher, { selector: "[data-view-btn]" });
 
   return (
     <header className="at-mast">
@@ -38,6 +48,35 @@ export function Mast({
         <b>Atlas</b>
         <span className="at-part">athena-portable</span>
       </span>
+
+      {/* The view switcher. The same blocks, four arrangements. */}
+      <div
+        className="at-views"
+        role="radiogroup"
+        aria-label="Arrangement"
+        ref={switcher}
+        {...roving}
+      >
+        {VIEWS.map((id) => {
+          const meta = VIEW_META[id];
+          const on = view === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              className="at-view-btn"
+              data-view-btn=""
+              role="radio"
+              aria-checked={on}
+              tabIndex={on ? 0 : -1}
+              title={meta.note}
+              onClick={() => setView(id)}
+            >
+              {meta.label}
+            </button>
+          );
+        })}
+      </div>
 
       {/* The level rail. Every step behind the current one is a control, so a reader can leave
           two levels with one click and never has to guess how deep they are. */}
@@ -101,7 +140,7 @@ export function Mast({
             </button>
           </span>
         ) : (
-          <span className="at-lens-off">No lens &mdash; choose a concept to mark up the stack</span>
+          <span className="at-lens-off">No lens &mdash; choose a claim to mark up the sheet</span>
         )}
       </div>
 
@@ -110,8 +149,6 @@ export function Mast({
         <span>{counts.components} components</span>
         <span>{counts.edges} edges</span>
       </div>
-
-      {children}
     </header>
   );
 }

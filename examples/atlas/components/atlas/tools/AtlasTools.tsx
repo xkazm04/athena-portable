@@ -11,19 +11,21 @@
  * and reaches nobody: every capability is a read or a move, so `reversible: true` and
  * `sideEffects: "none"` are the honest flags and `reversible && side_effects !== "external"` makes
  * them AUTO. An app never argues a tool out of GATED — this one simply has no tool that earns it.
- * `set_lens` is the only one that changes anything a reader can see, and it changes a way of
- * looking, is reversible by calling it again, and reaches nothing outside the page.
  *
  * The four verbs of the level model (`read_view`, `open_group`, `open_item`, `zoom_out`) are the
  * kit's `useZoomTools`, so they mean the same thing here as on every other surface. The rest are
  * what only Atlas can answer.
  *
- * ROUND 3 ADDS TWO, both AUTO for the same reason as the others — `play_turn` and `set_turn` move
- * the transport, which is a way of looking rather than a change to anything. They exist because
- * the turn is now the app's hero and an agent that cannot drive it cannot see the argument: a
- * capture script, a reviewer's assistant or Athena herself needs to be able to say "stop at the
- * gate" and have the machine show the gate. `set_turn` takes a STOP NUMBER, not a beat, because
- * the beat is an implementation detail of the clock and a stop is a thing README §3.2 names.
+ * ROUND 4 ADDS ONE AND REMOVES ONE.
+ *
+ *   + `set_view` — four arrangements of one drawing is a property of the surface an agent must be
+ *     able to read and set, or it cannot describe what a reader is looking at. AUTO for the same
+ *     reason `set_lens` is: it changes a way of looking, is reversible by calling it again, and
+ *     reaches nothing outside the page.
+ *   − `play_turn` — round 3's turn was a light on a clock and the tool started and stopped it.
+ *     The turn is now a path drawn all at once with twelve discrete stops, so there is nothing to
+ *     play; `set_turn` still moves the step and `read_turn` still answers the whole script. A tool
+ *     whose subject no longer exists is worse than a missing one, because an agent will call it.
  */
 import { useZoomTools, useWebMCPTool } from "@athena/demo-kit/webmcp";
 import type { ZoomNav } from "@athena/demo-kit/zoom";
@@ -39,23 +41,37 @@ import {
 } from "@/data";
 import { LEVELS, NOUNS } from "@/lib/constants";
 
-import { TURN } from "../scene/turn";
-import type { Transport } from "../scene/useTurn";
+import { VIEWS, VIEW_META, isView, type ViewId } from "../canvas/plan";
+import { TURN } from "../canvas/turn";
 
-import { CONCEPT_KINDS, componentRead, conceptsRead, lensRead, systemRead, turnRead, viewDetail } from "./read";
+import {
+  CONCEPT_KINDS,
+  componentRead,
+  conceptsRead,
+  lensRead,
+  systemRead,
+  turnRead,
+  viewDetail,
+} from "./read";
 
 export function AtlasTools({
   nav,
   lens,
   lensId,
   setLens,
-  transport,
+  view,
+  setView,
+  stop,
+  setStop,
 }: {
   nav: ZoomNav;
   lens: Lens;
   lensId: string | null;
   setLens: (id: string | null) => void;
-  transport: Transport;
+  view: ViewId;
+  setView: (next: ViewId) => void;
+  stop: number;
+  setStop: (index: number) => void;
 }) {
   useZoomTools({
     nav,
@@ -77,13 +93,50 @@ export function AtlasTools({
           })),
         ),
       ),
-    detail: () => viewDetail(nav.state.focus, lensId),
+    detail: () => viewDetail(nav.state.focus, lensId, view),
+  });
+
+  useWebMCPTool({
+    name: "set_view",
+    description:
+      "Choose which of the four arrangements of the blueprint is on the sheet: layers (the six strata of README 3.1, dependencies running down), turn (README 3.2's twelve stops in order), trust (the six invariants, each a region of the blocks that enforce it), packages (the file tree as nested rectangles). The same blocks move to a new arrangement; the level and the open layer are kept. Call with no argument to read the current view.",
+    parameters: [
+      {
+        name: "view",
+        type: "string",
+        required: false,
+        enum: [...VIEWS],
+        description: "The arrangement. Omit to read the current one without changing it.",
+      },
+    ],
+    reversible: true,
+    sideEffects: "none",
+    handler: ({ view: asked }) => {
+      const answer = (id: ViewId, changed: boolean) => ({
+        ok: true as const,
+        view: { ...VIEW_META[id] },
+        changed,
+        available: VIEWS.map((v) => ({ id: v, label: VIEW_META[v].label, shows: VIEW_META[v].note })),
+        focus: nav.state.focus,
+      });
+      if (asked === undefined || asked === null || asked === "") return answer(view, false);
+      if (!isView(asked)) {
+        return {
+          ok: false as const,
+          error: `No view named ${String(asked)}.`,
+          available: [...VIEWS],
+        };
+      }
+      if (asked !== view) setView(asked);
+      return answer(asked, asked !== view);
+    },
+    deps: [view, setView, nav.state.focus],
   });
 
   useWebMCPTool({
     name: "read_concepts",
     description:
-      "The seventeen claims this repository makes: the six invariants of README §2, the four rungs of the onboarding ladder, the four acts of the demo, and three standing decisions. Each carries the section it was read from and how many components enforce it. Pass to set_lens to mark up the stack.",
+      "The seventeen claims this repository makes: the six invariants of README §2, the four rungs of the onboarding ladder, the four acts of the demo, and three standing decisions. Each carries the section it was read from and how many components enforce it. Pass to set_lens to mark up the sheet.",
     parameters: [
       {
         name: "kind",
@@ -173,18 +226,18 @@ export function AtlasTools({
   useWebMCPTool({
     name: "read_turn",
     description:
-      "The turn this machine runs, from README section 3.2: every stop in order, the module it happens in, the one label the scene shows there, and the README section it was read from. The gate's stop is the one that waits. Call set_turn with a stop number to put the light there.",
+      "The turn this machine runs, from README section 3.2: every stop in order, the module it happens in, the system and layer it belongs to, the one label the sheet shows there, and the README section it was read from. The gate's stop is the one that waits. Call set_view with 'turn' to put the path on the sheet and set_turn to step it.",
     parameters: [],
     reversible: true,
     sideEffects: "none",
-    handler: () => turnRead(transport.stop),
-    deps: [transport.stop],
+    handler: () => turnRead(stop),
+    deps: [stop],
   });
 
   useWebMCPTool({
     name: "set_turn",
     description:
-      "Put the turn's light at one stop and hold it there, pausing playback. The scene lights that module's block and shows its label. Reversible: call again with another stop, or play_turn to run from here.",
+      "Put the turn's step at one stop. The sheet lights that module's block and the read-out shows its label. Reversible: call again with another stop. Has no effect on which view is on the sheet — call set_view('turn') to see the path.",
     parameters: [
       {
         name: "stop",
@@ -195,43 +248,18 @@ export function AtlasTools({
     ],
     reversible: true,
     sideEffects: "none",
-    handler: ({ stop }) => {
-      const n = Number(stop);
+    handler: ({ stop: asked }) => {
+      const n = Number(asked);
       if (!Number.isFinite(n) || n < 1 || n > TURN.length) {
         return {
           ok: false as const,
-          error: `No stop ${String(stop)}. The turn has ${TURN.length} stops, numbered from 1.`,
+          error: `No stop ${String(asked)}. The turn has ${TURN.length} stops, numbered from 1.`,
         };
       }
-      transport.goTo(n - 1);
+      setStop(n - 1);
       return turnRead(n - 1);
     },
-    deps: [transport.goTo],
-  });
-
-  useWebMCPTool({
-    name: "play_turn",
-    description:
-      "Run the turn from where the light is, or pause it. Reversible in both directions; changes nothing but what is moving on screen.",
-    parameters: [
-      {
-        name: "action",
-        type: "string",
-        required: false,
-        enum: ["play", "pause", "rewind"],
-        description: "Default play. rewind puts the light back at the first stop and pauses.",
-      },
-    ],
-    reversible: true,
-    sideEffects: "none",
-    handler: ({ action }) => {
-      const verb = action === undefined || action === null ? "play" : String(action);
-      if (verb === "pause") transport.pause();
-      else if (verb === "rewind") transport.rewind();
-      else transport.play();
-      return { ...turnRead(transport.stop), playing: verb === "play" };
-    },
-    deps: [transport.play, transport.pause, transport.rewind, transport.stop],
+    deps: [setStop],
   });
 
   return null;

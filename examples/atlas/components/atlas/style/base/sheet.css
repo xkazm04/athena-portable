@@ -1,13 +1,13 @@
 /*
- * The scaffold: the page the machine stands in.
+ * The scaffold: the page the drawing lies on.
  *
- * Three rows — the mast, the body, the transport — and the body is the lens rail beside the
- * stage. The stage is the only element that grows, because the machine is the subject and
- * everything else is a margin around it. Nothing here is decorative; the atmosphere is in
- * `scene/scene.css`.
+ * Three rows — the mast, the body, and the turn's step control when the turn is on the sheet —
+ * and the body is the claims rail beside the stage. The stage is the only element that grows,
+ * because the drawing is the subject and everything else is a margin around it. Nothing here is
+ * decorative; the sheet's own atmosphere is in `canvas/canvas.css`.
  */
 
-/* The app fills the viewport exactly and never scrolls: the machine is the thing that moves, and
+/* The app fills the viewport exactly and never scrolls: the drawing is the thing that moves, and
    a page that also scrolls gives a reader two ways to change what they are looking at, one of
    which does nothing they meant. */
 .at-app {
@@ -20,7 +20,7 @@
      max-content, so a mast that does not want to wrap makes the STAGE wider than the window and
      the machine is then drawn centred on a point off the right of the screen. Pinning the column
      to 100% makes the rows overflow their track (harmlessly, and they clip) instead of widening
-     it. Measured before and after; this is the line that moved the machine back into the frame. */
+     it. Measured before and after; this is the line that moved the drawing back into the frame. */
   grid-template-columns: 100%;
   grid-template-rows: auto minmax(var(--at-stage-min), 1fr) auto;
   background: var(--at-ground);
@@ -44,15 +44,10 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  /* The cyanotype grid, under everything, so the machine has a floor to stand against and the
-     reader has a fixed reference the camera moves relative to. */
-  background-image:
-    linear-gradient(var(--at-grid-ink) var(--at-rule-1), transparent var(--at-rule-1)),
-    linear-gradient(90deg, var(--at-grid-ink) var(--at-rule-1), transparent var(--at-rule-1));
-  background-size: var(--at-grid) var(--at-grid);
+  background: var(--at-ground);
 }
 
-/* The vignette: the machine sits in a room, not on a page. One radial gradient, no blur. */
+/* The vignette: the sheet lies on a table, not on a page. One radial gradient, no blur. */
 .at-stage::after {
   content: "";
   position: absolute;
@@ -127,6 +122,16 @@
   margin: 0;
 }
 
+/* The reading line's third slot: the name of the thing under the pointer, and only while it is. */
+.at-readout-hover {
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-micro);
+  color: var(--at-line-0);
+  border-inline-start: var(--at-rule-2) solid var(--at-cyan);
+  padding-inline-start: var(--at-space-2);
+}
+
+.at-sr,
 .at-vh {
   position: absolute;
   width: var(--at-rule-1);
