@@ -63,6 +63,7 @@ run at once.
 | `app/providers.tsx` | the one client provider. No chat, no agent runtime |
 | `components/HostCapabilities.tsx` | the `navigate` tool (enum of views, plus the `id` that `detail` needs) and the `read_current_view` tool, both on `document.modelContext` |
 | `components/RecordsTable.tsx` | `DataTable` with row selection published as the `read_selection` tool |
+| `components/Levels.tsx` | the three-depth read (L0 owners → L1 records → L2 one record) on the layered-UI formula: `useLevelFlight`, `presenceOf`, `sharedIdentity`/`useSharedIdentity`, `useOverlayEscape`, `useTokens` |
 | `app/[id]/page.tsx` | detail view |
 | `app/activity/page.tsx` | the shared activity log, with Undo bound to a server action |
 | `app/actions.ts` | `undoAction` - the app-specific half of `undoActivity` |
@@ -72,6 +73,20 @@ where any browser agent that speaks the standard - Athena through `packages/athe
 included - can read it. The app hosts no chat of its own. Each
 registration carries the standard annotations, and a consumer applies the design 5.1 rule from
 them: `consequentialHint` is GATED, `readOnlyHint` is AUTO, anything unknown is gated.
+
+## The three levels
+
+`components/Levels.tsx` is a skeleton of the layered-UI formula (`docs/layered-ui-formula.md`):
+one surface read at three depths, where a level change is a move you can follow and abandon. It
+is about a hundred lines and every one of them is a rule from §1, named in the file's header —
+the outgoing level carries the camera, one claimant per shared id, one clock read out of the
+cascade (`--dk-dur-*` in `app/globals.css`), the overlay owns its Escape and hands focus back,
+presence comes from the model. It exists so a new app starts on the formula: round 1 had three
+apps build the same five primitives, differently, before the kit grew them.
+
+Give it your domain and your design, or delete it if your app is genuinely a flat list. What you
+must not do is keep the shape and re-derive the primitives — that is the drift the kit's
+`@athena/demo-kit/zoom` exports exist to prevent.
 
 ## Rules the app agents must not break
 

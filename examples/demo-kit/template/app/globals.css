@@ -41,8 +41,78 @@
   --dk-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --dk-font-display: var(--dk-font);
   --dk-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+
+  /*
+   * ONE CLOCK PER LEVEL CHANGE (layered-UI formula §1 rule 4). These three are the whole motion
+   * vocabulary of `components/Levels.tsx`, which reads them back out of the cascade with
+   * `useTokens` rather than typing a millisecond of its own - so a stylesheet transition and a
+   * JS morph cannot move at different speeds. --dk-dur-move is the level change and is the one
+   * number with a budget: the rubric gives a DOM level change 400ms.
+   */
+  --dk-dur-move: 260ms;
+  --dk-dur-fade: 160ms;
+  --dk-ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
 body {
   margin: 0;
+}
+
+/*
+ * The level container. Deliberately plain - the formula is about how a surface renders the
+ * navigation model, and what it renders is where your design goes.
+ */
+.dk-levels {
+  position: relative;
+  margin-bottom: var(--dk-gap);
+}
+
+.dk-level {
+  display: grid;
+  gap: calc(var(--dk-gap) / 2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dk-level-row {
+  width: 100%;
+  padding: var(--dk-gap);
+  border: 1px solid var(--dk-line);
+  border-radius: var(--dk-radius);
+  background: var(--dk-surface);
+  color: var(--dk-ink);
+  font: inherit;
+  text-align: start;
+}
+
+.dk-level-count {
+  color: var(--dk-ink-soft);
+  font-family: var(--dk-font-mono);
+}
+
+/* The outgoing level: a picture of where the reader just was. Never takes a pointer. */
+.dk-echo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* The completion signal. Zero size, keyed on the flight: it runs the move and reports the end. */
+.dk-flight {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.dk-overlay {
+  position: fixed;
+  inset: 10% 50% auto;
+  z-index: 60;
+  width: min(32rem, 80vw);
+  translate: 50% 0;
+  padding: var(--dk-gap);
+  border-radius: var(--dk-radius);
+  background: var(--dk-surface);
+  box-shadow: var(--dk-shadow);
 }

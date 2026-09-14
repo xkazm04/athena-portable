@@ -22,7 +22,8 @@ kit file hot-reloads in a running app. `pnpm --filter @athena/demo-kit typecheck
 | `@athena/demo-kit/webmcp` | client | `useWebMCPTool`, `annotationsFor`, `useZoomTools`, `bounded`, `boundedPage`, `PAGE`, `ensureModelContext`, `detectModelContext`, and the types |
 | `@athena/demo-kit/ui` | client | `AppShell`, `DataTable`, `DetailPane`, `EmptyState`, `ToastProvider`, `useToast`, `ThemeVariantSwitcher`, `useThemeVariant` |
 | `@athena/demo-kit/ui/demo-kit.css` | css | the `--dk-*` themed stylesheet; `@import` it once from the app's globals.css |
-| `@athena/demo-kit/zoom` | client | `useZoomNav`, `emphasis`, `nodeId`, `HOME`, `navReducer`, `escapeLeavesLevel`, types `ZoomNav`, `Focus`, `Level` |
+| `@athena/demo-kit/zoom` | client | the model: `useZoomNav`, `useStaticNav`, `navReducer`, `initialNavState`, `HOME`, `nodeId`, `sameFocus`, `escapeLeavesLevel`, `escapeAbortsFlight`, `MODAL_SELECTOR`, types `ZoomNav`, `Focus`, `Level`, `NavState`, `NavAction`, `EscapeEvent` |
+| | | the formula: `useLevelFlight` (+ `advanceFlight`, `settleFlight`, `isMoving`, `initialFlight`, `FLIGHT_FALLBACK_MS`), `emphasis`, `presenceOf`, `presenceStyle`, `PRESENCE_DEPTH`, `useSharedIdentity`, `sharedIdentity`, `UNCLAIMED`, `useTokens`, `cssMs`, `cssEase`, `parseMs`, `parseEase`, `parseBezier`, `readTokens`, `styleOf`, `tokenValue`, `secs`, `useOverlayEscape`, `escapeClosesOverlay`, `focusReturnTarget`, `isOpener`, types `LevelFlight`, `FlightState`, `Presence`, `SharedIdentity`, `TokenValue`, `StyleSource`, `OverlayEscape` |
 | `@athena/demo-kit/seed` | any | `Rng`, `rngFor`, and the shared world: `STUDIO`, `COMPANIES`, `companyByName`, `companyByDomain`, `companyDomain`, `KESTREL_APPLICANT`, `PINEGROVE_ALIAS`, `QUIET_CLIENT` |
 | `@athena/demo-kit` | any | types + pure functions only (`classifyTool`, `parametersToJsonSchema`, `registryName`) |
 
@@ -55,6 +56,29 @@ derived by the consumer (`packages/athena-bridge/gate.js`, `flagsOf` then `class
 directions share; `useZoomTools` offers it to an agent as `read_view` / `open_group` / `open_item`
 / `zoom_out` so those verbs mean the same thing on every surface.
 
+## The formula in the kit
+
+`docs/layered-ui-formula.md` §1 is the nine rules that survived round 1. Round 1 also ended with
+all three apps asking for the same five primitives, each having built its own — so this is where
+each rule now lives. A rule marked *app-side* is one the kit cannot hold: it is about what a
+surface draws, and the kit deliberately ships no chrome.
+
+| Rule (§1) | In the kit |
+|---|---|
+| 1. The level you leave carries the camera; the level you arrive at carries the continuity | `useLevelFlight` — `from` / `to` / `moving` on the frame the level changes, which is what lets the outgoing layer stay mounted for exactly one move. Which layer holds the transform is app-side; the template's `dk-echo` is the shape. |
+| 2. One claimant per shared id | `useSharedIdentity(id, owns)` / `sharedIdentity` — `layoutId` only when it owns, and a `key` that flips with ownership so motion re-reads the id (it reads `layoutId` only at mount). |
+| 3. Box, then ink | App-side. Staging is a design decision about what the surface is made of; the kit gives it the clock (`useTokens`) and the completion signal (`settle`) to hang the second beat on. |
+| 4. One clock per level change, in one module | `useTokens` / `cssMs` / `cssEase` / `parseMs` / `parseBezier` / `secs` — JS reads the `--*` tokens and never types a millisecond. |
+| 5. An overlay owns its own Escape and returns focus to its opener | `useOverlayEscape` — `onKeyDown` for the dialog root (Escape → `preventDefault` + close, which is what keeps the kit's window rule out, see `zoom/escape.ts` rule 1) and focus back to the opener, or to `returnFocusTo()`, on unmount. |
+| 6. A move in flight is abortable | `escapeAbortsFlight` + `nav.abort()` + `nav.setMoving` — the nav's own listener aborts to the focus the move left instead of stepping up out of a level nobody arrived at. `useLevelFlight` keeps `setMoving` current, so an app that uses it gets this for nothing. |
+| 7. Presence comes from the model | `emphasis` (the model's answer) and `presenceOf` / `presenceStyle` (the one mapping to opacity and scale: `opacity = e`, `scale = 1 − (1 − e)·0.06`). |
+| 8. Reduced motion lands on the final state at frame zero | App-side, but cheap: an unreadable or zero token reads as `0`, which is the final state — never a `0.01ms` animation. |
+| 9. What is no longer seen stops costing | App-side. The kit is renderer-free by design (no `three` import anywhere under `zoom/`), so on-demand drawing is the surface's own contract with its renderer. |
+
+Everything that can be wrong is pure and pinned under `node --test`: `flight.ts`, `presence.ts`,
+`identity.ts`, `tokens.ts`, `overlay.ts`, `escape.ts`, `state.ts`. The hooks are thin wrappers,
+and `template/components/Levels.tsx` is a hundred-line skeleton that uses all of them.
+
 ## Signatures
 
 ```ts
@@ -71,6 +95,17 @@ useWebMCPTool({ name, description, parameters?, reversible, sideEffects, handler
 annotationsFor({ reversible, sideEffects }): WebMCPAnnotations
 classifyTool({ reversible, side_effects }): "AUTO" | "GATED"
 bounded(items, cap): { showing, of, items, footer }
+
+useLevelFlight(nav, opts?: { fallbackToken?: string; fallbackMs?: number; el?: Element | null })
+  : { from: Focus; to: Focus; moving: boolean; flight: number; settle(flight?: number): void }
+presenceStyle(e: number, opts?: { depth?: number; floor?: number }): { opacity, scale }
+presenceOf(focus, group, item = null, opts?): { opacity, scale }
+useSharedIdentity(id: string, owns: boolean): { layoutId: string | undefined; key: string }
+useTokens(names: readonly string[], el?): Record<name, { raw: string; ms: number; ease: string }>
+cssMs(name, el?, fallback = 0): number        // "260ms" | "0.26s" -> 260
+cssEase(name, el?, fallback = ""): string
+useOverlayEscape({ onClose, returnFocusTo? }): { onKeyDown }
+escapeAbortsFlight(event, moving: boolean, level: number): boolean   // ask AFTER escapeLeavesLevel
 ```
 
 ## Template

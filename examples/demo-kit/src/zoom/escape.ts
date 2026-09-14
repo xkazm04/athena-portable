@@ -51,3 +51,34 @@ export function escapeLeavesLevel(event: EscapeEvent, level: number, holds = 0):
   if (holds > 0) return false;
   return !insideModal(event.target);
 }
+
+/**
+ * The other half of the rule: this Escape abandons a move that is still in flight.
+ *
+ * `escapeLeavesLevel` answers "is this key the nav's". This answers "and what does the nav do
+ * with it" — because those are two questions, and round 1 found the second one missing in every
+ * app. A level change is a move the reader can follow, which means it is a move the reader can
+ * change their mind about (formula §1 rule 6): Escape a tenth of a second into a zoom should put
+ * them back where they were standing, not one level above a place they never arrived at.
+ * Tidycrm carried the same shape locally as `escapeAbortsArrival`, for the window before its
+ * hand-off; this is the general case.
+ *
+ * ASK IT AFTER `escapeLeavesLevel`, not instead of it. Ownership first (a modal, a hold, a
+ * consumer that already called `preventDefault` all keep the key), then this to choose between
+ * `nav.abort()` and `nav.up()`. `nav.ts` does exactly that, and an app with its own listener
+ * should too:
+ *
+ *     if (!escapeLeavesLevel(e, level, holds)) return;
+ *     e.preventDefault();
+ *     if (escapeAbortsFlight(e, moving, level)) nav.abort();
+ *     else nav.up();
+ *
+ * @param moving whether a level change is in flight (`useLevelFlight`'s `moving`)
+ * @param level the level the nav is on now — L0 has no arrival to abandon
+ */
+export function escapeAbortsFlight(event: EscapeEvent, moving: boolean, level: number): boolean {
+  if (event.key !== "Escape") return false;
+  if (event.defaultPrevented) return false;
+  if (!moving) return false;
+  return level >= 1;
+}
