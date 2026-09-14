@@ -33,6 +33,7 @@
  */
 import type { CSSProperties } from "react";
 import { motion } from "motion/react";
+import { sharedIdentity, type Presence } from "@athena/demo-kit/zoom";
 
 import { STAGES } from "@/lib/constants";
 import { Face } from "./marks/Face";
@@ -42,7 +43,7 @@ import {
   type BdCandidate,
   type BdRole,
 } from "./model";
-import { ARRIVE, SHRINK, settle, throwOut, zoom } from "./motion";
+import { ARRIVE, useBoardMotion } from "./motion";
 import { GroupRead, stageFact } from "./columns/facts";
 import {
   FACE,
@@ -59,11 +60,13 @@ import {
  * identity and the face→card morph is never ambiguous; it carries no entrance
  * either, because it is a picture of a board that is already on screen.
  *
- * What it does carry is `dim`: the kit's `emphasis()` for the focus the nav has
- * just moved to, mapped in this direction to opacity and scale. The group being
- * opened holds still at 1 while every other group on the board dims and shrinks
- * away from it, so the rest of the surface leaves BEFORE the part you picked
- * does. The rule is the kit's and is never re-derived here.
+ * What it does carry is `presence`: the kit's `presenceOf()` for the focus the nav
+ * has just moved to — `emphasis()` mapped onto the two channels a level change may
+ * animate. The group being opened holds still at 1 while every other group on the
+ * board dims and shrinks away from it, so the rest of the surface leaves BEFORE the
+ * part you picked does. Both the rule and the mapping are the kit's, and neither is
+ * re-derived here: the 0.94 scale floor this file used to carry is the kit's
+ * `PRESENCE_DEPTH` now.
  */
 export function Columns({
   board,
@@ -71,7 +74,7 @@ export function Columns({
   onlyBorderline,
   onOpen,
   ghost = false,
-  dim,
+  presence,
   lit,
 }: {
   board: BdBoard;
@@ -79,7 +82,7 @@ export function Columns({
   onlyBorderline: boolean;
   onOpen: (group: string) => void;
   ghost?: boolean;
-  dim?: (group: string) => number;
+  presence?: (group: string) => Presence;
   /**
    * The kit's `highlight` set — "nodes something is pointing at". `Board.tsx` puts the
    * group the reader just left into it for one beat after the zoom out, so the board
@@ -88,6 +91,8 @@ export function Columns({
    */
   lit?: ReadonlySet<string>;
 }) {
+  const m = useBoardMotion();
+
   return (
     <div className="bd-board">
       {STAGES.map((stage) => {
@@ -111,7 +116,7 @@ export function Columns({
           <motion.section
             key={stage}
             layout={!ghost}
-            transition={settle}
+            transition={m.settle}
             className="bd-column"
             data-role={stageRole}
           >
@@ -134,17 +139,19 @@ export function Columns({
                   const hidden = candidates.length - shown.length;
                   const overlap = overlapFor(candidates.length);
                   const group = groupId(stage, role.id);
-                  /* The kit's presence rule, mapped to this direction's two channels.
-                     Scale is the shallower of the two on purpose: a row that shrinks
-                     as far as it dims reads as falling rather than as receding. */
-                  const near = dim?.(group) ?? 1;
+                  /* The kit's presence rule AND the kit's mapping of it. Scale is the
+                     shallower of the two channels on purpose — a row that shrinks as
+                     far as it dims reads as falling rather than as receding — and that
+                     argument is now made once, in `zoom/presence.ts`, for every
+                     surface in the repo rather than once per app. */
+                  const near = presence?.(group);
 
                   return (
                     <motion.button
                       key={role.id}
                       type="button"
                       layout={!ghost}
-                      transition={ghost ? zoom : settle}
+                      transition={ghost ? m.zoom : m.settle}
                       className="bd-group-row"
                       /* The zoom's origin is measured off this element, the frame
                          before the level changes — see `Board.tsx`. */
@@ -153,10 +160,10 @@ export function Columns({
                          echo: a picture of a board cannot be pointed at. */
                       data-lit={!ghost && lit?.has(group) ? "true" : undefined}
                       tabIndex={ghost ? -1 : undefined}
-                      {...(ghost
+                      {...(ghost && near
                         ? {
                             initial: { opacity: 1, scale: 1 },
-                            animate: { opacity: near, scale: SHRINK + (1 - SHRINK) * near },
+                            animate: { opacity: near.opacity, scale: near.scale },
                           }
                         : null)}
                       onClick={() => onOpen(group)}
@@ -182,14 +189,18 @@ export function Columns({
                       >
                         {shown.map((candidate, index) => {
                           const name = labelFor(candidate, stacking);
+                          /* The same identity the carousel card and the dossier carry.
+                             One id, three levels — and only ever ONE claimant of it,
+                             which is why the echo above drops it entirely. The kit
+                             sets both halves: the `layoutId` only while this element
+                             owns the id, and a `key` that flips with ownership so
+                             motion re-reads the id (it reads it at mount and never
+                             again). */
+                          const box = sharedIdentity(`candidate-${candidate.id}`, !ghost);
                           return (
                             <motion.span
-                              key={candidate.id}
-                              /* The same identity the carousel card and the
-                                 dossier carry. One id, three levels — and only
-                                 ever ONE claimant of it, which is why the echo
-                                 above drops it entirely. */
-                              layoutId={ghost ? undefined : `candidate-${candidate.id}`}
+                              key={box.key}
+                              layoutId={box.layoutId}
                               layout={!ghost}
                               className="bd-pile-item"
                               data-borderline={candidate.borderline}
@@ -209,8 +220,8 @@ export function Columns({
                                  it arrives at its final state or it flickers. */
                               initial={ghost ? false : { opacity: 0, scale: ARRIVE }}
                               animate={{ opacity: 1, scale: 1, rotate: 0, x: 0, y: 0 }}
-                              exit={throwOut(candidate.id)}
-                              transition={settle}
+                              exit={m.throwOut(candidate.id)}
+                              transition={m.settle}
                             >
                               <Face
                                 id={candidate.id}

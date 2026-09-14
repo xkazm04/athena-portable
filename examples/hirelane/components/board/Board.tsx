@@ -52,7 +52,13 @@ import {
   motion,
   useReducedMotion,
 } from "motion/react";
-import { emphasis, useZoomNav, type Focus } from "@athena/demo-kit/zoom";
+import {
+  presenceOf,
+  useLevelFlight,
+  useZoomNav,
+  type Focus,
+  type Presence,
+} from "@athena/demo-kit/zoom";
 
 import { Carousel } from "./Carousel";
 import { Columns } from "./Columns";
@@ -61,7 +67,7 @@ import { splitGroup, type BdBoard, type BdColumn, type BdRole } from "./model";
 import { BoardTools } from "./tools";
 import { BoardFoot } from "./shell/Foot";
 import { BoardMast } from "./shell/Mast";
-import { LAND_MS, PULL, PUSH, ZOOM_MS, fade, instant, leave, zoom } from "./motion";
+import { PULL, PUSH, instant, useBoardMotion } from "./motion";
 import "./style/index.css";
 
 /** Stage-box coordinates. The echo's `transform-origin`. */
@@ -88,9 +94,30 @@ export function Board({ board }: { board: BdBoard }) {
   const [onlyBorderline, setOnlyBorderline] = useState(false);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const reduced = useReducedMotion();
+  const m = useBoardMotion();
+
+  /*
+   * THE LEVEL CHANGE, AS THE KIT SEES IT — `from`, `to`, `moving`, and a `settle`.
+   *
+   * This used to be a `prev` ref compared inside a dep-less layout effect, which is
+   * one of the three shapes round 1 produced for the same question (the kit's
+   * `zoom/flight.ts` names all three). The requirement is unchanged and is why it
+   * cannot be an ordinary effect: the level being LEFT has to be known on the very
+   * frame the level changes, because that is the frame the echo is built from.
+   *
+   * `fallbackToken` is a SAFETY NET, not the clock — the echo's own
+   * `onAnimationComplete` calls `settle` — and it is `--bd-dur-4` rather than
+   * `--bd-zoom` because the zoom token is a `calc()` and a custom property that is
+   * not registered keeps its `calc(...)` through computed style. 420ms is the step
+   * above the zoom's 350, which is what a net should be.
+   *
+   * It also tells the nav it is moving, which is what makes Escape mid-zoom abort to
+   * where the reader was standing instead of stepping up out of a level nobody
+   * arrived at (formula §1 rule 6).
+   */
+  const flight = useLevelFlight(nav, { fallbackToken: "--bd-dur-4" });
 
   const level = nav.state.focus.level;
-  const flight = nav.state.flight;
   const { stage, roleId } = splitGroup(nav.state.focus.group);
 
   const role = useMemo(
@@ -156,7 +183,7 @@ export function Board({ board }: { board: BdBoard }) {
   }, [measure]);
 
   /*
-   * THE LEVEL CHANGE ITSELF: what just happened, read off the flight counter.
+   * THE LEVEL CHANGE ITSELF: what just happened, read off the kit's flight.
    *
    * Every path into a level change ends here — the row, the back button, Escape,
    * the scrim, and every tool an agent calls — which is why the echo and the focus
@@ -165,46 +192,54 @@ export function Board({ board }: { board: BdBoard }) {
   const [inFlight, setInFlight] = useState<Zoom | null>(null);
   /** A selector for the control focus belongs on once the level change lands. */
   const restore = useRef<string | null>(null);
-  const prev = useRef({
-    flight,
-    level,
-    group: nav.state.focus.group,
-    item: nav.state.focus.item,
-    role,
-    column,
-    hover: nav.state.hover,
-  });
 
-  /* Deliberately dep-less: it compares the render it is running for against the
-     previous one and must therefore run after EVERY render. A dependency list
-     would mean "run when these change", which is the question this effect is
-     asking rather than the answer — and `flight` is monotonic, so the guard
-     below is the real gate. */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  /**
+   * The role and column a group id names.
+   *
+   * This replaces half of what the old `prev` ref carried. `flight.from` already says
+   * which group was left, and `board` is the same object it was a frame ago, so the
+   * pair can be looked up rather than remembered — a ref that mirrors derivable state
+   * is a second source of truth waiting to disagree with the first.
+   */
+  const groupAt = useCallback(
+    (group: string | null) => {
+      const { stage: s, roleId: r } = splitGroup(group);
+      const found = board.roles.find((x) => x.id === r);
+      return {
+        role: found,
+        column: found && s ? found.columns.find((c) => c.id === s) : undefined,
+      };
+    },
+    [board.roles],
+  );
+
+  const { from, to } = flight;
+  /*
+   * Deps are the two foci and nothing else, and that is exact rather than lazy: the
+   * nav re-creates its `focus` object only on a focus-changing action, so `from` and
+   * `to` are referentially stable between level changes and this fires exactly once
+   * per move (plus once at mount, where they are the same object).
+   *
+   * Everything else the body reads is deliberately absent. `nav` is a fresh identity
+   * on every dispatch — listing it would re-run this on every hover, which is the bug
+   * the old dep-less version was written around — and `nav.state.hover` read here IS
+   * the hover at the moment of the change, because no level action touches it.
+   *
+   * A LAYOUT effect, still: the echo has to be in the same paint as the level it is a
+   * picture of.
+   */
   useLayoutEffect(() => {
-    const was = prev.current;
-    const group = nav.state.focus.group;
-    const moved = was.flight !== flight;
-    prev.current = {
-      flight,
-      level,
-      group,
-      item: nav.state.focus.item,
-      role,
-      column,
-      hover: nav.state.hover,
-    };
-    if (!moved) return;
+    if (from === to) return;
 
     /* Where focus goes when a level closes. Set here rather than in five
        handlers, because every path — the row, the back button, Escape, the
-       scrim, and every tool an agent calls — arrives at exactly this point. */
+       scrim, and every tool an agent calls — arrives at exactly this point.
+       L2 → L1 is NOT here any more: the dossier is an overlay and owns its own
+       focus return through the kit's `useOverlayEscape` (see `Dossier.tsx`). */
     const esc = (v: string) =>
       typeof CSS !== "undefined" && CSS.escape ? CSS.escape(v) : v;
-    if (was.level === 2 && level === 1 && was.item) {
-      restore.current = `[data-candidate="${esc(was.item)}"]`;
-    } else if (was.level === 1 && level === 0 && was.group) {
-      restore.current = `[data-group="${esc(was.group)}"]`;
+    if (from.level === 1 && to.level === 0 && from.group) {
+      restore.current = `[data-group="${esc(from.group)}"]`;
     }
 
     /*
@@ -218,37 +253,81 @@ export function Board({ board }: { board: BdBoard }) {
      * discarded at the moment it mattered.
      *
      * `highlight` is the kit's own word for "nodes something is pointing at", so this
-     * is read from the model rather than invented here, exactly as `emphasis()` is
+     * is read from the model rather than invented here, exactly as `presenceOf()` is
      * three lines below. Any other move clears it: a light left on a row nobody came
      * back to is a selection, and this direction has no selection.
      */
-    if (was.level === 1 && level === 0 && was.group) {
-      nav.highlight([was.group]);
+    if (from.level === 1 && to.level === 0 && from.group) {
+      nav.highlight([from.group]);
     } else if (nav.state.highlight.size > 0) {
       nav.highlight([]);
     }
 
-    if (reduced) return;
-
-    if (was.level === 0 && level === 1 && group) {
-      setInFlight({
-        key: flight,
-        dir: "in",
-        origin: origins.current.get(group) ?? centre.current,
-        echo: { level: 0 },
-      });
-    } else if (was.level === 1 && level === 0 && was.group && was.role && was.column) {
-      setInFlight({
-        key: flight,
-        dir: "out",
-        origin: origins.current.get(was.group) ?? centre.current,
-        echo: { level: 1, role: was.role, column: was.column, focusId: was.hover },
-      });
+    /* Under reduced motion no echo is ever built, so the whole block is skipped and
+       the level change lands on its final state at frame zero (§9.16). */
+    const key = flight.flight;
+    if (!reduced) {
+      if (from.level === 0 && to.level === 1 && to.group) {
+        setInFlight({
+          key,
+          dir: "in",
+          origin: origins.current.get(to.group) ?? centre.current,
+          echo: { level: 0 },
+        });
+        return;
+      }
+      if (from.level === 1 && to.level === 0 && from.group) {
+        const left = groupAt(from.group);
+        if (left.role && left.column) {
+          setInFlight({
+            key,
+            dir: "out",
+            origin: origins.current.get(from.group) ?? centre.current,
+            echo: {
+              level: 1,
+              role: left.role,
+              column: left.column,
+              focusId: nav.state.hover,
+            },
+          });
+          return;
+        }
+      }
     }
-  });
+    /* Every other move — L1 ⇄ L2 — has no echo, and says so rather than leaving the
+       previous one behind for `moving` to put back on screen. */
+    setInFlight(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [from, to]);
 
   /*
-   * And it goes out on its own, one beat after the echo has cleared (`LAND_MS`).
+   * A LEVEL CHANGE WITH NO CAMERA OF ITS OWN HAS ALREADY ARRIVED, and has to say so.
+   *
+   * `moving` is what tells the nav to treat Escape as "not that one after all" rather
+   * than "up a level" (formula §1 rule 6). Only the two moves that build an echo have
+   * anything to finish, and only those have an `onAnimationComplete` to finish it
+   * with; everything else — L1 ⇄ L2, and every move under reduced motion — would
+   * otherwise stay notionally in the air until the kit's fallback duration expired.
+   *
+   * That is not a tidiness fix. Escape twice in quick succession is how a reader
+   * leaves a dossier and then the group, and with the second press landing inside a
+   * flight that never ended, the abort would put them back in the dossier they had
+   * just closed. L1 → L2 loses nothing by settling early either: abort and up are the
+   * same place from there.
+   *
+   * Derived rather than read off `inFlight`, so it does not depend on a state update
+   * from the effect above having landed first, and in its own effect so that neither
+   * of them cascades a render out of the other.
+   */
+  const staged =
+    !reduced &&
+    ((from.level === 0 && to.level === 1) || (from.level === 1 && to.level === 0));
+  useEffect(() => {
+    if (flight.moving && !staged) flight.settle();
+  }, [flight, staged]);
+
+  /*
+   * And it goes out on its own, one beat after the echo has cleared (`landMs`).
    *
    * Keyed on the SET's contents rather than on `nav`, whose identity is fresh on every
    * dispatch — a timer re-armed by every hover would keep the row lit for as long as
@@ -268,31 +347,27 @@ export function Board({ board }: { board: BdBoard }) {
   });
   useEffect(() => {
     if (!litKey) return;
-    const id = window.setTimeout(() => navRef.current.highlight([]), LAND_MS);
+    const id = window.setTimeout(() => navRef.current.highlight([]), m.landMs);
     return () => window.clearTimeout(id);
-  }, [litKey]);
+  }, [litKey, m.landMs]);
 
-  /* Cleared by a timer as well as by the animation, because an echo left on the
-     surface is the one failure mode of this whole mechanism. Keyed, so a second
-     action mid-flight cancels the first clear rather than clearing the second. */
-  useEffect(() => {
-    if (!inFlight) return;
-    const id = window.setTimeout(
-      () => setInFlight((z) => (z && z.key === inFlight.key ? null : z)),
-      ZOOM_MS * 2,
-    );
-    return () => window.clearTimeout(id);
-  }, [inFlight]);
+  /* The local timer that used to clear the echo is gone: `useLevelFlight` owns the
+     safety net now (`fallbackToken` above), and the echo is drawn only while the
+     flight it belongs to is still moving — so an echo left on the surface, the one
+     failure mode of this whole mechanism, is no longer this file's to prevent. */
 
   /*
    * FOCUS FOLLOWS THE LEVEL, and it is restored rather than dropped.
    *
-   * Closing the dossier used to leave focus on a detached button, i.e. on
-   * `document.body`, so the next Tab started at the top of the page and the next
-   * arrow key did nothing. The card that opened it is where the reader was; the
-   * group row is where they were before that. `focus()` and not a click, so
-   * `:focus-visible` stays false when the level was changed with a pointer and
-   * the ring does not flash (the rail's entry focus is in `Carousel.tsx`).
+   * This is the L1 → L0 half only. L2 → L1 belongs to the dossier, which is an
+   * overlay and therefore owns both its Escape and the focus it owes its opener
+   * (`useOverlayEscape`, formula §1 rule 5) — two places restoring focus after the
+   * same close is one of them winning a race.
+   *
+   * The group row is where the reader was before they opened the group. `focus()`
+   * and not a click, so `:focus-visible` stays false when the level was changed with
+   * a pointer and the ring does not flash (the rail's entry focus is in
+   * `Carousel.tsx`).
    */
   useEffect(() => {
     const sel = restore.current;
@@ -317,12 +392,23 @@ export function Board({ board }: { board: BdBoard }) {
     };
   }, [board.roles, roleFilter]);
 
-  /* The kit's rule for what recedes when you drill in, read and never re-derived.
-     This direction's only decision is that presence is opacity and scale. */
+  /*
+   * THE KIT'S RULE FOR WHAT RECEDES, and the kit's mapping of it.
+   *
+   * `emphasis()` was already read here rather than re-derived; what this direction
+   * still owned was the mapping onto opacity and scale, with its own 0.94 floor. The
+   * kit's `presenceOf()` is the same arithmetic — `opacity = e`,
+   * `scale = 1 − (1 − e)·0.06` — arrived at from this file's own note about a row
+   * that shrinks as far as it dims reading as falling rather than receding. So the
+   * second number goes too, and two surfaces in this repo now recede at one rate.
+   */
   const focus: Focus = nav.state.focus;
-  const dimGroup = useCallback((id: string) => emphasis(focus, id, null), [focus]);
-  const dimItem = useCallback(
-    (group: string, id: string) => emphasis(focus, group, id),
+  const groupPresence = useCallback(
+    (id: string): Presence => presenceOf(focus, id),
+    [focus],
+  );
+  const itemPresence = useCallback(
+    (group: string, id: string): Presence => presenceOf(focus, group, id),
     [focus],
   );
 
@@ -406,7 +492,7 @@ export function Board({ board }: { board: BdBoard }) {
              * `aria-hidden`: it is a picture of where the reader just was.
              */}
             <AnimatePresence>
-              {inFlight ? (
+              {inFlight && inFlight.key === flight.flight && flight.moving ? (
                 <motion.div
                   key={inFlight.key}
                   className="bd-layer bd-echo"
@@ -419,11 +505,13 @@ export function Board({ board }: { board: BdBoard }) {
                   animate={{ opacity: 0, scale: inFlight.dir === "in" ? PUSH : PULL }}
                   /* Cancelled mid-flight by a second nav action: §1.3 removal,
                      not a second copy of the entrance. */
-                  exit={{ opacity: 0, transition: leave }}
-                  transition={zoom}
-                  onAnimationComplete={() =>
-                    setInFlight((z) => (z && z.key === inFlight.key ? null : z))
-                  }
+                  exit={{ opacity: 0, transition: m.leave }}
+                  transition={m.zoom}
+                  /* The move's own completion ends the flight — the kit's fallback
+                     duration is only the net under it. Settling by key means a
+                     completion belonging to a level change that has already been
+                     superseded cannot declare the one that replaced it finished. */
+                  onAnimationComplete={() => flight.settle(inFlight.key)}
                   style={{ transformOrigin: `${inFlight.origin.x}px ${inFlight.origin.y}px` }}
                 >
                   {inFlight.echo.level === 0 ? (
@@ -433,7 +521,7 @@ export function Board({ board }: { board: BdBoard }) {
                       onlyBorderline={onlyBorderline}
                       onOpen={() => {}}
                       ghost
-                      dim={dimGroup}
+                      presence={groupPresence}
                     />
                   ) : (
                     <Carousel
@@ -444,7 +532,7 @@ export function Board({ board }: { board: BdBoard }) {
                       onFocus={() => {}}
                       onOpen={() => {}}
                       ghost
-                      dim={dimItem}
+                      presence={itemPresence}
                     />
                   )}
                 </motion.div>
@@ -459,7 +547,7 @@ export function Board({ board }: { board: BdBoard }) {
              * carousel card underneath were both legible through the blur. Now
              * the scrim darkens on its own timer, the box morphs from the card,
              * and what is written in the box waits for it to land (see
-             * `DOSSIER_SHELL` in ./motion.ts).
+             * `dossierShell` in ./motion.ts).
              */}
             <AnimatePresence>
               {showDossier ? (
@@ -470,7 +558,7 @@ export function Board({ board }: { board: BdBoard }) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={reduced ? instant : fade}
+                  transition={reduced ? instant : m.fade}
                 />
               ) : null}
             </AnimatePresence>

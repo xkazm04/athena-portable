@@ -26,7 +26,7 @@
  *   - WEIGHT IS A WEIGHT MARK — a stack of one to three rules beside the criterion — rather than a
  *     width, because here the row is a line of type and its length is spoken for by the name.
  *
- * IT CARRIES `layoutId={`candidate-${id}`}` — the same identity the face on the board had and the
+ * IT CARRIES `candidate-<id>` — the same identity the face on the board had and the
  * dossier will have — so a candidate travels through all three levels as one object rather than
  * being drawn three times.
  *   - THE GAP IS NAMED IN WORDS on its own row rather than drawn, since this card is already a
@@ -42,11 +42,12 @@
  */
 import { motion } from "motion/react";
 import { useState, type CSSProperties } from "react";
+import type { Presence, SharedIdentity } from "@athena/demo-kit/zoom";
 
 import { fmtScore } from "../format";
 import { Face } from "../marks/Face";
 import { BAND_LABEL, FIT_LABEL, SCORE_MAX, type BdCandidate, type BdColumn } from "../model";
-import { SHRINK, settle, zoom } from "../motion";
+import { useBoardMotion } from "../motion";
 import { LOUPE, poseOf } from "./pose";
 import { StageMeta } from "./StageMeta";
 
@@ -70,18 +71,19 @@ export interface SlideProps {
    */
   medians: Map<string, number>;
   /**
-   * Whether this card holds `candidate-<id>`. False while the dossier has it, and
-   * false in the inert copy the zoom leaves behind — one claimant per identity,
-   * always. `Carousel.tsx` explains why the key changes with it.
+   * The `layoutId` for `candidate-<id>` and the key that flips with it — the kit's
+   * `sharedIdentity`, computed by `Carousel.tsx` because the key has to be set by
+   * the parent. The id is absent while the dossier has it, and absent in the inert
+   * copy the zoom leaves behind: one claimant per identity, always.
    */
-  owns: boolean;
+  identity: SharedIdentity;
   /** True for the one mount that takes the identity back from a closing dossier:
    *  the glass sheet travels home and the ink arrives once it lands. The delay is
    *  `[data-ink]` in `style/level1/l1-carousel.css`. */
   staged?: boolean;
-  /** The kit's `emphasis()` for the focus the nav has moved to, when this card is
-   *  part of the outgoing echo. Undefined on the live rail, which never dims. */
-  dim?: number;
+  /** The kit's `presenceOf()` for the focus the nav has moved to, when this card is
+   *  part of the outgoing echo. Undefined on the live rail, which never recedes. */
+  presence?: Presence;
   onFocus: () => void;
   onOpen: () => void;
 }
@@ -91,12 +93,13 @@ export function Slide({
   column,
   offset,
   medians,
-  owns,
+  identity,
   staged,
-  dim,
+  presence,
   onFocus,
   onOpen,
 }: SlideProps) {
+  const m = useBoardMotion();
   /* Read once, at mount: the rail goes on re-rendering while the box travels home
      and a prop that flips back would cut the entrance short. */
   const [returning] = useState(() => staged === true);
@@ -116,7 +119,7 @@ export function Slide({
   return (
     <motion.button
       type="button"
-      layoutId={owns ? `candidate-${candidate.id}` : undefined}
+      layoutId={identity.layoutId}
       className="bd-slide"
       /* What the dossier hands focus back to when it closes. */
       data-candidate={candidate.id}
@@ -129,7 +132,7 @@ export function Slide({
          remounts, and a remount must not replay the deal: it is already where it
          belongs, so it arrives at its pose rather than sliding into it. */
       initial={
-        dim === undefined
+        presence === undefined
           ? false
           : { x: pose.x, rotateY: pose.rotateY, z: pose.z, scale: pose.scale, opacity: pose.opacity }
       }
@@ -137,10 +140,13 @@ export function Slide({
         x: pose.x,
         rotateY: pose.rotateY,
         z: pose.z,
-        scale: pose.scale * (dim === undefined ? 1 : SHRINK + (1 - SHRINK) * dim),
-        opacity: pose.opacity * (dim ?? 1),
+        /* The pose is where the card stands in the deck; presence is how far back the
+           whole level has gone. They multiply, because the kit's mapping is a ratio
+           and the deck's bend is a position. */
+        scale: pose.scale * (presence?.scale ?? 1),
+        opacity: pose.opacity * (presence?.opacity ?? 1),
       }}
-      transition={dim === undefined ? settle : zoom}
+      transition={presence === undefined ? m.settle : m.zoom}
       style={{ zIndex: 20 - Math.abs(offset) }}
       onClick={() => (focused ? onOpen() : onFocus())}
     >

@@ -31,6 +31,7 @@
  * move it.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { sharedIdentity, type Presence } from "@athena/demo-kit/zoom";
 
 import { comparisonOrder, criterionMedians, groupId, type BdColumn, type BdRole } from "./model";
 import { CARD, VISIBLE } from "./carousel/pose";
@@ -44,7 +45,7 @@ export function Carousel({
   onFocus,
   onOpen,
   ghost = false,
-  dim,
+  presence,
 }: {
   role: BdRole;
   column: BdColumn;
@@ -63,7 +64,9 @@ export function Carousel({
   onOpen: (id: string) => void;
   /** The inert copy the zoom leaves behind — see the note in `Columns.tsx`. */
   ghost?: boolean;
-  dim?: (group: string, id: string) => number;
+  /** The kit's `presenceOf()` for the focus the nav has moved to, for the cards of
+   *  the outgoing echo. Undefined on the live rail, which never recedes. */
+  presence?: (group: string, id: string) => Presence;
 }) {
   const ordered = useMemo(() => comparisonOrder(column), [column]);
   const railRef = useRef<HTMLDivElement | null>(null);
@@ -206,6 +209,7 @@ export function Carousel({
         {ordered.map((candidate, i) => {
           const offset = i - at;
           if (Math.abs(offset) > VISIBLE) return null;
+          const identity = sharedIdentity(`candidate-${candidate.id}`, owns);
           return (
             <Slide
               /*
@@ -218,18 +222,22 @@ export function Carousel({
                * mount in one commit, which is the case the library is built for —
                * so the dossier grows from the card's own box, and on close the card
                * grows back out of the dossier's.
+               *
+               * `sharedIdentity` is the kit's spelling of exactly that pair, and the
+               * pure form rather than the hook because this is inside a `.map()`.
+               * The key it returns replaces the list key; it already names the card.
                */
-              key={owns ? candidate.id : `${candidate.id}:plain`}
+              key={identity.key}
+              identity={identity}
               candidate={candidate}
               column={column}
               offset={offset}
               medians={medians}
-              owns={owns}
               /* Only the card the dossier was ABOUT has a box to shrink out of.
                  The other two take their identities back without moving, so
                  staging them would blank two thirds of the level for no gesture. */
               staged={returning && candidate.id === focusId}
-              dim={dim?.(groupId(column.id, role.id), candidate.id)}
+              presence={presence?.(groupId(column.id, role.id), candidate.id)}
               onFocus={() => {
                 setLive(i);
                 onFocus(candidate.id);

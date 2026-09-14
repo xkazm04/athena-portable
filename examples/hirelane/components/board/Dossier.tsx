@@ -16,9 +16,10 @@
  */
 import { useEffect, useMemo, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { useOverlayEscape, useSharedIdentity } from "@athena/demo-kit/zoom";
 
 import { comparisonOrder, type BdCandidate, type BdColumn, type BdRole } from "./model";
-import { DOSSIER_PART, DOSSIER_SHELL, DOSSIER_STILL, lift } from "./motion";
+import { DOSSIER_STILL, useBoardMotion } from "./motion";
 import { DossierActs } from "./dossier/Acts";
 import { DossierBench } from "./dossier/Bench";
 import { DossierEvidence } from "./dossier/Evidence";
@@ -43,6 +44,33 @@ export function Dossier({
   const closeRef = useRef<HTMLButtonElement>(null);
   const paneRef = useRef<HTMLDivElement | null>(null);
   const reduced = useReducedMotion();
+  const m = useBoardMotion();
+  /* One claimant per shared id, both halves from the kit: the dossier holds
+     `candidate-<id>` for as long as it is open, and the key flips with that so the
+     handover to and from the carousel card is an unmount and a mount in one commit. */
+  const box = useSharedIdentity(`candidate-${candidate.id}`, true);
+
+  /*
+   * ESCAPE, AND THE FOCUS IT OWES ITS OPENER — the kit's `useOverlayEscape`.
+   *
+   * Both halves used to be written out here, and the second half was not even here:
+   * `Board.tsx` restored focus for every level change including this one, from a
+   * selector it built in a layout effect. Two places restoring focus after one close
+   * is one of them winning a race, so the overlay owns it now and the board keeps
+   * only L1 → L0 (formula §1 rule 5).
+   *
+   * `returnFocusTo` is the fallback, and it is the one that normally fires: the card
+   * that opened this pane gave its identity up when the pane took it, so by the time
+   * focus goes back the opener is a detached button and the kit falls through to the
+   * card that has taken its place.
+   */
+  const overlay = useOverlayEscape({
+    onClose,
+    returnFocusTo: () =>
+      document.querySelector<HTMLElement>(
+        `[data-candidate="${typeof CSS !== "undefined" && CSS.escape ? CSS.escape(candidate.id) : candidate.id}"]`,
+      ),
+  });
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -54,35 +82,23 @@ export function Dossier({
   }, []);
 
   /**
-   * ESCAPE, AND THE FOCUS TRAP. Both live here for the same reason.
+   * THE TAB TRAP, which the kit deliberately does not hold.
    *
-   * ESCAPE FIRST, because it was dead. The pane declares `role="dialog"` and
-   * `aria-modal="true"`, which is rule 2 in the kit's `zoom/escape.ts`: the
-   * window listener sees an Escape raised inside a modal subtree and correctly
-   * declines it, because a modal owns its own dismiss. It was right to decline
-   * and nothing here was claiming it, so the key did nothing at all at L2 while
-   * the foot went on printing `Esc` beside the back button. A modal that says it
-   * owns Escape has to own it.
+   * Escape is `useOverlayEscape` above; what stays here is the trap, and it is the
+   * reason this component was not split further. It has to reach every control in the
+   * card, which means it has to own the element the regions render into. Threading a
+   * ref through four components to reassemble one tab order would be worse than the
+   * file being longer. The kit's note says the same thing from the other side: a trap,
+   * a scroll lock and a scrim differ per pane, so the pane keeps them.
    *
-   * This is rule 1 of the same file — React's root listener runs before a
-   * `window` listener, so calling `preventDefault()` here has already spoken by
-   * the time the nav asks. `nav.holdEscape()` is the other way in, and it is the
-   * wrong one here: a hold is for an overlay that listens on `window` itself and
-   * so cannot be seen by either of the first two rules. This one has a handler
-   * on its own subtree, which is exactly what rule 1 is for.
-   *
-   * THE FOCUS TRAP is the reason this component was not split further. It has to
-   * reach every control in the card, which means it has to own the element the
-   * regions render into. Threading a ref through four components to reassemble
-   * one tab order would be worse than the file being longer.
+   * Escape goes to the kit's handler FIRST, because that is the protocol: it calls
+   * `preventDefault()`, the nav's window listener checks `defaultPrevented` before it
+   * checks anything else, and one press therefore leaves one level. The old local
+   * branch also called `stopPropagation()`, which was belt and braces over a rule that
+   * was already sufficient.
    */
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      event.stopPropagation();
-      onClose();
-      return;
-    }
+    overlay.onKeyDown(event);
     if (event.key !== "Tab") return;
     const focusable = paneRef.current?.querySelectorAll<HTMLElement>(
       "button:not(:disabled), select:not(:disabled), textarea:not(:disabled), [href]",
@@ -131,7 +147,7 @@ export function Dossier({
        * `candidate-<id>`, held by exactly one element at a time — while the scrim
        * darkens beside it in `Board.tsx`. Only once the box has LANDED does what
        * is written in it arrive, region by region, on `--hl-stagger`. See
-       * `DOSSIER_SHELL` in ./motion.ts for the measurement that moved it: a single
+       * `dossierShell` in ./motion.ts for the measurement that moved it: a single
        * 180ms fade over a still-travelling box left six frames in which the
        * dossier's prose and the card underneath were both legible through the
        * blur, which reads as a flash rather than as a thing growing.
@@ -140,15 +156,16 @@ export function Dossier({
        * no delay, no rise, no fade (DESIGN-LAW §1.3, §9.16).
        */}
       <motion.div
-        layoutId={`candidate-${candidate.id}`}
+        key={box.key}
+        layoutId={box.layoutId}
         className="bd-dossier"
         role="dialog"
         aria-modal="true"
         aria-labelledby="bd-dossier-title"
         ref={paneRef}
         onKeyDown={onKeyDown}
-        transition={lift}
-        variants={reduced ? DOSSIER_STILL : DOSSIER_SHELL}
+        transition={m.lift}
+        variants={reduced ? DOSSIER_STILL : m.dossierShell}
         initial={reduced ? false : "hidden"}
         animate="shown"
       >
@@ -157,12 +174,12 @@ export function Dossier({
           candidate={candidate}
           closeRef={closeRef}
           onClose={onClose}
-          variants={reduced ? DOSSIER_STILL : DOSSIER_PART}
+          variants={reduced ? DOSSIER_STILL : m.dossierPart}
         />
 
         <motion.div
           className="bd-dossier-body"
-          variants={reduced ? DOSSIER_STILL : DOSSIER_PART}
+          variants={reduced ? DOSSIER_STILL : m.dossierPart}
         >
           <DossierEvidence role={role} candidate={candidate} />
           <DossierBench
@@ -197,7 +214,7 @@ export function Dossier({
          */}
         <motion.div
           className="bd-actbar"
-          variants={reduced ? DOSSIER_STILL : DOSSIER_PART}
+          variants={reduced ? DOSSIER_STILL : m.dossierPart}
         >
           <DossierActs key={`auto:${candidate.id}`} candidate={candidate} />
           <DossierGate key={`gate:${candidate.id}`} candidate={candidate} openSlots={openSlots} />
