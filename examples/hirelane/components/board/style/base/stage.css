@@ -30,3 +30,38 @@
   min-block-size: 0;
 }
 
+/*
+ * THE ECHO: the level being left, scaling through the centre of the group that
+ * was opened. See the note at the top of `Board.tsx` for why it is a second copy
+ * rather than the outgoing level itself — in one sentence, a copy carries no
+ * `layoutId`, so the live level is always the only claimant of a candidate's
+ * identity and the face→card morph is never ambiguous.
+ *
+ * It sits ON TOP of the arriving level and takes no input. "Never block input
+ * during a transition" is the rule it is obeying: the arriving level is live and
+ * clickable from its first frame, through a picture of the one that is leaving.
+ * `transform-origin` is set per-flight from JS, in stage coordinates.
+ */
+.bd-echo {
+  z-index: 2;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/*
+ * The dossier's scrim, as its own layer rather than as the dossier's backdrop.
+ *
+ * It has to darken while the box is still travelling and lift after the box has
+ * gone home, which is a different clock from the pane's — and when the two were
+ * one element, the fade that carried the scrim also carried the dossier's prose,
+ * so it was legible over the card it was still growing out of.
+ */
+.bd-scrim-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  background: var(--bd-scrim);
+  /* §9.4 exception: a blur radius, not a length on the spacing scale. */
+  backdrop-filter: blur(6px);
+}
+

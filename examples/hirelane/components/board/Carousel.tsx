@@ -32,7 +32,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
-import { comparisonOrder, criterionMedians, type BdColumn, type BdRole } from "./model";
+import { comparisonOrder, criterionMedians, groupId, type BdColumn, type BdRole } from "./model";
 import { CARD, VISIBLE } from "./carousel/pose";
 import { Slide } from "./carousel/Slide";
 
@@ -40,14 +40,30 @@ export function Carousel({
   role,
   column,
   focusId,
+  owns,
   onFocus,
   onOpen,
+  ghost = false,
+  dim,
 }: {
   role: BdRole;
   column: BdColumn;
   focusId: string | null;
+  /**
+   * Whether this rail holds the candidates' `layoutId`s.
+   *
+   * False while the dossier is open, because two mounted elements claiming one
+   * identity is the failure `Board.tsx` carries a note about: motion has two
+   * claimants and animates neither, so the card stops becoming the dossier. The
+   * rail gives the ids up on the way in and takes them back on the way out,
+   * which is also what makes the box morph HOME when the dossier closes.
+   */
+  owns: boolean;
   onFocus: (id: string) => void;
   onOpen: (id: string) => void;
+  /** The inert copy the zoom leaves behind — see the note in `Columns.tsx`. */
+  ghost?: boolean;
+  dim?: (group: string, id: string) => number;
 }) {
   const ordered = useMemo(() => comparisonOrder(column), [column]);
   const railRef = useRef<HTMLDivElement | null>(null);
@@ -99,9 +115,51 @@ export function Carousel({
     return () => el.removeEventListener("keydown", onKey);
   }, [move]);
 
+  /*
+   * THE RAIL TAKES FOCUS WHEN THE LEVEL ARRIVES.
+   *
+   * The level's whole instruction is "← → to move" and, until this pass, the
+   * arrows did nothing until you had clicked a card or tabbed past the entire
+   * masthead first — the keyboard affordance the surface advertises was two
+   * interactions away from working. This component is keyed by its group, so a
+   * mount is exactly "a group was opened" and the focus lands once per arrival.
+   *
+   * `focus()` rather than a click: a programmatic focus keeps the modality of
+   * the last real interaction, so `:focus-visible` stays false when the group
+   * was opened with a pointer and the ring does not flash. Every focus style in
+   * this direction is `:focus-visible` (`base/the-room.css`), so that is the
+   * whole of the fix.
+   */
+  useEffect(() => {
+    if (ghost) return;
+    railRef.current?.focus({ preventScroll: true });
+  }, [ghost]);
+
+  /*
+   * TRUE WHEN THE CARDS TAKE THE IDENTITIES BACK from a closing dossier.
+   *
+   * A card remounts whenever `owns` flips (see the key below), but only one of the
+   * two directions has a 1180px box to shrink out of, and only that one has to keep
+   * its own type out of the way while it does. "This rail was already here" is the
+   * whole of the difference: `arrived` is false for exactly the first render — the
+   * render in which a card is mounting because the LEVEL arrived rather than because
+   * the dossier gave it back.
+   */
+  const [arrived, setArrived] = useState(false);
+  useEffect(() => {
+    /* After the first PAINT, not synchronously in the effect body: this is a fact
+       about the rail having been drawn once, and setting it inside the effect would
+       be a cascading render for something no frame ever sees. */
+    const frame = requestAnimationFrame(() => setArrived(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+  const returning = owns && arrived;
+
+
   return (
     <section
       className="bd-carousel"
+      aria-hidden={ghost || undefined}
       /* The card width the two step sizes in pose.ts are solved from. The rail draws at the
          width the poses assume, or the loupe set gains a gap it was never given. */
       style={{ "--card": `${CARD}px` } as CSSProperties}
@@ -125,18 +183,35 @@ export function Carousel({
         ref={railRef}
         role="listbox"
         aria-label={`${role.title} at ${column.label}`}
-        tabIndex={0}
+        tabIndex={ghost ? -1 : 0}
       >
         {ordered.map((candidate, i) => {
           const offset = i - at;
           if (Math.abs(offset) > VISIBLE) return null;
           return (
             <Slide
-              key={candidate.id}
+              /*
+               * KEYED BY WHETHER IT HOLDS THE IDENTITY, and that is load-bearing.
+               *
+               * Dropping `layoutId` on a mounted element is not the same event as
+               * the element leaving: motion snapshots a shared identity when its
+               * claimant UNMOUNTS, and that snapshot is what the next claimant
+               * grows out of. Changing the key makes the handover an unmount and a
+               * mount in one commit, which is the case the library is built for —
+               * so the dossier grows from the card's own box, and on close the card
+               * grows back out of the dossier's.
+               */
+              key={owns ? candidate.id : `${candidate.id}:plain`}
               candidate={candidate}
               column={column}
               offset={offset}
               medians={medians}
+              owns={owns}
+              /* Only the card the dossier was ABOUT has a box to shrink out of.
+                 The other two take their identities back without moving, so
+                 staging them would blank two thirds of the level for no gesture. */
+              staged={returning && candidate.id === focusId}
+              dim={dim?.(groupId(column.id, role.id), candidate.id)}
               onFocus={() => {
                 setLive(i);
                 onFocus(candidate.id);

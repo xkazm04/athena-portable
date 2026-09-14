@@ -1,5 +1,30 @@
 /* --------------------------------------------------------- reduced motion */
 
+/*
+ * TWO HALVES, AND THIS FILE IS ONLY ONE OF THEM.
+ *
+ * DESIGN-LAW §1.3 asks that every motion path have a reduced branch landing on
+ * the FINAL STATE rather than on a faster version of the animation. CSS has one
+ * way to say that about a transition, and it is the rule below: a transition
+ * that cannot be perceived is the final state.
+ *
+ * The paths that matter in this direction are not CSS transitions, though —
+ * they are `motion/react`, and a duration is the wrong instrument for them
+ * because a shortened animation still PLAYS. So each one takes the branch in
+ * JS, where "land on the final state" can be said exactly:
+ *
+ *   - the zoom's echo is never created at all (`Board.tsx`: the level change
+ *     returns before `setInFlight`), so there is no camera move to shorten;
+ *   - the scrim arrives at `instant` (./motion.ts), duration zero;
+ *   - the dossier's two beats collapse to `DOSSIER_STILL`, which is the shown
+ *     state under both keys — no delay, no rise, no fade;
+ *   - `MotionConfig reducedMotion="user"` in `Board.tsx` drops transform and
+ *     layout animation across the whole tree, so the shared-identity morphs cut
+ *     rather than travel.
+ *
+ * The rule below therefore covers the press feedback and the hover washes, which
+ * is all that is left here.
+ */
 @media (prefers-reduced-motion: reduce) {
   .bd-rail-3d {
     perspective: none;
@@ -10,6 +35,13 @@
   .bd-root *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+
+  /* The one CSS path with a DELAY rather than a duration: a shortened animation
+     that still waits 260ms to begin is not the final state, it is the final state
+     late. Removing the animation lands the ink where it belongs, at once. */
+  .bd-slide-inner[data-ink="after-box"] > * {
+    animation: none !important;
   }
 }
 

@@ -42,7 +42,7 @@ import {
   type BdCandidate,
   type BdRole,
 } from "./model";
-import { settle, throwOut } from "./motion";
+import { ARRIVE, SHRINK, settle, throwOut, zoom } from "./motion";
 import { GroupRead, stageFact } from "./columns/facts";
 import {
   FACE,
@@ -52,16 +52,33 @@ import {
   stackingFor,
 } from "./columns/stacking";
 
+/**
+ * THE ECHO (`ghost`). The board is rendered a second time, inert, while the zoom
+ * plays — see the note at the top of `Board.tsx`. A ghost row carries no
+ * `layoutId`, so the live level is always the only claimant of a candidate's
+ * identity and the face→card morph is never ambiguous; it carries no entrance
+ * either, because it is a picture of a board that is already on screen.
+ *
+ * What it does carry is `dim`: the kit's `emphasis()` for the focus the nav has
+ * just moved to, mapped in this direction to opacity and scale. The group being
+ * opened holds still at 1 while every other group on the board dims and shrinks
+ * away from it, so the rest of the surface leaves BEFORE the part you picked
+ * does. The rule is the kit's and is never re-derived here.
+ */
 export function Columns({
   board,
   roleFilter,
   onlyBorderline,
   onOpen,
+  ghost = false,
+  dim,
 }: {
   board: BdBoard;
   roleFilter: string;
   onlyBorderline: boolean;
   onOpen: (group: string) => void;
+  ghost?: boolean;
+  dim?: (group: string) => number;
 }) {
   return (
     <div className="bd-board">
@@ -85,7 +102,7 @@ export function Columns({
         return (
           <motion.section
             key={stage}
-            layout
+            layout={!ghost}
             transition={settle}
             className="bd-column"
             data-role={stageRole}
@@ -108,15 +125,30 @@ export function Columns({
                   const shown = candidates.slice(0, PILE_CAP);
                   const hidden = candidates.length - shown.length;
                   const overlap = overlapFor(candidates.length);
+                  const group = groupId(stage, role.id);
+                  /* The kit's presence rule, mapped to this direction's two channels.
+                     Scale is the shallower of the two on purpose: a row that shrinks
+                     as far as it dims reads as falling rather than as receding. */
+                  const near = dim?.(group) ?? 1;
 
                   return (
                     <motion.button
                       key={role.id}
                       type="button"
-                      layout
-                      transition={settle}
+                      layout={!ghost}
+                      transition={ghost ? zoom : settle}
                       className="bd-group-row"
-                      onClick={() => onOpen(groupId(stage, role.id))}
+                      /* The zoom's origin is measured off this element, the frame
+                         before the level changes — see `Board.tsx`. */
+                      data-group={group}
+                      tabIndex={ghost ? -1 : undefined}
+                      {...(ghost
+                        ? {
+                            initial: { opacity: 1, scale: 1 },
+                            animate: { opacity: near, scale: SHRINK + (1 - SHRINK) * near },
+                          }
+                        : null)}
+                      onClick={() => onOpen(group)}
                       aria-label={`Open ${role.title} at ${label}, ${candidates.length} candidates`}
                     >
                       <span className="bd-group-label">
@@ -143,9 +175,11 @@ export function Columns({
                             <motion.span
                               key={candidate.id}
                               /* The same identity the carousel card and the
-                                 dossier carry. One id, three levels. */
-                              layoutId={`candidate-${candidate.id}`}
-                              layout
+                                 dossier carry. One id, three levels — and only
+                                 ever ONE claimant of it, which is why the echo
+                                 above drops it entirely. */
+                              layoutId={ghost ? undefined : `candidate-${candidate.id}`}
+                              layout={!ghost}
                               className="bd-pile-item"
                               data-borderline={candidate.borderline}
                               title={candidate.name}
@@ -160,7 +194,9 @@ export function Columns({
                                * wanted to see was the one buried.
                                */
                               style={{ zIndex: shown.length - index }}
-                              initial={{ opacity: 0, scale: 0.7 }}
+                              /* A ghost is a picture of a board already on screen:
+                                 it arrives at its final state or it flickers. */
+                              initial={ghost ? false : { opacity: 0, scale: ARRIVE }}
                               animate={{ opacity: 1, scale: 1, rotate: 0, x: 0, y: 0 }}
                               exit={throwOut(candidate.id)}
                               transition={settle}

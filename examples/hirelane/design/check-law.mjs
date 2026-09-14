@@ -23,6 +23,14 @@
  *   3. §4.2  colours  - a hex or rgb() literal outside the token block. #000 and #fff inside a
  *                       mask-image or a box-shadow are alpha stops and ring geometry rather than
  *                       palette, and are exempt.
+ *   4. §9.1  motion   - a raw duration, delay or spring constant typed into a `.ts`/`.tsx` file
+ *                       under the direction. §1.3 is a scale exactly as §1.1 is, and until this
+ *                       pass nothing read a TypeScript file: five hand-tuned spring constants and
+ *                       two durations sat in `components/board/motion.ts` for three rounds without
+ *                       a red run, because the instrument only opened stylesheets. A direction's
+ *                       motion token block - `components/<slug>/motion.ts` - is the one file a
+ *                       number may be typed in, exactly as `style/base/tokens.css` is for CSS, and
+ *                       the same `§9.4 exception:` marker exempts a line anywhere else.
  *
  * The tree is clean on all three today, so every count is an absolute zero rather than a baseline
  * to ratchet down. If a direction ever lands with debt, give it a `design/law-baseline.json` of
@@ -53,12 +61,28 @@ const COLOUR = /#[0-9a-fA-F]{3,8}\b|\brgba?\(/;
 /** Alpha stops and ring geometry, not palette. */
 const NOT_PALETTE = /mask-image|box-shadow|\brgba?\(\s*255\s+255\s+255\s*\/|\brgba?\(\s*0\s+0\s+0\s*\//;
 
-function walk(dir) {
+/**
+ * A motion value typed as a literal in TypeScript.
+ *
+ * The keys are the ones `motion/react` reads a time or a curve from, and the match requires a
+ * NUMERIC literal after them, so `duration: secs(DUR[3])`, `delay: HOLD` and
+ * `transition={zoom}` all pass while `duration: 0.18` and `stiffness: 260` do not. `ms` and
+ * `s`-suffixed literals inside a `setTimeout` are not motion and are not matched: the key list is
+ * the whole of the rule.
+ */
+const RAW_MOTION =
+  /\b(duration|delay|delayChildren|staggerChildren|repeatDelay|stiffness|damping|mass|velocity|bounce)\s*:\s*-?\d/;
+/** A named curve is a token; a bezier typed at a call site is four numbers somebody guessed. */
+const RAW_EASE = /\bease\s*:\s*\[/;
+
+function walk(dir, ext = ".css") {
   const out = [];
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
-    if (statSync(path).isDirectory()) out.push(...walk(path));
-    else if (path.endsWith(".css")) out.push(path);
+    if (statSync(path).isDirectory()) out.push(...walk(path, ext));
+    else if (Array.isArray(ext) ? ext.some((e) => path.endsWith(e)) : path.endsWith(ext)) {
+      out.push(path);
+    }
   }
   return out;
 }
@@ -72,6 +96,40 @@ function directions() {
   return readdirSync(COMPONENTS)
     .filter((slug) => existsSync(join(COMPONENTS, slug, "style", "base", "tokens.css")))
     .sort();
+}
+
+/**
+ * §9.1 for motion: the direction's `.ts`/`.tsx`, minus its own motion token block.
+ *
+ * Comments are blanked the same way the stylesheets' are, so the file that explains why
+ * `stiffness: 260` was wrong may go on saying so.
+ */
+function checkMotion(slug) {
+  const root = join(COMPONENTS, slug);
+  const tokenModule = join(root, "motion.ts");
+  const failures = [];
+  let rawMotion = 0;
+
+  for (const file of walk(root, [".ts", ".tsx"]).sort()) {
+    if (file === tokenModule) continue;
+    const source = readFileSync(file, "utf8");
+    const raw = source.split("\n");
+    /* `//` as well as `/* *\/`: a TypeScript file explains itself in both. */
+    const code = blankComments(source)
+      .split("\n")
+      .map((l) => l.replace(/\/\/.*$/, ""));
+    const where = (i) => `${relative(APP, file).replace(/\\/g, "/")}:${i + 1}`;
+    const exempt = (i) => raw.slice(Math.max(0, i - 2), i + 1).some((l) => l.includes(EXEMPTION));
+
+    code.forEach((line, i) => {
+      if (exempt(i)) return;
+      if (RAW_MOTION.test(line) || RAW_EASE.test(line)) {
+        rawMotion += 1;
+        failures.push(`  §9.1  ${where(i)}  raw motion value: ${line.trim()}`);
+      }
+    });
+  }
+  return { rawMotion, failures };
 }
 
 function checkDirection(slug) {
@@ -106,7 +164,15 @@ function checkDirection(slug) {
       }
     });
   }
-  return { slug, rawPx, dkOverrides, offLockColours, failures };
+  const motion = checkMotion(slug);
+  return {
+    slug,
+    rawPx,
+    dkOverrides,
+    offLockColours,
+    rawMotion: motion.rawMotion,
+    failures: [...failures, ...motion.failures],
+  };
 }
 
 const baselines = existsSync(BASELINE_FILE)
@@ -122,7 +188,7 @@ if (found.length === 0) {
 
 for (const slug of found) {
   const result = checkDirection(slug);
-  const allowed = baselines[slug] ?? { rawPx: 0, dkOverrides: 0, offLockColours: 0 };
+  const allowed = baselines[slug] ?? { rawPx: 0, dkOverrides: 0, offLockColours: 0, rawMotion: 0 };
   const over = (key) => result[key] > (key === "dkOverrides" ? 0 : (allowed[key] ?? 0));
   const line = (key, law) =>
     `  ${law.padEnd(5)} ${key.padEnd(15)} ${String(result[key]).padStart(3)} (allowed ${
@@ -131,10 +197,11 @@ for (const slug of found) {
 
   console.log(`design:check  ${slug}`);
   console.log(line("rawPx", "§9.1"));
+  console.log(line("rawMotion", "§9.1"));
   console.log(line("dkOverrides", "§9.2"));
   console.log(line("offLockColours", "§4.2"));
 
-  if (over("rawPx") || over("dkOverrides") || over("offLockColours")) {
+  if (over("rawPx") || over("rawMotion") || over("dkOverrides") || over("offLockColours")) {
     failed = true;
     console.log(result.failures.join("\n"));
   }

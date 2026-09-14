@@ -15,9 +15,10 @@
  * and the bench ranking, which the rail and nothing else needs.
  */
 import { useEffect, useMemo, useRef } from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 import { comparisonOrder, type BdCandidate, type BdColumn, type BdRole } from "./model";
+import { DOSSIER_PART, DOSSIER_SHELL, DOSSIER_STILL, lift } from "./motion";
 import { DossierActs } from "./dossier/Acts";
 import { DossierBench } from "./dossier/Bench";
 import { DossierEvidence } from "./dossier/Evidence";
@@ -41,6 +42,7 @@ export function Dossier({
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const paneRef = useRef<HTMLDivElement | null>(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -52,13 +54,35 @@ export function Dossier({
   }, []);
 
   /**
-   * The focus trap, and the reason this component was not split further.
+   * ESCAPE, AND THE FOCUS TRAP. Both live here for the same reason.
    *
-   * It has to reach every control in the card, which means it has to own the
-   * element the regions render into. Threading a ref through four components to
-   * reassemble one tab order would be worse than the file being longer.
+   * ESCAPE FIRST, because it was dead. The pane declares `role="dialog"` and
+   * `aria-modal="true"`, which is rule 2 in the kit's `zoom/escape.ts`: the
+   * window listener sees an Escape raised inside a modal subtree and correctly
+   * declines it, because a modal owns its own dismiss. It was right to decline
+   * and nothing here was claiming it, so the key did nothing at all at L2 while
+   * the foot went on printing `Esc` beside the back button. A modal that says it
+   * owns Escape has to own it.
+   *
+   * This is rule 1 of the same file — React's root listener runs before a
+   * `window` listener, so calling `preventDefault()` here has already spoken by
+   * the time the nav asks. `nav.holdEscape()` is the other way in, and it is the
+   * wrong one here: a hold is for an overlay that listens on `window` itself and
+   * so cannot be seen by either of the first two rules. This one has a handler
+   * on its own subtree, which is exactly what rule 1 is for.
+   *
+   * THE FOCUS TRAP is the reason this component was not split further. It has to
+   * reach every control in the card, which means it has to own the element the
+   * regions render into. Threading a ref through four components to reassemble
+   * one tab order would be worse than the file being longer.
    */
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      onClose();
+      return;
+    }
     if (event.key !== "Tab") return;
     const focusable = paneRef.current?.querySelectorAll<HTMLElement>(
       "button:not(:disabled), select:not(:disabled), textarea:not(:disabled), [href]",
@@ -100,6 +124,21 @@ export function Dossier({
         if (event.target === event.currentTarget) onClose();
       }}
     >
+      {/*
+       * TWO BEATS, NOT ONE FADE.
+       *
+       * The box morphs out of the carousel card it came from — one identity,
+       * `candidate-<id>`, held by exactly one element at a time — while the scrim
+       * darkens beside it in `Board.tsx`. Only once the box has LANDED does what
+       * is written in it arrive, region by region, on `--hl-stagger`. See
+       * `DOSSIER_SHELL` in ./motion.ts for the measurement that moved it: a single
+       * 180ms fade over a still-travelling box left six frames in which the
+       * dossier's prose and the card underneath were both legible through the
+       * blur, which reads as a flash rather than as a thing growing.
+       *
+       * Reduced motion takes the same two beats collapsed onto the final state —
+       * no delay, no rise, no fade (DESIGN-LAW §1.3, §9.16).
+       */}
       <motion.div
         layoutId={`candidate-${candidate.id}`}
         className="bd-dossier"
@@ -108,15 +147,23 @@ export function Dossier({
         aria-labelledby="bd-dossier-title"
         ref={paneRef}
         onKeyDown={onKeyDown}
+        transition={lift}
+        variants={reduced ? DOSSIER_STILL : DOSSIER_SHELL}
+        initial={reduced ? false : "hidden"}
+        animate="shown"
       >
         <DossierVerdict
           role={role}
           candidate={candidate}
           closeRef={closeRef}
           onClose={onClose}
+          variants={reduced ? DOSSIER_STILL : DOSSIER_PART}
         />
 
-        <div className="bd-dossier-body">
+        <motion.div
+          className="bd-dossier-body"
+          variants={reduced ? DOSSIER_STILL : DOSSIER_PART}
+        >
           <DossierEvidence role={role} candidate={candidate} />
           <DossierBench
             bench={bench}
@@ -124,7 +171,7 @@ export function Dossier({
             candidate={candidate}
             onFocus={onFocus}
           />
-        </div>
+        </motion.div>
 
         {/*
          * ONE BAR, TWO ZONES. `design/ui-pass-brief.md` §3 has the measurement that moved them:
@@ -148,10 +195,13 @@ export function Dossier({
          * approved is not the thing about to happen, so the zones remount and arming starts over.
          * The note draft does not follow the reader to the next person either.
          */}
-        <div className="bd-actbar">
+        <motion.div
+          className="bd-actbar"
+          variants={reduced ? DOSSIER_STILL : DOSSIER_PART}
+        >
           <DossierActs key={`auto:${candidate.id}`} candidate={candidate} />
           <DossierGate key={`gate:${candidate.id}`} candidate={candidate} openSlots={openSlots} />
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );

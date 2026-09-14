@@ -14,9 +14,9 @@
   display: grid;
   place-items: center;
   padding: var(--bd-s4);
-  background: var(--bd-scrim);
-  /* §9.4 exception: a blur radius, not a length on the spacing scale. */
-  backdrop-filter: blur(6px);
+  /* The scrim is `.bd-scrim-layer` in `base/stage.css` and is mounted beside this
+     one, not under it: it darkens and lifts on its own clock so the pane's own
+     ink can wait for the box to land. */
 }
 
 .bd-dossier {

@@ -126,6 +126,33 @@
   overflow: hidden;
 }
 
+/*
+ * THE INK WAITS FOR THE SHEET — the second beat of the dossier's close.
+ *
+ * Closing the dossier hands `candidate-<id>` back to this card, so the box morphs
+ * from a 1180px spread down to 352px. A shared-layout morph scale-corrects the
+ * ELEMENT and not the type inside it, so the card's own name was drawn at three
+ * times its size, across the two cards either side of it: the exact overprint the
+ * dossier's entrance was rewritten to remove, arriving on the way out instead.
+ *
+ * So the sheet travels and what is written on it arrives after it lands, which is
+ * the dossier's own two beats reversed. The two steps are the same two: the sheet's
+ * journey is `--bd-dur-3` (the delay), the ink is `--bd-dur-2` (the fade). `both`
+ * is what holds the ink at zero through the delay; without it the first frame
+ * paints the text at full size before the animation starts.
+ *
+ * `Slide.tsx` sets the attribute, and only on the one card the dossier was about.
+ */
+@keyframes bd-ink-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.bd-slide-inner[data-ink="after-box"] > * {
+  animation: bd-ink-in var(--bd-dur-2) var(--bd-ease) var(--bd-dur-3) both;
+}
+
 .bd-slide[data-focus="true"] .bd-slide-inner {
   border-color: var(--bd-rule-2);
   box-shadow: var(--bd-elev-lift);

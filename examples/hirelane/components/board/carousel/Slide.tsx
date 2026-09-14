@@ -41,12 +41,12 @@
  * without opening the candidate.
  */
 import { motion } from "motion/react";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 
 import { fmtScore } from "../format";
 import { Face } from "../marks/Face";
 import { BAND_LABEL, FIT_LABEL, SCORE_MAX, type BdCandidate, type BdColumn } from "../model";
-import { settle } from "../motion";
+import { SHRINK, settle, zoom } from "../motion";
 import { LOUPE, poseOf } from "./pose";
 import { StageMeta } from "./StageMeta";
 
@@ -69,11 +69,37 @@ export interface SlideProps {
    * a column of zeroes — see `comparable` below.
    */
   medians: Map<string, number>;
+  /**
+   * Whether this card holds `candidate-<id>`. False while the dossier has it, and
+   * false in the inert copy the zoom leaves behind — one claimant per identity,
+   * always. `Carousel.tsx` explains why the key changes with it.
+   */
+  owns: boolean;
+  /** True for the one mount that takes the identity back from a closing dossier:
+   *  the glass sheet travels home and the ink arrives once it lands. The delay is
+   *  `[data-ink]` in `style/level1/l1-carousel.css`. */
+  staged?: boolean;
+  /** The kit's `emphasis()` for the focus the nav has moved to, when this card is
+   *  part of the outgoing echo. Undefined on the live rail, which never dims. */
+  dim?: number;
   onFocus: () => void;
   onOpen: () => void;
 }
 
-export function Slide({ candidate, column, offset, medians, onFocus, onOpen }: SlideProps) {
+export function Slide({
+  candidate,
+  column,
+  offset,
+  medians,
+  owns,
+  staged,
+  dim,
+  onFocus,
+  onOpen,
+}: SlideProps) {
+  /* Read once, at mount: the rail goes on re-rendering while the box travels home
+     and a prop that flips back would cut the entrance short. */
+  const [returning] = useState(() => staged === true);
   const pose = poseOf(offset);
   const focused = offset === 0;
   /* Against the median of the scored, widest difference first. Unscored candidates and empty
@@ -90,25 +116,43 @@ export function Slide({ candidate, column, offset, medians, onFocus, onOpen }: S
   return (
     <motion.button
       type="button"
-      layoutId={`candidate-${candidate.id}`}
+      layoutId={owns ? `candidate-${candidate.id}` : undefined}
       className="bd-slide"
+      /* What the dossier hands focus back to when it closes. */
+      data-candidate={candidate.id}
       data-focus={focused}
       data-depth={Math.abs(offset) <= LOUPE ? "loupe" : "far"}
       data-borderline={candidate.borderline}
       role="option"
       aria-selected={focused}
+      /* Handed the identity back (or taken off the rail by the dossier) the card
+         remounts, and a remount must not replay the deal: it is already where it
+         belongs, so it arrives at its pose rather than sliding into it. */
+      initial={
+        dim === undefined
+          ? false
+          : { x: pose.x, rotateY: pose.rotateY, z: pose.z, scale: pose.scale, opacity: pose.opacity }
+      }
       animate={{
         x: pose.x,
         rotateY: pose.rotateY,
         z: pose.z,
-        scale: pose.scale,
-        opacity: pose.opacity,
+        scale: pose.scale * (dim === undefined ? 1 : SHRINK + (1 - SHRINK) * dim),
+        opacity: pose.opacity * (dim ?? 1),
       }}
-      transition={settle}
+      transition={dim === undefined ? settle : zoom}
       style={{ zIndex: 20 - Math.abs(offset) }}
       onClick={() => (focused ? onOpen() : onFocus())}
     >
-      <span className="bd-slide-inner">
+      {/* THE PANEL TRAVELS, THE INK WAITS. A `layout` morph scale-corrects the
+          element and not the type inside it, so a card shrinking home from a 1180px
+          dossier drew its own name at three times the size, across the two cards
+          either side of it — the same overprint the dossier's entrance was rewritten
+          to remove, arriving on the way out instead. So the card comes home the way
+          the dossier went in: the glass sheet moves, and what is written on it
+          arrives once the sheet has landed. The delay is `l1-carousel.css`, on the
+          same two duration steps the dossier's own two beats use. */}
+      <span className="bd-slide-inner" data-ink={returning ? "after-box" : undefined}>
         <span className="bd-slide-who">
           <Face id={candidate.id} initials={candidate.initials} className="bd-mono" size="lg" />
           <span className="bd-slide-text">

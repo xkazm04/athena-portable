@@ -8,6 +8,7 @@
  * because printing a zero would be a score and nobody has given them one.
  */
 import type { RefObject } from "react";
+import { motion, type Variants } from "motion/react";
 
 import { STAGE_LABEL } from "@/lib/constants";
 import { fmtDate, fmtScore } from "../format";
@@ -19,14 +20,18 @@ export function DossierVerdict({
   candidate,
   closeRef,
   onClose,
+  variants,
 }: {
   role: BdRole;
   candidate: BdCandidate;
   closeRef: RefObject<HTMLButtonElement | null>;
   onClose: () => void;
+  /** The dossier's staged entrance, inherited from the pane. This band is the
+   *  first region to arrive after the box lands — see `Dossier.tsx`. */
+  variants?: Variants;
 }) {
   return (
-    <div className="bd-dossier-head">
+    <motion.div className="bd-dossier-head" variants={variants}>
       <div className="bd-dossier-top">
         <Face
           id={candidate.id}
@@ -105,6 +110,6 @@ export function DossierVerdict({
           ✕
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
