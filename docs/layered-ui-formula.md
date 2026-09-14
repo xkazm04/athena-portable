@@ -131,3 +131,59 @@ regression.
 - A token reader (`cssMs` / `useTokens(el, names)`) for `--*` durations into JS.
 - A focus-return helper for L2 overlays, and the kit rule for "a transition to level N is in flight
   and may be abandoned" — the half of the Escape rule the kit does not have.
+
+### Round 2 — consolidation, the fourth app, and the owner's review (2026-09-14)
+
+**Why this theme.** All three round-1 agents asked for the same five shared primitives, so the
+consolidation round moved forward. And the formula needs an objective test: a fourth app built
+on the kit alone, rebuilt whenever the kit changes, whose count of "had to write it myself" is
+the distance from a reusable formula.
+
+**Baseline** is the round-1 after-state (the tables above; captures in
+`examples/journey/shots/round1-verify-*`).
+
+**Scope**
+
+- *Kit (wave A, first):* `useLevelFlight`, `presenceStyle`/`presenceOf`, `useSharedIdentity`,
+  `cssMs`/`useTokens`, `useOverlayEscape`, the in-flight abort half of the Escape rule, the
+  template on the formula, and a README section mapping the nine rules to primitives.
+- *Atlas (wave B, new, port 3006):* the repo's own Athena architecture (README §3 layers, the
+  packages, the six invariants as concepts) explored at three altitudes — concept, system,
+  component — one direction, built only through the kit; every local workaround logged as a kit gap.
+  The old `athena-everywhere/examples/atlas` is discarded; only its concept survives.
+- *Ledgerbox (owner's notes):* L0 fills large monitors, legible marks and type, a reading line per
+  lane, attention by default (quiet marks semitransparent); L1 status glyph instead of id, footer
+  legend doubles as filter, the open lane's timeline folded into the head's right half and the other
+  lanes' rails removed; L2 footer selects styled, the AUTO/GATED bars replaced by one CTA opening a
+  decision dialog with a conversation slot for Athena.
+- *Tidycrm (owner's notes):* L0 remodelled from four zones of records to nine databases of tables,
+  one dot per table, cell fill by state, subtle red where a fault sits inside. Three prototypes behind
+  a tab switcher on `/` — plate (2.5D, tilt only), slab (WebGL 3×3×1, snap rotation), octants (cube
+  2×2×2 + core, snap rotation) — so the owner picks from live builds. Plus ink-waits on the dossier
+  morph and arrow keys at L1.
+- *Hirelane (carry-overs only):* heading waits for the echo, cards fly back to their faces, carousel
+  keeps its centre after a dossier, board brief amended, and a production-build measurement of the
+  level-change long task.
+
+**Decisions taken by the owner:** L1 timeline folds into the head's right half; L2 acts become one
+CTA into a decision dialog; tidycrm prototypes all three L0 shapes; atlas models this repo's
+architecture.
+
+**Kit gaps found by migration** (running list; the consolidation review closes them):
+
+- *hirelane:* `useOverlayEscape` always prefers the opener; a pane that grew out of a card wants
+  the card to win. Needs a `prefer` option or `focusReturnTarget` reachable separately.
+- *hirelane:* `fallbackToken` cannot read a `calc()` token (unregistered custom properties come back
+  unresolved); either sum a list of tokens or document "declare the budget as one step".
+- *hirelane:* `presenceOf` returns a shape motion rejects as a `Target`; a `presenceTarget()` typed
+  for `animate=` is needed for the template to compile as written.
+- *hirelane:* `settle()` has no "this move had no camera" spelling; an unclaimed flight should count as
+  settled within a frame, or apps re-find the double-Escape-aborts-into-the-overlay bug.
+- *hirelane, useful surprise:* `useTokens` caught Turbopack minifying `--bd-dur-2` to `.16s`; the old
+  TS map never saw the cascade.
+- *ledgerbox (round 2 build):* a portal-inside-token-scope helper; a presence→opacity mapper that
+  survives motion's inline `opacity` writes; `useRoving(selector)` for arrow-key grids (third copy).
+- *hirelane (round 2 build):* `useLevelInk(nav)` → wait / leave / null; a "highlight for one beat"
+  helper, since `nav.highlight` has no expiry.
+
+**Outcome:** *(filled after review)*
