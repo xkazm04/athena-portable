@@ -246,3 +246,27 @@ quiet-database fill cannot be judged from real data; a test now fails the day th
 **Carried to later rounds:** URL sync (still nowhere); tidycrm L0 pick; atlas at 68 components is
 over the brief's density and L2 does not fit a 900 px viewport; the L0 column heads in hirelane still
 arrive at full ink on the first frame of a zoom-out.
+
+### Round 3 — concept tests, not polish (2026-09-14)
+
+**Why this theme.** The owner's review of round 2: "our adjustments are too careful and do not try
+any major design upgrades, leading us into polishing versions we are stuck with, unable to learn
+conceptual lessons." And atlas "is not understood — the goal is a visual multi-layer model of the
+solution, text as a secondary element." So every app is rebuilt around ONE concept to test, and the
+kit gains the camera every bold direction needs. The contract every build codes against is
+`docs/kit-camera-contract.md`.
+
+**Baseline** is the round-2 after-state (captures in `examples/journey/shots/round2-*`).
+
+**Kit:** a camera rig (drag orbit/pan, pointer-anchored wheel zoom, pinch, inertia, snap, keyboard,
+reduced motion), semantic zoom (camera distance → the zoom model's level, both directions, no
+loops), the echo container for rule 1, and the round-2 gap fixes the directions need.
+
+| App | Concept under test | Form the owner chose |
+|---|---|---|
+| Tidycrm | One 3D space across all levels: opening a database is the camera flying into its octant, tables as cells inside it, the dossier rises out of a cell | Octants, full camera control |
+| Ledgerbox | Continuous semantic zoom: levels are zoom bands of one pannable world | The timeline map |
+| Hirelane | Three directions behind a switcher: the board with a free camera (control), cutaway rooms (place-based navigation), a constellation (semantic zoom in a second domain) | All three prototyped |
+| Atlas | The machine: strata as planes, systems as blocks, edges as pipes, a real turn travelling through, text only at L2 | All three renderers prototyped: WebGL, CSS 3D, hybrid |
+
+**Outcome:** *(filled after review)*
