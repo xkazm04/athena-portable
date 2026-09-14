@@ -10,25 +10,35 @@
  * when each one starts. The numbers are not here: they are `./beats.ts`, which
  * the tokens and the advertised cost also read.
  *
- * It lives apart from the shell because the shell's job is to lay out a sheet
- * and this is a state machine with three timers in it. Reading either one used
- * to mean reading both.
+ * IT IS THE KIT'S FLIGHT NOW, and that is what deleted half of this file.
  *
- * THE MOVE CAN BE WALKED OUT OF, in two different ways, and both are here.
+ * Round 1 left this hook holding two predicates nobody else should have needed:
+ * `escapeAbortsArrival`, because the kit declined Escape at L0 and the flatten
+ * happened at L0, so for four hundred milliseconds the key reached nobody; and
+ * `arrivalAbandoned`, because the beats ran on timers that had no idea the
+ * reader had walked out from under them. Both were symptoms of the same thing —
+ * the move was committed to the nav only at its halfway point, so for its first
+ * half there was no move as far as the model was concerned.
  *
- *   · After the hand-off, the level has already changed, so the kit's Escape and
- *     the back button both work and the clock only has to NOTICE — see
- *     `arrivalAbandoned`. A held `opening` is what steps the plate back, so an
- *     abandoned move that is never cleaned up is a plate nobody can click.
- *   · BEFORE the hand-off the level is still 0, and `escapeLeavesLevel` never
- *     claims Escape at L0 — correctly, there is nowhere above it to go. So for
- *     the length of the picture's flatten there was no way out at all: Escape a
- *     tenth of a second in was swallowed and the reader arrived at L1 anyway.
- *     `escapeAbortsArrival` is the missing half, and `abort` is what it runs.
+ * So the nav is told at the START. `openFromPlate` dispatches `openGroup`
+ * immediately and the flatten runs inside the flight that creates: `moving` is
+ * true from that frame, which is what makes the nav's own Escape listener
+ * `abort()` (back to the focus the move left) rather than `up()` (out of a level
+ * nobody arrived at) — formula §1 rule 6, `escapeAbortsFlight` in the kit. And
+ * because the beats are keyed to the database the nav is actually on, a move
+ * that has been abandoned or replaced stops being this hook's business without
+ * anyone having to notice: `beat` derives to `settled` the moment the focus is
+ * no longer the one the beats were staged over.
+ *
+ * WHAT THE SHEET DRAWS IS STILL L0 UNTIL THE HAND-OFF. The nav being at L1 for
+ * the length of the flatten is the truth — the reader has chosen, and Escape
+ * now means "put me back" rather than "go up" — but the picture is still the
+ * plate, so `level` below is what the SHEET reads. That is rule 1 in its
+ * smallest form: the level you leave carries the camera.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { Focus, ZoomNav } from "@athena/demo-kit/zoom";
+import { useLevelFlight, type ZoomNav } from "@athena/demo-kit/zoom";
 
 import { DRESS, LAND, SPREAD } from "./beats";
 import type { FieldPhase } from "./Field";
@@ -36,212 +46,196 @@ import type { FieldPhase } from "./Field";
 const MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 /**
- * Is this Escape the arrival's to cancel?
+ * The beats, including the one the DOM never sees.
  *
- * The kit owns Escape from L1 upward and declines it at L0 (`escape.ts`), which
- * leaves exactly one window uncovered: the picture is flattening, `opening` is set,
- * and the level has not changed yet. Nothing else on the sheet wants the key
- * there, and a move that cannot be stopped for its first four hundred
- * milliseconds is a move the reader does not control.
- *
- * Asked BEFORE `preventDefault`, and declining an event somebody else has
- * already claimed, for the same reason the kit does: a listener that calls
- * `preventDefault` on a key the page has not decided about cannot be composed
- * with.
- *
- * Pure, and exported, so the decision can be pinned without a renderer.
+ * `flatten` is the picture's own: the dots leaving their cells for the plane,
+ * before any of L1 is mounted. The other four are `FieldPhase`, because they are
+ * what the arriving level is drawn in.
  */
-export function escapeAbortsArrival(
-  event: { key: string; defaultPrevented: boolean },
-  level: number,
-  opening: string | null,
-): boolean {
-  if (event.key !== "Escape") return false;
-  if (event.defaultPrevented) return false;
-  if (opening === null) return false;
-  return level === 0;
+export type ArrivalBeat = "flatten" | FieldPhase;
+
+/** The beats during which the L0 picture is still holding the pose. */
+const HOLDING: ReadonlySet<ArrivalBeat> = new Set<ArrivalBeat>(["flatten", "land", "spread"]);
+
+/**
+ * The beats, and the database they were staged over.
+ *
+ * Keyed by the database rather than kept as a bare beat, which is the whole of
+ * what `arrivalAbandoned` used to compute: if the nav is no longer on the
+ * database these beats belong to — Escape, an abort, a jump to another one —
+ * they are not this move's beats any more and the derivation below says so.
+ * A timer that fires afterwards writes a beat for a database nobody is on, and
+ * is ignored rather than having to be cancelled correctly.
+ */
+export interface Staged {
+  database: string | null;
+  at: ArrivalBeat;
 }
 
 /**
- * Has the move been abandoned — is the level the arrival is dressing no longer
- * the level on screen?
+ * Which beat this move is actually in.
  *
- * The beats run on timers rather than on the focus, so nothing in the clock
- * notices when the reader leaves in the middle of one. Escape inside the
- * arrival window drops L1 back to L0 while `opening` is still set, and `opening`
- * is what steps every legend key back and stops the picture answering a click —
- * so an abandoned move that is never cleaned up is a plate nobody can use and a
- * level nobody can leave.
- *
- * `settled` is the resting phase at BOTH ends: before the hand-off the picture is
- * still flattening at L0 with `opening` set, which is the move working
- * correctly. Only once a beat is running has the arrival taken a level of its
- * own to be abandoned from.
- *
- * Pure, and exported, so the decision can be pinned without a renderer.
+ * The staged beat counts only while the nav is still on the database it was
+ * staged over AND the flight carrying it is still in the air. Anything else — an
+ * abort back to the plate, a jump to another database, a flight that has already
+ * settled — is rest, and a timer that fires afterwards writes a beat for a
+ * database nobody is on and is ignored rather than having to be cancelled
+ * correctly. This is the whole of what `arrivalAbandoned` used to compute, and
+ * it is pure and exported for the same reason that was: so the decision can be
+ * pinned without a renderer.
  */
-export function arrivalAbandoned(
-  focus: Pick<Focus, "level" | "group">,
-  opening: string | null,
-  phase: FieldPhase,
-): boolean {
-  if (opening === null || phase === "settled") return false;
-  return !(focus.level >= 1 && focus.group === opening);
+export function beatOf(
+  staged: Staged,
+  group: string | null,
+  moving: boolean,
+): ArrivalBeat {
+  if (!moving) return "settled";
+  if (staged.database === null || staged.database !== group) return "settled";
+  return staged.at;
 }
 
-export function useArrival(nav: ZoomNav) {
+/** The database whose tables are mid-flight: the picture is still holding a pose for it. */
+export function openingOf(beat: ArrivalBeat, group: string | null): string | null {
+  return HOLDING.has(beat) ? group : null;
+}
+
+/**
+ * The level the SHEET draws, given the level the nav is on.
+ *
+ * They differ for exactly one window — the flatten — because the reader has
+ * chosen but the picture has not handed over yet. Only L1 is held back: an
+ * `open_item` that lands mid-flatten still draws its dossier, because the reader
+ * (or the agent) asked for a place two levels in and the plate is not it.
+ */
+export function drawnLevel(beat: ArrivalBeat, level: number): number {
+  return beat === "flatten" && level === 1 ? 0 : level;
+}
+
+export interface Arrival {
+  /** The database whose tables are mid-flight, or null at rest. */
+  opening: string | null;
+  /** Which beat the arriving level is drawn in. */
+  phase: FieldPhase;
   /**
-   * The database whose tables are mid-flight.
-   *
-   * Opening a database is not one beat but four, and the level does not change
-   * until the picture has finished flattening. Holding the id here is what lets
-   * the scene finish its move before the DOM arrives on top of it.
+   * The level the SHEET draws, which is not always the level the nav is on: the
+   * plate is still the plate for the length of the flatten.
    */
-  const [held, setOpening] = useState<string | null>(null);
-  /**
-   * Which beat of the arrival L1 is in. See `Field`'s header for what each one
-   * draws; this component only owns the clock.
+  level: number;
+  openFromPlate: (id: string) => void;
+  openDatabase: (id: string) => void;
+  /** The picture has finished flattening. Called by whichever L0 is mounted. */
+  flattened: () => void;
+}
+
+export function useArrival(nav: ZoomNav): Arrival {
+  /*
+   * `--bk-dur-5` is the safety net, not the clock: `beats.ts` is the clock and
+   * `settle()` below is what normally ends the flight. The net only matters for
+   * a move whose completion never arrives — a picture that failed to report, or
+   * a reduced-motion cut whose beats never ran.
    */
-  const [beat, setPhase] = useState<FieldPhase>("settled");
+  const flight = useLevelFlight(nav, { fallbackToken: "--bk-dur-5" });
+  const [staged, setStaged] = useState<Staged>({ database: null, at: "settled" });
   const timers = useRef<number[]>([]);
 
-  /**
-   * The reader left in the middle of the move — Escape out of L1, or a jump to
-   * another database — so the move is over whatever the timers still believe, and
-   * an abandoned arrival is read as no arrival rather than being written back
-   * into state. (Writing it back would be a setState inside an effect, which is
-   * the cascading render this hook exists to avoid.)
-   *
-   * `held` is not decoration: it steps every legend key back and stops the
-   * picture answering a click. Left standing after Escape it gives back
-   * an L0 with nothing on it that can be pressed, no rung to climb and no way
-   * out but a reload.
-   */
-  const lapsed = arrivalAbandoned(nav.state.focus, held, beat);
-  const opening = lapsed ? null : held;
-  const phase: FieldPhase = lapsed ? "settled" : beat;
+  const focus = nav.state.focus;
+  const settle = flight.settle;
 
-  // A move abandoned halfway — the reader hits back, or leaves — must not have
-  // its later beats fire into a level that is no longer on screen.
+  const beat = beatOf(staged, focus.group, flight.moving);
+  const opening = openingOf(beat, focus.group);
+  const phase: FieldPhase = beat === "flatten" ? "settled" : beat;
+  // Rule 1, in its smallest form: the level being left carries the camera.
+  const level = drawnLevel(beat, focus.level);
+
   const clearTimers = useCallback(() => {
     for (const id of timers.current) window.clearTimeout(id);
     timers.current = [];
   }, []);
   useEffect(() => clearTimers, [clearTimers]);
 
-  /**
-   * Stop the move and give the plate back.
+  /*
+   * A flight with no beats staged over it has already landed.
    *
-   * Dropping `opening` is the whole act: the picture reads it every frame, so the
-   * dots walk back out of the plane and into their cells, the cells answer a
-   * click again, the legend keys come out of their stepped-back state and the
-   * caption stops claiming a database is opening. There
-   * is nothing to unwind, because nothing was committed — the level has not
-   * changed yet, which is exactly the window this is for.
+   * Every other level change on this sheet is immediate — a jump between
+   * databases, a table opening into its dossier, an abort back to the plate — so
+   * the flight that carries it ends on the frame it started. Only the arrival
+   * holds one open, and it holds it exactly until its last beat sets `settled`.
    */
-  const abort = useCallback(() => {
-    clearTimers();
-    setPhase("settled");
-    setOpening(null);
-  }, [clearTimers]);
-
-  /**
-   * Escape, for the one window the kit cannot cover. See `escapeAbortsArrival`.
-   *
-   * Bound on `window` rather than on the plate because the reader may have
-   * pressed a legend key, clicked a cell in the picture, or asked an agent —
-   * in the last two cases nothing on the sheet holds focus, so a React handler
-   * would never see the key.
-   */
-  const level = nav.state.focus.level;
   useEffect(() => {
-    if (held === null) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (!escapeAbortsArrival(event, level, held)) return;
-      event.preventDefault();
-      abort();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [abort, held, level]);
+    if (flight.moving && beat === "settled") settle();
+  }, [beat, flight.moving, settle]);
 
   /**
    * The picture has finished flattening; run the rest of the move.
    *
-   * The level changes here and the canvas does NOT leave: `opening` stays set,
-   * so the dots hold their flattened pose while the cells are measured onto
-   * them, and the scene is only unmounted once the blocks have places of their
-   * own to be. Each beat is a timer rather than a transition-end listener,
-   * because the beats have to keep their order even when a transition is
-   * cancelled or was never allowed to run.
+   * The level does not change here any more — the nav has been at L1 since the
+   * reader chose — but the SHEET's does: `land` is the first beat in which L1
+   * exists, and it exists on top of the pose the picture is still holding. Each
+   * beat is a timer rather than a transition-end listener, because the beats
+   * have to keep their order even when a transition is cancelled or was never
+   * allowed to run.
    */
   const flattened = useCallback(() => {
-    const id = opening;
-    if (!id) return;
+    if (beat !== "flatten") return;
+    const database = focus.group;
+    if (database === null) return;
     clearTimers();
-    nav.openGroup(id);
 
     // With motion turned down there is nothing to watch, so there is nothing to
     // wait for either: the grid is simply there.
     if (window.matchMedia(MOTION_QUERY).matches) {
-      setPhase("settled");
-      setOpening(null);
+      setStaged({ database, at: "settled" });
       return;
     }
 
-    setPhase("land");
-    const at = (ms: number, run: () => void) => timers.current.push(window.setTimeout(run, ms));
-    at(LAND, () => setPhase("spread"));
-    at(LAND + SPREAD, () => {
-      setPhase("dress");
-      setOpening(null);
-    });
-    at(LAND + SPREAD + DRESS, () => setPhase("settled"));
-  }, [clearTimers, nav, opening]);
+    setStaged({ database, at: "land" });
+    const at = (ms: number, next: ArrivalBeat) =>
+      timers.current.push(window.setTimeout(() => setStaged({ database, at: next }), ms));
+    at(LAND, "spread");
+    at(LAND + SPREAD, "dress");
+    at(LAND + SPREAD + DRESS, "settled");
+  }, [beat, clearTimers, focus.group]);
+
+  /**
+   * Opening a database FROM the plate.
+   *
+   * The nav is told first, which is the whole of the migration: the flatten now
+   * happens inside a flight, so Escape a tenth of a second in is the nav's abort
+   * and puts the reader back on the plate rather than being swallowed.
+   *
+   * With motion turned down this stages nothing at all. It used to hand the
+   * request to the scene regardless, let the flatten run its full duration, and
+   * only notice the preference when the scene reported back — so a reader who
+   * had asked for less motion waited more than a second in front of an animation
+   * they were never going to be shown.
+   */
+  const openFromPlate = useCallback(
+    (id: string) => {
+      // A second request for the database already arriving is not a new move.
+      // The picture has no second flatten to run for it, so nothing would call
+      // back to restart the beats.
+      if (id === opening) return;
+      clearTimers();
+      const reduced = window.matchMedia(MOTION_QUERY).matches;
+      setStaged({ database: id, at: reduced ? "settled" : "flatten" });
+      nav.openGroup(id);
+    },
+    [clearTimers, nav, opening],
+  );
 
   /** Opening a second database from L1 has no picture to come out of, so it has
       no arrival to stage either — the cells simply change. */
   const openDatabase = useCallback(
     (id: string) => {
       clearTimers();
-      setPhase("settled");
-      // The picture may still be held for the database being left, if the jump
-      // lands inside its arrival window. Nothing is coming out of it now.
-      setOpening(null);
+      setStaged({ database: id, at: "settled" });
       nav.openGroup(id);
     },
     [clearTimers, nav],
   );
 
-  /**
-   * Opening a database FROM the plate.
-   *
-   * With motion turned down this does not hand the request to the scene at all.
-   * It used to: `setOpening` started the picture's flatten, the flatten ran its
-   * full duration, and only when it reported back did `flattened` notice the
-   * preference and skip the beats — so a reader who had asked for less motion
-   * waited more than a second in front of an animation they were never going to
-   * be shown. The preference is checked before the move starts, not after.
-   */
-  const openFromPlate = useCallback(
-    (id: string) => {
-      // A second request for the database already arriving is not a new move.
-      // The picture has no second flatten to run for it, so nothing would call back to
-      // restart the beats — and clearing them would leave the arrival stopped
-      // where it stood, with `opening` set and no timer left to release it.
-      if (id === opening) return;
-      clearTimers();
-      // Whatever beat a lapsed arrival died on, this move starts from rest.
-      setPhase("settled");
-      if (window.matchMedia(MOTION_QUERY).matches) {
-        setOpening(null);
-        nav.openGroup(id);
-        return;
-      }
-      setOpening(id);
-    },
-    [clearTimers, nav, opening],
+  return useMemo(
+    () => ({ opening, phase, level, openFromPlate, openDatabase, flattened }),
+    [flattened, level, openDatabase, openFromPlate, opening, phase],
   );
-
-  return { opening, phase, openFromPlate, openDatabase, flattened, abort };
 }

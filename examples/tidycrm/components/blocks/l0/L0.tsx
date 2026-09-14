@@ -21,6 +21,8 @@
 
 import { useState } from "react";
 
+import type { Focus } from "@athena/demo-kit/zoom";
+
 import { databaseSummary } from "./cells";
 import { L0Keys } from "./Keys";
 import { L0Switcher } from "./Switcher";
@@ -39,12 +41,16 @@ const PICTURE: Record<string, (props: L0Props) => React.ReactElement> = {
 
 export function L0({
   cells,
+  focus,
   opening,
   out,
   onOpen,
   onFlattened,
 }: {
   cells: L0Cell[];
+  /** The nav's focus. The legend's recede is `emphasis()` put through the kit's
+   *  one mapping rather than a number invented here — see `Keys.tsx`. */
+  focus: Focus;
   opening: string | null;
   out: boolean;
   onOpen: (id: string) => void;
@@ -72,7 +78,6 @@ export function L0({
     <div
       className="bk-l0"
       data-variant-l0={variant}
-      data-opening={opening ?? ""}
       data-hover={hovered !== null && opening === null}
     >
       <L0Switcher variant={variant} onChoose={choose} />
@@ -81,6 +86,7 @@ export function L0({
         <Picture {...props} />
         <L0Keys
           cells={cells}
+          focus={focus}
           hovered={hovered}
           opening={opening}
           onHover={setHovered}

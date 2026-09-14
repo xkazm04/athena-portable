@@ -74,11 +74,19 @@ with a mouse drag, and four cells was the wrong model. So:
   colour is the strongest claim on that table (gold outranks red, as everywhere else here) and its
   SIZE is how much is outstanding on it — because 43 of the 46 tables touch an open pair, and colour
   alone would have drawn 46 near-identical dots;
-- a cell is **filled by state**: no red at all when nothing inside is outstanding, and a red wash
-  otherwise whose strength is that database's share of the worst one's outstanding work. The review
-  asked for a binary wash; in this seed every database carries a table in fault, so a binary wash
-  paints nine identical cells and answers nothing. The state is still binary, and the strength is
-  what makes nine of them comparable;
+- a cell is **filled by state**: greenline and no red at all when nothing inside is outstanding,
+  and a red wash otherwise whose strength is that database's share of the worst one's outstanding
+  work. The review asked for a binary wash; in this seed every database carries a table in fault, so
+  a binary wash paints nine identical cells and answers nothing. The state is still binary, and the
+  strength is what makes nine of them comparable. The quiet half is GREENLINE rather than an
+  absence, because a database with nothing outstanding in any of its tables is not unexamined — it
+  is every check on it passed, which is the one thing this palette spends green on. **Nothing in
+  this seed reaches it**: all 46 tables carry at least one deviation (45 a hand-typed phone, 44 a
+  stale row), so `clearTables` is 0 and no database can be quiet. The state is therefore pinned by
+  `test/l0-fill.test.ts` — the rule, both inks, and the two stylesheet grounds — rather than by a
+  screenshot, and the shot that shows it
+  (`examples/journey/shots/round2-tidycrm-quiet/`) is forced and says so in its name. That test also
+  fails the day a table goes clean, which is the day to go and look at it;
 - **three prototypes of L0 are on the page at once**, behind a segmented switcher remembered in
   `localStorage` and reflected in the URL (`?l0=plate`), defaulting to `plate`. Only one mounts.
   Each lives in `components/blocks/l0/<variant>/` and shares nothing but `l0/contract.ts`:
@@ -295,6 +303,30 @@ and its rules are adopted. Durations and easings are tokens (`--bk-dur-*`, `--bk
 - **Staggered orchestration.** Lists and grids never mount instantly; they cascade at an offset per
   index (`--bk-stagger`), capped so a long list does not take seconds to arrive.
 - **Animate only `transform` and `opacity`.** Never `top`/`left`/`width`/`height`.
+- **The formula's primitives are the kit's** (`@athena/demo-kit/zoom`, consolidation round). Five
+  things this direction had built for itself are now imported: `useLevelFlight` (rule 1 and 6),
+  `presenceOf` / `presenceStyle` (rule 7), `sharedIdentity` (rule 2), `useTokens` / `parseBezier` /
+  `secs` (rule 4) and `useOverlayEscape` (rule 5). The refactor is visible nowhere — the settled
+  L0, L1 and L2 stills are pixel-identical across it — and what it deleted is the interesting part:
+  - **`escapeAbortsArrival` and `arrivalAbandoned` are gone**, and so is the window listener and the
+    abort callback under them. Both existed because the move was committed to the nav only at its
+    halfway point: the flatten ran at L0, where the kit correctly declines Escape, and the beats ran
+    on timers that had no way to notice the reader had walked out. `openFromPlate` now tells the nav
+    FIRST, so the flatten happens inside a real flight — `moving` is true from that frame, the nav's
+    own listener answers Escape with `abort()` (back to the focus the move left, not up out of a
+    level nobody arrived at), and "has this been abandoned" stops being a question because the beats
+    are keyed to the database the nav is actually on.
+  - **The sheet still draws the plate for the length of the flatten.** The nav being at L1 while the
+    picture has not handed over is the truth of it — the reader has chosen — but rule 1 says the
+    level you leave carries the camera, so `useArrival` returns the level the SHEET reads and
+    `Blocks.tsx` uses that. The one externally visible consequence is that `read_view` reports L1
+    about four hundred milliseconds earlier than it used to, which `open_group`'s `settles_in_ms`
+    already told its caller to expect.
+  - **The legend's recede comes from the model.** `Keys.tsx` writes each key's opacity from
+    `presenceOf(focus, id)` rather than from a `0.62` in the stylesheet, with a `floor` (the eight
+    databases the reader did not choose stay legible enough to change their mind about) and
+    `depth: 0` (a legend key is a row in a list; a row that shrinks reads as a control that has been
+    disabled). Both are written down at the call site as decisions rather than taste.
 - **A move has to be followable — and abandonable.** The L0 → L1 arrival is four named beats and
   **about 1.2 seconds**, because a move nobody can watch is indistinguishable from a cut and a move
   nobody can stop is not the reader's. It used to be about three, and the three seconds were not

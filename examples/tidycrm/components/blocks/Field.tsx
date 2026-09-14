@@ -36,6 +36,7 @@
  */
 import { useRef, useState, type CSSProperties } from "react";
 import { motion } from "motion/react";
+import { sharedIdentity } from "@athena/demo-kit/zoom";
 
 import {
   FLAT_COLS,
@@ -70,18 +71,16 @@ function toneOf(table: BkTable): "goldline" | "redline" | "greenline" {
  * withheld until the grid is settled. Nothing is lost: the ids exist for the
  * L1 -> L2 morph, which can only start from the settled grid anyway.
  *
- * WHY THE KEY CHANGES WITH IT. `motion` builds a projection node once, during
- * the render in which the component first appears, and reads `layoutId` off the
- * props it had at that moment (`useVisualElement`'s `createProjectionNode`,
- * whose own source carries the "TODO: update options in an effect" admitting
- * it). A `layoutId` that arrives later is never registered in the shared stack,
- * so the dossier that mounts holding the matching id finds nothing to travel
- * FROM — which is exactly why the L1 -> L2 morph had been dead since it was
- * written, and why the card appeared at full size on frame zero. Changing the
- * key at the settle makes the cell a new component on the frame it acquires its
- * id, which is the only frame motion will read it on. The remount is a single
- * commit with identical markup on both sides of it, and it happens at the one
- * moment on this level when nothing is moving.
+ * BOTH HALVES OF THAT ARE THE KIT'S NOW. `sharedIdentity(id, owns)` is formula
+ * §1 rule 2 as a pair of props — the `layoutId` only while this element is the
+ * claimant, and a `key` that flips with ownership so acquiring the id is a
+ * remount rather than a prop change. That second half is not decoration: motion
+ * builds a projection node once, during the render in which a component first
+ * appears, and reads `layoutId` off the props it had at that moment, so an id
+ * that arrives later is never registered in the shared stack and the morph
+ * silently never plays. It is the bug this direction shipped through round 1,
+ * the evidence is written up in the kit's `zoom/identity.ts`, and the three
+ * hand-rolled versions of it are now one.
  */
 export function Field({
   sheet,
@@ -140,11 +139,17 @@ export function Field({
         onKeyDown={onKeyDown}
         style={{ "--cols": FLAT_COLS } as CSSProperties}
       >
-        {database.tables.map((table, i) => (
+        {database.tables.map((table, i) => {
+          // One claimant per shared id, and the id must exist at mount. The key
+          // that comes back replaces the list key — it already names the table.
+          const box = sharedIdentity(`table-${table.ident}`, settled);
+          const cluster = sharedIdentity(`cluster-${table.ident}`, settled);
+          const name = sharedIdentity(`table-name-${table.ident}`, settled);
+          return (
           <motion.button
-            key={settled ? table.ident : `${table.ident}:arriving`}
+            key={box.key}
             type="button"
-            layoutId={settled ? `table-${table.ident}` : undefined}
+            layoutId={box.layoutId}
             className="bk-cell"
             /* The cell is where focus is put back down when the dossier closes,
                and for a card an agent opened there is nothing else to go on —
@@ -163,10 +168,7 @@ export function Field({
             onClick={() => onOpenTable(table.ident)}
             aria-label={`Open ${table.ident}, ${table.name}. ${table.why}`}
           >
-            <motion.span
-              layoutId={settled ? `cluster-${table.ident}` : undefined}
-              className="bk-cell-cluster"
-            >
+            <motion.span key={cluster.key} layoutId={cluster.layoutId} className="bk-cell-cluster">
               <Cluster marks={table.marks} />
             </motion.span>
 
@@ -177,10 +179,7 @@ export function Field({
                 * for came second, in the same box, at a size that had to argue with it.
                 */}
               <span className="bk-cell-head">
-                <motion.span
-                  layoutId={settled ? `table-name-${table.ident}` : undefined}
-                  className="bk-tile-name"
-                >
+                <motion.span key={name.key} layoutId={name.layoutId} className="bk-tile-name">
                   {table.name}
                 </motion.span>
                 <span className="bk-tile-ident">{table.ident}</span>
@@ -203,7 +202,8 @@ export function Field({
               </Stats>
             </span>
           </motion.button>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

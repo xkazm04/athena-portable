@@ -63,11 +63,17 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
   // frontier. Keeping it open is the reader's choice, not a default.
   const [showKinds, setShowKinds] = useState(false);
 
-  const { opening, phase, openFromPlate, openDatabase, flattened } = useArrival(nav);
+  /*
+   * `level` is the arrival's, not the nav's, and the difference is four hundred
+   * milliseconds long. The nav goes to L1 the moment the reader chooses a
+   * database — which is what lets Escape abort the move rather than step out of
+   * a level nobody arrived at — while the sheet goes on drawing the plate until
+   * the picture has handed its dots over. See `useArrival`.
+   */
+  const { opening, phase, level, openFromPlate, openDatabase, flattened } = useArrival(nav);
   const motion = useMotionTokens();
 
-  const level = nav.state.focus.level;
-  const database = databaseOf(sheet, nav.state.focus.group);
+  const database = level >= 1 ? databaseOf(sheet, nav.state.focus.group) : undefined;
   const table = tableOf(sheet, nav.state.focus.item);
   const cells = useMemo(() => cellsOf(sheet), [sheet]);
 
@@ -151,6 +157,7 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
                     is holding. */}
                 <L0
                   cells={cells}
+                  focus={nav.state.focus}
                   opening={opening}
                   out={level >= 1}
                   onOpen={openFromPlate}

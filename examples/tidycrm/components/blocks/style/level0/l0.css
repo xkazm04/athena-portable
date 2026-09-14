@@ -238,17 +238,24 @@
 }
 
 /*
- * THE FILL IS THE STATE, and the STRENGTH is the share.
+ * THE FILL IS THE STATE, the STRENGTH is the share, and QUIET IS GREENLINE.
  *
  * The review asked for "discoloured when no error, subtle red if error inside".
- * The state is exactly that and a database with nothing outstanding carries no
- * red at all — but every one of the nine in this seed has a table in fault, so a
- * flat red would have painted nine identical tiles. The wash is therefore laid
- * over the ground as its own layer at an opacity that is the database's share of
- * the worst one's outstanding work, which ranks the nine without asking anyone
- * to read nine numbers. Subtle at its strongest, because redline on this sheet
- * is a mark on a RECORD and a database drawn in full redline would drown the
- * dots that carry the actual finding.
+ * The state is exactly that — but every one of the nine databases in this seed
+ * has a table in fault, so a flat red would have painted nine identical tiles.
+ * The wash is therefore laid over the ground as its own layer at an opacity that
+ * is the database's share of the worst one's outstanding work, which ranks the
+ * nine without asking anyone to read nine numbers. Subtle at its strongest,
+ * because redline on this sheet is a mark on a RECORD and a database drawn in
+ * full redline would drown the dots that carry the actual finding.
+ *
+ * The other half is `quiet`, and it is not an absence. A database with nothing
+ * outstanding in any of its tables is every check on it PASSED, which is what
+ * greenline means here and the one thing it is reserved for — so the quiet cell
+ * carries a greenline inner edge and no red at all, and the reader gets a HUE to
+ * scan for rather than a difference of saturation. Nothing in this seed reaches
+ * it: all 46 tables carry something outstanding. `test/l0-fill.test.ts` pins the
+ * state and this file's two grounds, because a screenshot cannot.
  */
 .bk-plate-tile {
   position: relative;
@@ -271,6 +278,10 @@
 
 .bk-plate-tile[data-fill="fault"] {
   border-inline-start-color: var(--bk-redline);
+}
+
+.bk-plate-tile[data-fill="quiet"] {
+  border-inline-start-color: var(--bk-greenline);
 }
 
 /* The wash is a layer, so everything the tile prints has to stand above it. */
@@ -430,13 +441,14 @@
   border-radius: var(--bk-radius-0);
   text-align: start;
   cursor: pointer;
-  transition:
-    border-color var(--bk-dur-2) var(--bk-ease),
-    background-color var(--bk-dur-2) var(--bk-ease);
 }
 
 .bk-db-key[data-fill="fault"] {
   border-inline-start-color: var(--bk-redline);
+}
+
+.bk-db-key[data-fill="quiet"] {
+  border-inline-start-color: var(--bk-greenline);
 }
 
 .bk-db-key:hover,
@@ -531,20 +543,25 @@
   background: var(--bk-redline);
 }
 
-/* While a database is opening, the legend is no longer the subject: the keys
-   step back so the flatten is the only thing moving. They stay readable, and
-   live, because a reader may change their mind mid-flatten. */
+.bk-db-key[data-fill="quiet"] .bk-db-key-measure i {
+  background: var(--bk-greenline);
+}
+
+/*
+ * While a database is opening, the legend is no longer the subject: the keys
+ * step back so the flatten is the only thing moving. They stay readable, and
+ * live, because a reader may change their mind mid-flatten.
+ *
+ * THE VALUE IS NOT HERE ANY MORE. It used to be a `0.62` in this file against an
+ * `[data-opening]` attribute; presence comes from the model (formula §1 rule 7),
+ * so `Keys.tsx` writes the opacity from `presenceOf(focus, id)` and all this
+ * still owns is how long it takes to get there.
+ */
 .bk-l0 .bk-db-key {
-  opacity: 1;
-  transition: opacity var(--bk-dur-4) var(--bk-ease);
-}
-
-.bk-l0[data-opening]:not([data-opening=""]) .bk-db-key {
-  opacity: 0.62;
-}
-
-.bk-l0[data-opening]:not([data-opening=""]) .bk-db-key[data-on="true"] {
-  opacity: 1;
+  transition:
+    opacity var(--bk-dur-4) var(--bk-ease),
+    border-color var(--bk-dur-2) var(--bk-ease),
+    background-color var(--bk-dur-2) var(--bk-ease);
 }
 
 .bk-l0-caption {

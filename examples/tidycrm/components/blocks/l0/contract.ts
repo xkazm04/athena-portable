@@ -210,7 +210,7 @@ export function weightOf(id: string, hovered: string | null, opening: string | n
 /**
  * The inks the WebGL prototypes draw with.
  *
- * The same four values `base/tokens.css` declares, restated here because a
+ * The same values `base/tokens.css` declares, restated here because a
  * `three` material takes a colour and cannot read a custom property. This is the
  * only place in the direction where a colour is written twice, it is the same
  * exception round 1's `cube/palette.ts` carried, and the palette itself is not
@@ -219,9 +219,9 @@ export function weightOf(id: string, hovered: string | null, opening: string | n
  */
 export const INK = {
   graphite: "#1d1c1a",
-  graphite3: "#7e7a72",
   rule: "#c6c1b4",
   redline: "#b3261e",
+  greenline: "#2e6b40",
   goldline: "#8a6a12",
   sheet: "#f4f1e9",
   vellum: "#e7e2d6",
@@ -235,6 +235,29 @@ export const FILL_FAULT = { base: 0.08, span: 0.2 } as const;
 /** How solid one cell's wash is, in the two WebGL prototypes. */
 export function fillOpacity(cell: L0Cell): number {
   return fillOf(cell) === "quiet" ? FILL_QUIET : FILL_FAULT.base + FILL_FAULT.span * cell.share;
+}
+
+/**
+ * What ink a cell's wash is, and why `quiet` is GREENLINE rather than an absence.
+ *
+ * The review asked for "discoloured when no error, subtle red if error inside",
+ * and the first cut read the quiet half as an absence: graphite, i.e. a cell that
+ * simply makes no claim. That is the wrong claim to make no claim about. A
+ * database with nothing outstanding in any of its tables is not unexamined — it
+ * is every check on it PASSED, which is exactly what greenline means on this
+ * sheet and the one thing the direction reserves it for (`vocabulary.ts` states
+ * the rule: green is spent where a check actually passed and never on a nought
+ * that means "none"). A reader scanning nine cells for the ones in fault gets a
+ * hue difference rather than a saturation difference, which is the difference
+ * they can make at a glance.
+ *
+ * NOTHING IN THIS SEED REACHES IT. All 46 tables carry at least one outstanding
+ * deviation, so every one of the nine databases is in fault and the quiet wash
+ * has no live data to appear over. It is pinned by `test/l0-fill.test.ts` rather
+ * than by a screenshot, and the shot that shows it is forced.
+ */
+export function fillInk(cell: L0Cell): string {
+  return fillOf(cell) === "quiet" ? INK.greenline : INK.redline;
 }
 
 /** Ease out, so everything decelerates onto its target rather than stopping. */

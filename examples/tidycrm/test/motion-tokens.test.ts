@@ -4,9 +4,14 @@
  * `motion-tokens.ts` is the one place in the direction where a `--bk-*` value
  * crosses into script: `motion`'s shared-layout morph measures two boxes and
  * interpolates in JS, which no stylesheet can do, and the app's law is that no
- * duration or easing is typed anywhere. The parsing is the part that can be
- * wrong, and it does not need a browser to be wrong in — so it is run here
- * against the values the token file actually declares.
+ * duration or easing is typed anywhere.
+ *
+ * THE PARSING IS THE KIT'S as of the consolidation round (`@athena/demo-kit/zoom`,
+ * formula §1 rule 4), and it is pinned there. What is still this direction's, and
+ * therefore still pinned here, is WHICH tokens the morph is made of, that they
+ * are the values `style/base/tokens.css` actually declares, and the one delay
+ * derived from two of them. The stub below answers out of the token file itself,
+ * so the check is against the cascade and not against a second copy of it.
  *
  *   node --experimental-transform-types --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
@@ -15,7 +20,12 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
-const { readMotionTokens } = await import("../components/blocks/motion-tokens");
+const { readTokens } = await import("@athena/demo-kit/zoom");
+const { MOTION_TOKENS, motionFrom } = await import("../components/blocks/motion-tokens");
+
+/** The four tokens as the kit reads them, off whatever style source is given. */
+const read = (style: { getPropertyValue: (p: string) => string }) =>
+  motionFrom(readTokens(MOTION_TOKENS, style));
 
 const TOKENS = readFileSync(
   fileURLToPath(new URL("../components/blocks/style/base/tokens.css", import.meta.url)),
@@ -33,7 +43,7 @@ function declared(): { getPropertyValue: (property: string) => string } {
 }
 
 test("the direction's own token values parse", () => {
-  const tokens = readMotionTokens(declared());
+  const tokens = read(declared());
   assert.ok(tokens, "tokens.css declares a --bk-dur-* or --bk-ease this cannot read");
   // Milliseconds in CSS, seconds in `motion`. A morph mis-read by a factor of a
   // thousand is either instantaneous or seven minutes long, and both have
@@ -45,7 +55,7 @@ test("the direction's own token values parse", () => {
 });
 
 test("the body is held until the box has all but landed", () => {
-  const tokens = readMotionTokens(declared());
+  const tokens = read(declared());
   assert.ok(tokens);
   assert.ok(
     tokens.body.delay! > tokens.morph.duration / 2,
@@ -57,12 +67,12 @@ test("the body is held until the box has all but landed", () => {
 test("a stylesheet that declares none of it reports that, rather than guessing", () => {
   // The fallback is `null`, not an invented number: a constant here would be the
   // second copy of --bk-dur-4 the module exists to avoid.
-  assert.equal(readMotionTokens({ getPropertyValue: () => "" }), null);
-  assert.equal(readMotionTokens({ getPropertyValue: () => "ease-in-out" }), null);
+  assert.equal(read({ getPropertyValue: () => "" }), null);
+  assert.equal(read({ getPropertyValue: () => "ease-in-out" }), null);
 });
 
 test("both CSS time units are understood", () => {
-  const seconds = readMotionTokens({
+  const seconds = read({
     getPropertyValue: (p) =>
       p === "--bk-ease" ? "cubic-bezier(0.2, 0, 0, 1)" : p === "--bk-dur-4" ? "0.5s" : "0.25s",
   });

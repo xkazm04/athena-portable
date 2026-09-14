@@ -26,7 +26,7 @@ import {
   INK,
   POSES,
   SETTLED,
-  fillOf,
+  fillInk,
   fillOpacity,
   weightOf,
   type L0Cell,
@@ -134,7 +134,7 @@ function Octant({
 }) {
   const box = useMemo(() => cellBox(cell.id), [cell.id]);
   const { solid, flat, count } = useMemo(() => dotsOf(cell, cell.id), [cell]);
-  const fill = fillOf(cell);
+  const ink = fillInk(cell);
   /* The wash's strength is the database's share of the worst one's outstanding
      work — see `L0Cell.share`. The STATE is still binary; the strength is what
      stops nine tiles in fault reading as nine identical tiles. */
@@ -257,7 +257,7 @@ function Octant({
       >
         <boxGeometry args={[box.w, box.h, box.d]} />
         <meshBasicMaterial
-          color={fill === "fault" ? INK.redline : INK.graphite3}
+          color={ink}
           transparent
           opacity={solidity}
           depthWrite={false}

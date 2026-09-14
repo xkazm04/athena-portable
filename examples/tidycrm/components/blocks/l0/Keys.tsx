@@ -9,6 +9,20 @@
  * whichever drawing is in the frame. They double as the read-out for whatever
  * the pointer is over.
  *
+ * THE RECEDE COMES FROM THE MODEL (formula §1 rule 7). While a database is
+ * opening, the other eight keys step back — and what "step back" means is
+ * `emphasis()`'s answer put through the kit's one mapping, not a number chosen
+ * here. Two options are passed, and both are decisions rather than taste:
+ *
+ *   floor  0.5, because a reader may change their mind mid-flatten and the eight
+ *          they did not choose have to stay readable enough to pick. The kit's
+ *          bare mapping would take them to 0.22, which is right for a board that
+ *          has receded behind a card and wrong for a rail that is still live.
+ *   depth  0, because these are rows in a list. The kit's six percent is a
+ *          shallow SINK, which reads correctly for an object standing further
+ *          back in a scene; a legend key that shrinks reads as a control that
+ *          has been disabled, and it has not been.
+ *
  * THE INDEX GLYPH. Nine squares with one filled, which is where that database
  * sits in the picture — the same 3x3 arrangement the plate and the slab lay out,
  * and the reading order the octant corners follow. A list has no geometry, so a
@@ -18,6 +32,8 @@
  */
 
 import type { CSSProperties } from "react";
+
+import { presenceOf, type Focus } from "@athena/demo-kit/zoom";
 
 import { Stat, Stats } from "../Stat";
 import { DB_GRID, outstandingTone } from "../model";
@@ -43,12 +59,15 @@ function IndexGlyph({ id }: { id: string }) {
 
 export function L0Keys({
   cells,
+  focus,
   hovered,
   opening,
   onHover,
   onOpen,
 }: {
   cells: L0Cell[];
+  /** The nav's focus, which is what says how present each key is. */
+  focus: Focus;
   hovered: string | null;
   opening: string | null;
   onHover: (id: string | null) => void;
@@ -66,6 +85,7 @@ export function L0Keys({
             className="bk-db-key"
             data-on={hovered === cell.id || opening === cell.id}
             data-fill={fillOf(cell)}
+            style={presenceOf(focus, cell.id, null, { floor: 0.5, depth: 0 }) as CSSProperties}
             /* Never disabled while a database is opening. `openFromPlate`
                already handles being asked for a second one mid-flight and
                Escape abandons the move outright, so a control the reader can
