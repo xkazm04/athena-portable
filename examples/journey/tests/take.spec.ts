@@ -159,7 +159,7 @@ const st: {
   advancing: Row[];
   slots: Map<string, string>;
   rejected?: Row;
-  zone: string;
+  database: string;
   pinegroveDomain: string;
   confident: Row[];
   uncertain: Row[];
@@ -192,7 +192,7 @@ const st: {
   band: [],
   advancing: [],
   slots: new Map(),
-  zone: "A",
+  database: "billing",
   pinegroveDomain: "",
   confident: [],
   uncertain: [],
@@ -784,11 +784,11 @@ const ACTIONS: Record<string, () => Promise<void>> = {
   "3.3": async () => {
     const crm = st.crm!;
     const view = await crm.read<Row>("read_view");
-    const zones = safe(() => itemsOf(view.zones), [] as Row[]);
-    st.zone = zones.length > 0 ? String(zones[0]!.id) : "A";
-    await act(crm, "open_group", { id: st.zone });
-    // The cube spends about three seconds turning its records into the grid, and the tool says so;
-    // the beat's settle is that number, from the script.
+    const databases = safe(() => itemsOf(view.databases), [] as Row[]);
+    st.database = databases.length > 0 ? String(databases[0]!.id) : "billing";
+    await act(crm, "open_group", { id: st.database });
+    // Round 2: the four lettered zones are nine named databases, and the arrival is about 1.2s
+    // rather than about three. The wait is still the script's settle for this beat, with room.
     await page.waitForTimeout(2_900);
   },
 
@@ -807,7 +807,7 @@ const ACTIONS: Record<string, () => Promise<void>> = {
     const block =
       blocks.find((row) => String(row.domain ?? "").toLowerCase() === st.pinegroveDomain) ?? blocks[0];
     if (block) {
-      await act(crm, "open_item", { id: String(block.ident ?? block.id), group: String(block.zone ?? st.zone) });
+      await act(crm, "open_item", { id: String(block.ident ?? block.id), group: String(block.database ?? st.database) });
     }
     await strip.call(
       "open_item",
@@ -1359,9 +1359,9 @@ const ACTIONS: Record<string, () => Promise<void>> = {
   C2: async () => {
     const crm = st.crm!;
     const view = await crm.read<Row>("read_view");
-    const zones = safe(() => itemsOf(view.zones), [] as Row[]);
-    st.zone = zones.length > 0 ? String(zones[0]!.id) : "A";
-    await act(crm, "open_group", { id: st.zone });
+    const databases = safe(() => itemsOf(view.databases), [] as Row[]);
+    st.database = databases.length > 0 ? String(databases[0]!.id) : "billing";
+    await act(crm, "open_group", { id: st.database });
     // The cube spends about three seconds turning its records into the grid; the beat's settle is
     // that number, from the script.
     await page.waitForTimeout(3_000);
@@ -1378,7 +1378,7 @@ const ACTIONS: Record<string, () => Promise<void>> = {
     const blocks = itemsOf(await crm.read<Row>("search_blocks", { text: st.pinegroveDomain }));
     const block = blocks.find((row) => String(row.domain ?? "").toLowerCase() === st.pinegroveDomain) ?? blocks[0];
     if (block) {
-      await act(crm, "open_item", { id: String(block.ident ?? block.id), group: String(block.zone ?? st.zone) });
+      await act(crm, "open_item", { id: String(block.ident ?? block.id), group: String(block.database ?? st.database) });
       await strip.call(
         "open_item",
         `${st.pinegroveDomain} · ${conflict.spellings(pinegrove!).length} spellings, including ${PINEGROVE_ALIAS.crm}`,

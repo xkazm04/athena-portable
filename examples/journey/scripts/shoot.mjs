@@ -56,12 +56,12 @@ await page.waitForTimeout(2500);
 await shot("tidycrm-L0");
 await call("show_breakdown", { open: true });
 await shot("tidycrm-L0-breakdown");
-await call("open_group", { id: "A" });
+await call("open_group", { id: "billing" });
 await page.waitForTimeout(3500);
 await shot("tidycrm-L1");
-const blocks = JSON.parse(await call("search_blocks", { zone: "A" }));
+const blocks = JSON.parse(await call("search_blocks", { database: "billing" }));
 const ident = blocks.items[0].id ?? blocks.items[0].ident;
-await call("open_item", { id: ident, group: "A" });
+await call("open_item", { id: ident, group: "billing" });
 await page.waitForTimeout(1500);
 await shot("tidycrm-L2");
 

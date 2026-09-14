@@ -1,40 +1,50 @@
 "use client";
 
 /**
- * L1 — one zone, built out of the dots the cube just put down.
+ * L1 — one database's tables, built out of the dots the picture just put down.
  *
- * WHAT THIS IS. Not a page that replaces the cube: the same twelve clusters,
- * carried out of the canvas and into the DOM without moving, and then walked
- * from there to where a reader can use them. The cube flattens its records into
- * a small plate of clusters in the middle of the frame; this level draws those
- * same clusters, at that same size, in those same places, and only then spreads
- * them across the sheet and grows the parts a block has at this depth.
+ * WHAT THIS IS. Not a page that replaces the L0 picture: the same five or six
+ * clusters, carried out of it and into the DOM without moving, and then walked
+ * from there to where a reader can use them. L0 flattens the database's tables
+ * into a small plate of clusters in the middle of the frame; this level draws
+ * those same clusters, at that same size, in those same places, and only then
+ * spreads them across the sheet and grows the parts a table has at this depth.
  *
  * THE FOUR BEATS, and why each one exists:
  *
- *   land    the cells are rendered and immediately pushed onto the canvas's own
- *           clusters — measured, not guessed — carrying nothing but their dots.
- *           The canvas fades out underneath them and nothing appears to happen,
- *           which is the point: the hand-off has to be invisible.
- *   spread  the transforms are dropped. Each block travels from the plate to
- *           its place in the grid, staggered, so twelve blocks read as twelve
- *           things moving rather than one block of content sliding.
+ *   land    the cells are rendered and immediately pushed onto the plane the
+ *           picture published — measured, not guessed — carrying nothing but
+ *           their dots. The picture fades out underneath them and nothing
+ *           appears to happen, which is the point: the hand-off has to be
+ *           invisible.
+ *   spread  the transforms are dropped. Each table travels from the plane to
+ *           its place in the grid, staggered, so six tables read as six things
+ *           moving rather than one block of content sliding.
  *   dress   each cell grows its ground and its rule, then its name and its
- *           figures, and the zone's own heading arrives last.
- *   settled an ordinary grid of blocks, with nothing left animating.
+ *           figures, and the database's own heading arrives last.
+ *   settled an ordinary grid of tables, with nothing left animating.
  *
- * A cell is therefore not a card containing a chart. It is the block itself, at
+ * A cell is therefore not a card containing a chart. It is the table itself, at
  * the depth where its name and its counts are finally worth printing.
+ *
+ * ARROW KEYS, which round 1's review named as missing. The grid is ONE tab stop
+ * with a roving tabindex: left and right step a cell, up and down step a row,
+ * Home and End go to the ends, and nothing wraps off the edge. Where the step
+ * goes is `model/keys.ts`, shared with the plate prototype, because two grids
+ * owing the reader two different answers is how a keyboard reader learns not to
+ * trust either.
  */
-import { useRef, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { motion } from "motion/react";
 
 import {
   FLAT_COLS,
+  gridStep,
+  type BkDatabase,
   type BkSheet,
   type BkTable,
-  type BkZone,
 } from "./model";
+import type { InkHold } from "./Blocks";
 import { Cluster } from "./Cluster";
 import { Stat, Stats } from "./Stat";
 import { FieldHead } from "./field/Head";
@@ -56,7 +66,7 @@ function toneOf(table: BkTable): "goldline" | "redline" | "greenline" {
  *
  * `layoutId` makes motion the owner of an element's `transform`, and it writes
  * that inline — which beats any stylesheet. While the cells are being placed on
- * the canvas's clusters the transform belongs to the arrival, so the ids are
+ * the picture's plane the transform belongs to the arrival, so the ids are
  * withheld until the grid is settled. Nothing is lost: the ids exist for the
  * L1 -> L2 morph, which can only start from the settled grid anyway.
  *
@@ -75,35 +85,62 @@ function toneOf(table: BkTable): "goldline" | "redline" | "greenline" {
  */
 export function Field({
   sheet,
-  zone,
+  database,
   phase,
+  ink,
   onOpenTable,
-  onOpenZone,
+  onOpenDatabase,
 }: {
   sheet: BkSheet;
-  zone: BkZone;
+  database: BkDatabase;
   phase: FieldPhase;
+  /** Which cell is holding its lettering back while its box travels. */
+  ink: InkHold | null;
   onOpenTable: (ident: string) => void;
-  onOpenZone: (id: string) => void;
+  onOpenDatabase: (id: string) => void;
 }) {
   const cellsRef = useRef<HTMLDivElement | null>(null);
   const settled = phase === "settled";
+  /*
+   * The roving stop, carried WITH the database it belongs to rather than reset
+   * by an effect when the database changes. Derived, so a jump to another
+   * database lands on its first cell in the same render that draws it — an
+   * effect would have painted one frame with a stop pointing into a grid that
+   * no longer exists.
+   */
+  const [roving, setRoving] = useState<{ db: string; at: number }>({ db: database.id, at: 0 });
+  const at = roving.db === database.id ? roving.at : 0;
+  const rove = (next: number) => setRoving({ db: database.id, at: next });
 
-  // Beat one of the arrival: measure where the canvas left each block's dots
+  // Beat one of the arrival: measure where the picture left each table's dots
   // and start every cell exactly there. See `field/useLanding.ts`.
-  useLanding(cellsRef, phase, zone.tables.length);
+  useLanding(cellsRef, phase, database.tables.length);
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const next = gridStep(event.key, at, database.tables.length, FLAT_COLS);
+    if (next === null) return;
+    event.preventDefault();
+    rove(next);
+    const ident = database.tables[next]?.ident;
+    if (ident) {
+      cellsRef.current?.querySelector<HTMLElement>(`.bk-cell[data-ident="${ident}"]`)?.focus();
+    }
+  };
 
   return (
     <section className="bk-grid" data-phase={phase}>
-      <FieldHead sheet={sheet} zone={zone} onOpenZone={onOpenZone} />
+      <FieldHead sheet={sheet} database={database} onOpenDatabase={onOpenDatabase} />
 
       <div
         className="bk-cells"
         ref={cellsRef}
         data-phase={phase}
+        role="group"
+        aria-label={`Tables in ${database.name}`}
+        onKeyDown={onKeyDown}
         style={{ "--cols": FLAT_COLS } as CSSProperties}
       >
-        {zone.tables.map((table, i) => (
+        {database.tables.map((table, i) => (
           <motion.button
             key={settled ? table.ident : `${table.ident}:arriving`}
             type="button"
@@ -114,7 +151,15 @@ export function Field({
                nothing on the sheet had focus. See `Dossier.tsx`. */
             data-ident={table.ident}
             data-tone={toneOf(table)}
+            /* THE INK WAITS FOR THE BOX. `gone` while the box is out at the
+               dossier, `after-box` while it comes home; the stylesheet owns
+               both. See the note in `Blocks.tsx`. */
+            data-ink={
+              ink?.ident === table.ident ? (ink.phase === "out" ? "gone" : "after-box") : undefined
+            }
+            tabIndex={i === at ? 0 : -1}
             style={{ "--i": i } as CSSProperties}
+            onFocus={() => rove(i)}
             onClick={() => onOpenTable(table.ident)}
             aria-label={`Open ${table.ident}, ${table.name}. ${table.why}`}
           >
@@ -143,7 +188,7 @@ export function Field({
 
               {/*
                 * `deviations`, not `errors`. Nothing on this sheet is an error: a record deviates
-                * from a specification, and that is the word the plate, the zone head and the
+                * from a specification, and that is the word the plate, the database head and the
                 * dossier all use for the same figure.
                 */}
               <Stats className="bk-tile-figures">

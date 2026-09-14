@@ -15,7 +15,7 @@
  * that the reading may be MOVED and not deleted — it is still on the surface, still visible
  * without interaction, still counted from the live registrations rather than typed.
  */
-import { DEVIATION_LABEL, type BkSheet, type BkTable, type BkZone, type DeviationKind } from "../model";
+import { DEVIATION_LABEL, type BkDatabase, type BkSheet, type BkTable, type DeviationKind } from "../model";
 import { presenceLine, useAthenaPresence } from "../presence";
 
 const KIND_ORDER: DeviationKind[] = ["duplicate", "conflict", "phone", "stale"];
@@ -34,14 +34,14 @@ function markTone(kind: DeviationKind, count: number): "redline" | "goldline" | 
 
 export function SheetFoot({
   sheet,
-  zone,
+  database,
   table,
   level,
   showKinds,
   nav,
 }: {
   sheet: BkSheet;
-  zone: BkZone | undefined;
+  database: BkDatabase | undefined;
   table: BkTable | undefined;
   level: number;
   /**
@@ -63,14 +63,14 @@ export function SheetFoot({
         <span className="bk-crumb">
           <b>The plate</b>
           <i>
-            {sheet.tableCount} blocks · {sheet.records} records
+            {sheet.databases.length} databases · {sheet.tableCount} tables · {sheet.records} records
           </i>
         </span>
-        {zone ? (
+        {database ? (
           <span className="bk-crumb">
-            <b>Zone {zone.id}</b>
+            <b>{database.name}</b>
             <i>
-              {zone.tables.length} blocks · {zone.span}
+              {database.tables.length} tables · {database.span}
             </i>
           </span>
         ) : null}
@@ -94,7 +94,7 @@ export function SheetFoot({
         */}
       <div className="bk-legend">
         <span data-tone="ink">
-          <i /> one dot is one record, carrying nothing outstanding
+          <i /> one dot is one {level === 0 ? "table" : "record"}, carrying nothing outstanding
         </span>
         <span data-tone="redline">
           <i /> deviates from the specification; a rule can repair it
@@ -102,11 +102,15 @@ export function SheetFoot({
         <span data-tone="goldline">
           <i /> stands in an identity pair no rule may resolve
         </span>
-        {level >= 1 ? (
+        {level === 0 ? (
           <span data-tone="ink" className="bk-legend-edge">
-            <i /> a block&rsquo;s inner edge carries the strongest claim on it
+            <i /> a cell is washed red when any table inside it is outstanding
           </span>
-        ) : null}
+        ) : (
+          <span data-tone="ink" className="bk-legend-edge">
+            <i /> a table&rsquo;s inner edge carries the strongest claim on it
+          </span>
+        )}
         <span className="bk-presence" data-on={presence.bridged}>
           {presenceLine(presence)}
         </span>

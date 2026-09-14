@@ -27,7 +27,7 @@
 /*
  * The phone. What this block exists to prevent is the sheet's numbers pushing
  * the plate off the screen: six figures at one per line and a level rail whose
- * three labels each wrapped to two put the cube 745px down the page, which on a
+ * three labels each wrapped to two put the picture 745px down the page, which on a
  * 390-wide phone means the subject of the direction is not on it.
  */
 @container bk-sheet (max-width: 34rem) {
@@ -83,12 +83,12 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .bk-zone-strip {
+  .bk-db-strip {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .bk-zone-jump {
+  .bk-db-jump {
     justify-content: space-between;
   }
 

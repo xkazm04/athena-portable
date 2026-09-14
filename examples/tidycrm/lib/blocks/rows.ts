@@ -11,12 +11,7 @@ import "server-only";
 import { STALE_MONTHS } from "../constants";
 import { displayName } from "../db";
 import type { Contact } from "../types";
-import {
-  ZONE_IDS,
-  type BkRow,
-  type DeviationKind,
-  type ZoneId,
-} from "@/components/blocks/model";
+import { type BkRow, type DeviationKind } from "@/components/blocks/model";
 
 /** A record is checked when it carries no outstanding deviation. Stored flags only. */
 export function isChecked(c: Contact): boolean {
@@ -64,11 +59,4 @@ export function toRow(c: Contact, changed: Record<string, number>): BkRow {
     inOpenPair: c.in_open_pair === 1,
     changed: changed[c.id] ?? 0,
   };
-}
-
-/** Which zone letter a block lands in, from its position in the ident order. */
-export function zoneFor(index: number, total: number): ZoneId {
-  const per = Math.ceil(total / ZONE_IDS.length);
-  const slot = Math.min(ZONE_IDS.length - 1, Math.floor(index / per));
-  return ZONE_IDS[slot] ?? "D";
 }

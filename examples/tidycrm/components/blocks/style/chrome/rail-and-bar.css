@@ -57,7 +57,7 @@
 /*
  * THE CHIP — one small standing fact in a box, and the only shape this direction gives one.
  *
- * Three places make chips: the breakdown under the bar, the zone strip at L1, and the pair picker
+ * Three places make chips: the breakdown under the bar, the database strip at L1, and the pair picker
  * in the dossier. They were three different things — a bare monospace line, a bordered button, and
  * a bordered button in another face. The box is declared once here; what follows it in
  * level1/l1-grid.css adds only what a chip that is also a 44px TARGET needs.

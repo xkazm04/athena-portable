@@ -16,7 +16,7 @@ const { deleteContacts } = await import("../lib/mutations");
 const { buildSheet } = await import("../lib/blocks");
 
 const DOMAIN = "verdant-supply.example";
-const blocks = () => buildSheet().zones.flatMap((z) => z.tables);
+const blocks = () => buildSheet().databases.flatMap((d) => d.tables);
 
 test("a conflict deviation counts spellings, which is what its clause says", () => {
   for (const block of blocks()) {

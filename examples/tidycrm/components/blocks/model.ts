@@ -1,5 +1,5 @@
 /**
- * `blocks` — the view model of The Blocks, in six parts and one door.
+ * `blocks` — the view model of The Blocks, in seven parts and one door.
  *
  * Client-safe: types and pure functions only, no `lib/db` import. The server
  * builds one `BkSheet` per request in `lib/blocks.ts`.
@@ -7,31 +7,34 @@
  * THE VOCABULARY. the `law` direction established that a **block** is one email domain:
  * the natural cohort in this schema, the column `contacts_domain` is indexed
  * on, and the unit a company-name conflict is a deviation *within*. This
- * direction keeps that and adds one level above it. A **zone** is a lettered
- * region of the survey sheet holding roughly a dozen blocks — the same A/B/C/D
- * grid a real general-arrangement drawing carries down its border, so a block
- * can be referred to by where it sits as well as by what it is called.
+ * direction keeps that and adds one level above it. Round 1 called that level a
+ * **zone** — a lettered quarter of a drawing border, holding a size band of the
+ * blocks. Round 2 replaces it with a **database**: one of nine places the studio
+ * actually keeps rows, owning four to seven blocks each, which on the surface
+ * are called its **tables**.
  *
- * WHY ZONES BY MAGNITUDE. Blocks are already identified `BLK-01` upward by
- * descending record count, so contiguous slices of that order are size bands:
- * zone A holds the largest domains, D the smallest. That matters for reading
- * the sheet, because six deviations in a forty-record block and six in a
- * five-record block are not the same problem, and a grouping by defect KIND
- * would have made every dot in a zone red and thrown the per-block signal away.
+ * WHY THE ZONES WENT. A zone was a slice of the ident order, and the ident order
+ * is descending record count, so a zone was a size band. That is a true fact
+ * about the sheet and a useless one to act on: the product owner's review asked
+ * L0 to answer "which database is in fault, and how many tables does it hold",
+ * and a size band answers neither. The mapping that replaced it, and the nine
+ * names, are `./model/databases.ts`.
  *
  * This file is the door. Everything importing `./model` keeps working, and the
- * six parts behind it can each be read in one sitting:
+ * seven parts behind it can each be read in one sitting:
  *
  *   deviations  the four kinds, and the three states a record can be in
  *   rows        one contact, and one unadjudicated identity pair
  *   tables      one block
- *   zones       a quarter of the sheet, and the sheet itself
- *   flatten     the plane the cube becomes, and the camera looking at it
+ *   databases   the nine, where they sit, which blocks they own, and the sheet
+ *   flatten     the plane the picture becomes, and the camera looking at it
+ *   keys        where an arrow key moves inside a grid of cells
  *   vocabulary  finding things by id, and what a passing check says
  */
 export * from "./model/deviations";
 export * from "./model/rows";
 export * from "./model/tables";
-export * from "./model/zones";
+export * from "./model/databases";
 export * from "./model/flatten";
+export * from "./model/keys";
 export * from "./model/vocabulary";

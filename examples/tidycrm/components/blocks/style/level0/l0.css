@@ -1,0 +1,588 @@
+/* ==================================================================== L0 */
+
+/*
+ * L0 — the whole population, in whichever of the three prototypes is chosen.
+ *
+ * This part owns the FRAME and the PLATE prototype. The two WebGL prototypes are
+ * a canvas and a published plane, and both are here too because there are only
+ * four rules between them; everything else about them is in `three`.
+ *
+ * WHAT ROUND 2 REPLACED. Round 1's L0 was one WebGL cube quartered into four
+ * lettered zones, with 800 record dots inside it and a four-key rail beside it.
+ * The product owner's review asked for nine databases, a cell filled by state,
+ * one dot per table, and a picture that does not need a mouse drag. Those rules
+ * are gone from `base/reduced-motion*.css` (where the cut that made those files
+ * had left them) and this is what stands in their place.
+ */
+
+/* The picture holds its flattened pose under the arriving cells, then leaves
+   before they start moving away from it. */
+.bk-l0-hold {
+  transition: opacity var(--bk-dur-3) var(--bk-ease);
+}
+
+.bk-l0-hold[data-out="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bk-l0 {
+  display: grid;
+  gap: var(--bk-s4);
+  align-content: start;
+}
+
+.bk-l0-body {
+  display: grid;
+  gap: var(--bk-s4);
+}
+
+/* ---------------------------------------------------------- the switcher */
+
+/*
+ * TEMPORARY FURNITURE. Three prototypes are on the page so the owner can
+ * compare them; two will be deleted and this row goes with them. It is drawn as
+ * a ruled strip above the picture rather than as part of the sheet's own
+ * instrument, because it is a question about the drawing and not a reading of
+ * the survey.
+ */
+.bk-l0-switch {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--bk-s3);
+  padding-block-end: var(--bk-s2);
+  border-block-end: var(--bk-rule-1) dashed var(--bk-rule-ink);
+}
+
+.bk-l0-switch-label,
+.bk-pose-label {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-label-size);
+  letter-spacing: var(--bk-track-label);
+  color: var(--bk-label-ink);
+}
+
+.bk-l0-switch-note,
+.bk-pose-note {
+  margin: 0;
+  font-family: var(--bk-font-note);
+  font-size: var(--bk-text-xs);
+  line-height: var(--bk-leading-normal);
+  color: var(--bk-graphite-2);
+}
+
+/* One choice with three answers, drawn as one ruled box divided by rules. */
+.bk-seg {
+  display: inline-flex;
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-radius: var(--bk-radius-0);
+  background: var(--bk-sheet);
+}
+
+.bk-seg-option {
+  min-block-size: var(--bk-s7);
+  padding-inline: var(--bk-s3);
+  background: none;
+  border: 0;
+  border-inline-start: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-radius: var(--bk-radius-0);
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-xs);
+  color: var(--bk-graphite-2);
+  cursor: pointer;
+  transition:
+    background-color var(--bk-dur-2) var(--bk-ease),
+    color var(--bk-dur-2) var(--bk-ease);
+}
+
+.bk-seg-option:first-child {
+  border-inline-start: 0;
+}
+
+.bk-seg-option:hover {
+  background: var(--bk-vellum);
+  color: var(--bk-graphite);
+}
+
+.bk-seg-option[aria-checked="true"] {
+  background: var(--bk-graphite);
+  color: var(--bk-sheet);
+}
+
+/* ------------------------------------------------------------- the plane */
+
+/*
+ * THE PLANE EVERY VARIANT PUBLISHES.
+ *
+ * An inert box at the rectangle this prototype's picture flattens into, which
+ * `field/useLanding.ts` measures whichever one is mounted. `visibility: hidden`
+ * rather than `display: none`, because a box with no layout has no rectangle to
+ * measure — it is the measurement that has to exist here, not the paint.
+ */
+.bk-l0-plane {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  pointer-events: none;
+  visibility: hidden;
+  aspect-ratio: var(--plane-ar, 1);
+}
+
+/* ----------------------------------------------------- the WebGL variants */
+
+.bk-l0-scene {
+  display: grid;
+  gap: var(--bk-s3);
+}
+
+.bk-l0-canvas {
+  position: relative;
+  min-block-size: clamp(300px, 34cqi, 440px);
+  /* The paper the picture is drawn on: a faint tooth, and a vignette so the
+     field falls off into the sheet rather than stopping at a hard border. The
+     lift is the ramp's second declared deviation, named in base/tokens.css so
+     the lock's list is the whole list. */
+  background:
+    radial-gradient(70% 60% at 50% 45%, var(--bk-plate-lift) 0%, transparent 70%),
+    var(--bk-sheet);
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  /* Not `grab`: nothing here is draggable, which is the review's finding acted
+     on rather than apologised for. */
+  cursor: default;
+}
+
+.bk-l0[data-hover="true"] .bk-l0-canvas {
+  cursor: pointer;
+}
+
+.bk-l0-canvas canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/* The plane, in a canvas this camera drew: `--plane-h` of its height, at the
+   plane's own proportions. Both numbers come from `model/flatten.ts`. */
+.bk-l0-canvas .bk-l0-plane {
+  block-size: calc(var(--plane-h, 0.5) * 100%);
+}
+
+.bk-pose {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--bk-s3);
+}
+
+/* ------------------------------------------------------- the plate variant */
+
+.bk-plate-wrap {
+  container-type: inline-size;
+}
+
+/*
+ * THE TILT, and the only 3D on this prototype.
+ *
+ * Two custom properties written straight onto the node by a pointer move, and a
+ * `rotate3d` that reads them. The angle is small on purpose: enough that the
+ * plate reads as a plate seen from slightly above, never enough that a tile's
+ * lettering has to be read at an angle.
+ */
+.bk-plate-stage {
+  position: relative;
+  perspective: var(--bk-perspective);
+  padding-block: var(--bk-s4);
+}
+
+.bk-plate-stage .bk-l0-plane {
+  /* Half the plate's width. Larger, and the tile's dots arrive at the size of
+     saucers before the L1 clusters take over; smaller, and the arrival has
+     nowhere to travel from. */
+  inline-size: 52%;
+}
+
+.bk-plate {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bk-s3);
+  transform: rotateX(calc(var(--tilt-x, 0) * var(--bk-tilt)))
+    rotateY(calc(var(--tilt-y, 0) * var(--bk-tilt)));
+  transform-style: preserve-3d;
+  transition: transform var(--bk-dur-3) var(--bk-ease);
+}
+
+.bk-plate-tile {
+  display: grid;
+  gap: var(--bk-s2);
+  padding: var(--bk-s3);
+  background: var(--bk-sheet);
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-inline-start: var(--bk-rule-3) solid var(--bk-rule-ink);
+  border-radius: var(--bk-radius-0);
+  text-align: start;
+  cursor: pointer;
+  /* The pivot is the dot field's own centre, written in by the measurement, so
+     the tile scales around its dots rather than around its corner. */
+  transform-origin: var(--ox, 50%) var(--oy, 50%);
+  /* `--w` is `weightOf` in `l0/contract.ts`: 1 for the cell being read, a step
+     back for its neighbours. The floor keeps a stepped-back cell legible enough
+     to choose, which is the whole reason it is not simply hidden. */
+  opacity: calc(0.45 + 0.55 * var(--w, 1));
+  transition:
+    transform var(--bk-beat-flatten) var(--bk-ease-in),
+    opacity var(--bk-dur-3) var(--bk-ease),
+    background-color var(--bk-dur-2) var(--bk-ease),
+    border-color var(--bk-dur-2) var(--bk-ease);
+}
+
+/*
+ * THE FILL IS THE STATE, and the STRENGTH is the share.
+ *
+ * The review asked for "discoloured when no error, subtle red if error inside".
+ * The state is exactly that and a database with nothing outstanding carries no
+ * red at all — but every one of the nine in this seed has a table in fault, so a
+ * flat red would have painted nine identical tiles. The wash is therefore laid
+ * over the ground as its own layer at an opacity that is the database's share of
+ * the worst one's outstanding work, which ranks the nine without asking anyone
+ * to read nine numbers. Subtle at its strongest, because redline on this sheet
+ * is a mark on a RECORD and a database drawn in full redline would drown the
+ * dots that carry the actual finding.
+ */
+.bk-plate-tile {
+  position: relative;
+  background: color-mix(in srgb, var(--bk-vellum) 55%, var(--bk-sheet));
+}
+
+.bk-plate-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bk-redline);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--bk-dur-3) var(--bk-ease);
+}
+
+.bk-plate-tile[data-fill="fault"]::before {
+  opacity: calc(0.03 + 0.13 * var(--fault, 0));
+}
+
+.bk-plate-tile[data-fill="fault"] {
+  border-inline-start-color: var(--bk-redline);
+}
+
+/* The wash is a layer, so everything the tile prints has to stand above it. */
+.bk-plate-tile > * {
+  position: relative;
+}
+
+/* HOVER AND FOCUS LIFT THE CELL, which is the other half of the read-out: the
+   caption says what it is, and the plate says which one it is. */
+.bk-plate-tile:hover,
+.bk-plate-tile:focus-visible {
+  border-color: var(--bk-graphite);
+  transform: translateZ(var(--bk-s4));
+}
+
+.bk-plate-name {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-text-md);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-tight);
+  line-height: var(--bk-leading-snug);
+  color: var(--bk-graphite);
+}
+
+/*
+ * THE DOT FIELD, at the plane's own proportions and in the plane's own column
+ * count. That is what makes opening a database a single transform: the field is
+ * already a scaled copy of the plane the L1 cells are about to be measured onto,
+ * so putting it on the plane puts every dot on its cluster centre.
+ */
+.bk-plate-field {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  place-items: center;
+  /* A FIXED box at the plane's proportions rather than one that fills the tile.
+     Filling it made a tile four hundred pixels tall and put the third row of
+     the plate below the fold, which is the one thing L0 may not do. The height
+     is on the spacing scale and the width follows from the plane's ratio, so the
+     flatten is still a single uniform scale. */
+  block-size: var(--bk-s8);
+  inline-size: calc(var(--bk-s8) * var(--plane-ar, 1));
+  /* Left, with the name and the figures. Centred, the dots were the one part of
+     the tile not on the same edge as everything else on it. */
+  justify-self: start;
+}
+
+.bk-plate-dot {
+  inline-size: var(--bk-s3);
+  block-size: var(--bk-s3);
+  border-radius: 50%;
+  background: var(--bk-graphite);
+  /* The size is the table's outstanding work against the worst table's; the
+     colour is the kind of claim on it. See `L0Dot` in `l0/contract.ts`. */
+  scale: var(--dot, 1);
+}
+
+.bk-plate-dot[data-mark="1"] {
+  background: var(--bk-redline);
+}
+
+.bk-plate-dot[data-mark="2"] {
+  background: var(--bk-goldline);
+}
+
+.bk-plate-figs {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--bk-s0) var(--bk-s2);
+}
+
+.bk-plate-figs b {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--bk-graphite);
+}
+
+.bk-plate-figs b[data-tone="redline"] {
+  color: var(--bk-redline);
+}
+
+.bk-plate-figs span {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-label-size);
+  letter-spacing: var(--bk-track-label);
+  color: var(--bk-label-ink);
+}
+
+.bk-plate-flag {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-label-size);
+  letter-spacing: var(--bk-track-label);
+  color: var(--bk-goldline);
+}
+
+/*
+ * THE FLATTEN, in one transform on one element.
+ *
+ * The eight tiles that are not being opened fade out; the ninth travels onto the
+ * published plane and takes its dots with it. Its own lettering leaves first, so
+ * what crosses the sheet is a field of dots and not a card being thrown.
+ */
+.bk-plate-stage[data-opening]:not([data-opening=""]) .bk-plate-tile {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Written at the same weight as the rule above it, on purpose: the fade-out
+   selector carries three attribute and class steps, so a plain
+   `.bk-plate-tile[data-flying]` loses to it and the one tile that is supposed to
+   travel leaves with the other eight. */
+.bk-plate-stage[data-opening]:not([data-opening=""]) .bk-plate-tile[data-flying="true"] {
+  opacity: 1;
+  z-index: 2;
+  background: transparent;
+  border-color: transparent;
+  transform: translate(var(--fx, 0px), var(--fy, 0px)) scale(var(--fs, 1));
+}
+
+.bk-plate-tile[data-flying="true"]::before {
+  opacity: 0;
+}
+
+.bk-plate-tile[data-flying="true"] .bk-plate-name,
+.bk-plate-tile[data-flying="true"] .bk-plate-figs,
+.bk-plate-tile[data-flying="true"] .bk-plate-flag {
+  opacity: 0;
+  transition: opacity var(--bk-dur-2) var(--bk-ease);
+}
+
+/* ------------------------------------------------------------ the legend */
+
+/*
+ * The nine-database legend. Three across rather than a rail down the side: nine
+ * keys in a 20rem column is nine hundred pixels of list beside a picture that is
+ * five hundred tall, which puts the survey's own figures below the fold.
+ */
+.bk-db-keys {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--bk-s2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bk-db-key {
+  display: grid;
+  gap: var(--bk-s1);
+  inline-size: 100%;
+  padding: var(--bk-s3);
+  background: none;
+  border: var(--bk-rule-1) solid var(--bk-rule-ink);
+  border-inline-start: var(--bk-rule-3) solid var(--bk-rule-ink);
+  border-radius: var(--bk-radius-0);
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color var(--bk-dur-2) var(--bk-ease),
+    background-color var(--bk-dur-2) var(--bk-ease);
+}
+
+.bk-db-key[data-fill="fault"] {
+  border-inline-start-color: var(--bk-redline);
+}
+
+.bk-db-key:hover,
+.bk-db-key[data-on="true"] {
+  border-color: var(--bk-graphite);
+  background: var(--bk-vellum);
+}
+
+.bk-db-key-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--bk-s2);
+}
+
+/* Nine squares, one filled: where this database sits in the picture. */
+.bk-db-index {
+  inline-size: 15px;
+  block-size: 15px;
+  flex: none;
+}
+
+.bk-db-index-box {
+  fill: none;
+  /* 3:1 against the sheet, which is the floor for a graphic that carries
+     meaning. */
+  stroke: var(--bk-graphite-3);
+  stroke-width: 1;
+}
+
+.bk-db-index-on {
+  fill: var(--bk-graphite-3);
+  stroke: none;
+  transition: fill var(--bk-dur-2) var(--bk-ease);
+}
+
+.bk-db-key:hover .bk-db-index-on,
+.bk-db-key[data-on="true"] .bk-db-index-on {
+  fill: var(--bk-graphite);
+}
+
+.bk-db-key-name {
+  font-family: var(--bk-font-fig);
+  font-size: var(--bk-text-sm);
+  font-weight: 500;
+  letter-spacing: var(--bk-track-tight);
+  line-height: var(--bk-leading-snug);
+  color: var(--bk-graphite);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bk-db-key-span {
+  font-family: var(--bk-font-draft);
+  font-size: var(--bk-label-size);
+  letter-spacing: var(--bk-track-label);
+  line-height: 1.3;
+  color: var(--bk-label-ink);
+}
+
+.bk-db-key-figures {
+  margin-block-start: var(--bk-s1);
+}
+
+/* The drawn measure: this database's outstanding work against the worst one's. */
+.bk-db-key-measure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  block-size: var(--bk-rule-2);
+  background: var(--bk-rule-ink);
+}
+
+/* Scaled, not sized: `calc()` percentage math is banned by DESIGN §6, and a
+   transform is the one thing this app is allowed to animate anyway. */
+.bk-db-key-measure i {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  background: var(--bk-graphite-2);
+  transform: scaleX(var(--of, 0));
+  transform-origin: left center;
+  transition: background var(--bk-dur-2) var(--bk-ease);
+}
+
+.bk-db-key:hover .bk-db-key-measure i,
+.bk-db-key[data-on="true"] .bk-db-key-measure i {
+  background: var(--bk-graphite);
+}
+
+.bk-db-key[data-fill="fault"] .bk-db-key-measure i {
+  background: var(--bk-redline);
+}
+
+/* While a database is opening, the legend is no longer the subject: the keys
+   step back so the flatten is the only thing moving. They stay readable, and
+   live, because a reader may change their mind mid-flatten. */
+.bk-l0 .bk-db-key {
+  opacity: 1;
+  transition: opacity var(--bk-dur-4) var(--bk-ease);
+}
+
+.bk-l0[data-opening]:not([data-opening=""]) .bk-db-key {
+  opacity: 0.62;
+}
+
+.bk-l0[data-opening]:not([data-opening=""]) .bk-db-key[data-on="true"] {
+  opacity: 1;
+}
+
+.bk-l0-caption {
+  margin: 0;
+  max-inline-size: var(--bk-measure-wide);
+  font-family: var(--bk-font-note);
+  font-size: var(--bk-text-sm);
+  line-height: var(--bk-leading-relaxed);
+  color: var(--bk-graphite-2);
+}
+
+/* ---------------------------------------------------------- responsive */
+
+@container bk-sheet (max-width: 62rem) {
+  .bk-db-keys {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bk-l0-switch,
+  .bk-pose {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .bk-l0-switch-note,
+  .bk-pose-note {
+    grid-column: 1 / -1;
+  }
+}
+
+@container bk-sheet (max-width: 34rem) {
+  .bk-db-keys {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The plate stays three across at every width. It is a drawing of a 3x3, and
+     the legend's index glyph says so; reflowing it to two columns would make
+     that index a lie on the one screen where a reader most needs it. */
+  .bk-plate-tile {
+    padding: var(--bk-s2);
+  }
+}

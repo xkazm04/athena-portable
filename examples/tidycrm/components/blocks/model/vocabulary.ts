@@ -1,5 +1,5 @@
 /**
- * Finding a zone or a block by id, and what a passing check says.
+ * Finding a database or a block by id, and what a passing check says.
  *
  * `CLEAR_CLAUSE` is the half of the check print that is easy to forget: a check
  * that only speaks when it fails cannot tell a reader the difference between
@@ -9,7 +9,7 @@
 
 import type { DeviationKind } from "./deviations";
 import type { BkTable } from "./tables";
-import type { BkSheet, BkZone } from "./zones";
+import type { BkDatabase, BkSheet } from "./databases";
 
 /* ------------------------------------------------------------- vocabulary */
 
@@ -22,10 +22,11 @@ import type { BkSheet, BkZone } from "./zones";
  * level rail prints, so an agent and a reader are talking about the same thing"
  * (demo-kit `webmcp/zoomTools.ts`) — and two declarations disagreed on the
  * third word, so a reader was told `One table` while an agent was told
- * `One block`. `table` is the model type's name (`BkTable`); `block` is the
- * reader's, everywhere.
+ * `One block`. Round 2 settles the pair the other way: a block inside a database
+ * is a TABLE, because that is what a database holds, and `BkTable` was always
+ * the model type's name for it.
  */
-export const BK_LEVELS = ["The plate", "One zone", "One block"] as const;
+export const BK_LEVELS = ["The plate", "One database", "One table"] as const;
 
 /**
  * The tone an OUTSTANDING count is drawn in.
@@ -40,14 +41,14 @@ export const BK_LEVELS = ["The plate", "One zone", "One block"] as const;
 export const outstandingTone = (n: number): "redline" | undefined =>
   n > 0 ? "redline" : undefined;
 
-export function zoneOf(sheet: BkSheet, id: string | null): BkZone | undefined {
-  return id ? sheet.zones.find((z) => z.id === id) : undefined;
+export function databaseOf(sheet: BkSheet, id: string | null): BkDatabase | undefined {
+  return id ? sheet.databases.find((d) => d.id === id) : undefined;
 }
 
 export function tableOf(sheet: BkSheet, id: string | null): BkTable | undefined {
   if (!id) return undefined;
-  for (const zone of sheet.zones) {
-    const hit = zone.tables.find((t) => t.ident === id);
+  for (const db of sheet.databases) {
+    const hit = db.tables.find((t) => t.ident === id);
     if (hit) return hit;
   }
   return undefined;

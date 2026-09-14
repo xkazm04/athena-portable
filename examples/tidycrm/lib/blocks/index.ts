@@ -2,7 +2,7 @@
  * Builds the one dataset The Blocks reads (design 4.6.4).
  *
  * Read once per request in a server module and handed down as plain props, so
- * moving from the sheet to a zone to a table is a transform and never a fetch.
+ * moving from the sheet to a database to a table is a transform and never a fetch.
  *
  * Everything here is derived from four exported queries — `segmentRows`,
  * `listOpenPairs`, `allDomainSpellings` and `revisionCounts` — plus the activity
@@ -12,8 +12,8 @@
  * pair's confidence is the sum of its rules' hand-set weights, not a prediction.
  *
  * What a single row looks like, and the sentence that says why it is marked,
- * lives in `blocks/rows.ts`. This file is the assembly: rows into blocks,
- * blocks into zones, zones into one sheet.
+ * lives in `blocks/rows.ts`. This file is the assembly: rows into tables,
+ * tables into the nine databases, databases into one sheet.
  */
 import "server-only";
 
@@ -27,10 +27,11 @@ import {
   segmentRows,
 } from "../db";
 import type { Contact, MergePair } from "../types";
-import { clauseFor, isChecked, toRow, zoneFor } from "./rows";
+import { clauseFor, isChecked, toRow } from "./rows";
 import { sheetTotals } from "./totals";
-import { buildZones } from "./zones";
+import { buildDatabases } from "./databases";
 import {
+  assignDatabases,
   DEVIATION_KINDS,
   PAIR_SAMPLE,
   RecordMark,
@@ -38,9 +39,9 @@ import {
   type BkPair,
   type BkSheet,
   type BkTable,
+  type DatabaseId,
   type Deviation,
   type DeviationKind,
-  type ZoneId,
 } from "@/components/blocks/model";
 
 export function buildSheet(): BkSheet {
@@ -71,12 +72,18 @@ export function buildSheet(): BkSheet {
   }
 
   // Idents are assigned by descending record count then domain, so BLK-07 names
-  // the same block on every machine and the zone letters are a size banding.
+  // the same block on every machine.
   const ordered = [...byDomain.entries()].sort(
     (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
   );
 
-  const tables: (BkTable & { zone: ZoneId })[] = ordered.map(([domain, members], index) => {
+  // Which of the nine databases owns each table. Assigned from the idents alone,
+  // by the pure rule in `model/databases.ts`, so the grouping is a function of
+  // the seed and not of anything this file decides on the way past.
+  const owner = assignDatabases(ordered.map((_, index) => identOf(index)));
+
+  const tables: (BkTable & { database: DatabaseId })[] = ordered.map(([domain, members], index) => {
+    const ident = identOf(index);
     const spelling = spellings[domain] ?? [];
     const name = spelling[0]?.company ?? members[0]?.company ?? domain;
     const sorted = [...members].sort(
@@ -136,8 +143,8 @@ export function buildSheet(): BkSheet {
     });
 
     return {
-      zone: zoneFor(index, ordered.length),
-      ident: `BLK-${String(index + 1).padStart(2, "0")}`,
+      database: owner[ident] ?? "billing",
+      ident,
       domain,
       name,
       records: sorted.length,
@@ -176,12 +183,17 @@ export function buildSheet(): BkSheet {
     };
   });
 
-  const zones = buildZones(tables);
+  const databases = buildDatabases(tables);
   // Both figures are the true totals; `shown` is what the capped list actually carried.
   return sheetTotals(
-    zones,
+    databases,
     tables,
     { total: countOpenPairs(), shown: openPairs.length },
     countActivity(),
   );
+}
+
+/** The block's own name, from its place in the ident order. */
+function identOf(index: number): string {
+  return `BLK-${String(index + 1).padStart(2, "0")}`;
 }

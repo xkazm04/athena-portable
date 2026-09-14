@@ -11,13 +11,13 @@ import "server-only";
 import {
   DEVIATION_KINDS,
   type BkSheet,
+  type BkDatabase,
   type BkTable,
-  type BkZone,
   type DeviationKind,
 } from "@/components/blocks/model";
 
 export function sheetTotals(
-  zones: BkZone[],
+  databases: BkDatabase[],
   tables: BkTable[],
   openPairs: { total: number; shown: number },
   revision: number,
@@ -34,7 +34,7 @@ export function sheetTotals(
   const checked = tables.reduce((n, t) => n + t.checked, 0);
 
   return {
-    zones,
+    databases,
     records,
     checked,
     coverage: records === 0 ? 1 : checked / records,

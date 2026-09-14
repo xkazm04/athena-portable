@@ -511,7 +511,7 @@ test("the demo journey: four acts, one studio, one record", async () => {
     assertClasses(crm, TIDYCRM);
 
     // Beat 2. Preview the phone normalisation, then run it on exactly what the preview named.
-    // `read_view` is the survey sheet — zones and blocks, not rows — so the ids come from the
+    // `read_view` is the survey sheet — databases and tables, not rows — so the ids come from the
     // record search, which is the read that answers with contacts.
     const ids = itemsOf(await crm.read<Row>("search_records", { text: "", limit: 500 }))
       .map((row) => safe(() => contact.id(row), ""))

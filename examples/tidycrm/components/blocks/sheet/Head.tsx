@@ -29,7 +29,8 @@ export function SheetHead({ sheet }: { sheet: BkSheet }) {
             {STUDIO.name} / tidycrm / check print / the blocks
           </p>
           <h1 className="bk-h1">
-            {sheet.tableCount} blocks, {sheet.records} records, read at three depths
+            {sheet.databases.length} databases, {sheet.tableCount} tables, {sheet.records} records,
+            read at three depths
           </h1>
         </div>
       </div>
@@ -49,7 +50,7 @@ export function SheetHead({ sheet }: { sheet: BkSheet }) {
         />
         <Stat
           value={sheet.clearTables}
-          label="blocks fully checked"
+          label="tables fully checked"
           tone={sheet.clearTables > 0 ? "greenline" : undefined}
         />
         <Stat value={sheet.changed} label="rows changed so far" />

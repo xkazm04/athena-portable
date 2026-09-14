@@ -63,9 +63,19 @@ one rule design 5.1 states and `annotationsFor` (demo-kit `webmcp`) emits: AUTO 
 | `undo(activity_id)` | **G** | false | `data` | Replays one reversible write backwards. Gated because the undo's own activity row is written `reversible: false`: an undo cannot itself be undone. |
 
 The sheet registers seven more of its own in `components/blocks/tools/` — `read_view`, `open_group`,
-`open_item`, `back`, `search_blocks`, `search_records`, `show_breakdown`. They look and move; none
-of them writes, and none collides with a name above. There are no readables: WebMCP has no separate
-readable channel, so what would have been ambient context is a read-only tool the agent asks for.
+`open_item`, `zoom_out`, `search_blocks`, `search_records`, `show_breakdown`. They look and move;
+none of them writes, and none collides with a name above. There are no readables: WebMCP has no
+separate readable channel, so what would have been ambient context is a read-only tool the agent
+asks for.
+
+**`open_group` takes a DATABASE id.** The survey used to be quartered into four lettered zones, so
+`open_group` took `A` to `D`; it now takes one of the nine database ids — `billing`, `crm-eu`,
+`crm-us`, `support`, `marketing`, `partners`, `events`, `archive`, `ops` — and `search_blocks` and
+`search_records` take `database` where they took `zone`. The tool NAMES and their AUTO/GATED classes
+are unchanged; what moved is the nouns the shared zoom layer builds its parameter descriptions from
+(`nouns: ["database", "table"]`), so `read_view` always lists the ids that are actually accepted and
+nothing has to be memorised from this file. The move is staged and `open_group` reports what it
+costs (about 1.2 s), so wait before reading the view.
 
 Every mutating action is a server action in `app/actions.ts`; each writes to the shared `activity`
 table, and each reversible one stores an undo payload that `applyUndo` in `lib/mutations.ts` knows
@@ -80,12 +90,23 @@ machine. `lib/seed-data.ts` builds it; `lib/db.ts` inserts it and indexes every 
 
 | | Count |
 |---|---|
+| Databases | 9, holding 4 to 7 tables each |
+| Tables (email domains) | 46 |
 | Contacts | 800 — 724 generated, 60 re-entries of them, 16 written down |
 | Near-duplicate pairs | 60 — 43 confident (≥ 0.80), 17 uncertain |
 | Non-E.164 phone numbers | 120 |
 | Stale (no activity in 18 months) | 135 |
 | Contacts on a conflicted company domain | 179, across exactly 10 domains |
 | Contacts on a client domain (the `clients` segment) | 254, across the registry's 15 companies |
+
+The nine databases are a grouping ABOVE the seed and change nothing inside it. A table is still one
+email domain; which database owns it is an FNV-1a hash of its ident (`BLK-01` upward) dealt
+round-robin into the nine, in `components/blocks/model/databases.ts`, so the assignment is the same
+on every machine and each database holds five or six of the 46. A hash rather than a slice of the
+ident order, because idents run by descending record count and a slice would have put the ten
+largest domains in one database. `test/databases.test.ts` asserts the regrouping against the
+database: same record ids, same pair ids and orientations, same ten conflicted domains including
+`pinegrove-collective.example` with its alias intact.
 
 The sixteen written down are the registry's fifteen billing contacts and `KESTREL_APPLICANT` — the
 people the sibling apps hold by name. They are copied verbatim (same name, title and address) and
@@ -104,11 +125,18 @@ away.
 
 ## Views
 
-One route. `/` is **The Blocks**: the survey read at three depths — the plate (one cube, one dot per
-record), one zone (its blocks as cells), one block (the dossier: the checks, the identity pair, and
-the two gated acts). `/api/export` is the only other route. The direction index that used to sit at
-`/v`, and the AG-UI chat proxy at `/api/athena/chat`, are both gone: a host app in this demo is a
-tab the user already has open, and Athena reaches it through the bridge.
+One route. `/` is **The Blocks**: the survey read at three depths — the plate (nine databases, one
+dot per table), one database (its tables as cells), one table (the dossier: the checks, the identity
+pair, and the two gated acts). `/api/export` is the only other route. The direction index that used
+to sit at `/v`, and the AG-UI chat proxy at `/api/athena/chat`, are both gone: a host app in this
+demo is a tab the user already has open, and Athena reaches it through the bridge.
+
+**L0 is three prototypes at once, for now.** A segmented switcher at the top of the plate offers
+`plate`, `slab` and `octants`; the choice is remembered in `localStorage` and reflected in the URL,
+so `/?l0=slab` opens straight into one. Only one mounts at a time. They draw the same nine databases
+from the same data and differ only in the picture — a 2.5D CSS plate that tilts under the pointer, a
+WebGL slab, and the round-1 cube split into eight octants and a core — and two of them will be
+deleted once the shape is chosen. `DESIGN.md` §1 says what each one is and what it costs.
 
 ## The design
 

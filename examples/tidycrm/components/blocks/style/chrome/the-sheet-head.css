@@ -24,10 +24,10 @@
 }
 
 /*
- * The second rank. A zone's heading and a block's heading are the same rank as
+ * The second rank. A database's heading and a table's heading are the same rank as
  * each other and one step below the sheet's own title — at every width, not
  * only on a phone. Two headings at one size is not a hierarchy: at L1 the sheet
- * title and the zone title sat one above the other at the same size and weight,
+ * title and the database title sat one above the other at the same size and weight,
  * leaving the rule between them to carry the whole distinction.
  */
 .bk-h2 {
@@ -92,7 +92,7 @@
  * THE FIGURE, AND ITS LABEL — the one stat, at one scale, everywhere.
  *
  * `.bk-stats` is the ARRANGEMENT and `.bk-stat` is the thing arranged. There were four
- * treatments of this before: the mast at --bk-text-md, the zone key at --bk-text-sm, the L1 cell
+ * treatments of this before: the mast at --bk-text-md, the legend key at --bk-text-sm, the L1 cell
  * at --bk-text-md again but with its own label rule, the dossier verdict at --bk-text-lg. The
  * three depths are supposed to read as one instrument asking one question of a smaller and
  * smaller part of the sheet, and four sizes said the opposite.
@@ -104,8 +104,8 @@
   gap: var(--bk-s5);
 }
 
-/* Two columns, for the arrangements that are a card rather than a row: the zone keys in a 20rem
-   rail. Fixed tracks, never a wrapping flex — with flex, zone D's shorter numbers folded two
+/* Two columns, for the arrangements that are a card rather than a row: the legend keys in a 20rem
+   rail. Fixed tracks, never a wrapping flex — with flex, a short database's numbers folded two
    lines into one and the four keys stopped reading as a column of the same thing. */
 .bk-stats-pair {
   display: grid;

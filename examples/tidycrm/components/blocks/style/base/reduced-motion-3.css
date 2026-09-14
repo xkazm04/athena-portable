@@ -43,7 +43,7 @@
 
 /*
  * Beat four — the heading, last and alone, because it is the only part of this
- * level that was never inside the cube and so has nothing to arrive from. Its
+ * level that was never inside the L0 picture and so has nothing to arrive from. Its
  * box is reserved the whole way through, so nothing below it moves when it
  * lands.
  *
@@ -55,7 +55,7 @@
  * It rides `--bk-dress-name`, the same offset the lettering inside a cell takes,
  * so the heading and the first block's name are written at the same moment. It
  * used to wait a whole `--bk-beat-dress` and then take `--bk-dur-5`, which on the
- * shortened budget would have left the zone's own title still arriving after
+ * shortened budget would have left the database's own title still arriving after
  * everything under it had settled.
  */
 .bk-grid-head {
@@ -72,8 +72,8 @@
   transition-delay: 0ms;
 }
 
-/* The cube holds its flattened pose under the cells, then leaves before they
-   start moving away from it. */
+/* The L0 picture holds its flattened pose under the cells, then leaves before
+   they start moving away from it. */
 .bk-stage {
   display: grid;
   grid-template: minmax(0, 1fr) / 1fr;
@@ -83,33 +83,6 @@
 .bk-stage > * {
   grid-area: 1 / 1;
   min-inline-size: 0;
-}
-
-.bk-cube-hold {
-  transition: opacity var(--bk-dur-3) var(--bk-ease);
-}
-
-.bk-cube-hold[data-out="true"] {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/*
- * While a zone is opening, the plate's own furniture is no longer the subject:
- * the keys step back so the flatten is the only thing moving, and the key of the
- * zone actually opening stays lit, because it is what the move is about.
- *
- * It used to be 0.25 on the whole rail, which was honest while the keys were
- * disabled and is not now that they are live: a reader may change their mind
- * mid-flatten, so the other three zones have to stay readable enough to pick.
- */
-.bk-cube-wrap[data-opening]:not([data-opening=""]) .bk-zone-key {
-  opacity: 0.62;
-  transition: opacity var(--bk-dur-4) var(--bk-ease);
-}
-
-.bk-cube-wrap[data-opening]:not([data-opening=""]) .bk-zone-key[data-on="true"] {
-  opacity: 1;
 }
 
 .bk-tile-head {
@@ -150,26 +123,12 @@
 /* ============================================================ responsive */
 
 @container bk-sheet (max-width: 62rem) {
-  .bk-cube-wrap {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .bk-zone-keys {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@container bk-sheet (max-width: 62rem) {
   .bk-cells {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @container bk-sheet (max-width: 34rem) {
-  .bk-zone-keys {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .bk-cells {
     grid-template-columns: minmax(0, 1fr);
   }

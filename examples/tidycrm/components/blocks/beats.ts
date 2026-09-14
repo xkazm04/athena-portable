@@ -28,16 +28,17 @@
 /* -------------------------------------------------- the clock: when a beat starts */
 
 /**
- * How long the cube's records take to leave the lattice and form the plate.
+ * How long the L0 picture's table dots take to leave their cells and form the
+ * plane.
  *
- * The scene runs this off a duration rather than a per-frame lerp (see
- * `cube/motion.ts`), so the DOM can count on it. It is the first third of the
+ * All three prototypes run this off a duration rather than a per-frame lerp, so
+ * the DOM can count on it whichever one is mounted. It is the first third of the
  * budget and the only part of the move that happens before the level changes.
  */
 export const FLATTEN = 420;
 
 /**
- * `land` — the room the cells need to be measured onto the canvas's clusters and
+ * `land` — the room the cells need to be measured onto the published plane and
  * painted there once before anything moves. It is invisible by design: two frames
  * is enough for the hand-off, and any longer is a pause in the middle of a move.
  */
@@ -78,13 +79,19 @@ export const DRESS_NAME = 70;
 export const DRESS_FIGURES = 130;
 
 /**
- * How many cells the longest zone holds. The stagger is multiplied by a cell's
- * index, so this is what decides whether the LAST cell still finishes inside its
- * beat — which is the only fit that can fail, and the one `test/beats.test.ts`
- * checks. Twelve is the largest zone in the seeded sheet (A, B and C; D holds
- * ten), so it is the worst case the budget has to survive.
+ * How many cells the widest database holds. The stagger is multiplied by a
+ * cell's index, so this is what decides whether the LAST cell still finishes
+ * inside its beat — which is the only fit that can fail, and the one
+ * `test/beats.test.ts` checks.
+ *
+ * SEVEN, NOT SIX, and not twelve any more. Round 1's four zones held ten to
+ * twelve blocks each; round 2's nine databases hold five or six, because the
+ * mapping deals 46 tables round-robin into nine. Seven is the ceiling of the
+ * four-to-seven band `model/databases.ts` commits to rather than the six the
+ * current seed happens to produce, so a merge that empties a domain and shifts
+ * the deal cannot quietly overrun the beat.
  */
-export const WIDEST_ZONE = 12;
+export const WIDEST_DATABASE = 7;
 
 /* ----------------------------------------------------------------- the total cost */
 

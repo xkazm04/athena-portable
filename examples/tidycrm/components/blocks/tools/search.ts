@@ -1,5 +1,5 @@
 /**
- * Search the print, across every zone and block at once.
+ * Search the print, across every database and table at once.
  *
  * Two searches, not one, because this sheet holds two kinds of thing and
  * conflating them is the mistake that matters here. `searchBlocks` answers
@@ -13,16 +13,16 @@
  */
 import { bounded } from "@athena/demo-kit/webmcp";
 
-import type { BkSheet, BkTable, BkZone } from "../model";
+import type { BkDatabase, BkSheet, BkTable } from "../model";
 import { tableRead } from "./read";
 
 /** Results returned before a search stops and says how many it left out. */
 export const SEARCH_PAGE = 25;
 
 export interface BlocksQuery {
-  /** Matched against the block's id, its name, its domain and its why-clause. */
+  /** Matched against the table's id, its name, its domain and its why-clause. */
   text?: string;
-  zone?: string;
+  database?: string;
   /** Only blocks with at least this many outstanding deviations. */
   deviations_over?: number;
   /** Only blocks whose coverage is at or below this percentage. */
@@ -43,8 +43,8 @@ function hit(t: BkTable, q: BlocksQuery): boolean {
   return true;
 }
 
-function zonesOf(sheet: BkSheet, id: string | undefined): BkZone[] {
-  return id && id !== "all" ? sheet.zones.filter((z) => z.id === id) : sheet.zones;
+function databasesOf(sheet: BkSheet, id: string | undefined): BkDatabase[] {
+  return id && id !== "all" ? sheet.databases.filter((d) => d.id === id) : sheet.databases;
 }
 
 /**
@@ -59,23 +59,23 @@ function worstFirst(a: BkTable, b: BkTable): number {
 }
 
 export function searchBlocks(sheet: BkSheet, q: BlocksQuery) {
-  const zones = zonesOf(sheet, q.zone);
-  if (zones.length === 0) {
+  const databases = databasesOf(sheet, q.database);
+  if (databases.length === 0) {
     return {
       ...bounded([], SEARCH_PAGE),
-      error: `No zone called ${q.zone}.`,
-      zones: sheet.zones.map((z) => z.id),
+      error: `No database called ${q.database}.`,
+      databases: sheet.databases.map((d) => d.id),
     };
   }
 
-  const found = zones
-    .flatMap((zone) => zone.tables.filter((t) => hit(t, q)).map((t) => ({ zone, table: t })))
+  const found = databases
+    .flatMap((db) => db.tables.filter((t) => hit(t, q)).map((t) => ({ db, table: t })))
     .sort((a, b) => worstFirst(a.table, b.table));
 
   return {
-    ...bounded(found, SEARCH_PAGE, ({ zone, table }) => ({
+    ...bounded(found, SEARCH_PAGE, ({ db, table }) => ({
       ...tableRead(table),
-      zone: zone.id,
+      database: db.id,
     })),
   };
 }
@@ -88,14 +88,14 @@ export function searchBlocks(sheet: BkSheet, q: BlocksQuery) {
  * could not see, rather than letting a caller conclude that a name is absent
  * from the database when it is merely absent from the sample.
  */
-export function searchRecords(sheet: BkSheet, text: string, zone?: string) {
+export function searchRecords(sheet: BkSheet, text: string, database?: string) {
   const needle = text.toLowerCase();
-  const zones = zonesOf(sheet, zone);
-  const searched = zones.flatMap((z) => z.tables);
+  const databases = databasesOf(sheet, database);
+  const searched = databases.flatMap((d) => d.tables);
   const unseen = searched.reduce((n, t) => n + t.rowsHidden, 0);
 
-  const found = zones.flatMap((z) =>
-    z.tables.flatMap((t) =>
+  const found = databases.flatMap((d) =>
+    d.tables.flatMap((t) =>
       t.rows
         .filter((r) =>
           `${r.name} ${r.email} ${r.company} ${r.title} ${r.city}`.toLowerCase().includes(needle),
@@ -107,8 +107,8 @@ export function searchRecords(sheet: BkSheet, text: string, zone?: string) {
           company: r.company,
           city: r.city,
           in_open_pair: r.inOpenPair,
-          block: t.ident,
-          zone: z.id,
+          table: t.ident,
+          database: d.id,
         })),
     ),
   );

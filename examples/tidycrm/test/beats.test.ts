@@ -34,6 +34,10 @@ function token(name: string): number {
 
 /** Every token that mirrors an export of `beats.ts`, and the export it mirrors. */
 const MIRRORED: ReadonlyArray<[string, number]> = [
+  // The plate prototype's flatten is a CSS transition rather than a WebGL
+  // interpolation, so `FLATTEN` now has a token of its own and the same
+  // agreement to keep as the three beats below it.
+  ["bk-beat-flatten", beats.FLATTEN],
   ["bk-beat-spread", beats.SPREAD_TRANSITION],
   ["bk-beat-dress", beats.DRESS_TRANSITION],
   ["bk-beat-dress-text", beats.DRESS_TEXT_TRANSITION],
@@ -54,12 +58,12 @@ test("the last cell's travel finishes inside the beats it is given", () => {
   // be still by the time the clock calls the move settled, or `settled` is a
   // claim about something that is still moving — and `settled` is what hands out
   // the shared-layout ids the L1 -> L2 morph runs on.
-  const last = (beats.WIDEST_ZONE - 1) * beats.STAGGER_TIGHT + beats.SPREAD_TRANSITION;
+  const last = (beats.WIDEST_DATABASE - 1) * beats.STAGGER_TIGHT + beats.SPREAD_TRANSITION;
   assert.ok(last <= beats.SPREAD + beats.DRESS, `travel ${last}ms overruns its window`);
 });
 
 test("the last cell's dressing finishes inside the dress beat", () => {
-  const cell = beats.WIDEST_ZONE - 1;
+  const cell = beats.WIDEST_DATABASE - 1;
   const ground = cell * beats.STAGGER + beats.DRESS_TRANSITION;
   const name = cell * beats.STAGGER + beats.DRESS_NAME + beats.DRESS_TEXT_TRANSITION;
   const figures = cell * beats.STAGGER + beats.DRESS_FIGURES + beats.DRESS_TEXT_TRANSITION;

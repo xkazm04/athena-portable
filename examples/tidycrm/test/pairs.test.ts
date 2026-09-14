@@ -19,7 +19,7 @@ const { buildSheet } = await import("../lib/blocks");
 /** Open pairs the sheet managed to attach to a block, which is what the blocks can show. */
 function attached(): number {
   return buildSheet()
-    .zones.flatMap((z) => z.tables)
+    .databases.flatMap((d) => d.tables)
     .reduce((n, t) => n + (t.deviations.find((d) => d.kind === "duplicate")?.count ?? 0), 0);
 }
 

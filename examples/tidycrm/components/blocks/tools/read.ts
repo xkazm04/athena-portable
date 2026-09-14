@@ -8,18 +8,18 @@
  * one. An agent that flattens them into "problems" will eventually propose
  * merging two records, which destroys one of them.
  *
- * So `attention` is never folded into `deviations`, and every block that has it
+ * So `attention` is never folded into `deviations`, and every table that has it
  * says in words what it is waiting for.
  */
 import {
   DEVIATION_LABEL,
   ROW_SAMPLE,
+  type BkDatabase,
   type BkSheet,
   type BkTable,
-  type BkZone,
 } from "../model";
 
-/** One block: what the cell prints, plus why it is marked. */
+/** One table: what the cell prints, plus why it is marked. */
 export function tableRead(table: BkTable) {
   return {
     id: table.ident,
@@ -41,26 +41,32 @@ export function tableRead(table: BkTable) {
   };
 }
 
-/** One zone: a quarter of the cube, and a size band of the blocks. */
-export function zoneRead(zone: BkZone) {
+/** One database: the tables it owns, and how much of its work is outstanding. */
+export function databaseRead(db: BkDatabase) {
   return {
-    id: zone.id,
-    holds: zone.span,
-    blocks: zone.tables.length,
-    records: zone.records,
-    checked: zone.checked,
-    coverage: Number((zone.coverage * 100).toFixed(0)),
-    changed: zone.changed,
-    deviations: zone.deviationTotal,
-    blocks_awaiting_a_person: zone.attention,
-    blocks_fully_checked: zone.clear,
+    id: db.id,
+    holds: db.blurb,
+    span: db.span,
+    tables: db.tables.length,
+    records: db.records,
+    checked: db.checked,
+    coverage: Number((db.coverage * 100).toFixed(0)),
+    changed: db.changed,
+    deviations: db.deviationTotal,
+    // What fills the cell red on the plate, and therefore what a reader saw
+    // before they asked. Kept apart from `deviations`: one is a count of
+    // findings, the other a count of tables carrying any.
+    tables_in_fault: db.faulty,
+    tables_awaiting_a_person: db.attention,
+    tables_fully_checked: db.clear,
   };
 }
 
 /** The whole plate, which is what L0 is showing. */
 export function sheetRead(sheet: BkSheet) {
   return {
-    blocks: sheet.tableCount,
+    databases: sheet.databases.length,
+    tables: sheet.tableCount,
     records: sheet.records,
     coverage: Number((sheet.coverage * 100).toFixed(0)),
     deviations: sheet.deviationTotal,
@@ -70,21 +76,21 @@ export function sheetRead(sheet: BkSheet) {
       count,
     })),
     records_awaiting_a_person: sheet.unadjudicated,
-    // Capped, and therefore announced: the sheet attaches this many pairs to blocks, and an
-    // agent that adds up the per-block duplicate counts should be told when it will fall short.
+    // Capped, and therefore announced: the sheet attaches this many pairs to tables, and an
+    // agent that adds up the per-table duplicate counts should be told when it will fall short.
     records_awaiting_a_person_shown: sheet.unadjudicatedShown,
-    blocks_fully_checked: sheet.clearTables,
+    tables_fully_checked: sheet.clearTables,
     rows_changed: sheet.changed,
     revision: sheet.revision,
   };
 }
 
 /**
- * One block at full depth: the example rows and the identity pairs.
+ * One table at full depth: the example rows and the identity pairs.
  *
  * Both are capped where the dossier caps them and both say how many they left
  * out, because a bounded output that does not announce its bound is how an
- * agent comes to believe a block has six records.
+ * agent comes to believe a table has six records.
  */
 export function dossierRead(table: BkTable) {
   return {

@@ -16,157 +16,17 @@
     animation-delay: 0ms !important;
     transition-delay: 0ms !important;
   }
+
+  /*
+   * The two CSS paths with a DELAY rather than a duration. A shortened animation
+   * that still waits is not the final state, it is the final state late — and
+   * with `motion`'s `reducedMotion="user"` there is no morph for the ink to wait
+   * for in the first place, so both states land the lettering where it belongs,
+   * at once.
+   */
+  .bk-cell[data-ink] .bk-cell-head,
+  .bk-cell[data-ink] .bk-tile-figures {
+    opacity: 1;
+    animation: none !important;
+  }
 }
-
-/* ================================================================== L0 cube */
-
-/*
- * The WebGL plate. One cube, quartered, with the zone keys beside it as real
- * DOM controls — a canvas is not reachable by keyboard and a survey plate has
- * to be, so the four buttons are the accessible path to the same four places
- * and double as the read-out.
- */
-/*
- * The plate and its rail are one instrument, so they are one row and they end
- * at the same rule. `stretch` rather than `center`: the rail's height is set by
- * four keys and the canvas takes whatever that is, which keeps the two boxes
- * squared to each other at every width instead of floating past one another.
- */
-.bk-cube-wrap {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 20rem;
-  gap: var(--bk-s5);
-  align-items: stretch;
-}
-
-.bk-cube-canvas {
-  position: relative;
-  min-block-size: clamp(340px, 44cqi, 560px);
-  /* The paper the cube is drawn on: a faint tooth, and a vignette so the
-     particles at the edge of the field fall off into the sheet rather than
-     stopping at a hard border. The lift is the ramp's second declared
-     deviation, named in base/tokens.css so the lock's list is the whole list. */
-  background:
-    radial-gradient(70% 60% at 50% 45%, var(--bk-plate-lift) 0%, transparent 70%),
-    var(--bk-sheet);
-  border: var(--bk-rule-1) solid var(--bk-rule-ink);
-  /* Not `grab`: nothing here is draggable, and a cursor that promises a drag
-     the scene does not support is a lie told sixty times a second. The pointer
-     appears only over a quadrant, which is the thing that IS clickable. */
-  cursor: default;
-}
-
-.bk-cube-wrap[data-hover="true"] .bk-cube-canvas {
-  cursor: pointer;
-}
-
-.bk-cube-canvas canvas {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-}
-
-.bk-zone-keys {
-  display: grid;
-  gap: var(--bk-s2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.bk-zone-key {
-  display: grid;
-  gap: var(--bk-s2);
-  inline-size: 100%;
-  padding: var(--bk-s3);
-  background: none;
-  border: var(--bk-rule-1) solid var(--bk-rule-ink);
-  border-inline-start: var(--bk-rule-3) solid var(--bk-rule-ink);
-  border-radius: var(--bk-radius-0);
-  text-align: start;
-  cursor: pointer;
-  transition: border-color var(--bk-dur-2) var(--bk-ease), background var(--bk-dur-2) var(--bk-ease);
-}
-
-.bk-zone-key:hover,
-.bk-zone-key[data-on="true"] {
-  border-color: var(--bk-graphite);
-  border-inline-start-color: var(--bk-graphite);
-  background: var(--bk-vellum);
-}
-
-.bk-zone-key-top {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: var(--bk-s2);
-}
-
-/* The quarter index. Four squares, one filled: which part of the cube this is. */
-.bk-quarter {
-  inline-size: 15px;
-  block-size: 15px;
-  flex: none;
-}
-
-.bk-quarter-box {
-  fill: none;
-  /* 3:1 against the sheet, which is the floor for a graphic that carries meaning; at
-     --bk-graphite-4 this index was 2.2:1 and effectively invisible. */
-  stroke: var(--bk-graphite-3);
-  stroke-width: 1;
-}
-
-.bk-quarter-on {
-  fill: var(--bk-graphite-3);
-  stroke: none;
-  transition: fill var(--bk-dur-2) var(--bk-ease);
-}
-
-.bk-zone-key:hover .bk-quarter-on,
-.bk-zone-key[data-on="true"] .bk-quarter-on {
-  fill: var(--bk-graphite);
-}
-
-/*
- * THE NAME LEADS. This was `.bk-zone-key-id`, set in the figure face at --bk-text-md as
- * `ZONE A` — a monospace code where the card's subject was standing. A zone's name IS "Zone A",
- * so it is set as a name: the drafted face, the card's largest type, and the quarter index beside
- * it doing the job an index does.
- */
-.bk-zone-key-name {
-  font-family: var(--bk-font-draft);
-  font-size: var(--bk-text-md);
-  font-weight: 500;
-  letter-spacing: var(--bk-track-tight);
-  line-height: var(--bk-leading-snug);
-  color: var(--bk-graphite);
-}
-
-/* What the zone covers: the one quiet line under the name, in the sheet's one label style. */
-.bk-zone-key-span {
-  font-family: var(--bk-font-draft);
-  font-size: var(--bk-label-size);
-  font-weight: 500;
-  letter-spacing: var(--bk-track-label);
-  line-height: 1.3;
-  color: var(--bk-label-ink);
-  margin-block-start: calc(var(--bk-s2) * -1);
-}
-
-/*
- * The four figures. Arrangement only — `.bk-stats-pair` in chrome/the-sheet-head.css owns the
- * two tracks and `.bk-stat` owns the scale, so the rail prints the same figure the mast does.
- */
-.bk-zone-key-figures {
-  margin-block-start: var(--bk-s1);
-}
-
-/* The drawn measure: this zone's outstanding work against the worst zone's. */
-.bk-zone-key-measure {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  block-size: var(--bk-rule-2);
-  background: var(--bk-rule-ink);
-}
-

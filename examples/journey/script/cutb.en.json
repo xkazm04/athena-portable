@@ -132,7 +132,7 @@
           "app": "tidycrm",
           "voice": "narrator",
           "line": "In the contact list, Pinegrove is spelled three ways. The bank name from the books settles it.",
-          "screen": "open_group(A) (3 s), open_item on the Pinegrove block: three spellings; preview_company then resolve_company(pinegrove-collective.example, Pinegrove Collective); the strip cites the B3 fact",
+          "screen": "open_group(a database) (1.2 s), open_item on the Pinegrove table: three spellings; preview_company then resolve_company(pinegrove-collective.example, Pinegrove Collective); the strip cites the B3 fact",
           "settle_ms": 3000
         },
         {

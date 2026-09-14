@@ -18,11 +18,11 @@
  *
  *   · After the hand-off, the level has already changed, so the kit's Escape and
  *     the back button both work and the clock only has to NOTICE — see
- *     `arrivalAbandoned`. A held `opening` is what disables the plate, so an
+ *     `arrivalAbandoned`. A held `opening` is what steps the plate back, so an
  *     abandoned move that is never cleaned up is a plate nobody can click.
  *   · BEFORE the hand-off the level is still 0, and `escapeLeavesLevel` never
  *     claims Escape at L0 — correctly, there is nowhere above it to go. So for
- *     the length of the cube's flatten there was no way out at all: Escape a
+ *     the length of the picture's flatten there was no way out at all: Escape a
  *     tenth of a second in was swallowed and the reader arrived at L1 anyway.
  *     `escapeAbortsArrival` is the missing half, and `abort` is what it runs.
  */
@@ -39,7 +39,7 @@ const MOTION_QUERY = "(prefers-reduced-motion: reduce)";
  * Is this Escape the arrival's to cancel?
  *
  * The kit owns Escape from L1 upward and declines it at L0 (`escape.ts`), which
- * leaves exactly one window uncovered: the cube is flattening, `opening` is set,
+ * leaves exactly one window uncovered: the picture is flattening, `opening` is set,
  * and the level has not changed yet. Nothing else on the sheet wants the key
  * there, and a move that cannot be stopped for its first four hundred
  * milliseconds is a move the reader does not control.
@@ -69,11 +69,11 @@ export function escapeAbortsArrival(
  * The beats run on timers rather than on the focus, so nothing in the clock
  * notices when the reader leaves in the middle of one. Escape inside the
  * arrival window drops L1 back to L0 while `opening` is still set, and `opening`
- * is what disables every zone key and unmounts every quadrant's hit volume — so
- * an abandoned move that is never cleaned up is a plate nobody can click and a
+ * is what steps every legend key back and stops the picture answering a click —
+ * so an abandoned move that is never cleaned up is a plate nobody can use and a
  * level nobody can leave.
  *
- * `settled` is the resting phase at BOTH ends: before the hand-off the cube is
+ * `settled` is the resting phase at BOTH ends: before the hand-off the picture is
  * still flattening at L0 with `opening` set, which is the move working
  * correctly. Only once a beat is running has the arrival taken a level of its
  * own to be abandoned from.
@@ -91,10 +91,10 @@ export function arrivalAbandoned(
 
 export function useArrival(nav: ZoomNav) {
   /**
-   * The zone whose records are mid-flight.
+   * The database whose tables are mid-flight.
    *
-   * Opening a zone is not one beat but four, and the level does not change
-   * until the cube has finished flattening. Holding the id here is what lets
+   * Opening a database is not one beat but four, and the level does not change
+   * until the picture has finished flattening. Holding the id here is what lets
    * the scene finish its move before the DOM arrives on top of it.
    */
   const [held, setOpening] = useState<string | null>(null);
@@ -107,13 +107,13 @@ export function useArrival(nav: ZoomNav) {
 
   /**
    * The reader left in the middle of the move — Escape out of L1, or a jump to
-   * another zone — so the move is over whatever the timers still believe, and
+   * another database — so the move is over whatever the timers still believe, and
    * an abandoned arrival is read as no arrival rather than being written back
    * into state. (Writing it back would be a setState inside an effect, which is
    * the cascading render this hook exists to avoid.)
    *
-   * `held` is not decoration: it disables every zone key and unmounts every
-   * quadrant's hit volume in `Cube3D`. Left standing after Escape it gives back
+   * `held` is not decoration: it steps every legend key back and stops the
+   * picture answering a click. Left standing after Escape it gives back
    * an L0 with nothing on it that can be pressed, no rung to climb and no way
    * out but a reload.
    */
@@ -132,10 +132,10 @@ export function useArrival(nav: ZoomNav) {
   /**
    * Stop the move and give the plate back.
    *
-   * Dropping `opening` is the whole act: the scene reads it every frame, so the
-   * records walk back out of the plate and into the lattice over `UNFLATTEN`,
-   * the quadrants get their hit volumes back, the zone keys come out of their
-   * stepped-back state and the caption stops claiming a zone is opening. There
+   * Dropping `opening` is the whole act: the picture reads it every frame, so the
+   * dots walk back out of the plane and into their cells, the cells answer a
+   * click again, the legend keys come out of their stepped-back state and the
+   * caption stops claiming a database is opening. There
    * is nothing to unwind, because nothing was committed — the level has not
    * changed yet, which is exactly the window this is for.
    */
@@ -149,7 +149,7 @@ export function useArrival(nav: ZoomNav) {
    * Escape, for the one window the kit cannot cover. See `escapeAbortsArrival`.
    *
    * Bound on `window` rather than on the plate because the reader may have
-   * pressed a zone key, clicked a quadrant on the canvas, or asked an agent —
+   * pressed a legend key, clicked a cell in the picture, or asked an agent —
    * in the last two cases nothing on the sheet holds focus, so a React handler
    * would never see the key.
    */
@@ -166,7 +166,7 @@ export function useArrival(nav: ZoomNav) {
   }, [abort, held, level]);
 
   /**
-   * The cube has finished flattening; run the rest of the move.
+   * The picture has finished flattening; run the rest of the move.
    *
    * The level changes here and the canvas does NOT leave: `opening` stays set,
    * so the dots hold their flattened pose while the cells are measured onto
@@ -199,14 +199,14 @@ export function useArrival(nav: ZoomNav) {
     at(LAND + SPREAD + DRESS, () => setPhase("settled"));
   }, [clearTimers, nav, opening]);
 
-  /** Opening a second zone from L1 has no cube to come out of, so it has no
-      arrival to stage either — the cells simply change. */
-  const openZone = useCallback(
+  /** Opening a second database from L1 has no picture to come out of, so it has
+      no arrival to stage either — the cells simply change. */
+  const openDatabase = useCallback(
     (id: string) => {
       clearTimers();
       setPhase("settled");
-      // The cube may still be held for the zone being left, if the jump lands
-      // inside its arrival window. Nothing is coming out of it now.
+      // The picture may still be held for the database being left, if the jump
+      // lands inside its arrival window. Nothing is coming out of it now.
       setOpening(null);
       nav.openGroup(id);
     },
@@ -214,10 +214,10 @@ export function useArrival(nav: ZoomNav) {
   );
 
   /**
-   * Opening a zone FROM the plate.
+   * Opening a database FROM the plate.
    *
    * With motion turned down this does not hand the request to the scene at all.
-   * It used to: `setOpening` started the cube's flatten, the flatten ran its
+   * It used to: `setOpening` started the picture's flatten, the flatten ran its
    * full duration, and only when it reported back did `flattened` notice the
    * preference and skip the beats — so a reader who had asked for less motion
    * waited more than a second in front of an animation they were never going to
@@ -225,8 +225,8 @@ export function useArrival(nav: ZoomNav) {
    */
   const openFromPlate = useCallback(
     (id: string) => {
-      // A second request for the zone already arriving is not a new move. The
-      // cube has no second flatten to run for it, so nothing would call back to
+      // A second request for the database already arriving is not a new move.
+      // The picture has no second flatten to run for it, so nothing would call back to
       // restart the beats — and clearing them would leave the arrival stopped
       // where it stood, with `opening` set and no timer left to release it.
       if (id === opening) return;
@@ -243,5 +243,5 @@ export function useArrival(nav: ZoomNav) {
     [clearTimers, nav, opening],
   );
 
-  return { opening, phase, openFromPlate, openZone, flattened, abort };
+  return { opening, phase, openFromPlate, openDatabase, flattened, abort };
 }

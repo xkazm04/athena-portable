@@ -325,7 +325,7 @@
           "app": "tidycrm",
           "voice": "narrator",
           "line": "The list is read at three depths. A zone, then a block, one company per block.",
-          "screen": "`open_group(\"A\")`: the cube flattens (2.9 s)",
+          "screen": "`open_group(\"billing\")`: the plate flattens (1.2 s)",
           "settle_ms": 2900,
           "estimate_s": 7
         },

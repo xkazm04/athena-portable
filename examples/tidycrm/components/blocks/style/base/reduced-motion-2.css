@@ -1,50 +1,19 @@
-/* Scaled, not sized: `calc()` percentage math is banned by DESIGN §6, and a
-   transform is the one thing this app is allowed to animate anyway. */
-.bk-zone-key-measure i {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-  background: var(--bk-graphite-2);
-  transform: scaleX(var(--of, 0));
-  transform-origin: left center;
-  transition: background var(--bk-dur-2) var(--bk-ease);
-}
-
-.bk-zone-key:hover .bk-zone-key-measure i,
-.bk-zone-key[data-on="true"] .bk-zone-key-measure i {
-  background: var(--bk-graphite);
-}
-
-.bk-zone-key[data-worst="true"] .bk-zone-key-measure i {
-  background: var(--bk-redline);
-}
-
-.bk-cube-caption {
-  grid-column: 1 / -1;
-  margin: 0;
-  max-inline-size: var(--bk-measure-wide);
-  font-family: var(--bk-font-note);
-  font-size: var(--bk-text-sm);
-  line-height: var(--bk-leading-relaxed);
-  color: var(--bk-graphite-2);
-}
-
 /* ================================================================= L1 tiles */
 
 /*
- * One tile is one block is one table. Four figures and nothing else: the
+ * One tile is one table. Four figures and nothing else: the
  * coverage bars, deviation breakdowns and clauses the ruled list carried are
  * all one click away, and taking them out is what lets twelve blocks sit on one
  * screen at a size worth clicking.
  */
 /*
- * The cluster field. Four columns, because the cube flattens into four columns,
- * and one cell per block in the same order — the two agree through `FLAT_COLS`
- * so the hand-off from canvas to DOM lands rather than cuts.
+ * The cluster field. Three columns, because the L0 picture flattens into three
+ * columns, and one cell per table in the same order — the two agree through
+ * `FLAT_COLS` so the hand-off from the picture to the DOM lands rather than cuts.
  */
 .bk-cells {
   display: grid;
-  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
   gap: var(--bk-s4);
 }
 
@@ -120,7 +89,7 @@
   overflow: visible;
 }
 
-/* The three states, in the print's own ink — the same three the cube uses. */
+/* The three states, in the print's own ink — the same three the L0 picture uses. */
 .bk-cluster-dot[data-mark="0"] {
   fill: var(--bk-graphite);
 }
@@ -144,7 +113,7 @@
  * The arrival, in four beats. `Blocks.tsx` owns the clock; these rules own what
  * each beat looks like. The order matters more than any single duration: the
  * dots arrive first and alone, they travel, and only then does anything appear
- * that was not already in the cube.
+ * that was not already in the L0 picture.
  */
 
 /*

@@ -4,29 +4,37 @@
  * The Blocks on WebMCP: the ingest layer for this direction.
  *
  * Four of the tools are the shared ones every three-level direction gets from
- * `useZoomTools` — read the view, open a zone, open a block, come back out. The
- * three below are what only this sheet can answer: a search over the blocks, a
- * search over the example rows they carry, and the deviation breakdown the
+ * `useZoomTools` — read the view, open a database, open a table, come back out.
+ * The three below are what only this sheet can answer: a search over the tables,
+ * a search over the example rows they carry, and the deviation breakdown the
  * sheet head can be asked to show.
  *
- * OPENING A ZONE IS NOT INSTANT HERE, and the tool says so. The cube spends
- * about a second turning its records into the grid, and an agent that called
- * `open_group` and then immediately `read_view` would be reading a level that is
- * still assembling. `open_group` therefore reports the level it is heading to and
- * how long the move takes.
+ * THE NOUNS MOVED, AND THE TOOL NAMES DID NOT. Round 2 replaced the four
+ * lettered zones with nine named databases, so `open_group` now takes `billing`
+ * or `crm-eu` where it used to take `A`. The kit builds every description in
+ * this layer out of `nouns`, so changing the pair below is what changes what
+ * `open_group`'s `id` parameter says it wants — the tool's NAME, its class and
+ * its shape are untouched, which is the rule this repo holds tools to.
  *
- * NOTHING HERE CHANGES THE DATABASE. Normalising, flagging, merging and
- * deleting are registered by `components/shell/HostCapabilities.tsx`, where
- * `merge_contacts` and `delete_contacts` come back GATED — merging destroys a
- * record and no rule may decide it. This layer looks and moves, so every tool
+ * OPENING A DATABASE IS NOT INSTANT HERE, and the tool says so. The picture
+ * spends about four hundred milliseconds turning its table dots into the grid,
+ * and the arrival takes about as long again, so an agent that called
+ * `open_group` and then immediately `read_view` would be reading a level that is
+ * still assembling. `open_group` therefore reports the level it is heading to
+ * and how long the move takes.
+ *
+ * NOTHING HERE CHANGES THE DATABASE — the SQLite one, that is. Normalising,
+ * flagging, merging and deleting are registered by
+ * `components/shell/HostCapabilities.tsx`, where `merge_contacts` and
+ * `delete_contacts` come back GATED. This layer looks and moves, so every tool
  * in it is `readOnlyHint` and none is `consequentialHint`.
  */
 import { useZoomTools, useWebMCPTool } from "@athena/demo-kit/webmcp";
 import type { ZoomNav } from "@athena/demo-kit/zoom";
 
 import { ARRIVAL_MS } from "../beats";
-import { BK_LEVELS, tableOf, zoneOf, ZONE_IDS, type BkSheet } from "../model";
-import { dossierRead, sheetRead, tableRead, zoneRead } from "./read";
+import { BK_LEVELS, DATABASE_IDS, databaseOf, tableOf, type BkSheet } from "../model";
+import { databaseRead, dossierRead, sheetRead, tableRead } from "./read";
 import { searchBlocks, searchRecords, type BlocksQuery } from "./search";
 
 /*
@@ -44,45 +52,45 @@ function num(v: unknown): number | undefined {
 export function BlocksTools({
   sheet,
   nav,
-  onOpenZone,
+  onOpenDatabase,
   showKinds,
   setShowKinds,
 }: {
   sheet: BkSheet;
   nav: ZoomNav;
-  /** The same opener a click on a quadrant uses, so the cube actually flattens. */
-  onOpenZone: (id: string) => void;
+  /** The same opener a click on a cell uses, so the picture actually flattens. */
+  onOpenDatabase: (id: string) => void;
   showKinds: boolean;
   setShowKinds: (next: boolean) => void;
 }) {
   useZoomTools({
     nav,
     levels: BK_LEVELS,
-    nouns: ["zone", "block"],
-    openGroup: onOpenZone,
+    nouns: ["database", "table"],
+    openGroup: onOpenDatabase,
     openGroupMs: ARRIVAL_MS,
     groups: () =>
-      sheet.zones.map((zone) => ({
-        id: zone.id,
-        label: `Zone ${zone.id} · ${zone.span}`,
-        count: zone.tables.length,
+      sheet.databases.map((db) => ({
+        id: db.id,
+        label: `${db.name} · ${db.blurb}`,
+        count: db.tables.length,
       })),
     items: (group) =>
-      (group === null ? sheet.zones : sheet.zones.filter((z) => z.id === group)).flatMap((zone) =>
-        zone.tables.map((t) => ({ id: t.ident, label: `${t.ident} · ${t.name}`, group: zone.id })),
+      (group === null ? sheet.databases : sheet.databases.filter((d) => d.id === group)).flatMap(
+        (db) => db.tables.map((t) => ({ id: t.ident, label: `${t.ident} · ${t.name}`, group: db.id })),
       ),
     detail: () => {
       const { level, group, item } = nav.state.focus;
       if (level === 2) {
         const table = tableOf(sheet, item);
-        return table ? dossierRead(table) : { error: `No block ${item}.` };
+        return table ? dossierRead(table) : { error: `No table ${item}.` };
       }
       if (level === 1) {
-        const zone = zoneOf(sheet, group);
-        if (!zone) return { error: `No zone ${group}.` };
-        return { ...zoneRead(zone), blocks: zone.tables.map(tableRead) };
+        const db = databaseOf(sheet, group);
+        if (!db) return { error: `No database ${group}.` };
+        return { ...databaseRead(db), tables: db.tables.map(tableRead) };
       }
-      return { ...sheetRead(sheet), zones: sheet.zones.map(zoneRead) };
+      return { ...sheetRead(sheet), databases: sheet.databases.map(databaseRead) };
     },
   });
 
@@ -92,20 +100,25 @@ export function BlocksTools({
     // merge or a delete can empty a domain, and a description that teaches a
     // count the dispatcher can compute is a count that goes stale silently.
     description:
-      `Search all ${sheet.tableCount} blocks across ${sheet.zones.length} zones at once, at any level, without opening a zone first. Every result carries the zone it lives in, so its id can be passed straight to open_item. Sorted worst first: the blocks a person is waiting on, then the most outstanding deviations. A block awaiting a person is counted separately from its deviations and never folded into them — a rule may repair a deviation, but only a person may settle an identity pair.`,
+      `Search all ${sheet.tableCount} tables across ${sheet.databases.length} databases at once, at any level, without opening a database first. Every result carries the database it lives in, so its id can be passed straight to open_item. Sorted worst first: the tables a person is waiting on, then the most outstanding deviations. A table awaiting a person is counted separately from its deviations and never folded into them — a rule may repair a deviation, but only a person may settle an identity pair.`,
     parameters: [
-      { name: "text", type: "string", description: "Matched against the block's id, name, domain and why-clause" },
-      { name: "zone", type: "string", enum: [...ZONE_IDS], description: "One zone, or omit for all four" },
-      { name: "deviations_over", type: "number", description: "Only blocks with at least this many outstanding" },
-      { name: "coverage_under", type: "number", description: "Only blocks checked this percentage or less" },
-      { name: "awaiting_a_person", type: "boolean", description: "Only blocks holding an unadjudicated identity pair" },
+      { name: "text", type: "string", description: "Matched against the table's id, name, domain and why-clause" },
+      {
+        name: "database",
+        type: "string",
+        enum: [...DATABASE_IDS],
+        description: "One database, or omit for all nine",
+      },
+      { name: "deviations_over", type: "number", description: "Only tables with at least this many outstanding" },
+      { name: "coverage_under", type: "number", description: "Only tables checked this percentage or less" },
+      { name: "awaiting_a_person", type: "boolean", description: "Only tables holding an unadjudicated identity pair" },
     ],
     reversible: true,
     sideEffects: "none",
     handler: (args) => {
       const q: BlocksQuery = {
         ...(args.text === undefined ? {} : { text: String(args.text) }),
-        ...(args.zone === undefined ? {} : { zone: String(args.zone) }),
+        ...(args.database === undefined ? {} : { database: String(args.database) }),
         ...(num(args.deviations_over) === undefined ? {} : { deviations_over: num(args.deviations_over) }),
         ...(num(args.coverage_under) === undefined ? {} : { coverage_under: num(args.coverage_under) }),
         ...(args.awaiting_a_person === undefined
@@ -119,15 +132,20 @@ export function BlocksTools({
   useWebMCPTool({
     name: "search_records",
     description:
-      "Find a contact by name, email, company, title or city among the example rows the sheet carries, and get back the block and zone it sits in. Each block sends a sample of its rows rather than all of them, so the result says how many rows it could not see: an absence here is not proof of an absence in the database.",
+      "Find a contact by name, email, company, title or city among the example rows the sheet carries, and get back the table and database it sits in. Each table sends a sample of its rows rather than all of them, so the result says how many rows it could not see: an absence here is not proof of an absence in the database.",
     parameters: [
       { name: "text", type: "string", required: true, description: "What to look for" },
-      { name: "zone", type: "string", enum: [...ZONE_IDS], description: "One zone, or omit for all four" },
+      {
+        name: "database",
+        type: "string",
+        enum: [...DATABASE_IDS],
+        description: "One database, or omit for all nine",
+      },
     ],
     reversible: true,
     sideEffects: "none",
-    handler: ({ text, zone }) =>
-      searchRecords(sheet, String(text ?? ""), zone === undefined ? undefined : String(zone)),
+    handler: ({ text, database }) =>
+      searchRecords(sheet, String(text ?? ""), database === undefined ? undefined : String(database)),
   });
 
   useWebMCPTool({

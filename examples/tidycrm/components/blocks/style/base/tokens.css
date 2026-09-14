@@ -23,8 +23,8 @@
  * in redline would say a rule could fix both. Gold appears on nothing else.
  *
  * THE SECOND DECLARED DEVIATION is achromatic and belongs to one element: the
- * cube's canvas is lit by `--bk-plate-lift`, a white fall-off that lets the
- * particle field's edge dissolve into the sheet instead of stopping at a border.
+ * L0 picture's ground is lit by `--bk-plate-lift`, a white fall-off that lets the
+ * field's edge dissolve into the sheet instead of stopping at a border.
  * It is declared because this lock is only worth having if the list is true, and
  * a value on the surface that appears in no list makes the whole file
  * unauditable. It is not a shadow: it lights the ground rather than casting the
@@ -62,11 +62,11 @@
   --bk-greenline: #2e6b40;
   --bk-goldline: #8a6a12;
 
-  /* THE SECOND DECLARED DEVIATION, and the only achromatic one. The WebGL
-     canvas needs its field to fall off into the sheet at the edge, which a flat
-     fill cannot do, so the plate's ground carries a lift no other surface has.
-     It is white at 55% over --bk-sheet and it appears on the canvas and nowhere
-     else — see base/reduced-motion.css's .bk-cube-canvas. */
+  /* THE SECOND DECLARED DEVIATION, and the only achromatic one. The L0 picture
+     needs its field to fall off into the sheet at the edge, which a flat fill
+     cannot do, so the plate's ground carries a lift no other surface has. It is
+     white at 55% over --bk-sheet and it appears there and nowhere else — see
+     level0/l0.css. */
   --bk-plate-lift: rgb(255 255 255 / 55%);
 }
 
@@ -112,7 +112,7 @@
    * Every figure on this sheet used to carry a tracked-out all-caps micro label under it, at
    * 12px, at --bk-track-caps, in --bk-graphite-3: "OF RECORDS CHECKED", "ROWS CHANGED",
    * "ERRORS", "THE FOUR CHECKS ON THIS BLOCK", "SURVIVES / FOLDED IN". Six of those on the mast
-   * alone, and the same device again on every zone key, every block card and every region of the
+   * alone, and the same device again on every legend key, every table card and every region of the
    * dossier. Two things were wrong with it and neither is a matter of taste:
    *
    *   · 0.14em of tracking on uppercase at 12px is a legibility cost paid on EVERY word on the
@@ -154,6 +154,7 @@
    *
    * Do not retune a number here. Retune it in `beats.ts` and copy it down.
    */
+  --bk-beat-flatten: 420ms;
   --bk-beat-spread: 360ms;
   --bk-beat-dress: 240ms;
   --bk-beat-dress-text: 170ms;
@@ -168,6 +169,13 @@
   /* --- Shadowless by declaration. A drawing sheet has no drop shadows on it;
          depth is rule weight, inversion and hatch density. --- */
   --bk-elev-0: none;
+
+  /* The plate prototype's 2.5D, and the only two angles on the sheet. The tilt
+     is small on purpose: enough that the plate reads as a plate seen from
+     slightly above, never enough that a tile's lettering has to be read at an
+     angle. */
+  --bk-tilt: 4deg;
+  --bk-perspective: 60rem;
 
   --bk-rule-1: 1px;
   --bk-rule-2: 2px;
