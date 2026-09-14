@@ -5,48 +5,51 @@
  * direction.
  *
  * It owns the level, through the kit's shared L0/L1/L2 model, so "open a group"
- * means here exactly what it means everywhere else in this repo. Everything else
- * is a pure child handed props.
+ * means here exactly what it means everywhere else in this repo. It also owns
+ * the CAMERA, which is round 3's change: one rig, created here, read by the
+ * scene, by the L1 labels and by `useSemanticZoom`, so that a click, a wheel, an
+ * Escape and an agent's `open_group` all end up in the same flight.
  *
- * MOTION IS TOKENISED HERE, at the root, and this is a correction rather than an
- * addition. The direction already carried matched `layoutId`s from the cell to
- * the dossier, but nothing configured them: `motion` 13's default layout
+ * ONE SPACE, THREE DEPTHS. There is no longer a picture at L0 and a page at L1.
+ * `World.tsx` is mounted at every level and never unmounts; the level is where
+ * the camera is. L2 is the one thing that is still a page — the dossier is text
+ * and actions and belongs on paper — and the camera holds under it.
+ *
+ * MOTION IS TOKENISED HERE, at the root. `motion` 13's default layout
  * transition is a spring, which cannot be expressed as a `--bk-*` token and
- * settles fast enough that the dossier read as a cut — and its `reducedMotion`
- * default is `"never"`, which quietly contradicted the token file's claim to be
- * running "law's durations verbatim". One `MotionConfig` fixes both: the default
- * transition is `--bk-dur-4` on `--bk-ease`, read out of the cascade by
- * `motion-tokens.ts`, and the reduced-motion preference is honoured by the
- * library the same way `app/globals.css` honours it for CSS.
+ * settles fast enough that the dossier read as a cut; its `reducedMotion`
+ * default is `"never"`, which contradicts the token file's claim to be running
+ * law's durations verbatim. One `MotionConfig` fixes both.
  *
- * THE INK WAITS FOR THE BOX, and this is round 2's correction. A `layout` morph
- * scale-corrects the element it owns and not the type inside it, so the cell
- * travelling out to the dossier drew its own figures at three times their size
- * on the way, and again on the way home — the finding round 1's review carried
- * forward as "the cell's figures scale with the box (ink travelling at 3x)".
- * `ink` below is the one piece of state that fixes it: while the box is in
- * flight the cell's lettering is held back, and it is written again once the box
- * has landed. `hirelane` arrived at the same rule from the other end and calls
- * it `data-ink="after-box"`; this is the same attribute and the same two beats.
- *
- * The level change itself is still a redraw and not a spring — the box edges lay
- * themselves down, everything else is press feedback — and the one morph on the
- * sheet is the table travelling out of its cell, which is the only place where
- * two levels are the same object.
+ * THE INK WAITS FOR THE BOX. A `layout` morph scale-corrects the element it owns
+ * and not the type inside it, so the cell travelling out to the dossier drew its
+ * own figures at three times their size on the way. `ink` below is the state
+ * that fixes it: while the box is in flight the cell's lettering is held back,
+ * and it is written again once the box has landed.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, MotionConfig, motion as m } from "motion/react";
-import { useZoomNav } from "@athena/demo-kit/zoom";
+import {
+  angleDelta,
+  useCameraRig,
+  useLevelFlight,
+  useSemanticZoom,
+  useZoomNav,
+} from "@athena/demo-kit/zoom";
 
 import { Dossier } from "./Dossier";
 import { Field } from "./Field";
+import { World } from "./World";
 import { L0 } from "./l0/L0";
+import { FieldHead } from "./field/Head";
 import { cellsOf } from "./l0/cells";
 import { BlocksTools } from "./tools";
 import { useArrival } from "./useArrival";
 import { useMotionTokens } from "./motion-tokens";
 import { SheetFoot } from "./sheet/Foot";
 import { SheetHead } from "./sheet/Head";
+import { BANDS, BOUNDS, REST, poseFor, resolveGroup, resolveItem, snapNear } from "./space/camera";
+import { useWheelZoom } from "./space/useWheelZoom";
 import { databaseOf, tableOf, type BkSheet } from "./model";
 import "./style/index.css";
 
@@ -62,31 +65,128 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
   // The picture is the only thing on screen at L0, so the sheet head carries the
   // frontier. Keeping it open is the reader's choice, not a default.
   const [showKinds, setShowKinds] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const frameRef = useRef<HTMLDivElement | null>(null);
+
+  const focus = nav.state.focus;
+  const level = focus.level;
+  const inside = level >= 1;
 
   /*
-   * `level` is the arrival's, not the nav's, and the difference is four hundred
-   * milliseconds long. The nav goes to L1 the moment the reader chooses a
-   * database — which is what lets Escape abort the move rather than step out of
-   * a level nobody arrived at — while the sheet goes on drawing the plate until
-   * the picture has handed its dots over. See `useArrival`.
+   * THE RIG. Bounds, drag, wheel, inertia, keyboard and the magnet, all from
+   * `space/camera.ts` so the arithmetic is testable and this is only the wiring.
+   * `flyToken` is `--bk-beat-flight`, which is `beats.ts`'s `FLIGHT` copied into
+   * the cascade and pinned there by `test/beats.test.ts` — the one clock, read
+   * by the camera rather than typed at it.
    */
-  const { opening, phase, level, openFromPlate, openDatabase, flattened } = useArrival(nav);
+  // Written in an effect rather than during render: the magnet is asked for an
+  // answer on a pointer-up, long after any render, and a ref updated during
+  // render is a side effect React is allowed to run twice.
+  const insideRef = useRef(inside);
+  useEffect(() => {
+    insideRef.current = inside;
+  }, [inside]);
+  const rig = useCameraRig({
+    initial: REST,
+    bounds: BOUNDS,
+    drag: "orbit",
+    /* NOT the rig's. `zoomAt` is exact for an orthographic stage and off by the
+       focal length for a perspective one, and the contract gives the rig no way
+       to be told which it is driving. `useWheelZoom` runs the kit's own
+       arithmetic with the anchor converted first; the argument is in that file,
+       and it is round 3's clearest kit gap. */
+    wheel: "none",
+    inertia: 0.9,
+    keyboard: true,
+    reducedMotion: "user",
+    flyToken: "--bk-beat-flight",
+    easeToken: "--bk-ease",
+    // The magnet, declining inside a database. A function rather than a list
+    // because "only when idle and only if the pose is near one" is a decision
+    // the list form cannot express.
+    snap: (pose) => snapNear(pose, insideRef.current),
+  });
+  useWheelZoom(rig, frameRef);
+
+  /*
+   * `--bk-dur-6` is the safety net, not the clock: `beats.ts` is the clock, the
+   * camera flies on `--bk-beat-flight`, and the arrival releases its claim when
+   * the dressing is done. The net only matters for a move whose completion never
+   * arrives.
+   */
+  const flight = useLevelFlight(nav, { fallbackToken: "--bk-dur-6", el: () => frameRef.current });
+  const { phase, openDatabase } = useArrival(nav, flight);
   const motion = useMotionTokens();
 
-  const database = level >= 1 ? databaseOf(sheet, nav.state.focus.group) : undefined;
-  const table = tableOf(sheet, nav.state.focus.item);
+  const database = inside ? databaseOf(sheet, focus.group) : undefined;
+  const table = tableOf(sheet, focus.item);
   const cells = useMemo(() => cellsOf(sheet), [sheet]);
 
   /*
-   * THE INK HOLD.
-   *
-   * Going out, the hold is set in the render that opens the dossier. Coming
-   * home, the cell re-claims the shared id and the hold has to outlast the
-   * travel — so it is dropped a morph plus a fade later, both read from the
-   * tokens rather than typed. A second open inside that window replaces the hold
-   * rather than queueing behind it, which is what the effect's own cleanup does
-   * for free.
+   * CAMERA DISTANCE IS THE LEVEL, both ways. Wheeling out past the band leaves
+   * the database; every nav change that came from anywhere else — a click on a
+   * cell, a legend key, an agent's `open_group`, Escape, an abort — is flown.
+   * The hook marks which side is leading so the two cannot chase each other.
    */
+  const idents = useMemo(
+    () => new Map<string, string[]>(sheet.databases.map((d) => [d.id, d.tables.map((t) => t.ident)])),
+    [sheet],
+  );
+  const { driving } = useSemanticZoom(nav, rig, {
+    bands: BANDS,
+    resolveGroup,
+    resolveItem: (pose, group) => resolveItem(pose, group, idents.get(group) ?? []),
+    poseFor,
+    // So a level change the WHEEL caused claims and settles the same flight a
+    // click's does, and Escape means the same thing in both.
+    flight,
+  });
+
+  /*
+   * ARRIVING BY WHEEL ARRIVES WHERE CLICKING WOULD HAVE.
+   *
+   * A nav-driven change flies to `poseFor`. A camera-driven one — the reader
+   * wheeling in until the band is crossed — does not, by the contract's design:
+   * the reader is driving and the kit will not fight them. That is right for the
+   * ORBIT and wrong for the arrival, and this scene shows why. The tables stand
+   * in the plane the camera flies in along and the reader's wheel has no opinion
+   * about that plane, so zooming in from the resting pose crosses the band and
+   * lands beside a rank of cards seen edge-on, at whatever distance the last
+   * notch happened to leave; two more notches and the reader is through the far
+   * wall of a database they never saw.
+   *
+   * So crossing the band IS a level change and gets a level change's flight,
+   * exactly once, to exactly the pose a click would have flown to. Afterwards
+   * the camera is the reader's again: `aligned` is the guard, so orbiting and
+   * zooming inside the database are never undone, and the flight is only ever
+   * spent on the crossing itself.
+   */
+  const aligned = useRef<string | null>(null);
+  useEffect(() => {
+    if (level < 1 || focus.group === null) {
+      aligned.current = null;
+      return;
+    }
+    if (driving !== "camera" || aligned.current === focus.group) return;
+    aligned.current = focus.group;
+    const want = poseFor(focus);
+    const pose = rig.get();
+    if (
+      Math.abs(angleDelta(pose.yaw, want.yaw)) < 0.05 &&
+      Math.abs(pose.pitch - want.pitch) < 0.05 &&
+      Math.abs(pose.zoom - want.zoom) < 0.05
+    ) {
+      return;
+    }
+    /* NOT returned as this effect's cleanup. `driving` falls back to null a
+       frame after the dispatch, which re-runs the effect, which would cancel the
+       flight it had just started sixteen milliseconds in — and the reader would
+       see the level change begin and stop. The flight is self-cancelling
+       anyway: a second `flyTo`, a drag or a wheel notch all end it. */
+    rig.flyTo(want);
+  }, [driving, focus, level, rig]);
+
+  /* The ink hold. See the header. */
   const open = level === 2 && table ? table.ident : null;
   const [ink, setInk] = useState<{ seen: string | null; hold: InkHold | null }>({
     seen: null,
@@ -96,9 +196,7 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
   // Adjusted DURING RENDER, which is React's own recipe for state that follows a
   // prop, rather than in an effect: the hold has to be on the cell in the SAME
   // commit the dossier mounts, and an effect is one frame late — one frame of
-  // lettering drawn at three times its size, which is the whole bug. `seen` is
-  // state and not a ref for the same reason the recipe says so: a ref read
-  // during render is a value React is allowed not to have re-read.
+  // lettering drawn at three times its size, which is the whole bug.
   if (ink.seen !== open) {
     setInk({
       seen: open,
@@ -111,8 +209,6 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
     });
   }
   const hold = ink.hold;
-  // Coming home is the only half with a clock on it, and the clock is read out
-  // of the tokens: a morph for the travel, a press-feedback for the fade.
   useEffect(() => {
     if (hold?.phase !== "back") return;
     const id = window.setTimeout(() => setInk((s) => ({ ...s, hold: null })), holdMs);
@@ -121,21 +217,16 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
 
   return (
     <div className="bk-root" data-variant="blocks" data-level={level}>
-      {/*
-        * `reducedMotion="user"` rather than the library's `"never"` default: a
-        * reader who has asked for less motion gets the end state of the morph,
-        * the same as they get the end state of every transition in `style/`.
-        */}
       <MotionConfig reducedMotion="user" transition={motion?.morph}>
         {/* The ingest layer: this direction's three levels, offered to an agent
             beside the page on `document.modelContext`. It opens a database
-            through `openFromPlate`, the same path a click on a cell takes, so
-            the picture actually flattens rather than the level being swapped
-            under it. Renders nothing, and no tool it registers writes. */}
+            through the same path a click takes, so the camera actually flies
+            rather than the level being swapped under it. Renders nothing, and no
+            tool it registers writes. */}
         <BlocksTools
           sheet={sheet}
           nav={nav}
-          onOpenDatabase={openFromPlate}
+          onOpenDatabase={openDatabase}
           showKinds={showKinds}
           setShowKinds={setShowKinds}
         />
@@ -143,39 +234,46 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
         <div className="bk-sheet">
           <SheetHead sheet={sheet} />
 
-          {/*
-            * Both can be mounted at once, stacked in one cell. That overlap is
-            * the transition: the L0 picture is still there, flattened, while the
-            * cells arrive on top of it wearing its geometry.
-            */}
           <div className="bk-stage">
-            {level === 0 || opening ? (
-              <div className="bk-l0-hold" data-out={level >= 1} aria-hidden={level >= 1}>
-                {/* `out` is the same fact as `data-out`: the hold is fading, so
-                    the picture has nothing left to draw and stops rendering. It
-                    stays MOUNTED because the cells are standing on the pose it
-                    is holding. */}
-                <L0
-                  cells={cells}
-                  focus={nav.state.focus}
-                  opening={opening}
-                  out={level >= 1}
-                  onOpen={openFromPlate}
-                  onFlattened={flattened}
+            <World
+              cells={cells}
+              database={database}
+              focus={focus}
+              hovered={level === 0 ? hovered : null}
+              rig={rig}
+              frameRef={frameRef}
+              moving={phase === "flight"}
+              onHover={setHovered}
+              onOpen={openDatabase}
+            >
+              {database ? (
+                <Field
+                  database={database}
+                  phase={phase}
+                  ink={hold}
+                  rig={rig}
+                  frame={frameRef}
+                  onOpenTable={(ident) => nav.openItem(database.id, ident)}
                 />
-              </div>
-            ) : null}
+              ) : null}
+            </World>
 
-            {level >= 1 && database ? (
-              <Field
+            {database ? (
+              <FieldHead
                 sheet={sheet}
                 database={database}
                 phase={phase}
-                ink={hold}
-                onOpenTable={(ident) => nav.openItem(database.id, ident)}
                 onOpenDatabase={openDatabase}
               />
-            ) : null}
+            ) : (
+              <L0
+                cells={cells}
+                focus={focus}
+                hovered={hovered}
+                onHover={setHovered}
+                onOpen={openDatabase}
+              />
+            )}
           </div>
 
           <SheetFoot
@@ -193,11 +291,7 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
           *
           * It dims the sheet while the table travels out of its cell, so it has
           * to fade in PARALLEL with the morph and out again after it — which is
-          * an `AnimatePresence` of its own. Held by the card it would either have
-          * taken the card's opacity with it (hiding the move it exists to frame)
-          * or held the card in the tree while it faded, and a card still mounted
-          * is a card the cell cannot morph back out of: `layoutId` reverses when
-          * the dossier LEAVES and the cell becomes the lead again.
+          * an `AnimatePresence` of its own.
           */}
         <AnimatePresence>
           {level === 2 && table ? (
@@ -214,12 +308,7 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
         </AnimatePresence>
 
         {/* Keyed by the table, so a change of table is a new card and not the
-            same card holding a different one. The dossier carries two pieces of
-            state a reader armed against what was in front of them — the armed
-            act and the pair being adjudicated — and an agent may call open_item
-            while it is mounted. Unkeyed, the armed merge or delete survives the
-            swap and points at a table nobody armed it for, with no undo behind
-            it. */}
+            same card holding a different one. */}
         <AnimatePresence>
           {level === 2 && table ? (
             <Dossier key={table.ident} table={table} onClose={nav.up} motion={motion} />

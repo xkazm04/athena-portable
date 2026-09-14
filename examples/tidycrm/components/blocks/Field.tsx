@@ -1,124 +1,99 @@
 "use client";
 
 /**
- * L1 — one database's tables, built out of the dots the picture just put down.
+ * L1 — one database's tables, standing in the database.
  *
- * WHAT THIS IS. Not a page that replaces the L0 picture: the same five or six
- * clusters, carried out of it and into the DOM without moving, and then walked
- * from there to where a reader can use them. L0 flattens the database's tables
- * into a small plate of clusters in the middle of the frame; this level draws
- * those same clusters, at that same size, in those same places, and only then
- * spreads them across the sheet and grows the parts a table has at this depth.
+ * NOT A PAGE THAT REPLACED THE PICTURE. The tables are slabs inside the octant
+ * the camera flew into (`l0/octants/Scene.tsx` draws them), and this is the type
+ * on them: one label per slab, projected onto it by `field/useProjector.ts`, at
+ * the size the perspective says the slab is. Orbiting turns the rank; zooming
+ * out past the band leaves the level; nothing here ever moves under its own
+ * power, because the thing that moves is the camera.
  *
- * THE FOUR BEATS, and why each one exists:
+ * TWO TECHNOLOGIES, ONE RULE. The slab is the BOX and this is the INK — formula
+ * §1 rule 3, and the reason the cell carries no ground of its own: the ground is
+ * a solid in the scene, and drawing a second one in the DOM on top of it would
+ * hide the object the level is about. So the label is a portrait card of type
+ * and nothing else, and what a reader sees standing in front of them is a slab
+ * with words on it.
  *
- *   land    the cells are rendered and immediately pushed onto the plane the
- *           picture published — measured, not guessed — carrying nothing but
- *           their dots. The picture fades out underneath them and nothing
- *           appears to happen, which is the point: the hand-off has to be
- *           invisible.
- *   spread  the transforms are dropped. Each table travels from the plane to
- *           its place in the grid, staggered, so six tables read as six things
- *           moving rather than one block of content sliding.
- *   dress   each cell grows its ground and its rule, then its name and its
- *           figures, and the database's own heading arrives last.
- *   settled an ordinary grid of tables, with nothing left animating.
+ * WHY PORTRAIT, and it is arithmetic rather than taste: six tables in a cube's
+ * face is three across and two down, which makes each slab half again as tall
+ * as it is wide. Round 2's landscape cell — cluster beside a column of text,
+ * three figures on one baseline — does not fit that box at any type size worth
+ * reading. So the cluster goes on top, the name under it, and the figures
+ * stack.
  *
- * A cell is therefore not a card containing a chart. It is the table itself, at
- * the depth where its name and its counts are finally worth printing.
+ * ARROW KEYS. The grid is ONE tab stop with a roving tabindex, `model/keys.ts`
+ * deciding where a step goes, exactly as in round 2 — and the handler stops the
+ * key propagating, because the element it bubbles to is the camera rig, whose
+ * arrows orbit. Two things that both want the arrow keys is the one place this
+ * level could have taken the reader's control away, and it does not.
  *
- * ARROW KEYS, which round 1's review named as missing. The grid is ONE tab stop
- * with a roving tabindex: left and right step a cell, up and down step a row,
- * Home and End go to the ends, and nothing wraps off the edge. Where the step
- * goes is `model/keys.ts`, shared with the plate prototype, because two grids
- * owing the reader two different answers is how a keyboard reader learns not to
- * trust either.
+ * DRAG WINS OVER CLICK. The rig is bound to the frame these labels sit in, so a
+ * drag that starts on a card still orbits the scene. A pointer that travelled
+ * more than `SLOP` is therefore not a click on the table, and the card says so
+ * rather than opening a dossier the reader did not ask for.
  */
-import { useRef, useState, type CSSProperties } from "react";
-import { motion } from "motion/react";
-import { sharedIdentity } from "@athena/demo-kit/zoom";
-
-import {
-  FLAT_COLS,
-  gridStep,
-  type BkDatabase,
-  type BkSheet,
-  type BkTable,
-} from "./model";
+import { useRef, useState, type CSSProperties, type RefObject } from "react";
+import type { CameraRig } from "@athena/demo-kit/zoom";
+import { gridStep, type BkDatabase, type BkTable } from "./model";
+import { SLOT_COLS } from "./space/geometry";
 import type { InkHold } from "./Blocks";
 import { Cluster } from "./Cluster";
 import { Stat, Stats } from "./Stat";
-import { FieldHead } from "./field/Head";
-import { useLanding } from "./field/useLanding";
+import type { FieldPhase } from "./useArrival";
+import { useProjector } from "./field/useProjector";
 
-/** The beats of the arrival. See the file header. */
-export type FieldPhase = "land" | "spread" | "dress" | "settled";
+/** How far a pointer may travel and still be a click rather than an orbit. */
+const SLOP = 5;
 
-/** Which edge a cell carries: the stronger claim wins it. */
+/** Which edge a table carries: the stronger claim wins it. */
 function toneOf(table: BkTable): "goldline" | "redline" | "greenline" {
   if (table.attention) return "goldline";
   if (table.deviationTotal > 0) return "redline";
   return "greenline";
 }
 
-/**
- * Shared-layout identities are handed out only once the arrival is over — and
- * the cell is REMOUNTED when they are, which is the part that was missing.
- *
- * `layoutId` makes motion the owner of an element's `transform`, and it writes
- * that inline — which beats any stylesheet. While the cells are being placed on
- * the picture's plane the transform belongs to the arrival, so the ids are
- * withheld until the grid is settled. Nothing is lost: the ids exist for the
- * L1 -> L2 morph, which can only start from the settled grid anyway.
- *
- * BOTH HALVES OF THAT ARE THE KIT'S NOW. `sharedIdentity(id, owns)` is formula
- * §1 rule 2 as a pair of props — the `layoutId` only while this element is the
- * claimant, and a `key` that flips with ownership so acquiring the id is a
- * remount rather than a prop change. That second half is not decoration: motion
- * builds a projection node once, during the render in which a component first
- * appears, and reads `layoutId` off the props it had at that moment, so an id
- * that arrives later is never registered in the shared stack and the morph
- * silently never plays. It is the bug this direction shipped through round 1,
- * the evidence is written up in the kit's `zoom/identity.ts`, and the three
- * hand-rolled versions of it are now one.
- */
 export function Field({
-  sheet,
   database,
   phase,
   ink,
+  rig,
+  frame,
   onOpenTable,
-  onOpenDatabase,
 }: {
-  sheet: BkSheet;
   database: BkDatabase;
   phase: FieldPhase;
   /** Which cell is holding its lettering back while its box travels. */
   ink: InkHold | null;
+  rig: CameraRig;
+  /** The canvas box the labels are projected into. */
+  frame: RefObject<HTMLElement | null>;
   onOpenTable: (ident: string) => void;
-  onOpenDatabase: (id: string) => void;
 }) {
   const cellsRef = useRef<HTMLDivElement | null>(null);
-  const settled = phase === "settled";
+  const down = useRef<{ x: number; y: number } | null>(null);
+
   /*
    * The roving stop, carried WITH the database it belongs to rather than reset
    * by an effect when the database changes. Derived, so a jump to another
-   * database lands on its first cell in the same render that draws it — an
-   * effect would have painted one frame with a stop pointing into a grid that
-   * no longer exists.
+   * database lands on its first cell in the same render that draws it.
    */
   const [roving, setRoving] = useState<{ db: string; at: number }>({ db: database.id, at: 0 });
   const at = roving.db === database.id ? roving.at : 0;
   const rove = (next: number) => setRoving({ db: database.id, at: next });
 
-  // Beat one of the arrival: measure where the picture left each table's dots
-  // and start every cell exactly there. See `field/useLanding.ts`.
-  useLanding(cellsRef, phase, database.tables.length);
+  // Every label onto its slab, on every pose the rig emits. The camera is the
+  // only thing that moves at this level; this is what follows it.
+  useProjector(rig, frame, cellsRef, database, phase !== "flight");
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    const next = gridStep(event.key, at, database.tables.length, FLAT_COLS);
+    const next = gridStep(event.key, at, database.tables.length, SLOT_COLS);
     if (next === null) return;
     event.preventDefault();
+    // The rig is an ancestor and its arrows orbit. This key has been spent.
+    event.stopPropagation();
     rove(next);
     const ident = database.tables[next]?.ident;
     if (ident) {
@@ -127,84 +102,84 @@ export function Field({
   };
 
   return (
-    <section className="bk-grid" data-phase={phase}>
-      <FieldHead sheet={sheet} database={database} onOpenDatabase={onOpenDatabase} />
-
-      <div
-        className="bk-cells"
-        ref={cellsRef}
-        data-phase={phase}
-        role="group"
-        aria-label={`Tables in ${database.name}`}
-        onKeyDown={onKeyDown}
-        style={{ "--cols": FLAT_COLS } as CSSProperties}
-      >
-        {database.tables.map((table, i) => {
-          // One claimant per shared id, and the id must exist at mount. The key
-          // that comes back replaces the list key — it already names the table.
-          const box = sharedIdentity(`table-${table.ident}`, settled);
-          const cluster = sharedIdentity(`cluster-${table.ident}`, settled);
-          const name = sharedIdentity(`table-name-${table.ident}`, settled);
-          return (
-          <motion.button
-            key={box.key}
-            type="button"
-            layoutId={box.layoutId}
-            className="bk-cell"
-            /* The cell is where focus is put back down when the dossier closes,
-               and for a card an agent opened there is nothing else to go on —
-               nothing on the sheet had focus. See `Dossier.tsx`. */
-            data-ident={table.ident}
-            data-tone={toneOf(table)}
-            /* THE INK WAITS FOR THE BOX. `gone` while the box is out at the
-               dossier, `after-box` while it comes home; the stylesheet owns
-               both. See the note in `Blocks.tsx`. */
-            data-ink={
-              ink?.ident === table.ident ? (ink.phase === "out" ? "gone" : "after-box") : undefined
-            }
-            tabIndex={i === at ? 0 : -1}
+    <div
+      className="bk-cells"
+      ref={cellsRef}
+      data-phase={phase}
+      role="group"
+      aria-label={`Tables in ${database.name}`}
+      onKeyDown={onKeyDown}
+    >
+      {database.tables.map((table, i) => (
+          <div
+            key={table.ident}
+            className="bk-cell-at"
+            data-slot={table.ident}
+            data-behind="false"
+            /* `--i` is the card's place in the wave the dressing beat crosses the
+               octant as. It is on the WRAPPER because the wrapper is what the
+               projection writes to. */
             style={{ "--i": i } as CSSProperties}
-            onFocus={() => rove(i)}
-            onClick={() => onOpenTable(table.ident)}
-            aria-label={`Open ${table.ident}, ${table.name}. ${table.why}`}
           >
-            <motion.span key={cluster.key} layoutId={cluster.layoutId} className="bk-cell-cluster">
-              <Cluster marks={table.marks} />
-            </motion.span>
-
-            <span className="bk-cell-body">
-              {/*
-                * The NAME leads and the ident follows it, quieter. The other way round the card
-                * opened on `BLK-04` — a code no reader is looking for — and the company it stands
-                * for came second, in the same box, at a size that had to argue with it.
-                */}
-              <span className="bk-cell-head">
-                <motion.span key={name.key} layoutId={name.layoutId} className="bk-tile-name">
-                  {table.name}
-                </motion.span>
-                <span className="bk-tile-ident">{table.ident}</span>
+            <button
+              type="button"
+              className="bk-cell"
+              data-ident={table.ident}
+              data-tone={toneOf(table)}
+              /* THE INK WAITS FOR THE BOX. `gone` while the box is out at the
+                 dossier, `after-box` while it comes home; the stylesheet owns
+                 both. See the note in `Blocks.tsx`. */
+              data-ink={
+                ink?.ident === table.ident ? (ink.phase === "out" ? "gone" : "after-box") : undefined
+              }
+              tabIndex={i === at ? 0 : -1}
+              onFocus={() => rove(i)}
+              onPointerDown={(e) => {
+                down.current = { x: e.clientX, y: e.clientY };
+              }}
+              onClick={(e) => {
+                const from = down.current;
+                down.current = null;
+                // A pointer that orbited the scene did not choose a table.
+                if (from && Math.hypot(e.clientX - from.x, e.clientY - from.y) > SLOP) return;
+                onOpenTable(table.ident);
+              }}
+              aria-label={`Open ${table.ident}, ${table.name}. ${table.why}`}
+            >
+              <span className="bk-cell-cluster">
+                <Cluster marks={table.marks} />
               </span>
 
-              {/*
-                * `deviations`, not `errors`. Nothing on this sheet is an error: a record deviates
-                * from a specification, and that is the word the plate, the database head and the
-                * dossier all use for the same figure.
-                */}
-              <Stats className="bk-tile-figures">
-                <Stat value={table.records} label="rows" />
-                <Stat value={table.changed} label="changed" quiet={table.changed === 0} />
-                <Stat
-                  value={table.deviationTotal}
-                  label="deviations"
-                  tone={table.deviationTotal > 0 ? "redline" : undefined}
-                  quiet={table.deviationTotal === 0}
-                />
-              </Stats>
-            </span>
-          </motion.button>
-          );
-        })}
-      </div>
-    </section>
+              <span className="bk-cell-body">
+                {/*
+                  * The NAME leads and the ident follows it, quieter. The other way round the card
+                  * opened on `BLK-04` — a code no reader is looking for — and the company it stands
+                  * for came second, in the same box, at a size that had to argue with it.
+                  */}
+                <span className="bk-cell-head">
+                  <span className="bk-tile-name">{table.name}</span>
+                  <span className="bk-tile-ident">{table.ident}</span>
+                </span>
+
+                {/*
+                  * `deviations`, not `errors`. Nothing on this sheet is an error: a record deviates
+                  * from a specification, and that is the word the picture, the database head and the
+                  * dossier all use for the same figure.
+                  */}
+                <Stats className="bk-tile-figures">
+                  <Stat value={table.records} label="rows" />
+                  <Stat value={table.changed} label="changed" quiet={table.changed === 0} />
+                  <Stat
+                    value={table.deviationTotal}
+                    label="deviations"
+                    tone={table.deviationTotal > 0 ? "redline" : undefined}
+                    quiet={table.deviationTotal === 0}
+                  />
+                </Stats>
+              </span>
+            </button>
+          </div>
+      ))}
+    </div>
   );
 }

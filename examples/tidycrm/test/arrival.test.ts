@@ -1,61 +1,55 @@
 /**
- * The arrival clock knows whose move it is running, and what the sheet draws
+ * The arrival clock knows whose move it is running, and what the page may draw
  * while it runs.
  *
  * ROUND 1 shipped two predicates here — `escapeAbortsArrival` and
  * `arrivalAbandoned` — and both existed because the move was committed to the
- * nav only at its halfway point. For the length of the picture's flatten the
- * level was still 0, so the kit declined Escape (correctly: there is nowhere
- * above L0 to go) and the key reached nobody; and the beats ran on timers that
- * had no idea the reader had walked out from under them, which left `opening`
- * standing against a level that was gone and a plate nobody could click.
+ * nav only at its halfway point. The consolidation round deleted both by telling
+ * the nav first.
  *
- * THE CONSOLIDATION ROUND deleted both. `openFromPlate` tells the nav first, so
- * the flatten runs inside a real flight: `escapeAbortsFlight` and `nav.abort()`
- * are the kit's now and are pinned there, and "has this move been walked out
- * of" stops being a question because the beats are keyed to the database the nav
- * is actually on.
+ * ROUND 3 DELETED A THIRD, `drawnLevel`, and its deletion is the concept test's
+ * clearest result. It existed because the SHEET's level and the NAV's level
+ * disagreed for four hundred milliseconds: the reader had chosen a database but
+ * the picture was still the whole plate, because the picture at L0 and the page
+ * at L1 were two different things and one had to be held back while the other
+ * assembled. There is one picture now — the camera flies from the cube into an
+ * octant and the octant was always there — so the two levels are the same
+ * number and there is nothing to hold back.
  *
- * What is left here is what is still this direction's, in the same three
- * situations the round-1 file covered:
+ * What is left is what is still this direction's:
  *
  *   1. a beat belongs to a move only while the nav is on its database and the
  *      flight is still in the air (`beatOf`);
- *   2. the picture holds its pose through `flatten`, `land` and `spread`, and
- *      lets go at `dress` (`openingOf`);
- *   3. the sheet goes on drawing the plate for the length of the flatten, and
- *      for nothing else (`drawnLevel`).
+ *   2. the labels are not drawn while the camera is moving, and are drawn the
+ *      moment it stops (`inkable`).
  *
  *   node --experimental-transform-types --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-const { beatOf, drawnLevel, openingOf } = await import("../components/blocks/useArrival");
+const { beatOf, inkable } = await import("../components/blocks/useArrival");
 
-const BILLING = { database: "billing", at: "flatten" } as const;
-const staged = (at: "flatten" | "land" | "spread" | "dress" | "settled") =>
-  ({ database: "billing", at }) as const;
+const staged = (at: "flight" | "dress" | "settled") => ({ database: "billing", at }) as const;
 
 /* 1. Whose beat is this? */
 
 test("a beat runs while the nav is on the database it was staged over", () => {
-  for (const at of ["flatten", "land", "spread", "dress"] as const) {
+  for (const at of ["flight", "dress"] as const) {
     assert.equal(beatOf(staged(at), "billing", true), at, at);
   }
 });
 
 test("Escape inside the arrival window ends the move", () => {
-  // `nav.abort()` puts the reader back on the plate: focus.group is null, and
-  // whatever the timers still believe, this move is over. Round 1 needed
-  // `arrivalAbandoned` to notice; now the derivation cannot help noticing.
-  assert.equal(beatOf(staged("flatten"), null, true), "settled");
-  assert.equal(beatOf(staged("land"), null, true), "settled");
-  assert.equal(beatOf(staged("spread"), null, true), "settled");
+  // `nav.abort()` puts the reader back outside the cube: focus.group is null,
+  // and whatever the timers still believe, this move is over. Round 1 needed
+  // `arrivalAbandoned` to notice; the derivation cannot help noticing.
+  assert.equal(beatOf(staged("flight"), null, true), "settled");
+  assert.equal(beatOf(staged("dress"), null, true), "settled");
 });
 
 test("jumping to another database mid-arrival abandons the move it left", () => {
-  assert.equal(beatOf(staged("land"), "crm-eu", true), "settled");
+  assert.equal(beatOf(staged("flight"), "crm-eu", true), "settled");
 });
 
 test("a settled flight has no beat left to run", () => {
@@ -75,38 +69,21 @@ test("a dossier opened out of the arriving database is still that database's mov
   assert.equal(beatOf(staged("dress"), "billing", true), "dress");
 });
 
-/* 2. When does the picture let go? */
+/* 2. What may the page draw? */
 
-test("the picture holds its pose until the cells have travelled", () => {
-  assert.equal(openingOf("flatten", "billing"), "billing");
-  assert.equal(openingOf("land", "billing"), "billing");
-  assert.equal(openingOf("spread", "billing"), "billing");
-  // `dress` is the beat where the cells acquire what was never in the picture,
-  // so the picture has nothing left to hold and unmounts.
-  assert.equal(openingOf("dress", "billing"), null);
-  assert.equal(openingOf("settled", "billing"), null);
+test("no ink while the camera is moving, and ink the moment it stops", () => {
+  // Type projected through a moving perspective camera slides and rescales
+  // every frame. There is no size at which it can be read, so it is not drawn
+  // at all: the slab is what the reader follows into the database.
+  assert.equal(inkable("flight"), false);
+  assert.equal(inkable("dress"), true);
+  assert.equal(inkable("settled"), true);
 });
 
-/* 3. What does the sheet draw? */
-
-test("the sheet draws the plate for the length of the flatten, and nothing else", () => {
-  assert.equal(drawnLevel("flatten", 1), 0, "the reader has chosen; the picture has not handed over");
-  assert.equal(drawnLevel("land", 1), 1, "L1 exists from the hand-off");
-  assert.equal(drawnLevel("spread", 1), 1);
-  assert.equal(drawnLevel("dress", 1), 1);
-  assert.equal(drawnLevel("settled", 1), 1);
-});
-
-test("a dossier asked for mid-flatten is still drawn", () => {
-  // Only L1 is held back. An agent that calls open_item during the flatten asked
-  // for a place two levels in, and the plate is not it.
-  assert.equal(drawnLevel("flatten", 2), 2);
-  assert.equal(drawnLevel("flatten", 0), 0);
-});
-
-test("the staged shape is what the hook stages", () => {
-  // A guard against the fixture drifting from the type: `at` is an ArrivalBeat
-  // and `database` is the group id the nav will be on.
-  assert.equal(BILLING.database, "billing");
-  assert.equal(beatOf(BILLING, BILLING.database, true), "flatten");
+test("the sheet's level is the nav's level, with nothing held back", async () => {
+  // The whole of round 2's `drawnLevel`, asserted as an absence: there is no
+  // longer any function in this module that can make the two disagree.
+  const clock = await import("../components/blocks/useArrival");
+  assert.equal("drawnLevel" in clock, false, "the picture no longer lags the nav");
+  assert.equal("openingOf" in clock, false, "nothing holds a pose for a level any more");
 });

@@ -57,7 +57,7 @@ depth on a drawing sheet is rule weight, inversion and hatch density.
 What this direction tests is not a second opinion about lettering — it deliberately shares `law`'s
 palette, type and polarity — but **structure**: the same survey read at three depths, on one object.
 
-**THE MODEL CHANGED IN ROUND 2, AND L0 IS THREE PROTOTYPES UNTIL THE OWNER PICKS ONE.** Round 1's L0
+**THE MODEL CHANGED IN ROUND 2.** Round 1's L0
 was a three.js cube quartered into four lettered **zones**, with one dot per record — 800 of them —
 inside it. The product owner's review said two things about it: the canvas was hard to manipulate
 with a mouse drag, and four cells was the wrong model. So:
@@ -87,25 +87,50 @@ with a mouse drag, and four cells was the wrong model. So:
   screenshot, and the shot that shows it
   (`examples/journey/shots/round2-tidycrm-quiet/`) is forced and says so in its name. That test also
   fails the day a table goes clean, which is the day to go and look at it;
-- **three prototypes of L0 are on the page at once**, behind a segmented switcher remembered in
-  `localStorage` and reflected in the URL (`?l0=plate`), defaulting to `plate`. Only one mounts.
-  Each lives in `components/blocks/l0/<variant>/` and shares nothing but `l0/contract.ts`:
-  **plate** is nine tiles on one 2.5D CSS plate that the pointer tilts a few degrees and nothing
-  drags; **slab** is the nine as a 3x3x1 WebGL slab; **octants** is the round-1 cube split 2x2x2
-  with a centre core for the ninth. Both WebGL prototypes replace the free drag with four named
-  poses reachable by button and by arrow key. **Two of the three will be deleted** once the owner
-  has chosen, and the switcher goes with them.
+- **the owner chose the octants.** Round 2 put three drawings of the nine on the page behind a
+  switcher — a 2.5D CSS plate, a WebGL 3x3x1 slab, and the round-1 cube split 2x2x2 with a centre
+  core for the ninth — so the choice could be made from live builds. It was: the cube. The plate and
+  the slab, the switcher and `useVariant.ts` are deleted; `l0/contract.ts` keeps only what was never
+  about which drawing was in the frame.
 
-Opening a database flattens its table dots onto a plane and the database arrives on top of them as a
-grid of its tables. Opening a table raises its dossier over the sheet: the verdict, the four checks,
-the offending rows, the identity pair, and the merge behind the inverted title block.
+**ROUND 3: L0 AND L1 ARE ONE SPACE, AT TWO CAMERA DISTANCES.** This is the round's concept test and
+it is the largest change the direction has made. There is no longer a picture at L0 and a page at L1:
 
-**THE PLANE IS PUBLISHED, NOT DERIVED**, and that is what lets one arrival serve three pictures.
-Every prototype renders one inert `.bk-l0-plane` box at the rectangle its own picture flattens into;
-`components/blocks/field/useLanding.ts` measures that one element and never asks which prototype is
-mounted. The WebGL ones size theirs from the camera arithmetic in `model/flatten.ts`; the CSS plate
-lays its opened tile onto its own, which is why its whole flatten is a single transform on a single
-element.
+- **the cube has a real camera.** Drag orbits with inertia, the wheel zooms anchored at the pointer,
+  two fingers pinch, the arrows orbit and `+`/`-` zoom from the keyboard, `Home` resets. The four
+  named poses survive as a MAGNET rather than as a navigation model — release within about nine
+  degrees of one and the pose settles onto it; stop anywhere else and it is left exactly where the
+  reader put it. That is the owner's note acted on in both halves: "mouse drag into the canvas does
+  not do anything", and "zoom in and out on mouse wheel would be helpful for cases the content will
+  grow";
+- **opening a database is the camera flying INTO that octant**, where the database's tables are
+  already standing as a 3x2 grid of slabs. The other eight octants recede — `emphasis()` through a
+  floor of 0.24, because they are the walls of the room the reader is now inside — and stay in the
+  world, so a reader always knows which corner of the cube they are in. Zooming back out past the
+  band returns to L0; Escape does the same;
+- **a dot becomes a slab.** At L0 one dot is one table; inside a database that same table is a slab
+  with its name on it, and the dots go out as the camera goes in. The semantic zoom is stated in the
+  one place a reader can see it;
+- **the slab is the box and the label is the ink.** The slab — a sheet-coloured face, a rule round
+  it, and the table's tone on its leading edge — is drawn by `three`. Its name, ident, record
+  cluster and three figures are DOM, projected onto it by `components/blocks/field/useProjector.ts`
+  on every pose the rig emits. The argument for DOM rather than billboards is in that file and it is
+  three-part: the type is the sheet's (a sprite cannot read a token), a sprite is not reachable by
+  keyboard or screen reader, and the card has to be a measurable box. The card is PORTRAIT because a
+  slot in a 3x2 grid on a cube's face is about 1.8 times as tall as it is wide, and
+  `test/space.test.ts` fails if the slab and the card stop agreeing about that;
+- **L2 is still a page.** The dossier is text and actions and belongs on paper. The camera holds
+  under it, and the card rises out of the cell's projected box and lowers back into it.
+
+Opening a table raises its dossier over the sheet: the verdict, the four checks, the offending rows,
+the identity pair, and the merge behind the inverted title block.
+
+**THE PUBLISHED PLANE IS GONE, AND SO IS THE HAND-OFF.** Rounds 1 and 2 had two pictures with a
+seam between them, and a published `.bk-l0-plane` box plus `field/useLanding.ts` existed to hide it:
+the L0 picture flattened its dots onto that rectangle and the arriving DOM cells were measured onto
+it before they were allowed to move. A camera that never leaves the scene has no seam, so the plane,
+the measurement, the landing beat and the travel beat are all deleted, and `model/flatten.ts` is
+`model/lens.ts` — two numbers, the camera's resting distance and its field of view.
 
 The atmosphere is still. Nothing pulses, nothing spins, and nothing implies work is happening —
 because Athena is not connected to this app and a surface that breathes reads as one that is
@@ -229,13 +254,15 @@ All three faces are self-hosted through `next/font` at the module scope of the p
 fabricated content" ban in §9. What is adopted is the section's actual constraints:
 
 - **The entry is the instrument, not an introduction to it.** `/` opens on the sheet itself,
-  in survey order: sheet head, then the level rail and command bar, then the plate. There is no
+  in survey order: sheet head, then the world, then the legend and the caption under it. There is no
   banner above the work.
 - **One primary CTA.** No secondary "learn more".
 - **No filler chrome.** No "scroll to explore", no bouncing chevrons, no scroll arrows.
 - **No overlapping content.** Text never sits on top of other text or on an image. The one deliberate
-  overlap is the arrival itself — the flattened plate and the cells that land on it are the same
-  object mid-move, for about a second — and it is `aria-hidden` on the way out.
+  overlap is round 3's L1, where the type stands ON the object: a projected label is the face of the
+  slab under it, sized and placed by the same arithmetic the slab is drawn from, and it is taken out
+  entirely rather than allowed to overprint when the reader orbits far enough that the slabs are
+  edge-on.
 
 The entry section states plainly that **Athena is not connected to this app**, and describes her
 capabilities in the present tense of the manifest — what she *would* be allowed to do and which of
@@ -297,55 +324,88 @@ and its rules are adopted. Durations and easings are tokens (`--bk-dur-*`, `--bk
     render it first appears in and reads `layoutId` off the props it had then; the L1 cells withheld
     theirs until the arrival settled, so nothing was ever registered and the dossier — which
     carried the matching id — found nothing to travel from and appeared at full size on frame zero.
-    The cells are now REMOUNTED at the settle, which is the only frame the library will read the id
-    on. The guard that withholds the id during the arrival stands: `layoutId` makes `motion` the
-    owner of an element's `transform` and the arrival owns it first.
+    Round 2 fixed it by REMOUNTING the cells at the settle.
+  - **Round 3 removed the morph entirely, and this is the round's sharpest finding.** The L1 cell is
+    positioned by a projection this app writes onto an ancestor element on every frame the camera
+    pose changes; `motion`'s shared-layout system owns the transform of the elements it morphs and
+    measures their ancestors when the morph begins. **Two systems cannot own one element's
+    transform.** Symptom: after a single orbit at L1 the dossier opened frozen at the cell's own
+    size, at zero opacity, and never animated out of it — reproduced in a probe, not inferred. So
+    the card is MEASURED out of the cell instead. `riseFrom()` in `Dossier.tsx` reads the cell's box
+    on the frame the card opens, and the card grows from that scale and offset to its own on
+    `--bk-dur-4`, reversing on the way out. The reader sees the same move, it costs two fewer long
+    tasks (the measured morph was 62–97 ms on open-item under `next dev`; the rise is zero), and
+    nothing has to agree about who owns a transform. `sharedIdentity` is no longer imported by this
+    app, which is a deletion the formula should hear about rather than a preference.
 - **Staggered orchestration.** Lists and grids never mount instantly; they cascade at an offset per
   index (`--bk-stagger`), capped so a long list does not take seconds to arrive.
 - **Animate only `transform` and `opacity`.** Never `top`/`left`/`width`/`height`.
 - **The formula's primitives are the kit's** (`@athena/demo-kit/zoom`, consolidation round). Five
   things this direction had built for itself are now imported: `useLevelFlight` (rule 1 and 6),
-  `presenceOf` / `presenceStyle` (rule 7), `sharedIdentity` (rule 2), `useTokens` / `parseBezier` /
-  `secs` (rule 4) and `useOverlayEscape` (rule 5). The refactor is visible nowhere — the settled
+  `presenceOf` / `presenceStyle` (rule 7), `sharedIdentity` (rule 2 — dropped again in round 3, see
+  below), `useTokens` / `parseBezier` / `secs` (rule 4) and `useOverlayEscape` (rule 5). Round 3 adds
+  three more: `useCameraRig`, `useSemanticZoom` and `zoomAt`. The refactor is visible nowhere — the settled
   L0, L1 and L2 stills are pixel-identical across it — and what it deleted is the interesting part:
   - **`escapeAbortsArrival` and `arrivalAbandoned` are gone**, and so is the window listener and the
     abort callback under them. Both existed because the move was committed to the nav only at its
-    halfway point: the flatten ran at L0, where the kit correctly declines Escape, and the beats ran
-    on timers that had no way to notice the reader had walked out. `openFromPlate` now tells the nav
-    FIRST, so the flatten happens inside a real flight — `moving` is true from that frame, the nav's
+    halfway point: the move ran at L0, where the kit correctly declines Escape, and the beats ran
+    on timers that had no way to notice the reader had walked out. `openDatabase` now tells the nav
+    FIRST, so the move happens inside a real flight — `moving` is true from that frame, the nav's
     own listener answers Escape with `abort()` (back to the focus the move left, not up out of a
     level nobody arrived at), and "has this been abandoned" stops being a question because the beats
     are keyed to the database the nav is actually on.
-  - **The sheet still draws the plate for the length of the flatten.** The nav being at L1 while the
-    picture has not handed over is the truth of it — the reader has chosen — but rule 1 says the
-    level you leave carries the camera, so `useArrival` returns the level the SHEET reads and
-    `Blocks.tsx` uses that. The one externally visible consequence is that `read_view` reports L1
-    about four hundred milliseconds earlier than it used to, which `open_group`'s `settles_in_ms`
-    already told its caller to expect.
+  - **The sheet's level is the nav's level again (round 3).** Round 2 had `useArrival` return a
+    level the SHEET read, four hundred milliseconds behind the nav's, because the picture at L0 and
+    the page at L1 were two different things and one had to be held back while the other assembled.
+    One scene at two distances needs no such lie, so `drawnLevel` and `openingOf` are deleted and
+    `test/arrival.test.ts` asserts their ABSENCE — the clearest measurement the concept produced.
   - **The legend's recede comes from the model.** `Keys.tsx` writes each key's opacity from
     `presenceOf(focus, id)` rather than from a `0.62` in the stylesheet, with a `floor` (the eight
     databases the reader did not choose stay legible enough to change their mind about) and
     `depth: 0` (a legend key is a row in a list; a row that shrinks reads as a control that has been
     disabled). Both are written down at the call site as decisions rather than taste.
-- **A move has to be followable — and abandonable.** The L0 → L1 arrival is four named beats and
-  **about 1.2 seconds**, because a move nobody can watch is indistinguishable from a cut and a move
-  nobody can stop is not the reader's. It used to be about three, and the three seconds were not
-  what made it legible: the beats **ran end to end**, each waiting for the last to finish. They now
-  OVERLAP — the travel starts as soon as the cells have been measured onto the canvas, and the
-  dressing starts as the first cells reach their places rather than after the last one — so the
-  order a reader reads the move by (the dots arrive, the dots travel, the blocks acquire their
-  names) is unchanged and only the waiting is gone.
-  - **One source for the numbers.** `components/blocks/beats.ts` decides them. The clock
-    (`useArrival.ts`) imports it, all three L0 prototypes run their flatten off it, the cost
-    `open_group` advertises to an agent is derived from it, and `test/beats.test.ts` reads
-    `style/base/tokens.css` and fails if a `--bk-beat-*` token has drifted — a stylesheet cannot
-    import a module, so the agreement is asserted rather than shared. The three copies this replaces
-    disagreed: the clock said 1960ms, the tool told agents 2900ms.
-  - **Every beat is escapable.** The kit declines Escape at L0 (`zoom/escape.ts`, correctly — there
-    is nowhere above it to go), which left the flatten as a window with no way out; the reader
-    pressed Escape and arrived at L1 anyway. `escapeAbortsArrival` claims the key for exactly that
-    window and the picture comes back. The legend keys stay live throughout, so a reader who has
-    watched the wrong cell start to come apart can simply press another one.
+- **THE CAMERA IS THE MOVE (round 3).** There is one rig, created in `Blocks.tsx` from
+  `@athena/demo-kit/zoom`, and everything that changes the level goes through it.
+  - **Drag, wheel, pinch, keys, Home.** Orbit with inertia; the wheel zooms anchored at the pointer;
+    the arrows orbit and `+`/`-` zoom; `Home` flies back to the resting pose. The rig is bound to the
+    canvas's FRAME rather than to the canvas, so a drag that starts on an L1 card still orbits — and
+    a pointer that travelled more than five pixels is therefore not a click on that table.
+  - **The four poses are a magnet, not a menu.** `snapNear()` puts a released pose onto a named one
+    only when it is within about nine degrees of it, and declines entirely inside a database. "Do
+    not fight the user" is the whole of the rule: a pose the reader chose is never tidied away.
+  - **Camera distance IS the level (`useSemanticZoom`).** Crossing zoom 1.45 outward returns to L0;
+    crossing it inward opens whichever octant is nearest the view axis. Every nav change from
+    anywhere else — a click, a legend key, an agent's `open_group`, Escape, an abort — is flown to
+    `poseFor(focus)`, so a tool produces exactly the flight a click does. The second band is
+    deliberately unreachable: **L2 is not a camera distance on this sheet**, the dossier is a page,
+    and the camera holds under it. `useSemanticZoom` wants two numbers and that is the honest way to
+    give it two when the surface has one.
+  - **Arriving by wheel arrives where clicking would have.** The contract's camera-driven change does
+    not fly, by design. That is right for an orbit and wrong for an arrival here, because the slabs
+    stand in the plane the camera flies in along and the reader's wheel has no opinion about that
+    plane: crossing the band from the resting pose landed beside a rank of cards seen edge-on. So the
+    crossing itself gets one flight, to the pose a click would have flown to, exactly once — and
+    afterwards the camera is the reader's again.
+- **A move has to be followable — and abandonable.** The L0 → L1 arrival is **two** named beats and
+  **1.12 seconds**: `flight` (the camera travels, 620 ms) and `dress` (the tables write on what they
+  only carry at this depth, 440 ms), plus a 60 ms settle pad. It was four beats in round 2, and the
+  other two — `land` and `spread` — existed only to hide the seam between a WebGL L0 and a DOM L1.
+  There is no seam. 620 ms is over the formula's 400 ms budget for a DOM level change and inside its
+  guardrail for a canvas one ("may stage longer but must be abortable"): a camera crossing eight
+  world units while turning to face a corner reads as a jump cut at 400.
+  - **Box then ink, in two technologies.** The slab is the box and it comes up with the flight; the
+    projected label is the ink and it may not be drawn until the camera has stopped, because type
+    carried through a moving perspective divide slides and rescales every frame and there is no size
+    at which it can be read.
+  - **One source for the numbers, and the camera reads it too.** `components/blocks/beats.ts`
+    decides them; `--bk-beat-flight` mirrors `FLIGHT` into the cascade and is handed to the rig as
+    its `flyToken`, so the flight's length is read out of the token file rather than typed at a
+    hook. `test/beats.test.ts` parses the token file, fails on any drift, and fails if the three
+    deleted beats' tokens outlive the beats.
+  - **Every beat is escapable.** `openDatabase` tells the nav first, so the flight is real from the
+    frame the reader chooses: `moving` is true, the kit's own listener answers Escape with `abort()`
+    and the camera flies straight back out. The arrival CLAIMS the kit's level flight and holds it
+    through the dressing, because the camera stopping is not the end of the move.
 - **An overlay owns the key it took.** `aria-modal="true"` is a promise to the kit's Escape
   listener, and a modal that makes it and then answers nothing is a box with no keyboard way out.
   A surface that takes focus gives it back: the dossier returns focus to the cell it grew out of.
@@ -357,8 +417,10 @@ and its rules are adopted. Durations and easings are tokens (`--bk-dur-*`, `--bk
   other end and calls it `data-ink="after-box"`; this is the same attribute and the same two beats.
 - **The L1 grid is one tab stop with arrow keys.** Left and right step a cell, up and down step a
   row, Home and End go to the ends, and nothing wraps off the edge. Where the step goes is
-  `model/keys.ts`, shared with the plate prototype, because two grids owing a keyboard reader two
-  different answers is how they learn not to trust either.
+  `model/keys.ts`. The handler STOPS THE KEY PROPAGATING, which round 3 made necessary: the element
+  it would bubble to is the camera rig, whose arrows orbit. Two things that both want the arrow keys
+  is the one place this level could have taken the reader's control away, and focus decides — on a
+  card the arrows walk the grid, on the frame they turn the camera.
 - **Perpetual micro-loops** on components that represent live agent state — and *only* those. This is
   where the app amends the skill: `taste-design` wants an infinite loop on every active component,
   but in a governed app a thing that pulses forever reads as "working". Nothing may imply Athena is
@@ -375,22 +437,22 @@ and its rules are adopted. Durations and easings are tokens (`--bk-dur-*`, `--bk
   particle field, once converged, ran `sin(t + i)` into a thousand motes and re-uploaded the buffer
   **every frame, forever**, for a displacement invisible at that point size. The field is gone with
   the cube it decorated; what keeps the claim true is unchanged in kind.
-  - Both WebGL prototypes are **demand-driven** (`frameloop="demand"`): React's commits invalidate,
-    and every `useFrame` asks for the next frame only while it still has somewhere to go. A settled
-    slab and a settled octant cube each issue **zero** draw calls in a 1.5 s window — measured, not
-    asserted, by `examples/journey/shots/round2-tidycrm-after/after.mjs`, which patches the WebGL
-    draw entry points and counts them. The flatten is the one exception and runs on a continuous
-    loop, because the DOM waits on it as a duration and a stalled flatten strands the reader.
-  - Once the level has changed, the canvas stops rendering entirely. It stays MOUNTED — the L1 cells
-    are measured onto the plane it is holding — but it holds its last frame rather than drawing
-    behind a layer running to `opacity: 0`.
-  - The **plate** prototype has no canvas, no WebGL context and no animation frame at all. Its tilt
-    is a `rotate3d` on one wrapper driven by two custom properties written on pointer move, so the
-    compositor does it and the main thread does not. It is the cheapest of the three by a wide
-    margin, and the only one that works with WebGL unavailable.
+  - The scene is **demand-driven** (`frameloop="demand"`) and there is no continuous loop anywhere:
+    the rig's `subscribe` invalidates on every pose it emits, a hover that changes a weight
+    invalidates once, and nothing else asks for a frame. The world is mounted at every level and a
+    settled world issues **zero** draw calls in a 1.5 s window **at L0 and at L1 alike** — measured,
+    not asserted, by `examples/journey/shots/round3-tidycrm/after.mjs`, which patches the WebGL draw
+    entry points and counts them, and which now probes at rest twice. In flight the same window
+    costs about 2,100–2,700 calls across 70–90 frames, with no long task at any level change.
+  - **Reduced motion lands the SCENE at frame zero too, not only the stylesheet.** Rule 8 is easy to
+    keep in CSS and easy to miss in a `useFrame`: the per-frame lerps that fade eight octants back
+    and bring five slabs up were still running half a second of animation for a reader who had asked
+    for none. They now jump. Measured: the same open-group window costs **about 2,400 draw calls
+    with motion on and 93 with it turned down**.
 - **Per-frame allocation is a perpetual layer too.** A `new Matrix4()` or `new Color()` inside a
   `useFrame` is garbage at frame rate; both are hoisted, and instance colours — a stored flag, not a
-  state of the move — are written once rather than on every frame of every flatten.
+  state of the move — are written once rather than on every frame. The table dots are placed into
+  their instanced mesh ONCE, on the first frame they exist, because they no longer travel anywhere.
 
 ---
 

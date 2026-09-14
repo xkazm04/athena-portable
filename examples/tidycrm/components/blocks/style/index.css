@@ -28,6 +28,6 @@
 @import "./chrome/sheet-foot.css";
 @import "./chrome/responsive.css";
 @import "./base/reduced-motion.css";
-@import "./base/reduced-motion-2.css";
-@import "./base/reduced-motion-3.css";
+@import "./level1/l1-cells.css";
+@import "./level1/l1-dress.css";
 @import "./chrome/toast.css";

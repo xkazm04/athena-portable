@@ -27,7 +27,7 @@
  *   rows        one contact, and one unadjudicated identity pair
  *   tables      one block
  *   databases   the nine, where they sit, which blocks they own, and the sheet
- *   flatten     the plane the picture becomes, and the camera looking at it
+ *   lens        the camera the one scene is seen through
  *   keys        where an arrow key moves inside a grid of cells
  *   vocabulary  finding things by id, and what a passing check says
  */
@@ -35,6 +35,6 @@ export * from "./model/deviations";
 export * from "./model/rows";
 export * from "./model/tables";
 export * from "./model/databases";
-export * from "./model/flatten";
+export * from "./model/lens";
 export * from "./model/keys";
 export * from "./model/vocabulary";

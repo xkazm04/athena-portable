@@ -3,11 +3,20 @@
 /**
  * The dossier's head: which block this is, and what is outstanding on it.
  *
- * It carries the same cluster the cell carried and the cube before it, matched
- * by id, so the block's own shape follows it all the way down rather than the
- * card arriving as a new object.
+ * It carries the same cluster the cell carried and the scene before it, so the
+ * block's own shape follows it all the way down rather than the card arriving as
+ * a new object.
+ *
+ * ROUND 3 UNMATCHED THE IDS. Rounds 1 and 2 carried a `layoutId` from the cell
+ * to each of these, so the cluster and the name physically travelled. That
+ * cannot survive a camera: the cell is positioned by a projection written
+ * outside React on every frame the pose changes, and a shared-layout morph
+ * measured against a box an ancestor transform owns arrives at the wrong place
+ * — after one orbit at L1 the card opened stuck at the cell's own size, at zero
+ * opacity, and never animated out of it. The continuity is unchanged and the
+ * mechanism is the sheet's own now: the card RISES out of the cell's projected
+ * box. The argument is in `Dossier.tsx`.
  */
-import { motion } from "motion/react";
 import type { RefObject } from "react";
 
 import { Cluster } from "../Cluster";
@@ -27,18 +36,14 @@ export function DossierHead({
     <div className="bk-dossier-head">
       <div className="bk-dossier-top">
         {/* The same cluster the cell carried, and the cube before it. */}
-        <motion.span layoutId={`cluster-${table.ident}`} className="bk-dossier-cluster">
+        <span className="bk-dossier-cluster">
           <Cluster marks={table.marks} />
-        </motion.span>
+        </span>
         {/* The name leads here too, the way it does on the cell it grew out of; the block code
             and the domain are the quiet identifiers that follow it. */}
-        <motion.h2
-          layoutId={`table-name-${table.ident}`}
-          className="bk-dossier-title"
-          id="bk-dossier-title"
-        >
+        <h2 className="bk-dossier-title" id="bk-dossier-title">
           {table.name}
-        </motion.h2>
+        </h2>
         <span className="bk-ident">{table.ident}</span>
         <span className="bk-ident">{table.domain}</span>
         <button

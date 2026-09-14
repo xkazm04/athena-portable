@@ -92,18 +92,20 @@ test("the two washes are a different ink, not a different strength", () => {
   }
 });
 
-test("the stylesheet draws the two states apart, on the tile and on the key", () => {
+test("the stylesheet draws the two states apart on the legend key", () => {
+  // ROUND 3 LOST THE OTHER HALF OF THIS TEST, and it is a deletion rather than a
+  // regression: the CSS plate was one of round 2's three L0 prototypes and the
+  // owner chose the octants, so `.bk-plate-tile` no longer exists. The picture's
+  // half of the rule is `fillInk`/`fillOpacity` above, which is where a `three`
+  // material reads it; the legend is the only place it is still CSS.
   const rule = (selector: string): string => {
     const at = CSS.indexOf(`${selector} {`);
     assert.ok(at >= 0, `level0/l0.css declares no \`${selector}\``);
     return CSS.slice(at, CSS.indexOf("}", at));
   };
-  assert.match(rule('.bk-plate-tile[data-fill="quiet"]'), /--bk-greenline/);
-  assert.match(rule('.bk-plate-tile[data-fill="fault"]'), /--bk-redline/);
   assert.match(rule('.bk-db-key[data-fill="quiet"]'), /--bk-greenline/);
   assert.match(rule('.bk-db-key[data-fill="fault"]'), /--bk-redline/);
-  // The red LAYER is the fault state's alone: the base tile paints it at zero,
-  // so a quiet tile carries no red at any strength.
-  assert.match(rule(".bk-plate-tile::before"), /opacity: 0;/);
-  assert.match(rule('.bk-plate-tile[data-fill="fault"]::before'), /var\(--fault, 0\)/);
+  assert.match(rule('.bk-db-key[data-fill="quiet"] .bk-db-key-measure i'), /--bk-greenline/);
+  assert.match(rule('.bk-db-key[data-fill="fault"] .bk-db-key-measure i'), /--bk-redline/);
+  assert.doesNotMatch(CSS, /bk-plate-tile/, "the plate prototype is gone, not hidden");
 });

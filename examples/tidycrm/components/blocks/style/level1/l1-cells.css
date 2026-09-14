@@ -1,78 +1,81 @@
-/* ================================================================= L1 tiles */
+/* ============================================================== L1 labels */
 
 /*
- * One tile is one table. Four figures and nothing else: the
- * coverage bars, deviation breakdowns and clauses the ruled list carried are
- * all one click away, and taking them out is what lets twelve blocks sit on one
- * screen at a size worth clicking.
+ * ONE LABEL IS ONE TABLE, standing on the slab the scene draws for it.
+ *
+ * ROUND 3 TOOK THE GROUND AWAY, and that is the whole change in this part. A
+ * round-2 cell was a card: a ground, a rule, an inner edge in the table's tone,
+ * and a cluster beside a column of text. The ground is now a solid IN THE SCENE
+ * — a sheet-coloured slab inside the database's octant, with the tone on its
+ * leading edge — and drawing a second one in the DOM on top of it would hide
+ * the object the level is about. So what is left here is the INK: the cluster,
+ * the name, the ident and the figures, and nothing that is a box.
+ *
+ * That is formula §1 rule 3 with its two halves in two technologies, and it is
+ * also why the card is PORTRAIT. Six tables in a cube's face is three across and
+ * two down, so a slab is half again as tall as it is wide; round 2's landscape
+ * arrangement does not fit that box at any type size worth reading.
  */
-/*
- * The cluster field. Three columns, because the L0 picture flattens into three
- * columns, and one cell per table in the same order — the two agree through
- * `FLAT_COLS` so the hand-off from the picture to the DOM lands rather than cuts.
- */
+
+/* The label layer's own box. Absolute, so the wrappers inside it are positioned
+   against the frame the projection was computed in, and inert, so the space
+   between two cards still belongs to the camera. */
 .bk-cells {
-  display: grid;
-  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
-  gap: var(--bk-s4);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
+/*
+ * THE CARD IS SIZED TO ITS SLAB, not to the sheet's usual rhythm. `--bk-label-w`
+ * is its width, and the slab it stands on is drawn at about 1.75 times that
+ * (`space/geometry.ts` explains the two gutters), so the padding and the gaps
+ * here are the tight end of the spacing scale. A card that overflowed would
+ * print its last figure on the volume behind the box rather than on the box.
+ */
 .bk-cell {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: var(--bk-s3);
-  padding: var(--bk-s3);
-  background: var(--bk-sheet);
-  border: var(--bk-rule-1) solid var(--bk-rule-ink);
-  border-inline-start: var(--bk-rule-3) solid var(--bk-rule-ink);
+  justify-items: start;
+  align-content: start;
+  gap: var(--bk-s1);
+  inline-size: 100%;
+  block-size: 100%;
+  padding: var(--bk-s2);
+  background: none;
+  border: var(--bk-rule-1) solid transparent;
   border-radius: var(--bk-radius-0);
   text-align: start;
   cursor: pointer;
-  /*
-   * The pivot is the cluster's own centre, written in by the measurement, so
-   * the cell scales around its dots rather than around its corner. Nothing here
-   * touches the box: the cell keeps its final size and padding through the
-   * whole arrival, because a cell whose layout changes mid-move drags its
-   * cluster off the dots it is supposed to be standing on.
-   */
-  transform-origin: var(--ox, 50%) var(--oy, 50%);
-  /* One wave across the grid, `--i` being the cell's own place in it: the
-     travel is staggered tightly so twelve blocks read as a shoal, and the
-     ground behind them arrives on the slower `--bk-stagger` beat. */
-  transition:
-    transform var(--bk-beat-spread) var(--bk-ease-in) calc(var(--i, 0) * var(--bk-stagger-tight)),
-    background-color var(--bk-beat-dress) var(--bk-ease) calc(var(--i, 0) * var(--bk-stagger)),
-    border-color var(--bk-beat-dress) var(--bk-ease) calc(var(--i, 0) * var(--bk-stagger));
+  transition: border-color var(--bk-dur-2) var(--bk-ease);
 }
 
-.bk-cell:hover {
-  background: var(--bk-vellum);
+/*
+ * HOVER AND FOCUS ARE A RULE, NOT A WASH. The slab behind the card is already
+ * the ground; a background here would put a second sheet on top of the first.
+ * The rule is drawn in graphite at the sheet's own weight, which is the same
+ * mark `.bk-db-key` uses for the same meaning.
+ */
+.bk-cell:hover,
+.bk-cell:focus-visible {
   border-color: var(--bk-graphite);
 }
 
-.bk-cell[data-tone="redline"] {
-  border-inline-start-color: var(--bk-redline);
-}
-
-.bk-cell[data-tone="goldline"] {
-  border-inline-start-color: var(--bk-goldline);
-}
-
-.bk-cell[data-tone="greenline"] {
-  border-inline-start-color: var(--bk-greenline);
+.bk-cell:focus-visible {
+  outline: var(--bk-rule-2) solid var(--bk-graphite);
+  outline-offset: var(--bk-rule-1);
 }
 
 .bk-cell-cluster {
   display: block;
-  inline-size: 4.5rem;
-  block-size: 4.5rem;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
   flex: none;
 }
 
 .bk-cell-body {
   display: grid;
-  gap: var(--bk-s3);
+  gap: var(--bk-s1);
+  inline-size: 100%;
   min-inline-size: 0;
 }
 
@@ -89,7 +92,7 @@
   overflow: visible;
 }
 
-/* The three states, in the print's own ink — the same three the L0 picture uses. */
+/* The three states, in the print's own ink — the same three the scene uses. */
 .bk-cluster-dot[data-mark="0"] {
   fill: var(--bk-graphite);
 }
@@ -110,38 +113,13 @@
 }
 
 /*
- * The arrival, in four beats. `Blocks.tsx` owns the clock; these rules own what
- * each beat looks like. The order matters more than any single duration: the
- * dots arrive first and alone, they travel, and only then does anything appear
- * that was not already in the L0 picture.
+ * BEAT ONE — flight. The camera is travelling and the labels are not drawn at
+ * all. Not a fade: type that travels through a perspective divide is type
+ * sliding and rescaling every frame, and there is no size at which anybody can
+ * read it. The slab is what the reader follows into the database; the words
+ * arrive when it has stopped.
  */
-
-/*
- * Beat one — land. Every cell is pushed onto the cluster the canvas is drawing
- * for it, and there is nothing else to see: no ground, no rule, no text. The
- * grid is not painted at all until the measurement has been written, or the
- * first frame would show twelve cells in the wrong place, which is the cut this
- * whole mechanism exists to avoid.
- */
-.bk-cells[data-phase="land"]:not([data-measured="true"]) {
-  visibility: hidden;
+.bk-cells[data-phase="flight"] .bk-cell-at {
+  opacity: 0;
+  pointer-events: none;
 }
-
-.bk-cells[data-phase="land"] .bk-cell {
-  transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(var(--s, 1));
-  transition: none;
-}
-
-/*
- * Beat two — spread. The transform is simply dropped, so each block travels
- * from the plate to its place in the grid under the transition the cell already
- * carries, staggered by its own index. Still undressed: what moves is twelve
- * clusters of dots, not twelve cards.
- */
-.bk-cells[data-phase="land"] .bk-cell,
-.bk-cells[data-phase="spread"] .bk-cell {
-  background-color: transparent;
-  border-color: transparent;
-  cursor: default;
-}
-

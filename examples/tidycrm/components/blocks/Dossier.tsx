@@ -74,6 +74,34 @@ function cellFor(ident: string): HTMLElement | null {
   );
 }
 
+/** How wide the card will be, which is `l2-dossier.css`'s `min(1180px, 100%)`. */
+const CARD_W = 1180;
+
+/**
+ * Where the card comes from: the cell's own projected box, as a transform.
+ *
+ * Measured rather than guessed, and measured ONCE — during the render that opens
+ * the card, before the cell's ink leaves and before anything moves. Scale is the
+ * cell's width over the card's, which is what makes the two boxes the same size
+ * at the first frame; `x` and `y` carry the cell's centre against the card's,
+ * which is the middle of the viewport. If the cell cannot be found — an agent
+ * opened the card from a level where it is not drawn — the card rises from the
+ * middle, slightly small, which is the same move with nowhere particular to come
+ * from.
+ */
+function riseFrom(ident: string): { opacity: number; scale: number; x: number; y: number } {
+  const cell = typeof document === "undefined" ? null : cellFor(ident);
+  const box = cell?.getBoundingClientRect();
+  if (!box || box.width === 0) return { opacity: 0, scale: 0.94, x: 0, y: 0 };
+  const w = Math.min(CARD_W, window.innerWidth);
+  return {
+    opacity: 0,
+    scale: Math.max(0.05, box.width / w),
+    x: box.left + box.width / 2 - window.innerWidth / 2,
+    y: box.top + box.height / 2 - window.innerHeight / 2,
+  };
+}
+
 export function Dossier({
   table,
   onClose,
@@ -92,9 +120,25 @@ export function Dossier({
   const closeRef = useRef<HTMLButtonElement>(null);
 
   const ident = table.ident;
+  /* Where the card grows from, read ONCE on the frame it opens: a later read
+     would measure a cell whose ink has already left, or a camera that has
+     moved. The card is keyed by the table in `Blocks.tsx`, so a change of table
+     is a new card and gets its own measurement. */
+  const [rise] = useState(() => riseFrom(table.ident));
   /* Escape, and the focus this card owes whoever opened it. The kit's, because
      all three apps had written the same thing. */
-  const overlay = useOverlayEscape({ onClose, returnFocusTo: () => cellFor(ident) });
+  /*
+   * `prefer: "origin"`, which closes round 2's own gap in this app's list — "the
+   * kit always prefers the opener; a pane that grew out of a card wants the card
+   * to win". Round 3 made the case unanswerable rather than merely untidy: the
+   * element the reader was on when they opened a dossier is often the CAMERA
+   * FRAME (it takes focus on a drag, and it is where an agent's `open_item`
+   * leaves focus), and putting them back on the frame hands the arrow keys to
+   * the camera instead of to the grid they were just reading. The table's own
+   * cell is the object the card grew out of and where a reader watching the move
+   * expects to be put down.
+   */
+  const overlay = useOverlayEscape({ onClose, prefer: "origin", returnFocusTo: () => cellFor(ident) });
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -157,7 +201,28 @@ export function Dossier({
     >
       {/* The scrim is `Blocks.tsx`'s, not this card's — see the note there. */}
       <motion.div
-        layoutId={`table-${table.ident}`}
+        /*
+         * IT RISES OUT OF THE CELL, and round 3 changed how.
+         *
+         * Rounds 1 and 2 matched a `layoutId` on this box and on the cell, so
+         * the cell physically became the card. That cannot survive a camera. The
+         * cell is positioned by a projection this app writes onto an ancestor
+         * every frame the pose changes, and `motion`'s shared-layout system owns
+         * the transform of the elements it morphs and measures their ancestors
+         * once: after a single orbit at L1 the card opened frozen at the cell's
+         * own size, at zero opacity, and never animated out of it. It is not a
+         * bug in either library. Two systems cannot own one element's transform.
+         *
+         * So the card is measured out of the cell instead — `riseFrom` reads the
+         * cell's box on the frame it opens, before the ink leaves it — and grows
+         * from there on this sheet's own token. The reader sees the same move,
+         * it reverses the same way, and nothing has to agree about who owns a
+         * transform. Formula §1 rule 3: the box travels first and
+         * `l2-dossier.css` holds the card's body back until it has landed.
+         */
+        initial={rise}
+        animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+        exit={rise}
         /* Stated here as well as on the `MotionConfig`, because this is the one
            element whose travel the whole level change is read by: the box the
            reader watches leave the grid. `--bk-dur-4` on `--bk-ease`. */

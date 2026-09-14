@@ -13,23 +13,28 @@
  */
 import { Stat, Stats } from "../Stat";
 import { outstandingTone, type BkDatabase, type BkSheet } from "../model";
+import type { FieldPhase } from "../useArrival";
 
 export function FieldHead({
   sheet,
   database,
+  phase,
   onOpenDatabase,
 }: {
   sheet: BkSheet;
   database: BkDatabase;
+  /** It arrives last of the beats, so it has to know which one is running. */
+  phase: FieldPhase;
   onOpenDatabase: (id: string) => void;
 }) {
   return (
-  <div className="bk-grid-head">
+  <div className="bk-grid-head" data-phase={phase}>
     <div className="bk-grid-title">
       <h2 className="bk-h2">{database.name}</h2>
       <p className="bk-lede">
-        {database.tables.length} tables, {database.span}. One cluster is one table; one dot in it
-        is one of its records, in the place the plate just put it.
+        {database.tables.length} tables, {database.span}. The camera is inside this database:
+        each slab is one of its tables, each dot on a slab is one of its records. Drag to turn
+        the rank, zoom out to come back to the nine.
       </p>
     </div>
     {/*

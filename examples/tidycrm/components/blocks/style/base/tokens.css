@@ -154,12 +154,10 @@
    *
    * Do not retune a number here. Retune it in `beats.ts` and copy it down.
    */
-  --bk-beat-flatten: 420ms;
-  --bk-beat-spread: 360ms;
+  --bk-beat-flight: 620ms;
   --bk-beat-dress: 240ms;
   --bk-beat-dress-text: 170ms;
   --bk-stagger: 12ms;
-  --bk-stagger-tight: 10ms;
   --bk-dress-name: 70ms;
   --bk-dress-figures: 130ms;
   --bk-ease: cubic-bezier(0.2, 0, 0, 1);
@@ -170,12 +168,15 @@
          depth is rule weight, inversion and hatch density. --- */
   --bk-elev-0: none;
 
-  /* The plate prototype's 2.5D, and the only two angles on the sheet. The tilt
-     is small on purpose: enough that the plate reads as a plate seen from
-     slightly above, never enough that a tile's lettering has to be read at an
-     angle. */
-  --bk-tilt: 4deg;
-  --bk-perspective: 60rem;
+  /* THE WORLD'S FRAME. One height at every level, because the canvas is
+     mounted at every level and a box that resized on a level change would be
+     animating something that is not a transform. Deep enough that six table
+     slabs inside one octant are portrait cards a reader can read. */
+  --bk-world-h: clamp(360px, 46cqi, 600px);
+  /* The width a projected L1 label is authored at. `field/useProjector.ts`
+     declares the same number; the scale it writes is the slab's projected
+     width over this, so at the pose `poseFor` flies to the factor is one. */
+  --bk-label-w: 132px;
 
   --bk-rule-1: 1px;
   --bk-rule-2: 2px;

@@ -1,22 +1,5 @@
 /* ---------------------------------------------------------------- L1 grid */
 
-.bk-grid {
-  display: grid;
-  gap: var(--bk-s4);
-  /*
-   * ROWS AT THEIR OWN HEIGHT, at the top of the stage.
-   *
-   * `.bk-stage` stacks L0 and L1 in one grid cell so the arrival can hand over
-   * between them, which means this section is stretched to whatever the L0
-   * picture is tall — and a grid container's default `align-content: normal`
-   * resolves to `stretch`, so its two auto rows split that height between them.
-   * With round 1's single 560px canvas that was invisible; with round 2's nine
-   * tiles it pushed the heading into the middle of the sheet and the cells below
-   * the fold, where they arrived from a plane they were nowhere near.
-   */
-  align-content: start;
-}
-
 /*
  * Title and jump strip on one row, the database's verdict ruled off beneath them.
  * A grid rather than a wrapping flex, so the strip stays pinned to the end edge

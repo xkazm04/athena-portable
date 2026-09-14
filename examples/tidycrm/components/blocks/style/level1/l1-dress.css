@@ -1,19 +1,25 @@
 /*
- * Beat three — dress. Three things, not one, and in this order inside every
- * cell: the ground and the inner rule (on `.bk-cell` above), then the ident and
- * the name, then the figures. Each part carries its own offset behind its cell's
- * ground, and every cell carries `--i * --bk-stagger` behind its neighbour, so
- * what crosses the grid is one wave rather than twelve simultaneous fades.
+ * BEAT TWO — dress. The camera has stopped; the tables acquire the parts they
+ * only have at this depth, in this order inside every card: the cluster of
+ * record dots, then the name and its ident, then the figures. Each part carries
+ * its own offset, and every card carries `--i * --bk-stagger` behind its
+ * neighbour, so what crosses the octant is one wave rather than six
+ * simultaneous fades.
  *
- * Previously `.bk-cell-body` faded in whole, which made the dressing a single
- * event and lost the thing the beat is for: a block acquiring, in order, the
- * parts it only has at this depth.
+ * The order is the argument. The dots were already in the picture — they are
+ * what a table looked like from outside, as one mark in a lattice — so they are
+ * what the level arrives holding, and the words are what only this depth has.
  */
+.bk-cell-cluster,
 .bk-cell-head,
 .bk-tile-figures {
   transition:
     opacity var(--bk-beat-dress-text) var(--bk-ease) var(--bk-dress-at, 0ms),
     transform var(--bk-beat-dress-text) var(--bk-ease) var(--bk-dress-at, 0ms);
+}
+
+.bk-cell-cluster {
+  --bk-dress-at: calc(var(--i, 0) * var(--bk-stagger));
 }
 
 .bk-cell-head {
@@ -24,39 +30,36 @@
   --bk-dress-at: calc(var(--i, 0) * var(--bk-stagger) + var(--bk-dress-figures));
 }
 
-.bk-cells[data-phase="land"] .bk-cell-head,
-.bk-cells[data-phase="spread"] .bk-cell-head,
-.bk-cells[data-phase="land"] .bk-tile-figures,
-.bk-cells[data-phase="spread"] .bk-tile-figures {
+.bk-cells[data-phase="flight"] .bk-cell-cluster,
+.bk-cells[data-phase="flight"] .bk-cell-head,
+.bk-cells[data-phase="flight"] .bk-tile-figures {
   opacity: 0;
+  /* The hidden state takes no delay: leaving has to be immediate, or the ink is
+     still on screen while the camera is already moving. */
+  transition-delay: 0ms;
 }
 
-.bk-cells[data-phase="land"] .bk-cell-head,
-.bk-cells[data-phase="spread"] .bk-cell-head {
+.bk-cells[data-phase="flight"] .bk-cell-cluster {
+  transform: scale(0.82);
+}
+
+.bk-cells[data-phase="flight"] .bk-cell-head {
   transform: translateX(-8px);
 }
 
-.bk-cells[data-phase="land"] .bk-tile-figures,
-.bk-cells[data-phase="spread"] .bk-tile-figures {
+.bk-cells[data-phase="flight"] .bk-tile-figures {
   transform: translateY(6px);
 }
 
 /*
- * Beat four — the heading, last and alone, because it is the only part of this
- * level that was never inside the L0 picture and so has nothing to arrive from. Its
- * box is reserved the whole way through, so nothing below it moves when it
- * lands.
+ * BEAT THREE — the database's own heading, last and alone, because it is the
+ * only part of this level that was never inside the picture and so has nothing
+ * to arrive from. Its box is reserved the whole way through, so nothing below
+ * it moves when it lands.
  *
  * The delay lives on the SHOWN state, not on the hidden one. Written the other
- * way the heading also took 420ms to leave, which meant it was still on screen
- * during `land` — over the top of the cells being measured onto the canvas,
- * which is the one moment nothing may be moving.
- *
- * It rides `--bk-dress-name`, the same offset the lettering inside a cell takes,
- * so the heading and the first block's name are written at the same moment. It
- * used to wait a whole `--bk-beat-dress` and then take `--bk-dur-5`, which on the
- * shortened budget would have left the database's own title still arriving after
- * everything under it had settled.
+ * way the heading also took the delay to LEAVE, which meant it was still on
+ * screen over the top of a camera that had already started moving.
  */
 .bk-grid-head {
   transition:
@@ -64,24 +67,25 @@
     transform var(--bk-dur-3) var(--bk-ease) var(--bk-dress-name);
 }
 
-.bk-grid[data-phase="land"] .bk-grid-head,
-.bk-grid[data-phase="spread"] .bk-grid-head {
+.bk-grid-head[data-phase="flight"] {
   opacity: 0;
   transform: translateY(-10px);
   pointer-events: none;
   transition-delay: 0ms;
 }
 
-/* The L0 picture holds its flattened pose under the cells, then leaves before
-   they start moving away from it. */
+/* The stage is one column now: the world, and the level's own instrument under
+   it. Round 2 stacked L0 and L1 in one grid cell so the arrival could hand over
+   between them; there is one picture to hand over from and nothing to hand it
+   to. */
 .bk-stage {
   display: grid;
-  grid-template: minmax(0, 1fr) / 1fr;
+  gap: var(--bk-s4);
+  align-content: start;
   min-block-size: 0;
 }
 
 .bk-stage > * {
-  grid-area: 1 / 1;
   min-inline-size: 0;
 }
 
@@ -92,9 +96,9 @@
 }
 
 /* The name leads the card; the code follows it. Order is in the markup (Field.tsx) — what is
-   here is only that neither may push the other out of the cell. */
+   here is only that neither may push the other out of the card. */
 .bk-tile-name {
-  font-size: var(--bk-text-md);
+  font-size: var(--bk-text-sm);
   font-weight: 500;
   letter-spacing: var(--bk-track-tight);
   line-height: var(--bk-leading-snug);
@@ -115,26 +119,11 @@
   white-space: nowrap;
 }
 
-/* Arrangement only: three figures in a row, on one baseline, at the one stat scale. */
+/* Three figures STACKED, because the card is portrait: a slab is three columns
+   across an octant's face and half again as tall as it is wide, and three
+   figures on one baseline inside it are three figures nobody can read. */
 .bk-tile-figures {
-  gap: var(--bk-s4);
+  display: grid;
+  gap: var(--bk-s0);
+  inline-size: 100%;
 }
-
-/* ============================================================ responsive */
-
-@container bk-sheet (max-width: 62rem) {
-  .bk-cells {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@container bk-sheet (max-width: 34rem) {
-  .bk-cells {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .bk-tile-figures {
-    gap: var(--bk-s3);
-  }
-}
-
