@@ -180,4 +180,5 @@ export {
   type RectLike,
 } from "./echo-rule";
 export { useEcho, type EchoHandle, type EchoOptions, type EchoState } from "./useEcho";
-export { ECHO_GRACE_MS, Echo, type EchoProps } from "./Echo";
+// The <Echo> component lives at "@athena/demo-kit/zoom/echo": a .tsx file in this barrel would
+// make every consumer's `node --test` that imports the barrel fail on the JSX.

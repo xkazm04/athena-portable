@@ -13,6 +13,7 @@
     "./ui": "./src/ui/index.ts",
     "./seed": "./src/seed/index.ts",
     "./zoom": "./src/zoom/index.ts",
+    "./zoom/echo": "./src/zoom/Echo.tsx",
     "./ui/demo-kit.css": "./src/ui/demo-kit.css",
     "./webmcp": "./src/webmcp/index.ts"
   },

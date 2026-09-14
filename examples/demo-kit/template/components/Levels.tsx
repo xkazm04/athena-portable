@@ -46,8 +46,8 @@ import {
   useReducedMotion,
   type Transition,
 } from "motion/react";
+import { Echo } from "@athena/demo-kit/zoom/echo";
 import {
-  Echo,
   parseBezier,
   poseToTransform,
   presenceOf,
