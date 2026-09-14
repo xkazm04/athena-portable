@@ -17,33 +17,6 @@ const SUFFIXES = [".ts", ".tsx", "/index.ts", "/index.tsx"];
 /** `revalidatePath` needs a request store. Nothing here renders, so the calls are recorded and dropped. */
 const CACHE_STUB = "data:text/javascript,export function revalidatePath(){};export function revalidateTag(){}";
 
-/**
- * The one `.tsx` on the kit's zoom barrel, stubbed.
- *
- * Node 24 strips types out of a `.ts` and refuses a `.tsx` outright, so from the
- * round-3 camera landing onward `import … from "@athena/demo-kit/zoom"` — which
- * every test of this direction's clock does — died on `zoom/Echo.tsx` before it
- * reached the pure module it wanted. The barrel is the kit's and is not this
- * app's to split; a test runner that renders nothing does not need the component.
- *
- * So the ECHO CONTAINER, and only it, resolves to a stub. Everything the tests
- * actually assert against — `parseMs`, `parseBezier`, `secs`, the pose and field
- * arithmetic — is `.ts` and is the real thing. `ECHO_GRACE_MS` keeps its value
- * because it is a number a test may one day want to read; `Echo` is a function
- * that throws, so a test that tried to RENDER it would fail loudly rather than
- * quietly pass against a stub.
- */
-const ECHO_STUB =
-  "data:text/javascript," +
-  encodeURIComponent(
-    "export const ECHO_GRACE_MS = 34;" +
-      "export function Echo(){ throw new Error('zoom/Echo is stubbed under node --test'); }",
-  );
-const isKitEcho = (specifier, parentURL) =>
-  (specifier === "./Echo" || specifier.endsWith("/Echo.tsx")) &&
-  typeof parentURL === "string" &&
-  parentURL.includes("demo-kit/src/zoom");
-
 registerHooks({
   resolve(specifier, context, next) {
     // A build-time marker in Next; under the test runner every module is server-side already.
@@ -52,9 +25,6 @@ registerHooks({
     }
     if (specifier === "next/cache") {
       return { url: CACHE_STUB, shortCircuit: true };
-    }
-    if (isKitEcho(specifier, context?.parentURL)) {
-      return { url: ECHO_STUB, shortCircuit: true };
     }
     const spec = specifier.startsWith("@/") ? new URL(specifier.slice(2), ROOT).href : specifier;
     try {

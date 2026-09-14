@@ -26,13 +26,6 @@
 @import "./level2/l2-dossier.css";
 @import "./level2/l2-dossier-2.css";
 @import "./level2/l2-dossier-3.css";
-/* Round 3 — the three spatial directions. After the levels, because the
-   switcher, the camera and the two new pictures all sit ON the shapes above:
-   `.bd-echo` gains its camera move here, and the order is the cascade. */
-@import "./dir/switch.css";
-@import "./dir/camera.css";
-@import "./dir/rooms.css";
-@import "./dir/constellation.css";
 @import "./chrome/the-foot.css";
 @import "./chrome/responsive.css";
 @import "./base/reduced-motion.css";

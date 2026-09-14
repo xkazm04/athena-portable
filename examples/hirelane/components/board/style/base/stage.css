@@ -56,15 +56,6 @@
  * one element, the fade that carried the scrim also carried the dossier's prose,
  * so it was legible over the card it was still growing out of.
  */
-/*
- * The overlay wrapper: present in the DOM so `.bd-root > *` lands on IT, absent
- * from layout so the two fixed layers inside it keep their own positioning.
- * See the note in `Board.tsx`.
- */
-.bd-overlays {
-  display: contents;
-}
-
 .bd-scrim-layer {
   position: fixed;
   inset: 0;
