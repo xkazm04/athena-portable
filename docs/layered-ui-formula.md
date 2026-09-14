@@ -186,4 +186,63 @@ architecture.
 - *hirelane (round 2 build):* `useLevelInk(nav)` → wait / leave / null; a "highlight for one beat"
   helper, since `nav.highlight` has no expiry.
 
-**Outcome:** *(filled after review)*
+- *ledgerbox (migration):* `presenceStyle` assumes the surface owns no transform — a lane carrying
+  `translateZ` as data cannot take the returned `scale`; needs a "no scale key" option. The kit knows
+  one presence channel (navigation) and has no vocabulary for a second, domain-owned one (the
+  books' "wants a decision"). `fallbackToken` needs an element that does not exist on first render.
+- *tidycrm (migration):* `emphasis()` has no answer for hover, so WebGL cells keep their own weight;
+  `presenceStyle` needed both `depth` and `floor` overridden for a legend rail (a preset would do);
+  same opener-preference bite as hirelane.
+- *atlas (13 logged in `examples/atlas/KIT-GAPS.md`):* the three that matter — `Presence` is an
+  interface motion rejects as a `Target`, so the kit's own template does not typecheck as written;
+  there is no echo container, so rule 1, the headline rule, is still ~30 lines of app code plus CSS
+  in every app; focus does not follow an L0↔L1 change, only L2 is covered. Also `read_view` at L1
+  hands an agent a flat list of 68 component ids with no system structure.
+
+**Outcome** — commits `350cd22` (kit), `bed7a3e` + `48e4482` (hirelane), `a8200ae` + `3857381`
+(ledgerbox), `9b64d2f` + `ef008fd` (tidycrm), `37b5784` (atlas). All gates green everywhere (kit
+69, ledgerbox 29, hirelane 50, tidycrm 63, atlas 30 tests). Four apps run: 3001, 3002, 3004, 3006.
+
+| Axis | Ledgerbox | Hirelane | Tidycrm | Atlas (first) |
+|---|---|---|---|---|
+| Composition per level | 4 → 5 | 4 | 4 → 4* | 4 |
+| Transition choreography | 4 | 4 → 5 | 4 | 3 |
+| User control | 4 → 5 | 4 | 4 → 5 | 3 |
+| Continuity | 4 | 4 → 5 | 4 | 4 |
+| Motion cost | 4 | 3 → 4 | 4 → 5 | 5 |
+
+\* held at 4 until the owner picks one of the three L0 prototypes; the plate reads clearest.
+
+What moved: ledgerbox's L0 now fills a 2560 display and reads at arm's length, quiet marks recede
+by default, L1 carries glyphs, a folded timeline and the legend-as-filter, L2 has one decision
+dialog. Hirelane's heading waits for the echo and the row you return to stays lit; its long task is
+proven dev-only (52 ms once cold in production, then zero). Tidycrm is nine databases of tables
+with three L0 shapes to choose from, all costing nothing at rest, the arrival abortable through the
+kit. Atlas exists, built on the kit alone, and its gap count is the first reading of the distance
+to a reusable formula: **13 gaps on a fresh app, 10 more from three migrations, 7 distinct themes.**
+
+**The migrations paid for themselves twice.** Hirelane's `useTokens` caught Turbopack minifying
+`--bd-dur-2` to `.16s`, which the old TypeScript map never saw. Hirelane's `nav.abort()` exposed
+that an echo-less flight was never settled, so a second Escape aborted back into the dossier.
+Ledgerbox removed 275 lines and tidycrm 159, both verified pixel-identical.
+
+**Facts about the data worth knowing:** none of tidycrm's 46 tables is clean in this seed, so the
+quiet-database fill cannot be judged from real data; a test now fails the day that changes.
+
+**Round-3 kit work, consolidated from every gap above (one bullet per theme):**
+1. An echo container that carries rule 1: the inert, id-free outgoing copy, the camera move through
+   a measured origin, the direction, and which level changes get one.
+2. Presence made composable: a `type` motion accepts, a "no scale key" option for surfaces whose
+   transform is data, a rail preset, a hover channel, and a documented way to nest a domain-owned
+   channel under the navigation one.
+3. Focus follows every level change, not only L2: a focus-follow rule for L0↔L1, `useRoving` for
+   arrow-key grids and rows, and `useOverlayEscape` gains a `prefer` between opener and origin.
+4. Flight ergonomics: `fallbackToken` accepts a list or a `calc()`, works without an element on
+   first render, and an unclaimed flight settles itself within a frame.
+5. Ink on its own clock: `useLevelInk(nav)` → wait / leave / null, plus a highlight-for-one-beat.
+6. A portal that stays inside the token scope.
+7. `read_view` at L1 with group structure for agents.
+
+**Carried to later rounds:** URL sync (still nowhere); tidycrm L0 pick; atlas at 68 components is
+over the brief's density and L2 does not fit a 900 px viewport; the L0 column heads in hirelane still
+arrive at full ink on the first frame of a zoom-out.
