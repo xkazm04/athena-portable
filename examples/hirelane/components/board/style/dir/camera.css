@@ -1,0 +1,119 @@
+/* ------------------------------------------- the camera, and the echo's move */
+
+/*
+ * THE ECHO'S CAMERA MOVE IS CSS NOW, and that is a consequence of the kit rather
+ * than a preference.
+ *
+ * `<Echo>` reports the end of the move through `animationend` on itself, which
+ * means the move has to BE an animation — and the app gets something back for
+ * it: the flight's end is the browser's own event rather than a motion callback
+ * with a duration token as a net under it. The clock is unchanged, `--bd-zoom`,
+ * the sum of two steps that `test/motion.test.ts` already pins against the JS.
+ *
+ * The origin is the kit's two variables, written from the rect the direction
+ * measured off the group row the frame before the level changed. `in` scales
+ * PAST the reader through that point; `out` falls back into it.
+ */
+.bd-echo {
+  transform-origin: var(--echo-ox) var(--echo-oy);
+  will-change: transform, opacity;
+}
+
+@keyframes bd-echo-in {
+  to {
+    opacity: 0;
+    transform: scale(var(--bd-echo-push));
+  }
+}
+
+@keyframes bd-echo-out {
+  to {
+    opacity: 0;
+    transform: scale(var(--bd-echo-pull));
+  }
+}
+
+.bd-echo[data-direction="in"] {
+  animation: bd-echo-in var(--bd-zoom) var(--bd-ease) both;
+}
+
+.bd-echo[data-direction="out"] {
+  animation: bd-echo-out var(--bd-zoom) var(--bd-ease) both;
+}
+
+/* ------------------------------------------------------------ the rig's frame */
+
+/*
+ * The scene the rig transforms. It is a LAYER inside the stage rather than the
+ * stage itself, because the carousel and the echo are its siblings: a shared
+ * identity measured inside an animating ancestor projects wrong, and a camera is
+ * an animating ancestor whenever the reader is touching it.
+ */
+.bd-cam-frame {
+  overflow: clip;
+}
+
+.bd-cam-scene {
+  inline-size: 100%;
+  block-size: 100%;
+  /* The transform is written by the rig, not declared here: a `transform` in the
+     cascade and a `transform` on `style` are the same property, and the loser is
+     whichever one the stylesheet wrote. */
+  transform-origin: 50% 50%;
+  outline: none;
+}
+
+.bd-cam-scene:focus-visible {
+  outline: var(--bd-rule-w2) solid var(--bd-accent);
+  outline-offset: calc(var(--bd-s1) * -1);
+}
+
+/* While the camera is parked behind another level there is nothing to look at
+   and nothing to reach: no paint, no hit testing, no layout thrash. */
+.bd-stage[data-cam="parked"] .bd-cam-frame {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/*
+ * The one line that says the camera exists. It is removed the first time the
+ * reader moves it — a hint that stays after the thing it describes has been
+ * discovered is decoration — and it is `aria-hidden` because every gesture it
+ * names has a keyboard equivalent the rig already advertises through `bind`.
+ */
+/*
+ * A SECOND ROW ON THE STAGE, rather than an absolute strip over it.
+ *
+ * The hint was absolutely positioned at the stage's foot and printed straight
+ * through the Interview column's own stage fact — two sentences in one line of
+ * pixels, which is the overprinting §1c already ruled on once. The stage is a
+ * grid; a caption under the picture is a row.
+ */
+.bd-stage:has(.bd-cam-hint) {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.bd-cam-hint {
+  grid-area: -2 / 1;
+  margin: var(--bd-s2) 0 0;
+  text-align: center;
+  font-size: var(--bd-label);
+  color: var(--bd-ink-4);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * LAND ON THE FINAL STATE, not on a faster camera.
+   *
+   * The echo is not staged at all under reduced motion (`dir/board/Echo.tsx`
+   * returns no echo), so there is nothing here to shorten — but if one ever were
+   * staged, the blanket `animation-duration: 0.01ms` in `base/reduced-motion.css`
+   * would still leave it PLAYING. `animation: none` is the final state, and the
+   * kit's own timeout still settles the flight.
+   */
+  .bd-echo[data-direction] {
+    animation: none !important;
+    opacity: 0;
+  }
+}

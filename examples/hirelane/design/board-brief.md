@@ -249,3 +249,58 @@ Two derived figures and where they come from, since neither is a raw column:
   about how much of the rubric the application speaks to, never a probability, and it is shown
   beside the score so a thinly evidenced 3.4 cannot be read as the same claim as a well evidenced
   one.
+
+## Round 3: three directions (2026-09)
+
+The round-2 review of this programme was blunt: "our adjustments are too careful and do not try
+any major design upgrades … unable to learn conceptual lessons." Every pass since §1b had been a
+correction to the shape already on the page, so the rounds were learning craft and not concepts.
+Round 3 is therefore a **concept test**: the same database, the same tools, the same three depths,
+drawn three ways, one mounted at a time behind a segmented control on `/` — keyboard-operable,
+remembered in `localStorage`, reflected in `?dir=`. They share exactly one module,
+`components/board/dir/contract.ts`, which holds the data every direction gets (the filtered
+(stage, role) groups with their candidates, the nav, the flight, the presence mapper) and the
+arithmetic more than one drawing would otherwise copy. The masthead, the filters, the foot, the
+capability register, the scrim and the **dossier** stay with the host, `components/board/Board.tsx`:
+L2 is the same pane in all three, because the round asks how a reader gets to an item, not what an
+item says. **One of these three will be chosen and the other two deleted, and the switcher goes
+with them.**
+
+**`board`** — the control. Five stage columns with a row per role, the carousel, the dossier;
+unchanged in look from the surface §1c left. Two things change underneath the paint. The echo that
+carries rule 1 is the kit's now (`useEcho` / `<Echo>`), so the thirty lines this direction wrote
+about measuring an origin, keying a flight and settling it are four lines of app code and a CSS
+`@keyframes` on `--bd-zoom`; and the board has a free camera — drag to pan, wheel to zoom anchored
+at the pointer, arrows and `+`/`-` from the keyboard, and one band, past which the group row under
+the camera opens through `useSemanticZoom`. The camera holds L0 alone (`components/board/dir/board/camera.ts`):
+the carousel's cards are laid out against a `--card` token and a rig that magnified them would be a
+second gesture on a move the echo already carries. **The concept it tests is the rig and nothing
+else** — whatever `rooms` and `constellation` win, they win over a surface that already reads.
+
+**`rooms`** — place-based navigation. The pipeline as a cutaway set seen from above in CSS 3D: five
+rooms in a row, one per stage, floors pitched back under one long lens, each floor holding its open
+roles as tables and each table its candidates as seated monogram tokens, the strongest at the head.
+Opening a group is the camera going down and into that room — one `flyTo`, no echo, no re-mount —
+and the deck of cards stands on the table it flew to while the other four rooms stay on screen,
+receded by the kit's `presenceOf()`. Escape flies back out. Every position is solved in
+`components/board/dir/rooms/layout.ts` and pinned by `test/dir.test.ts`. **The concept it tests:
+does a place you return to beat a layer that re-mounts?** The cost it makes visible is that two
+surfaces are then on screen at once, and the deck needs a wash heavy enough to read through.
+
+**`constellation`** — semantic zoom, the same concept ledgerbox's map tests, in a second domain.
+One field: every applicant is a point placed by weighted score (x, on the rubric's own 0–4
+baseline) and by how many sentences of theirs a scorecard quotes (y), inside a labelled region per
+(stage, role) group; role is the colour, stage is the region. The unread stand in a ruled gutter at
+the left edge of their region — off both axes, because an unscored application has neither a number
+nor evidence — ordered by how long they have been waiting. There is one gesture, the wheel: past
+the first band the region under the camera IS the open group and its points become monogram chips;
+past the second the point under the camera is the open item and the dossier grows out of its card.
+Clicking does the same thing by flying the camera there, which is what `poseFor` is: one set of
+poses, two ways in. `components/board/dir/constellation/field.ts` holds every coordinate.
+**The concept it tests: can camera distance BE the level?** Its honest limit is density — forty
+points across ten regions is a picture you can read, four hundred across forty is a cloud.
+
+All three obey the rules the earlier rounds earned: one clock read from the cascade, box then ink,
+presence from the model, reduced motion landing on the final state at frame zero, unseen layers
+costing nothing (the rigs write the scene's transform and one data attribute straight onto the DOM
+and draw no frame at rest), and the same tool set producing the same flights a click does.
