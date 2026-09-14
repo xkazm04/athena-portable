@@ -16,7 +16,7 @@
  * glyph adds a shape to an encoding that was colour-only, which is also the
  * greyscale answer: turn the sheet monochrome and the standing is still there.
  *
- * Pure and iconless on purpose — `world/Glyph.tsx` maps a key to a lucide
+ * Pure and iconless on purpose — `spread/Glyph.tsx` maps a key to a lucide
  * component, and this file can be held by `test/lanes.test.ts` without React.
  */
 
@@ -26,7 +26,7 @@ import type { LnMark } from "./sheet";
  * At or past this many days a mark is worth interrupting someone about — the
  * footer key publishes this as "45+ days", and the key is the contract.
  *
- * It lived in `world/marks.ts`, which is a component-side file that imports the
+ * It lived in `swarm/marks.ts`, which is a component-side file that imports the
  * model; a model file importing it back would be a cycle. It is a fact about the
  * books, so it is here and `marks.ts` re-exports it.
  */
@@ -60,7 +60,7 @@ export const STATUS_LABEL: Record<StatusKey, string> = {
  * One invoice's standing, worst first.
  *
  * The order is a claim about which fact you would want to be told if you could
- * only be told one, and it matches `flagOf` in `world/marks.ts` for the three
+ * only be told one, and it matches `flagOf` in `swarm/marks.ts` for the three
  * standings that also carry a glyph at L0 — so a mark and the card it becomes
  * never disagree about what is the matter with it.
  */

@@ -37,13 +37,25 @@
   animation: ln-title-open var(--ln-dur-3) var(--ln-ease) both;
 }
 
-/*
- * THE HEADLINE NO LONGER SHRINKS INTO A CRUMB, and the reason is the same one the figures below
- * it stayed for: a `font-size` change on the masthead resizes the stage, the stage's box is the
- * world's box, and a world rebuilt mid-flight moves the invoice the reader is flying towards.
- * There is also nothing left for it to make room for — the lane's name is a HUD over the map
- * now, not a heading that has to be given a line.
- */
+.ln-root[data-level="1"] .ln-title,
+.ln-root[data-level="2"] .ln-title {
+  font-size: var(--ln-text-md);
+  color: var(--ln-mute);
+  animation-name: ln-title-settle;
+}
+
+/* Down into a lane: the poster line arrives at crumb size already, and the
+   scale plays the shrink back for the eye without moving a single box. */
+@keyframes ln-title-settle {
+  from {
+    opacity: 0.2;
+    transform: scale(2.2);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 
 /* And back out: the same settle in the other direction. Runs once on load as
    well, which is the headline arriving rather than being already there. */

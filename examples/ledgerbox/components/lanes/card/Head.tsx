@@ -3,20 +3,16 @@
 /**
  * The card's head: which invoice this is, and the money in one line.
  *
- * THE TWO SHARED IDS ARE GONE, and the reason is the whole of round 3. The amount and the client
- * name used to carry `layoutId`s matched to the L1 node this card grew out of, so they flew into
- * place. Their other end was `Spread.tsx`, and there is no spread any more: the node is a card in
- * the world, inside the camera's own `translate … scale`. An unmatched `layoutId` is not free —
- * motion still projects the element, it measured it while the pane's grow keyframe had it at 16%
- * of its size, and the headline ended up drawn a hundred pixels left of the box it belongs to.
- *
- * The pane grows from a measured origin instead (`style/world/pane.css`), and the ink arrives
- * after the box has landed. Rule 3 is kept; rule 2 has nothing left to claim.
+ * The amount and the client name carry `layoutId`s matched to the node this
+ * card grew out of, so they FLY into place rather than cross-fading. That is
+ * what makes the card the node enlarged instead of a modal that appeared over
+ * it.
  *
  * `figures` is computed by the card, not here: which four figures are worth
  * printing depends on whether anything is still owed, and that is a decision
  * about the invoice rather than about the layout.
  */
+import { motion } from "motion/react";
 import type { RefObject } from "react";
 
 import { formatMoneyShort } from "@/lib/format";
@@ -53,14 +49,14 @@ export function CardHead({
             ✕
           </button>
         </span>
-        <h2 className="ln-card-client" id="ln-card-title">
+        <motion.h2 layoutId={`client-${mark.id}`} className="ln-card-client" id="ln-card-title">
           {mark.clientName}
-        </h2>
+        </motion.h2>
         <div className="ln-card-figures">
           <span className="ln-figure" data-lead="true">
-            <b>
+            <motion.b layoutId={`money-${mark.id}`}>
               {formatMoneyShort(owed ? mark.balanceCents : mark.amountCents)}
-            </b>
+            </motion.b>
             <span>{owed ? "Still owed" : "Settled"}</span>
           </span>
           {figures.map((f) => (

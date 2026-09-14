@@ -57,15 +57,23 @@ export function fade(): Transition {
 /** Reduced motion: land on the final state, rather than play a faster animation. */
 export const instant: Transition = { duration: 0 };
 
-/*
- * WHAT ROUND 3 DELETED FROM THIS FILE, and why it is a good sign.
+/** A lane opening or closing: heavy, settles once, does not wobble. */
+export const zoom: Transition = { type: "spring", stiffness: 210, damping: 30 };
+
+/** A node becoming a card, and back. Slightly quicker than a lane. */
+export const lift: Transition = { type: "spring", stiffness: 320, damping: 32 };
+
+/**
+ * Arrival stagger, in seconds, capped so a 40-invoice lane does not take a
+ * second to land. Both the step and the cap are `--ln-*` tokens, so the tail is
+ * budgeted in the same place as the move it follows.
  *
- * `zoom` and `lift` were two springs — a lane opening, a node becoming a card — and
- * `revealDelay` was the staggered arrival of a spread's forty cards. All three existed because a
- * level change was a set of elements appearing, and something had to choreograph the appearing.
- * A camera over one persistent world has nothing to choreograph: the objects were already there,
- * at those positions, and the only thing that moved is the point of view. The flight between two
- * poses is the rig's, on `--ln-dur-move`; the crossfade between two bands is the stylesheet's, on
- * the same token. A direction with a camera needs exactly two transitions in TypeScript, and
- * they are the two above.
+ * The cap is a bare count rather than a duration, so it is the one token here
+ * `cssMs` cannot read: it is parsed off the same computed style by hand.
  */
+export function revealDelay(index: number): number {
+  const el = root();
+  const raw = el ? getComputedStyle(el).getPropertyValue("--ln-stagger-cap").trim() : "";
+  const cap = Number.parseFloat(raw);
+  return Math.min(index, Number.isNaN(cap) ? 0 : cap) * secs(cssMs("--ln-stagger", el));
+}

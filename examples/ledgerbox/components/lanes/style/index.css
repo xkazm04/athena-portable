@@ -1,33 +1,35 @@
 /*
  * The Lanes - the whole stylesheet, as an ordered list of small ones.
  *
- * THE ORDER IS THE CASCADE, so this file is not an index: it IS the sheet. To move a rule, move
- * it. To add one, add it to the part that owns its concern. Do not reorder these imports unless
- * you mean to change the cascade.
+ * THE ORDER IS THE CASCADE, so this file is not an index: it IS the sheet.
+ * Every part below was cut from one two-thousand-line stylesheet at its own
+ * section banners and, inside an over-long section, at the last top-level rule
+ * boundary that still fit. No rule was ever split. Concatenating the parts in
+ * this order reproduces the original, and the script that cut them asserted
+ * exactly that before it wrote anything.
  *
- * ROUND 3 CUT TEN PARTS AND ADDED SIX. Gone: the two L0 swarm sheets, the two L1 spread sheets,
- * the stage's two-layer rules, the dead rail-and-toolbar block (161 lines styling controls no
- * component had rendered since round 2), and the three responsive files that took a
- * position-absolute swimlane apart for a phone. In their place, one world: a stage that clips,
- * a scene that moves, six lanes, one invoice drawn four ways, a HUD and one narrow step — because
- * a camera needs no responsive layout, only smaller chrome.
+ * To move a rule, move it. To add one, add it to the part that owns its
+ * concern. Do not reorder these imports unless you mean to change the cascade.
  */
 
 @import "./base/tokens.css";
 @import "./base/the-sheet.css";
 @import "./chrome/mast.css";
-@import "./world/stage.css";
-@import "./world/lanes.css";
-@import "./world/marks.css";
-@import "./world/hud.css";
-@import "./world/tip.css";
+@import "./chrome/rail-and-toolbar.css";
+@import "./base/stage.css";
+@import "./level0/l0-swarm.css";
+@import "./level0/l0-swarm-2.css";
+@import "./level0/l0-swarm-3.css";
+@import "./level1/l1-spread.css";
+@import "./level1/l1-spread-2.css";
 @import "./level2/l2-the-card.css";
 @import "./level2/l2-the-card-2.css";
 @import "./level2/l2-the-card-3.css";
-@import "./world/pane.css";
 @import "./chrome/foot.css";
 @import "./base/heat-in-one-place.css";
-@import "./world/narrow.css";
+@import "./chrome/responsive.css";
+@import "./chrome/responsive-2.css";
+@import "./chrome/responsive-3.css";
 @import "./base/reduced-motion.css";
 @import "./chrome/toast.css";
 @import "./chrome/ticked.css";

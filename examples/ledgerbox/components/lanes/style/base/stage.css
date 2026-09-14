@@ -1,0 +1,86 @@
+/* ------------------------------------------------------------------ stage */
+
+/*
+ * The stage holds both zoom layers in the same box, stacked, and BOTH ARE
+ * MOUNTED for the length of a level change — which is what makes the change a
+ * move rather than a cut.
+ *
+ * The layer you are LEAVING carries the camera: it scales through
+ * `--ln-zoom-x`/`--ln-zoom-y` and fades. Those two are not guesses — `Lanes.tsx`
+ * measures the centre of the lane you actually clicked off that lane's own
+ * element, in the frame before it goes, and writes them here. Going in, the
+ * swarm scales up past the reader through that point; coming back out, the
+ * spread shrinks into it.
+ *
+ * The layer you are ARRIVING at never holds a transform, and that is a rule
+ * rather than a preference: layout projection measures boxes in viewport space,
+ * so an ancestor animating its own scale hands motion the projection of a
+ * scaled plane and every morph inside it lands in the wrong place. The arriving
+ * layer starts at its final pose and its members travel into it instead.
+ */
+.ln-stage {
+  position: relative;
+  overflow-x: clip;
+  overflow-y: auto;
+  /* Reserved always, so the gutter does not jump by ten pixels when a level
+     that scrolls follows one that does not. */
+  scrollbar-gutter: stable;
+  min-block-size: 0;
+  /* Both layers occupy ONE cell, so the outgoing and incoming levels overlap
+     during the zoom instead of stacking and shoving the footer down. The stage
+     takes the height of whichever is taller, which is the level you are
+     arriving at. */
+  display: grid;
+  grid-template: 1fr / 1fr;
+  align-items: start;
+  /* The middle of the stage until a lane has been measured — which is only ever
+     the case before the first level change. */
+  --ln-zoom-x: 50%;
+  --ln-zoom-y: 50%;
+}
+
+.ln-layer {
+  grid-area: 1 / 1;
+  inline-size: 100%;
+  min-inline-size: 0;
+  transform-origin: var(--ln-zoom-x) var(--ln-zoom-y);
+}
+
+/*
+ * The live level is the one on top and the only one that takes the pointer.
+ *
+ * NOTHING IS EVER BLOCKED: the outgoing layer stops accepting clicks the moment
+ * it stops being the level you are on, so a second navigation mid-flight lands
+ * on the level arriving rather than on the ghost of the one leaving.
+ */
+.ln-root[data-level="0"] .ln-layer[data-layer="swarm"] {
+  z-index: 1;
+}
+
+.ln-root:not([data-level="0"]) .ln-layer[data-layer="swarm"] {
+  pointer-events: none;
+}
+
+.ln-root:not([data-level="0"]) .ln-layer[data-layer="spread"] {
+  z-index: 1;
+}
+
+.ln-root[data-level="0"] .ln-layer[data-layer="spread"] {
+  pointer-events: none;
+}
+
+/*
+ * The completion signal.
+ *
+ * A zero-size element keyed on the kit's flight counter, running the move the
+ * level change is actually running. Its `onAnimationComplete` is what tells the
+ * surface the morph has settled and the tilt may come back — the job a bare
+ * `setTimeout(…, 700)` used to do with a number that had no relation to
+ * anything. It draws nothing and measures nothing.
+ */
+.ln-flight {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
+}

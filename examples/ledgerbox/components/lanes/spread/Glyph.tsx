@@ -42,14 +42,14 @@ const ICON: Record<StatusKey, LucideIcon> = {
 export function StatusGlyph({ status }: { status: StatusKey }) {
   const Icon = ICON[status];
   return (
-    <span className="ln-glyph" data-status={status}>
+    <span className="ln-node-status-mark" data-status={status}>
       {/* Sized in `em` so the glyph scales with the card's own type rather than
           with a second number. NOT `absoluteStrokeWidth`: lucide computes that
           as `strokeWidth * 24 / Number(size)`, and `Number("1em")` is NaN — the
           browser then drops the attribute and React warns on every one of the
           forty cards in a lane. */}
       <Icon size="1em" strokeWidth={1.75} aria-hidden />
-      <span className="ln-glyph-say">{STATUS_LABEL[status]}</span>
+      <span className="ln-node-status-say">{STATUS_LABEL[status]}</span>
     </span>
   );
 }
