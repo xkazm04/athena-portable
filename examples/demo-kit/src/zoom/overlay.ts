@@ -32,13 +32,25 @@ export interface FocusCandidate {
 }
 
 /**
+ * Which of the two candidates the overlay would rather hand focus to.
+ *
+ * `"opener"` — the default and the round-1 rule: focus goes back where the reader put it.
+ * `"origin"` — the round-2 gap, raised by hirelane and tidycrm in the same words: a pane that
+ * GREW OUT OF a card wants the card to win. The opener may have been a toolbar button or a
+ * breadcrumb three hundred pixels away, and returning there after a morph that visibly travelled
+ * from the card is a jump the reader did not make. The "origin" is whatever `returnFocusTo()`
+ * answers, which is the element the surface morphed from.
+ */
+export type FocusPreference = "opener" | "origin";
+
+/**
  * Where focus goes when the overlay closes, best answer first.
  *
- * The opener is preferred because it is where the reader actually was. It may be gone — an agent
- * opened the overlay so nothing on the sheet had focus, or the level underneath re-rendered, or
- * the opener belonged to a level that has since left — so the caller's fallback is taken
- * instead: the object the overlay grew out of, or the one control present at every level (a back
- * button). `document.body` is not an answer; it is what "focus was dropped" looks like.
+ * The preferred candidate wins if it is still in the document and is not the body; otherwise the
+ * other one; otherwise nowhere. A candidate may be gone — an agent opened the overlay so nothing
+ * on the sheet had focus, or the level underneath re-rendered, or the opener belonged to a level
+ * that has since left. `document.body` is never an answer: it is what "focus was dropped" looks
+ * like.
  *
  * `body` is a parameter rather than a global read so this stays pure.
  */
@@ -46,9 +58,15 @@ export function focusReturnTarget<T extends FocusCandidate>(
   opener: T | null | undefined,
   fallback: T | null | undefined,
   body?: unknown,
+  prefer: FocusPreference = "opener",
 ): T | null {
-  if (opener && opener !== body && opener.isConnected !== false) return opener;
-  return fallback ?? null;
+  const usable = (el: T | null | undefined): el is T =>
+    Boolean(el) && el !== body && (el as T).isConnected !== false;
+  const first = prefer === "origin" ? fallback : opener;
+  const second = prefer === "origin" ? opener : fallback;
+  if (usable(first)) return first;
+  if (usable(second)) return second;
+  return null;
 }
 
 /**

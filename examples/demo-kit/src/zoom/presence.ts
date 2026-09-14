@@ -51,16 +51,39 @@ export function emphasis(focus: Focus, group: string, item: string | null): numb
   return item === focus.item ? 1 : 0.14;
 }
 
-export interface Presence {
+/**
+ * A TYPE ALIAS, not an interface, and that is load-bearing.
+ *
+ * Round 2 logged it three times (hirelane, atlas twice): `presenceOf` returned a shape `motion`
+ * rejected as a `Target`, so the kit's own template did not typecheck as written. `Target` is an
+ * index-signature type, and TypeScript gives an implicit index signature to an object TYPE but
+ * never to an INTERFACE — an interface can be augmented later, so it cannot be known to hold
+ * only the members it declares. One keyword, and `animate={presenceOf(...)}` compiles.
+ */
+export type Presence = {
   opacity: number;
   scale: number;
-}
+};
+
+/** The same, for a surface whose transform is its own. See `{ scale: false }` below. */
+export type PresenceOpacity = {
+  opacity: number;
+};
 
 export interface PresenceOptions {
   /** How much of its size a node loses between fully present and gone. Default `0.06`. */
   depth?: number;
   /** A floor on opacity, for a surface that must keep a receding node legible. Default `0`. */
   floor?: number;
+  /**
+   * `false` emits NO `scale` key at all — not `scale: 1`.
+   *
+   * Round 2, ledgerbox: a lane that carries a `translateZ` as DATA cannot take a scale from the
+   * navigation channel, and `scale: 1` is not a way of declining it — `motion` writes the key,
+   * which composes into the same transform and overwrites the lane's own. The absent key is the
+   * only spelling of "this channel does not speak for the transform".
+   */
+  scale?: false;
 }
 
 /** The kit's depth: six percent of size across the whole of the fade. */
@@ -74,10 +97,13 @@ const clamp01 = (n: number): number => (n < 0 ? 0 : n > 1 ? 1 : n);
  * `e` is clamped to 0..1, so an app that hands in a number of its own (a filter's fade, a
  * staged entrance) gets the same curve rather than a negative scale.
  */
-export function presenceStyle(e: number, opts: PresenceOptions = {}): Presence {
+export function presenceStyle(e: number, opts: PresenceOptions & { scale: false }): PresenceOpacity;
+export function presenceStyle(e: number, opts?: PresenceOptions): Presence;
+export function presenceStyle(e: number, opts: PresenceOptions = {}): Presence | PresenceOpacity {
   const { depth = PRESENCE_DEPTH, floor = 0 } = opts;
   const present = clamp01(Number.isFinite(e) ? e : 0);
   const opacity = floor + (1 - floor) * present;
+  if (opts.scale === false) return { opacity };
   return { opacity, scale: 1 - (1 - present) * depth };
 }
 
@@ -92,8 +118,20 @@ export function presenceStyle(e: number, opts: PresenceOptions = {}): Presence {
 export function presenceOf(
   focus: Focus,
   group: string,
-  item: string | null = null,
+  item: string | null,
+  opts: PresenceOptions & { scale: false },
+): PresenceOpacity;
+export function presenceOf(
+  focus: Focus,
+  group: string,
+  item?: string | null,
   opts?: PresenceOptions,
-): Presence {
+): Presence;
+export function presenceOf(
+  focus: Focus,
+  group: string,
+  item: string | null = null,
+  opts: PresenceOptions = {},
+): Presence | PresenceOpacity {
   return presenceStyle(emphasis(focus, group, item), opts);
 }

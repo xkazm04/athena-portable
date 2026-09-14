@@ -76,3 +76,19 @@ export function settleFlight(s: FlightState, flight: number): FlightState {
 
 /** Is a level change in flight? */
 export const isMoving = (s: FlightState): boolean => s.settled !== s.flight;
+
+/**
+ * A claim id that is never a real flight.
+ *
+ * Round 2's gap: "`settle()` has no 'this move had no camera' spelling; an unclaimed flight
+ * should count as settled within a frame" — hirelane found it as a second Escape aborting back
+ * INTO the dossier, because the flight that had no animation was still officially moving.
+ * `useLevelFlight` can only act on that once it knows the surface speaks the claim protocol at
+ * all; a surface that never claims must keep the old behaviour or every app in the repo would
+ * have its echo unmounted a frame after it mounted.
+ *
+ * So claiming this id ARMS the self-settle without claiming any actual flight, and releasing it
+ * settles nothing (the counter is monotonic from 0, so `-1` is never current). `useEcho` claims
+ * it at mount; nothing else needs to.
+ */
+export const ARMING_FLIGHT = -1;

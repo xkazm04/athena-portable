@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  ARMING_FLIGHT,
   FLIGHT_FALLBACK_MS,
   advanceFlight,
   initialFlight,
@@ -74,4 +75,14 @@ test("the nav's counter is what a flight is keyed on, and it only goes up", () =
   s = navReducer(s, { type: "open-item", group: "a", item: "a1" });
   s = navReducer(s, { type: "up" });
   assert.equal(s.flight, before + 3);
+});
+
+/* ------------------------------------------------------- round 3: the arming id for self-settle */
+
+test("the arming claim id is never a real flight, so releasing it settles nothing", () => {
+  // The nav's counter starts at 0 and only goes up, so -1 can never be the current flight.
+  assert.ok(ARMING_FLIGHT < initialNavState().flight);
+  const s = advanceFlight(initialFlight(HOME), 1, L1);
+  assert.equal(settleFlight(s, ARMING_FLIGHT), s);
+  assert.equal(isMoving(s), true);
 });

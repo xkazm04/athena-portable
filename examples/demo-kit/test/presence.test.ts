@@ -59,3 +59,28 @@ test("drilling in makes the groups you left recede, and L0 leaves everything pre
   assert.ok(presenceOf(atL1, "b").opacity < presenceOf(atL1, "a").opacity);
   assert.ok(presenceOf(atL1, "b").scale < 1);
 });
+
+/* ------------------------------------------------- round 3: presence composed with a transform */
+
+test("`{ scale: false }` emits NO scale key — not a scale of 1", () => {
+  // Round 2, ledgerbox: a lane that carries a translateZ as DATA cannot take a scale from the
+  // navigation channel, and `scale: 1` is not a way of declining it — motion writes the key and
+  // it composes into the same transform, overwriting the lane's own.
+  const flat = presenceStyle(0.4, { scale: false });
+  assert.deepEqual(flat, { opacity: 0.4 });
+  assert.equal("scale" in flat, false);
+});
+
+test("the opacity is the same number with or without the scale key", () => {
+  assert.equal(presenceStyle(0.3, { scale: false }).opacity, presenceStyle(0.3).opacity);
+  assert.equal(
+    presenceStyle(0.3, { scale: false, floor: 0.2 }).opacity,
+    presenceStyle(0.3, { floor: 0.2 }).opacity,
+  );
+});
+
+test("presenceOf declines the scale the same way", () => {
+  const focus = { level: 1, group: "a", item: null } as const;
+  const flat = presenceOf(focus, "b", null, { scale: false });
+  assert.deepEqual(flat, { opacity: 0.22 });
+});

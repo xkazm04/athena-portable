@@ -46,6 +46,7 @@ export { useStaticNav, useWorldNav as useZoomNav, type Nav as ZoomNav } from "./
 
 /* Rule 1 + 6: a level change is a move you can follow, and abandon. */
 export {
+  ARMING_FLIGHT,
   FLIGHT_FALLBACK_MS,
   advanceFlight,
   initialFlight,
@@ -67,6 +68,7 @@ export {
   presenceOf,
   presenceStyle,
   type Presence,
+  type PresenceOpacity,
   type PresenceOptions,
 } from "./presence";
 
@@ -96,9 +98,86 @@ export {
   focusReturnTarget,
   isOpener,
   type FocusCandidate,
+  type FocusPreference,
 } from "./overlay";
 export {
   useOverlayEscape,
   type OverlayEscape,
   type OverlayEscapeOptions,
 } from "./useOverlayEscape";
+
+/* Rule 3 of the round-3 list: focus follows every level change, not only L2. */
+export { ROVING_KEYS, isRovingKey, rovingIndex, type RovingKey } from "./roving";
+export { useRoving, type Roving, type RovingOptions } from "./useRoving";
+
+/*
+ * THE CAMERA, round 3 — `docs/kit-camera-contract.md`.
+ *
+ * Four numbers and the two ways a surface consumes them. NOTHING BELOW IMPORTS `three`, and it
+ * never will: `poseToTransform` is for a DOM stage, and a WebGL stage reads `rig.get()` in its
+ * own `useFrame` and moves its own camera. The kit has no renderer, which is the only reason one
+ * camera can serve a swimlane, a kanban, a cube and a map.
+ */
+export {
+  FLY_EASE,
+  FLY_MS,
+  FRAME_MS,
+  NEGLIGIBLE,
+  ORBIT_SENSITIVITY,
+  REST_POSE,
+  SNAP_WEIGHTS,
+  ZERO_VELOCITY,
+  angleDelta,
+  clampPose,
+  easeFromCss,
+  isNegligible,
+  lerpPose,
+  mergePose,
+  nearestSnap,
+  orbitDelta,
+  panDelta,
+  poseDistance,
+  poseToTransform,
+  samePose,
+  stepInertia,
+  zoomAt,
+  type CameraBounds,
+  type CameraFrame,
+  type CameraPose,
+  type CameraVelocity,
+} from "./camera";
+export {
+  KEY_ORBIT,
+  KEY_PAN,
+  KEY_ZOOM,
+  SNAP_IDLE_MS,
+  WHEEL_SENSITIVITY,
+  useCameraRig,
+  type CameraBind,
+  type CameraRig,
+  type CameraRigOptions,
+} from "./useCameraRig";
+
+/* §3: camera distance is the level. */
+export { SEMANTIC_HYSTERESIS, bandProgress, levelForZoom } from "./semantic";
+export {
+  useSemanticZoom,
+  type SemanticNav,
+  type SemanticZoom,
+  type SemanticZoomOptions,
+} from "./useSemanticZoom";
+
+/* §4: the echo container — rule 1, at last, as a primitive rather than thirty lines per app. */
+export {
+  echoDirection,
+  echoKey,
+  echoOrigin,
+  echoOriginVars,
+  echoStages,
+  levelChanged,
+  type EchoDirection,
+  type EchoOriginUnit,
+  type RectLike,
+} from "./echo-rule";
+export { useEcho, type EchoHandle, type EchoOptions, type EchoState } from "./useEcho";
+export { ECHO_GRACE_MS, Echo, type EchoProps } from "./Echo";

@@ -61,10 +61,26 @@ body {
 /*
  * The level container. Deliberately plain - the formula is about how a surface renders the
  * navigation model, and what it renders is where your design goes.
+ *
+ * It is also the SCENE: `useCameraRig`'s `bind` is spread on it, so it takes the pointer, the
+ * wheel and the arrow keys. `touch-action: none` comes from `bind.style`; the outline is yours.
  */
 .dk-levels {
   position: relative;
   margin-bottom: var(--dk-gap);
+  overflow: clip;
+}
+
+/*
+ * What the camera moves. One element, one `transform`, written straight onto the style by the
+ * rig's `subscribe` - never through React state, which would be a render per frame.
+ *
+ * `transform-origin` must stay at the centre: `zoomAt` solves for a pan that keeps the point
+ * under the pointer fixed, and it solves it about the middle of the box.
+ */
+.dk-stage {
+  transform-origin: 50% 50%;
+  will-change: transform;
 }
 
 .dk-level {
@@ -91,11 +107,57 @@ body {
   font-family: var(--dk-font-mono);
 }
 
-/* The outgoing level: a picture of where the reader just was. Never takes a pointer. */
+/*
+ * RULE 1, the whole of it, in CSS. `<Echo>` renders the level the reader is leaving once, inert
+ * and id-free, and sets three things on it: `--echo-ox` / `--echo-oy`, the measured middle of
+ * the node that was opened or closed, and `data-direction`.
+ *
+ * The move is yours. Here it is the plainest one that reads as a camera: the outgoing level
+ * zooms INTO the point the reader aimed at on the way down, and falls back away from it on the
+ * way up, while the live layer underneath is already at its final size (which is what keeps a
+ * shared-element morph from being measured inside an animating ancestor).
+ *
+ * `--dk-dur-move` is the same token `useLevelFlight` reads for its safety net and the rig reads
+ * for its flights, so the three cannot drift (rule 4).
+ */
 .dk-echo {
   position: absolute;
   inset: 0;
+  transform-origin: var(--echo-ox, 50%) var(--echo-oy, 50%);
   pointer-events: none;
+}
+
+.dk-echo[data-direction="in"] {
+  animation: dk-echo-in var(--dk-dur-move) var(--dk-ease) both;
+}
+
+.dk-echo[data-direction="out"] {
+  animation: dk-echo-out var(--dk-dur-move) var(--dk-ease) both;
+}
+
+@keyframes dk-echo-in {
+  to {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes dk-echo-out {
+  to {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+}
+
+/*
+ * Rule 8: the FINAL STATE at frame zero, not a faster animation - `0s`, never `0.01ms`. A
+ * zero-duration animation still fires `animationend`, so the echo still reports in and the
+ * flight still settles through the move rather than through its safety net.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .dk-echo[data-direction] {
+    animation-duration: 0s;
+  }
 }
 
 /* The completion signal. Zero size, keyed on the flight: it runs the move and reports the end. */

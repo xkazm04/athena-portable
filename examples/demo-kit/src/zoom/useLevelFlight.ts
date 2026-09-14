@@ -28,7 +28,7 @@
  * Escape listener abort a move in flight instead of stepping up out of it (§1 rule 6, and
  * `escapeAbortsFlight`). An app that calls this hook gets that for free.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   FLIGHT_FALLBACK_MS,
@@ -52,18 +52,45 @@ export interface LevelFlight {
   flight: number;
   /** This flight has landed. Pass an id to settle a specific flight; stale ids are dropped. */
   settle: (flight?: number) => void;
+  /**
+   * "Something is moving for this flight, wait for it." Returns a release, and releasing settles
+   * the flight if it is still the current one — a mover that unmounts mid-move has ended it.
+   *
+   * Calling this AT ALL (with any id, including `ARMING_FLIGHT`) tells the hook that this
+   * surface speaks the protocol, after which a flight nobody claims settles itself one frame
+   * later instead of waiting out the fallback. That is round 2's "this move had no camera"
+   * gap, and the arming is what keeps a surface that never claims behaving exactly as before.
+   * `useEcho` does both halves for you.
+   */
+  claim: (flight?: number) => () => void;
+  /** The resolved safety-net budget in ms — the sum of `fallbackToken`, or `fallbackMs`. */
+  readonly fallbackMs: number;
 }
 
 export interface LevelFlightOptions {
   /**
    * A `--*` duration token naming this surface's level-change budget, e.g. `"--ln-dur-4"`.
    * Read once per flight, off `el`, so the fallback and the CSS move cannot drift.
+   *
+   * A LIST is SUMMED, which is the answer to round 2's `calc()` gap: an unregistered custom
+   * property comes back from the cascade unresolved, so `--x: calc(var(--a) + var(--b))` reads
+   * as the literal string and parses as nothing. Declare the budget as its steps —
+   * `["--bd-dur-box", "--bd-dur-ink"]` — and the staged move's total is read, not typed.
+   * A token the cascade cannot answer contributes nothing; if NONE of them can be read, the
+   * whole list falls back to `FLIGHT_FALLBACK_MS`.
    */
-  fallbackToken?: string;
+  fallbackToken?: string | readonly string[];
   /** The same thing as a number, for a surface whose clock is not in the cascade. */
   fallbackMs?: number;
-  /** Where the token is declared. Defaults to `document.documentElement`. */
-  el?: Element | null;
+  /**
+   * Where the token is declared. Defaults to `document.documentElement`.
+   *
+   * May be a FUNCTION, which is the answer to round 2's "needs an element that does not exist on
+   * first render": a `ref.current` read during the first render is null, and a hook that
+   * captured that null would read the document for the life of the surface. The function is
+   * called inside the effect, by which time the scope is mounted.
+   */
+  el?: Element | null | (() => Element | null);
 }
 
 /** `nav` is usually the whole `ZoomNav`; only these two members are touched. */
@@ -87,6 +114,33 @@ export function useLevelFlight(nav: FlightNav, opts: LevelFlightOptions = {}): L
     setState((s) => settleFlight(s, at ?? s.flight));
   }, []);
 
+  /* Who has said they are moving for which flight, and whether this surface speaks the protocol
+     at all. Refs, because a claim must not render anything: see `ARMING_FLIGHT`. */
+  const claimed = useRef(new Set<number>());
+  const armed = useRef(false);
+  const currentFlight = useRef(flight);
+  currentFlight.current = flight;
+
+  const claim = useCallback(
+    (at?: number) => {
+      armed.current = true;
+      const id = at ?? currentFlight.current;
+      claimed.current.add(id);
+      let released = false;
+      return () => {
+        if (released) return;
+        released = true;
+        claimed.current.delete(id);
+        if (id === currentFlight.current) settle(id);
+      };
+    },
+    [settle],
+  );
+
+  /* The budget, resolved where the cascade exists. A ref so `fallbackMs` on the returned object
+     can answer without a render, which is what `Echo`'s own safety net reads. */
+  const budget = useRef(fallbackMs ?? FLIGHT_FALLBACK_MS);
+
   /*
    * The safety net. Started per flight, cleared when the flight changes or settles, so a second
    * nav action mid-move replaces the net rather than stacking one behind it — which is the
@@ -97,9 +151,35 @@ export function useLevelFlight(nav: FlightNav, opts: LevelFlightOptions = {}): L
    */
   useEffect(() => {
     if (!moving) return;
-    const ms =
-      fallbackMs ??
-      (fallbackToken ? cssMs(fallbackToken, el, FLIGHT_FALLBACK_MS) : FLIGHT_FALLBACK_MS);
+
+    const node = typeof el === "function" ? el() : (el ?? null);
+    let ms = fallbackMs;
+    if (ms === undefined && fallbackToken) {
+      const names = typeof fallbackToken === "string" ? [fallbackToken] : fallbackToken;
+      let total = 0;
+      let read = false;
+      for (const name of names) {
+        const value = cssMs(name, node, -1);
+        if (value >= 0) {
+          total += value;
+          read = true;
+        }
+      }
+      if (read) ms = total;
+    }
+    if (ms === undefined) ms = FLIGHT_FALLBACK_MS;
+    budget.current = ms;
+
+    /* Nobody has said they are moving for this one. Give it a frame — a claim from a layout
+       effect in the same commit has already landed, and one from a child's effect lands before
+       the callback runs — and then call it landed. */
+    if (armed.current && !claimed.current.has(flight)) {
+      const id = requestAnimationFrame(() => {
+        if (!claimed.current.has(flight)) settle(flight);
+      });
+      return () => cancelAnimationFrame(id);
+    }
+
     const id = window.setTimeout(() => settle(flight), Math.max(0, ms));
     return () => window.clearTimeout(id);
   }, [moving, flight, fallbackMs, fallbackToken, el, settle]);
@@ -112,7 +192,17 @@ export function useLevelFlight(nav: FlightNav, opts: LevelFlightOptions = {}): L
   }, [moving, setMoving]);
 
   return useMemo(
-    () => ({ from: current.from, to: current.to, moving, flight, settle }),
-    [current.from, current.to, moving, flight, settle],
+    () => ({
+      from: current.from,
+      to: current.to,
+      moving,
+      flight,
+      settle,
+      claim,
+      get fallbackMs() {
+        return budget.current;
+      },
+    }),
+    [current.from, current.to, moving, flight, settle, claim],
   );
 }

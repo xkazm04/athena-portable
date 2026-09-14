@@ -70,3 +70,27 @@ test("the opener is recorded once — the StrictMode guard", () => {
   assert.equal(isOpener(body, null, body), false);
   assert.equal(isOpener(null, null, body), false);
 });
+
+/* --------------------------------------------- round 3: the pane that grew out of a card wins */
+
+test("`prefer: origin` makes the thing the overlay grew out of the first answer", () => {
+  // Round 2's gap, raised by hirelane and tidycrm in the same words: the opener may have been a
+  // toolbar button three hundred pixels from the morph the reader just watched.
+  const opener = { isConnected: true };
+  const card = { isConnected: true };
+  assert.equal(focusReturnTarget(opener, card, {}, "origin"), card);
+  assert.equal(focusReturnTarget(opener, card, {}, "opener"), opener);
+  assert.equal(focusReturnTarget(opener, card, {}), opener);
+});
+
+test("the preference is a preference, not a rule: a gone origin falls back to the opener", () => {
+  const opener = { isConnected: true };
+  const gone = { isConnected: false };
+  assert.equal(focusReturnTarget(opener, gone, {}, "origin"), opener);
+});
+
+test("the body is not an answer from either side", () => {
+  const body = { isConnected: true };
+  assert.equal(focusReturnTarget(body, body, body, "origin"), null);
+  assert.equal(focusReturnTarget(body, body, body, "opener"), null);
+});

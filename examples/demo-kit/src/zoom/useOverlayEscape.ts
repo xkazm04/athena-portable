@@ -29,7 +29,12 @@
  */
 import { useCallback, useEffect, useRef, type KeyboardEvent } from "react";
 
-import { escapeClosesOverlay, focusReturnTarget, isOpener } from "./overlay";
+import {
+  escapeClosesOverlay,
+  focusReturnTarget,
+  isOpener,
+  type FocusPreference,
+} from "./overlay";
 
 export interface OverlayEscapeOptions {
   /** What Escape means. Usually `nav.up`. */
@@ -40,21 +45,37 @@ export interface OverlayEscapeOptions {
    * element up then rather than capture one that may not survive.
    */
   returnFocusTo?: () => HTMLElement | null;
+  /**
+   * Which candidate wins when both are available. Default `"opener"`.
+   *
+   * Round 2's gap, raised by hirelane and tidycrm in the same words: a pane that GREW OUT OF a
+   * card wants the card to win, because the morph the reader just watched came from there and
+   * the opener may have been a toolbar three hundred pixels away. `"origin"` makes
+   * `returnFocusTo()` the first answer and the opener the fallback; the rule that neither may be
+   * the body, and that a disconnected element is not an answer, is unchanged either way.
+   */
+  prefer?: FocusPreference;
 }
 
 export interface OverlayEscape {
   onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
 }
 
-export function useOverlayEscape({ onClose, returnFocusTo }: OverlayEscapeOptions): OverlayEscape {
+export function useOverlayEscape({
+  onClose,
+  returnFocusTo,
+  prefer = "opener",
+}: OverlayEscapeOptions): OverlayEscape {
   /* The two callbacks are read at unmount and at keydown, i.e. always after a commit, so they
      are mirrored into refs after every render rather than captured in the mount effect's
      closure — otherwise a pane that re-creates its `onClose` closes a stale level. */
   const close = useRef(onClose);
   const fallback = useRef(returnFocusTo);
+  const preference = useRef(prefer);
   useEffect(() => {
     close.current = onClose;
     fallback.current = returnFocusTo;
+    preference.current = prefer;
   });
 
   const opener = useRef<HTMLElement | null>(null);
@@ -85,6 +106,7 @@ export function useOverlayEscape({ onClose, returnFocusTo }: OverlayEscapeOption
         opener.current,
         fallback.current?.() ?? null,
         document.body,
+        preference.current,
       );
       /* Next frame, not this one: React is still committing the unmount, and the level
          underneath has not been painted for the fallback to exist in yet. */
