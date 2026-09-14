@@ -41,6 +41,32 @@ superseded by this section; §§2-8 stand except where this section replaces the
 | **Source direction** | **The lit contact sheet.** A dark viewing surface with the frames laid on it, the three under the loupe held at full size and the rest angled away into the dark. What is written on the sheet is written by hand in soft pencil-crayon: annotations are the only place a second voice appears, and they never carry a fact the database does not hold. |
 | **Why this source** | A hiring board is a comparison surface, and a contact sheet is the genre built for exactly that: same frame, same size, same light, laid side by side, with the ones you are actually choosing between brought forward and everything else angled off. It also gives the annotation its natural home — on a contact sheet the marks in the margin are a person's, not the machine's, which is precisely the distinction this app exists to make visible. |
 
+**Nothing cuts — built, at last.** For three rounds the signature above was a claim this file made
+and the code did not keep: L0→L1 unmounted one level and mounted the next in the same frame, and
+the comment at the top of `Board.tsx` described a measured transform-origin zoom that had never
+existed. What ships now is a camera move, and the mechanism is the one thing worth writing down
+because it is not the obvious one. **The level you leave carries the camera; the level you arrive
+at carries the continuity.** The board being left is rendered once more beside the live layer as an
+inert copy — no identities on anything in it, no pointer events, `aria-hidden` — and that copy
+takes the whole gesture: it scales through the centre of the row you opened, measured off the row
+itself the frame before the level changed, while every group that is not yours dims and shrinks by
+the kit's `emphasis()` so the rest of the board leaves before the part you picked does. Going back
+out it falls the other way, into the same point. The live carousel never scales at all, and that is
+the point of the echo rather than a concession to it: a shared-element morph measured inside an
+animating ancestor projects wrong, so the faces go on growing into their cards at full size while
+the camera moves around them. One claimant per identity, always — which is the same rule that lets
+a card grow into the dossier and shrink home.
+
+**And the ink is on its own clock.** A camera move means the arriving level is at full size on the
+first frame, so nothing about its SIZE can say that the board is still leaving; only the ink can.
+So the carousel's head and its keyboard hint wait until the echo is past the middle of its journey
+before they fade in, and on the way out the echo's own head is taken off at once, a third of its
+ink gone one frame in — the board and the group are never both shouting their names at the reader
+in the same frame. The way back adds the one fact the return trip was throwing away: the row you
+came out of keeps the accent for a beat after the echo has cleared, which is the hue this brief
+already assigned to "the open group", spent one beat late so the eye has somewhere to land on a
+board that has otherwise arrived all at once. Three gestures, and now none of them cuts.
+
 ## 1c. REVISION — the readability pass (2026-09)
 
 The dark rework was reviewed again, beside the two sibling tabs, and several of its own answers

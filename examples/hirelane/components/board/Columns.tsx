@@ -72,6 +72,7 @@ export function Columns({
   onOpen,
   ghost = false,
   dim,
+  lit,
 }: {
   board: BdBoard;
   roleFilter: string;
@@ -79,6 +80,13 @@ export function Columns({
   onOpen: (group: string) => void;
   ghost?: boolean;
   dim?: (group: string) => number;
+  /**
+   * The kit's `highlight` set — "nodes something is pointing at". `Board.tsx` puts the
+   * group the reader just left into it for one beat after the zoom out, so the board
+   * arrives with a light on the row they came from rather than as eight identical
+   * rows one of which they were inside a moment ago.
+   */
+  lit?: ReadonlySet<string>;
 }) {
   return (
     <div className="bd-board">
@@ -141,6 +149,9 @@ export function Columns({
                       /* The zoom's origin is measured off this element, the frame
                          before the level changes — see `Board.tsx`. */
                       data-group={group}
+                      /* Where the reader came back from, for one beat. Not on the
+                         echo: a picture of a board cannot be pointed at. */
+                      data-lit={!ghost && lit?.has(group) ? "true" : undefined}
                       tabIndex={ghost ? -1 : undefined}
                       {...(ghost
                         ? {

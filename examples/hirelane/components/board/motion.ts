@@ -75,6 +75,20 @@ export const secs = (ms: number): number => ms / 1000;
  */
 export const ZOOM_MS = DUR[3] + DUR[1];
 
+/**
+ * HOW LONG THE ROW YOU CAME BACK TO STAYS LIT.
+ *
+ * Coming out of a group the board arrives whole, in one piece, and nothing on it says
+ * which of its eight rows the reader was just inside — the echo is a picture of the
+ * carousel, not of the row, and it is gone by 350ms. So the row keeps the kit's
+ * `highlight` for the zoom plus one more step: lit while the echo is still on screen,
+ * and held for `--hl-dur-3` after it clears so the eye has somewhere to land in a
+ * frame where nothing else is moving. Longer and it reads as a selection the reader
+ * has to dismiss; shorter and it goes out under the echo, which is the same as never
+ * having been on.
+ */
+export const LAND_MS = ZOOM_MS + DUR[3];
+
 /** How far the outgoing board pushes past the reader, and how far the outgoing
  *  carousel falls back into the sheet. Ratios, not lengths. */
 export const PUSH = 1.16;

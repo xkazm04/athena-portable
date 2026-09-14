@@ -180,6 +180,21 @@
   --bd-dur-4: var(--hl-dur-4);
   --bd-ease: var(--hl-ease-standard);
   --bd-ease-in: var(--hl-ease-entrance);
+  --bd-ease-out: var(--hl-ease-exit);
+
+  /*
+   * THE ZOOM, IN CSS. The same sum `ZOOM_MS` is in ./motion.ts — `--hl-dur-3` plus
+   * `--hl-dur-1`, 350ms — so a level change that is animated in JS and a level change
+   * that is SEQUENCED in CSS cannot disagree about how long the camera takes.
+   * `test/motion.test.ts` asserts the two spellings against each other.
+   *
+   * The half-step is the beat rule 3 asks for: a heading arriving at a new level waits
+   * until the outgoing echo is past the middle of its journey, so there is never a frame
+   * with two headings at full ink. It is a scale value divided, not a number somebody
+   * liked; `175ms` written out would be exactly the defect §1 forbids.
+   */
+  --bd-zoom: calc(var(--bd-dur-3) + var(--bd-dur-1));
+  --bd-zoom-half: calc(var(--bd-zoom) / 2);
 
   /* Depth on a dark ground is a bloom and a hairline, never a grey blur. */
   --bd-elev-0: none;

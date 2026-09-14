@@ -125,6 +125,26 @@
   border-color: var(--bd-rule);
 }
 
+/*
+ * WHERE THE READER CAME BACK FROM, for one beat after the zoom out (`LAND_MS` in
+ * ../../motion.ts). `Board.tsx` puts the group into the kit's `highlight` set on
+ * L1→L0 and takes it out again; nothing else in this direction sets it.
+ *
+ * It is `--bd-accent` because that is the job the brief gave the hue in writing —
+ * "structure: the open group, the level rail, the rule under a heading" — and a row
+ * you have just been inside is the open group, one beat late. The hover wash is the
+ * ground it sits on, so a row lit and hovered at once does not stack two washes.
+ *
+ * No animation and no keyframe: the row's `transition` two rules up already carries
+ * background and border-colour on `--bd-dur-2`, so the light comes up and goes out on
+ * the same clock as every other state on this control, and under reduced motion it
+ * lands on its final state — lit, then not — rather than playing a fast version.
+ */
+.bd-group-row[data-lit="true"] {
+  background: var(--bd-glass);
+  border-color: var(--bd-accent);
+}
+
 .bd-group-label {
   display: flex;
   align-items: baseline;

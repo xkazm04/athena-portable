@@ -40,6 +40,42 @@
   margin: 0;
 }
 
+/*
+ * THE HEADING WAITS FOR THE CAMERA, AND LEAVES BEFORE IT.
+ *
+ * The level arrives at full size — it has to, because a `layoutId` morph measured
+ * inside an animating ancestor projects wrong — so the only thing that can say "the
+ * board is still leaving" is the ink. Painted on the first frame, this level's head
+ * and its keyboard hint overprinted the column heads of the board still scaling away
+ * behind them, in BOTH directions.
+ *
+ * `wait`  the live rail: hold at zero until the echo is past the middle of its
+ *         journey (`--bd-zoom-half`), then fade in. `both` is what holds it at zero
+ *         through the delay rather than painting it once before the delay begins.
+ * `leave` the inert copy the zoom leaves behind on L1→L0: take it off at once.
+ *
+ * THE CURVE ON THE WAY OUT IS THE ENTRANCE ONE, and that is not a slip. §1.3 gives a
+ * removal `--hl-ease-exit`, which is back-loaded — it holds a thing near full for most
+ * of its duration, which is right for ink leaving WITH its box and exactly wrong for
+ * ink that has to be out of the way BEFORE the box moves. The front-loaded curve puts
+ * this line under a third of its ink one frame in.
+ */
+.bd-carousel[data-ink="wait"] .bd-carousel-head,
+.bd-carousel[data-ink="wait"] .bd-hint {
+  animation: bd-ink-in var(--bd-dur-2) var(--bd-ease) var(--bd-zoom-half) both;
+}
+
+@keyframes bd-ink-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.bd-carousel[data-ink="leave"] .bd-carousel-head,
+.bd-carousel[data-ink="leave"] .bd-hint {
+  animation: bd-ink-out var(--bd-dur-1) var(--bd-ease-in) both;
+}
+
 .bd-carousel-title {
   margin: 0;
   font-family: var(--bd-font-display);

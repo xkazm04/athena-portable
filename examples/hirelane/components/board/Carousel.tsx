@@ -160,6 +160,24 @@ export function Carousel({
     <section
       className="bd-carousel"
       aria-hidden={ghost || undefined}
+      /*
+       * BOX, THEN INK — the level's own heading, sequenced (the formula's rule 3,
+       * which applies to headings and not only to the type inside a card).
+       *
+       * This level arrives at full size while the board it replaced scales away as an
+       * echo, and until this pass the head and the keyboard hint were painted on the
+       * first frame of that: `Backend Engineer · Screening` sat across `Applied` and
+       * `Screening` at full ink for a third of a second, and on the way back out the
+       * same two lines printed over the board that was arriving underneath them.
+       *
+       * So the ink takes the beat the box does not need. `wait` holds it at zero until
+       * the echo is past the half-way point of its journey and then fades it in;
+       * `leave` — the inert copy the zoom leaves behind on L1→L0 — takes it off at
+       * once, so it is gone long before the echo lands. The sequence is
+       * `style/level1/l1-carousel.css`, on `--bd-zoom-half`, which is the zoom's own
+       * clock rather than a second one.
+       */
+      data-ink={ghost ? "leave" : "wait"}
       /* The card width the two step sizes in pose.ts are solved from. The rail draws at the
          width the poses assume, or the loupe set gains a gap it was never given. */
       style={{ "--card": `${CARD}px` } as CSSProperties}

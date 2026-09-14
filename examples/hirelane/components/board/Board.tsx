@@ -61,7 +61,7 @@ import { splitGroup, type BdBoard, type BdColumn, type BdRole } from "./model";
 import { BoardTools } from "./tools";
 import { BoardFoot } from "./shell/Foot";
 import { BoardMast } from "./shell/Mast";
-import { PULL, PUSH, ZOOM_MS, fade, instant, leave, zoom } from "./motion";
+import { LAND_MS, PULL, PUSH, ZOOM_MS, fade, instant, leave, zoom } from "./motion";
 import "./style/index.css";
 
 /** Stage-box coordinates. The echo's `transform-origin`. */
@@ -207,6 +207,27 @@ export function Board({ board }: { board: BdBoard }) {
       restore.current = `[data-group="${esc(was.group)}"]`;
     }
 
+    /*
+     * THE ROW YOU CAME FROM KEEPS A LIGHT ON — the return trip's half of the
+     * continuity the zoom already has going in.
+     *
+     * Going in, the reader's eye is ON the row when the board scales through it, so
+     * the row IS the transition. Coming out there is nothing equivalent: the board
+     * arrives whole and the echo is a picture of the carousel, so the one fact the
+     * level change carries — which of these eight rows you were just inside — was
+     * discarded at the moment it mattered.
+     *
+     * `highlight` is the kit's own word for "nodes something is pointing at", so this
+     * is read from the model rather than invented here, exactly as `emphasis()` is
+     * three lines below. Any other move clears it: a light left on a row nobody came
+     * back to is a selection, and this direction has no selection.
+     */
+    if (was.level === 1 && level === 0 && was.group) {
+      nav.highlight([was.group]);
+    } else if (nav.state.highlight.size > 0) {
+      nav.highlight([]);
+    }
+
     if (reduced) return;
 
     if (was.level === 0 && level === 1 && group) {
@@ -225,6 +246,31 @@ export function Board({ board }: { board: BdBoard }) {
       });
     }
   });
+
+  /*
+   * And it goes out on its own, one beat after the echo has cleared (`LAND_MS`).
+   *
+   * Keyed on the SET's contents rather than on `nav`, whose identity is fresh on every
+   * dispatch — a timer re-armed by every hover would keep the row lit for as long as
+   * the pointer kept moving. The set changes identity only when a highlight is
+   * dispatched, so this arms once per landing and a second landing cancels the first.
+   */
+  const litKey = useMemo(
+    () => [...nav.state.highlight].sort().join(" "),
+    [nav.state.highlight],
+  );
+  /* Kept current in an effect rather than in render: the nav is a fresh object on
+     every dispatch and the timer below must not depend on it, but a ref written
+     during render is a ref read at a moment React does not promise anything about. */
+  const navRef = useRef(nav);
+  useEffect(() => {
+    navRef.current = nav;
+  });
+  useEffect(() => {
+    if (!litKey) return;
+    const id = window.setTimeout(() => navRef.current.highlight([]), LAND_MS);
+    return () => window.clearTimeout(id);
+  }, [litKey]);
 
   /* Cleared by a timer as well as by the animation, because an echo left on the
      surface is the one failure mode of this whole mechanism. Keyed, so a second
@@ -324,6 +370,10 @@ export function Board({ board }: { board: BdBoard }) {
                   roleFilter={roleFilter}
                   onlyBorderline={onlyBorderline}
                   onOpen={(group) => nav.openGroup(group)}
+                  /* The live board only. The echo is a picture of where the reader
+                     WAS; lighting a row on it would say "here" twice, in two places,
+                     about the same row. */
+                  lit={nav.state.highlight}
                 />
               </div>
             ) : (

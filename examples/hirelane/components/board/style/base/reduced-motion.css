@@ -37,10 +37,18 @@
     animation-duration: 0.01ms !important;
   }
 
-  /* The one CSS path with a DELAY rather than a duration: a shortened animation
-     that still waits 260ms to begin is not the final state, it is the final state
-     late. Removing the animation lands the ink where it belongs, at once. */
-  .bd-slide-inner[data-ink="after-box"] > * {
+  /* The CSS paths with a DELAY rather than a duration: a shortened animation that
+     still waits 260ms to begin is not the final state, it is the final state late.
+     Removing the animation lands the ink where it belongs, at once.
+
+     The carousel head is here for a second reason as well. Under reduced motion the
+     echo is never created at all (`Board.tsx` returns before `setInFlight`), so there
+     is no camera move for the heading to wait behind — `leave` would then be the only
+     one of the two that could ever play, and it would take the heading off a level
+     that is simply present. Both keys land on the heading being there. */
+  .bd-slide-inner[data-ink="after-box"] > *,
+  .bd-carousel[data-ink] .bd-carousel-head,
+  .bd-carousel[data-ink] .bd-hint {
     animation: none !important;
   }
 }
