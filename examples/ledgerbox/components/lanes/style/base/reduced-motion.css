@@ -3,6 +3,15 @@
 /*
  * Reduced motion removes the transitions and the perspective. It does NOT hide
  * anything: every fact reachable through a tilt is reachable without one.
+ *
+ * IT LANDS ON THE FINAL STATE, which is not the same thing as playing the same
+ * animation faster. This used to force every duration to `0.01ms`, which still
+ * schedules the animation, still runs its keyframes, and — for anything whose
+ * `from` is the interesting half, like the headline's settle — still shows a
+ * frame of the pose the reader asked not to be shown. `transition: none` and
+ * `animation: none` remove the path entirely: the element is painted where it
+ * ends up, once. The TypeScript half of this branch is `motion.ts`'s `instant`,
+ * handed to every transition `Lanes.tsx` owns when `useReducedMotion()` is true.
  */
 @media (prefers-reduced-motion: reduce) {
   [data-variant="lanes"] {
@@ -12,8 +21,8 @@
   .ln-root *,
   .ln-root *::before,
   .ln-root *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+    transition: none !important;
+    animation: none !important;
   }
 
   .ln-stack,

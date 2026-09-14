@@ -14,20 +14,34 @@
  * person's click have to end in the same setState, or the two are looking at
  * different pages.
  *
- * THE ZOOM. L0 and L1 occupy the same grid cell, so they overlap rather than
- * replace each other, and both are given the same transform origin: the centre
- * of the lane you actually clicked, measured off its own element the moment
- * before the level changes. The books then scale up and fade out THROUGH that
- * point while the lane scales up into it from below — which is what makes the
- * change read as pushing into the sheet rather than as two views swapping.
- * Going back runs the same move in reverse.
+ * THE ZOOM, AS BUILT. L0 and L1 occupy the same grid cell and BOTH STAY MOUNTED
+ * for the length of a level change, so the change is a move and not a cut. One
+ * rule decides who does what:
+ *
+ *   the level you are LEAVING carries the camera — it scales through the
+ *   transform origin measured off the lane you actually clicked, and fades;
+ *   the level you are ARRIVING at carries the continuity — it starts at its
+ *   final pose and its members travel into place, staggered.
+ *
+ * That split is what keeps the two jobs from fighting. Layout projection
+ * measures boxes in viewport space, so an ancestor animating its own `scale`
+ * hands motion the projection of a scaled plane and every morph inside it
+ * lands in the wrong place. Only the outgoing layer ever holds a transform, and
+ * the outgoing layer has nothing left to morph.
+ *
+ * ONE ELEMENT CLAIMS A `layoutId` AT A TIME, and that is what the two mounted
+ * levels cost. A `layoutId` claimed by two live elements animates neither — the
+ * marks stop being the cards. So the layer matching the current level is LIVE
+ * and keeps its ids, and the layer on its way out renders the same markup
+ * without them: the ids deregister in the same commit the arriving layer claims
+ * them, which is exactly the handoff an unmount would have given.
  *
  * L2 is a different gesture on purpose: it is not a zoom but a lift, and it is
  * handled by matched `layoutId`s between the L1 node and the card.
  */
-import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "motion/react";
-import { useZoomNav } from "@athena/demo-kit/zoom";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from "motion/react";
+import { useZoomNav, type Focus } from "@athena/demo-kit/zoom";
 
 import { Card } from "./Card";
 import type { Period } from "@/lib/constants";
@@ -39,7 +53,7 @@ import {
   type LnFilter,
   type LnSheet,
 } from "./model";
-import { fade } from "./motion";
+import { fade, instant, lift, move } from "./motion";
 import { Spread, type SpreadMode } from "./Spread";
 import { Swarm } from "./Swarm";
 import { Foot } from "./shell/Foot";
@@ -47,8 +61,16 @@ import { Mast } from "./shell/Mast";
 import { BooksTools, LanesTools } from "./tools";
 import "./style/index.css";
 
+/** What a level change is: the focus it left and the focus it is going to. */
+interface Flight {
+  id: number;
+  from: Focus;
+  to: Focus;
+}
+
 export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
   const nav = useZoomNav();
+  const reduced = useReducedMotion();
   const [filter, setFilter] = useState<LnFilter>(NO_FILTER);
   /**
    * Invoices ticked by `select`, and the period the close readout is pointed at by `set_period`.
@@ -69,20 +91,31 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
    */
   const flat = false;
   const mode: SpreadMode = "flat";
+
+  const focus = nav.state.focus;
+  const level = focus.level;
+  const flightId = nav.state.flight;
+
   /**
-   * True from the moment a lane is opened until its cards have arrived.
+   * The flight in progress, derived during render rather than in an effect.
    *
-   * Layout projection measures boxes in viewport space and re-applies them as
-   * transforms, so an ancestor holding a `rotateX` hands motion the projection
-   * of a tilted plane and the card arrives skewed. The stack lies flat for the
-   * length of the move and tilts back afterwards.
+   * The outgoing level has to be known on the very frame the level changes —
+   * that is the frame the layer it is leaving has to still be mounted for, and
+   * the frame the arriving layer measures its morph against. An effect is one
+   * frame late, which is a cut with extra steps. Adjusting state during render
+   * is the one React-sanctioned way to read "what changed": the guard is the
+   * kit's monotonic `flight`, so this settles in a single extra pass.
+   */
+  const [flight, setFlight] = useState<Flight>(() => ({ id: flightId, from: focus, to: focus }));
+  if (flight.id !== flightId) setFlight({ id: flightId, from: flight.to, to: focus });
+
+  /**
+   * The flight that has FINISHED. Everything about "are we mid-move" is derived
+   * from the difference, so it is true on the very frame the level changes
+   * rather than a `setState` in an effect body later.
    */
   const [settled, setSettled] = useState(-1);
-
-  const level = nav.state.focus.level;
-  const lane = laneById(sheet, nav.state.focus.group);
-  const mark = markById(sheet, nav.state.focus.item);
-  const detail = mark ? sheet.details[mark.id] : undefined;
+  const moving = settled !== flightId;
 
   /**
    * Flatten for the length of EVERY level change, whoever asked for it.
@@ -92,24 +125,66 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
    * component never sees — projected the morph through a tilted plane and the
    * marks arrived skewed. `flight` counts level changes from all four paths, so
    * hanging the flatten off it is the only version that cannot be forgotten by
-   * a new call site. It also runs once on mount, which lands the stack flat and
-   * lets the tilt settle in.
+   * a new call site.
    *
-   * What is stored is the flight that has FINISHED, so `moving` is derived
-   * during render and the stack is flat on the very frame the level changes.
-   * Storing `moving` itself would need a `setState` in the effect body, which is
-   * both a lint error here and a frame late — the morph would have started.
+   * IT ENDS WHEN THE MOVE ENDS, not on a timer. This used to be a bare
+   * `setTimeout(…, 700)` — a number with no relation to the spring it was
+   * guessing at and no token anywhere near it. `.ln-flight` below runs the move
+   * that is actually in flight and says when it has settled, so the tilt comes
+   * back on the frame the morph stops and not a moment either side.
    */
-  const flight = nav.state.flight;
-  const moving = settled !== flight;
-  useEffect(() => {
-    const timer = window.setTimeout(() => setSettled(flight), 700);
-    return () => window.clearTimeout(timer);
+  const lands = flight.to.level === 2 || flight.from.level === 2 ? lift : move();
+  const signal = reduced ? instant : lands;
+
+  const lane = laneById(sheet, focus.group);
+  const mark = markById(sheet, focus.item);
+  const detail = mark ? sheet.details[mark.id] : undefined;
+
+  /**
+   * Which layers are on the stage, and which of them is live.
+   *
+   * Live means "this is the level you are on": it keeps the `layoutId`s and it
+   * takes the pointer. The other one is scenery for the length of the move.
+   */
+  const swarmLive = level === 0;
+  const spreadLive = level > 0;
+  const leavingSwarm = moving && flight.from.level === 0 && level > 0;
+  const leavingSpread = moving && flight.from.level > 0 && level === 0;
+  const spreadLane = lane ?? (leavingSpread ? laneById(sheet, flight.from.group) : undefined);
+  const showSwarm = swarmLive || leavingSwarm;
+  const showSpread = Boolean(spreadLane) && (spreadLive || leavingSpread);
+
+  /**
+   * THE TRANSFORM ORIGIN IS MEASURED, not assumed.
+   *
+   * Both layers scale through the centre of the lane you actually clicked,
+   * taken off that lane's own element in the frame before it leaves — which is
+   * possible only because the outgoing layer is still mounted when this runs.
+   * Without it the zoom pushes through the middle of the stage, which is the
+   * one point on the sheet the reader was not looking at.
+   */
+  const stageRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const group = flight.to.group ?? flight.from.group;
+    const el = group
+      ? stage.querySelector<HTMLElement>(`.ln-lane[data-lane="${CSS.escape(group)}"]`)
+      : null;
+    const box = stage.getBoundingClientRect();
+    const from = el?.getBoundingClientRect();
+    if (!from || box.width === 0 || box.height === 0) return;
+    stage.style.setProperty(
+      "--ln-zoom-x",
+      `${((from.left + from.width / 2 - box.left) / box.width) * 100}%`,
+    );
+    stage.style.setProperty(
+      "--ln-zoom-y",
+      `${((from.top + from.height / 2 - box.top) / box.height) * 100}%`,
+    );
   }, [flight]);
 
   const pickedSet = useMemo(() => new Set(picked), [picked]);
-
-
 
   return (
     <MotionConfig reducedMotion="user">
@@ -144,39 +219,72 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
 
         <Mast sheet={sheet} />
 
+        {/*
+         * The completion signal. A zero-size element, keyed on the flight, that
+         * runs the move THIS level change is actually running and reports when
+         * it settles — so the flatten above ends with the morph rather than at
+         * a number somebody typed. It is the whole of what a 700ms timer used
+         * to do, minus the 700.
+         */}
+        <motion.span
+          key={flightId}
+          className="ln-flight"
+          aria-hidden
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={signal}
+          onAnimationComplete={() => setSettled(flightId)}
+        />
 
         <LayoutGroup>
-        <div className="ln-stage">
+        <div className="ln-stage" ref={stageRef}>
             {/*
-             * Exactly ONE level is mounted at a time, and that is deliberate.
-             * A cross-fade keeps both mounted while it plays, which means two
-             * elements claim the same `layoutId` and motion animates neither —
-             * the marks stop being the cards. Rendering one level is what lets
-             * the morph carry the movement instead.
+             * BOTH LEVELS ARE MOUNTED WHILE ONE IS LEAVING, and the `layoutId`
+             * pitfall that used to forbid it is solved rather than avoided: the
+             * outgoing layer renders the same markup with its ids dropped (the
+             * `live` prop), so exactly one element claims each id in every
+             * frame and the handoff is the one an unmount would have given.
              */}
-            {level === 0 || !lane ? (
-              <div className="ln-layer">
+            {showSwarm ? (
+              <motion.div
+                className="ln-layer"
+                data-layer="swarm"
+                initial={false}
+                animate={swarmLive ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.16 }}
+                transition={reduced ? instant : move()}
+              >
                 <Swarm
                   sheet={sheet}
+                  focus={focus}
+                  live={swarmLive}
                   filter={filter}
                   picked={pickedSet}
                   onOpenLane={nav.openGroup}
                   onOpenMark={(laneId, markId) => nav.openItem(laneId, markId)}
                 />
-              </div>
-            ) : (
-              <div className="ln-layer">
+              </motion.div>
+            ) : null}
+
+            {showSpread && spreadLane ? (
+              <motion.div
+                className="ln-layer"
+                data-layer="spread"
+                initial={false}
+                animate={spreadLive ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 }}
+                transition={reduced ? instant : move()}
+              >
                 <Spread
                   sheet={sheet}
-                  lane={lane}
+                  lane={spreadLane}
+                  live={spreadLive}
                   filter={filter}
                   picked={pickedSet}
                   mode={mode}
-                  onOpenItem={(id) => nav.openItem(lane.id, id)}
+                  onOpenItem={(id) => nav.openItem(spreadLane.id, id)}
                   onOpenLane={nav.openGroup}
                 />
-              </div>
-            )}
+              </motion.div>
+            ) : null}
 
         </div>
 
@@ -199,10 +307,10 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
           {level === 2 && mark ? (
             <motion.div
               key="card"
-              initial={{ opacity: 0 }}
+              initial={reduced ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={fade}
+              transition={reduced ? instant : fade()}
             >
               <Card
                 mark={mark}

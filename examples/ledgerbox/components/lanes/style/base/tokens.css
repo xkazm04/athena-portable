@@ -136,11 +136,25 @@
   --ln-mark-h: 10px;
 
   /* --- Motion. Springs for anything that moves in space, fades for anything
-         that only appears. Durations live here; springs live in motion.ts. --- */
+         that only appears.
+
+         EVERY DURATION IN THE DIRECTION IS ONE OF THESE, including the ones the
+         TypeScript uses: `motion.ts` reads them back off this element rather
+         than restating them, so there is one spelling of a duration and no way
+         for the stylesheet and the components to drift apart. Springs are the
+         only exception, because a spring has no CSS spelling. --- */
   --ln-dur-1: 120ms;
   --ln-dur-2: 200ms;
   --ln-dur-3: 320ms;
   --ln-dur-4: 520ms;
+  /* The level change itself — the whole camera move from one level to the next.
+     The budget for a level change is 400ms and this is what is spent of it: 300
+     for the move, and the 140ms stagger below as the tail behind it. */
+  --ln-dur-move: 300ms;
+  /* The arrival stagger, and the index it stops counting at. A lane of forty
+     invoices lands in the same 140ms a lane of ten does. */
+  --ln-stagger: 14ms;
+  --ln-stagger-cap: 10;
   --ln-ease: cubic-bezier(0.2, 0, 0, 1);
   --ln-ease-out: cubic-bezier(0.05, 0.7, 0.1, 1);
 

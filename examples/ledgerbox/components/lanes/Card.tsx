@@ -54,6 +54,8 @@ export function Card({
   const [category, setCategory] = useState<Category>(mark.category);
   const closeRef = useRef<HTMLButtonElement>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  /** The node at L1 or the mark at L0 that opened this card. See the effect. */
+  const openerRef = useRef<HTMLElement | null>(null);
 
   const owed = mark.balanceCents > 0;
   const actionable = owed || mark.state === "disputed";
@@ -61,16 +63,68 @@ export function Card({
   // Body scroll is locked while the card is up, and focus lands on the way out
   // rather than on the first action: the card is a place you are reading, and
   // the way back should never need a hunt.
+  //
+  // AND IT IS HANDED BACK. Moving focus into an overlay without returning it is
+  // half a job: Escape used to leave the reader at the top of the document,
+  // with the mark they had been looking at three hundred pixels down and no way
+  // back to it but the mouse.
+  //
+  // The opener is read at the TOP of this effect, which is the last moment it is
+  // still true: mounting a card moves nothing, so whatever held focus when the
+  // card appeared is the node at L1 or the mark at L0 that opened it, and the
+  // next line is what takes focus away. It is re-checked on the way out rather
+  // than trusted — a mark at L0 is not on the page any more once its level has
+  // left — and the crumb's back button is the fallback, which is the one control
+  // always present at every level this card can close into.
   useEffect(() => {
+    // Recorded once and never overwritten from inside the card: StrictMode runs
+    // this effect, its cleanup and this effect again, and on the second pass
+    // focus is already on the close button below — so an unguarded read would
+    // record a control that is about to be unmounted with the card and hand
+    // focus back to nothing.
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active !== document.body && !active.closest(".ln-card")) {
+      openerRef.current = active;
+    }
+    const opener = openerRef.current;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
     return () => {
       document.body.style.overflow = previous;
+      // Next frame, not this one: React is still committing the unmount, and
+      // the level underneath has not been painted for the back button to exist
+      // in yet.
+      requestAnimationFrame(() => {
+        // ...which also means this can run against a card that never went
+        // away: StrictMode mounts, tears down and re-mounts every effect in
+        // development, and a cleanup that moves focus unconditionally would
+        // yank it straight back out of the card it had just put it in. Only a
+        // card that is really gone hands focus back.
+        if (document.querySelector(".ln-card")) return;
+        const target =
+          opener?.isConnected && opener.offsetParent !== null
+            ? opener
+            : document.querySelector<HTMLElement>(".ln-back");
+        target?.focus();
+      });
     };
   }, []);
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    /*
+     * THE CARD OWNS ESCAPE, and it has to: the kit's window listener declines
+     * any Escape raised inside a modal subtree (`zoom/escape.ts`), which is
+     * right — a dialog's dismiss is the dialog's business — but this one then
+     * answered to nothing at all while the footer went on advertising the key.
+     * `preventDefault` is what the kit checks first, so the nav stays out of it
+     * and one press leaves one level rather than two.
+     */
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+      return;
+    }
     if (event.key !== "Tab") return;
     const focusable = cardRef.current?.querySelectorAll<HTMLElement>(
       'button:not(:disabled), select:not(:disabled), [href], [tabindex]:not([tabindex="-1"])',
@@ -105,13 +159,17 @@ export function Card({
         aria-modal="true"
         aria-labelledby="ln-card-title"
         ref={cardRef}
+        /* On the dialog itself rather than on the lean wrapper inside it, so a
+           key pressed with focus anywhere in the card — including on the dialog
+           box, which is where focus lands if a control unmounts under it —
+           reaches the same handler. */
+        onKeyDown={onKeyDown}
       >
         <div
           className="ln-card-tilt"
           ref={tiltRef}
           onPointerMove={tilt.onPointerMove}
           onPointerLeave={tilt.onPointerLeave}
-          onKeyDown={onKeyDown}
         >
           <CardHead
             mark={mark}

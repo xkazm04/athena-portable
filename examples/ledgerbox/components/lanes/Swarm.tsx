@@ -22,6 +22,7 @@
  * Everything else stays a bar, and hovering any mark gives the full read-out.
  */
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
+import { emphasis, type Focus } from "@athena/demo-kit/zoom";
 
 import type { LnFilter, LnLane, LnMark, LnSheet } from "./model";
 import { Lane } from "./swarm/Lane";
@@ -30,12 +31,21 @@ import { Tip, type Hover } from "./swarm/Tip";
 
 export function Swarm({
   sheet,
+  focus,
+  live,
   filter,
   picked,
   onOpenLane,
   onOpenMark,
 }: {
   sheet: LnSheet;
+  /** The focus the whole surface is on, which is what decides how present each
+   *  lane still is once the reader has drilled past this level. */
+  focus: Focus;
+  /** True while L0 is the level you are on. False for the frames it is still
+   *  mounted on its way out: it gives up its `layoutId`s to the level arriving
+   *  and stops taking the pointer. */
+  live: boolean;
   filter: LnFilter;
   /** Invoices ticked by `select` — ringed rather than lit, because a tick is a working set and
    *  not a state of the books. */
@@ -128,11 +138,26 @@ export function Swarm({
       </p>
 
       <div className="ln-lanes">
+        {/*
+         * WHAT RECEDES WHEN YOU DRILL IN IS NOT THIS FILE'S OPINION. `emphasis`
+         * is the kit's one rule, shared by all nine directions, and a world
+         * reads it and decides what to DO with it rather than re-deriving it.
+         * Here it becomes opacity: at L0 every lane is fully present, and from
+         * inside a lane the five you are not in fall back to 0.22 while the one
+         * you opened holds at 1 — so the swarm visibly recedes behind the
+         * spread instead of being cut away under it.
+         */}
         {sheet.lanes.map((lane, index) => (
           <Lane
             key={lane.id}
             lane={lane}
             index={index}
+            live={live}
+            presence={emphasis(focus, lane.id, null)}
+            /* The lane you opened has a stand-in: its name is the element that
+               travels to the spread's head, so the copy left behind here would
+               be the same word twice for the length of the flight. */
+            traveling={!live && focus.group === lane.id}
             filter={filter}
             picked={picked}
             todayX={todayX}

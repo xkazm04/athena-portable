@@ -163,6 +163,20 @@
   color: var(--ln-ink);
 }
 
+/*
+ * The name of the lane you just opened, on the frames the swarm is still
+ * mounted behind the spread.
+ *
+ * It has a stand-in: the same word, matched by `layoutId`, is in flight to the
+ * spread's head. Leaving the copy here would print the lane's name twice for
+ * the length of the move, once stationary and once passing over it. Hidden, not
+ * removed — the box still holds the gutter's width, so the lanes beside it do
+ * not shuffle as the level changes.
+ */
+.ln-lane-name[data-traveling] {
+  opacity: 0;
+}
+
 .ln-lane-figures {
   font-family: var(--ln-font-mono);
   font-size: var(--ln-text-xs);

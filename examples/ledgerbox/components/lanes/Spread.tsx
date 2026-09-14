@@ -24,11 +24,11 @@
  * name fly to their new positions instead of cross-fading.
  */
 import { useMemo, type CSSProperties } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { formatMoneyShort } from "@/lib/format";
 import { chronological, matches, type LnFilter, type LnLane, type LnSheet } from "./model";
-import { fade, lift, zoom } from "./motion";
+import { fade, instant, lift, move, revealDelay, zoom } from "./motion";
 import { SpreadHead } from "./spread/Head";
 
 export type SpreadMode = "flat" | "raised";
@@ -43,6 +43,7 @@ function shortNumber(number: string): string {
 export function Spread({
   sheet,
   lane,
+  live,
   filter,
   picked,
   mode,
@@ -51,6 +52,14 @@ export function Spread({
 }: {
   sheet: LnSheet;
   lane: LnLane;
+  /**
+   * True while this level is the one being read.
+   *
+   * On the frames it is still mounted on its way back out to L0 it renders the
+   * same markup without `layoutId`s, so the marks arriving underneath it can
+   * claim them — exactly one live claimant per id, in every frame.
+   */
+  live: boolean;
   filter: LnFilter;
   /** Ticked invoices, ringed at this level too. */
   picked: ReadonlySet<string>;
@@ -58,6 +67,7 @@ export function Spread({
   onOpenItem: (id: string) => void;
   onOpenLane: (laneId: string) => void;
 }) {
+  const reduced = useReducedMotion();
   const ordered = useMemo(() => chronological(lane), [lane]);
   // The tallest bar in THIS lane, so a lane of small invoices still has relief
   // rather than lying flat because another lane holds the studio's whale.
@@ -68,8 +78,8 @@ export function Spread({
   const shown = ordered.filter((m) => matches(m, filter)).length;
 
   return (
-    <div className="ln-spread">
-      <SpreadHead sheet={sheet} lane={lane} onOpenLane={onOpenLane} />
+    <div className="ln-spread" data-live={live}>
+      <SpreadHead sheet={sheet} lane={lane} live={live} onOpenLane={onOpenLane} />
 
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
@@ -88,42 +98,56 @@ export function Spread({
           animate={{ rotateX: mode === "raised" ? 9 : 0, transformPerspective: 2600 }}
           transition={zoom}
         >
-          {ordered.map((mark) => {
+          {ordered.map((mark, index) => {
             const dim = !matches(mark, filter);
             // How far this card stands up in `raised` mode: its share of the
             // largest balance in the lane.
             const standing = maxBalance > 0 ? Math.max(0, mark.balanceCents) / maxBalance : 0;
-            return (
-              <motion.button
-                key={mark.id}
-                type="button"
-                layoutId={mark.id}
-                className="ln-node"
-                data-heat={mark.heat}
-                data-dim={dim}
-                data-picked={picked.has(mark.id)}
-                style={{ "--lift": standing } as CSSProperties}
-                animate={{
-                  opacity: dim ? 0.22 : 1,
-                  y: mode === "raised" ? -standing * 26 : 0,
-                }}
-                transition={lift}
-                onClick={() => onOpenItem(mark.id)}
-                aria-label={`Open ${mark.number}, ${mark.clientName}. ${mark.status}${
-                  picked.has(mark.id) ? " Ticked." : ""
-                }`}
-              >
+            /*
+             * THE STAGGER IS ON THE MORPH, not on a separate entrance.
+             *
+             * Each card grows out of the mark it was at L0 — one `layoutId`,
+             * measured in the frame the level changed — and each waits its turn
+             * by `--ln-stagger` before it does. That is what makes a lane read
+             * as unpacking rather than as twelve boxes appearing at once, and
+             * the cap keeps a forty-invoice lane inside the same 140ms tail a
+             * ten-invoice lane takes.
+             */
+            const delay = reduced ? 0 : revealDelay(index);
+            const arrive = reduced ? instant : { ...move(), delay };
+            const money = formatMoneyShort(
+              mark.balanceCents > 0 ? mark.balanceCents : mark.amountCents,
+            );
+            /*
+             * The card's contents, written once for both spellings.
+             *
+             * A `layoutId` is claimed at MOUNT and released at UNMOUNT — setting
+             * the prop to `undefined` on a live element does not deregister it,
+             * which is why this is two element types and not one prop. Rendering
+             * a plain `span` where the live level renders a `motion.span` makes
+             * React unmount the one and mount the other in a single commit,
+             * which is precisely the handoff motion's shared-layout stack is
+             * built around.
+             */
+            const body = (
+              <>
                 <span className="ln-node-top">
                   <span className="ln-node-no">#{shortNumber(mark.number)}</span>
-                  <motion.span layoutId={`money-${mark.id}`} className="ln-node-money">
-                    {formatMoneyShort(
-                      mark.balanceCents > 0 ? mark.balanceCents : mark.amountCents,
-                    )}
-                  </motion.span>
+                  {live ? (
+                    <motion.span layoutId={`money-${mark.id}`} className="ln-node-money">
+                      {money}
+                    </motion.span>
+                  ) : (
+                    <span className="ln-node-money">{money}</span>
+                  )}
                 </span>
-                <motion.span layoutId={`client-${mark.id}`} className="ln-node-client">
-                  {mark.clientName}
-                </motion.span>
+                {live ? (
+                  <motion.span layoutId={`client-${mark.id}`} className="ln-node-client">
+                    {mark.clientName}
+                  </motion.span>
+                ) : (
+                  <span className="ln-node-client">{mark.clientName}</span>
+                )}
                 <span className="ln-node-status">{mark.status}</span>
                 {/*
                  * The balance, as a length, against the largest balance in this
@@ -135,7 +159,42 @@ export function Spread({
                  * get it.
                  */}
                 <span className="ln-node-meter" aria-hidden />
+              </>
+            );
+            const shared = {
+              type: "button" as const,
+              className: "ln-node",
+              "data-heat": mark.heat,
+              "data-dim": dim,
+              "data-picked": picked.has(mark.id),
+              onClick: () => onOpenItem(mark.id),
+              "aria-label": `Open ${mark.number}, ${mark.clientName}. ${mark.status}${
+                picked.has(mark.id) ? " Ticked." : ""
+              }`,
+            };
+            return live ? (
+              <motion.button
+                key={mark.id}
+                layoutId={mark.id}
+                {...shared}
+                style={{ "--lift": standing } as CSSProperties}
+                initial={reduced ? false : { opacity: 0 }}
+                animate={{
+                  opacity: dim ? 0.22 : 1,
+                  y: mode === "raised" ? -standing * 26 : 0,
+                }}
+                transition={{ ...lift, layout: arrive, opacity: arrive }}
+              >
+                {body}
               </motion.button>
+            ) : (
+              <button
+                key={mark.id}
+                {...shared}
+                style={{ "--lift": standing, opacity: dim ? 0.22 : 1 } as CSSProperties}
+              >
+                {body}
+              </button>
             );
           })}
         </motion.div>
@@ -150,7 +209,7 @@ export function Spread({
           className="ln-count ln-spread-narrowed"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={fade}
+          transition={fade()}
         >
           showing {shown} of {ordered.length} — the rest are dimmed, not removed
         </motion.p>

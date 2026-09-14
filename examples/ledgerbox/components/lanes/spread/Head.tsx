@@ -13,31 +13,54 @@
  * one thing that decides whether you would rather be in it: how much of its
  * money is late.
  */
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import type { CSSProperties } from "react";
 
 import { formatMoneyShort } from "@/lib/format";
 import type { LnLane, LnSheet } from "../model";
+import { instant, move } from "../motion";
 
 export function SpreadHead({
   sheet,
   lane,
+  live,
   onOpenLane,
 }: {
   sheet: LnSheet;
   lane: LnLane;
+  /** True while L1/L2 is the level being read; false on the way back out to L0,
+   *  where the id belongs to the lane name arriving in the gutter. */
+  live: boolean;
   onOpenLane: (id: string) => void;
 }) {
+  const reduced = useReducedMotion();
   const others = sheet.lanes.filter((l) => l.id !== lane.id);
   return (
     <>
   <div className="ln-spread-head">
     {/* The same element as the lane's name in the L0 gutter: motion matches
         them by id, so the label travels and grows rather than one fading
-        out while another fades in somewhere else. */}
-    <motion.h2 layoutId={`lane-name-${lane.id}`} className="ln-spread-title">
-      {lane.label}
-    </motion.h2>
+        out while another fades in somewhere else. THE MASTHEAD DOES NOT MOVE
+        UNDER IT — `chrome/mast.css` takes the headline down to its crumb size
+        in the frame the level changes and settles it with a transform, so the
+        box this name is flying to is already where it will end up. It used to
+        be measured against a masthead still 520ms from finishing its own
+        shrink, which is why the two printed over each other mid-flight. */}
+    {live ? (
+      <motion.h2
+        layoutId={`lane-name-${lane.id}`}
+        className="ln-spread-title"
+        /* The flight is tokenised like every other duration in the direction.
+           Left to motion's default this one spring was the slowest thing on the
+           screen — still creeping the last six pixels half a second after the
+           level had otherwise finished. */
+        transition={reduced ? instant : move()}
+      >
+        {lane.label}
+      </motion.h2>
+    ) : (
+      <h2 className="ln-spread-title">{lane.label}</h2>
+    )}
     <p className="ln-spread-blurb">{lane.blurb}</p>
   </div>
   {/*

@@ -7,6 +7,37 @@
   perspective-origin: 50% 20%;
 }
 
+/*
+ * THE CHROME ARRIVES; THE TITLE TRAVELS.
+ *
+ * The lane's blurb, its three figures and the five rails have no counterpart at
+ * L0, so they fade up in place over `--ln-dur-2` rather than being cut in. The
+ * spread's own `<h2>` is deliberately NOT in this list: it is the element
+ * carrying the `layoutId` from the L0 gutter, and fading it would put a second
+ * animation on top of the one move the reader is supposed to be following.
+ *
+ * Fading the whole layer would do the same thing to it, which is why the layer
+ * the arriving level lives in holds no opacity of its own.
+ */
+.ln-spread-blurb,
+.ln-spread-figures,
+.ln-rails {
+  /* Held back by one step, so the lane's name has crossed this band and landed
+     in the head before the figures under it come up. Without the delay the
+     traveller flew through three poster numerals fading in underneath it, which
+     is the same illegible frame the masthead used to produce one region up. */
+  animation: ln-spread-arrive var(--ln-dur-2) var(--ln-ease-out) var(--ln-dur-1) both;
+}
+
+@keyframes ln-spread-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .ln-spread-head {
   display: flex;
   flex-wrap: wrap;

@@ -42,7 +42,7 @@ export function Gate({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={fade}
+          transition={fade()}
         >
           <span className="ln-gate-q">{question}</span>
           <button
@@ -70,7 +70,7 @@ export function Gate({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={fade}
+          transition={fade()}
         >
           {label}
         </motion.button>

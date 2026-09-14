@@ -7,6 +7,21 @@
   gap: var(--ln-s2) var(--ln-s5);
 }
 
+/*
+ * THE HEADLINE SETTLES; IT DOES NOT REFLOW UNDER THE THING FLYING AT IT.
+ *
+ * The mast used to transition `font-size` over 520ms, which is a layout
+ * animation of the whole page: the lane name travelling from the L0 gutter to
+ * the spread's head measured its target against a masthead that was still half
+ * a second from finishing, and landed across the figures. One frame of the
+ * capture had the L0 headline and the L1 head printing over each other.
+ *
+ * So the SIZE lands in the frame the level changes — that is the only way the
+ * traveller's target can be right — and the CHANGE is carried by transform and
+ * opacity, which cost no layout. The headline shrinks into its crumb position
+ * and the lane name flies into the space it left, in that order, and neither
+ * ever draws on top of the other.
+ */
 .ln-title {
   margin: var(--ln-s1) 0 0;
   font-size: var(--ln-text-display);
@@ -15,13 +30,44 @@
   white-space: nowrap;
   /* The headline is the one place white goes fully opaque. */
   color: #fff;
-  transition: font-size var(--ln-dur-4) var(--ln-ease), opacity var(--ln-dur-3) var(--ln-ease);
+  /* Shrinking toward the start edge, so it settles into the crumb's own
+     alignment rather than toward the middle of a line it no longer fills. */
+  transform-origin: 0 50%;
+  transition: color var(--ln-dur-2) var(--ln-ease);
+  animation: ln-title-open var(--ln-dur-3) var(--ln-ease) both;
 }
 
 .ln-root[data-level="1"] .ln-title,
 .ln-root[data-level="2"] .ln-title {
   font-size: var(--ln-text-md);
   color: var(--ln-mute);
+  animation-name: ln-title-settle;
+}
+
+/* Down into a lane: the poster line arrives at crumb size already, and the
+   scale plays the shrink back for the eye without moving a single box. */
+@keyframes ln-title-settle {
+  from {
+    opacity: 0.2;
+    transform: scale(2.2);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* And back out: the same settle in the other direction. Runs once on load as
+   well, which is the headline arriving rather than being already there. */
+@keyframes ln-title-open {
+  from {
+    opacity: 0.2;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Claim and figures share a row beneath the headline, which is the reference's

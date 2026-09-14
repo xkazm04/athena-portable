@@ -14,11 +14,12 @@
  * no information at all. The share does: 51% in Design and 97% in Reimbursable,
  * and that difference is the whole reason to open one lane before the other.
  */
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import type { CSSProperties } from "react";
 
 import { formatMoney, formatMoneyShort } from "@/lib/format";
 import { matches, type LnFilter, type LnLane, type LnMark } from "../model";
+import { instant, move } from "../motion";
 import { flagOf, labelledIn, markVars } from "./marks";
 
 /**
@@ -43,6 +44,9 @@ export interface Deck {
 export function Lane({
   lane,
   index,
+  live,
+  presence,
+  traveling,
   filter,
   picked,
   todayX,
@@ -52,6 +56,20 @@ export function Lane({
 }: {
   lane: LnLane;
   index: number;
+  /**
+   * True while L0 is the level being read.
+   *
+   * A lane keeps its `layoutId`s only while it is live. On the frames it is
+   * still mounted on its way out it renders the same markup as plain elements,
+   * which deregisters every id in the same commit the arriving level claims
+   * them — two live claimants on one id animates neither, and that is the whole
+   * reason the two levels could not overlap before.
+   */
+  live: boolean;
+  /** 1 fully there, 0 gone — the kit's `emphasis()`, never re-derived here. */
+  presence: number;
+  /** This lane's name is the element flying to the spread's head. */
+  traveling: boolean;
   filter: LnFilter;
   /** Ticked invoices, ringed at this level. */
   picked: ReadonlySet<string>;
@@ -60,17 +78,24 @@ export function Lane({
   onOpenLane: (id: string) => void;
   onOpenMark: (laneId: string, markId: string) => void;
 }) {
+  const reduced = useReducedMotion();
+  /* Reduced motion lands on the final presence rather than fading to it: the
+     lane is simply as present as `emphasis()` says it is, on the frame the
+     level changed. */
+  const travel = reduced ? instant : move();
   const { byDate, enter, leave, rove, roving, setRoving, hoveredId } = deck;
   const labelled = labelledIn(lane);
   const shown = lane.marks.filter((m) => matches(m, filter)).length;
   const lateShare = lane.owedCents > 0 ? lane.lateCents / lane.owedCents : 0;
 
   return (
-  <div
+  <motion.div
     key={lane.id}
     className="ln-lane"
     data-lane={lane.id}
     data-heat={lane.heat}
+    animate={{ opacity: presence }}
+    transition={travel}
     style={
       {
         "--i": index,
@@ -86,9 +111,19 @@ export function Lane({
       onClick={() => onOpenLane(lane.id)}
       aria-label={`Open the ${lane.label} lane, ${lane.count} invoices, ${formatMoneyShort(lane.owedCents)} outstanding`}
     >
-      <motion.span layoutId={`lane-name-${lane.id}`} className="ln-lane-name">
-        {lane.label}
-      </motion.span>
+      {live ? (
+        <motion.span
+          layoutId={`lane-name-${lane.id}`}
+          className="ln-lane-name"
+          transition={travel}
+        >
+          {lane.label}
+        </motion.span>
+      ) : (
+        <span className="ln-lane-name" data-traveling={traveling || undefined}>
+          {lane.label}
+        </span>
+      )}
       <span className="ln-lane-figures num">
         {shown === lane.count ? lane.count : `${shown}/${lane.count}`} ·{" "}
         {formatMoneyShort(lane.owedCents)}
@@ -122,6 +157,33 @@ export function Lane({
         const late = mark.daysOverdue > 0 && mark.balanceCents > 0;
         const flag = flagOf(mark);
         const open = hoveredId === mark.id;
+        /* Everything about a mark except who owns its `layoutId`. Written once
+           so the live and the receding spelling cannot drift apart. */
+        const markProps = {
+          type: "button" as const,
+          className: "ln-mark",
+          "data-heat": mark.heat,
+          "data-dim": dim,
+          "data-open": open,
+          "data-picked": picked.has(mark.id),
+          tabIndex: index === (roving[lane.id] ?? 0) ? 0 : -1,
+          style: markVars(mark, todayX),
+          onMouseEnter: (event: React.MouseEvent<HTMLButtonElement>) =>
+            enter(mark, lane, event.currentTarget),
+          onFocus: (event: React.FocusEvent<HTMLButtonElement>) => {
+            enter(mark, lane, event.currentTarget);
+            setRoving((r) => (r[lane.id] === index ? r : { ...r, [lane.id]: index }));
+          },
+          onMouseLeave: leave,
+          onBlur: leave,
+          onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+            event.stopPropagation();
+            onOpenMark(lane.id, mark.id);
+          },
+          "aria-label": `${mark.number}, ${mark.clientName}, ${formatMoney(
+            mark.balanceCents > 0 ? mark.balanceCents : mark.amountCents,
+          )}. ${mark.status}${picked.has(mark.id) ? " Ticked." : ""}`,
+        };
         return (
           <span key={mark.id}>
             {late ? (
@@ -156,36 +218,16 @@ export function Lane({
                 {flag}
               </span>
             ) : null}
-            <motion.button
-              type="button"
-              layoutId={mark.id}
-              className="ln-mark"
-              data-heat={mark.heat}
-              data-dim={dim}
-              data-open={open}
-              data-picked={picked.has(mark.id)}
-              tabIndex={index === (roving[lane.id] ?? 0) ? 0 : -1}
-              style={markVars(mark, todayX)}
-              onMouseEnter={(event) => enter(mark, lane, event.currentTarget)}
-              onFocus={(event) => {
-                enter(mark, lane, event.currentTarget);
-                setRoving((r) => (r[lane.id] === index ? r : { ...r, [lane.id]: index }));
-              }}
-              onMouseLeave={leave}
-              onBlur={leave}
-              onClick={(event) => {
-                event.stopPropagation();
-                onOpenMark(lane.id, mark.id);
-              }}
-              aria-label={`${mark.number}, ${mark.clientName}, ${formatMoney(
-                mark.balanceCents > 0 ? mark.balanceCents : mark.amountCents,
-              )}. ${mark.status}${picked.has(mark.id) ? " Ticked." : ""}`}
-            />
+            {live ? (
+              <motion.button layoutId={mark.id} {...markProps} />
+            ) : (
+              <button {...markProps} />
+            )}
           </span>
         );
       })}
       <span className="ln-now" style={{ "--todayX": todayX } as CSSProperties} />
     </div>
-  </div>
+  </motion.div>
   );
 }
