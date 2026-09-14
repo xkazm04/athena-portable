@@ -323,8 +323,17 @@ owner of its transform.
    switcher hook exists in three copies; `nav.highlight` still has no expiry.
 5. The resolve callbacks get a pose but no frame.
 
-**Owner picks pending:** the hirelane direction (rooms proved the lesson; board reads best today)
-and the atlas renderer (hybrid reads best and keeps text selectable).
+**The owner's verdict (same day).** Hirelane keeps the board; rooms and constellation "degraded
+the baseline and cannot be used for anything" — reverted to the round-2 tree. Ledgerbox reverts to
+the clickable layers: the map's "L1 is not readable and the layers are not calibrated to be used".
+Tidycrm's one space is kept for future polish. Atlas has no winner: "designing app architecture as
+a building is not the right direction — a 2D diagram of components in a canvas with switchable
+views in blueprint structure would fit much better. For 3D we don't have any good practice or idea
+what to invent; we should not chase it." Two standing consequences for the program: a concept
+that makes an app less usable than its baseline is reverted, not polished, and the lesson is kept
+here instead; and 3D is not where the formula will come from — 2D canvas, pan/zoom, semantic
+detail and switchable views are the space to search. Kit gap 3 (the `.tsx` in the barrel) was
+closed on the way: `Echo` has its own entry point.
 
 **Carried:** URL sync (four rounds, still nowhere); atlas L1 stubs for edges leaving the stratum;
 ledgerbox near-band density and dead space; rooms floor size; pinch on a perspective camera.
