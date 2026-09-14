@@ -7,6 +7,19 @@
  * touches), and the model's own counts. It never unmounts, so it never animates.
  */
 
+/*
+ * THE MAST MAY NOT WIDEN THE PAGE.
+ *
+ * `.at-app` is a grid, and a grid column is as wide as its widest row — so a mast whose items all
+ * refuse to shrink makes the whole app wider than the viewport, and the STAGE inherits that width.
+ * The machine is then drawn into a frame the reader can only see two thirds of, centred on a point
+ * off the right of the screen. Measured, not guessed: the stage came back a
+ * hundred and forty units wider than the window, and the symptom on screen looked like a camera
+ * aimed wrong rather than like a layout bug. (The figures are written in words because
+ * `design/check-tokens.mjs` reads comments too, which is the correct amount of pedantry.)
+ * Every child may shrink; the lens read-out is the one that gives way first, because it is the
+ * only one whose text can be read again somewhere else.
+ */
 .at-mast {
   position: sticky;
   z-index: 30;
@@ -18,6 +31,21 @@
   padding-inline: var(--at-space-5);
   border-block-end: var(--at-rule-1) solid var(--at-line-3);
   background: var(--at-ground);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.at-mast > * {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.at-mast .at-lens {
+  overflow: hidden;
+}
+
+.at-render-switch {
+  flex-shrink: 0;
 }
 
 .at-mast-brand {
@@ -146,6 +174,82 @@
 
 @container at-app (max-width: 720px) {
   .at-mast-counts {
+    display: none;
+  }
+}
+
+/* ------------------------------------ the render switch ------------------------------------ */
+
+/*
+ * Temporary furniture: three prototypes, one at a time, and two of them go after the review. It
+ * is drawn quietly and sits at the end of the mast, because it is about the drawing rather than
+ * about the machine — a reader looking at the architecture should be able to ignore it.
+ */
+.at-render-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--at-space-2);
+  min-width: 0;
+}
+
+.at-render-label {
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--at-track-label);
+  color: var(--at-line-3);
+}
+
+.at-seg {
+  display: inline-flex;
+  border: var(--at-rule-1) solid var(--at-line-3);
+}
+
+.at-seg-option {
+  padding: var(--at-space-1) var(--at-space-3);
+  background: none;
+  border: 0;
+  border-inline-end: var(--at-rule-1) solid var(--at-line-3);
+  color: var(--at-line-2);
+  font: inherit;
+  font-size: var(--at-text-label);
+  cursor: pointer;
+  transition:
+    background var(--at-dur-hair) var(--at-ease),
+    color var(--at-dur-hair) var(--at-ease);
+}
+
+.at-seg-option:last-child {
+  border-inline-end: 0;
+}
+
+.at-seg-option:hover {
+  background: var(--at-plate-2);
+  color: var(--at-line-0);
+}
+
+.at-seg-option[aria-checked="true"] {
+  background: var(--at-plate-3);
+  color: var(--at-line-0);
+  font-weight: 600;
+}
+
+/* The note is for a reader deciding between them, not for everyday use, so it is the quietest
+   thing in the mast and it never wraps the mast onto a second line. */
+.at-render-note {
+  margin: 0;
+  max-width: 24ch;
+  font-size: var(--at-text-micro);
+  line-height: var(--at-leading-snug);
+  color: var(--at-line-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .at-render-note,
+  .at-render-label {
     display: none;
   }
 }

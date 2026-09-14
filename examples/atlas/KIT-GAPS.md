@@ -1,6 +1,6 @@
 # KIT-GAPS — the distance from a reusable formula
 
-Atlas is round 2's objective test of the layered-UI formula (`docs/layered-ui-formula.md` §2): an
+Atlas is the objective test of the layered-UI formula (`docs/layered-ui-formula.md` §2): an
 app built **only** through `@athena/demo-kit`'s primitives, whose count of "I had to write this
 myself" measures how far the kit is from a formula somebody can just *use*. This file is the
 measurement, and it is the deliverable as much as the app is.
@@ -10,13 +10,256 @@ primitive's API fought back. Each says what, why the kit did not cover it, the f
 in, and a one-line proposal. Nothing in `examples/demo-kit` was edited to make Atlas work; every
 workaround is here instead.
 
-**Score for round 2, first build: 13 gaps** — 5 that cost real code (#1, #2, #3, #4, #7), 3 that
+**Round 2's score, first build: 13 gaps** — 5 that cost real code (#1, #2, #3, #4, #7), 3 that
 cost a workaround (#5, #6, #8), 5 that are documentation or ergonomics (#9–#13). Nothing in the
 nine rules was *impossible*; rules 1, 3 and 5-adjacent focus were the expensive ones.
 
 ---
 
-## 2026-09-14 — gaps found building Atlas
+## Round 3 — the camera contract, and the machine (2026-09-14)
+
+Round 3 rebuilt Atlas as a **scene**: six strata as planes, systems as blocks, components as parts,
+edges as pipes, and README §3.2's turn as a light that travels them. The kit landed
+`docs/kit-camera-contract.md` in parallel. So this round measures two things at once — how far the
+kit is from a reusable formula, and **how far the camera contract is from the surface it was
+written for**.
+
+**Score for round 3: 11 gaps.** Four cost real code (#R3-1, #R3-2, #R3-4, #R3-9), three cost a
+workaround (#R3-3, #R3-5, #R3-7), four are documentation or a rule the formula does not yet have
+(#R3-6, #R3-8, #R3-10, #R3-11).
+
+**The three that matter**, before the list: *(a)* the contract's `resolveItem` assumes "which item
+is under the camera" is a question with an answer, and for a scene whose items live inside a
+container it is not — so semantic zoom is a two-band hook in a three-level app (R3-1). *(b)* `snap`
+as a list of poses silently defeats semantic zoom, because a snap that carries `zoom` un-zooms the
+reader and the level then never changes; nothing errors (R3-2). *(c)* rules 1, 2 and 3 of the
+formula all assume a 2D layout, and none of them says so — in a scene, `layoutId` measures the wrong
+rectangle, the echo has nothing to echo, and "box then ink" needs a third beat for a camera (R3-6).
+
+---
+
+### R3-1. `resolveItem` has no honest answer in a container scene
+
+**What.** Contract §3 asks for `resolveItem(pose, group)`, and the hook opens L2 when the camera
+crosses the second band. Atlas's items are parts standing inside a block: at the distance where that
+band is crossed, *every* part of the block in frame is under the camera. There is no "the one under
+the pointer", because the crossing is a zoom and not a point. Returning an arbitrary one flies the
+reader somewhere they did not choose; returning `null` — which the docstring allows — means the
+wheel stops at L1 and the third level is unreachable by camera.
+
+Atlas returns `null` and opens parts by click and by tool. That is the right answer for this
+surface, but it means **semantic zoom is a two-band hook in a three-level app**, and the contract's
+headline claim ("camera distance is the level") is two thirds true here.
+
+**Written in.** `components/atlas/scene/rig.ts`, `resolveItem: () => null` plus the comment
+explaining why.
+
+**Proposal.** Either accept a pointer (`resolveItem(pose, group, pointer?: { x, y })`) so a surface
+can answer "the part under the cursor at the moment of crossing", or document that the third band is
+for surfaces whose items are laid out in the plane, and give the two-band case a name.
+
+---
+
+### R3-2. `snap` as a list of poses silently defeats semantic zoom
+
+**What.** The contract offers `snap?: readonly CameraPose[]`, and a list is the obvious thing to
+pass. But a `CameraPose` is four numbers and only two of them are about where the reader is
+*standing*; the other two are where they are *looking*. In a direction where **distance is the
+level**, a snap whose poses carry `zoom: 1` pulls the reader back to `zoom: 1` the instant they stop
+turning the wheel — so the band is never crossed, the level never changes, and the symptom is "the
+wheel does nothing". No error, no warning, and the cause is three files from the effect. It took a
+scripted browser probe reading the world transform frame by frame to find.
+
+Atlas passes a **function** that keeps `zoom` and `pan` untouched, snaps yaw and pitch to the
+nearest of three orientations, and declines entirely once the camera is inside a level.
+
+**Written in.** `components/atlas/scene/poses.ts`, `snapPose()` (~20 lines) and its test.
+
+**Proposal.** Ship `snapOrientation(snaps)` beside `nearestSnap`, and say in the contract that a
+snap list is for surfaces whose zoom is not semantic. This is an interaction between two features of
+the same document; only the kit can own it.
+
+---
+
+### R3-3. `bind.ref` is a deviation that fails silently
+
+**What.** `rig.bind` carries a `ref` (for the non-passive wheel listener), which contract §2 does not
+list. Spreading `bind` over a JSX element that already has a `ref` drops one of them — which one
+depends on the order somebody typed the attributes in — and the failure is invisible: the camera
+still orbits, the wheel still zooms, and the page *also* scrolls underneath. Atlas composes them.
+
+The kit's own docstring warns about this, which is the right thing to do and is not the same as it
+not being a hazard: a prop spread is the one place a reader does not look for a collision.
+
+**Written in.** `components/atlas/render/useFrameSize.ts`, `composeRefs()` (~12 lines), used by both
+scene renderers.
+
+**Proposal.** Export `composeRefs` from the kit — every consumer of `bind` needs it — or have `bind`
+expose `attach(el)` as a method the consumer calls from its own ref, so there is no prop to collide
+with.
+
+---
+
+### R3-4. There is no `poseFor` helper, and getting it wrong is invisible
+
+**What.** `poseFor(focus)` is the whole nav-to-camera half of the contract and every surface has to
+write it. For a scene it means: resolve the target's offset from the orbit centre onto the camera's
+own right and up axes, negate, and hand that back as `pan`. That derivation is eleven lines of cross
+products, it is the most breakable thing in the camera, and **its failures do not look like
+failures** — one sign flipped in the right vector and the camera flies to the *mirror image* of the
+thing that was opened. Nothing throws, nothing logs, and the surface looks like a camera aimed
+badly. Found by eye, in a screenshot, after the code had been green for an hour.
+
+**Written in.** `components/atlas/scene/aim.ts` (the whole module, ~90 lines), plus two tests in
+`test/scene.test.ts` asserting that `poseFor` lands its target within a pixel of the frame's centre
+for every stratum and every part in the model.
+
+**Proposal.** `aimPose(target, pose, { centre })` in the kit, pure and tested — the contract already
+owns the pose, and "the pan that centres a world point" is arithmetic, not identity. At minimum, say
+in §3 that `poseFor` needs a test and what that test should assert.
+
+---
+
+### R3-5. `useSemanticZoom` needs the flight, and the contract does not say so
+
+**What.** The kit's `SemanticZoomOptions.flight` is marked "NOT IN THE CONTRACT" in its own
+docstring, and it is load-bearing: without it a camera-driven level change never claims a flight, so
+`flight.moving` is false during a wheel-opened move, an interrupt has nothing to abort, and rule 6
+holds for a click but not for a wheel. A surface built from the contract alone would ship that
+asymmetry and never see it.
+
+**Written in.** Nowhere — the coordinator's message named it, and Atlas passes `flight` from the
+first line. Logged because the gap is in the document rather than in the code, and the next app gets
+the document.
+
+**Proposal.** Fold `flight` into contract §3.
+
+---
+
+### R3-6. Rules 1, 2 and 3 of the formula assume a 2D layout, and none of them says so
+
+**What.** This is the round's biggest finding, and it is about the formula rather than the kit's API.
+
+- **Rule 1** ("the level you leave carries the camera") and its new `useEcho` / `Echo` primitive
+  have nothing to do here. The camera IS the level change: `rig.flyTo(poseFor(focus))` moves the
+  reader through one continuous space, so there is no outgoing level to render inert — the thing you
+  left is still on screen, further away. Atlas mounts no echo at all, and is not worse for it.
+- **Rule 2** ("one claimant per shared id") cannot be used. The part a pane grows out of is a face
+  carrying a `matrix3d`, and `getBoundingClientRect` on it returns the axis-aligned bounding box of a
+  projected quadrilateral — a rectangle the reader can see is not where the part is. Atlas grows the
+  pane from a **projected point** instead, which is the same idea with the right measurement.
+- **Rule 3** ("box, then ink") needs a third beat: the box moves, *the camera arrives*, then the ink.
+  A label on the box's clock arrives while the camera is still flying.
+
+**Written in.** `components/atlas/motion.ts` (the note where the two shared ids used to be),
+`components/atlas/machine/Pane.tsx` (the projected origin), and the absence of an echo in
+`Atlas.tsx`.
+
+**Proposal.** §1 of the formula should say which rules are about a DOM layout and what their
+equivalent is when the level change is a camera move. Rule 1 in particular has a strictly better
+form in a scene, and the kit now ships a primitive for the weaker one.
+
+---
+
+### R3-7. `emphasis()` still has two tiers, and now the middle one is a solid object
+
+**What.** Round 2's #9, unchanged and now more expensive. `emphasis(focus, group, item)` can say how
+present a stratum is and how present a part is, and has nothing to say about a **block** — which in
+a scene is not a column of rows but a box with a volume, standing between them. Atlas derives a
+block's presence as the strongest presence among its parts, floored at its stratum's own, so a
+receding block that still holds a lit part does not take that part down with it.
+
+**Written in.** `components/atlas/render/contract.ts`, `weightsFor()`.
+
+**Proposal.** As round 2: an optional path, `emphasis(focus, [group, sub, item])`.
+
+---
+
+### R3-8. `presenceStyle` has no vocabulary for a scene
+
+**What.** It returns `{ opacity, scale }`, which is the right pair for a DOM layer and the wrong pair
+for a machine. A block does not recede by shrinking — it recedes by losing its fill and keeping its
+edge, or by dropping out of the lighting. Atlas maps presence to opacity only and lets each renderer
+decide what "less present" looks like in its own vocabulary (a fill mix in css3d, material opacity
+and emissive in webgl).
+
+**Written in.** `components/atlas/render/contract.ts` (`Weight`), and the renderers' materials.
+
+**Proposal.** Keep `presenceStyle` for DOM, and document beside `presenceOf` that the *number* is the
+model's answer while the *mapping* is the direction's — which is already true and is written down
+nowhere a scene author would find it.
+
+---
+
+### R3-9. `useZoomTools` still has two tiers, and the turn needed three tools of its own
+
+**What.** Round 2's #8, unchanged: `read_view` at L1 hands an agent a flat list of the layer's
+components with no system structure, so `read_system` is still hand-written. New this round: the
+turn is the app's hero and the four verbs have no idea it exists, so `read_turn`, `set_turn` and
+`play_turn` are written by hand. That is correct — a transport is not a level model — but it means
+an agent must learn two vocabularies for one surface, and nothing in the kit's generated
+descriptions tells it the second one exists.
+
+**Written in.** `components/atlas/tools/AtlasTools.tsx` (three tools),
+`components/atlas/tools/read.ts` (`turnRead`).
+
+**Proposal.** `useZoomTools` should accept an `also` list of tool names to mention in `read_view`'s
+payload, so one call tells an agent everything this surface can do.
+
+---
+
+### R3-10. `useTokens` reads an unknown or unmounted token as `0`, and a zero clock is not a clock
+
+**What.** Round 2's #10, with a new consequence. The turn's beat is a duration read from the cascade;
+during the server render and the first client frame `useTokens` answers `0`, and a turn on a zero
+clock completes instantly and invisibly. Atlas carries a `FALLBACK_BEAT` constant and a lint check
+that asserts it equals `--at-dur-beat`, because the alternative is two clocks.
+
+**Written in.** `components/atlas/motion.ts` (`FALLBACK_BEAT`), `design/check-tokens.mjs` (check 5).
+
+**Proposal.** `useTokens(names, { fallback })` — one option, and the app stops needing a lint rule to
+keep two numbers equal.
+
+---
+
+### R3-11. Nothing in the kit knows about a clock that is content
+
+**What.** Every duration the kit reasons about is a transition: it is zeroed under reduced motion,
+and that is right for a level change. The turn is not a transition — it is twelve stops that
+together are README §3.2, and a reader who asked for no motion should get them as **stills**, not as
+an empty machine. Atlas keeps `--at-dur-beat` out of the reduced block and has the transport snap
+stop to stop instead of interpolating.
+
+That distinction — a *transition* versus a *sequence a reader is reading* — is a real rule, and the
+formula does not have it.
+
+**Written in.** `components/atlas/style/base/tokens.css` (the reduced block's comment),
+`components/atlas/scene/useTurn.ts` (the stills branch).
+
+**Proposal.** Rule 8 should read: "reduced motion lands a *transition* on its final state at frame
+zero, and turns a *sequence* into stills on the same clock".
+
+---
+
+### What the camera contract got right, for the record
+
+- **`useCameraRig` is the whole camera.** Drag, wheel-at-pointer, inertia, keyboard, `Home`, bounds
+  and the fly — none of it is written in this app, and all three renderings share one pose, which is
+  the only reason "three drawings of one machine" is a true sentence rather than an aspiration.
+- **`flyToken` / `easeToken`.** The camera's move reads the app's own `--at-dur-move` out of the
+  cascade, so rule 4 holds for the camera without the app passing it a number.
+- **`useSemanticZoom`'s `driving` marker** worked first time: a wheel that crosses a band dispatches,
+  a tool that opens a group flies, and neither echoes the other. That loop is the hard part of the
+  contract and it is correct.
+- **`subscribe` firing once immediately** is what lets a renderer be one `useEffect` with no
+  initial-paint special case — in all three variants, unchanged.
+- **`poseToTransform`** went unused (the css3d scene needs a `perspective` and a world scale that
+  agree with the same pinhole the WebGL camera uses), but the pose it consumes is unchanged, which is
+  the point: the kit owns four numbers, not the picture.
+
+---
+
+## Round 2 — the first build, on the kit alone (2026-09-14)
 
 ### 1. `Presence` is an `interface`, so it cannot be handed to motion at all
 

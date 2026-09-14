@@ -27,11 +27,27 @@
   gap: var(--at-space-4);
   align-content: start;
   overflow-y: auto;
-  width: min(var(--at-pane-w), calc(100cqi - var(--at-space-8)));
+  width: min(var(--at-pane-w), calc(100vw - var(--at-space-8)));
   padding: var(--at-space-5);
   border: var(--at-rule-3) solid var(--at-line-0);
   background: var(--at-plate-2);
   box-shadow: var(--at-elev-0);
+}
+
+/*
+ * IT RISES OUT OF THE PART.
+ *
+ * `--at-pane-ox` / `--at-pane-oy` are the part's projected position on screen, written inline by
+ * `Atlas.tsx` on the commit the pane opens. Anchoring the scale's origin there is what makes the
+ * grow read as the part opening rather than as a dialog appearing in the middle of the page — and
+ * it is the only mechanism available, because the part is a face carrying a `matrix3d` and a
+ * `layoutId` morph would measure a rectangle that is nowhere near where the reader sees it.
+ *
+ * The origin is in VIEWPORT pixels and the pane is `position: fixed`, so the two coordinate
+ * systems are the same one and the offset needs no correction.
+ */
+.at-pane[data-anchored] {
+  transform-origin: calc(var(--at-pane-ox) - 50vw + 50%) calc(var(--at-pane-oy) - var(--at-space-8));
 }
 
 /* The pane is not a control and already carries the heaviest rule on the surface, so its focus
@@ -212,4 +228,14 @@
     width: calc(100cqi - var(--at-space-6));
     padding: var(--at-space-4);
   }
+}
+
+/* The pane's kicker line: part number, then layer / system. Two `.at-part` spans with nothing
+   between them ran together into `C-053CORE`, which reads as one identifier that does not exist. */
+.at-pane .at-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--at-space-3);
+  align-items: baseline;
+  margin: 0 0 var(--at-space-2);
 }

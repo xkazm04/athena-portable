@@ -3,10 +3,14 @@
  *
  * Tokens first and always: every file below reads them and none of them declares a value.
  * `design/check-tokens.mjs` enforces that, and `app/globals.css` imports this file once.
+ *
+ * The scene files come after the scaffold and before the pane, because the pane is the one thing
+ * that sits ON TOP of the machine and its rules must win.
  */
 @import "./base/tokens.css";
 @import "./base/sheet.css";
 @import "./chrome/mast.css";
-@import "./level0/l0-index.css";
-@import "./level1/l1-layer.css";
+@import "./chrome/transport.css";
+@import "./scene/scene.css";
+@import "./scene/css3d.css";
 @import "./level2/l2-pane.css";

@@ -27,6 +27,22 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const TOKEN_FILE = join(ROOT, "components/atlas/style/base/tokens.css");
 const SKIP_DIRS = new Set(["node_modules", ".next", "data", "design", "test"]);
+
+/**
+ * THE ONE EXEMPTION FROM THE `px` BAN, and it is about a coordinate system rather than a
+ * preference.
+ *
+ * Inside `.at-c3-world` the CSS 3D renderer applies `scale3d(unit)` (see `scene/project.ts`,
+ * `cssView`), so every length below that element is a SCENE UNIT and not a pixel: a block nine
+ * units tall is written `height: 9px` and measures nine units. Banning `px` there would be
+ * banning the scene's own unit of measurement, and replacing each one with a token would put
+ * the machine's geometry in the token file, where it does not belong — the geometry is computed
+ * in `scene/layout.ts` and tested.
+ *
+ * The exemption is `px` only. Every `ms` in the file is still a token, and every `--at-*` it
+ * uses must still be declared.
+ */
+const SCENE_UNIT_FILES = new Set(["components/atlas/style/scene/css3d.css"]);
 const EXTS = [".css", ".ts", ".tsx"];
 
 /** `0px` and `0ms` are the same value in any unit and read as "none"; they are not a clock. */
@@ -72,6 +88,7 @@ for (const file of walk(ROOT)) {
       );
       continue;
     }
+    if (m[2] === "px" && SCENE_UNIT_FILES.has(where)) continue;
     problems.push(`${where}:${line}  raw "${m[0]}" — use an --at-* token (DESIGN.md §9)`);
   }
 
@@ -82,9 +99,27 @@ for (const file of walk(ROOT)) {
   }
 }
 
-/* The clock itself: the four durations the layered-UI formula's rule 4 is made of. */
-for (const name of ["--at-dur-hair", "--at-dur-ink", "--at-dur-lens", "--at-dur-move"]) {
+/* The clock itself: the durations the layered-UI formula's rule 4 is made of, plus round 3's
+   beat — the turn's own unit, and the only clock in this app that is content rather than chrome. */
+for (const name of ["--at-dur-hair", "--at-dur-ink", "--at-dur-lens", "--at-dur-move", "--at-dur-beat"]) {
   if (!declared.has(name)) problems.push(`tokens.css  missing ${name} — the clock is incomplete`);
+}
+
+/*
+ * Check 5: the ONE number `motion.ts` is allowed to hold — the beat's pre-cascade fallback —
+ * must equal the token it stands in for. `useTokens` answers 0 during the server render, and a
+ * turn on a zero clock is a turn nobody can watch, so the fallback exists; a fallback that has
+ * drifted from the token is two clocks, which is precisely what rule 4 forbids.
+ */
+{
+  const token = /--at-dur-beat\s*:\s*(\d+)ms/.exec(tokenSource)?.[1];
+  const motion = readFileSync(join(ROOT, "components/atlas/motion.ts"), "utf8");
+  const fallback = /FALLBACK_BEAT\s*=\s*(\d+)/.exec(motion)?.[1];
+  if (token && fallback && token !== fallback) {
+    problems.push(
+      `motion.ts  FALLBACK_BEAT is ${fallback} but --at-dur-beat is ${token}ms — one clock, rule 4`,
+    );
+  }
 }
 
 if (problems.length > 0) {

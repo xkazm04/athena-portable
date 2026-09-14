@@ -38,6 +38,8 @@ import {
 } from "@/data";
 import { READ_CAP } from "@/lib/constants";
 
+import { TURN } from "../scene/turn";
+
 /** The one sentence AGENTS.md requires of any bounded output. */
 export const announce = (showing: number, of: number): string => `(showing ${showing} of ${of})`;
 
@@ -267,5 +269,35 @@ export function viewDetail(focus: Focus, conceptId: string | null) {
       components: componentsOfLayer(l.id).length,
       lit: litInLayer(lens, l.id),
     })),
+  };
+}
+
+/* ---------------------------------------- the turn ---------------------------------------- */
+
+/**
+ * The turn, as an agent reads it: every stop in order, the module it happens in, the one label
+ * the scene shows there, and the README section it was read from.
+ *
+ * Bounded like everything else — the whole turn is twelve stops, comfortably under the cap, and
+ * the announcement is still made, because "every truncated block announces (showing N of M)" is
+ * an invariant of this repository (README §2, #4) and an invariant that only fires when it is
+ * needed is an invariant nobody has tested.
+ */
+export function turnRead(at: number) {
+  return {
+    ...announced(TURN, (s) => ({
+      stop: s.index + 1,
+      label: s.label,
+      kind: s.kind,
+      component: s.part,
+      system: s.block,
+      file: componentById(s.part)?.file ?? null,
+      source: s.cite,
+      waitsHere: s.kind === "wait",
+    })),
+    at: at + 1,
+    of: TURN.length,
+    here: TURN[at]?.label ?? null,
+    note: "The light stops at each of these in order. It waits at the gate until a decision resolves it. set_turn moves it; play_turn runs it.",
   };
 }

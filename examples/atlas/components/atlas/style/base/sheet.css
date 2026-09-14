@@ -1,246 +1,258 @@
 /*
- * The sheet, and the one atom every level is made of.
+ * The scaffold: the page the machine stands in.
  *
- * DESIGN.md §4: five components carry the whole app, and every one of them is the same cell at a
- * different scale (Variance dial = 1). This file is that cell: a square-cornered box on
- * `--at-plate-2` with a rule that changes weight, a part number, and a citation. L0, L1 and L2
- * add arrangement and nothing else.
+ * Three rows — the mast, the body, the transport — and the body is the lens rail beside the
+ * stage. The stage is the only element that grows, because the machine is the subject and
+ * everything else is a margin around it. Nothing here is decorative; the atmosphere is in
+ * `scene/scene.css`.
  */
 
+/* The app fills the viewport exactly and never scrolls: the machine is the thing that moves, and
+   a page that also scrolls gives a reader two ways to change what they are looking at, one of
+   which does nothing they meant. */
 .at-app {
-  /* Named container so the mast, which sits outside the plate, can still answer in `cqi`. */
-  container: at-app / inline-size;
-  min-height: 100dvh;
+  height: 100dvh;
+  width: 100%;
+  max-width: 100vw;
+  overflow: hidden;
+  display: grid;
+  /* ONE COLUMN, EXACTLY THE VIEWPORT. An implicit `auto` grid column sizes to the widest row's
+     max-content, so a mast that does not want to wrap makes the STAGE wider than the window and
+     the machine is then drawn centred on a point off the right of the screen. Pinning the column
+     to 100% makes the rows overflow their track (harmlessly, and they clip) instead of widening
+     it. Measured before and after; this is the line that moved the machine back into the frame. */
+  grid-template-columns: 100%;
+  grid-template-rows: auto minmax(var(--at-stage-min), 1fr) auto;
   background: var(--at-ground);
-  color: var(--at-line-0);
+  color: var(--at-line-1);
   font-family: var(--at-font-draft);
   font-size: var(--at-text-base);
   line-height: var(--at-leading-body);
 }
 
-/*
- * The plate: the sheet the levels are drawn on, and the container-query context every fluid term
- * in this app is measured against (DESIGN.md §3 — an agent side panel narrows the body without
- * changing the viewport, so `cqi` and never `vw`).
- */
-.at-plate {
-  container: at-plate / inline-size;
+.at-body {
+  display: grid;
+  grid-template-columns: var(--at-claims-w) minmax(0, 1fr);
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  border-block: var(--at-rule-1) solid var(--at-line-3);
+}
+
+.at-stage {
   position: relative;
-  min-height: calc(100dvh - var(--at-mast-h));
-  padding: var(--at-space-5) var(--at-space-5) var(--at-space-8);
-  background-color: var(--at-plate);
-  /* The cyanotype grid. One gradient pair, no image, no repeat cost worth measuring. */
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  /* The cyanotype grid, under everything, so the machine has a floor to stand against and the
+     reader has a fixed reference the camera moves relative to. */
   background-image:
-    linear-gradient(to right, var(--at-grid-ink) var(--at-rule-1), transparent var(--at-rule-1)),
-    linear-gradient(to bottom, var(--at-grid-ink) var(--at-rule-1), transparent var(--at-rule-1));
+    linear-gradient(var(--at-grid-ink) var(--at-rule-1), transparent var(--at-rule-1)),
+    linear-gradient(90deg, var(--at-grid-ink) var(--at-rule-1), transparent var(--at-rule-1));
   background-size: var(--at-grid) var(--at-grid);
 }
 
-/* ------------------------------------------------------------------- the cell -- */
-
-.at-cell {
-  position: relative;
-  display: grid;
-  gap: var(--at-space-2);
-  align-content: start;
-  width: 100%;
-  padding: var(--at-space-3);
-  border: var(--at-rule-1) solid var(--at-line-3);
-  border-radius: var(--at-radius-0);
-  background: var(--at-plate-2);
-  box-shadow: var(--at-elev-0);
-  color: var(--at-line-0);
-  font: inherit;
-  text-align: start;
-  transition:
-    background-color var(--at-dur-hair) var(--at-ease),
-    border-color var(--at-dur-hair) var(--at-ease);
-}
-
-button.at-cell {
-  cursor: pointer;
-}
-
-.at-cell:hover,
-.at-cell:focus-visible {
-  border-color: var(--at-line-2);
-  background: var(--at-plate-3);
-}
-
-.at-cell:focus-visible {
-  outline: var(--at-rule-2) solid var(--at-line-0);
-  outline-offset: var(--at-rule-1);
-}
-
-/* The one cell the reader is inside. Weight, not colour. */
-.at-cell[data-open="true"] {
-  border-width: var(--at-rule-3);
-  border-color: var(--at-line-0);
-}
-
-/*
- * Lit by the lens. Orthogonal to the three states above, which is why it is a separate attribute
- * and not a fourth value of one: a cell can be open AND lit, and both facts have to survive.
- */
-.at-cell[data-lit="true"] {
-  border-color: var(--at-mark);
-  border-width: var(--at-rule-2);
-  background: var(--at-mark-soft);
-}
-
-.at-cell[data-lit="true"]::before {
+/* The vignette: the machine sits in a room, not on a page. One radial gradient, no blur. */
+.at-stage::after {
   content: "";
   position: absolute;
-  inset-block-start: var(--at-space-0);
-  inset-inline-start: var(--at-space-0);
-  width: var(--at-tick);
-  height: var(--at-tick);
-  background: var(--at-mark);
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    transparent 40%,
+    color-mix(in srgb, var(--at-ground) 70%, transparent) 100%
+  );
 }
 
-/* A cell for something that is designed and not built. Drawn, but drawn dashed. */
-.at-cell[data-status="planned"] {
-  border-style: dashed;
+/* ------------------------------------- the reading line ------------------------------------- */
+
+.at-readout {
+  position: absolute;
+  inset-inline-start: var(--at-space-5);
+  inset-block-end: var(--at-space-4);
+  margin: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: var(--at-space-1);
+  max-width: var(--at-measure);
+  pointer-events: none;
 }
 
-/* ----------------------------------------------------------- the three labels -- */
+.at-readout-level {
+  font-size: var(--at-text-lg);
+  line-height: var(--at-leading-tight);
+  letter-spacing: var(--at-track-tight);
+  color: var(--at-line-0);
+  font-weight: 700;
+}
+
+/* ---------------------------------------- vocabulary ---------------------------------------- */
 
 .at-part {
-  color: var(--at-line-2);
   font-family: var(--at-font-fig);
   font-size: var(--at-text-micro);
+  font-variant-numeric: tabular-nums;
   letter-spacing: var(--at-track-label);
-}
-
-.at-label {
-  color: var(--at-line-1);
-  font-size: var(--at-text-label);
-  letter-spacing: var(--at-track-label);
-  line-height: var(--at-leading-snug);
-}
-
-.at-name {
-  color: var(--at-line-0);
-  font-size: var(--at-text-md);
-  font-weight: 600;
-  letter-spacing: var(--at-track-tight);
-  line-height: var(--at-leading-snug);
+  color: var(--at-line-2);
+  text-transform: uppercase;
 }
 
 .at-fig {
-  color: var(--at-line-1);
   font-family: var(--at-font-fig);
   font-size: var(--at-text-fig);
   font-variant-numeric: tabular-nums;
+  color: var(--at-line-2);
+}
+
+.at-label {
+  font-size: var(--at-text-label);
+  line-height: var(--at-leading-snug);
+  color: var(--at-line-2);
 }
 
 .at-prose {
-  max-width: var(--at-measure);
-  color: var(--at-line-1);
   font-size: var(--at-text-base);
   line-height: var(--at-leading-body);
+  color: var(--at-line-1);
+  max-width: var(--at-measure);
+  margin: 0;
 }
 
-/*
- * The citation. Truncated from the LEFT, so `…/core/catalog.py` survives and `src/athena/…`
- * does not: the tail of a path is the part that identifies the module. `direction: rtl` on the
- * box with an LTR span inside is the one way to do this without JavaScript measuring text.
- */
 .at-cite {
-  direction: rtl;
-  overflow: hidden;
-  color: var(--at-line-2);
   font-family: var(--at-font-fig);
   font-size: var(--at-text-micro);
+  color: var(--at-line-2);
+  margin: 0;
+}
+
+.at-vh {
+  position: absolute;
+  width: var(--at-rule-1);
+  height: var(--at-rule-1);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Focus is one ring everywhere, and it is the white line rather than the accent: the accent
+   means the lens and nothing else. */
+:where(.at-app) :focus-visible {
+  outline: var(--at-rule-2) solid var(--at-line-0);
+  outline-offset: var(--at-space-1);
+}
+
+/* ---------------------------------------- the claims ---------------------------------------- */
+
+.at-claims {
+  min-height: 0;
+  border-inline-end: var(--at-rule-1) solid var(--at-line-3);
+  background: var(--at-plate);
+  overflow-y: auto;
+  padding-block: var(--at-space-4) var(--at-space-6);
+  min-width: 0;
+}
+
+.at-claims-head {
+  padding-inline: var(--at-space-4);
+  padding-block-end: var(--at-space-4);
+  border-block-end: var(--at-rule-1) solid var(--at-line-3);
+}
+
+.at-claims-head h2 {
+  margin: 0 0 var(--at-space-1);
+  font-size: var(--at-text-md);
+  line-height: var(--at-leading-tight);
+  color: var(--at-line-0);
+}
+
+.at-claims-head p {
+  margin: 0;
+}
+
+.at-claims-group {
+  padding-block-start: var(--at-space-4);
+}
+
+.at-claims-group-head {
+  margin: 0 0 var(--at-space-2);
+  padding-inline: var(--at-space-4);
+  font-size: var(--at-text-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--at-track-label);
+  color: var(--at-line-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--at-space-0);
+}
+
+.at-claims-group-note {
+  font-family: var(--at-font-fig);
+  text-transform: none;
+  color: var(--at-line-3);
+}
+
+.at-claims ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.at-claim {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--at-space-2);
+  padding: var(--at-space-2) var(--at-space-4);
+  background: none;
+  border: 0;
+  border-inline-start: var(--at-rule-3) solid transparent;
+  color: var(--at-line-1);
+  font: inherit;
+  font-size: var(--at-text-label);
   text-align: start;
+  cursor: pointer;
+  transition:
+    background var(--at-dur-hair) var(--at-ease),
+    border-color var(--at-dur-lens) var(--at-ease),
+    color var(--at-dur-hair) var(--at-ease);
+}
+
+.at-claim:hover {
+  background: var(--at-plate-2);
+  color: var(--at-line-0);
+}
+
+.at-claim[data-on] {
+  border-inline-start-color: var(--at-mark);
+  background: var(--at-mark-soft);
+  color: var(--at-line-0);
+}
+
+.at-claim-name {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.at-cite > span {
-  direction: ltr;
-  unicode-bidi: embed;
+.at-claim[data-on] .at-claim-n {
+  color: var(--at-mark);
 }
 
-/* A row of small things with space between: used in every cell head. */
-.at-row {
-  display: flex;
-  gap: var(--at-space-2);
-  align-items: baseline;
-  justify-content: space-between;
-}
+/* ------------------------------------- narrow viewports ------------------------------------- */
 
-.at-hr {
-  height: var(--at-rule-1);
-  margin: var(--at-space-0);
-  border: 0;
-  background: var(--at-line-3);
-}
-
-/* --------------------------------------------------------------- the levels --- */
-
-.at-levels {
-  position: relative;
-}
-
-/*
- * Rule 1: the level being LEFT carries the camera. The echo is the outgoing level rendered once
- * more, inert and id-free, with the whole scale-and-fade on it, so the arriving level mounts at
- * its final size and a shared-element morph is never measured inside an animating ancestor.
- */
-.at-echo {
-  position: absolute;
-  z-index: 1;
-  inset-block-start: 0;
-  inset-inline: 0;
-  /* One screenful: the echo is a picture of what the reader could actually see, and clipping it
-     to the ARRIVING level's height (which is what `inset: 0` does) cropped it to a strip. */
-  height: 100dvh;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-/*
- * RULE 3, THE WAY BACK: the ink leaves before the box travels.
- *
- * Only the SECONDARY ink — claims, blurbs, citations, counts, labels. A cell's NAME travels with
- * its box, because the name is what makes the box identifiable as the thing it is; a box whose
- * name has already gone is an empty rectangle sliding off, which is not a move a reader can
- * follow. This is a CSS animation and not a second motion layer on purpose: wrapping the whole
- * echo in one fading element faded the boxes too, and the echo vanished a third of the way
- * through its own move (found by reading the early frames of the capture strip).
- */
-@keyframes at-ink-out {
-  from {
-    opacity: 1;
+@media (max-width: 900px) {
+  .at-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(var(--at-stage-min), 1fr);
   }
-  to {
-    opacity: 0;
+
+  .at-claims {
+    border-inline-end: 0;
+    border-block-end: var(--at-rule-1) solid var(--at-line-3);
+    max-height: 30dvh;
   }
-}
-
-.at-echo .at-prose,
-.at-echo .at-label,
-.at-echo .at-part,
-.at-echo .at-fig,
-.at-echo .at-cite,
-.at-echo .at-concept-claim,
-.at-echo .at-band-blurb,
-.at-echo .at-band-figs,
-.at-echo .at-system-blurb,
-.at-echo .at-edges,
-.at-echo .at-edges-title {
-  animation: at-ink-out var(--at-dur-ink) var(--at-ease) both;
-}
-
-/* The completion signal: zero-size, keyed on the flight, running the move the level is running. */
-.at-flight {
-  position: absolute;
-  width: var(--at-space-0);
-  height: var(--at-space-0);
-}
-
-.at-live {
-  position: relative;
-  z-index: 2;
 }

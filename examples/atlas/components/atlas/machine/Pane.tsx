@@ -1,21 +1,31 @@
 "use client";
 
 /**
- * L2 — one component: what it enforces, which claims it carries, who calls it, what it calls, and
- * the ADR that decided it.
+ * L2 — ONE COMPONENT, AND THE ONLY PLACE IN ATLAS WHERE PROSE IS ALLOWED.
  *
- * It owns its own Escape and hands focus back to the row it grew out of (formula §1 rule 5,
- * `useOverlayEscape`), and it holds that row's shared id for as long as it is up (rule 2). It is
- * NOT inside an `AnimatePresence`: on close it has to release the id in the same commit the row
- * takes it back, or there are two claimants and the box does not morph home.
+ * That is the round-3 rule and it is a design rule, not a layout convenience: the machine is the
+ * argument, and text everywhere else is a label on a part. What it enforces, the claims it
+ * carries, who calls it, what it reaches, which ADR decided it, and its path in this repository —
+ * six blocks of words, at the one depth where a reader has stopped moving and started reading.
+ *
+ * IT RISES OUT OF THE PART. The camera holds still at L2 (the rig has already flown to the part
+ * and stays there), and the pane grows from the part's own position on screen — `origin` is the
+ * projected point, handed in by the scene, and it becomes the `transform-origin` of a scale. That
+ * is rule 3 in its L2 form: the box travels first, the ink arrives after it has landed
+ * (`m.inkIn`, delayed by a whole move). No `layoutId` here: the part it grows from is a face of a
+ * box in a 3D scene, and a shared-element morph measuring a `matrix3d` gets a rectangle that is
+ * nowhere near where the reader sees the part.
+ *
+ * It owns its own Escape and hands focus back to whatever opened it (formula §1 rule 5,
+ * `useOverlayEscape`).
  *
  * The chips are the fastest path in the app: "this module enforces invariant 2" to "where else is
  * invariant 2 enforced" is one click, and it does not change level — a lens is a way of looking at
  * where you already are.
  */
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { motion } from "motion/react";
-import { useOverlayEscape, useSharedIdentity, type ZoomNav } from "@athena/demo-kit/zoom";
+import { useOverlayEscape, type ZoomNav } from "@athena/demo-kit/zoom";
 
 import {
   adrByN,
@@ -29,21 +39,23 @@ import {
   type Lens,
 } from "@/data";
 
-import { partId, useAtlasMotion } from "../motion";
+import { useAtlasMotion } from "../motion";
 
 export function Pane({
   component,
   nav,
   lens,
   setLens,
+  origin,
 }: {
   component: Component;
   nav: ZoomNav;
   lens: Lens;
   setLens: (id: string | null) => void;
+  /** Measures where the part is on screen, in viewport pixels. Called once, on mount. */
+  origin: () => { x: number; y: number } | null;
 }) {
   const m = useAtlasMotion();
-  const box = useSharedIdentity(partId(component.id), true);
   const paneRef = useRef<HTMLDivElement | null>(null);
 
   const overlay = useOverlayEscape({
@@ -58,6 +70,19 @@ export function Pane({
   useEffect(() => {
     paneRef.current?.focus({ preventScroll: true });
   }, []);
+
+  /* The grow's anchor, measured once, before the browser paints the pane's first frame. Writing
+     it as two custom properties on the pane's own node is updating an external system, which is
+     what a layout effect is for; making it React state would be a second render behind the one
+     that mounted the pane, and the grow would start from the middle of the screen. */
+  useLayoutEffect(() => {
+    const el = paneRef.current;
+    const at = origin();
+    if (!el || !at) return;
+    el.style.setProperty("--at-pane-ox", `${Math.round(at.x)}px`);
+    el.style.setProperty("--at-pane-oy", `${Math.round(at.y)}px`);
+    el.dataset.anchored = "";
+  }, [origin]);
 
   const system = systemById(component.system);
   const layer = layerOfComponent(component);
@@ -78,14 +103,14 @@ export function Pane({
 
       <motion.div
         ref={paneRef}
-        key={box.key}
-        layoutId={box.layoutId}
         className="at-pane"
         role="dialog"
         aria-modal="true"
         aria-label={`${component.part} ${component.name}`}
         data-status={component.status}
         tabIndex={-1}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={m.move}
         {...overlay}
       >

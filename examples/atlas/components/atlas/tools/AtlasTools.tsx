@@ -15,8 +15,15 @@
  * looking, is reversible by calling it again, and reaches nothing outside the page.
  *
  * The four verbs of the level model (`read_view`, `open_group`, `open_item`, `zoom_out`) are the
- * kit's `useZoomTools`, so they mean the same thing here as on every other surface. The four
- * below are what only Atlas can answer.
+ * kit's `useZoomTools`, so they mean the same thing here as on every other surface. The rest are
+ * what only Atlas can answer.
+ *
+ * ROUND 3 ADDS TWO, both AUTO for the same reason as the others — `play_turn` and `set_turn` move
+ * the transport, which is a way of looking rather than a change to anything. They exist because
+ * the turn is now the app's hero and an agent that cannot drive it cannot see the argument: a
+ * capture script, a reviewer's assistant or Athena herself needs to be able to say "stop at the
+ * gate" and have the machine show the gate. `set_turn` takes a STOP NUMBER, not a beat, because
+ * the beat is an implementation detail of the clock and a stop is a thing README §3.2 names.
  */
 import { useZoomTools, useWebMCPTool } from "@athena/demo-kit/webmcp";
 import type { ZoomNav } from "@athena/demo-kit/zoom";
@@ -32,18 +39,23 @@ import {
 } from "@/data";
 import { LEVELS, NOUNS } from "@/lib/constants";
 
-import { CONCEPT_KINDS, componentRead, conceptsRead, lensRead, systemRead, viewDetail } from "./read";
+import { TURN } from "../scene/turn";
+import type { Transport } from "../scene/useTurn";
+
+import { CONCEPT_KINDS, componentRead, conceptsRead, lensRead, systemRead, turnRead, viewDetail } from "./read";
 
 export function AtlasTools({
   nav,
   lens,
   lensId,
   setLens,
+  transport,
 }: {
   nav: ZoomNav;
   lens: Lens;
   lensId: string | null;
   setLens: (id: string | null) => void;
+  transport: Transport;
 }) {
   useZoomTools({
     nav,
@@ -156,6 +168,70 @@ export function AtlasTools({
       return lensRead(asked);
     },
     deps: [lensId, setLens, lens.concept?.id],
+  });
+
+  useWebMCPTool({
+    name: "read_turn",
+    description:
+      "The turn this machine runs, from README section 3.2: every stop in order, the module it happens in, the one label the scene shows there, and the README section it was read from. The gate's stop is the one that waits. Call set_turn with a stop number to put the light there.",
+    parameters: [],
+    reversible: true,
+    sideEffects: "none",
+    handler: () => turnRead(transport.stop),
+    deps: [transport.stop],
+  });
+
+  useWebMCPTool({
+    name: "set_turn",
+    description:
+      "Put the turn's light at one stop and hold it there, pausing playback. The scene lights that module's block and shows its label. Reversible: call again with another stop, or play_turn to run from here.",
+    parameters: [
+      {
+        name: "stop",
+        type: "number",
+        required: true,
+        description: `Which stop, 1 to ${TURN.length}. read_turn lists them.`,
+      },
+    ],
+    reversible: true,
+    sideEffects: "none",
+    handler: ({ stop }) => {
+      const n = Number(stop);
+      if (!Number.isFinite(n) || n < 1 || n > TURN.length) {
+        return {
+          ok: false as const,
+          error: `No stop ${String(stop)}. The turn has ${TURN.length} stops, numbered from 1.`,
+        };
+      }
+      transport.goTo(n - 1);
+      return turnRead(n - 1);
+    },
+    deps: [transport.goTo],
+  });
+
+  useWebMCPTool({
+    name: "play_turn",
+    description:
+      "Run the turn from where the light is, or pause it. Reversible in both directions; changes nothing but what is moving on screen.",
+    parameters: [
+      {
+        name: "action",
+        type: "string",
+        required: false,
+        enum: ["play", "pause", "rewind"],
+        description: "Default play. rewind puts the light back at the first stop and pauses.",
+      },
+    ],
+    reversible: true,
+    sideEffects: "none",
+    handler: ({ action }) => {
+      const verb = action === undefined || action === null ? "play" : String(action);
+      if (verb === "pause") transport.pause();
+      else if (verb === "rewind") transport.rewind();
+      else transport.play();
+      return { ...turnRead(transport.stop), playing: verb === "play" };
+    },
+    deps: [transport.play, transport.pause, transport.rewind, transport.stop],
   });
 
   return null;

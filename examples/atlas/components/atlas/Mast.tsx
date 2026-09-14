@@ -18,11 +18,15 @@ export function Mast({
   lens,
   setLens,
   counts,
+  children,
 }: {
   nav: ZoomNav;
   lens: Lens;
   setLens: (id: string | null) => void;
   counts: ModelCounts;
+  /** The rendering switch. Temporary furniture, and it lives in the mast because it is about
+   *  the whole surface rather than about anything in the scene. */
+  children?: React.ReactNode;
 }) {
   const focus = nav.state.focus;
   const layer = layerById(focus.group);
@@ -106,6 +110,8 @@ export function Mast({
         <span>{counts.components} components</span>
         <span>{counts.edges} edges</span>
       </div>
+
+      {children}
     </header>
   );
 }

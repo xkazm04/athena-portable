@@ -107,6 +107,9 @@
   --at-bp-mid: 900px;
 
   --at-mast-h: 56px;
+  --at-claims-w: 15rem; /* the lens rail */
+  --at-transport-h: 8.5rem; /* the turn's controls and its stop list */
+  --at-stage-min: 26rem;
   --at-band-h: 64px;
   --at-cell-min: 14rem;
   --at-col-min: 17rem;
@@ -123,7 +126,8 @@
   --at-dur-hair: 90ms; /* rule weight and ground, on hover or focus */
   --at-dur-ink: 150ms; /* text in and out — the second beat of every staged move */
   --at-dur-lens: 220ms; /* the lens spreading down the stack */
-  --at-dur-move: 320ms; /* the level change */
+  --at-dur-move: 320ms; /* the level change, and the camera's flight to a focus */
+  --at-dur-beat: 620ms; /* ONE BEAT OF THE TURN — the only clock that is content, not chrome */
   --at-ease: cubic-bezier(0.2, 0, 0, 1);
   --at-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -151,6 +155,32 @@
   --dk-dur-move: var(--at-dur-move);
   --dk-dur-fade: var(--at-dur-ink);
   --dk-ease: var(--at-ease);
+
+  /* ------------------------------------------------------------------- scene --
+   * The machine's own colours and weights. A stratum plane, a block wall, a block lid, a pipe
+   * and the travelling light — five roles, and the WebGL variant reads the first four back out
+   * of this cascade at mount (`render/webgl/Webgl.tsx`) so a material cannot invent a sixth.
+   */
+  --at-plane: #0e2a42;
+  --at-plane-edge: #1f4d74;
+  --at-wall: #12314a;
+  --at-wall-lit: #1b5079;
+  --at-lid: #163c5c;
+  --at-pipe: #2d5c85;
+  --at-pipe-up: #4d82ab;
+  --at-glow: #ff7a4d;
+  --at-glow-soft: #ff7a4d33;
+
+  /* The billboard angles, written once per frame by the css3d renderer onto the world element.
+   * Declared here because they are part of the contract between that renderer and its
+   * stylesheet, and because `design/check-tokens.mjs` requires every --at-* a file uses to be
+   * declared somewhere a human can find it. */
+  --at-c3-yaw: 0deg;
+  --at-c3-pitch: 0deg;
+
+  /* Where the L2 pane grows from — a projected screen point, written by `Atlas.tsx`. */
+  --at-pane-ox: 50%;
+  --at-pane-oy: 50%;
 }
 
 /*
@@ -168,5 +198,9 @@
     --at-dur-ink: 0ms;
     --at-dur-lens: 0ms;
     --at-dur-move: 0ms;
+    /* --at-dur-beat is NOT zeroed. The turn is content, not a transition: a reader who asked for
+       no motion gets the twelve stops as stills on the same clock (`scene/useTurn.ts` snaps
+       between them instead of interpolating), because zeroing it would show them an empty
+       machine and call that accessibility. */
   }
 }
