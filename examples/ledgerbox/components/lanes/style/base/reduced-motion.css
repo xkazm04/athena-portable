@@ -1,23 +1,27 @@
 /* ---------------------------------------------------------- reduced motion */
 
 /*
- * Reduced motion removes the transitions and the perspective. It does NOT hide
- * anything: every fact reachable through a tilt is reachable without one.
+ * Reduced motion removes the transitions and the animations. It does NOT hide anything and it
+ * does not take the camera away: every fact on the map is still reachable, and drag, wheel and
+ * Home all still work — what goes is the travel between two poses.
  *
- * IT LANDS ON THE FINAL STATE, which is not the same thing as playing the same
- * animation faster. This used to force every duration to `0.01ms`, which still
- * schedules the animation, still runs its keyframes, and — for anything whose
- * `from` is the interesting half, like the headline's settle — still shows a
- * frame of the pose the reader asked not to be shown. `transition: none` and
- * `animation: none` remove the path entirely: the element is painted where it
- * ends up, once. The TypeScript half of this branch is `motion.ts`'s `instant`,
- * handed to every transition `Lanes.tsx` owns when `useReducedMotion()` is true.
+ * IT LANDS ON THE FINAL STATE, which is not the same thing as playing the same animation faster.
+ * This used to force every duration to `0.01ms`, which still schedules the animation, still runs
+ * its keyframes, and — for anything whose `from` is the interesting half, like the pane's grow —
+ * still shows a frame of the pose the reader asked not to be shown. `transition: none` and
+ * `animation: none` remove the path entirely: the element is painted where it ends up, once.
+ *
+ * THE OTHER TWO HALVES OF THE BRANCH. `motion.ts`'s `instant` is handed to every transition
+ * `Lanes.tsx` owns, and the camera rig is built with `reducedMotion: "user"` — so `flyTo` sets
+ * the pose rather than animating to it, and a drag carries no inertia. A band change is then a
+ * cut, which is the correct reading: the reader asked for no movement, and a crossfade is
+ * movement.
+ *
+ * `.ln-world` IS NOT INCLUDED IN THE TRANSFORM RESET BELOW, and that is load-bearing. Its
+ * transform is not decoration, it is the camera: a `transform: none` here would put the map at
+ * its resting pose and leave every subsequent write fighting an `!important`.
  */
 @media (prefers-reduced-motion: reduce) {
-  [data-variant="lanes"] {
-    --ln-tilt: 0deg;
-  }
-
   .ln-root *,
   .ln-root *::before,
   .ln-root *::after {
@@ -25,17 +29,11 @@
     animation: none !important;
   }
 
-  .ln-stack,
-  .ln-spread,
   .ln-card-layer {
     perspective: none;
   }
 
-  .ln-card-tilt,
-  .ln-lane,
-  .ln-mark,
-  .ln-tail {
+  .ln-card-tilt {
     transform: none;
   }
 }
-

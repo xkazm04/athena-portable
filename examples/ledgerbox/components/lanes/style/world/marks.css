@@ -1,0 +1,270 @@
+/* ----------------------------------------------------- one invoice, at four distances */
+
+/*
+ * THE BUTTON IS THE CELL AT EVERY BAND. It is the card's footprint, and it does not move or
+ * resize when the band changes — so the invoice under the reader's pointer at zoom 1 is the
+ * invoice under their pointer at zoom 8, and the hit target never slides out from under a click
+ * that is already happening. What the band changes is what is DRAWN inside it.
+ *
+ * Every rule below animates `opacity` or `transform` and nothing else, so a band change costs no
+ * layout at all: it is a class flip on one ancestor and a tokenised crossfade on 125 boxes.
+ */
+.ln-wmark {
+  position: absolute;
+  inset-inline-start: calc(var(--x) * 1px);
+  inset-block-start: calc(var(--y) * 1px);
+  inline-size: calc(var(--w) * 1px);
+  block-size: calc(var(--h) * 1px);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  /*
+   * PRESENCE, AS ONE DECLARATION — and this is the round-2 note that died with the `layoutId` it
+   * was about. `Spread.tsx` had to read `PRESENCE_OPACITY` as numbers because motion owned the
+   * inline opacity of a morphing card and a stylesheet rule could not outrank it. Nothing writes
+   * an inline opacity on a mark any more, so the tokens are the whole of the answer and there is
+   * one spelling of each of the three values again.
+   */
+  opacity: var(--ln-presence-lit);
+  transition: opacity var(--ln-dur-2) var(--ln-ease);
+}
+
+.ln-wmark[data-presence="quiet"] {
+  opacity: var(--ln-presence-quiet);
+}
+
+.ln-wmark[data-presence="dim"] {
+  opacity: var(--ln-presence-dim);
+}
+
+/* A quiet invoice is still an invoice, and pointing at one proves it. Receding by default is
+   only honest if the reader can always overrule it. Last, so it beats both rules above. */
+.ln-wmark:hover,
+.ln-wmark:focus-visible,
+.ln-wmark[data-open],
+.ln-wmark[data-picked] {
+  opacity: var(--ln-presence-lit);
+  z-index: 4;
+}
+
+/*
+ * The bar: its width IS what the invoice is worth.
+ *
+ * It thickens at the mid band and fades out as the card takes the cell it was sitting in the
+ * middle of — which is the same object gaining detail rather than one object replacing another.
+ */
+.ln-wbar {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 50%;
+  inline-size: calc(var(--bw) * 1px);
+  block-size: calc(var(--bh) * 1px);
+  margin-block-start: calc(var(--bh) * -0.5px);
+  border-radius: calc(2px * var(--ln-inv));
+  background: var(--tone);
+  box-shadow: inset 0 calc(1px * var(--ln-inv)) 0 rgb(255 255 255 / 30%);
+  transform-origin: 0 50%;
+  transition:
+    opacity var(--ln-dur-3) var(--ln-ease),
+    transform var(--ln-dur-3) var(--ln-ease);
+}
+
+.ln-world[data-band="mid"] .ln-wbar {
+  transform: scaleY(1.4);
+}
+
+.ln-world[data-band="near"] .ln-wbar,
+.ln-world[data-band="closest"] .ln-wbar {
+  opacity: 0;
+  transform: scaleY(1.4);
+}
+
+.ln-wmark:hover .ln-wbar,
+.ln-wmark[data-open] .ln-wbar {
+  box-shadow:
+    inset 0 calc(1px * var(--ln-inv)) 0 rgb(255 255 255 / 45%),
+    0 0 0 calc(2px * var(--ln-inv)) var(--ln-ink);
+}
+
+/* Lateness as physical length: from the bar's right edge to the now-line. Zero-width when the
+   invoice is not late, so there is nothing to hide and no branch in the component. */
+.ln-wtail {
+  position: absolute;
+  inset-inline-start: calc(var(--bw) * 1px);
+  inset-block-start: 50%;
+  inline-size: calc(var(--tw) * 1px);
+  block-size: calc(1px * var(--ln-inv));
+  background: var(--tone);
+  opacity: 0.42;
+  pointer-events: none;
+  transition: opacity var(--ln-dur-3) var(--ln-ease);
+}
+
+.ln-world[data-band="near"] .ln-wtail,
+.ln-world[data-band="closest"] .ln-wtail {
+  opacity: 0;
+}
+
+/*
+ * The glyph. Three meanings and no more, so the key fits in a person's head: `!` long overdue,
+ * `?` disputed, `+` a credit that would clear it. It is the reason to look, so it is drawn from
+ * the farthest band — and at a constant size in screen pixels, which is the answer to "icons and
+ * text are very small" on a 2560 monitor and to "absurd" on a zoomed-in one.
+ */
+.ln-wflag {
+  position: absolute;
+  inset-inline-end: calc(100% + 3px * var(--ln-inv));
+  inset-block-start: 50%;
+  inline-size: calc(17px * var(--ln-inv));
+  block-size: calc(17px * var(--ln-inv));
+  margin-block-start: calc(-8.5px * var(--ln-inv));
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ln-void);
+  border: calc(1px * var(--ln-inv)) solid var(--tone);
+  color: var(--tone);
+  font-family: var(--ln-font-mono);
+  font-size: calc(var(--ln-label) * var(--ln-inv));
+  font-weight: 500;
+  line-height: 1;
+  pointer-events: none;
+  transition: opacity var(--ln-dur-3) var(--ln-ease);
+}
+
+.ln-world[data-band="near"] .ln-wflag,
+.ln-world[data-band="closest"] .ln-wflag {
+  opacity: 0;
+}
+
+/*
+ * The amount, at the mid band. THIS IS THE WHOLE OF WHAT THE MID BAND IS: the same hundred and
+ * twenty-five invoices, no navigation, one more fact each.
+ */
+.ln-wamount {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 50%;
+  margin-block-start: calc(var(--bh) * -0.5px - 1.3em);
+  font-size: calc(var(--ln-text-xs) * var(--ln-inv));
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--ln-dur-3) var(--ln-ease);
+}
+
+.ln-world[data-band="mid"] .ln-wamount {
+  opacity: 1;
+}
+
+/*
+ * THE CARD, which is on the page at every band.
+ *
+ * At the far band it is an empty-looking box at zero opacity sitting exactly where the bar is;
+ * at the near band it is the round-2 L1 card — glyph, client, amount, number, the waiting-on
+ * clause — filling the same cell. Nothing mounted. The scale from 0.88 is what makes the
+ * crossfade read as the bar GROWING into it rather than as a card fading over it.
+ */
+.ln-wcard {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: start;
+  gap: calc(2px * var(--ln-inv));
+  padding: calc(5px * var(--ln-inv)) calc(7px * var(--ln-inv));
+  text-align: start;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 7%), transparent 44%),
+    var(--ln-surface);
+  border: calc(1px * var(--ln-inv)) solid var(--ln-rule);
+  border-block-start: calc(2px * var(--ln-inv)) solid var(--tone);
+  border-radius: calc(4px * var(--ln-inv));
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0.88);
+  transform-origin: 0 50%;
+  pointer-events: none;
+  transition:
+    opacity var(--ln-dur-3) var(--ln-ease),
+    transform var(--ln-dur-3) var(--ln-ease);
+}
+
+.ln-world[data-band="near"] .ln-wcard,
+.ln-world[data-band="closest"] .ln-wcard {
+  opacity: 1;
+  transform: none;
+}
+
+.ln-wcard-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(6px * var(--ln-inv));
+}
+
+.ln-wcard-money {
+  font-size: calc(var(--ln-text-sm) * var(--ln-inv));
+  font-weight: 500;
+  line-height: 1;
+  color: var(--tone);
+  white-space: nowrap;
+}
+
+.ln-wcard-client {
+  font-size: calc(var(--ln-text-xs) * var(--ln-inv));
+  line-height: 1.2;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ln-wcard-no {
+  font-size: calc(var(--ln-label) * var(--ln-inv));
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  color: var(--ln-faint);
+}
+
+.ln-wcard-status {
+  font-size: calc(var(--ln-label) * var(--ln-inv));
+  line-height: 1.3;
+  color: var(--ln-mute);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* The standing, where the id used to be: one glyph, nine meanings, inheriting `--tone` from the
+   invoice's own heat so the mark and its card cannot disagree about what is the matter. */
+.ln-glyph {
+  display: inline-flex;
+  align-items: center;
+  color: var(--tone);
+  font-size: calc(var(--ln-text-sm) * var(--ln-inv));
+  line-height: 1;
+}
+
+.ln-glyph-say {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* A ticked invoice is ringed rather than lit: a tick is a working set, not a state of the
+   books. `select` rings them at every band. */
+.ln-wmark[data-picked] .ln-wbar,
+.ln-wmark[data-picked] .ln-wcard {
+  outline: calc(2px * var(--ln-inv)) solid var(--ln-accent);
+  outline-offset: calc(1px * var(--ln-inv));
+}

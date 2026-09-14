@@ -38,7 +38,7 @@ import {
   type LnMark,
   type LnSheet,
 } from "../components/lanes/model";
-import { flagOf } from "../components/lanes/swarm/marks";
+import { flagOf } from "../components/lanes/world/marks";
 
 const ALL: LnFilter = { state: "all", client: "all" };
 

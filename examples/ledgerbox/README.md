@@ -56,25 +56,42 @@ means picking the payment out of a real month, not out of a list of payments.
 The app never says "skip this client". It says what is true and leaves the decision on the other
 side of the seam.
 
-## The design
+## What it does — the timeline map
 
-Ledgerbox ships one design, **The Lanes**, and it is the root route. Six chronological swimlanes,
-one per area of the practice, all reading one clock on a single-hue lit ground under a condensed
-poster masthead. A mark is worth its width and late by the tail it drags into the now-line; the
-three largest balances in each lane print their amount and the few asking for something carry a
-glyph, so the swarm has a focus without 124 labels in it.
+Ledgerbox ships one design, **The Lanes**, and it is the root route. It is not three pages any
+more. It is **one map you pan and zoom**: six areas of the practice stacked vertically, time
+running left to right from June to October, the now-line standing where the first of September
+falls, and every one of the 125 invoices at its due date with its width worth its balance and its
+tail as long as it is late.
 
-Three levels, and every one of them zooms through the point you clicked rather than swapping views:
+The camera is the primary control. **Drag** pans, **the wheel** zooms anchored at the pointer,
+**arrow keys** pan, **`+` / `-`** zoom and **`Home`** resets. A click still works and lands in
+exactly the same place, because a click and a wheel ask for the same pose.
 
-| Level | Shows | The agent's verb |
-|---|---|---|
-| **L0** the swarm | all six lanes on one time axis | `read_view`, `zoom_out` |
-| **L1** one lane spread | one area's invoices as cards, packed by date or standing up by balance | `open_group` |
-| **L2** one invoice lifted | the card: lines, the credits that could settle it, any draft, and the three gates | `open_item` / `open_invoice` |
+The three levels survive as the model — `@athena/demo-kit/zoom` still owns Escape, the focus, the
+flight and the tools — but they are now read off the camera's **distance** rather than dispatched
+as a change of page. `useSemanticZoom` is the wire in both directions: cross a band by wheel and
+it dispatches `open_group` / `open_item` / `zoom_out`; change the nav any other way and it flies
+the camera to `poseFor(focus)`.
 
-The Strip — the older quarter-as-a-film-strip direction that used to be the root, with its own
-invoice stage at `/invoices/[id]` and a direction index at `/v` — is gone, and so is everything
-under `components/edge/`. One design, one page, one register.
+| Band | Nav level | What you see | The agent's verb |
+|---|---|---|---|
+| **far** | L0 | the whole quarter — every invoice a bar at its due date, the six areas' names and figures in the gutter, the glyphs on the few that are asking for something | `read_view`, `zoom_out` |
+| **mid** | L0 | *the same* population, closer: the bars thicken, every lit invoice prints its amount, and each area's own sentence appears. No navigation happened. | — |
+| **near** | L1 | the area under the camera is open: its invoices are **cards** — status glyph, client, amount, number, what it is waiting for — laid along the same time axis. The other five recede and stay in the world above and below. | `open_group` |
+| **closest** | L2 | the invoice under the camera opens as a pane over the map: lines, the credits that could settle it, any draft, and one CTA into the decision dialog. The camera holds; the map is still behind it. | `open_item` / `open_invoice` |
+
+Only two of those four thresholds are navigation. **More detail is not another level** — which is
+the claim round 3 was built to test. The head is a HUD: a strip pinned over the map that names the
+area the camera is over and swaps its text as you drag, rather than a page that mounts. Text in
+the world is screen-space (one `--ln-inv` = 1/zoom, quantised onto a ladder so it costs a handful
+of relayouts per flight rather than sixty a second); geometry is world-space. Escape flies out one
+band, through the kit, with focus following. Reduced motion lands every flight on its final pose
+at frame zero and turns inertia off.
+
+The brief is `design/round3-map-brief.md`. The Strip — the older quarter-as-a-film-strip direction
+that used to be the root, with its own invoice stage at `/invoices/[id]` and a direction index at
+`/v` — is gone, and so is everything under `components/edge/`. One design, one page, one register.
 
 ## Host manifest
 
@@ -135,13 +152,16 @@ that never changed. Ids come out of `read_view`: the six areas are its `areas.it
 invoice id is `inv_NNNN` — from `read_view`'s detail at L1, from `search_invoices`, or from
 `read_inbox`.
 
-- `open_group` zooms L0 into one lane. `open_item` and `open_invoice` are the **same move**: the
-  mark morphs into the L2 card, `.ln-root` gains `data-level="2"`, and the card names the client.
+- `open_group` flies the camera into one area: `.ln-root` gains `data-level="1"`, the scene gains
+  `data-band="near"`, the area's invoices become cards and the HUD strip names it. `open_item` and
+  `open_invoice` are the **same move** one band further: the camera lands on the invoice, the pane
+  grows out of that invoice's own card in the map, and `.ln-root` gains `data-level="2"`.
+  `zoom_out` flies back. A wheel across the same threshold dispatches the same action.
 - `navigate` returns to the overview and lights a subset of the swarm — `overdue` presses the Late
   chip, `unmatched` presses Credit waiting, `disputed` presses Disputed, `inbox` clears it. It dims
   rather than removes, and says how many it dimmed. `set_filter` moves the same two chips plus the
   client select.
-- `select` rings the ticked marks in the accent at L0 and L1 and prints `N ticked` on the toolbar.
+- `select` rings the ticked invoices in the accent at every band and prints `N ticked` on the toolbar.
 - `set_period` and `export_summary` move the **Close** select on the toolbar.
 - `match_bank_line` rebuilds the sheet under the open card: the lead figure flips from *Still owed*
   to *Settled* when the credit covers the balance, the card's `data-heat` goes to `good`, and a
@@ -149,7 +169,8 @@ invoice id is `inv_NNNN` — from `read_view`'s detail at L1, from `search_invoi
   `unmatch` puts the balance back, live, on the same card.
 - `draft_reminder` adds the **Draft reminder, ⟨tone⟩, not sent** block to the open card.
   `send_reminder` clears it and raises *Reminders sent* in the card's aside.
-- `categorize` moves the invoice into another lane; `void_invoice` turns its mark grey (`inert`).
+- `categorize` moves the invoice into another area — a different band of the map; `void_invoice`
+  turns its mark grey (`inert`).
 - The masthead's presence line is a reading, not a caption: `components/lanes/presence.ts` looks
   for the surface's injected bridge (`window.__athenaBridge`) and the line switches to "Athena is
   connected" with a filled dot when one is there.
@@ -178,6 +199,8 @@ app ships no chat, no runtime endpoint and no provider to host one.
 | `lib/lanes/` | the server build: `buildSheet()` (the picture) and `buildBooks()` (the ledger the tools answer from) |
 | `app/actions.ts` | one server action per mutating capability, with `applyUndo` |
 | `app/page.tsx` | the one route: one server read, two props |
-| `components/lanes/` | the whole UI — swarm, spread, card, shell, style — plus its three zoom levels |
+| `components/lanes/world/` | the map: `layout.ts` (time → x, area → y, invoice → cell, and every pose) and `bands.ts` (far/mid/near/closest and the type ladder), both pure and tested; `World.tsx` draws them |
+| `components/lanes/` | the rest of the UI — the camera wiring in `Lanes.tsx`, the L2 card, the shell and the stylesheet |
 | `components/lanes/tools/` | the two registration files and the pure read and search layer behind them |
 | `test/books.test.ts`, `test/journey.test.ts`, `test/tools.test.ts` | the money rules, act 1's read surface, and the union manifest |
+| `test/world.test.ts` | the map's geometry and the camera's own arithmetic: one answer to "where is this invoice", the pan that centres a point, the poses a click and a wheel must agree on |

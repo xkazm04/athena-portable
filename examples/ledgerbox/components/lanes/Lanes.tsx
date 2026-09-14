@@ -1,49 +1,56 @@
 "use client";
 
 /**
- * The Lanes — the whole surface, and the only stateful component in the
- * direction.
+ * The Lanes — one map, one camera, four bands.
  *
- * It owns the level (through the kit's shared L0/L1/L2 model, so "open a
- * group" means here exactly what it means in Hirelane's Board and TidyCRM's
- * Blocks), the filter, the tick and the period, and the two view switches.
- * Everything else is a pure child.
+ * ROUND 3 TOOK THE LEVELS OUT OF THE PAGE AND PUT THEM IN THE DISTANCE. Round 2's version of
+ * this file mounted two layers in one grid cell, measured a transform origin off the lane you
+ * clicked, put the whole zoom on the layer that was leaving and handed `layoutId`s between them
+ * in the commit the level changed. All of that was in service of one thing: making a level change
+ * a move you can follow. A camera over one persistent world makes it a move BY CONSTRUCTION, so
+ * the echo, the measured origin, the two layers and the id hand-off are gone — see
+ * `design/round3-map-brief.md` §7.
  *
- * Every one of those pieces of state is also something a tool moves — which is
- * the reason they are here rather than in the tool files: an agent's call and a
- * person's click have to end in the same setState, or the two are looking at
- * different pages.
+ * WHAT IS LEFT HERE, AND WHY EACH PIECE IS HERE RATHER THAN IN A CHILD:
  *
- * THE ZOOM, AS BUILT. L0 and L1 occupy the same grid cell and BOTH STAY MOUNTED
- * for the length of a level change, so the change is a move and not a cut. One
- * rule decides who does what:
- *
- *   the level you are LEAVING carries the camera — it scales through the
- *   transform origin measured off the lane you actually clicked, and fades;
- *   the level you are ARRIVING at carries the continuity — it starts at its
- *   final pose and its members travel into place, staggered.
- *
- * That split is what keeps the two jobs from fighting. Layout projection
- * measures boxes in viewport space, so an ancestor animating its own `scale`
- * hands motion the projection of a scaled plane and every morph inside it
- * lands in the wrong place. Only the outgoing layer ever holds a transform, and
- * the outgoing layer has nothing left to morph.
- *
- * ONE ELEMENT CLAIMS A `layoutId` AT A TIME, and that is what the two mounted
- * levels cost. A `layoutId` claimed by two live elements animates neither — the
- * marks stop being the cards. So the layer matching the current level is LIVE
- * and keeps its ids, and the layer on its way out renders the same markup
- * without them: the ids deregister in the same commit the arriving layer claims
- * them, which is exactly the handoff an unmount would have given.
- *
- * L2 is a different gesture on purpose: it is not a zoom but a lift, and it is
- * handled by matched `layoutId`s between the L1 node and the card.
+ *   · THE NAV is still the single truth. A wheel that crosses a band, a click on a lane, Escape
+ *     and an agent's `open_group` all end in the same reducer, because `useSemanticZoom` turns
+ *     the camera's distance into `nav.openGroup` / `openItem` / `up` and turns every nav change
+ *     back into `rig.flyTo(poseFor(focus))`. One set of poses, three ways to ask for them.
+ *   · THE FRAME, because the world's size IS the stage's size (zoom 1 is the resting frame), so
+ *     a resize rebuilds the world and every pose with it.
+ *   · THE TRANSFORM AND `--ln-inv`, written straight onto the scene node in the camera's own
+ *     subscribe. Neither is React state: sixty renders a second of a hundred and twenty-five
+ *     invoices is the whole motion-cost axis, and neither value is read by anything but CSS.
+ *   · THE BAND, which IS React state — but only four values, changing a handful of times in a
+ *     gesture, and `World` is memoised so the change costs a class flip rather than a re-render
+ *     of the map.
+ *   · The filter, the tick and the period, because each of them is something a tool moves, and an
+ *     agent's call and a person's click have to end in the same `setState` or the two are looking
+ *     at different pages.
  */
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from "motion/react";
-import { useLevelFlight, useZoomNav } from "@athena/demo-kit/zoom";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "motion/react";
+import {
+  poseToTransform,
+  useCameraRig,
+  useLevelFlight,
+  useSemanticZoom,
+  useZoomNav,
+  type CameraPose,
+} from "@athena/demo-kit/zoom";
 
 import { Card } from "./Card";
+import { formatDate } from "@/lib/format";
 import type { Period } from "@/lib/constants";
 import {
   NO_FILTER,
@@ -51,144 +58,252 @@ import {
   markById,
   type LnBooks,
   type LnFilter,
+  type LnMark,
   type LnSheet,
 } from "./model";
-import { fade, instant, lift, move } from "./motion";
-import { Spread, type SpreadMode } from "./Spread";
-import { Swarm } from "./Swarm";
+import { fade, instant } from "./motion";
 import { Foot } from "./shell/Foot";
 import { Mast } from "./shell/Mast";
 import { BooksTools, LanesTools } from "./tools";
+import { Hud } from "./world/Hud";
+import { Tip, type Hover } from "./world/Tip";
+import { World } from "./world/World";
+import { bandOf, quantizeInverse, type Band } from "./world/bands";
+import {
+  NAV_BANDS,
+  ZOOM,
+  buildWorld,
+  centreOf,
+  clampPan,
+  laneAt,
+  markAt,
+  panBounds,
+  poseForFocus,
+  timeAt,
+  type Frame,
+} from "./world/layout";
 import "./style/index.css";
+
+/** The map does not re-render because the reader dragged over a lane boundary. */
+const TheWorld = memo(World);
 
 export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
   const nav = useZoomNav();
   const reduced = useReducedMotion();
   const [filter, setFilter] = useState<LnFilter>(NO_FILTER);
-  /**
-   * Invoices ticked by `select`, and the period the close readout is pointed at by `set_period`.
-   *
-   * Both are here rather than in the tool file for the same reason the filter is: a tool that
-   * moves the view has to move the SAME state a click moves, or the agent and the person are
-   * looking at two different pages. A ticked mark is ringed at L0 and L1; the period is a control
-   * on the toolbar.
-   */
   const [picked, setPicked] = useState<string[]>([]);
   const [period, setPeriod] = useState<Period>("2026-08");
-  /*
-   * The two view switches lost their controls with the bar, and neither was ever reachable by a
-   * tool — grep `components/lanes/tools/` and `lib/manifest.ts`: nothing registers them. So they
-   * are the defaults they always opened at, held as constants rather than as state nothing can
-   * move. If an agent is ever given a `set_view`, these become state again and the tool is what
-   * moves them.
-   */
-  const flat = false;
-  const mode: SpreadMode = "flat";
 
   const focus = nav.state.focus;
   const level = focus.level;
 
-  /**
-   * The root element, held as state rather than in a ref, because two things
-   * read tokens off it and both need a re-render when it arrives: the flight's
-   * fallback clock below, and `--ln-dur-4`, which is declared on
-   * `[data-variant="lanes"]` and on nothing above it.
-   */
   const [rootEl, setRootEl] = useState<HTMLDivElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const sceneRef = useRef<HTMLDivElement | null>(null);
+  const dateRef = useRef<HTMLElement | null>(null);
 
   /**
-   * THE FLIGHT IS THE KIT'S NOW.
+   * THE FRAME IS THE WORLD'S OWN SIZE. `buildWorld` lays the map out so that zoom 1 shows all of
+   * it in exactly this box, which is what lets the band thresholds be plain numbers instead of
+   * multiples of a viewport-dependent fit (`world/layout.ts`, the header note). A resize is
+   * therefore a rebuild — of the world, and of every pose derived from it.
+   */
+  const [frame, setFrame] = useState<Frame>({ w: 1440, h: 620 });
+  useLayoutEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const read = () => {
+      const box = el.getBoundingClientRect();
+      setFrame((f) =>
+        Math.abs(f.w - box.width) < 1 && Math.abs(f.h - box.height) < 1
+          ? f
+          : { w: box.width, h: box.height },
+      );
+    };
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const world = useMemo(() => buildWorld(sheet, frame), [sheet, frame]);
+
+  /*
+   * THE CAMERA'S CALLBACKS ARE BOUND ONCE and must see the CURRENT world, not the one that was
+   * in scope when the rig mounted. Refs, because none of these renders anything — and written in
+   * an effect rather than during render, which is not a formality: a ref assigned in the render
+   * body is assigned again on a render React then throws away, and under StrictMode or a
+   * concurrent retry the camera would be reading the world of a commit that never happened. An
+   * effect runs on the commit that won, and every reader below is an event or a subscription,
+   * which cannot fire before it.
+   */
+  const worldRef = useRef(world);
+  const frameRef = useRef(frame);
+  const levelRef = useRef(level);
+
+  /**
+   * THE FLIGHT IS STILL THE KIT'S, and it is now claimed by the camera rather than by a
+   * zero-size element running a dummy animation.
    *
-   * This was thirty lines here: a local `{id, from, to}` adjusted during render,
-   * a second `settled` counter beside it, and `moving` derived from the
-   * difference. All three round-1 apps wrote that same derivation differently
-   * and the consolidation round moved it to `useLevelFlight` — with two things
-   * this copy did not have. A stale settle is DROPPED, so the completion element
-   * of a level change that has already been superseded cannot declare its
-   * replacement finished (the interruption case). And `moving` is pushed into
-   * `nav.setMoving`, which is what lets the nav's own Escape listener abandon a
-   * move in flight rather than step up out of a level nobody arrived at — rule 6,
-   * which this app had only by accident.
-   *
-   * `--ln-dur-4` is the safety net for a flight whose completion element never
-   * animates (a browser that skips it, a tab that was hidden). It is read off
-   * the cascade, not typed.
+   * `useSemanticZoom` takes the flight and claims it for the length of each `flyTo`, so
+   * `nav.setMoving` is true exactly while the camera is moving — which is what lets the nav's own
+   * Escape listener abandon a move in flight rather than step out of a level nobody arrived at
+   * (rule 6). Round 2 spent a `motion.span` and an `onAnimationComplete` on the same job.
    */
   const flight = useLevelFlight(nav, { fallbackToken: "--ln-dur-4", el: rootEl });
-  const flightId = flight.flight;
-  const moving = flight.moving;
+
+  const bounds = useMemo(
+    () => ({ zoom: [ZOOM.min, ZOOM.max] as [number, number], pan: panBounds(world) }),
+    [world],
+  );
 
   /**
-   * Flatten for the length of EVERY level change, whoever asked for it.
+   * THE PAN CLAMP IS A SNAP, and that is the one place the contract did not fit.
    *
-   * Three buttons used to flatten the stack themselves, which meant the fourth
-   * way of changing level — the Escape key, which the kit's nav owns and this
-   * component never sees — projected the morph through a tilted plane and the
-   * marks arrived skewed. `flight` counts level changes from all four paths, so
-   * hanging the flatten off it is the only version that cannot be forgotten by
-   * a new call site.
-   *
-   * IT ENDS WHEN THE MOVE ENDS, not on a timer. This used to be a bare
-   * `setTimeout(…, 700)` — a number with no relation to the spring it was
-   * guessing at and no token anywhere near it. `.ln-flight` below runs the move
-   * that is actually in flight and says when it has settled, so the tilt comes
-   * back on the frame the morph stops and not a moment either side.
+   * `bounds.pan` is a single static rectangle, but how far a camera may travel depends on the
+   * zoom: a bound wide enough for zoom 14 lets the reader drag the whole map off the screen at
+   * zoom 1. So the bound is set once, generously, and the per-zoom half of the same rule is
+   * handed in as `snap` — which the rig applies when the reader stops. `clampPan` is idempotent
+   * and tested, so a pose already inside the world is left exactly where it is.
    */
-  const lands = flight.to.level === 2 || flight.from.level === 2 ? lift : move();
-  const signal = reduced ? instant : lands;
+  const rig = useCameraRig({
+    bounds,
+    drag: "pan",
+    wheel: "zoom",
+    inertia: 0.86,
+    keyboard: true,
+    reducedMotion: "user",
+    flyToken: "--ln-dur-move",
+    easeToken: "--ln-ease",
+    snap: useCallback(
+      (pose: CameraPose) => clampPan(pose, worldRef.current, frameRef.current) as CameraPose,
+      [],
+    ),
+  });
+
+  /**
+   * CAMERA DISTANCE IS THE LEVEL. The wheel crosses a band and this dispatches the same action a
+   * click dispatches; a click, a tool or Escape changes the nav and this flies the camera to the
+   * same pose. The hook marks which side is driving and ignores the echo of its own dispatch, so
+   * the two directions cannot loop.
+   */
+  useSemanticZoom(nav, rig, {
+    bands: NAV_BANDS,
+    resolveGroup: (pose) => laneAt(worldRef.current, centreOf(pose, worldRef.current).y),
+    resolveItem: (pose, group) => {
+      const here = centreOf(pose, worldRef.current);
+      return markAt(worldRef.current, group, here.x, here.y);
+    },
+    poseFor: (f) => poseForFocus(worldRef.current, f, frameRef.current) as Partial<CameraPose>,
+    flight,
+  });
+
+  /**
+   * The band, and the lane the camera is over.
+   *
+   * Two pieces of state, both changing a handful of times per gesture rather than per frame. The
+   * lane under the camera is NOT the same thing as `focus.group`: while a reader drags sideways
+   * at the near band the nav still has the lane they opened, and the HUD should already be
+   * naming the one they are arriving at. That gap is the whole reason the head is furniture.
+   */
+  const [band, setBand] = useState<Band>("far");
+  const bandRef = useRef<Band>("far");
+  const [under, setUnder] = useState<string | null>(null);
+  const underRef = useRef<string | null>(null);
+  /** The rung of the type ladder the scene is on. See `quantizeInverse`. */
+  const invRef = useRef(0);
+
+  /* Every ref the camera reads, synced on the commit that won. See the note above. */
+  useEffect(() => {
+    worldRef.current = world;
+    frameRef.current = frame;
+    levelRef.current = level;
+    bandRef.current = band;
+    underRef.current = under;
+  }, [world, frame, level, band, under]);
+
+  /**
+   * ONE SUBSCRIBE, AND IT WRITES THE DOM RATHER THAN STATE.
+   *
+   * The transform and `--ln-inv` are written on the same commit, which is what keeps the type in
+   * the world at a constant size in screen pixels while the geometry scales (brief §6). The
+   * readout's date is written the same way. Only the two values that CHANGE SOMETHING
+   * STRUCTURAL — the band, and the lane the HUD names — go through React.
+   */
+  useEffect(
+    () =>
+      rig.subscribe((pose) => {
+        const scene = sceneRef.current;
+        if (scene) {
+          /* The transform is a composite and costs nothing to write per frame. `--ln-inv` is a
+             LAYOUT input — it sizes every glyph in the world — so it is quantised and written
+             only when the rung changes. Un-quantised, this line alone relaid out fourteen
+             hundred elements sixty times a second: 23fps and a 110ms long task per flight. */
+          scene.style.transform = poseToTransform(pose);
+          const inv = quantizeInverse(pose.zoom);
+          if (inv !== invRef.current) {
+            invRef.current = inv;
+            scene.style.setProperty("--ln-inv", String(inv));
+          }
+        }
+        const w = worldRef.current;
+        const here = centreOf(pose, w);
+        if (dateRef.current) {
+          dateRef.current.textContent = formatDate(new Date(timeAt(w, here.x)).toISOString());
+        }
+        const nextBand = bandOf(levelRef.current, pose.zoom, bandRef.current);
+        if (nextBand !== bandRef.current) {
+          bandRef.current = nextBand;
+          setBand(nextBand);
+        }
+        const nextLane = laneAt(w, here.y);
+        if (nextLane !== underRef.current) {
+          underRef.current = nextLane;
+          setUnder(nextLane);
+        }
+      }),
+    [rig],
+  );
+
+  /* A nav change that did not come from the camera — a click, a tool, Escape — still moves the
+     band, and it must move it on the frame the level changed rather than when the fly happens to
+     cross a threshold. The camera's own crossing is idempotent against this. */
+  useEffect(() => {
+    const next = bandOf(level, rig.get().zoom, bandRef.current);
+    if (next !== bandRef.current) {
+      bandRef.current = next;
+      setBand(next);
+    }
+  }, [level, rig]);
 
   const lane = laneById(sheet, focus.group);
   const mark = markById(sheet, focus.item);
   const detail = mark ? sheet.details[mark.id] : undefined;
-
-  /**
-   * Which layers are on the stage, and which of them is live.
-   *
-   * Live means "this is the level you are on": it keeps the `layoutId`s and it
-   * takes the pointer. The other one is scenery for the length of the move.
-   */
-  const swarmLive = level === 0;
-  const spreadLive = level > 0;
-  const leavingSwarm = moving && flight.from.level === 0 && level > 0;
-  const leavingSpread = moving && flight.from.level > 0 && level === 0;
-  const spreadLane = lane ?? (leavingSpread ? laneById(sheet, flight.from.group) : undefined);
-  const showSwarm = swarmLive || leavingSwarm;
-  const showSpread = Boolean(spreadLane) && (spreadLive || leavingSpread);
-
-  /**
-   * THE TRANSFORM ORIGIN IS MEASURED, not assumed.
-   *
-   * Both layers scale through the centre of the lane you actually clicked,
-   * taken off that lane's own element in the frame before it leaves — which is
-   * possible only because the outgoing layer is still mounted when this runs.
-   * Without it the zoom pushes through the middle of the stage, which is the
-   * one point on the sheet the reader was not looking at.
-   */
-  const stageRef = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    const group = flight.to.group ?? flight.from.group;
-    const el = group
-      ? stage.querySelector<HTMLElement>(`.ln-lane[data-lane="${CSS.escape(group)}"]`)
-      : null;
-    const box = stage.getBoundingClientRect();
-    const from = el?.getBoundingClientRect();
-    if (!from || box.width === 0 || box.height === 0) return;
-    stage.style.setProperty(
-      "--ln-zoom-x",
-      `${((from.left + from.width / 2 - box.left) / box.width) * 100}%`,
-    );
-    stage.style.setProperty(
-      "--ln-zoom-y",
-      `${((from.top + from.height / 2 - box.top) / box.height) * 100}%`,
-    );
-    /* The two FOCUSES, not the whole flight object: the hook's return also
-       carries `moving`, and re-measuring the origin on the frame a move settles
-       would read the lane's box after the camera has already used it. */
-  }, [flight.from, flight.to]);
+  /* The HUD names where the CAMERA is, which during a drag is ahead of where the nav is. */
+  const hudLane = laneById(sheet, under) ?? lane;
 
   const pickedSet = useMemo(() => new Set(picked), [picked]);
+
+  const [hover, setHover] = useState<Hover | null>(null);
+  const onHover = useCallback(
+    (m: LnMark | null, el: HTMLElement | null) => {
+      if (!m || !el) {
+        setHover(null);
+        return;
+      }
+      const box = el.getBoundingClientRect();
+      const laneOf = sheet.lanes.find((l) => l.marks.some((x) => x.id === m.id));
+      if (!laneOf) return;
+      setHover({ mark: m, lane: laneOf, x: box.left + box.width / 2, y: box.bottom, top: box.top });
+    },
+    [sheet],
+  );
+
+  const openLane = useCallback((id: string) => nav.openGroup(id), [nav]);
+  const openMark = useCallback(
+    (laneId: string, markId: string) => nav.openItem(laneId, markId),
+    [nav],
+  );
 
   return (
     <MotionConfig reducedMotion="user">
@@ -197,15 +312,12 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
         ref={setRootEl}
         data-variant="lanes"
         data-level={level}
-        data-flat={flat || moving}
+        data-band={band}
       >
-        {/* The ingest layer: this direction's three levels, offered to an
-            agent beside the page on `document.modelContext`. Renders nothing,
-            and every tool it registers reads or moves — none of them writes. */}
+        {/* The ingest layer: this direction's three levels, offered to an agent beside the page
+            on `document.modelContext`. The tools did not change this round — `open_group` still
+            means what it meant; it is now a flight rather than a page. */}
         <LanesTools sheet={sheet} nav={nav} filter={filter} setFilter={setFilter} />
-        {/* The books' own layer: the reads, and the seven acts — three of them
-            gated. Mounted beside the view layer, on the one shipped route, so
-            the union in `lib/manifest.ts` is what an agent finds. */}
         <BooksTools
           sheet={sheet}
           books={books}
@@ -225,76 +337,63 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
         <Mast sheet={sheet} />
 
         {/*
-         * The completion signal. A zero-size element, keyed on the flight, that
-         * runs the move THIS level change is actually running and reports when
-         * it settles — so the flatten above ends with the morph rather than at
-         * a number somebody typed. It is the whole of what a 700ms timer used
-         * to do, minus the 700.
+         * THE STAGE IS THE VIEWPORT AND THE SCENE IS THE WORLD. The rig binds to the stage —
+         * that is where the pointer, the wheel and the keys are read, and where the frame is
+         * measured — and the scene inside it carries the transform. `bind` is spread AFTER the
+         * ref so the rig keeps the element it reads tokens and the bounding box from.
          */}
-        <motion.span
-          key={flightId}
-          className="ln-flight"
-          aria-hidden
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={signal}
-          onAnimationComplete={() => flight.settle(flightId)}
-        />
+        <div
+          className="ln-stage"
+          ref={(el) => {
+            stageRef.current = el;
+            rig.bind.ref(el);
+          }}
+          onPointerDown={rig.bind.onPointerDown}
+          onPointerMove={rig.bind.onPointerMove}
+          onPointerUp={rig.bind.onPointerUp}
+          onPointerCancel={rig.bind.onPointerCancel}
+          onWheel={rig.bind.onWheel}
+          onKeyDown={rig.bind.onKeyDown}
+          tabIndex={rig.bind.tabIndex}
+          style={rig.bind.style}
+          data-camera="rig"
+          role="application"
+          aria-label="The books as a map. Drag to pan, wheel or plus and minus to zoom, Home to reset."
+        >
+          <div
+            className="ln-world"
+            ref={sceneRef}
+            data-band={band}
+            /* The size and the two measures the stylesheet reads, plus the negative margins
+               that put the scene's own centre on the stage's — which is what makes the kit's
+               `transform-origin: 50% 50%` frame of reference literally true here. */
+            style={
+              {
+                inlineSize: world.w,
+                blockSize: world.h,
+                marginInlineStart: -world.w / 2,
+                marginBlockStart: -world.h / 2,
+                "--ln-gutter-w": world.gutter,
+                "--ln-axis-h": world.axisH,
+              } as CSSProperties
+            }
+          >
+            <TheWorld
+              world={world}
+              focus={focus}
+              filter={filter}
+              picked={pickedSet}
+              onOpenLane={openLane}
+              onOpenMark={openMark}
+              onHover={onHover}
+            />
+          </div>
 
-        <LayoutGroup>
-        <div className="ln-stage" ref={stageRef}>
-            {/*
-             * BOTH LEVELS ARE MOUNTED WHILE ONE IS LEAVING, and the `layoutId`
-             * pitfall that used to forbid it is solved rather than avoided: the
-             * outgoing layer renders the same markup with its ids dropped (the
-             * `live` prop), so exactly one element claims each id in every
-             * frame and the handoff is the one an unmount would have given.
-             */}
-            {showSwarm ? (
-              <motion.div
-                className="ln-layer"
-                data-layer="swarm"
-                initial={false}
-                animate={swarmLive ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.16 }}
-                transition={reduced ? instant : move()}
-              >
-                <Swarm
-                  sheet={sheet}
-                  focus={focus}
-                  live={swarmLive}
-                  filter={filter}
-                  picked={pickedSet}
-                  onOpenLane={nav.openGroup}
-                  onOpenMark={(laneId, markId) => nav.openItem(laneId, markId)}
-                />
-              </motion.div>
-            ) : null}
-
-            {showSpread && spreadLane ? (
-              <motion.div
-                className="ln-layer"
-                data-layer="spread"
-                initial={false}
-                animate={spreadLive ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 }}
-                transition={reduced ? instant : move()}
-              >
-                <Spread
-                  sheet={sheet}
-                  lane={spreadLane}
-                  live={spreadLive}
-                  filter={filter}
-                  picked={pickedSet}
-                  mode={mode}
-                  onOpenItem={(id) => nav.openItem(spreadLane.id, id)}
-                />
-              </motion.div>
-            ) : null}
-
+          <Hud band={band} lane={hudLane} mark={mark} dateRef={dateRef} onOut={nav.up} />
         </div>
 
-        {/* The legend is also the filter panel, so the footer takes the filter
-            and the setter the tools already move. One `setFilter`, whether the
-            press came from a person's thumb or from `set_filter`. */}
+        {/* The legend is also the filter panel, and the crumbs are still the way back up. One
+            `setFilter`, whether the press came from a person's thumb or from `set_filter`. */}
         <Foot
           sheet={sheet}
           lane={lane}
@@ -305,18 +404,15 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
           setFilter={setFilter}
         />
 
+        {hover ? <Tip hover={hover} /> : null}
+
         {/*
-         * The card layer lives HERE, after the footer, and that placement is
-         * load-bearing rather than tidy. It used to sit inside `.ln-stage`,
-         * which is a positioned `.ln-root` child and therefore its own stacking
-         * context — so the card's `z-index: 60` competed only with its
-         * siblings inside the stage, and the footer, a later sibling of the
-         * stage at the same level, painted its top rule straight through the
-         * card's action panel. As a later sibling itself the card is above
-         * everything, with no z-index arms race.
-         *
-         * It stays inside the `LayoutGroup`, which is what carries the
-         * `layoutId` morph from the node it grew out of.
+         * L2 is the one thing that is NOT in the world, and that is deliberate. An invoice you
+         * are acting on wants a modal's focus trap, a scroll of its own and a dialog role; a
+         * card at zoom 12 inside a panning scene has none of those. So the closest band opens a
+         * DOM pane OVER the map — box first, from the exact screen position of the card it grew
+         * out of, and its ink a beat later (rule 3). The camera holds where it arrived, so the
+         * world behind the pane is still the lane the reader was reading.
          */}
         <AnimatePresence>
           {level === 2 && mark ? (
@@ -336,7 +432,6 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
             </motion.div>
           ) : null}
         </AnimatePresence>
-        </LayoutGroup>
       </div>
     </MotionConfig>
   );

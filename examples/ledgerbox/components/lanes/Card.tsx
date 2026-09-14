@@ -1,33 +1,38 @@
 "use client";
 
 /**
- * L2 — one invoice, lifted off the sheet.
+ * The closest band — one invoice, lifted off the map.
  *
- * ONE OBJECT IN TWO STATES, not two components. The card carries the same
- * `layoutId` as the node you clicked, and so do the three pieces of content
- * they share: the number, the amount and the client name. motion matches each
- * pair across the level change, so the box grows out of the node's exact
- * position while the number slides up into the eyebrow, the client name grows
- * into the headline and the amount travels into the stat row. Nothing
- * cross-fades, which is what stops the drill reading as a modal appearing.
+ * IT GROWS OUT OF THE CARD IN THE WORLD, AND NOT THROUGH A `layoutId` ANY MORE. Round 2 matched
+ * this pane to the L1 node by shared id and let motion morph between them. That is the right
+ * answer when both ends are in the same untransformed coordinate system, and the wrong one now:
+ * the source is a card inside the scene, which carries the camera's own `translate … scale`.
+ * Layout projection measures boxes in viewport space, so a shared-element morph across that
+ * boundary is a morph between a scaled plane and an unscaled one — which is exactly the trap
+ * rule 1 exists to keep a level change out of.
  *
- * The lean lives on an inner wrapper. motion owns the transform of the card
- * itself while it is morphing, so a pointer-driven `rotate` on the same element
- * would be overwritten every frame.
+ * So the pane is grown from a MEASURED ORIGIN instead: a layout effect reads the screen centre
+ * of the world card this invoice already is, writes it as this element's `transform-origin`, and
+ * the stylesheet's one keyframe scales the BOX up from there. The INK — head, evidence, actions —
+ * arrives a beat later on its own animation, which is rule 3 said in CSS rather than in a
+ * component. Both are removed outright under reduced motion by the sheet's own branch, so the
+ * card lands on its final state at frame zero.
+ *
+ * The lean lives on an inner wrapper, so a pointer-driven `rotate` and the grow do not share an
+ * element's transform.
  *
  * Everything below the head is evidence, and the action panel is the footer.
  * The three GATED acts sit behind `Gate`: the manifest's own
  * `reversible && sideEffects !== "external"` rule decides which those are, and
  * this file only renders the answer.
  */
-import { useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useReducedMotion } from "motion/react";
 import { useOverlayEscape } from "@athena/demo-kit/zoom";
 
 import { matchAction, unmatchAction } from "@/app/actions";
 import { type Category, type Tone } from "@/lib/constants";
 import type { LnDetail, LnMark } from "./model";
-import { lift } from "./motion";
 import { useRun } from "./useRun";
 import { CardAside } from "./card/Aside";
 import { CardEvidence } from "./card/Evidence";
@@ -99,6 +104,29 @@ export function Card({
     };
   }, []);
 
+  /**
+   * WHERE THE BOX GROWS FROM: the invoice's own card in the world, measured in the frame before
+   * this one paints.
+   *
+   * It is a `useLayoutEffect` and not an effect because the keyframe begins on the element's
+   * first painted frame; a transform-origin written afterwards would arrive one frame into the
+   * grow, and the box would jump. The world card is always on the page — nothing in the map is
+   * ever unmounted — so the measurement cannot come back empty because a level left.
+   */
+  useLayoutEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    const source = document.querySelector<HTMLElement>(
+      `.ln-wmark[data-mark="${CSS.escape(mark.id)}"]`,
+    );
+    if (!source) return;
+    const from = source.getBoundingClientRect();
+    const box = card.getBoundingClientRect();
+    if (box.width === 0 || box.height === 0) return;
+    card.style.setProperty("--ln-grow-x", `${from.left + from.width / 2 - box.left}px`);
+    card.style.setProperty("--ln-grow-y", `${from.top + from.height / 2 - box.top}px`);
+  }, [mark.id]);
+
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     overlay.onKeyDown(event);
     if (event.key !== "Tab") return;
@@ -126,9 +154,7 @@ export function Card({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <motion.div
-        layoutId={mark.id}
-        transition={lift}
+      <div
         className="ln-card"
         data-heat={mark.heat}
         role="dialog"
@@ -193,7 +219,7 @@ export function Card({
             run={run}
           />
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,156 @@
+/* ------------------------------------------------------------------ the six lanes, in world */
+
+/*
+ * A lane is a band of y. It never leaves the world and it is never unmounted: when the reader
+ * flies into one, the other five recede through `presenceOf` and stay exactly where they were,
+ * which is the whole reason the place cannot be lost.
+ *
+ * The opacity is written inline from the model (rule 7) and the transition is the only thing
+ * this file adds to it.
+ */
+.ln-wlane {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(var(--y) * 1px);
+  block-size: calc(var(--h) * 1px);
+  transition: opacity var(--ln-dur-3) var(--ln-ease);
+}
+
+/*
+ * The spine, and it is a MEASUREMENT. How much of this area's outstanding money is already late:
+ * 51% in Design, 97% in Reimbursable, and that difference is the whole reason to fly into one
+ * area before another. Two colours and a hard stop, so it is a bar rather than a gradient
+ * pretending to be one.
+ */
+.ln-wlane-spine {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: calc(3px * var(--ln-inv));
+  border-radius: calc(2px * var(--ln-inv));
+  background: linear-gradient(
+    to bottom,
+    var(--ln-alert) 0 calc(var(--late, 0) * 100%),
+    var(--ln-rule) calc(var(--late, 0) * 100%) 100%
+  );
+  opacity: 0.8;
+}
+
+/*
+ * The gutter: the lane's name and its figures, in the world rather than in a HUD.
+ *
+ * All six are on the screen at the far and mid bands, which is the reading those bands are for.
+ * At the near band the camera has flown past them and the fixed head takes over — see
+ * `world/Hud.tsx`, and §5 of the brief.
+ *
+ * ABOVE THE TRACK, because the track covers the whole lane so that a click anywhere in the empty
+ * field opens the area. A z-index rather than a DOM reorder: the reading order is name, then
+ * figures, then the invoices, and that is the order a screen reader should get.
+ */
+.ln-wlane-head {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: calc(var(--ln-gutter-w) * 1px);
+  max-block-size: 100%;
+  display: grid;
+  align-content: start;
+  gap: calc(2px * var(--ln-inv));
+  padding: calc(3px * var(--ln-inv)) 0 0 calc(10px * var(--ln-inv));
+  border: 0;
+  background: none;
+  text-align: start;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.ln-wlane-name {
+  font-family: var(--ln-font-display);
+  font-size: calc(var(--ln-text-lg) * var(--ln-inv));
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: 1;
+  color: #fff;
+  white-space: nowrap;
+  transition: color var(--ln-dur-1) var(--ln-ease);
+}
+
+.ln-wlane-head:hover .ln-wlane-name,
+.ln-wlane[data-open] .ln-wlane-name {
+  color: var(--ln-accent);
+}
+
+.ln-wlane-figures {
+  font-family: var(--ln-font-mono);
+  font-size: calc(var(--ln-text-xs) * var(--ln-inv));
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+  color: var(--ln-mute);
+  white-space: nowrap;
+}
+
+.ln-wlane-late {
+  color: var(--tone, var(--ln-mute));
+  font-weight: 500;
+}
+
+/*
+ * THE LANE'S OWN SENTENCE — and it is the mid band's whole content.
+ *
+ * The same population, told more about: no navigation happened, the camera just came closer.
+ * That is the claim the round is testing, and this is the cheapest possible demonstration of it —
+ * one opacity, on one element, at one threshold.
+ */
+.ln-wlane-reading {
+  font-family: var(--ln-font-mono);
+  font-size: calc(var(--ln-label) * var(--ln-inv));
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  color: var(--ln-faint);
+  text-wrap: pretty;
+  opacity: 0;
+  transition: opacity var(--ln-dur-3) var(--ln-ease);
+}
+
+.ln-world[data-band="mid"] .ln-wlane-reading,
+.ln-world[data-band="near"] .ln-wlane-reading,
+.ln-world[data-band="closest"] .ln-wlane-reading {
+  opacity: 1;
+}
+
+/*
+ * The track. A GROUP and not a button: a hundred real buttons inside a button is invalid markup
+ * and was the reason this level once had a hundred and forty-eight tab stops. It spans the whole
+ * lane so a click in the empty field opens the area; only its panel starts at the gutter.
+ */
+.ln-wtrack {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+}
+
+.ln-wtrack::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--ln-gutter-w) * 1px);
+  inset-inline-end: 0;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 5%), transparent 42%),
+    var(--ln-surface);
+  border-radius: calc(3px * var(--ln-inv));
+  transition: background var(--ln-dur-2) var(--ln-ease);
+}
+
+.ln-wtrack:hover::before {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 8%), transparent 42%),
+    var(--ln-raise);
+}
+
+.ln-wlane[data-open] .ln-wtrack::before {
+  background:
+    linear-gradient(180deg, rgb(116 188 214 / 10%), transparent 42%),
+    var(--ln-raise);
+}

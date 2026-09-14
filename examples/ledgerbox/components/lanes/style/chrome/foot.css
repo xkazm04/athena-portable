@@ -100,10 +100,18 @@
   transition: opacity var(--ln-dur-3) var(--ln-ease);
 }
 
-.ln-root[data-level="1"] .ln-mast .ln-readout,
-.ln-root[data-level="2"] .ln-mast .ln-readout {
-  display: none;
-}
+/*
+ * THE CHROME DOES NOT CHANGE SIZE WITH THE LEVEL, AND THAT IS A ROUND-3 RULE.
+ *
+ * This used to be `display: none` on the masthead's figures at L1 and L2, to free vertical room
+ * for the spread. It cannot be now: the stage's box IS the world's box — `buildWorld` lays the
+ * map out for the frame it is given — so a masthead that shrinks when the level changes rebuilds
+ * the map underneath the camera mid-flight, and the invoice the reader clicked is no longer where
+ * they clicked it. The figures stay. They are the books at a glance and they are true at every
+ * distance.
+ *
+ * `visibility` is still allowed, and the legend below uses it: it changes no layout.
+ */
 
 .ln-readout div {
   display: grid;

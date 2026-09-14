@@ -130,56 +130,16 @@
   --ln-radius-card: 8px;
 
   /*
-   * ONE NUMBER OWNS THE HEIGHT OF THE SWARM, AND IT IS NOW THE SCREEN'S.
+   * THE WORLD'S OWN MEASURES, in world units — one world unit is one CSS pixel at zoom 1.
    *
-   * A lane is `rows x --ln-row` tall. At a flat 26px the swarm was 661px on
-   * every monitor: on a 1440-tall screen that is 46% of the frame and 468px of
-   * dead band, which is the owner's "does not spread with larger monitor
-   * sizes". The row is fluid instead — the height left over after the chrome,
-   * divided by the number of packed rows the sheet actually has. `Swarm.tsx`
-   * writes `--ln-rows-all` from the sheet, so the divisor is a fact about the
-   * books rather than a number typed here; the ceiling stops one four-row lane
-   * from becoming a poster, and the floor is the last resort on a short frame,
-   * where the stage scrolls rather than the marks becoming hairlines.
-   *
-   * `--ln-swarm-chrome` is everything the lanes do not get: the masthead, the
-   * axis, the footer and the stage's own padding. MEASURED, not guessed — 268px
-   * of it at 1920 and 2560, 302 at 1440 where the footer's filter panel takes a
-   * row of its own, plus the axis and the stack's padding inside the stage.
-   * The margin over the measurement is what stops the sixth lane from being
-   * shaved by a rounding error.
+   * `world/layout.ts` is the authority: it computes both from the frame and `Lanes.tsx` writes
+   * them onto the scene element, because the gutter is fluid and the axis band is not. These are
+   * the fallbacks for the frame before the first measurement, and they are the same two numbers
+   * the module's `GUTTER` and `AXIS_H` declare. A stylesheet that guessed them would be a second
+   * opinion about where the time axis starts.
    */
-  --ln-row-min: 20px;
-  --ln-row-max: 58px;
-  --ln-swarm-chrome: 460px;
-  --ln-rows-all: 20;
-  --ln-rows-min: 2;
-  --ln-row: var(--ln-row-min);
-  --ln-mark-h: 10px;
-  /* The L1 head's clock: the same picture as a lane at L0, at the size a head
-     can carry. Fixed rather than fluid — it is a thumbnail of the level you came
-     from, and a thumbnail that grows to half a screen is not one. */
-  /*
-   * What a lane's head needs before its blurb can be drawn at all: the name, the
-   * two figure lines, two lines of blurb and the head's own padding — 106px
-   * measured off the rendered head, with the rest of this a margin.
-   *
-   * `.ln-lane-reading` compares the SHORTEST lane's height against it and
-   * collapses to nothing below it, so the sentence is either whole or absent and
-   * never the top four pixels of a line of type. One decision for all six lanes:
-   * see `--ln-rows-min` and the note in `Swarm.tsx`.
-   */
-  --ln-lane-reading-at: 6.7rem;
-  /* The floor on a lane: the name and its two figure lines, which no lane may be
-     too short to print. Measured off the rendered head at the 13px type floor. */
-  --ln-lane-min: 5rem;
-  --ln-clock-row: 13px;
-  --ln-clock-mark: 7px;
-  /* The gutter the lane names and their readings live in. Fluid, so the reading
-     under each name gets a second line's worth of room on a wide monitor rather
-     than the same 186px it had on a laptop. The two narrow steps in
-     `chrome/responsive.css` override it and still win: they are declared later. */
-  --ln-gutter: clamp(186px, 12cqi, 264px);
+  --ln-gutter-w: 180;
+  --ln-axis-h: 34;
 
   /*
    * PRESENCE — one dimming system, three values, and no second opinion.
@@ -202,28 +162,20 @@
          EVERY DURATION IN THE DIRECTION IS ONE OF THESE, including the ones the
          TypeScript uses: `motion.ts` reads them back off this element rather
          than restating them, so there is one spelling of a duration and no way
-         for the stylesheet and the components to drift apart. Springs are the
-         only exception, because a spring has no CSS spelling. --- */
+         for the stylesheet and the components to drift apart. THE CAMERA READS
+         THEM TOO — the rig is built with `flyToken: "--ln-dur-move"` and
+         `easeToken: "--ln-ease"`, so a flight between two poses is on the same
+         clock as everything else the level change does. --- */
   --ln-dur-1: 120ms;
   --ln-dur-2: 200ms;
   --ln-dur-3: 320ms;
   --ln-dur-4: 520ms;
-  /* The level change itself — the whole camera move from one level to the next.
-     The budget for a level change is 400ms and this is what is spent of it: 300
-     for the move, and the 140ms stagger below as the tail behind it. */
-  --ln-dur-move: 300ms;
-  /* The arrival stagger, and the index it stops counting at. A lane of forty
-     invoices lands in the same 140ms a lane of ten does. */
-  --ln-stagger: 14ms;
-  --ln-stagger-cap: 10;
+  /* The level change itself — the camera's flight from one pose to the next, and
+     the crossfade a band change runs. The budget for a level change is 400ms and
+     this is what is spent of it. */
+  --ln-dur-move: 320ms;
   --ln-ease: cubic-bezier(0.2, 0, 0, 1);
   --ln-ease-out: cubic-bezier(0.05, 0.7, 0.1, 1);
-
-  /* The tilt. Flat view sets it to 0deg and nothing else changes. Kept small:
-     perspective scales the near lanes up, and much past this the gutter labels
-     push into the stage's clip. */
-  --ln-tilt: 5deg;
-  --ln-bleed: 34px;
 
   --ln-font-display: var(--font-ln-display), "Haettenschweiler", "Arial Narrow", sans-serif;
   --ln-font: var(--font-ln-text), ui-sans-serif, system-ui, sans-serif;
@@ -246,9 +198,5 @@
   --dk-shadow: none;
   --dk-gated: var(--ln-gate);
   --dk-auto: var(--ln-auto);
-}
-
-[data-variant="lanes"][data-flat="true"] {
-  --ln-tilt: 0deg;
 }
 
