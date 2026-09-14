@@ -13,8 +13,19 @@
  * how present a LANE is once you have drilled past it. This is the same channel
  * with one more reason to be in it: one function, three values, and `opacity`
  * is the only thing anything downstream does with them. A mark's opacity on
- * screen is `emphasis(focus, lane) * presence(mark, filter)` — the lane's
+ * screen is `emphasis(focus, lane) * markPresence(mark, filter)` — the lane's
  * reading and the mark's, multiplied, never two systems arguing.
+ *
+ * HOW THE TWO CHANNELS COMPOSE, since the kit only knows one of them. The kit's
+ * `presenceOf(focus, group)` answers "how present is this LANE, given where the
+ * reader is standing" — a fact about NAVIGATION, and the only presence the kit
+ * can know. This file answers "how present is this MARK, given the filter and
+ * whether the invoice wants a decision" — a fact about the BOOKS, which the kit
+ * has no way to see. They multiply, and they multiply in the DOM rather than in
+ * arithmetic: the lane element carries the kit's opacity and the mark inside it
+ * carries this one, so the two compose the way nested opacity always does and
+ * neither has to know the other exists. `markPresence` is named for its subject
+ * so it cannot be mistaken at a call site for the kit's `presenceOf`.
  *
  * Pure, so `test/lanes.test.ts` can hold the rule without a DOM.
  */
@@ -50,7 +61,7 @@ export function needsDecision(mark: LnMark): boolean {
  * The filter comes first because it is the reader's own explicit narrowing, and
  * an invoice they have filtered out should recede even when it is screaming.
  */
-export function presenceOf(mark: LnMark, filter: LnFilter): Presence {
+export function markPresence(mark: LnMark, filter: LnFilter): Presence {
   if (!matches(mark, filter)) return "dim";
   return needsDecision(mark) ? "lit" : "quiet";
 }

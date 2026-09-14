@@ -153,11 +153,26 @@
   --ln-row-max: 58px;
   --ln-swarm-chrome: 460px;
   --ln-rows-all: 20;
+  --ln-rows-min: 2;
   --ln-row: var(--ln-row-min);
   --ln-mark-h: 10px;
   /* The L1 head's clock: the same picture as a lane at L0, at the size a head
      can carry. Fixed rather than fluid — it is a thumbnail of the level you came
      from, and a thumbnail that grows to half a screen is not one. */
+  /*
+   * What a lane's head needs before its blurb can be drawn at all: the name, the
+   * two figure lines, two lines of blurb and the head's own padding — 106px
+   * measured off the rendered head, with the rest of this a margin.
+   *
+   * `.ln-lane-reading` compares the SHORTEST lane's height against it and
+   * collapses to nothing below it, so the sentence is either whole or absent and
+   * never the top four pixels of a line of type. One decision for all six lanes:
+   * see `--ln-rows-min` and the note in `Swarm.tsx`.
+   */
+  --ln-lane-reading-at: 6.7rem;
+  /* The floor on a lane: the name and its two figure lines, which no lane may be
+     too short to print. Measured off the rendered head at the 13px type floor. */
+  --ln-lane-min: 5rem;
   --ln-clock-row: 13px;
   --ln-clock-mark: 7px;
   /* The gutter the lane names and their readings live in. Fluid, so the reading

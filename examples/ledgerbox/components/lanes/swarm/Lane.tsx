@@ -15,13 +15,14 @@
  * and that difference is the whole reason to open one lane before the other.
  */
 import { motion, useReducedMotion } from "motion/react";
+import { sharedIdentity } from "@athena/demo-kit/zoom";
 import type { CSSProperties } from "react";
 
 import { formatMoney, formatMoneyShort } from "@/lib/format";
 import {
   PRESENCE_OPACITY,
   matches,
-  presenceOf,
+  markPresence,
   type LnFilter,
   type LnLane,
   type LnMark,
@@ -54,7 +55,6 @@ export function Lane({
   live,
   presence,
   traveling,
-  reading,
   filter,
   picked,
   todayX,
@@ -78,9 +78,6 @@ export function Lane({
   presence: number;
   /** This lane's name is the element flying to the spread's head. */
   traveling: boolean;
-  /** One line saying what the line is. Composed once by the swarm, because it
-   *  reads the axis and every lane gets the same sentence. */
-  reading: string;
   filter: LnFilter;
   /** Ticked invoices, ringed at this level. */
   picked: ReadonlySet<string>;
@@ -96,6 +93,9 @@ export function Lane({
   const travel = reduced ? instant : move();
   const { byDate, enter, leave, rove, roving, setRoving, hoveredId } = deck;
   const labelled = labelledIn(lane);
+  /* The lane's name travels to the spread's head; the lane owns the id only
+     while L0 is the level being read. */
+  const name = sharedIdentity(`lane-name-${lane.id}`, live);
   const shown = lane.marks.filter((m) => matches(m, filter)).length;
   const lateShare = lane.owedCents > 0 ? lane.lateCents / lane.owedCents : 0;
 
@@ -122,19 +122,24 @@ export function Lane({
       onClick={() => onOpenLane(lane.id)}
       aria-label={`Open the ${lane.label} lane, ${lane.count} invoices, ${formatMoneyShort(lane.owedCents)} outstanding`}
     >
-      {live ? (
-        <motion.span
-          layoutId={`lane-name-${lane.id}`}
-          className="ln-lane-name"
-          transition={travel}
-        >
-          {lane.label}
-        </motion.span>
-      ) : (
-        <span className="ln-lane-name" data-traveling={traveling || undefined}>
-          {lane.label}
-        </span>
-      )}
+      {/*
+        ONE CLAIMANT PER SHARED ID, as the kit's two props rather than as two
+        spellings of the element. `sharedIdentity` hands back the `layoutId` only
+        while this lane owns it and a `key` that FLIPS with ownership — which is
+        the half that is easy to get wrong: motion reads `layoutId` at mount and
+        never again, so dropping the id has to be a remount or the deregistration
+        never happens. The branch this replaces did that by rendering a different
+        element type, with a comment asking the two spellings not to drift.
+      */}
+      <motion.span
+        key={name.key}
+        layoutId={name.layoutId}
+        className="ln-lane-name"
+        data-traveling={(!live && traveling) || undefined}
+        transition={travel}
+      >
+        {lane.label}
+      </motion.span>
       <span className="ln-lane-figures num">
         {shown === lane.count ? lane.count : `${shown}/${lane.count}`} ·{" "}
         {formatMoneyShort(lane.owedCents)}
@@ -146,11 +151,19 @@ export function Lane({
       ) : (
         <span className="ln-lane-figures">nothing late</span>
       )}
-      {/* What the line IS. Not a caption on the lane's contents — a statement of
-          the encoding, which is the one thing six bands of coloured bars cannot
-          say for themselves. It goes in the head so it is read with the name and
-          leaves with it when the gutter narrows. */}
-      <span className="ln-lane-reading">{reading}</span>
+      {/*
+        WHAT THIS LINE IS — the lane's own blurb, which is the only part of the
+        answer that differs between lanes.
+        The first cut of this printed the ENCODING here — "by due date, Jun→Oct ·
+        colour is the state" — six times, identically, in six gutters: a key
+        repeated once per row is not a key, it is noise with a definition in it.
+        The encoding is stated once now, where it belongs to the whole sheet: the
+        axis says it is a due date, and the footer's own line says width is the
+        balance and the tail is how late. What is left here is the sentence only
+        this lane can say, and it comes from the books rather than from a
+        template.
+      */}
+      <span className="ln-lane-reading">{lane.blurb}</span>
     </button>
     {/*
      * The track is a GROUP, not a button. It used to carry
@@ -178,7 +191,7 @@ export function Lane({
          * anything" is the other half, and a surface with two dimming systems
          * has neither.
          */
-        const presence = presenceOf(mark, filter);
+        const presence = markPresence(mark, filter);
         const late = mark.daysOverdue > 0 && mark.balanceCents > 0;
         const flag = flagOf(mark);
         const open = hoveredId === mark.id;
@@ -197,6 +210,7 @@ export function Lane({
          * receding by default has to make.
          */
         const opacity = open || picked.has(mark.id) ? 1 : PRESENCE_OPACITY[presence];
+        const ident = sharedIdentity(mark.id, live);
         /* Everything about a mark except who owns its `layoutId`. Written once
            so the live and the receding spelling cannot drift apart. */
         const markProps = {
@@ -258,18 +272,20 @@ export function Lane({
                 {flag}
               </span>
             ) : null}
-            {live ? (
-              <motion.button
-                layoutId={mark.id}
-                {...markProps}
-                animate={{ opacity }}
-                whileHover={{ opacity: 1 }}
-                whileFocus={{ opacity: 1 }}
-                transition={travel}
-              />
-            ) : (
-              <button {...markProps} />
-            )}
+            {/* Same rule, same helper: the mark holds the id it will become a
+                card under only while this level is live. `initial={false}` lands
+                the remount that the key flip causes on the value it already had,
+                so a hand-over is not an entrance. */}
+            <motion.button
+              key={ident.key}
+              layoutId={ident.layoutId}
+              {...markProps}
+              initial={false}
+              animate={{ opacity }}
+              whileHover={{ opacity: 1 }}
+              whileFocus={{ opacity: 1 }}
+              transition={live ? travel : instant}
+            />
           </span>
         );
       })}

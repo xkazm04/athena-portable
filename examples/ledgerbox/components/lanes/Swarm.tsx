@@ -22,7 +22,7 @@
  * Everything else stays a bar, and hovering any mark gives the full read-out.
  */
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
-import { emphasis, type Focus } from "@athena/demo-kit/zoom";
+import { presenceOf, type Focus } from "@athena/demo-kit/zoom";
 
 import type { LnFilter, LnLane, LnMark, LnSheet } from "./model";
 import { Lane } from "./swarm/Lane";
@@ -129,12 +129,27 @@ export function Swarm({
     [sheet.lanes],
   );
 
-  /** `Jun` → `Oct`, for the reading under each lane's name. */
-  const firstMonth = months[0]?.label ?? "";
-  const lastMonth = months[months.length - 1]?.label ?? "";
+  /**
+   * The packed rows of the SHORTEST lane, which is what decides whether any lane
+   * prints its blurb.
+   *
+   * The decision has to be one decision. Per-lane it is arithmetic CSS can do —
+   * compare this lane's height against the room its head needs — but the result
+   * is a gutter where three lanes carry a sentence and three do not, at whatever
+   * viewport height happens to fall between them, which reads as a bug rather
+   * than as a rule. The shortest lane is the binding one, so the whole sheet
+   * says what its lanes are or none of them does.
+   */
+  const rowsMin = useMemo(
+    () => sheet.lanes.reduce((n, lane) => Math.min(n, lane.rows), Number.POSITIVE_INFINITY),
+    [sheet.lanes],
+  );
 
   return (
-    <div className="ln-stack" style={{ "--ln-rows-all": rowsAll } as CSSProperties}>
+    <div
+      className="ln-stack"
+      style={{ "--ln-rows-all": rowsAll, "--ln-rows-min": rowsMin } as CSSProperties}
+    >
       {/*
        * THE AXIS IS NOW LABELLED, not implied.
        *
@@ -169,13 +184,23 @@ export function Swarm({
 
       <div className="ln-lanes">
         {/*
-         * WHAT RECEDES WHEN YOU DRILL IN IS NOT THIS FILE'S OPINION. `emphasis`
-         * is the kit's one rule, shared by all nine directions, and a world
-         * reads it and decides what to DO with it rather than re-deriving it.
-         * Here it becomes opacity: at L0 every lane is fully present, and from
-         * inside a lane the five you are not in fall back to 0.22 while the one
-         * you opened holds at 1 — so the swarm visibly recedes behind the
-         * spread instead of being cut away under it.
+         * WHAT RECEDES WHEN YOU DRILL IN IS NOT THIS FILE'S OPINION. `presenceOf`
+         * is the kit's one rule AND the kit's one mapping of it, shared by
+         * every direction: at L0 every lane is fully present, and from inside a
+         * lane the five you are not in fall back to 0.22 while the one you
+         * opened holds at 1 — so the swarm visibly recedes behind the spread
+         * instead of being cut away under it.
+         *
+         * ONLY THE OPACITY HALF IS TAKEN, and that is the one place this
+         * surface cannot use the kit whole. `presenceStyle` also returns a
+         * `scale`, and a lane's transform here is DATA: `.ln-lane` carries
+         * `translateZ(--i * 4px)`, the stagger that makes the six read as a
+         * stack under the tilt. motion owns an element's transform outright, so
+         * animating `scale` on the same element would overwrite the depth the
+         * lane is positioned at. Rule 7's own wording is the licence — a world
+         * reads the model's presence and decides what to DO with it — and what
+         * is not taken is the surface's decision, not a second opinion about
+         * how far back 0.22 stands.
          */}
         {sheet.lanes.map((lane, index) => (
           <Lane
@@ -183,17 +208,11 @@ export function Swarm({
             lane={lane}
             index={index}
             live={live}
-            presence={emphasis(focus, lane.id, null)}
+            presence={presenceOf(focus, lane.id).opacity}
             /* The lane you opened has a stand-in: its name is the element that
                travels to the spread's head, so the copy left behind here would
                be the same word twice for the length of the flight. */
             traveling={!live && focus.group === lane.id}
-            /* What the line IS, said under its name. The review's flattest note
-               was "not understandable what each line inside a swimlane means",
-               and it was fair: six bands of coloured bars with a name and two
-               figures never once stated that the horizontal is a due date or
-               that the colour is a state. */
-            reading={`by due date, ${firstMonth}→${lastMonth} · colour is the state`}
             filter={filter}
             picked={picked}
             todayX={todayX}

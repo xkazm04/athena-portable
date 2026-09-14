@@ -25,13 +25,14 @@
  */
 import { useCallback, useMemo, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { sharedIdentity } from "@athena/demo-kit/zoom";
 
 import { formatMoneyShort } from "@/lib/format";
 import {
   PRESENCE_OPACITY,
   chronological,
   matches,
-  presenceOf,
+  markPresence,
   statusOf,
   type LnFilter,
   type LnLane,
@@ -144,7 +145,7 @@ export function Spread({
           transition={zoom}
         >
           {ordered.map((mark, index) => {
-            const presence = presenceOf(mark, filter);
+            const presence = markPresence(mark, filter);
             const status = statusOf(mark);
             // How far this card stands up in `raised` mode: its share of the
             // largest balance in the lane.
@@ -165,16 +166,21 @@ export function Spread({
               mark.balanceCents > 0 ? mark.balanceCents : mark.amountCents,
             );
             /*
-             * The card's contents, written once for both spellings.
+             * THE THREE SHARED IDS, through the kit's one helper.
              *
              * A `layoutId` is claimed at MOUNT and released at UNMOUNT — setting
-             * the prop to `undefined` on a live element does not deregister it,
-             * which is why this is two element types and not one prop. Rendering
-             * a plain `span` where the live level renders a `motion.span` makes
-             * React unmount the one and mount the other in a single commit,
-             * which is precisely the handoff motion's shared-layout stack is
-             * built around.
+             * the prop to `undefined` on a live element does not deregister it —
+             * so ownership has to be a remount. `sharedIdentity` is exactly that
+             * pair: the id when this level owns it, and a `key` that flips when
+             * it does not. It replaces three live/plain element branches here
+             * whose only contract was a comment asking the two spellings not to
+             * drift.
              */
+            const ids = {
+              box: sharedIdentity(mark.id, live),
+              money: sharedIdentity(`money-${mark.id}`, live),
+              client: sharedIdentity(`client-${mark.id}`, live),
+            };
             const body = (
               <>
                 {/*
@@ -187,21 +193,21 @@ export function Spread({
                  */}
                 <span className="ln-node-top">
                   <StatusGlyph status={status} />
-                  {live ? (
-                    <motion.span layoutId={`money-${mark.id}`} className="ln-node-money">
-                      {money}
-                    </motion.span>
-                  ) : (
-                    <span className="ln-node-money">{money}</span>
-                  )}
-                </span>
-                {live ? (
-                  <motion.span layoutId={`client-${mark.id}`} className="ln-node-client">
-                    {mark.clientName}
+                  <motion.span
+                    key={ids.money.key}
+                    layoutId={ids.money.layoutId}
+                    className="ln-node-money"
+                  >
+                    {money}
                   </motion.span>
-                ) : (
-                  <span className="ln-node-client">{mark.clientName}</span>
-                )}
+                </span>
+                <motion.span
+                  key={ids.client.key}
+                  layoutId={ids.client.layoutId}
+                  className="ln-node-client"
+                >
+                  {mark.clientName}
+                </motion.span>
                 <span className="ln-node-no num">{mark.number}</span>
                 <span className="ln-node-status">{mark.status}</span>
                 {/*
@@ -235,13 +241,17 @@ export function Spread({
                the card morphs, so this is the one place the number rather than
                the token is read. */
             const opacity = PRESENCE_OPACITY[presence];
-            return live ? (
+            return (
               <motion.button
-                key={mark.id}
-                layoutId={mark.id}
+                key={ids.box.key}
+                layoutId={ids.box.layoutId}
                 {...shared}
-                style={{ "--lift": standing } as CSSProperties}
-                initial={reduced ? false : { opacity: 0 }}
+                style={{ "--lift": standing, opacity } as CSSProperties}
+                /* Only the LIVE level has an entrance. The layer on its way out
+                   is rendering the same cards one last time; starting them at
+                   zero would be a second animation nobody asked for, on top of
+                   the layer's own fade. */
+                initial={live && !reduced ? { opacity: 0 } : false}
                 animate={{
                   opacity,
                   y: mode === "raised" ? -standing * 26 : 0,
@@ -253,18 +263,10 @@ export function Spread({
                    is not something a `:hover` rule can outrank. */
                 whileHover={{ opacity: 1 }}
                 whileFocus={{ opacity: 1 }}
-                transition={{ ...lift, layout: arrive, opacity: arrive }}
+                transition={live ? { ...lift, layout: arrive, opacity: arrive } : instant}
               >
                 {body}
               </motion.button>
-            ) : (
-              <button
-                key={mark.id}
-                {...shared}
-                style={{ "--lift": standing, opacity } as CSSProperties}
-              >
-                {body}
-              </button>
             );
           })}
         </motion.div>

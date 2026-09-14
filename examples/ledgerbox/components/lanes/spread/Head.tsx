@@ -25,10 +25,11 @@
  * and a second way to open the same twelve invoices is a second thing to learn.
  */
 import { motion, useReducedMotion } from "motion/react";
+import { sharedIdentity } from "@athena/demo-kit/zoom";
 import type { CSSProperties } from "react";
 
 import { formatMoneyShort } from "@/lib/format";
-import { presenceOf, type LnFilter, type LnLane, type LnSheet } from "../model";
+import { markPresence, type LnFilter, type LnLane, type LnSheet } from "../model";
 import { instant, move } from "../motion";
 import { markVars } from "../swarm/marks";
 
@@ -48,6 +49,7 @@ export function SpreadHead({
 }) {
   const reduced = useReducedMotion();
   const { todayX, months } = sheet.axis;
+  const title = sharedIdentity(`lane-name-${lane.id}`, live);
 
   return (
     <div className="ln-spread-head">
@@ -58,21 +60,22 @@ export function SpreadHead({
             UNDER IT — `chrome/mast.css` takes the headline down to its crumb size
             in the frame the level changes and settles it with a transform, so the
             box this name is flying to is already where it will end up. */}
-        {live ? (
-          <motion.h2
-            layoutId={`lane-name-${lane.id}`}
-            className="ln-spread-title"
-            /* The flight is tokenised like every other duration in the direction.
-               Left to motion's default this one spring was the slowest thing on the
-               screen — still creeping the last six pixels half a second after the
-               level had otherwise finished. */
-            transition={reduced ? instant : move()}
-          >
-            {lane.label}
-          </motion.h2>
-        ) : (
-          <h2 className="ln-spread-title">{lane.label}</h2>
-        )}
+        {/* The other end of the L0 gutter's `lane-name` id, through the kit's
+            one-claimant helper: exactly one of the two levels holds it in any
+            frame, and the key flip is what makes the hand-over a remount, which
+            is the only event motion reads a `layoutId` on. */}
+        <motion.h2
+          key={title.key}
+          layoutId={title.layoutId}
+          className="ln-spread-title"
+          /* The flight is tokenised like every other duration in the direction.
+             Left to motion's default this one spring was the slowest thing on the
+             screen — still creeping the last six pixels half a second after the
+             level had otherwise finished. */
+          transition={reduced ? instant : move()}
+        >
+          {lane.label}
+        </motion.h2>
         <p className="ln-spread-blurb">{lane.blurb}</p>
         {/*
          * THE LANE'S OWN CLAIM, in the masthead's own device.
@@ -120,7 +123,7 @@ export function SpreadHead({
             <i
               key={mark.id}
               data-heat={mark.heat}
-              data-presence={presenceOf(mark, filter)}
+              data-presence={markPresence(mark, filter)}
               style={markVars(mark, todayX)}
             />
           ))}

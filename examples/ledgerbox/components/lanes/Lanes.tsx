@@ -41,7 +41,7 @@
  */
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from "motion/react";
-import { useZoomNav, type Focus } from "@athena/demo-kit/zoom";
+import { useLevelFlight, useZoomNav } from "@athena/demo-kit/zoom";
 
 import { Card } from "./Card";
 import type { Period } from "@/lib/constants";
@@ -60,13 +60,6 @@ import { Foot } from "./shell/Foot";
 import { Mast } from "./shell/Mast";
 import { BooksTools, LanesTools } from "./tools";
 import "./style/index.css";
-
-/** What a level change is: the focus it left and the focus it is going to. */
-interface Flight {
-  id: number;
-  from: Focus;
-  to: Focus;
-}
 
 export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
   const nav = useZoomNav();
@@ -94,28 +87,36 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
 
   const focus = nav.state.focus;
   const level = focus.level;
-  const flightId = nav.state.flight;
 
   /**
-   * The flight in progress, derived during render rather than in an effect.
+   * The root element, held as state rather than in a ref, because two things
+   * read tokens off it and both need a re-render when it arrives: the flight's
+   * fallback clock below, and `--ln-dur-4`, which is declared on
+   * `[data-variant="lanes"]` and on nothing above it.
+   */
+  const [rootEl, setRootEl] = useState<HTMLDivElement | null>(null);
+
+  /**
+   * THE FLIGHT IS THE KIT'S NOW.
    *
-   * The outgoing level has to be known on the very frame the level changes —
-   * that is the frame the layer it is leaving has to still be mounted for, and
-   * the frame the arriving layer measures its morph against. An effect is one
-   * frame late, which is a cut with extra steps. Adjusting state during render
-   * is the one React-sanctioned way to read "what changed": the guard is the
-   * kit's monotonic `flight`, so this settles in a single extra pass.
+   * This was thirty lines here: a local `{id, from, to}` adjusted during render,
+   * a second `settled` counter beside it, and `moving` derived from the
+   * difference. All three round-1 apps wrote that same derivation differently
+   * and the consolidation round moved it to `useLevelFlight` — with two things
+   * this copy did not have. A stale settle is DROPPED, so the completion element
+   * of a level change that has already been superseded cannot declare its
+   * replacement finished (the interruption case). And `moving` is pushed into
+   * `nav.setMoving`, which is what lets the nav's own Escape listener abandon a
+   * move in flight rather than step up out of a level nobody arrived at — rule 6,
+   * which this app had only by accident.
+   *
+   * `--ln-dur-4` is the safety net for a flight whose completion element never
+   * animates (a browser that skips it, a tab that was hidden). It is read off
+   * the cascade, not typed.
    */
-  const [flight, setFlight] = useState<Flight>(() => ({ id: flightId, from: focus, to: focus }));
-  if (flight.id !== flightId) setFlight({ id: flightId, from: flight.to, to: focus });
-
-  /**
-   * The flight that has FINISHED. Everything about "are we mid-move" is derived
-   * from the difference, so it is true on the very frame the level changes
-   * rather than a `setState` in an effect body later.
-   */
-  const [settled, setSettled] = useState(-1);
-  const moving = settled !== flightId;
+  const flight = useLevelFlight(nav, { fallbackToken: "--ln-dur-4", el: rootEl });
+  const flightId = flight.flight;
+  const moving = flight.moving;
 
   /**
    * Flatten for the length of EVERY level change, whoever asked for it.
@@ -182,7 +183,10 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
       "--ln-zoom-y",
       `${((from.top + from.height / 2 - box.top) / box.height) * 100}%`,
     );
-  }, [flight]);
+    /* The two FOCUSES, not the whole flight object: the hook's return also
+       carries `moving`, and re-measuring the origin on the frame a move settles
+       would read the lane's box after the camera has already used it. */
+  }, [flight.from, flight.to]);
 
   const pickedSet = useMemo(() => new Set(picked), [picked]);
 
@@ -190,6 +194,7 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
     <MotionConfig reducedMotion="user">
       <div
         className="ln-root"
+        ref={setRootEl}
         data-variant="lanes"
         data-level={level}
         data-flat={flat || moving}
@@ -233,7 +238,7 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={signal}
-          onAnimationComplete={() => setSettled(flightId)}
+          onAnimationComplete={() => flight.settle(flightId)}
         />
 
         <LayoutGroup>

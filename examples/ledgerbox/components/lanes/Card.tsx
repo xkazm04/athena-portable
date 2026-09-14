@@ -22,6 +22,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { useOverlayEscape } from "@athena/demo-kit/zoom";
 
 import { matchAction, unmatchAction } from "@/app/actions";
 import { type Category, type Tone } from "@/lib/constants";
@@ -54,77 +55,52 @@ export function Card({
   const [category, setCategory] = useState<Category>(mark.category);
   const closeRef = useRef<HTMLButtonElement>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
-  /** The node at L1 or the mark at L0 that opened this card. See the effect. */
-  const openerRef = useRef<HTMLElement | null>(null);
 
   const owed = mark.balanceCents > 0;
   const actionable = owed || mark.state === "disputed";
 
+  /**
+   * ESCAPE AND THE WAY BACK ARE THE KIT'S — formula §1 rule 5, as one hook.
+   *
+   * It replaces about fifty lines here: the Escape branch, the opener ref read
+   * at the top of a mount effect, the StrictMode guard that had to look for
+   * `.ln-card` in the document to tell a real close from React taking the effect
+   * apart and putting it back, and the next-frame restore. All three round-1
+   * apps wrote the same four things; the kit's version is pinned pure
+   * (`overlay.ts`) and cancels its own pending restore instead of needing a
+   * selector to recognise itself by.
+   *
+   * `preventDefault` IS the protocol, and the hook does it: the kit's window
+   * listener checks it first, so one press leaves one level rather than two —
+   * and the decision dialog nested inside this card gets to speak first for the
+   * same reason, because `escapeClosesOverlay` declines an event another overlay
+   * has already claimed.
+   *
+   * The fallback is looked up at unmount rather than captured: a mark at L0 is
+   * not on the page any more once its level has left, and the crumb's back
+   * button is the one control present at every level this card can close into.
+   */
+  const overlay = useOverlayEscape({
+    onClose,
+    returnFocusTo: () => document.querySelector<HTMLElement>(".ln-back"),
+  });
+
   // Body scroll is locked while the card is up, and focus lands on the way out
   // rather than on the first action: the card is a place you are reading, and
-  // the way back should never need a hunt.
-  //
-  // AND IT IS HANDED BACK. Moving focus into an overlay without returning it is
-  // half a job: Escape used to leave the reader at the top of the document,
-  // with the mark they had been looking at three hundred pixels down and no way
-  // back to it but the mouse.
-  //
-  // The opener is read at the TOP of this effect, which is the last moment it is
-  // still true: mounting a card moves nothing, so whatever held focus when the
-  // card appeared is the node at L1 or the mark at L0 that opened it, and the
-  // next line is what takes focus away. It is re-checked on the way out rather
-  // than trusted — a mark at L0 is not on the page any more once its level has
-  // left — and the crumb's back button is the fallback, which is the one control
-  // always present at every level this card can close into.
+  // the way back should never need a hunt. Both are the pane's own business —
+  // the hook deliberately neither locks scroll nor decides where focus goes IN,
+  // because those differ per surface.
   useEffect(() => {
-    // Recorded once and never overwritten from inside the card: StrictMode runs
-    // this effect, its cleanup and this effect again, and on the second pass
-    // focus is already on the close button below — so an unguarded read would
-    // record a control that is about to be unmounted with the card and hand
-    // focus back to nothing.
-    const active = document.activeElement;
-    if (active instanceof HTMLElement && active !== document.body && !active.closest(".ln-card")) {
-      openerRef.current = active;
-    }
-    const opener = openerRef.current;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
     return () => {
       document.body.style.overflow = previous;
-      // Next frame, not this one: React is still committing the unmount, and
-      // the level underneath has not been painted for the back button to exist
-      // in yet.
-      requestAnimationFrame(() => {
-        // ...which also means this can run against a card that never went
-        // away: StrictMode mounts, tears down and re-mounts every effect in
-        // development, and a cleanup that moves focus unconditionally would
-        // yank it straight back out of the card it had just put it in. Only a
-        // card that is really gone hands focus back.
-        if (document.querySelector(".ln-card")) return;
-        const target =
-          opener?.isConnected && opener.offsetParent !== null
-            ? opener
-            : document.querySelector<HTMLElement>(".ln-back");
-        target?.focus();
-      });
     };
   }, []);
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    /*
-     * THE CARD OWNS ESCAPE, and it has to: the kit's window listener declines
-     * any Escape raised inside a modal subtree (`zoom/escape.ts`), which is
-     * right — a dialog's dismiss is the dialog's business — but this one then
-     * answered to nothing at all while the footer went on advertising the key.
-     * `preventDefault` is what the kit checks first, so the nav stays out of it
-     * and one press leaves one level rather than two.
-     */
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onClose();
-      return;
-    }
+    overlay.onKeyDown(event);
     if (event.key !== "Tab") return;
     const focusable = cardRef.current?.querySelectorAll<HTMLElement>(
       'button:not(:disabled), select:not(:disabled), [href], [tabindex]:not([tabindex="-1"])',

@@ -31,7 +31,7 @@ import {
   legendSay,
   matches,
   needsDecision,
-  presenceOf,
+  markPresence,
   statusOf,
   toggleState,
   type LnFilter,
@@ -73,14 +73,14 @@ function mark(over: Partial<LnMark>): LnMark {
 
 test("an invoice with nothing outstanding recedes; one asking for a decision does not", () => {
   // The three that ask: late, disputed, and a credit that would clear it.
-  assert.equal(presenceOf(mark({ daysOverdue: 12 }), ALL), "lit");
-  assert.equal(presenceOf(mark({ state: "disputed" }), ALL), "lit");
-  assert.equal(presenceOf(mark({ candidateCount: 1 }), ALL), "lit");
+  assert.equal(markPresence(mark({ daysOverdue: 12 }), ALL), "lit");
+  assert.equal(markPresence(mark({ state: "disputed" }), ALL), "lit");
+  assert.equal(markPresence(mark({ candidateCount: 1 }), ALL), "lit");
   // And the ones where the right move is nothing.
-  assert.equal(presenceOf(mark({ state: "paid", balanceCents: 0 }), ALL), "quiet");
-  assert.equal(presenceOf(mark({}), ALL), "quiet", "inside its terms is not a decision");
+  assert.equal(markPresence(mark({ state: "paid", balanceCents: 0 }), ALL), "quiet");
+  assert.equal(markPresence(mark({}), ALL), "quiet", "inside its terms is not a decision");
   assert.equal(
-    presenceOf(mark({ state: "void", balanceCents: 0, daysOverdue: 90 }), ALL),
+    markPresence(mark({ state: "void", balanceCents: 0, daysOverdue: 90 }), ALL),
     "quiet",
     "a voided invoice cannot be late at anybody",
   );
@@ -99,10 +99,10 @@ test("the filter is the first half of presence, not a second dimming system", ()
   const onlySettled: LnFilter = { state: "paid", client: "all" };
   // Filtered out beats "this is screaming": an explicit narrowing is the
   // reader's own instruction and outranks the sheet's opinion.
-  assert.equal(presenceOf(late, onlySettled), "dim");
+  assert.equal(markPresence(late, onlySettled), "dim");
   assert.equal(matches(late, onlySettled), false);
   // And a mark the filter keeps is still read for whether it wants anything.
-  assert.equal(presenceOf(settled, onlySettled), "quiet");
+  assert.equal(markPresence(settled, onlySettled), "quiet");
 });
 
 test("the presence numbers and the presence tokens are the same three numbers", () => {

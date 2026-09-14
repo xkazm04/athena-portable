@@ -170,10 +170,11 @@
  * The head and the track share a grid row, so the taller of the two decided the
  * lane — and the moment the gutter gained a reading under the name, six heads
  * of three text rows each took 200px off a swarm whose whole point is fitting.
- * The height is the packed rows and nothing else; the head clips into it, with
- * a floor that guarantees the name and the two figure lines. The reading is what
- * the floor gives up first, which is the right order: it is the same sentence on
- * every lane and the name is not.
+ * The height is the packed rows and nothing else, with `--ln-lane-min` as the
+ * floor — measured, and exactly the name and the two figure lines, which are the
+ * facts a lane may never give up. The blurb under them is not part of the floor:
+ * it takes itself out of the gutter when the sheet has no room for it, which is
+ * `--ln-lane-reading-at` a few rules down.
  */
 .ln-lane {
   position: relative;
@@ -182,7 +183,7 @@
   align-items: stretch;
   gap: var(--ln-s3);
   block-size: calc(var(--rows) * var(--ln-row) + var(--ln-s2));
-  min-block-size: 4.6rem;
+  min-block-size: var(--ln-lane-min);
   transform: translateZ(calc(var(--i) * 4px));
   transform-style: preserve-3d;
 }
@@ -234,13 +235,10 @@
      than both ends of the block. */
   align-content: start;
   min-block-size: 44px;
+  /* The head still clips, as the last resort — but the thing that used to
+     overflow it, the reading, now takes itself out of the way below
+     `--ln-lane-reading-at`, so in practice there is nothing left to cut. */
   overflow: hidden;
-  /* A CLIP THAT FADES RATHER THAN GUILLOTINES. The head is allowed to be taller
-     than its lane on the two shortest lanes, and a hard cut through the middle
-     of a line of type reads as a rendering fault rather than as an editorial
-     decision. The last few pixels fall away instead, which says "there is more
-     of this" in the way a scroll shadow does. */
-  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--ln-s2)), transparent);
 }
 
 .ln-lane-name {
@@ -300,7 +298,24 @@
  * two words.
  */
 .ln-lane-reading {
-  margin-block-start: 3px;
+  /*
+   * THE THRESHOLD, AS ARITHMETIC, because CSS has no `if`.
+   *
+   * `--ln-lane-room` is what the SHORTEST lane has over and above the fixed part
+   * of its head. The sentence is therefore either drawn whole on every lane or
+   * on none of them — never as the top four pixels of a line of type, which is
+   * what the previous fade-mask clip produced at 1440x900, and never as three
+   * lanes with a description beside three without one. Both the threshold and
+   * the divisor are tokens, so moving the rule is one edit.
+   */
+  --ln-lane-room: calc(
+    var(--ln-rows-min) * var(--ln-row) + var(--ln-s2) - var(--ln-lane-reading-at)
+  );
+  /* `min()` of two lines and a number that is either huge or negative: any room
+     at all gives the full two lines, no room gives zero, and there is no value
+     in between for a half-drawn line to live at. Negative is clamped to zero by
+     `max-block-size`'s own range, which is the `if` CSS does not have. */
+  max-block-size: min(2.6em, calc(var(--ln-lane-room) * 99));
   font-family: var(--ln-font-mono);
   font-size: var(--ln-label);
   line-height: 1.3;

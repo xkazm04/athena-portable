@@ -21,7 +21,7 @@
  * gates, same classes read from `lib/tool-classes.ts`. This file got smaller;
  * the contract did not change.
  */
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { type Category, type Tone } from "@/lib/constants";
 import { Decide } from "./Decide";
@@ -54,14 +54,6 @@ export function CardFoot({
   run: Run["run"];
 }) {
   const [deciding, setDeciding] = useState(false);
-  /**
-   * The opener, kept so the dialog can hand focus back to it (round-1 rule 5).
-   *
-   * This is the ONE place that knows where "back" is from the decision list, so
-   * it is the one place that restores it — the same argument the card makes
-   * about the node it grew out of, one level in.
-   */
-  const ctaRef = useRef<HTMLButtonElement | null>(null);
 
   return (
     <div className="ln-card-foot">
@@ -71,7 +63,6 @@ export function CardFoot({
             type="button"
             className="ln-btn ln-decide-cta"
             data-kind="primary"
-            ref={ctaRef}
             onClick={() => setDeciding(true)}
             aria-haspopup="dialog"
             aria-expanded={deciding}
@@ -93,13 +84,11 @@ export function CardFoot({
               setCategory={setCategory}
               pending={pending}
               run={run}
-              onClose={() => {
-                setDeciding(false);
-                /* Next frame: the dialog is still committing its unmount, and a
-                   focus call into a node that is about to lose its subtree
-                   lands on the body instead. */
-                requestAnimationFrame(() => ctaRef.current?.focus());
-              }}
+              /* Just the state. Focus back to this button is the dialog's, and
+                 the dialog gets it from the kit's overlay hook — which records
+                 whatever held focus when it mounted, i.e. the CTA the reader
+                 pressed, and restores it next frame whatever closed it. */
+              onClose={() => setDeciding(false)}
             />
           ) : null}
         </>

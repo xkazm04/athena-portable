@@ -39,6 +39,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { motion, useReducedMotion } from "motion/react";
+import { useOverlayEscape } from "@athena/demo-kit/zoom";
 
 import {
   categorizeAction,
@@ -125,33 +126,45 @@ export function Decide({
       : document.querySelector<HTMLElement>(".ln-root") ?? document.body,
   );
 
+  /**
+   * ESCAPE AND THE WAY BACK, from the kit — and this is the nesting case.
+   *
+   * ONE PRESS LEAVES ONE THING, and it needs no `stopPropagation` now. A portal
+   * still propagates React events to its React parent, so the card's handler
+   * does see this Escape — but the card is on the same hook, and
+   * `escapeClosesOverlay` declines any event whose default is already prevented.
+   * The inner overlay speaks first because React bubbles from the target
+   * outwards; the outer one then correctly stands down. The composition is the
+   * kit's, not a local suppression.
+   *
+   * THE OPENER IS FOUND, NOT PASSED. The hook records whatever held focus when
+   * this dialog mounted, which is the CTA the reader just pressed — so the
+   * `requestAnimationFrame(() => ctaRef.current?.focus())` that used to live in
+   * `card/Foot.tsx` is gone, and with it the question of what happens when the
+   * dialog is closed by something that is not the button. `returnFocusTo` is
+   * the net for the case where nothing had focus at all (an agent opened it),
+   * and it looks the CTA up at unmount rather than holding a ref across it.
+   */
+  const overlay = useOverlayEscape({
+    onClose,
+    returnFocusTo: () => document.querySelector<HTMLElement>(".ln-decide-cta"),
+  });
+
   /*
    * Focus lands on the dialog's own heading rather than on its first control:
    * the list is the point and the first act is `mark_paid`, which writes money.
    * The card does the same thing for the same reason — a place you are reading
    * should not open with your hands on the loudest control in it.
    *
-   * Focus goes back to the opener on the way out, and that is `Foot.tsx`'s job:
-   * it holds the ref to the button, so it is the one place that knows where back
-   * is. Doing it here would mean the dialog guessing at its own opener.
+   * AFTER the hook, deliberately: effects run in declaration order, and the
+   * hook's has to read `document.activeElement` while it is still the opener.
    */
   useEffect(() => {
     headingRef.current?.focus();
   }, []);
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      /*
-       * ONE PRESS LEAVES ONE THING. `preventDefault` keeps the kit's window
-       * listener out of it; `stopPropagation` keeps the CARD out of it, because
-       * a portal still propagates React events to its React parent and the
-       * card's `onKeyDown` would otherwise close the card underneath this.
-       */
-      event.preventDefault();
-      event.stopPropagation();
-      onClose();
-      return;
-    }
+    overlay.onKeyDown(event);
     if (event.key !== "Tab") return;
     event.stopPropagation();
     const focusable = paneRef.current?.querySelectorAll<HTMLElement>(
