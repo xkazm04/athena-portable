@@ -80,6 +80,11 @@ Each rule names the round that earned it and the app(s) it was proven in.
     month leaves an empty near band; a set drawn at a third of the viewport reads as thumbnails, not
     rooms. Spatial directions need a minimum scale the data is laid out to, not the data's own.
     *(R3, ledgerbox near band, hirelane rooms — observed in review, the fix is round-4 work.)*
+16. **Camera distance can be the level for all three bands only when the items are laid out in
+    the plane.** In a container scene every part is "under the camera", so `resolveItem` has no
+    honest answer and the wheel stops at L1; on a sheet the wheel walks L0→L1→L2 and `poseFor` and
+    `resolve*` are exact inverses by construction, asserted per layer and component in every view.
+    *(R4, atlas; the negative from R3 tidycrm and atlas.)*
 
 ## 2. Round log
 
@@ -350,4 +355,25 @@ systems far, components and ports near, one component's pane closest — and fou
 over the same blocks: layers, turn, trust, packages. A view switch is a layout transition of the
 same elements and is the app's one signature motion. Text stays secondary.
 
-**Outcome:** *(filled after review)*
+**Outcome** — commit `b13765b`. Gates green (57 tests, static build, zero console errors in
+every capture). What the owner sees: one blueprint sheet; four views that re-arrange the same
+nineteen blocks; wheel or click walks systems → components → one component's pane; a lens lights
+what carries a claim in any view; the turn is a twelve-stop scrubber over the same blocks rather
+than a light in a building. The 3D renderers, scene and dependencies are gone.
+
+| Axis | Atlas R3 machine → R4 blueprint |
+|---|---|
+| Composition per level | 4 → 4 (L0 and L2 strong; L1 shows about half a band, rule 15) |
+| Transition choreography | 4 → 4 (the view switch is the signature; band changes crossfade) |
+| User control | 4 → 5 (wheel reaches all three levels; tools, Escape, keys agree) |
+| Continuity | 5 → 5 (one world, blocks keep identity across views) |
+| Motion cost | 5 → 5 |
+
+**Kit gaps, round 4 (10; five are repeats):** no vocabulary for a second, orthogonal axis such as
+a view (a fly that does not bump the flight, a URL-backed choice with an SSR snapshot, a tool the
+zoom tools cannot be told about); `rig.bind` cannot be composed with a focus container; focus still
+does not follow a level change nobody clicked — fourth round running.
+
+**Carried:** L1 framing (narrower regions vs L0 legibility); run routing avoids no obstacles, so
+runs cross region heads at L0; three package names truncate; URL sync for the level (view is in the
+URL, level is not).
