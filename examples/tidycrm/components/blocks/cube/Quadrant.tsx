@@ -11,7 +11,7 @@
  * not a control.
  */
 
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -33,6 +33,7 @@ function Frame({
 }) {
   const ref = useRef<THREE.LineSegments>(null);
   const shown = useRef(EDGE_REST);
+  const invalidate = useThree((state) => state.invalidate);
 
   const geometry = useMemo(() => {
     const box = quadrantBox(zoneId);
@@ -57,6 +58,9 @@ function Frame({
     if (Math.abs(want - shown.current) < 0.002) return;
     shown.current += (want - shown.current) * approach(delta, 6);
     (line.material as THREE.LineBasicMaterial).opacity = shown.current;
+    // The canvas renders on demand at rest; a weight still moving asks for the
+    // frame that carries it. See `Cube3D.tsx`.
+    invalidate();
   });
 
   return (

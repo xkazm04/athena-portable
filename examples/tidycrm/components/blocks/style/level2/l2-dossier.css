@@ -23,10 +23,68 @@
      own. The inline padding stays tighter so a phone keeps its measure. */
   padding-block: var(--bk-s5);
   padding-inline: var(--bk-s4);
+}
+
+/*
+ * THE SCRIM, which used to be this layer's own background.
+ *
+ * It is a separate element, one step behind the layer, because it has to fade
+ * while the card MORPHS: the block travels out of its cell over --bk-dur-4 and
+ * the sheet dims under it over --bk-dur-3, and those are two animations of two
+ * things. As a background on the card's own layer it could only have been one —
+ * fading the container fades the card inside it, which hid the move.
+ *
+ * `pointer-events: none` because the layer above it is what catches the click
+ * that dismisses the card, and `z-index` one under the layer's for the same
+ * reason. Mounted and unmounted by `Blocks.tsx`, animated by `motion`, so the
+ * only thing declared here is what it looks like.
+ */
+.bk-dossier-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 69;
+  pointer-events: none;
   /* The ink the sheet is dimmed with, mixed from the role rather than
      restated as a triple: 29 28 26 IS --bk-graphite, and written raw the scrim
      stops tracking the ramp the moment the ink moves. */
   background: color-mix(in srgb, var(--bk-graphite) 46%, transparent);
+}
+
+/*
+ * THE CARD FILLS AFTER IT LANDS.
+ *
+ * The morph carries two things out of the cell — the cluster and the block's
+ * name — and they are the only two things that were ever in the cell. Everything
+ * else on this card is new at this depth, and printing it all at frame zero is
+ * what made the dossier read as a cut wearing a morph: the box was still
+ * travelling and the four checks, the identity pair and the two gated acts were
+ * already there to be read.
+ *
+ * So they arrive behind it, on `--bk-dur-4` — the morph's own duration, which is
+ * what "after the box lands" means in this file. `backwards` fill so the delay
+ * is spent hidden rather than spent showing the end state. An animation rather
+ * than a transition because there is no state to transition FROM: the card is
+ * mounted once, already open.
+ */
+@keyframes bk-dossier-fill {
+  from {
+    opacity: 0;
+    transform: translateY(var(--bk-s1));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.bk-dossier .bk-ident,
+.bk-dossier .bk-close,
+.bk-dossier .bk-verdict,
+.bk-dossier-body,
+.bk-dossier .bk-foot-bar,
+.bk-dossier .bk-title-block {
+  animation: bk-dossier-fill var(--bk-dur-3) var(--bk-ease) var(--bk-dur-4) backwards;
 }
 
 /*

@@ -122,8 +122,9 @@ Its tokens are `components/blocks/style/base/tokens.css`, scoped under `[data-va
 which `components/blocks/Blocks.tsx` sets on its own wrapper — the root layout sets no variant. The
 written design law it follows is `design/pass3-law-brief.md`. Every fluid value is on `cqi` and
 every responsive rule is a `@container` query, so the sheet reads the width it actually has rather
-than the viewport's. Motion answers an action and then stops, and `prefers-reduced-motion` strips
-the three-second arrival back to a cut.
+than the viewport's. Motion answers an action and then stops: the L0 → L1 arrival is four named
+beats over about 1.2 seconds, whose numbers all come from `components/blocks/beats.ts`, Escape
+abandons it at any point, and `prefers-reduced-motion` strips it back to a cut.
 
 ## Run it
 

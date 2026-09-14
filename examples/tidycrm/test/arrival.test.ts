@@ -11,7 +11,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-const { arrivalAbandoned } = await import("../components/blocks/useArrival");
+const { arrivalAbandoned, escapeAbortsArrival } = await import("../components/blocks/useArrival");
+
+const ESC = { key: "Escape", defaultPrevented: false };
 
 const PLATE = { level: 0, group: null } as const;
 const ZONE_A = { level: 1, group: "A" } as const;
@@ -44,4 +46,32 @@ test("a dossier opened out of the arriving zone is still that zone's move", () =
 test("with nothing opening there is nothing to abandon", () => {
   assert.equal(arrivalAbandoned(PLATE, null, "settled"), false);
   assert.equal(arrivalAbandoned(ZONE_A, null, "dress"), false);
+});
+
+/*
+ * The other half: the window BEFORE the hand-off, where the level is still 0.
+ * `escapeLeavesLevel` declines Escape at L0 — there is nowhere above it to go —
+ * so for the length of the cube's flatten the key reached nobody and the move
+ * could not be stopped at all. This is what claims it, and only there.
+ */
+
+test("Escape while the cube is flattening abandons the move", () => {
+  assert.equal(escapeAbortsArrival(ESC, 0, "A"), true);
+});
+
+test("from L1 up the kit owns Escape, not the arrival", () => {
+  // The level has already changed, so `escapeLeavesLevel` claims the key and
+  // `arrivalAbandoned` cleans up behind it. Two claims on one keypress would
+  // take the reader out of two levels at once.
+  assert.equal(escapeAbortsArrival(ESC, 1, "A"), false);
+  assert.equal(escapeAbortsArrival(ESC, 2, "A"), false);
+});
+
+test("with no move running Escape at L0 is nobody's", () => {
+  assert.equal(escapeAbortsArrival(ESC, 0, null), false);
+});
+
+test("a key somebody else has already decided about is left alone", () => {
+  assert.equal(escapeAbortsArrival({ key: "Escape", defaultPrevented: true }, 0, "A"), false);
+  assert.equal(escapeAbortsArrival({ key: "Enter", defaultPrevented: false }, 0, "A"), false);
 });

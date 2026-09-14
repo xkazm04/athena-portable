@@ -51,11 +51,17 @@
  * way the heading also took 420ms to leave, which meant it was still on screen
  * during `land` — over the top of the cells being measured onto the canvas,
  * which is the one moment nothing may be moving.
+ *
+ * It rides `--bk-dress-name`, the same offset the lettering inside a cell takes,
+ * so the heading and the first block's name are written at the same moment. It
+ * used to wait a whole `--bk-beat-dress` and then take `--bk-dur-5`, which on the
+ * shortened budget would have left the zone's own title still arriving after
+ * everything under it had settled.
  */
 .bk-grid-head {
   transition:
-    opacity var(--bk-dur-5) var(--bk-ease) var(--bk-beat-dress),
-    transform var(--bk-dur-5) var(--bk-ease) var(--bk-beat-dress);
+    opacity var(--bk-dur-3) var(--bk-ease) var(--bk-dress-name),
+    transform var(--bk-dur-3) var(--bk-ease) var(--bk-dress-name);
 }
 
 .bk-grid[data-phase="land"] .bk-grid-head,
@@ -88,11 +94,22 @@
   pointer-events: none;
 }
 
-/* While a zone is opening, the plate's own furniture is no longer the subject:
-   the keys and the caption step back so the flatten is the only thing moving. */
-.bk-cube-wrap[data-opening]:not([data-opening=""]) .bk-zone-keys {
-  opacity: 0.25;
+/*
+ * While a zone is opening, the plate's own furniture is no longer the subject:
+ * the keys step back so the flatten is the only thing moving, and the key of the
+ * zone actually opening stays lit, because it is what the move is about.
+ *
+ * It used to be 0.25 on the whole rail, which was honest while the keys were
+ * disabled and is not now that they are live: a reader may change their mind
+ * mid-flatten, so the other three zones have to stay readable enough to pick.
+ */
+.bk-cube-wrap[data-opening]:not([data-opening=""]) .bk-zone-key {
+  opacity: 0.62;
   transition: opacity var(--bk-dur-4) var(--bk-ease);
+}
+
+.bk-cube-wrap[data-opening]:not([data-opening=""]) .bk-zone-key[data-on="true"] {
+  opacity: 1;
 }
 
 .bk-tile-head {

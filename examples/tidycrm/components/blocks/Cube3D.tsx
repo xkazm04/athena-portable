@@ -62,12 +62,20 @@ function QuarterGlyph({ id }: { id: string }) {
 export function Cube3D({
   sheet,
   opening,
+  out,
   onOpen,
   onFlattened,
 }: {
   sheet: BkSheet;
   /** The zone being opened, while its records are still flattening. */
   opening: string | null;
+  /**
+   * The plate has handed over: the level is L1 and `.bk-cube-hold` is running to
+   * `opacity: 0`. The cube is still MOUNTED — the cells are standing on the pose
+   * it left and it may not be pulled out from under them — but it has nothing
+   * left to say, so it stops rendering. See the `frameloop` note below.
+   */
+  out: boolean;
   onOpen: (zoneId: string) => void;
   onFlattened: () => void;
 }) {
@@ -92,6 +100,33 @@ export function Cube3D({
           camera={{ position: [0, 0, 12], fov: 30, near: 0.1, far: 100 }}
           dpr={[1, 1.75]}
           gl={{ antialias: true, alpha: true }}
+          /*
+           * A SETTLED CUBE COSTS NOTHING, which is what DESIGN §8 always claimed
+           * and what this line, with the four `invalidate()` calls in `cube/`,
+           * finally makes true.
+           *
+           * `demand` renders on invalidation only. React's own commits in the
+           * scene invalidate, a pointer move over the canvas invalidates
+           * (`Turntable.tsx`), and every `useFrame` in `cube/` asks for the next
+           * frame while — and only while — it still has somewhere to go. So the
+           * cube turns under the cursor, the quadrant weights fade, the dust
+           * converges, and then the canvas stops: no frames, no draw calls, no
+           * GPU.
+           *
+           * TWO STATES IT IS DELIBERATELY NOT USED IN.
+           *
+           *   opening  the flatten is a DURATION the DOM waits on — `onSettled`
+           *            is what changes the level — so it runs on a continuous
+           *            loop rather than on a chain of invalidations that one
+           *            mis-gated branch could break. A stalled flatten is a
+           *            reader stranded on the plate.
+           *   out      nothing, in the other direction. The canvas stays mounted
+           *            through the hand-off because the DOM cells are measured
+           *            onto the pose it is holding, but it was still drawing
+           *            eight hundred instances behind a layer running to
+           *            `opacity: 0`. `demand` holds the last frame instead.
+           */
+          frameloop={opening !== null && !out ? "always" : "demand"}
           onPointerMissed={() => setHovered(null)}
         >
           <Turntable reduced={reduced} opening={opening}>
@@ -131,7 +166,17 @@ export function Cube3D({
               className="bk-zone-key"
               data-on={hovered === zone.id || opening === zone.id}
               data-worst={zone.deviationTotal === worst}
-              disabled={opening !== null}
+              /*
+               * NOT disabled while a zone is opening. They used to be, for the
+               * whole length of the move, which meant the one moment a reader is
+               * most likely to want a different zone — they have just watched the
+               * wrong quadrant start to come apart — was the one moment the four
+               * keys could not be pressed. `openFromPlate` already handles being
+               * asked for a second zone mid-flatten, and Escape now abandons the
+               * move outright, so there is nothing left for the disable to
+               * protect and a control the user can see but not press is the
+               * opposite of control.
+               */
               onMouseEnter={() => setHovered(zone.id)}
               onMouseLeave={() => setHovered(null)}
               onFocus={() => setHovered(zone.id)}

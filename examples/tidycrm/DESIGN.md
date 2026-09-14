@@ -242,13 +242,45 @@ and its rules are adopted. Durations and easings are tokens (`--bk-dur-*`, `--bk
   durations and cubic-bezier easings (`--bk-dur-*`, `--bk-ease*`) rather than springs, because the
   arrival's beats have to keep their order on a slow machine and a spring cannot be asked how long it
   will take. The "no linear easing" half binds regardless and is met.
+  - **The divergence now binds `motion` too, which it did not.** The L1 → L2 morph is the one move
+    on this sheet a stylesheet cannot express — it measures two boxes in two stacking contexts and
+    interpolates in script — and it was running on the library's own default, which is a spring, and
+    under its `reducedMotion: "never"` default, which contradicted this file outright. One
+    `MotionConfig` at the root of the direction (`Blocks.tsx`) answers both: `reducedMotion="user"`,
+    and a transition read OUT of the cascade by `components/blocks/motion-tokens.ts` so no duration
+    or easing is typed in script either. `--bk-dur-4` on `--bk-ease`, once, from the token file.
+  - **The morph had never actually run.** `motion` builds an element's projection node during the
+    render it first appears in and reads `layoutId` off the props it had then; the L1 cells withheld
+    theirs until the arrival settled, so nothing was ever registered and the dossier — which
+    carried the matching id — found nothing to travel from and appeared at full size on frame zero.
+    The cells are now REMOUNTED at the settle, which is the only frame the library will read the id
+    on. The guard that withholds the id during the arrival stands: `layoutId` makes `motion` the
+    owner of an element's `transform` and the arrival owns it first.
 - **Staggered orchestration.** Lists and grids never mount instantly; they cascade at an offset per
   index (`--bk-stagger`), capped so a long list does not take seconds to arrive.
 - **Animate only `transform` and `opacity`.** Never `top`/`left`/`width`/`height`.
-- **A move has to be followable.** The L0 → L1 arrival is four named beats and about three seconds,
-  because a move nobody can watch is indistinguishable from a cut. The clock that owns the beats is
-  `components/blocks/useArrival.ts` and the transitions they trigger are in `style/`; the two carry
-  the same numbers and have to agree.
+- **A move has to be followable — and abandonable.** The L0 → L1 arrival is four named beats and
+  **about 1.2 seconds**, because a move nobody can watch is indistinguishable from a cut and a move
+  nobody can stop is not the reader's. It used to be about three, and the three seconds were not
+  what made it legible: the beats **ran end to end**, each waiting for the last to finish. They now
+  OVERLAP — the travel starts as soon as the cells have been measured onto the canvas, and the
+  dressing starts as the first cells reach their places rather than after the last one — so the
+  order a reader reads the move by (the dots arrive, the dots travel, the blocks acquire their
+  names) is unchanged and only the waiting is gone.
+  - **One source for the numbers.** `components/blocks/beats.ts` decides them. The clock
+    (`useArrival.ts`) imports it, the cube's flatten (`cube/motion.ts`) imports it, the cost
+    `open_group` advertises to an agent is derived from it, and `test/beats.test.ts` reads
+    `style/base/tokens.css` and fails if a `--bk-beat-*` token has drifted — a stylesheet cannot
+    import a module, so the agreement is asserted rather than shared. The three copies this replaces
+    disagreed: the clock said 1960ms, the tool told agents 2900ms.
+  - **Every beat is escapable.** The kit declines Escape at L0 (`zoom/escape.ts`, correctly — there
+    is nowhere above it to go), which left the cube's flatten as a window with no way out; the
+    reader pressed Escape and arrived at L1 anyway. `escapeAbortsArrival` claims the key for exactly
+    that window and the cube comes back. The zone keys stay live throughout, so a reader who has
+    watched the wrong quadrant start to come apart can simply press another one.
+- **An overlay owns the key it took.** `aria-modal="true"` is a promise to the kit's Escape
+  listener, and a modal that makes it and then answers nothing is a box with no keyboard way out.
+  A surface that takes focus gives it back: the dossier returns focus to the cell it grew out of.
 - **Perpetual micro-loops** on components that represent live agent state — and *only* those. This is
   where the app amends the skill: `taste-design` wants an infinite loop on every active component,
   but in a governed app a thing that pulses forever reads as "working". Nothing may imply Athena is
@@ -260,9 +292,25 @@ and its rules are adopted. Durations and easings are tokens (`--bk-dur-*`, `--bk
   (`components/blocks/cube/Turntable.tsx`) for the scene, and a `matchMedia` check before the arrival
   clock starts. Honouring the preference means arriving at the end state, never skipping the move and
   keeping the start state.
-- Expensive perpetual layers are shed rather than left running. The live direction has none: the
-  scene rebuilds its instance buffers only while something is actually moving
-  (`components/blocks/cube/Records.tsx`), so a settled cube costs nothing.
+- **Expensive perpetual layers are shed rather than left running**, and a settled cube costs
+  nothing. *This clause used to be false, and is recorded here rather than quietly fixed.* It named
+  `cube/Records.tsx`, which does rebuild its instance buffers only while something is moving, and
+  said nothing about `cube/Particles.tsx` — which, once converged, ran `sin(t + i)` into a thousand
+  motes' `z` and re-uploaded the buffer **every frame, forever**, for a displacement invisible at
+  that point size. That is also a perpetual micro-loop on a component representing nothing, which
+  the bullet above forbids outright. Three things make the claim true:
+  - the particle field writes its final frame when it lands and never touches the buffer again;
+  - the canvas is **demand-driven** (`frameloop="demand"`): React's commits invalidate, a pointer
+    move over the plate invalidates, and every `useFrame` in `cube/` asks for the next frame only
+    while it still has somewhere to go. A cube nobody is pointing at issues **zero** draw calls —
+    measured, not asserted. The flatten is the one exception and runs on a continuous loop, because
+    the DOM waits on it as a duration and a stalled flatten strands the reader on the plate;
+  - once the level has changed, the canvas stops rendering entirely. It stays MOUNTED — the L1 cells
+    are measured onto the pose it is holding — but it used to keep drawing eight hundred instances
+    behind a layer running to `opacity: 0`, and now it holds its last frame instead.
+- **Per-frame allocation is a perpetual layer too.** A `new Matrix4()` or `new Color()` inside a
+  `useFrame` is garbage at frame rate; both are hoisted, and instance colours — a stored flag, not a
+  state of the move — are written once rather than on every frame of every flatten.
 
 ---
 

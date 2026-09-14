@@ -5,6 +5,16 @@
   .bk-root *::before,
   .bk-root *::after {
     transition-duration: 0.01ms !important;
+    /*
+     * The DELAY has to go with the duration, and `app/globals.css` only takes
+     * the duration. A staged arrival is a set of offsets — the dossier holds its
+     * body back by --bk-dur-4 so the card can land first — and an offset that
+     * survives the animation it was staging is not a move stripped to a cut, it
+     * is half a second of blank card. Honouring the preference means arriving at
+     * the end state, which means arriving at it now.
+     */
+    animation-delay: 0ms !important;
+    transition-delay: 0ms !important;
   }
 }
 

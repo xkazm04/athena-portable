@@ -13,7 +13,7 @@
  * rest washes toward the paper.
  */
 
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -27,8 +27,23 @@ import { approach, ease } from "./motion";
  * Each mote knows which quadrant's edges it landed on, so when a zone is being
  * read its dust holds full graphite and the rest of the field washes out toward
  * the paper. Carried on a vertex-colour buffer rewritten only while a hover is
- * actually moving — the convergence itself is untouched, and a settled field
- * with nobody pointing at it still costs one position write per breath.
+ * actually moving.
+ *
+ * THE BREATH IS GONE, and this is the file DESIGN.md §8 was wrong about.
+ *
+ * Once converged, the field used to run `sin(t + i)` into every mote's `z`,
+ * forever: a thousand float writes and a buffer upload every frame, for a
+ * displacement of two hundredths of a unit that is invisible at this point size.
+ * §8's closing rule — "expensive perpetual layers are shed rather than left
+ * running… so a settled cube costs nothing" — named `Records.tsx` and was simply
+ * false about this component, and §8's own micro-loop rule is stricter still: a
+ * perpetual loop is permitted only on the async lane while a real job is
+ * running, and a field that breathes forever on a page where Athena is not
+ * connected is a surface that reads as thinking.
+ *
+ * So the convergence writes its final frame, sets `landed`, and the field stops.
+ * The settled cube LOOKS the same — the targets are where the breath was
+ * oscillating around — and now it costs what §8 always claimed it did.
  */
 export function Particles({
   zones,
@@ -45,6 +60,9 @@ export function Particles({
   const progress = useRef(reduced ? 1 : 0);
   const fade = useRef(1);
   const level = useRef<number[]>([]);
+  /** The convergence has written its final frame. Nothing moves the motes after
+   *  this, so the position buffer is never touched again. */
+  const landed = useRef(false);
 
   const { positions, starts, targets, count, tints, zoneAt } = useMemo(() => {
     const target: number[] = [];
@@ -85,10 +103,19 @@ export function Particles({
     };
   }, [zones]);
 
+  // The scratch colour, and the two ends it is mixed between. One object for the
+  // life of the component: `new THREE.Color()` inside `useFrame` is an
+  // allocation sixty times a second for a value that is overwritten immediately.
   const palette = useMemo(
-    () => ({ ink: new THREE.Color(GRAPHITE_3), paper: new THREE.Color(SHEET) }),
+    () => ({
+      ink: new THREE.Color(GRAPHITE_3),
+      paper: new THREE.Color(SHEET),
+      swatch: new THREE.Color(),
+    }),
     [],
   );
+  const swatch = palette.swatch;
+  const invalidate = useThree((state) => state.invalidate);
 
   useFrame((_, delta) => {
     const points = ref.current;
@@ -98,12 +125,13 @@ export function Particles({
     if (Math.abs(wantFade - fade.current) > 0.001) {
       fade.current += (wantFade - fade.current) * approach(delta, 6);
       (points.material as THREE.PointsMaterial).opacity = 0.75 * fade.current;
+      // Demand-driven at rest (`Cube3D.tsx`): still moving, so ask for a frame.
+      invalidate();
     }
 
     // --- who is being read
     if (level.current.length !== zones.length) level.current = zones.map(() => 1);
     let tinted = false;
-    const swatch = new THREE.Color();
     for (let z = 0; z < zones.length; z += 1) {
       const want = hovered === null || opening !== null || zones[z] === hovered ? 1 : 0.2;
       const now = level.current[z] ?? 1;
@@ -112,6 +140,7 @@ export function Particles({
       tinted = true;
     }
     if (tinted) {
+      invalidate();
       const colour = points.geometry.getAttribute("color") as THREE.BufferAttribute;
       for (let i = 0; i < count; i += 1) {
         swatch.copy(palette.paper).lerp(palette.ink, level.current[zoneAt[i] ?? 0] ?? 1);
@@ -122,24 +151,19 @@ export function Particles({
       colour.needsUpdate = true;
     }
 
+    // --- the convergence, and its last frame
+    if (landed.current) return;
     const attr = points.geometry.getAttribute("position") as THREE.BufferAttribute;
-    if (progress.current < 1) {
-      progress.current = Math.min(1, progress.current + delta * 0.55);
-      const t = ease(progress.current);
-      for (let i = 0; i < count * 3; i += 1) {
-        attr.array[i] = starts[i]! + (targets[i]! - starts[i]!) * t;
-      }
-      attr.needsUpdate = true;
-      return;
-    }
-    if (reduced || opening !== null) return;
-    // Settled: a slow breath along the shape, a fraction of a unit wide.
-    const time = performance.now() * 0.0004;
-    for (let i = 0; i < count; i += 1) {
-      const k = i * 3;
-      attr.array[k + 2] = targets[k + 2]! + Math.sin(time + i * 0.4) * 0.02;
+    progress.current = reduced ? 1 : Math.min(1, progress.current + delta * 0.55);
+    const t = ease(progress.current);
+    for (let i = 0; i < count * 3; i += 1) {
+      attr.array[i] = starts[i]! + (targets[i]! - starts[i]!) * t;
     }
     attr.needsUpdate = true;
+    // Landed. The dust has arrived on the shape and there is nothing further for
+    // it to do, so this is the last position write the field ever makes.
+    if (progress.current >= 1) landed.current = true;
+    else invalidate();
   });
 
   return (

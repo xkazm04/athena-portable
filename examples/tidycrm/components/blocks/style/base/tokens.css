@@ -144,23 +144,23 @@
   --bk-dur-6: 1200ms;
 
   /*
-   * The L0 -> L1 arrival. These mirror `LAND` / `SPREAD` / `DRESS` in
-   * `Blocks.tsx`, which owns the clock: the constants there decide when a beat
-   * starts, these decide how long its transitions take, and they have to agree
-   * or a beat begins before the one before it has finished.
+   * The L0 -> L1 arrival. NOT A SECOND SOURCE: every value in this block is the
+   * matching export of `components/blocks/beats.ts`, which is where the move's
+   * numbers are decided and where the reasoning for each one is written. The
+   * clock there says when a beat starts, these say how long its transitions
+   * take, and `test/beats.test.ts` parses this file and fails if the two have
+   * drifted — a stylesheet cannot import a module, so the agreement is asserted
+   * instead of shared.
+   *
+   * Do not retune a number here. Retune it in `beats.ts` and copy it down.
    */
-  --bk-beat-spread: 620ms;
-  --bk-beat-dress: 420ms;
-  /* Lettering is quicker than ground: a rule can afford to be drawn, a word
-     that takes 420ms to appear reads as a fade rather than as writing. */
-  --bk-beat-dress-text: 320ms;
-  --bk-stagger: 30ms;
-  /* The travel's own stagger, tighter than --bk-stagger so twelve blocks read
-     as a shoal while their grounds arrive on the slower beat behind them. */
-  --bk-stagger-tight: 16ms;
-  /* How far behind its own cell's ground each later part of the dressing is. */
-  --bk-dress-name: 90ms;
-  --bk-dress-figures: 190ms;
+  --bk-beat-spread: 360ms;
+  --bk-beat-dress: 240ms;
+  --bk-beat-dress-text: 170ms;
+  --bk-stagger: 12ms;
+  --bk-stagger-tight: 10ms;
+  --bk-dress-name: 70ms;
+  --bk-dress-figures: 130ms;
   --bk-ease: cubic-bezier(0.2, 0, 0, 1);
   --bk-ease-in: cubic-bezier(0.05, 0.7, 0.1, 1);
   --bk-ease-snap: cubic-bezier(0.85, 0, 0.15, 1);

@@ -7,6 +7,8 @@
  * that cannot jump, and a weight that says which quadrant the reader is on.
  */
 
+import { FLATTEN as FLATTEN_MS } from "../beats";
+
 /** Ease out, so everything decelerates onto its target rather than stopping. */
 export const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
@@ -20,9 +22,15 @@ export const ease = (t: number) => 1 - Math.pow(1 - t, 3);
  * one the whole remaining distance is covered in a single frame — which is
  * exactly what happened on a software renderer, where the flatten finished
  * before the first frame was even shown. A duration cannot do that.
+ *
+ * The flatten is the first third of the L0 -> L1 budget, so its length is not
+ * this file's to decide: it is `../beats.ts`, in milliseconds, converted here.
+ * The unflatten is, because nothing waits on it — it is what an ABANDONED move
+ * looks like, and a cube that comes back faster than it left is the right answer
+ * for a reader who has just said no.
  */
-export const FLATTEN = 1.15;
-export const UNFLATTEN = 0.6;
+export const FLATTEN = FLATTEN_MS / 1000;
+export const UNFLATTEN = 0.34;
 
 /**
  * A frame-rate-independent approach factor, with a ceiling.

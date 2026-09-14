@@ -10,10 +10,10 @@
  * sheet head can be asked to show.
  *
  * OPENING A ZONE IS NOT INSTANT HERE, and the tool says so. The cube spends
- * about three seconds turning its records into the grid, and an agent that
- * called `open_group` and then immediately `read_view` would be reading a level
- * that is still assembling. `open_group` therefore reports the level it is
- * heading to and how long the move takes.
+ * about a second turning its records into the grid, and an agent that called
+ * `open_group` and then immediately `read_view` would be reading a level that is
+ * still assembling. `open_group` therefore reports the level it is heading to and
+ * how long the move takes.
  *
  * NOTHING HERE CHANGES THE DATABASE. Normalising, flagging, merging and
  * deleting are registered by `components/shell/HostCapabilities.tsx`, where
@@ -24,18 +24,17 @@
 import { useZoomTools, useWebMCPTool } from "@athena/demo-kit/webmcp";
 import type { ZoomNav } from "@athena/demo-kit/zoom";
 
+import { ARRIVAL_MS } from "../beats";
 import { BK_LEVELS, tableOf, zoneOf, ZONE_IDS, type BkSheet } from "../model";
 import { dossierRead, sheetRead, tableRead, zoneRead } from "./read";
 import { searchBlocks, searchRecords, type BlocksQuery } from "./search";
 
-/**
- * Roughly what the four-beat arrival costs, in milliseconds.
- *
- * Reported to a caller by `open_group` so it waits rather than reading a level
- * that is still assembling. Deliberately a little longer than the beats add up
- * to: the cube's flatten is a duration and the frame it starts on is not.
+/*
+ * What the four-beat arrival costs is NOT written here any more. It was 2900,
+ * typed, beside a clock that said 1960 and tokens that said something else
+ * again; it is now derived from `../beats.ts` with the rest of the move, so an
+ * agent is told what the sheet will actually do. See that file for the pad.
  */
-const ARRIVAL_MS = 2900;
 
 function num(v: unknown): number | undefined {
   const n = Number(v);

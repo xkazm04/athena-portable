@@ -9,7 +9,7 @@
  * single interpolation rather than eight hundred animations.
  */
 
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -42,6 +42,10 @@ export function Records({
   const fade = useRef(1);
   const dirty = useRef(true);
   const announced = useRef(false);
+  /** Whether the instance colours have ever been written. A dot's mark does not
+   *  change while the sheet is open, so they are written once and not once per
+   *  frame of every move. */
+  const tinted = useRef(false);
 
   const colours = useMemo(
     () => ({
@@ -51,6 +55,11 @@ export function Records({
     }),
     [],
   );
+  /** The scratch matrix. One per component rather than one per frame: this loop
+   *  runs eight hundred times and `new THREE.Matrix4()` inside it was garbage at
+   *  frame rate for a value overwritten on the next iteration. */
+  const scratch = useMemo(() => new THREE.Matrix4(), []);
+  const invalidate = useThree((state) => state.invalidate);
 
   useFrame((_, delta) => {
     const mesh = ref.current;
@@ -84,11 +93,15 @@ export function Records({
       fade.current += (wantFade - fade.current) * approach(delta, 6);
       const material = mesh.material as THREE.MeshBasicMaterial;
       material.opacity = 0.95 * fade.current;
+      // The canvas renders on demand at rest (`Cube3D.tsx`): anything still
+      // moving asks for the frame it needs, and stops asking when it arrives.
+      invalidate();
     }
 
     if (!dirty.current) return;
+    invalidate();
     const t = ease(progress.current);
-    const m = new THREE.Matrix4();
+    const paint = !tinted.current;
     for (let i = 0; i < count; i += 1) {
       const k = i * 3;
       const x = solid[k]! + (flat[k]! - solid[k]!) * t;
@@ -98,13 +111,22 @@ export function Records({
       // further as the plane forms, because on the flat it is what a person is
       // being asked to look at.
       const scale = (mark[i] === 2 ? 1.25 : 1) * (1 + t * 0.5);
-      m.makeScale(scale, scale, scale);
-      m.setPosition(x, y, z);
-      mesh.setMatrixAt(i, m);
-      mesh.setColorAt(i, mark[i] === 2 ? colours.gold : mark[i] === 1 ? colours.bad : colours.clean);
+      scratch.makeScale(scale, scale, scale);
+      scratch.setPosition(x, y, z);
+      mesh.setMatrixAt(i, scratch);
+      // The mark a dot carries is a stored flag, not a state of the move, so it
+      // is written on the first pass and never again. It used to be written on
+      // every frame of every flatten, which is eight hundred colour writes and a
+      // buffer upload per frame to restate an unchanged fact.
+      if (paint) {
+        mesh.setColorAt(i, mark[i] === 2 ? colours.gold : mark[i] === 1 ? colours.bad : colours.clean);
+      }
     }
     mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    if (paint) {
+      tinted.current = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    }
     dirty.current = progress.current !== wantProgress;
 
     if (mine && progress.current >= 1 && !announced.current) {

@@ -51,13 +51,27 @@ function toneOf(table: BkTable): "goldline" | "redline" | "greenline" {
 }
 
 /**
- * Shared-layout identities are handed out only once the arrival is over.
+ * Shared-layout identities are handed out only once the arrival is over — and
+ * the cell is REMOUNTED when they are, which is the part that was missing.
  *
  * `layoutId` makes motion the owner of an element's `transform`, and it writes
  * that inline — which beats any stylesheet. While the cells are being placed on
  * the canvas's clusters the transform belongs to the arrival, so the ids are
  * withheld until the grid is settled. Nothing is lost: the ids exist for the
  * L1 -> L2 morph, which can only start from the settled grid anyway.
+ *
+ * WHY THE KEY CHANGES WITH IT. `motion` builds a projection node once, during
+ * the render in which the component first appears, and reads `layoutId` off the
+ * props it had at that moment (`useVisualElement`'s `createProjectionNode`,
+ * whose own source carries the "TODO: update options in an effect" admitting
+ * it). A `layoutId` that arrives later is never registered in the shared stack,
+ * so the dossier that mounts holding the matching id finds nothing to travel
+ * FROM — which is exactly why the L1 -> L2 morph had been dead since it was
+ * written, and why the card appeared at full size on frame zero. Changing the
+ * key at the settle makes the cell a new component on the frame it acquires its
+ * id, which is the only frame motion will read it on. The remount is a single
+ * commit with identical markup on both sides of it, and it happens at the one
+ * moment on this level when nothing is moving.
  */
 export function Field({
   sheet,
@@ -91,10 +105,14 @@ export function Field({
       >
         {zone.tables.map((table, i) => (
           <motion.button
-            key={table.ident}
+            key={settled ? table.ident : `${table.ident}:arriving`}
             type="button"
             layoutId={settled ? `table-${table.ident}` : undefined}
             className="bk-cell"
+            /* The cell is where focus is put back down when the dossier closes,
+               and for a card an agent opened there is nothing else to go on —
+               nothing on the sheet had focus. See `Dossier.tsx`. */
+            data-ident={table.ident}
             data-tone={toneOf(table)}
             style={{ "--i": i } as CSSProperties}
             onClick={() => onOpenTable(table.ident)}

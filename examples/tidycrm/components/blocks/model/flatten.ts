@@ -6,7 +6,7 @@
  * comes to rest; the DOM reads them to work out where on screen that cluster
  * ended up, so the cell it draws can start life exactly on top of it. They live
  * on their own because the moment the two sides disagree about any of them, a
- * three-second move becomes a cut.
+ * followable move becomes a cut.
  */
 
 /**

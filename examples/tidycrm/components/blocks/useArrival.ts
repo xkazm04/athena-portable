@@ -3,54 +3,64 @@
 /**
  * The clock the L0-to-L1 move runs on.
  *
- * The move is four named beats and about three seconds, and the reason it is a
- * clock rather than a chain of transition-end listeners is that the beats have
- * to keep their order even when a transition is cancelled or was never allowed
- * to run at all. `style/` draws what each beat looks like; this decides when
- * each one starts.
+ * The move is four named beats and about a second and a fifth, and the reason it
+ * is a clock rather than a chain of transition-end listeners is that the beats
+ * have to keep their order even when a transition is cancelled or was never
+ * allowed to run at all. `style/` draws what each beat looks like; this decides
+ * when each one starts. The numbers are not here: they are `./beats.ts`, which
+ * the tokens and the advertised cost also read.
  *
  * It lives apart from the shell because the shell's job is to lay out a sheet
  * and this is a state machine with three timers in it. Reading either one used
  * to mean reading both.
  *
- * The clock also has to survive being walked out on. A move is abandoned the
- * moment the focus stops being the one it is dressing — Escape out of L1, a
- * jump to another zone — and an abandoned move reads as no move at all, because
- * a held `opening` is what disables the plate's controls. See
- * `arrivalAbandoned`.
+ * THE MOVE CAN BE WALKED OUT OF, in two different ways, and both are here.
+ *
+ *   · After the hand-off, the level has already changed, so the kit's Escape and
+ *     the back button both work and the clock only has to NOTICE — see
+ *     `arrivalAbandoned`. A held `opening` is what disables the plate, so an
+ *     abandoned move that is never cleaned up is a plate nobody can click.
+ *   · BEFORE the hand-off the level is still 0, and `escapeLeavesLevel` never
+ *     claims Escape at L0 — correctly, there is nowhere above it to go. So for
+ *     the length of the cube's flatten there was no way out at all: Escape a
+ *     tenth of a second in was swallowed and the reader arrived at L1 anyway.
+ *     `escapeAbortsArrival` is the missing half, and `abort` is what it runs.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { Focus, ZoomNav } from "@athena/demo-kit/zoom";
 
+import { DRESS, LAND, SPREAD } from "./beats";
 import type { FieldPhase } from "./Field";
 
-/**
- * How long each beat is given, in milliseconds.
- *
- * These are long on purpose. The first cut ran the whole hand-off in seventy
- * milliseconds and the review was that the level had simply been replaced —
- * correctly, because a move nobody can follow is indistinguishable from a cut.
- * A reader has to be able to watch the plate of dots come apart, watch each
- * block walk to its place, and watch the blocks acquire their names, as three
- * separate things.
- *
- * `LAND` is the invisible one: the cells are already on top of the canvas's
- * clusters, and this is only the room the canvas needs to fade out from under
- * them.
- *
- * `DRESS` is the longest because it is three things and not one: every cell
- * grows its ground and its rule, then its ident and its name, then its figures,
- * each offset behind the last inside its own cell and behind its neighbour
- * across the grid. The stylesheet owns those offsets (`--bk-stagger` and the
- * `data-phase` rules); this number only has to be long enough for the last cell
- * in the wave to finish its last part.
- */
-const LAND = 300;
-const SPREAD = 800;
-const DRESS = 860;
-
 const MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+/**
+ * Is this Escape the arrival's to cancel?
+ *
+ * The kit owns Escape from L1 upward and declines it at L0 (`escape.ts`), which
+ * leaves exactly one window uncovered: the cube is flattening, `opening` is set,
+ * and the level has not changed yet. Nothing else on the sheet wants the key
+ * there, and a move that cannot be stopped for its first four hundred
+ * milliseconds is a move the reader does not control.
+ *
+ * Asked BEFORE `preventDefault`, and declining an event somebody else has
+ * already claimed, for the same reason the kit does: a listener that calls
+ * `preventDefault` on a key the page has not decided about cannot be composed
+ * with.
+ *
+ * Pure, and exported, so the decision can be pinned without a renderer.
+ */
+export function escapeAbortsArrival(
+  event: { key: string; defaultPrevented: boolean },
+  level: number,
+  opening: string | null,
+): boolean {
+  if (event.key !== "Escape") return false;
+  if (event.defaultPrevented) return false;
+  if (opening === null) return false;
+  return level === 0;
+}
 
 /**
  * Has the move been abandoned — is the level the arrival is dressing no longer
@@ -118,6 +128,42 @@ export function useArrival(nav: ZoomNav) {
     timers.current = [];
   }, []);
   useEffect(() => clearTimers, [clearTimers]);
+
+  /**
+   * Stop the move and give the plate back.
+   *
+   * Dropping `opening` is the whole act: the scene reads it every frame, so the
+   * records walk back out of the plate and into the lattice over `UNFLATTEN`,
+   * the quadrants get their hit volumes back, the zone keys come out of their
+   * stepped-back state and the caption stops claiming a zone is opening. There
+   * is nothing to unwind, because nothing was committed — the level has not
+   * changed yet, which is exactly the window this is for.
+   */
+  const abort = useCallback(() => {
+    clearTimers();
+    setPhase("settled");
+    setOpening(null);
+  }, [clearTimers]);
+
+  /**
+   * Escape, for the one window the kit cannot cover. See `escapeAbortsArrival`.
+   *
+   * Bound on `window` rather than on the plate because the reader may have
+   * pressed a zone key, clicked a quadrant on the canvas, or asked an agent —
+   * in the last two cases nothing on the sheet holds focus, so a React handler
+   * would never see the key.
+   */
+  const level = nav.state.focus.level;
+  useEffect(() => {
+    if (held === null) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (!escapeAbortsArrival(event, level, held)) return;
+      event.preventDefault();
+      abort();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [abort, held, level]);
 
   /**
    * The cube has finished flattening; run the rest of the move.
@@ -197,5 +243,5 @@ export function useArrival(nav: ZoomNav) {
     [clearTimers, nav, opening],
   );
 
-  return { opening, phase, openFromPlate, openZone, flattened };
+  return { opening, phase, openFromPlate, openZone, flattened, abort };
 }

@@ -14,10 +14,13 @@
  */
 
 import { useFrame, useThree } from "@react-three/fiber";
-import { useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import * as THREE from "three";
 
 import { approach } from "./motion";
+
+/** Near enough to the target pose to be put ON it, in radians: 0.4 of a degree. */
+const SETTLED = 0.007;
 
 /**
  * A slow turn, which squares up as a zone opens.
@@ -36,7 +39,22 @@ export function Turntable({
   opening: string | null;
 }) {
   const ref = useRef<THREE.Group>(null);
-  const { pointer } = useThree();
+  const { pointer, invalidate, gl } = useThree();
+
+  /*
+   * THE SCENE IS DEMAND-DRIVEN AT REST (see `Cube3D.tsx`), so a pointer move has
+   * to ask for the frame that answers it. React's own commits invalidate, and
+   * every animating `useFrame` in `cube/` keeps itself alive by invalidating
+   * while it still has somewhere to go — but the pointer changes nothing in
+   * React and nothing in the tree, so without this the cube would simply stop
+   * following the cursor.
+   */
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const wake = () => invalidate();
+    canvas.addEventListener("pointermove", wake);
+    return () => canvas.removeEventListener("pointermove", wake);
+  }, [gl, invalidate]);
 
   useFrame((_, delta) => {
     const g = ref.current;
@@ -49,6 +67,18 @@ export function Turntable({
     const rate = approach(delta, squaring ? 3.4 : 3);
     g.rotation.y += (wantY - g.rotation.y) * rate;
     g.rotation.x += (wantX - g.rotation.x) * rate;
+    // Still travelling: ask for the next frame. Otherwise SNAP to the target and
+    // stop asking, because an exponential approach never actually arrives — left
+    // to its own epsilon it spends another second and a half rendering a
+    // thousandth of a radian, which is precisely the perpetual cost this scene
+    // is not allowed to have. A fortieth of a degree is not a pose anyone can
+    // see; it is only a number that has not finished.
+    if (Math.abs(wantY - g.rotation.y) > SETTLED || Math.abs(wantX - g.rotation.x) > SETTLED) {
+      invalidate();
+    } else {
+      g.rotation.y = wantY;
+      g.rotation.x = wantX;
+    }
   });
 
   return <group ref={ref}>{children}</group>;

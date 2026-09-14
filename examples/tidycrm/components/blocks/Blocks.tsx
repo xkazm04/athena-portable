@@ -8,13 +8,24 @@
  * means here exactly what it means everywhere else in this repo. Everything else
  * is a pure child handed props.
  *
- * There is no `motion` in this direction, deliberately. the `law` direction set the motion
- * signature for this app — the pencil draws, as `stroke-dashoffset` running to
- * zero on inline SVG — and a spring-based shared-layout morph would be a second
- * grammar sitting on top of it. The level change here is a redraw: the box edges
- * lay themselves down, and everything else is press feedback.
+ * MOTION IS TOKENISED HERE, at the root, and this is a correction rather than an
+ * addition. The direction already carried matched `layoutId`s from the cell to
+ * the dossier, but nothing configured them: `motion` 13's default layout
+ * transition is a spring, which cannot be expressed as a `--bk-*` token and
+ * settles fast enough that the dossier read as a cut — and its `reducedMotion`
+ * default is `"never"`, which quietly contradicted the token file's claim to be
+ * running "law's durations verbatim". One `MotionConfig` fixes both: the default
+ * transition is `--bk-dur-4` on `--bk-ease`, read out of the cascade by
+ * `motion-tokens.ts`, and the reduced-motion preference is honoured by the
+ * library the same way `app/globals.css` honours it for CSS.
+ *
+ * The level change itself is still a redraw and not a spring — the box edges lay
+ * themselves down, everything else is press feedback — and the one morph on the
+ * sheet is the block travelling out of its cell, which is the only place where
+ * two levels are the same object.
  */
 import { useState } from "react";
+import { AnimatePresence, MotionConfig, motion as m } from "motion/react";
 import { useZoomNav } from "@athena/demo-kit/zoom";
 
 import { Cube3D } from "./Cube3D";
@@ -22,6 +33,7 @@ import { Dossier } from "./Dossier";
 import { Field } from "./Field";
 import { BlocksTools } from "./tools";
 import { useArrival } from "./useArrival";
+import { useMotionTokens } from "./motion-tokens";
 import { SheetFoot } from "./sheet/Foot";
 import { SheetHead } from "./sheet/Head";
 import { tableOf, zoneOf, type BkSheet } from "./model";
@@ -34,6 +46,7 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
   const [showKinds, setShowKinds] = useState(false);
 
   const { opening, phase, openFromPlate, openZone, flattened } = useArrival(nav);
+  const motion = useMotionTokens();
 
   const level = nav.state.focus.level;
   const zone = zoneOf(sheet, nav.state.focus.group);
@@ -41,64 +54,103 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
 
   return (
     <div className="bk-root" data-variant="blocks" data-level={level}>
-      {/* The ingest layer: this direction's three levels, offered to an agent
-          beside the page on `document.modelContext`. It opens a zone through
-          `openFromPlate`, the same path a click on a quadrant takes, so the
-          cube actually flattens rather than the level being swapped under it.
-          Renders nothing, and no tool it registers writes. */}
-      <BlocksTools
-        sheet={sheet}
-        nav={nav}
-        onOpenZone={openFromPlate}
-        showKinds={showKinds}
-        setShowKinds={setShowKinds}
-      />
+      {/*
+        * `reducedMotion="user"` rather than the library's `"never"` default: a
+        * reader who has asked for less motion gets the end state of the morph,
+        * the same as they get the end state of every transition in `style/`.
+        */}
+      <MotionConfig reducedMotion="user" transition={motion?.morph}>
+        {/* The ingest layer: this direction's three levels, offered to an agent
+            beside the page on `document.modelContext`. It opens a zone through
+            `openFromPlate`, the same path a click on a quadrant takes, so the
+            cube actually flattens rather than the level being swapped under it.
+            Renders nothing, and no tool it registers writes. */}
+        <BlocksTools
+          sheet={sheet}
+          nav={nav}
+          onOpenZone={openFromPlate}
+          showKinds={showKinds}
+          setShowKinds={setShowKinds}
+        />
 
-      <div className="bk-sheet">
-        <SheetHead sheet={sheet} />
+        <div className="bk-sheet">
+          <SheetHead sheet={sheet} />
 
 
-        {/*
-          * Both can be mounted at once, stacked in one cell. That overlap is
-          * the transition: the cube is still there, flattened, while the cells
-          * arrive on top of it wearing its geometry.
-          */}
-        <div className="bk-stage">
-          {level === 0 || opening ? (
-            <div className="bk-cube-hold" data-out={level >= 1} aria-hidden={level >= 1}>
-              <Cube3D
+          {/*
+            * Both can be mounted at once, stacked in one cell. That overlap is
+            * the transition: the cube is still there, flattened, while the cells
+            * arrive on top of it wearing its geometry.
+            */}
+          <div className="bk-stage">
+            {level === 0 || opening ? (
+              <div className="bk-cube-hold" data-out={level >= 1} aria-hidden={level >= 1}>
+                {/* `out` is the same fact as `data-out`: the hold is fading, so
+                    the scene has nothing left to draw and stops rendering. It
+                    stays MOUNTED because the cells are standing on the pose it
+                    is holding. */}
+                <Cube3D
+                  sheet={sheet}
+                  opening={opening}
+                  out={level >= 1}
+                  onOpen={openFromPlate}
+                  onFlattened={flattened}
+                />
+              </div>
+            ) : null}
+
+            {level >= 1 && zone ? (
+              <Field
                 sheet={sheet}
-                opening={opening}
-                onOpen={openFromPlate}
-                onFlattened={flattened}
+                zone={zone}
+                phase={phase}
+                onOpenTable={(ident) => nav.openItem(zone.id, ident)}
+                onOpenZone={openZone}
               />
-            </div>
-          ) : null}
+            ) : null}
+          </div>
 
-          {level >= 1 && zone ? (
-            <Field
-              sheet={sheet}
-              zone={zone}
-              phase={phase}
-              onOpenTable={(ident) => nav.openItem(zone.id, ident)}
-              onOpenZone={openZone}
-            />
-          ) : null}
+          <SheetFoot sheet={sheet} zone={zone} table={table} level={level} showKinds={showKinds} nav={nav} />
         </div>
 
-        <SheetFoot sheet={sheet} zone={zone} table={table} level={level} showKinds={showKinds} nav={nav} />
-      </div>
+        {/*
+          * THE SCRIM IS NOT THE CARD'S, and that is why it is here.
+          *
+          * It dims the sheet while the block travels out of its cell, so it has
+          * to fade in PARALLEL with the morph and out again after it — which is
+          * an `AnimatePresence` of its own. Held by the card it would either have
+          * taken the card's opacity with it (hiding the move it exists to frame)
+          * or held the card in the tree while it faded, and a card still mounted
+          * is a card the cell cannot morph back out of: `layoutId` reverses when
+          * the dossier LEAVES and the cell becomes the lead again.
+          */}
+        <AnimatePresence>
+          {level === 2 && table ? (
+            <m.div
+              key="bk-scrim"
+              className="bk-dossier-scrim"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={motion?.medium}
+              aria-hidden
+            />
+          ) : null}
+        </AnimatePresence>
 
-      {/* Keyed by the block, so a change of block is a new card and not the same
-          card holding a different block. The dossier carries two pieces of
-          state a reader armed against what was in front of them — the armed
-          act and the pair being adjudicated — and an agent may call open_item
-          while it is mounted. Unkeyed, the armed merge or delete survives the
-          swap and points at a block nobody armed it for, with no undo behind
-          it. */}
-      {level === 2 && table ? (
-        <Dossier key={table.ident} table={table} onClose={nav.up} />
-      ) : null}
+        {/* Keyed by the block, so a change of block is a new card and not the same
+            card holding a different block. The dossier carries two pieces of
+            state a reader armed against what was in front of them — the armed
+            act and the pair being adjudicated — and an agent may call open_item
+            while it is mounted. Unkeyed, the armed merge or delete survives the
+            swap and points at a block nobody armed it for, with no undo behind
+            it. */}
+        <AnimatePresence>
+          {level === 2 && table ? (
+            <Dossier key={table.ident} table={table} onClose={nav.up} motion={motion} />
+          ) : null}
+        </AnimatePresence>
+      </MotionConfig>
     </div>
   );
 }
