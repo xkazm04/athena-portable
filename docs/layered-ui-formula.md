@@ -337,3 +337,17 @@ closed on the way: `Echo` has its own entry point.
 
 **Carried:** URL sync (four rounds, still nowhere); atlas L1 stubs for edges leaving the stratum;
 ledgerbox near-band density and dead space; rooms floor size; pinch on a perspective camera.
+
+### Round 4 — atlas as a blueprint (2026-09-14)
+
+**Why.** The owner's verdict on round 3 closed the 3D search and named the form: "a 2D diagram of
+components in a canvas with switchable views in blueprint structure". Only atlas is in scope this
+round; hirelane and ledgerbox stand at their round-2 state, tidycrm at round 3.
+
+**Concept under test.** One 2D canvas with one visual grammar, panned and zoomed by the kit's rig
+(whose orthographic math fits exactly), the three levels applied as semantic detail — layers and
+systems far, components and ports near, one component's pane closest — and four switchable views
+over the same blocks: layers, turn, trust, packages. A view switch is a layout transition of the
+same elements and is the app's one signature motion. Text stays secondary.
+
+**Outcome:** *(filled after review)*
