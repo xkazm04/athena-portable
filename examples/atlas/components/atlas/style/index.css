@@ -1,0 +1,12 @@
+/*
+ * `plate` — the whole stylesheet, in load order.
+ *
+ * Tokens first and always: every file below reads them and none of them declares a value.
+ * `design/check-tokens.mjs` enforces that, and `app/globals.css` imports this file once.
+ */
+@import "./base/tokens.css";
+@import "./base/sheet.css";
+@import "./chrome/mast.css";
+@import "./level0/l0-index.css";
+@import "./level1/l1-layer.css";
+@import "./level2/l2-pane.css";

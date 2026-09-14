@@ -1,0 +1,215 @@
+/*
+ * L2 — one component, opened.
+ *
+ * The only element on this surface allowed to sit over the sheet. No shadow and no blur: a scrim
+ * is a flat `--at-scrim`, because frosted glass is not a thing that happens to paper (DESIGN.md
+ * §4). The pane grows out of the row it was opened from — it holds that row's shared id for as
+ * long as it is up (formula §1 rule 2) — and it fills with ink only after the box has landed
+ * (rule 3), which is what `.at-pane-ink` is for.
+ */
+
+.at-scrim {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  border: 0;
+  background: var(--at-scrim);
+  cursor: pointer;
+}
+
+.at-pane {
+  position: fixed;
+  z-index: 60;
+  inset-block: var(--at-space-8);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  display: grid;
+  gap: var(--at-space-4);
+  align-content: start;
+  overflow-y: auto;
+  width: min(var(--at-pane-w), calc(100cqi - var(--at-space-8)));
+  padding: var(--at-space-5);
+  border: var(--at-rule-3) solid var(--at-line-0);
+  background: var(--at-plate-2);
+  box-shadow: var(--at-elev-0);
+}
+
+/* The pane is not a control and already carries the heaviest rule on the surface, so its focus
+   ring is a hairline in the ink ramp. It must NOT be `--at-mark`: orange means the lens and
+   nothing else (DESIGN.md §2), and a pane that takes focus programmatically would otherwise look
+   permanently lit. */
+.at-pane:focus-visible {
+  outline: var(--at-rule-1) solid var(--at-line-2);
+  outline-offset: var(--at-space-1);
+}
+
+.at-pane[data-status="planned"] {
+  border-style: dashed;
+}
+
+.at-pane-title {
+  margin: var(--at-space-0);
+  color: var(--at-line-0);
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-lg);
+  font-weight: 500;
+  letter-spacing: var(--at-track-tight);
+  line-height: var(--at-leading-tight);
+}
+
+.at-pane-ink {
+  display: grid;
+  gap: var(--at-space-5);
+}
+
+/* A block inside the pane: a small heading and its content. Four of them, always in this order:
+   what it enforces, the invariants it carries, who calls it, what it calls. */
+.at-block {
+  display: grid;
+  gap: var(--at-space-2);
+}
+
+.at-block-head {
+  display: flex;
+  gap: var(--at-space-2);
+  align-items: baseline;
+  padding-block-end: var(--at-space-1);
+  border-block-end: var(--at-rule-1) solid var(--at-line-3);
+  color: var(--at-line-2);
+  font-size: var(--at-text-micro);
+  letter-spacing: var(--at-track-label);
+}
+
+.at-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--at-space-2);
+  margin: var(--at-space-0);
+  padding: var(--at-space-0);
+  list-style: none;
+}
+
+/* A concept the component carries. Takes the mark only when it IS the lens — nothing else here
+   may be orange. Clicking one sets the lens from the pane, which is the fastest path in the app:
+   "this module enforces invariant 2" -> "where else is invariant 2 enforced". */
+.at-chip {
+  padding: var(--at-space-1) var(--at-space-2);
+  border: var(--at-rule-1) solid var(--at-line-3);
+  background: var(--at-plate);
+  color: var(--at-line-1);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--at-text-label);
+}
+
+.at-chip:hover,
+.at-chip:focus-visible {
+  border-color: var(--at-line-2);
+  color: var(--at-line-0);
+}
+
+.at-chip:focus-visible {
+  outline: var(--at-rule-2) solid var(--at-line-0);
+  outline-offset: var(--at-rule-1);
+}
+
+.at-chip[data-lit="true"] {
+  border-color: var(--at-mark);
+  border-width: var(--at-rule-2);
+  background: var(--at-mark-soft);
+  color: var(--at-line-0);
+}
+
+/* An edge, in or out. The verb is the figure face; the other end's name is the drawn voice. */
+.at-link {
+  display: grid;
+  gap: var(--at-space-1);
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: var(--at-space-3);
+  width: 100%;
+  padding: var(--at-space-2);
+  border: var(--at-rule-1) solid transparent;
+  border-block-end-color: var(--at-line-3);
+  background: none;
+  color: var(--at-line-0);
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+}
+
+.at-link:hover,
+.at-link:focus-visible {
+  border-color: var(--at-line-2);
+  background: var(--at-plate-3);
+}
+
+.at-link:focus-visible {
+  outline: var(--at-rule-2) solid var(--at-line-0);
+  outline-offset: calc(var(--at-rule-2) * -1);
+}
+
+.at-link-kind {
+  color: var(--at-line-2);
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-micro);
+}
+
+.at-link-note {
+  grid-column: 2;
+  color: var(--at-line-1);
+  font-size: var(--at-text-label);
+  line-height: var(--at-leading-snug);
+}
+
+/* The ADRs. A citation, not a link — nothing in this app fetches anything. */
+.at-adr {
+  display: grid;
+  gap: var(--at-space-1);
+  padding-block: var(--at-space-2);
+  border-block-end: var(--at-rule-1) solid var(--at-line-3);
+}
+
+.at-adr-n {
+  color: var(--at-mark);
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-micro);
+}
+
+.at-pane-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--at-space-3);
+  align-items: center;
+  justify-content: space-between;
+  padding-block-start: var(--at-space-3);
+  border-block-start: var(--at-rule-1) solid var(--at-line-3);
+}
+
+.at-close {
+  padding: var(--at-space-2) var(--at-space-3);
+  border: var(--at-rule-1) solid var(--at-line-2);
+  background: var(--at-plate);
+  color: var(--at-line-0);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--at-text-label);
+}
+
+.at-close:hover,
+.at-close:focus-visible {
+  background: var(--at-plate-3);
+}
+
+.at-close:focus-visible {
+  outline: var(--at-rule-2) solid var(--at-line-0);
+  outline-offset: var(--at-rule-1);
+}
+
+@container at-plate (max-width: 720px) {
+  .at-pane {
+    inset-block: var(--at-space-4);
+    width: calc(100cqi - var(--at-space-6));
+    padding: var(--at-space-4);
+  }
+}

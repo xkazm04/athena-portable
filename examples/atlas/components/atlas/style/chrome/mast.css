@@ -1,0 +1,151 @@
+/*
+ * The mast — the one thing that does not change between levels.
+ *
+ * Rubric axis 4 (continuity) asks what visibly persists across depths. Here it is: the title
+ * block of a drawing, pinned to the top, carrying the level rail (where you are, and every level
+ * you can step back to), the lens read-out (what is currently marked up, and how many parts it
+ * touches), and the model's own counts. It never unmounts, so it never animates.
+ */
+
+.at-mast {
+  position: sticky;
+  z-index: 30;
+  inset-block-start: 0;
+  display: flex;
+  gap: var(--at-space-5);
+  align-items: center;
+  height: var(--at-mast-h);
+  padding-inline: var(--at-space-5);
+  border-block-end: var(--at-rule-1) solid var(--at-line-3);
+  background: var(--at-ground);
+}
+
+.at-mast-brand {
+  display: flex;
+  gap: var(--at-space-2);
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+.at-mast-brand b {
+  color: var(--at-line-0);
+  font-size: var(--at-text-md);
+  font-weight: 700;
+  letter-spacing: var(--at-track-tight);
+}
+
+/* The level rail: three steps, the one you are on drawn heavy, the ones behind it clickable. */
+.at-rail {
+  display: flex;
+  gap: var(--at-space-1);
+  align-items: center;
+  margin: var(--at-space-0);
+  padding: var(--at-space-0);
+  list-style: none;
+}
+
+.at-rail-sep {
+  color: var(--at-line-3);
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-micro);
+}
+
+.at-step {
+  padding: var(--at-space-1) var(--at-space-2);
+  border: var(--at-rule-1) solid transparent;
+  border-radius: var(--at-radius-0);
+  background: none;
+  color: var(--at-line-2);
+  font: inherit;
+  font-size: var(--at-text-label);
+  white-space: nowrap;
+  transition: color var(--at-dur-hair) var(--at-ease);
+}
+
+.at-step:not([disabled]) {
+  cursor: pointer;
+}
+
+.at-step:not([disabled]):hover {
+  color: var(--at-line-0);
+}
+
+.at-step:focus-visible {
+  outline: var(--at-rule-2) solid var(--at-line-0);
+  outline-offset: var(--at-rule-1);
+}
+
+.at-step[aria-current="step"] {
+  border-color: var(--at-line-0);
+  color: var(--at-line-0);
+  font-weight: 600;
+}
+
+/* The lens read-out. The ONLY chrome allowed to take the accent, because it IS the lens. */
+.at-lens {
+  display: flex;
+  gap: var(--at-space-2);
+  align-items: center;
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+
+.at-lens-off {
+  color: var(--at-line-2);
+  font-size: var(--at-text-label);
+}
+
+.at-lens-on {
+  display: flex;
+  gap: var(--at-space-2);
+  align-items: baseline;
+  padding: var(--at-space-1) var(--at-space-2);
+  border: var(--at-rule-2) solid var(--at-mark);
+  background: var(--at-mark-soft);
+  color: var(--at-line-0);
+  font-size: var(--at-text-label);
+}
+
+.at-lens-clear {
+  border: 0;
+  background: none;
+  color: var(--at-line-1);
+  cursor: pointer;
+  font: inherit;
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-micro);
+  text-decoration: underline;
+}
+
+.at-lens-clear:focus-visible {
+  outline: var(--at-rule-2) solid var(--at-line-0);
+  outline-offset: var(--at-rule-1);
+}
+
+.at-mast-counts {
+  display: flex;
+  gap: var(--at-space-3);
+  color: var(--at-line-2);
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-micro);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The foot: what this app is, and the one sentence about where the model came from. */
+.at-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--at-space-4);
+  justify-content: space-between;
+  padding: var(--at-space-4) var(--at-space-5);
+  border-block-start: var(--at-rule-1) solid var(--at-line-3);
+  background: var(--at-ground);
+  color: var(--at-line-2);
+  font-size: var(--at-text-label);
+}
+
+@container at-app (max-width: 720px) {
+  .at-mast-counts {
+    display: none;
+  }
+}

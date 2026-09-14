@@ -1,7 +1,9 @@
 # Examples - the studio the demo runs on
 
-Three small Next.js apps that ship WITHOUT Athena, plus the journey that drives them (ADR 0017).
-They are one studio's tabs: Halden Studio's books, its hiring pipeline and its contact list. Every
+Three small Next.js apps that ship WITHOUT Athena, plus the journey that drives them (ADR 0017),
+plus `atlas` - a fourth app whose subject is this repository itself and whose job is to measure the
+shared kit (`docs/layered-ui-formula.md` section 2, round 2).
+The first three are one studio's tabs: Halden Studio's books, its hiring pipeline and its contact list. Every
 seed reads the same world from `@athena/demo-kit/seed` — the studio, its fifteen clients with one
 billing contact each, and the named people and aliases the four acts of README §1 pull on — so a
 fact Athena learns in one tab is checkable in the next.
@@ -16,7 +18,13 @@ beside the page, never inside it.
 | `ledgerbox/` | 3001 | invoice and expense inbox | 1 | money gates, tone as a parameter, matching as a long job |
 | `hirelane/` | 3002 | recruiting pipeline | 2 | judgment with evidence, per-row decisions, gates on anything that reaches a candidate |
 | `tidycrm/` | 3004 | CRM cleanup | 3 | provenance at scale, merge-vs-delete gate, a fact from act 1 applied |
+| `atlas/` | 3006 | this repository's own architecture | – | the layered-UI formula itself: built only through the kit's primitives, every local workaround logged in `atlas/KIT-GAPS.md` |
 | `journey/` | – | the four acts, automated | 1–4 | the real bridge in a real Chromium; approvals and connectors as fakes at the seam |
+
+Atlas is not one of the studio's tabs and carries no act: it has no database, no seed and no
+mutation, and it reads the repository rather than a domain. It is in `examples/` because it is the
+fourth app on the shared kit, and because rebuilding it whenever the kit changes is how the
+formula's distance from being reusable gets re-measured.
 
 ```bash
 pnpm dev:ledgerbox                      # one app

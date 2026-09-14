@@ -1,0 +1,214 @@
+/*
+ * L1 — one layer, its systems laid side by side, and what it connects to.
+ *
+ * The layout argument (DESIGN.md §5): systems are COLUMNS, not a stack, because the question L1
+ * exists to answer is "which of these does the work", and two things you cannot see at once you
+ * cannot compare. The head is the band the reader opened, arrived at its final size — it is the
+ * shared element, so it is the one thing that travels.
+ *
+ * Edges are in the MARGIN. A left rail for layers above (an edge running back up the stack) and a
+ * right rail for layers below (a dependency). No curves over the content: a line crossing forty
+ * component rows makes the rows harder to read, and at this density a node-link drawing is a
+ * hairball. The graph is navigable, not drawn.
+ */
+
+.at-l1 {
+  display: grid;
+  gap: var(--at-space-5);
+}
+
+/* The head: what the band became. */
+.at-l1-head {
+  display: grid;
+  gap: var(--at-space-3) var(--at-space-5);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: var(--at-space-4);
+  border: var(--at-rule-3) solid var(--at-line-0);
+  background: var(--at-plate-2);
+}
+
+.at-l1-title {
+  margin: var(--at-space-0);
+  color: var(--at-line-0);
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-xl);
+  font-weight: 500;
+  letter-spacing: var(--at-track-tight);
+  line-height: var(--at-leading-tight);
+}
+
+.at-l1-blurb {
+  max-width: var(--at-measure);
+  color: var(--at-line-1);
+  font-size: var(--at-text-label);
+  line-height: var(--at-leading-snug);
+}
+
+/* -------------------------------------------------------------- the margin rails -- */
+
+.at-l1-body {
+  display: grid;
+  gap: var(--at-space-4);
+  grid-template-columns: var(--at-rail-w) minmax(0, 1fr) var(--at-rail-w);
+  align-items: start;
+}
+
+.at-edges {
+  display: grid;
+  gap: var(--at-space-2);
+  margin: var(--at-space-0);
+  padding: var(--at-space-0);
+  list-style: none;
+}
+
+.at-edges-title {
+  color: var(--at-line-2);
+  font-size: var(--at-text-micro);
+  letter-spacing: var(--at-track-label);
+}
+
+.at-edge {
+  display: grid;
+  gap: var(--at-space-1);
+  padding-block: var(--at-space-1);
+  color: var(--at-line-1);
+  font-size: var(--at-text-micro);
+}
+
+.at-edge-down {
+  border-inline-start: var(--at-rule-2) solid var(--at-line-3);
+  padding-inline-start: var(--at-space-2);
+}
+
+.at-edge-up {
+  border-inline-end: var(--at-rule-2) solid var(--at-line-3);
+  padding-inline-end: var(--at-space-2);
+  text-align: end;
+}
+
+.at-edge-none {
+  color: var(--at-line-3);
+  font-size: var(--at-text-micro);
+}
+
+/* ----------------------------------------------------------------- the columns --- */
+
+.at-systems {
+  display: grid;
+  gap: var(--at-space-3);
+  grid-template-columns: repeat(auto-fit, minmax(var(--at-col-min), 1fr));
+  align-items: start;
+  margin: var(--at-space-0);
+  padding: var(--at-space-0);
+  list-style: none;
+}
+
+.at-system {
+  display: grid;
+  gap: var(--at-space-3);
+  padding: var(--at-space-3);
+  border: var(--at-rule-1) solid var(--at-line-3);
+  background: var(--at-plate-2);
+}
+
+.at-system[data-lit="true"] {
+  border-color: var(--at-mark);
+  border-width: var(--at-rule-2);
+}
+
+.at-system[data-status="planned"] {
+  border-style: dashed;
+}
+
+.at-system-name {
+  color: var(--at-line-0);
+  font-size: var(--at-text-md);
+  font-weight: 600;
+  letter-spacing: var(--at-track-tight);
+  line-height: var(--at-leading-snug);
+}
+
+.at-system-blurb {
+  color: var(--at-line-1);
+  font-size: var(--at-text-label);
+  line-height: var(--at-leading-snug);
+}
+
+/* The component rows. Each one is the atom again, at its smallest: a name, a part number, a
+   citation, and the same four states. */
+.at-parts {
+  display: grid;
+  gap: var(--at-rule-1);
+  margin: var(--at-space-0);
+  padding: var(--at-space-0);
+  list-style: none;
+}
+
+.at-part-row {
+  display: grid;
+  gap: var(--at-space-1);
+  width: 100%;
+  padding: var(--at-space-2);
+  border: var(--at-rule-1) solid transparent;
+  background: var(--at-plate);
+  color: var(--at-line-0);
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+  transition:
+    background-color var(--at-dur-hair) var(--at-ease),
+    border-color var(--at-dur-hair) var(--at-ease);
+}
+
+.at-part-row:hover,
+.at-part-row:focus-visible {
+  border-color: var(--at-line-2);
+  background: var(--at-plate-3);
+}
+
+.at-part-row:focus-visible {
+  outline: var(--at-rule-2) solid var(--at-line-0);
+  outline-offset: calc(var(--at-rule-2) * -1);
+}
+
+.at-part-row[data-lit="true"] {
+  border-color: var(--at-mark);
+  background: var(--at-mark-soft);
+}
+
+.at-part-row[data-open="true"] {
+  border-color: var(--at-line-0);
+  border-width: var(--at-rule-2);
+}
+
+.at-part-row[data-status="planned"] {
+  border-style: dashed;
+  border-color: var(--at-line-3);
+}
+
+.at-part-name {
+  color: var(--at-line-0);
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-fig);
+  line-height: var(--at-leading-snug);
+}
+
+@container at-plate (max-width: 900px) {
+  .at-l1-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .at-edges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--at-space-3);
+  }
+
+  .at-edge-up,
+  .at-edge-down {
+    border: 0;
+    padding-inline: var(--at-space-0);
+    text-align: start;
+  }
+}

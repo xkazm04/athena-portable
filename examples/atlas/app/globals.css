@@ -1,0 +1,21 @@
+/*
+ * Atlas — one design, one token contract.
+ *
+ * The kit's own stylesheet draws the shell, the toasts and the badges from `--dk-*` hooks; the
+ * direction's token file (imported below, through `components/atlas/style/index.css`) re-points
+ * every one of them at an `--at-*` value. Alias, never fork — nothing here restyles a kit
+ * component.
+ */
+@import "tailwindcss";
+@import "@athena/demo-kit/ui/demo-kit.css";
+@import "../components/atlas/style/index.css";
+
+html {
+  background: var(--at-ground);
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--at-ground);
+}

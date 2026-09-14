@@ -1,0 +1,172 @@
+/*
+ * `plate` — the token file, and the only file in this app allowed to contain a raw `px` or `ms`.
+ *
+ * DESIGN.md is the law; this is the authority for every value it rules about. `design/check-tokens.mjs`
+ * runs in `pnpm --filter atlas lint` and fails on a raw `px` or `ms` in any other stylesheet or in
+ * any `.ts`/`.tsx` file, which is how "one clock per level change, in one module" (layered-UI
+ * formula §1 rule 4) is enforced rather than merely intended. JS reads the four `--at-dur-*` values
+ * back out of this cascade with the kit's `useTokens`/`cssMs`/`secs`.
+ *
+ * The block ends with an alias layer re-pointing the kit's `--dk-*` hooks at these values, so the
+ * shared shell, toasts and badges follow the direction without knowing it exists. Alias, never fork.
+ */
+
+[data-variant="plate"] {
+  /* ---------------------------------------------------------------- grounds --
+   * A cyanotype: the paper is blue because of the chemistry, so there is one polarity and no
+   * light variant is owed. Four grounds, one pigment family, no warm/cool fluctuation.
+   */
+  --at-ground: #061420; /* the table the sheet lies on */
+  --at-plate: #0b2236; /* the sheet */
+  --at-plate-2: #10314c; /* a cell, a band, a pane — anything drawn ON the sheet */
+  --at-plate-3: #17456a; /* a cell under the pointer, or the one cell that is open */
+
+  /* ------------------------------------------------------------------- inks --
+   * Four weights of the drawn line. Prose ink stops at `--at-line-1`; `--at-line-2` is the
+   * lowest tier and carries rule work, skimmable figures and disabled chrome — never a sentence
+   * a reader has to follow. `--at-line-3` is rules only and never carries text at all.
+   */
+  --at-line-3: #2d5c85;
+  --at-line-2: #6d9cc0;
+  --at-line-1: #a8cade;
+  --at-line-0: #eaf4fb; /* the white line: the name of the thing */
+
+  /* ---------------------------------------------------------------- the mark --
+   * ONE accent, and it means ONE thing: the lens. Nothing else on this surface may take it —
+   * not a hover, not a selection, not a count, not an error. If it is orange, a chosen concept
+   * put it there. `--at-mark-soft` is a tint of the same hue for the tick's fill, not a second
+   * accent.
+   */
+  --at-mark: #ff7a4d;
+  --at-mark-soft: #ff7a4d2e;
+
+  /* ----------------------------------------------------------------- spacing --
+   * Nine steps on a 4px grid, and the cyanotype grid under the plate is the same grid at 4x.
+   * Every margin, padding and gap in the app is one of these.
+   */
+  --at-space-0: 0px;
+  --at-space-1: 4px;
+  --at-space-2: 8px;
+  --at-space-3: 12px;
+  --at-space-4: 16px;
+  --at-space-5: 24px;
+  --at-space-6: 32px;
+  --at-space-7: 48px;
+  --at-space-8: 64px;
+
+  /* -------------------------------------------------------------------- type --
+   * Two faces, no third. `--at-font-draft` is the drawn voice; `--at-font-fig` is every path,
+   * id, count and number, tabular, unconditionally. The `next/font` variables are set on <html>
+   * by `app/layout.tsx`; the fallbacks are what a build with no font step renders.
+   */
+  --at-font-draft: var(--font-draft), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --at-font-fig: var(--font-fig), ui-monospace, "Cascadia Mono", Menlo, monospace;
+
+  --at-text-micro: 0.6875rem;
+  --at-text-label: 0.8125rem;
+  --at-text-fig: 0.8125rem;
+  --at-text-base: 1rem;
+  --at-text-md: 1.125rem;
+  --at-text-lg: 1.375rem;
+  --at-text-xl: 1.75rem;
+  --at-text-2xl: 2.25rem;
+
+  --at-leading-tight: 1.05;
+  --at-leading-snug: 1.25;
+  --at-leading-body: 1.55;
+
+  --at-track-tight: -0.015em;
+  --at-track-label: 0.01em;
+
+  --at-measure: 62ch; /* prose only; nothing else is measure-clamped */
+
+  /* ------------------------------------------------------------------- shape --
+   * Depth is rule weight, not shadow. A plotted line does not round.
+   */
+  --at-radius-0: 0px;
+  --at-elev-0: none;
+  --at-rule-1: 1px; /* at rest */
+  --at-rule-2: 2px; /* lit by the lens */
+  --at-rule-3: 3px; /* open: the one cell the reader is inside */
+
+  /* -------------------------------------------------------------- the sheet --
+   * The cyanotype grid, and the flat scrim behind the pane. Frosted glass is not a thing
+   * that happens to paper, so there is no blur token and never will be.
+   */
+  --at-grid: 16px;
+  --at-grid-ink: #ffffff0a;
+  --at-scrim: #061420cc;
+
+  /* ------------------------------------------------------------------ sizes --
+   * The few structural measurements, so no other file needs a raw length.
+   */
+  /* The two breakpoints, declared here even though a `@container` condition cannot read a custom
+   * property: `design/check-tokens.mjs` requires every literal in a query condition to equal one
+   * of these, so the app still has exactly two and they are still written down in one place. */
+  --at-bp-narrow: 720px;
+  --at-bp-mid: 900px;
+
+  --at-mast-h: 56px;
+  --at-band-h: 64px;
+  --at-cell-min: 14rem;
+  --at-col-min: 17rem;
+  --at-pane-w: 46rem;
+  --at-rail-w: 5rem;
+  --at-tick: 6px;
+
+  /* ------------------------------------------------------------------ motion --
+   * ONE CLOCK (formula §1 rule 4). These four durations and two easings are the entire motion
+   * vocabulary of this app, and no JavaScript in it types a millisecond: `components/atlas/motion.ts`
+   * reads them back out of this cascade. `--at-dur-move` is the level change and is the one
+   * number with a budget — the rubric gives a DOM level change 400ms.
+   */
+  --at-dur-hair: 90ms; /* rule weight and ground, on hover or focus */
+  --at-dur-ink: 150ms; /* text in and out — the second beat of every staged move */
+  --at-dur-lens: 220ms; /* the lens spreading down the stack */
+  --at-dur-move: 320ms; /* the level change */
+  --at-ease: cubic-bezier(0.2, 0, 0, 1);
+  --at-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ------------------------------------------------ the kit's hooks, aliased --
+   * The shared AppShell, toasts, badges and activity chips read only `--dk-*`. Alias, never fork.
+   * `--dk-gated` is aliased although Atlas spends it nowhere: every tool this app registers is a
+   * read or a move, so all of them are AUTO. The role still has to mean one thing across the
+   * studio, and a future irreversible tool here finds the colour already named.
+   */
+  --dk-accent: var(--at-mark);
+  --dk-accent-contrast: var(--at-ground);
+  --dk-surface: var(--at-plate-2);
+  --dk-surface-2: var(--at-ground);
+  --dk-ink: var(--at-line-0);
+  --dk-ink-soft: var(--at-line-1);
+  --dk-line: var(--at-line-3);
+  --dk-auto: #6fd6b0;
+  --dk-gated: #c9a227;
+  --dk-radius: var(--at-radius-0);
+  --dk-gap: var(--at-space-3);
+  --dk-shadow: var(--at-elev-0);
+  --dk-font: var(--at-font-draft);
+  --dk-font-display: var(--at-font-draft);
+  --dk-font-mono: var(--at-font-fig);
+  --dk-dur-move: var(--at-dur-move);
+  --dk-dur-fade: var(--at-dur-ink);
+  --dk-ease: var(--at-ease);
+}
+
+/*
+ * REDUCED MOTION LANDS ON THE FINAL STATE AT FRAME ZERO (formula §1 rule 8).
+ *
+ * Not a `0.01ms` animation — every law document in this repository names that as the wrong
+ * branch. The durations go to zero here, which is the value `cssMs` reads into JS as well, so the
+ * CSS transition and the `motion` transition take the same branch from the same source. The echo
+ * layer is additionally not rendered at all (`components/atlas/Atlas.tsx`), because an element
+ * that fades in zero milliseconds still costs a commit.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-variant="plate"] {
+    --at-dur-hair: 0ms;
+    --at-dur-ink: 0ms;
+    --at-dur-lens: 0ms;
+    --at-dur-move: 0ms;
+  }
+}

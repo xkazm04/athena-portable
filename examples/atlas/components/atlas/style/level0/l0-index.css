@@ -1,0 +1,172 @@
+/*
+ * L0 — the index plate.
+ *
+ * Two regions on ONE sheet (DESIGN.md §5): the concept index above — what this repository claims
+ * — and the six-band layer stack below — what it is made of. They scroll together; the stack is
+ * not a sidebar, because the whole argument of L0 is that the claim and the machine are the same
+ * drawing, and the lens is what joins them.
+ *
+ * Clicking a concept does NOT change level. It sets the lens, and the stack marks up in place.
+ * That is deliberate: a lens is a way of looking at where you already are.
+ */
+
+.at-l0 {
+  display: grid;
+  gap: var(--at-space-6);
+}
+
+.at-l0-head {
+  display: grid;
+  gap: var(--at-space-2);
+}
+
+.at-l0-title {
+  margin: var(--at-space-0);
+  color: var(--at-line-0);
+  font-size: var(--at-text-xl);
+  font-weight: 700;
+  letter-spacing: var(--at-track-tight);
+  line-height: var(--at-leading-tight);
+}
+
+/* ----------------------------------------------------------- the concept index -- */
+
+.at-index {
+  display: grid;
+  gap: var(--at-space-3);
+  grid-template-columns: repeat(auto-fill, minmax(var(--at-cell-min), 1fr));
+  margin: var(--at-space-0);
+  padding: var(--at-space-0);
+  list-style: none;
+}
+
+/* An invariant is drawn heavier than a product idea: README §2 calls them the thing that makes
+   the features trustworthy, and a plate says that with rule weight rather than with a word. */
+.at-concept[data-kind="invariant"] .at-name {
+  font-size: var(--at-text-md);
+}
+
+.at-concept[data-kind="invariant"] {
+  border-color: var(--at-line-2);
+}
+
+.at-concept[data-lit="true"],
+.at-concept[data-kind="invariant"][data-lit="true"] {
+  border-color: var(--at-mark);
+}
+
+/* Clamped, not truncated by width: three lines is what fits under a name at `--at-cell-min`, and
+   a claim that runs to five makes the index scroll past the stack it is supposed to mark up. The
+   whole claim is in the L2 pane and in `read_concepts`. */
+.at-concept-claim {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: var(--at-line-1);
+  font-size: var(--at-text-label);
+  line-height: var(--at-leading-snug);
+}
+
+/* ------------------------------------------------------------- the layer stack -- */
+
+.at-stack {
+  margin: var(--at-space-0);
+  padding: var(--at-space-0);
+  border: var(--at-rule-1) solid var(--at-line-3);
+  list-style: none;
+}
+
+.at-stack > li + li {
+  border-block-start: var(--at-rule-1) solid var(--at-line-3);
+}
+
+/*
+ * A band. Full width, no gap between bands: a stack drawn as a stack, in README §3.1's own order,
+ * surfaces at the top and contracts at the bottom.
+ */
+.at-band {
+  display: grid;
+  gap: var(--at-space-3) var(--at-space-5);
+  grid-template-columns: var(--at-rail-w) minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  min-height: var(--at-band-h);
+  padding: var(--at-space-3) var(--at-space-4);
+  border: 0;
+  background: var(--at-plate-2);
+  color: var(--at-line-0);
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+  transition: background-color var(--at-dur-hair) var(--at-ease);
+}
+
+.at-band:hover,
+.at-band:focus-visible {
+  background: var(--at-plate-3);
+}
+
+.at-band:focus-visible {
+  outline: var(--at-rule-2) solid var(--at-line-0);
+  outline-offset: calc(var(--at-rule-2) * -1);
+}
+
+.at-band-name {
+  color: var(--at-line-0);
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-md);
+  letter-spacing: var(--at-track-tight);
+}
+
+.at-band-blurb {
+  overflow: hidden;
+  color: var(--at-line-1);
+  font-size: var(--at-text-label);
+  line-height: var(--at-leading-snug);
+}
+
+.at-band-figs {
+  display: flex;
+  gap: var(--at-space-4);
+  align-items: baseline;
+  justify-content: end;
+}
+
+/*
+ * The lens, expressed downward. A band shows how many of its components the chosen concept
+ * touches, in vermilion — and the bar beside the figure is the same count as a length, so the
+ * six bands can be compared without reading six numbers.
+ */
+.at-band-lit {
+  display: flex;
+  gap: var(--at-space-2);
+  align-items: center;
+  color: var(--at-mark);
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-fig);
+  font-variant-numeric: tabular-nums;
+}
+
+.at-band-bar {
+  width: var(--at-rail-w);
+  height: var(--at-tick);
+  border: var(--at-rule-1) solid var(--at-line-3);
+}
+
+.at-band-bar > i {
+  display: block;
+  height: 100%;
+  background: var(--at-mark);
+  transition: width var(--at-dur-lens) var(--at-ease);
+}
+
+@container at-plate (max-width: 720px) {
+  .at-band {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .at-band-blurb {
+    display: none;
+  }
+}
