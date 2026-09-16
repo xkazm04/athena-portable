@@ -149,6 +149,21 @@
   white-space: nowrap;
 }
 
+/*
+ * THE HEADING IS CLIPPED TO THE BOX THE ROUTER RESERVED FOR IT (round 5).
+ *
+ * `plan.ts`'s `HEAD_SHARE` reserves 45% of a region's top edge as an obstacle no run may cross,
+ * and the remaining 55% is how runs get into the region at all. A heading that overflowed that
+ * box would be words with lines through them — so it does not overflow it, it ellipsises, which
+ * is the study's "shrink to fit with a floor; reject rather than overflow" (§7.8) in the one form
+ * a CSS box can express it. The percentage is of the REGION, in world units, which is exactly
+ * what the router measured.
+ */
+.at-region-head {
+  max-width: 30%;
+  overflow: hidden;
+}
+
 .at-region-note {
   font-size: var(--at-text-micro);
   font-family: var(--at-font-fig);
@@ -515,4 +530,209 @@
 .at-canvas[data-band="1"] .at-runs-system,
 .at-canvas[data-band="2"] .at-runs-system {
   opacity: 0.3;
+}
+
+/* ======================================================================================
+   ROUND 5 — detail tiers, run labels, the story, and what recedes.
+   ====================================================================================== */
+
+/*
+ * 1. DETAIL IS A TIER, AND INTENT OVERRIDES THE BAND (archify study §4, §7.3).
+ *
+ * Round 4 decided per component what "far" meant. Round 5 says it once: every piece of type in the
+ * drawing carries `data-detail`, the band decides which tiers are drawn, and `data-reveal` on the
+ * thing the reader is pointing at, focusing, lighting with the lens or telling a story about
+ * restores every tier AT ANY DISTANCE.
+ *
+ * Opacity, never `display`, so the geometry never moves when a tier arrives — a reader crossing a
+ * band watches detail appear on a drawing that holds still, which is the whole difference between
+ * semantic zoom and a page swap. The one exception is the part number in a block's title, which is
+ * `display: none` at the far band because there the problem is the WIDTH it takes from the name.
+ */
+[data-detail] {
+  transition: opacity var(--at-dur-ink) var(--at-ease-out);
+}
+
+.at-canvas[data-band="0"] [data-detail="context"],
+.at-canvas[data-band="0"] [data-detail="fine"],
+.at-canvas[data-band="1"] [data-detail="fine"] {
+  opacity: 0;
+}
+
+/* Intent. Four sources, one attribute, and the cascade does not care which of them set it. */
+.at-canvas[data-band="0"] .at-block[data-reveal] [data-detail],
+.at-canvas[data-band="1"] .at-block[data-reveal] [data-detail],
+.at-canvas[data-band="0"] .at-region[data-lit] [data-detail],
+.at-canvas[data-band="0"] .at-region[data-open] [data-detail] {
+  opacity: 1;
+}
+
+.at-canvas[data-band="1"] .at-block[data-reveal] .at-parts {
+  opacity: 1;
+}
+
+/*
+ * INTENT ADVANCES THE BAND BY ONE STEP; IT DOES NOT REPLACE IT — and that is a correction to the
+ * study, arrived at from a capture rather than from the text.
+ *
+ * Archify's rule is "focus, reach, lens, route, story and hover re-reveal detail at any scale"
+ * (§4). Taken literally here it is wrong, and the round-5 hover capture shows exactly why: at the
+ * whole-sheet band a part cell is about thirty screen pixels wide, so revealing the FINE tier on a
+ * hovered block prints "wir…", "cli…", "rea…" in nine blocks at once — noise where the silhouette
+ * was information. The study's own §7.8 answers it: shrink to fit with a legibility floor, and
+ * reject what shrinking cannot save. So the fine tier is revealed from the middle band, where the
+ * cell can hold a word, and at the far band intent gives the reader the CONTEXT tier, the hop
+ * lighting and the reading line instead. Detail a reader cannot read is not detail.
+ */
+.at-canvas[data-band="0"] .at-block[data-reveal] [data-detail="fine"] {
+  opacity: 0;
+}
+
+/*
+ * 2. THE RUN LABEL AND ITS MASK (study §7.7).
+ *
+ * The mask is not decoration: two characters of figure over a ruled ground with a line running
+ * under them is unreadable, and `route.ts` reserved this exact box in world units so that no later
+ * run crosses it. The `<g>` counter-scales by `--at-cs` like every other label here, so the figure
+ * is the same size in pixels at every distance while the box it sits in is world-space.
+ */
+.at-run-label {
+  pointer-events: none;
+}
+
+.at-run-mask {
+  fill: var(--at-ground);
+  stroke: none;
+}
+
+.at-run-text {
+  fill: var(--at-line-2);
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-micro);
+  font-weight: 500;
+}
+
+.at-run-label[data-mode="path"] .at-run-text {
+  fill: var(--at-line-1);
+}
+
+/*
+ * 3. THE STORY (study §4). Beat states, a trail drawn OVER the authored runs, and dimming.
+ *
+ * The authored run is never restyled by the story — the trail is a second path on the same
+ * geometry, in its own class, which is the study's rule 11: a derived path is an overlay, always,
+ * so what the drawing asserts and what the story says about it can never be confused.
+ */
+/*
+ * TWO PRESENCE CHANNELS, MULTIPLIED. `--at-present` is the navigation channel (rule 7, straight
+ * out of `presenceStyle`); the beat states and the dim below are the DOMAIN channel — the story,
+ * the legend's filter. Neither may overwrite the other, so they compose in a `calc()`, and a block
+ * that is both far from the reader's focus and off the story's beat is quieter than either alone.
+ */
+.at-block {
+  opacity: var(--at-present, 1);
+}
+
+.at-block[data-story-beat-state="past"] {
+  opacity: calc(var(--at-present, 1) * var(--at-op-past));
+}
+
+.at-block[data-story-beat-state="active"] {
+  opacity: var(--at-op-active);
+  border-color: var(--at-line-0);
+  border-width: var(--at-rule-3);
+  background: var(--at-plate-3);
+}
+
+.at-block[data-story-beat-state="next"] {
+  opacity: calc(var(--at-present, 1) * var(--at-op-next));
+}
+
+.at-trail-run {
+  fill: none;
+  stroke: var(--at-cyan);
+  stroke-width: var(--at-rule-3);
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+  opacity: var(--at-op-past);
+  transition: opacity var(--at-dur-ink) var(--at-ease-out);
+}
+
+.at-trail-run[data-story-beat-state="active"] {
+  opacity: var(--at-op-active);
+}
+
+.at-trail-run[data-story-beat-state="next"] {
+  opacity: var(--at-op-next);
+}
+
+/*
+ * 4. WHAT RECEDES. Dimmed, never removed: the rest of the drawing is the spatial reference that
+ * makes the lit part mean something (study §4). One opacity, one transition, three sources — the
+ * story, the legend's filter, and nothing else. A hover never dims anything; it only lights.
+ */
+.at-block[data-dim] {
+  opacity: calc(var(--at-present, 1) * var(--at-op-dim));
+}
+
+.at-run[data-dim] {
+  opacity: var(--at-op-dim);
+}
+
+.at-block,
+.at-run {
+  transition:
+    opacity var(--at-dur-lens) var(--at-ease-out),
+    transform var(--at-dur-view) var(--at-ease);
+}
+
+/*
+ * 5. ONE HOP. A hover lights the thing and what it touches, and opens nothing (study §4, §7.13).
+ * The weight is INK, never the accent: the accent is the lens and means a chosen claim.
+ */
+.at-block[data-hop] {
+  border-color: var(--at-line-0);
+  border-width: var(--at-rule-2);
+}
+
+.at-run[data-hop] {
+  stroke: var(--at-line-0);
+  stroke-width: var(--at-rule-2);
+  opacity: 1;
+}
+
+/* ---------------------------------- the blueprint's own stage ---------------------------------- */
+
+/*
+ * THREE ROWS: the legend, the drawing, and the turn's control strip.
+ *
+ * Round 4 floated the legend and the readout over the sheet, which was right while the legend was
+ * four static captions. Round 5's legend carries counts and is a filter — it is a CONTROL — and a
+ * control that occludes the thing it controls is the defect the round-4 capture shows in every
+ * view: the first region's heading disappears behind it. So the legend takes a row, and only the
+ * reading line still floats, over the corner of the sheet where nothing is drawn.
+ */
+.at-bp {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.at-bp-plane {
+  position: relative;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.at-bp > .at-legend {
+  position: static;
+  grid-row: 1;
+  max-width: none;
+  border-width: 0 0 var(--at-rule-1) 0;
+  background: var(--at-ground);
+}
+
+.at-bp > .at-turnbar {
+  grid-row: 3;
 }

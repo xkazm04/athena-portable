@@ -203,3 +203,156 @@
     overflow-x: auto;
   }
 }
+
+/* ======================================================================================
+   ROUND 5 — the legend counts and filters, and the story's two buttons.
+   ====================================================================================== */
+
+/*
+ * THE LEGEND IS A ROW OF CONTROLS NOW (study §4's lens, §2's counted legend).
+ *
+ * Each row says what a kind is, how many of it are on this sheet, and — when pressed — dims
+ * everything else. It stays a single line along the top of the stage, and it groups so that the
+ * strata and the runs do not read as one undifferentiated list of chips.
+ */
+.at-legend {
+  flex-wrap: wrap;
+  gap: var(--at-space-3);
+  max-width: calc(100% - var(--at-space-8));
+}
+
+.at-legend-group {
+  display: flex;
+  align-items: center;
+  gap: var(--at-space-1);
+}
+
+.at-legend-group + .at-legend-group {
+  padding-inline-start: var(--at-space-3);
+  border-inline-start: var(--at-rule-1) solid var(--at-line-3);
+}
+
+.at-legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--at-space-2);
+  padding: var(--at-space-1) var(--at-space-2);
+  border: var(--at-rule-1) solid transparent;
+  background: none;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--at-dur-hair) var(--at-ease),
+    background var(--at-dur-hair) var(--at-ease);
+}
+
+.at-legend-row:hover {
+  border-color: var(--at-line-3);
+  background: var(--at-plate-2);
+}
+
+.at-legend-row[data-on] {
+  border-color: var(--at-line-1);
+  background: var(--at-plate-3);
+}
+
+.at-legend-row[data-on] .at-label {
+  color: var(--at-line-0);
+}
+
+.at-legend-row .at-fig {
+  color: var(--at-line-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.at-legend-row[data-on] .at-fig {
+  color: var(--at-line-0);
+}
+
+/* The strata swatches. One weight of the ink family per stratum, top to bottom — not six hues:
+   a colour per layer would be a second accent, and this drawing has exactly one. */
+.at-legend-swatch[data-layer] {
+  background: var(--at-line-2);
+}
+
+.at-legend-swatch[data-layer="surfaces"] {
+  background: var(--at-line-0);
+}
+
+.at-legend-swatch[data-layer="channels"] {
+  background: var(--at-line-1);
+}
+
+.at-legend-swatch[data-layer="contracts"] {
+  background: var(--at-line-3);
+}
+
+.at-legend-run[data-mode="path"] path {
+  fill: var(--at-cyan);
+  stroke: var(--at-cyan);
+}
+
+.at-legend-run[data-mode="tether"] path {
+  stroke-dasharray: 3 3;
+}
+
+.at-legend-clear {
+  padding: var(--at-space-1) var(--at-space-3);
+  border: var(--at-rule-1) solid var(--at-line-2);
+  background: none;
+  color: var(--at-line-1);
+  font: inherit;
+  font-size: var(--at-text-label);
+  cursor: pointer;
+}
+
+/* --------------------------------------- the story --------------------------------------- */
+
+.at-story-btn {
+  padding: var(--at-space-1) var(--at-space-3);
+  border: var(--at-rule-1) solid var(--at-line-3);
+  background: none;
+  color: var(--at-line-1);
+  font: inherit;
+  font-size: var(--at-text-label);
+  cursor: pointer;
+  transition:
+    border-color var(--at-dur-hair) var(--at-ease),
+    color var(--at-dur-hair) var(--at-ease);
+}
+
+.at-story-btn:hover {
+  border-color: var(--at-line-1);
+  color: var(--at-line-0);
+}
+
+.at-story-btn[data-on],
+.at-story-btn[data-playing] {
+  border-color: var(--at-cyan);
+  color: var(--at-cyan);
+}
+
+/* Telling the story changes the strip itself, so a reader can see which mode they are in without
+   reading the button: the dots take their beat states and the rest of the strip quietens. */
+.at-turnbar[data-story] .at-turnbar-dot {
+  opacity: var(--at-op-dim);
+}
+
+.at-turnbar[data-story] .at-turnbar-dot[data-story-beat-state="past"] {
+  opacity: var(--at-op-past);
+}
+
+.at-turnbar[data-story] .at-turnbar-dot[data-story-beat-state="next"] {
+  opacity: var(--at-op-next);
+}
+
+.at-turnbar[data-story] .at-turnbar-dot[data-story-beat-state="active"] {
+  opacity: var(--at-op-active);
+}
+
+/* The turn bar is inside the variant's stage from round 5, not a row of the app grid. */
+.at-turnbar {
+  grid-row: 2;
+}

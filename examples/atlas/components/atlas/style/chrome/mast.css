@@ -44,21 +44,24 @@
   overflow: hidden;
 }
 
-.at-views {
+.at-switch {
   flex-shrink: 0;
   display: flex;
   border: var(--at-rule-1) solid var(--at-line-3);
 }
 
 /*
- * The view switcher: a segmented control, and a RADIO GROUP rather than four buttons.
+ * A SEGMENTED CONTROL, AND A RADIO GROUP rather than a row of buttons. Round 5 has two of them —
+ * which VARIANT is drawing, and which of its VIEWS is on the sheet — and they are the same object
+ * because they are the same kind of choice: N values of one property, walked with the arrow keys
+ * (`useRoving` in `Mast.tsx`), only the current one in the tab order, the chosen one drawn as the
+ * sheet itself. The ink and the ground swap, which says "this is the one on the board" without
+ * spending the accent, which means the lens and nothing else.
  *
- * Four arrangements of one drawing are four values of one property. The arrow keys walk them
- * (`useRoving` in `Mast.tsx`), only the current one is in the tab order, and the chosen one is
- * drawn as the sheet itself — the ink and the ground swap, which is the plainest way to say "this
- * is the one on the board" without spending the accent, which means the lens and nothing else.
+ * THE VARIANT SWITCHER IS THE FIRST and it is drawn a shade heavier, because a variant is a bigger
+ * change than an arrangement: one re-arranges nineteen blocks, the other replaces the drawing.
  */
-.at-view-btn {
+.at-switch-btn {
   padding: var(--at-space-1) var(--at-space-3);
   border: 0;
   border-inline-end: var(--at-rule-1) solid var(--at-line-3);
@@ -73,19 +76,27 @@
     color var(--at-dur-hair) var(--at-ease);
 }
 
-.at-view-btn:last-child {
+.at-switch-btn:last-child {
   border-inline-end: 0;
 }
 
-.at-view-btn:hover {
+.at-switch-btn:hover {
   color: var(--at-line-0);
   background: var(--at-plate-2);
 }
 
-.at-view-btn[aria-checked="true"] {
+.at-switch-btn[aria-checked="true"] {
   background: var(--at-line-1);
   color: var(--at-ground);
   font-weight: 600;
+}
+
+.at-variants {
+  border-color: var(--at-line-2);
+}
+
+.at-variants .at-switch-btn[aria-checked="true"] {
+  background: var(--at-line-0);
 }
 
 .at-mast-brand {

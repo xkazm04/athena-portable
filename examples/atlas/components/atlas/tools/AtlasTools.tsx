@@ -41,8 +41,8 @@ import {
 } from "@/data";
 import { LEVELS, NOUNS } from "@/lib/constants";
 
-import { VIEWS, VIEW_META, isView, type ViewId } from "../canvas/plan";
-import { TURN } from "../canvas/turn";
+import { VARIANTS, type VariantSlug } from "../variants/contract";
+import { readViews, requestView } from "../variants/viewBus";
 
 import {
   CONCEPT_KINDS,
@@ -50,7 +50,7 @@ import {
   conceptsRead,
   lensRead,
   systemRead,
-  turnRead,
+  variantRow,
   viewDetail,
 } from "./read";
 
@@ -59,20 +59,27 @@ export function AtlasTools({
   lens,
   lensId,
   setLens,
-  view,
-  setView,
-  stop,
-  setStop,
+  variant,
+  setVariant,
+  metaViews,
 }: {
   nav: ZoomNav;
   lens: Lens;
   lensId: string | null;
   setLens: (id: string | null) => void;
-  view: ViewId;
-  setView: (next: ViewId) => void;
-  stop: number;
-  setStop: (index: number) => void;
+  variant: VariantSlug;
+  setVariant: (next: VariantSlug) => void;
+  /** `VariantMeta.views` of the mounted variant — the enum `set_view` advertises. */
+  metaViews: readonly string[];
 }) {
+  /* The LIVE half of the second axis: whatever the mounted variant published this render. Read
+     through the bus rather than kept here, so the shell never holds a stale copy of a variant's
+     own state (`variants/viewBus.ts`). */
+  const currentView = () => {
+    const live = readViews();
+    return live.views.find((v) => v.id === live.current) ?? null;
+  };
+
   useZoomTools({
     nav,
     levels: LEVELS,
@@ -93,44 +100,98 @@ export function AtlasTools({
           })),
         ),
       ),
-    detail: () => viewDetail(nav.state.focus, lensId, view),
+    detail: () => viewDetail(nav.state.focus, lensId, variant, currentView()),
+  });
+
+  useWebMCPTool({
+    name: "set_variant",
+    description:
+      "Choose which of the three drawings of this architecture is on the table: blueprint (a ruled 2D sheet of system blocks with orthogonal runs and four switchable arrangements), archify (the archify grammar transposed — kind-coloured nodes, dashed group boundaries, labelled runs), wildcard (one idea neither of the others would try). The model, the level you are at, the open layer and the lens all survive the switch; only the drawing changes. Call with no argument to read which one is mounted.",
+    parameters: [
+      {
+        name: "variant",
+        type: "string",
+        required: false,
+        enum: VARIANTS.map((v) => v.slug),
+        description: "The drawing. Omit to read the current one without changing it.",
+      },
+    ],
+    reversible: true,
+    sideEffects: "none",
+    handler: ({ variant: asked }) => {
+      const answer = (id: VariantSlug, changed: boolean) => ({
+        ok: true as const,
+        variant: variantRow(id),
+        changed,
+        available: VARIANTS.map((v) => ({ id: v.slug, label: v.label, is: v.blurb })),
+        views: readViews().views.map((v) => v.id),
+        focus: nav.state.focus,
+      });
+      if (asked === undefined || asked === null || asked === "") return answer(variant, false);
+      const wanted = String(asked);
+      if (!VARIANTS.some((v) => v.slug === wanted)) {
+        return {
+          ok: false as const,
+          error: `No variant named ${wanted}.`,
+          available: VARIANTS.map((v) => v.slug),
+        };
+      }
+      if (wanted !== variant) setVariant(wanted as VariantSlug);
+      return answer(wanted as VariantSlug, wanted !== variant);
+    },
+    deps: [variant, setVariant, nav.state.focus],
   });
 
   useWebMCPTool({
     name: "set_view",
     description:
-      "Choose which of the four arrangements of the blueprint is on the sheet: layers (the six strata of README 3.1, dependencies running down), turn (README 3.2's twelve stops in order), trust (the six invariants, each a region of the blocks that enforce it), packages (the file tree as nested rectangles). The same blocks move to a new arrangement; the level and the open layer are kept. Call with no argument to read the current view.",
+      "Choose which arrangement the MOUNTED variant draws. A view is a variant's own second axis, not the app's: the blueprint has four (layers, turn, trust, packages) and re-arranges the same blocks between them, keeping the level and the open layer; another variant may have none, in which case this tool says so rather than failing. Call with no argument to read the current arrangement and what else is available.",
     parameters: [
       {
         name: "view",
         type: "string",
         required: false,
-        enum: [...VIEWS],
+        enum: [...metaViews],
         description: "The arrangement. Omit to read the current one without changing it.",
       },
     ],
     reversible: true,
     sideEffects: "none",
     handler: ({ view: asked }) => {
-      const answer = (id: ViewId, changed: boolean) => ({
+      const live = readViews();
+      /* The answer names the view the tool is LEAVING the surface in, which after a successful
+         request is the one asked for — the bus has not re-rendered yet inside this handler, so
+         reading it back here would answer the previous view and an agent would believe the call
+         had failed. */
+      const answer = (changed: boolean, id: string | null = live.current) => ({
         ok: true as const,
-        view: { ...VIEW_META[id] },
+        variant: variantRow(variant),
+        view: live.views.find((v) => v.id === id) ?? null,
         changed,
-        available: VIEWS.map((v) => ({ id: v, label: VIEW_META[v].label, shows: VIEW_META[v].note })),
+        available: live.views.map((v) => ({ id: v.id, label: v.label, shows: v.note ?? null })),
         focus: nav.state.focus,
       });
-      if (asked === undefined || asked === null || asked === "") return answer(view, false);
-      if (!isView(asked)) {
+      if (asked === undefined || asked === null || asked === "") return answer(false);
+      const wanted = String(asked);
+      if (live.views.length === 0) {
         return {
           ok: false as const,
-          error: `No view named ${String(asked)}.`,
-          available: [...VIEWS],
+          error: `The ${variantRow(variant).label} variant draws one arrangement and has no views to switch between.`,
+          variant: variantRow(variant),
+          hint: "set_variant('blueprint') mounts the variant with four arrangements.",
         };
       }
-      if (asked !== view) setView(asked);
-      return answer(asked, asked !== view);
+      if (wanted === live.current) return answer(false);
+      if (!requestView(wanted)) {
+        return {
+          ok: false as const,
+          error: `No view named ${wanted} in the ${variantRow(variant).label} variant.`,
+          available: live.views.map((v) => v.id),
+        };
+      }
+      return answer(true, wanted);
     },
-    deps: [view, setView, nav.state.focus],
+    deps: [variant, metaViews, nav.state.focus],
   });
 
   useWebMCPTool({
@@ -221,45 +282,6 @@ export function AtlasTools({
       return lensRead(asked);
     },
     deps: [lensId, setLens, lens.concept?.id],
-  });
-
-  useWebMCPTool({
-    name: "read_turn",
-    description:
-      "The turn this machine runs, from README section 3.2: every stop in order, the module it happens in, the system and layer it belongs to, the one label the sheet shows there, and the README section it was read from. The gate's stop is the one that waits. Call set_view with 'turn' to put the path on the sheet and set_turn to step it.",
-    parameters: [],
-    reversible: true,
-    sideEffects: "none",
-    handler: () => turnRead(stop),
-    deps: [stop],
-  });
-
-  useWebMCPTool({
-    name: "set_turn",
-    description:
-      "Put the turn's step at one stop. The sheet lights that module's block and the read-out shows its label. Reversible: call again with another stop. Has no effect on which view is on the sheet — call set_view('turn') to see the path.",
-    parameters: [
-      {
-        name: "stop",
-        type: "number",
-        required: true,
-        description: `Which stop, 1 to ${TURN.length}. read_turn lists them.`,
-      },
-    ],
-    reversible: true,
-    sideEffects: "none",
-    handler: ({ stop: asked }) => {
-      const n = Number(asked);
-      if (!Number.isFinite(n) || n < 1 || n > TURN.length) {
-        return {
-          ok: false as const,
-          error: `No stop ${String(asked)}. The turn has ${TURN.length} stops, numbered from 1.`,
-        };
-      }
-      setStop(n - 1);
-      return turnRead(n - 1);
-    },
-    deps: [setStop],
   });
 
   return null;

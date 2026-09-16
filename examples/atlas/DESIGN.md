@@ -294,3 +294,137 @@ at `100% / --at-cs` and scaled back; with `line-height: 1.55` the line box is ha
 the strip it sits in, and the clip takes the ascenders. Every folder name in the packages view was
 shaved, which reads as a font-rendering fault rather than as a tight label. One declaration:
 `line-height: var(--at-leading-tight)` on the scaled box.
+
+---
+
+## W. Round 5, the wildcard: the structure matrix
+
+**The idea, and the three sentences it is defended in.** This variant draws the model as a **design
+structure matrix**: both axes are the same ordered list of all 68 modules, and a relationship is a
+*mark at a position* rather than a line between two places. (1) A node-link drawing of 68 modules
+and 120 edges is a drawing of edges nobody traces; a matrix puts every one of those edges in exactly
+one place, with nothing crossing, nothing routed and nothing hidden behind anything, so **L0 is
+complete rather than a summary**. (2) Ordering both axes by README §3.1's stack turns the
+architecture's central claim — dependencies run down — into a geometric fact: everything right of
+the diagonal is lawful, the fifteen blocks left of it are hatched and must stay empty, and the field
+says the promise is currently kept in a way no arrangement of boxes can, because **a matrix gives
+the absence of a relationship a position on the page**. (3) It is the one form whose three bands are
+the same object at three grains — 6×6 layer blocks, 19×19 system blocks, 68×68 component cells — so
+semantic zoom is *aggregation* rather than a change of drawing, and `poseFor`/`resolve*` are exact
+inverses by construction because an item is a coordinate, not a thing inside a container.
+
+**What each band shows.** L0: the 6×6 grain, each block filled by how much crosses between two
+layers and printing the figure; the six layer blocks on the diagonal, sized by how much code is in
+them; the empty hatched triangle. L1: one layer's row band and column band tinted straight across
+the field, the 19×19 grain, both rails turned to system names. L2: one module's **crosshair** — its
+row is everything it asks of, its column is everything that asks it — with the kind glyph
+(`c i g s r`) inside every mark, the marks on the cross in full ink, and the shell's pane grown out
+of the module's own diagonal cell.
+
+**The signature interaction is the crosshair.** Point at a mark and *both* of its modules light —
+the row of the one that asks and the column of the one asked — one hop and no further. Commit to
+one (click, Enter on a rail entry, or the wheel) and the cross stays, and reading the architecture
+becomes reading two orthogonal strips instead of following a line through a diagram.
+
+**The headers are not in the world.** A row header inside a scaled world is unreadable at the far
+band and absurd at the near one, and counter-scaling it only moves the problem into the gutter,
+which scales too. So the two rails are pinned to the frame's edges and every entry is positioned
+each frame by projecting its span through the camera (`projectY`/`projectX`, the kit's own
+orthographic line written out and pinned in the test). Three things follow: every label is the same
+size in pixels at every band with no `--cs` and no quantisation (rule 13, satisfied by relocation);
+the rail changes *grain* with the band, so the header is itself a reading of the semantic zoom; and
+a name is drawn only where its span has room for one, which is archify's shrink-then-reject turned
+into a per-frame test. The world is therefore exactly the field — a square, centred on the origin,
+with the diagonal through it — and one zero-sized element carries the camera.
+
+**Rule 12, sharpened by the form.** On this field the split between "where you stand" and "where you
+look" falls on an *axis*: the row is the subject and the column is the object, so `pan.y` says which
+module the reader is reading and `pan.x` says only how far along its row they have got. `resolveGroup`
+and `resolveItem` read `y` alone, which is both the honest answer and the one that makes the inverse
+exact with no containment branch — round 4's sheet needed one because a layer's frame was a bounding
+box of scattered blocks that could overlap; an axis cannot overlap itself.
+
+**Rule 15, inverted.** A sheet can be *sparse* and the rule's answer is a floor size. A matrix has no
+sparse region, because every position on it is defined whether or not it carries a mark; the failure
+available to it is the opposite one — a field too **fine** to resolve, since 68 rows in a 690 px
+stage is 10 px a row whatever the cell size. The answer is not a bigger drawing (the fit is bounded
+by the frame's height either way) but the rails: at L0 they say six words, at L1 nineteen, at L2
+sixty-eight.
+
+**The honest weakness.** An item here is a row that spans the whole drawing, so "closer" and "see
+all of it" pull in opposite directions: at L2 a module's own marks are often outside the frame and
+have to be reached by panning along the row. The first capture at `L2_ZOOM = 2.6` put twelve columns
+on screen and all four of `ledger.py`'s marks outside them; 2.0 puts seventeen columns and eleven
+rows in frame, the legend prints both degrees so the reader knows what is off-screen, and the marks
+on the cross are the darkest thing in the picture. It is mitigated, not solved.
+
+**Files.** `components/atlas/variants/wildcard/` — `matrix.ts` (the axis, the geometry, the marks,
+the two grains, the fifteen zones), `poses.ts` (bands, `poseFor`, `resolveGroup`, `resolveItem`, the
+projection), `useMatrixCamera.ts` (the kit's rig and semantic zoom, and the measured frame),
+`Field.tsx` (the world), `Rails.tsx` (the screen-space headers), `Legend.tsx` (the key and the one
+number), `index.tsx`, `wildcard.css`. Tests: `test/wildcard.matrix.test.ts`,
+`test/wildcard.poses.test.ts`. Captures: `examples/journey/shots/round5-atlas/wildcard-*.png`.
+
+## R5. Round 5: three variants behind one switcher
+
+Round 4 was one drawing. It scored well and that is exactly the problem the owner named after round
+2: *"our adjustments are too careful and do not try any major design upgrades, leading us into
+polishing versions we are stuck with."* A single direction cannot tell you whether it is the right
+direction. So round 5 builds **three drawings over one model**, behind a segmented switcher in the
+mast, and the reader compares them by pressing a key.
+
+The line between them is `components/atlas/variants/contract.ts`, frozen before any of the three was
+written. **The shell** (`variants/Shell.tsx`) owns the nav, the flight, the lens and the `lit` set,
+reduced motion, the claims rail, the L2 pane — the one details destination for the whole app — and
+the `?variant=` choice. **A variant** owns everything inside its stage: layout, camera, bands,
+views, legend, story. A variant mounts by existing: `variants/<slug>/index.tsx` with a default
+export taking `VariantProps`, imported lazily through a template specifier so a folder that is not
+written yet costs a placeholder card rather than a build error. A variant's own second axis — its
+views, if it has any — is published through `variants/viewBus.ts`, so the mast draws whatever is
+mounted and `set_view` delegates to it rather than knowing about four arrangements.
+
+### R5.1 Blueprint — round 4's sheet, evolved
+
+Same grammar: one ruled sheet, nineteen system blocks with ports, orthogonal runs, four
+arrangements, three bands of detail, prose only at L2. Five things changed, each of them visible.
+
+**The near band frames the whole layer.** Round 4 stood at a fixed zoom of 1.3 whatever it opened,
+which on the six-system `surfaces` stratum showed about half a band — the round-4 carry-over, and
+rule 15 in its second form. Regions now balance their rows (`balancedCols`: three across, not five
+and one) and the L1 pose *fits* the open layer's frame, clamped into the band's interior so
+`poseFor`/`resolveGroup` stay exact inverses. L0 legibility did not pay for it: the sheet got
+narrower and taller in one move, so the whole-sheet zoom barely changed and a block is still about
+145 px wide at L0. `test/plan.test.ts` asserts the framing in the layers view and asserts that a
+layer scattered by another arrangement is either fitted or pinned at the band floor — never at some
+third number nobody chose.
+
+**Runs route around words.** `variants/blueprint/route.ts` replaces round 4's formula with a search:
+nine candidate families (facing-straight, the two mid-corridors, two L-shapes, the four outside
+channels, the two gap corridors), a hard feasibility filter, and a lexicographic cost vector —
+*crossings → block intrusions → label clearance → shared corridor → length → bends → port
+displacement → a stable ordinal*. The hard rule is the round: **a drawing may put a line across a
+rectangle; it may not put a line across a word.** Region headings and block title bars are absolute;
+block bodies are a cost. Every run label sits on an opaque mask and becomes an obstacle for the runs
+routed after it. `test/route.test.ts` fails the build if a run ever crosses a heading or a title, in
+any of the four views, at either tier. A region's heading is capped at 30% of its own top edge,
+because an uncapped one made fourteen of the layers view's runs unroutable — a region whose top edge
+is four fifths sentence is a region nothing can enter from above.
+
+**The legend counts, and it filters.** Only the kinds present, each with its count, and pressing one
+dims the rest to spatial reference rather than hiding it. It is not a second lens: the lens is the
+claims rail and owns the one accent; the filter takes ink weight.
+
+**The turn is a story.** Twelve stops with `past` / `active` / `next` beat states, everything off the
+beat dimmed, and the Story Trail drawn as an *overlay* over the authored runs, which are never
+restyled. The play is finite — one pass, no loop — and under reduced motion it lands on the final
+beat at frame zero with every past state shown, which is rule 8 rather than an exception for content.
+
+**Detail is a tier, and intent advances the band by one step.** `data-detail="context|fine"` on every
+piece of type; a hover, a focus, the lens or the story sets `data-reveal` and pulls the next tier
+forward. Not *all* tiers at any distance, which is how the study words it: at the whole-sheet band a
+part cell is thirty screen pixels wide, and revealing module names there printed `wir…` `cli…` in
+nine blocks at once. Detail a reader cannot read is not detail.
+
+**One details destination.** A hover is a one-hop preview — it lights the block and what it touches,
+writes one line in the reading line, and opens nothing. Pointer-fine only, and suppressed whenever
+the filter or the story is doing something stronger. The L2 pane, the shell's, stays the only panel.

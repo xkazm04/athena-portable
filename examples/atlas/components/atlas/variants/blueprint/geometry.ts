@@ -94,8 +94,18 @@ export const DIM = {
   /** Clear space between two blocks. */
   gapX: 44,
   gapY: 30,
-  /** The most blocks a region puts in one row before it wraps. */
-  cols: 5,
+  /**
+   * The most blocks a region puts in one row before it wraps.
+   *
+   * ROUND 5 TOOK THIS FROM FIVE TO FOUR, and then `balancedCols` below usually takes it lower
+   * still. Round 4's carry-over was "L1 framing: narrower regions vs L0 legibility" (rule 15), and
+   * the two are not actually in tension once the rows are BALANCED: six systems at five across is
+   * a row of five and a row of one, 1676 units wide, which at the near band needs 2180 screen
+   * pixels and therefore does not fit any laptop; the same six at three across is 988 units and two
+   * tidy rows, and because the sheet got taller as it got narrower the whole-sheet zoom barely
+   * moved — a block is still ~145 px wide at L0, which is what the L0 names need.
+   */
+  cols: 4,
   /** A region's own frame: its heading strip, and the margin inside its rule. */
   regionHead: 30,
   regionPad: 16,
@@ -110,6 +120,58 @@ export const DIM = {
   /** The margin of blank sheet around the whole drawing. */
   margin: 40,
 } as const;
+
+/**
+ * How many columns a region of `n` blocks should use: the fewest that still balances the rows.
+ *
+ * Five blocks at four across is 4 + 1, which reads as a mistake; at three across it is 3 + 2, which
+ * reads as a shape. The arithmetic is "how many rows will this need at the maximum, then spread the
+ * blocks evenly over those rows" — one line, and it is the difference between a drawing and a
+ * ragged stack. Rule 15 again: a place needs a floor size AND a shape.
+ */
+export function balancedCols(n: number, max: number = DIM.cols): number {
+  if (n <= 1) return 1;
+  const rows = Math.ceil(n / Math.max(1, max));
+  return Math.ceil(n / rows);
+}
+
+/* ------------------------------------- text, as geometry ------------------------------------- */
+
+/**
+ * WHAT A WORD OCCUPIES ON THE SHEET, so the router can route around it.
+ *
+ * Type is screen-space and geometry is world-space (rule 13), so a label's world footprint depends
+ * on the zoom it is read at — which means there is no exact answer and pretending otherwise would
+ * be worse than an estimate. These are the footprint at the NEAR band, where labels matter most and
+ * where a run crossing one is most visible, and they are deliberately generous: an obstacle that is
+ * slightly too big costs a run one extra corner, while one that is slightly too small costs the
+ * reader a word.
+ *
+ * This is the study's `text-fit.mjs` at the one place a hand-built explorer actually needs it: not
+ * to shrink text, but to know where it is.
+ */
+export const TEXT = {
+  /** World units per character of a label at the near band. */
+  em: 6.2,
+  /** The height of one line of it. */
+  line: 15,
+  /** Clear space around a label's own mask. */
+  pad: 5,
+} as const;
+
+/**
+ * The box a string of `chars` characters occupies, centred on wherever it is placed.
+ *
+ * The floor is a character and a half, not a stub: a one-character label reserving nine characters
+ * of sheet is a label that cannot be placed anywhere on a short run, which is how four of the
+ * turn's twelve legs lost their number the first time this was written.
+ */
+export function textBox(chars: number, lines = 1): { w: number; h: number } {
+  return {
+    w: Math.max(1.5, chars) * TEXT.em + TEXT.pad * 2,
+    h: TEXT.line * lines + TEXT.pad * 2,
+  };
+}
 
 /** How tall a block with `n` parts stands. The one sizing rule, and it ignores the view. */
 export function blockHeight(parts: number): number {

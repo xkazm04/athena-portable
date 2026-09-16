@@ -38,8 +38,8 @@ import {
 } from "@/data";
 import { READ_CAP } from "@/lib/constants";
 
-import { VIEW_META, type ViewId } from "../canvas/plan";
-import { GATE_STOP, TURN } from "../canvas/turn";
+import { VARIANTS, type VariantSlug } from "../variants/contract";
+import type { ViewDescriptor } from "../variants/viewBus";
 
 /** The one sentence AGENTS.md requires of any bounded output. */
 export const announce = (showing: number, of: number): string => `(showing ${showing} of ${of})`;
@@ -81,6 +81,19 @@ const componentRow = (c: Component) => ({
 /* --------------------------------------------------------------------- the reads -- */
 
 export const CONCEPT_KINDS: readonly ConceptKind[] = ["invariant", "tier", "act", "decision"];
+
+/**
+ * Which drawing is on the table, in the words the switcher uses.
+ *
+ * ROUND 5 PUTS THE VARIANT IN EVERY READ, and that is not decoration. Three variants render the
+ * same model with different grammars; an agent that reports "the surfaces layer is open" without
+ * saying WHICH drawing it is open in has described a state the reader cannot check against their
+ * screen. `read_view` therefore names the variant before it names anything else.
+ */
+export const variantRow = (slug: VariantSlug) => {
+  const row = VARIANTS.find((v) => v.slug === slug);
+  return { id: slug, label: row?.label ?? slug, is: row?.blurb ?? "" };
+};
 
 /**
  * The population at L0. `kind` narrows it; anything else is refused with the list of kinds rather
@@ -240,16 +253,21 @@ export function lensRead(conceptId: string | null) {
  * arrangements and an agent that cannot tell which one is on the sheet cannot describe what a
  * reader is seeing.
  */
-export function viewDetail(focus: Focus, conceptId: string | null, view: ViewId) {
+export function viewDetail(
+  focus: Focus,
+  conceptId: string | null,
+  variant: VariantSlug,
+  view: ViewDescriptor | null,
+) {
   const lens = lensFor(conceptId);
   const marked = lens.concept
     ? { id: lens.concept.id, part: lens.concept.part, name: lens.concept.name, components: lens.components.size }
     : null;
   const arrangement = {
-    id: view,
-    label: VIEW_META[view].label,
-    shows: VIEW_META[view].note,
-    runs: VIEW_META[view].runs,
+    variant: variantRow(variant),
+    ...(view
+      ? { id: view.id, label: view.label, shows: view.note ?? null, runs: view.runs ?? null }
+      : { id: null, label: null, shows: "This variant draws one arrangement; set_view has nothing to choose between.", runs: null }),
   };
 
   if (focus.level === 2) {
@@ -291,38 +309,5 @@ export function viewDetail(focus: Focus, conceptId: string | null, view: ViewId)
       components: componentsOfLayer(l.id).length,
       lit: litInLayer(lens, l.id),
     })),
-  };
-}
-
-/* ---------------------------------------- the turn ---------------------------------------- */
-
-/**
- * The turn, as an agent reads it: every stop in order, the module it happens in, the one label
- * the scene shows there, and the README section it was read from.
- *
- * Bounded like everything else — the whole turn is twelve stops, comfortably under the cap, and
- * the announcement is still made, because "every truncated block announces (showing N of M)" is
- * an invariant of this repository (README §2, #4) and an invariant that only fires when it is
- * needed is an invariant nobody has tested.
- */
-export function turnRead(at: number) {
-  return {
-    ...announced(TURN, (s) => ({
-      stop: s.index + 1,
-      label: s.label,
-      kind: s.kind,
-      component: s.part,
-      system: s.block,
-      layer: s.layer,
-      file: componentById(s.part)?.file ?? null,
-      source: s.cite,
-      waitsHere: s.kind === "wait",
-      revisit: s.revisit,
-    })),
-    at: at + 1,
-    of: TURN.length,
-    here: TURN[at]?.label ?? null,
-    gate: GATE_STOP + 1,
-    note: "The path is drawn all at once in the turn view; the step control lights one stop at a time. The turn WAITS at the gate until a decision resolves it. set_turn moves the step; set_view('turn') puts the path on the sheet.",
   };
 }

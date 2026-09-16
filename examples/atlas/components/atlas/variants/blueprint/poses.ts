@@ -43,8 +43,37 @@ import { PLANS, partIn, type ViewId } from "./plan";
  */
 export const BANDS: readonly [number, number] = [0.85, 2.3];
 
-/** Where the camera stands with one layer open. The band's own reading distance. */
+/**
+ * Where the camera stands with one layer open — the band's own reading distance, and the FLOOR of
+ * a fit rather than a fixed number.
+ *
+ * ROUND 4 STOOD AT 1.3 WHATEVER IT WAS LOOKING AT, and the round-4 capture shows what that costs:
+ * the surfaces layer is 1676 world units wide, 1.3 makes that 2180 screen pixels, and the reader
+ * arrives at L1 looking at about half a band with the rest off both edges. That is the round-4
+ * carry-over "L1 framing" and it is rule 15 in its second form — a place needs a floor size, and a
+ * *frame* needs to contain the place.
+ *
+ * Round 5 FITS the open layer's frame and then clamps the result into the band's interior, so the
+ * arrival always shows the whole layer and the band is still unambiguously L1. The clamp is what
+ * keeps rule 14 true: a zoom that fell below `BANDS[0]` would resolve to L0 and the reader would be
+ * thrown back out of the layer they just opened. `L1_ZOOM` remains the answer when there is no
+ * measured frame yet (the first paint, and the server).
+ */
 export const L1_ZOOM = 1.3;
+
+/**
+ * The band's interior, with room for the kit's 8% hysteresis on both sides.
+ *
+ * A pose exactly on a band edge is a pose that flaps: the kit resolves it one way, the reader's
+ * next wheel notch resolves it the other, and the level changes without anybody asking. Nine per
+ * cent is the eight the kit uses plus one, which is the smallest honest margin.
+ */
+export const HYSTERESIS = 0.09;
+export const L1_MIN = BANDS[0] * (1 + HYSTERESIS);
+export const L1_MAX = BANDS[1] * (1 - HYSTERESIS);
+
+/** How much of the frame a fitted layer fills. The rest is the sheet around it, which is the point. */
+export const FIT = 0.92;
 
 /** Where it stands with one component open — a part big enough to point at. */
 export const L2_ZOOM = 3.2;
@@ -75,6 +104,20 @@ export function homeZoom(view: ViewId, frame: Frame): number {
   return clamp(Math.min(frame.w / b.w, frame.h / b.h) * 0.94, HOME_MIN, HOME_MAX);
 }
 
+/**
+ * The zoom that fits one layer's frame in the viewport, held inside the L1 band.
+ *
+ * Pure and exported so `test/poses.test.ts` can assert the framing directly: for every layer in
+ * every view, either the whole frame fits the reference viewport at this zoom, or the zoom is
+ * pinned at the band floor and the test says which layer is too big for the band — a fact about
+ * the arrangement, stated, rather than a reader discovering it by scrolling.
+ */
+export function layerZoom(view: ViewId, layer: LayerId, frame: Frame): number {
+  const box = PLANS[view].frames[layer];
+  if (!box || !(box.w > 0) || !(box.h > 0) || !(frame.w > 0) || !(frame.h > 0)) return L1_ZOOM;
+  return clamp(Math.min(frame.w / box.w, frame.h / box.h) * FIT, L1_MIN, L1_MAX);
+}
+
 /** The world point the camera is looking at: the inverse of `pan`. */
 export const lookingAt = (pose: CameraPose): Point => ({ x: -pose.pan.x, y: -pose.pan.y });
 
@@ -97,7 +140,7 @@ export function poseFor(focus: Focus, view: ViewId, frame: Frame): Partial<Camer
   }
   if (focus.level >= 1 && focus.group) {
     const box = plan.frames[focus.group as LayerId];
-    if (box) return { zoom: L1_ZOOM, pan: panTo(centreOf(box)) };
+    if (box) return { zoom: layerZoom(view, focus.group as LayerId, frame), pan: panTo(centreOf(box)) };
   }
   return { zoom: homeZoom(view, frame), pan: panTo(centreOf(plan.bounds)) };
 }

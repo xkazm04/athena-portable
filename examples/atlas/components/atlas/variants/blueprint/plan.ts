@@ -46,16 +46,18 @@ import {
 
 import {
   DIM,
+  balancedCols,
   blockHeight,
   boundsOf,
   centreOf,
   packRows,
   partRect,
-  routeOrtho,
+  textBox,
   type Point,
   type Rect,
   type Run,
 } from "./geometry";
+import { Router, type Corridors, type Obstacle, type Routed } from "./route";
 import { TURN, TURN_BLOCKS } from "./turn";
 
 /* ---------------------------------------- the views ---------------------------------------- */
@@ -151,8 +153,16 @@ export interface PlanEdge {
   mode: RunMode;
   /** How many component edges cross this way (`system`), or the stop number (`path`). */
   weight: number;
+  /** The sentence the readout and the tools use. Never drawn on the sheet. */
   label: string;
+  /** The two or three characters drawn ON the run, over an opaque mask. Null for an unlabelled run. */
+  short: string | null;
   run: Run;
+  /** Where the short label sits, in world units. */
+  labelAt: Point | null;
+  /** Which candidate family won, and whether the search failed and fell back. For the tests. */
+  family: Routed["family"];
+  fallback: boolean;
 }
 
 export interface Plan {
@@ -218,7 +228,10 @@ interface RegionSpec {
  */
 function stack(specs: readonly RegionSpec[]): { blocks: BlockBox[]; regions: RegionBox[] } {
   const packs = specs.map((s) =>
-    packRows(s.blocks.map((id) => SIZE_BY_ID.get(id) ?? { w: DIM.blockW, h: DIM.headH })),
+    packRows(
+      s.blocks.map((id) => SIZE_BY_ID.get(id) ?? { w: DIM.blockW, h: DIM.headH }),
+      balancedCols(s.blocks.length),
+    ),
   );
   const width = Math.max(DIM.blockW, ...packs.map((p) => p.w)) + DIM.regionPad * 2;
 
@@ -260,43 +273,154 @@ const rectOf = (blocks: readonly BlockBox[], id: string): Rect | null =>
   blocks.find((b) => b.id === id) ?? null;
 
 /**
- * Turn a list of block pairs into runs, ranking the ones that share a corridor so they do not
- * draw on top of each other.
+ * EVERYTHING ON THE SHEET THAT A RUN MUST NOT CROSS, and the one distinction that matters:
+ * a rectangle with WORDS in it is hard, a rectangle without is soft.
  *
- * The rank is per ORDERED PAIR OF SIDES rather than global; see `routeOrtho`.
+ * Hard: a region's heading (as wide as its text, not as wide as the region — a boundary is not an
+ * obstacle, its label is) and a block's title bar, which is the one part of a block that always
+ * carries type. Soft: a block's body, which a run may cross when the sheet leaves it no choice.
+ *
+ * This is the study's "groups derived from membership, never authored rectangles" (§7.4) read from
+ * the other end: the region rectangle is derived, so it is not a thing to route around — the words
+ * in it are.
+ */
+export function wallsFor(blocks: readonly BlockBox[], regions: readonly RegionBox[]): Obstacle[] {
+  const walls: Obstacle[] = [];
+  for (const r of regions) {
+    const box = textBox(r.name.length + r.note.length + 3);
+    /**
+     * THE HEADING IS CAPPED AT FORTY-FIVE PER CENT OF ITS REGION, and the number is a finding.
+     *
+     * Uncapped, a stratum's heading plus its blurb is 830 world units of a 1020-unit region — and
+     * a region whose top edge is four fifths word is a region nothing can enter from above. The
+     * router proved it: fourteen of the layers view's runs had no feasible candidate at all,
+     * because every vertical corridor into the stratum and every outside channel beside it ran
+     * through a sentence. Capping the heading leaves a clear entry wider than a block, which is
+     * the geometric condition for the region to be reachable at all, and the stylesheet clips the
+     * note to match (study §7.8: shrink to fit, reject rather than overflow).
+     */
+    walls.push({
+      id: `head:${r.id}`,
+      kind: "text",
+      x: r.x,
+      y: r.y,
+      w: Math.min(r.w * HEAD_SHARE, box.w),
+      h: DIM.regionHead,
+    });
+  }
+  for (const b of blocks) {
+    walls.push({ id: `title:${b.id}`, kind: "text", x: b.x, y: b.y, w: b.w, h: DIM.headH });
+    if (b.h > DIM.headH) {
+      walls.push({
+        id: `body:${b.id}`,
+        kind: "body",
+        x: b.x,
+        y: b.y + DIM.headH,
+        w: b.w,
+        h: b.h - DIM.headH,
+      });
+    }
+  }
+  return walls;
+}
+
+/**
+ * What a system run says about itself, in two characters.
+ *
+ * A run that carries one import needs no figure — the run IS the fact. A run that carries nine
+ * is a different claim about the two systems and the drawing should say so where the run is,
+ * not in a tooltip. Everything longer than this belongs in the readout or the pane (item 5:
+ * one details destination).
+ */
+const weightMark = (weight: number): string | null => (weight > 1 ? `×${weight}` : null);
+
+/** How much of a region's top edge its heading may claim. The rest is where runs come in. */
+export const HEAD_SHARE = 0.3;
+
+/**
+ * The two clear columns beside the whole drawing.
+ *
+ * A guarantee, not an optimisation: a pair of blocks with no corridor between them can always be
+ * joined by going out past the edge of everything and back, so the search never has to give up and
+ * `test/route.test.ts` can assert zero fallbacks rather than "not too many".
+ */
+function escapeOf(
+  blocks: readonly BlockBox[],
+  regions: readonly RegionBox[],
+): { left: number; right: number } {
+  const all = boundsOf([...regions, ...blocks]);
+  return { left: all.x - DIM.regionGap, right: all.x + all.w + DIM.regionGap };
+}
+
+/**
+ * The corridors the arrangement already left: the middle of every gap beside a block, and the
+ * band above and below every row. Deduplicated to the nearest unit, because two blocks in the same
+ * row leave the same corridor and the router should see it once.
+ */
+function corridorsOf(blocks: readonly BlockBox[]): Corridors {
+  const xs = new Set<number>();
+  const ys = new Set<number>();
+  for (const b of blocks) {
+    xs.add(Math.round(b.x - DIM.gapX / 2));
+    xs.add(Math.round(b.x + b.w + DIM.gapX / 2));
+    ys.add(Math.round(b.y - DIM.elbow));
+    ys.add(Math.round(b.y + b.h + DIM.elbow));
+  }
+  return { xs: [...xs].sort((a, b) => a - b), ys: [...ys].sort((a, b) => a - b) };
+}
+
+export interface RunSpec {
+  from: string;
+  to: string;
+  mode: RunMode;
+  weight: number;
+  label: string;
+  /** What is drawn on the run itself, over its own mask. Two or three characters at most. */
+  short: string | null;
+  /**
+   * The order this run is ROUTED in, biggest first. Defaults to the weight.
+   *
+   * It is separate from the weight because the two are not always the same question: a system run
+   * is routed heaviest-first because the heaviest edge deserves the clean corridor, but the turn's
+   * legs are routed in the order a reader FOLLOWS them, which is the opposite end of the weight.
+   */
+  priority?: number;
+}
+
+/**
+ * Turn a list of block pairs into routed runs.
+ *
+ * THE ORDER IS THE DESIGN. Round 4 ranked runs that shared a corridor so they would not overlap,
+ * which is a local fix for a global problem; round 5 routes them ONE AT A TIME, heaviest first,
+ * each against everything already drawn — so the edge that carries twelve imports gets the clean
+ * corridor and the edge that carries one goes round. Ties break on the id, so the sheet is
+ * byte-deterministic and a test can assert on the geometry (study §3's stable ordinal).
  */
 function runs(
   blocks: readonly BlockBox[],
-  pairs: readonly { from: string; to: string; mode: RunMode; weight: number; label: string }[],
+  regions: readonly RegionBox[],
+  pairs: readonly RunSpec[],
 ): PlanEdge[] {
+  const router = new Router(
+    wallsFor(blocks, regions),
+    escapeOf(blocks, regions),
+    corridorsOf(blocks),
+  );
   const drawable = pairs
     .map((p) => ({ p, a: rectOf(blocks, p.from), b: rectOf(blocks, p.to) }))
-    .filter((r) => r.a !== null && r.b !== null && r.p.from !== r.p.to);
+    .filter((r) => r.a !== null && r.b !== null && r.p.from !== r.p.to)
+    .sort(
+      (x, y) =>
+        (y.p.priority ?? y.p.weight) - (x.p.priority ?? x.p.weight) ||
+        (`${x.p.from}->${x.p.to}` < `${y.p.from}->${y.p.to}` ? -1 : 1),
+    );
 
-  /* Two passes, because a lane offset needs to know how many runs are sharing the corridor
-     before it can centre them in it: one run offset by zero, two by ±half a lane, five by
-     −2..+2. A single pass can only ever push them all to one side. */
-  const key = (r: (typeof drawable)[number]) => {
-    const provisional = routeOrtho(r.a!, r.b!, 0);
-    const corridor = provisional.points[1] ?? { x: 0, y: 0 };
-    return `${provisional.from}|${provisional.to}|${Math.round(
-      (provisional.from === "left" || provisional.from === "right" ? corridor.x : corridor.y) /
-        (DIM.lane * 2),
-    )}`;
-  };
-  const bucket = new Map<string, number>();
-  const keys = drawable.map((r) => {
-    const k = key(r);
-    bucket.set(k, (bucket.get(k) ?? 0) + 1);
-    return k;
-  });
-  const taken = new Map<string, number>();
-
-  return drawable.map((r, i) => {
-    const k = keys[i]!;
-    const n = taken.get(k) ?? 0;
-    taken.set(k, n + 1);
-    const rank = n - (bucket.get(k)! - 1) / 2;
+  return drawable.map((r) => {
+    const routed = router.route(
+      r.a!,
+      r.b!,
+      r.p.short ? textBox(r.p.short.length) : null,
+    );
     return {
       id: `${r.p.mode}:${r.p.from}->${r.p.to}`,
       from: r.p.from,
@@ -304,7 +428,11 @@ function runs(
       mode: r.p.mode,
       weight: r.p.weight,
       label: r.p.label,
-      run: routeOrtho(r.a!, r.b!, rank),
+      short: r.p.short,
+      run: { points: routed.points, from: routed.from, to: routed.to, down: routed.down },
+      labelAt: routed.labelAt,
+      family: routed.family,
+      fallback: routed.fallback,
     };
   });
 }
@@ -336,6 +464,7 @@ function assemble(
   const movedEdges = edges.map((e) => ({
     ...e,
     run: { ...e.run, points: e.run.points.map((p) => ({ x: p.x + dx, y: p.y + dy })) },
+    labelAt: e.labelAt ? { x: e.labelAt.x + dx, y: e.labelAt.y + dy } : null,
   }));
 
   const frames = {} as Record<LayerId, Rect>;
@@ -379,15 +508,16 @@ function layersPlan(): Plan {
   const depth = (id: string) => LAYER_ORDER.indexOf((systemById(id)?.layer ?? "core") as LayerId);
   const edges = runs(
     blocks,
-    [...SYSTEM_EDGES]
-      .sort((a, b) => b.weight - a.weight)
-      .map((e) => ({
-        from: e.from,
-        to: e.to,
-        mode: "system" as const,
-        weight: e.weight,
-        label: depth(e.to) > depth(e.from) ? "depends on" : depth(e.to) < depth(e.from) ? "reaches" : "calls",
-      })),
+    regions,
+    SYSTEM_EDGES.map((e) => ({
+      from: e.from,
+      to: e.to,
+      mode: "system" as const,
+      weight: e.weight,
+      label:
+        depth(e.to) > depth(e.from) ? "depends on" : depth(e.to) < depth(e.from) ? "reaches" : "calls",
+      short: weightMark(e.weight),
+    })),
   );
   return assemble("layers", blocks, regions, edges);
 }
@@ -422,9 +552,13 @@ function turnPlan(): Plan {
     to: stop.block,
     mode: "path" as const,
     weight: stop.index + 1,
+    /* The turn is read in ORDER, so its runs are routed in order too: the first leg gets the clean
+       corridor and the last goes round, which is the order a reader follows them in. */
+    priority: TURN.length - stop.index,
     label: `${stop.index + 1}. ${stop.label}`,
+    short: String(stop.index + 1),
   }));
-  return assemble("turn", blocks, regions, runs(blocks, legs));
+  return assemble("turn", blocks, regions, runs(blocks, regions, legs));
 }
 
 /* -------------------------------------- 3. the trust -------------------------------------- */
@@ -511,11 +645,12 @@ function trustPlan(): Plan {
         mode: "tether" as const,
         weight: inv.n,
         label: `also enforces ${CONCEPTS.find((c) => c.id === inv.id)?.name ?? inv.id}`,
+        short: CONCEPTS.find((c) => c.id === inv.id)?.part ?? null,
       }))
       .filter((t) => t.to !== "" && t.to !== s.id),
   );
 
-  return assemble("trust", blocks, regions, runs(blocks, tethers));
+  return assemble("trust", blocks, regions, runs(blocks, regions, tethers));
 }
 
 /* ------------------------------------- 4. the packages ------------------------------------- */
@@ -638,9 +773,15 @@ function packagesPlan(): Plan {
   });
   const edges = runs(
     blocks,
-    [...SYSTEM_EDGES]
-      .sort((a, b) => b.weight - a.weight)
-      .map((e) => ({ from: e.from, to: e.to, mode: "system" as const, weight: e.weight, label: "imports" })),
+    regions,
+    SYSTEM_EDGES.map((e) => ({
+      from: e.from,
+      to: e.to,
+      mode: "system" as const,
+      weight: e.weight,
+      label: "imports",
+      short: weightMark(e.weight),
+    })),
   );
   return assemble("packages", blocks, regions, edges);
 }
@@ -733,43 +874,69 @@ export function partRuns(
   const mine = new Set(
     COMPONENTS.filter((c) => systemById(c.system)?.layer === layer).map((c) => c.id),
   );
+  const plan = PLANS[view];
+
+  /* The near band's obstacles are the far band's plus the parts themselves: a component run that
+     crosses another component's name is exactly the defect this round is about, one tier down. A
+     part is SOFT, because the three columns inside a block leave no corridor at all and a run that
+     refuses to cross one would have to leave the block to reach its neighbour. */
+  const walls: Obstacle[] = wallsFor(plan.blocks, plan.regions);
+  for (const b of plan.blocks) {
+    for (const p of b.parts) {
+      walls.push({ id: `part:${p.id}`, kind: "body", x: b.x + p.x, y: b.y + p.y, w: p.w, h: p.h });
+    }
+  }
+  const router = new Router(
+    walls,
+    escapeOf(plan.blocks, plan.regions),
+    corridorsOf(plan.blocks),
+  );
+
   const out: PartRun[] = [];
-  let rank = 0;
-  for (const e of edges) {
-    const here = mine.has(e.from);
-    const there = mine.has(e.to);
-    if (!here && !there) continue;
+  /* Deterministic: inside the layer first (the runs a reader is meant to follow), then the stubs,
+     each group in the model's own order. */
+  const inside = edges.filter((e) => mine.has(e.from) && mine.has(e.to));
+  const leaving = edges.filter((e) => mine.has(e.from) !== mine.has(e.to));
+
+  for (const e of inside) {
     const a = partIn(view, e.from);
     const b = partIn(view, e.to);
     if (!a || !b) continue;
-    if (here && there) {
-      out.push({
-        id: `${e.from}->${e.to}`,
-        from: e.from,
-        to: e.to,
-        kind: e.kind,
-        note: e.note,
-        run: routeOrtho(a, b, (rank++ % 3) - 1),
-        leaves: null,
-      });
-      continue;
-    }
-    /* One end outside: draw the run anyway, from the part inside to the part outside. The
-       stylesheet fades it out past the layer's frame, which is what a stub IS on a real sheet —
-       a run that leaves the drawing and says which way it went. */
-    const other = systemById(
-      COMPONENTS.find((c) => c.id === (here ? e.to : e.from))?.system ?? "",
-    )?.layer;
+    const routed = router.route(a, b, null);
     out.push({
       id: `${e.from}->${e.to}`,
       from: e.from,
       to: e.to,
       kind: e.kind,
       note: e.note,
-      run: routeOrtho(here ? a : b, here ? b : a, 0),
+      run: { points: routed.points, from: routed.from, to: routed.to, down: routed.down },
+      leaves: null,
+    });
+  }
+
+  for (const e of leaving) {
+    const here = mine.has(e.from);
+    const a = partIn(view, e.from);
+    const b = partIn(view, e.to);
+    if (!a || !b) continue;
+    /* One end outside: draw the run anyway, from the part inside to the part outside. The
+       stylesheet fades it out past the layer's frame, which is what a stub IS on a real sheet —
+       a run that leaves the drawing and says which way it went. */
+    const other = systemById(
+      COMPONENTS.find((c) => c.id === (here ? e.to : e.from))?.system ?? "",
+    )?.layer;
+    const routed = router.route(here ? a : b, here ? b : a, null);
+    out.push({
+      id: `${e.from}->${e.to}`,
+      from: e.from,
+      to: e.to,
+      kind: e.kind,
+      note: e.note,
+      run: { points: routed.points, from: routed.from, to: routed.to, down: routed.down },
       leaves: other ?? "elsewhere",
     });
   }
+
   return out;
 }
 

@@ -261,3 +261,64 @@
     max-height: 30dvh;
   }
 }
+
+/* ---------------------------------- round 5: the variant stage ---------------------------------- */
+
+/*
+ * A VARIANT'S STAGE. The shell owns `.at-stage`; everything inside it belongs to whichever drawing
+ * is mounted, and this is the box it gets: the full cell, two rows, the second one for a control
+ * strip a variant may or may not have (the blueprint's turn bar does; nothing else does yet).
+ *
+ * Absolutely positioned chrome — the reading line, the legend — anchors to THIS box rather than to
+ * the stage, so a variant with a control strip does not have its legend float over it.
+ */
+.at-stage-in {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+/*
+ * THE HONEST PLACEHOLDER. A variant that is not built yet, or whose module threw, gets this — and
+ * it says which file would make it appear, because the reader of this app is usually the person
+ * who would write that file. It is deliberately plain: a card that looked designed would read as
+ * a feature rather than as an absence.
+ */
+.at-missing {
+  place-self: center;
+  grid-row: 1 / -1;
+  max-width: var(--at-measure);
+  padding: var(--at-space-6);
+  border: var(--at-rule-1) dashed var(--at-line-3);
+  text-align: center;
+}
+
+.at-missing-head {
+  margin: 0 0 var(--at-space-2);
+  font-size: var(--at-text-md);
+  color: var(--at-line-1);
+}
+
+.at-missing-head b {
+  color: var(--at-line-0);
+}
+
+.at-missing-retry {
+  margin-block-start: var(--at-space-4);
+  padding: var(--at-space-1) var(--at-space-4);
+  border: var(--at-rule-1) solid var(--at-line-3);
+  background: none;
+  color: var(--at-line-1);
+  font: inherit;
+  font-size: var(--at-text-label);
+  cursor: pointer;
+}
+
+.at-missing-retry:hover {
+  border-color: var(--at-line-1);
+  color: var(--at-line-0);
+}

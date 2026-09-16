@@ -26,6 +26,14 @@ import {
   viewDetail,
 } from "../components/atlas/tools/read";
 
+/** The descriptor the blueprint variant publishes for its default arrangement. */
+const LAYERS_VIEW = {
+  id: "layers",
+  label: "Layers",
+  note: "README 3.1 - six strata, surfaces on top",
+  runs: "depends on",
+};
+
 test("announce() is the one sentence AGENTS.md asks for", () => {
   assert.equal(announce(5, 22), "(showing 5 of 22)");
 });
@@ -136,18 +144,18 @@ test("set_lens with nothing set reads as no lens, and offers the concepts", () =
 });
 
 test("read_view's detail is honest at all three levels", () => {
-  const l0 = viewDetail({ level: 0, group: null, item: null }, null, "layers");
+  const l0 = viewDetail({ level: 0, group: null, item: null }, null, "blueprint", LAYERS_VIEW);
   assert.equal(l0.counts?.components, COMPONENTS.length);
   assert.equal(l0.stack?.length, LAYERS.length);
 
   const layer = LAYERS[0]!;
-  const l1 = viewDetail({ level: 1, group: layer.id, item: null }, null, "layers");
+  const l1 = viewDetail({ level: 1, group: layer.id, item: null }, null, "blueprint", LAYERS_VIEW);
   assert.equal(l1.layer?.id, layer.id);
   assert.ok((l1.systems?.length ?? 0) > 0);
   assert.ok(l1.components?.footer.startsWith("(showing "));
 
   const component = COMPONENTS[0]!;
-  const l2 = viewDetail({ level: 2, group: component.system, item: component.id }, null, "layers");
+  const l2 = viewDetail({ level: 2, group: component.system, item: component.id }, null, "blueprint", LAYERS_VIEW);
   assert.equal(l2.component?.ok, true);
 });
 
@@ -160,7 +168,7 @@ test("read_view's detail is honest at all three levels", () => {
  */
 test("read_view at L1 groups the components by system, and the grouping agrees with the flat list", () => {
   for (const layer of LAYERS) {
-    const out = viewDetail({ level: 1, group: layer.id, item: null }, null, "layers");
+    const out = viewDetail({ level: 1, group: layer.id, item: null }, null, "blueprint", LAYERS_VIEW);
     const systems = out.systems ?? [];
     assert.ok(systems.length > 0, `${layer.id} answers no systems`);
     const nested: string[] = [];
@@ -177,13 +185,25 @@ test("read_view at L1 groups the components by system, and the grouping agrees w
   }
 });
 
-test("read_view names the arrangement on the sheet, at every level", () => {
-  for (const view of ["layers", "turn", "trust", "packages"] as const) {
-    const out = viewDetail({ level: 0, group: null, item: null }, null, view);
-    assert.equal(out.view.id, view);
-    assert.ok(out.view.label.length > 0);
-    assert.ok(out.view.runs.length > 0, "a view that does not say what its runs mean");
+/**
+ * ROUND 5. `read_view` names the VARIANT first and the arrangement second, because three drawings
+ * render the same model and a report that omits which one is a report the reader cannot check.
+ * A variant with no views says so in a sentence rather than answering a view that does not exist.
+ */
+test("read_view names the variant and the arrangement, at every level", () => {
+  for (const id of ["layers", "turn", "trust", "packages"] as const) {
+    const view = { id, label: id, note: `the ${id} arrangement`, runs: "depends on" };
+    const out = viewDetail({ level: 0, group: null, item: null }, null, "blueprint", view);
+    assert.equal(out.view.id, id);
+    assert.equal(out.view.variant.id, "blueprint");
+    assert.ok((out.view.label ?? "").length > 0);
+    assert.ok((out.view.runs ?? "").length > 0, "a view that does not say what its runs mean");
   }
+
+  const none = viewDetail({ level: 0, group: null, item: null }, null, "wildcard", null);
+  assert.equal(none.view.id, null);
+  assert.equal(none.view.variant.id, "wildcard");
+  assert.ok((none.view.shows ?? "").length > 0, "a variant with no views says nothing about why");
 });
 
 test("read_view carries the lens at every level, so an agent never loses the mark", () => {
@@ -193,7 +213,7 @@ test("read_view carries the lens at every level, so an agent never loses the mar
     { level: 1 as const, group: LAYERS[0]!.id, item: null },
     { level: 2 as const, group: COMPONENTS[0]!.system, item: COMPONENTS[0]!.id },
   ]) {
-    const out = viewDetail(focus, concept.id, "layers");
+    const out = viewDetail(focus, concept.id, "blueprint", LAYERS_VIEW);
     assert.equal(out.lens?.id, concept.id);
   }
 });

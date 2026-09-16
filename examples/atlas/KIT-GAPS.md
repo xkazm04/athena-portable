@@ -798,3 +798,156 @@ code at all, and three of them are the ones round 1 got wrong in all three apps:
   correct: Atlas's pane owns its key and the nav's listener stays out of the way.
 - **`useZoomTools`** — four verbs, no arguing, and the generated descriptions read well enough to
   ship. Within its two tiers (#8) it is the least-effort part of the whole app.
+
+---
+
+## Round 5, the wildcard variant (the structure matrix)
+
+Five gaps. Two are new and specific to a surface whose chrome has to agree with a camera; three are
+repeats, and the repeats are the useful number — one of them is now on its **fifth** round.
+
+### W1. A camera has no way to tell a surface that its FRAME changed (new)
+
+**What.** `useCameraRig` notifies on the pose. It says nothing about the element it is bound to, and
+for good reason — it does not own it. But the moment a surface draws anything in SCREEN space that
+has to agree with the world (a pinned header, a minimap, a ruler, an edge-of-frame indicator), a
+resize moves every one of those things without the pose moving at all, and there is no signal. This
+variant's two rails had to be given one by hand: a `ResizeObserver` in the camera hook, a
+`frameTick` counter in its public shape, and that counter in the rails' effect dependencies.
+
+**Written in.** `variants/wildcard/useMatrixCamera.ts` (`reported`, `frameTick`) and
+`variants/wildcard/Rails.tsx` (the `place(rig.get())` before `rig.subscribe`).
+
+**Proposal.** `useCameraRig` already has the element; have it observe it, expose `rig.frame()` as a
+getter and include the frame in the `subscribe` callback — `(pose, moving, frame)` — so a screen-space
+consumer is notified by the same channel the world is. It also closes round 3's gap 5 (below) from
+the other end.
+
+### W2. There is no vocabulary for "screen space, tied to the world" (new)
+
+**What.** The kit's one consumer of a pose is `poseToTransform`, which puts the WORLD on a stage.
+Anything pinned to the frame that must track the world — this direction's whole header design — has
+to re-derive the orthographic projection by hand from `pose.zoom`, `pose.pan` and the frame, and
+then re-derive the inverse to answer "what is under the pointer". Written out here as `projectX` /
+`projectY` and pinned in `test/wildcard.poses.test.ts`, precisely because a header that disagrees
+with the field it heads is the one bug on this surface a reader would not recognise as a bug.
+
+**Written in.** `variants/wildcard/poses.ts`, the `projectX` / `projectY` / `rowCentreY` /
+`colCentreX` block.
+
+**Proposal.** Ship the two lines beside `poseToTransform`: `projectPoint(pose, frame, world)` and
+`unprojectPoint(pose, frame, screen)`, pure, in `zoom/camera.ts`. Every surface that grows a
+minimap, a ruler, a sticky header or an off-screen indicator needs them, and each will otherwise
+get the sign of `pan` wrong once.
+
+### W3. The resolve callbacks get a pose and no frame (round 3's gap 5 — third round)
+
+**What.** `poseFor(focus)` has to know the frame to fit a whole drawing at L0, and the hook hands it
+nothing, so every surface closes over a ref it maintains itself. Unchanged since round 3.
+
+**Written in.** `variants/wildcard/useMatrixCamera.ts` — `poseFor: (focus) => poseFor(focus, frame.current)`.
+
+**Proposal.** Pass the frame as the second argument to all three callbacks. Subsumed by W1 if the rig
+starts measuring.
+
+### W4. Focus still does not follow a level change nobody clicked (fifth round)
+
+**What.** Wheel from L0 into a layer and into a module: the nav moves, the camera flies, the drawing
+changes grain, and the keyboard is still wherever it was. This variant has a natural focus target
+for every level — the rail entry that heads the row — and still has to leave it alone, because
+moving focus on a *camera-driven* change would steal it from a reader who is dragging. The kit knows
+which of the two is driving (`useSemanticZoom` returns `driving`) and is the only thing that does,
+so this is the kit's rule to own. Written for the fifth round running.
+
+**Written in.** Nowhere — the omission is the workaround, and the capture shows it
+(`active: "BODY"` after every wheel crossing in `wildcard-log.txt`).
+
+**Proposal.** `useFocusFollow(nav, { target: (focus) => Element | null, when: "nav" | "always" })`,
+defaulting to moving focus only when the nav led.
+
+### W5. `design/check-tokens.mjs` has one token authority, and a variant may not edit it (new, app-side)
+
+**What.** Not a kit gap but a law gap, logged here because the law is the formula's rule 4 made
+executable. The checker treats `style/base/tokens.css` as the single authority and bans a raw `px`
+or `ms` everywhere else — which is right for one direction and wrong for three, since a variant owns
+its own palette and its own clock and cannot write either into a file another agent owns. This
+direction's tokens are therefore declared in `variants/wildcard/wildcard.css`, in `s` and `rem`, in
+one block, zeroed in one place for reduced motion, and read by the rig through `cssMs` off the
+cascade — the law kept, the checker not consulted.
+
+**Written in.** `variants/wildcard/wildcard.css`, the `.wc-stage` token block and the `--wc-hair`
+note.
+
+**Proposal.** Teach the checker a list of authorities (`style/base/tokens.css` plus
+`variants/*/*.css`), and scope the "is this token declared" check per authority. Then three
+directions can each have one clock and the gate can still prove it.
+
+## Round 5 — blueprint, and the shell that mounts three variants (2026-09-16)
+
+Round 5 puts three drawings of one model behind a switcher. The shell and the blueprint variant were
+built together; these are the places the kit made the app write something it should not have had to,
+or where something the kit already owns could not be composed. Five of the nine are repeats, and the
+repeat count is the measurement.
+
+**R5-1. A second orthogonal axis, for the fifth and sixth time.** *(round 3 gap 4, round 4 gap 1 —
+now doubled.)* The kit has `useZoomNav` for the level and nothing at all for a choice beside it.
+Round 4 needed one (which arrangement); round 5 needs two (which variant, and which arrangement),
+and they are the same shape down to the SSR problem: the URL is knowable on the server, `localStorage`
+is not, so the honest implementation is `useSyncExternalStore` with a server snapshot of the default
+and a module-level store. The app now has exactly one copy (`variants/useChoice.ts`) instead of five,
+which is the most an app can do about a missing primitive. **Wanted:** `useChoice({ param, storage,
+values, fallback })` in the kit, with the SSR snapshot built in.
+
+**R5-2. `presenceStyle` returns an `opacity`, and an inline `opacity` cannot be overridden.**
+*(round 2 #9, round 3 #7, round 4, round 5 — the fourth round running, and this round it produced a
+visible bug.)* The kit knows one presence channel, navigation. This surface has two: the nav channel
+(how far the reader is from this block) and a domain channel (is this block on the story's beat, does
+the legend's filter keep it). `presenceStyle` hands back `{ opacity }`, the app writes it inline, and
+an inline `opacity` beats every selector — so the story's beat states and the filter's dimming did
+nothing at all until the first capture showed it. The app's fix is to write the nav channel as a
+custom property (`--at-present`) and multiply the two in CSS, which costs one `calc()`. **Wanted:**
+`presenceStyle(p, { as: "property", name: "--at-present" })`, and a sentence in the kit's README
+saying that a surface with a second presence channel must not take `opacity` inline.
+
+**R5-3. The resolve callbacks still get a pose and no frame.** *(round 3 gap 5, round 4, open.)* It
+mattered more this round than last: the L1 zoom is now a *fit of the open layer's frame into the
+viewport*, which is by definition a function of the frame, and `poseFor` still has to read a size the
+app measured itself with a `ResizeObserver` and stashed in a ref. **Wanted:** `poseFor(focus, frame)`
+and `resolveGroup(pose, frame)` in the semantic-zoom contract.
+
+**R5-4. `rig.bind` cannot be composed with another ref.** *(round 3 gap 3, round 4, round 5.)*
+`bind.ref` is not in the camera contract's type, so spreading `bind` onto an element that already has
+a ref silently drops one and the page scrolls under the camera. Fourth `composeRefs` in this repo.
+
+**R5-5. Focus does not follow a level change nobody clicked.** *(rounds 2, 3, 4, 5.)* `open_group`
+from an agent tool, or a wheel that crosses a band, leaves focus on `<body>` — visible in this
+round's capture log, where `active` is `BODY` after every tool-driven open.
+
+**R5-6. Mounting one of N variants is a whole pattern, written by hand for the third time.** Hirelane
+(round 3, three directions), tidycrm (round 3, three L0 shapes) and atlas (round 5) all needed: a
+choice, a lazy import that must not fail the build when the folder is absent, an error boundary, an
+honest placeholder, and a retry that makes a *new* `lazy` because `lazy()` caches its rejection. The
+template-specifier trick — `import(`…`)` with an expression, so the bundler builds a runtime context
+instead of resolving eagerly — is the non-obvious part and every app will get it wrong once.
+**Wanted:** `useVariantMount(slugs, { fallback })`, or at least the pattern written down.
+
+**R5-7. There is no channel from a lazily-mounted child back to the shell.** The mast has to draw a
+switcher for a variant's own views, and `set_view` has to reach it, but the contract (correctly)
+carries no view. The app wrote a twelve-line module-level bus (`variants/viewBus.ts`) that a variant
+opts into with one hook. This is the same shape as `nav.highlight` — a published fact a sibling reads
+— and the kit already has the machinery. **Wanted:** a generic `publish/usePublished` pair.
+
+**R5-8. `useWebMCPTool`'s `enum` is static, but a delegating tool's is not.** `set_view` advertises
+the enum of *whatever variant is mounted*, which changes when the reader switches. Passing it through
+`deps` re-registers the tool, which works, but nothing in the kit says whether re-registering a tool
+under the same name is a supported operation or a leak. **Wanted:** one sentence either way.
+
+**R5-9. Nothing in the kit helps with geometry, and this round is 500 lines of it.** Orthogonal
+routing with candidate families, a feasibility filter and a lexicographic cost vector is not a kit
+concern *yet* — but every one of the four apps now draws lines between rectangles, and the part that
+is genuinely hard (an obstacle set, a rhythm floor, a stable tiebreak so the output is deterministic
+and testable) is the same every time. Logged as an observation, not a request.
+
+**Closed this round, in the app:** round 4's "no vocabulary for a view" is now one hook and one bus
+rather than four copies; round 4's "run routing avoids no obstacles" is a gate in `test/route.test.ts`;
+round 4's "L1 framing" is `layerZoom` plus `balancedCols`, asserted.

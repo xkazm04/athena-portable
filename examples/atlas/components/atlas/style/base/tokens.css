@@ -120,6 +120,24 @@
   --at-stage-min: 26rem;
   --at-pane-w: 42rem;
   --at-tick: 6px;
+  /* ------------------------------------------------ recession --
+   * The four weights a thing can have when something else is being pointed at. The three beat
+   * opacities are the archify study's (§4): past 0.72, active 1, next 0.5 — a story the reader can
+   * follow needs the step before and the step after to be legible AS the step before and after.
+   * `--at-op-dim` is what everything the story, the filter or the lens is not about recedes to:
+   * dimmed, never removed, because it is the spatial reference that makes the rest mean anything.
+   */
+  /* The NAVIGATION channel's presence, written inline by `Block.tsx` as a custom property rather
+   * than as `opacity`. An inline `opacity` cannot be overridden by any selector, so a block that
+   * the story or the filter wants to push back would keep its presence value and nothing would
+   * recede — which is exactly what the first round-5 capture shows. As a property the two channels
+   * MULTIPLY, and the kit's missing "second, domain-owned presence channel" (KIT-GAPS, round 2 #9)
+   * turns out to cost one `calc()` when the app owns the composition. */
+  --at-present: 1;
+  --at-op-past: 0.72;
+  --at-op-active: 1;
+  --at-op-next: 0.5;
+  --at-op-dim: 0.16;
   --at-port: 7px;
   --at-hair: 1.5px;
 
@@ -140,6 +158,11 @@
   --at-dur-lens: 220ms; /* the accent spreading through the drawing */
   --at-dur-move: 320ms; /* the level change, and the camera's flight to a focus */
   --at-dur-view: 560ms; /* THE SIGNATURE MOTION: the same blocks, re-arranged */
+  /* ROUND 5's ONE ADDITION TO THE CLOCK: how long the guided story dwells on a beat.
+   * It is a duration and not a "beat" in round 3's sense — there is nothing to interpolate, the
+   * story simply stands on a stop for this long and then stands on the next one. Zeroed under
+   * reduced motion below, which `story.ts` reads as "land on the final beat", never as "faster". */
+  --at-dur-beat: 1500ms;
   --at-ease: cubic-bezier(0.2, 0, 0, 1);
   --at-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -194,5 +217,6 @@
     --at-dur-lens: 0ms;
     --at-dur-move: 0ms;
     --at-dur-view: 0ms;
+    --at-dur-beat: 0ms;
   }
 }

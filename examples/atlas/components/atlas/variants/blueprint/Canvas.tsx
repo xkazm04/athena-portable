@@ -6,24 +6,22 @@
  * ONE ELEMENT CARRIES THE TRANSFORM and it is written straight onto `style` from `rig.subscribe`,
  * never through React state — sixty renders a second of nineteen blocks and sixty-eight parts is
  * the motion-cost score round 1 paid for. The world's `transform-origin` stays at the centre,
- * which is what `zoomAt` solves about (the kit's README says so in one line and it is the
- * difference between a camera and a slider).
+ * which is what `zoomAt` solves about.
  *
- * TYPE IS SCREEN-SPACE, GEOMETRY IS WORLD-SPACE (rule 13). The same subscription writes
- * `--at-cs`, the quantised inverse of the zoom, and every label in the drawing scales by it — so a
- * title is the same size in pixels at every distance while the drawing it names is not. Quantised
- * in steps of ~26% (`poses.ts`), because an un-quantised counter-scale re-lays-out every label on
- * every wheel tick.
+ * TYPE IS SCREEN-SPACE, GEOMETRY IS WORLD-SPACE (rule 13). The same subscription writes `--at-cs`,
+ * the quantised inverse of the zoom, and every label in the drawing scales by it — including, from
+ * round 5, the labels on the runs themselves. Quantised in steps of ~26% (`poses.ts`), because an
+ * un-quantised counter-scale re-lays-out every label on every wheel tick.
  *
- * ARROWS MOVE FOCUS, NOT THE CAMERA — unless the canvas itself is what has focus.
+ * ARROWS MOVE FOCUS, NOT THE CAMERA — unless the canvas itself is what has focus. A drawing with
+ * nineteen blocks in it is a thing a keyboard reader TRAVERSES, so `←↑→↓` with a block focused move
+ * to the neighbouring block (`useRoving`, `DIM.cols` columns, walls at the edges). The camera's own
+ * arrow keys are reached the way a reader reaches a canvas in any drawing tool: by focusing the
+ * canvas itself, at which point `←↑→↓` pan and `+`/`-`/`Home` zoom.
  *
- * That is the decision this surface owes the formula, and it is settled here rather than by
- * feel: a drawing with nineteen blocks in it is a thing a keyboard reader TRAVERSES, so `←↑→↓`
- * with a block focused move to the neighbouring block (`useRoving`, four columns, walls at the
- * edges). The camera's own arrow keys are still there, and they are reached the way a reader
- * reaches a canvas in any drawing tool: by focusing the canvas itself (Tab to it, or click the
- * empty sheet), at which point `←↑→↓` pan and `+`/`-`/`Home` zoom. One element, two meanings,
- * disambiguated by what has focus rather than by a modifier nobody discovers.
+ * THE BAND IS ON THE CANVAS AND THE DETAIL RULES READ IT (round 5). `data-band` was already here;
+ * what is new is that the stylesheet now uses it to decide which `data-detail` tier is drawn,
+ * instead of every component deciding for itself what "far" means.
  */
 import { useCallback, useEffect, useMemo, useRef, type KeyboardEvent } from "react";
 import { poseToTransform, useRoving, type Focus } from "@athena/demo-kit/zoom";
@@ -33,6 +31,7 @@ import { EDGES, type Lens } from "@/data";
 import { DIM } from "./geometry";
 import { WORLD, partRuns, planOf, type ViewId } from "./plan";
 import { quantise } from "./poses";
+import { blockBeat } from "./story";
 import { Block } from "./Block";
 import { Runs } from "./Runs";
 import type { CanvasCamera } from "./useCanvasCamera";
@@ -45,10 +44,19 @@ export interface CanvasProps {
   lens: Lens;
   /** The turn's current stop, 0-based. The Turn view lights its block. */
   stop: number;
+  /** True while the turn is being told as a story rather than scrubbed. */
+  story: boolean;
   /** `packages` starts with its runs hidden. */
   runsHidden: boolean;
+  /** What the legend's filter, the story or a hover has pushed into the background. */
+  dimBlocks: ReadonlySet<string>;
+  dimRuns: ReadonlySet<string>;
+  /** What the one-hop hover preview is lighting. */
+  hopBlocks: ReadonlySet<string>;
+  hopRuns: ReadonlySet<string>;
+  hover: string | null;
   onOpenLayer: (layer: string) => void;
-  onOpenPart: (id: string) => void;
+  onOpenPart: (id: string, at: DOMRect) => void;
   onHover: (id: string | null) => void;
 }
 
@@ -58,7 +66,7 @@ export interface CanvasProps {
  * `rig.bind` carries a `ref` (for the non-passive wheel listener) that the camera contract does
  * not list, so spreading `bind` over an element that already has a ref drops one of them and the
  * failure is invisible — the camera still works and the page also scrolls underneath. Written for
- * the second round running; logged again in KIT-GAPS (R3-3).
+ * the third round running; logged again in KIT-GAPS.
  */
 function composeRefs<T>(...refs: ((el: T | null) => void)[]) {
   return (el: T | null) => {
@@ -72,7 +80,13 @@ export function Canvas({
   focus,
   lens,
   stop,
+  story,
   runsHidden,
+  dimBlocks,
+  dimRuns,
+  hopBlocks,
+  hopRuns,
+  hover,
   onOpenLayer,
   onOpenPart,
   onHover,
@@ -100,8 +114,6 @@ export function Canvas({
     [rig],
   );
 
-  /* Arrow keys across the blocks. Four columns, because that is what `DIM.cols` packs a region
-     into and a reader's ArrowDown should land on the block below the one they are on. */
   const roving = useRoving(worldRef, { selector: "[data-roving]", columns: DIM.cols });
 
   const onKeyDown = useCallback(
@@ -152,6 +164,7 @@ export function Canvas({
       })}
       data-band={camera.band}
       data-view={view}
+      data-story={story ? "" : undefined}
       data-driving={camera.driving ?? undefined}
       onPointerDown={rig.bind.onPointerDown}
       onPointerMove={rig.bind.onPointerMove}
@@ -198,7 +211,9 @@ export function Canvas({
               <span className="at-region-head" style={{ height: `${DIM.regionHead}px` }}>
                 <span className="at-scaled">
                   <span className="at-region-name">{r.name}</span>
-                  <span className="at-region-note">{r.note}</span>
+                  <span className="at-region-note" data-detail="context">
+                    {r.note}
+                  </span>
                 </span>
               </span>
             </div>
@@ -218,6 +233,9 @@ export function Canvas({
               parts={runs}
               liveStop={view === "turn" ? stop + 1 : null}
               hidden={runsHidden}
+              story={story}
+              dimmed={dimRuns}
+              hopped={hopRuns}
             />
           </svg>
 
@@ -230,6 +248,10 @@ export function Canvas({
               open={open === block.layer}
               stops={stopsBy.get(block.id) ?? []}
               live={liveBlock === block.id}
+              beat={story ? blockBeat(block.id, stop) : null}
+              dim={dimBlocks.has(block.id)}
+              hop={hopBlocks.has(block.id)}
+              hovered={hover === block.id}
               onOpenLayer={onOpenLayer}
               onOpenPart={onOpenPart}
               onHover={onHover}

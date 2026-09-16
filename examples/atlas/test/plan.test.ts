@@ -26,7 +26,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { COMPONENTS, LAYERS, LAYER_ORDER, SYSTEMS, systemById } from "../data";
-import { DIM, blockHeight, boundsOf, overlaps, packRows, routeOrtho } from "../components/atlas/canvas/geometry";
+import { DIM, blockHeight, boundsOf, overlaps, packRows, routeOrtho } from "../components/atlas/variants/blueprint/geometry";
 import {
   PLANS,
   VIEWS,
@@ -36,19 +36,22 @@ import {
   partRuns,
   regionOf,
   type ViewId,
-} from "../components/atlas/canvas/plan";
+} from "../components/atlas/variants/blueprint/plan";
 import {
   BANDS,
   HOME_MAX,
   HOME_MIN,
+  L1_MAX,
+  L1_MIN,
   L1_ZOOM,
   L2_ZOOM,
+  layerZoom,
   poseFor,
   quantise,
   resolveGroup,
   resolveItem,
-} from "../components/atlas/canvas/poses";
-import { GATE_STOP, TURN, TURN_BLOCKS } from "../components/atlas/canvas/turn";
+} from "../components/atlas/variants/blueprint/poses";
+import { GATE_STOP, TURN, TURN_BLOCKS } from "../components/atlas/variants/blueprint/turn";
 import { EDGES } from "../data";
 
 const FRAME = { w: 1150, h: 740 };
@@ -251,6 +254,57 @@ test("the bands leave room around every zoom poseFor can produce (rule 12 and 14
   assert.ok(L1_ZOOM > l1, "opening a layer does not cross into the layer band");
   assert.ok(L1_ZOOM < l2, "opening a layer overshoots into the component band");
   assert.ok(L2_ZOOM > l2, "opening a component does not cross into the component band");
+  /* Round 5: the L1 zoom is a FIT, so what has to be inside the band is the fit's whole range. */
+  assert.ok(L1_MIN > l1, "a fitted layer can fall out of the bottom of its own band");
+  assert.ok(L1_MAX < l2, "a fitted layer can climb into the component band");
+});
+
+/**
+ * ROUND 4'S CARRY-OVER, CLOSED (item 1, rule 15).
+ *
+ * "L1 framing (narrower regions vs L0 legibility)". The near band must show the WHOLE open layer,
+ * and the test says so in the units a reader has: at the pose `poseFor` produces, the layer's frame
+ * must fit inside the viewport. A layer that cannot is named, with its size, rather than discovered
+ * by scrolling.
+ */
+test("opening any layer in the layers view frames the whole layer (round-4 carry-over)", () => {
+  for (const layer of LAYER_ORDER) {
+    const box = PLANS.layers.frames[layer];
+    const zoom = layerZoom("layers", layer, FRAME);
+    assert.ok(
+      box.w * zoom <= FRAME.w + 0.5,
+      `layers/${layer}: ${Math.round(box.w * zoom)}px wide in a ${FRAME.w}px frame`,
+    );
+    assert.ok(
+      box.h * zoom <= FRAME.h + 0.5,
+      `layers/${layer}: ${Math.round(box.h * zoom)}px tall in a ${FRAME.h}px frame`,
+    );
+  }
+});
+
+/**
+ * THE OTHER THREE ARRANGEMENTS CANNOT PROMISE IT, AND THE TEST SAYS SO RATHER THAN LOOKING AWAY.
+ *
+ * A layer's frame in the layers view IS its band. In the turn, trust and packages views it is the
+ * bounding box of blocks the ARRANGEMENT has scattered — `surfaces` in the packages view is six
+ * systems in four different folders — and no zoom inside the L1 band can frame that, because
+ * framing it would mean standing at a distance the band calls L0. So the promise here is the
+ * weaker true one: the fit is attempted, and when it cannot be met the camera is at the band floor
+ * rather than at some third number nobody chose.
+ */
+test("a scattered layer is fitted as far as the band allows, and then pinned at its floor", () => {
+  for (const view of VIEWS) {
+    for (const layer of LAYER_ORDER) {
+      const box = PLANS[view].frames[layer];
+      const zoom = layerZoom(view, layer, FRAME);
+      const fits = box.w * zoom <= FRAME.w + 0.5 && box.h * zoom <= FRAME.h + 0.5;
+      assert.ok(
+        fits || Math.abs(zoom - L1_MIN) < 1e-9,
+        `${view}/${layer}: neither fits nor is at the band floor (zoom ${zoom.toFixed(3)})`,
+      );
+      assert.ok(zoom >= L1_MIN - 1e-9 && zoom <= L1_MAX + 1e-9, `${view}/${layer}: out of band`);
+    }
+  }
 });
 
 test("resolveGroup is the exact inverse of poseFor, for every layer in every view", () => {
