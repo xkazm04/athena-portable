@@ -212,16 +212,26 @@ export function useSemanticZoom(
     owed.current = null;
     setLead("nav");
     const release = o.flight?.claim(flightNo) ?? (() => {});
+    /* Whether the flight lands, is cancelled by the rig (a `set`, a drag, a wheel, another fly)
+       or is torn down here, the lead is let go exactly once. A cancelled flight that kept the
+       lead at "nav" left the wheel changing the band but never the level (round 5). */
+    let released = false;
+    const letGo = () => {
+      if (released) return;
+      released = true;
+      release();
+      if (lead.current === "nav") setLead(null);
+    };
     const cancel = rig.flyTo(o.poseFor(focus), {
       onDone: () => {
-        release();
+        letGo();
         o.flight?.settle(flightNo);
-        if (lead.current === "nav") setLead(null);
       },
+      onCancel: letGo,
     });
     return () => {
       cancel();
-      release();
+      letGo();
     };
     // `focus` is the value `flightNo` counts, so the counter alone is the dependency — and it is
     // monotonic, which is what makes a re-open of the same focus still fly.

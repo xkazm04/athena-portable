@@ -199,7 +199,7 @@ useRoving(ref, { selector: string; columns?: number | (() => number) }): { onKey
 
 useCameraRig({ bounds, initial?, drag?, wheel?, inertia?, snap?, keyboard?, reducedMotion?,
                flyToken?, easeToken?, sensitivity? })
-  : { get(), set(partial), flyTo(partial, { ms?, onDone? }): cancel, reset(), subscribe(cb),
+  : { get(), set(partial), flyTo(partial, { ms?, onDone?, onCancel? }): cancel, reset(), subscribe(cb),
       moving, bind }
 poseToTransform(pose, { perspective? }): string
 zoomAt(pose, factor, anchor: {x,y}, frame: {w,h}): CameraPose   // anchor is frame-relative px

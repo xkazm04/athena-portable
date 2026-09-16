@@ -122,8 +122,16 @@ export interface CameraRig {
   get(): CameraPose;
   /** Immediate and clamped. Cancels a fly in progress. */
   set(pose: Partial<CameraPose>): void;
-  /** Animate there. Returns a cancel; a second `flyTo` cancels the first. */
-  flyTo(pose: Partial<CameraPose>, opts?: { ms?: number; onDone?: () => void }): () => void;
+  /**
+   * Animate there. Returns a cancel; a second `flyTo`, a `set`, a drag or a wheel cancels the
+   * first. Exactly one of `onDone` / `onCancel` fires, so a caller holding state for the flight
+   * (a lead, a claim) can always let it go — round-5 finding: a cancelled flight that told nobody
+   * left semantic zoom's lead pinned to "nav" and the wheel changed the band but never the level.
+   */
+  flyTo(
+    pose: Partial<CameraPose>,
+    opts?: { ms?: number; onDone?: () => void; onCancel?: () => void },
+  ): () => void;
   /** Fly back to `initial`. What `Home` does. */
   reset(): void;
   /**
@@ -284,7 +292,10 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
   /* ------------------------------------------------------------------------------------- flyTo */
 
   const flyTo = useCallback(
-    (patch: Partial<CameraPose>, o?: { ms?: number; onDone?: () => void }): (() => void) => {
+    (
+      patch: Partial<CameraPose>,
+      o?: { ms?: number; onDone?: () => void; onCancel?: () => void },
+    ): (() => void) => {
       fly.current?.();
       stopInertia();
       clearIdle();
@@ -312,6 +323,7 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
         if (id) cancelAnimationFrame(id);
         if (fly.current === cancel) fly.current = null;
         setMoving(false);
+        o?.onCancel?.();
       };
 
       const tick = (now: number) => {

@@ -173,3 +173,9 @@ Everything else, briefly:
 - The pure echo module is `zoom/echo-rule.ts`, not `echo.ts`: `Echo.tsx` sits beside it and
   TypeScript refuses two files differing only in case. Import from `@athena/demo-kit/zoom`; the
   path is only visible to a test.
+
+**(round 5) `flyTo` takes `onCancel`, and exactly one of `onDone` / `onCancel` fires.** A flight
+cancelled by `set`, a drag, a wheel or another `flyTo` used to tell nobody; `useSemanticZoom` kept
+its lead at `"nav"` and the wheel then changed the band but never the level (found by the atlas
+archify variant, and it affected the blueprint too). The hook now lets its lead and its claim go
+on either outcome.
