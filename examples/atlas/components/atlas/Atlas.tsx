@@ -1,14 +1,19 @@
 "use client";
 
 /**
- * ATLAS — this repository's architecture, drawn behind one switcher.
+ * ATLAS — this repository's architecture, drawn one way, through a shell built to draw it N ways.
  *
  * ROUND 5 ASKED WHETHER ROUND 4 WAS THE RIGHT DRAWING, by building three over one model and letting
  * the reader compare them in the mast. The owner answered: keep the archify grammar, delete the
  * evolved blueprint and the structure matrix — *"the degradation from visual archify is significant
- * in grouping, component strategy and style"*. So one drawing survived, and round 6 asks the
- * narrower question the verdict implies: which ARCHIFY is the right archify. The switcher and the
- * contract stay exactly as they were; only the list of slugs changed.
+ * in grouping, component strategy and style"*. ROUND 6 ASKED THE NARROWER QUESTION the verdict
+ * implied — which ARCHIFY is the right archify — built three more and closed with one:
+ * **`archify-lanes`, the turn as lanes and phases.** *"Lanes are a step forward."*
+ *
+ * SO THE APP DRAWS ONE DIRECTION AND THE SHELL STILL MOUNTS N. Each deletion cost one edit to one
+ * list in `variants/contract.ts` and nothing else, twice — which is the measurement the contract
+ * was built to take. Above the stage, two things followed the count rather than the code: the
+ * mast draws no variant switcher with one value in it, and `set_variant` left the tool surface.
  *
  * WHAT THIS FILE IS: nothing but the mount point. Everything that was here in round 4 lives in one
  * of two places, and the line between them is `variants/contract.ts`:
@@ -18,7 +23,8 @@
  *                  choice. One model, one level semantics, one details destination, N drawings.
  *   the variant    `variants/<slug>/index.tsx` — everything inside the stage: layout, camera,
  *                  bands, views, legend, story, and any tool only that stage can answer. The one
- *                  built variant is `variants/archify/`.
+ *                  variant is `variants/archify-lanes/`, and it is self-contained: the three pure
+ *                  modules it used to import from its deleted sibling moved in with it.
  *
  * WHERE THE SIXTEEN RULES OF THE FORMULA LIVE is therefore also split, and that split is itself a
  * finding worth the round: rules 4, 5, 6, 7 and 8 turn out to be SHELL rules — one clock, one

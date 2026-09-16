@@ -20,7 +20,17 @@
  * dev, so changing a `fallback` in the caller does not reach a store that already exists until the
  * module itself is re-evaluated. Harmless in production — the fallback is a constant and the page
  * is prerendered with it — and it is exactly what a dev server shows you if you edit the default
- * variant and do not restart.
+ * variant and do not restart. Round 6 collected the receipt: deleting two variants and renaming the
+ * default left a running dev server rendering the OLD default on the server and the new one on the
+ * client, which arrives as a hydration mismatch and a lazy import of a folder that is no longer
+ * there. The production build was correct the whole time. If a `?variant=` that does not exist ever
+ * has to be survivable at runtime rather than at build time, this capture is where to start.
+ *
+ * ONE VALUE IS STILL A CHOICE, AS FAR AS THIS HOOK IS CONCERNED. After the round-6 verdict
+ * `VARIANTS` has a single slug, so `values` has one member and `commit` can only ever be called
+ * with the value already held. Nothing here special-cases that — the hook stays the general thing
+ * and the MAST is where "there is nothing to choose" becomes "draw no switcher", because that is a
+ * question about a control and not about a store.
  *
  * THE STORE IS MODULE-LEVEL AND THE HOOK NEVER HOLDS IT. The choice is a fact about the page, not
  * about one component: two components reading the same axis must never disagree, and a `useState`

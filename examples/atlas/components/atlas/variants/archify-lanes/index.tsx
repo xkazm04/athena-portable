@@ -30,12 +30,15 @@
  *   L2  one NODE — its screen rect reported through `reportOrigin` so the shell's pane grows out
  *       of it, and the pane rendered last so it sits over the world (rule 3, rule 11).
  *
- * WHAT IS REUSED RATHER THAN REBUILT. `../archify/kinds` (the role→colour rule and the seven-kind
- * enum — a fact about the model, not about a drawing), `../archify/story` (the twelve stops read
- * off README §3.2 and the four chapter cuts), and `../archify/routing`'s pure geometry primitives
- * and `runPath`. Nothing in `variants/archify/**` was modified, and this folder imports no
- * component, stylesheet or class name from it — the round-6 brief asked for the reuse and the
- * contract's "a variant owns everything inside its stage" decides where the line is.
+ * WHAT WAS INHERITED RATHER THAN REBUILT. Three pure modules were written for the round-5 archify
+ * sheet and, while both drawings were on the table, this folder imported them across the boundary:
+ * `kinds.ts` (the role→colour rule and the seven-kind enum — a fact about the model, not about a
+ * drawing), `script.ts` (the twelve stops read off README §3.2 and the four chapter cuts), and the
+ * routing `primitives.ts` (the rhythm floors, the segment algebra, `runPath`). THE OWNER'S ROUND-6
+ * VERDICT CHOSE THIS DRAWING AND DELETED THE OTHER TWO, so the cross-folder import had nowhere to
+ * point and the three modules moved in here, each keeping its own header and saying where it came
+ * from. Nothing was rewritten in the move; `variants/contract.ts`'s "a variant owns everything
+ * inside its stage" is now true of this folder without an exception to excuse.
  */
 import {
   useCallback,

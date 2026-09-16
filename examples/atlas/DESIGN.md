@@ -12,11 +12,13 @@ And, still standing from round 3: Atlas is a **visual multi-layer model of the s
 secondary. Everything below follows from those two sentences. There is no `three`, no CSS 3D, no
 perspective, and no renderer switch: **one direction, built once.**
 
-**Where this document stands after round 5.** Round 5 put three drawings behind one switcher and
-the owner chose one: the **archify** variant (§R5.2) is the surviving drawing and the baseline for
-round 6. The evolved blueprint (§R5.1) and the structure matrix (§W) were deleted; their sections
-are kept below, marked, because what they found is still true and reverting the document would lose
-the reasoning. §R5.3 is the verdict.
+**Where this document stands after round 6.** Round 5 put three drawings behind one switcher and
+the owner kept the **archify** grammar (§R5.2). Round 6 asked the narrower question that implied —
+*which archify?* — put three archify-derived drawings on the same switcher, and the owner ruled:
+**`archify-lanes` is the winner; delete the other two.** *"Lanes are a step forward."* So the app
+now draws ONE direction: the turn, in lanes, at three levels (§R6). Every section below about a
+deleted drawing is kept and marked, because what each of them found is still true and reverting the
+document would lose the reasoning. §R5.3 is round 5's verdict; §R6 is round 6's.
 
 ---
 
@@ -553,3 +555,135 @@ list. `set_variant`'s enum is `VARIANTS`, so the tool surface followed by itself
 `read_turn` / `set_turn` from whichever variant tells the turn — now `variants/archify/Tools.tsx`
 rather than the deleted blueprint's. Archify's answer says one thing the blueprint's could not:
 which of the eleven hops an authored module edge actually carries, and which README asserts alone.
+
+> **Superseded by §R6.** `variants/archify/Tools.tsx` was itself deleted at the end of round 6.
+> `read_turn` / `set_turn` moved on again, to `variants/archify-lanes/Tools.tsx`, by the same rule:
+> the drawing that tells the turn registers them. `set_variant` is gone from the surface entirely.
+
+---
+
+## R6. Round 6: which archify — and the answer
+
+Round 5's verdict kept a grammar and named three things we were still wrong about: **grouping** (the
+abstraction ceiling), **component strategy** (the node as a fixed unit), and **the finish**. Round 6
+took a second reading of the archify tool aimed at exactly those three (`docs/archify-study.md`
+Part 2), and its finding was that archify's limits are QUANTITIES, not techniques — no example
+exceeds twelve nodes or fourteen edges, boundaries run one to four, nesting depth is one, a node is
+a fixed 120×60 whose text shrinks to a floor and never truncates, and the home pose is scale 1 with
+zoom-out disabled. Two more variants were built to those numbers and mounted beside the round-5
+sheet through the same contract:
+
+| Measured at L0, 1440×900 | `archify` (R5 sheet) | `archify-density` | `archify-lanes` |
+|---|---|---|---|
+| nodes / boundaries / runs | 19 / 7 / 52+ | 12 / 2 / 14 | 12 / 0 / 14 |
+| home scale | 0.28 | 1.00 | 1.00 |
+| labels under 9 px on screen | many | 0 | 0 |
+| ellipses | yes | 0 | 0 |
+| run stroke on screen | 0.42 px | 1.5 px | 1.5–1.8 px |
+
+### R6.1 The verdict: lanes survived
+
+The owner ruled:
+
+> ***"Lanes are a step forward."***
+
+**Why it is the one that survived, and the density variant is not.** Both met the quantities; only
+one of them made the quantities MEAN something. Density reached twelve nodes by abstracting *harder*
+— the same spatial map with fewer, larger cards — so it answered the ceiling and left the other two
+findings where it found them: the reader still has to be told what the arrangement is about, and the
+grouping is still a frame drawn around a set.
+
+Lanes reached twelve nodes by changing what the sheet is a drawing OF. A workflow diagram has two
+spatial axes that carry meaning — **lanes** (who owns the step) and **columns** (when it happens),
+gathered into **phases** (which act it belongs to) — so reading order comes from position, and
+archify's own answer to grouping turns out not to be a better boundary rectangle but a second axis
+that makes boundary rectangles unnecessary. There are **no boundary frames anywhere in this drawing,
+and no boundary type in its IR**: the thesis is enforced as a type, and `test/lanes.model.test.ts`
+asserts it. The amber dashes round 5 was criticised for did not get better; they got deleted.
+
+And the turn stopped being an overlay. In rounds 3, 4 and 5 the twelve stops of README §3.2 were a
+light travelling over a static map — the drawing said where things are, and a scrubber said when.
+Here **the drawing IS the turn**: the columns are its clock and the lanes are its owners, so eight
+of the ten drawn hops are already on the sheet as authored edges (round 5's sheet carried five of
+eleven). The two that are not are the round's sharpest finding rather than a gap: stop 7 → 8 reaches
+into the CONTRACTS and stop 8 → 9 comes back out — a hop into a thing that has no behaviour to put
+in a column, which `kinds.ts` already paints slate for exactly that reason. The Story Trail draws
+those two dotted and the chapter receipt counts them.
+
+### R6.2 What the app draws now
+
+**One direction. The turn, in lanes, at three levels.** Four lanes, six columns, three phases,
+twelve nodes, fourteen runs, on a 1180-unit world whose home pose is scale 1.
+
+| Level | Is | Shows |
+|---|---|---|
+| **L0** | the whole lane grid | phase headers on top, twelve nodes with sigil / label / sublabel / tag, fourteen labelled runs, five roles |
+| **L1** | one **phase** | its columns widened by `planFor`, the run labels a 52-unit column gap could not hold revealed, the other two phases receded through the kit's `presenceOf` |
+| **L2** | one **node** | the shell's pane, grown out of the node's own screen rect — still the one details destination for the whole app |
+
+Two arrangements remain, and they are the variant's own: **lanes** (the grid) and **turn** (the same
+twelve nodes with the turn's path made the primary reading order). They are published through
+`variants/viewBus.ts`, so the mast's second switcher and `set_view` both follow the drawing.
+
+### R6.3 What was deleted, and what moved rather than dying with it
+
+**Deleted:** `components/atlas/variants/archify/**`, `components/atlas/variants/archify-density/**`,
+`test/archify.layout.test.ts`, `test/archify.model.test.ts`, `test/archify.routing.test.ts`,
+`test/density.camera.test.ts`, `test/density.routing.test.ts`, `test/density.sheet.test.ts`.
+`KIT-GAPS.md` is untouched, for the third round running: every gap those builds found is a fact
+about the kit and not about a drawing, and deleting the finding with the folder would be the one
+unrecoverable mistake available here. The round-6 capture scripts and their PNGs stay too.
+
+**Moved, not deleted.** The lanes variant had been importing three pure modules from its sibling —
+which the contract forbids, and which was only ever tolerable while both drawings were on the table.
+With the sibling gone they moved INTO `variants/archify-lanes/`, each keeping its own header and
+carrying one line saying where it came from:
+
+| Now | Was | Why it is not the sheet's to take with it |
+|---|---|---|
+| `archify-lanes/kinds.ts` | `archify/kinds.ts` | the closed seven-kind enum and the rule that assigns it — *a system's kind is the ROLE it plays in one turn*. A fact about the model, not about a drawing. |
+| `archify-lanes/script.ts` | `archify/story.ts` | the twelve stops read off README §3.2 and the four chapter cuts, as cited data. Renamed because this folder's own `story.ts` is the lane grid's trail; the script is what the trail reads. |
+| `archify-lanes/primitives.ts` | the bottom of `archify/routing.ts` | the rhythm floors (`MIN_SEG`, `MIN_TURN`, `CLEAR`), `segRectDistance`, `segmentsOf`, `crosses`, `runPath` — the measurements every orthogonal run is validated against, at archify's own values. |
+
+`primitives.ts` is the one partial copy, and it says so in its header. The rest of
+`archify/routing.ts` was a generate-and-rank SOLVER — nine candidate families, a lexicographic cost
+vector, a Dijkstra fallback over a lattice — written for a six-row sheet whose long dependencies
+named no corridors. **A lane diagram names them all**: fourteen edges pin their own corridors in
+`workflow.ts` and `archify-lanes/routing.ts` resolves the names. The solver had no caller here and
+its only test was the deleted sheet's, so carrying it would have meant seven hundred lines of
+untested dead code for a drawing that no longer exists. It went with the sheet.
+
+The guards came across too. `test/archify.model.test.ts` was the only thing pinning the kind mapping
+and the twelve-stop script; those assertions are now in `test/lanes.model.test.ts`, because a module
+carried across a deletion and left untested is a module nobody is answerable for. Only the probe's
+assertions were dropped — their subject, `archify/path.ts`, was the sheet's own PATH tool.
+
+### R6.4 The shell keeps the mechanism; the mast and the tool surface do not pretend
+
+`variants/contract.ts`, `Shell.tsx`, `useChoice.ts` and `viewBus.ts` are unchanged apart from
+`VARIANTS`, which is now the single entry `{ slug: "archify-lanes", label: "Lanes" }`. **The lazy
+template import, the error boundary, the "not built yet" placeholder, the retry and `?variant=` all
+survive on purpose** — that is what round 7's drawing mounts through, and going three → one cost one
+edit to one array, exactly as it did in round 5. That measurement is the argument for having had a
+contract at all.
+
+Two things did follow the count, because leaving them would have been a lie the surface tells:
+
+- **The mast hides the variant switcher.** A radio group with one radio is a control that cannot be
+  operated, and drawing it says there is a choice where there is none. It is conditional on
+  `VARIANTS.length > 1`, which is the rule the view switcher already ran on — one rule, two axes,
+  and no edit needed the day a second drawing lands.
+- **`set_variant` left the tool surface.** This is the honest one of the two options, and it is
+  round 4's `play_turn` rule applied again: *a tool whose subject no longer exists is worse than a
+  missing one, because an agent will call it.* A one-value enum is not a capability — it is a
+  sentence, and `read_view` already says that sentence, naming the variant before it names anything
+  else in every projection (`tools/read.ts`). Keeping it would advertise a choice an agent cannot
+  make and charge a call to discover that. The mechanism underneath is untouched, so the tool comes
+  back with a real enum the day there is something to choose.
+
+**The tool surface now:** `read_view`, `open_group`, `open_item`, `zoom_out` (the kit's level
+verbs), `set_view`, `read_concepts`, `read_system`, `read_component`, `set_lens` from the shell, and
+`read_turn` / `set_turn` from `variants/archify-lanes/Tools.tsx`. Ten tools, all AUTO. The lanes
+answer says three things the sheet's could not: which LANE and which PHASE a stop happens in, which
+of the twelve nodes it stands on, and whether an authored run **of this drawing** carries the hop
+into it and in which role.

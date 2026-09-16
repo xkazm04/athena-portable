@@ -18,6 +18,13 @@
  * round 5 cannot, because a sibling variant may have none, or seven, and the mast must not know.
  * It draws whatever the mounted variant published through `variants/viewBus.ts`, and draws nothing
  * at all when nothing was published — which is the honest rendering of "this variant has one view".
+ *
+ * AND AFTER ROUND 6 THE VARIANT SWITCHER OBEYS THE SAME RULE IT ALREADY APPLIED TO VIEWS. The
+ * owner kept `archify-lanes` and deleted the other two, so `VARIANTS` has one entry; a radio group
+ * with one radio is a control that cannot be operated, and drawing it would tell a reader there is
+ * a choice where there is none. The switcher is therefore conditional on `VARIANTS.length > 1`,
+ * exactly as the view switcher is conditional on `views.length > 1` — one rule, two axes, and the
+ * mast needs no edit on the day a second drawing lands.
  */
 import { useRef } from "react";
 import { useRoving, type ZoomNav } from "@athena/demo-kit/zoom";
@@ -61,7 +68,8 @@ export function Mast({
         <span className="at-part">athena-portable</span>
       </span>
 
-      {/* Round 5's first axis: which of the three drawings is on the table. */}
+      {/* The first axis: which drawing is on the table. Absent while there is only one. */}
+      {VARIANTS.length > 1 ? (
       <div
         className="at-switch at-variants"
         role="radiogroup"
@@ -89,6 +97,7 @@ export function Mast({
           );
         })}
       </div>
+      ) : null}
 
       {/* The second axis, owned by whatever is mounted. Absent when the variant published none. */}
       {views.views.length > 1 && views.set ? (

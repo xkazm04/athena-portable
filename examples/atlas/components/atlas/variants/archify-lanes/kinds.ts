@@ -35,6 +35,9 @@
  * COMPONENT KINDS INHERIT THEIR SYSTEM'S, with five named exceptions listed below — a module whose
  * own job differs from its system's role. Every exception carries its reason on the same line,
  * because an unexplained exception is an opinion and there is no room for one in a legend.
+ *
+ * THIS FILE MOVED HERE, UNCHANGED, WHEN `variants/archify/**` WAS DELETED after the round-6 verdict
+ * — the lanes variant is the only drawing left and the contract forbids importing from a sibling.
  */
 import { COMPONENTS, SYSTEMS, systemById, type Component, type System } from "@/data";
 

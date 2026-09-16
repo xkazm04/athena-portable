@@ -39,7 +39,7 @@
  */
 import { SYSTEMS, systemById } from "@/data";
 
-import { kindOfSystem, type Kind } from "../archify/kinds";
+import { kindOfSystem, type Kind } from "./kinds";
 
 /* ------------------------------------------- the lanes --------------------------------------- */
 

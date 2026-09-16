@@ -27,11 +27,21 @@
  *     play; `set_turn` still moves the step and `read_turn` still answers the whole script. A tool
  *     whose subject no longer exists is worse than a missing one, because an agent will call it.
  *
- * ROUND 5 ADDED `set_variant`, AND ROUND 6 LEFT IT ALONE. The owner's verdict deleted two of the
- * three drawings; the tool's enum follows `VARIANTS`, so it shrank by itself and will grow again
- * when the two announced folders are written. `read_turn` / `set_turn` are NOT here and never
- * were: they are registered by whichever variant tells the turn (`variants/archify/Tools.tsx`),
- * because a tool the shell registers cannot answer a fact only a stage holds.
+ * ROUND 5 ADDED `set_variant`; ROUND 6 REMOVED IT, by the same rule that removed `play_turn`.
+ * The owner's verdict kept `archify-lanes` and deleted the other two, so `VARIANTS` has one entry
+ * and the tool's enum had one value. A tool that can only be called with the answer it would have
+ * given is not a capability — it is a sentence, and `read_view` already says it: every projection
+ * in `tools/read.ts` names the variant before it names anything else. Keeping a one-value enum
+ * would advertise a choice an agent cannot make and would cost a call to discover that. So the
+ * tool is gone and the FACT stayed, which is the opposite trade from round 4's `play_turn` only in
+ * appearance: both times the subject disappeared and the tool went with it.
+ *
+ * The mechanism underneath is untouched — `?variant=archify-lanes`, the lazy mount, the
+ * placeholder — so the day a second drawing lands, `set_variant` comes back with a real enum.
+ *
+ * `read_turn` / `set_turn` are NOT here and never were: they are registered by whichever variant
+ * tells the turn (`variants/archify-lanes/Tools.tsx`), because a tool the shell registers cannot
+ * answer a fact only a stage holds.
  */
 import { useZoomTools, useWebMCPTool } from "@athena/demo-kit/webmcp";
 import type { ZoomNav } from "@athena/demo-kit/zoom";
@@ -47,7 +57,7 @@ import {
 } from "@/data";
 import { LEVELS, NOUNS } from "@/lib/constants";
 
-import { VARIANTS, type VariantSlug } from "../variants/contract";
+import type { VariantSlug } from "../variants/contract";
 import { readViews, requestView } from "../variants/viewBus";
 
 import {
@@ -66,7 +76,6 @@ export function AtlasTools({
   lensId,
   setLens,
   variant,
-  setVariant,
   metaViews,
 }: {
   nav: ZoomNav;
@@ -74,7 +83,6 @@ export function AtlasTools({
   lensId: string | null;
   setLens: (id: string | null) => void;
   variant: VariantSlug;
-  setVariant: (next: VariantSlug) => void;
   /** `VariantMeta.views` of the mounted variant — the enum `set_view` advertises. */
   metaViews: readonly string[];
 }) {
@@ -110,48 +118,9 @@ export function AtlasTools({
   });
 
   useWebMCPTool({
-    name: "set_variant",
-    description:
-      "Choose which drawing of this architecture is on the table. archify is the built one: the archify grammar transposed — kind-coloured nodes, dashed group boundaries derived from membership, labelled orthogonal runs, two arrangements, PATH / MAP / LENS and a guided turn. archify-density and archify-lanes are announced and not written yet; asking for one mounts an honest placeholder that names the file which would make it appear. The model, the level you are at, the open layer and the lens all survive the switch; only the drawing changes. Call with no argument to read which one is mounted.",
-    parameters: [
-      {
-        name: "variant",
-        type: "string",
-        required: false,
-        enum: VARIANTS.map((v) => v.slug),
-        description: "The drawing. Omit to read the current one without changing it.",
-      },
-    ],
-    reversible: true,
-    sideEffects: "none",
-    handler: ({ variant: asked }) => {
-      const answer = (id: VariantSlug, changed: boolean) => ({
-        ok: true as const,
-        variant: variantRow(id),
-        changed,
-        available: VARIANTS.map((v) => ({ id: v.slug, label: v.label, is: v.blurb })),
-        views: readViews().views.map((v) => v.id),
-        focus: nav.state.focus,
-      });
-      if (asked === undefined || asked === null || asked === "") return answer(variant, false);
-      const wanted = String(asked);
-      if (!VARIANTS.some((v) => v.slug === wanted)) {
-        return {
-          ok: false as const,
-          error: `No variant named ${wanted}.`,
-          available: VARIANTS.map((v) => v.slug),
-        };
-      }
-      if (wanted !== variant) setVariant(wanted as VariantSlug);
-      return answer(wanted as VariantSlug, wanted !== variant);
-    },
-    deps: [variant, setVariant, nav.state.focus],
-  });
-
-  useWebMCPTool({
     name: "set_view",
     description:
-      "Choose which arrangement the MOUNTED variant draws. A view is a variant's own second axis, not the app's: archify has two (sheet, where rows are layers and columns are kinds; stack, the same nodes on a plain four-column grid) and re-arranges the same nodes between them, keeping the level and the open layer; another variant may have none, in which case this tool says so rather than failing. Call with no argument to read the current arrangement and what else is available.",
+      "Choose which arrangement the drawing is in. A view is the variant's own second axis, not the app's: the lanes drawing has two (lanes, the four owners as rows and the six moments as columns; turn, the same twelve nodes with the turn's own path made the primary reading order) and re-arranges the same nodes between them, keeping the level, the open phase and the lens. A variant may have none, in which case this tool says so rather than failing. Call with no argument to read the current arrangement and what else is available.",
     parameters: [
       {
         name: "view",
@@ -184,7 +153,7 @@ export function AtlasTools({
           ok: false as const,
           error: `The ${variantRow(variant).label} variant draws one arrangement and has no views to switch between.`,
           variant: variantRow(variant),
-          hint: "set_variant('archify') mounts the variant with arrangements to switch between.",
+          hint: "read_view names the drawing and everything else that is true of this level.",
         };
       }
       if (wanted === live.current) return answer(false);

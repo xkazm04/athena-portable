@@ -8,10 +8,16 @@
  * and the same L2 pane, and let a reader switch between them in one keystroke — so that what
  * differs between two variants is the DESIGN and never the model, the level semantics or the
  * plumbing. That is this file's whole job, and the answer came back: the archify grammar, and not
- * the other two. ROUND 6 ASKS THE SAME QUESTION ONE LEVEL IN — *which archify is the right
- * archify?* — so the shell is unchanged apart from its list, which is the point of having a
- * contract: `VARIANTS` shrank from three to one built variant plus two announced ones and nothing
- * below this comment had to be edited.
+ * the other two. ROUND 6 ASKED THE SAME QUESTION ONE LEVEL IN — *which archify is the right
+ * archify?* — built three and closed with one: `archify-lanes`, "the turn as lanes and phases".
+ *
+ * SO THE SHELL NOW MOUNTS EXACTLY ONE VARIANT, AND NOT ONE LINE BELOW THIS COMMENT CHANGED. That
+ * is the point of having had a contract: `VARIANTS` went three → one and the lazy template import,
+ * the boundary, the placeholder, the retry and `?variant=` all still mean what they meant. The
+ * mechanism is not vestigial — it is what round 7's drawing mounts through, and the one edit it
+ * will cost is the same one edit the deletion cost. What DID change is above the stage: the mast
+ * hides a switcher it cannot draw with one value in it, and `set_variant` is off the tool surface
+ * because there is no longer a choice for an agent to make (`variants/contract.ts`).
  *
  * WHAT THE SHELL OWNS, and a variant therefore never invents:
  *
@@ -176,7 +182,7 @@ export function Shell() {
     param: "variant",
     storage: "atlas:variant",
     values: SLUGS,
-    fallback: "archify",
+    fallback: "archify-lanes",
   });
 
   /* ------------------------------------- the lens ------------------------------------- */
@@ -292,7 +298,6 @@ export function Shell() {
         lensId={lensId}
         setLens={setLens}
         variant={variant}
-        setVariant={setVariant}
         metaViews={toolViews}
       />
       <div

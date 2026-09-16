@@ -13,12 +13,37 @@
  *      turn descends the stack left to right" stated as an inequality.
  *   4. Every authored string fits its node at or above its floor, so the drawing never clips and
  *      never ellipsises (study §7.8: reject rather than overflow).
+ *   5. THE TWO INHERITED MODULES, guarded here since the round-6 verdict deleted the sheet they
+ *      were written for and moved them into this folder. `kinds.ts` — the closed enum is closed and
+ *      total, every named exception points at a real component, and the counted legend counts what
+ *      the mapping assigns. `script.ts` — the twelve stops name real modules, touch all six layers,
+ *      and the chapters partition them in order. Those assertions were `test/archify.model.test.ts`
+ *      and they came across with the modules; only the probe's, whose subject (`archify/path.ts`)
+ *      went with the sheet, were dropped.
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { SYSTEMS, componentById } from "../data";
-import { KINDS } from "../components/atlas/variants/archify/kinds";
+import { COMPONENTS, COMPONENT_BY_ID, LAYER_ORDER, SYSTEMS, componentById } from "../data";
+import {
+  COMPONENT_KIND,
+  KINDS,
+  KIND_COUNTS,
+  KIND_RULE,
+  SYSTEM_KIND,
+  TRUST_SYSTEMS,
+  kindOfComponent,
+  kindOfSystem,
+} from "../components/atlas/variants/archify-lanes/kinds";
+import {
+  BEATS,
+  CHAPTERS,
+  HOPS,
+  TRAIL_COUNTS,
+  beatState,
+  chapterOf,
+  deltaOf,
+} from "../components/atlas/variants/archify-lanes/script";
 import {
   COLS,
   EDGES,
@@ -189,4 +214,110 @@ test("shrink-to-fit never reaches the floor: no label clips and no label ellipsi
       );
     }
   }
+});
+
+/* ---------------------------------------------------------------------------------------------
+ * THE TWO INHERITED MODULES — `kinds.ts` and `script.ts`, which moved into this variant's folder
+ * when the round-6 verdict deleted the sheet they were written for. Their guards moved with them:
+ * a module carried across a deletion and left untested is a module nobody is answerable for.
+ * ------------------------------------------------------------------------------------------- */
+
+test("the kind mapping is total: every system has one, and it is a member of the closed set", () => {
+  for (const s of SYSTEMS) {
+    const kind = SYSTEM_KIND[s.id];
+    assert.ok(kind, `${s.id} (${s.name}) has no kind — add it to SYSTEM_KIND with its reason`);
+    assert.ok(KINDS.includes(kind), `${s.id} has a kind outside the closed set`);
+  }
+  assert.equal(
+    Object.keys(SYSTEM_KIND).length,
+    SYSTEMS.length,
+    "SYSTEM_KIND names something that is not a system",
+  );
+});
+
+test("all seven kinds are used, and each has a rule written down", () => {
+  const used = new Set(SYSTEMS.map((s) => kindOfSystem(s.id)));
+  for (const kind of KINDS) {
+    assert.ok(used.has(kind), `${kind} is declared and never used — a legend entry with no members`);
+    assert.ok(KIND_RULE[kind].length > 0, `${kind} has no rule`);
+  }
+});
+
+test("every component-level exception points at a component the model has", () => {
+  for (const id of Object.keys(COMPONENT_KIND)) {
+    assert.ok(COMPONENT_BY_ID.has(id), `${id} is an exception for a component that does not exist`);
+  }
+  /* And an exception must actually differ from the system it overrides, or it is noise. */
+  for (const [id, kind] of Object.entries(COMPONENT_KIND)) {
+    const system = COMPONENT_BY_ID.get(id)!.system;
+    assert.notEqual(kind, kindOfSystem(system), `${id}'s exception says what its system already says`);
+  }
+});
+
+test("the counted legend counts the same components the mapping assigns", () => {
+  for (const row of KIND_COUNTS) {
+    const components = COMPONENTS.filter((c) => kindOfComponent(c) === row.kind).length;
+    assert.equal(row.components, components, `${row.kind}: the legend and the mapping disagree`);
+  }
+  assert.equal(
+    KIND_COUNTS.reduce((n, r) => n + r.systems, 0),
+    SYSTEMS.length,
+  );
+});
+
+test("the trust boundary is authored, real, and crosses more than one layer", () => {
+  const layers = new Set<string>();
+  for (const id of TRUST_SYSTEMS) {
+    const system = SYSTEMS.find((s) => s.id === id);
+    assert.ok(system, `${id} is in the trust boundary and not in the model`);
+    layers.add(system.layer);
+  }
+  assert.ok(layers.size >= 3, "a trust boundary inside one layer would not be worth drawing");
+});
+
+test("every stop names a real component, and the twelve touch all six layers", () => {
+  const layers = new Set<string>();
+  for (const b of BEATS) {
+    assert.ok(COMPONENT_BY_ID.has(b.part), `stop ${b.index} names ${b.part}, which is not a module`);
+    layers.add(b.layer);
+  }
+  for (const layer of LAYER_ORDER) {
+    assert.ok(layers.has(layer), `the turn never enters ${layer}`);
+  }
+});
+
+test("the script's authored/derived split is the edge list's own", () => {
+  assert.equal(TRAIL_COUNTS.hops, BEATS.length - 1);
+  assert.equal(TRAIL_COUNTS.authored + TRAIL_COUNTS.derived, TRAIL_COUNTS.hops);
+  assert.ok(TRAIL_COUNTS.authored > 0, "not one hop of the turn is an authored edge — check the ids");
+  assert.ok(
+    TRAIL_COUNTS.derived > 0,
+    "every hop is authored — then the derived dash is dead code and should go",
+  );
+  for (const hop of HOPS) {
+    assert.equal(hop.authored, BEATS[hop.index]!.authored);
+  }
+});
+
+test("the chapters partition the twelve stops, in order, with notes inside archify's 140", () => {
+  const seen = CHAPTERS.flatMap((c) => c.beats.map((b) => b.index));
+  assert.deepEqual(seen, [...BEATS.keys()], "the chapters do not cover the stops exactly once");
+  assert.ok(CHAPTERS.length <= 5, "archify caps a story at five chapters");
+  for (const c of CHAPTERS) {
+    assert.ok(c.note.length <= 140, `${c.id}'s note is ${c.note.length} characters`);
+    assert.ok(c.focus.length > 0);
+  }
+  for (const b of BEATS) {
+    assert.ok(CHAPTERS[chapterOf(b.index)]!.beats.some((x) => x.index === b.index));
+  }
+});
+
+test("the chapter delta is a real handoff: the first chapter brings everything in", () => {
+  const first = deltaOf(0);
+  assert.equal(first.stay, 0);
+  assert.equal(first.leave, 0);
+  assert.ok(first.enter > 0);
+  assert.equal(beatState(0, 3), "past");
+  assert.equal(beatState(3, 3), "active");
+  assert.equal(beatState(4, 3), "next");
 });

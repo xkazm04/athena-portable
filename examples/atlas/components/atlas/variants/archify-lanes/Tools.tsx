@@ -4,13 +4,14 @@
  * `read_turn` / `set_turn` — the two capabilities only a drawing that TELLS the turn can answer.
  *
  * The shell registers what is true of the whole app; the turn's position is a fact about this
- * drawing, so the drawing registers it and it unmounts with the drawing. That rule is the archify
- * variant's (`variants/archify/Tools.tsx`) and it holds here for the same reason — but the two
- * tools cannot be imported from there, because a variant owns everything inside its own stage and
- * these two answer with THIS drawing's nodes, lanes, phases and edges. An agent that calls
- * `set_turn` while a variant without a story is mounted gets "no such tool", which is the truth.
+ * drawing, so the drawing registers it and it unmounts with the drawing. That rule came from the
+ * round-5 archify sheet, which registered its own pair the same way — and the two could never be
+ * shared, because a variant owns everything inside its own stage and these answer with THIS
+ * drawing's nodes, lanes, phases and edges. Which is why the round-6 verdict that deleted the
+ * sheet cost the capability nothing: the drawing that TELLS the turn is the one that survived, and
+ * `read_turn` / `set_turn` mount with it here.
  *
- * WHAT THIS ANSWER SAYS THAT THE ARCHIFY VARIANT'S DID NOT. Three things, each a property of the
+ * WHAT THIS ANSWER SAYS THAT THE ARCHIFY SHEET'S DID NOT. Three things, each a property of the
  * lane grid rather than of the turn: which LANE and which PHASE a stop happens in (so an agent can
  * ask for the phase and get a level change), which NODE it stands on after twelve stops were
  * folded into twelve boxes, and — the one worth having — whether an authored EDGE OF THIS DRAWING

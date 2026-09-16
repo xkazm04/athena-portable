@@ -2,9 +2,10 @@
  * THE RUNS — orthogonal, corridor-threaded, checked against archify's own hard predicate.
  * Study §3 ("routing is orthogonal only… filtered by a hard feasibility predicate"), §7.5, §7.7.
  *
- * WHY THIS IS NOT ROUND 5'S ROUTER. The archify variant's `routing.ts` is a generate-and-rank
- * solver with nine candidate families, a lexicographic cost vector and a Dijkstra fallback over a
- * lattice — because its sheet is six rows deep, its runs are long, and nothing in the drawing
+ * WHY THIS IS NOT ROUND 5'S ROUTER. The archify variant's `routing.ts` — deleted with its sheet
+ * after the round-6 verdict — was a generate-and-rank solver with nine candidate families, a
+ * lexicographic cost vector and a Dijkstra fallback over a
+ * lattice — because its sheet was six rows deep, its runs were long, and nothing in the drawing
  * names a free lane. A LANE DIAGRAM NAMES THEM ALL. The midline of a column gap, the strip inside
  * a lane above or below its nodes, the gap between two lanes and the two outside channels are not
  * discovered, they are the grid; archify's v2 schema says as much by letting an author pin
@@ -32,11 +33,11 @@ import {
   CLEAR,
   MIN_SEG,
   MIN_TURN,
+  crosses,
   runPath,
   segRectDistance,
   segmentsOf,
-  INTERNALS,
-} from "../archify/routing";
+} from "./primitives";
 
 import {
   channelValue,
@@ -345,7 +346,7 @@ export function crossingsBetween(a: Run, b: Run): number {
   const sa = segmentsOf(a.points);
   const sb = segmentsOf(b.points);
   let n = 0;
-  for (const p of sa) for (const q of sb) if (INTERNALS.crosses(p, q)) n += 1;
+  for (const p of sa) for (const q of sb) if (crosses(p, q)) n += 1;
   return n;
 }
 

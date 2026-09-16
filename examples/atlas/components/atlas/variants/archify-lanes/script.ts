@@ -20,6 +20,10 @@
  * edge list is a claim `data/edges.ts` makes; where they disagree the drawing says so, with a
  * derived hop drawn in a different dash and counted in the chapter's own receipt. A story overlay
  * that quietly straightened that out would be the decorative version of exactly this feature.
+ *
+ * THIS FILE MOVED HERE, UNCHANGED, WHEN `variants/archify/**` WAS DELETED after the round-6 verdict
+ * — it is `archify/story.ts` under the one name that was free, because this folder's own `story.ts`
+ * is the lane grid's trail and the script is the data that trail reads.
  */
 import { EDGES, componentById, systemById } from "@/data";
 

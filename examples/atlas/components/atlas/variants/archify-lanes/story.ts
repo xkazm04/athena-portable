@@ -16,12 +16,12 @@
  * trail draws those two dotted and the chapter receipt counts them, because a story overlay that
  * quietly straightened that out would be the decorative version of this feature.
  *
- * THE SCRIPT AND THE CHAPTERS ARE REUSED, NOT RE-TYPED. `../archify/story` holds the twelve stops
+ * THE SCRIPT AND THE CHAPTERS ARE REUSED, NOT RE-TYPED. `./script.ts` holds the twelve stops
  * read off README §3.2 and the four chapter cuts, both as pure data with the model-integrity test
  * already on them; this module maps them onto THIS drawing's twelve nodes and asks the one
  * question the archify sheet could not: does an edge of the lane grid carry this hop?
  */
-import { BEATS, CHAPTERS, beatState, chapterOf, deltaOf, stopAt, type Beat } from "../archify/story";
+import { BEATS, CHAPTERS, beatState, chapterOf, deltaOf, stopAt, type Beat } from "./script";
 
 import { EDGES, nodeById, nodeOfSystem, type Role } from "./workflow";
 

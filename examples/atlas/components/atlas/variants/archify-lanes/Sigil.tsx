@@ -1,17 +1,19 @@
 /**
  * THE SEMANTIC SIGIL — an 11-unit stroked mark, top-left, one per kind. Archify study §2.
  *
- * The seven paths are the round-5 variant's, drawn on the same 12-unit grid, because the glyph set
- * is part of the grammar and a second alphabet for the same seven meanings would be the decorative
- * mistake the study warns about. They are re-declared here rather than imported so that this
- * variant's stylesheet owns every class name inside its own stage (`variants/contract.ts`: "a
- * variant owns everything inside its stage"), and `al-sigil` is styled only under `.al-stage`.
+ * The seven paths are the round-5 archify sheet's, drawn on the same 12-unit grid, because the
+ * glyph set is part of the grammar and a second alphabet for the same seven meanings would be the
+ * decorative mistake the study warns about. They were re-declared here rather than imported so
+ * that this variant's stylesheet owns every class name inside its own stage
+ * (`variants/contract.ts`: "a variant owns everything inside its stage"), and `al-sigil` is styled
+ * only under `.al-stage` — which is why the round-6 deletion of that sheet cost this file nothing
+ * but the path its `Kind` type is imported from.
  *
  * STROKED, NEVER FILLED, with `vector-effect: non-scaling-stroke`, so the mark keeps its weight at
  * every distance the camera stands at while the node it sits on does not. It inherits
  * `currentColor` from the node, which is the kind accent — the colour is stated once, in CSS.
  */
-import type { Kind } from "../archify/kinds";
+import type { Kind } from "./kinds";
 
 const PATHS: Record<Kind, string> = {
   /* a screen on a stand */

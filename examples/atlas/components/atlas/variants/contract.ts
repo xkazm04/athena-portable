@@ -1,5 +1,5 @@
 /**
- * ROUND 6 — the archify variant, and the two that come out of it, behind one switcher.
+ * ROUND 6 CLOSED — one variant, and the mechanism that put three on the table kept behind it.
  *
  * Every variant is a folder under `variants/<slug>/` exporting a default component that takes
  * exactly these props. The shell (`variants/Shell.tsx`) owns the switcher, `?variant=`,
@@ -7,29 +7,29 @@
  * its stage: layout, camera, bands, views, legend, story. A variant never imports from a sibling
  * variant folder.
  *
- * ROUND 5 PUT THREE DRAWINGS ON THE TABLE AND THE OWNER CHOSE ONE. `blueprint` (round 4's ruled
- * sheet, evolved) and `wildcard` (the 68x68 structure matrix) are deleted; the verdict was that
- * "the degradation from visual archify is significant in grouping, component strategy and style",
- * so the archify grammar is the baseline every further variant is measured against and the other
- * two drawings are not worth carrying. DESIGN.md §R5.3 keeps the reasoning; KIT-GAPS.md keeps
- * everything the three of them found.
+ * THE OWNER RULED AFTER ROUND 6: **`archify-lanes` is the winner; delete the other two.** Round 5
+ * put three drawings on the table and kept the archify grammar; round 6 asked which archify, built
+ * `archify` (the round-5 sheet), `archify-density` (twelve cards) and `archify-lanes` (the turn as
+ * lanes and phases), and the verdict was *"lanes are a step forward"*. So `archify/**` and
+ * `archify-density/**` are gone, and with them their tests. The three pure modules the lanes
+ * variant had been importing across the folder boundary — the kind rule, the twelve-stop script
+ * and the routing primitives — moved INTO `archify-lanes/` rather than being deleted with their
+ * first home, each keeping its own header and saying where it came from. The line "a variant never
+ * imports from a sibling" is now true without an exception to excuse.
  *
- * THE SWITCHER MECHANISM SURVIVES THE DELETION, on purpose. Two more archify-derived variants are
- * coming, and the shell is built and shipped before they exist — which is exactly the condition
- * the lazy template import and the "not built yet" placeholder were written for. The two slugs
- * below name folders that do not exist yet; `?variant=archify-density` renders the placeholder and
- * the app keeps running.
+ * WHAT SURVIVED THE DELETION, and what did not:
  *
- * The three slugs and what each tests:
- *   archify         — the archify visual language transposed: rounded nodes with icon/title/subtitle
- *                     coloured by kind, dashed group boundaries with corner labels, labelled
- *                     orthogonal runs with a style per edge kind, light and dark, PATH / MAP / LENS
- *                     toolbar, guided stories that dim everything but the step, semantic zoom bands.
- *                     The baseline, and the default.
- *   archify-density — coming: hard abstraction, cards. How few nodes a sheet can carry, and the
- *                     node as a fixed unit whose text tiers absorb what sub-nodes used to.
- *   archify-lanes   — coming: the turn as lanes and phases. The twelve-stop turn as the drawing's
- *                     primary axis rather than an overlay on a spatial map.
+ *   KEPT  the lazy template import, the error boundary and the "not built yet" placeholder in
+ *         `Shell.tsx`; `useChoice`; `?variant=archify-lanes`; the `VariantSlug` type; `viewBus`.
+ *         `VARIANTS` shrinking from three to one cost one edit to one list and nothing else —
+ *         which is the whole argument for having had a contract, and the mechanism is what a
+ *         round 7 would mount its next drawing through.
+ *   GONE  the mast's variant switcher, which now hides itself because a radio group with one
+ *         radio is a control that cannot be operated; and the `set_variant` TOOL, by the same rule
+ *         that removed `play_turn` in round 4 — a tool whose subject no longer exists is worse
+ *         than a missing one, because an agent will call it. `read_view` still names the drawing
+ *         before it names anything else, so nothing an agent could learn from `set_variant` was
+ *         lost; only the ability to choose, which there is no longer a choice to make.
  */
 import type { ReactNode } from "react";
 import type { Focus, Level, ZoomNav } from "@athena/demo-kit/zoom";
@@ -37,13 +37,18 @@ import type { useLevelFlight } from "@athena/demo-kit/zoom";
 
 import type { Lens } from "@/data";
 
-export type VariantSlug = "archify" | "archify-density" | "archify-lanes";
+export type VariantSlug = "archify-lanes";
 
-/** The first entry is the DEFAULT — the shell falls back to it and the mast draws it first. */
+/**
+ * The first entry is the DEFAULT — the shell falls back to it and the mast draws it first.
+ *
+ * ONE ENTRY, AND THE LIST IS STILL A LIST. `VARIANTS.length === 1` is the condition every reader
+ * of this module branches on — the mast draws no switcher, `Shell` still mounts through the same
+ * lazy import, and `read_view` still names the drawing — so adding a second slug is again one edit
+ * to one array.
+ */
 export const VARIANTS: readonly { slug: VariantSlug; label: string; blurb: string }[] = [
-  { slug: "archify", label: "Archify", blurb: "The archify grammar, transposed." },
-  { slug: "archify-density", label: "Density", blurb: "coming: hard abstraction, cards" },
-  { slug: "archify-lanes", label: "Lanes", blurb: "coming: the turn as lanes and phases" },
+  { slug: "archify-lanes", label: "Lanes", blurb: "The turn as lanes and phases." },
 ];
 
 export interface VariantProps {
