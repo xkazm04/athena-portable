@@ -882,6 +882,75 @@ note.
 `variants/*/*.css`), and scope the "is this token declared" check per authority. Then three
 directions can each have one clock and the gate can still prove it.
 
+## Round 5 — the archify variant (2026-09-16)
+
+The archify variant is the archify grammar (`docs/archify-study.md`) transposed onto our model: a
+layer × kind grid, boundaries derived from membership, a generate-and-rank orthogonal router, and
+the kit's rig plus `useSemanticZoom` over three bands. It found **three new gaps**, numbered `R5-A*`
+because the blueprint variant and the shell were counting in the same round. Two of the three are
+the same shape: *the camera rig has no way to be told "this one is not for you"*, and a surface that
+corrects the camera it was given silently breaks the hook that was driving it.
+
+### R5-A1. `useCameraRig` captures the pointer, so a DOM control inside the scene stops being clickable
+
+`bind.onPointerDown` calls `setPointerCapture` on the scene element. Once a pointer is captured,
+Chromium retargets the subsequent `click` to the capturing element — so a `<div role="button">`
+inside the scene never receives its own `onClick`. The failure is invisible in every way that
+matters: the node still focuses, Enter still opens it, hover still previews, and only the MOUSE
+stops working. Two rounds of this app have built their scenes out of DOM controls over the rig.
+
+The local workaround is one line per control — `onPointerDown={(e) => e.stopPropagation()}` — which
+buys correctness at the price of "you cannot start a pan on top of a box". That is the right trade
+for a button and the wrong one for, say, a wide region frame.
+
+**Proposal:** `useCameraRig({ dragFrom })` — a selector or a predicate the rig consults on
+`pointerdown` before it captures (`"[data-camera-ignore]"`, or `(target) => boolean`). The rig
+already owns the event; it is the only place that can decline it without the surface guessing.
+Written in `variants/archify/Nodes.tsx`.
+
+### R5-A2. A surface that corrects the camera cancels the flight `useSemanticZoom` is holding, and the hook never recovers
+
+`rig.flyTo` returns a `cancel`, and `cancel()` does **not** call `onDone` — correctly, since the
+move did not finish. But `useSemanticZoom`'s "nav drives the camera" effect clears its own
+`lead = "nav"` flag *inside* `onDone`. So any `rig.set` or second `rig.flyTo` that lands while the
+hook's mount flight is in the air leaves `lead` pinned at `"nav"` forever, and `lead === "nav"`
+suppresses **every camera-driven level change** from then on. The symptom is the camera contract's
+headline claim quietly two-thirds true: the wheel changes `data-band` and never the level. The
+round-4 canvas has the same shape — a `rig.set` in a `requestAnimationFrame` to re-fit once the
+frame is measured — and shows the same symptom on `?variant=blueprint`.
+
+**Proposal:** two small things. (a) `flyTo`'s cancel should invoke a separate `onCancel`, or
+`onDone` with `{ completed: false }`, so a holder can release its state either way. (b)
+`useSemanticZoom` should clear `lead` when the rig reports `moving === false` and no flight is
+owed — it already sees that on every subscription callback. Diagnosed by instrumenting the kit
+temporarily; **the kit was restored unchanged**. Worked around in `variants/archify/index.tsx` by
+measuring the frame in an effect declared *before* `useCameraRig`, so nothing needs correcting.
+
+### R5-A3. `useRef(true)` "skip the first run" is a bug in Strict Mode, and every camera surface writes one
+
+React's development double-invoke runs an effect, cleans up, and runs it again — so the *second*
+mount run of `useEffect(() => { if (first.current) { first.current = false; return; } … })` fires.
+In a camera surface that "…" is almost always a `flyTo`, which is R5-A2's trigger. The kit has no
+primitive for "this value changed since the last time this effect ran", so every surface invents the
+boolean, and the boolean is wrong.
+
+**Proposal:** `usePrevious(value)` / `useChanged(value)` in the zoom barrel — three lines, remembers
+the VALUE rather than the visit, correct under Strict Mode by construction. Written in
+`variants/archify/index.tsx` as a `useRef<ViewId | null>`.
+
+### Repeats this round confirms
+
+- **R3-5 / R4-5, the resolve callbacks get a pose and no frame.** Third round. This variant fits
+  both the whole-sheet zoom and the per-layer L1 zoom to the canvas box, so it measures the element
+  itself and reads it through a ref from inside `poseFor` — and the ORDER in which it does so is now
+  load-bearing (R5-A2). A `frame` argument would delete the whole class of bug.
+- **R4-8, nothing in the kit knows the difference between a band and a level.** The three detail
+  tiers are `data-band` on the stage and `data-detail` on the type, written by hand, with "intent
+  overrides the band" as a CSS specificity rule. Fourth surface to write it.
+- **R4-2 / R3-3, `rig.bind` cannot be composed.** `composeRefs` again, verbatim, third round running.
+
+---
+
 ## Round 5 — blueprint, and the shell that mounts three variants (2026-09-16)
 
 Round 5 puts three drawings of one model behind a switcher. The shell and the blueprint variant were

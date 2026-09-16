@@ -428,3 +428,69 @@ nine blocks at once. Detail a reader cannot read is not detail.
 **One details destination.** A hover is a one-hop preview — it lights the block and what it touches,
 writes one line in the reading line, and opens nothing. Pointer-fine only, and suppressed whenever
 the filter or the story is doing something stronger. The L2 pane, the shell's, stays the only panel.
+
+### R5.2 Archify — the archify grammar, transposed
+
+The study (`docs/archify-study.md`) is of a tool that turns a typed JSON IR into a self-contained
+interactive SVG map. What is worth taking from it is not its output but its **grammar**: a closed
+seven-kind enum with one colour per meaning, a node with no title bar, boundaries derived from
+membership, orthogonal labelled runs with one style per relationship, presets as pure CSS-variable
+layers, and a viewer that reads only the DOM's semantic attributes. This variant transposes that
+grammar onto six layers, nineteen systems, sixty-eight modules and a hundred and twenty edges, and
+in doing so makes one claim the blueprint cannot.
+
+**Rows are layers; columns are kinds.** Our model has no `type` field — it has a layer, which is
+*where a thing sits*, and a layer is not a kind. So `variants/archify/kinds.ts` states the rule once
+and applies it nineteen times: **a system's kind is the role it plays in one turn** (README §3.2) —
+frontend a human looks at, messagebus carries a turn across a process boundary, backend runs it,
+security decides whether something may run, database owns durable state, cloud reaches a service we
+do not own, external is not behaviour at all. Five modules override their system's kind, each with
+its reason on the line. Put those seven on the other axis of the grid and the drawing says
+something: **the gate is one column, four rows tall**, and the rose `security-group` derived from
+its four members crosses four amber layer regions. `core` spans backend to cloud; `contracts` is one
+narrow external box that reaches nothing. The ragged right edge is the model's own shape. The second
+view, `stack`, is archify's literal four-column `DEFAULT_GRID` with the kind axis taken away — the
+control, one keystroke to the left, because an axis that carries meaning is only worth claiming if
+the version without it is next to it.
+
+**Layout is fixed cell math with a constraint pass; routing is generate-and-rank with a complete
+fallback.** Columns are solved by a difference-constraint relaxation (node widths, label widths, and
+a span constraint so the security-group's corner label fits its own frame). Runs are archify's
+candidate families filtered by a hard feasibility predicate and ranked lexicographically —
+*reverse travel → crossings → shared corridor → clearance deficit → bends → length → port
+displacement → a stable family ordinal*. **The families are not complete and that is the round's
+finding**: six rows deep, 27 of 52 system runs had no feasible family, so the last resort is a
+Dijkstra over the drawing's free lanes with a bend penalty. `test/archify.routing.test.ts` then
+asserts, with no exceptions and at every band, that no run crosses a node. The same test found that
+spacing is a routing constraint before it is a rhythm: a gap narrower than twice the router's
+clearance contains no lane, so three modules in the middle of `sys-studio` were unreachable.
+
+**A node reserves the space its modules need, at every distance.** One plan, one geometry, three
+bands — which is what makes `poseFor` and `resolve*` exact inverses by construction (rule 14, rule
+16). An empty box that size would be a lie about how much is inside it, so band 0 draws the modules
+as unlabelled **ghost cells** in their own kinds' colours; a reader counts a system's modules from
+across the sheet, and the band change is the moment they gain names, not the moment they appear.
+Opening a node takes away its fill and its mask: at band 1 a system is the space its modules are in,
+and the runs between them are drawn through it.
+
+**PATH / MAP / LENS live in the stage, not the mast.** A control that changes what *this* drawing
+means belongs to the drawing. PATH is a BFS over authored edges with a four-line receipt and the
+answer "no authored route" when the model has none — never inferred from geometry. LENS is the
+counted legend, bridged: one kind reveals its relationships, two compare the ones that cross between
+them, capped at 24, the rest dimmed as spatial reference. MAP is built at runtime from the same
+boxes the sheet draws. The story is the twelve-stop turn as four chapters with a printed
+enter/stay/leave delta, a Story Trail drawn *over* the authored runs, and one honest distinction the
+round-4 turn could not make: **five of the eleven hops are authored module edges and six are not**,
+so a hop README asserts and the edge list does not carry is drawn dotted and counted in the bar.
+
+### R5.2a What was deliberately not taken from archify
+
+The diagnostic protocol and `supportedFixes`, delivery receipts and hashes, revision-pinned sources
+and brand marks, the export pipeline and the clean-clone step, the CLI, the diff view, and
+author-coordinates-as-the-only-layout-path. Two more were dropped on purpose: **glow** (the Signal
+Flow preset's radial gradients and scan sweep — this app's motion budget has one owner and a sweep
+is a second one), and **a second details panel** (the Semantic Passport is exactly the shell's L2
+pane, so there is one details destination for all three variants and archify's own §7.13 says so).
+The `editorial` preset was costed and cut: paper, vermilion and a serif heading is a fourth palette
+to keep contrast-correct, and two presets already prove the "CSS-variable reskin of identical
+geometry" claim.
