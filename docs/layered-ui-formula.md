@@ -396,4 +396,30 @@ and nothing else, so three agents build in one tree without touching each other.
 | archify | The archify grammar transposed onto our model: closed kind enum with one colour per meaning, sigil nodes without title bars, boundaries from membership, labelled orthogonal runs with a style per edge kind, presets as CSS-variable layers, PATH / MAP / LENS, guided story, finite motion |
 | wildcard | One idea the other two would not try, chosen and defended by the builder (matrix, sequence sheet, subway map, or better) |
 
+**Outcome** — commits `a66e852` (shell + blueprint), `2f6e1a3` (wildcard), `fb741da`
+(archify), `7592aa5` (kit fix). Gates green, 134 tests. The archify variant found a real kit
+bug: a cancelled camera flight told nobody, so semantic zoom kept its lead and the wheel changed
+the band but never the level; `flyTo` now fires exactly one of `onDone` / `onCancel`.
+
+**The owner's verdict (same day):** keep archify for the next rounds, delete blueprint and
+wildcard. "The degradation from visual archify is significant in grouping, component strategy
+and style." So the first study's fourteen practices were necessary and not sufficient: we copied
+the grammar and missed the abstraction ceiling (how few nodes a sheet carries), the node as a
+unit (fixed geometry, three text tiers doing the work of sub-nodes), and the finish (stroke
+weights, chips, arrowheads, grid rhythm, fit at 100%). Round 6 dives deeper on exactly those three
+and builds two more archify-derived variants.
+
+**What the two discarded variants still taught (kept, not reverted from the doc):** the
+structure matrix showed that headers pinned outside the world are legible at every band by
+construction (a relocation answer to rule 13); the evolved blueprint showed that intent should
+advance the detail tier one step, not replace the band, and that motion's inline opacity defeats
+every selector unless presence rides a custom property.
+
+### Round 6 — deeper into archify: grouping, the node, the finish (2026-09-16)
+
+**Why.** The owner's verdict on round 5. The archify variant stays as the baseline; two more
+variants come from a second study aimed at what the first missed: the abstraction ceiling
+(grouping), the node as a fixed unit with text tiers absorbing detail (component strategy), and
+the finish (style, scale, fit). Blueprint and wildcard are deleted.
+
 **Outcome:** *(filled after review)*
