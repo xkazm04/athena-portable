@@ -179,3 +179,101 @@ revision-pinned sources and brand capture, the CLI, update checks, i18n.
 
 Screenshots of five example artifacts at 1440×900 are in the session scratchpad under
 `archify-shots/` for as long as the session lasts.
+
+---
+
+# Part 2 — what the first study missed (2026-09-16, after the owner's verdict on round 5)
+
+The first study recorded archify's mechanisms and none of its editorial limits. Every gap below
+is a quantity, not a technique.
+
+## 1. Grouping: the abstraction ceiling is hard and low
+
+Across all 19 example JSONs no diagram exceeds **12 nodes** (distribution 8–12); edges track
+nodes about 1:1 (6–14); boundaries are **1–4, never more**; nesting depth is **1**. This is
+authored policy: `SKILL.md:21` "at most 12 primary nodes"; `references/authoring-contract.md:152`
+"prefer 6–12 primary components and group only real ownership, trust, process or deployment
+boundaries; boundaries do not replace relationships"; `SKILL.md:77` "remove low-value edges
+before adding routing controls"; `PRODUCT.md:30` "one spatial narrative first".
+
+Sublabel and tag absorb what would otherwise be nodes: every architecture example sublabels
+~100% of components and tags 17–100% (`Redis / multi-AZ cache / platform`); three S3 buckets are
+one node with a three-item bullet list inside it. Edge labels are sparse: `maka` labels 3 of 12.
+Cards are the third grouping axis: 1–3 cards, 2–3 bullets each, below the canvas. Lanes, phases
+and stages are the second spatial axis in workflow and dataflow (4 lanes × 6 cols × 3 phases,
+12 nodes; 5 stages × 2 rows, 10 nodes), so reading order comes from position.
+
+**Why ours reads worse:** 19 systems + 68 components + 120 edges is 7× the node ceiling and 8.5×
+the edge count with six boundaries, double archify's maximum, so no boundary is distinctive and
+the amber dashes become texture. L1 "opens every system into components", turning 12 boxes into
+68 exactly where reading should get easier.
+
+**The archify-faithful abstraction of our model:** L0 carries 10–12 nodes and 2–3 boundaries.
+Merge studio + journey + modules → Desktop surfaces, daemon + mcp + voice → Channels, seams +
+vocabulary → Contracts; keep shell, bridge, browser lane, runner, hooks, brain, catalog, record as
+the main path because the gate and the ledger are the argument. One region (Athena runtime) plus
+one security group (the trust boundary); drop the per-layer frames, the row already encodes the
+layer. The 68 components become the directory in the sublabel, the part id and status in the
+tag, and three cards of three bullets naming the clusters we lose. Of 120 edges keep the ~14 that
+form the turn; the rest live in the pane. L1 does not show every component: it reveals sublabel
+and tag on the same 12 boxes and opens one system's card.
+
+## 2. Component strategy: the node is a fixed unit
+
+`render-architecture.mjs:65-66`: `defaultW: 120, defaultH: 60`, fixed; `rx=6`; stroke 1.5; an
+opaque mask underneath; sigil 11 px at (6,6); brand mark top-right; label 11/600 centred with
+floor 8; sublabel 9 with floor 6 at cy+14; tag 7 at the bottom in the kind accent. `text-fit.mjs`
+shrinks then **rejects** over-long text, never clips. Variants: emphasis stroke 1.8, security
+dash 5,5, dashed 4,4. Edge labels: 14 px mask, rx 3, 8 px text, every label an obstacle.
+
+Our divergences, each with its fix: ghost module cells (no precedent; the sanctioned form is a
+bullet list, which is text) → fixed 140×60; fitted widths from `⌈√n⌉ × 96` giving 378×214 nodes
+→ fixed width and shrink-to-fit; `text-overflow: ellipsis` → shrink to a floor; a 24 px title
+strip → none; tag top-right competing with the sigil → bottom-centre in the accent; arrowheads
+7×7 → 10×7 with refX 9; no emphasised spine (maka marks 8 of 12 connections emphasis) → the
+turn's path in green 1.8; labels on nearly every run → labels earn their place.
+
+## 3. Style: the finish
+
+Classic dark: `--bg #020617`, `--grid #1e293b`, `--mask #0f172a`, `--panel rgba(15,23,42,.5)`,
+`--arrow #64748b`, `--arrow-emphasis #34d399`, fills at 0.4 alpha, strokes `#22d3ee #34d399
+#a78bfa #fbbf24 #fb7185 #fb923c #94a3b8`. Light: `--bg #f8fafc`, `--grid #e2e8f0`, fills
+0.15–0.2. Our CSS reproduces these hexes exactly — the palette was never the problem. Runs 1.5
+px, emphasis 1.8; boundaries stroke 1, region fill `rgba(251,191,36,.05)` dash 8,4, security
+group dash 4,4, label 9/600 on an opaque mask; grid 40×40; `h1` 1.5 rem/700/-0.025 em with a
+.875 rem subtitle; cards `auto-fit minmax(280px,1fr)`; Present mode hides the cards and the
+canvas is the slide.
+
+What reads cheaper in ours: runs at 1.5 world units × 28% = 0.42 px on screen; no emphasis
+spine; grid pitch 11 px on screen (moiré); nodes 378×214; ghost cells; ellipses; six frames; a
+floating legend instead of one inside the canvas footprint; no cards; no title band; 7×7
+arrowheads; 7 px boundary labels.
+
+## 4. Scale and framing
+
+`viewer-camera.js` starts at scale 1 and **disables zoom-out below 1**. There is no fit pass:
+the authored viewBox fills a reading column (`max-width 1440px`, `svg width 100%`), and the
+authoring contract forces the author to make it fit at 1440×900, 1600×1000 and 1920×1080 —
+"repair overflow by removing content, never with overflow hidden, a scroller or smaller type".
+Typical viewBox 1080×520. Ours defines the home pose as a heavy zoom-out (`HOME_MIN 0.16`), which
+is the single ratio behind the thin lines, dense grid and unreadable labels.
+
+## 5. Two variants for round 6
+
+**A — the editorial sheet (`archify-density`).** Twelve nodes, two boundaries, at most fourteen
+edges, one emphasised spine, no node ever opens. L0 is the sheet at 100%; L1 is the same boxes
+with sublabel and tag revealed plus the hovered node's pane; L2 is the card rail, not a new
+graph. The one change that matters: fixed 140×60 nodes and an authored world of about 1180×720
+that fills the reading column at scale 1, zoom-out disabled below 1. Success: at 1440×900 zero
+horizontal scroll, scale ≥ 1, every label ≥ 9 px on screen, zero ellipses, runs ≥ 1.5 px, and a
+reader can name the turn's path from the still frame.
+
+**B — the turn in lanes (`archify-lanes`).** Archify's workflow type: four lanes (Surface /
+Runtime / Policy and recovery / Tools and evidence), six columns, three phases (Arrive / Compose
+and gate, emphasis / Run and record, dashed), twelve nodes on lane×col, edges with `role:
+main|branch|async|return|error`. L0 the lane grid with phase headers; L1 one phase's columns
+widened with edge labels revealed; L2 one lane as a five-stage dataflow (Signal → Compose →
+Gate → Execute → Record). The one change: lane and phase chrome replaces the boundary frames, so
+reading order comes from position and the amber dashes disappear. Success: a reader with no
+legend states the happy path and the one exception branch in under fifteen seconds, and error
+and return runs never enter the main corridor (zero crossings between main and error runs).
