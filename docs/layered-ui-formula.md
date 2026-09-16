@@ -85,6 +85,16 @@ Each rule names the round that earned it and the app(s) it was proven in.
     honest answer and the wheel stops at L1; on a sheet the wheel walks L0→L1→L2 and `poseFor` and
     `resolve*` are exact inverses by construction, asserted per layer and component in every view.
     *(R4, atlas; the negative from R3 tidycrm and atlas.)*
+17. **A sheet has a ceiling, and the ceiling is a design decision, not a property of the data.**
+    Fix the world and fix the node; let text tiers and cards absorb what will not fit; a level
+    change then reveals detail on the same marks instead of replacing them with more marks, which
+    is why the near band reads *easier* than the far one. Twelve nodes, two boundaries, fourteen
+    runs, the sheet at scale 1. *(R6, atlas density; the negative from R5's 19 + 68 + 120 at 28%.)*
+18. **Position can be the grouping, and then the frame is one you no longer have to draw.** On an
+    authored two-axis grid the group under the camera is derivable from where it looks, so the
+    level change can be a widening of the open group's columns, the only move that makes more
+    room, and a label that will not fit stands down at this level and is revealed by the level
+    that widens it. *(R6, atlas lanes.)*
 
 ## 2. Round log
 
@@ -422,4 +432,28 @@ variants come from a second study aimed at what the first missed: the abstractio
 (grouping), the node as a fixed unit with text tiers absorbing detail (component strategy), and
 the finish (style, scale, fit). Blueprint and wildcard are deleted.
 
-**Outcome:** *(filled after review)*
+**Outcome** — commits `4f33568` (cleanup: archify stays), `ce68bb3` (density), `07a3f49`
+(lanes), `7592aa5` (kit: a cancelled flight tells its caller), `0186f9f` (study part 2). Gates
+green, 112 tests, static build. Three variants mount through one shell: archify (the round-5
+baseline), density, lanes.
+
+| Measured at L0 | archify (R5) | density | lanes |
+|---|---|---|---|
+| Nodes / boundaries / runs on the sheet | 19 / 7 / 52+ | 12 / 2 / 14 | 12 / 0 / 14 |
+| Home scale at 1440×900 | 0.28 | 1.00 | 1.00 |
+| Labels under 9 px on screen | many | 0 | 0 |
+| Ellipses | yes | 0 | 0 |
+| Run stroke on screen | 0.42 px | 1.5 px | 1.5–1.8 px |
+
+The second study's finding was that archify's limits are quantities, not techniques: no example
+exceeds twelve nodes, boundaries are one to four, nesting depth is one, nodes are a fixed
+120×60 with text shrinking to a floor and never truncating, and the home pose is scale 1 with
+zoom-out disabled. Both new variants meet those numbers on our model, with tests that pin them.
+Rules 17 and 18 are what they taught. The clone is deleted; `docs/archify-study.md` keeps both
+studies.
+
+**Carried:** lanes' near band frames three of four lanes and pushes the lane labels off screen
+(the matrix's "headers pinned outside the world" would fix it); density's cards sit 235 px below
+the fold at 1440×900; `read_view` still projects nineteen systems where a variant draws twelve;
+the rig's pointer capture still steals `click` from DOM controls in the scene (fourth report);
+resolve callbacks still get no frame (fourth round). The owner picks among the three variants.
