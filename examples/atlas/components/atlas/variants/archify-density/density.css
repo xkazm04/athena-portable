@@ -1,0 +1,635 @@
+/*
+ * `archify-density` — the editorial sheet. Every selector is under `.ad-sheet` or carries the `ad-`
+ * prefix, so it cannot reach the shell, the mast, the pane or a sibling variant.
+ *
+ * WHAT THIS STYLESHEET IS ARGUING, in three numbers from study part 2 §3:
+ *
+ *   · runs are 1.5 world units and the camera never stands further back than 1, so a run is 1.5 px
+ *     on screen. Round 5's were 1.5 × 0.28 = 0.42 px, which is why they read as smoke.
+ *   · the grid is 40 world units, so it is ~40 px on screen. Round 5's was 11 px, which is moiré.
+ *   · every text tier is a world length, so it scales WITH the camera and is never counter-scaled.
+ *     11 units at scale 1 is 11 px; at the L1 band (1.8) it is 20. Nothing is ever under 9 px.
+ *
+ * NO RAW `px` AND NO RAW `ms` (DESIGN.md §9, `design/check-tokens.mjs`). World lengths are `rem`
+ * against a root font size of 16, so `0.6875rem` IS the 11-unit label `sheet.ts` measured its
+ * labels against; geometry the router computed arrives as inline `style` from tested numbers.
+ * Durations are `--ad-*` aliases of the app's own clock and never a literal.
+ */
+
+.ad-sheet {
+  /* ------------------------------------------------------- the clock -- */
+  --ad-dur-hair: var(--at-dur-hair); /* a rule changing weight under the pointer */
+  --ad-dur-detail: var(--at-dur-ink); /* a text tier arriving or leaving */
+  --ad-dur-lens: var(--at-dur-lens); /* the dim spreading through the drawing */
+  --ad-dur-move: var(--at-dur-move); /* the level change, and the camera's flight */
+  --ad-ease: var(--at-ease);
+  --ad-ease-out: var(--at-ease-out);
+
+  /* --------------------------------------------------- world lengths -- */
+  --ad-node-pad: 0.5625rem; /* NODE_PAD 9 */
+  --ad-radius: 0.375rem; /* archify's rx = 6 */
+  --ad-rule: 0.09375rem; /* 1.5 world units — the run, and the node's stroke */
+  --ad-rule-2: 0.125rem; /* 2 — a node the reader is inside */
+  --ad-hair: 0.0625rem; /* 1 — a boundary */
+  --ad-text-label: 0.6875rem; /* 11 */
+  --ad-text-sub: 0.5625rem; /* 9 */
+  --ad-text-tag: 0.4375rem; /* 7 */
+  --ad-text-run: 0.5625rem; /* 9 — the run label, an obstacle and therefore fixed */
+  --ad-text-frame: 0.5625rem; /* 9 — the boundary's corner label */
+  --ad-grid: 2.5rem; /* 40 */
+  --ad-sigil: 0.6875rem; /* 11, at (6, 6) */
+  --ad-sigil-inset: 0.375rem;
+
+  /* ------------------------------------------------------ page lengths -- */
+  --ad-column-max: 90rem; /* archify's reading column, in units: 1440 */
+  --ad-card-min: 17.5rem; /* archify's 280-unit card floor (study part 2 §3) */
+  --ad-radius-sm: 0.1875rem;
+  --ad-radius-lg: 0.5rem;
+
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--ad-ground);
+  color: var(--ad-ink);
+  font-family: var(--at-font-fig);
+}
+
+/* ---------------------------------------------------------------- the palette --
+ * Archify's Classic, hex for hex (study §3). The palette was never the problem, so it is not
+ * changed: what changed is the scale everything is drawn at.
+ */
+.ad-sheet[data-theme="dark"] {
+  --ad-ground: #020617;
+  --ad-canvas: #020617;
+  --ad-panel: #0f172a;
+  --ad-mask: #0f172a;
+  --ad-ink: #e2e8f0;
+  --ad-ink-muted: #94a3b8;
+  --ad-ink-dim: #64748b;
+  --ad-line: #1e293b;
+  --ad-grid-ink: #1e293b;
+  --ad-region: #fbbf24;
+  --ad-region-fill: rgba(251, 191, 36, 0.05);
+  --ad-secgroup: #fb7185;
+  --ad-secgroup-fill: rgba(251, 113, 133, 0.04);
+  --ad-arrow: #64748b;
+  --ad-arrow-emphasis: #34d399;
+
+  --ad-k-frontend: #22d3ee;
+  --ad-k-messagebus: #fb923c;
+  --ad-k-backend: #34d399;
+  --ad-k-security: #fb7185;
+  --ad-k-database: #a78bfa;
+  --ad-k-cloud: #fbbf24;
+  --ad-k-external: #94a3b8;
+  --ad-fill: 22%;
+}
+
+.ad-sheet[data-theme="light"] {
+  --ad-ground: #f8fafc;
+  --ad-canvas: #ffffff;
+  --ad-panel: #ffffff;
+  --ad-mask: #ffffff;
+  --ad-ink: #0f172a;
+  --ad-ink-muted: #475569;
+  --ad-ink-dim: #64748b;
+  --ad-line: #e2e8f0;
+  --ad-grid-ink: #e2e8f0;
+  --ad-region: #b45309;
+  --ad-region-fill: rgba(180, 83, 9, 0.04);
+  --ad-secgroup: #e11d48;
+  --ad-secgroup-fill: rgba(225, 29, 72, 0.03);
+  --ad-arrow: #64748b;
+  --ad-arrow-emphasis: #059669;
+
+  --ad-k-frontend: #0891b2;
+  --ad-k-messagebus: #ea580c;
+  --ad-k-backend: #059669;
+  --ad-k-security: #e11d48;
+  --ad-k-database: #7c3aed;
+  --ad-k-cloud: #b45309;
+  --ad-k-external: #475569;
+  --ad-fill: 18%;
+}
+
+/* The accent for one node, resolved once from its kind. Every other rule reads `--ad-accent`. */
+.ad-sheet [data-node-kind="frontend"] { --ad-accent: var(--ad-k-frontend); }
+.ad-sheet [data-node-kind="messagebus"] { --ad-accent: var(--ad-k-messagebus); }
+.ad-sheet [data-node-kind="backend"] { --ad-accent: var(--ad-k-backend); }
+.ad-sheet [data-node-kind="security"] { --ad-accent: var(--ad-k-security); }
+.ad-sheet [data-node-kind="database"] { --ad-accent: var(--ad-k-database); }
+.ad-sheet [data-node-kind="cloud"] { --ad-accent: var(--ad-k-cloud); }
+.ad-sheet [data-node-kind="external"] { --ad-accent: var(--ad-k-external); }
+
+/* ------------------------------------------------------------------ the column --
+ * Archify's reading column: 1440 units wide at most, the drawing sized to fill it at 100 %.
+ */
+.ad-column {
+  max-width: var(--ad-column-max);
+  margin-inline: auto;
+  padding-inline: var(--at-space-5);
+  padding-block: var(--at-space-4) var(--at-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--at-space-4);
+}
+
+/* ------------------------------------------------------------------ the title -- */
+
+.ad-title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--at-space-1);
+}
+
+.ad-title h1 {
+  margin: 0;
+  font-family: var(--at-font-fig);
+  font-size: var(--at-text-xl);
+  font-weight: 700;
+  letter-spacing: var(--at-track-tight);
+  line-height: var(--at-leading-tight);
+  color: var(--ad-ink);
+  display: flex;
+  align-items: center;
+  gap: var(--at-space-3);
+}
+
+.ad-title h1::before {
+  content: "";
+  width: var(--at-space-2);
+  height: var(--at-space-2);
+  border-radius: 50%;
+  background: var(--ad-k-frontend);
+  flex: none;
+}
+
+.ad-title p {
+  margin: 0;
+  font-size: var(--at-text-label);
+  color: var(--ad-ink-muted);
+}
+
+.ad-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--at-space-4);
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------------ the canvas -- */
+
+.ad-canvas {
+  position: relative;
+  border: var(--at-rule-1) solid var(--ad-line);
+  border-radius: var(--ad-radius-lg);
+  background: var(--ad-canvas);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ad-viewport {
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+  outline: none;
+  flex: none;
+}
+.ad-viewport:active {
+  cursor: grabbing;
+}
+.ad-viewport:focus-visible {
+  outline: var(--at-rule-2) solid var(--ad-k-frontend);
+  outline-offset: calc(-1 * var(--at-rule-2));
+}
+
+.ad-world {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+/* Archify's 40-unit grid, on the element the camera transforms: a sheet, not a backdrop. */
+.ad-paper {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--ad-grid-ink) var(--ad-hair), transparent var(--ad-hair)),
+    linear-gradient(to bottom, var(--ad-grid-ink) var(--ad-hair), transparent var(--ad-hair));
+  background-size: var(--ad-grid) var(--ad-grid);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.ad-plate {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------- the boundaries --
+ * A region is amber and dashed 8,4; a security group is rose and dashed 4,4. Archify's two, and
+ * there is no third. The corner label carries its own opaque mask.
+ */
+.ad-frame {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border: var(--ad-hair) dashed var(--ad-frame-ink);
+  border-radius: var(--ad-radius-lg);
+  background: var(--ad-frame-fill);
+  pointer-events: none;
+}
+.ad-frame[data-kind="region"] {
+  --ad-frame-ink: var(--ad-region);
+  --ad-frame-fill: var(--ad-region-fill);
+  border-style: dashed;
+}
+.ad-frame[data-kind="security-group"] {
+  --ad-frame-ink: var(--ad-secgroup);
+  --ad-frame-fill: var(--ad-secgroup-fill);
+}
+
+.ad-frame-label {
+  position: absolute;
+  left: var(--at-space-3);
+  top: calc(-1 * var(--at-space-2));
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--at-space-2);
+  padding-inline: var(--at-space-1);
+  background: var(--ad-canvas);
+  font-size: var(--ad-text-frame);
+  font-weight: 600;
+  letter-spacing: var(--at-track-label);
+  color: var(--ad-frame-ink);
+  white-space: nowrap;
+}
+.ad-frame-note {
+  color: var(--ad-ink-dim);
+  font-weight: 400;
+}
+
+/* -------------------------------------------------------------------- the node --
+ * Archify's anatomy exactly (study §2, part 2 §2): no title strip, an opaque mask so a run never
+ * shows through, rx 6, a 1.5-unit stroke, an 11-unit sigil at (6, 6), a centred 11/600 label, a
+ * 9-unit muted sublabel and a 7-unit tag at the bottom in the kind accent. NO GHOST CELLS: a node
+ * never opens, so there is nothing for them to promise.
+ */
+.ad-node {
+  position: absolute;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--at-space-0);
+  padding: var(--ad-node-pad);
+  border: var(--ad-rule) solid var(--ad-accent);
+  border-radius: var(--ad-radius);
+  background: color-mix(in srgb, var(--ad-accent) var(--ad-fill), var(--ad-mask));
+  color: var(--ad-accent);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color var(--ad-dur-hair) var(--ad-ease),
+    opacity var(--ad-dur-lens) var(--ad-ease),
+    box-shadow var(--ad-dur-hair) var(--ad-ease);
+}
+
+.ad-mask {
+  position: absolute;
+  inset: calc(-1 * var(--ad-rule));
+  border-radius: var(--ad-radius);
+  background: var(--ad-mask);
+  z-index: -1;
+}
+
+.ad-sigil {
+  position: absolute;
+  left: var(--ad-sigil-inset);
+  top: var(--ad-sigil-inset);
+  width: var(--ad-sigil);
+  height: var(--ad-sigil);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.9;
+}
+
+.ad-label {
+  font-size: var(--ad-text-label);
+  font-weight: 600;
+  line-height: var(--at-leading-tight);
+  color: var(--ad-ink);
+  white-space: nowrap;
+}
+
+.ad-sub {
+  font-size: var(--ad-text-sub);
+  line-height: var(--at-leading-tight);
+  color: var(--ad-ink-muted);
+  white-space: nowrap;
+  margin-top: var(--at-space-1);
+}
+
+.ad-tag {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--at-space-1);
+  font-size: var(--ad-text-tag);
+  letter-spacing: var(--at-track-label);
+  color: var(--ad-accent);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------- semantic zoom, tiered --
+ * `data-detail-level` on the world is the band; `data-detail` on a tier is what it costs. Archify's
+ * rule, with round 5's correction: INTENT ADVANCES THE TIER ONE STEP rather than replacing the
+ * band, so a hovered node at the map band gains its 9-unit sublabel and not its 7-unit tag — which
+ * is what keeps the "nothing under 9 px on screen" claim true at every distance.
+ */
+.ad-world[data-detail-level="map"] [data-detail="context"],
+.ad-world[data-detail-level="map"] [data-detail="fine"] {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ad-dur-detail) var(--ad-ease);
+}
+/* INTENT ADVANCES THE TIER ONE STEP: at the map band a node the reader is pointing at gains its
+   9-unit sublabel, and NOT its 7-unit tag, which at a scale of 1 would be 7 px on screen. */
+.ad-world[data-detail-level="map"] .ad-node[data-intent] [data-detail="context"] {
+  opacity: 1;
+}
+.ad-world[data-detail-level="read"] [data-detail],
+.ad-world[data-detail-level="full"] [data-detail] {
+  opacity: 1;
+  transition: opacity var(--ad-dur-detail) var(--ad-ease);
+}
+
+/* Layout must not jump when a tier fades, so the hidden tiers keep their box. The one exception is
+   the map band, where the label alone should sit in the middle of the box — archify's own look. */
+.ad-world[data-detail-level="map"] .ad-sub {
+  display: none;
+}
+.ad-world[data-detail-level="map"] .ad-node[data-intent] .ad-sub {
+  display: block;
+}
+
+/* ----------------------------------------------------------------- what is lit -- */
+
+.ad-node[data-intent] {
+  border-width: var(--ad-rule-2);
+}
+.ad-node[data-intent="focus"] {
+  box-shadow: 0 0 0 var(--ad-hair) var(--ad-accent);
+}
+/* The open layer band: its nodes carry the weight, the rest of the sheet stays legible reference.
+   A band is not a new drawing, so this is the only thing that changes. */
+.ad-node[data-open] {
+  border-width: var(--ad-rule-2);
+  box-shadow: 0 0 0 var(--ad-hair) color-mix(in srgb, var(--ad-accent) 45%, transparent);
+}
+.ad-node[data-dim] {
+  opacity: 0.34;
+}
+.ad-node[data-lit] .ad-label {
+  color: var(--ad-accent);
+}
+
+.ad-node:focus-visible {
+  outline: var(--at-rule-2) solid var(--ad-k-frontend);
+  outline-offset: var(--at-space-1);
+}
+
+/* --------------------------------------------------------------------- the runs -- */
+
+.ad-run-line {
+  fill: none;
+  stroke: var(--ad-arrow);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: butt;
+}
+.ad-run[data-style="emphasis"] .ad-run-line {
+  stroke: var(--ad-arrow-emphasis);
+  stroke-width: 1.8;
+}
+.ad-run[data-style="security"] .ad-run-line {
+  stroke: var(--ad-secgroup);
+  stroke-dasharray: 5 5;
+}
+.ad-run[data-style="dashed"] .ad-run-line {
+  stroke-dasharray: 4 4;
+}
+.ad-run[data-derived] .ad-run-line {
+  stroke-dasharray: 2 4;
+}
+.ad-run[data-dim] {
+  opacity: 0.22;
+  transition: opacity var(--ad-dur-lens) var(--ad-ease);
+}
+
+.ad-marker path {
+  fill: var(--ad-arrow);
+}
+.ad-marker[data-style="emphasis"] path {
+  fill: var(--ad-arrow-emphasis);
+}
+.ad-marker[data-style="security"] path {
+  fill: var(--ad-secgroup);
+}
+
+.ad-run-mask {
+  fill: var(--ad-mask);
+}
+.ad-run-label text {
+  fill: var(--ad-ink-muted);
+  font-size: var(--ad-text-run);
+  font-family: var(--at-font-fig);
+  text-anchor: middle;
+}
+.ad-run[data-style="emphasis"] .ad-run-label text {
+  fill: var(--ad-arrow-emphasis);
+}
+
+/* ------------------------------------------------------------------ the footer --
+ * The legend lives INSIDE the canvas footprint (study part 2 §3: round 5's floated over the
+ * drawing), on the left, with counts; the camera's own controls sit opposite it.
+ */
+.ad-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--at-space-4);
+  padding: var(--at-space-2) var(--at-space-4);
+  border-top: var(--at-rule-1) solid var(--ad-line);
+  background: var(--ad-canvas);
+  flex-wrap: wrap;
+}
+
+.ad-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--at-space-3);
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.ad-legend-title {
+  font-size: var(--at-text-micro);
+  letter-spacing: var(--at-track-label);
+  text-transform: uppercase;
+  color: var(--ad-ink-dim);
+}
+
+.ad-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--at-space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--at-text-micro);
+  color: var(--ad-ink-muted);
+  cursor: pointer;
+}
+.ad-chip::before {
+  content: "";
+  width: var(--at-space-3);
+  height: var(--at-space-2);
+  border: var(--at-rule-1) solid var(--ad-accent);
+  border-radius: var(--ad-radius-sm);
+  background: color-mix(in srgb, var(--ad-accent) var(--ad-fill), transparent);
+}
+.ad-chip[data-on] {
+  color: var(--ad-ink);
+}
+.ad-chip-n {
+  font-variant-numeric: tabular-nums;
+  color: var(--ad-ink-dim);
+}
+
+.ad-omitted {
+  font-size: var(--at-text-micro);
+  color: var(--ad-ink-dim);
+}
+
+.ad-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--at-space-2);
+}
+
+.ad-btn {
+  padding: var(--at-space-1) var(--at-space-3);
+  border: var(--at-rule-1) solid var(--ad-line);
+  border-radius: var(--ad-radius-sm);
+  background: var(--ad-panel);
+  color: var(--ad-ink-muted);
+  font: inherit;
+  font-size: var(--at-text-micro);
+  letter-spacing: var(--at-track-label);
+  cursor: pointer;
+}
+.ad-btn[data-on] {
+  color: var(--ad-ink);
+  border-color: var(--ad-k-frontend);
+}
+.ad-zoom {
+  font-variant-numeric: tabular-nums;
+  color: var(--ad-ink-dim);
+  font-size: var(--at-text-micro);
+  min-width: var(--at-space-8);
+  text-align: center;
+}
+
+/* -------------------------------------------------------------------- the cards -- */
+
+.ad-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--ad-card-min), 1fr));
+  gap: var(--at-space-4);
+}
+
+.ad-card {
+  padding: var(--at-space-4);
+  border: var(--at-rule-1) solid var(--ad-line);
+  border-radius: var(--ad-radius-lg);
+  background: var(--ad-panel);
+  transition: border-color var(--ad-dur-hair) var(--ad-ease);
+}
+.ad-card[data-open] {
+  border-color: var(--ad-accent);
+}
+
+.ad-card h2 {
+  margin: 0 0 var(--at-space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--at-space-2);
+  font-size: var(--at-text-label);
+  font-weight: 600;
+  color: var(--ad-ink);
+}
+.ad-card h2::before {
+  content: "";
+  width: var(--at-space-2);
+  height: var(--at-space-2);
+  border-radius: 50%;
+  background: var(--ad-accent);
+  flex: none;
+}
+
+.ad-card ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--at-space-2);
+}
+.ad-card li {
+  font-size: var(--at-text-micro);
+  line-height: var(--at-leading-body);
+  color: var(--ad-ink-muted);
+  padding-left: var(--at-space-3);
+  position: relative;
+}
+.ad-card li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  color: var(--ad-ink-dim);
+}
+
+/* -------------------------------------------------------------------- present -- */
+
+.ad-sheet[data-present] .ad-cards,
+.ad-sheet[data-present] .ad-title p {
+  display: none;
+}
+
+/* ------------------------------------------------------------- reduced motion --
+ * Rule 8: the final state at frame zero, never a faster animation. The tokens are already 0 under
+ * `prefers-reduced-motion` (tokens.css); this removes the transitions themselves so nothing is
+ * left interpolating a colour.
+ */
+.ad-sheet[data-reduced] * {
+  transition: none !important;
+  animation: none !important;
+}
