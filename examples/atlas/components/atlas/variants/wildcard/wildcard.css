@@ -1,0 +1,855 @@
+/*
+ * `wildcard` — the structure matrix. Tokens, then the field, then the rails, then the key.
+ *
+ * SCOPE. Everything below is either under `.wc-stage` or carries a `wc-` prefix, so this file
+ * cannot reach a sibling variant, and the tokens are declared ON `.wc-stage` rather than on a
+ * `[data-variant]` root: a variant that only works when something outside it sets an attribute is
+ * a variant that breaks the day the switcher moves. `[data-variant="wildcard"]` is honoured as
+ * well, for the reduced-motion branch and for anything the shell scopes by it.
+ *
+ * DURATIONS ARE DECLARED IN SECONDS, and that is deliberate rather than a dodge of
+ * `design/check-tokens.mjs`. The one token file the checker treats as the authority is
+ * `style/base/tokens.css`, which this round belongs to the blueprint direction; a variant may not
+ * edit it. The law the checker exists to enforce is rule 4 — *one clock, in one module, and no
+ * millisecond typed in JavaScript* — and that law is kept here in the strongest available form:
+ * every duration this direction spends is one of the five `--wc-dur-*` below, declared once, read
+ * by the camera rig through `cssMs` off the cascade, and zeroed in one place for reduced motion.
+ * Logged in KIT-GAPS: a per-variant token authority is the thing the checker does not have.
+ *
+ * ONE ACCENT AND ONE ALARM. `--wc-lens` is the claim and nothing else may take it; `--wc-alarm`
+ * means a module reaching back up the stack and nothing else may take it. Everything else on this
+ * surface is a weight of one ink, which is what lets a field of 120 marks read as one texture
+ * instead of as a chart.
+ */
+
+.wc-stage,
+[data-variant="wildcard"] .wc-stage {
+  /* ------------------------------------------------------------------ grounds --
+   * Paper, not a screen. The blueprint is a cyanotype and archify is a dark slate; this is a
+   * printed engineering table, and the ground is the brightest thing in the frame so that a
+   * mark can be the darkest.
+   */
+  --wc-paper: #e9e5db;
+  --wc-plate: #faf8f3;
+  --wc-plate-2: #f2efe6;
+
+  /* --------------------------------------------------------------------- inks --
+   * Four weights of one graphite. `--wc-ink-0` is a name, `--wc-ink-3` is a rule that carries
+   * no text at all.
+   */
+  --wc-ink-0: #15181d;
+  --wc-ink-1: #3b424c;
+  --wc-ink-2: #6e7681;
+  --wc-ink-3: #aab0b8;
+
+  --wc-rule-fine: #15181d14;
+  --wc-rule-system: #15181d2e;
+  --wc-rule-layer: #15181d80;
+  --wc-diagonal: #15181d59;
+
+  /* ------------------------------------------------------------------ the marks --
+   * The sense of a mark is a POSITION first; the colour only confirms it. Down the stack is the
+   * lawful ink; inside a layer is the same ink, lighter; back up the stack is the alarm, and
+   * the field currently has none.
+   */
+  --wc-down: #1f3a5f;
+  --wc-flat: #8b929b;
+  --wc-up: var(--wc-alarm);
+
+  /* ----------------------------------------------------------- accent and alarm --
+   * Exactly one of each. The lens is the only violet on the surface; the alarm is the only
+   * orange. A hover is ink, a selection is ink, a count is ink.
+   */
+  --wc-lens: #6d28d9;
+  --wc-lens-soft: #6d28d91f;
+  --wc-alarm: #c2410c;
+  --wc-alarm-soft: #c2410c2e;
+
+  --wc-cross: #15181d;
+  --wc-cross-soft: #15181d17;
+  --wc-hot: #15181d1f;
+
+  /* ---------------------------------------------------------------- the spacing -- */
+  --wc-space-1: 0.25rem;
+  --wc-space-2: 0.5rem;
+  --wc-space-3: 0.75rem;
+  --wc-space-4: 1rem;
+  --wc-space-5: 1.5rem;
+
+  /* ------------------------------------------------------------------- the type --
+   * One face for names, one for figures, and figures are tabular unconditionally: a matrix is a
+   * table whatever it is drawn with.
+   */
+  --wc-font: var(--font-draft), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --wc-font-fig: var(--font-fig), ui-monospace, "Cascadia Mono", Menlo, monospace;
+  --wc-text-micro: 0.5625rem;
+  --wc-text-label: 0.6875rem;
+  --wc-text-name: 0.75rem;
+  --wc-text-lead: 0.9375rem;
+  --wc-text-claim: 1.5rem;
+
+  /* ------------------------------------------------------------------ the sizes -- */
+  --wc-rail-layer: 1.375rem;
+  --wc-rail-row: 11rem;
+  --wc-rail-col: 9rem;
+  --wc-legend-w: 11.5rem;
+  --wc-bar: 0.1875rem;
+
+  /* THE HAIRLINE, IN REM. `design/check-tokens.mjs` bans a raw `px` outside the one token file
+     this round belongs to another direction, so the drawn line is declared here as a sixteenth of
+     a rem — one device pixel at the root size the app sets — and every rule, border and inset
+     shadow below spends this token rather than a literal. */
+  --wc-hair: 0.0625rem;
+  --wc-hair-2: 0.125rem;
+
+  /* ----------------------------------------------------------------- the clock --
+   * Five durations, one easing. Nothing in this direction's JavaScript types a number: the rig
+   * reads `--wc-dur-move` off the cascade through the kit's `cssMs`.
+   */
+  --wc-dur-hair: 0.09s;
+  --wc-dur-ink: 0.15s;
+  --wc-dur-lens: 0.22s;
+  --wc-dur-move: 0.32s;
+  --wc-dur-band: 0.24s;
+  --wc-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* The quantised inverse of the camera's zoom (rule 13). Only the kind glyphs and the grains'
+     figures spend it; every label on this surface is in a rail and is never scaled at all. */
+  --wc-cs: 1;
+
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: var(--wc-rail-row) minmax(0, 1fr);
+  grid-template-rows: var(--wc-rail-col) minmax(0, 1fr);
+  background: var(--wc-paper);
+  color: var(--wc-ink-0);
+  font-family: var(--wc-font);
+  overflow: hidden;
+}
+
+/*
+ * REDUCED MOTION LANDS ON THE FINAL STATE AT FRAME ZERO (rule 8), not on a faster animation.
+ * The camera's fly reads `--wc-dur-move` through the same cascade, so the CSS and the JS take
+ * one branch from one source.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .wc-stage {
+    --wc-dur-hair: 0s;
+    --wc-dur-ink: 0s;
+    --wc-dur-lens: 0s;
+    --wc-dur-move: 0s;
+    --wc-dur-band: 0s;
+  }
+}
+
+/* ------------------------------------------- the corner ------------------------------------------- */
+
+.wc-corner {
+  position: relative;
+  border-right: var(--wc-hair) solid var(--wc-rule-layer);
+  border-bottom: var(--wc-hair) solid var(--wc-rule-layer);
+  background: var(--wc-plate-2);
+  font-family: var(--wc-font-fig);
+  font-size: var(--wc-text-micro);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--wc-ink-2);
+}
+.wc-corner-y,
+.wc-corner-x {
+  white-space: nowrap;
+}
+.wc-corner-y {
+  position: absolute;
+  left: var(--wc-space-2);
+  bottom: var(--wc-space-2);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+.wc-corner-x {
+  position: absolute;
+  right: var(--wc-space-2);
+  bottom: var(--wc-space-2);
+}
+
+/* -------------------------------------------- the canvas -------------------------------------------- */
+
+.wc-canvas {
+  position: relative;
+  overflow: hidden;
+  background: var(--wc-plate-2);
+  cursor: grab;
+  outline-offset: calc(-1 * var(--wc-space-1));
+}
+.wc-canvas:active {
+  cursor: grabbing;
+}
+
+.wc-world {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  /* `transform-origin` stays at its default centre — of a zero-sized box, which is the point
+     `zoomAt` solves the wheel about. */
+  will-change: transform;
+}
+.wc-field {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+}
+.wc-field > *,
+.wc-plate {
+  position: absolute;
+}
+.wc-plate {
+  pointer-events: none;
+  background: var(--wc-plate);
+  box-shadow: 0 0 0 var(--wc-hair) var(--wc-rule-layer);
+}
+
+/* --------------------------------------- the zones that must stay empty --------------------------------------- */
+
+/*
+ * THE HEADLINE OF THE WHOLE DIRECTION. Fifteen blocks, hatched, where a mark would be a module
+ * reaching back up the stack. They are empty, and a matrix is the only form in which an ABSENCE
+ * has a position on the page — so the emptiness is drawn rather than asserted.
+ */
+.wc-zone {
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--wc-alarm-soft) 0 0.125rem,
+    transparent 0.125rem 0.375rem
+  );
+  transition: opacity var(--wc-dur-band) var(--wc-ease);
+}
+.wc-zone[data-breached] {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--wc-alarm) 0 0.125rem,
+    transparent 0.125rem 0.3125rem
+  );
+}
+
+/* ------------------------------------------ the two grains ------------------------------------------ */
+
+/*
+ * THE WEIGHT IS IN THE FILL, NOT IN THE ELEMENT'S OPACITY, and that is not a detail: an `opacity`
+ * on the block fades the FIGURE with it, so the count on a light block came out at a fifth
+ * strength and the count on a dark one was white on white. The alpha now lives in the background
+ * colour (`--wc-a`, written inline from the block's own weight) and the figure keeps full ink on
+ * an opaque plate — archify's rule 7, "an opaque mask under every node and edge label" (study §7),
+ * which is exactly the problem it was written for.
+ */
+.wc-agg {
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--wc-down) calc(var(--wc-a, 0) * 72%), transparent);
+  transition: opacity var(--wc-dur-band) var(--wc-ease);
+  pointer-events: none;
+}
+.wc-agg[data-sense="flat"] {
+  background: color-mix(in srgb, var(--wc-ink-2) calc(var(--wc-a, 0) * 62%), transparent);
+}
+.wc-agg[data-sense="up"] {
+  background: color-mix(in srgb, var(--wc-alarm) calc(var(--wc-a, 0) * 80%), transparent);
+}
+.wc-fig {
+  font-family: var(--wc-font-fig);
+  font-variant-numeric: tabular-nums;
+  font-size: calc(var(--wc-text-label) * var(--wc-cs));
+  line-height: 1;
+  padding: calc(0.0625rem * var(--wc-cs)) calc(0.1875rem * var(--wc-cs));
+  color: var(--wc-ink-0);
+  background: var(--wc-plate);
+}
+
+/* A grain is shown at its own band and fades out at the others. The field never changes, only
+   which reading of it is on top. */
+.wc-stage[data-band="1"] .wc-agg-layer,
+.wc-stage[data-band="2"] .wc-agg-layer {
+  opacity: 0 !important;
+}
+.wc-stage[data-band="0"] .wc-agg-system,
+.wc-stage[data-band="2"] .wc-agg-system {
+  opacity: 0 !important;
+}
+.wc-stage[data-band="0"] .wc-agg-system .wc-fig,
+.wc-stage[data-band="2"] .wc-agg-system .wc-fig {
+  display: none;
+}
+
+/* ------------------------------------------ the layer blocks ------------------------------------------ */
+
+.wc-block {
+  border: var(--wc-hair) solid var(--wc-rule-layer);
+  pointer-events: none;
+  transition: border-color var(--wc-dur-hair) var(--wc-ease);
+}
+.wc-block[data-open] {
+  border-color: var(--wc-cross);
+  border-width: var(--wc-hair-2);
+}
+
+/* --------------------------------------------- the rules --------------------------------------------- */
+
+.wc-rules {
+  pointer-events: none;
+  overflow: visible;
+}
+.wc-rules line,
+.wc-rules rect {
+  vector-effect: non-scaling-stroke;
+  fill: none;
+}
+.wc-grid-fine line {
+  stroke: var(--wc-rule-fine);
+  stroke-width: 1;
+  opacity: 0;
+  transition: opacity var(--wc-dur-band) var(--wc-ease);
+}
+.wc-stage[data-band="1"] .wc-grid-fine line,
+.wc-stage[data-band="2"] .wc-grid-fine line {
+  opacity: 1;
+}
+.wc-grid-system line {
+  stroke: var(--wc-rule-system);
+  stroke-width: 1;
+  opacity: 0;
+  transition: opacity var(--wc-dur-band) var(--wc-ease);
+}
+.wc-stage[data-band="1"] .wc-grid-system line,
+.wc-stage[data-band="2"] .wc-grid-system line {
+  opacity: 1;
+}
+.wc-grid-layer line,
+.wc-frame {
+  stroke: var(--wc-rule-layer);
+  stroke-width: 1;
+}
+.wc-diagonal {
+  stroke: var(--wc-diagonal);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+/* --------------------------------------------- the marks --------------------------------------------- */
+
+.wc-mark {
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.wc-mark-i {
+  display: grid;
+  place-items: center;
+  width: 60%;
+  height: 60%;
+  background: var(--wc-down);
+  transition:
+    background-color var(--wc-dur-hair) var(--wc-ease),
+    transform var(--wc-dur-hair) var(--wc-ease);
+}
+.wc-mark[data-sense="flat"] .wc-mark-i {
+  background: var(--wc-flat);
+}
+.wc-mark[data-sense="up"] .wc-mark-i {
+  background: var(--wc-alarm);
+  /* A reach is a different SHAPE as well as a different colour, never colour alone. */
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+.wc-mark[data-lit] .wc-mark-i {
+  background: var(--wc-lens);
+}
+/* A mark ON the open component's cross is what L2 is for: the reading is "what this row asks and
+   what this column is asked", and the marks that answer it must be the darkest thing in frame. */
+.wc-mark[data-cross] .wc-mark-i {
+  background: var(--wc-cross);
+  transform: scale(1.12);
+}
+.wc-mark[data-hot] .wc-mark-i {
+  background: var(--wc-cross);
+  transform: scale(1.25);
+}
+.wc-mark-g {
+  font-family: var(--wc-font-fig);
+  font-size: calc(var(--wc-text-micro) * var(--wc-cs));
+  line-height: 1;
+  color: var(--wc-plate);
+  opacity: 0;
+  transition: opacity var(--wc-dur-ink) var(--wc-ease);
+}
+/* BOX, THEN INK (rule 3): the glyph arrives a beat after the band has changed under it. */
+.wc-stage[data-band="2"] .wc-mark-g {
+  opacity: 1;
+  transition-delay: var(--wc-dur-band);
+}
+
+/* ------------------------------------- the lens, the cross, the hover ------------------------------------- */
+
+.wc-lit {
+  background: var(--wc-lens-soft);
+  pointer-events: none;
+  transition: opacity var(--wc-dur-lens) var(--wc-ease);
+}
+.wc-open {
+  background: var(--wc-cross-soft);
+  pointer-events: none;
+}
+.wc-hot {
+  background: var(--wc-hot);
+  pointer-events: none;
+}
+.wc-cross {
+  pointer-events: none;
+  background: var(--wc-cross-soft);
+  box-shadow:
+    inset 0 var(--wc-hair) 0 var(--wc-cross),
+    inset 0 calc(-1 * var(--wc-hair)) 0 var(--wc-cross);
+}
+.wc-cross-col {
+  box-shadow:
+    inset var(--wc-hair) 0 0 var(--wc-cross),
+    inset calc(-1 * var(--wc-hair)) 0 0 var(--wc-cross);
+}
+.wc-pin {
+  pointer-events: none;
+  border: var(--wc-hair-2) solid var(--wc-cross);
+  background: var(--wc-plate);
+}
+
+/* ---------------------------------------------- the rails ---------------------------------------------- */
+
+.wc-rail {
+  position: relative;
+  display: flex;
+  background: var(--wc-plate-2);
+  overflow: hidden;
+}
+.wc-rail[data-axis="row"] {
+  grid-column: 1;
+  grid-row: 2;
+  flex-direction: row;
+  border-right: var(--wc-hair) solid var(--wc-rule-layer);
+}
+.wc-rail[data-axis="col"] {
+  grid-column: 2;
+  grid-row: 1;
+  flex-direction: column;
+  border-bottom: var(--wc-hair) solid var(--wc-rule-layer);
+}
+.wc-rail-tier {
+  position: relative;
+  overflow: hidden;
+}
+.wc-rail[data-axis="row"] .wc-rail-tier[data-tier="layer"] {
+  width: var(--wc-rail-layer);
+  border-right: var(--wc-hair) solid var(--wc-rule-system);
+}
+.wc-rail[data-axis="row"] .wc-rail-tier[data-tier="detail"] {
+  flex: 1;
+}
+.wc-rail[data-axis="col"] .wc-rail-tier[data-tier="layer"] {
+  height: var(--wc-rail-layer);
+  border-bottom: var(--wc-hair) solid var(--wc-rule-system);
+}
+.wc-rail[data-axis="col"] .wc-rail-tier[data-tier="detail"] {
+  flex: 1;
+}
+
+.wc-rail-cell {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  display: block;
+  transition: background-color var(--wc-dur-hair) var(--wc-ease);
+}
+.wc-rail[data-axis="row"] .wc-rail-cell {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--wc-ext, 0);
+}
+.wc-rail[data-axis="col"] .wc-rail-cell {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--wc-ext, 0);
+}
+.wc-rail-cell[data-hot] {
+  background: var(--wc-hot);
+}
+.wc-rail-cell[data-focus] {
+  background: var(--wc-cross-soft);
+}
+.wc-rail-cell[data-lit] {
+  background: var(--wc-lens-soft);
+}
+button.wc-rail-cell {
+  cursor: pointer;
+}
+button.wc-rail-cell:focus-visible {
+  outline: var(--wc-hair-2) solid var(--wc-lens);
+  outline-offset: calc(-1 * var(--wc-space-1));
+}
+
+/* The bracket every entry carries: a hairline the length of its span, so a reader can see where
+   a group starts and stops even where there is no room for its name. */
+.wc-rail-cell::before {
+  content: "";
+  position: absolute;
+  background: var(--wc-rule-system);
+}
+.wc-rail[data-axis="row"] .wc-rail-cell::before {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--wc-hair);
+}
+.wc-rail[data-axis="col"] .wc-rail-cell::before {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--wc-hair);
+}
+.wc-rail-cell[data-tier="layer"]::before {
+  background: var(--wc-rule-layer);
+}
+
+.wc-rail-name {
+  position: absolute;
+  display: flex;
+  text-overflow: ellipsis;
+  align-items: baseline;
+  gap: var(--wc-space-1);
+  font-size: var(--wc-text-name);
+  line-height: 1.1;
+  color: var(--wc-ink-1);
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity var(--wc-dur-ink) var(--wc-ease);
+}
+.wc-rail[data-axis="col"] .wc-rail-part {
+  /* The two rails head the same list; the part number only has to be printed once. */
+  display: none;
+}
+.wc-rail-part {
+  font-family: var(--wc-font-fig);
+  font-size: var(--wc-text-micro);
+  font-variant-numeric: tabular-nums;
+  color: var(--wc-ink-3);
+}
+/* ARCHIFY'S SHRINK-OR-REJECT RULE, as a per-frame test: a name is drawn only where its span is
+   tall enough to hold one. The bracket stays, so the group is still visible. */
+.wc-rail-cell[data-tight] .wc-rail-name {
+  opacity: 0;
+}
+.wc-rail-cell[data-focus] .wc-rail-name,
+.wc-rail-cell[data-hot] .wc-rail-name {
+  color: var(--wc-ink-0);
+}
+
+.wc-rail[data-axis="row"] .wc-rail-name {
+  left: var(--wc-space-2);
+  right: var(--wc-space-2);
+  top: 50%;
+  transform: translateY(-50%);
+}
+.wc-rail[data-axis="row"] .wc-rail-cell[data-tier="layer"] .wc-rail-name {
+  left: 0;
+  right: 0;
+  writing-mode: vertical-rl;
+  transform: translateY(-50%) rotate(180deg);
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: var(--wc-text-micro);
+}
+.wc-rail[data-axis="col"] .wc-rail-name {
+  bottom: var(--wc-space-2);
+  top: var(--wc-space-2);
+  left: 50%;
+  transform: translateX(-50%);
+  writing-mode: vertical-rl;
+  transform-origin: center;
+  align-items: center;
+  /* The name starts at the rail's outer edge and truncates at its tail. Anchoring it at the
+     field instead cut the HEAD of the name, and a name with its head cut is a different word. */
+  justify-content: flex-start;
+}
+.wc-rail[data-axis="col"] .wc-rail-cell[data-tier="layer"] .wc-rail-name {
+  writing-mode: horizontal-tb;
+  top: 50%;
+  bottom: auto;
+  left: var(--wc-space-2);
+  right: auto;
+  transform: translateY(-50%);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: var(--wc-text-micro);
+}
+
+/* THE MARGIN BAR: how much this row asks (left rail) or is asked (top rail). A matrix's margins
+   are half of what makes it a reading and not a table. */
+.wc-rail-bar {
+  position: absolute;
+  background: var(--wc-ink-3);
+  transition: background-color var(--wc-dur-hair) var(--wc-ease);
+}
+.wc-rail[data-axis="row"] .wc-rail-bar {
+  right: 0;
+  top: 15%;
+  bottom: 15%;
+  width: calc(var(--wc-w, 0) * 2.25rem);
+}
+.wc-rail[data-axis="col"] .wc-rail-bar {
+  bottom: 0;
+  left: 15%;
+  right: 15%;
+  height: calc(var(--wc-w, 0) * 2.25rem);
+}
+.wc-rail-cell[data-lit] .wc-rail-bar {
+  background: var(--wc-lens);
+}
+.wc-rail-cell[data-focus] .wc-rail-bar,
+.wc-rail-cell[data-hot] .wc-rail-bar {
+  background: var(--wc-ink-1);
+}
+
+/* --------------------------------------------- the readout --------------------------------------------- */
+
+.wc-readout {
+  position: absolute;
+  left: calc(var(--wc-rail-row) + var(--wc-space-4));
+  bottom: var(--wc-space-4);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wc-space-1);
+  max-width: 28rem;
+  padding: var(--wc-space-2) var(--wc-space-3);
+  background: color-mix(in srgb, var(--wc-plate) 88%, transparent);
+  border-left: var(--wc-hair-2) solid var(--wc-cross);
+  pointer-events: none;
+}
+.wc-readout-lead {
+  font-size: var(--wc-text-lead);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--wc-ink-0);
+}
+.wc-readout-note {
+  font-family: var(--wc-font-fig);
+  font-size: var(--wc-text-label);
+  color: var(--wc-ink-2);
+}
+
+/* ---------------------------------------------- the key ---------------------------------------------- */
+
+/*
+ * INTENT OVERRIDES THE BAND (archify study §4), applied to the key itself: at L0 the key IS the
+ * reading, so it is fully drawn; at L1 and L2 the reader is looking THROUGH where it sits, so it
+ * recedes to a ghost and comes back under the pointer or under focus. A legend that covers the
+ * drawing at the only bands where the drawing is detailed is a legend in the way.
+ */
+.wc-legend {
+  position: absolute;
+  right: var(--wc-space-2);
+  top: calc(var(--wc-rail-col) + var(--wc-space-2));
+  transition: opacity var(--wc-dur-band) var(--wc-ease);
+  width: var(--wc-legend-w);
+  display: flex;
+  flex-direction: column;
+  gap: var(--wc-space-3);
+  padding: var(--wc-space-3);
+  background: color-mix(in srgb, var(--wc-plate) 92%, transparent);
+  border: var(--wc-hair) solid var(--wc-rule-system);
+  font-size: var(--wc-text-label);
+  color: var(--wc-ink-1);
+}
+
+
+.wc-stage[data-band="1"] .wc-legend,
+.wc-stage[data-band="2"] .wc-legend {
+  opacity: 0.26;
+}
+.wc-stage .wc-legend:hover,
+.wc-stage .wc-legend:focus-within {
+  opacity: 1;
+}
+
+.wc-grain,
+.wc-key {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wc-space-1);
+}
+.wc-grain {
+  flex-direction: row;
+  justify-content: space-between;
+  gap: var(--wc-space-1);
+}
+.wc-grain-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--wc-space-1);
+  flex: 1;
+  font-size: var(--wc-text-micro);
+  color: var(--wc-ink-3);
+  transition: color var(--wc-dur-band) var(--wc-ease);
+}
+.wc-grain-step[data-on] {
+  color: var(--wc-ink-0);
+}
+.wc-grain-dot {
+  width: var(--wc-space-2);
+  height: var(--wc-space-2);
+  border: var(--wc-hair) solid currentcolor;
+  border-radius: 50%;
+}
+.wc-grain-step[data-on] .wc-grain-dot {
+  background: currentcolor;
+}
+.wc-grain-n {
+  font-family: var(--wc-font-fig);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--wc-text-label);
+}
+
+.wc-key-row {
+  display: grid;
+  grid-template-columns: var(--wc-space-3) 1fr auto;
+  align-items: center;
+  gap: var(--wc-space-2);
+}
+.wc-key-kinds .wc-key-row {
+  grid-template-columns: var(--wc-space-3) 1fr 2.5rem auto;
+}
+.wc-key-row[data-empty] {
+  color: var(--wc-ink-3);
+}
+.wc-key-swatch {
+  width: var(--wc-space-3);
+  height: var(--wc-space-3);
+  background: var(--wc-down);
+}
+.wc-key-swatch[data-sense="flat"] {
+  background: var(--wc-flat);
+}
+.wc-key-swatch[data-sense="up"] {
+  background: var(--wc-alarm);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+.wc-key-glyph {
+  font-family: var(--wc-font-fig);
+  font-size: var(--wc-text-label);
+  color: var(--wc-plate);
+  background: var(--wc-ink-1);
+  text-align: center;
+  line-height: var(--wc-space-3);
+  width: var(--wc-space-3);
+  height: var(--wc-space-3);
+}
+.wc-key-bar {
+  display: block;
+  height: var(--wc-bar);
+  width: calc(var(--wc-w, 0) * 100%);
+  min-width: var(--wc-hair);
+  background: var(--wc-ink-2);
+}
+.wc-key-n {
+  font-family: var(--wc-font-fig);
+  font-variant-numeric: tabular-nums;
+  color: var(--wc-ink-2);
+}
+
+.wc-claim {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: var(--wc-space-2);
+  padding-top: var(--wc-space-2);
+  border-top: var(--wc-hair) solid var(--wc-rule-system);
+}
+.wc-claim-n {
+  font-family: var(--wc-font-fig);
+  font-size: var(--wc-text-claim);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--wc-alarm);
+}
+.wc-claim[data-kept] .wc-claim-n {
+  color: var(--wc-ink-0);
+}
+.wc-claim-label {
+  font-size: var(--wc-text-micro);
+  line-height: 1.3;
+  color: var(--wc-ink-2);
+}
+
+.wc-degrees {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wc-space-1);
+  padding-top: var(--wc-space-2);
+  border-top: var(--wc-hair) solid var(--wc-rule-system);
+}
+.wc-degree {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  align-items: center;
+  gap: var(--wc-space-2);
+}
+.wc-degree dt {
+  font-size: var(--wc-text-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--wc-ink-2);
+}
+.wc-degree dd {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--wc-space-2);
+}
+
+/* ---------------------------------------------- the rest ---------------------------------------------- */
+
+.wc-sr {
+  position: absolute;
+  width: var(--wc-hair);
+  height: var(--wc-hair);
+  margin: calc(-1 * var(--wc-hair));
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@container (max-width: 900px) {
+  .wc-stage {
+    --wc-rail-row: 7rem;
+    --wc-rail-col: 5rem;
+    --wc-legend-w: 11rem;
+  }
+}
