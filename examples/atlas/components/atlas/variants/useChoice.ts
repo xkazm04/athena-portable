@@ -15,6 +15,13 @@
  * `useSyncExternalStore` is the sanctioned answer — a server snapshot of the default, a client
  * snapshot of the real choice, and React reconciles the difference itself.
  *
+ * THE FALLBACK IS CAPTURED WHEN THE STORE IS FIRST MADE, which is a fact worth writing down: the
+ * store is module state, the module outlives a request on the server and outlives a hot reload in
+ * dev, so changing a `fallback` in the caller does not reach a store that already exists until the
+ * module itself is re-evaluated. Harmless in production — the fallback is a constant and the page
+ * is prerendered with it — and it is exactly what a dev server shows you if you edit the default
+ * variant and do not restart.
+ *
  * THE STORE IS MODULE-LEVEL AND THE HOOK NEVER HOLDS IT. The choice is a fact about the page, not
  * about one component: two components reading the same axis must never disagree, and a `useState`
  * in each of them would. Every function below is keyed by the PARAM — a string — because the

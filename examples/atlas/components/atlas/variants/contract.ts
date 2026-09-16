@@ -1,20 +1,35 @@
 /**
- * ROUND 5 — three atlas variants behind one switcher, one contract.
+ * ROUND 6 — the archify variant, and the two that come out of it, behind one switcher.
  *
  * Every variant is a folder under `variants/<slug>/` exporting a default component that takes
- * exactly these props. The shell (`variants/Shell.tsx`, owned by the blueprint agent) owns the
- * switcher, `?variant=`, localStorage, the nav, the flight, the lens and the L2 pane; a variant
- * owns everything inside its stage: layout, camera, bands, views, legend, story. A variant never
- * imports from a sibling variant folder.
+ * exactly these props. The shell (`variants/Shell.tsx`) owns the switcher, `?variant=`,
+ * localStorage, the nav, the flight, the lens and the L2 pane; a variant owns everything inside
+ * its stage: layout, camera, bands, views, legend, story. A variant never imports from a sibling
+ * variant folder.
+ *
+ * ROUND 5 PUT THREE DRAWINGS ON THE TABLE AND THE OWNER CHOSE ONE. `blueprint` (round 4's ruled
+ * sheet, evolved) and `wildcard` (the 68x68 structure matrix) are deleted; the verdict was that
+ * "the degradation from visual archify is significant in grouping, component strategy and style",
+ * so the archify grammar is the baseline every further variant is measured against and the other
+ * two drawings are not worth carrying. DESIGN.md §R5.3 keeps the reasoning; KIT-GAPS.md keeps
+ * everything the three of them found.
+ *
+ * THE SWITCHER MECHANISM SURVIVES THE DELETION, on purpose. Two more archify-derived variants are
+ * coming, and the shell is built and shipped before they exist — which is exactly the condition
+ * the lazy template import and the "not built yet" placeholder were written for. The two slugs
+ * below name folders that do not exist yet; `?variant=archify-density` renders the placeholder and
+ * the app keeps running.
  *
  * The three slugs and what each tests:
- *   blueprint — round 4 evolved: same sheet, tighter L1 framing, obstacle-aware runs, archify's
- *               legend-with-counts and story dimming grafted onto the blueprint grammar.
- *   archify   — the archify visual language transposed: rounded nodes with icon/title/subtitle
- *               coloured by kind, dashed group boundaries with corner labels, labelled orthogonal
- *               runs with a style per edge kind, light and dark, PATH / MAP / LENS toolbar,
- *               guided stories that dim everything but the step, semantic zoom bands on top.
- *   wildcard  — one idea neither of the above would try; the agent names it in DESIGN.md.
+ *   archify         — the archify visual language transposed: rounded nodes with icon/title/subtitle
+ *                     coloured by kind, dashed group boundaries with corner labels, labelled
+ *                     orthogonal runs with a style per edge kind, light and dark, PATH / MAP / LENS
+ *                     toolbar, guided stories that dim everything but the step, semantic zoom bands.
+ *                     The baseline, and the default.
+ *   archify-density — coming: hard abstraction, cards. How few nodes a sheet can carry, and the
+ *                     node as a fixed unit whose text tiers absorb what sub-nodes used to.
+ *   archify-lanes   — coming: the turn as lanes and phases. The twelve-stop turn as the drawing's
+ *                     primary axis rather than an overlay on a spatial map.
  */
 import type { ReactNode } from "react";
 import type { Focus, Level, ZoomNav } from "@athena/demo-kit/zoom";
@@ -22,12 +37,13 @@ import type { useLevelFlight } from "@athena/demo-kit/zoom";
 
 import type { Lens } from "@/data";
 
-export type VariantSlug = "blueprint" | "archify" | "wildcard";
+export type VariantSlug = "archify" | "archify-density" | "archify-lanes";
 
+/** The first entry is the DEFAULT — the shell falls back to it and the mast draws it first. */
 export const VARIANTS: readonly { slug: VariantSlug; label: string; blurb: string }[] = [
-  { slug: "blueprint", label: "Blueprint", blurb: "Round 4's sheet, evolved." },
   { slug: "archify", label: "Archify", blurb: "The archify grammar, transposed." },
-  { slug: "wildcard", label: "Wildcard", blurb: "One idea the others would not try." },
+  { slug: "archify-density", label: "Density", blurb: "coming: hard abstraction, cards" },
+  { slug: "archify-lanes", label: "Lanes", blurb: "coming: the turn as lanes and phases" },
 ];
 
 export interface VariantProps {

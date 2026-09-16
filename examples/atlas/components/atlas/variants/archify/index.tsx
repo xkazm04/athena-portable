@@ -58,6 +58,7 @@ import { usePublishViews } from "../viewBus";
 import "./archify.css";
 import { Frames, PartNode, SystemNode, type Intent } from "./Nodes";
 import { Legend, Minimap, ProbeReceipt, StoryBar, Toolbar, type Mode } from "./Chrome";
+import { ArchifyTools } from "./Tools";
 import { PathOverlay, RunMarkers, Runs, Trail, type TrailSegment } from "./RunLayer";
 import { KINDS, kindOfComponent, kindOfSystem, type Kind } from "./kinds";
 import { PLANS, VIEWS, VIEW_INFO, WORLD, centreOf, type Rect, type ViewId } from "./layout";
@@ -680,6 +681,16 @@ export default function Archify({
           setStory((was) => !was);
           setPlaying(false);
         }}
+      />
+
+      {/* `read_turn` / `set_turn` — the two capabilities only a drawing that tells the turn can
+          answer. They mount and unmount with this variant (see `./Tools.tsx`). */}
+      <ArchifyTools
+        stop={stop}
+        setStop={setStop}
+        story={story}
+        setStory={setStory}
+        playing={playing}
       />
 
       {/* The shell's pane, rendered LAST so it sits over the world (contract, rule 3, rule 11). */}

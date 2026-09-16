@@ -12,6 +12,12 @@ And, still standing from round 3: Atlas is a **visual multi-layer model of the s
 secondary. Everything below follows from those two sentences. There is no `three`, no CSS 3D, no
 perspective, and no renderer switch: **one direction, built once.**
 
+**Where this document stands after round 5.** Round 5 put three drawings behind one switcher and
+the owner chose one: the **archify** variant (§R5.2) is the surviving drawing and the baseline for
+round 6. The evolved blueprint (§R5.1) and the structure matrix (§W) were deleted; their sections
+are kept below, marked, because what they found is still true and reverting the document would lose
+the reasoning. §R5.3 is the verdict.
+
 ---
 
 ## 0. What is on the screen
@@ -299,6 +305,11 @@ shaved, which reads as a font-rendering fault rather than as a tight label. One 
 
 ## W. Round 5, the wildcard: the structure matrix
 
+> **Deleted after round 5** (owner's verdict, §R5.3). `variants/wildcard/` and its two tests are
+> gone. This section is kept as the record of what the form proved — chiefly that headers pinned
+> outside the world are legible at every band by construction, which is a relocation answer to
+> rule 13 and survives the drawing it was found in.
+
 **The idea, and the three sentences it is defended in.** This variant draws the model as a **design
 structure matrix**: both axes are the same ordered list of all 68 modules, and a relationship is a
 *mark at a position* rather than a line between two places. (1) A node-link drawing of 68 modules
@@ -384,6 +395,12 @@ views, if it has any — is published through `variants/viewBus.ts`, so the mast
 mounted and `set_view` delegates to it rather than knowing about four arrangements.
 
 ### R5.1 Blueprint — round 4's sheet, evolved
+
+> **Deleted after round 5** (owner's verdict, §R5.3). `variants/blueprint/`, `test/plan.test.ts`,
+> `test/route.test.ts` and `style/canvas/canvas.css` are gone. Kept as the record: intent should
+> advance the detail tier one step rather than replace the band, and a run may cross a rectangle
+> but never a word. Its two tools, `read_turn` and `set_turn`, moved to the archify variant, which
+> tells the same twelve-stop turn.
 
 Same grammar: one ruled sheet, nineteen system blocks with ports, orthogonal runs, four
 arrangements, three bands of detail, prose only at L2. Five things changed, each of them visible.
@@ -494,3 +511,45 @@ pane, so there is one details destination for all three variants and archify's o
 The `editorial` preset was costed and cut: paper, vermilion and a serif heading is a fourth palette
 to keep contrast-correct, and two presets already prove the "CSS-variable reskin of identical
 geometry" claim.
+
+### R5.3 The verdict: archify survives, the other two are deleted
+
+The owner ruled the day round 5 landed:
+
+> *"Keep archify for the next rounds, delete the other two. The degradation from visual archify is
+> significant in grouping, component strategy and style."*
+
+That sentence compares **our archify variant to the archify tool itself**, not to its two siblings —
+the siblings were simply not the direction. So the finding is not "archify won on points"; it is
+that the archify grammar is the only one of the three worth being wrong about, and we are still
+wrong about it in three named ways:
+
+- **grouping** — the abstraction ceiling. Our sheet carries nineteen system nodes at L0 and
+  archify's carries a handful; a drawing that shows everything at the far band has not abstracted,
+  it has shrunk.
+- **component strategy** — the node as a unit. Archify's node is a fixed card whose *text tiers*
+  absorb the detail our ghost cells spend geometry on.
+- **style** — the finish. Stroke weights, chips, arrowheads, grid rhythm, and fitting at 100%.
+
+**What was deleted:** `components/atlas/variants/blueprint/**`, `components/atlas/variants/wildcard/**`,
+`components/atlas/style/canvas/canvas.css` (the blueprint's stage, imported by nothing else),
+`test/plan.test.ts`, `test/route.test.ts`, `test/wildcard.matrix.test.ts`, `test/wildcard.poses.test.ts`,
+and the two round-5 capture scripts. `KIT-GAPS.md` is untouched: every gap those two builds found is
+a fact about the kit, not about a drawing, and deleting the finding with the folder would be the one
+unrecoverable mistake available here.
+
+**What was kept, and why the shell did not shrink with them.** `variants/contract.ts`,
+`variants/Shell.tsx`, `variants/useChoice.ts` and `variants/viewBus.ts` stay exactly as they were.
+Round 6 builds **two more archify-derived variants**, so `VARIANTS` now lists the built one and two
+announced slugs — `archify-density` ("coming: hard abstraction, cards") and `archify-lanes`
+("coming: the turn as lanes and phases"). Asking for one of those (`?variant=archify-density`)
+mounts the shell's honest placeholder, which names the file that would make it appear. That is the
+same mechanism that let the shell ship before its siblings existed in round 5, exercised again
+rather than rebuilt — and it is the reason deleting two thirds of the round cost one edit to one
+list. `set_variant`'s enum is `VARIANTS`, so the tool surface followed by itself.
+
+**The tool surface after the verdict.** Unchanged in shape: the four level verbs, `set_variant`,
+`set_view`, `read_concepts`, `read_system`, `read_component`, `set_lens` from the shell, and
+`read_turn` / `set_turn` from whichever variant tells the turn — now `variants/archify/Tools.tsx`
+rather than the deleted blueprint's. Archify's answer says one thing the blueprint's could not:
+which of the eleven hops an authored module edge actually carries, and which README asserts alone.

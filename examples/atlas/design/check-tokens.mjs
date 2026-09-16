@@ -33,7 +33,7 @@ const SKIP_DIRS = new Set(["node_modules", ".next", "data", "design", "test"]);
  *
  * Round 3 exempted one stylesheet, because the CSS 3D renderer scaled a subtree and every length
  * inside it was a scene unit written as a pixel. On the blueprint the world's geometry never
- * touches CSS at all: `canvas/plan.ts` computes it in world units and the components emit it as
+ * touches CSS at all: a variant's own `layout.ts` computes it in world units and the components emit it as
  * inline `style` from those numbers, which this check cannot mistake for a design decision
  * because there is no literal in the source to mistake. A geometry that lives in a tested module
  * needs no hole in the design law.

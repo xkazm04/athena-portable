@@ -1,13 +1,17 @@
 "use client";
 
 /**
- * THE SHELL — one app, three variants, one model underneath all of them.
+ * THE SHELL — one app, N variants, one model underneath all of them.
  *
- * ROUND 5 ASKS A QUESTION ROUNDS 1–4 COULD NOT: *is the blueprint the right drawing?* The only
- * honest way to ask it is to build the alternatives on the same data, the same nav, the same lens
+ * ROUND 5 ASKED A QUESTION ROUNDS 1–4 COULD NOT: *is the round-4 sheet the right drawing?* The only
+ * honest way to ask it was to build the alternatives on the same data, the same nav, the same lens
  * and the same L2 pane, and let a reader switch between them in one keystroke — so that what
  * differs between two variants is the DESIGN and never the model, the level semantics or the
- * plumbing. That is this file's whole job.
+ * plumbing. That is this file's whole job, and the answer came back: the archify grammar, and not
+ * the other two. ROUND 6 ASKS THE SAME QUESTION ONE LEVEL IN — *which archify is the right
+ * archify?* — so the shell is unchanged apart from its list, which is the point of having a
+ * contract: `VARIANTS` shrank from three to one built variant plus two announced ones and nothing
+ * below this comment had to be edited.
  *
  * WHAT THE SHELL OWNS, and a variant therefore never invents:
  *
@@ -85,7 +89,7 @@ const load = (slug: VariantSlug): Promise<{ default: ComponentType<VariantProps>
 type Mounts = Record<VariantSlug, ComponentType<VariantProps>>;
 
 /**
- * The three lazies, created OUTSIDE a render.
+ * One lazy per slug, created OUTSIDE a render.
  *
  * `lazy()` makes a new component type, and a component type made during a render is a new type
  * every render — React would unmount and remount the whole variant on every keystroke. So they are
@@ -172,7 +176,7 @@ export function Shell() {
     param: "variant",
     storage: "atlas:variant",
     values: SLUGS,
-    fallback: "blueprint",
+    fallback: "archify",
   });
 
   /* ------------------------------------- the lens ------------------------------------- */

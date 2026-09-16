@@ -1,6 +1,9 @@
 /*
  * `blueprint` — the token file, and the only file in this app allowed to contain a raw `px` or `ms`.
  *
+ * `blueprint` is the name of this app's DESIGN (`lib/constants.ts`'s `VARIANT`, set on `<html>`),
+ * not a drawing a reader can switch to. The round-5 variant that shared the word was deleted.
+ *
  * DESIGN.md is the law; this is the authority for every value it rules about. `design/check-tokens.mjs`
  * runs in `pnpm --filter atlas lint` and fails on a raw `px` or `ms` in any other stylesheet or in
  * any `.ts`/`.tsx` file, which is how "one clock per level change, in one module" (layered-UI

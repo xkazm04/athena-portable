@@ -1,22 +1,24 @@
 "use client";
 
 /**
- * ATLAS — this repository's architecture, drawn three ways behind one switcher.
+ * ATLAS — this repository's architecture, drawn behind one switcher.
  *
- * ROUND 5, AND WHY. Round 4 answered the owner's verdict on round 3 with one 2D blueprint and the
- * rubric moved, but a single direction cannot tell you whether it is the RIGHT direction — the
- * lesson rounds 2 and 3 paid for twice ("our adjustments are too careful… we are polishing versions
- * we are stuck with"). So round 5 builds three drawings over one model: the blueprint evolved, the
- * archify grammar transposed, and one wildcard, and the reader switches between them in the mast.
+ * ROUND 5 ASKED WHETHER ROUND 4 WAS THE RIGHT DRAWING, by building three over one model and letting
+ * the reader compare them in the mast. The owner answered: keep the archify grammar, delete the
+ * evolved blueprint and the structure matrix — *"the degradation from visual archify is significant
+ * in grouping, component strategy and style"*. So one drawing survived, and round 6 asks the
+ * narrower question the verdict implies: which ARCHIFY is the right archify. The switcher and the
+ * contract stay exactly as they were; only the list of slugs changed.
  *
- * WHAT THIS FILE IS NOW: nothing but the mount point. Everything that was here in round 4 moved to
- * one of two places, and the line between them is `variants/contract.ts`:
+ * WHAT THIS FILE IS: nothing but the mount point. Everything that was here in round 4 lives in one
+ * of two places, and the line between them is `variants/contract.ts`:
  *
  *   the shell      `variants/Shell.tsx` — the nav, the flight, the lens, the `lit` set, reduced
  *                  motion, the L2 pane, the mast, the claims rail, the tools, and the `?variant=`
- *                  choice. One model, one level semantics, one details destination, three drawings.
+ *                  choice. One model, one level semantics, one details destination, N drawings.
  *   the variant    `variants/<slug>/index.tsx` — everything inside the stage: layout, camera,
- *                  bands, views, legend, story. The blueprint's is `variants/blueprint/`.
+ *                  bands, views, legend, story, and any tool only that stage can answer. The one
+ *                  built variant is `variants/archify/`.
  *
  * WHERE THE SIXTEEN RULES OF THE FORMULA LIVE is therefore also split, and that split is itself a
  * finding worth the round: rules 4, 5, 6, 7 and 8 turn out to be SHELL rules — one clock, one

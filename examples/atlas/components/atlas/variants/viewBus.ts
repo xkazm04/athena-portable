@@ -4,7 +4,7 @@
  * THE SECOND AXIS, PUBLISHED — how a variant tells the shell what its views are.
  *
  * `variants/contract.ts` is FROZEN and its props carry the level model, the lens and the pane; it
- * carries no view, on purpose, because a view is a variant's own business (the blueprint has four
+ * carries no view, on purpose, because a view is a variant's own business (archify has two
  * arrangements, another variant may have none, a third may have seven). But two things outside the
  * stage still need to know: the mast, which draws the switcher, and `set_view`, which an agent
  * calls. `VariantMeta.views` answers *statically* — the names, read off the lazily imported module

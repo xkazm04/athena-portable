@@ -85,7 +85,7 @@ export const CONCEPT_KINDS: readonly ConceptKind[] = ["invariant", "tier", "act"
 /**
  * Which drawing is on the table, in the words the switcher uses.
  *
- * ROUND 5 PUTS THE VARIANT IN EVERY READ, and that is not decoration. Three variants render the
+ * ROUND 5 PUT THE VARIANT IN EVERY READ, and that is not decoration. Several variants render the
  * same model with different grammars; an agent that reports "the surfaces layer is open" without
  * saying WHICH drawing it is open in has described a state the reader cannot check against their
  * screen. `read_view` therefore names the variant before it names anything else.
@@ -249,9 +249,9 @@ export function lensRead(conceptId: string | null) {
  * components nested inside it, bounded per system as well as in total — so one call tells an agent
  * the shape of the layer it is standing in and not just its contents.
  *
- * Every projection also carries the VIEW, because the same focus looks different in four
- * arrangements and an agent that cannot tell which one is on the sheet cannot describe what a
- * reader is seeing.
+ * Every projection also carries the VIEW, because the same focus looks different in each of a
+ * variant's arrangements and an agent that cannot tell which one is on the sheet cannot describe
+ * what a reader is seeing.
  */
 export function viewDetail(
   focus: Focus,

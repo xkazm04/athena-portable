@@ -16,9 +16,9 @@
  * kit's `useZoomTools`, so they mean the same thing here as on every other surface. The rest are
  * what only Atlas can answer.
  *
- * ROUND 4 ADDS ONE AND REMOVES ONE.
+ * ROUND 4 ADDED ONE AND REMOVED ONE.
  *
- *   + `set_view` — four arrangements of one drawing is a property of the surface an agent must be
+ *   + `set_view` — N arrangements of one drawing is a property of the surface an agent must be
  *     able to read and set, or it cannot describe what a reader is looking at. AUTO for the same
  *     reason `set_lens` is: it changes a way of looking, is reversible by calling it again, and
  *     reaches nothing outside the page.
@@ -26,6 +26,12 @@
  *     The turn is now a path drawn all at once with twelve discrete stops, so there is nothing to
  *     play; `set_turn` still moves the step and `read_turn` still answers the whole script. A tool
  *     whose subject no longer exists is worse than a missing one, because an agent will call it.
+ *
+ * ROUND 5 ADDED `set_variant`, AND ROUND 6 LEFT IT ALONE. The owner's verdict deleted two of the
+ * three drawings; the tool's enum follows `VARIANTS`, so it shrank by itself and will grow again
+ * when the two announced folders are written. `read_turn` / `set_turn` are NOT here and never
+ * were: they are registered by whichever variant tells the turn (`variants/archify/Tools.tsx`),
+ * because a tool the shell registers cannot answer a fact only a stage holds.
  */
 import { useZoomTools, useWebMCPTool } from "@athena/demo-kit/webmcp";
 import type { ZoomNav } from "@athena/demo-kit/zoom";
@@ -106,7 +112,7 @@ export function AtlasTools({
   useWebMCPTool({
     name: "set_variant",
     description:
-      "Choose which of the three drawings of this architecture is on the table: blueprint (a ruled 2D sheet of system blocks with orthogonal runs and four switchable arrangements), archify (the archify grammar transposed — kind-coloured nodes, dashed group boundaries, labelled runs), wildcard (one idea neither of the others would try). The model, the level you are at, the open layer and the lens all survive the switch; only the drawing changes. Call with no argument to read which one is mounted.",
+      "Choose which drawing of this architecture is on the table. archify is the built one: the archify grammar transposed — kind-coloured nodes, dashed group boundaries derived from membership, labelled orthogonal runs, two arrangements, PATH / MAP / LENS and a guided turn. archify-density and archify-lanes are announced and not written yet; asking for one mounts an honest placeholder that names the file which would make it appear. The model, the level you are at, the open layer and the lens all survive the switch; only the drawing changes. Call with no argument to read which one is mounted.",
     parameters: [
       {
         name: "variant",
@@ -145,7 +151,7 @@ export function AtlasTools({
   useWebMCPTool({
     name: "set_view",
     description:
-      "Choose which arrangement the MOUNTED variant draws. A view is a variant's own second axis, not the app's: the blueprint has four (layers, turn, trust, packages) and re-arranges the same blocks between them, keeping the level and the open layer; another variant may have none, in which case this tool says so rather than failing. Call with no argument to read the current arrangement and what else is available.",
+      "Choose which arrangement the MOUNTED variant draws. A view is a variant's own second axis, not the app's: archify has two (sheet, where rows are layers and columns are kinds; stack, the same nodes on a plain four-column grid) and re-arranges the same nodes between them, keeping the level and the open layer; another variant may have none, in which case this tool says so rather than failing. Call with no argument to read the current arrangement and what else is available.",
     parameters: [
       {
         name: "view",
@@ -178,7 +184,7 @@ export function AtlasTools({
           ok: false as const,
           error: `The ${variantRow(variant).label} variant draws one arrangement and has no views to switch between.`,
           variant: variantRow(variant),
-          hint: "set_variant('blueprint') mounts the variant with four arrangements.",
+          hint: "set_variant('archify') mounts the variant with arrangements to switch between.",
         };
       }
       if (wanted === live.current) return answer(false);

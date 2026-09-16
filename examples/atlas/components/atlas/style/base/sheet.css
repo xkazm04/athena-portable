@@ -262,15 +262,15 @@
   }
 }
 
-/* ---------------------------------- round 5: the variant stage ---------------------------------- */
+/* ----------------------------------- the variant stage ----------------------------------- */
 
 /*
  * A VARIANT'S STAGE. The shell owns `.at-stage`; everything inside it belongs to whichever drawing
- * is mounted, and this is the box it gets: the full cell, two rows, the second one for a control
- * strip a variant may or may not have (the blueprint's turn bar does; nothing else does yet).
+ * is mounted, and this is the box a variant may opt into: the full cell, two rows, the second one
+ * for a control strip a variant may or may not have.
  *
- * Absolutely positioned chrome — the reading line, the legend — anchors to THIS box rather than to
- * the stage, so a variant with a control strip does not have its legend float over it.
+ * Absolutely positioned chrome — a reading line, a legend — anchors to THIS box rather than to the
+ * stage, so a variant with a control strip does not have its legend float over it.
  */
 .at-stage-in {
   position: relative;
