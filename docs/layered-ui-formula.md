@@ -456,4 +456,13 @@ studies.
 (the matrix's "headers pinned outside the world" would fix it); density's cards sit 235 px below
 the fold at 1440×900; `read_view` still projects nineteen systems where a variant draws twelve;
 the rig's pointer capture still steals `click` from DOM controls in the scene (fourth report);
-resolve callbacks still get no frame (fourth round). The owner picks among the three variants.
+resolve callbacks still get no frame (fourth round).
+
+**The owner's verdict (same day):** *"Lanes are a step forward."* `archify-lanes` is the
+winner; `archify` and `archify-density` are deleted, with their tests. The three pure modules
+lanes had been importing from its sibling — the kind rule, the twelve-stop script, the routing
+primitives — moved into `variants/archify-lanes/` rather than dying with their first home, and
+their guards moved with them. The shell keeps its lazy-mount mechanism (one edit to one list is
+still all a variant costs), but the mast hides a switcher with one value in it and `set_variant`
+left the tool surface by round 4's `play_turn` rule. Atlas now draws one direction: the turn, in
+lanes, at three levels. `examples/atlas/DESIGN.md` §R6 is the reasoning.
