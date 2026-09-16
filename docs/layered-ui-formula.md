@@ -377,3 +377,23 @@ does not follow a level change nobody clicked — fourth round running.
 **Carried:** L1 framing (narrower regions vs L0 legibility); run routing avoids no obstacles, so
 runs cross region heads at L0; three package names truncate; URL sync for the level (view is in the
 URL, level is not).
+
+### Round 5 — three atlas variants after the archify study (2026-09-16)
+
+**Why.** The owner asked for a look at archify (https://github.com/tt-a1i/archify, MIT) for good
+practices in abstracting and visualizing technical concepts, then three atlas variants on top of
+the round-4 app: one evolved from the blueprint, one heavily inspired by archify's style, one
+wildcard. The study is `docs/archify-study.md`; the fourteen practices in its §7 are the brief.
+The clone is deleted once the builders finish.
+
+**Shape.** One shell (switcher, nav, flight, lens, the L2 pane, `?variant=`) and a frozen
+contract (`examples/atlas/components/atlas/variants/contract.ts`); each variant owns its folder
+and nothing else, so three agents build in one tree without touching each other.
+
+| Variant | What it tests |
+|---|---|
+| blueprint | Round 4 evolved: L1 framing, obstacle-aware routing with a cost vector, legend as filter, the turn as a guided story with beat states, detail tiers with intent overriding the band |
+| archify | The archify grammar transposed onto our model: closed kind enum with one colour per meaning, sigil nodes without title bars, boundaries from membership, labelled orthogonal runs with a style per edge kind, presets as CSS-variable layers, PATH / MAP / LENS, guided story, finite motion |
+| wildcard | One idea the other two would not try, chosen and defended by the builder (matrix, sequence sheet, subway map, or better) |
+
+**Outcome:** *(filled after review)*
