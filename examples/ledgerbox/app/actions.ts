@@ -10,7 +10,17 @@ import { logActivity, undoActivity, type ActivityEntry } from "@athena/demo-kit/
 import type { Db } from "@athena/demo-kit/db";
 
 import { MAX_IDS, type Category, type Period, type Tone } from "@/lib/constants";
-import { COUNTED_OUT, db, getInvoice, inPeriod, listInvoices, summarize, unappliedLines } from "@/lib/db";
+import {
+  COUNTED_OUT,
+  db,
+  findInvoiceId,
+  getInvoice,
+  inPeriod,
+  listInvoices,
+  resolveInvoice,
+  summarize,
+  unappliedLines,
+} from "@/lib/db";
 import { isMostlyPaid } from "@/lib/filter";
 import { renderSummary, renderSummaryMarkdown, summaryTitle } from "@/lib/export";
 import { formatMoney } from "@/lib/format";
@@ -105,7 +115,9 @@ function fail(message: string): ActionResult {
 
 /** AUTO - file invoices under a book-keeping category. */
 export async function categorizeAction(ids: string[], category: Category): Promise<ActionResult> {
-  const targets = ids.slice(0, MAX_IDS);
+  // An id or a number, whichever the caller read; a reference that matches nothing stays in the
+  // count as not found, so the shortfall is still reported.
+  const targets = ids.slice(0, MAX_IDS).map((ref) => findInvoiceId(ref) ?? String(ref));
   if (targets.length === 0) return fail("Select at least one invoice first.");
   const requested = targets.length;
   const handle = db();
@@ -147,9 +159,11 @@ export async function categorizeAction(ids: string[], category: Category): Promi
 }
 
 /** AUTO - apply a bank line to an invoice and record the payment it represents. */
-export async function matchAction(invoiceId: string, lineId: string): Promise<MatchResult> {
-  const invoice = getInvoice(invoiceId);
-  if (!invoice) return fail("That invoice is gone.");
+export async function matchAction(ref: string, lineId: string): Promise<MatchResult> {
+  const resolved = resolveInvoice(ref);
+  if (!resolved.ok) return fail(resolved.error);
+  const invoiceId = resolved.id;
+  const invoice = getInvoice(invoiceId)!;
   const line = unappliedLines().find((l) => l.id === lineId);
   if (!line) return fail("That bank line is already applied elsewhere.");
   // The guard `markPaidAction` has always had. Without it any credit could be applied to any
@@ -208,7 +222,10 @@ export async function matchAction(invoiceId: string, lineId: string): Promise<Ma
 }
 
 /** AUTO - take a bank line back off an invoice. */
-export async function unmatchAction(invoiceId: string, lineId: string): Promise<ActionResult> {
+export async function unmatchAction(ref: string, lineId: string): Promise<ActionResult> {
+  const resolved = resolveInvoice(ref);
+  if (!resolved.ok) return fail(resolved.error);
+  const invoiceId = resolved.id;
   const handle = db();
   const row = handle.get<{
     matched_at: string;
@@ -260,9 +277,11 @@ export async function unmatchAction(invoiceId: string, lineId: string): Promise<
 }
 
 /** GATED - money. Recording a payment against the books is not something the app takes back. */
-export async function markPaidAction(invoiceId: string, amountCents: number): Promise<ActionResult> {
-  const invoice = getInvoice(invoiceId);
-  if (!invoice) return fail("That invoice is gone.");
+export async function markPaidAction(ref: string, amountCents: number): Promise<ActionResult> {
+  const resolved = resolveInvoice(ref);
+  if (!resolved.ok) return fail(resolved.error);
+  const invoiceId = resolved.id;
+  const invoice = getInvoice(invoiceId)!;
   if (invoice.state === "void") return fail("A voided invoice cannot be paid.");
   // NaN is false on both comparisons below, so without this it passes every guard and reaches the
   // INSERT, where `amount_cents INTEGER NOT NULL` throws mid-action instead of answering the user.
@@ -292,9 +311,11 @@ export async function markPaidAction(invoiceId: string, amountCents: number): Pr
 }
 
 /** AUTO - writes a draft. Nothing leaves the building until `send_reminder`. */
-export async function draftReminderAction(invoiceId: string, tone: Tone): Promise<DraftResult> {
-  const invoice = getInvoice(invoiceId);
-  if (!invoice) return fail("That invoice is gone.");
+export async function draftReminderAction(ref: string, tone: Tone): Promise<DraftResult> {
+  const resolved = resolveInvoice(ref);
+  if (!resolved.ok) return fail(resolved.error);
+  const invoiceId = resolved.id;
+  const invoice = getInvoice(invoiceId)!;
   if (invoice.balance_cents <= 0) return fail(`${invoice.number} is settled - nothing to chase.`);
   // Stated where it is meant. This used to be an accident of the days_overdue arithmetic.
   if (invoice.state === "disputed") {
@@ -351,9 +372,11 @@ export async function draftReminderAction(invoiceId: string, tone: Tone): Promis
  * fact the books must keep is which address the letter went to - "sent to Solstice Partners" is
  * not a record of that, and a second derivation could name a different person than the draft did.
  */
-export async function sendReminderAction(invoiceId: string): Promise<SendResult> {
-  const invoice = getInvoice(invoiceId);
-  if (!invoice) return fail("That invoice is gone.");
+export async function sendReminderAction(ref: string): Promise<SendResult> {
+  const resolved = resolveInvoice(ref);
+  if (!resolved.ok) return fail(resolved.error);
+  const invoiceId = resolved.id;
+  const invoice = getInvoice(invoiceId)!;
   const handle = db();
   const draft = handle.get<{ id: string; tone: Tone; recipient: string; subject: string }>(
     "SELECT id, tone, recipient, subject FROM reminders WHERE invoice_id = ? AND sent_at IS NULL ORDER BY created_at DESC LIMIT 1",
@@ -383,9 +406,11 @@ export async function sendReminderAction(invoiceId: string): Promise<SendResult>
 }
 
 /** GATED - voiding is a permanent statement about the books. */
-export async function voidInvoiceAction(invoiceId: string): Promise<ActionResult> {
-  const invoice = getInvoice(invoiceId);
-  if (!invoice) return fail("That invoice is gone.");
+export async function voidInvoiceAction(ref: string): Promise<ActionResult> {
+  const resolved = resolveInvoice(ref);
+  if (!resolved.ok) return fail(resolved.error);
+  const invoiceId = resolved.id;
+  const invoice = getInvoice(invoiceId)!;
   if (invoice.state === "void") return fail(`${invoice.number} is already void.`);
   if (invoice.paid_cents > 0) return fail("Unapply the payments before voiding this invoice.");
 

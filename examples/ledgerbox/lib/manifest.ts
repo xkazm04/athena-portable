@@ -30,6 +30,7 @@ import {
   TONES,
   VIEWS,
 } from "./constants";
+import { REF_DESCRIPTION } from "./invoice-ref";
 import { STATE_FILTERS } from "@/components/lanes/model";
 import { TOOL_CLASSES, type ToolClass, type ToolName } from "./tool-classes";
 
@@ -58,7 +59,7 @@ const INVOICE_ID: ToolParameter = {
   name: "id",
   type: "string",
   required: true,
-  description: "An invoice id, from read_view, read_inbox or search_invoices — e.g. inv_0042",
+  description: `${REF_DESCRIPTION}. Ids come from read_view, read_inbox or search_invoices.`,
 };
 
 const LINE_ID: ToolParameter = {
@@ -163,7 +164,7 @@ export const BOOKS_CAPABILITIES = [
         type: "string[]",
         required: true,
         maxItems: SELECT_MAX,
-        description: "Invoice ids to tick on the sheet. An empty list clears the tick.",
+        description: "Invoice ids (inv_0002) or numbers (LB-2026-0002) to tick on the sheet. An empty list clears the tick.",
       },
     ],
   },
@@ -174,21 +175,21 @@ export const BOOKS_CAPABILITIES = [
   {
     name: "categorize",
     parameters: [
-      { name: "ids", type: "string[]", required: true, maxItems: MAX_IDS, description: "Invoice ids" },
+      { name: "ids", type: "string[]", required: true, maxItems: MAX_IDS, description: "Invoice ids (inv_0002) or numbers (LB-2026-0002)" },
       { name: "category", type: "string", enum: CATEGORIES, required: true },
     ],
   },
   {
     name: "match_bank_line",
     parameters: [
-      { name: "invoice_id", type: "string", required: true, description: "An invoice id" },
+      { name: "invoice_id", type: "string", required: true, description: REF_DESCRIPTION },
       LINE_ID,
     ],
   },
   {
     name: "unmatch",
     parameters: [
-      { name: "invoice_id", type: "string", required: true, description: "An invoice id" },
+      { name: "invoice_id", type: "string", required: true, description: REF_DESCRIPTION },
       LINE_ID,
     ],
   },

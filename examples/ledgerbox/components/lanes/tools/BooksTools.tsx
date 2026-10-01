@@ -62,6 +62,7 @@ import {
 import type { CreditView, LineSuggestion } from "@/lib/db";
 import { isMostlyPaid, matchesFilterClient } from "@/lib/filter";
 import { parseDollars } from "@/lib/format";
+import { REF_HINT, resolveInvoiceRef } from "@/lib/invoice-ref";
 import { registration } from "@/lib/manifest";
 import type { InvoiceRow } from "@/lib/types";
 
@@ -287,8 +288,9 @@ export function BooksTools({
     description: "One invoice with the bank credits that could settle it. Changes nothing.",
     ...registration("read_invoice"),
     handler: ({ id }) => {
-      const r = rows.find((x) => x.id === String(id));
-      if (!r) return `No invoice ${String(id)}.`;
+      const found = resolveInvoiceRef(id, rows);
+      if (!found.ok) return found.error;
+      const r = rows.find((x) => x.id === found.id)!;
       const offers = Object.entries(suggestions)
         .flatMap(([line_id, hits]) =>
           hits.filter((h) => h.invoice_id === r.id).map((h) => ({ line_id, ...offer(h) })),
@@ -386,13 +388,15 @@ export function BooksTools({
   useWebMCPTool({
     name: "open_invoice",
     description:
-      "Open one invoice at full depth — the same card `open_item` lifts, addressed by invoice id alone. Its lines, the credits that could settle it, any draft on file and the three gated acts are on it.",
+      "Open one invoice at full depth — the same card `open_item` lifts, addressed by invoice id or number alone. Its lines, the credits that could settle it, any draft on file and the three gated acts are on it.",
     ...registration("open_invoice"),
     handler: ({ id }) => {
-      const wanted = String(id);
+      const found = resolveInvoiceRef(id, rows);
+      if (!found.ok) return { ok: false, error: found.error };
+      const wanted = found.id;
       const r = rows.find((x) => x.id === wanted);
       const lane = laneOf.get(wanted);
-      if (!r || !lane) return { ok: false, error: `No invoice ${wanted}.` };
+      if (!r || !lane) return { ok: false, error: `No invoice matches "${String(id)}". ${REF_HINT}` };
       nav.openItem(lane, wanted);
       return {
         ok: true,
@@ -411,9 +415,12 @@ export function BooksTools({
       // Count what was actually sent before anything is dropped: `asIds` caps at MAX_IDS (100),
       // which belongs to `categorize`, not here, and reporting against it hid a second truncation.
       const sent = Array.isArray(ids) ? ids.map(String) : [];
-      const known = new Set(rows.map((r) => r.id));
       const capped = sent.slice(0, SELECT_MAX);
-      const kept = capped.filter((id) => known.has(id));
+      // Ids or numbers, whichever the caller read; the sheet is ticked by id.
+      const kept = capped.flatMap((ref) => {
+        const found = resolveInvoiceRef(ref, rows);
+        return found.ok ? [found.id] : [];
+      });
       setPicked(kept);
       // Capped and not-found are different failures and an agent has to be able to tell them apart.
       const over = sent.length > SELECT_MAX ? `; ${sent.length - SELECT_MAX} over the cap of ${SELECT_MAX}` : "";

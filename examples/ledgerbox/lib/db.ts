@@ -5,6 +5,7 @@ import { openDb, type Db } from "@athena/demo-kit/db";
 import { APP_ID, DETAIL_CANDIDATES, LINE_SUGGESTIONS, TODAY, type Period } from "./constants";
 import { inPeriodClient as inPeriod } from "./filter-period";
 import { candidatesFor, isAmbiguous, scoreCandidate } from "./match";
+import { resolveInvoiceRef, type Resolved } from "./invoice-ref";
 import { seed } from "./seed";
 import type {
   BankLine,
@@ -120,6 +121,19 @@ export const listInvoices = cache((): InvoiceRow[] => {
     .all<RawRow>(`${ROW_SQL} ORDER BY i.due_at ASC`)
     .map((raw) => toRow(raw, pool));
 });
+
+/**
+ * An invoice reference, id or number, resolved to the id. The one lookup every action goes through;
+ * the rule itself is `resolveInvoiceRef`, shared with the page's own tools.
+ */
+export function resolveInvoice(ref: unknown): Resolved {
+  return resolveInvoiceRef(ref, db().all<{ id: string; number: string }>("SELECT id, number FROM invoices"));
+}
+
+export function findInvoiceId(ref: unknown): string | undefined {
+  const r = resolveInvoice(ref);
+  return r.ok ? r.id : undefined;
+}
 
 export function getInvoice(id: string): InvoiceRow | undefined {
   const raw = db().get<RawRow>(`${ROW_SQL} WHERE i.id = ?`, [id]);

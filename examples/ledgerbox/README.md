@@ -117,6 +117,10 @@ GATED by what it is.
 | `void_invoice(id)` | **G** | `id` | the action's message |
 | `export_summary(period)` | **A** | `period` (enum) | `{ok, message, period, title, markdown, body}` |
 
+Every tool that takes an invoice takes either its id (`inv_0002`) or its number (`LB-2026-0002`),
+case-insensitively; one resolver, `lib/invoice-ref.ts`, answers both, and an unknown reference
+replies with both forms and an example rather than a bare refusal.
+
 There are no host readables. What a readable would carry is returned inside `read_books`'s `screen`
 object instead. Every parameter that addresses UI is an enum, every array carries `maxItems`, and
 every bounded read states how much it left out through the kit's one envelope —

@@ -79,10 +79,10 @@ action triggers (Tidycrm's zoom is 2.9 s; a dossier or card opens in about 1 s).
 | 1.5 | `read_credits(only: ambiguous)`; the Kestrel credit with two candidate invoices | Athena | One credit from Kestrel Labs fits two identical retainers. I can't tell which. I'll leave it for you. | 8 |
 | 1.6 | `open_item(inv_0930)`, match; the strip shows "counterparty: PINEGROVE COOP"; a fact card: "Pinegrove Collective pays as PINEGROVE COOP" | Athena | This one arrived as Pinegrove Coop. That's Pinegrove Collective's bank name. I'll remember that. | 9 |
 | 1.7 | `navigate("overdue")`: the Late chip presses, the sheet dims to 44 | Athena | Forty-four invoices are past due. Twenty-nine are over thirty days. | 6 |
-| 1.8 | `open_item`, `draft_reminder(firm)` on the oldest: the draft block appears on the card | Narrator | A draft is a whole message, addressed to the client's billing contact. Writing it is reversible. Sending it is not. | 9 |
+| 1.8 | `open_item(inv_0057)` (LB-2026-0057, Halcyon Works, 57 days past due), `draft_reminder(inv_0057, firm)`: the draft block appears on the card | Narrator | A draft is a whole message, addressed to the client's billing contact. Writing it is reversible. Sending it is not. | 9 |
 | 1.9 | `send_reminder`: the strip shows a decision card, the page's own gate arms with the recipient | Athena | Ready to send to Nils Eriksen at Halcyon Works. Shall I? | 5 |
 | 1.10 | Mira approves; the card resolves; "Reminders sent 1" in the aside | Mira | Yes. | 3 |
-| 1.11 | Second draft, gentle; second card; approved | Athena | Verdant Supply, forty-nine days, gentle tone. | 5 |
+| 1.11 | Second draft, gentle, on `inv_0105` (LB-2026-0105, Verdant Supply, part paid, 49 days); second card; approved | Athena | Verdant Supply, forty-nine days, gentle tone. | 5 |
 | 1.12 | Solstice card: `paid_ratio 0.8` visible in the strip | Athena | Solstice Partners paid eighty percent of theirs in August and went quiet. I'd hold off. | 8 |
 | 1.13 | Mira declines the Solstice card; the ledger row reads user_denied | Mira | Agreed, skip them. | 3 |
 | 1.14 | `export_summary("2026-08")`; the notes connector card: "create page: August 2026 close" | Athena | August is closed. I'll file the summary in your notes. | 6 |

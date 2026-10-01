@@ -33,6 +33,9 @@ pnpm --filter @athena/journey test      # boots all three, runs the journey, pri
 
 ## The threads between the acts
 
+- **Invoice ids and numbers.** Ledgerbox ids are `inv_NNNN` and numbers are `LB-2026-NNNN` (`inv_0002` is
+  `LB-2026-0002`); its tools accept either. There is no `INV-118` and no Northwind in the seed; a demo
+  that needs a late invoice uses `inv_0057` (Halcyon Works, 57 days past due).
 - **Kestrel Labs.** Chased in act 1. In act 2, `KESTREL_APPLICANT` is one of the six borderline
   applicants for the backend role, and Tidycrm holds them under the same email. Context only;
   nothing in Hirelane can score or move a stage on it.
