@@ -1,0 +1,1 @@
+Pixels deleted on purpose (PRUNED): every crop of the Main window rectangle (they can contain other windows on the user's desktop) and the shots of the two void focus-theft runs. Kept: her own window crops only. Text and journals are the record.

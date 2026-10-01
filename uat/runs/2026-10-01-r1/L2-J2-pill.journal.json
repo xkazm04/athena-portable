@@ -1,0 +1,37 @@
+{
+  "name": "L2-J2-pill",
+  "ms": 2479,
+  "code": 2,
+  "checks": [
+    {
+      "label": "pill says resting when she is at her home form and nothing runs",
+      "ok": true,
+      "rows": [
+        {
+          "label": "ledger open, nothing running",
+          "athena": "ledger",
+          "pill": "Athena is working"
+        },
+        {
+          "label": "after Esc (home form)",
+          "athena": "seal",
+          "pill": "Athena is resting"
+        }
+      ]
+    },
+    {
+      "label": "pill does not say 'working' while she is in the ledger and nothing runs",
+      "ok": false,
+      "row": {
+        "label": "ledger open, nothing running",
+        "athena": "ledger",
+        "pill": "Athena is working"
+      }
+    }
+  ],
+  "notes": [
+    "{\"label\":\"ledger open, nothing running\",\"athena\":\"ledger\",\"pill\":\"Athena is working\"}",
+    "{\"label\":\"after Esc (home form)\",\"athena\":\"seal\",\"pill\":\"Athena is resting\"}",
+    "docked-state pill not driven: a native drag to a screen edge cannot be synthesised through CDP (uncertain, see L2-PREFLIGHT)"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "L2-J3-orphan2",
+  "ms": 407,
+  "code": 2,
+  "checks": [
+    {
+      "label": "the decisions route answered with the token (200)",
+      "ok": true,
+      "status": 200
+    },
+    {
+      "label": "at least one decision is pending in the daemon (the refused approval)",
+      "ok": false,
+      "pending": 0
+    },
+    {
+      "label": "every pending decision has a card on screen to answer it",
+      "ok": true,
+      "pending": 0,
+      "cardOnScreen": false
+    }
+  ],
+  "notes": [
+    "keys=ok,pending,showing,total,footer total=0 pending=0 []"
+  ]
+}

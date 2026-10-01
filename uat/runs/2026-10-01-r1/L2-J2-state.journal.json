@@ -1,0 +1,10 @@
+{
+  "name": "L2-J2-state",
+  "ms": 772,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "state=ledger |  51 days past due. I haven't read its reminder history, so I can't say whether earlier reminders went out. If you'd rather use a firmer tone, decline the card and I'll redraft. host.ledgerbox.send_reminder → pending_approval YOU Invoice id inv_0002 already has a saved draft reminder. File the send card for it now, using the id inv_0002. THE TURN STOPPED foreign_origin 'http://127.0.0.1:3001' has sent no manifest; register the origin before running a turn Approved. Stamped and sent to the record.",
+    "windows: 488x656, 1456x909"
+  ]
+}

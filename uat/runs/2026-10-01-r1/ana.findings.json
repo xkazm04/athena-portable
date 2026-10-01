@@ -1,0 +1,796 @@
+[
+  {
+    "id": "ana-1",
+    "journey": "J3",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "trust",
+    "severity": "high",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "trust",
+    "title": "A card that arrives while she is hidden opens the slip and takes focus onto Approve, where a bare A approves it",
+    "expected": "ADR 0026: a card arriving while hidden brings her back as a seal or tab with a ring and a count, and does not open the slip over the user's work.",
+    "got": "The reducer sets snoozed on arrival and emits `show`; Rust `show()` always calls set_focus and emits athena:summon; the page's summon handler then clears snoozed and requests focus on Approve. Reproduced: hide -> cards(hidden) -> summon ends form=slip snoozed=false fx=focus:approve. A and D answer with no confirmation (`live.tsx:184-189`), so keystrokes meant for another window can approve or decline a gated action.",
+    "evidence": [
+      "apps/desktop/src-tauri/src/companion.rs:589-591",
+      "apps/desktop/src/companion/machine.ts:222-245",
+      "apps/desktop/src/companion/machine.ts:361-384",
+      "apps/desktop/src/companion/live.tsx:149",
+      "apps/desktop/src/companion/live.tsx:184-189",
+      "docs/adr/0026-athena-is-her-own-window-and-main-is-the-workhorse.md (Hide means put away)"
+    ],
+    "code_check": "vitest against the real reducer (scratchpad ana.test.ts): events hide, cards{n:1,hidden:true}, summon; printed `summon -> form=slip snoozed=false hidden=false fx=focus:approve,cancel,size`.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Arrival while hidden shows seal/tab with ring and count, no set_focus, no summon; A/D act only after the person has focused her on purpose.",
+    "l2_priority": "Hide her via the tray, type in another app (Notepad) while a gated turn from ledgerbox raises a card; record whether focus moved, whether the slip opened, and whether typed letters answered it. Needs: Windows 11, onboarded store, Claude CLI present, one real gated turn."
+  },
+  {
+    "id": "ana-2",
+    "journey": "J3",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "clarity",
+    "title": "The arrival announcement is a re-created live region, names nothing about the card, and is silent for the second card",
+    "expected": "A screen reader says what is being asked (action, app, first parameter) when a card arrives, and again for the next one, in a region that already exists.",
+    "got": "`aw-sr` is keyed on say.n so it is unmounted and remounted per sentence; the text is a fixed sentence without the action or recipient; `say` is set only when the card count increases, so the card that follows an answered one is not announced; the tape's `stopped` result outside the ledger has no live region (role=alert exists only inside the Talk tab).",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:87",
+      "apps/desktop/src/companion/machine.ts:240",
+      "apps/desktop/src/companion/machine.ts:243",
+      "apps/desktop/src/companion/machine.ts:293-299",
+      "apps/desktop/src/companion/views.tsx:278-292",
+      "apps/desktop/src/companion/views.tsx:439"
+    ],
+    "code_check": "Read of the reducer: `say()` is called in `cards` (arrived), `decide` and `esc` only. No call in `settle`.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "One persistent live region; text includes card.action and the first parameter; the next card is announced after the previous settles; a stopped turn is announced.",
+    "l2_priority": "NVDA on Windows 11 with Athena unfocused, then focused: does it speak on arrival, at all, and does it speak the second card. Environment: NVDA 2025.x, a store with two queued gated calls."
+  },
+  {
+    "id": "ana-3",
+    "journey": "J3",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "med",
+      "trust_erosion": "med"
+    },
+    "dimension": "completion",
+    "title": "The slip is an article, not a dialog, so a screen reader in browse mode never delivers the A and D keys",
+    "expected": "A decision card is a dialog that takes focus and puts the screen reader in forms or focus mode, so single-letter answers reach the page.",
+    "got": "Slip is `<article aria-label=...>` with aria-keyshortcuts on the buttons; the global handler listens for bare letters on window. NVDA browse mode consumes D (landmark navigation) and the keys do not reach the page; only Enter on the focused button, or the Ctrl+Alt chords, would work.",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:184-189",
+      "apps/desktop/src/companion/views.tsx:215-220",
+      "apps/desktop/src/companion/live.tsx:167-193"
+    ],
+    "code_check": "Static read; no role=dialog, alertdialog or application anywhere in views.tsx.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "The slip takes role=alertdialog (or the buttons are the documented path) and the keyhint says Enter on the focused button as well as A/D.",
+    "l2_priority": "NVDA browse mode, slip focused: press D, then A; record whether decline happens. Environment: NVDA with default browse mode, one waiting card."
+  },
+  {
+    "id": "ana-4",
+    "journey": "J3",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "broken-flow",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "effort",
+    "title": "A card arriving while she is visible but unfocused cannot be answered with A/D, and nothing tells her so",
+    "expected": "The announcement and the keyhint on the slip agree with what works: Press A to approve only when A works.",
+    "got": "The announcement says 'Press A to approve, D to decline' (machine.ts:243) and the rail shows A and D chips, but the handler is a window keydown, which only fires when her window has focus; the visible-arrival path never calls show or set_focus. Only the Ctrl+Alt chords work from elsewhere.",
+    "evidence": [
+      "apps/desktop/src/companion/machine.ts:243",
+      "apps/desktop/src/companion/live.tsx:194",
+      "apps/desktop/src/companion/views.tsx:147-150",
+      "apps/desktop/src-tauri/src/companion.rs:626-629"
+    ],
+    "code_check": "Read: cards path emits `size` only (fx list printed in the vitest run: schedule,cancel,cancel,size,cancel).",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "The announcement names the chord when she is not focused, or the slip takes focus when the user is idle.",
+    "l2_priority": "With another app focused and her visible at seal, raise a card and press plain A, then Ctrl+Alt+A. Environment: as ana-1."
+  },
+  {
+    "id": "ana-5",
+    "journey": "J3",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "broken-flow",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "low"
+    },
+    "dimension": "effort",
+    "title": "Keyboard focus is dropped when Approve is disabled, when Esc unmounts the slip, and when the slip tears; it is never restored",
+    "expected": "Focus lands on something predictable (the next card's Approve, or the seal) after an answer or Esc.",
+    "got": "decided disables both buttons (disabled elements lose focus), Esc changes form to seal and the paper unmounts, settle replaces the paper with a new keyed one. The only focus effects are the summon path (machine.ts:379-382). After the answer the active element is the body; Tab starts again from the seal.",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:215-220",
+      "apps/desktop/src/companion/views.tsx:72-85",
+      "apps/desktop/src/companion/machine.ts:305-312",
+      "apps/desktop/src/companion/live.tsx:73-78"
+    ],
+    "code_check": "Read of the reducer: `focus` effects are emitted from `summon` only.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "After settle with cards left focus moves to the next Approve; with none it returns to the seal; after Esc focus moves to the seal.",
+    "l2_priority": "Tab to Approve, press Enter, record document.activeElement every 200ms through settle; same after Esc. Environment: WebView2 console via CDP."
+  },
+  {
+    "id": "ana-6",
+    "journey": "J3",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "low",
+      "reachability": "med",
+      "trust_erosion": "med"
+    },
+    "dimension": "completion",
+    "title": "The slip's scrolling body is not an explicit tab stop, so a long parameter list depends on browser behaviour",
+    "expected": "Every parameter is reachable by keyboard (the file comment says a decision's every parameter must be reachable, never cut).",
+    "got": "`.sl-scroll` has overflow-y auto in a 316px window and the div has no tabIndex (the ledger's lg-scroll does). Chromium 130+ makes scrollers keyboard-focusable only when they hold no focusable child; here they hold none, so it may work, but it is unasserted. A 12px gate note and 15px title leave about 150px of body.",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:195",
+      "apps/desktop/src/companion/companion.css:1458-1470",
+      "apps/desktop/src/companion/views.tsx:420"
+    ],
+    "code_check": "Read: views.tsx:195 `<div className=\"sl-scroll\">` against views.tsx:420 `tabIndex={0} role=\"log\"`.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "sl-scroll gets tabIndex 0 and an accessible name, or the slip grows to fit.",
+    "l2_priority": "A card with 12 long parameters: Tab from Approve and shift+Tab; record whether the body takes focus and scrolls with arrows. Environment: WebView2 runtime version noted."
+  },
+  {
+    "id": "ana-7",
+    "journey": "J2",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "missing-feature",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "low"
+    },
+    "dimension": "missing",
+    "title": "There is no keyboard way to move, dock, undock or put her away",
+    "expected": "Every action in both windows has a Tab path (criterion 1): dock and undock are actions.",
+    "got": "Dragging, snapping and the tab dock are pointer gestures (onPointerDown, startDragging). The machine's `hide` event has no dispatcher; putting her away is the tray menu or Alt+F4 in her window. A keyboard user's seal stays bottom-right (`companion.rs:436`) or beside Main after onboarding.",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:55",
+      "apps/desktop/src/lib/companion.ts:128-155",
+      "apps/desktop/src/companion/machine.ts:103",
+      "apps/desktop/src-tauri/src/tray.rs:49-52",
+      "apps/desktop/src-tauri/src/companion.rs:493-496"
+    ],
+    "code_check": "grep: no non-test dispatcher of t:\"hide\", \"show\" or \"expand\" (0 hits).",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Ledger header or tray menu offers Dock left, Dock right, Float, Put away, with keys; the machine's hide event is used.",
+    "l2_priority": "Keyboard only: dock her to the right edge and undock; put her away and summon. Environment: Windows 11, no pointer."
+  },
+  {
+    "id": "ana-8",
+    "journey": "J2",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "high",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "The resting dim (55% opacity after 45s) takes her caption and the paper text below 4.5:1 on every wallpaper",
+    "expected": "Text at least 4.5:1 on its real surface in the resting state she is looked past in all day.",
+    "got": "`.aw[data-quiet=\"1\"] .aw-fig { opacity: .55 }` after QUIET_MS 45s. Computed: house-ink caption over white wallpaper 2.75:1, grey 3.49, black 3.39; ink-2 on paper over white 2.46, grey 3.11, black 3.74. Restores on hover or focus-within only.",
+    "evidence": [
+      "apps/desktop/src/companion/companion.css:160-167",
+      "apps/desktop/src/companion/machine.ts:34-36",
+      "apps/desktop/src/companion/machine.ts:472-478"
+    ],
+    "code_check": "node scratchpad/c.mjs section '--- quiet .55 dim over wallpaper'.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Dim only the decoration, or dim to a floor that keeps 4.5:1 for text.",
+    "l2_priority": "Screenshot the seal after 45s at rest over a white document at 150% and measure the caption against its pixels. Environment: a light wallpaper, a maximised light app behind her."
+  },
+  {
+    "id": "ana-9",
+    "journey": "J2",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "At rest the seal's focus ring is partly eaten by the housing's scallop mask",
+    "expected": "A visible, continuous focus ring on the seal in every state.",
+    "got": "At `seal` the whole housing carries a radial mask that cuts a 4.6-5.2px circle every 14px along the paper edge (`.aw-house` mask). The seal's outline is drawn at offset -3px with a 2px width, which is 1px to 3px inside the same edge, so about half of each 14px on that side is cut and the ring reads as dashed.",
+    "evidence": [
+      "apps/desktop/src/companion/companion.css:203-206",
+      "apps/desktop/src/companion/companion.css:1446-1453"
+    ],
+    "code_check": "Geometry: circle radius 4.6 at the edge covers depth 1-3px for 7 to 9px of each 14px tile.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Move the ring inside the mask (offset -6px or draw it on .aw-sealwrap) or drop the mask while focused.",
+    "l2_priority": "Tab to the seal at rest and screenshot the ring at 150%. Environment: onboarded store, nothing waiting."
+  },
+  {
+    "id": "ana-10",
+    "journey": "J5",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "broken-flow",
+    "severity": "critical",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "completion",
+    "title": "Main opens at 1440x900 and cannot shrink below 900x600, which is larger than the work area of a 1080p laptop at 125% and 150%",
+    "expected": "No state is clipped or off-screen at 150% (criterion 4); the window buttons and module bar are always on screen.",
+    "got": "`inner_size(1440, 900)` `.center()` and `min_inner_size(900, 600)` in logical px. 1920x1080 at 150% is a 1280x672 work area: 160 wide and 228 tall over. Centring a larger window gives a negative y of about -114, which puts the 76px module bar, theme toggle and window buttons above the screen. There is no clamp in lib.rs. Win+Up would rescue a user who knows it.",
+    "evidence": [
+      "apps/desktop/src-tauri/src/lib.rs:283-287",
+      "apps/desktop/src-tauri/src/layout.rs:1-30"
+    ],
+    "code_check": "scratchpad ana.test.ts size table (1920x1080 @150: work h=672; 1366x768 @125: 566; min height 600 exceeds @150 on 1366x768 (464)).",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Create Main at min(1440x900, work area) and clamp min size to it.",
+    "l2_priority": "Fresh store on a 1920x1080 display set to 150%: first launch, Open your first app; screenshot where the bar lands. Environment: Windows display scaling 150%, native 1920x1080."
+  },
+  {
+    "id": "ana-11",
+    "journey": "J5",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "broken-flow",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "med",
+      "trust_erosion": "med"
+    },
+    "dimension": "effort",
+    "title": "In Browser with a tab open Tab walks into the registration ledger, which is clipped away",
+    "expected": "Every focus stop is visible (pet peeve: focus that vanishes).",
+    "got": "With a tab open the chrome webview is the 76px band and a page webview covers the rest. In the DOM the strip comes first, then the module body with the Register input, Register button, per-row host buttons and Open/Switch/Forget acts. Nothing makes the body inert or non-focusable, so Tab after the URL field goes to controls that are not on screen (or scrolls the 76px viewport onto them).",
+    "evidence": [
+      "apps/desktop/src/modules/browser/view.tsx:46-109",
+      "apps/desktop/src-tauri/src/layout.rs:1-30",
+      "apps/desktop/src/styles/app.css:151-155"
+    ],
+    "code_check": "Read: no `inert`, `hidden` or `tabIndex=-1` on module-browser__body when a tab is open.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "In browser mode the body is `inert`/display:none, so Tab leaves the strip.",
+    "l2_priority": "Open a tab, Tab from the URL field, record the focused element and where it is painted. Environment: one open tab, three registered origins."
+  },
+  {
+    "id": "ana-12",
+    "journey": "J5",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "missing-feature",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "completion",
+    "title": "Nothing moves keyboard focus into a page webview",
+    "expected": "After opening or switching a tab the keyboard user can Tab or press a chord into the page (the app she works in).",
+    "got": "Page webviews are separate webviews; no code calls set_focus on a webview. companion.rs set_focus is for windows. Tabs.focus changes a record and relayouts. Whether WebView2 forwards Tab out of the chrome webview into a sibling child is not established.",
+    "evidence": [
+      "apps/desktop/src-tauri/src/tabs.rs:173-262",
+      "apps/desktop/src-tauri/src/tabs.rs:263-270",
+      "apps/desktop/src-tauri/src/companion.rs:590"
+    ],
+    "code_check": "grep set_focus under src-tauri/src: only companion.rs:590 and :663, both windows.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Opening or focusing a tab focuses its webview; a documented chord returns to the chrome.",
+    "l2_priority": "Open a tab by keyboard, then try to type in the page's first field without the mouse; try Tab from the last chrome control. Environment: ledgerbox on 3001, onboarded store."
+  },
+  {
+    "id": "ana-13",
+    "journey": "J5",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "confusion",
+    "severity": "medium",
+    "impact": {
+      "frequency": "low",
+      "reachability": "med",
+      "trust_erosion": "med"
+    },
+    "dimension": "trust",
+    "title": "The Close button says 'Athena stays' and closing Main quits the whole app",
+    "expected": "The accessible name matches what happens (the J5 'watch for' line).",
+    "got": "aria-label 'Close Main window. Athena stays.' but the CloseRequested handler calls handle.exit(0). A screen reader user is told she stays and then loses her and any waiting card.",
+    "evidence": [
+      "apps/desktop/src/app.tsx:131-134",
+      "apps/desktop/src-tauri/src/lib.rs:301-305"
+    ],
+    "code_check": "Read of both sites; the Rust comment says closing Main quits the app.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Name it 'Close Main and quit Athena', or make close hide Main.",
+    "l2_priority": "Press the Close button with a card waiting; confirm the process ends. Environment: a waiting card and the tray visible."
+  },
+  {
+    "id": "ana-14",
+    "journey": "J2",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "broken-flow",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "med",
+      "trust_erosion": "med"
+    },
+    "dimension": "completion",
+    "title": "The ledger (656) does not fit the work area at 150% on 1366x768 and 1600x900 and slides so the composer is off-screen",
+    "expected": "No state is clipped at 150%.",
+    "got": "place() slides the window to the top of the work area and the body is overflow hidden, so the bottom of a 656px window is lost (432 to 552 logical px of work height). Run over 36 screen and scale pairs: ledger overflows on 9, welcome on 3 (175%).",
+    "evidence": [
+      "apps/desktop/src-tauri/src/companion.rs:52-60",
+      "apps/desktop/src-tauri/src/companion.rs:171-174",
+      "apps/desktop/src/companion/companion.css:19-22"
+    ],
+    "code_check": "ana.test.ts size table: 1366x768 @150 work 464 vs ledger 656; 1600x900 @150 work 552.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Ledger height is min(656, work height) with the scroller absorbing the difference.",
+    "l2_priority": "Open the ledger at 150% on a 1366x768 or 1600x900 display and screenshot the composer. Environment: that resolution."
+  },
+  {
+    "id": "ana-15",
+    "journey": "J2",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "broken-flow",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "completion",
+    "title": "Esc or Later on the welcome page leaves Main hidden with no in-app way to open it",
+    "expected": "Esc is defined and non-destructive and the user still reaches the app.",
+    "got": "Esc and Later set mode=auto without setting onboarded or showing Main (Main is built hidden on first launch). The only route to Main is the tray menu item. The seal's ledger has no 'Open Main' action, and the pill lives in Main.",
+    "evidence": [
+      "apps/desktop/src/companion/machine.ts:333-336",
+      "apps/desktop/src/companion/machine.ts:413-416",
+      "apps/desktop/src-tauri/src/lib.rs:285-290",
+      "apps/desktop/src-tauri/src/tray.rs:51-56"
+    ],
+    "code_check": "Esc matrix run: welcome -> seal mode=auto.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Later shows Main or the ledger offers 'Show Main window'.",
+    "l2_priority": "Fresh store, press Esc at welcome, then try to reach Main without the mouse. Environment: fresh store."
+  },
+  {
+    "id": "ana-16",
+    "journey": "J5",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "The bar's focus ring is clipped at the top on every full-height bar control",
+    "expected": "A visible focus ring on every control (criterion 1).",
+    "got": "Bar items, the presence pill and the window buttons stretch to the 35px bar (align-items: stretch) and the global ring is 2px with 2px offset, so its top 4px is outside the document at y<0 and is clipped; the bottom overlaps the border or, in browser mode, the strip.",
+    "evidence": [
+      "apps/desktop/src/styles/app.css:261-271",
+      "apps/desktop/src/styles/app.css:740-748",
+      "apps/desktop/src/styles/app.css:776-788",
+      "apps/desktop/src/styles/app.css:861-871"
+    ],
+    "code_check": "Geometry from the CSS: height var(--bar-height) 36 with stretch, outline-offset 2 + width 2.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Use an inset ring (outline-offset -2px) on bar controls.",
+    "l2_priority": "Tab across the bar and screenshot at 150% in both themes. Environment: Main visible."
+  },
+  {
+    "id": "ana-17",
+    "journey": "J5",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "effort",
+    "title": "Forget on an app row swaps its buttons and drops focus",
+    "expected": "Focus stays on a stable control through a two-step confirm.",
+    "got": "Clicking Forget unmounts Forget/Show/Switch and mounts Yes, forget/Keep; the focused element disappears and focus goes to the body. After Yes the row itself is removed. The acts are opacity 0 until the row holds focus, so the keyboard user has just lost the thing that revealed them.",
+    "evidence": [
+      "apps/desktop/src/modules/browser/view.tsx:272-300",
+      "apps/desktop/src/modules/browser/browser.css:198-213"
+    ],
+    "code_check": "Read: no ref or autoFocus on the confirm buttons.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Confirm buttons take focus on mount; after forget focus moves to the next row's host.",
+    "l2_priority": "Tab to Forget, Enter, record the active element. Environment: three registered origins."
+  },
+  {
+    "id": "ana-18",
+    "journey": "J5",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "low",
+    "impact": {
+      "frequency": "low",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "There is no forced-colors or prefers-contrast handling, and the cues she relies on are shadows",
+    "expected": "In Windows high contrast the card, the ring and the waiting state stay visible.",
+    "got": "grep for forced-colors and prefers-contrast over src finds 0 hits. The attention pulse and the tab's waiting ring are box-shadow (ignored in forced colors); the housing is a gradient; the window is transparent. Outlines survive, which keeps focus rings.",
+    "evidence": [
+      "apps/desktop/src/companion/companion.css:252-259",
+      "apps/desktop/src/companion/companion.css:544-546",
+      "apps/desktop/src/styles/app.css:840-849"
+    ],
+    "code_check": "grep: `forced-colors|prefers-contrast` in apps/desktop/src returned nothing.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "A forced-colors block gives the housing a border and the waiting state an outline and a word.",
+    "l2_priority": "Turn on a Windows contrast theme and screenshot seal, slip and tab with a card waiting. Environment: Windows 11 contrast theme."
+  },
+  {
+    "id": "ana-19",
+    "journey": "J3",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "low",
+    "impact": {
+      "frequency": "low",
+      "reachability": "low",
+      "trust_erosion": "med"
+    },
+    "dimension": "completion",
+    "title": "The global answer chords are Ctrl+Alt+A and Ctrl+Alt+D, which is AltGr+A and AltGr+D on layouts that type letters with AltGr",
+    "expected": "A chord that cannot swallow a character the user types.",
+    "got": "While cards > 0 the registered hotkeys take Ctrl+Alt+A/D system-wide. On layouts where AltGr is Ctrl+Alt (for example Polish, where AltGr+A is a) the user cannot type those characters anywhere while a card waits. Registration failure is only logged.",
+    "evidence": [
+      "apps/desktop/src-tauri/src/hotkeys.rs:24-29",
+      "apps/desktop/src-tauri/src/hotkeys.rs:76-93"
+    ],
+    "code_check": "Read; layout behaviour is outside the repo.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Let the user rebind, or choose Ctrl+Shift chords, and state the chosen keys in the slip.",
+    "l2_priority": "Switch the keyboard layout to Polish, raise a card, type AltGr+A in Notepad. Environment: Windows with that layout installed."
+  },
+  {
+    "id": "ana-20",
+    "journey": "J2",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "Values are computed for views that never read them: 7 of 10 event payload fields, 33 of 34 model leaves, 16 of 19 machine events",
+    "expected": "Every computed value reaches a view; every event has a sender.",
+    "got": "talk.ready is computed and unread; athena:summon.cards is ignored; athena:snap.to is ignored; athena:status.visible is stored and never read, so Main's pill cannot say she is hidden; machine events expand, show and hide have no dispatcher; the PushToTalk component and its CSS are unused; .aw.arrive, .aw.drop and data-intro rules match nothing because views.tsx puts `arrive` on .aw-fig.",
+    "evidence": [
+      "apps/desktop/src/companion/model.ts:299",
+      "apps/desktop/src/companion/live.tsx:149",
+      "apps/desktop/src/stores/athena.ts:45",
+      "apps/desktop/src/app.tsx:70-73",
+      "apps/desktop/src/companion/machine.ts:99-103",
+      "apps/desktop/src/components/PushToTalk.tsx:52",
+      "apps/desktop/src/companion/views.tsx:54",
+      "apps/desktop/src/companion/companion.css:623-655"
+    ],
+    "code_check": "grep counts: `\\bready\\b` in views.tsx 0; `t: \"expand|show|hide\"` outside machine.ts and tests 0; importers of PushToTalk 0.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Delete or wire each; the hidden state reaches the pill.",
+    "l2_priority": "Not an L2 item; confirm by hiding her from the tray and reading Main's pill text. Environment: both windows up."
+  },
+  {
+    "id": "ana-21",
+    "journey": "J5",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "Several controls miss 3:1 or 4.5:1: input boundary 1.55, disabled Approve 2.6, light status-success on recessed 4.42",
+    "expected": "Text 4.5:1 and a control boundary 3:1 (criterion 2).",
+    "got": "Composer input and the ghost toggles use rgba(10,18,20,.2): 1.55 on white and 1.54 on paper. Disabled Approve is 2.60 and disabled Speak 2.08 during the 1.5s the stamp is announced. Light --status-success #047857 is 4.42 on --recessed (4.72 on background). Everything else computed passes (tables in the L1 report).",
+    "evidence": [
+      "apps/desktop/src/companion/companion.css:1308-1319",
+      "apps/desktop/src/companion/companion.css:1529-1534",
+      "apps/desktop/src/companion/companion.css:703-706",
+      "apps/desktop/src/styles/app.css:104"
+    ],
+    "code_check": "node scratchpad/c.mjs.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Boundary at 3:1 (use paper-ink-2), success token darkened one step, disabled states keep 3:1.",
+    "l2_priority": "Measure rendered pixels for the composer border and a success Badge on a recessed tile in light theme."
+  },
+  {
+    "id": "ana-22",
+    "journey": "J5",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "high",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "Main's presence pill changes without a live region, so '1 waiting' is not announced while she is in Main",
+    "expected": "A card arriving is announced wherever the user is working.",
+    "got": "The pill is a button whose label is rebuilt from athena:status; there is no aria-live or role=status in Main. The only live region is inside her own window.",
+    "evidence": [
+      "apps/desktop/src/components/ModuleBar.tsx:102-112",
+      "apps/desktop/src/app.tsx:70-73",
+      "apps/desktop/src/stores/athena.ts:41-46"
+    ],
+    "code_check": "grep aria-live in apps/desktop/src/components and app.tsx: 0 hits.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "A visually hidden polite region in Main mirrors the pill text when cards change.",
+    "l2_priority": "NVDA with Main focused: raise a card, record speech. Environment: as ana-2."
+  },
+  {
+    "id": "ana-23",
+    "journey": "J2",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "low",
+    "impact": {
+      "frequency": "low",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "The ledger tabs have no tabpanel association and two of the three scroll regions have no accessible name",
+    "expected": "role=tab controls aria-controls a role=tabpanel; focusable regions are named.",
+    "got": "tablist and tab roles are present with roving tabindex, but no aria-controls or tabpanel; the Record and Origins scrollers are tabIndex 0 divs without role or label (Talk has role=log and a label).",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:114-130",
+      "apps/desktop/src/companion/views.tsx:490",
+      "apps/desktop/src/companion/views.tsx:549"
+    ],
+    "code_check": "Read.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Add tabpanel and labels.",
+    "l2_priority": "NVDA: arrow through the tabs and read the content region name."
+  },
+  {
+    "id": "ana-s1",
+    "journey": "J3",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "strength",
+    "severity": "strength",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "trust",
+    "title": "Paper text contrast and the paper focus ring are strong in both themes",
+    "expected": "Text at least 4.5:1 on its real surface.",
+    "got": "Every paper pair computed: ink 16.89, ink-2 7.01, stamp 7.04, agent 6.34, external 6.75, ok 4.89, info 5.98 on paper; white on stamp 7.88, white on teal 5.36; the housing's focus cyan 8.90 to 12.90. The paper and housing are fixed so light theme in sunlight is the same surface as dark.",
+    "evidence": [
+      "apps/desktop/src/companion/companion.css:40-51",
+      "apps/desktop/src/companion/companion.css:707-711"
+    ],
+    "code_check": "node scratchpad/c.mjs.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Keep.",
+    "l2_priority": "None."
+  },
+  {
+    "id": "ana-s2",
+    "journey": "J3",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "strength",
+    "severity": "strength",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "clarity",
+    "title": "Reduced motion is complete in her window and Esc is defined in all seven forms",
+    "expected": "Unroll and pulse removed; Esc non-destructive.",
+    "got": "Block at companion.css:1421-1439 sets 1ms and one iteration on every animation, kills the unroll and makes the attention ring static; every Esc branch run in vitest is non-destructive (the slip stays waiting).",
+    "evidence": [
+      "apps/desktop/src/companion/companion.css:1421-1439",
+      "apps/desktop/src/companion/machine.ts:333-347"
+    ],
+    "code_check": "vitest ana.test.ts 'esc across all forms'.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Keep.",
+    "l2_priority": "None."
+  },
+  {
+    "id": "ana-s3",
+    "journey": "J3",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "strength",
+    "severity": "strength",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "completion",
+    "title": "A card can be answered by A, D, click or a global chord, and the keys are named in aria-keyshortcuts",
+    "expected": "Answered without the mouse.",
+    "got": "Approve and Decline carry aria-keyshortcuts; the gate class is a word in a box; the stamp is announced; a double answer is impossible (decide ignores while decided).",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:215-220",
+      "apps/desktop/src/companion/machine.ts:278-300",
+      "apps/desktop/src-tauri/src/hotkeys.rs:76-93"
+    ],
+    "code_check": "Read of the reducer.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Keep.",
+    "l2_priority": "None."
+  },
+  {
+    "id": "ana-s4",
+    "journey": "J5",
+    "character": "ana",
+    "cert_level": "L1",
+    "type": "strength",
+    "severity": "strength",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "low"
+    },
+    "dimension": "effort",
+    "title": "Main's form controls are keyboard-correct: radiogroups roving, disabled buttons stay focusable with their reason, no text under 12px anywhere",
+    "expected": "Every control reachable by Tab; nothing under 12px.",
+    "got": "PillGroup is a radiogroup with roving tabindex; Button with disabledReason wraps a focusable span carrying the reason; the stylesheet floor is 0.75rem / 12px across every css file.",
+    "evidence": [
+      "apps/desktop/src/components/PillGroup.tsx:60-81",
+      "apps/desktop/src/components/Button.tsx:33-39",
+      "apps/desktop/src/companion/companion.css:60"
+    ],
+    "code_check": "grep of every font-size and font: shorthand.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Keep.",
+    "l2_priority": "None."
+  }
+]

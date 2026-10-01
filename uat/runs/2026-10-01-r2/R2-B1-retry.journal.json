@@ -1,0 +1,13 @@
+{
+  "name": "R2-B1-retry",
+  "ms": 6664,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "tabs now: [{\"id\":1,\"url\":\"http://localhost:3001/\",\"focused\":true},{\"id\":2,\"url\":\"http://127.0.0.1:3001/\",\"focused\":false}]",
+    "pending row: {\"id\":\"apr_23e30fb6cf68\",\"action\":\"host.ledgerbox.send_reminder\",\"params\":{\"id\":\"inv_0002\"},\"rationale\":\"You asked to send a reminder for LB-2026-0002; the gentle draft is saved and reviewed above.\",\"options\":[\"approve\",\"decline\"],\"origin\":\"host:ledgerbox\",\"conversation_id\":\"conv_ledgerbox\",\"surface\":\"panel\",\"created_at\":\"2026-10-01T10:18:34.515001+00:00\",\"expires_at\":\"2026-10-02T10:18:34.515001+00:00\"}",
+    "focused tab now: http://localhost:3001/",
+    "AFTER DECLINE: waiting on you A D GATED host.ledgerbox.send_reminder 1 waiting You asked to send a reminder for LB-2026-0002; the gentle draft is saved and reviewed above. ID inv_0002 Approve A Decline D Speak That answer was refused: this decision belongs to a different app than the one in front of you. Focus the app this decision is about and try again. Nothing runs until you sign. That answer was refused: this decision belongs to a different app than the one in front of you. Focus the app this decision is about and try again.",
+    "pending after: 1"
+  ]
+}

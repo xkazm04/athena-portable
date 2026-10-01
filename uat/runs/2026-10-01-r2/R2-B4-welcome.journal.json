@@ -1,0 +1,43 @@
+{
+  "name": "R2-B4-welcome",
+  "ms": 6882,
+  "code": 0,
+  "checks": [
+    {
+      "label": "welcome shows a real probe answer (ready) with Claude Code present",
+      "ok": true
+    },
+    {
+      "label": "welcome has no developer jargon",
+      "ok": true
+    },
+    {
+      "label": "Setup no longer says the probe has not answered",
+      "ok": true
+    },
+    {
+      "label": "Setup names the engine as found",
+      "ok": true,
+      "eng": "Engine Claude Code runs the turns, and is running now. Claude Code Codex Claude Code 2.1.286 (Claude Code) Check again Page No page is open. Athena works inside one. Open Theme Follow the operating system, "
+    },
+    {
+      "label": "Setup has an engine Check again",
+      "ok": true,
+      "btn": 1
+    },
+    {
+      "label": "first-run Browser asks for an app address in plain words",
+      "ok": true
+    },
+    {
+      "label": "close button says what it does",
+      "ok": true
+    }
+  ],
+  "notes": [
+    "WELCOME: waiting 1 0 remembers 1 acts 2 native 3 reaches FIRST LAUNCH Athena is here. She works inside the web apps you already have open. She reads one page, decides, acts in another, and asks before anything that cannot be undone. Engine: Claude Code, ready. She never asks for a key. Runs on this machine. No account, no cloud, no telemetry. Open your first app Enter Later Esc ASKS FIRST THEN SHE ACTS ASKS FIRST THEN SHE ACT",
+    "SETUP engine: Engine Claude Code runs the turns, and is running now. Claude Code Codex Claude Code 2.1.286 (Claude Code) Check again Page No page is open. Athena works inside one. Open Theme Follow the operating system, ",
+    "BROWSER first-run: Athena Browser Connectors Setup 1 waiting + Browser The apps Athena works in Open one, and she reads what it offers. 0 open Registered apps 0 registered Register and open Type the address of an app you use, for example your invoicing tool. Press Enter to open it. For example: invoicing.example.test Setup: Engine: Claude Code, ready. Any site. Registering switches the origin on and opens it, so Athena can read what it offers; nothing is done there until you approve it. No app is registered yet. R",
+    "close label: Close Athena"
+  ]
+}

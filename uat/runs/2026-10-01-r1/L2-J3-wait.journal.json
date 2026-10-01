@@ -1,0 +1,10 @@
+{
+  "name": "L2-J3-wait",
+  "ms": 39,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "state=ledger",
+    "TAIL: Send a payment reminder for the oldest overdue invoice. ATHENA Plan: read the overdue list to find the oldest, draft a reminder, then file a card to send it. I'll pick the invoice once the list comes back. host.ledgerbox.read_inbox → unknown_ref"
+  ]
+}

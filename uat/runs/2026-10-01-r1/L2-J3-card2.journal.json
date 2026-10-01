@@ -1,0 +1,16 @@
+{
+  "name": "L2-J3-card2",
+  "ms": 271953,
+  "code": 2,
+  "checks": [
+    {
+      "label": "a card (slip) was filed for the chore within 270s",
+      "ok": false,
+      "secs": 271
+    }
+  ],
+  "notes": [
+    "after 271s state=ledger",
+    "TEXT: YOU Send a payment reminder for invoice LB-2026-0002. ATHENA The search for INV-118 didn't run either, so I still don't know why it was missing. I'll drop it and work on LB-2026-0002. Plan: save a gentle draft first, so you can see the text. Then I'll file the send card, since sending reaches a person and needs your answer. host.ledgerbox.draft_reminder → That invoice is gone. ATHENA No draft was saved for LB-2026-0002 either. The tool answered \"That invoice is gone\", the same as for INV-118. Both ids failing makes me doubt the ids or the book state, so I won't file a send card, because there is no draft to send. I'll read the overdue list to get the real ids. host.ledgerbox.read_inbox → {\"showing\":20,\"of\":54,\"page\":0,\"items\":[{\"id\":\"inv_0058\",\"number\":\"LB-2026-0058\",\"client\":\"Ironwood Studio\",\"contact_name\":\"Luc Barros\",\"contact_email\":\"luc.barros@ironwood-studio.example\",\"state\":\"disputed\",\"category\":\"development\",\"due_at\":\"2026-06-20\",\"days_overdue\":72,\"amount\":17500,\"paid\":7000,\"balance\":10500,\"paid_ratio\":0.4,\"last_payment_at\":\"2026-06-22\",\"candidates\":0,\"has_draft_reminder\":false,\"reminders_sent\":0,\"dispute\":\"Client says the workshop day was never delivered.\"},{\"id\":\"inv_0029\",\"number\":\"LB-2026-0029\",\"client\":\"Kestrel Labs\",\"contact_name\":\"Ines Kaur\",\"contact_email\":\"ines.kaur@kestrel-labs.example\",\"state\":\"overdue\",\"category\":\"consulting\",\"due_at\":\"2026-06-22\",\"days_overdue\":70,\"amount\":25350,\"paid\":0,\"balance\":25350,\"paid_ratio\":0,\"last_payment_at\":null,\"candidates\":0"
+  ]
+}

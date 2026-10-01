@@ -1,0 +1,31 @@
+{
+  "name": "L2-J2-focus",
+  "ms": 8616,
+  "code": 2,
+  "checks": [
+    {
+      "label": "Notepad is the foreground app before the card arrives",
+      "ok": false,
+      "start": "chrome|Decisions | KandiDate | Verified AI hiring, sealed decisions - Google Chrome"
+    },
+    {
+      "label": "a card arriving while she is put away does NOT take the foreground from the user's app",
+      "ok": false,
+      "s": 1,
+      "fg": "chrome|Decisions | KandiDate | Verified AI hiring, sealed decisions - Google Chrome",
+      "wins": [
+        "1456x909"
+      ]
+    },
+    {
+      "label": "she does not open the slip over the user's work while put away",
+      "ok": true,
+      "state": "ledger"
+    }
+  ],
+  "notes": [
+    "foreground before the card: chrome|Decisions | KandiDate | Verified AI hiring, sealed decisions - Google Chrome",
+    "first change: {\"s\":1,\"fg\":\"chrome|Decisions | KandiDate | Verified AI hiring, sealed decisions - Google Chrome\",\"wins\":[\"1456x909\"]}",
+    "athena state=ledger"
+  ]
+}

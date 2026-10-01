@@ -1,0 +1,15 @@
+{
+  "name": "L2-J3-card3",
+  "ms": 300886,
+  "code": 2,
+  "checks": [
+    {
+      "label": "a card eventually reached the slip",
+      "ok": false
+    }
+  ],
+  "notes": [
+    "waited +301s; state=ledger",
+    "TAIL: d nothing has been sent. I'm filing a card to send it, and it needs your answer. **Draft** - To: Nils Eriksen, nils.eriksen@halcyon-works.example - Subject: LB-2026-0002: $95,100.00 outstanding, 51 days past due - Body: a gentle note saying the invoice is still open, no rush if it's already in a payment run. It lists $95,100.00 outstanding of $95,100.00 and is signed Mira Halden. The invoice is large and 51 days past due. I haven't read its reminder history, so I can't say whether earlier reminders went out. If you'd rather use a firmer tone, decline the card and I'll redraft. host.ledgerbox.send_reminder → pending_approval GATED host.ledgerbox.send_reminder 1 waiting You asked to send a reminder for LB-2026-0002; the gentle draft is saved and reviewed above. ID inv_0002 Approve A Decline D Speak Nothing runs until you sign. A decision is waiting on you. Press A to approve, D to decline."
+  ]
+}

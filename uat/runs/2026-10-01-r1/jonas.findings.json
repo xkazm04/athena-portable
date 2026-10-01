@@ -1,0 +1,479 @@
+[
+  {
+    "id": "jonas-1",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "trust",
+    "severity": "critical",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "trust",
+    "title": "The per-origin switch is cosmetic: nothing outside the views reads origin.enabled, and the daemon never receives it",
+    "expected": "Switching an origin off (Origins tab or Browser 'Switch off') stops her acting there, as the row says 'switched off; nothing runs here'.",
+    "got": "enabled/overrides are written to SQLite and read only by the two views. run.send publishes the manifest and streams /run without consulting useOrigins; the daemon is built with Policy(connectors=vault), so disabled_origins is always empty (and is keyed host:<app_id>, not the web origin the table stores). gate.js decide() has 0 callers in the app.",
+    "evidence": [
+      "apps/desktop/src/stores/run.ts:136-148",
+      "apps/desktop/src/stores/run.ts:337-340",
+      "apps/desktop/src/modules/browser/model.ts:198-200",
+      "apps/desktop/src/companion/views.tsx:576-583",
+      "src/athena/wiring.py:235",
+      "src/athena/harness/policy.py:175-185"
+    ],
+    "code_check": "grep 'decide(' and 'useOrigins' under apps/desktop/src: run.ts does not import origins; Policy.build(disabled_origins=...) is called only from tests/harness/test_policy.py.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Either enforce (send disabled origins to the daemon, refuse in run.send) or relabel the switch honestly; add a test that a disabled origin's turn is refused before /run.",
+    "l2_priority": "Live: fresh ATHENA_STORE, register http://localhost:3004 then Switch off; ask a read question on that tab and see whether the turn runs. Precondition: dev:tidycrm up, daemon ready, Claude Code engine signed in."
+  },
+  {
+    "id": "jonas-2",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "missing-feature",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "missing",
+    "title": "The generic hands are never reachable, never listed and never distinguished from page tools, yet three surfaces claim they operate the page",
+    "expected": "Page tools (tier 1) and generic hands (tier 2) are listed separately, each with a gate class (criterion 4).",
+    "got": "Rust declares nine hands (hands_call, hands_list registered) but the TypeScript layer has no wrapper for either, the manifest publishes only the page's tools, toolRows hard-codes tier 1, and the Origins list shows only the page's tools. Copy still says 'the generic hands operate it' / 'still reach it'. A page without a bridge offers her nothing.",
+    "evidence": [
+      "apps/desktop/src/lib/manifest.ts:42-43",
+      "apps/desktop/src-tauri/src/lib.rs:58-73",
+      "apps/desktop/src/companion/tools.ts:19-26",
+      "apps/desktop/src/modules/browser/model.ts:204-205",
+      "apps/desktop/src/modules/browser/view.tsx:369",
+      "apps/desktop/src/modules/setup/view.tsx:454",
+      "apps/desktop/src/companion/views.tsx:555"
+    ],
+    "code_check": "grep -rniE 'hands_call|hands_list|handsCall|page_click' apps/desktop/src src/athena packages/athena-bridge: 0 hits outside Rust and its test; the daemon has no page_click entry.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Hands appear in the Origins tab as their own group with a tier word and a gate class, or the copy stops claiming them.",
+    "l2_priority": "Live: open a page with no WebMCP (any plain site), ask her to click something, observe whether any hand is proposed. Precondition: engine present, tab on a non-bridge page."
+  },
+  {
+    "id": "jonas-3",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "trust",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "trust",
+    "title": "A new origin is not shown as GATED or off before anything runs, and an origin visited by URL leaves no trace",
+    "expected": "Criterion 1: a new origin starts GATED or off and the UI says so before anything runs.",
+    "got": "blankOrigin is enabled:false but only in memory. The only writers of the origins table are Browser 'Register and open' (which writes enabled:true) and the toggles; no first-sight write exists despite the store comment. A tab opened from the URL field has no row, so it is in neither the Browser list nor 'Apps she has seen', yet Talk is enabled for it (blockedBecause ignores trust). The register copy 'Registering switches the origin on ... nothing runs there until you say so' conflates enabled with the gate: AUTO tools run with no card.",
+    "evidence": [
+      "apps/desktop/src/lib/store.ts:155-158",
+      "apps/desktop/src/modules/browser/index.ts:47-55",
+      "apps/desktop/src/modules/browser/view.tsx:337-340",
+      "apps/desktop/src/companion/model.ts:543-548",
+      "apps/desktop/src/stores/origins.ts:101-118",
+      "apps/desktop/src/companion/views.tsx:569-571"
+    ],
+    "code_check": "grep save( / setEnabled( / originWrite( callers: browser/index.ts register + toggles, companion setOrigin only. 0 first-sight writers.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Origins tab lists the focused origin with an explicit 'new: gated, not enabled' state before the first turn.",
+    "l2_priority": "Live: type http://localhost:3002 in the URL field (never registered), open her Origins tab, then ask a question. Precondition: onboarded store, dev:hirelane up."
+  },
+  {
+    "id": "jonas-4",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "trust",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "trust",
+    "title": "'A page's tools are off until you say otherwise' is false on the Origins tab",
+    "expected": "Copy matches behaviour.",
+    "got": "The empty-state line promises tools off by default; the manifest is published and tools run per their class regardless of enabled.",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:569-571",
+      "apps/desktop/src/stores/run.ts:320-335"
+    ],
+    "code_check": "Same grep as jonas-1.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Reword to what the gate does (class), not the switch.",
+    "l2_priority": "Live: on a fresh store, ask a READ-class question on tidycrm before registering it."
+  },
+  {
+    "id": "jonas-5",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "missing-feature",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "missing",
+    "title": "'What did she do in the last hour, on which site' cannot be answered from the UI in any number of actions",
+    "expected": "Criterion 6: Record (2 actions from rest: seal, Record tab) shows time, tool and origin for the last hour.",
+    "got": "The Record tab has two lists. The session list is the in-memory transcript (this window run only), keyed by the page-claimed app_id slug, not the observed origin, with no time. The model-call list shows HH:MM (date and timezone dropped), model, rounds, cost; ledgerFrom drops the origin and surface fields the daemon returns. The activity table (origin, tool, tier, class, outcome, reason) has a type and a schema but zero writers and zero readers.",
+    "evidence": [
+      "apps/desktop/src/companion/model.ts:431-446",
+      "apps/desktop/src/companion/model.ts:455-472",
+      "apps/desktop/src/companion/views.tsx:531",
+      "src/athena/daemon/routes.py:724-754",
+      "apps/desktop/src/lib/store.ts:88-101",
+      "apps/desktop/src-tauri/src/store.rs:264-278"
+    ],
+    "code_check": "Executed (scratchpad vitest): ledgerFrom with a row carrying origin returns rows with keys id,when,model,cost,rounds,isError,reason only. grep activity writers: none.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Record rows carry origin and full timestamp; a decisions/actions read route exists.",
+    "l2_priority": "Live: after one turn with a tool call and one declined card, restart Athena and open Record; count what survives. Precondition: Claude CLI signed in, tidycrm up."
+  },
+  {
+    "id": "jonas-6",
+    "journey": "J3",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "trust",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "trust",
+    "title": "The Record says 'approved' the moment the key is pressed, before the daemon answers; a refused approval still reads approved",
+    "expected": "A decision row reflects the daemon's resolution.",
+    "got": "The runtime 'answer' effect appends approved or user_denied synchronously; run.answer removes the card before the reply; on an ApiError (e.g. foreign_origin because focus moved to another tab) fail() shows 'The turn stopped' but the card is gone and the Record still says approved. The stamp and the screen-reader line 'Approved. Stamped and sent to the record.' fire at press time.",
+    "evidence": [
+      "apps/desktop/src/companion/runtime.ts:96-105",
+      "apps/desktop/src/stores/run.ts:370-385",
+      "apps/desktop/src/companion/machine.ts:289-299",
+      "src/athena/daemon/routes.py:586-590"
+    ],
+    "code_check": "Read twice: daemon _origin_refusal can return before resolve; no UI path re-offers the card.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Decision row is written from the resolution (status) and a refused answer restores the card.",
+    "l2_priority": "Live: file a card on tidycrm, move Main's focused tab to ledgerbox, press A; read Record and Talk. Precondition: two registered tabs and a real gated turn."
+  },
+  {
+    "id": "jonas-7",
+    "journey": "J3",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "trust",
+    "severity": "medium",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "clarity",
+    "title": "The decision card does not say which origin it is for",
+    "expected": "Card shows action, origin, rationale, exact parameters (J3 definition of done; jonas: 'on which origin').",
+    "got": "DecisionRequested carries origin, expires_at, decision_kind, surface, capture_id and option labels; cardView keeps id, action, rationale, params only (about 5 of 12 fields used). With two tabs the user cannot see which site a grant applies to or when it expires. The slip chip is the literal 'GATED' regardless of decision_kind.",
+    "evidence": [
+      "apps/desktop/src/lib/events.ts:81-92",
+      "apps/desktop/src/companion/model.ts:330-338",
+      "apps/desktop/src/companion/views.tsx:191"
+    ],
+    "code_check": "grep expires_at, decision_kind, capture_id, .surface in views/model: declarations only.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Slip shows host and expiry line.",
+    "l2_priority": "Live: file a card and read the slip at 100% and 150% scaling."
+  },
+  {
+    "id": "jonas-8",
+    "journey": "J3",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "strength",
+    "severity": "low",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "low"
+    },
+    "dimension": "trust",
+    "title": "Parameters on a card are spelled in full and never cut; a declined card is recorded with reason class user_denied (this session)",
+    "expected": "Criterion 2.",
+    "got": "spell() never truncates; a decline writes result 'user_denied', rendered verbatim in its own colour; gate classes are words in a box.",
+    "evidence": [
+      "apps/desktop/src/companion/model.ts:340-348",
+      "apps/desktop/src/companion/runtime.ts:100-103",
+      "apps/desktop/src/companion/views.tsx:497-503",
+      "apps/desktop/src/companion/drawing.tsx:171-174"
+    ],
+    "code_check": "Executed: cardView with a 5000-char param keeps its length.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "n/a",
+    "l2_priority": "Live: decline a card by D and by chord; confirm both rows."
+  },
+  {
+    "id": "jonas-9",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "clarity",
+    "title": "The session record's count footer is a tautology and its lead sentence overclaims",
+    "expected": "Criterion 3: shown N of M where M is the population.",
+    "got": "'(showing N of N)' is computed from the same arrays it counts, so it can never announce a cut; the lead says 'Nothing is missing from this list' while the empty state says 'Nothing has run in this window yet', and Clear empties it. The model-call list is correct (daemon footer) but is a fixed default page of 20 (no limit sent).",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:491",
+      "apps/desktop/src/companion/views.tsx:514-516",
+      "src/athena/daemon/routes.py:213-226",
+      "apps/desktop/src/lib/api.ts:209-211",
+      "apps/desktop/src/stores/run.ts:397-401"
+    ],
+    "code_check": "Executed: recordOf returns every tool entry of the transcript; run.clear resets the transcript and so the Record.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Footer comes from a source with a true M, or is omitted.",
+    "l2_priority": "Live: produce 25 model calls and confirm '(showing 20 of 25)' on the Record tab."
+  },
+  {
+    "id": "jonas-10",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "clarity",
+    "title": "Record loses audit facts it has: refused rows are unstyled, a decline appears twice with a garbage app, hands rows have no class chip, any model error is styled as user_denied",
+    "expected": "Every row: who asked, what ran, which class, why declined.",
+    "got": "Executed recordOf: 'declined: card_9' becomes tool 'declined: card_9' and app 'declined: card_9', cls null, result 'refused' (duplicating the decision row); a 'page_click' row has app 'page_click' and no chip; CSS defines .rec-approved/.rec-user_denied/.rec-waiting but no .rec-refused or .rec-ok, so refusals read in neutral ink; every is_error model row reuses rec-user_denied, so a failed model call looks like a user decline.",
+    "evidence": [
+      "apps/desktop/src/stores/run.ts:386-389",
+      "apps/desktop/src/companion/model.ts:378-392",
+      "apps/desktop/src/companion/views.tsx:533",
+      "apps/desktop/src/companion/companion.css:1379-1386"
+    ],
+    "code_check": "Reproduced in scratchpad vitest (RECORD output).",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Refusals styled and carry a reason class.",
+    "l2_priority": "Live: trigger a refusal (pending_approval) and read colours in both themes."
+  },
+  {
+    "id": "jonas-11",
+    "journey": "J5",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "trust",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "trust",
+    "title": "The Close button says 'Athena stays' and quits everything",
+    "expected": "The label matches the effect (J5: 'close knowing what happens to her').",
+    "got": "aria-label 'Close Main window. Athena stays.' but win.close() reaches CloseRequested, which calls handle.exit(0): the app, the daemon and any waiting card end. The Rust comment admits it quits.",
+    "evidence": [
+      "apps/desktop/src/app.tsx:122-130",
+      "apps/desktop/src-tauri/src/lib.rs:301-305"
+    ],
+    "code_check": "Read twice; no prevent_close for main.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Label says it quits, or Main hides.",
+    "l2_priority": "Live: waiting card, close Main, check whether she and the card survive."
+  },
+  {
+    "id": "jonas-12",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "med",
+      "trust_erosion": "med"
+    },
+    "dimension": "trust",
+    "title": "Per-tool overrides ('N pinned') have no way in: setOverride has zero callers",
+    "expected": "User can pin a tool to GATED and see it.",
+    "got": "The UI renders 'N pinned' from overrides but no control writes one, and decide() that would honour it has no caller.",
+    "evidence": [
+      "apps/desktop/src/stores/origins.ts:135-142",
+      "apps/desktop/src/companion/views.tsx:576"
+    ],
+    "code_check": "grep setOverride: definition and tests only.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Remove the count or add the control.",
+    "l2_priority": "Live: none (no control to drive)."
+  },
+  {
+    "id": "jonas-13",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "confusion",
+    "severity": "low",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "'Last seen' is stamped by a switch click, not by a visit",
+    "expected": "last_seen is when she last saw the page.",
+    "got": "save() writes last_seen = now on every patch, including Enable/Disable; nothing writes it on navigation.",
+    "evidence": [
+      "apps/desktop/src/stores/origins.ts:108-112",
+      "apps/desktop/src/modules/browser/view.tsx:269"
+    ],
+    "code_check": "Read twice.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Rename, or write on visit.",
+    "l2_priority": "Live: toggle a stale origin and read 'Xm ago' in Browser."
+  },
+  {
+    "id": "jonas-14",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "low",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "low"
+    },
+    "dimension": "trust",
+    "title": "Record's app column is the page-claimed app_id slug, not the observed origin",
+    "expected": "On which origin = the browser-observed origin.",
+    "got": "stepOf takes parts[1] of host.<app_id>.<tool>; toolRows builds it from the page's own athena:app meta, which the page controls.",
+    "evidence": [
+      "apps/desktop/src/companion/model.ts:381-383",
+      "apps/desktop/src/companion/tools.ts:20-21"
+    ],
+    "code_check": "Read twice.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Show the origin beside the slug.",
+    "l2_priority": "Live: an example app with a mismatched app id."
+  },
+  {
+    "id": "jonas-15",
+    "journey": "J4",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "strength",
+    "severity": "low",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "low"
+    },
+    "dimension": "trust",
+    "title": "Credentials are never rendered: password inputs, a sealed-at-rest sentence, the daemon token confined to privileged webviews",
+    "expected": "Criterion 5.",
+    "got": "Connector token and client secret use type=password and are not echoed; daemon:status carrying the token goes to privileged labels only; no token field in any companion view.",
+    "evidence": [
+      "apps/desktop/src/modules/connectors/view.tsx:315",
+      "apps/desktop/src/modules/connectors/view.tsx:382",
+      "apps/desktop/src/lib/daemon.ts:57-59"
+    ],
+    "code_check": "grep token/secret across companion/*.tsx: none. Caveat: card params are model-supplied and unredacted.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "n/a",
+    "l2_priority": "Live: scan both windows' DOM text for a token after connecting a connector."
+  },
+  {
+    "id": "jonas-16",
+    "journey": "J3",
+    "character": "jonas",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "low",
+    "impact": {
+      "frequency": "med",
+      "reachability": "med",
+      "trust_erosion": "low"
+    },
+    "dimension": "missing",
+    "title": "Project grounding is declared but never sent, and no UI sets a project",
+    "expected": "The turn is grounded in the active project (source 4).",
+    "got": "TurnBody.project_id exists; run.ts never sets it; setActiveProject has no caller.",
+    "evidence": [
+      "apps/desktop/src/lib/api.ts:164-171",
+      "apps/desktop/src/stores/run.ts:284-291",
+      "apps/desktop/src/stores/settings.ts:90-93"
+    ],
+    "code_check": "grep project_id/activeProjectId outside stores/lib: none.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "Accept as out of scope, or wire it.",
+    "l2_priority": "Live: none."
+  }
+]

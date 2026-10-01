@@ -1,0 +1,11 @@
+{
+  "name": "L2-J2-hidden-turn",
+  "ms": 54,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "visibility=visible state=ledger",
+    "TRANSCRIPT: YOU Invoice id inv_0002 already has a saved draft reminder. File the send card for it now, using the id inv_0002. ATHENA The send card for inv_0002 is already filed and waiting for your answer: `apr_23e30fb6cf68`. I won't file a second one. It will send the saved gentle draft to Nils Eriksen (nils.eriksen@halcyon-works.example) once you approve it. Approved. Stamped and sent to the record.",
+    "pill: Athena is working"
+  ]
+}

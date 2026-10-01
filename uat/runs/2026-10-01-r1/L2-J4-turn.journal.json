@@ -1,0 +1,28 @@
+{
+  "name": "L2-J4-turn",
+  "ms": 120552,
+  "code": 2,
+  "checks": [
+    {
+      "label": "the store records ledgerbox as disabled after Switch off",
+      "ok": true,
+      "lb": {
+        "enabled": false,
+        "first_seen": "2026-10-01 10:07:24",
+        "last_seen": "2026-10-01 10:08:07",
+        "origin": "http://localhost:3001",
+        "overrides": {}
+      }
+    },
+    {
+      "label": "a turn on a switched-off origin did not run (jonas-1/mira-11)",
+      "ok": false,
+      "sample": "ledger Talk Record Origins Talk Clear YOU In one sentence: what can you do on this page? ATHENA On this Ledgerbox page I can read the books, invoices, credits and clients, and navigate or filter the v"
+    }
+  ],
+  "notes": [
+    "origins table: [{\"enabled\":false,\"first_seen\":\"2026-10-01 10:07:24\",\"last_seen\":\"2026-10-01 10:08:07\",\"origin\":\"http://localhost:3001\",\"overrides\":{}}]",
+    "no settled reply: timed out waiting for a settled reply",
+    "TALK after turn (120s): ledger Talk Record Origins Talk Clear YOU In one sentence: what can you do on this page? ATHENA On this Ledgerbox page I can read the books, invoices, credits and clients, and navigate or filter the view. I can also categorize invoices, draft reminders, match bank credits and export period summaries. Sending a reminder, marking an invoice paid and voiding an invoice each file a decision card for you to answer first. The earlier conversation I recalled was from a different page (Scratchbox), so I'm not carrying any of it over."
+  ]
+}

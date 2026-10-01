@@ -1,0 +1,16 @@
+{
+  "name": "R2-B1-orphan",
+  "ms": 707,
+  "code": 0,
+  "checks": [
+    {
+      "label": "the decision pending in the daemon has a card on screen (was invisible in r1)",
+      "ok": true,
+      "st": "slip"
+    }
+  ],
+  "notes": [
+    "daemon pending: [\"apr_23e30fb6cf68 host.ledgerbox.send_reminder\"]",
+    "athena form=slip | waiting on you A D GATED host.ledgerbox.send_reminder 1 waiting You asked to send a reminder for LB-2026-0002; the gentle draft is saved and reviewed above. ID inv_0002 Approve A Decline D Speak Nothing runs until you sign. A decision is waiting on you. Press A to approve, D to decline."
+  ]
+}

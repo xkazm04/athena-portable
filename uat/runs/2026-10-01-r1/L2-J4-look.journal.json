@@ -1,0 +1,17 @@
+{
+  "name": "L2-J4-look",
+  "ms": 40,
+  "code": 0,
+  "checks": [
+    {
+      "label": "origin row shows a state other than 'ready' after Switch off",
+      "ok": true,
+      "row": "BrowserThe apps Athena works inOpen one, and she reads what it offers.1 openlocalhost:3001"
+    }
+  ],
+  "notes": [
+    "origin row text now: BrowserThe apps Athena works inOpen one, and she reads what it offers.1 openlocalhost:3001",
+    "ATHENA ledger text: ledger Talk Record Origins Talk Ask about localhost:3001. Nothing she does there runs without the gate. File invoices under a book-keeping category, which moves them between lanes. Reversible Write a payment reminder in a tone and save it as a draft addressed to the client's billing contact. The draft appears on the invoice's card. Returns the whole message - to, subject, body. Nothing is sent Generate the summary for an accounting period and point the close readout at it. Returns a page: title, markdown, and the plain-text body",
+    "controls: BUTTON.aw-seal:Athena. The ledger is op | BUTTON.:Talk | BUTTON.:Record | BUTTON.:Origins | BUTTON.ico-btn on:Keep Athena on top of ot | BUTTON.ico-btn:Put the ledger away (Esc | BUTTON.aw-btn aw-btn-sugg:File invoices under a bo | BUTTON.aw-btn aw-btn-sugg:Write a payment reminder | BUTTON.aw-btn aw-btn-sugg:Generate the summary for | INPUT.:Message Athena | BUTTON.aw-btn aw-btn-primary aw-btn-i:Send"
+  ]
+}

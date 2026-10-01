@@ -1,0 +1,16 @@
+{
+  "name": "L2-J5-main",
+  "ms": 21607,
+  "code": 1,
+  "checks": [
+    {
+      "label": "Setup reports the engine that IS on this host (claude present)",
+      "ok": false,
+      "eng": ""
+    }
+  ],
+  "notes": [
+    "Setup engine area: ",
+    "driver error: Error: timed out waiting for a ledgerbox tab"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "name": "R2-B1-foreign",
+  "ms": 16975,
+  "code": 2,
+  "checks": [
+    {
+      "label": "focus is on a different origin than the card's",
+      "ok": true
+    },
+    {
+      "label": "the UI does NOT claim 'Approved' for a refused answer",
+      "ok": true,
+      "t": "waiting on you A D GATED host.ledgerbox.send_reminder 1 waiting You asked to send a reminder for LB-2026-0002; the gentle draft is saved and reviewed above. ID inv_0002 Approve A Decline D Speak That answer was refused: this decision belongs to a different app than the one in front of you. Focus the app this decision is about and try again. Nothing runs until you sign. That answer was refused: this decision belongs to a different app than the one in front of you. Focus the app this decision is about and try again."
+    },
+    {
+      "label": "the card is still on screen",
+      "ok": true
+    },
+    {
+      "label": "the refusal is shown in plain words",
+      "ok": true
+    },
+    {
+      "label": "the decision is still pending in the daemon (nothing was sent)",
+      "ok": true,
+      "before": 1,
+      "after": 1
+    },
+    {
+      "label": "no developer vocabulary in the refusal",
+      "ok": true
+    },
+    {
+      "label": "with the right tab focused, Decline succeeds and nothing is pending",
+      "ok": false,
+      "left": 1
+    }
+  ],
+  "notes": [
+    "tabs: [{\"id\":1,\"url\":\"http://localhost:3001/\",\"focused\":false},{\"id\":2,\"url\":\"http://127.0.0.1:3001/\",\"focused\":true}]",
+    "AFTER APPROVE: waiting on you A D GATED host.ledgerbox.send_reminder 1 waiting You asked to send a reminder for LB-2026-0002; the gentle draft is saved and reviewed above. ID inv_0002 Approve A Decline D Speak That answer was refused: this decision belongs to a different app than the one in front of you. Focus the app this decision is about and try again. Nothing runs until you sign. That answer was refused: this decision belongs to a different app than the one in front of you. Focus the app this decision is about and try again.",
+    "daemon pending before/after: 1/1",
+    "AFTER DECLINE (right tab): ont of you. Focus the app this decision is about and try again. Nothing runs until you sign. That answer was refused: this decision belongs to a different app than the one in front of you. Focus the app this decision is about and try again.",
+    "daemon pending after decline: 1"
+  ]
+}

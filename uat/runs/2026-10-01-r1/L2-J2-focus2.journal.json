@@ -1,0 +1,31 @@
+{
+  "name": "L2-J2-focus2",
+  "ms": 3768,
+  "code": 2,
+  "checks": [
+    {
+      "label": "precondition: the foreground app is not the shell",
+      "ok": false,
+      "base": "athena-desktop|Athena"
+    },
+    {
+      "label": "precondition: she is put away (only Main is on screen)",
+      "ok": false
+    },
+    {
+      "label": "a card arriving while she is put away leaves the user's foreground app in front",
+      "ok": false,
+      "foc": "athena-desktop|Athena"
+    },
+    {
+      "label": "she does not open the slip over the user's work while put away",
+      "ok": true,
+      "state": "ledger"
+    }
+  ],
+  "notes": [
+    "baseline foreground (the user's own app): athena-desktop|Athena",
+    "first appearance: {\"s\":1,\"fg\":\"athena-desktop|Athena\",\"up\":[\"488x656\"]}",
+    "athena state=ledger | foreground now=athena-desktop|Athena"
+  ]
+}

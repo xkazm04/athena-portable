@@ -1,0 +1,59 @@
+$ pnpm --filter ledgerbox dev
+$ next dev --port 3001
+▲ Next.js 16.3.4 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://10.0.0.140:3001
+✓ Ready in 601ms
+✓ Running next.config.ts took 120ms
+
+(node:37640) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ GET / 200 in 1408ms (next.js: 1113ms, application-code: 295ms)
+ GET / 200 in 100ms (next.js: 3ms, application-code: 97ms)
+ GET /invoices 404 in 49ms (next.js: 22ms, application-code: 27ms)
+ GET / 200 in 119ms (next.js: 7ms, application-code: 112ms)
+ GET /inbox 404 in 30ms (next.js: 6ms, application-code: 24ms)
+ GET / 200 in 98ms (next.js: 2ms, application-code: 96ms)
+ GET / 200 in 147ms (next.js: 6ms, application-code: 141ms)
+ POST / 200 in 13ms (next.js: 2ms, application-code: 11ms)
+  └─ ƒ draftReminderAction("INV-118", "gentle") in 1ms app/actions.ts
+ GET / 200 in 66ms (next.js: 3ms, application-code: 63ms)
+ POST / 200 in 8ms (next.js: 2ms, application-code: 6ms)
+  └─ ƒ draftReminderAction("LB-2026-0002", "gentle") in 0ms app/actions.ts
+ GET / 200 in 55ms (next.js: 2ms, application-code: 53ms)
+ POST / 200 in 68ms (next.js: 1.8ms, application-code: 66ms)
+  └─ ƒ draftReminderAction("inv_0002", "gentle") in 6ms app/actions.ts
+ GET / 200 in 75ms (next.js: 1.7ms, application-code: 73ms)
+ GET / 200 in 107ms (next.js: 2ms, application-code: 105ms)
+⚠ Blocked cross-origin request to Next.js dev resource /_next/hmr from "127.0.0.1".
+Cross-origin access to Next.js dev resources is blocked by default for safety.
+
+To allow this host in development, add it to "allowedDevOrigins" in next.config.js and restart the dev server:
+
+// next.config.js
+module.exports = {
+  allowedDevOrigins: ['127.0.0.1'],
+}
+
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ GET / 200 in 100ms (next.js: 2.0ms, application-code: 98ms)
+ GET / 200 in 106ms (next.js: 2.0ms, application-code: 104ms)
+ GET / 200 in 135ms (next.js: 5ms, application-code: 130ms)
+ GET / 200 in 256ms (next.js: 6ms, application-code: 250ms)
+ GET / 200 in 104ms (next.js: 2ms, application-code: 102ms)
+ GET / 200 in 99ms (next.js: 2ms, application-code: 97ms)
+ GET / 200 in 130ms (next.js: 3ms, application-code: 127ms)
+ GET / 200 in 161ms (next.js: 5ms, application-code: 156ms)
+ GET / 200 in 241ms (next.js: 24ms, application-code: 217ms)
+ GET / 200 in 144ms (next.js: 5ms, application-code: 139ms)
+ GET / 200 in 110ms (next.js: 3ms, application-code: 107ms)
+ GET / 200 in 1577ms (next.js: 33ms, application-code: 1544ms)
+ GET / 200 in 759ms (next.js: 2ms, application-code: 757ms)
+ POST / 200 in 279ms (next.js: 22ms, application-code: 257ms)
+  └─ ƒ draftReminderAction("inv_0029", "gentle") in 4ms app/actions.ts
+ GET / 200 in 222ms (next.js: 42ms, application-code: 181ms)
+[?25h
+C:\Users\kazda\kiro\athena-portable\examples\ledgerbox:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] ledgerbox@0.1.0 dev: `next dev --port 3001`
+Exit status 4294967295
+[ELIFECYCLE] Command failed with exit code 4294967295.

@@ -1,0 +1,16 @@
+{
+  "name": "L2-J3-retry",
+  "ms": 151615,
+  "code": 2,
+  "checks": [
+    {
+      "label": "a card (slip) was filed for the chore",
+      "ok": false
+    }
+  ],
+  "notes": [
+    "chrome says: 23 tools",
+    "after 151s state=ledger",
+    "TEXT: YOU Draft a payment reminder for invoice INV-118. ATHENA Drafting a gentle reminder for INV-118 now; nothing is sent. My earlier read of the overdue list never ran because I wrote the op in the wrong format, so I haven't yet confirmed INV-118 is the oldest overdue invoice. host.ledgerbox.draft_reminder → That invoice is gone. ATHENA No draft was saved: the tool reported \"ok\", but its answer was \"That invoice is gone.\" So INV-118 is not in the books under that id, and it may have been voided or removed. I'll search for it to check. host.ledgerbox.search_invoices → validator_failed"
+  ]
+}

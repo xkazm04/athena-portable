@@ -1,0 +1,19 @@
+{
+  "name": "L2-J2-focus3",
+  "ms": 528829,
+  "code": 0,
+  "checks": [
+    {
+      "label": "precondition: she is put away (only Main on screen)",
+      "ok": true,
+      "wins": [
+        "1456x909"
+      ]
+    }
+  ],
+  "notes": [
+    "foreground at start: chrome|Decisions | KandiDate | Verified AI hiring, sealed decisions - Google Chrome",
+    "first appearance while put away: null",
+    "no card within 520s: arm not exercised (uncertain)"
+  ]
+}

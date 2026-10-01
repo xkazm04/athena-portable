@@ -1,0 +1,11 @@
+{
+  "name": "L2-J3-diag",
+  "ms": 54,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "origins: [{\"enabled\":true,\"first_seen\":\"2026-10-01 10:07:24\",\"last_seen\":\"2026-10-01 10:11:04\",\"origin\":\"http://localhost:3001\",\"overrides\":{}}]",
+    "chrome buttons: Browser | Connectors | Setup | Athena is working | Ledgerbox — the Lanes | × | + | Register and open | localhost:3001 | Show | Switch off | Forget",
+    "athena state: ledger"
+  ]
+}

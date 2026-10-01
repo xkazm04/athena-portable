@@ -1,0 +1,21 @@
+{
+  "name": "L2-J3-orphan",
+  "ms": 283,
+  "code": 0,
+  "checks": [
+    {
+      "label": "daemon url and token are available to the privileged chrome",
+      "ok": true
+    },
+    {
+      "label": "every pending decision in the daemon has a card on screen",
+      "ok": true,
+      "pending": 0,
+      "cardOnScreen": false
+    }
+  ],
+  "notes": [
+    "daemon_status keys: url,token,engine,health,error,source,brain",
+    "GET /decisions -> 401, pending rows: 0 []"
+  ]
+}

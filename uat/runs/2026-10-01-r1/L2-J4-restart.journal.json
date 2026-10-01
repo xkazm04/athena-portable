@@ -1,0 +1,26 @@
+{
+  "name": "L2-J4-restart",
+  "ms": 38847,
+  "code": 2,
+  "checks": [
+    {
+      "label": "second launch skips the welcome (onboarded persisted)",
+      "ok": true
+    },
+    {
+      "label": "a decision that is pending in the daemon is shown to the user after restart",
+      "ok": false,
+      "pending": 1
+    },
+    {
+      "label": "the record answers 'what did she do, on which site' after a restart",
+      "ok": false
+    }
+  ],
+  "notes": [
+    "windows: 92x92, 1456x909",
+    "daemon pending after restart: 1",
+    "ATHENA after restart: ledger Talk Record Origins Talk Open a page, then ask about it. Nothing she does there runs without the gate. What can you do on this page? Open a page first — Athena works inside the app you are looking at.",
+    "RECORD after restart: ledger Talk Record Origins Talk Open a page, then ask about it. Nothing she does there runs without the gate. What can you do on this page? Open a page first — Athena works inside the app you are looking at."
+  ]
+}

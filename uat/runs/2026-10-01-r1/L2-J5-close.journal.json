@@ -1,0 +1,21 @@
+{
+  "name": "L2-J5-close",
+  "ms": 15016,
+  "code": 2,
+  "checks": [
+    {
+      "label": "Close Main window. Athena stays.",
+      "ok": true,
+      "title": "Close"
+    },
+    {
+      "label": "she survives closing Main, as the button says",
+      "ok": false,
+      "alive": "0"
+    }
+  ],
+  "notes": [
+    "close button label: Close Main window. Athena stays. | title: Close",
+    "windows before: 1456x909 | athena-desktop processes after close: 0"
+  ]
+}

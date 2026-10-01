@@ -1,0 +1,9 @@
+{
+  "name": "R2-diag",
+  "ms": 52,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "[{\"ph\":\"Address\",\"al\":\"Address\",\"type\":\"text\"},{\"ph\":\"Address of an app\",\"al\":\"Address of the app to register\",\"type\":\"text\"}]"
+  ]
+}

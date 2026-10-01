@@ -1,0 +1,34 @@
+{
+  "name": "L2-J3-card",
+  "ms": 153808,
+  "code": 2,
+  "checks": [
+    {
+      "label": "the slip names the action (host.ledgerbox...)",
+      "ok": true
+    },
+    {
+      "label": "the slip shows a recipient (who the reminder goes to)",
+      "ok": false
+    },
+    {
+      "label": "the slip shows the message that will be sent",
+      "ok": false
+    },
+    {
+      "label": "the slip shows which app/origin it will act on",
+      "ok": true
+    },
+    {
+      "label": "nothing on the slip under 12px",
+      "ok": true,
+      "min": 12
+    }
+  ],
+  "notes": [
+    "timed out waiting for the slip (a card waits)",
+    "slip after 151s: null",
+    "SLIP TEXT: ledger Talk Record Origins Talk Clear YOU In one sentence: what can you do on this page? ATHENA On this Ledgerbox page I can read the books, invoices, credits and clients, and navigate or filter the view. I can also categorize invoices, draft reminders, match bank credits and export period summaries. Sending a reminder, marking an invoice paid and voiding an invoice each file a decision card for you to answer first. The earlier conversation I recalled was from a different page (Scratchbox), so I'm not carrying any of it over. YOU Send a payment reminder for the oldest overdue invoice. ATHENA Plan: read the overdue list to find the oldest, draft a reminder, then file a card to send it. I'll pick the invoice once the list comes back. host.ledgerbox.read_inbox → unknown_ref",
+    "windows: 488x656, 1456x909"
+  ]
+}

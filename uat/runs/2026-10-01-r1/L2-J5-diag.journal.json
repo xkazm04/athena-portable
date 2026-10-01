@@ -1,0 +1,12 @@
+{
+  "name": "L2-J5-diag",
+  "ms": 1549,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "SETUP: Athena Browser Connectors Setup Athena is resting Setup How Athena is set up The engine, the page, the brain, the voice — and where it all lives. Show the welcome again Engine Claude Code is stored; the probe has not answered yet. Claude Code Codex Page One page is open, on localhost:3001. Open Ledgerbox — the Lanes localhost:3001 Theme Follow the operating system, and switch when it does. system light dark Brain Episodes go to the daemon's own directory. Use this Microphone Not asked yet. Asking here keeps the prompt out of a turn. Check the microphone Voice The daemon was started without a voice backend. the daemon has not said yet Data One SQLite file: settings, origins, projects, activity and captures. Copy it to move this machine's Athena. C:\\Users\\kazda\\kiro\\athena-portable\\uat\\runs\\2026-10-01-r1\\scratch\\fresh.sqlite",
+    "BROWSER: Athena Browser Connectors Setup Athena is resting Ledgerbox — the Lanes × + 23 tools Browser The apps Athena works in Open one, and she reads what it offers. 1 open localhost:3001 Registered apps 1 registered Register and open Any site. Registering switches the origin on and opens it, so Athena can read what it offers; nothing runs there until you say so. L localhost:3001 http://localhost:3001 ready 23 tools over webmcp-polyfill 23 tools webmcp-polyfill 2 h ago Show Switch off Forget Stylised pl",
+    "pages: http://127.0.0.1:1431/chrome.html , http://127.0.0.1:1431/athena.html",
+    "daemon: {}"
+  ]
+}

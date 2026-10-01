@@ -1,0 +1,21 @@
+{
+  "name": "L2-J3-orphan3",
+  "ms": 268,
+  "code": 2,
+  "checks": [
+    {
+      "label": "a decision is pending in the daemon",
+      "ok": true,
+      "pending": 1
+    },
+    {
+      "label": "every pending decision has a card on screen to answer it",
+      "ok": false,
+      "pending": 1,
+      "cardOnScreen": false
+    }
+  ],
+  "notes": [
+    "total=1 showing=1 footer= pending=1 [{\"id\":\"apr_23e30fb6cf68\",\"action\":\"host.ledgerbox.send_reminder\",\"origin\":\"host:ledgerbox\"}]"
+  ]
+}

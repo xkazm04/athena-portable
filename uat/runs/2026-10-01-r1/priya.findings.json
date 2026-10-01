@@ -1,0 +1,366 @@
+[
+  {
+    "id": "priya-1",
+    "journey": "J1",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "broken-flow",
+    "severity": "critical",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "completion",
+    "title": "The engine probe is never wired: Setup always says the probe has not answered, so a missing engine is never reported",
+    "expected": "Codex-only machine: the app names the missing Claude Code and the fix in plain words (criterion 2).",
+    "got": "Setup's Live passes probes: null and problem: null as literals. No daemon route and no Tauri command carries probe_all; the only Python callers are `athena doctor` and the harness re-export. Every sentence in remedyFor / engineFact / engineLead is unreachable live. The user sees 'the probe has not answered yet' forever.",
+    "evidence": [
+      "apps/desktop/src/modules/setup/index.ts:85",
+      "apps/desktop/src/modules/setup/index.ts:6-8",
+      "src/athena/harness/engines.py:109",
+      "src/athena/cli.py:166",
+      "apps/desktop/src/lib/engines.ts:226-237"
+    ],
+    "code_check": "grep -rn 'probes:' apps/desktop/src (non-test, non-fixture) -> one hit, setup/index.ts:85 = null. grep probe_all src apps -> no daemon route, no IPC command. Python probe() run with a missing binary returns 'codex-definitely-missing is not on PATH' (so the daemon side works; only the wire is missing).",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "none; this is the arm's core contract",
+    "l2_priority": "Fresh store (ATHENA_STORE), claude absent from PATH and codex present: open Setup from the bar and confirm the Engine row text; expect 'has not answered yet' with both pills enabled."
+  },
+  {
+    "id": "priya-2",
+    "journey": "J1",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "trust",
+    "severity": "critical",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "trust",
+    "title": "The welcome ticks 'Engine: Claude Code' for someone who does not have it",
+    "expected": "The one screen a first-timer sees names the engine only if it was found.",
+    "got": "Welcome renders a green check icon and 'Engine: <label of settings.engine>. She never asks for a key.' The stored default is claude_code; nothing consults a probe. A Codex-only user is told in green that her engine is Claude Code, then presses 'Open your first app' and onboarded is written.",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:336-340",
+      "apps/desktop/src/companion/live.tsx:220",
+      "apps/desktop/src/companion/live.tsx:281",
+      "apps/desktop/src/stores/settings.ts:72",
+      "apps/desktop/src/lib/engines.ts:217"
+    ],
+    "code_check": "Read selectCompanion welcome: { engine: i.engine } (model.ts:314) where engine = engineLabel(useSettings.engine); no probe field exists on CompanionModel.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "none",
+    "l2_priority": "Fresh store, claude not on PATH, codex on PATH: screenshot the welcome at 'welcome' size and read the engine line."
+  },
+  {
+    "id": "priya-3",
+    "journey": "J1",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "broken-flow",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "completion",
+    "title": "No 'check again' for the engine anywhere; the only 'Check again' is the microphone's",
+    "expected": "After installing her engine she presses one button and the app re-checks without a restart (criterion 3).",
+    "got": "remedyFor tells her to 'probe again' but there is no control, action, or command that probes. SetupActions has no probe member. The only 'Check again' label is the microphone button. Reaching a running probe would also need the daemon restart (stores/daemon restart), which is behind 'Restart on <engine>', itself only shown when the stored engine differs from the running one.",
+    "evidence": [
+      "apps/desktop/src/modules/setup/model.ts:43-57",
+      "apps/desktop/src/lib/engines.ts:67-69",
+      "apps/desktop/src/modules/setup/view.tsx:470",
+      "apps/desktop/src/modules/setup/readiness.ts:187-195"
+    ],
+    "code_check": "grep -rn 'Check again|probe again' apps/desktop/src -> engines.ts:67,69 (text) and setup/view.tsx:470 (mic). SetupActions keys: chooseEngine, restart, setTheme, setBrainPath, openPage, checkMic, finish, reopenOnboarding.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "none",
+    "l2_priority": "Needs a probe wire first. Then: start with codex absent, install it, press the control, confirm the row flips without restarting the app."
+  },
+  {
+    "id": "priya-4",
+    "journey": "J1",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "confusion",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "clarity",
+    "title": "Remedy text is for a developer: 'put `claude` on the PATH', 'sign in once in a terminal', 'probe again', 'version flag'",
+    "expected": "Plain words: what to install, where to get it, how to check again (criterion 2, 5; senior bar: no terminal).",
+    "got": "Even if the probe were wired the sentences are: 'Install it, or put `codex` on the PATH, and probe again.' and 'Sign in once in a terminal'. The probe's own detail is printed verbatim ('codex is not on PATH', 'codex --version exited 1', 'FileNotFoundError'-style). Neither names a download source, a ChatGPT-plan route, or that Athena can run on the engine she already pays for. engineLead says 'answered their version flags'.",
+    "evidence": [
+      "apps/desktop/src/lib/engines.ts:231-233",
+      "apps/desktop/src/modules/setup/readiness.ts:159-174",
+      "src/athena/harness/engines.py:81",
+      "src/athena/harness/engines.py:92",
+      "apps/desktop/src/modules/setup/view.tsx:396-400"
+    ],
+    "code_check": "uv run python probe('codex', executable='codex-definitely-missing') -> detail 'codex-definitely-missing is not on PATH' (printed verbatim by view.tsx:397).",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "none",
+    "l2_priority": "Once wired: read every probe state's rendered text at 125% scaling against the jargon list (PATH, terminal, probe, version flag, daemon)."
+  },
+  {
+    "id": "priya-5",
+    "journey": "J1",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "broken-flow",
+    "severity": "high",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "completion",
+    "title": "First launch routes around the Setup letter entirely: onboarded is written before Main ever shows",
+    "expected": "Her first screen in Main is the place that checks her engine, per J1 'the engine she will use is named and found'.",
+    "got": "'Open your first app' dispatches onboard, which sets settings.onboarded=true; Rust then shows Main on the Browser module. Setup's mode is derived from onboarded, so the onboarding letter (with its engine passage and 'Open the first app' field) is never what she sees; she gets Settings only if she finds the Setup tab. Net: the engine check lives in a place the first-run path never passes through, and the welcome button says 'Open your first app' but opens an empty Browser with a registration field, not an app.",
+    "evidence": [
+      "apps/desktop/src/companion/live.tsx:71-72",
+      "apps/desktop/src/companion/machine.ts:413-415",
+      "apps/desktop/src-tauri/src/store.rs:943-944",
+      "apps/desktop/src-tauri/src/companion.rs:668-670",
+      "apps/desktop/src/modules/setup/model.ts:125",
+      "apps/desktop/src/modules/browser/view.tsx:152-155"
+    ],
+    "code_check": "Trace: Welcome button -> actions.open -> machine 'open' effect onboard -> setOnboarded(true) -> store.rs notify -> after_onboarded raise(main). selectSetup mode = onboarded && !reopened ? 'settings' : 'onboarding' -> 'settings'. Only reopened=true (Show the welcome again) yields the letter.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "none",
+    "l2_priority": "Fresh store: press Open your first app; record which module Main lands on and whether any text mentions the engine. Env: normal launch, no ATHENA_START_URL."
+  },
+  {
+    "id": "priya-6",
+    "journey": "J1",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "broken-flow",
+    "severity": "high",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "trust",
+    "title": "When the engine is missing the failure arrives as 'The turn stopped: engine_error FileNotFoundError ... [WinError 2]' after she typed a request",
+    "expected": "A missing engine is explained before a turn, or at least in her words at the turn.",
+    "got": "The daemon starts regardless of engine presence (no engine check in serve; the Rust 'engine_unavailable' ready-line reason is only parsed). A turn then runs the transport, OSError is caught, and the reason is fixed engine_error with detail '<ExceptionType>: <message>'. The Talk tab prints <code>engine_error</code> and the raw detail; the tape prints 'stopped' with 'engine_error: ...'. Also daemon-not-ready shows as 'unknown_ref: the daemon is not ready'. Error codes are her explicit pet peeve. TransportError subclasses OSError (transports.py:38) so it is caught and ends as engine_error, as designed.",
+    "evidence": [
+      "src/athena/harness/cli_harness.py:354-358",
+      "src/athena/harness/transports.py:99-100",
+      "apps/desktop/src/companion/views.tsx:439-443",
+      "apps/desktop/src/companion/model.ts:414-417",
+      "apps/desktop/src/stores/run.ts:278",
+      "apps/desktop/src-tauri/src/daemon.rs:1030"
+    ],
+    "code_check": "grep engine_unavailable src/athena -> 0 hits in Python; Rust test only parses it. ERROR_REASONS (contracts/harness.py:119-135) contains engine_error but nothing engine-specific.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "none",
+    "l2_priority": "claude absent from PATH: send one message in Talk; capture the exact error text shown."
+  },
+  {
+    "id": "priya-7",
+    "journey": "J1",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "confusion",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "completion",
+    "title": "'Later' leaves her with a 92px seal, Main hidden, and the only way to Main is a tray menu item",
+    "expected": "Later is safe and the next step stays visible.",
+    "got": "Later sets mode auto. The seal is the only surface; clicking the seal with no cards opens the ledger (Talk), not Main. Main is reachable through tray 'Show Main window' (a Windows 11 tray icon is often in the overflow flyout). The welcome has no word on how to come back. onboarded stays false, so a relaunch shows the welcome again.",
+    "evidence": [
+      "apps/desktop/src/companion/machine.ts:413-415",
+      "apps/desktop/src/companion/machine.ts:323-331",
+      "apps/desktop/src-tauri/src/tray.rs:38-42",
+      "apps/desktop/src-tauri/src/lib.rs:279-283"
+    ],
+    "code_check": "Read machine.ts reducer branches 'later' and 'seal'; Main window built visible(!first_launch).",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "tray-only path to Main acceptable if the seal says so",
+    "l2_priority": "Fresh store: press Later, then find Main using only visible affordances; record steps. Needs tray icon visible in overflow state."
+  },
+  {
+    "id": "priya-8",
+    "journey": "J1",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "confusion",
+    "severity": "medium",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "The welcome and the Setup letter use vocabulary she asked not to meet",
+    "expected": "One jargon-free sentence of what Athena is (criterion 1) and no internal terms to proceed (criterion 5).",
+    "got": "The welcome sentence is plain ('works inside the web apps you already have open ... asks before anything that cannot be undone') but shows an unexplained ladder 'remembers / acts / native / reaches' and an eyebrow 'First launch'. The Setup letter says 'The daemon is local', 'per origin', 'Any site... the generic hands still reach it'. Browser says 'origin', 'bridge', 'hands', 'tools registered, over <transport>'. No term is required to proceed, but all are on the screens she passes.",
+    "evidence": [
+      "apps/desktop/src/companion/views.tsx:28-33",
+      "apps/desktop/src/companion/views.tsx:329-334",
+      "apps/desktop/src/modules/setup/readiness.ts:201-214",
+      "apps/desktop/src/modules/setup/view.tsx:454-455",
+      "apps/desktop/src/modules/browser/view.tsx:342",
+      "apps/desktop/src/modules/browser/view.tsx:369"
+    ],
+    "code_check": "grep -n -iE 'daemon|origin|hands|relay|bridge' on the three view files; counts: setup/view.tsx daemon 5 (copy), browser/view.tsx origin 3 and hands 2 in user-visible strings.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "none",
+    "l2_priority": "Read the welcome at 'welcome' size at 125% and 150% scaling; check the ladder legibility (>=12px) and clipping."
+  },
+  {
+    "id": "priya-9",
+    "journey": "J5",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "quality-gap",
+    "severity": "medium",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "med"
+    },
+    "dimension": "clarity",
+    "title": "daemon.lastError is computed, kept across events, and read by no view; a daemon that failed to start has no sentence on any screen",
+    "expected": "A failed or stopped daemon is said in plain words where she is looking.",
+    "got": "reduce() maintains lastError; no component reads it (0 view hits). Setup shows daemonHealth only as 'running now' or via voiceSentence 'The daemon is not running'; Connectors shows 'daemon_offline' with the word daemon. The Browser module and the status pill do not mention the daemon health at all.",
+    "evidence": [
+      "apps/desktop/src/stores/daemon.ts:38",
+      "apps/desktop/src/stores/daemon.ts:67",
+      "apps/desktop/src/modules/connectors/view.tsx:44-46",
+      "apps/desktop/src/modules/setup/view.tsx:339-343"
+    ],
+    "code_check": "grep -rn lastError apps/desktop/src (excluding tests and stores/daemon.ts) -> 0 hits.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "none",
+    "l2_priority": "Kill the sidecar or make it fail to spawn; observe every surface for any text about it."
+  },
+  {
+    "id": "priya-10",
+    "journey": "J1",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "strength",
+    "severity": "low",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "low"
+    },
+    "dimension": "trust",
+    "title": "The probe, readiness and the Start gate are honest in design: derived, never stored, never claims past 'answered --version', Skip is offered",
+    "expected": "n/a",
+    "got": "engines.py probe never raises and returns a sentence for every failure; readiness is derived at render so it cannot say ready after an engine vanishes; the Start button carries a disabledReason; 'Skip for now' exists; both preset states (found, not_found, not_logged_in, unknown) are distinguished. All of it is good and is waiting on the wire in priya-1.",
+    "evidence": [
+      "src/athena/harness/engines.py:73-106",
+      "apps/desktop/src/modules/setup/readiness.ts:135-150",
+      "apps/desktop/src/modules/setup/view.tsx:103-121"
+    ],
+    "code_check": "Read; engines.py probe tested in tests/harness/test_engines.py (not re-run).",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "n/a",
+    "l2_priority": "none"
+  },
+  {
+    "id": "priya-11",
+    "journey": "J5",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "strength",
+    "severity": "low",
+    "impact": {
+      "frequency": "high",
+      "reachability": "high",
+      "trust_erosion": "low"
+    },
+    "dimension": "clarity",
+    "title": "Browser's registration field is plain and reassuring; tool count reads 'N tools' / 'no bridge'",
+    "expected": "n/a",
+    "got": "Register and open is one field and one button with 'nothing runs there until you say so'. The tool pill is a count or 'no bridge'.",
+    "evidence": [
+      "apps/desktop/src/modules/browser/view.tsx:338-344",
+      "apps/desktop/src/modules/browser/view.tsx:386-413"
+    ],
+    "code_check": "Read.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "n/a",
+    "l2_priority": "none"
+  },
+  {
+    "id": "priya-12",
+    "journey": "J5",
+    "character": "priya",
+    "cert_level": "L1",
+    "type": "trust",
+    "severity": "high",
+    "impact": {
+      "frequency": "med",
+      "reachability": "high",
+      "trust_erosion": "high"
+    },
+    "dimension": "trust",
+    "title": "The Close button says 'Athena stays' but closing Main quits the whole app",
+    "expected": "The label tells the truth about what happens to her.",
+    "got": "aria-label/title: 'Close Main window. Athena stays.' lib.rs handles CloseRequested on Main by quitting the app (a Main that closed would leave her off the taskbar). She disappears with Main.",
+    "evidence": [
+      "apps/desktop/src/app.tsx:120-127",
+      "apps/desktop/src-tauri/src/lib.rs:301-303"
+    ],
+    "code_check": "Read both; comment at lib.rs:301 states closing Main quits the app.",
+    "verdict": "uncertain",
+    "resolution": "open",
+    "ceiling": null,
+    "recurrence": 1,
+    "suggested_acceptance": "none",
+    "l2_priority": "Close Main on a normal launch; confirm process exit and that the seal vanishes."
+  }
+]

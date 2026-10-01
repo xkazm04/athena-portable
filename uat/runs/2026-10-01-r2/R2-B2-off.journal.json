@@ -1,0 +1,21 @@
+{
+  "name": "R2-B2-off",
+  "ms": 17805,
+  "code": 2,
+  "checks": [
+    {
+      "label": "the turn on a switched-off app did not use the page's tools (no tool names offered)",
+      "ok": false
+    },
+    {
+      "label": "the refusal or the reply tells the user the app is off, in plain words",
+      "ok": false
+    }
+  ],
+  "notes": [
+    "off buttons: 1",
+    "origins: [[\"http://localhost:3001\",false],[\"http://127.0.0.1:3001\",true]]",
+    "BROWSER: localhost:3001 Registered apps 2 registered Register and open Any site. Registering switches the origin on and opens it, so Athena can read what it offers; nothing is done th",
+    "after 13s TALK: YOU In one sentence: what tools does this page offer you? ATHENA Right now I can't see any Ledgerbox tools: my capability list shows only 3 of 26 names (`core.write_fact`, `core.recall`, `core.checkpoint`), and earlier turns used `host.ledgerbox.draft_reminder`, `read_inbox` and `send_reminder`, but none of those are listed this turn, so I can't count them as available. Declined. Nothing was sent."
+  ]
+}

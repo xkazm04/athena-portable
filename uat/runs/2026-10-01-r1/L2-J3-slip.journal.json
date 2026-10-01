@@ -1,0 +1,38 @@
+{
+  "name": "L2-J3-slip",
+  "ms": 21901,
+  "code": 2,
+  "checks": [
+    {
+      "label": "the card arrives as the slip over her home form",
+      "ok": true,
+      "secs": 12
+    },
+    {
+      "label": "slip shows the recipient",
+      "ok": false
+    },
+    {
+      "label": "slip shows the message that will be sent",
+      "ok": false
+    },
+    {
+      "label": "slip shows which app it acts on",
+      "ok": true
+    },
+    {
+      "label": "one key (D) declines the card without opening Main",
+      "ok": true,
+      "st": "seal",
+      "txt": "resting Declined. Nothing was sent."
+    }
+  ],
+  "notes": [
+    "state after Esc: tape",
+    "windows at slip: 488x316, 1456x909",
+    "SLIP: waiting on you A D GATED host.ledgerbox.send_reminder 1 waiting send the saved gentle draft to Ines Kaur at Kestrel Labs for inv_0029, 70 days past due ID inv_0029 Approve A Decline D Speak Nothing runs until you sign. A decision is waiting on you. Press A to approve, D to decline.",
+    "focused element on arrival: waiting\non you\nA\nD\nG",
+    "after D: {\"st\":\"seal\",\"txt\":\"resting Declined. Nothing was sent.\"}",
+    "daemon pending after decline: apr_23e30fb6cf68"
+  ]
+}

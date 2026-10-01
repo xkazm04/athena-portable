@@ -1,0 +1,17 @@
+{
+  "name": "L2-J4-switchoff",
+  "ms": 3366,
+  "code": 0,
+  "checks": [
+    {
+      "label": "Browser says the app is switched off",
+      "ok": true
+    }
+  ],
+  "notes": [
+    "BROWSER after Switch off: localhost:3001 Registered apps 1 registered Register and open Any site. Registering switches the origin on and opens it, so Athena can read what it offers; nothing runs there until you say so. L localhost:3001 http",
+    "athena DOM state: ledger",
+    "composer count: 0",
+    "windows: 488x656, 1456x909"
+  ]
+}

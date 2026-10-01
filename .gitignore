@@ -45,3 +45,6 @@ Thumbs.db
 
 # Design contests (arena and vault, not for commits)
 .contest/
+
+# Registry skills are machine-local links (scripts/link-registry.mjs in ai-registry)
+.claude/skills/uat

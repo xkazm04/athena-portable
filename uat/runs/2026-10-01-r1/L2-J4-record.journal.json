@@ -1,0 +1,23 @@
+{
+  "name": "L2-J4-record",
+  "ms": 2245,
+  "code": 2,
+  "checks": [
+    {
+      "label": "Record names the site/origin of each action",
+      "ok": false
+    },
+    {
+      "label": "Record states shown-of-total",
+      "ok": true
+    },
+    {
+      "label": "Origins tab shows each origin's gate state (off/enabled/GATED)",
+      "ok": true
+    }
+  ],
+  "notes": [
+    "RECORD:  Record Every call, by app and gate class. Nothing is missing from this list. THIS SESSION Nothing has run in this window yet. MODEL CALLS, FROM THE DAEMON 10:31 claude_code 1 round, $0.2581 10:18 claude_code 1 round, $0.2393 10:18 claude_code 1 round, $0.2183 10:18 claude_code 1 round, $0.1964 10:18 claude_code 1 round, $0.1806 10:15 claude_code 1 round, $0.1653 10:15 claude_code 1 round, $0.1507 10:11 claude_code 1 round, $0.1074 10:08 claude_code 1 round, $0.0729 11:50 claude_code 1 round, $0.0000 11:50 claude_code 1 round, $0.0000 11:50 claude_code 1 round, $0.0000 11:49 claude_code 1 round, $0.0000 11:44 claude_code 1 round, $0.0000 11:44 claude_code 1 round, $0.0000 11:44 claude_code 1",
+    "ORIGINS:  Origins No page is open. THIS PAGE OFFERS Nothing registered yet. Her generic hands are gated on first sight. APPS SHE HAS SEEN localhost:3001 enabled Disable 127.0.0.1:3001 enabled Disable"
+  ]
+}

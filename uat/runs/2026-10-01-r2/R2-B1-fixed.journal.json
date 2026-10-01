@@ -1,0 +1,20 @@
+{
+  "name": "R2-B1-fixed",
+  "ms": 9774,
+  "code": 0,
+  "checks": [
+    {
+      "label": "a restored decision can be answered once the right app is focused",
+      "ok": true,
+      "left": 0
+    },
+    {
+      "label": "the decline is acknowledged only after success",
+      "ok": true
+    }
+  ],
+  "notes": [
+    "pending before: 1",
+    "AFTER DECLINE: resting Declined. Nothing was sent."
+  ]
+}
