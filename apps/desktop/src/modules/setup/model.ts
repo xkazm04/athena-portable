@@ -42,6 +42,8 @@ export interface EngineOption {
 
 export interface SetupActions {
   chooseEngine: (id: string) => void;
+  /** Ask the daemon again which engines are installed and signed in. */
+  checkEngines: () => void;
   /** Hand the chosen engine to the running daemon: a staged shutdown and a fresh spawn. */
   restart: () => void;
   setTheme: (theme: ThemeChoice) => void;
@@ -67,6 +69,8 @@ export interface SetupModel {
   probes: readonly EngineProbe[] | null;
   /** Why the probe could not be read at all, verbatim, or null. */
   problem: string | null;
+  /** A check is in flight: the button reads "Checking...". */
+  checking: boolean;
   theme: ThemeChoice;
   /** The brain directory. Empty means the daemon's own default, which is a real answer. */
   brainPath: string;
@@ -95,6 +99,7 @@ export interface SetupSources {
   engineIds: readonly string[];
   probes: readonly EngineProbe[] | null;
   problem: string | null;
+  checking?: boolean;
   theme: ThemeChoice;
   brainPath: string;
   /** The raw tab list, as `stores/tabs.ts` holds it. */
@@ -128,6 +133,7 @@ export function selectSetup(source: SetupSources): SetupModel {
     engines,
     probes: source.probes,
     problem: source.problem,
+    checking: source.checking ?? false,
     theme: source.theme,
     brainPath: source.brainPath,
     tabs: source.tabs.map((t) => ({
@@ -178,6 +184,7 @@ function hostOfSafely(url: string): string {
 /** Fixtures and any variant that needs a set that does nothing. */
 export const INERT_ACTIONS: SetupActions = {
   chooseEngine: () => {},
+  checkEngines: () => {},
   restart: () => {},
   setTheme: () => {},
   setBrainPath: () => {},

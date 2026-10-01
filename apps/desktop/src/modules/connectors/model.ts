@@ -13,6 +13,7 @@
  */
 import type { ConnectorToolView, ConnectorView, FlowView } from "@/lib/api";
 import type { Tone } from "@/components/StatusDot";
+import { parseStamp } from "@/lib/time";
 
 export type Standing = "not-connected" | "connected" | "needs-reauth" | "off" | "broken";
 
@@ -73,9 +74,10 @@ export function isWrite(tool: ConnectorToolView): boolean {
 /** "3 min ago" from an ISO stamp, or the raw string when it cannot be read. */
 export function ageOf(iso: string, now: number = Date.now()): string {
   if (!iso) return "";
-  const then = Date.parse(iso);
-  if (Number.isNaN(then)) return iso;
-  const s = Math.max(0, Math.round((now - then) / 1000));
+  // A stamp without a zone is UTC, not the viewer's local time (lib/time.ts).
+  const at = parseStamp(iso);
+  if (at === null) return iso;
+  const s = Math.max(0, Math.round((now - at.getTime()) / 1000));
   if (s < 60) return "just now";
   const m = Math.round(s / 60);
   if (m < 60) return `${m} min ago`;

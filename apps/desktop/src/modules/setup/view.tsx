@@ -85,6 +85,7 @@ function Onboarding({ model }: { model: SetupModel }) {
         <Passage glyph="engine" title="Choose the engine" fact={engineFact(model)}>
           <EngineChoice model={model} />
           <EngineDetail model={model} />
+          <EngineCheck model={model} />
         </Passage>
 
         <Passage glyph="page" title="Open the first app" fact={pageFact(model)}>
@@ -186,9 +187,9 @@ function Settings({ model }: { model: SetupModel }) {
 
       {model.problem ? (
         <ProblemNote
-          title="No engine probe has answered, so nothing is known about what is installed."
+          title="Athena could not check which engines are installed."
           reason={model.problem}
-          detail="The daemon runs the probe; the names below are all this page can say on its own."
+          detail="The names below are all this page can say until a check goes through. Press Check again."
         />
       ) : null}
 
@@ -208,6 +209,7 @@ function Settings({ model }: { model: SetupModel }) {
               </div>
             ) : null}
             <EngineDetail model={model} compact />
+            <EngineCheck model={model} />
           </div>
         </Row>
 
@@ -235,7 +237,7 @@ function Settings({ model }: { model: SetupModel }) {
           fact={
             model.brainPath
               ? "Episodes, facts and playbooks are written here."
-              : "Episodes go to the daemon's own directory."
+              : "Episodes go to Athena's own folder."
           }
         >
           <BrainField model={model} />
@@ -304,9 +306,10 @@ function Row({
 
 function engineSentence(model: SetupModel): string {
   if (model.probes === null) {
+    if (model.checking) return "Checking which engines are installed...";
     return model.problem
-      ? "The engine probe could not be read."
-      : `${engineLabel(model.engine)} is stored; the probe has not answered yet.`;
+      ? "Athena could not check which engines are installed."
+      : `${engineLabel(model.engine)} is chosen; Athena has not heard back about it yet.`;
   }
   const chosen = probeOf(model.probes, model.engine);
   if (chosen?.state === "found") {
@@ -337,9 +340,9 @@ function micSentence(model: SetupModel): string {
 }
 
 function voiceSentence(model: SetupModel): string {
-  if (model.voiceAvailable) return "The daemon can hear and speak.";
-  if (model.daemonHealth !== "ready") return "The daemon is not running, so nothing is known yet.";
-  return "The daemon was started without a voice backend.";
+  if (model.voiceAvailable) return "Athena can hear you and speak back.";
+  if (model.daemonHealth !== "ready") return "Athena is still starting, so nothing is known yet.";
+  return "Voice is not installed with this copy of Athena.";
 }
 
 // -- the controls ----------------------------------------------------------------------------------
@@ -354,7 +357,7 @@ function EngineChoice({ model }: { model: SetupModel }) {
       options={model.engines.map((e) => ({
         value: e.id,
         label: e.label,
-        hint: e.probe?.detail,
+        hint: e.probe?.state === "found" ? e.probe.detail : undefined,
         // A signed-out engine is still choosable: the row is a preference, and the remedy belongs
         // beside it rather than in place of it.
         ...(e.probe?.state === "not_found" ? { disabledReason: e.disabledReason } : {}),
@@ -363,15 +366,33 @@ function EngineChoice({ model }: { model: SetupModel }) {
   );
 }
 
-/** What the probe said, verbatim, and the one thing to do about it. */
+/** Ask again without restarting anything: the one button that answers "I installed it". */
+function EngineCheck({ model }: { model: SetupModel }) {
+  return (
+    <span className="row">
+      <Button
+        size="sm"
+        variant="secondary"
+        disabledReason={model.checking ? "Already checking." : undefined}
+        onClick={model.actions.checkEngines}
+      >
+        {model.checking ? "Checking..." : "Check again"}
+      </Button>
+    </span>
+  );
+}
+
+/** What the engine check found, and the one thing to do about it. and the one thing to do about it. */
 function EngineDetail({ model, compact = false }: { model: SetupModel; compact?: boolean }) {
   const { probes } = model;
   if (probes === null) {
     return compact ? null : (
       <p className="typo-caption">
-        {model.problem
-          ? `The engine probe could not be read: ${model.problem}`
-          : "Found will mean the binary answered its version flag — not that it is signed in."}
+        {model.checking
+          ? "Checking which engines are installed..."
+          : model.problem
+            ? `Athena could not check which engines are installed: ${model.problem}`
+            : "Athena has not heard back about the engines yet."}
       </p>
     );
   }
@@ -393,9 +414,17 @@ function EngineDetail({ model, compact = false }: { model: SetupModel; compact?:
               }
             />
             <span className="typo-data">{engineLabel(probe.id)}</span>
-            <span className="typo-caption" style={{ overflowWrap: "anywhere" }}>
-              {probe.detail}
-            </span>
+            {/* The version is worth showing for an engine that works; for one that does not, the
+                remedy below is the answer and the raw reason is only a hover. */}
+            {probe.state === "found" ? (
+              <span className="typo-caption" style={{ overflowWrap: "anywhere" }}>
+                {probe.detail}
+              </span>
+            ) : (
+              <span className="typo-caption" title={probe.detail}>
+                {probe.state === "not_logged_in" ? "not signed in" : "not installed"}
+              </span>
+            )}
           </span>
           {probe.state !== "found" ? <span className="typo-caption">{remedyFor(probe)}</span> : null}
         </div>
@@ -451,8 +480,7 @@ function OpenPage({ model, compact = false }: { model: SetupModel; compact?: boo
         </ul>
       ) : compact ? null : (
         <p className="typo-caption">
-          Any site. A page that registers nothing simply offers no tools, and the generic hands
-          still reach it.
+          Any site. A page that offers no tools of its own can be read by Athena but not acted on yet.
         </p>
       )}
     </div>
@@ -491,7 +519,7 @@ function BrainField({ model }: { model: SetupModel }) {
     <span className="row">
       <TextInput
         value={value}
-        placeholder="the daemon's default"
+        placeholder="Athena's own folder"
         aria-label="Brain directory"
         style={{ flex: "1 1 16rem" }}
         onChange={(e) => setDraft(e.target.value)}

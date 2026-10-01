@@ -225,3 +225,15 @@
     transition: none;
   }
 }
+
+/* The first-run lead (UAT backlog B5): one sentence, the Enter hint and the engine's standing. */
+.register__first {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.register__example {
+  font-style: italic;
+}

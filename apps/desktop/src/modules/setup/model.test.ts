@@ -50,7 +50,7 @@ test("an engine that answered badly carries its remediation, and a found one car
   ];
   const model = selectSetup(sources({ probes }));
   expect(model.engines[0].disabledReason).toBeUndefined();
-  expect(model.engines[1].disabledReason).toContain("Install it");
+  expect(model.engines[1].disabledReason).toContain("Install it from its website");
 });
 
 test("no probe at all is not the same fact as no engine installed", () => {

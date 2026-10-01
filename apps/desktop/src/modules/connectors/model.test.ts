@@ -6,6 +6,8 @@ import { expect, test } from "vitest";
 
 import type { ConnectorView } from "@/lib/api";
 
+import { whenAgo } from "@/lib/time";
+
 import { INERT_ACTIONS, ageOf, isWrite, paragraphsOf, selectConnectors, standingOf } from "./model";
 
 const NOW = Date.parse("2026-09-12T12:00:00Z");
@@ -96,4 +98,20 @@ test("the guide splits on blank lines and keeps a URL as text", () => {
     "2. Open https://x.test/y",
     "Three.",
   ]);
+});
+
+test("a zone-less stamp written 20 s ago reads 'just now' in any time zone (UAT finding uat-1)", () => {
+  const before = process.env.TZ;
+  try {
+    for (const tz of ["Europe/Prague", "America/New_York"]) {
+      process.env.TZ = tz;
+      const now = Date.now();
+      const stamp = new Date(now - 20_000).toISOString().slice(0, 19).replace("T", " ");
+      expect(ageOf(stamp, now)).toBe("just now");
+      expect(whenAgo(stamp, now)).toBe("just now");
+    }
+  } finally {
+    if (before === undefined) delete process.env.TZ;
+    else process.env.TZ = before;
+  }
 });

@@ -150,11 +150,11 @@ test("an app's standing is a fact about the tabs and the relay, in order of what
     tabId: 1,
     host: "a.test",
   });
-  expect(appOf(row("https://b.test"), tabs, byTab)).toMatchObject({ standing: "hands", tabId: 2 });
+  expect(appOf(row("https://b.test"), tabs, byTab)).toMatchObject({ standing: "readonly", tabId: 2 });
   expect(appOf(row("https://c.test"), tabs, byTab)).toMatchObject({ standing: "closed", tabId: null, summary: "not opened" });
   // Open, but the relay has not answered: reading, not "no tools".
   expect(appOf(row("https://a.test"), tabs, {})).toMatchObject({ standing: "reading" });
-  // Switched off outranks everything else: nothing runs there whatever the page offers.
+  // Not acting on an app outranks everything else: nothing runs there whatever the page offers.
   expect(appOf(row("https://a.test", { enabled: false }), tabs, byTab)).toMatchObject({ standing: "disabled" });
 });
 

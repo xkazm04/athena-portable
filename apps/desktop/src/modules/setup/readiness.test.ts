@@ -49,7 +49,7 @@ function model(over: Partial<SetupSources> = {}) {
 test("an unanswered probe is `unknown`, which is not `missing`", () => {
   const fact = engineFact(model({ probes: null }));
   expect(fact.standing).toBe("unknown");
-  expect(fact.summary).toBe("the probe has not answered yet");
+  expect(fact.summary).toBe("Athena has not heard back about the engine yet");
 });
 
 test("a probe that could not be read says so in the daemon's own words", () => {
@@ -70,11 +70,12 @@ test("an installed engine that is signed out is missing, not done", () => {
   ];
   const fact = engineFact(model({ probes }));
   expect(fact.standing).toBe("missing");
-  expect(fact.summary).toContain("signed out");
+  expect(fact.summary).toContain("not signed in");
 });
 
 test("an empty probe list is a different sentence from a probe that found nothing usable", () => {
   expect(engineFact(model({ probes: [] })).summary).toContain("no engines at all");
+  expect(engineFact(model({ probes: null, checking: true })).summary).toBe("checking the engine...");
   const none: EngineProbe[] = [{ id: "claude_code", state: "not_found", detail: "absent" }];
   expect(engineFact(model({ probes: none })).summary).toContain("none of the 1");
 });
@@ -108,7 +109,7 @@ test("readiness is derived: take the page away and it goes with it", () => {
   expect(notReadyBecause(noPage)).toContain("Open a page");
 
   const nothing = model({ probes: null });
-  expect(notReadyBecause(nothing)).toContain("Choose an engine");
+  expect(notReadyBecause(nothing)).toContain("Get an engine ready");
 });
 
 test("the microphone and the voice are never required", () => {
@@ -128,16 +129,15 @@ test("the microphone and the voice are never required", () => {
   );
 });
 
-test("the opening sentence agrees with its own numbers, and never claims more than a probe proves", () => {
-  expect(engineLead(1, 2)).toBe("1 of the 2 answered its version flag.");
-  expect(engineLead(2, 3)).toBe("2 of the 3 answered their version flags.");
-  expect(engineLead(2, 2)).toBe("All 2 answered their version flags.");
-  expect(engineLead(1, 1)).toBe("The one engine answered its version flag.");
-  expect(engineLead(0, 2)).toBe("None of the 2 answered their version flags.");
-  expect(engineLead(0, 0)).toBe("The probe answered and named no engines at all.");
+test("the opening sentence agrees with its own numbers, in plain words", () => {
+  expect(engineLead(1, 2)).toBe("1 of the 2 engines is ready.");
+  expect(engineLead(2, 3)).toBe("2 of the 3 engines are ready.");
+  expect(engineLead(2, 2)).toBe("All 2 engines are ready.");
+  expect(engineLead(1, 1)).toBe("The one engine is ready.");
+  expect(engineLead(0, 2)).toBe("None of the 2 engines is ready.");
+  expect(engineLead(0, 0)).toBe("Athena was told of no engines at all.");
   for (const found of [0, 1, 2]) {
-    expect(engineLead(found, 2)).not.toContain("ready");
-    expect(engineLead(found, 2)).not.toContain("signed in");
+    expect(engineLead(found, 2)).not.toMatch(/probe|version flag|daemon|PATH|terminal/);
   }
 });
 

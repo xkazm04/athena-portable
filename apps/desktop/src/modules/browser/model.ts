@@ -49,10 +49,10 @@ export interface BrowserTools {
  * - `closed`   — registered, no tab open on it.
  * - `reading`  — a tab is open and the relay is still asking the page.
  * - `ready`    — the page answered with at least one tool.
- * - `hands`    — the page answered nothing (no bridge): the generic hands operate it.
- * - `disabled` — the user switched the origin off; nothing runs there whatever it offers.
+ * - `readonly` — the page offers no tools of its own: Athena can read it but not act on it yet.
+ * - `disabled` — the user told Athena not to act on this app, whatever it offers.
  */
-export type AppStanding = "closed" | "reading" | "ready" | "hands" | "disabled";
+export type AppStanding = "closed" | "reading" | "ready" | "readonly" | "disabled";
 
 export interface RegisteredApp {
   origin: string;
@@ -104,7 +104,17 @@ export interface BrowserModel {
   appsProblem: string | null;
   /** True once the origins table has answered. Before that, no apps means nobody has asked. */
   appsLoaded: boolean;
+  /**
+   * Set on the first visit after the welcome, when nothing is open: the Browser leads with the one
+   * sentence and the engine's standing in plain words. `null` on every other visit.
+   */
+  firstRun: FirstRun | null;
   actions: BrowserActions;
+}
+
+/** What the first-run lead says about the engine; composed by `lib/engines.ts` `engineLine`. */
+export interface FirstRun {
+  engineLine: string;
 }
 
 /** What the selector reads of `stores/origins.ts`. A snapshot, never the store. */
@@ -134,6 +144,7 @@ export function selectBrowser(
   byTab: Readonly<Record<number, TabTools>>,
   actions: BrowserActions,
   origins: OriginsSnapshot = NO_ORIGINS,
+  firstRun: FirstRun | null = null,
 ): BrowserModel {
   const mapped: BrowserTab[] = tabs.map((t) => ({
     id: t.id,
@@ -154,6 +165,7 @@ export function selectBrowser(
       .map((row) => appOf(row, tabs, byTab)),
     appsProblem: origins.problem,
     appsLoaded: origins.loaded,
+    firstRun,
     actions,
   };
 }
@@ -196,13 +208,13 @@ export function appOf(
     tools: null as { count: number; transport: string | null } | null,
   };
   if (!row.enabled) {
-    return { ...base, standing: "disabled", summary: "switched off; nothing runs here" };
+    return { ...base, standing: "disabled", summary: "Athena will not act on this app" };
   }
   if (!tab) return { ...base, standing: "closed", summary: "not opened" };
   const tools = toolsOf(byTab[tab.id]);
   if (tools.asking) return { ...base, standing: "reading", summary: "reading the page" };
   if (tools.problem || tools.count === 0) {
-    return { ...base, standing: "hands", summary: "no bridge; the generic hands operate it" };
+    return { ...base, standing: "readonly", summary: "offers no tools of its own; Athena can read it but not act on it yet" };
   }
   return {
     ...base,

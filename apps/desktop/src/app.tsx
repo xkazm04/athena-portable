@@ -19,7 +19,7 @@
  * is self-only in Tauri v2 — a bare `<div>` in the path swallows the drag rather than passing it
  * up.
  */
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import ModuleBar, { BarIcon, type Presence } from "@/components/ModuleBar";
@@ -29,6 +29,7 @@ import { MODULE_ENTRIES, moduleFor } from "@/modules/registry";
 import { isResting, pillText, startAthena, useAthena } from "@/stores/athena";
 import { startConnectors } from "@/stores/connectors";
 import { startDaemon } from "@/stores/daemon";
+import { startEngines } from "@/stores/engines";
 import { startOrigins } from "@/stores/origins";
 import { startSettings, useSettings } from "@/stores/settings";
 import { startShell, useShell } from "@/stores/shell";
@@ -57,6 +58,7 @@ export default function App() {
     void startSettings();
     void startOrigins();
     void startConnectors();
+    void startEngines();
     void startAthena();
   }, []);
 
@@ -64,7 +66,7 @@ export default function App() {
   const Live = active.Live;
 
   const presence: Presence = {
-    tone: athena.cards > 0 ? "human" : isResting(athena.state) ? "idle" : "work",
+    tone: athena.cards > 0 ? "human" : isResting(athena.state, athena.line) ? "idle" : "work",
     text: pillText(athena),
   };
 
@@ -92,7 +94,7 @@ export default function App() {
             >
               <BarIcon d={theme === "dark" ? ICON_SUN : ICON_MOON} />
             </button>
-            <WindowButtons />
+            <WindowButtons waiting={athena.cards > 0} />
           </>
         }
       />
@@ -103,9 +105,16 @@ export default function App() {
   );
 }
 
-function WindowButtons() {
+function WindowButtons({ waiting }: { waiting: boolean }) {
+  const [confirming, setConfirming] = useState(false);
+  const keep = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (confirming) keep.current?.focus();
+  }, [confirming]);
   if (!hasShell()) return null;
   const win = getCurrentWindow();
+  // Closing Main closes the whole app, Athena's window with it (ADR 0026), and says so.
+  const close = () => void win.close();
   return (
     <span className="window-buttons">
       <button
@@ -126,15 +135,39 @@ function WindowButtons() {
       >
         <BarIcon d="M7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z" />
       </button>
-      <button
-        type="button"
-        className="window-btn window-btn--close focus-ring"
-        title="Close"
-        aria-label="Close Main window. Athena stays."
-        onClick={() => void win.close()}
-      >
-        <BarIcon d="M6.5 6.5l11 11M17.5 6.5l-11 11" />
-      </button>
+      {confirming ? (
+        <span
+          className="close-confirm"
+          role="alertdialog"
+          aria-label="Confirm close"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setConfirming(false);
+          }}
+        >
+          <span className="close-confirm__text typo-caption">A decision is waiting. Close anyway?</span>
+          <button type="button" className="close-confirm__btn focus-ring" onClick={close}>
+            Close
+          </button>
+          <button
+            ref={keep}
+            type="button"
+            className="close-confirm__btn focus-ring"
+            onClick={() => setConfirming(false)}
+          >
+            Keep
+          </button>
+        </span>
+      ) : (
+        <button
+          type="button"
+          className="window-btn window-btn--close focus-ring"
+          title="Closes Athena: both windows"
+          aria-label="Close Athena"
+          onClick={() => (waiting ? setConfirming(true) : close())}
+        >
+          <BarIcon d="M6.5 6.5l11 11M17.5 6.5l-11 11" />
+        </button>
+      )}
     </span>
   );
 }

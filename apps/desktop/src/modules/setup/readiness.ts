@@ -42,28 +42,30 @@ export function engineFact(model: SetupModel): Fact {
     return {
       ...base,
       standing: "unknown",
-      summary: model.problem
-        ? `the probe could not be read — ${model.problem}`
-        : "the probe has not answered yet",
+      summary: model.checking
+        ? "checking the engine..."
+        : model.problem
+          ? `Athena could not check the engine (${model.problem})`
+          : "Athena has not heard back about the engine yet",
     };
   }
   const chosen: EngineProbe | null = probeOf(model.probes, model.engine);
   if (chosen?.state === "found") {
-    return { ...base, standing: "done", summary: `${engineLabel(chosen.id)} answered` };
+    return { ...base, standing: "done", summary: `${engineLabel(chosen.id)} is ready` };
   }
   const found = usable(model.probes);
   if (chosen && chosen.state === "not_logged_in") {
     return {
       ...base,
       standing: "missing",
-      summary: `${engineLabel(chosen.id)} is installed and signed out`,
+      summary: `${engineLabel(chosen.id)} is installed but not signed in`,
     };
   }
   if (found.length > 0) {
     return {
       ...base,
       standing: "todo",
-      summary: `${found.length} of ${model.probes.length} answered, another is chosen`,
+      summary: `${found.length} of ${model.probes.length} ready, but another is chosen`,
     };
   }
   return {
@@ -71,8 +73,8 @@ export function engineFact(model: SetupModel): Fact {
     standing: "missing",
     summary:
       model.probes.length === 0
-        ? "the probe named no engines at all"
-        : `none of the ${model.probes.length} answered`,
+        ? "Athena was told of no engines at all"
+        : `none of the ${model.probes.length} can be used yet`,
   };
 }
 
@@ -117,12 +119,12 @@ export function micFact(model: SetupModel): Fact {
 export function voiceFact(model: SetupModel): Fact {
   const base = { key: "voice" as const };
   if (model.voiceAvailable) {
-    return { ...base, standing: "done", summary: "the daemon listens on /voice" };
+    return { ...base, standing: "done", summary: "ready to listen" };
   }
   return {
     ...base,
     standing: model.daemonHealth === "ready" ? "missing" : "unknown",
-    summary: model.voiceReason || "the daemon has not said yet",
+    summary: model.voiceReason || "not known yet",
   };
 }
 
@@ -141,36 +143,24 @@ export function notReadyBecause(model: SetupModel): string {
   const engine = engineFact(model);
   const page = pageFact(model);
   if (engine.standing !== "done" && page.standing !== "done") {
-    return "Choose an engine that answered and open a page first.";
+    return "Get an engine ready and open a page first.";
   }
-  if (engine.standing === "unknown") return "The engine probe has not answered yet.";
+  if (engine.standing === "unknown") return "Athena is still checking the engine.";
   if (engine.standing !== "done") return `The engine cannot run a turn yet: ${engine.summary}.`;
   if (page.standing !== "done") return "Open a page first — Athena works inside one.";
   return "";
 }
 
-/**
- * The engine passage's opening sentence, composed from the figures.
- *
- * It lives here rather than in the view because it is a *claim about the machine* and it has to
- * be exactly as strong as the probe is: "answered its version flag" is all a probe proves, and
- * the sentence never says more.
- */
+/** The engine passage's opening sentence, composed from the figures. */
 export function engineLead(found: number, total: number): string {
-  if (total === 0) return "The probe answered and named no engines at all.";
+  if (total === 0) return "Athena was told of no engines at all.";
   if (found === 0) {
-    return total === 1
-      ? "The one engine did not answer its version flag."
-      : `None of the ${total} answered their version flags.`;
+    return total === 1 ? "The one engine is not ready." : `None of the ${total} engines is ready.`;
   }
   if (found === total) {
-    return total === 1
-      ? "The one engine answered its version flag."
-      : `All ${total} answered their version flags.`;
+    return total === 1 ? "The one engine is ready." : `All ${total} engines are ready.`;
   }
-  return found === 1
-    ? `1 of the ${total} answered its version flag.`
-    : `${found} of the ${total} answered their version flags.`;
+  return found === 1 ? `1 of the ${total} engines is ready.` : `${found} of the ${total} engines are ready.`;
 }
 
 /**
@@ -201,7 +191,7 @@ export function restartNotice(model: SetupModel): RestartNotice | null {
 export const WHAT_ATHENA_IS: readonly { title: string; body: string }[] = [
   {
     title: "It runs on this machine",
-    body: "The daemon is local, on an engine you already pay for. No key is typed here.",
+    body: "Athena runs on this computer, on an engine you already pay for. No key is typed here.",
   },
   {
     title: "Each site is trusted, or not",

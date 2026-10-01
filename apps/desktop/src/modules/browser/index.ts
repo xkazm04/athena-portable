@@ -12,7 +12,10 @@
  */
 import { createElement } from "react";
 
+import { engineLine } from "@/lib/engines";
+import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
+import { useSettings } from "@/stores/settings";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
 import type { ModuleEntry } from "@/modules/types";
@@ -35,6 +38,11 @@ function Live() {
   const known = useOrigins((s) => s.known);
   const originsLoaded = useOrigins((s) => s.loaded);
   const originsProblem = useOrigins((s) => s.problem);
+  const onboarded = useSettings((s) => s.onboarded);
+  const engine = useSettings((s) => s.engine);
+  const probes = useEngines((s) => s.probes);
+  const checking = useEngines((s) => s.checking);
+  const engineProblem = useEngines((s) => s.problem);
 
   // A rejected command is reported and not thrown: a tab that will not open must not take the
   // module down with it, and the strip still lists what is really there because the list only
@@ -70,7 +78,11 @@ function Live() {
       known,
       loaded: originsLoaded,
       problem: originsProblem,
-    }),
+    },
+    // The welcome has been answered and nothing is open: lead with the way in (UAT backlog B5).
+    onboarded && loaded && tabs.length === 0
+      ? { engineLine: engineLine(engine, probes, engineProblem, checking) }
+      : null),
   });
 }
 

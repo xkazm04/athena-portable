@@ -2,7 +2,7 @@
  * What an engine probe is, and what a person should do about each answer — README section 3.1
  * (harness: "CLI harness in two dialects, engine probes").
  *
- * The daemon runs the probe: it knows whether `claude` and `codex` are on the PATH, what version
+ * The daemon runs the probe: it knows whether `claude` and `codex` are installed, what version
  * each answered with, and whether the CLI says it is signed in. The shell only *renders* that,
  * so this file is a shape and a vocabulary and holds no probing of its own.
  *
@@ -60,16 +60,39 @@ export const DEFAULT_ENGINE: EngineId = "claude_code";
  * left blank — a blank cell reads as a missing fact.
  */
 export function remedyFor(probe: EngineProbe): string {
+  const name = engineLabel(probe.id);
   switch (probe.state) {
     case "found":
-      return "Nothing to do. Choosing this engine starts the daemon on it.";
+      return `${name} is ready.`;
     case "not_logged_in":
-      return `Sign in once in a terminal — \`${cliOf(probe.id)}\` — and probe again. Athena never asks for a key.`;
+      return `${name} is installed but not signed in. Open it once and sign in, then press Check again.`;
     case "not_found":
-      return `Install it, or put \`${cliOf(probe.id)}\` on the PATH, and probe again.`;
+      return `Athena could not find ${name} on this computer. Install it from its website, then press Check again.`;
     case "unknown":
-      return "The probe has not answered yet. Nothing is known about this engine.";
+      return `Athena has not heard back about ${name} yet.`;
   }
+}
+
+/**
+ * One plain line about the chosen engine, for the places that point at Setup (the Browser's first
+ * run). Ready is a short sentence; anything else is the remedy, so the line is always something to
+ * read and then do.
+ */
+export function engineLine(
+  id: string,
+  probes: readonly EngineProbe[] | null,
+  problem: string | null = null,
+  checking = false,
+): string {
+  const name = engineLabel(id);
+  if (probes === null) {
+    return problem && !checking
+      ? `Engine: Athena could not check ${name} yet. Open Setup and press Check again.`
+      : `Engine: checking ${name}...`;
+  }
+  const found = probeOf(probes, id);
+  if (!found) return `Engine: ${name} was not reported. Open Setup and press Check again.`;
+  return found.state === "found" ? `Engine: ${name}, ready.` : `Engine: ${remedyFor(found)}`;
 }
 
 /** The binary behind an engine id, which is what a remediation sentence has to name. */

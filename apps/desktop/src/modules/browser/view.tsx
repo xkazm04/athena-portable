@@ -21,6 +21,7 @@ import PageHeader from "@/components/PageHeader";
 import PageShell from "@/components/PageShell";
 import SectionCard from "@/components/SectionCard";
 import StatusDot, { type Tone } from "@/components/StatusDot";
+import { whenAgo } from "@/lib/time";
 import { normaliseUrl } from "@/lib/url";
 
 import "./browser.css";
@@ -30,11 +31,12 @@ import {
   type BrowserModel,
   type BrowserTab,
   type BrowserTools,
+  type FirstRun,
   type RegisteredApp,
 } from "./model";
 
 export default function BrowserView({ model }: { model: BrowserModel }) {
-  const { actions, apps, appsLoaded, appsProblem, focused, problem, tabs, tools } = model;
+  const { actions, apps, appsLoaded, appsProblem, firstRun, focused, problem, tabs, tools } = model;
 
   const go = (typed: string) => {
     const url = normaliseUrl(typed);
@@ -91,6 +93,7 @@ export default function BrowserView({ model }: { model: BrowserModel }) {
             onEnable={actions.setEnabled}
             onForget={actions.forget}
             onRegister={actions.register}
+            firstRun={firstRun}
           />
 
           {focused ? (
@@ -114,7 +117,7 @@ const STANDING_TONE: Record<AppStanding, Tone> = {
   closed: "neutral",
   reading: "pending",
   ready: "success",
-  hands: "info",
+  readonly: "info",
   disabled: "warning",
 };
 
@@ -122,8 +125,8 @@ const STANDING_WORD: Record<AppStanding, string> = {
   closed: "not opened",
   reading: "reading",
   ready: "ready",
-  hands: "hands",
-  disabled: "off",
+  readonly: "read only",
+  disabled: "not acting",
 };
 
 /**
@@ -140,6 +143,7 @@ function Ledger({
   onEnable,
   onForget,
   onRegister,
+  firstRun,
 }: {
   apps: readonly RegisteredApp[];
   loaded: boolean;
@@ -149,6 +153,7 @@ function Ledger({
   onEnable: (origin: string, enabled: boolean) => void;
   onForget: (origin: string) => void;
   onRegister: (url: string) => void;
+  firstRun: FirstRun | null;
 }) {
   const none = loaded && !problem && apps.length === 0;
   return (
@@ -163,7 +168,7 @@ function Ledger({
       </header>
 
       <div className="ledger__lead">
-        <RegisterField lead={none} onRegister={onRegister} />
+        <RegisterField lead={none} onRegister={onRegister} firstRun={none ? firstRun : null} />
       </div>
 
       {problem ? (
@@ -266,7 +271,7 @@ function AppRow({
       </div>
 
       <div className="app-row__cell">
-        <span className="typo-caption">{whenSeen(app.lastSeen)}</span>
+        <span className="typo-caption">{whenAgo(app.lastSeen)}</span>
       </div>
 
       <div className="app-row__acts" data-open={confirming ? "true" : undefined}>
@@ -285,7 +290,7 @@ function AppRow({
               {app.tabId === null ? "Open" : "Show"}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => onEnable(app.origin, !app.enabled)}>
-              {app.enabled ? "Switch off" : "Switch on"}
+              {app.enabled ? "Don't act here" : "Act here again"}
             </Button>
             <Button
               size="sm"
@@ -307,7 +312,15 @@ function AppRow({
  * reads a page she is already allowed to act on. `lead` is the empty ledger: the field is then
  * the largest thing on the surface, because it is the only act there is.
  */
-function RegisterField({ lead, onRegister }: { lead: boolean; onRegister: (url: string) => void }) {
+function RegisterField({
+  lead,
+  onRegister,
+  firstRun,
+}: {
+  lead: boolean;
+  onRegister: (url: string) => void;
+  firstRun: FirstRun | null;
+}) {
   const [typed, setTyped] = useState("");
   const register = () => {
     const url = normaliseUrl(typed);
@@ -321,10 +334,11 @@ function RegisterField({ lead, onRegister }: { lead: boolean; onRegister: (url: 
         <input
           className="input register__field focus-ring"
           value={typed}
-          placeholder="invoicing.example.test"
+          placeholder={firstRun ? "Address of an app" : "invoicing.example.test"}
           aria-label="Address of the app to register"
           spellCheck={false}
           autoFocus={lead}
+          aria-describedby={firstRun ? "register-first" : undefined}
           onChange={(e) => setTyped(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") register();
@@ -338,27 +352,23 @@ function RegisterField({ lead, onRegister }: { lead: boolean; onRegister: (url: 
           Register and open
         </Button>
       </div>
+      {firstRun ? (
+        <div id="register-first" className="register__first">
+          <p className="typo-body">
+            Type the address of an app you use, for example your invoicing tool.
+          </p>
+          <p className="typo-caption">
+            Press Enter to open it. For example: <span className="register__example">invoicing.example.test</span>
+          </p>
+          <p className="typo-caption">Setup: {firstRun.engineLine}</p>
+        </div>
+      ) : null}
       <p className="typo-caption">
         Any site. Registering switches the origin on and opens it, so Athena can read what it
-        offers; nothing runs there until you say so.
+        offers; nothing is done there until you approve it.
       </p>
     </div>
   );
-}
-
-/** A timestamp as a person says it. Verbatim date when it cannot be parsed. */
-function whenSeen(iso: string): string {
-  if (!iso) return "never";
-  const at = new Date(iso);
-  if (Number.isNaN(at.getTime())) return iso;
-  const minutes = Math.round((Date.now() - at.getTime()) / 60_000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} h ago`;
-  const days = Math.round(hours / 24);
-  if (days < 30) return `${days} d ago`;
-  return at.toISOString().slice(0, 10);
 }
 
 // -- the strip -----------------------------------------------------------------------------------
@@ -366,8 +376,8 @@ function whenSeen(iso: string): string {
 /** The same three facts as a sentence, for the one place there is room for one. */
 function describe(tools: BrowserTools | null): string {
   if (!tools || tools.asking) return "Asking the page what it has registered…";
-  if (tools.problem) return `No bridge on this page: ${tools.problem}. The generic hands are how it is operated.`;
-  if (!tools.count) return `No tools registered — ${tools.transport ?? "no transport"}.`;
+  if (tools.problem) return `This page could not be read for tools (${tools.problem}). Athena can read it but not act on it yet.`;
+  if (!tools.count) return `This page offers no tools of its own; Athena can read it but not act on it yet.`;
   return `${tools.count} tool${tools.count === 1 ? "" : "s"} registered, over ${tools.transport ?? "no transport"}.`;
 }
 
@@ -375,7 +385,7 @@ function describe(tools: BrowserTools | null): string {
  * The focused page's tier-1 surface in one pill, and it is three facts rather than a number.
  * `pending` is nobody has asked yet; `warning` is the relay could not read the page, with the
  * reason verbatim in the title; and a count is a count, where zero is the ordinary answer for
- * every site that never heard of WebMCP — which is what the nine hands exist for (c24).
+ * every site that never heard of WebMCP — which is the page Athena can read but not act on yet.
  */
 function ToolCount({ tools }: { tools: BrowserTools | null }) {
   if (!tools) return null;

@@ -167,6 +167,10 @@ const typical = selectBrowser(TYPICAL_TABS, true, TYPICAL_TOOLS, INERT, snapshot
 
 export const fixtures: Record<string, BrowserModel> = {
   empty: selectBrowser([], true, {}, INERT, snapshot([])),
+  // The first visit after the welcome: nothing open, the way in leads, the engine named plainly.
+  "first-run": selectBrowser([], true, {}, INERT, snapshot([]), {
+    engineLine: "Engine: Claude Code, ready.",
+  }),
   typical: withTools(typical, REGISTERED),
   heavy: selectBrowser(HEAVY_TABS, true, HEAVY_TOOLS, INERT, snapshot(HEAVY_APPS)),
   degraded: selectBrowser([], false, {}, INERT, snapshot([], null, false)),
@@ -183,6 +187,6 @@ export const fixtures: Record<string, BrowserModel> = {
   ),
 };
 
-export const fixtureIds = ["empty", "typical", "heavy", "degraded", "no-bridge", "apps-unread"] as const;
+export const fixtureIds = ["empty", "first-run", "typical", "heavy", "degraded", "no-bridge", "apps-unread"] as const;
 
 export type { BrowserTab };

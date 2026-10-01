@@ -4,8 +4,7 @@
  * Four stores meet here and none of them is started here: `settings` (the engine, the theme,
  * the brain path, whether the letter has been read), `tabs` (whether a page is open), `daemon`
  * (which engine is running, and the restart), and `voice` (whether the daemon can hear). The
- * engine probe is still `null` — nothing in the shell asks the daemon for one yet — and `null`
- * already means what it has to mean: the probe has not answered.
+ * engine answer is read from `engines` (started by the app root); `null` means it has not answered.
  *
  * Two facts are React state rather than stored rows, because they are facts about *this* visit:
  * the microphone's answer (a permission is the browser's fact, not the store's) and whether the
@@ -17,6 +16,7 @@ import { ENGINE_IDS, isEngineId } from "@/lib/engines";
 import { checkMicrophone, type MicStanding } from "@/lib/voice";
 import type { ModuleEntry } from "@/modules/types";
 import { useDaemon } from "@/stores/daemon";
+import { useEngines } from "@/stores/engines";
 import { useSettings, type ThemeChoice } from "@/stores/settings";
 import { useShell } from "@/stores/shell";
 import { useTabs } from "@/stores/tabs";
@@ -36,6 +36,9 @@ function Live() {
   const tabs = useTabs((s) => s.tabs);
   const daemonHealth = useDaemon((s) => s.health);
   const daemonEngine = useDaemon((s) => s.engine);
+  const probes = useEngines((s) => s.probes);
+  const checking = useEngines((s) => s.checking);
+  const problem = useEngines((s) => s.problem);
   const voiceAvailable = useVoice((s) => s.available);
   const voiceReason = useVoice((s) => s.reason);
 
@@ -54,6 +57,7 @@ function Live() {
         if (!isEngineId(id)) return;
         void useSettings.getState().setEngine(id).catch(report("engine"));
       },
+      checkEngines: () => void useEngines.getState().check(),
       restart: () => {
         void useDaemon.getState().restart(useSettings.getState().engine).catch(report("restart"));
       },
@@ -82,8 +86,9 @@ function Live() {
         hydrated,
         engine,
         engineIds: ENGINE_IDS,
-        probes: null,
-        problem: null,
+        probes,
+        problem,
+        checking,
         theme,
         brainPath,
         tabs,
@@ -110,6 +115,9 @@ function Live() {
       storePath,
       daemonHealth,
       daemonEngine,
+      probes,
+      checking,
+      problem,
       reopened,
       actions,
     ],

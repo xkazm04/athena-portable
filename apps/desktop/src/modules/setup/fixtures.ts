@@ -4,7 +4,7 @@
  * `empty` is a first launch that has answered nothing yet: no probe, no page, the letter still
  * to be read. `typical` is the settings list on a machine that works. `heavy` is every row saying
  * something awkward at once — a signed-out engine, a pending restart, a long path, a refused
- * microphone, eight tabs. `degraded` is the daemon offline, so nothing about the engine or the
+ * microphone, eight tabs. `notFound` is Claude Code not installed and `checking` is the check in flight. `degraded` is the daemon offline, so nothing about the engine or the
  * voice is known. `onboarding` and `settings` are the two moods by name.
  */
 import type { EngineProbe } from "@/lib/engines";
@@ -29,7 +29,7 @@ function model(over: Partial<SetupSources>): SetupModel {
     engineIds: ENGINE_IDS,
     probes: [
       probe("claude_code", "found", "2.1.268 (Claude Code)"),
-      probe("codex", "not_found", "`codex` is not on the PATH"),
+      probe("codex", "not_found", "`codex` was not found"),
     ],
     problem: null,
     theme: "system",
@@ -107,6 +107,19 @@ const heavy = model({
     "C:\\Users\\a-long-account-name\\AppData\\Roaming\\com.athena.portable\\stores\\athena.sqlite",
 });
 
+/** Claude Code is not installed: the row says so in plain words and offers Check again. */
+const notFound = model({
+  probes: [
+    probe("claude_code", "not_found", "`claude` was not found"),
+    probe("codex", "not_found", "`codex` was not found"),
+  ],
+  daemonEngine: "",
+  daemonHealth: "failed",
+});
+
+/** A check is in flight: the button reads "Checking...". */
+const checking = model({ probes: null, checking: true, daemonHealth: "starting", daemonEngine: "" });
+
 /** The daemon never came up, so the probe never answered. Everything else still reads. */
 const degraded = model({
   probes: null,
@@ -124,8 +137,10 @@ export const fixtures: Record<string, SetupModel> = {
   typical,
   heavy,
   degraded,
+  notFound,
+  checking,
   onboarding,
   settings,
 };
 
-export const fixtureIds = ["empty", "typical", "heavy", "degraded", "onboarding", "settings"] as const;
+export const fixtureIds = ["empty", "typical", "heavy", "degraded", "notFound", "checking", "onboarding", "settings"] as const;
