@@ -33,6 +33,8 @@
     "allow-hands-call",
     "allow-hands-list",
     "allow-athena-show",
-    "allow-athena-hide"
+    "allow-athena-hide",
+    "allow-athena-open-main",
+    "allow-athena-snap-to"
   ]
 }

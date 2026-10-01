@@ -56,6 +56,8 @@ windows-sys = { version = "0.61", features = [
     "Win32_Storage_Xps",
     "Win32_System_JobObjects",
     "Win32_System_Threading",
+    # `ShowWindow(SW_SHOWNOACTIVATE)`: a card arriving shows her without taking focus.
+    "Win32_UI_WindowsAndMessaging",
 ] }
 # The shell's own store (c21). `bundled` compiles SQLite's amalgamation into the binary rather
 # than linking whatever the machine happens to have: the store is one file in the app data

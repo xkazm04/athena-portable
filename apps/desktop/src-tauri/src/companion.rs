@@ -577,8 +577,41 @@ pub fn on_main_event(app: &AppHandle, event: &WindowEvent) {
     }
 }
 
-/// Put her on the screen. With a card waiting the page opens at `slip`; with none, at home.
+/// Why she is being shown. A card arriving is not a reason to take the keyboard from whatever the
+/// user is typing into: the decision is Rust's and it is this one function (ADR 0026, "she never
+/// opens the slip over the user's work").
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Cause {
+    /// The user asked: the tray, the pill, `Ctrl+Shift+Space`.
+    User,
+    /// A card arrived while she was put away or unfocused.
+    Arrival,
+}
+
+/// Should a show take focus? A user's own request does; an arrival never does, because whether the
+/// user is typing elsewhere is not knowable from here.
+pub fn takes_focus(cause: Cause) -> bool {
+    matches!(cause, Cause::User)
+}
+
+/// What the command's optional `focus` argument means: absent is a user's show.
+pub fn cause_of(focus: Option<bool>) -> Cause {
+    if focus.unwrap_or(true) {
+        Cause::User
+    } else {
+        Cause::Arrival
+    }
+}
+
+/// Put her on the screen, focused: a user-initiated show.
 pub fn show(app: &AppHandle) {
+    show_with(app, true);
+}
+
+/// Put her on the screen. With a card waiting the page opens at `slip`; with none, at home. With
+/// `focus` false the window is shown without being activated, so a card arriving never takes the
+/// keyboard from the user's work.
+pub fn show_with(app: &AppHandle, focus: bool) {
     let Some(window) = window_of(app) else { return };
     let cards = {
         let companion = app.state::<Companion>();
@@ -586,10 +619,34 @@ pub fn show(app: &AppHandle) {
         inner.visible = true;
         inner.cards
     };
-    let _ = window.show();
-    let _ = window.set_focus();
-    emit_athena(app, "athena:summon", serde_json::json!({ "cards": cards }));
+    if focus {
+        let _ = window.show();
+        let _ = window.set_focus();
+    } else {
+        show_no_activate(&window);
+    }
+    emit_athena(app, "athena:summon", serde_json::json!({ "cards": cards, "focus": focus }));
     announce(app);
+}
+
+/// Show a window without activating it. `Window::show` is `SW_SHOW` underneath, which activates;
+/// `SW_SHOWNOACTIVATE` does not.
+#[cfg(windows)]
+fn show_no_activate(window: &Window) {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_SHOWNOACTIVATE};
+    match window.hwnd() {
+        Ok(hwnd) => unsafe {
+            ShowWindow(hwnd.0 as _, SW_SHOWNOACTIVATE);
+        },
+        Err(_) => {
+            let _ = window.show();
+        }
+    }
+}
+
+#[cfg(not(windows))]
+fn show_no_activate(window: &Window) {
+    let _ = window.show();
 }
 
 /// Put her away. Hiding stops drawing, not listening: the webview lives on and the daemon's
@@ -687,6 +744,100 @@ pub fn after_onboarded(app: &AppHandle) {
     emit_athena(app, "athena:snap", payload);
 }
 
+/// Parse the wire spelling of a snap target.
+pub fn snap_from_str(s: &str) -> Option<Snap> {
+    Some(match s {
+        "main.right" => Snap::MainRight,
+        "main.left" => Snap::MainLeft,
+        "main.corner" => Snap::MainCorner,
+        "screen.left" => Snap::ScreenLeft,
+        "screen.right" => Snap::ScreenRight,
+        "free" => Snap::Free,
+        _ => return None,
+    })
+}
+
+/// Where the seal goes for a requested snap. `Err` names why it cannot: a `main.*` target needs a
+/// visible Main. A screen target lands the seal one margin from the edge (which `classify` calls
+/// that edge); `free` from a dock steps the seal in off the edge so it does not read as docked.
+pub fn snap_seal(
+    snap: Snap,
+    seal: Point,
+    was_docked: bool,
+    main: Option<&Rect>,
+    work: &Rect,
+) -> Result<Point, &'static str> {
+    let clamp_y = |y: f64| y.min(work.y + work.height - SEAL).max(work.y);
+    match snap {
+        Snap::MainRight | Snap::MainLeft | Snap::MainCorner => {
+            let m = main.ok_or("Main is not open")?;
+            follow(snap, seal, m).ok_or("Main is not open")
+        }
+        Snap::ScreenLeft => Ok(Point { x: work.x + MARGIN, y: clamp_y(seal.y) }),
+        Snap::ScreenRight => Ok(Point { x: work.x + work.width - MARGIN - SEAL, y: clamp_y(seal.y) }),
+        Snap::Free => Ok(if was_docked {
+            let inward = SNAP_PX * 2.0;
+            let x = if seal.x < work.x + work.width / 2.0 { seal.x + inward } else { seal.x - inward };
+            Point { x, y: seal.y }
+        } else {
+            seal
+        }),
+    }
+}
+
+/// Snap her by name, as the drop detector would have, and tell the page.
+pub fn snap_to(app: &AppHandle, to: &str) -> Result<(), String> {
+    let snap = snap_from_str(to).ok_or_else(|| format!("unknown snap target \"{to}\""))?;
+    let window = window_of(app).ok_or("the Athena window does not exist")?;
+    let work = work_area(&window);
+    let main = main_rect(app);
+    let companion = app.state::<Companion>();
+    let mut inner = companion.lock();
+    let was_docked = inner.snap.dock().is_some();
+    let seal = snap_seal(snap, inner.seal, was_docked, main.as_ref(), &work).map_err(str::to_string)?;
+    let previous = inner.orient;
+    inner.snap = snap;
+    let size = size_of(&inner.name).unwrap_or((92.0, 92.0));
+    let rect = match (inner.name.as_str(), snap.dock()) {
+        ("tab", Some(dock)) => {
+            let r = tab_rect(dock, seal.y - (size.1 - SEAL) / 2.0, size, &work);
+            inner.seal = tab_seal(dock, &r);
+            r
+        }
+        _ => {
+            let (r, o) = place(seal, size, inner.orient, &work);
+            inner.orient = o;
+            inner.seal = seal_origin(&r, o);
+            r
+        }
+    };
+    put(&mut inner, &window, rect);
+    let orient = inner.orient;
+    drop(inner);
+    if orient != previous {
+        emit_athena(app, "athena:orient", orient);
+    }
+    emit_athena(app, "athena:snap", serde_json::json!({ "to": snap.as_str(), "docked": snap.dock() }));
+    Ok(())
+}
+
+/// Main's preferred size and its minimum, logical px.
+pub const MAIN_WIDE: (f64, f64) = (1440.0, 900.0);
+pub const MAIN_MIN: (f64, f64) = (900.0, 600.0);
+
+/// Main's size and place at creation: 1440x900 unless that is more than 90% of the work area, never
+/// below the 900x600 minimum, centred in the work area (logical px) so its buttons are on screen.
+pub fn main_start_rect(work: &Rect) -> Rect {
+    let width = MAIN_WIDE.0.min((work.width * 0.9).floor()).max(MAIN_MIN.0);
+    let height = MAIN_WIDE.1.min((work.height * 0.9).floor()).max(MAIN_MIN.1);
+    Rect {
+        x: (work.x + (work.width - width) / 2.0).max(work.x).floor(),
+        y: (work.y + (work.height - height) / 2.0).max(work.y).floor(),
+        width,
+        height,
+    }
+}
+
 // ==============================================================================================
 // Commands. Each needs three edits: here, `build.rs`, and `capabilities/athena.json`.
 // ==============================================================================================
@@ -702,9 +853,24 @@ pub async fn athena_set_size(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn athena_show(app: AppHandle) -> Result<(), String> {
-    show(&app);
+pub async fn athena_show(app: AppHandle, focus: Option<bool>) -> Result<(), String> {
+    show_with(&app, takes_focus(cause_of(focus)));
     Ok(())
+}
+
+/// Bring Main forward, for the page's "Later" recovery and the pill.
+#[tauri::command(rename_all = "snake_case")]
+pub async fn athena_open_main(app: AppHandle) -> Result<(), String> {
+    let main = app.get_window(crate::MAIN_WINDOW).ok_or("Main does not exist")?;
+    raise(&main);
+    crate::layout::apply(&app);
+    Ok(())
+}
+
+/// Dock her where a drop would have: the same classification arithmetic, asked for by name.
+#[tauri::command(rename_all = "snake_case")]
+pub async fn athena_snap_to(app: AppHandle, to: String) -> Result<(), String> {
+    snap_to(&app, &to)
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -846,6 +1012,68 @@ mod tests {
         let main = Rect { x: 0.0, y: 0.0, width: 1920.0, height: 1040.0 };
         let p = Point { x: 1920.0 - SEAL - 4.0, y: 300.0 };
         assert_eq!(classify(p, Some(&main), &WORK), Snap::ScreenRight);
+    }
+
+    #[test]
+    fn a_card_arrival_never_takes_focus_and_a_user_show_does() {
+        assert!(!takes_focus(Cause::Arrival));
+        assert!(takes_focus(Cause::User));
+        assert_eq!(cause_of(None), Cause::User, "absent means a user's show");
+        assert_eq!(cause_of(Some(true)), Cause::User);
+        assert_eq!(cause_of(Some(false)), Cause::Arrival);
+    }
+
+    #[test]
+    fn every_snap_spelling_round_trips_and_nonsense_is_refused() {
+        for s in ["main.right", "main.left", "main.corner", "screen.left", "screen.right", "free"] {
+            assert_eq!(snap_from_str(s).map(Snap::as_str), Some(s));
+        }
+        assert_eq!(snap_from_str("main"), None);
+    }
+
+    /// A requested snap must classify back to itself, or the next real drop would disagree.
+    #[test]
+    fn a_requested_snap_lands_where_the_drop_detector_would_call_it_the_same() {
+        let main = main_window();
+        let start = Point { x: 900.0, y: 400.0 };
+        for snap in [Snap::MainRight, Snap::MainLeft, Snap::MainCorner, Snap::ScreenLeft, Snap::ScreenRight] {
+            let p = snap_seal(snap, start, false, Some(&main), &WORK).expect("placeable");
+            assert_eq!(classify(p, Some(&main), &WORK), snap, "{snap:?} landed at {p:?}");
+        }
+    }
+
+    #[test]
+    fn a_main_snap_without_main_is_refused_and_free_from_a_dock_steps_off_the_edge() {
+        let seal = Point { x: 8.0, y: 300.0 };
+        assert!(snap_seal(Snap::MainRight, seal, false, None, &WORK).is_err());
+        assert!(snap_seal(Snap::ScreenLeft, seal, false, None, &WORK).is_ok());
+        let p = snap_seal(Snap::Free, seal, true, None, &WORK).unwrap();
+        assert_eq!(classify(p, None, &WORK), Snap::Free);
+        assert_eq!(snap_seal(Snap::Free, Point { x: 900.0, y: 500.0 }, false, None, &WORK).unwrap(), Point { x: 900.0, y: 500.0 });
+    }
+
+    #[test]
+    fn main_starts_at_1440_by_900_where_it_fits_and_shrinks_to_90_percent_where_it_does_not() {
+        let big = main_start_rect(&WORK);
+        assert_eq!((big.width, big.height), (1440.0, 900.0), "1920x1040 at 100%");
+        assert_eq!((big.x, big.y), (240.0, 70.0), "centred");
+
+        let hd150 = Rect { x: 0.0, y: 0.0, width: 1280.0, height: 672.0 };
+        let r = main_start_rect(&hd150);
+        assert_eq!((r.width, r.height), (1152.0, 604.0), "1080p at 150%");
+        assert!(r.y + r.height <= hd150.height && r.x >= 0.0 && r.y >= 0.0);
+
+        let uhd = Rect { x: 0.0, y: 0.0, width: 3840.0, height: 2080.0 };
+        let r = main_start_rect(&uhd);
+        assert_eq!((r.width, r.height), (1440.0, 900.0), "4K at 100%");
+    }
+
+    #[test]
+    fn main_is_never_smaller_than_its_minimum_even_on_a_tiny_work_area() {
+        let tiny = Rect { x: 0.0, y: 0.0, width: 800.0, height: 500.0 };
+        let r = main_start_rect(&tiny);
+        assert_eq!((r.width, r.height), MAIN_MIN);
+        assert!(r.x >= 0.0 && r.y >= 0.0, "the title buttons stay reachable");
     }
 
     #[test]

@@ -64,6 +64,8 @@ fn main() {
             "athena_hide",
             "athena_pin",
             "athena_report",
+            "athena_snap_to",
+            "athena_open_main",
         ])),
     )
     .expect("failed to run tauri-build");

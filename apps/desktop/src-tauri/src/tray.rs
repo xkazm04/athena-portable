@@ -53,7 +53,7 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
                     companion::raise(&w);
                 }
             }
-            "quit" => app.exit(0),
+            "quit" => crate::quit(app),
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {

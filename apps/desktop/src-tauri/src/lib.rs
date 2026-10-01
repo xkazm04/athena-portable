@@ -33,6 +33,17 @@ use tauri::{AppHandle, Emitter, EventTarget, Manager, WebviewUrl, WindowEvent};
 use layout::Selection;
 use tabs::{Tab, Tabs};
 
+/// Leave the app. Both windows are hidden first so the user does not watch them tear down; the
+/// exit hooks (the daemon's process tree) still run on `ExitRequested | Exit`.
+pub fn quit(app: &AppHandle) {
+    for label in [MAIN_WINDOW, companion::ATHENA_WINDOW] {
+        if let Some(w) = app.get_window(label) {
+            let _ = w.hide();
+        }
+    }
+    app.exit(0);
+}
+
 /// The window every rectangle is measured in.
 pub const MAIN_WINDOW: &str = "main";
 
@@ -197,6 +208,8 @@ pub fn run() {
             companion::athena_hide,
             companion::athena_pin,
             companion::athena_report,
+            companion::athena_snap_to,
+            companion::athena_open_main,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
@@ -278,14 +291,29 @@ fn start_url() -> Option<String> {
 /// **On first launch Main is built hidden** (ADR 0026): the only window the user sees is Athena at
 /// `welcome`, and "Open your first app" is what shows Main (`companion::after_onboarded`).
 fn build_shell(app: &AppHandle, first_launch: bool) -> Result<(), Box<dyn std::error::Error>> {
-    let window = tauri::window::WindowBuilder::new(app, MAIN_WINDOW)
+    // 1440x900 can exceed a 1080p work area at 150%: size to the primary monitor's work area.
+    let start = app.primary_monitor().ok().flatten().map(|m| {
+        let scale = m.scale_factor();
+        let a = m.work_area();
+        companion::main_start_rect(&layout::Rect {
+            x: a.position.x as f64 / scale,
+            y: a.position.y as f64 / scale,
+            width: a.size.width as f64 / scale,
+            height: a.size.height as f64 / scale,
+        })
+    });
+    let builder = tauri::window::WindowBuilder::new(app, MAIN_WINDOW)
         .title("Athena")
-        .inner_size(1440.0, 900.0)
-        .min_inner_size(900.0, 600.0)
+        .min_inner_size(companion::MAIN_MIN.0, companion::MAIN_MIN.1)
         .decorations(false)
-        .visible(!first_launch)
-        .center()
-        .build()?;
+        .visible(!first_launch);
+    let builder = match start {
+        Some(r) => builder.inner_size(r.width, r.height).position(r.x, r.y),
+        None => builder
+            .inner_size(companion::MAIN_WIDE.0, companion::MAIN_WIDE.1)
+            .center(),
+    };
+    let window = builder.build()?;
 
     window.add_child(
         tauri::webview::WebviewBuilder::new(CHROME_WEBVIEW, WebviewUrl::App("chrome.html".into())),
@@ -301,7 +329,7 @@ fn build_shell(app: &AppHandle, first_launch: bool) -> Result<(), Box<dyn std::e
         // Closing Main quits the app: she is off the taskbar, so a Main that closed and left her
         // running would leave nothing to find her by but the tray.
         if let WindowEvent::CloseRequested { .. } = event {
-            handle.exit(0);
+            quit(&handle);
         }
         companion::on_main_event(&handle, event);
     });
