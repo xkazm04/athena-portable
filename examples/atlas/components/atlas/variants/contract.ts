@@ -1,5 +1,5 @@
 /**
- * ROUND 6 CLOSED — one variant, and the mechanism that put three on the table kept behind it.
+ * ROUND 7 — three finishes of the one drawing round 6 kept.
  *
  * Every variant is a folder under `variants/<slug>/` exporting a default component that takes
  * exactly these props. The shell (`variants/Shell.tsx`) owns the switcher, `?variant=`,
@@ -7,29 +7,12 @@
  * its stage: layout, camera, bands, views, legend, story. A variant never imports from a sibling
  * variant folder.
  *
- * THE OWNER RULED AFTER ROUND 6: **`archify-lanes` is the winner; delete the other two.** Round 5
- * put three drawings on the table and kept the archify grammar; round 6 asked which archify, built
- * `archify` (the round-5 sheet), `archify-density` (twelve cards) and `archify-lanes` (the turn as
- * lanes and phases), and the verdict was *"lanes are a step forward"*. So `archify/**` and
- * `archify-density/**` are gone, and with them their tests. The three pure modules the lanes
- * variant had been importing across the folder boundary — the kind rule, the twelve-stop script
- * and the routing primitives — moved INTO `archify-lanes/` rather than being deleted with their
- * first home, each keeping its own header and saying where it came from. The line "a variant never
- * imports from a sibling" is now true without an exception to excuse.
- *
- * WHAT SURVIVED THE DELETION, and what did not:
- *
- *   KEPT  the lazy template import, the error boundary and the "not built yet" placeholder in
- *         `Shell.tsx`; `useChoice`; `?variant=archify-lanes`; the `VariantSlug` type; `viewBus`.
- *         `VARIANTS` shrinking from three to one cost one edit to one list and nothing else —
- *         which is the whole argument for having had a contract, and the mechanism is what a
- *         round 7 would mount its next drawing through.
- *   GONE  the mast's variant switcher, which now hides itself because a radio group with one
- *         radio is a control that cannot be operated; and the `set_variant` TOOL, by the same rule
- *         that removed `play_turn` in round 4 — a tool whose subject no longer exists is worse
- *         than a missing one, because an agent will call it. `read_view` still names the drawing
- *         before it names anything else, so nothing an agent could learn from `set_variant` was
- *         lost; only the ability to choose, which there is no longer a choice to make.
+ * THE OWNER RULED AFTER ROUND 6: **`archify-lanes` is the winner.** Round 7 does not replace that
+ * drawing: it mounts it three times, with three finishes, so a reader can compare visual wow
+ * against the ability to present the solution. Classic is the round-6 baseline. Signal and
+ * Editorial import the shared engine through `components/atlas/lanes.ts`, never this folder's
+ * sibling, so the "no sibling import" line still holds. `set_variant` is back on the tool
+ * surface because there is a choice an agent can make.
  */
 import type { ReactNode } from "react";
 import type { Focus, Level, ZoomNav } from "@athena/demo-kit/zoom";
@@ -37,18 +20,27 @@ import type { useLevelFlight } from "@athena/demo-kit/zoom";
 
 import type { Lens } from "@/data";
 
-export type VariantSlug = "archify-lanes";
+export type VariantSlug = "archify-lanes" | "archify-signal" | "archify-editorial";
 
 /**
  * The first entry is the DEFAULT — the shell falls back to it and the mast draws it first.
  *
- * ONE ENTRY, AND THE LIST IS STILL A LIST. `VARIANTS.length === 1` is the condition every reader
- * of this module branches on — the mast draws no switcher, `Shell` still mounts through the same
- * lazy import, and `read_view` still names the drawing — so adding a second slug is again one edit
- * to one array.
+ * THREE FINISHES OF ONE GEOMETRY. The mast draws the switcher because `VARIANTS.length > 1`;
+ * `set_variant` is on the tool surface for the same reason. Classic is the round-6 winner;
+ * Signal and Editorial are the round-7 prototypes.
  */
 export const VARIANTS: readonly { slug: VariantSlug; label: string; blurb: string }[] = [
-  { slug: "archify-lanes", label: "Lanes", blurb: "The turn as lanes and phases." },
+  { slug: "archify-lanes", label: "Lanes", blurb: "The turn as lanes and phases. The round-6 baseline." },
+  {
+    slug: "archify-signal",
+    label: "Signal",
+    blurb: "The same drawing, wow-forward: glow on the main path, one finite scan.",
+  },
+  {
+    slug: "archify-editorial",
+    label: "Editorial",
+    blurb: "The same drawing, as an argument: twelve stops under the sheet, lane owners pinned on screen.",
+  },
 ];
 
 export interface VariantProps {

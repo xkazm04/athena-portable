@@ -229,6 +229,12 @@
   }
 }
 
+@media (max-width: 720px) {
+  .at-mast-counts {
+    display: none;
+  }
+}
+
 /* ------------------------------------ the render switch ------------------------------------ */
 
 /*

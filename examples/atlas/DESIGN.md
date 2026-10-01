@@ -12,13 +12,14 @@ And, still standing from round 3: Atlas is a **visual multi-layer model of the s
 secondary. Everything below follows from those two sentences. There is no `three`, no CSS 3D, no
 perspective, and no renderer switch: **one direction, built once.**
 
-**Where this document stands after round 6.** Round 5 put three drawings behind one switcher and
+**Where this document stands after round 7.** Round 5 put three drawings behind one switcher and
 the owner kept the **archify** grammar (§R5.2). Round 6 asked the narrower question that implied —
 *which archify?* — put three archify-derived drawings on the same switcher, and the owner ruled:
-**`archify-lanes` is the winner; delete the other two.** *"Lanes are a step forward."* So the app
-now draws ONE direction: the turn, in lanes, at three levels (§R6). Every section below about a
-deleted drawing is kept and marked, because what each of them found is still true and reverting the
-document would lose the reasoning. §R5.3 is round 5's verdict; §R6 is round 6's.
+**`archify-lanes` is the winner; delete the other two.** *"Lanes are a step forward."* Round 7
+keeps that drawing and mounts it three times: classic, signal (wow), editorial (clarity) (§R7).
+Every section below about a deleted drawing is kept and marked, because what each of them found is
+still true and reverting the document would lose the reasoning. §R5.3 is round 5's verdict; §R6 is
+round 6's; §R7 is the current comparison.
 
 ---
 
@@ -687,3 +688,44 @@ verbs), `set_view`, `read_concepts`, `read_system`, `read_component`, `set_lens`
 answer says three things the sheet's could not: which LANE and which PHASE a stop happens in, which
 of the twelve nodes it stands on, and whether an authored run **of this drawing** carries the hop
 into it and in which role.
+
+> **Superseded by §R7.** The mast draws the switcher again and `set_variant` is back: round 7
+> mounts two more finishes of this drawing, so there is a choice. The engine did not move; the
+> list grew.
+
+---
+
+## R7. Round 7: wow against the ability to present the solution
+
+Round 6 left the right *drawing*. Round 7 asks the next question: **can that drawing carry a visual
+wow without losing the ability to present the architecture as a solution you can read?** Two more
+finishes of the same twelve nodes sit beside the baseline in the mast (`?variant=`), and a reader
+compares them by pressing a key. There is still no `three`, no CSS 3D, no perspective, and no
+second geometry — the contract's lazy import mounts `Drawing.tsx` three times with a `preset`.
+
+| Finish | Slug | What it tests |
+|---|---|---|
+| **Lanes** (baseline) | `archify-lanes` | Round 6, unchanged. Classic dark, cards under the sheet, TURN behind a toggle. |
+| **Signal** (wow) | `archify-signal` | Archify's Signal Flow preset on the lane geometry: deeper ground, a radial wash, glow on the main path, one finite scan that parks itself. The still frame has to carry the meaning (study §7.9); if a reader can still name the happy path and the one exception in under fifteen seconds, the wow did not cost the solution. |
+| **Editorial** (clarity) | `archify-editorial` | Archify's Editorial preset — paper, vermilion, a serif heading, a ruled margin — plus two things classic hides: the four lane owners pinned in *screen space* over the gutter (the round-6 carry: L1 frames three of four lanes and the in-world labels leave), and the twelve stops of README §3.2 as a reading list under the sheet, clickable. The architecture is an argument; the drawing is the illustration. |
+
+**What did not change.** Twelve nodes, fourteen runs, four lanes, six columns, three phases, the
+two arrangements, `poseFor`/`resolve*` as inverses, shrink-to-fit text, one clock, one details
+destination. `test/lanes.*.test.ts` still pins all of that. The new file is `test/presets.test.ts`:
+three slugs, one default, copy that does not collide, twelve stops and four lanes in every finish.
+
+**What the shell did.** `VARIANTS` grew from one to three, which is the one edit the contract was
+built to take. The mast's switcher reappears because `VARIANTS.length > 1`. `set_variant` returns
+with a three-value enum. Signal and Editorial import the engine through `components/atlas/lanes.ts`,
+never from the sibling folder.
+
+**The motion budget.** Signal's scan is a second motion owner (`data-motion-owner="scan"`), finite,
+one-shot, parked under reduced motion and displaced the moment the story starts playing. There is
+still only one owner at a time. Editorial adds no motion.
+
+**The honest weakness of each.** Signal's glow is a filter on fourteen strokes; it is atmosphere,
+and atmosphere can become texture the way round 5's amber dashes did. Editorial's first board
+stole two columns from the sheet and cropped the drawing at 1440 — the opposite of clarity —
+so the twelve stops now sit *under* the sheet (archify's own card slot) and the lane owners
+overlay the gutter in screen space. The argument is still on the page; the illustration is
+whole again.

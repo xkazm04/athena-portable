@@ -8,12 +8,9 @@
  * evolved blueprint and the structure matrix — *"the degradation from visual archify is significant
  * in grouping, component strategy and style"*. ROUND 6 ASKED THE NARROWER QUESTION the verdict
  * implied — which ARCHIFY is the right archify — built three more and closed with one:
- * **`archify-lanes`, the turn as lanes and phases.** *"Lanes are a step forward."*
- *
- * SO THE APP DRAWS ONE DIRECTION AND THE SHELL STILL MOUNTS N. Each deletion cost one edit to one
- * list in `variants/contract.ts` and nothing else, twice — which is the measurement the contract
- * was built to take. Above the stage, two things followed the count rather than the code: the
- * mast draws no variant switcher with one value in it, and `set_variant` left the tool surface.
+ * **`archify-lanes`, the turn as lanes and phases.** *"Lanes are a step forward."* ROUND 7 KEEPS
+ * THAT DRAWING AND MOUNTS IT THREE TIMES: classic, signal, editorial — wow against the ability to
+ * present the solution, compared from the mast.
  *
  * WHAT THIS FILE IS: nothing but the mount point. Everything that was here in round 4 lives in one
  * of two places, and the line between them is `variants/contract.ts`:

@@ -466,3 +466,20 @@ their guards moved with them. The shell keeps its lazy-mount mechanism (one edit
 still all a variant costs), but the mast hides a switcher with one value in it and `set_variant`
 left the tool surface by round 4's `play_turn` rule. Atlas now draws one direction: the turn, in
 lanes, at three levels. `examples/atlas/DESIGN.md` §R6 is the reasoning.
+
+### Round 7 — wow against presenting the solution (2026-09-17)
+
+**Why.** Lanes won on grouping, the node, and the finish. The next question is whether that
+drawing can carry a visual wow without losing the ability to present the architecture as a
+solution a reader can follow. Two finishes of the same twelve-node lane geometry sit beside the
+baseline in the mast.
+
+| Finish | Form | What a reader is asked |
+|---|---|---|
+| Lanes (baseline) | Classic dark, cards, TURN behind a toggle | Can you still read the turn from the still frame? |
+| Signal (wow) | Deeper ground, glow on the main path, one finite scan | Does atmosphere make the spine *more* obvious, or become texture? |
+| Editorial (clarity) | Paper, vermilion, lane owners pinned in screen space, twelve stops as a reading column | Does putting the solution in words beside the diagram make it clearer than the diagram alone? |
+
+No new geometry, no 3D, no second model. `examples/atlas/DESIGN.md` §R7 is the reasoning. The
+mast switcher and `set_variant` return because `VARIANTS.length > 1`. Outcome and rubric scores
+wait on the owner's comparison.

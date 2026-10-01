@@ -27,17 +27,10 @@
  *     play; `set_turn` still moves the step and `read_turn` still answers the whole script. A tool
  *     whose subject no longer exists is worse than a missing one, because an agent will call it.
  *
- * ROUND 5 ADDED `set_variant`; ROUND 6 REMOVED IT, by the same rule that removed `play_turn`.
- * The owner's verdict kept `archify-lanes` and deleted the other two, so `VARIANTS` has one entry
- * and the tool's enum had one value. A tool that can only be called with the answer it would have
- * given is not a capability — it is a sentence, and `read_view` already says it: every projection
- * in `tools/read.ts` names the variant before it names anything else. Keeping a one-value enum
- * would advertise a choice an agent cannot make and would cost a call to discover that. So the
- * tool is gone and the FACT stayed, which is the opposite trade from round 4's `play_turn` only in
- * appearance: both times the subject disappeared and the tool went with it.
- *
- * The mechanism underneath is untouched — `?variant=archify-lanes`, the lazy mount, the
- * placeholder — so the day a second drawing lands, `set_variant` comes back with a real enum.
+ * ROUND 5 ADDED `set_variant`; ROUND 6 REMOVED IT; ROUND 7 PUT IT BACK. Round 6 had one drawing,
+ * so the enum had one value and the tool left by the same rule that removed `play_turn`. Round 7
+ * mounts three finishes of that drawing, so there is a choice an agent can make and the tool
+ * returns with a real enum. `read_view` still names the drawing first in every projection.
  *
  * `read_turn` / `set_turn` are NOT here and never were: they are registered by whichever variant
  * tells the turn (`variants/archify-lanes/Tools.tsx`), because a tool the shell registers cannot
@@ -57,7 +50,7 @@ import {
 } from "@/data";
 import { LEVELS, NOUNS } from "@/lib/constants";
 
-import type { VariantSlug } from "../variants/contract";
+import { VARIANTS, type VariantSlug } from "../variants/contract";
 import { readViews, requestView } from "../variants/viewBus";
 
 import {
@@ -76,6 +69,7 @@ export function AtlasTools({
   lensId,
   setLens,
   variant,
+  setVariant,
   metaViews,
 }: {
   nav: ZoomNav;
@@ -83,6 +77,7 @@ export function AtlasTools({
   lensId: string | null;
   setLens: (id: string | null) => void;
   variant: VariantSlug;
+  setVariant: (next: VariantSlug) => void;
   /** `VariantMeta.views` of the mounted variant — the enum `set_view` advertises. */
   metaViews: readonly string[];
 }) {
@@ -167,6 +162,46 @@ export function AtlasTools({
       return answer(true, wanted);
     },
     deps: [variant, metaViews, nav.state.focus],
+  });
+
+  useWebMCPTool({
+    name: "set_variant",
+    description:
+      "Choose which finish of the lane drawing is on the table. Lanes is the round-6 baseline; Signal is the same geometry with glow and a one-shot scan; Editorial is the same geometry as a readable argument, with the twelve stops listed under the sheet. The level, the open phase and the lens are kept. Call with no argument to read the current finish and what else is available.",
+    parameters: [
+      {
+        name: "variant",
+        type: "string",
+        required: false,
+        enum: VARIANTS.map((v) => v.slug),
+        description: "The finish. Omit to read the current one without changing it.",
+      },
+    ],
+    reversible: true,
+    sideEffects: "none",
+    handler: ({ variant: asked }) => {
+      const available = VARIANTS.map((v) => ({ id: v.slug, label: v.label, is: v.blurb }));
+      const answer = (id: VariantSlug, changed: boolean) => ({
+        ok: true as const,
+        variant: variantRow(id),
+        changed,
+        available,
+        focus: nav.state.focus,
+      });
+      if (asked === undefined || asked === null || asked === "") return answer(variant, false);
+      const wanted = String(asked);
+      const hit = VARIANTS.find((v) => v.slug === wanted);
+      if (!hit) {
+        return {
+          ok: false as const,
+          error: `No variant named ${wanted}.`,
+          available: VARIANTS.map((v) => v.slug),
+        };
+      }
+      if (hit.slug !== variant) setVariant(hit.slug);
+      return answer(hit.slug, hit.slug !== variant);
+    },
+    deps: [variant, setVariant, nav.state.focus],
   });
 
   useWebMCPTool({

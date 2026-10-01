@@ -11,13 +11,11 @@
  * the other two. ROUND 6 ASKED THE SAME QUESTION ONE LEVEL IN — *which archify is the right
  * archify?* — built three and closed with one: `archify-lanes`, "the turn as lanes and phases".
  *
- * SO THE SHELL NOW MOUNTS EXACTLY ONE VARIANT, AND NOT ONE LINE BELOW THIS COMMENT CHANGED. That
- * is the point of having had a contract: `VARIANTS` went three → one and the lazy template import,
- * the boundary, the placeholder, the retry and `?variant=` all still mean what they meant. The
- * mechanism is not vestigial — it is what round 7's drawing mounts through, and the one edit it
- * will cost is the same one edit the deletion cost. What DID change is above the stage: the mast
- * hides a switcher it cannot draw with one value in it, and `set_variant` is off the tool surface
- * because there is no longer a choice for an agent to make (`variants/contract.ts`).
+ * ROUND 7 GREW THE LIST FROM ONE TO THREE, AND NOT ONE LINE BELOW THIS COMMENT HAD TO CHANGE
+ * except handing `setVariant` to the tools. That is the point of having had a contract: the lazy
+ * template import, the boundary, the placeholder, the retry and `?variant=` all still mean what
+ * they meant. The mast draws the switcher because `VARIANTS.length > 1`; `set_variant` is back
+ * because there is a choice an agent can make.
  *
  * WHAT THE SHELL OWNS, and a variant therefore never invents:
  *
@@ -298,6 +296,7 @@ export function Shell() {
         lensId={lensId}
         setLens={setLens}
         variant={variant}
+        setVariant={setVariant}
         metaViews={toolViews}
       />
       <div

@@ -186,10 +186,10 @@ test("read_view at L1 groups the components by system, and the grouping agrees w
 });
 
 /**
- * ROUND 5, AND STILL TRUE WITH ONE DRAWING LEFT. `read_view` names the VARIANT first and the
- * arrangement second. Round 6 removed `set_variant` — a tool with a one-value enum advertises a
- * choice nobody can make — so this projection is now the ONLY place an agent learns which drawing
- * it is looking at, which makes the assertion more load-bearing than it was, not less.
+ * ROUND 5, AND STILL TRUE WITH THREE FINISHES. `read_view` names the VARIANT first and the
+ * arrangement second. Round 7 put `set_variant` back (three finishes, a real enum); this
+ * projection is still the place an agent learns which drawing it is looking at without calling
+ * the setter.
  *
  * The second half is the case that has to stay honest whatever is mounted: a variant that publishes
  * no views says so in a sentence rather than answering a view that does not exist.

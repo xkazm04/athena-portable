@@ -19,12 +19,9 @@
  * It draws whatever the mounted variant published through `variants/viewBus.ts`, and draws nothing
  * at all when nothing was published — which is the honest rendering of "this variant has one view".
  *
- * AND AFTER ROUND 6 THE VARIANT SWITCHER OBEYS THE SAME RULE IT ALREADY APPLIED TO VIEWS. The
- * owner kept `archify-lanes` and deleted the other two, so `VARIANTS` has one entry; a radio group
- * with one radio is a control that cannot be operated, and drawing it would tell a reader there is
- * a choice where there is none. The switcher is therefore conditional on `VARIANTS.length > 1`,
- * exactly as the view switcher is conditional on `views.length > 1` — one rule, two axes, and the
- * mast needs no edit on the day a second drawing lands.
+ * THE VARIANT SWITCHER OBEYS THE SAME RULE IT ALREADY APPLIED TO VIEWS. It is conditional on
+ * `VARIANTS.length > 1`, exactly as the view switcher is conditional on `views.length > 1` — one
+ * rule, two axes. Round 6 hid it (one drawing); round 7 shows it (three finishes of that drawing).
  */
 import { useRef } from "react";
 import { useRoving, type ZoomNav } from "@athena/demo-kit/zoom";

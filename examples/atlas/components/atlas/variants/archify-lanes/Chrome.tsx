@@ -16,29 +16,36 @@
  */
 import { memo } from "react";
 
-import type { Role } from "./workflow";
-import type { BeatView, ChapterView } from "./story";
+import { COPY } from "./copy";
+import { LANES, type Role } from "./workflow";
+import { BEAT_VIEWS, type BeatView, type ChapterView } from "./story";
+
+export type { LanesPreset } from "./copy";
+export { COPY } from "./copy";
 
 /* ------------------------------------------ the title ---------------------------------------- */
 
-export const TITLE = "The turn, in lanes";
-export const SUBTITLE =
-  "Twelve stops of README §3.2 across four lanes, six columns and three phases. Position is the reading order; there is not one boundary frame.";
+export const TITLE = COPY.classic.title;
+export const SUBTITLE = COPY.classic.subtitle;
 
 export const TitleBand = memo(function TitleBand({
   phase,
   level,
   zoom,
+  title = TITLE,
+  subtitle = SUBTITLE,
 }: {
   phase: string | null;
   level: number;
   zoom: number;
+  title?: string;
+  subtitle?: string;
 }) {
   return (
     <header className="al-title">
       <div className="al-title-text">
-        <h1>{TITLE}</h1>
-        <p>{SUBTITLE}</p>
+        <h1>{title}</h1>
+        <p>{subtitle}</p>
       </div>
       <dl className="al-title-read">
         <div>
@@ -224,5 +231,76 @@ export const StoryBar = memo(function StoryBar({
         </span>
       </div>
     </div>
+  );
+});
+
+/* -------------------------------- the editorial rails (round 7) ------------------------------- */
+
+/**
+ * FOUR LANE CAPTIONS PINNED OUTSIDE THE WORLD.
+ *
+ * Round 6 carried this: at L1 the camera frames three of four lanes and the in-world labels leave
+ * the screen. The matrix already had the answer — headers that live in screen space, not in the
+ * scaled sheet, are legible at every band by construction. Editorial is the drawing that spends
+ * that finding: the four owners stay on the left of the board no matter where the camera looks.
+ */
+export const LaneRail = memo(function LaneRail() {
+  return (
+    <ol className="al-lane-rail" aria-label="Who owns each row">
+      {LANES.map((l) => (
+        <li key={l.id} className="al-lane-rail-item" data-variant={l.variant}>
+          <span className="al-lane-rail-ord">{l.ord}</span>
+          <span className="al-lane-rail-name">{l.label}</span>
+          <span className="al-lane-rail-note">{l.note}</span>
+        </li>
+      ))}
+    </ol>
+  );
+});
+
+/**
+ * THE TWELVE STOPS AS A READING COLUMN, always on the page.
+ *
+ * Classic and signal hide the turn behind a TURN toggle and a story bar. Editorial's thesis is
+ * the opposite: the solution is an argument you read, and the diagram illustrates it. Clicking a
+ * stop lights that beat on the sheet — the same `set_turn` path the story bar uses — so the two
+ * surfaces cannot disagree.
+ */
+export const ScriptRail = memo(function ScriptRail({
+  stop,
+  story,
+  onStop,
+}: {
+  stop: number;
+  story: boolean;
+  onStop: (index: number) => void;
+}) {
+  return (
+    <ol className="al-script" aria-label="How a turn runs, in twelve stops">
+      {BEAT_VIEWS.map((b, i) => {
+        const on = story && stop === i;
+        return (
+          <li key={b.index}>
+            <button
+              type="button"
+              className="al-script-stop"
+              data-on={on ? "" : undefined}
+              data-kind={b.kind}
+              aria-current={on ? "step" : undefined}
+              onClick={() => onStop(i)}
+            >
+              <span className="al-script-n">{String(i + 1).padStart(2, "0")}</span>
+              <span className="al-script-body">
+                <span className="al-script-label">{b.label}</span>
+                <span className="al-script-meta">
+                  <span className="al-script-where">{b.nodeLabel}</span>
+                  <span className="al-script-cite">{b.cite}</span>
+                </span>
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ol>
   );
 });

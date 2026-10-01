@@ -826,3 +826,359 @@
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------- the board --
+ * Classic and Signal: the canvas is the board. Editorial: a three-column page, lane captions
+ * pinned left, the twelve-stop argument pinned right, the drawing in the middle. The rails are
+ * screen-space, so they never leave with the camera (round-6 carry, formula rule 13 by relocation).
+ */
+.al-board {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+}
+.al-board > .al-canvas {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.al-stage[data-preset="editorial"] .al-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  position: relative;
+  gap: var(--at-space-2);
+}
+.al-stage[data-preset="editorial"] .al-canvas {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* -------------------------------------------------------------- signal (wow) --
+ * Archify's Signal Flow preset, spent on the lane geometry: deeper ground, brighter strokes,
+ * a radial wash, glow on the main path, and ONE finite scan. The scan is the motion owner
+ * `scan`; the story takes over if it starts playing; reduced motion parks both.
+ */
+.al-stage[data-preset="signal"][data-theme="dark"] {
+  --al-canvas: #01040c;
+  --al-panel: #07101e;
+  --al-mask: #07101e;
+  --al-lane-band: #061018;
+  --al-phase: #0b1a30;
+  --al-fill: 34%;
+  --al-k-frontend: #5ce1ff;
+  --al-k-messagebus: #fb923c;
+  --al-k-backend: #4ade80;
+  --al-k-security: #fb7185;
+  --al-k-database: #c4b5fd;
+  --al-k-cloud: #fcd34d;
+  --al-k-external: #94a3b8;
+  --al-emphasis: #4ade80;
+  --al-trail: #5ce1ff;
+}
+
+.al-stage[data-preset="signal"][data-theme="light"] {
+  --al-canvas: #e8f4fb;
+  --al-panel: #ffffff;
+  --al-mask: #ffffff;
+  --al-fill: 22%;
+  --al-emphasis: #047857;
+  --al-trail: #0e7490;
+}
+
+.al-stage[data-preset="signal"] .al-canvas {
+  background:
+    radial-gradient(
+      120% 90% at 50% 8%,
+      color-mix(in srgb, var(--al-trail) 14%, transparent),
+      transparent 58%
+    ),
+    var(--al-canvas);
+  box-shadow: inset 0 0 6rem color-mix(in srgb, var(--al-trail) 12%, transparent);
+}
+
+.al-stage[data-preset="signal"] .al-node[data-main] {
+  box-shadow:
+    0 0 0.85rem color-mix(in srgb, var(--al-accent) 55%, transparent),
+    inset 0 0 0.65rem color-mix(in srgb, var(--al-accent) 22%, transparent);
+}
+
+.al-stage[data-preset="signal"] .al-run[data-role="main"] .al-run-line {
+  filter: drop-shadow(0 0 0.4rem var(--al-emphasis));
+}
+
+.al-stage[data-preset="signal"] .al-trail-line[data-story-beat-state="active"] {
+  filter: drop-shadow(0 0 0.45rem var(--al-trail));
+}
+
+.al-stage[data-preset="signal"] .al-paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    color-mix(in srgb, var(--al-trail) 22%, transparent) 50%,
+    transparent 62%
+  );
+  background-size: 220% 100%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.al-stage[data-preset="signal"][data-motion-owner="scan"] .al-paper::after {
+  animation: al-scan var(--al-dur-beat) var(--al-ease-out) 1 both;
+}
+
+@keyframes al-scan {
+  from {
+    background-position: 100% 0;
+    opacity: 1;
+  }
+  to {
+    background-position: -120% 0;
+    opacity: 0;
+  }
+}
+
+.al-stage[data-preset="signal"][data-reduced] .al-paper::after {
+  animation: none;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .al-stage[data-preset="signal"] .al-paper::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------- editorial (clarity) --
+ * Archify's Editorial preset: paper, vermilion, a ruled margin, serif for the heading only.
+ * Squared radii. The wow is quiet; the argument is the twelve-stop column.
+ */
+.al-stage[data-preset="editorial"] {
+  --al-radius: 0;
+  --al-font-serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+
+.al-stage[data-preset="editorial"][data-theme="light"] {
+  --al-canvas: #f2eee5;
+  --al-panel: #faf8f2;
+  --al-mask: #f2eee5;
+  --al-ink: #1c1917;
+  --al-ink-muted: #57534e;
+  --al-ink-dim: #78716c;
+  --al-line: #d6d3d1;
+  --al-grid-ink: #a8a29e33;
+  --al-lane: #a8a29e;
+  --al-lane-band: #ebe6db;
+  --al-phase: #e7e1d4;
+  --al-arrow: #78716c;
+  --al-emphasis: #c2410c;
+  --al-trail: #b91c1c;
+  --al-exception: #9f1239;
+  --al-k-frontend: #0f766e;
+  --al-k-messagebus: #c2410c;
+  --al-k-backend: #3f6212;
+  --al-k-security: #9f1239;
+  --al-k-database: #6d28d9;
+  --al-k-cloud: #a16207;
+  --al-k-external: #57534e;
+  --al-fill: 12%;
+}
+
+.al-stage[data-preset="editorial"][data-theme="dark"] {
+  --al-canvas: #1c1917;
+  --al-panel: #292524;
+  --al-mask: #1c1917;
+  --al-ink: #f5f5f4;
+  --al-ink-muted: #d6d3d1;
+  --al-ink-dim: #a8a29e;
+  --al-line: #44403c;
+  --al-grid-ink: #78716c33;
+  --al-lane: #78716c;
+  --al-lane-band: #221f1c;
+  --al-phase: #292524;
+  --al-arrow: #a8a29e;
+  --al-emphasis: #fb7185;
+  --al-trail: #fda4af;
+  --al-exception: #fb7185;
+  --al-k-frontend: #2dd4bf;
+  --al-k-messagebus: #fb923c;
+  --al-k-backend: #a3e635;
+  --al-k-security: #fb7185;
+  --al-k-database: #c4b5fd;
+  --al-k-cloud: #fbbf24;
+  --al-k-external: #a8a29e;
+  --al-fill: 16%;
+}
+
+.al-stage[data-preset="editorial"] .al-title-text h1 {
+  font-family: var(--al-font-serif);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.al-stage[data-preset="editorial"] .al-canvas {
+  border-radius: 0;
+  border-left: var(--at-rule-3) solid var(--al-emphasis);
+}
+
+.al-stage[data-preset="editorial"] .al-node,
+.al-stage[data-preset="editorial"] .al-toolbar,
+.al-stage[data-preset="editorial"] .al-story,
+.al-stage[data-preset="editorial"] .al-card {
+  border-radius: 0;
+}
+
+/* Lane captions: screen-space overlay on the canvas gutter, so the sheet keeps its full width
+   (the three-column board cropped the drawing at 1440). In-world lane labels hide; these stay. */
+.al-stage[data-preset="editorial"] .al-lane-ord,
+.al-stage[data-preset="editorial"] .al-lane-label {
+  fill: transparent;
+}
+
+.al-lane-rail {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  margin: 0;
+  padding: var(--at-space-7) var(--at-space-2) var(--at-space-6);
+  list-style: none;
+  min-width: 0;
+  width: 9.5rem;
+  grid-column: 1;
+  grid-row: 1;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(to right, var(--al-canvas) 55%, transparent);
+}
+
+.al-lane-rail-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--at-space-1);
+  min-height: 0;
+}
+
+.al-lane-rail-ord {
+  font-size: var(--al-text-tag);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--al-ink-dim);
+}
+
+.al-lane-rail-item[data-variant="exception"] .al-lane-rail-ord,
+.al-lane-rail-item[data-variant="exception"] .al-lane-rail-name {
+  color: var(--al-exception);
+}
+
+.al-lane-rail-name {
+  font-family: var(--al-font-serif, var(--at-font-fig));
+  font-size: var(--at-text-label);
+  font-weight: 600;
+  color: var(--al-ink);
+  line-height: var(--at-leading-tight);
+}
+
+.al-lane-rail-note {
+  font-size: var(--al-text-tag);
+  line-height: var(--at-leading-snug);
+  color: var(--al-ink-muted);
+}
+
+/* The twelve-stop argument, under the sheet the way archify's cards sit under the SVG. */
+.al-script {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--at-space-1) var(--at-space-3);
+  margin: 0;
+  padding: var(--at-space-2) 0 0;
+  list-style: none;
+  min-width: 0;
+  overflow: auto;
+  max-height: 9.5rem;
+  grid-column: 1;
+  grid-row: 2;
+  border-top: var(--at-rule-1) solid var(--al-line);
+}
+
+.al-script-stop {
+  appearance: none;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--at-space-2);
+  width: 100%;
+  margin: 0;
+  padding: var(--at-space-1) var(--at-space-2);
+  border: var(--at-rule-1) solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.al-script-stop:hover {
+  background: color-mix(in srgb, var(--al-panel) 80%, transparent);
+}
+
+.al-script-stop[data-on] {
+  border-color: var(--al-trail);
+  background: color-mix(in srgb, var(--al-trail) 10%, transparent);
+}
+
+.al-script-n {
+  flex: 0 0 auto;
+  font-size: var(--al-text-sub);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--al-ink-dim);
+}
+
+.al-script-stop[data-on] .al-script-n {
+  color: var(--al-trail);
+}
+
+.al-script-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.al-script-label {
+  font-size: var(--al-text-sub);
+  font-weight: 600;
+  line-height: var(--at-leading-snug);
+  color: var(--al-ink);
+}
+
+.al-script-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--at-space-2);
+}
+
+.al-script-where,
+.al-script-cite {
+  font-size: var(--al-text-tag);
+  color: var(--al-ink-dim);
+}
+
+@media (max-width: 900px) {
+  .al-stage[data-preset="editorial"] .al-lane-rail {
+    display: none;
+  }
+  .al-stage[data-preset="editorial"] .al-lane-ord,
+  .al-stage[data-preset="editorial"] .al-lane-label {
+    fill: revert;
+  }
+  .al-script {
+    grid-template-columns: 1fr 1fr;
+    max-height: 8rem;
+  }
+}
