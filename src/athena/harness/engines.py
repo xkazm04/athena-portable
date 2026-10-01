@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -106,9 +107,16 @@ def probe(name: str, *, executable: str | None = None, home: Path | None = None)
     )
 
 
-def probe_all(*, home: Path | None = None) -> list[EngineStatus]:
-    """Every engine, in the order a setup screen should offer them."""
-    return [probe(name, home=home) for name in ENGINES]
+def probe_all(
+    *, home: Path | None = None, executables: Mapping[str, str] | None = None
+) -> list[EngineStatus]:
+    """Every engine, in the order a setup screen should offer them.
+
+    ``executables`` overrides the binary per engine name, so a test (or a daemon pointed at a
+    non-default install) probes the file it means rather than whatever is on ``PATH``.
+    """
+    given = executables or {}
+    return [probe(name, executable=given.get(name), home=home) for name in ENGINES]
 
 
 def _logged_in(name: str, home: Path | None = None) -> bool | None:

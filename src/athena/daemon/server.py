@@ -67,15 +67,18 @@ from athena.core.catalog import Catalog
 from athena.core.ledger import Ledger
 from athena.daemon.ready import announce, failure_line, ready_line
 from athena.daemon.routes import (
+    ENGINES_TTL_S,
     SSE_CONTENT_TYPE,
     EventStream,
     Reply,
     Request,
     RouteTable,
     base_routes,
+    engine_row,
     error,
 )
 from athena.daemon.sessions import Sessions
+from athena.harness.engines import probe_all
 from athena.harness.policy import PolicyHook
 from athena.lane.browser_lane import BrowserLane
 
@@ -215,6 +218,12 @@ class AthenaDaemon:
     #: The WebSocket paths. Empty until wiring registers a channel — ``/voice`` when a voice
     #: backend is configured — so a daemon with no backend has no socket to fail on.
     sockets: SocketTable = field(default_factory=SocketTable)
+    #: Per-engine binary overrides for ``GET /engines`` (tests; a non-default install).
+    engine_executables: Mapping[str, str] = field(default_factory=dict)
+    #: Taken only around the engine probe and its cache -- never the writer lock, so a probe
+    #: subprocess cannot hold a turn and a turn cannot hold the probe.
+    probe_lock: threading.Lock = field(default_factory=threading.Lock)
+    _engines: tuple[float, list[dict[str, str]]] | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         self.routes = RouteTable(base_routes(self))
@@ -237,6 +246,17 @@ class AthenaDaemon:
         self.gate.policy = replace(
             policy, pinned_origins={**policy.pinned_origins, app_id: page_origin}
         )
+
+    def engine_rows(self, *, fresh: bool = False) -> list[dict[str, str]]:
+        """The engine probes, cached for :data:`ENGINES_TTL_S` unless ``fresh`` (``/engines``)."""
+        with self.probe_lock:
+            cached = self._engines
+            now = time.monotonic()
+            if not fresh and cached is not None and now - cached[0] < ENGINES_TTL_S:
+                return [dict(row) for row in cached[1]]
+            rows = [engine_row(status) for status in probe_all(executables=self.engine_executables)]
+            self._engines = (time.monotonic(), rows)
+            return [dict(row) for row in rows]
 
     @contextmanager
     def writing(self) -> Iterator[Brain]:

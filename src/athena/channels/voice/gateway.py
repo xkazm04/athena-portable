@@ -64,6 +64,7 @@ from athena.contracts.channel import (
     now_iso,
 )
 from athena.daemon.routes import (
+    NO_PAGE_SENTENCE,
     PENDING_LINES,
     Request,
     decide,
@@ -407,12 +408,7 @@ class VoiceSession:
     def _turn(self, job: _Job, message: str) -> None:
         session = self.daemon.sessions.get(job.origin)
         if session is None:
-            self.send(
-                TurnError(
-                    reason="foreign_origin",
-                    detail=f"{job.origin!r} has sent no manifest; open the page first",
-                )
-            )
+            self.send(TurnError(reason="foreign_origin", detail=NO_PAGE_SENTENCE))
             return
         project = {"id": job.project_id} if job.project_id else None
         for step in range(self.gateway.max_continuations + 1):

@@ -84,7 +84,9 @@ class CatalogPort(Protocol):
     so a name the catalog does not hold is a name the model was never told about.
     """
 
-    def render_capabilities(self, lane: Lane) -> PromptBlock: ...
+    def render_capabilities(
+        self, lane: Lane, exclude_origins: frozenset[str] = frozenset()
+    ) -> PromptBlock: ...
 
 
 @runtime_checkable
@@ -255,8 +257,10 @@ def stable(previous: Mapping[str, str], current: Mapping[str, str]) -> bool:
 # --- block builders ---------------------------------------------------------------------------
 
 
-def _capabilities(catalog: CatalogPort, lane: Lane) -> PromptBlock:
-    block = catalog.render_capabilities(lane).announced()
+def _capabilities(
+    catalog: CatalogPort, lane: Lane, disabled_origins: frozenset[str] = frozenset()
+) -> PromptBlock:
+    block = catalog.render_capabilities(lane, disabled_origins).announced()
     if block.name != "capabilities":
         block = PromptBlock(
             name="capabilities",
@@ -431,6 +435,7 @@ def compose(
     tool_results: Sequence[ToolResult] = (),
     active_project: Mapping[str, Any] | None = None,
     pending_decisions: Sequence[str] = (),
+    disabled_origins: frozenset[str] = frozenset(),
     nonce: str | None = None,
     tool_result_limit: int = TOOL_RESULT_LIMIT,
     decision_limit: int = DECISION_LIMIT,
@@ -449,7 +454,7 @@ def compose(
     static_blocks: list[PromptBlock] = [
         constitution.block(section) for section in CONSTITUTION_SECTIONS
     ]
-    static_blocks.append(_capabilities(catalog, lane))
+    static_blocks.append(_capabilities(catalog, lane, disabled_origins))
     always = recalled.get("memory.always")
     if always is not None:
         static_blocks.append(always)

@@ -145,7 +145,9 @@ def test_a_run_for_an_origin_with_no_session_is_refused_before_the_stream_opens(
 
     assert reply.status == 403
     assert reply.body["reason"] == "foreign_origin"
-    assert "manifest" in reply.body["detail"]
+    detail = reply.body["detail"]
+    assert detail == "Open the app this is about and focus its tab, then try again."
+    assert not {"origin", "manifest", "session"} & set(detail.lower().replace(",", "").split())
 
 
 def test_a_project_id_that_is_not_one_is_refused(live: Live) -> None:

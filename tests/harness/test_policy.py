@@ -7,6 +7,7 @@ the module is. The fakes come from ``tests/harness/conftest.py``, which is the s
 
 from __future__ import annotations
 
+import threading
 from typing import Any
 
 import pytest
@@ -360,3 +361,89 @@ def test_every_rule_name_is_reachable_from_authorize(rule: str) -> None:
     }
 
     assert rule in produced
+
+
+# -- rule 2, per turn: ``TurnContext.disabled_origins`` (the shell's switch, ADR 0011) ----------
+
+CALLS: list[str] = []
+
+
+def _ran(params: dict[str, Any], ctx: TurnContext) -> ExecResult:
+    CALLS.append("ran")
+    return ExecResult(ok=True, output="ran")
+
+
+def test_gated_auto_and_read_on_a_disabled_origin_are_all_refused_before_any_executor(
+    catalog: FakeCatalog, approvals: FakeApprovals
+) -> None:
+    gate = PolicyHook(catalog, approvals, Policy())
+    ctx = make_ctx(disabled_origins=frozenset({"connector:gmail"}))
+    CALLS.clear()
+    for cls in (ToolClass.GATED, ToolClass.AUTO, ToolClass.READ):
+        entry = catalog.add(
+            make_entry(
+                f"connector.gmail.{cls.value.lower()}",
+                cls,
+                origin="connector:gmail",
+                executor=_ran,
+            )
+        )
+
+        outcome = gate.run_tool(entry, {}, ctx)
+
+        assert isinstance(outcome.decision, Cancel), cls
+        assert outcome.decision.reason == "foreign_origin"
+        assert outcome.decision.reason in ERROR_REASONS
+        assert outcome.result is None
+    assert CALLS == [], "an executor ran for a switched-off origin"
+    assert approvals.rows == {}, "a refused call filed a card"
+
+
+def test_an_enabled_origin_is_unaffected(catalog: FakeCatalog, approvals: FakeApprovals) -> None:
+    entry = catalog.add(make_entry("host.invoices.chase2", ToolClass.AUTO, origin="host:invoices"))
+
+    outcome = PolicyHook(catalog, approvals, Policy()).run_tool(
+        entry, {}, make_ctx(disabled_origins=frozenset({"host:support"}))
+    )
+
+    assert isinstance(outcome.decision, Proceed)
+
+
+def test_a_replayed_approval_is_refused_when_the_app_was_switched_off_since(
+    catalog: FakeCatalog, approvals: FakeApprovals
+) -> None:
+    entry = catalog.add(make_entry("host.invoices.pay", ToolClass.GATED, origin="host:invoices"))
+
+    outcome = PolicyHook(catalog, approvals, Policy()).run_tool(
+        entry, {}, make_ctx(disabled_origins=frozenset({"host:invoices"})), approval_id="appr_x"
+    )
+
+    assert isinstance(outcome.decision, Cancel)
+    assert outcome.decision.reason == "foreign_origin"
+
+
+def test_two_concurrent_contexts_with_different_lists_do_not_leak(
+    catalog: FakeCatalog, approvals: FakeApprovals
+) -> None:
+    gate = PolicyHook(catalog, approvals, Policy())
+    entry = catalog.add(make_entry("host.invoices.chase", ToolClass.AUTO, origin="host:invoices"))
+    off = make_ctx(disabled_origins=frozenset({"host:invoices"}))
+    on = make_ctx()
+    seen: list[tuple[str, bool]] = []
+    barrier = threading.Barrier(2)
+
+    def go(label: str, ctx: TurnContext) -> None:
+        barrier.wait()
+        for _ in range(200):
+            outcome = gate.run_tool(entry, {}, ctx)
+            seen.append((label, isinstance(outcome.decision, Proceed)))
+
+    threads = [threading.Thread(target=go, args=args) for args in (("off", off), ("on", on))]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert {ok for label, ok in seen if label == "off"} == {False}
+    assert {ok for label, ok in seen if label == "on"} == {True}
+    assert gate.policy.disabled_origins == frozenset(), "the shared policy was mutated"

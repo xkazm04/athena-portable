@@ -149,3 +149,10 @@ def test_a_turn_context_names_its_trigger_and_defaults_to_the_cli() -> None:
         conversation_id="conv_a", turn_id="turn_2", surface="voice", trigger="voice"
     )
     assert (spoken.surface, spoken.trigger) == ("voice", "voice")
+
+
+def test_a_turn_context_switches_nothing_off_by_default() -> None:
+    """``disabled_origins`` rides on the context, so two turns never share a list (ADR 0011)."""
+    ctx = TurnContext(conversation_id="conv_x", turn_id="turn_x")
+
+    assert ctx.disabled_origins == frozenset()

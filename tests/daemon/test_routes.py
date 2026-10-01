@@ -89,6 +89,7 @@ def test_the_table_ships_every_route_the_daemon_answers(daemon: AthenaDaemon) ->
     """Three that write, five that read, and the one prefix path last so nothing shadows it."""
     assert daemon.routes.listing() == [
         "GET /health",
+        "GET /engines",
         "POST /manifest",
         "POST /run",
         "GET /decisions",

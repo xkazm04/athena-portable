@@ -251,6 +251,10 @@ class CliHarness:
         self._last: TurnResult | None = None
         #: conversation id → the CLI's own session id, for ``--resume``.
         self._sessions: dict[str, str] = {}
+        #: conversation id -> the static half the CLI session was opened with. A resumed session
+        #: keeps the law it was first told, so a static half that has changed (a switched-off
+        #: app's tools leaving the capability block) opens a new session instead of resuming.
+        self._static_seen: dict[str, str] = {}
 
     def session_id(self, conversation_id: str) -> str | None:
         """The CLI session this conversation is resumed from, if one has been opened."""
@@ -278,6 +282,9 @@ class CliHarness:
 
         entries = {entry.name: entry for entry in tools}
         static_text = _joined(static_blocks)
+        if self._static_seen.get(conversation_id, static_text) != static_text:
+            self._sessions.pop(conversation_id, None)
+        self._static_seen[conversation_id] = static_text
         history = [_opening_message(frame, user_message)]
         texts: list[str] = []
         tts: str | None = None

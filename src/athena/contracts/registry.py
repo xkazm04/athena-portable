@@ -201,6 +201,10 @@ class TurnContext:
     #: approval was granted for this action and these parameters.
     approval_id: str | None = None
     quiet_hours: bool = False
+    #: Origins (``host:<app_id>``, ``connector:<id>``) the user switched off *for this turn*. It
+    #: rides on the context, not on the shared policy, so two concurrent turns never see each
+    #: other's list (ADR 0011); the gate refuses a call on a listed origin with ``foreign_origin``.
+    disabled_origins: frozenset[str] = frozenset()
     extra: dict[str, Any] = field(default_factory=dict)
 
 

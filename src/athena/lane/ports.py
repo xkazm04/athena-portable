@@ -61,7 +61,9 @@ class CatalogPort(Protocol):
 
     def for_lane(self, lane: Lane) -> list[ToolEntry]: ...
 
-    def render_capabilities(self, lane: Lane) -> PromptBlock: ...
+    def render_capabilities(
+        self, lane: Lane, exclude_origins: frozenset[str] = frozenset()
+    ) -> PromptBlock: ...
 
     def get(self, name: str) -> ToolEntry:
         """The entry for a name, or ``ValueError`` for one the catalog does not hold."""

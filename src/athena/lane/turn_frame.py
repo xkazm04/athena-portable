@@ -60,6 +60,8 @@ class SurfaceTurn:
     #: One line per card still waiting on the user, so the model can say what it is waiting for
     #: rather than proposing the same action again. The daemon owns the inbox and supplies these.
     pending_decisions: tuple[str, ...] = ()
+    #: Origins the user switched off for this turn; their tools leave the capability block.
+    disabled_origins: frozenset[str] = frozenset()
 
 
 def tool_results_from(payloads: Sequence[Mapping[str, Any]]) -> tuple[ToolResult, ...]:
@@ -113,19 +115,29 @@ class FrameBuilder:
     def __post_init__(self) -> None:
         #: conversation id → the ``host_state`` of the last frame that was actually run.
         self._shown: dict[str, HostState] = {}
+        #: conversation id -> the switched-off origins its last frame was composed under.
+        self._disabled: dict[str, frozenset[str]] = {}
 
     def build(self, conversation_id: str, turn: SurfaceTurn) -> Composed:
         """The two halves of one turn. Nothing is remembered until :meth:`remember` is called."""
+        # A changed switch changes the static half, which opens a new CLI session; a session that
+        # has been shown nothing must get the whole picture, not a delta against the old one.
+        before = self._disabled.get(conversation_id)
+        self._disabled[conversation_id] = turn.disabled_origins
+        previous = self._shown.get(conversation_id)
+        if before is not None and before != turn.disabled_origins:
+            previous = None
         return compose(
             constitution=self.constitution,
             catalog=self.catalog,
             lane=self.lane,
             recall=self.recall(turn.message) if self.recall is not None else None,
             host_state=turn.host_state,
-            previous_host_state=self._shown.get(conversation_id),
+            previous_host_state=previous,
             tool_results=turn.tool_results,
             active_project=turn.active_project,
             pending_decisions=turn.pending_decisions,
+            disabled_origins=turn.disabled_origins,
         )
 
     def remember(self, conversation_id: str, frame: TurnFrame) -> None:

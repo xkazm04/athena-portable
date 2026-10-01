@@ -176,7 +176,7 @@ class Policy:
         self, entry: ToolEntry, params: Mapping[str, Any], ctx: TurnContext
     ) -> PolicyDecision:
         origin = str(entry.parsed_origin)
-        if origin in self.disabled_origins:
+        if origin in self.disabled_origins or origin in ctx.disabled_origins:
             return PolicyDecision.forbid(
                 "origin_enabled",
                 "foreign_origin",

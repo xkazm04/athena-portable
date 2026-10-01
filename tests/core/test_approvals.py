@@ -137,8 +137,8 @@ def test_only_the_approve_token_approves_every_other_offered_token_declines(
     declined = _create(approvals)
     other = _create(approvals, options=("approve", "send_anyway"))
 
-    assert approvals.resolve(declined.id, "decline").status == ApprovalStatus.DECLINED
-    assert approvals.resolve(other.id, "send_anyway").status == ApprovalStatus.DECLINED
+    assert approvals.resolve(declined.id, "decline", now=T0).status == ApprovalStatus.DECLINED
+    assert approvals.resolve(other.id, "send_anyway", now=T0).status == ApprovalStatus.DECLINED
 
 
 def test_describe_of_an_unknown_row_raises(approvals: Approvals) -> None:
@@ -165,7 +165,7 @@ def test_resolving_twice_is_refused_and_the_first_answer_stands(approvals: Appro
 def test_the_answer_text_rides_along_with_the_token(approvals: Approvals) -> None:
     row = _create(approvals)
 
-    resolved = approvals.resolve(row.id, "decline", "not this quarter")
+    resolved = approvals.resolve(row.id, "decline", "not this quarter", now=T0)
 
     assert resolved.answer == "not this quarter"
     assert resolved.resolution_event().choice == "decline"

@@ -385,7 +385,9 @@ class Catalog:
 
     # -- the generated capability section ---------------------------------------------------------
 
-    def render_capabilities(self, lane: Lane) -> PromptBlock:
+    def render_capabilities(
+        self, lane: Lane, exclude_origins: frozenset[str] = frozenset()
+    ) -> PromptBlock:
         """The capability block of the prompt, generated from the registry (README §2 invariant 4).
 
         Every entry enabled in this lane appears exactly once, under its class, with its
@@ -393,7 +395,7 @@ class Catalog:
         registry produce identical text — which is what lets the ledger's block hash mean
         something.
         """
-        entries = self.for_lane(lane)
+        entries = [e for e in self.for_lane(lane) if str(e.parsed_origin) not in exclude_origins]
         total = len(self.entries)
         lines = [
             "## Capabilities",

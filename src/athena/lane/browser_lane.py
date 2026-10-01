@@ -226,6 +226,7 @@ class BrowserLane:
             tool_results=tuple(tool_results),
             active_project=active_project,
             pending_decisions=tuple(pending_decisions),
+            disabled_origins=ctx.disabled_origins,
         )
         self._record_results(turn.tool_results, ctx)
         composed = self.frames.build(ctx.conversation_id, turn)

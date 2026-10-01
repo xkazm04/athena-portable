@@ -14,6 +14,7 @@ the token on every route), ADR 0012 (one turn is one SSE stream of channel event
 | Route | What it does | Lock |
 |---|---|---|
 | `GET /health` | engine, model, brain, uptime, sessions, tool count, the pending inbox | read |
+| `GET /engines?fresh=1` | which engines this machine can run, as a person would say it | none (own probe lock) |
 | `POST /manifest` | merge one page's capability manifest, whole or not at all | writer |
 | `POST /run` | one turn, streamed as Server-Sent Events | writer, for the turn |
 | `POST /decisions/<id>` | the user's answer; replays the gate and returns `execute` | writer |
@@ -34,6 +35,35 @@ Every bounded read carries an honest `showing` / `total` / `footer`, and every o
 
 A refusal is always one shape: `{"ok": false, "reason": ..., "detail": ...}`, where `reason` is a
 member of `contracts.harness.ERROR_REASONS`.
+
+## Switching an app off for one run
+
+`POST /run` takes an optional `disabled_origins: string[]` (catalog form, `host:<app_id>` or
+`connector:<id>`). The origins table lives in the shell, so the shell sends the list on every run
+and the daemon keeps none of it: it rides on that turn's `TurnContext`, never on the shared
+policy, so two concurrent runs with different lists cannot see each other's. A call whose origin
+is listed is refused by the gate before any executor, for READ, AUTO and GATED alike, with reason
+`foreign_origin` (the closed set is unchanged) and no card is filed; the refusal is a `tool.result`
+with `error: "foreign_origin"` and the turn is ledgered as usual. That turn's capability block also
+leaves out the listed origins' tools, and because a resumed CLI session keeps the law it was first
+told, a changed list opens a new CLI session. A value that is not a list of strings is read as
+empty. `POST /decisions/<id>` accepts the same field, so a card approved before the switch went
+off is refused on replay.
+
+A turn or card for an app the daemon has not seen is refused 403 `foreign_origin` with the one
+sentence "Open the app this is about and focus its tab, then try again."
+
+## `GET /engines`
+
+```json
+{"ok": true, "engines": [{"id": "claude_code", "state": "found", "detail": "2.1.0 (Claude Code)"},
+                         {"id": "codex", "state": "not_found", "detail": "codex is not on PATH"}]}
+```
+
+`state` is `found`, `not_found` or `not_logged_in` (installed, but the CLI's credential file is
+absent). The probe is a `--version` subprocess, so it takes its own lock and never the writer
+lock or a brain connection. The answer is cached for 10 seconds; `?fresh=1` skips the cache (the
+Check again button).
 
 ## The stream
 
@@ -231,7 +261,7 @@ curl -s "$ATHENA/health"                    -H "X-Athena-Token: $TOKEN"
 {"ok": true, "rows": [{"row_id": 1, "turn_id": "turn_bf71…", "engine": "claude_code", "model": "scripted", "conversation_id": "conv_invoices", "origin": "host:invoices", "surface": "panel", "trigger": "cli", "rounds": 1, "input_tokens": 1840, "output_tokens": 96, "cost_usd": 0.04, "is_error": false, "error_reason": null, "created_at": "…"}], "showing": 1, "total": 1, "footer": ""}
 {"ok": true, "rollup": [{"key": "host:invoices", "turns": 1, "errors": 0, "rounds": 1, "input_tokens": 1840, "output_tokens": 96, "cost_usd": 0.04, "ms": 1}], "showing": 1, "total": 1, "footer": "", "by": "origin"}
 {"ok": true, "items": [], "showing": 0, "total": 0, "footer": "", "origin": "host:invoices"}
-{"ok": true, "engine": "claude_code", "model": "scripted", "brain": ".../demo-brain", "uptime_s": 24.651, "sessions": 1, "tools": 6, "pending": {"showing": 0, "total": 0, "footer": ""}, "routes": ["GET /health", "POST /manifest", "POST /run", "GET /decisions", "GET /ledger", "GET /ledger/rollup", "GET /playbooks", "POST /decisions/<id>"], "sockets": []}
+{"ok": true, "engine": "claude_code", "model": "scripted", "brain": ".../demo-brain", "uptime_s": 24.651, "sessions": 1, "tools": 6, "pending": {"showing": 0, "total": 0, "footer": ""}, "routes": ["GET /health", "GET /engines", "POST /manifest", "POST /run", "GET /decisions", "GET /ledger", "GET /ledger/rollup", "GET /playbooks", "POST /decisions/<id>"], "sockets": []}
 ```
 
 `playbooks` is empty and says so honestly: a fresh demo brain has had no sleep cycle, so nothing

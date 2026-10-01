@@ -67,6 +67,7 @@ from athena.core.catalog import CatalogError
 from athena.core.ledger import LedgerError
 from athena.core.recall import recall as recall_bundle
 from athena.daemon.sessions import Session, conversation_for
+from athena.harness.engines import EngineStatus
 from athena.lane.turn_frame import tool_results_from
 
 if TYPE_CHECKING:
@@ -96,6 +97,7 @@ __all__ = [
     "decide",
     "decisions",
     "drain",
+    "engines",
     "error",
     "event_payload",
     "health",
@@ -125,6 +127,16 @@ PENDING_CEILING = 500
 #: How many waiting cards the turn frame lists, so the model can say what it is waiting for
 #: rather than proposing the same action again.
 PENDING_LINES = 10
+
+#: What a person is told when the app a turn or a card is about has not been seen. One sentence,
+#: in the user's words: the machine-readable ``reason`` beside it is the contract, this is not.
+NO_PAGE_SENTENCE = "Open the app this is about and focus its tab, then try again."
+
+#: Most origins one request may switch off; anything past it is ignored and the gate stays shut.
+MAX_DISABLED_ORIGINS = 256
+
+#: How long ``GET /engines`` trusts its last probe, and what ``?fresh=1`` skips.
+ENGINES_TTL_S = 10.0
 
 #: ``POST /decisions/<id>`` — the one path matched by prefix rather than by equality.
 DECISION_PREFIX = "/decisions/"
@@ -433,16 +445,18 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
     origin = str(body.get("origin", "")).strip()
     session = daemon.sessions.get(origin)
     if session is None:
-        return error(
-            403,
-            "foreign_origin",
-            f"{origin!r} has sent no manifest; register the origin before running a turn",
-        )
+        return error(403, "foreign_origin", NO_PAGE_SENTENCE)
     project_id = str(body.get("project_id", "") or "")
     if project_id and not ids.is_id("project", project_id):
         return error(400, "unknown_ref", f"not a project id: {project_id!r}")
 
-    ctx = turn_context(daemon, session, project_id, surface=str(body.get("surface") or "panel"))
+    ctx = turn_context(
+        daemon,
+        session,
+        project_id,
+        surface=str(body.get("surface") or "panel"),
+        disabled_origins=disabled_origins_from(body),
+    )
     raw_results = body.get("tool_results")
     results = tool_results_from(
         [row for row in raw_results if isinstance(row, Mapping)]
@@ -462,6 +476,24 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
     )
 
 
+def disabled_origins_from(body: Mapping[str, Any]) -> frozenset[str]:
+    """``disabled_origins`` off a request body: the apps the user switched off for this run.
+
+    The origins table lives in the shell's store, so the shell says it on every request and the
+    daemon keeps none of it. A value that is not a list of strings is read as an empty list --
+    nothing extra is refused -- because a malformed field must not switch an app *on*; the shell
+    is the one that decides, and it sends well-formed JSON.
+    """
+    raw = body.get("disabled_origins")
+    if not isinstance(raw, list):
+        return frozenset()
+    return frozenset(
+        item.strip()
+        for item in raw[:MAX_DISABLED_ORIGINS]
+        if isinstance(item, str) and item.strip()
+    )
+
+
 def turn_context(
     daemon: AthenaDaemon,
     session: Session,
@@ -469,6 +501,7 @@ def turn_context(
     *,
     surface: str = "panel",
     trigger: str = "cli",
+    disabled_origins: frozenset[str] = frozenset(),
 ) -> TurnContext:
     """The context one turn runs under, and the session refreshed for it.
 
@@ -487,6 +520,7 @@ def turn_context(
         app_id=session.app_id,
         page_origin=session.origin,
         project_id=project_id or None,
+        disabled_origins=disabled_origins,
     )
     daemon.sessions.touch(session.origin, session.app_id, tools=session.tools)
     return ctx
@@ -594,7 +628,9 @@ def decide(daemon: AthenaDaemon, request: Request, approval_id: str) -> Reply:
     if refusal is not None:
         return refusal
 
-    ctx = _decision_ctx(daemon, grant.origin, grant.conversation)
+    ctx = _decision_ctx(
+        daemon, grant.origin, grant.conversation, disabled_origins_from(request.body)
+    )
     with daemon.writing():
         resolution = daemon.lane.answer_decision(approval_id, choice, ctx)
     if resolution.reason is not None and resolution.reason != "user_denied":
@@ -647,7 +683,7 @@ def _origin_refusal(daemon: AthenaDaemon, grant_origin: str, stated: str) -> Rep
         return None
     session = daemon.sessions.get(stated)
     if session is None:
-        return error(403, "foreign_origin", f"{stated!r} has no session with this daemon")
+        return error(403, "foreign_origin", NO_PAGE_SENTENCE)
     try:
         parsed = parse_origin(grant_origin)
     except ValueError as exc:  # pragma: no cover - a row cannot hold an unparseable origin
@@ -661,7 +697,12 @@ def _origin_refusal(daemon: AthenaDaemon, grant_origin: str, stated: str) -> Rep
     return None
 
 
-def _decision_ctx(daemon: AthenaDaemon, grant_origin: str, conversation: str) -> TurnContext:
+def _decision_ctx(
+    daemon: AthenaDaemon,
+    grant_origin: str,
+    conversation: str,
+    disabled_origins: frozenset[str] = frozenset(),
+) -> TurnContext:
     """The context the gate is replayed under.
 
     It is built from the *card's* origin rather than from the request, so structural policy sees
@@ -687,6 +728,7 @@ def _decision_ctx(daemon: AthenaDaemon, grant_origin: str, conversation: str) ->
         surface="panel",
         app_id=app_id,
         page_origin=page_origin,
+        disabled_origins=disabled_origins,
     )
 
 
@@ -815,6 +857,33 @@ def playbooks(daemon: AthenaDaemon, request: Request) -> Reply:
     return 200, reply
 
 
+# --- GET /engines --------------------------------------------------------------------------------
+
+
+def engines(daemon: AthenaDaemon, request: Request) -> Reply:
+    """Which engines this machine can run, as a person would say it (setup's Check again button).
+
+    The probe is a subprocess, so it never runs under the writer lock and never touches the
+    brain: a slow ``codex --version`` must not hold a turn, and a turn must not hold this. The
+    answer is cached for :data:`ENGINES_TTL_S`; ``?fresh=1`` skips the cache.
+    """
+    fresh = request.query.get("fresh", "") in ("1", "true")
+    return 200, {"ok": True, "engines": daemon.engine_rows(fresh=fresh)}
+
+
+def engine_row(status: EngineStatus) -> dict[str, str]:
+    """One probe as the wire says it: ``found``, ``not_found`` or ``not_logged_in``."""
+    if not status.available:
+        return {"id": status.name, "state": "not_found", "detail": status.detail}
+    if status.logged_in is False:
+        return {
+            "id": status.name,
+            "state": "not_logged_in",
+            "detail": f"{status.name} is installed but not signed in; sign in with it once.",
+        }
+    return {"id": status.name, "state": "found", "detail": status.version or status.detail}
+
+
 # --- the table -----------------------------------------------------------------------------------
 
 
@@ -826,6 +895,7 @@ def base_routes(daemon: AthenaDaemon) -> list[Route]:
     """
     return [
         Route("GET", "/health", lambda request: health(daemon)),
+        Route("GET", "/engines", lambda request: engines(daemon, request)),
         Route("POST", "/manifest", lambda request: manifest(daemon, request)),
         Route("POST", "/run", lambda request: run(daemon, request)),
         Route("GET", "/decisions", lambda request: decisions(daemon, request)),
