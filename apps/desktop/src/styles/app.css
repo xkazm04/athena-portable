@@ -1147,3 +1147,27 @@ select:focus-visible {
     animation-duration: 1ms !important;
   }
 }
+
+/* The one-line close confirm (UAT backlog B3): in place of the close button, never a modal. */
+.close-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  color: var(--foreground);
+}
+
+.close-confirm__btn {
+  padding: 2px 10px;
+  border: 1px solid var(--border-emphasis);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.close-confirm__btn:hover {
+  background: var(--hover-wash);
+}
