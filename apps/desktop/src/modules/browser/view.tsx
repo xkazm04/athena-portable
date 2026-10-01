@@ -95,7 +95,8 @@ export default function BrowserView({ model }: { model: BrowserModel }) {
 
           {focused ? (
             <div className="page-stand-in">
-              <p className="typo-title">The page draws here</p>
+              <p className="typo-title">Stylised placeholder</p>
+              <p className="typo-caption">In the app this area is the page itself, a native webview.</p>
               <p className="typo-caption">{focused.url}</p>
               {/* Tier 1, in the one place there is room to spell it out (README section 3.4). */}
               <p className="typo-caption">{describe(tools)}</p>

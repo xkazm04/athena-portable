@@ -928,7 +928,21 @@ pub async fn store_set(
     key: String,
     value: Value,
 ) -> Result<String, String> {
-    opened(&app)?.set(&table, &key, &value)
+    let written = opened(&app)?.set(&table, &key, &value)?;
+    changed(&app, &table, &key, Some(&value));
+    Ok(written)
+}
+
+/// Tell every privileged webview a row moved, so two windows that each mirror the table cannot
+/// disagree about the theme or the engine (ADR 0026). `settings.onboarded` turning true is the one
+/// row with a consequence in Rust: Main appears and she settles beside it.
+fn changed(app: &AppHandle, table: &str, key: &str, value: Option<&Value>) {
+    crate::ui_emit(app, "store:changed", serde_json::json!({ "table": table, "key": key }));
+    let truthy = matches!(value, Some(Value::Bool(true)))
+        || matches!(value, Some(Value::String(s)) if s == "true");
+    if table == "settings" && key == "onboarded" && truthy {
+        crate::companion::after_onboarded(app);
+    }
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -938,7 +952,9 @@ pub async fn store_list(app: AppHandle, table: String, filter: Value) -> Result<
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn store_delete(app: AppHandle, table: String, key: String) -> Result<(), String> {
-    opened(&app)?.delete(&table, &key)
+    opened(&app)?.delete(&table, &key)?;
+    changed(&app, &table, &key, None);
+    Ok(())
 }
 
 /// The file itself, for the Settings module's read-only line.

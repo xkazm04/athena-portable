@@ -38,8 +38,13 @@ vi.mock("@tauri-apps/api/core", () => ({
   }),
 }));
 
+const listeners = vi.hoisted(() => new Map<string, (e: { payload: unknown }) => void>());
+
 vi.mock("@tauri-apps/api/event", () => ({
-  listen: vi.fn(async () => () => {}),
+  listen: vi.fn(async (name: string, f: (e: { payload: unknown }) => void) => {
+    listeners.set(name, f);
+    return () => {};
+  }),
 }));
 
 // The shell's two globals, as small as the store actually needs them: `hasShell` looks for the
@@ -136,4 +141,23 @@ test("the theme is painted before it is stored, and `system` resolves at the mom
 
   systemIsLight.value = false;
   expect(resolveTheme("system")).toBe("dark");
+});
+
+test("a store:changed for settings re-reads the rows, so two windows cannot disagree", async () => {
+  // startSettings ran in the first test and subscribed; the other window now writes the theme.
+  const listener = listeners.get("store:changed");
+  expect(listener).toBeDefined();
+
+  harness.rows.set("settings/theme", "dark");
+  harness.rows.set("settings/engine", "codex");
+  listener?.({ payload: { table: "settings", key: "theme" } });
+  await vi.waitFor(() => expect(useSettings.getState().engine).toBe("codex"));
+  expect(useSettings.getState().theme).toBe("dark");
+  expect(painted.get("data-theme")).toBe("dark");
+
+  // Another table is not its business.
+  harness.rows.set("settings/engine", "claude_code");
+  listener?.({ payload: { table: "origins", key: "x" } });
+  await new Promise((r) => setTimeout(r, 5));
+  expect(useSettings.getState().engine).toBe("codex");
 });

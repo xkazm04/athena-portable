@@ -56,6 +56,14 @@ fn main() {
             // grants them, which is what stops a site operating itself through them.
             "hands_call",
             "hands_list",
+            // companion.rs (ADR 0026) - her window: named sizes, show and hide, pin, and what she
+            // reports. The first four are hers; `athena_show` and `athena_hide` are also the chrome's
+            // (the status pill summons her).
+            "athena_set_size",
+            "athena_show",
+            "athena_hide",
+            "athena_pin",
+            "athena_report",
         ])),
     )
     .expect("failed to run tauri-build");

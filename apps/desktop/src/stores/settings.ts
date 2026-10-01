@@ -19,7 +19,7 @@
  */
 import { create } from "zustand";
 
-import { hasShell } from "@/lib/ipc";
+import { hasShell, onStoreChanged } from "@/lib/ipc";
 import { DEFAULT_ENGINE, isEngineId, type EngineId } from "@/lib/engines";
 import { SETTING_KEYS, settingRead, settingWrite, storePath } from "@/lib/store";
 import { applyTheme, useShell, type Theme } from "@/stores/shell";
@@ -125,6 +125,16 @@ export async function startSettings(): Promise<void> {
     return;
   }
 
+  await readRows();
+  // ADR 0026: a second window writes the same table. Re-read on its word, so the theme and the
+  // engine cannot disagree between the two webviews.
+  await onStoreChanged((change) => {
+    if (change.table === "settings") void readRows();
+  });
+}
+
+/** Read every row, paint the resolved theme and publish. Startup and `store:changed` share it. */
+export async function readRows(): Promise<void> {
   const [engine, theme, activeProjectId, brainPath, onboarded, path] = await Promise.all([
     settingRead<string>(SETTING_KEYS.engine),
     settingRead<string>(SETTING_KEYS.theme),

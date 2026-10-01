@@ -1,0 +1,16 @@
+<!doctype html>
+<!-- Athena's own window (ADR 0026, README section 3.1). Tauri loads it into the `athena` webview,
+     a transparent, frameless window whose rectangle hugs her drawing: an 8px margin of shadow and
+     nothing else. The background is transparent on purpose (`body.athena` in companion.css), and
+     the body never scrolls: the only scroll in her is the ledger's own list. -->
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Athena</title>
+  </head>
+  <body class="overflow-hidden athena">
+    <div id="root"></div>
+    <script type="module" src="/src/athena.tsx"></script>
+  </body>
+</html>

@@ -16,11 +16,11 @@ import type { ModuleEntry } from "./types";
 
 import { entry as browser } from "./browser";
 import { entry as connectors } from "./connectors";
-import { entry as panel } from "./panel";
 import { entry as setup } from "./setup";
 
-/** In bar order: what the window does, then what it is configured to be. */
-export const MODULE_ENTRIES: readonly ModuleEntry[] = [browser, panel, connectors, setup];
+/** In bar order: what the window does, then what it is configured to be. The panel left for
+ * Athena's own window (ADR 0026). */
+export const MODULE_ENTRIES: readonly ModuleEntry[] = [browser, connectors, setup];
 
 export const MODULE_REGISTRY: Readonly<Record<string, ModuleEntry>> = Object.fromEntries(
   MODULE_ENTRIES.map((m) => [m.id, m]),

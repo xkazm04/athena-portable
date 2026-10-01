@@ -21,16 +21,23 @@
 import { useCallback, useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 
+import ModuleBar from "@/components/ModuleBar";
+import AthenaPreview from "@/companion/preview";
 import { MODULE_ENTRIES, moduleFor } from "@/modules/registry";
 import { THEMES, applyTheme, isTheme, type Theme } from "@/stores/shell";
 
 import "@/styles/app.css";
+import "@/companion/companion.css";
 
 interface Query {
   module: string;
   fixture: string;
   theme: Theme;
   chrome: boolean;
+  /** `?bar=1`: draw the real module bar above the module, as the window does. */
+  bar: boolean;
+  /** `?athena=rest|work|card`: what the bar's presence pill reads. */
+  athena: string;
 }
 
 /** Every field defaulted, so no parameter can blank the page. */
@@ -42,6 +49,8 @@ function readQuery(): Query {
     fixture: q.get("fixture") ?? "typical",
     theme: isTheme(theme) ? theme : "dark",
     chrome: q.get("chrome") !== "0",
+    bar: q.get("bar") === "1",
+    athena: q.get("athena") ?? "rest",
   };
 }
 
@@ -52,6 +61,7 @@ function writeQuery(next: Query): void {
     fixture: next.fixture,
     theme: next.theme,
     ...(next.chrome ? {} : { chrome: "0" }),
+    ...(next.bar ? { bar: "1", athena: next.athena } : {}),
   });
   window.history.replaceState(null, "", `${window.location.pathname}?${q}`);
 }
@@ -111,6 +121,20 @@ function Preview() {
       {/* A definite height with one scroll, exactly as the window gives the module area, because
           `PageShell fill` resolves against a definite height: a harness that let the page grow
           instead would render a `fill` module short and nobody could tell that from a bug. */}
+      {query.bar ? (
+        <ModuleBar
+          items={MODULE_ENTRIES.map((m) => ({ id: m.id, label: m.label }))}
+          active={entry.id}
+          onSelect={(id) => set({ module: id, fixture: "typical" })}
+          presence={
+            query.athena === "card"
+              ? { tone: "human", text: "1 waiting" }
+              : query.athena === "work"
+                ? { tone: "work", text: "Reading Invoices" }
+                : { tone: "idle", text: "Athena is resting" }
+          }
+        />
+      ) : null}
       <main className="harness__body">{entry.preview(fixture)}</main>
     </div>
   );
@@ -145,6 +169,15 @@ function Picker({
   );
 }
 
+/**
+ * `?surface=athena` is her own window (ADR 0026): not a module, so it has no `ModuleEntry`, but it
+ * follows the same contract — a pure view, a fixture, inert actions — and `companion/preview.tsx`
+ * renders it. Every other query is the module harness above.
+ */
+const surface = new URLSearchParams(window.location.search).get("surface");
+
 // No `StrictMode` here, deliberately: the harness exists to look at a render, and a
 // double-invoked render of a pure component is noise in a screenshot rather than a signal.
-ReactDOM.createRoot(document.getElementById("root")!).render(<Preview />);
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  surface === "athena" ? <AthenaPreview /> : <Preview />,
+);

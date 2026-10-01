@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { DaemonApi, type ConnectorView } from "@/lib/api";
 
-import { resetConnectorsForTests, setConnectorDeps, useConnectors } from "./connectors";
+import { reloadOnStoreChange, resetConnectorsForTests, setConnectorDeps, useConnectors } from "./connectors";
 
 function row(id: string, over: Partial<ConnectorView> = {}): ConnectorView {
   return {
@@ -212,5 +212,27 @@ describe("the consent flow", () => {
     expect(state.items[0].connection.identity).toBe("me@example.test");
     expect(state.busy).toEqual({});
     expect(JSON.stringify(state)).not.toContain("sec\"");
+  });
+});
+
+describe("store:changed", () => {
+  it("re-reads the list for the connectors table and for no other", async () => {
+    let reads = 0;
+    const api = {
+      connectors: async () => {
+        reads += 1;
+        return { connectors: [row("gmail")] };
+      },
+    } as unknown as DaemonApi;
+    setConnectorDeps({ api: () => api, wait: async () => {} });
+
+    reloadOnStoreChange({ table: "settings", key: "theme" });
+    await Promise.resolve();
+    expect(reads).toBe(0);
+
+    reloadOnStoreChange({ table: "connectors", key: "gmail" });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(reads).toBe(1);
+    expect(useConnectors.getState().items).toHaveLength(1);
   });
 });

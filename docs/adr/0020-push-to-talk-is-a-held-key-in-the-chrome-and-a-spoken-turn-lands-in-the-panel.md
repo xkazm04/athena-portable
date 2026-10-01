@@ -4,6 +4,9 @@ Date: 2026-09-12
 
 ## Status
 
+> **Partly superseded by [0026](0026-athena-is-her-own-window-and-main-is-the-workhorse.md):** the held
+> key lives in her window now, and two global chords exist only while a card waits. The rest stands.
+
 Accepted. Implements the plan's c32 (README §3.1); builds on ADR 0019 (voice is a socket on the
 daemon's port), ADR 0013 (the module-first window) and ADR 0014 (the relay).
 

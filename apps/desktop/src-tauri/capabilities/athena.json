@@ -1,0 +1,29 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "athena",
+  "description": "The Athena companion window (ADR 0026). It holds exactly one webview and that webview is privileged, so, unlike `ui.json` whose window also holds page webviews, it may name its window. What it is granted is what her stores need and nothing of Main's: her own window commands, the tab list and the bridge (the run loop runs a page's tools on the focused tab), the daemon's status, the store, and the hands. It is given no tabs_create, tabs_close, tabs_focus, tabs_navigate or layout_*: she reads what Main has open and never opens, closes or selects anything in it.",
+  "local": true,
+  "windows": [
+    "athena"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "core:webview:allow-internal-toggle-devtools",
+    "allow-athena-set-size",
+    "allow-athena-show",
+    "allow-athena-hide",
+    "allow-athena-pin",
+    "allow-athena-report",
+    "allow-tabs-list",
+    "allow-bridge-list",
+    "allow-bridge-call",
+    "allow-daemon-status",
+    "allow-store-get",
+    "allow-store-set",
+    "allow-store-list",
+    "allow-store-delete",
+    "allow-hands-call",
+    "allow-hands-list"
+  ]
+}

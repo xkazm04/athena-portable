@@ -162,3 +162,27 @@ export const onTabsChanged = (f: (tabs: Tab[]) => void): Promise<UnlistenFn> =>
 /** Emitted whenever the selected module changes, whoever changed it. */
 export const onLayoutChanged = (f: (module: string) => void): Promise<UnlistenFn> =>
   listen<{ module: string }>("layout:changed", (e) => f(e.payload.module));
+
+/**
+ * A table changed under another window's hand (ADR 0026): `{table, key}`. The settings, origins
+ * and connectors mirrors re-read on it, so the theme and the engine cannot disagree between the
+ * `chrome` window and the `athena` one.
+ */
+export interface StoreChanged {
+  table: string;
+  key: string;
+}
+
+export const onStoreChanged = (f: (change: StoreChanged) => void): Promise<UnlistenFn> =>
+  listen<StoreChanged>("store:changed", (e) => f(e.payload));
+
+/** What she is doing, as Rust reports it for the status pill (`athena:status`, ADR 0026). */
+export interface AthenaStatus {
+  state: string;
+  cards: number;
+  line: string;
+  visible: boolean;
+}
+
+export const onAthenaStatus = (f: (status: AthenaStatus) => void): Promise<UnlistenFn> =>
+  listen<AthenaStatus>("athena:status", (e) => f(e.payload));

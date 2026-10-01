@@ -31,6 +31,8 @@
     "allow-store-path",
     "allow-captures-sweep",
     "allow-hands-call",
-    "allow-hands-list"
+    "allow-hands-list",
+    "allow-athena-show",
+    "allow-athena-hide"
   ]
 }

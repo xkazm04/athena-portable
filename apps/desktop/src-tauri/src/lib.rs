@@ -13,8 +13,11 @@
 //! two adjacent lines rather than on one list. That is deliberate: README section 9 names "seven
 //! people editing one panel" as a risk, and this is the Rust half of the answer.
 
+mod companion;
+mod hotkeys;
 mod layout;
 mod tabs;
+mod tray;
 // ── registrations: modules ────────────────────────────────────────────────────────────────────
 // c19 `mod bridge;`  c20 `mod daemon;`  c21 `mod store;`  c24 `mod hands;`  c27 `mod tray;`
 mod bridge;
@@ -70,15 +73,23 @@ fn hands_list() -> Vec<serde_json::Value> {
     hands::webmcp_tools()
 }
 
-/// Emit to the privileged webview only.
+/// Emit to the privileged webviews only: the chrome and the Athena window.
 ///
 /// **Never `app.emit` in this crate.** `app.emit` broadcasts into the page webviews as well, and
-/// a page webview is whatever site the user navigated to — from c20 the status event carries the
-/// daemon's token, and the habit has to exist before the secret does.
+/// a page webview is whatever site the user navigated to - from c20 the status event carries the
+/// daemon's token, and the habit has to exist before the secret does. ADR 0026 adds a second
+/// privileged label; it does not add a way to reach a page.
 pub fn ui_emit<S: Serialize + Clone>(app: &AppHandle, event: &str, payload: S) {
+    for label in [CHROME_WEBVIEW, companion::ATHENA_WINDOW] {
+        ui_emit_to(app, label, event, payload.clone());
+    }
+}
+
+/// Emit to one privileged label (`chrome` or `athena`), for an event only one of them hears.
+pub fn ui_emit_to<S: Serialize + Clone>(app: &AppHandle, label: &str, event: &str, payload: S) {
     let _ = app.emit_to(
         EventTarget::AnyLabel {
-            label: CHROME_WEBVIEW.to_string(),
+            label: label.to_string(),
         },
         event,
         payload,
@@ -151,6 +162,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(Tabs::default())
         .manage(Selection::default())
+        .manage(companion::Companion::default())
         // ── registrations: state ──────────────────────────────────────────────────────────────
         // c19 `.manage(Bridge::default())` · c20 `.manage(Daemon::default())`
         // c21 `.manage(Store::open(..))` (in `setup`, it needs a path) · c27 `.manage(Tray::…)`
@@ -180,10 +192,27 @@ pub fn run() {
             store::captures_sweep,
             hands_call,
             hands_list,
+            companion::athena_set_size,
+            companion::athena_show,
+            companion::athena_hide,
+            companion::athena_pin,
+            companion::athena_report,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
-            build_shell(&handle)?;
+            // The store comes first: whether this is a first launch decides which window the
+            // user sees, and the store is what knows (`settings.onboarded`).
+            store::init(&handle);
+            let first_launch = is_first_launch(&handle);
+            build_shell(&handle, first_launch)?;
+            if let Err(e) = companion::build(&handle, first_launch) {
+                eprintln!("[companion] cannot build her window: {e}");
+            }
+            if let Err(e) = tray::build(&handle) {
+                eprintln!("[tray] not built: {e}");
+            }
+            hotkeys::init(&handle);
+            companion::show(&handle);
 
             // A start page, for launching the shell straight at something: the first non-flag
             // argument, else `ATHENA_START_URL`. Without either, the shell opens with no tab and
@@ -199,7 +228,6 @@ pub fn run() {
             // ── registrations: setup ──────────────────────────────────────────────────────────
             // c20 spawns the daemon sidecar here and c27 builds the tray here; both are
             // non-fatal — the shell must come up even when they do not.
-            store::init(&handle);
             bridge::smoke_if_asked(&handle);
             // c24's own smoke: one page hand and the shell's capture, against a real window.
             hands::smoke_if_asked(&handle);
@@ -219,6 +247,16 @@ pub fn run() {
         });
 }
 
+/// `true` until the Setup wizard has been finished once (`settings.onboarded`). An unreadable
+/// store counts as a first launch: showing her welcome is the recoverable mistake.
+fn is_first_launch(app: &AppHandle) -> bool {
+    match store::opened(app).and_then(|s| s.get("settings", "onboarded")) {
+        Ok(serde_json::Value::Bool(b)) => !b,
+        Ok(serde_json::Value::String(s)) => s != "true",
+        _ => true,
+    }
+}
+
 /// The URL to open at launch, if any. An argument wins over the environment variable, so a
 /// shortcut and a shell session can each have their own answer.
 fn start_url() -> Option<String> {
@@ -236,12 +274,16 @@ fn start_url() -> Option<String> {
 /// The chrome is built at its **module-mode** geometry — the whole window — because that is what
 /// the default selection means with no tab open yet, and `layout::apply` at the end is what makes
 /// the first frame right whichever shape the shell actually comes up in.
-fn build_shell(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+///
+/// **On first launch Main is built hidden** (ADR 0026): the only window the user sees is Athena at
+/// `welcome`, and "Open your first app" is what shows Main (`companion::after_onboarded`).
+fn build_shell(app: &AppHandle, first_launch: bool) -> Result<(), Box<dyn std::error::Error>> {
     let window = tauri::window::WindowBuilder::new(app, MAIN_WINDOW)
         .title("Athena")
         .inner_size(1440.0, 900.0)
         .min_inner_size(900.0, 600.0)
         .decorations(false)
+        .visible(!first_launch)
         .center()
         .build()?;
 
@@ -256,6 +298,12 @@ fn build_shell(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         if let WindowEvent::Resized(_) | WindowEvent::ScaleFactorChanged { .. } = event {
             layout::apply(&handle);
         }
+        // Closing Main quits the app: she is off the taskbar, so a Main that closed and left her
+        // running would leave nothing to find her by but the tray.
+        if let WindowEvent::CloseRequested { .. } = event {
+            handle.exit(0);
+        }
+        companion::on_main_event(&handle, event);
     });
 
     layout::apply(app);

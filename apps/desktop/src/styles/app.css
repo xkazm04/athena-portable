@@ -1,12 +1,16 @@
-/* The token contract, light and dark — README section 3.1 (surfaces), and the house style the
- * first build settled on (`docs/athena-desktop/house-style.md` in the reference repository).
+/* The token contract, light and dark — README section 3.1 (surfaces); ADR 0026 (identity).
  *
- * This is the whole stylesheet of the app. The first build copied a 5,600-line design system out
- * of another product and then spent four sections of its house style arguing with the document
- * brightness filter that came with it; nothing is painted through a filter here, so a ratio
- * computed from these values is the ratio that reaches the screen.
+ * The palette is The Countersign's token sheet on the personas dark-teal palette: teal is the
+ * machine's world (Main, every status), paper and one pink ink are the human's, and `--role-human`
+ * is that pink and nothing else in the product. The dark values are the palette's own; the light
+ * pair is the same roles re-seated for a near-white canvas. The steps the palette lacks — a raised
+ * surface, a recessed one, a hairline, a hover wash, a focus ring — are derived from its values
+ * and named below so they can be audited.
  *
- * What is carried over is the contract, not the file:
+ * This is the whole stylesheet of the app. Nothing is painted through a filter, so a ratio
+ * computed from these values is the ratio that reaches the screen. The Athena window's housing
+ * and paper are physical objects that do not change with the theme; they live in that window's
+ * own sheet, not here.
  *
  *   1. **Tokens, never literals.** A component spells `var(--card-bg)`, never a hex. The two
  *      themes are the only place a colour is chosen.
@@ -18,62 +22,108 @@
  *   4. **Density is a variable.** `--density-gap`, `--density-pad`, `--density-pad-sm`. Never a
  *      one-off padding in a component.
  *
- * The typeface is the platform's own. The first build bundled two variable faces after measuring
- * that naming a family nobody has installed falls silently through to `serif`; the cheaper form
- * of the same lesson is to name only families the target machines actually ship.
+ * The typeface is the platform's own: naming a family nobody has installed falls silently
+ * through to `serif`, so only families the target machines ship are named.
  */
 
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --background: #0c1116;
-  --foreground: #e7edf3;
-  --muted-foreground: #93a1b1;
-  --card-bg: #141b23;
-  --card-raised: #18212b;
-  --recessed: #0a0e13;
-  --primary: #22d3ee;
+  --background: #0a1214;
+  --foreground: #e0f2fe;
+  --muted-foreground: #94c5d4;
+  /* Labels at 12px and up, large captions only: 4.6:1 on the canvas. Never prose. */
+  --muted: #5b8390;
+  --card-bg: #0d2025;
+  --card-raised: #123039;
+  --recessed: #070d0f;
+  --primary: #06b6d4;
   --primary-fg: #04222a;
-  --border-subtle: rgba(34, 211, 238, 0.08);
-  --border-default: rgba(34, 211, 238, 0.16);
-  --border-emphasis: rgba(34, 211, 238, 0.3);
-  --hover-wash: rgba(255, 255, 255, 0.06);
+  --accent: #22d3ee;
+  --btn-primary: #0e7490;
+  --on-primary: #ffffff;
+  --border-subtle: rgba(148, 197, 212, 0.09);
+  --border-default: rgba(148, 197, 212, 0.16);
+  --border-emphasis: rgba(148, 197, 212, 0.34);
+  --hover-wash: rgba(34, 211, 238, 0.07);
 
-  --status-success: #4ade80;
+  --status-success: #34d399;
   --status-warning: #fbbf24;
   --status-error: #f87171;
-  --status-info: #60a5fa;
-  --status-pending: #c4b5fd;
-  --status-neutral: #93a1b1;
+  --status-info: #22d3ee;
+  --status-pending: #a78bfa;
+  --status-neutral: #94a3b8;
+
+  /* Who is speaking. The pink is the human's and is used for "waiting on you" and nothing else. */
+  --role-agent: #a78bfa;
+  --role-human: #f472b6;
+  --role-external: #87d0fb;
+  --role-highlight: #2aa9c2;
+
+  --line: var(--border-default);
+  --line-strong: var(--border-emphasis);
+  --wash: var(--hover-wash);
+  --focus: #67e8f9;
+  --glow: rgba(34, 211, 238, 0.22);
+  --scrim: rgba(3, 8, 10, 0.55);
+  --shadow-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+
+  /* A foreign page inside Main: someone else's content, deliberately not ours. */
+  --page-bg: #1c2226;
+  --page-ink: #dfe6ea;
+  --page-ink-2: #9aa8b1;
+  --page-rule: rgba(223, 230, 234, 0.13);
+  --page-accent: #6aa3c7;
+  --page-row: rgba(223, 230, 234, 0.05);
 }
 
 [data-theme="light"] {
   color-scheme: light;
 
   --background: #eceef2;
-  --foreground: #101720;
-  /* 4.7:1 on the canvas: the muted tier is still read, it is just not the tier that leads. */
-  --muted-foreground: #576273;
-  --card-bg: #ffffff;
+  --foreground: #0f172a;
+  --muted-foreground: #3e4a5c;
+  --muted: #586883;
+  --card-bg: #f7f9fb;
   --card-raised: #ffffff;
-  --recessed: #e3e7ed;
-  --primary: #0e7490;
+  --recessed: #e3e7ee;
+  /* 4.6:1 on the recessed rung, where the title tier and tiles sit. */
+  --primary: #0c6a84;
   --primary-fg: #ffffff;
-  --border-subtle: rgba(14, 116, 144, 0.1);
-  --border-default: rgba(14, 116, 144, 0.22);
-  --border-emphasis: rgba(14, 116, 144, 0.38);
-  --hover-wash: rgba(0, 0, 0, 0.05);
+  --accent: #0891b2;
+  --btn-primary: #0e7490;
+  --on-primary: #ffffff;
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-default: rgba(15, 23, 42, 0.14);
+  --border-emphasis: rgba(15, 23, 42, 0.34);
+  --hover-wash: rgba(14, 116, 144, 0.07);
 
-  /* Re-seated for a near-white canvas: the dark roster's inks measure 2-3:1 here. Each of these
-   * clears 4.5:1 on `--card-bg` so a status word is read at prose contrast and the hue is a
-   * second channel rather than the only one. */
-  --status-success: #157347;
-  --status-warning: #8a5300;
+  /* Each of these clears 4.5:1 on `--card-bg`: a status word is read at prose contrast and the
+   * hue is a second channel rather than the only one. */
+  --status-success: #047857;
+  --status-warning: #92400e;
   --status-error: #be1b1b;
   --status-info: #1d4ed8;
   --status-pending: #6d28d9;
-  --status-neutral: #576273;
+  --status-neutral: #5b6878;
+
+  --role-agent: #6d28d9;
+  --role-human: #9d174d;
+  --role-external: #075985;
+  --role-highlight: #036d7d;
+
+  --focus: #0e7490;
+  --glow: rgba(8, 145, 178, 0.2);
+  --scrim: rgba(236, 238, 242, 0.6);
+  --shadow-elevation-1: 0 1px 2px rgba(15, 23, 42, 0.12);
+
+  --page-bg: #ffffff;
+  --page-ink: #1b2430;
+  --page-ink-2: #5a6674;
+  --page-rule: rgba(27, 36, 48, 0.12);
+  --page-accent: #2f6f97;
+  --page-row: rgba(27, 36, 48, 0.04);
 }
 
 :root {
@@ -85,7 +135,6 @@
   --radius-input: 6px;
   --radius-card: 10px;
 
-  --shadow-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.18);
   --duration-fast: 150ms;
 
   /* §3.2. Every gap and pad in the app is one of these three. */
@@ -217,7 +266,7 @@ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -663,8 +712,7 @@ select:focus-visible {
 
 .window-buttons {
   display: inline-flex;
-  align-items: center;
-  gap: 2px;
+  align-items: stretch;
 }
 
 /* The Browser module's own frame. Its first child is the tab strip and that is a contract with
@@ -690,38 +738,49 @@ select:focus-visible {
  * between a stylesheet and a Rust file, and they are edited together or not at all.
  */
 .module-bar {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: stretch;
   height: var(--bar-height);
-  padding: 0 8px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--background);
+  background: var(--recessed);
+  border-bottom: 1px solid var(--border-default);
   user-select: none;
 }
 
+.module-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px 0 12px;
+}
+
 .module-bar__mark {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   flex: none;
-  margin-right: 4px;
-  border-radius: 4px;
   user-select: none;
-  -webkit-user-drag: none;
+}
+
+.module-bar__word {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .module-bar__spacer {
   flex: 1 1 auto;
-  min-width: 0;
+  min-width: 20px;
   align-self: stretch;
 }
 
 .module-bar__item {
-  padding: 3px 10px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-interactive);
+  position: relative;
+  padding: 0 14px;
+  border: none;
   background: transparent;
   color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  font-weight: 600;
   cursor: pointer;
   transition:
     background var(--duration-fast),
@@ -734,21 +793,78 @@ select:focus-visible {
 }
 
 .module-bar__item[aria-current="page"] {
-  background: var(--card-raised);
-  border-color: var(--border-default);
   color: var(--foreground);
-  box-shadow: var(--shadow-elevation-1);
+}
+
+.module-bar__item[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 2px;
+  background: var(--primary);
+}
+
+/* The presence pill: what Athena is doing, and a way to bring her window forward. */
+.module-bar__presence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.module-bar__presence:hover {
+  background: var(--hover-wash);
+  color: var(--foreground);
+}
+
+.module-bar__dot {
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--muted);
+  border-radius: 50%;
+}
+
+.module-bar__presence[data-tone="work"] .module-bar__dot {
+  background: var(--status-info);
+  border-color: var(--status-info);
+}
+
+.module-bar__presence[data-tone="human"] {
+  color: var(--role-human);
+  font-weight: 700;
+}
+
+.module-bar__presence[data-tone="human"] .module-bar__dot {
+  background: var(--role-human);
+  border-color: var(--role-human);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--role-human) 30%, transparent);
+}
+
+.module-bar__icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .window-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 30px;
-  height: 24px;
-  padding: 0 8px;
+  width: 40px;
+  padding: 0;
   border: none;
-  border-radius: var(--radius-interactive);
   background: transparent;
   color: var(--muted-foreground);
   cursor: pointer;
@@ -758,6 +874,7 @@ select:focus-visible {
   background: var(--hover-wash);
   color: var(--foreground);
 }
+
 
 /* Push-to-talk (c32). A held key is a lit dot and a label; the phases differ by the dot alone,
  * so the control reads at a glance beside the window buttons without a second colour. */
@@ -846,8 +963,8 @@ select:focus-visible {
   gap: 8px;
   height: var(--strip-height);
   padding: 0 8px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--background);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--card-bg);
   user-select: none;
 }
 
@@ -861,7 +978,7 @@ select:focus-visible {
   flex: 1 1 auto;
   min-width: 0;
   align-self: stretch;
-  padding: 4px 0;
+  padding: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -877,10 +994,11 @@ select:focus-visible {
   max-width: 11rem;
   height: 100%;
   flex: none;
-  padding: 0 6px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-interactive);
-  color: var(--foreground);
+  padding: 0 10px 0 12px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--muted-foreground);
 }
 
 .tab-chip:hover {
@@ -889,10 +1007,10 @@ select:focus-visible {
 
 .tab-chip--focused,
 .tab-chip--focused:hover {
-  /* Colour alone cannot carry "this is the one": the fill, the edge and the elevation do. */
-  background: var(--card-raised);
-  border-color: var(--border-default);
-  box-shadow: var(--shadow-elevation-1);
+  /* Colour alone cannot carry "this is the one": the fill, the ink and the underline do. */
+  background: var(--background);
+  border-bottom-color: var(--primary);
+  color: var(--foreground);
 }
 
 .tab-chip__label {

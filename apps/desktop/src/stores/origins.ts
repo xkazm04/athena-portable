@@ -19,7 +19,7 @@
  */
 import { create } from "zustand";
 
-import { hasShell } from "@/lib/ipc";
+import { hasShell, onStoreChanged } from "@/lib/ipc";
 import {
   blankOrigin,
   originForget,
@@ -162,4 +162,8 @@ export async function startOrigins(): Promise<void> {
   if (started || !hasShell()) return;
   started = true;
   await useOrigins.getState().loadAll();
+  // ADR 0026: the other window may have written an origin. Re-read the table on its word.
+  await onStoreChanged((change) => {
+    if (change.table === "origins") void useOrigins.getState().loadAll();
+  });
 }

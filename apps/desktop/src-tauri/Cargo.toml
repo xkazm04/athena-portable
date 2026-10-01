@@ -21,7 +21,9 @@ tauri-build = { version = "2", features = [] }
 # `layout.rs`. It is a Tauri feature flag, not a nightly toolchain flag — the crate builds on
 # stable rustc. README section 9's first risk row is about this API surface, and c18 is where it
 # is retired.
-tauri = { version = "2", features = ["unstable"] }
+tauri = { version = "2", features = ["unstable", "tray-icon"] }
+# The global chords of ADR 0026: one always-on, two only while a card waits.
+global-hotkey = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # The relay (c19) parks a request on a oneshot and gives up on it with a timer. Tauri already runs

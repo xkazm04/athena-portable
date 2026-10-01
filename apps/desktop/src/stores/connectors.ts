@@ -17,6 +17,7 @@
 import { create } from "zustand";
 
 import { ApiError, DaemonApi, type ConnectorView } from "@/lib/api";
+import { hasShell, onStoreChanged, type StoreChanged } from "@/lib/ipc";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import type { ConnectorProblem } from "@/modules/connectors/model";
 
@@ -206,3 +207,17 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
     },
   };
 });
+
+/** Re-read the list when the other window says the connectors table moved (ADR 0026). */
+export function reloadOnStoreChange(change: StoreChanged): void {
+  if (change.table === "connectors") void useConnectors.getState().load();
+}
+
+let started = false;
+
+/** Listen for `store:changed`. Called by `src/app.tsx`; a no-op without a shell. */
+export async function startConnectors(): Promise<void> {
+  if (started || !hasShell()) return;
+  started = true;
+  await onStoreChanged(reloadOnStoreChange);
+}

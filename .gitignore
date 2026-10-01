@@ -42,3 +42,6 @@ Thumbs.db
 # Demo recordings are built artefacts (examples/journey/take/, delivered elsewhere)
 *.mp4
 *.webm
+
+# Design contests (arena and vault, not for commits)
+.contest/

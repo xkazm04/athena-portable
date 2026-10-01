@@ -1,14 +1,18 @@
 /**
- * The app root — README section 3.1 (surfaces) and 3.5 (module-first window).
+ * The app root — README section 3.1 (surfaces) and 3.5 (module-first window); ADR 0026 (Main is
+ * the workhorse beside her).
  *
  * It is two things and nothing else: **the module bar**, and **the selected module**. The window
  * is not a browser with surfaces bolted to the side of it; it is a bar and one module at full
- * width, and the browser is one module among them.
+ * width, and the browser is one module among three. The conversation, the cards and the voice key
+ * live in Athena's own window; the bar keeps a presence pill that summons her.
  *
  * **App-wide stores are started here.** That is the day-zero rule from README section 3.5: the
  * first build's tray count lived in one page and froze the moment the user left it. A store that
  * must stay true while the user is looking at something else is started by this root and by
- * nothing else — a module's `Live` may read a store, never start one.
+ * nothing else — a module's `Live` may read a store, never start one. Main starts what Main
+ * needs (shell, tabs, tools, daemon, settings, origins, connectors, her status); the run and
+ * voice stores belong to her window (ADR 0026, "Who runs which store").
  *
  * The window buttons live here because the decorations are off: this document is also the
  * titlebar. Everything in the bar that is not a control carries `data-tauri-drag-region`, which
@@ -18,18 +22,22 @@
 import { useEffect } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
-import mark from "@/assets/athena-mark.png";
-import ModuleBar from "@/components/ModuleBar";
-import PushToTalk from "@/components/PushToTalk";
+import ModuleBar, { BarIcon, type Presence } from "@/components/ModuleBar";
+import { athenaShow } from "@/lib/companion";
 import { hasShell } from "@/lib/ipc";
 import { MODULE_ENTRIES, moduleFor } from "@/modules/registry";
+import { isResting, pillText, startAthena, useAthena } from "@/stores/athena";
+import { startConnectors } from "@/stores/connectors";
 import { startDaemon } from "@/stores/daemon";
 import { startOrigins } from "@/stores/origins";
 import { startSettings, useSettings } from "@/stores/settings";
 import { startShell, useShell } from "@/stores/shell";
 import { startTabs } from "@/stores/tabs";
 import { startTools } from "@/stores/tools";
-import { startVoice, useVoice } from "@/stores/voice";
+
+const ICON_SUN =
+  "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3 7 7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7";
+const ICON_MOON = "M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z";
 
 export default function App() {
   const module = useShell((s) => s.module);
@@ -37,6 +45,7 @@ export default function App() {
   const theme = useShell((s) => s.theme);
   const themeChoice = useSettings((s) => s.theme);
   const setTheme = useSettings((s) => s.setTheme);
+  const athena = useAthena();
 
   useEffect(() => {
     void startShell();
@@ -47,13 +56,17 @@ export default function App() {
     // store a *view* starts stops being true the moment the user leaves that view.
     void startSettings();
     void startOrigins();
-    // c32: push-to-talk watches the daemon for `/voice` and owns the Ctrl+Space hotkey. Started
-    // here for the same reason as the rest: the key is in the bar on every module.
-    void startVoice();
+    void startConnectors();
+    void startAthena();
   }, []);
 
   const active = moduleFor(module);
   const Live = active.Live;
+
+  const presence: Presence = {
+    tone: athena.cards > 0 ? "human" : isResting(athena.state) ? "idle" : "work",
+    text: pillText(athena),
+  };
 
   return (
     <div className="app-root">
@@ -61,14 +74,10 @@ export default function App() {
         items={MODULE_ENTRIES.map((m) => ({ id: m.id, label: m.label }))}
         active={active.id}
         onSelect={(id) => void select(id)}
-        leading={
-          // The same mark the window and the taskbar carry, so the bar names the app the way
-          // the operating system does. Decorative here: the bar's label is the module list.
-          <img className="module-bar__mark" src={mark} alt="" aria-hidden="true" draggable={false} />
-        }
+        presence={presence}
+        onSummon={() => void athenaShow()}
         trailing={
           <>
-            <PushToTalkLive />
             {/* The Setup module owns the three-way choice (system / light / dark) and this
                 is its shortcut: one press flips to the opposite of what is *painted*, and the
                 choice it writes is a definite one, because "the opposite of system" is not a
@@ -76,12 +85,12 @@ export default function App() {
                 never disagree. */}
             <button
               type="button"
-              className="window-btn typo-label focus-ring"
+              className="window-btn focus-ring"
               title={`Theme: ${themeChoice}`}
-              aria-label={`Theme: ${themeChoice}`}
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
               onClick={() => void setTheme(theme === "dark" ? "light" : "dark")}
             >
-              {theme === "dark" ? "◗" : "◖"}
+              <BarIcon d={theme === "dark" ? ICON_SUN : ICON_MOON} />
             </button>
             <WindowButtons />
           </>
@@ -91,26 +100,6 @@ export default function App() {
         <Live />
       </main>
     </div>
-  );
-}
-
-/** The bar's hold-to-talk key, bound to the voice store. Renders nothing of its own state. */
-function PushToTalkLive() {
-  const phase = useVoice((s) => s.phase);
-  const available = useVoice((s) => s.available);
-  const reason = useVoice((s) => s.reason);
-  const partial = useVoice((s) => s.partial);
-  const press = useVoice((s) => s.press);
-  const release = useVoice((s) => s.release);
-  return (
-    <PushToTalk
-      phase={phase}
-      available={available}
-      reason={reason}
-      partial={partial}
-      onPress={() => void press()}
-      onRelease={release}
-    />
   );
 }
 
@@ -126,7 +115,7 @@ function WindowButtons() {
         aria-label="Minimise"
         onClick={() => void win.minimize()}
       >
-        –
+        <BarIcon d="M6 12h12" />
       </button>
       <button
         type="button"
@@ -135,16 +124,16 @@ function WindowButtons() {
         aria-label="Maximise"
         onClick={() => void win.toggleMaximize()}
       >
-        □
+        <BarIcon d="M7 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z" />
       </button>
       <button
         type="button"
         className="window-btn window-btn--close focus-ring"
         title="Close"
-        aria-label="Close window"
+        aria-label="Close Main window. Athena stays."
         onClick={() => void win.close()}
       >
-        ×
+        <BarIcon d="M6.5 6.5l11 11M17.5 6.5l-11 11" />
       </button>
     </span>
   );

@@ -326,7 +326,7 @@ function pageSentence(model: SetupModel): string {
 function micSentence(model: SetupModel): string {
   switch (model.mic) {
     case "granted":
-      return "The microphone answered. Hold the key in the bar, or Ctrl+Space, to talk.";
+      return "The microphone answered. Hold Ctrl+Space in her window to talk.";
     case "denied":
       return "The webview refused the microphone; push-to-talk stays off until it is allowed.";
     case "unsupported":

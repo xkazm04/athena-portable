@@ -2,6 +2,10 @@
 
 Date: 2026-09-12
 
+> **Partly superseded by [0026](0026-athena-is-her-own-window-and-main-is-the-workhorse.md).** The window is
+> no longer the whole product: Main keeps this shape (Browser, Connectors, Setup) and Athena is a
+> second, standalone window. The decisions about one privileged webview *inside Main* stand.
+
 > Numbered 0013 rather than 0012: `0012-one-turn-is-one-sse-stream-of-channel-events.md` landed on
 > main from the daemon lane while this was being written.
 
