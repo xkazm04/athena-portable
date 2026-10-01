@@ -67,6 +67,32 @@ test("several cards: a count, a pip each, and the first one is the slip on show"
   expect(out.match(/<i class="(cur)?"><\/i>/g)).toHaveLength(3);
 });
 
+test("while the answer is on its way nothing is stamped and the buttons say Sending", () => {
+  const out = html("slip sending");
+  expect(out).toContain("Sending…");
+  expect(out).not.toContain("sl-stamp");
+  expect(out).not.toContain("data-decision=");
+  expect(out).not.toContain("APPROVED");
+  expect(out).toMatch(/data-act="approve"[^>]*disabled/);
+  expect(out).toMatch(/data-act="decline"[^>]*disabled/);
+  // the card is still the card: the action and the parameters are on it
+  expect(out).toContain("host.ledgerbox.chase");
+  expect(out).toContain("INV-118");
+  expect(out).toContain("Nothing runs until you sign");
+});
+
+test("a refused answer leaves the card with the buttons back on and one plain sentence under them", () => {
+  const out = html("slip refused");
+  expect(out).toContain("That answer was refused: this decision belongs to a different app");
+  expect(out).toContain("Focus the app this decision is about and try again.");
+  expect(out).not.toContain("sl-stamp");
+  expect(out).not.toMatch(/data-act="approve"[^>]*disabled/);
+  expect(out).toContain("<kbd>A</kbd>");
+  // the refusal sits after the buttons
+  expect(out.indexOf('data-act="decline"')).toBeLessThan(out.indexOf("data-refusal"));
+  expect(html("slip")).not.toContain("data-refusal");
+});
+
 test("a stamped slip carries the impression and its buttons are disabled, so it cannot be answered twice", () => {
   const approved = html("slip approved");
   expect(approved).toContain('data-decision="approved"');
@@ -105,11 +131,48 @@ test("welcome: the four tiers, the two promises, and the two buttons with their 
   expect(out).toContain("Athena is here.");
   expect(out).toContain("remembers");
   expect(out).toContain("reaches");
-  expect(out).toContain("Engine: Claude Code.");
+  expect(out).toContain("Engine: Claude Code, ready.");
+  expect(out).toContain("She never asks for a key.");
   expect(out).toContain("Open your first app");
   expect(out).toContain("<kbd>Enter</kbd>");
   expect(out).toContain("Later");
   expect(out).toContain("ASKS FIRST");
+});
+
+test("welcome: no tick until the probe has answered, and nothing in it is jargon", () => {
+  const looking = html("welcome looking");
+  expect(looking).toContain("Looking for your engine…");
+  expect(looking).not.toContain("Engine: Claude Code");
+  expect(looking).not.toContain("check-engines");
+  expect(looking).not.toMatch(/PATH|probe|daemon/);
+});
+
+test("welcome: a missing engine is an amber mark, the plain remedy and a button that looks again", () => {
+  const out = html("welcome missing");
+  expect(out).toContain('data-engine="missing"');
+  expect(out).toContain("Claude Code is not on this computer yet.");
+  expect(out).toContain("Install it, then press Check again.");
+  expect(out).toContain('data-act="check-engines"');
+  expect(out).toContain("Check again");
+  expect(out).not.toContain('data-act="use-engine"');
+  expect(out).not.toMatch(/PATH|probe|daemon/);
+  expect(out).not.toContain("Engine: Claude Code, ready");
+  // the button is a real button, so the keyboard reaches it
+  expect(out).toMatch(/<button[^>]*data-act="check-engines"/);
+});
+
+test("welcome: when the other engine is ready it is offered, not assumed", () => {
+  const out = html("welcome missing other");
+  expect(out).toContain("Codex is ready on this computer");
+  expect(out).toContain('data-act="use-engine"');
+  expect(out).toContain("Use Codex");
+});
+
+test("after Later the empty Talk says Main is hidden and offers the way back", () => {
+  const out = html("ledger later");
+  expect(out).toContain("Main is hidden. Click here or use the tray to open it.");
+  expect(out).toContain('data-act="open-main"');
+  expect(html("ledger empty")).not.toContain("Main is hidden");
 });
 
 test("the ledger has three tabs, the waiting card inline in Talk, and a composer", () => {
@@ -128,18 +191,44 @@ test("the ledger says why the composer is off, and offers a question to ask othe
   expect(out).toContain("Open a page first");
   expect(out).toContain("disabled");
   const degraded = html("ledger degraded");
-  expect(degraded).toContain("daemon is not running yet");
-  expect(degraded).toContain("engine_error");
+  expect(degraded).toContain("Athena is not running yet");
+  // the sentence is the plain one; the code and the detail are in the expanded record
+  expect(degraded).toContain("Athena could not start Claude Code on this computer. Check Setup.");
   expect(degraded).toContain("The turn stopped");
+  expect(degraded).toContain("<details");
+  expect(degraded).toContain("engine_error");
+  const sentence = /<p>(Athena could not start[^<]*)<\/p>/.exec(degraded)?.[1] ?? "";
+  expect(sentence).not.toMatch(/engine_error|FileNotFoundError|origin|manifest|session/);
 });
 
-test("Record lists this session's calls with their class and the daemon's, with (showing N of M)", () => {
+test("Record has two labelled lists, each with its own (showing N of M), and the app, tool, class and clock on every row", () => {
   const out = html("ledger record");
-  expect(out).toContain("This session");
+  expect(out).toContain("This window");
+  expect(out).toContain("Earlier (kept on this computer)");
+  expect(out).not.toContain("This session");
   expect(out).toContain("host.ledgerbox.list_overdue");
   expect(out).toContain("approved");
+  expect(out).toContain("refused");
+  // the app (origin host) and the gate class on a decision row
+  expect(out).toContain("ledgerbox");
+  expect(out).toContain('class="chip chip-gated">GATED');
+  // a clock on every row that carries a time
+  expect(out).toMatch(/class="rec-c">\d{2}:\d{2}</);
+  // every list says how much of itself it shows
+  expect(out).toContain("(showing 4 of 4)");
+  expect(out).toContain("(showing 2 of 5)");
   expect(out).toContain("(showing 2 of 14)");
   expect(out).toContain("engine_error");
+});
+
+test("the Record's header claims completeness only when every list is whole", () => {
+  const cut = html("ledger record");
+  expect(cut).not.toContain("Nothing is missing from this list");
+  expect(cut).toContain('data-complete="0"');
+  expect(cut).toMatch(/Some are not shown here \(showing \d+ of \d+\)/);
+  const whole = html("ledger record whole");
+  expect(whole).toContain("Nothing is missing from this list");
+  expect(whole).toContain('data-complete="1"');
 });
 
 test("Origins lists what the page offers with the gate's class, and the apps she has seen", () => {

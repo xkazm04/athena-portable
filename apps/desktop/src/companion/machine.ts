@@ -36,9 +36,9 @@ export const QUIET_MS = 45_000;
 export const PEEK_MS = 6_000;
 /** The paper has torn away by now; a smaller rectangle may be asked for (ms). */
 export const SHRINK_MS = 380;
-/** The stamp has landed and the slip tears off (ms into a decision). */
+/** The stamp has landed and the slip tears off (ms after the daemon took the answer). */
 export const TEAR_MS = 900;
-/** The slip is gone and she returns to whatever she was (ms into a decision). */
+/** The slip is gone and she returns to whatever she was (ms after the daemon took the answer). */
 export const SETTLE_MS = 1_500;
 /** A turn that has just ended stays on the tape this long, so its last line can be read (ms). */
 export const LINGER_MS = 2_500;
@@ -46,6 +46,11 @@ export const LINGER_MS = 2_500;
 export interface Decided {
   kind: Choice;
   by: By;
+  /**
+   * The answer is on its way and the daemon has not said yes. The card is still the card: there is no
+   * stamp, no "Approved", and the buttons read "Sending..." until `sent` arrives (UAT backlog B1).
+   */
+  sending: boolean;
   /** The slip has started to tear off the housing. */
   tearing: boolean;
   /** The store has already dropped the card; it is still drawn until the slip has torn away. */
@@ -94,6 +99,8 @@ export type Event =
   | { t: "work"; on: boolean }
   | { t: "listen"; on: boolean }
   | { t: "decide"; kind: Choice; by: By }
+  /** The daemon's verdict on the answer. `text` is what a screen reader is told when it was refused. */
+  | { t: "sent"; ok: boolean; text?: string }
   | { t: "seal" }
   | { t: "esc" }
   | { t: "expand" }
@@ -123,7 +130,8 @@ export type Effect =
   | { type: "schedule"; key: TimerKey; ms: number; event: Event }
   | { type: "cancel"; key: TimerKey }
   | { type: "answer"; kind: Choice; by: By }
-  | { type: "show" }
+  /** `focus: false` shows her without taking the keyboard (a card arriving over someone's work). */
+  | { type: "show"; focus?: boolean }
   | { type: "hide" }
   | { type: "pin"; on: boolean }
   | { type: "onboard" }
@@ -236,7 +244,7 @@ function step(s: MachineState, prev: MachineState, event: Event, fx: Effect[]): 
           s.hidden = false;
           s.snoozed = true;
           s.arrive += 1;
-          fx.push({ type: "show" });
+          fx.push({ type: "show", focus: false });
           say(s, `A decision is waiting on you. Open her to answer.`);
         } else {
           if (!s.decided) s.snoozed = false;
@@ -277,6 +285,20 @@ function step(s: MachineState, prev: MachineState, event: Event, fx: Effect[]): 
     }
     case "decide": {
       if (s.decided || shown(s) === 0) return;
+      // A chord answers only a card the person can see (UAT B9, mira-7): from a put-away or
+      // snoozed state it brings the slip up and waits for a second press.
+      if (event.by === "chord" && (s.hidden || s.snoozed)) {
+        if (s.hidden) {
+          s.hidden = false;
+          s.arrive += 1;
+          fx.push({ type: "show" });
+        }
+        s.snoozed = false;
+        s.peek = false;
+        if (s.mode === "ledger") s.tab = "talk";
+        say(s, "A decision is waiting. Press the key again to answer it.");
+        return;
+      }
       if (s.hidden) {
         s.hidden = false;
         s.arrive += 1;
@@ -286,13 +308,27 @@ function step(s: MachineState, prev: MachineState, event: Event, fx: Effect[]): 
       if (s.mode === "ledger") s.tab = "talk";
       s.snoozed = false;
       s.peek = false;
-      s.decided = { kind: event.kind, by: event.by, tearing: false, dropped: false };
+      // The answer goes out, but nothing is stamped: the daemon has not said yes yet.
+      s.decided = { kind: event.kind, by: event.by, sending: true, tearing: false, dropped: false };
       fx.push({ type: "answer", kind: event.kind, by: event.by });
+      say(s, "Sending your answer.");
+      return;
+    }
+    case "sent": {
+      if (!s.decided || !s.decided.sending) return;
+      if (!event.ok) {
+        // Refused: the card is still the card, the buttons come back, and the reason is said.
+        const kind = s.decided.kind;
+        s.decided = null;
+        say(s, event.text ?? `That answer was refused. The decision is still waiting. (${kind})`);
+        return;
+      }
+      s.decided = { ...s.decided, sending: false };
       schedule(fx, "tear", TEAR_MS, { t: "tear" });
       schedule(fx, "settle", SETTLE_MS, { t: "settle" });
       say(
         s,
-        event.kind === "approve"
+        s.decided.kind === "approve"
           ? "Approved. Stamped and sent to the record."
           : "Declined. Nothing was sent.",
       );

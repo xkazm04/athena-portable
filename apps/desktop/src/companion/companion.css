@@ -48,6 +48,7 @@ body.athena {
   --paper-external: #075985;
   --paper-ok: #047857;
   --paper-info: #1d4ed8;
+  --paper-warn: #92400e;
   --paper-grain: rgba(6, 40, 50, 0.028);
 
   --mk-field: #06b6d4;
@@ -1628,4 +1629,104 @@ body.athena {
 /* the keycap on the teal button is full strength: at .85 it measures 4.35:1, under the 4.5 floor */
 .aw .aw-btn-primary kbd {
   opacity: 1;
+}
+
+/* ---------------------------------------------------------------- the daemon decides (UAT backlog B1, B4, B5, B6)
+ * A refusal under the buttons, the engine line that says what a probe found, the way back to Main,
+ * and the Record's second line (app and clock). Tokens only; nothing under 12px. */
+.aw .ic.warn {
+  color: var(--paper-warn);
+  width: var(--icon-m);
+  height: var(--icon-m);
+}
+.aw .ic.wait {
+  color: var(--paper-ink-2);
+  width: var(--icon-m);
+  height: var(--icon-m);
+}
+.aw .sl-refuse {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 6px 8px;
+  border-left: 3px solid var(--paper-warn);
+  background: var(--paper-2);
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--paper-ink);
+}
+.aw .slip[data-sending="1"] .sl-sign .aw-btn {
+  cursor: progress;
+}
+.aw .wl-engine[data-engine="missing"] {
+  padding-left: 8px;
+  border-left: 3px solid var(--paper-warn);
+}
+.aw .wl-engine-act {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.aw .wl-engine-act .aw-btn {
+  min-height: 32px;
+  border: 1.5px solid var(--paper-rule);
+  color: var(--paper-ink);
+}
+.aw .rec li {
+  flex-wrap: wrap;
+}
+.aw .rec-meta {
+  flex-basis: 100%;
+  display: flex;
+  gap: 10px;
+  font-size: var(--t-label);
+  color: var(--paper-ink-2);
+}
+.aw .rec-meta .rec-a {
+  color: var(--paper-external);
+}
+.aw .rec-declined,
+.aw .rec-refused {
+  color: var(--paper-stamp);
+}
+.aw .lg-main {
+  margin: 4px 0 0;
+}
+.aw .aw-textbtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--paper-external);
+  text-decoration: underline;
+  text-align: left;
+  cursor: pointer;
+}
+.aw .aw-textbtn:focus-visible {
+  outline: 2px solid var(--paper-ink);
+  outline-offset: 2px;
+}
+.aw .msg-tech {
+  margin-top: 6px;
+  font-size: var(--t-label);
+  color: var(--paper-ink-2);
+}
+.aw .msg-tech summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.aw .msg-tech summary:focus-visible {
+  outline: 2px solid var(--paper-ink);
+  outline-offset: 2px;
+}
+.aw .wl-stamp {
+  pointer-events: none;
+}
+.aw .wl:has(.wl-engine[data-engine="missing"]) .wl-stamp {
+  display: none;
 }

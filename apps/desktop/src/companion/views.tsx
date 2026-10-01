@@ -15,9 +15,11 @@ import { useEffect, useRef, type FormEvent, type KeyboardEvent } from "react";
 
 import { Chip, Defs, Icon, Mark, Ring, Sketch, Stamp } from "./drawing";
 import type { LedgerTab } from "./machine";
+import { showingOf } from "./model";
 import type {
   CardView,
   CompanionModel,
+  EngineView,
   MessageBlock,
   RecordRow,
   StepView,
@@ -47,7 +49,8 @@ export default function CompanionView({ model }: { model: CompanionModel }) {
       data-cards={String(cardCount)}
       data-attn={model.attn ? "1" : "0"}
       data-quiet={model.quiet ? "1" : "0"}
-      data-decided={model.decision?.kind ?? undefined}
+      data-decided={model.decision && !model.decision.sending ? model.decision.kind : undefined}
+      data-sending={model.decision?.sending ? "1" : undefined}
       data-listening={model.listening ? "1" : "0"}
     >
       <Defs />
@@ -179,12 +182,18 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
   }
   const total = model.cards.length;
   const count = total > 1 ? `${total} waiting` : "1 waiting";
-  const decided = decision !== null;
+  // The answer is on its way, or already given: either way the buttons are off.
+  const decided = decision !== null || card.sending;
+  // Nothing is stamped until the daemon has said yes.
+  const stamped = decision !== null && !decision.sending;
+  const sendingNow = (kind: "approve" | "decline") =>
+    card.sending && (decision === null || decision.kind === kind);
   return (
     <article
       className={`slip${inline ? " slip-inline" : ""}`}
       data-card={card.id}
-      data-decision={decision ? (decision.kind === "approve" ? "approved" : "declined") : undefined}
+      data-sending={card.sending ? "1" : undefined}
+      data-decision={stamped ? (decision.kind === "approve" ? "approved" : "declined") : undefined}
       aria-label={`Decision card: ${card.action} ${card.id}, waiting on you`}
     >
       <header className="sl-head">
@@ -212,18 +221,30 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
         </div>
       </div>
       <div className="sl-sign">
-        <button type="button" className="aw-btn aw-btn-stamp" data-act="approve" aria-keyshortcuts="A" disabled={decided} onClick={() => actions.approve("click")}>
-          Approve <kbd>A</kbd>
+        <button type="button" className="aw-btn aw-btn-stamp" data-act="approve" aria-keyshortcuts="A" aria-busy={sendingNow("approve") || undefined} disabled={decided} onClick={() => actions.approve("click")}>
+          {sendingNow("approve") ? (
+            "Sending…"
+          ) : (
+            <>
+              Approve <kbd>A</kbd>
+            </>
+          )}
         </button>
-        <button type="button" className="aw-btn aw-btn-ink" data-act="decline" aria-keyshortcuts="D" disabled={decided} onClick={() => actions.decline("click")}>
-          Decline <kbd>D</kbd>
+        <button type="button" className="aw-btn aw-btn-ink" data-act="decline" aria-keyshortcuts="D" aria-busy={sendingNow("decline") || undefined} disabled={decided} onClick={() => actions.decline("click")}>
+          {sendingNow("decline") ? (
+            "Sending…"
+          ) : (
+            <>
+              Decline <kbd>D</kbd>
+            </>
+          )}
         </button>
         <button
           type="button"
           className="aw-btn aw-btn-ghost"
           data-act="mic"
           aria-label="Hold and say approve or decline"
-          title={model.micAvailable ? "Hold and say approve or decline" : "Voice is not available: the daemon has no voice backend"}
+          title={model.micAvailable ? "Hold and say approve or decline" : "Voice is not available on this computer yet"}
           disabled={!model.micAvailable || decided}
           onPointerDown={(e) => {
             actions.micDown();
@@ -241,6 +262,12 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
           <span>Speak</span>
         </button>
       </div>
+      {card.refusal ? (
+        <p className="sl-refuse" data-refusal>
+          <Icon name="warn" className="warn" />
+          <span>{card.refusal}</span>
+        </p>
+      ) : null}
       <p className="sl-note">
         <span className="sl-note-a">
           {model.micAvailable ? "Nothing runs until you sign. Or say “approve”." : "Nothing runs until you sign."}
@@ -254,7 +281,7 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
           <span data-tr>{model.heard || "listening…"}</span>
         </span>
       </p>
-      {decision ? (
+      {stamped ? (
         <div className="sl-stamp" aria-hidden="true">
           <Stamp kind={decision.kind} by={decision.by} />
         </div>
@@ -333,12 +360,7 @@ function Welcome({ model }: { model: CompanionModel }) {
         before anything that cannot be undone.
       </p>
       <ul className="wl-facts">
-        <li>
-          <Icon name="check" className="ok" />
-          <span>
-            <b>Engine: {model.welcome.engine}.</b> She never asks for a key.
-          </span>
-        </li>
+        <EngineFact view={model.welcome.engineView} actions={actions} />
         <li>
           <Icon name="lock" className="ok" />
           <span>Runs on this machine. No account, no cloud, no telemetry.</span>
@@ -356,6 +378,34 @@ function Welcome({ model }: { model: CompanionModel }) {
         <Stamp kind="welcome" />
       </div>
     </div>
+  );
+}
+
+/**
+ * The engine line. A tick means a probe found it; until one has answered there is no tick, and when
+ * the engine is missing the mark is amber, a triangle, with the remedy and a way to look again.
+ */
+function EngineFact({ view, actions }: { view: EngineView; actions: CompanionModel["actions"] }) {
+  const icon = view.state === "ready" ? "check" : view.state === "missing" ? "warn" : "wait";
+  return (
+    <li className="wl-engine" data-engine={view.state}>
+      <Icon name={icon} className={view.state === "ready" ? "ok" : view.state === "missing" ? "warn" : "wait"} />
+      <span role="status">
+        <b>{view.text}</b> {view.sub}
+        {view.state === "missing" ? (
+          <span className="wl-engine-act">
+            <button type="button" className="aw-btn aw-btn-ghost-ink" data-act="check-engines" disabled={view.checking} onClick={actions.checkEngines}>
+              {view.checking ? "Checking…" : "Check again"}
+            </button>
+            {view.offer ? (
+              <button type="button" className="aw-btn aw-btn-ghost-ink" data-act="use-engine" onClick={() => actions.useEngine(view.offer!.id)}>
+                Use {view.offer.label}
+              </button>
+            ) : null}
+          </span>
+        ) : null}
+      </span>
+    </li>
   );
 }
 
@@ -431,6 +481,13 @@ function Talk({ model }: { model: CompanionModel }) {
                 </button>
               ))}
             </div>
+            {talk.mainHidden ? (
+              <p className="lg-main">
+                <button type="button" className="aw-textbtn" data-act="open-main" onClick={actions.openMain}>
+                  Main is hidden. Click here or use the tray to open it.
+                </button>
+              </p>
+            ) : null}
           </div>
         ) : (
           talk.blocks.map((b) => <Block key={b.id} block={b} />)
@@ -438,9 +495,13 @@ function Talk({ model }: { model: CompanionModel }) {
         {talk.error ? (
           <div className="msg msg-error" role="alert">
             <span className="msg-who">The turn stopped</span>
-            <p>
-              <code>{talk.error.reason}</code> {talk.error.detail}
-            </p>
+            <p>{talk.error.sentence}</p>
+            <details className="msg-tech">
+              <summary>Technical detail</summary>
+              <p>
+                <code>{talk.error.reason}</code> {talk.error.detail}
+              </p>
+            </details>
           </div>
         ) : null}
         {talk.working ? (
@@ -484,51 +545,74 @@ function Block({ block }: { block: MessageBlock }) {
   );
 }
 
+function RecordLine({ row }: { row: RecordRow }) {
+  return (
+    <li>
+      {row.cls ? <Chip cls={row.cls} /> : null}
+      <span className="rec-t">{row.tool}</span>
+      <span className={`rec-r rec-${row.result}`}>{row.result}</span>
+      <span className="rec-meta">
+        <span className="rec-a">{row.app}</span>
+        {row.clock ? <span className="rec-c">{row.clock}</span> : null}
+      </span>
+    </li>
+  );
+}
+
 function Record({ model }: { model: CompanionModel }) {
-  const { session, decisions, ledger } = model.record;
+  const { session, earlier, ledger, header } = model.record;
   return (
     <div className="lg-scroll" tabIndex={0}>
-      <p className="lg-lead">Every call, by app and gate class. Nothing is missing from this list.</p>
-      <h3 className="lg-h">This session</h3>
-      {session.length === 0 && decisions.length === 0 ? (
+      <p className="lg-lead" data-complete={model.record.complete ? "1" : "0"}>
+        {header}
+      </p>
+      <h3 className="lg-h">This window</h3>
+      {session.length === 0 ? (
         <p className="lg-foot">Nothing has run in this window yet.</p>
       ) : (
-        <ol className="rec">
-          {decisions.map((d) => (
-            <li key={d.id}>
-              <Chip cls="GATED" />
-              <span className="rec-t">{d.action}</span>
-              <span className={`rec-r rec-${d.result}`}>{d.result}</span>
-            </li>
-          ))}
-          {session.map((r: RecordRow) => (
-            <li key={r.id}>
-              {r.cls ? <Chip cls={r.cls} /> : null}
-              <span className="rec-t">{r.tool}</span>
-              <span className="rec-a">{r.app}</span>
-              <span className={`rec-r rec-${r.result}`}>{r.result}</span>
-            </li>
+        <ol className="rec" aria-label="This window">
+          {session.map((r) => (
+            <RecordLine key={`${r.id}/${r.result}/${r.at}`} row={r} />
           ))}
         </ol>
       )}
-      {session.length || decisions.length ? (
-        <p className="lg-foot">(showing {session.length + decisions.length} of {session.length + decisions.length})</p>
-      ) : null}
-      <h3 className="lg-h">Model calls, from the daemon</h3>
+      <p className="lg-foot">{showingOf(session.length, session.length)}</p>
+      <h3 className="lg-h">Earlier (kept on this computer)</h3>
+      {earlier === null ? (
+        <p className="lg-foot">Not read yet.</p>
+      ) : earlier.problem ? (
+        <p className="lg-foot" role="alert">
+          Could not be read: {earlier.problem}
+        </p>
+      ) : (
+        <>
+          {earlier.rows.length === 0 ? (
+            <p className="lg-foot">Nothing was kept from earlier windows.</p>
+          ) : (
+            <ol className="rec" aria-label="Earlier">
+              {earlier.rows.map((r) => (
+                <RecordLine key={`${r.id}/${r.result}/${r.at}`} row={r} />
+              ))}
+            </ol>
+          )}
+          <p className="lg-foot">{earlier.footer}</p>
+        </>
+      )}
+      <h3 className="lg-h">Model calls</h3>
       {ledger === null ? (
-        <p className="lg-foot">The daemon has not answered yet.</p>
+        <p className="lg-foot">Athena has not answered yet.</p>
       ) : ledger.problem ? (
         <p className="lg-foot" role="alert">
           Could not be read: {ledger.problem}
         </p>
       ) : ledger.rows.length === 0 ? (
-        <p className="lg-foot">No model call has been made.</p>
+        <p className="lg-foot">No model call has been made. {showingOf(0, 0)}</p>
       ) : (
         <>
           <ol className="rec">
             {ledger.rows.map((r) => (
               <li key={r.id}>
-                <span className="rec-t">{r.when.slice(11, 16) || "—"}</span>
+                <span className="rec-t">{r.clock}</span>
                 <span className="rec-a">{r.model}</span>
                 <span className={`rec-r ${r.isError ? "rec-user_denied" : ""}`}>
                   {r.isError ? r.reason || "error" : `${r.rounds} round${r.rounds === 1 ? "" : "s"}, ${r.cost}`}
@@ -536,7 +620,7 @@ function Record({ model }: { model: CompanionModel }) {
               </li>
             ))}
           </ol>
-          {ledger.footer ? <p className="lg-foot">{ledger.footer}</p> : null}
+          <p className="lg-foot">{ledger.footer || showingOf(ledger.rows.length, ledger.total)}</p>
         </>
       )}
     </div>

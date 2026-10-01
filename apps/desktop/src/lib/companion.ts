@@ -78,8 +78,16 @@ export interface Chord {
 export const athenaSetSize = (name: AthenaState, side: Side, valign: Valign) =>
   call<void>("athena_set_size", { name, side, valign });
 
-/** Show her window. Main imports this: the status pill summons her with it. */
-export const athenaShow = () => call<void>("athena_show");
+/**
+ * Show her window. Main imports this: the status pill summons her with it.
+ * `focus: false` shows her without taking the keyboard from the app the person is in (ADR 0026,
+ * "Hide means put away, not mute"); omitted, Rust's default (focus) applies.
+ */
+export const athenaShow = (focus?: boolean) =>
+  call<void>("athena_show", focus === undefined ? {} : { focus });
+
+/** Bring Main forward: the welcome's "Later" leaves her ledger a way back to it. */
+export const athenaOpenMain = () => call<void>("athena_open_main");
 
 /** Put her away. Hide stops drawing, not listening (ADR 0026). */
 export const athenaHide = () => call<void>("athena_hide");

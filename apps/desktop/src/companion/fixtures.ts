@@ -9,8 +9,9 @@
  * The page capture on the slip is a labelled sketch; a live card has none until captures are wired.
  */
 import type { ToolRow } from "@/lib/api";
+import type { EngineProbe } from "@/lib/engines";
 import type { DecisionRequested } from "@/lib/events";
-import type { TranscriptEntry } from "@/stores/run";
+import type { EarlierRecord, TranscriptEntry } from "@/stores/run";
 
 import { INITIAL, reduce, type Event, type MachineState } from "./machine";
 import {
@@ -60,8 +61,8 @@ export const CARDS: DecisionRequested[] = [
 const TURN: TranscriptEntry[] = [
   { id: "u1", kind: "user", text: "Find every invoice over 30 days and draft a chase for each." },
   { id: "a1", kind: "assistant", text: "Let me read the list." },
-  { id: "c1", kind: "tool", text: "host.ledgerbox.list_overdue → INV-118, INV-124, INV-131", tier: 1, ok: true },
-  { id: "c2", kind: "tool", text: "host.ledgerbox.read_client → Northwind, 3 open invoices", tier: 1, ok: true },
+  { id: "c1", kind: "tool", text: "host.ledgerbox.list_overdue → INV-118, INV-124, INV-131", tier: 1, ok: true, at: "2026-09-30 09:41:20" },
+  { id: "c2", kind: "tool", text: "host.ledgerbox.read_client → Northwind, 3 open invoices", tier: 1, ok: true, at: "2026-09-30 09:41:24" },
   {
     id: "a2",
     kind: "assistant",
@@ -103,8 +104,78 @@ const LEDGER: LedgerSnapshot = ledgerFrom({
   footer: "(showing 2 of 14)",
 });
 
+/** The same ledger with nothing cut, for the fixture where the header may say nothing is missing. */
+const LEDGER_WHOLE: LedgerSnapshot = { ...LEDGER, footer: "", showing: 2, total: 2 };
+
 const DECISIONS: SessionDecision[] = [
-  { id: "apr_0000000000a0", action: "host.ledgerbox.chase", result: "approved" },
+  {
+    id: "apr_0000000000a0",
+    action: "host.ledgerbox.chase",
+    origin: "host:ledgerbox",
+    result: "approved",
+    reason: null,
+    at: "2026-09-30 09:44:02",
+  },
+  {
+    id: "apr_00000000009f",
+    action: "host.ledgerbox.chase",
+    origin: "host:ledgerbox",
+    result: "refused",
+    reason: "foreign_origin",
+    at: "2026-09-30 09:43:10",
+  },
+];
+
+/** What earlier windows kept: three answers, of five. */
+const EARLIER: EarlierRecord = {
+  rows: [
+    {
+      id: 3,
+      ts: "2026-09-29 16:20:00",
+      tab_id: null,
+      origin: "host:ledgerbox",
+      tool: "host.ledgerbox.chase",
+      tier: 1,
+      class: "GATED",
+      outcome: "declined",
+      ms: 0,
+      reason: "user_denied",
+      approval_id: "apr_00000000008e",
+    },
+    {
+      id: 2,
+      ts: "2026-09-29 16:12:30",
+      tab_id: null,
+      origin: "host:ledgerbox",
+      tool: "host.ledgerbox.chase",
+      tier: 1,
+      class: "GATED",
+      outcome: "approved",
+      ms: 0,
+      reason: null,
+      approval_id: "apr_00000000008d",
+    },
+  ],
+  showing: 2,
+  total: 5,
+  problem: null,
+};
+
+const EARLIER_WHOLE: EarlierRecord = { ...EARLIER, total: 2 };
+
+const NOW = Date.parse("2026-09-30T10:00:00Z");
+
+const FOUND: EngineProbe[] = [
+  { id: "claude_code", state: "found", detail: "2.1.0" },
+  { id: "codex", state: "not_found", detail: "" },
+];
+const MISSING: EngineProbe[] = [
+  { id: "claude_code", state: "not_found", detail: "" },
+  { id: "codex", state: "not_found", detail: "" },
+];
+const MISSING_BUT_CODEX: EngineProbe[] = [
+  { id: "claude_code", state: "not_found", detail: "" },
+  { id: "codex", state: "found", detail: "0.5.0" },
 ];
 
 /** Drive the real machine through real events; timers are not run, only their consequences. */
@@ -127,6 +198,13 @@ interface Setup {
   origin?: string | null;
   ready?: boolean;
   capture?: boolean;
+  answering?: Record<string, string>;
+  refusals?: Record<string, string>;
+  earlier?: EarlierRecord | null;
+  ledger?: LedgerSnapshot | null;
+  probes?: EngineProbe[] | null;
+  probing?: boolean;
+  onboarded?: boolean;
 }
 
 function model(setup: Setup): CompanionModel {
@@ -139,6 +217,9 @@ function model(setup: Setup): CompanionModel {
       cards,
       summary: null,
       error: setup.phase === "error" ? { reason: "engine_error", detail: "the CLI reported an error and stopped" } : null,
+      answering: setup.answering,
+      refusals: setup.refusals,
+      earlier: setup.earlier === undefined ? EARLIER : setup.earlier,
     },
     voice: { phase: setup.voice ? "listening" : "idle", available: true, partial: setup.partial ?? "" },
     daemonReady: setup.ready ?? true,
@@ -146,9 +227,14 @@ function model(setup: Setup): CompanionModel {
     tools: TOOLS,
     held: setup.held ?? null,
     known: KNOWN,
-    ledger: LEDGER,
+    ledger: setup.ledger === undefined ? LEDGER : setup.ledger,
     decisions: DECISIONS,
     engine: "Claude Code",
+    engineId: "claude_code",
+    probes: setup.probes === undefined ? FOUND : setup.probes,
+    probing: setup.probing ?? false,
+    onboarded: setup.onboarded ?? true,
+    nowMs: NOW,
     actions: NO_ACTIONS,
   });
   return setup.capture ? { ...built, cards: built.cards.map((c) => ({ ...c, capture: "sketch" })) } : built;
@@ -182,23 +268,59 @@ export const fixtures: Record<string, () => CompanionModel> = {
   "slip many": () => model({ events: [INIT, { t: "cards", n: 3 }], cards: all, capture: true }),
   "slip approved": () =>
     model({
-      events: [INIT, { t: "cards", n: 1 }, { t: "decide", kind: "approve", by: "click" }, { t: "cards", n: 0 }],
+      events: [INIT, { t: "cards", n: 1 }, { t: "decide", kind: "approve", by: "click" }, { t: "sent", ok: true }, { t: "cards", n: 0 }],
       held: CARDS[0],
+      capture: true,
+    }),
+  /** The answer is on its way: the card is still the card, the buttons read Sending, nothing is stamped. */
+  "slip sending": () =>
+    model({
+      events: [INIT, { t: "cards", n: 1 }, { t: "decide", kind: "approve", by: "click" }],
+      cards: one,
+      answering: { [CARDS[0].id]: "approve" },
+      capture: true,
+    }),
+  /** The daemon refused the answer: the card stays and says why, in plain words. */
+  "slip refused": () =>
+    model({
+      events: [INIT, { t: "cards", n: 1 }, { t: "decide", kind: "approve", by: "click" }, { t: "sent", ok: false }],
+      cards: one,
+      refusals: {
+        [CARDS[0].id]:
+          "That answer was refused: this decision belongs to a different app than the one in front of you. Focus the app this decision is about and try again.",
+      },
       capture: true,
     }),
   "slip tearing": () =>
     model({
-      events: [INIT, { t: "cards", n: 1 }, { t: "decide", kind: "approve", by: "click" }, { t: "cards", n: 0 }, { t: "tear" }],
+      events: [INIT, { t: "cards", n: 1 }, { t: "decide", kind: "approve", by: "click" }, { t: "sent", ok: true }, { t: "cards", n: 0 }, { t: "tear" }],
       held: CARDS[0],
       capture: true,
     }),
   "slip declined": () =>
     model({
-      events: [INIT, { t: "cards", n: 1 }, { t: "decide", kind: "decline", by: "key" }, { t: "cards", n: 0 }],
+      events: [INIT, { t: "cards", n: 1 }, { t: "decide", kind: "decline", by: "key" }, { t: "sent", ok: true }, { t: "cards", n: 0 }],
       held: CARDS[0],
       capture: true,
     }),
-  welcome: () => model({ events: [{ t: "init", onboarded: false, cards: 0 }] }),
+  welcome: () => model({ events: [{ t: "init", onboarded: false, cards: 0 }], onboarded: false }),
+  /** The probe has not answered: no tick yet. */
+  "welcome looking": () =>
+    model({ events: [{ t: "init", onboarded: false, cards: 0 }], onboarded: false, probes: null }),
+  "welcome missing": () =>
+    model({ events: [{ t: "init", onboarded: false, cards: 0 }], onboarded: false, probes: MISSING }),
+  "welcome missing other": () =>
+    model({
+      events: [{ t: "init", onboarded: false, cards: 0 }],
+      onboarded: false,
+      probes: MISSING_BUT_CODEX,
+    }),
+  /** After "Later": her ledger keeps the way back to Main. */
+  "ledger later": () =>
+    model({
+      events: [{ t: "init", onboarded: false, cards: 0 }, { t: "later" }, { t: "seal" }],
+      onboarded: false,
+    }),
   ledger: () =>
     model({
       events: [INIT, { t: "cards", n: 1 }, { t: "seal" }],
@@ -211,6 +333,14 @@ export const fixtures: Record<string, () => CompanionModel> = {
     model({ events: [INIT, { t: "seal" }], origin: null, ready: false, phase: "error" }),
   "ledger record": () =>
     model({ events: [INIT, { t: "seal" }, { t: "tab", tab: "record" }], transcript: TURN }),
+  /** Every list whole: the only record whose header may say nothing is missing. */
+  "ledger record whole": () =>
+    model({
+      events: [INIT, { t: "seal" }, { t: "tab", tab: "record" }],
+      transcript: TURN,
+      earlier: EARLIER_WHOLE,
+      ledger: LEDGER_WHOLE,
+    }),
   "ledger origins": () => model({ events: [INIT, { t: "seal" }, { t: "tab", tab: "origins" }] }),
   tab: () => model({ events: [INIT, { t: "snap", docked: "right" }] }),
   "tab left": () => model({ events: [INIT, { t: "snap", docked: "left" }] }),

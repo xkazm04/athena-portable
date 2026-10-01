@@ -80,14 +80,15 @@ test("a card arriving while she is visible opens the slip at once and pulses for
   expect(r.s().form).toBe("slip");
 });
 
-test("answering stamps first, tears the slip at 900ms and returns her at 1500ms, shrinking 380ms after", () => {
+test("answering stamps once the daemon has said yes, tears the slip at 900ms and returns her at 1500ms, shrinking 380ms after", () => {
   const r = rig();
   r.d.dispatch({ t: "cards", n: 1 });
   r.d.dispatch({ t: "decide", kind: "approve", by: "click" });
   expect(r.of("answer")).toHaveLength(1);
   expect(r.of("answer")[0].effect).toMatchObject({ kind: "approve", by: "click" });
-  // the store drops the card at once; the slip stays until it has torn away
+  // the store drops the card when the daemon has taken the answer; the slip stays until it has torn away
   r.d.dispatch({ t: "cards", n: 0 });
+  r.d.dispatch({ t: "sent", ok: true });
   expect(r.s().cards).toBe(0);
   expect(shown(r.s())).toBe(1);
   expect(r.s().form).toBe("slip");
@@ -107,6 +108,42 @@ test("answering stamps first, tears the slip at 900ms and returns her at 1500ms,
   expect(shrink()).toHaveLength(1);
 });
 
+test("nothing is stamped, said or timed until the daemon has answered; a refusal brings the buttons back", () => {
+  const r = rig();
+  r.d.dispatch({ t: "cards", n: 1 });
+  const before = r.s().say.text;
+  r.d.dispatch({ t: "decide", kind: "approve", by: "key" });
+  expect(r.s().decided).toMatchObject({ kind: "approve", sending: true });
+  expect(r.s().say.text).not.toMatch(/Approved/);
+  // no stamp timers are running while the answer is in flight
+  r.advance(SETTLE_MS * 3);
+  expect(r.s().decided).toMatchObject({ sending: true, tearing: false });
+  expect(r.s().form).toBe("slip");
+
+  r.d.dispatch({ t: "sent", ok: false, text: "That answer was refused: x." });
+  expect(r.s().decided).toBeNull();
+  expect(r.s().cards).toBe(1);
+  expect(r.s().form).toBe("slip");
+  expect(r.s().say.text).toBe("That answer was refused: x.");
+  expect(r.s().say.text).not.toBe(before);
+
+  // and it can be answered again
+  r.d.dispatch({ t: "decide", kind: "decline", by: "click" });
+  expect(r.of("answer")).toHaveLength(2);
+  r.d.dispatch({ t: "sent", ok: true });
+  expect(r.s().say.text).toBe("Declined. Nothing was sent.");
+  expect(r.s().decided).toMatchObject({ sending: false });
+});
+
+test("a verdict with no answer in flight changes nothing", () => {
+  const r = rig();
+  r.d.dispatch({ t: "cards", n: 1 });
+  const before = r.s();
+  r.d.dispatch({ t: "sent", ok: true });
+  expect(r.s().decided).toBeNull();
+  expect(r.s().say).toEqual(before.say);
+});
+
 test("a second press during the stamp is ignored, so a card is answered once", () => {
   const r = rig();
   r.d.dispatch({ t: "cards", n: 1 });
@@ -120,6 +157,7 @@ test("with more cards waiting the next slip unrolls fresh after the last one is 
   r.d.dispatch({ t: "cards", n: 2 });
   const epoch = r.s().epoch;
   r.d.dispatch({ t: "decide", kind: "decline", by: "click" });
+  r.d.dispatch({ t: "sent", ok: true });
   r.d.dispatch({ t: "cards", n: 1 });
   expect(shown(r.s())).toBe(2);
   r.advance(SETTLE_MS);
@@ -161,6 +199,8 @@ test("hidden as the window reports it, not only as the page chose it, is the sam
   const r = rig();
   r.d.dispatch({ t: "cards", n: 1, hidden: true });
   expect(r.of("show")).toHaveLength(1);
+  // a card arriving over someone's work shows her without taking the keyboard
+  expect(r.of("show")[0].effect).toEqual({ type: "show", focus: false });
   expect(r.s().form).toBe("seal");
   // the window may have been left at any size, so it is asked again
   expect(r.sizes().at(-1)?.name).toBe("seal");
@@ -173,6 +213,7 @@ test("docked, her home form is the tab; a card still pulls the slip out and she 
   r.d.dispatch({ t: "cards", n: 1 });
   expect(r.s().form).toBe("slip");
   r.d.dispatch({ t: "decide", kind: "approve", by: "voice" });
+  r.d.dispatch({ t: "sent", ok: true });
   r.d.dispatch({ t: "cards", n: 0 });
   r.advance(SETTLE_MS);
   expect(r.s().form).toBe("tab");
@@ -302,15 +343,18 @@ test("nothing is sent for anything that is not a change of form", () => {
   expect(r.sizes().length).toBe(before);
 });
 
-test("the chord answers the first waiting card from wherever she is, showing her if she was hidden", () => {
+test("a chord from a put-away or snoozed state shows the slip and does not answer blind", () => {
   const r = rig();
   r.d.dispatch({ t: "cards", n: 1 });
   r.d.dispatch({ t: "esc" });
   r.d.dispatch({ t: "hide" });
   r.d.dispatch({ t: "decide", kind: "decline", by: "chord" });
   expect(r.of("show")).toHaveLength(1);
-  expect(r.of("answer")[0].effect).toMatchObject({ kind: "decline", by: "chord" });
+  expect(r.of("answer")).toHaveLength(0);
   expect(r.s().form).toBe("slip");
+  // the second press, with the slip on screen, answers it
+  r.d.dispatch({ t: "decide", kind: "decline", by: "chord" });
+  expect(r.of("answer")[0].effect).toMatchObject({ kind: "decline", by: "chord" });
 });
 
 test("with nothing waiting a chord does nothing", () => {
@@ -364,6 +408,7 @@ test("the ledger is chosen and sticky: a card does not pull her out of it, and E
   r.d.dispatch({ t: "cards", n: 1 });
   expect(r.s().form).toBe("ledger");
   r.d.dispatch({ t: "decide", kind: "approve", by: "key" });
+  r.d.dispatch({ t: "sent", ok: true });
   r.d.dispatch({ t: "cards", n: 0 });
   const epoch = r.s().epoch;
   r.advance(SETTLE_MS);

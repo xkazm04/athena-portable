@@ -11,27 +11,32 @@
  * machine's timers fire outside React and a snapshot that is replaced on change is exactly what
  * `useSyncExternalStore` wants.
  *
- * **Answering.** The answer goes to the run store at once, when the person presses, and the slip
- * stays on screen for the stamp. The store drops the card immediately (`run.answer` filters it
- * before the daemon replies), so the runtime keeps the card it answered (`held`) until the slip
- * has torn away, and the view-model draws it from there.
+ * **Answering.** The answer goes to the run store at once, when the person presses, but nothing is
+ * stamped until the daemon has taken it: the store calls `settled` with its verdict and the runtime
+ * turns that into the machine's `sent` event (UAT backlog B1). A refusal keeps the card and clears
+ * the `sending` state; a success starts the stamp. The store drops the card when the daemon says
+ * yes, so the runtime keeps the card it answered (`held`) until the slip has torn away, and the
+ * view-model draws it from there.
  */
 import type { AthenaState, Side, Valign } from "@/lib/companion";
 import type { DecisionRequested } from "@/lib/events";
+import type { Settled } from "@/stores/run";
 
 import { createDriver, REAL_CLOCK, type Clock, type Driver } from "./driver";
 import { INITIAL, type Choice, type Effect, type Event, type MachineState } from "./machine";
-import type { LedgerSnapshot, SessionDecision } from "./model";
+import type { LedgerSnapshot } from "./model";
 
 export interface RuntimeDeps {
   clock?: Clock;
   size: (name: AthenaState, side: Side, valign: Valign) => void;
-  show: () => void;
+  /** `focus: false` shows her without taking the keyboard from the app the person is in. */
+  show: (focus?: boolean) => void;
   hide: () => void;
   pin: (on: boolean) => void;
   /** The run store's waiting cards, now. */
   cards: () => readonly DecisionRequested[];
-  answer: (id: string, choice: string) => void;
+  /** Send the answer. `settled` is called once, when the daemon has taken it or refused it. */
+  answer: (id: string, choice: string, settled: (result: Settled) => void) => void;
   onboard: () => void;
   focus: (target: "approve" | "seal") => void;
   /** Is her window on screen? The page may have put her away, but the tray may have too. */
@@ -44,7 +49,6 @@ export interface Snapshot {
   machine: MachineState;
   /** The card being stamped, once the store has dropped it. */
   held: DecisionRequested | null;
-  decisions: readonly SessionDecision[];
   ledger: LedgerSnapshot | null;
 }
 
@@ -63,13 +67,12 @@ export interface Runtime {
 export function createRuntime(deps: RuntimeDeps): Runtime {
   const listeners = new Set<() => void>();
   let held: DecisionRequested | null = null;
-  let decisions: SessionDecision[] = [];
   let ledger: LedgerSnapshot | null = null;
-  let snapshot: Snapshot = { machine: INITIAL, held, decisions, ledger };
+  let snapshot: Snapshot = { machine: INITIAL, held, ledger };
   let chain: Promise<void> = Promise.resolve();
 
   const publish = (machine: MachineState) => {
-    snapshot = { machine, held, decisions, ledger };
+    snapshot = { machine, held, ledger };
     listeners.forEach((l) => l());
   };
 
@@ -79,7 +82,7 @@ export function createRuntime(deps: RuntimeDeps): Runtime {
         deps.size(effect.name, effect.side, effect.valign);
         break;
       case "show":
-        deps.show();
+        deps.show(effect.focus);
         break;
       case "hide":
         deps.hide();
@@ -95,13 +98,17 @@ export function createRuntime(deps: RuntimeDeps): Runtime {
         break;
       case "answer": {
         const card = deps.cards()[0];
-        if (!card) break;
+        // The machine's `sent` is delivered on a later turn of the loop, never inside the effect.
+        const settle = (r: Settled) =>
+          void Promise.resolve().then(() =>
+            driver.dispatch({ t: "sent", ok: r.ok, text: r.ok ? undefined : r.sentence }),
+          );
+        if (!card) {
+          settle({ ok: false, sentence: "That decision is no longer waiting." });
+          break;
+        }
         held = card;
-        decisions = [
-          { id: card.id, action: card.action, result: effect.kind === "approve" ? "approved" : "user_denied" },
-          ...decisions,
-        ];
-        deps.answer(card.id, choiceFor(card, effect.kind));
+        deps.answer(card.id, choiceFor(card, effect.kind), settle);
         break;
       }
     }
@@ -156,9 +163,15 @@ export function choiceFor(card: DecisionRequested, kind: Choice): string {
 }
 
 /** One line for the tray and Main's status pill: what she is doing, bounded and saying so. */
-export function lineOf(form: AthenaState, step: { app: string; what: string } | null): string {
+export function lineOf(
+  form: AthenaState,
+  step: { app: string; what: string } | null,
+  running = false,
+): string {
   if (form === "hear") return "listening";
-  if (form !== "tape" || !step) return "";
+  // The tape is work on its own; any other form is work only while a turn is running (UAT backlog B8),
+  // and then it says so, so Main's pill never reads "working" over an idle ledger.
+  if ((form !== "tape" && !running) || !step) return "";
   const text = `${step.app}: ${step.what}`;
   return text.length > LINE_MAX ? `${text.slice(0, LINE_MAX)} (showing ${LINE_MAX} of ${text.length})` : text;
 }

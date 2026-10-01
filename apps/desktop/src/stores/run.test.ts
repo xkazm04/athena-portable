@@ -9,11 +9,25 @@
  * and no provider: the fake daemon answers `fetch` with the same SSE frames the real one writes,
  * so `lib/api.ts`'s own parser is under test too.
  */
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DaemonApi } from "@/lib/api";
 
-import { MAX_CONTINUATIONS, resetRunForTests, setRunDeps, useRun, type RunDeps } from "./run";
+import type { OriginRow } from "@/lib/store";
+
+import {
+  MAX_CONTINUATIONS,
+  RECONCILE_MS,
+  cardFromRow,
+  disabledOriginsOf,
+  mergeCards,
+  resetRunForTests,
+  setRunDeps,
+  startRun,
+  useRun,
+  type ActivityWrite,
+  type RunDeps,
+} from "./run";
 
 // -- the fakes -----------------------------------------------------------------------------------
 
@@ -45,6 +59,8 @@ function jsonResponse(payload: unknown, status = 200): Response {
 interface Script {
   runs?: Array<Event[] | { refuse: { reason: string; detail: string }; status?: number }>;
   resolutions?: Record<string, unknown>;
+  /** `GET /decisions` rows. Mutable, so a test can change what the daemon holds. */
+  pending?: Array<Record<string, unknown>>;
 }
 
 interface Seen {
@@ -61,10 +77,15 @@ function fakeDaemon(script: Script = {}) {
     const body = typeof init.body === "string" ? JSON.parse(init.body) : null;
     seen.push({ path, body });
 
+    if (path === "/decisions") {
+      const rows = script.pending ?? [];
+      return jsonResponse({ ok: true, pending: rows, showing: rows.length, total: rows.length, footer: "" });
+    }
     if (path.startsWith("/decisions/")) {
       const id = decodeURIComponent(path.slice("/decisions/".length));
       const answer = script.resolutions?.[id];
       if (!answer) return jsonResponse({ reason: "unknown_ref", detail: id }, 404);
+      if (typeof answer === "function") return (answer as () => Promise<Response>)();
       return jsonResponse(answer);
     }
     if (path === "/run") {
@@ -80,7 +101,12 @@ function fakeDaemon(script: Script = {}) {
     return jsonResponse({ reason: "unknown_ref", detail: path }, 404);
   };
 
-  return { fetchImpl, seen, runs: () => seen.filter((s) => s.path === "/run") };
+  return {
+    fetchImpl,
+    seen,
+    runs: () => seen.filter((s) => s.path === "/run"),
+    count: (path: string) => seen.filter((s) => s.path === path).length,
+  };
 }
 
 function fakePage(answers: Record<string, { ok: boolean; output: string; error?: string }> = {}) {
@@ -407,9 +433,135 @@ describe("the card", () => {
     expect(useRun.getState().transcript.some((e) => e.text.includes("declined"))).toBe(true);
   });
 
-  it("is removed from the panel before the daemon replies", async () => {
-    // Otherwise a slow resolve leaves a card the user can press twice, and the second press is a
-    // second answer to a decision already made.
+});
+
+// -- the answer is the daemon's, not the screen's (UAT backlog B1) ---------------------------------
+
+const APPROVED = {
+  ok: true,
+  id: "apr_0000000000a1",
+  status: "approved",
+  choice: "approve",
+  conversation_id: "conv_ledgerbox",
+  execute: [],
+  output: "",
+  events: [],
+};
+
+describe("answering a card", () => {
+  it("keeps the card on screen until the daemon's answer arrives, then drops it once", async () => {
+    // The optimistic-loss regression: the card used to be removed before the POST, so a refusal
+    // left the daemon holding an approval with nothing on screen.
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const daemon = fakeDaemon({
+      resolutions: { apr_0000000000a1: async () => (await gate, jsonResponse(APPROVED)) },
+    });
+    wire(daemon, fakePage());
+    useRun.setState({ cards: [CARD as never] });
+
+    const settled = vi.fn();
+    const pending = useRun.getState().answer("apr_0000000000a1", "approve", settled);
+    await Promise.resolve();
+
+    expect(useRun.getState().cards.map((c) => c.id)).toEqual(["apr_0000000000a1"]);
+    expect(useRun.getState().answering).toEqual({ apr_0000000000a1: "approve" });
+    expect(settled).not.toHaveBeenCalled();
+
+    release();
+    await pending;
+
+    expect(useRun.getState().cards).toEqual([]);
+    expect(useRun.getState().answering).toEqual({});
+    expect(settled).toHaveBeenCalledWith({ ok: true, sentence: "" });
+    expect(useRun.getState().answered[0]).toMatchObject({ id: "apr_0000000000a1", result: "approved", reason: null });
+  });
+
+  it("registers the focused page with the daemon before answering, so a restored decision has a session", async () => {
+    // UAT r2: a decision restored after a daemon restart was refused as "a different app" on the right tab,
+    // because the daemon only learns a page's manifest from a turn.
+    const daemon = fakeDaemon({ resolutions: { apr_0000000000a1: APPROVED } });
+    setRunDeps({ ...wire(daemon, fakePage()), manifest: () => ({ app_id: "ledgerbox", tools: [] }) });
+    useRun.setState({ cards: [CARD as never] });
+
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    const paths = daemon.seen.map((s) => s.path);
+    expect(paths.indexOf("/manifest")).toBeGreaterThanOrEqual(0);
+    expect(paths.indexOf("/manifest")).toBeLessThan(paths.indexOf("/decisions/apr_0000000000a1"));
+  });
+
+  it("keeps the card when the daemon refuses, says why in plain words, and never records an approval", async () => {
+    const daemon = fakeDaemon({
+      resolutions: {
+        apr_0000000000a1: () =>
+          Promise.resolve(jsonResponse({ reason: "foreign_origin", detail: "not the pinned session" }, 403)),
+      },
+      pending: [{ id: "apr_0000000000a1", action: "host.ledgerbox.chase", params: { invoice: "INV-118" } }],
+    });
+    wire(daemon, fakePage());
+    useRun.setState({ cards: [CARD as never] });
+    const settled = vi.fn();
+
+    await useRun.getState().answer("apr_0000000000a1", "approve", settled);
+
+    const state = useRun.getState();
+    expect(state.cards.map((c) => c.id)).toEqual(["apr_0000000000a1"]);
+    expect(state.answering).toEqual({});
+    expect(state.refusals.apr_0000000000a1).toBe(
+      "That answer was refused: this decision belongs to a different app than the one in front of you. Focus the app this decision is about and try again.",
+    );
+    expect(state.answered).toHaveLength(1);
+    expect(state.answered[0]).toMatchObject({ result: "refused", reason: "foreign_origin" });
+    expect(state.answered.some((a) => a.result === "approved")).toBe(false);
+    expect(settled).toHaveBeenCalledWith(expect.objectContaining({ ok: false }));
+    // asked again what the daemon holds, success or failure
+    expect(daemon.count("/decisions")).toBe(1);
+  });
+
+  it("can be tried again after a refusal, and the refusal goes once it is accepted", async () => {
+    let refuse = true;
+    const daemon = fakeDaemon({
+      resolutions: {
+        apr_0000000000a1: () =>
+          Promise.resolve(
+            refuse ? jsonResponse({ reason: "foreign_origin", detail: "" }, 403) : jsonResponse(APPROVED),
+          ),
+      },
+      pending: [{ id: "apr_0000000000a1", action: "host.ledgerbox.chase", params: {} }],
+    });
+    wire(daemon, fakePage());
+    useRun.setState({ cards: [CARD as never] });
+
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+    refuse = false;
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    expect(useRun.getState().cards).toEqual([]);
+    expect(useRun.getState().refusals).toEqual({});
+    expect(useRun.getState().answered.map((a) => a.result)).toEqual(["approved", "refused"]);
+  });
+
+  it("is idempotent: a second answer while the first is in flight, or after it, sends nothing", async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const daemon = fakeDaemon({
+      resolutions: { apr_0000000000a1: async () => (await gate, jsonResponse(APPROVED)) },
+    });
+    wire(daemon, fakePage());
+    useRun.setState({ cards: [CARD as never] });
+
+    const first = useRun.getState().answer("apr_0000000000a1", "approve");
+    const second = useRun.getState().answer("apr_0000000000a1", "decline");
+    release();
+    await Promise.all([first, second]);
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    expect(daemon.count("/decisions/apr_0000000000a1")).toBe(1);
+    expect(useRun.getState().answered).toHaveLength(1);
+  });
+
+  it("drops a card the daemon says is no longer waiting, and says so", async () => {
     const daemon = fakeDaemon({ resolutions: {} });
     wire(daemon, fakePage());
     useRun.setState({ cards: [CARD as never] });
@@ -417,8 +569,284 @@ describe("the card", () => {
     await useRun.getState().answer("apr_0000000000a1", "approve");
 
     expect(useRun.getState().cards).toEqual([]);
+    expect(useRun.getState().refusals.apr_0000000000a1).toContain("no longer waiting");
+  });
+
+  it("says the daemon is not ready, rather than losing the card, when there is no daemon", async () => {
+    setRunDeps({
+      api: () => null,
+      focused: () => null,
+      hostState: () => ({}),
+      call: async () => ({ ok: true, output: "" }),
+    });
+    useRun.setState({ cards: [CARD as never] });
+
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    expect(useRun.getState().cards).toHaveLength(1);
+    expect(useRun.getState().refusals.apr_0000000000a1).toContain("Athena is still starting");
   });
 });
+
+// -- the cards are the daemon's too ------------------------------------------------------------------
+
+describe("reconciling with the daemon", () => {
+  const ROW = {
+    id: "apr_0000000000b2",
+    action: "host.ledgerbox.chase",
+    params: { invoice: "INV-124", to: "ap@kestrel.example" },
+    options: ["approve", "decline"],
+    origin: "host:ledgerbox",
+    surface: "panel",
+    created_at: "2026-10-01T10:00:00",
+    expires_at: "",
+  };
+
+  it("after a restart a decision pending in the daemon has a card, with its action and parameters", async () => {
+    const daemon = fakeDaemon({ pending: [ROW] });
+    wire(daemon, fakePage());
+    expect(useRun.getState().cards).toEqual([]);
+
+    await useRun.getState().reconcile();
+
+    const [card] = useRun.getState().cards;
+    expect(card.id).toBe("apr_0000000000b2");
+    expect(card.action).toBe("host.ledgerbox.chase");
+    expect(card.params).toEqual({ invoice: "INV-124", to: "ap@kestrel.example" });
+    expect(card.options.map((o) => o.id)).toEqual(["approve", "decline"]);
+  });
+
+  it("is the union: the stream's card keeps what it said, the row fills only what is missing", () => {
+    const streamed = { ...(CARD as never as Record<string, unknown>), rationale: "41 days late", origin: "" };
+    const merged = mergeCards(
+      [streamed as never],
+      [{ id: "apr_0000000000a1", action: "something else", params: {}, summary: "from the row", origin: "host:ledgerbox" }, ROW],
+      () => false,
+    );
+    expect(merged.map((c) => c.id)).toEqual(["apr_0000000000a1", "apr_0000000000b2"]);
+    expect(merged[0].rationale).toBe("41 days late");
+    expect(merged[0].action).toBe("host.ledgerbox.chase");
+    expect(merged[0].origin).toBe("host:ledgerbox");
+  });
+
+  it("does not bring back a card that was just answered, or is being answered", () => {
+    expect(mergeCards([], [ROW], (id) => id === "apr_0000000000b2")).toEqual([]);
+  });
+
+  it("builds a card from a row that carries little, and refuses a row with no id", () => {
+    expect(cardFromRow({ params: {} })).toBeNull();
+    const card = cardFromRow({ id: "apr_x" })!;
+    expect(card.action).toBeTruthy();
+    expect(card.options.map((o) => o.id)).toEqual(["approve", "decline"]);
+  });
+
+  it("Clear empties the conversation but not a decision the daemon is still holding", async () => {
+    const daemon = fakeDaemon({ runs: [[said("hello"), finished()]], pending: [ROW] });
+    wire(daemon, fakePage());
+    await useRun.getState().send("hi");
+    await useRun.getState().reconcile();
+
+    useRun.getState().clear();
+
+    expect(useRun.getState().transcript).toEqual([]);
+    expect(useRun.getState().cards.map((c) => c.id)).toEqual(["apr_0000000000b2"]);
+  });
+
+  it("checks again every 30 seconds while any card is on screen, and not otherwise", async () => {
+    vi.useFakeTimers();
+    try {
+      const daemon = fakeDaemon({ pending: [] });
+      wire(daemon, fakePage());
+      const stop = startRun();
+      await vi.advanceTimersByTimeAsync(0);
+      const atStart = daemon.count("/decisions");
+      expect(atStart).toBe(1);
+
+      await vi.advanceTimersByTimeAsync(RECONCILE_MS * 2);
+      expect(daemon.count("/decisions")).toBe(atStart);
+
+      useRun.setState({ cards: [CARD as never] });
+      await vi.advanceTimersByTimeAsync(RECONCILE_MS);
+      expect(daemon.count("/decisions")).toBe(atStart + 1);
+
+      useRun.setState({ cards: [] });
+      await vi.advanceTimersByTimeAsync(RECONCILE_MS * 2);
+      expect(daemon.count("/decisions")).toBe(atStart + 1);
+      stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+// -- what was done is kept (UAT backlog B6) ----------------------------------------------------------
+
+describe("the record of answers", () => {
+  it("writes each answered decision to the store with its action, origin, choice, time and reason class", async () => {
+    const rows: ActivityWrite[] = [];
+    const daemon = fakeDaemon({
+      resolutions: { apr_0000000000a1: { ...APPROVED, status: "declined", choice: "decline" } },
+    });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({
+      ...deps,
+      record: async (row) => void rows.push(row),
+      now: () => new Date("2026-10-01T10:08:07Z"),
+    });
+    useRun.setState({ cards: [CARD as never] });
+
+    await useRun.getState().answer("apr_0000000000a1", "decline");
+
+    expect(rows).toEqual([
+      {
+        ts: "2026-10-01 10:08:07",
+        origin: "host:ledgerbox",
+        tool: "host.ledgerbox.chase",
+        tier: 1,
+        class: "GATED",
+        outcome: "declined",
+        ms: 0,
+        reason: "user_denied",
+        approval_id: "apr_0000000000a1",
+      },
+    ]);
+  });
+
+  it("keeps a refusal as a refusal, with the daemon's reason", async () => {
+    const rows: ActivityWrite[] = [];
+    const daemon = fakeDaemon({
+      resolutions: {
+        apr_0000000000a1: () => Promise.resolve(jsonResponse({ reason: "foreign_origin", detail: "" }, 403)),
+      },
+    });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({ ...deps, record: async (row) => void rows.push(row) });
+    useRun.setState({ cards: [CARD as never] });
+
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    expect(rows[0]).toMatchObject({ outcome: "refused", reason: "foreign_origin" });
+  });
+
+  it("reads back what earlier windows kept, once, with its own total", async () => {
+    const earlier = vi.fn(async () => ({
+      rows: [
+        {
+          id: 1,
+          ts: "2026-10-01 09:00:00",
+          tab_id: null,
+          origin: "host:ledgerbox",
+          tool: "host.ledgerbox.chase",
+          tier: 1,
+          class: "GATED",
+          outcome: "approved",
+          ms: 0,
+          reason: null,
+          approval_id: "apr_old",
+        },
+      ],
+      showing: 1,
+      total: 7,
+    }));
+    const deps = wire(fakeDaemon(), fakePage());
+    setRunDeps({ ...deps, earlier });
+
+    await useRun.getState().loadEarlier();
+    await useRun.getState().loadEarlier();
+
+    expect(earlier).toHaveBeenCalledTimes(1);
+    expect(useRun.getState().earlier).toMatchObject({ showing: 1, total: 7, problem: null });
+  });
+
+  it("says when the earlier record could not be read, and tries again next time", async () => {
+    const earlier = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("store locked"))
+      .mockResolvedValue({ rows: [], showing: 0, total: 0 });
+    const deps = wire(fakeDaemon(), fakePage());
+    setRunDeps({ ...deps, earlier });
+
+    await useRun.getState().loadEarlier();
+    expect(useRun.getState().earlier?.problem).toBe("store locked");
+    await useRun.getState().loadEarlier();
+    expect(useRun.getState().earlier?.problem).toBeNull();
+  });
+
+  it("stamps every tool call with the time it ran, and Clear leaves the calls in the record", async () => {
+    const daemon = fakeDaemon({ runs: [[hostCall("c1", "host.ledgerbox.list_overdue"), finished()], [finished()]] });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({ ...deps, now: () => new Date("2026-10-01T10:08:07Z") });
+
+    await useRun.getState().send("go");
+    useRun.getState().clear();
+
+    expect(useRun.getState().transcript).toEqual([]);
+    expect(useRun.getState().calls).toHaveLength(1);
+    expect(useRun.getState().calls[0].at).toBe("2026-10-01 10:08:07");
+  });
+});
+
+// -- the per-app switch (UAT backlog B2) -------------------------------------------------------------
+
+describe("disabled origins", () => {
+  const row = (origin: string, enabled: boolean): OriginRow => ({
+    origin,
+    enabled,
+    overrides: {},
+    first_seen: "",
+    last_seen: "",
+  });
+  const tab = (id: number, url: string) =>
+    ({ id, label: `page-${id}`, url, title: "", loading: false, focused: id === 1 }) as never;
+  const found = (tabId: number, appId: string | null) => ({
+    tabId,
+    url: "",
+    tools: [],
+    transport: null,
+    appId,
+    appVersion: null,
+    problem: null,
+    asking: false,
+  });
+
+  it("names a switched-off app in catalog form, and leaves an enabled one out", () => {
+    const records = {
+      "https://ledgerbox.local": row("https://ledgerbox.local", false),
+      "https://inbox.local": row("https://inbox.local", true),
+    };
+    const tabs = [tab(1, "https://ledgerbox.local/invoices"), tab(2, "https://inbox.local/")];
+    const byTab = { 1: found(1, "ledgerbox"), 2: found(2, "inbox") };
+    expect(disabledOriginsOf(records, tabs, byTab)).toEqual(["host:ledgerbox"]);
+  });
+
+  it("does not guess an app id for an origin it cannot name, and keeps a catalog-form key as it is", () => {
+    const records = {
+      "https://closed.local": row("https://closed.local", false),
+      "host:other": row("host:other", false),
+    };
+    expect(disabledOriginsOf(records, [], {})).toEqual(["host:other"]);
+  });
+
+  it("rides every request of a turn, so the daemon's gate can refuse the call", async () => {
+    const daemon = fakeDaemon({ runs: [[finished()]] });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({ ...deps, disabledOrigins: () => ["host:ledgerbox"] });
+
+    await useRun.getState().send("hello");
+
+    expect(daemon.runs()[0].body!.disabled_origins).toEqual(["host:ledgerbox"]);
+  });
+
+  it("sends an empty list when nothing is switched off", async () => {
+    const daemon = fakeDaemon({ runs: [[finished()]] });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({ ...deps, disabledOrigins: () => [] });
+    await useRun.getState().send("hello");
+    expect(daemon.runs()[0].body!.disabled_origins).toEqual([]);
+  });
+});
+
+afterEach(() => vi.useRealTimers());
 
 // -- refusals ---------------------------------------------------------------------------------------
 

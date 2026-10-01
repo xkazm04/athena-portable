@@ -18,6 +18,7 @@ import { createElement, useEffect, useState, useSyncExternalStore } from "react"
 import { DaemonApi } from "@/lib/api";
 import {
   athenaHide,
+  athenaOpenMain,
   athenaPin,
   athenaReport,
   athenaSetSize,
@@ -28,9 +29,10 @@ import {
   onSnap,
   onSummon,
 } from "@/lib/companion";
-import { engineLabel } from "@/lib/engines";
+import { engineLabel, isEngineId } from "@/lib/engines";
 import { hasShell } from "@/lib/ipc";
 import { endpoint, useDaemon } from "@/stores/daemon";
+import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
 import { useRun } from "@/stores/run";
 import { useSettings } from "@/stores/settings";
@@ -57,8 +59,8 @@ function liveDeps(): RuntimeDeps {
     size: (name, side, valign) => {
       if (shell) athenaSetSize(name, side, valign).catch(report("athena_set_size"));
     },
-    show: () => {
-      if (shell) athenaShow().catch(report("athena_show"));
+    show: (focus) => {
+      if (shell) athenaShow(focus).catch(report("athena_show"));
     },
     hide: () => {
       if (shell) athenaHide().catch(report("athena_hide"));
@@ -67,7 +69,7 @@ function liveDeps(): RuntimeDeps {
       if (shell) athenaPin(on).catch(report("athena_pin"));
     },
     cards: () => useRun.getState().cards,
-    answer: (id, choice) => void useRun.getState().answer(id, choice).catch(report("answer")),
+    answer: (id, choice, settled) => void useRun.getState().answer(id, choice, settled).catch(report("answer")),
     // "Open your first app" sets `onboarded` and nothing else: Rust shows Main (ADR 0026).
     onboard: () => void useSettings.getState().setOnboarded(true).catch(report("onboard")),
     focus: (target) => {
@@ -218,6 +220,10 @@ export default function Live() {
   const records = useOrigins((s) => s.records);
   const known = useOrigins((s) => s.known);
   const engine = useSettings((s) => s.engine);
+  const onboarded = useSettings((s) => s.onboarded);
+  const probes = useEngines((s) => s.probes);
+  const probing = useEngines((s) => s.checking);
+  const probeProblem = useEngines((s) => s.problem);
 
   const focused = tabs.find((tab) => tab.focused) ?? tabs[0];
   const origin = focused ? originOf(focused.url) : null;
@@ -236,7 +242,10 @@ export default function Live() {
     new DaemonApi(found)
       .ledger()
       .then((reply) => current && rt.setLedger(ledgerFrom(reply)))
-      .catch((e: unknown) => current && rt.setLedger({ rows: [], footer: "", problem: String(e) }));
+      .catch(
+        (e: unknown) =>
+          current && rt.setLedger({ rows: [], footer: "", showing: 0, total: 0, problem: String(e) }),
+      );
     return () => {
       current = false;
     };
@@ -259,6 +268,13 @@ export default function Live() {
     micDown: () => void useVoice.getState().press(),
     micUp: () => useVoice.getState().release(),
     setOrigin: (o, enabled) => void useOrigins.getState().setEnabled(o, enabled).catch(report("origin")),
+    openMain: () => {
+      if (hasShell()) athenaOpenMain().catch(report("athena_open_main"));
+    },
+    checkEngines: () => void useEngines.getState().check(),
+    useEngine: (id) => {
+      if (isEngineId(id)) void useSettings.getState().setEngine(id).catch(report("engine"));
+    },
   };
 
   const originViews: OriginView[] = known.map((o) => ({
@@ -277,14 +293,21 @@ export default function Live() {
     held: snap.held,
     known: originViews,
     ledger: snap.ledger,
-    decisions: snap.decisions,
+    decisions: run.answered,
     engine: engineLabel(engine),
+    engineId: engine,
+    probes,
+    probing,
+    probeProblem,
+    onboarded,
     actions,
   });
 
   // What she is doing, for the tray dot, the chords and Main's status pill. Only a change is sent.
   const { form, cards } = model;
-  const line = lineOf(form, model.tape.cur);
+  // A turn that is running is work whatever form she is drawn in; the ledger with nothing running rests.
+  const running = run.phase === "running" || run.phase === "acting";
+  const line = lineOf(form, model.tape.cur, running);
   const ready0 = snap.machine.ready;
   useEffect(() => {
     if (!ready0 || !hasShell()) return;

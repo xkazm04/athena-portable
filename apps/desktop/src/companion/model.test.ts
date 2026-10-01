@@ -233,3 +233,179 @@ test("every fixture is a model the machine can reach, and the seven names are th
   expect(forms["tab waiting"]).toBe("tab");
   expect(forms["slip approved"]).toBe("slip");
 });
+
+// -- the Record (UAT backlog B6) ---------------------------------------------------------------------
+
+import { clockOf } from "@/lib/time";
+import type { EarlierRecord } from "@/stores/run";
+
+import { activityRow, decisionRow, engineView, recordView, showingOf, type LedgerSnapshot } from "./model";
+
+const WHOLE_LEDGER: LedgerSnapshot = { rows: [], footer: "", showing: 0, total: 0, problem: null };
+const WHOLE_EARLIER: EarlierRecord = { rows: [], showing: 0, total: 0, problem: null };
+const view = (over: Partial<Parameters<typeof recordView>[0]> = {}) =>
+  recordView({ calls: [], decisions: [], tools: [], earlier: WHOLE_EARLIER, ledger: WHOLE_LEDGER, ...over });
+
+test("the header says nothing is missing only when every list is whole", () => {
+  const whole = view();
+  expect(whole.complete).toBe(true);
+  expect(whole.header).toContain("Nothing is missing from this list");
+
+  const cutEarlier = view({ earlier: { ...WHOLE_EARLIER, showing: 50, total: 80 } });
+  expect(cutEarlier.complete).toBe(false);
+  expect(cutEarlier.header).not.toContain("Nothing is missing");
+  expect(cutEarlier.header).toContain("(showing 50 of 80)");
+
+  const cutLedger = view({ ledger: { ...WHOLE_LEDGER, footer: "(showing 20 of 90)", showing: 20, total: 90 } });
+  expect(cutLedger.complete).toBe(false);
+  expect(cutLedger.header).toContain("(showing 20 of 90)");
+
+  // both cut: the figures add up across the lists
+  const both = view({
+    decisions: [{ id: "a", action: "x", origin: "host:y", result: "approved", reason: null, at: "2026-10-01 10:00:00" }],
+    earlier: { ...WHOLE_EARLIER, showing: 50, total: 80 },
+    ledger: { ...WHOLE_LEDGER, showing: 20, total: 90 },
+  });
+  expect(both.header).toContain("(showing 71 of 171)");
+});
+
+test("a list that has not answered, or could not be read, is not whole", () => {
+  expect(view({ earlier: null }).complete).toBe(false);
+  expect(view({ earlier: { ...WHOLE_EARLIER, problem: "locked" } }).complete).toBe(false);
+  expect(view({ ledger: null }).complete).toBe(false);
+  expect(view({ ledger: { ...WHOLE_LEDGER, problem: "refused" } }).complete).toBe(false);
+  expect(view({ ledger: null }).header).not.toContain("Nothing is missing");
+});
+
+test("every list carries shown-of-total, and a decision row names the app, the tool, the class and the local clock", () => {
+  expect(showingOf(3, 7)).toBe("(showing 3 of 7)");
+  const row = decisionRow({
+    id: "apr_1",
+    action: "host.ledgerbox.chase",
+    origin: "host:ledgerbox",
+    result: "user_denied",
+    reason: "user_denied",
+    at: "2026-10-01 10:08:07",
+  });
+  expect(row).toMatchObject({ tool: "host.ledgerbox.chase", app: "ledgerbox", cls: "GATED", result: "declined" });
+  // the stamp is UTC: the clock is read through lib/time, never as the viewer's local time
+  expect(row.clock).toBe(clockOf("2026-10-01 10:08:07"));
+  expect(decisionRow({ id: "b", action: "a", origin: "", result: "refused", reason: "foreign_origin", at: "" }).result).toBe("refused");
+});
+
+test("a decision kept from an earlier window reads back with its site, tool, outcome and when", () => {
+  const row = activityRow(
+    { id: 9, ts: "2026-10-01 09:00:00", tab_id: null, origin: "host:ledgerbox", tool: "host.ledgerbox.chase", tier: 1, class: "GATED", outcome: "approved", ms: 0, reason: null, approval_id: "apr_old" },
+    Date.parse("2026-10-01T10:00:00Z"),
+  );
+  expect(row).toMatchObject({ id: "apr_old", app: "ledgerbox", cls: "GATED", result: "approved" });
+  expect(row.clock).toContain(clockOf("2026-10-01 09:00:00"));
+  expect(row.clock).toContain("1 h ago");
+});
+
+test("the window's own list merges decisions and calls, newest first", () => {
+  const v = view({
+    calls: [{ id: "c1", kind: "tool", text: "host.ledgerbox.list_overdue → 3", ok: true, at: "2026-10-01 10:00:00" }],
+    decisions: [{ id: "a", action: "host.ledgerbox.chase", origin: "host:ledgerbox", result: "approved", reason: null, at: "2026-10-01 10:05:00" }],
+  });
+  expect(v.session.map((r) => r.id)).toEqual(["a", "c1"]);
+  expect(v.session[1].clock).toBe(clockOf("2026-10-01 10:00:00"));
+});
+
+test("the ledger reply's figures come from its footer, or its own totals, or the rows", () => {
+  expect(ledgerFrom({ rows: [{}], footer: "(showing 1 of 9)" })).toMatchObject({ showing: 1, total: 9 });
+  expect(ledgerFrom({ rows: [{}, {}], showing: 2, total: 2, footer: "" })).toMatchObject({ showing: 2, total: 2 });
+  expect(ledgerFrom({ rows: [{}] })).toMatchObject({ showing: 1, total: 1 });
+  const dated = ledgerFrom({ rows: [{ row_id: "r", created_at: "2026-10-01T10:08:07" }] });
+  expect(dated.rows[0].clock).toBe(clockOf("2026-10-01T10:08:07"));
+});
+
+// -- the welcome's engine line (UAT backlog B4) --------------------------------------------------------
+
+test("the engine line is what a probe found, and there is no tick before one has answered", () => {
+  expect(engineView("claude_code", null, null, false)).toMatchObject({ state: "looking", text: "Looking for your engine…" });
+  expect(engineView("claude_code", null, "no daemon", false).state).toBe("missing");
+  const ready = engineView("claude_code", [{ id: "claude_code", state: "found", detail: "2.1" }], null, false);
+  expect(ready).toMatchObject({ state: "ready", text: "Engine: Claude Code, ready.", sub: "She never asks for a key." });
+});
+
+test("a missing or signed-out engine names the plain remedy; the other one is offered when it is found", () => {
+  const missing = engineView("claude_code", [{ id: "claude_code", state: "not_found", detail: "" }], null, false);
+  expect(missing).toMatchObject({ state: "missing", offer: null });
+  expect(missing.text).toBe("Claude Code is not on this computer yet.");
+  expect(missing.sub).toContain("Install it");
+
+  const signedOut = engineView("claude_code", [{ id: "claude_code", state: "not_logged_in", detail: "" }], null, true);
+  expect(signedOut.text).toBe("Claude Code is installed but not signed in.");
+  expect(signedOut.checking).toBe(true);
+
+  const other = engineView(
+    "claude_code",
+    [
+      { id: "claude_code", state: "not_found", detail: "" },
+      { id: "codex", state: "found", detail: "" },
+    ],
+    null,
+    false,
+  );
+  expect(other.offer).toEqual({ id: "codex", label: "Codex" });
+  expect(other.sub).toContain("Codex is ready on this computer");
+  for (const v of [missing, signedOut, other]) expect(`${v.text} ${v.sub}`).not.toMatch(/PATH|probe|daemon|not_found/);
+});
+
+// -- the card while its answer is on its way (UAT backlog B1) -----------------------------------------
+
+test("a card whose answer is on its way stays first, marked sending; a refused one carries its sentence", () => {
+  const machine = machineAfter(
+    { t: "init", onboarded: true, cards: 0 },
+    { t: "cards", n: 2 },
+    { t: "decide", kind: "approve", by: "click" },
+  );
+  const m = selectCompanion(
+    inputs({
+      machine,
+      run: {
+        phase: "idle",
+        transcript: [],
+        cards: [CARDS[0], CARDS[1]],
+        summary: null,
+        error: null,
+        answering: { [CARDS[0].id]: "approve" },
+        refusals: { [CARDS[1].id]: "That answer was refused: x." },
+      },
+    }),
+  );
+  expect(m.cards.map((c) => [c.id, c.sending, c.refusal])).toEqual([
+    [CARDS[0].id, true, null],
+    [CARDS[1].id, false, "That answer was refused: x."],
+  ]);
+  expect(m.decision).toMatchObject({ kind: "approve", sending: true });
+});
+
+test("a pending row with no rationale still gets a card that says so, with its action and parameters", () => {
+  const m = selectCompanion(
+    inputs({
+      machine: machineAfter({ t: "init", onboarded: true, cards: 0 }, { t: "cards", n: 1 }),
+      run: { phase: "idle", transcript: [], cards: [{ ...CARDS[0], rationale: "" }], summary: null, error: null },
+    }),
+  );
+  expect(m.cards[0].rationale).toMatch(/No reason was filed/);
+  expect(m.cards[0].params.length).toBeGreaterThan(0);
+});
+
+test("a stopped turn reads as a plain sentence, with the technical detail kept apart", () => {
+  const m = selectCompanion(
+    inputs({
+      run: { phase: "error", transcript: [], cards: [], summary: null, error: { reason: "engine_error", detail: "FileNotFoundError: claude" } },
+    }),
+  );
+  expect(m.talk.error?.sentence).toBe("Athena could not start Claude Code on this computer. Check Setup.");
+  expect(m.talk.error?.detail).toBe("FileNotFoundError: claude");
+  expect(m.talk.error?.sentence).not.toMatch(/FileNotFoundError|engine_error/);
+});
+
+test("Main is reported hidden only while the welcome has not been answered", () => {
+  expect(selectCompanion(inputs({ onboarded: false })).talk.mainHidden).toBe(true);
+  expect(selectCompanion(inputs({ onboarded: true })).talk.mainHidden).toBe(false);
+  expect(selectCompanion(inputs()).talk.mainHidden).toBe(false);
+});

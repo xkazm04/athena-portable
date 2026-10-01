@@ -14,7 +14,9 @@ import ReactDOM from "react-dom/client";
 
 import Live from "@/companion/live";
 import { startDaemon } from "@/stores/daemon";
+import { startEngines } from "@/stores/engines";
 import { startOrigins } from "@/stores/origins";
+import { startRun } from "@/stores/run";
 import { startSettings } from "@/stores/settings";
 import { startTabs } from "@/stores/tabs";
 import { startTools } from "@/stores/tools";
@@ -30,8 +32,13 @@ function Root() {
     void startDaemon();
     void startSettings();
     void startOrigins();
+    // The cards are the daemon's too: ask what it holds at start, when it is ready, and every 30 s
+    // while a card is on screen (UAT backlog B1). The engine probe feeds the welcome's engine line.
+    const stopRun = startRun();
+    startEngines();
     // Push-to-talk is a held key in her window (ADR 0020, 0026): Ctrl+Space while she is focused.
     void startVoice();
+    return stopRun;
   }, []);
   return <Live />;
 }

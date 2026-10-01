@@ -168,6 +168,11 @@ export interface TurnBody {
   tool_results?: Array<Record<string, unknown>>;
   project_id?: string;
   surface?: string;
+  /**
+   * Catalog origins (`host:<app_id>`) the user has switched off; the daemon's gate refuses a call
+   * on any of them for this run (UAT backlog B2).
+   */
+  disabled_origins?: string[];
 }
 
 /** A refusal the daemon named. `reason` is a member of the one closed vocabulary. */
@@ -180,6 +185,12 @@ export class ApiError extends Error {
     super(detail || reason);
     this.name = "ApiError";
   }
+}
+
+/** The answer of `GET /engines`. Rows have the shape `lib/engines.ts` renders (`EngineProbe`). */
+export interface EnginePage {
+  ok: boolean;
+  engines: readonly { id: string; state: "found" | "not_found" | "not_logged_in"; detail: string }[];
 }
 
 export class DaemonApi {
@@ -208,6 +219,15 @@ export class DaemonApi {
 
   ledger(): Promise<Record<string, unknown>> {
     return this.json("GET", "/ledger");
+  }
+
+  /**
+   * What the daemon's engine probe found on this machine, one row per engine (UAT backlog B4).
+   * `GET /engines` answers `{ ok, engines: [{ id, state, detail }] }`; `state` is the closed set
+   * `found | not_found | not_logged_in`, and `detail` is written for a person.
+   */
+  engines(): Promise<EnginePage> {
+    return this.json("GET", "/engines");
   }
 
   /** Every connector spec with its connection record. Never a credential (ADR 0021). */

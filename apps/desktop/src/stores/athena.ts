@@ -11,14 +11,22 @@ import { hasShell, onAthenaStatus, type AthenaStatus } from "@/lib/ipc";
 
 export type AthenaState = AthenaStatus;
 
-/** The states that mean she is doing nothing. Anything else is work. */
-export function isResting(state: string): boolean {
-  return state === "" || state === "rest" || state === "idle" || state === "seal";
+/** The forms that are work on their own: the tape, a held key, and a card waiting on the user. */
+const WORKING_FORMS: ReadonlySet<string> = new Set(["tape", "hear", "slip"]);
+
+/**
+ * Is she doing nothing? (UAT backlog B8.) She is working only when her form says so (tape, hear,
+ * slip) or when a turn is running, which her window reports as a non-empty `line` whatever form
+ * she is drawn in. The ledger, the welcome, the seal and the tab with nothing running rest: the
+ * old rule counted every state but four as work, so an idle ledger read as "working".
+ */
+export function isResting(state: string, line = ""): boolean {
+  return !WORKING_FORMS.has(state) && line === "";
 }
 
 export function pillText(status: Pick<AthenaStatus, "state" | "cards" | "line">): string {
   if (status.cards > 0) return `${status.cards} waiting`;
-  if (isResting(status.state)) return "Athena is resting";
+  if (isResting(status.state, status.line)) return "Athena is resting";
   return status.line || "Athena is working";
 }
 

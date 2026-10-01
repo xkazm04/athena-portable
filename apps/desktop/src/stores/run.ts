@@ -25,12 +25,16 @@ import { create } from "zustand";
 
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
 import { bridgeCall } from "@/lib/bridge";
-import type { Args } from "@/lib/ipc";
+import type { Args, Wire } from "@/lib/ipc";
 import { manifestBodyOf } from "@/lib/manifest";
-import { endpoint, useDaemon } from "@/stores/daemon";
+import { reasonOf, refusalSentence } from "@/companion/plain";
 import { isTerminal, type ChannelEvent, type DecisionRequested, type TurnSummary } from "@/lib/events";
+import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
+import { storeList, storeSet, type ActivityRow, type OriginRow } from "@/lib/store";
+import { endpoint, useDaemon } from "@/stores/daemon";
+import { useOrigins } from "@/stores/origins";
 import { useTabs } from "@/stores/tabs";
-import { useTools } from "@/stores/tools";
+import { useTools, type TabTools } from "@/stores/tools";
 
 /** How many times the loop may continue one exchange on its own before it stops and says so. */
 export const MAX_CONTINUATIONS = 8;
@@ -44,7 +48,55 @@ export interface TranscriptEntry {
   /** Set on a tool entry: the tier it ran at, so the panel can say where it happened. */
   tier?: number;
   ok?: boolean;
+  /** When it was written, as a UTC stamp (`lib/time.ts` reads it). Set on tool entries. */
+  at?: string;
 }
+
+/** How the user's answer to one card ended. `refused` means the daemon did not take it. */
+export type AnswerResult = "approved" | "user_denied" | "refused";
+
+/** One answer given in this window, newest first in `answered`. */
+export interface AnsweredDecision {
+  id: string;
+  action: string;
+  /** The catalog origin the card was about (`host:ledgerbox`). */
+  origin: string;
+  result: AnswerResult;
+  /** The closed-set reason: `user_denied`, or what the daemon refused with. `null` when approved. */
+  reason: string | null;
+  at: string;
+}
+
+/** One row for the shell's `activity` table. `approval_id` is the card, `tool` its action. */
+export interface ActivityWrite {
+  ts: string;
+  origin: string;
+  tool: string;
+  tier: number;
+  class: string;
+  outcome: string;
+  ms: number;
+  reason: string | null;
+  approval_id: string;
+}
+
+/** What was kept on this computer from earlier windows, as the store answered. */
+export interface EarlierRecord {
+  rows: readonly ActivityRow[];
+  showing: number;
+  total: number;
+  problem: string | null;
+}
+
+/** What `answer` tells its caller the moment the daemon has (or has not) taken the answer. */
+export interface Settled {
+  ok: boolean;
+  /** One plain sentence for a refusal; empty when ok. */
+  sentence: string;
+}
+
+/** How often the cards are checked against the daemon while any is on screen (ms). */
+export const RECONCILE_MS = 30_000;
 
 export interface RunFailure {
   reason: string;
@@ -78,6 +130,16 @@ export interface RunDeps {
    * no turn can start. Optional only so a test that is about something else may leave it out.
    */
   manifest?: () => Record<string, unknown> | null;
+  /**
+   * Catalog origins (`host:<app_id>`) the user has switched off, sent with every `POST /run` so the
+   * gate refuses a call on them (UAT backlog B2). Optional so a test about something else may omit it.
+   */
+  disabledOrigins?: () => string[];
+  /** Keep one answered decision on this computer (the `activity` table). */
+  record?: (row: ActivityWrite) => Promise<void>;
+  /** Read back what earlier windows kept. */
+  earlier?: () => Promise<StorePage<ActivityRow>>;
+  now?: () => Date;
 }
 
 export interface RunState {
@@ -89,8 +151,26 @@ export interface RunState {
   continuations: number;
   /** What this origin offers, as the last turn's capability answer said. */
   tools: ToolRow[];
+  /** Every tool call of this window. Unlike `transcript`, Clear does not touch it: it is the record. */
+  calls: TranscriptEntry[];
+  /** Cards whose answer is on its way to the daemon: id to the choice sent. */
+  answering: Record<string, string>;
+  /** Cards whose last answer was refused: id to the one sentence shown under the buttons. */
+  refusals: Record<string, string>;
+  /** Answers given in this window, newest first. */
+  answered: AnsweredDecision[];
+  /** What earlier windows kept, read once at start. `null` until the store has answered. */
+  earlier: EarlierRecord | null;
   send: (message: string) => Promise<void>;
-  answer: (id: string, choice: string) => Promise<void>;
+  /**
+   * Answer a card. The card stays until the daemon says it took the answer; `settled` is called the
+   * moment it has (or has not), before any continuation turn, so the slip stamps on success only.
+   */
+  answer: (id: string, choice: string, settled?: (result: Settled) => void) => Promise<void>;
+  /** Make the cards the union of the stream and what the daemon says is pending. */
+  reconcile: () => Promise<void>;
+  loadEarlier: () => Promise<void>;
+  /** Clears the transcript. A card the daemon is still holding is not part of it. */
   clear: () => void;
 }
 
@@ -102,6 +182,11 @@ export const EMPTY = {
   error: null as RunFailure | null,
   continuations: 0,
   tools: [] as ToolRow[],
+  calls: [] as TranscriptEntry[],
+  answering: {} as Record<string, string>,
+  refusals: {} as Record<string, string>,
+  answered: [] as AnsweredDecision[],
+  earlier: null as EarlierRecord | null,
 };
 
 /** The production wiring: the daemon store for the endpoint, the tabs store for the page. */
@@ -146,7 +231,124 @@ const LIVE: RunDeps = {
       tools: found.tools,
     });
   },
+  disabledOrigins: () =>
+    disabledOriginsOf(useOrigins.getState().records, useTabs.getState().tabs, useTools.getState().byTab),
+  record: async (row) => {
+    if (hasShell()) await storeSet("activity", "", row as unknown as Wire);
+  },
+  earlier: async () => {
+    if (!hasShell()) return { rows: [], showing: 0, total: 0 };
+    return storeList<ActivityRow>("activity", { limit: EARLIER_LIMIT });
+  },
 };
+
+/** How many earlier answers are read back at start. The list says when it cut them. */
+export const EARLIER_LIMIT = 50;
+
+/**
+ * The catalog origins the user has switched off (UAT backlog B2).
+ *
+ * The `origins` table is keyed by the web origin the browser observed, and the catalog namespaces a
+ * page's tools under the slug the page published (`host:<app_id>`). The two meet in the open tabs: a
+ * disabled web origin is sent as the app id a tab on it published. A key already in catalog form is
+ * sent as it is. An origin with no open tab and no catalog form cannot be named, and is not guessed.
+ */
+export function disabledOriginsOf(
+  records: Readonly<Record<string, OriginRow>>,
+  tabs: readonly Tab[],
+  byTab: Readonly<Record<number, TabTools>>,
+): string[] {
+  const out = new Set<string>();
+  for (const [key, record] of Object.entries(records)) {
+    if (record.enabled) continue;
+    if (key.startsWith("host:")) {
+      out.add(key);
+      continue;
+    }
+    for (const tab of tabs) {
+      const app = byTab[tab.id]?.appId;
+      if (app && originOf(tab.url) === key) out.add(`host:${app}`);
+    }
+  }
+  return [...out].sort();
+}
+
+/** `2026-10-01 10:08:07`, UTC, the way the store writes a stamp. */
+export function stampOf(date: Date): string {
+  return date.toISOString().slice(0, 19).replace("T", " ");
+}
+
+/**
+ * A card from a `GET /decisions` row. A pending row may lack what the stream carried (the rationale,
+ * the capture), so the card is built from what the row has: its action and parameters at minimum.
+ */
+export function cardFromRow(row: Record<string, unknown>): DecisionRequested | null {
+  if (typeof row.id !== "string" || row.id === "") return null;
+  const options = Array.isArray(row.options)
+    ? row.options.flatMap((o: unknown) => {
+        if (typeof o === "string") return [{ id: o, label: o }];
+        if (typeof o === "object" && o !== null && typeof (o as { id?: unknown }).id === "string") {
+          const { id, label } = o as { id: string; label?: unknown };
+          return [{ id, label: typeof label === "string" ? label : id }];
+        }
+        return [];
+      })
+    : [];
+  const text = (v: unknown) => (typeof v === "string" ? v : "");
+  return {
+    kind: "decision.requested",
+    id: row.id,
+    decision_kind: text(row.decision_kind) || "approve",
+    action: text(row.action) || "a request from an app",
+    params:
+      typeof row.params === "object" && row.params !== null && !Array.isArray(row.params)
+        ? (row.params as Record<string, unknown>)
+        : {},
+    rationale: text(row.rationale) || text(row.summary),
+    options: options.length
+      ? options
+      : [
+          { id: "approve", label: "approve" },
+          { id: "decline", label: "decline" },
+        ],
+    expires_at: text(row.expires_at),
+    origin: text(row.origin),
+    surface: text(row.surface),
+    capture_id: typeof row.capture_id === "string" ? row.capture_id : null,
+  };
+}
+
+/**
+ * The union of the stream's cards and the daemon's pending rows. A card the stream gave is kept
+ * as it is, with only its empty fields filled from the row; a pending row with no card gets one,
+ * unless `skip` says it has already been answered or is being answered.
+ */
+export function mergeCards(
+  current: readonly DecisionRequested[],
+  pending: ReadonlyArray<Record<string, unknown>>,
+  skip: (id: string) => boolean,
+): DecisionRequested[] {
+  const rows = new Map<string, DecisionRequested>();
+  for (const row of pending) {
+    const card = cardFromRow(row);
+    if (card) rows.set(card.id, card);
+  }
+  const have = new Set(current.map((c) => c.id));
+  const kept = current.map((card) => {
+    const row = rows.get(card.id);
+    if (!row) return card;
+    return {
+      ...card,
+      rationale: card.rationale || row.rationale,
+      origin: card.origin || row.origin,
+      surface: card.surface || row.surface,
+      expires_at: card.expires_at || row.expires_at,
+      params: Object.keys(card.params).length ? card.params : row.params,
+    };
+  });
+  const added = [...rows.values()].filter((card) => !have.has(card.id) && !skip(card.id));
+  return added.length ? [...kept, ...added] : kept;
+}
 
 let deps: RunDeps = LIVE;
 
@@ -160,12 +362,20 @@ export function resetRunForTests(): void {
   useRun.setState({ ...EMPTY });
 }
 
-export const useRun = create<RunState>((set) => {
+export const useRun = create<RunState>((set, get) => {
   /** Host answers produced since the last request, waiting to ride the next frame. */
   let outstanding: Array<Record<string, unknown>> = [];
 
-  const push = (entry: TranscriptEntry) =>
-    set((s) => ({ transcript: [...s.transcript, entry] }));
+  const now = () => stampOf(deps.now?.() ?? new Date());
+
+  /** A tool row also goes in `calls`, which Clear does not touch; `record: false` keeps it out. */
+  const push = (entry: TranscriptEntry, record = true) => {
+    const stamped = entry.kind === "tool" ? { ...entry, at: now() } : entry;
+    set((s) => ({
+      transcript: [...s.transcript, stamped],
+      calls: entry.kind === "tool" && record ? [...s.calls, stamped] : s.calls,
+    }));
+  };
 
   const fail = (error: unknown) =>
     set({
@@ -249,7 +459,11 @@ export const useRun = create<RunState>((set) => {
         });
         break;
       case "decision.requested":
-        set((s) => ({ cards: [...s.cards, event] }));
+        set((s) => ({
+          cards: s.cards.some((c) => c.id === event.id)
+            ? s.cards.map((c) => (c.id === event.id ? event : c))
+            : [...s.cards, event],
+        }));
         break;
       case "decision.resolved":
         set((s) => ({ cards: s.cards.filter((c) => c.id !== event.id) }));
@@ -275,7 +489,11 @@ export const useRun = create<RunState>((set) => {
     const api = deps.api();
     const focused = deps.focused();
     if (!api || !focused) {
-      fail(new ApiError(0, "unknown_ref", "the daemon is not ready"));
+      fail(
+        !api
+          ? new ApiError(0, "not_ready", "the daemon is not ready")
+          : new ApiError(0, "no_page", "no page is open"),
+      );
       return false;
     }
     const carried = outstanding;
@@ -287,6 +505,7 @@ export const useRun = create<RunState>((set) => {
         surface: "panel",
         host_state: deps.hostState(),
         tool_results: carried,
+        disabled_origins: deps.disabledOrigins?.() ?? [],
       })) {
         await apply(event);
         if (isTerminal(event)) break;
@@ -322,7 +541,7 @@ export const useRun = create<RunState>((set) => {
     if (body === null) return true;
     const api = deps.api();
     if (!api) {
-      fail(new ApiError(0, "unknown_ref", "the daemon is not ready"));
+      fail(new ApiError(0, "not_ready", "the daemon is not ready"));
       return false;
     }
     try {
@@ -367,24 +586,82 @@ export const useRun = create<RunState>((set) => {
       await exchange(message);
     },
 
-    async answer(id: string, choice: string) {
-      // Removed before the daemon replies, so a slow resolve cannot be pressed twice — and a
-      // second press is a second answer to a decision already made.
-      set((s) => ({ cards: s.cards.filter((c) => c.id !== id) }));
+    async answer(id, choice, settled) {
+      const before = get();
+      // A second press is a second answer to a decision that is already on its way or already made.
+      if (before.answering[id] !== undefined) return;
+      if (before.answered.some((a) => a.id === id && a.result !== "refused")) return;
+      const card = before.cards.find((c) => c.id === id);
+      set((s) => ({ answering: { ...s.answering, [id]: choice }, refusals: without(s.refusals, id) }));
+
+      const note = (result: AnswerResult, reason: string | null) => {
+        const row: AnsweredDecision = {
+          id,
+          action: card?.action ?? id,
+          origin: card?.origin ?? "",
+          result,
+          reason,
+          at: now(),
+        };
+        set((s) => ({ answered: [row, ...s.answered] }));
+        void deps
+          .record?.({
+            ts: row.at,
+            origin: row.origin,
+            tool: row.action,
+            tier: 1,
+            class: "GATED",
+            outcome: result === "approved" ? "approved" : result === "user_denied" ? "declined" : "refused",
+            ms: 0,
+            reason,
+            approval_id: id,
+          })
+          .catch((error: unknown) => console.error(`[athena] activity: ${String(error)}`));
+      };
+
+      // The card stays. A refusal says so in plain words, under the buttons, and the daemon is asked
+      // again what it holds, because a refused answer leaves the decision pending there.
+      const refuse = async (reason: string) => {
+        const sentence = refusalSentence(reason);
+        set((s) => ({
+          answering: without(s.answering, id),
+          refusals: { ...s.refusals, [id]: sentence },
+          // The daemon says no such decision is waiting: nothing is left to answer.
+          cards: reason === "unknown_ref" ? s.cards.filter((c) => c.id !== id) : s.cards,
+        }));
+        note("refused", reason);
+        settled?.({ ok: false, sentence });
+        await get().reconcile();
+      };
+
       const api = deps.api();
       if (!api) {
-        fail(new ApiError(0, "unknown_ref", "the daemon is not ready"));
+        await refuse("not_ready");
         return;
       }
+      // A decision restored from a previous daemon process has no session behind it until the page
+      // has been registered (UAT r2: it was refused as "a different app" on the right tab). Register
+      // the focused page first, exactly as a turn does; a failure here is the answer's to report.
+      const body = deps.manifest?.() ?? null;
+      if (body !== null) await api.manifest(body).catch(() => undefined);
       let resolution;
       try {
         resolution = await api.resolve(id, choice, deps.focused()?.origin);
       } catch (error) {
-        fail(error);
+        await refuse(reasonOf(error));
         return;
       }
+      const result: AnswerResult = resolution.status === "declined" ? "user_denied" : "approved";
+      set((s) => ({
+        cards: s.cards.filter((c) => c.id !== id),
+        answering: without(s.answering, id),
+        refusals: without(s.refusals, id),
+      }));
+      note(result, result === "user_denied" ? "user_denied" : null);
+      settled?.({ ok: true, sentence: "" });
+      await get().reconcile();
       if (resolution.status === "declined") {
-        push({ id, kind: "tool", text: `declined: ${id}`, ok: false });
+        push({ id, kind: "tool", text: `declined: ${card?.action ?? id}`, ok: false }, false);
         return;
       }
       for (const row of resolution.execute) await onPage(row);
@@ -394,13 +671,106 @@ export const useRun = create<RunState>((set) => {
       }
     },
 
+    async reconcile() {
+      const api = deps.api();
+      if (!api) return;
+      let page;
+      try {
+        page = await api.decisions();
+      } catch {
+        // The daemon did not answer; the cards on screen are all there is to go on.
+        return;
+      }
+      set((s) => ({
+        cards: mergeCards(
+          s.cards,
+          page.pending ?? [],
+          (id) =>
+            s.answering[id] !== undefined || s.answered.some((a) => a.id === id && a.result !== "refused"),
+        ),
+      }));
+    },
+
+    async loadEarlier() {
+      if (!deps.earlier || get().earlier?.problem === null) return;
+      try {
+        const page = await deps.earlier();
+        set({ earlier: { rows: page.rows, showing: page.showing, total: page.total, problem: null } });
+      } catch (error) {
+        set({
+          earlier: {
+            rows: [],
+            showing: 0,
+            total: 0,
+            problem: error instanceof Error ? error.message : String(error),
+          },
+        });
+      }
+    },
+
     clear() {
       outstanding = [];
       proposed = new Map();
-      set({ ...EMPTY });
+      // The transcript goes. What the daemon is still holding for the user does not: a card is a
+      // decision waiting, not a line of conversation, and the Record keeps what was done.
+      const keep = get();
+      set({
+        ...EMPTY,
+        cards: keep.cards,
+        calls: keep.calls,
+        answering: keep.answering,
+        refusals: keep.refusals,
+        answered: keep.answered,
+        earlier: keep.earlier,
+      });
     },
   };
 });
+
+let stopRun: (() => void) | null = null;
+
+/**
+ * Keep the cards true to the daemon: at start, when it becomes ready, and every
+ * {@link RECONCILE_MS} while any card is on screen. Returns what to undo. Idempotent.
+ */
+export function startRun(): () => void {
+  if (stopRun) return stopRun;
+  const run = () => {
+    void useRun.getState().reconcile();
+    void useRun.getState().loadEarlier();
+  };
+  run();
+  let timer: ReturnType<typeof setInterval> | null = null;
+  const offDaemon = useDaemon.subscribe((state, prev) => {
+    if (endpoint(state) && !endpoint(prev)) run();
+  });
+  const watch = (cards: number) => {
+    if (cards > 0 && timer === null) {
+      timer = setInterval(() => void useRun.getState().reconcile(), RECONCILE_MS);
+    }
+    if (cards === 0 && timer !== null) {
+      clearInterval(timer);
+      timer = null;
+    }
+  };
+  watch(useRun.getState().cards.length);
+  const offRun = useRun.subscribe((s, prev) => {
+    if (s.cards.length !== prev.cards.length) watch(s.cards.length);
+  });
+  stopRun = () => {
+    offDaemon();
+    offRun();
+    if (timer !== null) clearInterval(timer);
+    stopRun = null;
+  };
+  return stopRun;
+}
+
+function without<T>(map: Record<string, T>, id: string): Record<string, T> {
+  const next = { ...map };
+  delete next[id];
+  return next;
+}
 
 function resultRow(
   row: ExecuteRow,

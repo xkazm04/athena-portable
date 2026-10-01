@@ -60,11 +60,23 @@ const ICONS: Record<string, ReactNode> = {
     </>
   ),
   send: <path d="M4 12h15M13 6l6 6-6 6" />,
+  warn: (
+    <>
+      <path d="M12 4 3.5 19h17Z" />
+      <path d="M12 10v4M12 16.6v.4" />
+    </>
+  ),
+  wait: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 2" />
+    </>
+  ),
 };
 
 export type IconName = keyof typeof ICONS;
 
-/** One of the nine icons on a 24 grid, drawn inline so a static render shows it too. */
+/** One of the eleven icons on a 24 grid, drawn inline so a static render shows it too. */
 export function Icon({ name, className = "" }: { name: IconName; className?: string }) {
   return (
     <svg className={`ic ${className}`} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
