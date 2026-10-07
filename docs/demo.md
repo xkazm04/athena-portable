@@ -21,7 +21,8 @@ script (docs/demo.md, mirrored in examples/journey/script/journey.en.json)
    │
    ├─ 2. record    the journey in recording mode: one beat at a time, each beat held for
    │              max(clip duration, page settle), video captured by Playwright
-   │              (JOURNEY_VIDEO=1 JOURNEY_SCRIPT=journey.en.json)
+   │              (JOURNEY_SCRIPT=script/journey.en.json
+   │               pnpm exec playwright test tests/take.spec.ts)
    │
    └─ 3. compose   ffmpeg lays the clips on the video at the beat offsets the recorder logged,
                   adds the caption strip, exports mp4
@@ -150,3 +151,128 @@ About one working day to a finished take, given the key.
   it from the environment and refuses to run without it.
 - The three apps on ports 3001, 3002 and 3004, booted by the recorder itself.
 - Nothing from the desktop shell. When it is ready to be driven, the same script runs there.
+
+## 5. The Proving Ground film
+
+A second film, under three minutes, for the Nebius x NVIDIA submission: the gate on the desktop,
+the Proving Ground attacking it live, and the measured proofs. The script is
+`examples/journey/script/proving.en.json`, **a draft**: its lines and its on-screen claims are for
+the operator's review, and nothing has been narrated or shot for it yet. It names "NVIDIA
+Nemotron" and "Nebius Token Factory" in words and no other product.
+
+### 5.1 The script and its clock
+
+Fifteen beats in five acts, 1,526 characters of narration. At fifteen characters a second (the
+rate the first forty-two ElevenLabs clips measured) that is **1:42 of voice and 1:49 held on
+screen** with settles and half-second breaths, before any live wait.
+
+| Act | Segment | Beats | What it shows |
+|---|---|---|---|
+| open | card | T1 | Title: Athena, personal AI, in the apps you already have |
+| gate | desktop | D1–D3 | Mira's command typed into Athena's window, the decision card for `send_reminder`, Approve |
+| claim | card | K1 | "Can she be talked past her own gate?" |
+| proving | proving | P1–P5 | The hosted trigger page: token, Gauntlet, Small, Start; the live feed; 0 breached; the cost |
+| results | card | R1–R5 | 93 hostile turns and 0 breaches; persona fidelity 0.97; an approval is spent once; the model ladder on Nebius Token Factory; close |
+
+The live waits are what the script cannot know: the desktop engine's turn before the card arrives,
+and the Gauntlet's calls. Both are logged by their recorders and played at 4x under a "sped up 4x"
+label. The rehearsal below measured the small hosted Gauntlet at 12 s of wall clock (6 calls,
+$0.0016 of Nemotron), so on the day it finishes inside P2's hold and nothing needs speeding up; an
+engine turn of 20 to 60 s adds 5 to 15 s. The expected cut is **about 1:55 to 2:05**, and compose
+refuses anything over 2:59.
+
+### 5.2 One recorder per segment
+
+An act's `segment` says where its picture comes from; an act without one is `web`, so the two
+journey cuts are unchanged. Every recorder writes a video and a segment take beside it in
+`examples/journey/take/` (gitignored): the beats' `start_ms`/`end_ms` on that video's clock, and
+`speedups`, the waiting stretches.
+
+| Segment | Recorder | Writes | Paced on |
+|---|---|---|---|
+| `card` | `tests/cards.take.spec.ts`: every card beat set on one page from `src/card-page.ts`, the `record-page.ts` idiom | `cards.webm`, `cards.take.json` | the narration only |
+| `proving` | `tests/proving.take.spec.ts`: boots `python -m athena.proving.server --hosted` on a free port with a judge token minted for the take (`src/proving.ts`), types the token (a password field), picks Gauntlet and Small, presses Start | `proving.webm`, `proving.take.json` (and the run itself under `take/proving-runs/`) | the page's own event feed: `first_call` waits for the first call line, `end` for the end line |
+| `desktop` | `scripts/record-desktop.mjs`: attaches to the running shell over CDP, captures the screen rectangle of the app's windows with ffmpeg (`ddagrab`, falling back to `gdigrab`; rectangles from `scripts/window-rect.ps1`) | `desktop.mp4`, `desktop.take.json` | Athena's window: `card` waits for a decision card, `wait-decided` for its stamp |
+| `web` | `tests/take.spec.ts`, as in section 1 (only its `web` acts) | `journey.webm`, `take.json` | the narration |
+
+`scripts/compose.mjs --film` cuts each act out of its segment's video from its first beat's start
+to its last beat's end, plays the logged waits faster, concatenates the acts in script order
+(optionally crossfaded), lays each beat's clip at its place on the joined timeline, burns the
+captions and the speed-up label, and checks the length against the script's `max_ms` (2:59).
+
+### 5.3 Commands
+
+From `examples/journey/`, with `JOURNEY_SCRIPT=script/proving.en.json` set for every step:
+
+```bash
+# 0. rehearse without spending anything
+pnpm narrate -- --dry                  # durations at 15 chars/s; prints the characters it would spend
+pnpm film:placeholders                 # colour clips, tones and segment takes in take/placeholder/
+pnpm film:compose -- --takes take/placeholder --captions --xfade 300   # a real mp4, end to end
+node scripts/record-desktop.mjs --dry  # the beats, the grabbers this ffmpeg has, the capture command
+
+# 1. narrate (ElevenLabs; about 1,500 characters)
+pnpm narrate
+
+# 2. record, one segment at a time, in any order
+pnpm film:cards                                    # about a minute
+pnpm film:proving                                  # a live small hosted Gauntlet: under a cent
+pnpm film:desktop                                  # the app must be up, see below
+
+# 3. compose
+pnpm film:compose -- --captions --xfade 300        # take/film.mp4 and take/film.srt
+```
+
+`CARDS_ONLY=T1,R5` renders only those cards. `--speed 8` overrides every logged wait's factor;
+`--allow-long` lets a draft past 2:59 with a warning; `--max-s` changes the limit for one run.
+ffmpeg and ffprobe come from `PATH`, or from `FFMPEG` and `FFPROBE`.
+
+**The desktop app for the capture.** Build and start it as `uat/env.md` describes, with its CDP
+port open and Ledgerbox as its tab, then open Athena's window and leave both windows on the
+primary display (ddagrab captures output 0; `--grabber gdigrab` takes virtual-desktop coordinates
+if a window must sit elsewhere):
+
+```bash
+pnpm dev:ledgerbox                     # port 3001, from the repository root
+cd apps/desktop && pnpm dev            # the dev server the debug binary loads
+ATHENA_STORE=<a scratch store> ATHENA_START_URL=http://localhost:3001 \
+  WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222 \
+  ./src-tauri/target/debug/athena-desktop.exe
+```
+
+The D1 command needs a real engine turn, which spends whatever engine the shell is set to; the
+recorder only types, waits and clicks. `--window largest` films only the biggest window when the
+union of both is too wide to read.
+
+### 5.4 What it needs and what it costs
+
+| Need | For | Cost |
+|---|---|---|
+| `ELEVENLABS_API_KEY` (env or a gitignored `.env`) | narration | about 1,500 characters a take, re-runs only for changed lines |
+| ffmpeg with libx264, libass and ddagrab or gdigrab | capture and compose | none |
+| `NEBIUS_API_KEY` in the repository root `.env` | the proving segment | one small hosted Gauntlet: $0.0016 and $0.0021 in the two rehearsal runs, under the server's own $3 a day cap; no Claude |
+| the desktop app built, with CDP, and an engine signed in | the desktop segment | one engine turn |
+| a Chromium for Playwright (`pnpm exec playwright install chromium`) | cards and proving | none |
+
+### 5.5 Pre-flight: rights and what is on screen
+
+- [ ] **No third-party logos or product names in a browsed tab or on screen.** Use the example apps
+      (Ledgerbox) only; close every other tab of the desktop shell before D1.
+- [x] **The proving page names no third-party product.** Its pills, cost tally and preset notes say
+      "reference engine" and "reference control"; the data keys behind them are unchanged.
+- [ ] **The desktop engine row.** If the shell shows its engine by product name anywhere in the
+      captured windows, keep that panel closed during the capture.
+- [ ] **No music.** The film has narration only; a music bed needs its own licence.
+- [ ] **ElevenLabs licence.** The [Terms of Service](https://elevenlabs.io/terms-of-use), section
+      1(c), let free-plan users use the service for non-commercial purposes only, and paid
+      subscribers use the output commercially; ElevenLabs' public guidance also asks free-plan
+      output to be credited ("Voice generated by ElevenLabs" or similar). A hackathon submission
+      video is public and promotional, so narrate on a **paid plan** with a premade voice, or at
+      the least put the credit line in the video description. Premade voices need no separate
+      voice-owner licence; a cloned or library voice does, and the script does not use one.
+- [ ] **The numbers on the result cards** (R1 to R4) are typed from README section 9 and the
+      Proving Ground's reports: 93 hostile turns and 0 breaches, persona fidelity 0.972 shown as
+      0.97, the approval spent once, Lightning then Super. Re-read them against the latest reports
+      the day of the shoot.
+- [ ] **P4 says "Zero breached".** The film records a live run, so the line is only true if the run
+      is; read `notes` in `take/proving.take.json` (the end line and the tally) before composing.

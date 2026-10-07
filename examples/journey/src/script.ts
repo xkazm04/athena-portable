@@ -26,7 +26,30 @@ export const DURATIONS_PATH: string = resolve(TAKE_DIR, "audio", "durations.json
 /** `scripts/narrate.mjs`'s own record of what it read aloud, beat by beat. */
 export const NARRATION_MANIFEST_PATH: string = resolve(TAKE_DIR, "audio", "manifest.json");
 
-export type Voice = "narrator" | "mira" | "athena";
+/**
+ * The three voices of the journey films, plus any role a later script casts (the Proving Ground
+ * film's voice map is data: `script.voices`, read by `scripts/narrate.mjs`).
+ */
+export type Voice = "narrator" | "mira" | "athena" | (string & {});
+
+/**
+ * Where an act's picture comes from (docs/demo.md section 5). Absent means `web`, so the two journey
+ * cuts, which predate the field, keep meaning what they always meant.
+ *
+ * - `web`: the Playwright page with the surface strip (`tests/take.spec.ts`);
+ * - `proving`: the Proving Ground trigger page, paced on its live events (`tests/proving.take.spec.ts`);
+ * - `desktop`: a screen capture of the desktop app, driven over CDP (`scripts/record-desktop.mjs`);
+ * - `card`: a title or chapter card rendered from HTML (`tests/cards.take.spec.ts`).
+ */
+export type Segment = "web" | "proving" | "desktop" | "card";
+
+/** What a title or chapter card says. `stat` is the one large figure a results card leads with. */
+export interface Card {
+  readonly kicker: string;
+  readonly title: string;
+  readonly sub?: string;
+  readonly stat?: string;
+}
 
 export interface Beat {
   readonly id: string;
@@ -37,13 +60,26 @@ export interface Beat {
   /** The "on screen" column of docs/demo.md section 2 — what the beat has to show. */
   readonly screen: string;
   readonly settle_ms: number;
-  readonly estimate_s: number;
+  readonly estimate_s?: number;
+  /**
+   * Live segments only: the event the beat waits for before it starts (`card`, `first_call`, `end`,
+   * ...). The wait is logged as a speed-up range, never as part of the beat.
+   */
+  readonly cue?: string;
+  /** Live segments only: the beat's actions, from the recorder's small fixed vocabulary. */
+  readonly do?: readonly string[];
+  /** Card segments only: what the card says. */
+  readonly card?: Card;
 }
 
 export interface Act {
   readonly id: string;
   readonly title: string;
-  readonly estimate_s: number;
+  readonly estimate_s?: number;
+  /** Absent means `web`. */
+  readonly segment?: Segment;
+  /** Live segments: how much faster compose plays a logged waiting stretch (default 4). */
+  readonly speedup?: number;
   readonly beats: readonly Beat[];
 }
 
@@ -51,7 +87,14 @@ export interface Script {
   readonly title: string;
   readonly language: string;
   readonly words_per_second: number;
+  /**
+   * When set, a clip with no measured length is estimated from characters rather than words — the
+   * rate the first forty-two ElevenLabs clips measured was about fifteen characters a second.
+   */
+  readonly chars_per_second?: number;
   readonly breath_ms: number;
+  /** The longest the composed film may run; compose refuses a longer cut unless told otherwise. */
+  readonly max_ms?: number;
   readonly acts: readonly Act[];
 }
 
@@ -69,6 +112,20 @@ export function loadScript(path = scriptPath()): Script {
 /** Every beat of every act, in order — the take plays exactly this list and nothing else. */
 export function beatsOf(script: Script): Beat[] {
   return script.acts.flatMap((act) => [...act.beats]);
+}
+
+export function segmentOf(act: Act): Segment {
+  return act.segment ?? "web";
+}
+
+/** The acts one recorder plays, in script order — each segment's recorder sees only its own. */
+export function actsOf(script: Script, segment: Segment): Act[] {
+  return script.acts.filter((act) => segmentOf(act) === segment);
+}
+
+/** The beats of one segment, in script order. */
+export function segmentBeatsOf(script: Script, segment: Segment): Beat[] {
+  return actsOf(script, segment).flatMap((act) => [...act.beats]);
 }
 
 /**
@@ -127,6 +184,9 @@ function isStale(id: string, script: Script, narrated: Record<string, number>): 
 export function clipMsOf(beat: Beat, script: Script, measured: Record<string, number>): number {
   const known = measured[beat.id];
   if (known !== undefined) return known;
+  if (script.chars_per_second !== undefined && script.chars_per_second > 0) {
+    return Math.round((beat.line.length / script.chars_per_second) * 1000);
+  }
   const words = beat.line.split(/\s+/).filter((word) => word.length > 0).length;
   return Math.round((words / script.words_per_second) * 1000);
 }

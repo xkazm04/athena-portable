@@ -10,7 +10,12 @@
     "typecheck": "tsc --noEmit",
     "lint": "echo \"@athena/journey adds no eslint plugin of its own: tsc --noEmit under strict is its lint (see README)\"",
     "narrate": "node scripts/narrate.mjs",
-    "compose": "node scripts/compose.mjs"
+    "compose": "node scripts/compose.mjs",
+    "film:cards": "playwright test tests/cards.take.spec.ts",
+    "film:proving": "playwright test tests/proving.take.spec.ts",
+    "film:desktop": "node scripts/record-desktop.mjs",
+    "film:placeholders": "node scripts/placeholders.mjs",
+    "film:compose": "node scripts/compose.mjs --film"
   },
   "devDependencies": {
     "@athena/bridge": "workspace:*",

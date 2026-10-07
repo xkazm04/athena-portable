@@ -16,13 +16,22 @@ import { defineConfig, devices } from "@playwright/test";
  * back: naming its file on the command line, or `JOURNEY_TAKE=1`. Reading `process.argv` here is
  * what lets `pnpm exec playwright test tests/take.spec.ts` mean what it obviously means, with no
  * second project to keep in step and no environment variable to remember.
+ *
+ * The Proving Ground film's recorders (docs/demo.md section 5) are stricter: `cards.take.spec.ts`
+ * and `proving.take.spec.ts` run only when their own file is named. The second starts a live
+ * Gauntlet that spends Nemotron money, and `JOURNEY_TAKE=1` was never a promise to do that.
  */
-const takeWanted =
-  process.env.JOURNEY_TAKE === "1" || process.argv.some((argument) => argument.includes("take.spec"));
+const named = (file: string): boolean => process.argv.some((argument) => argument.includes(file));
+const takeWanted = process.env.JOURNEY_TAKE === "1" || named("take.spec");
+const ignored = [
+  ...(takeWanted ? [] : ["**/take.spec.ts"]),
+  ...(named("cards.take.spec") ? [] : ["**/cards.take.spec.ts"]),
+  ...(named("proving.take.spec") ? [] : ["**/proving.take.spec.ts"]),
+];
 
 export default defineConfig({
   testDir: "./tests",
-  ...(takeWanted ? {} : { testIgnore: ["**/take.spec.ts"] }),
+  ...(ignored.length === 0 ? {} : { testIgnore: ignored }),
   fullyParallel: false,
   workers: 1,
   retries: 0,

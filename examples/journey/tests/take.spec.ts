@@ -43,13 +43,13 @@ import { recordPage } from "../src/record-page.ts";
 import { installBridge } from "../src/relay.ts";
 import {
   TAKE_DIR,
-  beatsOf,
   captionOf,
   clipMsOf,
   holdMsOf,
   loadDurations,
   loadScript,
   scriptPath,
+  segmentBeatsOf,
 } from "../src/script.ts";
 import { STUDIO_NOTES, assertClasses, assertHands } from "../src/stage.ts";
 import { Strip, argLine } from "../src/strip.ts";
@@ -90,7 +90,13 @@ test.describe.configure({ timeout: 25 * 60 * 1000 });
 
 const script = loadScript();
 const durations = loadDurations(script);
-const beats = beatsOf(script);
+/**
+ * Only the script's `web` acts: a script with other segments (the Proving Ground film, docs/demo.md
+ * section 5) has their beats played by their own recorders. The two journey cuts have no segment
+ * field, so every act is `web` and this is every beat, exactly as before.
+ */
+const beats = segmentBeatsOf(script, "web");
+test.skip(beats.length === 0, `${scriptPath()} has no web acts; its other segments have their own recorders`);
 
 const VIDEO = join(TAKE_DIR, "journey.webm");
 const OFFSETS = join(TAKE_DIR, "take.json");

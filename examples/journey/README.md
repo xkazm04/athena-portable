@@ -193,11 +193,16 @@ pnpm narrate -- --dry              # no network: estimated durations only, so th
 pnpm narrate -- --only 1.3,1.4 --force   # re-cut two beats after a script edit
 
 # 2. record — the journey in recording mode, one beat at a time, held for max(clip, settle)
-JOURNEY_VIDEO=1 JOURNEY_SCRIPT=script/journey.en.json pnpm test
+#    (a bare `pnpm test` ignores the take; name its file. JOURNEY_VIDEO=1 only films the journey test)
+JOURNEY_SCRIPT=script/journey.en.json pnpm exec playwright test tests/take.spec.ts
 
 # 3. compose — the clips onto the video at the offsets the recorder logged
 pnpm compose -- --captions
 ```
+
+The Proving Ground film (`script/proving.en.json`) is made of segments, each with its own
+recorder — cards, the live trigger page, a screen capture of the desktop app — and is joined by
+`pnpm film:compose`; `docs/demo.md` section 5 has the commands.
 
 Everything the three write lands in `take/`, which is not committed:
 
