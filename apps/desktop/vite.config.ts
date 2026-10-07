@@ -1,9 +1,11 @@
 /**
- * Three HTML entries (README section 3.1; ADR 0026 added the second window).
+ * Four HTML entries (README section 3.1; ADR 0026 added the second window, ADR 0027 the halo).
  *
  * - `chrome.html` is the privileged shell document: the module bar and whichever module is
  *   selected. Tauri loads it into the `chrome` webview.
  * - `athena.html` is her own window (ADR 0026): a transparent, frameless webview with its own stores.
+ * - `halo.html` is the edge glow and caption (ADR 0027): one plain-TS copy per monitor, in a
+ *   transparent, click-through overlay.
  * - `preview.html` is the module preview harness. It runs in a plain browser with no Tauri, no
  *   IPC and no daemon, and the shell never loads it. It is an input here so `pnpm build`
  *   typechecks and bundles it like anything else — a harness that is not built is a harness that
@@ -45,6 +47,7 @@ export default defineConfig({
         chrome: path.resolve(root, "chrome.html"),
         athena: path.resolve(root, "athena.html"),
         preview: path.resolve(root, "preview.html"),
+        halo: path.resolve(root, "halo.html"),
       },
     },
   },

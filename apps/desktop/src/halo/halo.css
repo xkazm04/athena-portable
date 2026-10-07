@@ -1,0 +1,291 @@
+/* The halo's look — ADR 0027 (Athena is ambient), README section 3.1.
+ *
+ * Four bands at the screen edges, each a gradient that fades inward, and a caption in the lower
+ * third. The page covers a whole monitor in a transparent layer, so every moving thing here moves
+ * by `transform` or `opacity` only (the compositor's two cheap properties): a band's depth is a
+ * scale from the screen edge, never a width, a shadow or a filter. `main.ts` writes `--level`
+ * (0..1, smoothed) and `data-phase`; nothing else changes at runtime.
+ *
+ * The hues are the house's roles (`styles/app.css`): her voice is the house glow, the person's
+ * turn is a paler cyan, work in flight is the agent violet, and a card waiting on the person is
+ * the human pink. They are spelled here rather than imported, because this page runs once per
+ * monitor and does not load the app's sheet.
+ */
+
+:root {
+  --halo-speak: #22d3ee;
+  --halo-listen: #a5f3fc;
+  --halo-think: #a78bfa;
+  --halo-gate: #f472b6;
+
+  /* the bloom at level 1; a phase at rest shows `--rest` of it (~3px) */
+  --halo-deep: 40px;
+  --halo-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@property --hue {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #22d3ee;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* `?demo` in a plain browser: a stand-in wallpaper, so the transparent page has something under it */
+html.halo-demo {
+  background: linear-gradient(135deg, #1f2b33, #3b4a52 60%, #6b7a80);
+}
+
+.halo {
+  --level: 0;
+  --rest: 0.08;
+  --hue: var(--halo-speak);
+  position: fixed;
+  inset: 0;
+  opacity: 1;
+  /* the hue switches, it is never interpolated: a fading gradient is a repaint per frame */
+  transition: opacity 400ms ease-out;
+}
+.halo[data-phase="listening"] {
+  --hue: var(--halo-listen);
+  --rest: 0.1;
+}
+.halo[data-phase="thinking"] {
+  --hue: var(--halo-think);
+}
+.halo[data-phase="gate"] {
+  --hue: var(--halo-gate);
+}
+.halo[data-phase="speaking"] {
+  --rest: 0.1;
+}
+/* idle fades out in the hue it had: the hue waits for the fade before it resets */
+.halo[data-phase="idle"] {
+  opacity: 0;
+  transition:
+    opacity 400ms ease-out,
+    --hue 0s linear 400ms;
+}
+
+/* -- the edges ------------------------------------------------------------------------------- */
+
+.edge {
+  position: absolute;
+  overflow: hidden;
+  opacity: calc(0.55 + 0.45 * var(--level));
+  will-change: transform, opacity;
+  --strong: color-mix(in srgb, var(--hue) 85%, transparent);
+  --soft: color-mix(in srgb, var(--hue) 30%, transparent);
+}
+.edge.top,
+.edge.bottom {
+  left: 0;
+  right: 0;
+  height: var(--halo-deep);
+  transform: scaleY(max(var(--rest), var(--level)));
+  /* the ends fade out, so two bands meeting at a corner never add up to double bright */
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--halo-deep),
+    #000 calc(100% - var(--halo-deep)),
+    transparent
+  );
+}
+.edge.left,
+.edge.right {
+  top: 0;
+  bottom: 0;
+  width: var(--halo-deep);
+  transform: scaleX(max(var(--rest), var(--level)));
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 var(--halo-deep),
+    #000 calc(100% - var(--halo-deep)),
+    transparent
+  );
+}
+.edge.top {
+  top: 0;
+  transform-origin: top;
+  background: linear-gradient(to bottom, var(--strong), var(--soft) 35%, transparent);
+}
+.edge.bottom {
+  bottom: 0;
+  transform-origin: bottom;
+  background: linear-gradient(to top, var(--strong), var(--soft) 35%, transparent);
+}
+.edge.left {
+  left: 0;
+  transform-origin: left;
+  background: linear-gradient(to right, var(--strong), var(--soft) 35%, transparent);
+}
+.edge.right {
+  right: 0;
+  transform-origin: right;
+  background: linear-gradient(to left, var(--strong), var(--soft) 35%, transparent);
+}
+
+/* thinking: a brighter stretch travels clockwise round the screen, one edge per quarter */
+.edge i {
+  position: absolute;
+  display: none;
+  will-change: transform;
+}
+.edge.top i,
+.edge.bottom i {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 25%;
+  background: linear-gradient(to right, transparent, color-mix(in srgb, #fff 45%, var(--hue)), transparent);
+}
+.edge.left i,
+.edge.right i {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 25%;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, #fff 45%, var(--hue)), transparent);
+}
+.halo[data-phase="thinking"] .edge {
+  opacity: 0.8;
+}
+.halo[data-phase="thinking"] .edge i {
+  display: block;
+}
+.halo[data-phase="thinking"] .edge.top i {
+  animation: travel-right 8s linear infinite;
+}
+.halo[data-phase="thinking"] .edge.right i {
+  animation: travel-down 8s linear -6s infinite;
+}
+.halo[data-phase="thinking"] .edge.bottom i {
+  animation: travel-left 8s linear -4s infinite;
+}
+.halo[data-phase="thinking"] .edge.left i {
+  animation: travel-up 8s linear -2s infinite;
+}
+@keyframes travel-right {
+  0% {
+    transform: translateX(-100%);
+  }
+  25%,
+  100% {
+    transform: translateX(400%);
+  }
+}
+@keyframes travel-left {
+  0% {
+    transform: translateX(400%);
+  }
+  25%,
+  100% {
+    transform: translateX(-100%);
+  }
+}
+@keyframes travel-down {
+  0% {
+    transform: translateY(-100%);
+  }
+  25%,
+  100% {
+    transform: translateY(400%);
+  }
+}
+@keyframes travel-up {
+  0% {
+    transform: translateY(400%);
+  }
+  25%,
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+/* gate: a slow breathe until the card is answered */
+.halo[data-phase="gate"] .edge {
+  animation: breathe 2s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* -- the caption ----------------------------------------------------------------------------- */
+
+.caption {
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(60ch, 80vw);
+  text-align: center;
+  font-family: var(--halo-font);
+  color: #f1f7f8;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 0 14px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transition: opacity 600ms ease-out;
+}
+.caption[data-visible="1"] {
+  opacity: 1;
+  transition-duration: 160ms;
+}
+.caption .who {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hue);
+}
+.caption .text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+/* -- reduced motion: no travel, no breathe, a still glow at one depth ------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .halo .edge,
+  .halo[data-phase] .edge {
+    animation: none;
+    opacity: 0.8;
+  }
+  .edge.top,
+  .edge.bottom {
+    transform: scaleY(0.3);
+  }
+  .edge.left,
+  .edge.right {
+    transform: scaleX(0.3);
+  }
+  .halo[data-phase] .edge i {
+    display: none;
+    animation: none;
+  }
+}

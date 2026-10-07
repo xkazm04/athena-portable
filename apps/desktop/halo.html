@@ -1,0 +1,25 @@
+<!doctype html>
+<!-- The halo (ADR 0027, README section 3.1). Tauri loads it into every `halo-<i>` webview: a
+     transparent, click-through, topmost overlay covering one monitor. It paints a bloom at the
+     four screen edges and a two-line caption, and nothing else; the background is transparent and
+     nothing on it takes the pointer (`halo.css`). -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Athena halo</title>
+  </head>
+  <body>
+    <div id="halo" class="halo" data-phase="idle" aria-hidden="true">
+      <div class="edge top"><i></i></div>
+      <div class="edge right"><i></i></div>
+      <div class="edge bottom"><i></i></div>
+      <div class="edge left"><i></i></div>
+      <div id="halo-caption" class="caption" data-visible="0">
+        <span id="halo-who" class="who"></span>
+        <span id="halo-text" class="text"></span>
+      </div>
+    </div>
+    <script type="module" src="/src/halo/main.ts"></script>
+  </body>
+</html>
