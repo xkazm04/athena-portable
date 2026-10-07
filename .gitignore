@@ -48,3 +48,6 @@ Thumbs.db
 
 # Registry skills are machine-local links (scripts/link-registry.mjs in ai-registry)
 .claude/skills/uat
+
+# Proving Ground runs are evidence to read, not source (README §9)
+proving-runs/
