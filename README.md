@@ -760,6 +760,7 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 | Denied claims, reworked (clinics) | practice management, clearinghouse, Availity | 5 / 5 | **exceeds**: 8 of 10, $1,910 of $2,120, every claim exact, 0 false; 3.0 min, $2.59 |
 | Amazon FBA reimbursements | Seller Central, supplier inbox | 4 / 4 | **exceeds**: 5 of 5, $359.78 of $359.78, 14 of 14 traps avoided, 0 false; 2.6 min, $2.66 |
 | Medical bills against the EOBs | insurer portal, MyChart, Cedar | 4 / 4 | **exceeds**: $3,423.50 of $3,423.50 (7 of 8; one correct $95 bill left unpaid), 0 false; 2.3 min, $1.79 |
+| Distributor deductions, disputed (food brands) | myUNFI, KeHE K-Solve, Drive, warehouse portal | 4 / 4 | **exceeds**: 7 of 7, $10,882 of $10,882, every claim exact, 10 of 10 traps avoided, 0 false; 4.2 min, $3.57 |
 
 ### What the runs taught Athena
 
@@ -782,6 +783,9 @@ How the money moved, run by run, on the same worlds:
   ADRs 0041–0045 and the bench's follow-ups.
 - **Clinic denials:** $0 (2 of 10) → **$2,120** (exceeds) after the dropped-op and result-budget
   fixes → $1,910 (exceeds) after ADR 0045.
+- **Distributor deductions:** $10,882 with one false claim (short): she asked KeHE for the
+  backup behind a promotion billed at its deal sheet's "forecast" quantity, a fair question the
+  world had left open → $10,882 with none (exceeds) once the deal sheet named a fixed quantity.
 - **FBA reimbursements:** $359.78 (exceeds) → $359.78 with one false claim (short) → $359.78
   with none (exceeds) after ADR 0045. On Claude Haiku, before the fixes, it found 4 of 5 with
   no false claim for $0.08, about a nineteenth of Sonnet's cost.

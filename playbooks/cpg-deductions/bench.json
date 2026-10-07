@@ -1,0 +1,111 @@
+{
+  "playbook": "cpg-deductions",
+  "run_at": "2026-10-07T23:28:15Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 253.9,
+  "turns": 15,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 32,
+  "cost_usd": 3.573,
+  "your_time_s": 210,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 35.0
+    },
+    "minutes": 4.2
+  },
+  "score": {
+    "eligible": 7,
+    "found": 7,
+    "exact": 7,
+    "value_total_usd": 10882.0,
+    "value_found_usd": 10882.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 10,
+    "traps_filed": 0,
+    "filed_usd": 10882.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "dispute_deduction",
+      "key": "UN-88207",
+      "outcome": "correct",
+      "value_usd": 612.0,
+      "exact": true,
+      "why": "A per-invoice SSA after the February 2026 change, beside August's consolidated SSA"
+    },
+    {
+      "action": "dispute_deduction",
+      "key": "KE-54760",
+      "outcome": "correct",
+      "value_usd": 1620.0,
+      "exact": true,
+      "why": "The second deduction for the one event NG-0811"
+    },
+    {
+      "action": "dispute_deduction",
+      "key": "UN-88902",
+      "outcome": "correct",
+      "value_usd": 1180.0,
+      "exact": true,
+      "why": "The proof of delivery is signed clean for 240 of 240 cases"
+    },
+    {
+      "action": "dispute_deduction",
+      "key": "UN-89210",
+      "outcome": "correct",
+      "value_usd": 3600.0,
+      "exact": true,
+      "why": "The March and April 2024 deal sheets do not overlap"
+    },
+    {
+      "action": "dispute_deduction",
+      "key": "UN-88411",
+      "outcome": "correct",
+      "value_usd": 840.0,
+      "exact": true,
+      "why": "Deal sheet approved $1.00 a unit; deducted at $1.35: 2,400 x $0.35 over"
+    },
+    {
+      "action": "dispute_deduction",
+      "key": "UN-87810",
+      "outcome": "correct",
+      "value_usd": 2050.0,
+      "exact": true,
+      "why": "The agreement covers spoils with a 1% off-invoice allowance; no separate billing"
+    },
+    {
+      "action": "request_backup",
+      "key": "KE-51230",
+      "outcome": "correct",
+      "value_usd": 980.0,
+      "exact": true,
+      "why": "The flyer was approved but there is no proof it ran; day 159 of 180"
+    }
+  ],
+  "missed": [],
+  "closing_words": "K-Solve has six deductions, all shown (6 of 6). I'm asking for backup on one, and the rest are valid, already filed, or can't be disputed.\n\n**Backup request: KE-51230, $980 (Natural Grocers flyer advertising fee, 2026-05-01).** The only thing in Drive is the approval email for the May flyer placement. It says no tear sheet or proof that the flyer ran has been received. I can't tell whether this fee is valid, so I'm asking KeHE for the backup instead of disputing. The 180-day window runs to about 2026-10-28.\n\n\n**Leaving alone (valid)**\n- **KE-50944, $1,140 (pricing, 2026-04-20).** The price change letter says the new price took effect 2026-05-01, and our April invoices were billed at the new price. KeHE's pricing rule corrects invoices billed before the effective date, so this deduction is right.\n- **KE-55120, $1,350 plus $108 fee.** The Fresh Thyme deal sheet approves a fixed 1,800 units",
+  "note": "after the Fresh Thyme deal sheet named a fixed 1,800 units (run 1's backup request was a fair question of a forecast)",
+  "history": [
+    {
+      "run_at": "2026-10-07T23:21:47Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 7,
+      "eligible": 7,
+      "value_found_usd": 10882.0,
+      "false_claims": 1
+    }
+  ]
+}

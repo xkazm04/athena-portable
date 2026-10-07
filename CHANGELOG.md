@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
+- `feat(playbooks): distributor deductions for a food brand, across UNFI, KeHE, the Drive and the warehouse, benched to exceeds` — six deductions over-taken or duplicated and one with no proof it ran ($10,882), beside eight valid ones, two expired and one only KeHE's advanced search shows; run 2: 7 of 7, every amount exact, 0 false, 4.2 minutes.
+
 - `feat(playbooks): medical bills against the EOBs and denied clinic claims, benched to exceeds, and what each taught Athena` — two playbooks with their run histories (medical: seven runs, $388 to $3,423.50; clinic: $0 to $2,120); `lessons` and `caveat` in playbook.json, shown in the layer and counted on the overview; README §14 records every fix the runs found.
 - Fixes found by the runs: ADR 0041 (refusals and drops told in the turn, with calls in flight), ADR 0042 (recall: any word, the matched region), ADR 0043 (tool results by budget), ADR 0044 (the playbook rides every turn), ADR 0045 (evidence is what a page says; gather in each tab), the OP grammar's one shape; ADR 0029's three surfaces built (Connectors, Setup, Browser).
 

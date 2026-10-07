@@ -1,0 +1,67 @@
+{
+  "id": "cpg-deductions",
+  "title": "Distributor deductions, disputed",
+  "domain": "Food & beverage",
+  "promise": "Every deduction UNFI and KeHE took matched against your deal sheets, agreement and proof of delivery — the invalid ones disputed with the evidence attached, the valid ones left alone, before the windows close.",
+  "persona": "A $4M natural-foods snack brand selling through UNFI and KeHE, with a part-time finance person",
+  "chore": "Each month the distributors pay less than they owe: promotions, shortages, spoils, fees, pricing. The brand pulls deductions from the myUNFI Dispute Center and KeHE's K-Solve, decodes each code, then hunts the evidence outside both portals — the broker's deal sheets, the distribution agreement, the warehouse's proof of delivery, the price-change letter — and disputes inside each portal's window. Small ones are written off because nobody has the hours; services that do it want the brand's portal logins and a cut.",
+  "command": "Go through this month's UNFI and KeHE deductions, check each one against our deal sheets, agreement, price changes and proofs of delivery, dispute every one that's wrong with the evidence, ask for backup where we can't tell, and leave the valid ones alone.",
+  "apps": [
+    { "name": "myUNFI Dispute Center", "role": "UNFI deductions, the deduction key, disputes", "api": "Portal only", "url": "https://www.myunfi.com" },
+    { "name": "KeHE K-Solve", "role": "KeHE deductions, disputes, backup requests", "api": "Portal only, no email channel", "url": "https://connect.kehe.com" },
+    { "name": "Brand Drive", "role": "the broker's deal sheets, the distribution agreement, the price-change letter", "api": "Documents, not data", "url": "https://drive.google.com" },
+    { "name": "Warehouse portal", "role": "proofs of delivery with receiver notes", "api": "Per 3PL", "url": "" }
+  ],
+  "steps": [
+    "Reads each portal's own rules: windows, the SSA change, fees that are valid.",
+    "Lists the deductions in both portals, including KeHE items older than its quick search shows.",
+    "Pulls the deal sheet, the agreement clause, the price change or the proof of delivery each code needs.",
+    "Computes what was over-deducted, not just whether something was.",
+    "Disputes in each portal with the evidence named, asks for backup where the brand cannot tell, and leaves valid charges alone."
+  ],
+  "gates": [
+    { "action": "dispute_deduction", "label": "Dispute a deduction", "why": "It goes to the distributor's deductions team; a weak dispute costs credibility on the next one." },
+    { "action": "request_backup", "label": "Ask for backup", "why": "It goes outside the company and starts the distributor's clock." }
+  ],
+  "traps": [
+    "A promotion deducted at the approved rate, plus KeHE's 8% fee — both valid.",
+    "A shortage the proof of delivery itself notes as short.",
+    "A pricing deduction where the brand billed the new price before it took effect.",
+    "Free fill the agreement promised.",
+    "A UNFI item older than twelve months, and a KeHE item past 180 days that only advanced search shows."
+  ],
+  "memory": [
+    "Each deduction code and the evidence it needs, per distributor.",
+    "The deal calendar per retailer, cited to the broker's sheets.",
+    "Which warehouse's proofs of delivery carry receiver notes.",
+    "What was disputed and won, so the same code is argued the same way next month."
+  ],
+  "economics": {
+    "value_usd": 60000,
+    "per": "year",
+    "basis": "Mid-market brands write off 1.2–2.4% of revenue to deductions they never recover (vendor figure); about $48–96k for a $4M brand. The bench world holds $10,882 across one month.",
+    "manual_minutes": 900,
+    "incumbent_fee_pct": 30,
+    "incumbent": "Deduction services want the brand's portal logins; SupplyPike calls 30% of recoveries the industry standard, Glimpse charges about $1,000 a month plus 10%. Brands under $5M mostly dispute nothing.",
+    "sources": [
+      { "label": "SPS Commerce: UNFI's Dispute Center replaces email (2026)", "url": "https://www.spscommerce.com/community/articles/how-to-submit-and-appeal-a-deduction-dispute-in-unfis-dispute-center" },
+      { "label": "Overdeduct: 1.2–2.4% of revenue written off (vendor)", "url": "https://www.overdeduct.com/deductions/what-is-a-deduction" },
+      { "label": "KeHE and UNFI deduction codes and clocks", "url": "https://endlesscommerce.com/playbook/kehe-and-unfi-deductions-codes-and-clocks/" },
+      { "label": "Glimpse: UNFI and KeHE supplier deductions guide (2026)", "url": "https://www.tryglimpse.com/post/unfi-kehe-supplier-deductions" },
+      { "label": "Confido: 10–15 hours a month just gathering deduction data (vendor)", "url": "https://www.confidotech.com/blogs/manage-deductions-and-disputes-for-unfi" },
+      { "label": "SupplyPike: the 30% industry standard (vendor)", "url": "https://supplypike.com" }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Two distributor portals, a code key, evidence in two systems outside them, and amounts to recompute rather than accept.",
+    "usefulness_why": "Tens of thousands a year for a small brand, every month, that today mostly goes unclaimed."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 35,
+    "why": "A diligent finance person recovers most of it in a day; the bar is most of the money and no dispute of a valid charge."
+  }
+}
