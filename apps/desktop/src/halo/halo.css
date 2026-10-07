@@ -136,6 +136,17 @@ html.halo-demo {
   background: linear-gradient(to left, var(--strong), var(--soft) 35%, transparent);
 }
 
+/* listening: the person's light gathers in the middle of each edge and is gone by the corners, so it
+ * reads as a voice arriving rather than a frame drawn round the screen. A static mask: no frame cost. */
+.halo[data-phase="listening"] .edge.top,
+.halo[data-phase="listening"] .edge.bottom {
+  mask-image: linear-gradient(to right, transparent, #000 35%, #000 65%, transparent);
+}
+.halo[data-phase="listening"] .edge.left,
+.halo[data-phase="listening"] .edge.right {
+  mask-image: linear-gradient(to bottom, transparent, #000 35%, #000 65%, transparent);
+}
+
 /* thinking: a brighter stretch travels clockwise round the screen, one edge per quarter */
 .edge i {
   position: absolute;
