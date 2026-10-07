@@ -4,6 +4,9 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
+- `feat(playbooks): the trucking accessorials desk, six portals and a window that closes today, benched to exceeds` — detention, lumper, layover and TONU checked against rate cons, BOLs and the ELD and filed in each broker's own tool; run 2: 9 of 9, $1,580, 13 of 13 traps avoided, after ADR 0047.
+- `feat(playbooks): the subcontractor's lien desk, benched to exceeds` — lien and notice deadlines in CA and TX, waivers with their exceptions and a clean pay app across the office, Procore, Textura and GCPay; six runs, the last 10 of 10 for $416,700 after two corrections to the bench's own world.
+
 - `feat(playbooks): distributor deductions for a food brand, across UNFI, KeHE, the Drive and the warehouse, benched to exceeds` — six deductions over-taken or duplicated and one with no proof it ran ($10,882), beside eight valid ones, two expired and one only KeHE's advanced search shows; run 2: 7 of 7, every amount exact, 0 false, 4.2 minutes.
 
 - `feat(playbooks): medical bills against the EOBs and denied clinic claims, benched to exceeds, and what each taught Athena` — two playbooks with their run histories (medical: seven runs, $388 to $3,423.50; clinic: $0 to $2,120); `lessons` and `caveat` in playbook.json, shown in the layer and counted on the overview; README §14 records every fix the runs found.

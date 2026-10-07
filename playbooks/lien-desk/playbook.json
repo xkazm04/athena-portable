@@ -1,0 +1,169 @@
+{
+  "id": "lien-desk",
+  "title": "The subcontractor's lien desk",
+  "domain": "Construction",
+  "promise": "Every lien deadline met, every waiver signed on the right form with the right exceptions, every pay app clean before it is rejected — across each general contractor's own portal, so a missed day never costs the security for a whole receivable.",
+  "persona": "A $6M mechanical subcontractor with a dozen jobs in California and Texas and one office manager",
+  "chore": "Each general contractor picks its own portal: Procore, Oracle Textura, GCPay, or email. Every month the office manager bills each job against its schedule of values, attaches the right lien waiver and a current certificate of insurance, leaves out change orders the GC has not approved, and watches the statute: California's 20-day preliminary notice and its 30-day lien window after a recorded Notice of Completion, Texas's monthly notices by the 15th of the third month and its retainage notice, Textura's 72-hour auto-release of a waiver. A wrong form, an unconditional waiver signed before the money lands, or one missed date forfeits the lien rights on a whole receivable.",
+  "command": "Run the lien desk for this week: check every job against California and Texas lien deadlines, serve or send whatever notice is due, record any lien that has to be recorded now, handle every waiver request on the right statutory form and never sign away money we have not received, and get this month's pay apps in clean.",
+  "apps": [
+    {
+      "name": "Office (ERP and mail)",
+      "role": "jobs, deliveries, unpaid ledger, bank receipts, the insurance broker's mail, the lien rules",
+      "api": "Your own books; the statute is not data",
+      "url": ""
+    },
+    {
+      "name": "Procore",
+      "role": "California projects, daily logs, Procore Pay waiver requests",
+      "api": "Per-GC accounts",
+      "url": "https://app.procore.com"
+    },
+    {
+      "name": "Oracle Textura",
+      "role": "the Mission Bay draw, its waiver and payment status",
+      "api": "No API for a subcontractor",
+      "url": "https://www.texturacorp.com"
+    },
+    {
+      "name": "GCPay",
+      "role": "the Texas jobs' pay applications, change orders, compliance documents and waivers",
+      "api": "No API for a subcontractor",
+      "url": "https://www.gcpay.com"
+    }
+  ],
+  "steps": [
+    "Reads the lien rules the office keeps for California, Texas and Textura before computing a single date.",
+    "Walks every job: state, who the contract is with, first delivery, completion, a recorded Notice of Completion, notices already served.",
+    "Computes each deadline from the statute and today's date, moving weekend deadlines the way the rules say.",
+    "In Procore and Textura, reads each waiver request against what the bank actually received and what retention or disputed work is still owed.",
+    "In GCPay, checks the pay app's change orders against the GC's log and the certificate of insurance against its expiry.",
+    "Files each notice, lien, waiver answer and pay app as a card — each one a legal signature."
+  ],
+  "gates": [
+    {
+      "action": "serve_preliminary_notice",
+      "label": "Serve a California preliminary notice",
+      "why": "It goes to the owner, the GC and the lender, and its date decides what work is protected."
+    },
+    {
+      "action": "send_texas_notice",
+      "label": "Send a Texas monthly notice",
+      "why": "It reaches the owner and the GC and preserves the lien for one month of work."
+    },
+    {
+      "action": "send_retainage_notice",
+      "label": "Send a Texas retainage notice",
+      "why": "It reaches the owner and preserves the lien on retainage."
+    },
+    {
+      "action": "record_lien",
+      "label": "Record a mechanics lien",
+      "why": "It encumbers the owner's property and starts a 90-day clock to sue."
+    },
+    {
+      "action": "sign_waiver",
+      "label": "Sign a lien waiver",
+      "why": "An unconditional waiver binds on signature even if the money never arrives."
+    },
+    {
+      "action": "decline_waiver",
+      "label": "Decline a waiver and offer the right form",
+      "why": "It tells the GC no, in writing."
+    },
+    {
+      "action": "file_nonpayment_notice",
+      "label": "File a Textura non-payment notice",
+      "why": "Without it, the waiver releases itself at 72 hours whether the money came or not."
+    },
+    {
+      "action": "submit_pay_app",
+      "label": "Submit a pay application",
+      "why": "It bills the GC; a rejected one waits a month."
+    }
+  ],
+  "traps": [
+    "A job contracted directly with the owner needs no California preliminary notice.",
+    "A preliminary notice already served on the 2nd of last month: serving it again is a duplicate.",
+    "A late preliminary notice is still worth serving: it protects work from 20 days before service — but not the earlier work.",
+    "A recorded Notice of Completion shortens the lien window to 30 days; a weekend deadline is recorded the business day before.",
+    "An unconditional waiver for a draw the bank has not received: do not sign; file Textura's non-payment notice before the 72 hours run out.",
+    "An unconditional final waiver while retention is unpaid: decline it and offer the conditional final.",
+    "A conditional progress waiver must list retention and disputed work under Exceptions, or they are waived.",
+    "A GC's custom waiver with hold-harmless language: return the statutory Texas form.",
+    "A pending change order in this month's pay app, and an expired certificate of insurance whose renewal is in the broker's email."
+  ],
+  "memory": [
+    "Per GC: its portal, its waiver form, its compliance rules and its rejection history.",
+    "Per job: state, contract date, who the contract is with, first delivery, notices served, retention held.",
+    "Per state: the deadline rules, each cited to the source it came from.",
+    "Every deadline she computed, so next week's run starts from the calendar, not from scratch."
+  ],
+  "economics": {
+    "value_usd": 380000,
+    "per": "year",
+    "basis": "Receivables and retainage whose lien rights or payment ride on this desk for a $6M subcontractor; the bench world holds $416,700 across ten actions. Protection, not recovery: what a missed day would put at risk.",
+    "manual_minutes": 1500,
+    "incumbent": "Lien-notice services charge about $19–59 per notice and $349 per lien, and only know what is typed into them; pay-app tools need portal access and cover the big GCs. No tool joins the GC's portal, the sub's own books and the statute.",
+    "sources": [
+      {
+        "label": "Siteline 2026 survey: 43% of subs wait 90+ days for final payment and retainage",
+        "url": "https://www.contractormag.com/management/news/55403190/subcontractors-are-still-financing-their-own-jobs-2026-survey-finds"
+      },
+      {
+        "label": "California Civil Code §8204 (20-day preliminary notice), via billd",
+        "url": "https://billd.com/liens/california/"
+      },
+      {
+        "label": "Texas HB 2237 monthly notices (Porter Hedges)",
+        "url": "https://www.porterhedges.com/texas-construction-law/legislative-update-a-practical-guide-to-the-most-significant"
+      },
+      {
+        "label": "Texas Property Code §53.057 retainage notice",
+        "url": "https://codes.findlaw.com/tx/property-code/prop-sect-53-057.html/"
+      },
+      {
+        "label": "Textura's 72-hour waiver auto-release (Levelset)",
+        "url": "https://www.levelset.com/?p=29566"
+      },
+      {
+        "label": "California's four statutory waiver forms (LCW)",
+        "url": "https://lcwlegal.com/news/california-construction-payments-the-what-and-why-of-conditional-waivers-releases"
+      },
+      {
+        "label": "Levelset pricing (TrustRadius)",
+        "url": "https://www.trustradius.com/products/levelset/pricing"
+      }
+    ]
+  },
+  "caveat": "The rules are practitioner summaries, fixed in the bench world's rule page; this is not legal advice, and real use starts from your own counsel's deadline table.",
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 5,
+    "difficulty_why": "Four systems, deadlines computed per state from dates in three of them, and waiver choices that are legal judgements.",
+    "usefulness_why": "Whole receivables and retainage ride on it, every month, for a business that already finances its own jobs."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 35,
+    "why": "A seasoned office manager gets most of it right in a day; the bar is most of the protected money, no wrong signature, no notice where none is due."
+  },
+  "lessons": [
+    {
+      "adr": "",
+      "title": "Call ids carry their round",
+      "found": "In Textura a core.recall in one round and the page's list_draws in the round before shared an id; the draw was taken as answered and never read, and the $55,000 non-payment notice went unfiled. The bug predated the night."
+    },
+    {
+      "adr": "0046",
+      "title": "A tool named in op is read as the action",
+      "found": "She wrote ops with the tool's name in op and no action. Each was refused with the shape that works and re-sent a turn later, three phases over, so a time-critical Textura notice was argued about instead of filed early."
+    },
+    {
+      "adr": "",
+      "title": "The bench's own world, corrected by her",
+      "found": "Run 3 held the Mission Bay preliminary notice: the job showed an August draw under a 9/24 first delivery, and she asked which date was true instead of filing. She was right; the world was fixed. Runs 4 and 5 held a clean pay app because no page let her attach the renewed certificate; GCPay now says a submission sets its own attachments."
+    }
+  ]
+}

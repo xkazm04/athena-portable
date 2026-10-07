@@ -1,0 +1,814 @@
+{
+  "today": "2026-10-07",
+  "apps": [
+    {
+      "app_id": "office",
+      "name": "Office",
+      "aliases": [
+        "office",
+        "ERP",
+        "books"
+      ],
+      "origin": "https://erp.deltamechanical.example",
+      "path": "/lien-desk",
+      "view": {
+        "view": "Lien desk",
+        "company": "Delta Mechanical, Inc.",
+        "now": "Wednesday 2026-10-07 09:00 Pacific"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The lien rules the office keeps, by topic: ca_prelim, ca_lien, ca_waivers, tx_monthly, tx_retainage, tx_waivers, textura, deadlines. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_jobs",
+          "kind": "READ",
+          "description": "Every open job: state, who the contract is with, the GC and its portal, contract date, first delivery, completion, a recorded Notice of Completion, and notices already served. Paged.",
+          "params": {
+            "state": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "jobs",
+            "match": {
+              "state": "state"
+            },
+            "fields": [
+              "job_id",
+              "name",
+              "state",
+              "contract_with",
+              "gc",
+              "portal",
+              "first_furnished",
+              "completed",
+              "notice_of_completion",
+              "prelim_served"
+            ],
+            "page_size": 4
+          }
+        },
+        {
+          "name": "read_job",
+          "kind": "READ",
+          "description": "One job in full: contract value, billed, paid, unpaid by month, retention held, notes.",
+          "params": {
+            "job_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "jobs",
+            "match": {
+              "job_id": "job_id"
+            },
+            "require": [
+              "job_id"
+            ]
+          }
+        },
+        {
+          "name": "bank_receipts",
+          "kind": "READ",
+          "description": "Deposits received in the last 30 days, by payer and reference.",
+          "params": {},
+          "returns": {
+            "table": "bank"
+          }
+        },
+        {
+          "name": "search_mail",
+          "kind": "READ",
+          "description": "The office mailbox, by a word in the subject (for example: certificate, insurance, waiver).",
+          "params": {
+            "q": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "q": "subject"
+            },
+            "mode": "contains"
+          }
+        },
+        {
+          "name": "serve_preliminary_notice",
+          "kind": "REACHES_A_PERSON",
+          "description": "Serve a California preliminary notice (Civil Code 8200) on the owner, the GC and the lender by certified mail.",
+          "params": {
+            "job_id": {
+              "type": "string"
+            },
+            "first_furnished": {
+              "type": "string"
+            },
+            "estimated_price_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Preliminary notice for {job_id} sent by certified mail today."
+        },
+        {
+          "name": "send_texas_notice",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send a Texas monthly notice of unpaid work (Property Code 53.056) to the owner and the GC.",
+          "params": {
+            "job_id": {
+              "type": "string"
+            },
+            "month": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Texas notice for {job_id} ({month}) sent."
+        },
+        {
+          "name": "send_retainage_notice",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send a Texas retainage notice (Property Code 53.057) to the owner and the GC.",
+          "params": {
+            "job_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Retainage notice for {job_id} sent."
+        },
+        {
+          "name": "record_lien",
+          "kind": "REACHES_A_PERSON",
+          "description": "Record a mechanics lien with the county recorder and serve it on the owner.",
+          "params": {
+            "job_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "county": {
+              "type": "string"
+            }
+          },
+          "says": "Lien for {job_id} sent for recording and service."
+        }
+      ]
+    },
+    {
+      "app_id": "procore",
+      "name": "Procore",
+      "aliases": [
+        "Procore",
+        "Procore Pay"
+      ],
+      "origin": "https://app.procore.com",
+      "path": "/pay/waivers",
+      "view": {
+        "view": "Procore Pay: waiver requests",
+        "company": "Delta Mechanical, Inc."
+      },
+      "tools": [
+        {
+          "name": "list_waiver_requests",
+          "kind": "READ",
+          "description": "Waiver requests from the GCs on Procore Pay: job, draw, form requested, amount, and what the GC still holds.",
+          "params": {},
+          "returns": {
+            "table": "procore_waivers"
+          }
+        },
+        {
+          "name": "read_daily_log",
+          "kind": "READ",
+          "description": "A project's daily log, by job.",
+          "params": {
+            "job_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "daily_logs",
+            "match": {
+              "job_id": "job_id"
+            },
+            "require": [
+              "job_id"
+            ]
+          }
+        },
+        {
+          "name": "sign_waiver",
+          "kind": "REACHES_A_PERSON",
+          "description": "Sign a waiver request on a statutory form, listing any exceptions (retention, disputed or unpaid work).",
+          "params": {
+            "request_id": {
+              "type": "string"
+            },
+            "form": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "exceptions_usd": {
+              "type": "number"
+            },
+            "exceptions_note": {
+              "type": "string"
+            }
+          },
+          "says": "Waiver {request_id} signed on form {form}."
+        },
+        {
+          "name": "decline_waiver",
+          "kind": "REACHES_A_PERSON",
+          "description": "Decline a waiver request, say why, and offer the form you will sign instead.",
+          "params": {
+            "request_id": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "offer_form": {
+              "type": "string"
+            }
+          },
+          "says": "Waiver {request_id} declined; {offer_form} offered."
+        }
+      ]
+    },
+    {
+      "app_id": "textura",
+      "name": "Oracle Textura",
+      "aliases": [
+        "Textura"
+      ],
+      "origin": "https://www.texturacorp.com",
+      "path": "/draws",
+      "view": {
+        "view": "Draws",
+        "project": "Mission Bay Lab (GC: Bayline Builders)"
+      },
+      "tools": [
+        {
+          "name": "list_draws",
+          "kind": "READ",
+          "description": "Draws on this project: amount, the waiver required, the payment instruction time and its status.",
+          "params": {},
+          "returns": {
+            "table": "textura_draws"
+          }
+        },
+        {
+          "name": "sign_waiver",
+          "kind": "REACHES_A_PERSON",
+          "description": "Sign the waiver a draw requires.",
+          "params": {
+            "request_id": {
+              "type": "string"
+            },
+            "form": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "exceptions_usd": {
+              "type": "number"
+            },
+            "exceptions_note": {
+              "type": "string"
+            }
+          },
+          "says": "Waiver {request_id} signed."
+        },
+        {
+          "name": "file_nonpayment_notice",
+          "kind": "REACHES_A_PERSON",
+          "description": "Notify Textura in writing that a draw's payment has not been received, which stops the waiver's automatic release.",
+          "params": {
+            "draw_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Non-payment notice for {draw_id} filed."
+        }
+      ]
+    },
+    {
+      "app_id": "gcpay",
+      "name": "GCPay",
+      "aliases": [
+        "GCPay"
+      ],
+      "origin": "https://app.gcpay.com",
+      "path": "/payapps",
+      "view": {
+        "view": "Pay applications",
+        "company": "Delta Mechanical, Inc."
+      },
+      "tools": [
+        {
+          "name": "list_pay_apps",
+          "kind": "READ",
+          "description": "Draft and submitted pay applications, with their lines.",
+          "params": {},
+          "returns": {
+            "table": "pay_apps"
+          }
+        },
+        {
+          "name": "change_order_log",
+          "kind": "READ",
+          "description": "The GC's change order log for a job: number, amount, status.",
+          "params": {
+            "job_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "change_orders",
+            "match": {
+              "job_id": "job_id"
+            }
+          }
+        },
+        {
+          "name": "compliance_documents",
+          "kind": "READ",
+          "description": "Compliance documents on file with each GC, and their expiry.",
+          "params": {},
+          "returns": {
+            "table": "compliance"
+          }
+        },
+        {
+          "name": "list_waivers",
+          "kind": "READ",
+          "description": "Waivers the GCs have sent for signature on GCPay.",
+          "params": {},
+          "returns": {
+            "table": "gcpay_waivers"
+          }
+        },
+        {
+          "name": "document_library",
+          "kind": "READ",
+          "description": "Files the company can attach to a pay app or waiver; the office mailbox's attachments sync here.",
+          "params": {},
+          "returns": {
+            "table": "document_library"
+          }
+        },
+        {
+          "name": "submit_pay_app",
+          "kind": "REACHES_A_PERSON",
+          "description": "Submit a pay application as set here: the amount billed and the change orders included replace the draft's lines, and the attachments are chosen by file name from the document library. Nothing needs editing on the draft first.",
+          "params": {
+            "pay_app_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "change_orders_included": {
+              "type": "string"
+            },
+            "attachments": {
+              "type": "string"
+            }
+          },
+          "says": "Pay application {pay_app_id} submitted."
+        },
+        {
+          "name": "decline_waiver",
+          "kind": "REACHES_A_PERSON",
+          "description": "Decline a waiver the GC sent, say why, and offer the form you will sign instead.",
+          "params": {
+            "request_id": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "offer_form": {
+              "type": "string"
+            }
+          },
+          "says": "Waiver {request_id} declined; {offer_form} offered."
+        },
+        {
+          "name": "sign_waiver",
+          "kind": "REACHES_A_PERSON",
+          "description": "Sign a waiver the GC sent.",
+          "params": {
+            "request_id": {
+              "type": "string"
+            },
+            "form": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "exceptions_usd": {
+              "type": "number"
+            },
+            "exceptions_note": {
+              "type": "string"
+            }
+          },
+          "says": "Waiver {request_id} signed."
+        }
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "office",
+      "message": "Lien desk for the week. Start here in the office: read our rules and every job, and tell me which deadlines are due or coming and what you need from the GC portals.",
+      "nudges": 2
+    },
+    {
+      "app": "procore",
+      "message": "I'm in Procore Pay. Deal with the waiver requests here.",
+      "nudges": 1
+    },
+    {
+      "app": "textura",
+      "message": "Now Textura, for Mission Bay.",
+      "nudges": 1
+    },
+    {
+      "app": "gcpay",
+      "message": "Now GCPay for the Texas jobs. Get this month's pay app in clean and deal with anything waiting here.",
+      "nudges": 1
+    },
+    {
+      "app": "office",
+      "message": "Back in the office. Serve, send or record whatever is due, and tell me what's on the calendar.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Topics: ca_prelim, ca_lien, ca_waivers, tx_monthly, tx_retainage, tx_waivers, textura, deadlines."
+      },
+      {
+        "topic": "ca_prelim",
+        "text": "California preliminary notice (Civil Code 8204): serve within 20 days of first furnishing labor or materials. A late notice still protects work furnished from 20 days before the date of service onward; earlier work is not protected. Not required when the contract is directly with the owner."
+      },
+      {
+        "topic": "ca_lien",
+        "text": "California mechanics lien, subcontractor (8414): record within 90 days after completion of the work of improvement, or within 30 days after a Notice of Completion is recorded. Serve the owner (8416). Suit within 90 days of recording (8460). A valid preliminary notice is required."
+      },
+      {
+        "topic": "ca_waivers",
+        "text": "Four statutory forms: 8132 conditional progress, 8134 unconditional progress, 8136 conditional final, 8138 unconditional final. An unconditional waiver binds on signature even if payment never arrives: sign one only for money already received. A progress waiver releases everything through its date except what is listed under Exceptions: list retention held and disputed or unpaid extras there. Never sign an unconditional final waiver while retention or any balance is unpaid; offer the 8136 conditional final instead."
+      },
+      {
+        "topic": "tx_monthly",
+        "text": "Texas, commercial contracts entered on or after 2022-01-01 (HB 2237): for each month of unpaid work, send notice to the owner and the GC by the 15th day of the third month after the month the work was done (July work: by October 15). Notice may be sent as soon as a payment is late."
+      },
+      {
+        "topic": "tx_retainage",
+        "text": "Texas retainage notice (Property Code 53.057): send by the 30th day after the subcontract is completed, terminated or abandoned."
+      },
+      {
+        "topic": "tx_waivers",
+        "text": "Texas waivers must substantially follow the statutory forms in Property Code 53.284. Return a GC's custom form, especially one adding indemnity or hold-harmless terms, and offer the statutory form."
+      },
+      {
+        "topic": "textura",
+        "text": "Textura: a waiver attached to a draw is released automatically 72 hours after the payment instruction unless the subcontractor files written notice of non-payment within 60 hours of the instruction. File the notice whenever the money is not in the bank."
+      },
+      {
+        "topic": "deadlines",
+        "text": "Office policy: a Texas deadline falling on a weekend or holiday moves to the next business day. A California deadline falling on a weekend is met on the business day before it. Count days from the day after the triggering event."
+      }
+    ],
+    "jobs": [
+      {
+        "job_id": "MB-LAB",
+        "name": "Mission Bay Lab",
+        "state": "CA",
+        "contract_with": "GC (Bayline Builders)",
+        "gc": "Bayline Builders",
+        "portal": "Textura",
+        "contract_date": "2026-08-01",
+        "first_furnished": "2026-09-24 (delivery ticket DT-5512)",
+        "completed": null,
+        "notice_of_completion": null,
+        "prelim_served": null,
+        "contract_usd": 240000,
+        "billed_usd": 55000,
+        "paid_usd": 0,
+        "in_progress_usd": 36000,
+        "notes": "September draw $55,000 (duct and equipment delivered 9/24 to 9/30) waiting on payment."
+      },
+      {
+        "job_id": "OAK-CLINIC",
+        "name": "Oakland Clinic",
+        "state": "CA",
+        "contract_with": "GC (Harbor GC)",
+        "gc": "Harbor GC",
+        "portal": "Procore Pay",
+        "contract_date": "2026-08-15",
+        "first_furnished": "2026-08-29",
+        "completed": null,
+        "notice_of_completion": null,
+        "prelim_served": null,
+        "contract_usd": 100200,
+        "work_to_date_usd": 63000,
+        "work_through_2026-09-16_usd": 48200,
+        "work_since_2026-09-17_usd": 14800,
+        "remaining_usd": 37200,
+        "retention_held_usd": 4267,
+        "disputed_extra_usd": 6100,
+        "notes": "No preliminary notice was served."
+      },
+      {
+        "job_id": "FREMONT",
+        "name": "Fremont Tower",
+        "state": "CA",
+        "contract_with": "GC (Crane & Moss)",
+        "gc": "Crane & Moss",
+        "portal": "Procore",
+        "contract_date": "2025-10-01",
+        "first_furnished": "2025-10-20",
+        "completed": "2026-08-28",
+        "notice_of_completion": "recorded 2026-09-10 (Alameda County)",
+        "prelim_served": "2025-10-28",
+        "retention_held_usd": 22000,
+        "notes": "GC says the owner is slow; no payment since July.",
+        "unpaid_billed_usd_excluding_retention": 41000
+      },
+      {
+        "job_id": "SUNNYVALE",
+        "name": "Sunnyvale Office",
+        "state": "CA",
+        "contract_with": "GC (Peak Build)",
+        "gc": "Peak Build",
+        "portal": "Procore Pay",
+        "contract_date": "2025-12-01",
+        "first_furnished": "2026-01-06",
+        "completed": "2026-09-01",
+        "notice_of_completion": null,
+        "prelim_served": "2026-01-14",
+        "retention_held_usd": 31000,
+        "notes": "Final payment of retention not received."
+      },
+      {
+        "job_id": "DALY-RES",
+        "name": "Daly City residence",
+        "state": "CA",
+        "contract_with": "Owner (Ms. Lin), no lender",
+        "gc": null,
+        "portal": "email",
+        "contract_date": "2026-09-20",
+        "first_furnished": "2026-09-28",
+        "completed": null,
+        "notice_of_completion": null,
+        "prelim_served": null,
+        "notes": "Direct contract with the homeowner."
+      },
+      {
+        "job_id": "SJ-LIB",
+        "name": "San Jose Library TI",
+        "state": "CA",
+        "contract_with": "GC (Bayline Builders)",
+        "gc": "Bayline Builders",
+        "portal": "Procore",
+        "contract_date": "2026-08-10",
+        "first_furnished": "2026-08-25",
+        "completed": null,
+        "notice_of_completion": null,
+        "prelim_served": "2026-09-02 (certified mail receipt 7019 2280)",
+        "notes": ""
+      },
+      {
+        "job_id": "RR-DC",
+        "name": "Round Rock Distribution Center",
+        "state": "TX",
+        "contract_with": "GC (Lone Oak Constructors)",
+        "gc": "Lone Oak Constructors",
+        "portal": "GCPay",
+        "contract_date": "2025-03-12",
+        "first_furnished": "2025-04-02",
+        "completed": "2026-09-18 (our subcontract)",
+        "notice_of_completion": null,
+        "prelim_served": null,
+        "unpaid_by_month_usd": {
+          "2026-08": 62400
+        },
+        "retention_held_usd": 27000,
+        "notes": "Commercial. Our work finished 2026-09-18."
+      },
+      {
+        "job_id": "KATY",
+        "name": "Katy Retail",
+        "state": "TX",
+        "contract_with": "GC (Gulfline Partners)",
+        "gc": "Gulfline Partners",
+        "portal": "GCPay",
+        "contract_date": "2024-11-04",
+        "first_furnished": "2024-12-02",
+        "completed": null,
+        "notice_of_completion": null,
+        "prelim_served": null,
+        "unpaid_by_month_usd": {
+          "2026-07": 18900
+        },
+        "notes": "Commercial. July still unpaid."
+      }
+    ],
+    "bank": [
+      {
+        "date": "2026-10-02",
+        "payer": "Peak Build",
+        "reference": "Sunnyvale progress #9",
+        "amount_usd": 18500
+      },
+      {
+        "date": "2026-09-28",
+        "payer": "Gulfline Partners",
+        "reference": "Katy Aug",
+        "amount_usd": 23900
+      },
+      {
+        "date": "2026-09-21",
+        "payer": "Harbor GC",
+        "reference": "Oakland Aug",
+        "amount_usd": 21000
+      }
+    ],
+    "mail": [
+      {
+        "subject": "Your renewed certificate of insurance (Delta Mechanical) 2026-2027",
+        "from": "Westfield Insurance Brokers",
+        "date": "2026-09-29",
+        "body": "Attached: renewed certificate of insurance, policy period 2026-10-01 to 2027-10-01, file COI-2026-27.pdf."
+      },
+      {
+        "subject": "Waiver request: Katy Retail August payment",
+        "from": "Gulfline Partners AP",
+        "date": "2026-10-01",
+        "body": "Please sign the attached waiver on GCPay for the August payment."
+      }
+    ],
+    "procore_waivers": [
+      {
+        "request_id": "OAK-W-0926",
+        "job_id": "OAK-CLINIC",
+        "gc": "Harbor GC",
+        "draw": "September progress",
+        "form_requested": "8132 conditional progress",
+        "amount_usd": 38400,
+        "gc_note": "Retention of $4,267 held. Change request for extra ductwork ($6,100) not approved."
+      },
+      {
+        "request_id": "SUN-W-FINAL",
+        "job_id": "SUNNYVALE",
+        "gc": "Peak Build",
+        "draw": "Final",
+        "form_requested": "8138 unconditional final",
+        "amount_usd": 31000,
+        "gc_note": "Final release, please sign so we can close out. Retention to follow."
+      }
+    ],
+    "daily_logs": [
+      {
+        "job_id": "MB-LAB",
+        "date": "2026-09-24",
+        "entry": "Delta Mechanical delivered rooftop units (DT-5512)."
+      },
+      {
+        "job_id": "OAK-CLINIC",
+        "date": "2026-08-29",
+        "entry": "Delta Mechanical mobilized, first delivery of duct."
+      }
+    ],
+    "textura_draws": [
+      {
+        "draw_id": "MB-SEP",
+        "period": "September (materials delivered 9/24 to 9/30)",
+        "amount_usd": 55000,
+        "waiver_required": "unconditional progress (request MB-W-SEP)",
+        "payment_instruction": "2026-10-05 14:00 Pacific",
+        "payment_status": "Instruction sent"
+      }
+    ],
+    "pay_apps": [
+      {
+        "pay_app_id": "KATY-PA-09",
+        "job_id": "KATY",
+        "period": "September",
+        "status": "Draft",
+        "lines": [
+          {
+            "item": "Base contract work, September",
+            "amount_usd": 71500
+          },
+          {
+            "item": "CO #7 added exhaust fans",
+            "amount_usd": 12500
+          }
+        ],
+        "total_usd": 84000,
+        "attachments": "COI-2025-26.pdf"
+      }
+    ],
+    "change_orders": [
+      {
+        "job_id": "KATY",
+        "co": "CO #5",
+        "amount_usd": 8200,
+        "status": "Approved"
+      },
+      {
+        "job_id": "KATY",
+        "co": "CO #7",
+        "amount_usd": 12500,
+        "status": "Pending"
+      }
+    ],
+    "compliance": [
+      {
+        "gc": "Gulfline Partners",
+        "document": "Certificate of insurance",
+        "file": "COI-2025-26.pdf",
+        "expires": "2026-09-30",
+        "status": "Expired"
+      },
+      {
+        "gc": "Lone Oak Constructors",
+        "document": "Certificate of insurance",
+        "file": "COI-2025-26.pdf",
+        "expires": "2026-09-30",
+        "status": "Expired"
+      }
+    ],
+    "gcpay_waivers": [
+      {
+        "request_id": "KATY-W-AUG",
+        "job_id": "KATY",
+        "gc": "Gulfline Partners",
+        "payment": "August, $23,900 (received 2026-09-28)",
+        "form": "Gulfline custom release",
+        "text_excerpt": "Subcontractor releases all claims through the date hereof and shall indemnify and hold harmless Contractor from any claims arising from the work."
+      }
+    ],
+    "document_library": [
+      {
+        "file": "COI-2025-26.pdf",
+        "kind": "Certificate of insurance",
+        "covers": "2025-10-01 to 2026-09-30",
+        "added": "2025-09-24"
+      },
+      {
+        "file": "COI-2026-27.pdf",
+        "kind": "Certificate of insurance",
+        "covers": "2026-10-01 to 2027-10-01",
+        "added": "2026-09-29 (from Westfield Insurance Brokers, by email)"
+      },
+      {
+        "file": "W9-Delta-Mechanical-2026.pdf",
+        "kind": "W-9",
+        "covers": "",
+        "added": "2026-01-12"
+      }
+    ]
+  }
+}

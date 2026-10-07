@@ -761,6 +761,8 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 | Denied claims, reworked (clinics) | practice management, clearinghouse, Availity | 5 / 5 | **exceeds**: 8 of 10, $1,910 of $2,120, every claim exact, 0 false; 3.0 min, $2.59 |
 | Amazon FBA reimbursements | Seller Central, supplier inbox | 4 / 4 | **exceeds**: 5 of 5, $359.78 of $359.78, 14 of 14 traps avoided, 0 false; 2.6 min, $2.66 |
 | Medical bills against the EOBs | insurer portal, MyChart, Cedar | 4 / 4 | **exceeds**: $3,423.50 of $3,423.50 (7 of 8; one correct $95 bill left unpaid), 0 false; 2.3 min, $1.79 |
+| The subcontractor's lien desk (construction) | office ERP and mail, Procore, Oracle Textura, GCPay | 5 / 5 | **exceeds**: 10 of 10, $416,700 of $416,700, every filing exact, 12 of 12 traps avoided, 0 false; 3.8 min, $2.59 |
+| Detention, lumper and TONU (trucking) | Motive, dispatch inbox, CHR Navisphere, TQL, Uber Freight, RTS | 4 / 4 | **exceeds**: 9 of 9, $1,580 of $1,580, every request exact, 13 of 13 traps avoided, 0 false; 4.5 min, $4.87 |
 | Distributor deductions, disputed (food brands) | myUNFI, KeHE K-Solve, Drive, warehouse portal | 4 / 4 | **exceeds**: 7 of 7, $10,882 of $10,882, every claim exact, 10 of 10 traps avoided, 0 false; 4.2 min, $3.57 |
 
 ### What the runs taught Athena
@@ -776,6 +778,9 @@ playbooks were re-run after it; every run is kept in the playbook's `bench.json`
 | ADR 0043: tool results are bounded by the frame's budget, not a count of eight | clinic-denials | She read twelve pages in a turn, saw eight, and re-read four every turn |
 | ADR 0044: a handed-over playbook is the active project on every turn | medical-bills | In MyChart she worked the bills and never read the therapy notes the appeal needed: the goal had been said once, in another tab |
 | ADR 0045: a proposal rests on what a page says; cross-tab work is gathered in each tab | fba-reimbursements, medical-bills | A card claimed "12 of 12 cartons (240 units)"; no page said 240 units. After the clause, medical-bills found every dollar with no switch back |
+| ADR 0046: a tool named in `op` is read as the action | lien-desk | Ops written as `{"op":"host.gcpay.list_pay_apps"}` were refused and re-sent a turn later, three phases over |
+| ADR 0047: when the work left is in another tab, she asks for it by name | carrier-accessorials | She ended on "I'll do that there" in the inbox; nothing asked the person to switch, and a rep-approved $340 lumper went unfiled |
+| Call ids carry their round | lien-desk | A recall and a page read in consecutive rounds shared an id; the draw was taken as answered and a $55,000 non-payment notice went unfiled (the bug predated the night) |
 | The OP grammar names the one shape that works | medical-bills | An envelope with another verb and no action reached the catalog as the name '' |
 
 How the money moved, run by run, on the same worlds:
@@ -784,6 +789,13 @@ How the money moved, run by run, on the same worlds:
   ADRs 0041–0045 and the bench's follow-ups.
 - **Clinic denials:** $0 (2 of 10) → **$2,120** (exceeds) after the dropped-op and result-budget
   fixes → $1,910 (exceeds) after ADR 0045.
+- **Lien desk:** $361,700 (exceeds) → $282,200 (short, before call ids carried their round) →
+  $380,700 after ADR 0046 → $345,200 twice, each time holding back on a defect in the bench's world
+  (an August draw under a September first delivery; no way to attach the renewed certificate) →
+  **$416,700**, 10 of 10 exact, once both were fixed.
+- **Carrier accessorials:** $895 (short, 6 of 9): no page gave the CHR rep's address, and she
+  ended in the inbox saying she would move a TQL receipt "there" → **$1,580**, 9 of 9 exact, after
+  ADR 0047 and rep addresses on the mail. The person switched tabs three times at her request.
 - **Distributor deductions:** $10,882 with one false claim (short): she asked KeHE for the
   backup behind a promotion billed at its deal sheet's "forecast" quantity, a fair question the
   world had left open → $10,882 with none (exceeds) once the deal sheet named a fixed quantity.
