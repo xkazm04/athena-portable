@@ -1,9 +1,7 @@
 # Phase 1 status — the MVP checkpoint
 
 Plan c23. Written at the end of P5. It records what runs, what was proved by hand rather than by a
-test, and what the next phase inherits. It is not a plan; the phase table in the README is, and
-`hackathon/hackathon-build-plan.md` in the reference repository carries the per-commit chronology
-with its status icons.
+test, and what the next phase inherits. It is not a plan; the phase table in the README is.
 
 ## What the MVP is, and whether it is there
 

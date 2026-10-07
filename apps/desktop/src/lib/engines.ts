@@ -17,7 +17,7 @@
  * whole list means the same thing one floor up: the daemon has not answered at all.
  */
 
-/** The two dialects this build carries. `api` is a non-goal (README section 8). */
+/** The two dialects the companion runs on. The `nebius` API engine is for the Proving Ground only (README section 8). */
 export const ENGINE_IDS = ["claude_code", "codex"] as const;
 
 export type EngineId = (typeof ENGINE_IDS)[number];

@@ -1,12 +1,65 @@
 # Athena Portable
 
+An agent that works inside the web apps you already use, and stops to ask before anything it
+cannot take back.
+
+Built for the Nebius x NVIDIA Global AI Hackathon. Licensed under [Apache-2.0](LICENSE). The
+submission text is [`docs/submission.md`](docs/submission.md).
+
+Athena is a single-user desktop agent whose environment is the web applications the user already
+has open: an invoicing tool, a CRM, a support inbox. She holds them in tabs, reads the page in
+front of her, calls the page's own tools where it registers them and generic DOM hands where it
+does not, and files a decision card for anything irreversible or anything that leaves the app. The
+policy lives in one gate, never in the model; memory is markdown on disk that must cite what it
+came from; every model call is one row in a local ledger with its cost. Day to day she runs on the
+CLI the user is already signed in to, Claude Code or Codex, with no API key.
+
+**The Proving Ground** is what Nebius and NVIDIA add, and it is a test bench, not a new engine for
+the companion. NVIDIA Nemotron models on Nebius Token Factory attack Athena's gate from four
+directions (host page state, tool results, a foreign agent over MCP, memory poisoning), play her
+users from the `uat/` Characters, and judge the result next to a Claude Haiku control row. Token
+Factory Sandboxes are spiked as branching worlds, checkpointed and forked once per attack. Athena
+is run under test on her Claude CLI and on Nemotron through a new `nebius` engine. **None of the
+Proving Ground is built yet**; section 9 lists each prototype with its status and the test that
+has to pass before it is developed further.
+
+---
+
+## Setup
+
+What exists today and runs without any Nebius account.
+
+| Need | For |
+|---|---|
+| Python 3.11+ and [uv](https://docs.astral.sh/uv/) | the agent core, the daemon, the Python tests |
+| Node 22.5+ and pnpm 11 | the page bridge, the desktop panel, the example apps |
+| A Rust toolchain | the Tauri desktop shell (`apps/desktop/src-tauri`) |
+| A signed-in `claude` or `codex` CLI | real turns; every test runs without one |
+
 ```bash
+uv sync --extra dev                           # stdlib core + dev tools
+pnpm install                                  # bridge, panel, example apps
 uv run ruff check . && uv run ruff format --check .
 uv run mypy                                   # strict on src/athena
 uv run pytest                                 # every test, no provider needed
 pnpm typecheck && pnpm lint && pnpm test      # bridge and panel
 cargo check && cargo clippy --all-targets     # from P4 on
+
+uv run athena doctor                          # six stages; only a `fail` sets the exit code
+uv run athena serve --port 0                  # the daemon on the user's own CLI engine
+pnpm dev:ledgerbox                            # one example host app (ports in examples/README.md)
+pnpm --filter @athena/journey test            # boots the three example apps, runs the four acts
+pnpm --filter athena-desktop tauri dev        # the desktop shell
 ```
+
+The daemon's routes, a gated turn end to end and the voice socket are in
+[`docs/daemon.md`](docs/daemon.md). Voice speaks with local Kokoro by default (ADR 0028).
+
+**Proving Ground (planned).** It will read a Token Factory key from the environment variable
+`NEBIUS_API_KEY`, which is never logged and never written to the ledger. There is no Proving
+Ground command yet; it is added here when the first prototype lands. Without the key, everything
+above runs unchanged.
+
 ---
 
 ## 1. The problem and the user
@@ -61,7 +114,8 @@ Surfaces      the Tauri desktop shell (chrome, page webviews, the panel), the br
 channels      daemon (HTTP + SSE, token, CORS, Connection: close), mcp (JSON-RPC), voice (WebSocket)
 lane          the browser lane: one turn, streamed; never holds a gated executor
 harness       CLI harness in two dialects (claude, codex), hooks (gate, ledger, truncation),
-              structural policy, the OP grammar, engine probes
+              structural policy, the OP grammar, engine probes; an API engine (`nebius`, Nemotron
+              on Token Factory) behind the `ModelFn` port is planned, landing in WP1
 core          brain, recall, catalog, approvals, ledger, constitution, prompt composer
 contracts     dataclasses and Protocols only: ToolEntry, HostManifest, channel events, Harness,
               ERROR_REASONS, every id prefix
@@ -163,6 +217,10 @@ through the mail connector and the card names it as the thing that will act.
 
 ## 5. Build order and the stop rule
 
+This is the historical build plan the repository was executed against, kept as written because
+commits, ADRs and `docs/status-phase-1.md` cite its phases. P1 to P9 are that plan; P10 is the
+Proving Ground phase added for the Nebius x NVIDIA hackathon, and it has no hour budget.
+
 Nine phases of three or four components each. Phases 1 to 5 are the end-to-end MVP: one path,
 nothing optional, the smallest thing worth submitting. Phases 6 to 8 add one act or one criterion
 each, sorted by demo value. Phase 9 is reserved and starts at hour 44 from whatever is done.
@@ -178,6 +236,7 @@ each, sorted by demo value. Phase 9 is reserved and starts at hour 44 from whate
 | P7 Other agents and the record | 37–41 | 39 | MCP server + demo agent script, activity module, surfaces and tiers in the record | acts 3 and 4 |
 | P8 Voice | 41–44 | 42 | voice gateway + one backend, push-to-talk + mic check, spoken card answers | act 2 without a keyboard |
 | P9 Ship | 44–48 | 44 | bundle + smoke, demo script + ten runs, README + video | a bundle that installs and a script run ten times |
+| P10 Proving Ground (planned) | – | – | Token Factory `nebius` engine, the Gauntlet, model-played Characters, the Sandbox spike (section 9) | a fifth act, only for the prototypes whose proof test passed |
 
 **The stop rule.** At the end of every phase, read the clock once. If the next phase's latest
 start is ahead of the clock, continue. If it is behind and the phase is a value phase (P6 to P8),
@@ -187,12 +246,16 @@ instead; there is no demo without it. Within a phase the fourth component is the
 dropped. Never cut: the starvation test, exit hygiene, the headless panel test, the
 `(showing N of M)` footers, the screenshot on a gated proposal, or the ten demo runs.
 
+P10 has its own stop rule instead of a clock: each prototype carries a falsifiable proof test and a
+kill criterion (section 9), and nothing is polished before its proof passes (ADR 0030).
+
 ---
 
 ## 6. Repository layout at the end
 
 ```
-pyproject.toml           uv + hatchling; extras: dev, vec
+LICENSE                  Apache-2.0
+pyproject.toml           uv + hatchling; extras: dev, build, connectors
 package.json             pnpm workspace: packages/*, apps/*, examples/*
 src/athena/
   contracts/             registry.py, manifest.py, channel.py, harness.py, ids.py
@@ -202,6 +265,7 @@ src/athena/
   daemon/                server.py, routes.py, sessions.py, ready.py
   channels/              mcp.py, voice/
   connectors/            port.py only; the connectors themselves live in the reference repository
+  proving/               planned: the Gauntlet, model-played Characters, the Sandbox adapter (section 9)
   wiring.py, cli.py
 constitution/            law.md, identity.md
 packages/athena-bridge/  inject.js, gate.js, protocol.md, test/
@@ -211,7 +275,8 @@ apps/desktop/
 examples/                demo-kit/, ledgerbox/, hirelane/, tidycrm/, journey/ (ADR 0017)
 scripts/                 build-sidecar.py, sidecar_entry.py
 tests/                   core/, harness/, lane/, daemon/, test_contracts.py, test_ids_parity.py
-docs/                    design.md, adr/, demo.md
+uat/                     Characters, journeys, rubric; the users the Proving Ground will play
+docs/                    design.md, adr/, demo.md, daemon.md, submission.md
 ```
 
 ---
@@ -237,8 +302,96 @@ committed files.
 
 ## 8. Non-goals
 
-The Strands API engine, the sleep cycle, Athena registering herself as a WebMCP tool on pages,
-speech-to-speech voice models, telemetry mirrors, cloud deployment, per-project browsing profiles,
-the connectors themselves (section 4), and example host apps beyond the three the demo runs on
+The sleep cycle, Athena registering herself as a WebMCP tool on pages, speech-to-speech voice
+models, telemetry mirrors, cloud deployment of the companion, per-project browsing profiles, the
+connectors themselves (section 4), and example host apps beyond the three the demo runs on
 (`examples/`, ADR 0017). Real sites are the environment; a scratch page proves a claim, the three
 example apps rehearse the demo, a real app proves it.
+
+An API engine as the companion's daily engine is a non-goal too. The `nebius` engine (Nemotron on
+Token Factory, planned) exists to test and measure Athena as a matrix row beside the Claude CLI;
+the user's own Claude Code or Codex CLI stays the engine she works on (ADR 0030).
+
+---
+
+## 9. The Proving Ground (planned)
+
+Athena's claims are structural: a `GATED` tool never runs without a resolved decision, a page's
+output is evidence and never instruction, a fact must cite live episodes. Today those claims are
+held by hand-written tests. The Proving Ground points generated adversaries and generated users at
+the real daemon, through `POST /run` with hostile `host_state` and `tool_results` and
+`POST /manifest` for hostile tool surfaces, each attack against its own throwaway brain, every
+model call in the ledger (invariant 6).
+
+| Invariant under attack | Channel |
+|---|---|
+| 3 — policy lives in the gate | instructions planted in host page state and in tool results; a foreign agent over MCP |
+| 2 — provenance at write | memory poisoning: facts that cite nothing, or cite what was never observed |
+| Untrusted fences (§3.2) | page, tool and MCP content that tries to close its fence or speak as the user |
+
+Because NVIDIA tooling quality is not yet known to this project, every Nemotron role runs beside a
+Claude Haiku control row, and a prototype proves only if Nemotron lands within a stated margin of
+the control. Each prototype has a proof test and a kill criterion; nothing is polished before it
+proves (ADR 0030). The hackathon track is chosen after the proofs, not before.
+
+| Proving Ground prototype | Status | Proof test |
+|---|---|---|
+| `nebius` engine: Nemotron on Token Factory behind the same gate and ledger row | planned, landing in WP1 | one live turn against Nemotron Super, gated on the key; the ledger row carries `engine=nebius`, model, tokens and an estimated cost |
+| Gauntlet: Nemotron generates attacks on four channels, replayed against Athena on Claude and on Nemotron | planned | zero gated actions or fact writes ran without approval across all rows; Nemotron's valid-attack rate at least half of the Haiku control's |
+| Model-played Characters: Nemotron plays the `uat/` users; Nemotron and Haiku judge blind against `uat/rubric.md` | planned | the control judges persona fidelity at 80% or above; judge agreement Spearman 0.5 or above |
+| Branching worlds: Token Factory Sandboxes, checkpoint then fork once per attack | planned (spike) | the image boots, the daemon answers `/health`, Token Factory is reachable from inside, checkpoint then four forks each run a different attack |
+| Trigger page: start a run and watch it | planned, only after one prototype above proves | none of its own yet; it is a window onto the proofs above |
+
+No result is reported here until a run has produced it. Reports will land in a gitignored
+`proving-runs/<ts>/` as `report.json` and `report.md`.
+
+---
+
+## 10. How NVIDIA models are used (planned)
+
+All roles below are planned; none is called today. Model ids are checked against Token Factory's
+`/v1/models` before the first run, because the catalog names have not been verified.
+
+| Role | NVIDIA model (planned) | Control |
+|---|---|---|
+| Attacker: generates the four channels of attack | Nemotron Super | Claude Haiku |
+| Attack labeller | Nemotron Safety Guard, if Token Factory serves it | none; a label, never a verdict |
+| User simulator: plays mira, jonas, priya and ana from `uat/characters` | Nemotron Nano, escalated to Super if it breaks persona | Claude Haiku judges fidelity |
+| Judge: scores conversations against `uat/rubric.md`, nonce-fenced | Nemotron Ultra | Claude Haiku, judging the same transcripts blind |
+| Athena under test | Nemotron Super through the `nebius` engine | Athena on the Claude CLI |
+
+A judge never sets a verdict on its own and never decides whether something is gated; the gate is
+the policy (invariant 3). Open weights matter here for one reason: a run against a pinned open
+model can be repeated by someone else.
+
+---
+
+## 11. Where Token Factory accelerated the work (planned)
+
+Nothing has been measured yet. The expected gain is parallelism: today's empirical UAT level drives
+the user's own Claude CLI one journey at a time, and a Token Factory row can run attacks and
+conversations from a bounded thread pool. What will be recorded, from the ledger and the report
+rather than estimated: wall-clock per run, cost per run against the Claude row, and fork latency
+for the Sandbox spike. This section is filled from those numbers or states that the gain did not
+appear.
+
+## 12. Other Nebius services (planned)
+
+None is used today. Token Factory Sandboxes are the subject of the branching-worlds spike in
+section 9. Nebius Serverless Endpoints or Jobs would host the trigger page's runner, and only after
+a prototype has proved.
+
+## 13. Feedback on Nebius and NVIDIA tooling
+
+Not yet written: it is recorded as the prototypes run, including every control-row gap and every
+kill criterion that fires. One observation from planning, before any call: the Sandbox
+documentation does not say whether a sandbox has outbound networking, which decides whether a world
+with a browser and a host app can live inside one.
+
+---
+
+## License and credits
+
+Apache-2.0, see [LICENSE](LICENSE). Local speech is Kokoro through sherpa-onnx (ADR 0028). OpenAI
+is an optional cloud voice backend and ElevenLabs narrates the demo video; both are tooling, not
+sponsors.

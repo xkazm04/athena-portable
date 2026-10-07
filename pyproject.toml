@@ -7,14 +7,13 @@ name = "athena-portable"
 version = "0.1.0"
 description = "A single-user agent that treats the web applications a person already uses as her environment."
 readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 requires-python = ">=3.11"
 authors = [{ name = "Athena Portable contributors" }]
 keywords = ["agent", "browser", "webmcp", "memory", "approvals", "voice", "mcp"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",

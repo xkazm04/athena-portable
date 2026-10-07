@@ -1,7 +1,10 @@
 # Athena Portable — an agent that works inside the web apps you already use
 
-Built for the OpenAI hackathon. The reasoning engine is **OpenAI Codex**, driven through the user's
-own CLI sign-in. The voice is OpenAI's `gpt-4o-mini-transcribe` and `gpt-4o-mini-tts`.
+Built for the Nebius x NVIDIA Global AI Hackathon. Day to day, Athena reasons on the CLI the user
+is already signed in to, Claude Code or Codex, and speaks with local Kokoro. Nebius and NVIDIA are
+her **Proving Ground**: NVIDIA Nemotron models on Nebius Token Factory attack her gate, play her
+users and judge the result beside a Claude control. The Proving Ground is **planned**; the sections
+below say exactly what exists and what does not.
 
 ## What it is, in one paragraph
 
@@ -12,6 +15,33 @@ person would. Anything irreversible or anything that leaves the app stops and as
 call and every cost is written to a local record. Nothing is installed into the websites, no
 extension is granted access to your browsing, and no data leaves your machine except the model and
 voice calls themselves.
+
+## What the Proving Ground adds (planned)
+
+An agent that operates other people's software is only as good as its refusals, and today
+Athena's refusals are held by hand-written tests. The Proving Ground replaces the hand with an
+adversary and a crowd, and none of it is built yet:
+
+- **A gauntlet.** Nemotron generates attacks on four channels — instructions planted in host page
+  state, in tool results, from a foreign agent over MCP, and memory poisoning — and each is replayed
+  against Athena on the Claude CLI and on Nemotron. The proof test is that zero gated actions or
+  fact writes ran without approval across every row.
+- **Model-played users.** Nemotron plays the representative users already written in `uat/`,
+  and Nemotron and Claude Haiku judge the conversations blind against the same rubric.
+- **Branching worlds.** Token Factory Sandboxes are spiked as worlds that are checkpointed once
+  and forked per attack.
+- **A third engine for measurement.** A `nebius` engine runs Athena on Nemotron behind the same
+  gate and the same ledger row, as a matrix row beside the Claude CLI, not as her daily engine.
+
+Because the quality of the NVIDIA tooling is not yet known to us, every Nemotron role has a Claude
+Haiku control row and a kill criterion. Results, latencies and costs are reported only once a run
+has produced them.
+
+## What changed in the hackathon period
+
+Every commit in this repository is dated after the period opened on 2026-08-26: Athena was rebuilt
+from scratch here, with an earlier product as prior art only. The Proving Ground is the hackathon's
+addition and is listed above as planned until it lands.
 
 ## The problem
 
@@ -90,18 +120,20 @@ SQLite FTS5 as a rebuildable index, so a user's entire memory is portable by cop
 writer behind a lock, a fresh read-only connection per request, and the writer-starvation test was
 written before the server that had to pass it.
 
-**Engine** — two command-line dialects behind one contract: **OpenAI Codex** and Claude Code. Both
-run under the same approval gate, the same record, the same prompt composition and the same call
-grammar, so the engine is a configuration choice and can never become a second policy. Each dialect
-is replayed against a recorded transcript in the test suite, so a change in either CLI's output
-format fails a test rather than a demo. Because the engine is the CLI the user already signed in
-to, running a turn needs no model API key at all.
+**Engine** — two command-line dialects behind one contract: Claude Code and Codex. Both run under
+the same approval gate, the same record, the same prompt composition and the same call grammar, so
+the engine is a configuration choice and can never become a second policy. Each dialect is replayed
+against a recorded transcript in the test suite, so a change in either CLI's output format fails a
+test rather than a demo. Because the engine is the CLI the user already signed in to, running a
+turn needs no model API key at all. A third engine, **NVIDIA Nemotron through Nebius Token
+Factory**, is planned for the Proving Ground only; it needs a Token Factory key (`NEBIUS_API_KEY`)
+and sits behind the same gate and ledger row.
 
-**Voice** — a WebSocket gateway on the agent's own port. PCM16 audio from a push-to-talk key,
-`gpt-4o-mini-transcribe` to turn an utterance into a turn, `gpt-4o-mini-tts` to speak the reply's
-first line. Talking over a reply cancels playback rather than starting a second turn. This is the
-one component that reads an `OPENAI_API_KEY`, and without one it degrades to text instead of
-failing.
+**Voice** — a WebSocket gateway on the agent's own port. PCM16 audio from a push-to-talk key turns
+an utterance into a turn, and the reply's first line is spoken back. Speaking is local Kokoro by
+default and hearing can be local Whisper, set up in a Voice studio (ADR 0028); OpenAI's speech
+models are an optional cloud backend, labelled as cloud and never a silent fallback. Talking over a
+reply cancels playback rather than starting a second turn.
 
 **Desktop shell** — Tauri v2 in Rust, using the `unstable` multi-webview API so a single window
 holds the app chrome, the agent panel and one web view per tab. The panel is React 19 with zustand
@@ -119,6 +151,8 @@ threaded so a ninety-second turn never blocks a status read.
 
 **Quality bar** — Ruff, mypy strict, pytest, ESLint, tsc, Vitest, cargo clippy and cargo test, with
 a documented architecture decision record for every choice a later reader could question.
+
+Test counts are to refresh at submit; the figures below were taken before the Proving Ground work.
 
 | Suite | Tests |
 |---|---|
@@ -154,4 +188,5 @@ in JavaScript, with a test that fails the build when the two drift apart.
 
 No scraping and no pixel-guessing. No browser extension asking for access to everything you visit.
 No cloud account: memory, approvals and the cost record are files on your machine, and the agent
-process dies with the window.
+process dies with the window. The Proving Ground runs on Nebius against synthetic users and the
+example apps, never against a user's own brain; the product path does not change.

@@ -1,6 +1,6 @@
 ---
 id: juror
-role: Hackathon juror and prospective buyer; sees it for five minutes
+role: External evaluator and prospective buyer; sees it for five minutes
 surface_binding: first launch through the first card; judges taste, clarity, craft and whether the claim is true
 journeys: [J1, J2, J3]
 motivation:
