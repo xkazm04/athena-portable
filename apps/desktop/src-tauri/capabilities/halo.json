@@ -1,0 +1,12 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "halo",
+  "description": "The halo overlays (ADR 0027, Athena is ambient): one click-through window per monitor, labelled `halo-<i>`, each holding exactly one privileged webview that draws the screen edges from the `halo:signal` event. They are listen-only: events and nothing else, no command of the app's and no window control. The `athena` window is the halo's only producer, through `athena_halo` in `athena.json`.",
+  "local": true,
+  "windows": [
+    "halo-*"
+  ],
+  "permissions": [
+    "core:event:default"
+  ]
+}

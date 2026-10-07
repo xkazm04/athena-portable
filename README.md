@@ -57,7 +57,7 @@ trustworthy.
 
 ```
 Surfaces      the Tauri desktop shell (chrome, page webviews, the panel), the bridge in the page,
-              other agents over MCP, a voice client
+              other agents over MCP, a voice client, the halo (screen-edge light, ADR 0027)
 channels      daemon (HTTP + SSE, token, CORS, Connection: close), mcp (JSON-RPC), voice (WebSocket)
 lane          the browser lane: one turn, streamed; never holds a gated executor
 harness       CLI harness in two dialects (claude, codex), hooks (gate, ledger, truncation),

@@ -630,9 +630,9 @@ pub fn show_with(app: &AppHandle, focus: bool) {
 }
 
 /// Show a window without activating it. `Window::show` is `SW_SHOW` underneath, which activates;
-/// `SW_SHOWNOACTIVATE` does not.
+/// `SW_SHOWNOACTIVATE` does not. Hers on a card's arrival, and every halo's (ADR 0027).
 #[cfg(windows)]
-fn show_no_activate(window: &Window) {
+pub fn show_no_activate(window: &Window) {
     use windows_sys::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_SHOWNOACTIVATE};
     match window.hwnd() {
         Ok(hwnd) => unsafe {
@@ -645,7 +645,7 @@ fn show_no_activate(window: &Window) {
 }
 
 #[cfg(not(windows))]
-fn show_no_activate(window: &Window) {
+pub fn show_no_activate(window: &Window) {
     let _ = window.show();
 }
 
@@ -707,6 +707,12 @@ fn announce(app: &AppHandle) {
 /// A chord was pressed. Only the page knows which card is first and whether it can be answered.
 pub fn chord(app: &AppHandle, kind: &str) {
     emit_athena(app, "athena:chord", serde_json::json!({ "kind": kind }));
+}
+
+/// The held summon chord went down or came up (ADR 0027): push-to-talk from anywhere. Her page
+/// owns the voice, so the event is hers alone.
+pub fn ptt(app: &AppHandle, down: bool) {
+    crate::ui_emit_to(app, ATHENA_WINDOW, "athena:ptt", serde_json::json!({ "down": down }));
 }
 
 /// Bring a window to the front. Windows refuses `set_focus` from a process that is not already the

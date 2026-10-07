@@ -66,6 +66,9 @@ fn main() {
             "athena_report",
             "athena_snap_to",
             "athena_open_main",
+            // halo.rs (ADR 0027) - her window hands the halo its one signal; the `halo-*`
+            // overlays themselves are granted no command at all.
+            "athena_halo",
         ])),
     )
     .expect("failed to run tauri-build");

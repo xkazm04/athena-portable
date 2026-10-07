@@ -14,6 +14,7 @@
 //! people editing one panel" as a risk, and this is the Rust half of the answer.
 
 mod companion;
+mod halo;
 mod hotkeys;
 mod layout;
 mod tabs;
@@ -89,14 +90,16 @@ fn hands_list() -> Vec<serde_json::Value> {
 /// **Never `app.emit` in this crate.** `app.emit` broadcasts into the page webviews as well, and
 /// a page webview is whatever site the user navigated to - from c20 the status event carries the
 /// daemon's token, and the habit has to exist before the secret does. ADR 0026 adds a second
-/// privileged label; it does not add a way to reach a page.
+/// privileged label; it does not add a way to reach a page. ADR 0027's `halo-*` overlays are
+/// privileged too but listen-only (`capabilities/halo.json` grants events and no command): they
+/// are reached with `ui_emit_to` by label, from `halo.rs`, and never from here.
 pub fn ui_emit<S: Serialize + Clone>(app: &AppHandle, event: &str, payload: S) {
     for label in [CHROME_WEBVIEW, companion::ATHENA_WINDOW] {
         ui_emit_to(app, label, event, payload.clone());
     }
 }
 
-/// Emit to one privileged label (`chrome` or `athena`), for an event only one of them hears.
+/// Emit to one privileged label (`chrome`, `athena` or a `halo-*`), for an event only it hears.
 pub fn ui_emit_to<S: Serialize + Clone>(app: &AppHandle, label: &str, event: &str, payload: S) {
     let _ = app.emit_to(
         EventTarget::AnyLabel {
@@ -174,6 +177,7 @@ pub fn run() {
         .manage(Tabs::default())
         .manage(Selection::default())
         .manage(companion::Companion::default())
+        .manage(halo::Halo::default())
         // ── registrations: state ──────────────────────────────────────────────────────────────
         // c19 `.manage(Bridge::default())` · c20 `.manage(Daemon::default())`
         // c21 `.manage(Store::open(..))` (in `setup`, it needs a path) · c27 `.manage(Tray::…)`
@@ -210,6 +214,7 @@ pub fn run() {
             companion::athena_report,
             companion::athena_snap_to,
             companion::athena_open_main,
+            halo::athena_halo,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
@@ -221,6 +226,8 @@ pub fn run() {
             if let Err(e) = companion::build(&handle, first_launch) {
                 eprintln!("[companion] cannot build her window: {e}");
             }
+            // ADR 0027: one hidden, click-through overlay per monitor. Non-fatal inside.
+            halo::build(&handle);
             if let Err(e) = tray::build(&handle) {
                 eprintln!("[tray] not built: {e}");
             }
