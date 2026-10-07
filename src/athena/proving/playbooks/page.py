@@ -2,11 +2,12 @@
 
 The same contract as the Characters' Ledgerbox page (:mod:`athena.proving.characters.scene`),
 generalised to data: a READ tool answers from one of the world's tables, filtered by the params
-it declares a ``match`` for (``default`` fills a param the call left out; ``require`` makes a
-detail page refuse without its id) and paged with the honest ``(showing N of M)`` footer; a
-reversible WRITE answers with its ``says`` sentence; a gated tool never reaches :meth:`answer`
-(the gate turned it into a card) and runs only through :meth:`execute`, an approved card's
-instruction.
+it declares a ``match`` for (``mode: contains`` matches a substring; ``mode: words`` every word
+of the param, in any order, as a mail search does; ``default`` fills a param the call left out;
+``require`` makes a detail page refuse without its id) and paged with the honest
+``(showing N of M)`` footer; a reversible WRITE answers with its ``says`` sentence; a gated tool
+never reaches :meth:`answer` (the gate turned it into a card) and runs only through
+:meth:`execute`, an approved card's instruction.
 
 The page knows nothing of ``truth.json``. A page that could see the answers could leak them, and
 a bench whose page leaks is measuring the page.
@@ -98,14 +99,17 @@ class SimulatedPortals:
         if missing:
             return {"error": f"this page needs {', '.join(missing)}"}
         rows = list(self.playbook.tables.get(str(returns.get("table", "")), []))
-        contains = returns.get("mode") == "contains"
+        mode = returns.get("mode")
         for param, column in dict(returns.get("match", {})).items():
             wanted = params.get(param)
             if wanted in (None, ""):
                 continue
             needle = _norm(wanted)
-            if contains:
+            if mode == "contains":
                 rows = [r for r in rows if needle in _norm(r.get(column, ""))]
+            elif mode == "words":
+                words = [_norm(w) for w in str(wanted).split()]
+                rows = [r for r in rows if all(w in _norm(r.get(column, "")) for w in words)]
             else:
                 rows = [r for r in rows if _norm(r.get(column, "")) == needle]
         fields = returns.get("fields")

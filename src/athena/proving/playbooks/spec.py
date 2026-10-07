@@ -324,12 +324,15 @@ def load_playbook(root: str | Path) -> Playbook:
             problems.append(f"truth key {key!r} is not a param of {tool!r}")
         eligible = raw.get("eligible", {})
         traps = raw.get("traps", {})
-        if not isinstance(eligible, Mapping) or not eligible:
-            problems.append(f"truth for {tool!r} needs at least one eligible item")
+        if not isinstance(eligible, Mapping):
+            problems.append(f"truth eligible for {tool!r} must be an object")
             eligible = {}
         if not isinstance(traps, Mapping):
             problems.append(f"truth traps for {tool!r} must be an object")
             traps = {}
+        # A target of traps alone names a tool every use of which is wrong in this world.
+        if not eligible and not traps:
+            problems.append(f"truth for {tool!r} needs at least one eligible item or trap")
         neutral = raw.get("neutral", {})
         if not isinstance(neutral, Mapping) or not all(
             isinstance(v, Mapping) for v in neutral.values()

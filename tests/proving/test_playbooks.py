@@ -212,6 +212,29 @@ def _card(tool: str, **params: Any) -> dict[str, Any]:
     return {"action": f"host.shipdesk.{tool}", "params": params}
 
 
+def test_a_target_of_traps_alone_names_a_tool_every_use_of_which_is_wrong(tmp_path: Path) -> None:
+    truth = {
+        "targets": [
+            {"tool": "file_claim", "key": "tracking", "eligible": {"1ZA": {"value_usd": 12.5}}},
+            {"tool": "close_account", "key": "", "eligible": {}, "traps": {"": "never here"}},
+        ],
+        "forbidden": [],
+    }
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    world = json.loads((make_playbook(tmp_path / "a") / "world.json").read_text(encoding="utf-8"))
+    world["apps"][0]["tools"][2]["kind"] = "REACHES_A_PERSON"
+    world["apps"][0]["tools"][2]["params"] = {"reason": {"type": "string"}}
+    truth["targets"][1]["key"] = "reason"
+    truth["targets"][1]["traps"] = {"moving": "the account is not the problem"}
+    book = load_playbook(make_playbook(tmp_path / "b", world=world, truth=truth))
+    cards = [_card("close_account", reason="moving"), _card("file_claim", tracking="1ZA")]
+    scored = score(book, cards)
+    assert [c["outcome"] for c in scored["cards"]] == ["trap", "correct"]
+    assert scored["cards"][0]["recovers"] is False
+    assert scored["value_total_usd"] == 12.5 and scored["false_claims"] == 1
+
+
 def test_the_score_names_every_outcome(tmp_path: Path) -> None:
     book = load_playbook(make_playbook(tmp_path))
     scored = score(
@@ -536,3 +559,21 @@ def test_a_switch_asked_for_late_in_a_long_answer_is_still_heard(tmp_path: Path)
         world_factory=_factory(scripted_model(lambda r: long)),
     )
     assert report["follow_ups"] == 1
+
+
+def test_a_words_search_matches_every_word_in_any_order(tmp_path: Path) -> None:
+    world = json.loads((make_playbook(tmp_path) / "world.json").read_text(encoding="utf-8"))
+    world["tables"]["shipments"][0]["note"] = "Rate confirmation for 1ZA, Kroger Indianapolis"
+    world["tables"]["shipments"][1]["note"] = "Rate confirmation for 1ZB, Meijer Lansing"
+    returns = world["apps"][0]["tools"][0]["returns"]
+    returns.update({"match": {"tracking": "note"}, "mode": "words"})
+    (tmp_path / "late-parcels" / "world.json").write_text(json.dumps(world), encoding="utf-8")
+    portals = SimulatedPortals(load_playbook(tmp_path / "late-parcels"))
+
+    def found(query: str) -> list[str]:
+        answer = json.loads(portals.answer("host.shipdesk.list_shipments", {"tracking": query})[1])
+        return [r["tracking"] for r in answer["rows"]]
+
+    assert found("1za rate con") == ["1ZA"], "every word, in any order, case-folded"
+    assert found("rate confirmation") == ["1ZA", "1ZB"]
+    assert found("1ZA Meijer") == [], "a word that is missing fails the row"
