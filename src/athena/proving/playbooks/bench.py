@@ -45,6 +45,7 @@ __all__ = [
     "BenchConfig",
     "WorldFactory",
     "cards_of",
+    "headline",
     "prose_audit",
     "rescore",
     "run_bench",
@@ -52,6 +53,7 @@ __all__ = [
     "summary_of",
     "verdict",
     "write_bench",
+    "write_report",
 ]
 
 #: The desktop run loop's bound (``apps/desktop/src/stores/run.ts``).
@@ -171,6 +173,13 @@ def _phase(
     echo: Callable[[str], None],
 ) -> None:
     pending: list[dict[str, Any]] = []
+    # The playbook the person handed over is her active project on every turn, in every tab
+    # (ADR 0044): the goal she works toward while the phase message names only this tab's part.
+    project = {
+        "kind": "playbook",
+        "title": str(portals.playbook.showcase.get("title", portals.playbook.id)),
+        "goal": str(portals.playbook.showcase.get("command", "")),
+    }
     while True:
         bounded = False
         for step in range(MAX_CONTINUATIONS + 1):
@@ -178,7 +187,10 @@ def _phase(
                 run.errors.append(f"cap: spent ${run.cost:.2f} of ${config.cap_usd:.2f}")
                 return
             record = world.turn(
-                message, host_state=portals.host_state(app_id), tool_results=pending
+                message,
+                host_state=portals.host_state(app_id),
+                tool_results=pending,
+                active_project=project,
             )
             filed = _absorb(run, record, app_id, message)
             echo(
@@ -316,6 +328,8 @@ def score(playbook: Playbook, cards: Sequence[Mapping[str, Any]]) -> dict[str, A
             continue
         key = _norm(params.get(target.key, ""))
         row["key"] = key
+        # A target whose right answers are worth money recovers it; a payment target does not.
+        row["recovers"] = any(float(v.get("value_usd", 0)) > 0 for v in target.eligible.values())
         if key in target.eligible:
             if (tool, key) in seen:
                 row["outcome"] = "duplicate"
@@ -333,6 +347,18 @@ def score(playbook: Playbook, cards: Sequence[Mapping[str, Any]]) -> dict[str, A
                     row["wrong_params"] = wrong
                 else:
                     exact += 1
+        elif key in target.neutral:
+            item = target.neutral[key]
+            off = [
+                p for p, v in dict(item.get("expect", {})).items() if not _matches(v, params.get(p))
+            ]
+            if off:
+                row.update(
+                    outcome="trap", why=f"{item.get('why', '')} (not at {', '.join(off)} given)"
+                )
+                row["wrong_params"] = off
+            else:
+                row.update(outcome="neutral", why=str(item.get("why", "")))
         elif key in target.traps:
             row.update(outcome="trap", why=target.traps[key])
         else:
@@ -363,17 +389,31 @@ def score(playbook: Playbook, cards: Sequence[Mapping[str, Any]]) -> dict[str, A
         "duplicates": outcomes.count("duplicate"),
         "forbidden": outcomes.count("forbidden"),
         "other_cards": outcomes.count("other"),
+        "neutral": outcomes.count("neutral"),
         "cards": rows,
         "missed": missed,
     }
 
 
+#: The parameters a card names its money in, in the order they are looked for.
+AMOUNT_PARAMS = ("amount_usd", "amount_disputed_usd")
+
+
+def _amount(params: Mapping[str, Any]) -> float | None:
+    for name in AMOUNT_PARAMS:
+        value = params.get(name)
+        if isinstance(value, int | float) and not isinstance(value, bool):
+            return float(value)
+    return None
+
+
 def _filed_total(rows: Sequence[Mapping[str, Any]]) -> float | None:
-    """What the cards on target tools asked for, in dollars, from their own ``amount_usd``."""
+    """What the recovering cards asked for, in dollars, from their own amount parameter."""
     amounts = [
-        float(r["params"]["amount_usd"])
+        a
         for r in rows
-        if r["outcome"] != "other" and isinstance(r["params"].get("amount_usd"), int | float)
+        if r.get("recovers") and r["outcome"] not in ("other", "neutral", "forbidden")
+        if (a := _amount(r["params"])) is not None
     ]
     return round(sum(amounts), 2) if amounts else None
 
@@ -517,14 +557,61 @@ def rescore(playbook: Playbook, report: Mapping[str, Any]) -> dict[str, Any]:
     return again
 
 
-def write_bench(playbook: Playbook, report: Mapping[str, Any], run_dir: Path) -> Path:
-    """The full report into ``run_dir`` and the summary into the playbook's ``bench.json``."""
+def write_report(run_dir: Path, report: Mapping[str, Any]) -> Path:
+    """The full report, transcript and all, into ``run_dir`` (gitignored ``proving-runs/``)."""
     run_dir.mkdir(parents=True, exist_ok=True)
-    (run_dir / "report.json").write_text(
-        json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    path = run_dir / "report.json"
+    path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return path
+
+
+#: How many earlier runs ``bench.json`` keeps, newest last.
+HISTORY = 12
+
+
+def headline(summary: Mapping[str, Any]) -> dict[str, Any]:
+    """One earlier run, in a line: when, on what, the verdict and the money."""
+    s = summary.get("score", {})
+    keep: dict[str, Any] = prune(
+        {
+            "run_at": summary.get("run_at"),
+            "model": summary.get("model"),
+            "verdict": summary.get("verdict", {}).get("word"),
+            "found": s.get("found"),
+            "eligible": s.get("eligible"),
+            "value_found_usd": s.get("value_found_usd"),
+            "false_claims": s.get("false_claims"),
+            "note": summary.get("note"),
+        }
     )
+    return keep
+
+
+def write_bench(
+    playbook: Playbook, report: Mapping[str, Any], run_dir: Path, *, note: str = ""
+) -> Path:
+    """The full report into ``run_dir`` and the summary into the playbook's ``bench.json``.
+
+    The run ``bench.json`` held before becomes a line of its history, unless it is this same run
+    (a rescore replaces itself). ``note`` says what changed since the last run, in a sentence.
+    """
+    write_report(run_dir, report)
     target = playbook.root / "bench.json"
-    target.write_text(
-        json.dumps(summary_of(report), indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+    summary = summary_of(report)
+    history: list[dict[str, Any]] = []
+    if target.is_file():
+        try:
+            before = json.loads(target.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            before = {}
+        history = list(before.get("history", []))
+        if before.get("run_at") and before.get("run_at") != summary.get("run_at"):
+            history.append(headline(before))
+        elif before.get("note") and not note:
+            note = str(before["note"])
+    if note:
+        summary["note"] = note
+    if history:
+        summary["history"] = history[-HISTORY:]
+    target.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return target

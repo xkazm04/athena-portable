@@ -21,7 +21,13 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from athena.proving.playbooks.bench import BenchConfig, rescore, run_bench, write_bench
+from athena.proving.playbooks.bench import (
+    BenchConfig,
+    rescore,
+    run_bench,
+    write_bench,
+    write_report,
+)
 from athena.proving.playbooks.spec import PLAYBOOKS_DIRNAME, PlaybookError, load_all, load_playbook
 from athena.proving.report import RUNS_DIRNAME, new_run_dir
 
@@ -39,9 +45,11 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--cap", type=float, default=5.0, help="USD cap for the run")
     b.add_argument("--out", default=RUNS_DIRNAME)
     b.add_argument("--no-write", dest="write", action="store_false", help="leave bench.json alone")
+    b.add_argument("--note", default="", help="what changed since the last run, in a sentence")
     r = verbs.add_parser("rescore", help="score a saved run again; nothing is re-run")
     r.add_argument("playbook")
     r.add_argument("report", help="the run's report.json")
+    r.add_argument("--note", default="", help="why it was rescored, in a sentence")
     return parser
 
 
@@ -69,7 +77,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.verb == "rescore":
         source = Path(args.report)
         again = rescore(book, json.loads(source.read_text(encoding="utf-8")))
-        target = write_bench(book, again, source.parent)
+        target = write_bench(book, again, source.parent, note=args.note)
         print(f"rescored {source.as_posix()} -> {target.as_posix()}: {again['verdict']['word']}")
         return 1 if again["verdict"]["word"] == "short" else 0
     config = BenchConfig(
@@ -79,8 +87,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     report = run_bench(book, config, echo=lambda line: print(line, flush=True))
     run_dir = new_run_dir(Path(args.out)) / f"playbook-{book.id}"
     if args.write:
-        target = write_bench(book, report, run_dir)
+        target = write_bench(book, report, run_dir, note=args.note)
         print(f"summary: {target.as_posix()}", flush=True)
+    else:
+        write_report(run_dir, report)
     s = report["score"]
     v = report["verdict"]
     print(

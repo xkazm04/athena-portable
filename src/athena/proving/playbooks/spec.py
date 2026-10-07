@@ -134,6 +134,9 @@ class Target:
     eligible: dict[str, dict[str, Any]]
     #: ``{key value: why it must not be filed}``
     traps: dict[str, str]
+    #: ``{key value: {why, expect?}}``: acceptable either way. Filed with the ``expect`` params (or
+    #: with none declared) it is neither credited nor a fault; filed otherwise it is a trap.
+    neutral: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -319,15 +322,27 @@ def load_playbook(root: str | Path) -> Playbook:
         if not isinstance(traps, Mapping):
             problems.append(f"truth traps for {tool!r} must be an object")
             traps = {}
+        neutral = raw.get("neutral", {})
+        if not isinstance(neutral, Mapping) or not all(
+            isinstance(v, Mapping) for v in neutral.values()
+        ):
+            problems.append(f"truth neutral for {tool!r} must map keys to objects")
+            neutral = {}
         overlap = {_norm(k) for k in eligible} & {_norm(k) for k in traps}
         if overlap:
             problems.append(f"{sorted(overlap)} are both eligible and a trap")
+        both = ({_norm(k) for k in eligible} | {_norm(k) for k in traps}) & {
+            _norm(k) for k in neutral
+        }
+        if both:
+            problems.append(f"{sorted(both)} are neutral and also eligible or a trap")
         targets.append(
             Target(
                 tool=tool,
                 key=key,
                 eligible={_norm(k): dict(v) for k, v in eligible.items()},
                 traps={_norm(k): str(v) for k, v in traps.items()},
+                neutral={_norm(k): dict(v) for k, v in neutral.items()},
             )
         )
     if not targets:

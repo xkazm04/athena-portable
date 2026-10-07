@@ -2,9 +2,11 @@
 
 The same contract as the Characters' Ledgerbox page (:mod:`athena.proving.characters.scene`),
 generalised to data: a READ tool answers from one of the world's tables, filtered by the params
-it declares a ``match`` for and paged with the honest ``(showing N of M)`` footer; a reversible
-WRITE answers with its ``says`` sentence; a gated tool never reaches :meth:`answer` (the gate
-turned it into a card) and runs only through :meth:`execute`, an approved card's instruction.
+it declares a ``match`` for (``default`` fills a param the call left out; ``require`` makes a
+detail page refuse without its id) and paged with the honest ``(showing N of M)`` footer; a
+reversible WRITE answers with its ``says`` sentence; a gated tool never reaches :meth:`answer`
+(the gate turned it into a card) and runs only through :meth:`execute`, an approved card's
+instruction.
 
 The page knows nothing of ``truth.json``. A page that could see the answers could leak them, and
 a bench whose page leaks is measuring the page.
@@ -88,6 +90,13 @@ class SimulatedPortals:
         declared: Mapping[str, Any],
         params: Mapping[str, Any],
     ) -> dict[str, Any]:
+        params = {
+            **dict(returns.get("default", {})),
+            **{k: v for k, v in params.items() if v not in (None, "")},
+        }
+        missing = [p for p in returns.get("require", []) if params.get(p) in (None, "")]
+        if missing:
+            return {"error": f"this page needs {', '.join(missing)}"}
         rows = list(self.playbook.tables.get(str(returns.get("table", "")), []))
         contains = returns.get("mode") == "contains"
         for param, column in dict(returns.get("match", {})).items():

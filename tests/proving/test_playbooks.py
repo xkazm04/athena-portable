@@ -388,3 +388,94 @@ def test_a_saved_run_is_rescored_from_its_own_cards(tmp_path: Path) -> None:
     assert again["score"]["found"] == report["score"]["found"] == 2
     assert again["rescored_at"]
     assert summary_of(again)["rescored_at"] == again["rescored_at"]
+
+
+def test_a_neutral_item_is_fine_at_its_expected_params_and_a_trap_otherwise(tmp_path: Path) -> None:
+    truth = {
+        "targets": [
+            {
+                "tool": "file_claim",
+                "key": "tracking",
+                "eligible": {"1ZA": {"value_usd": 12.5}},
+                "traps": {},
+                "neutral": {"1ZB": {"why": "a partial claim is fair", "expect": {"amount": 5}}},
+            }
+        ]
+    }
+    book = load_playbook(make_playbook(tmp_path, truth=truth))
+    scored = score(
+        book,
+        [
+            _card("file_claim", tracking="1ZB", amount=5),
+            _card("file_claim", tracking="1ZB", amount=9),
+        ],
+    )
+    assert [c["outcome"] for c in scored["cards"]] == ["neutral", "trap"]
+    assert scored["neutral"] == 1 and scored["false_claims"] == 1
+    assert scored["cards"][1]["wrong_params"] == ["amount"]
+
+
+def test_neutral_and_eligible_cannot_overlap(tmp_path: Path) -> None:
+    truth = {
+        "targets": [
+            {
+                "tool": "file_claim",
+                "key": "tracking",
+                "eligible": {"1ZA": {"value_usd": 1}},
+                "traps": {},
+                "neutral": {"1za": {"why": "x"}},
+            }
+        ]
+    }
+    with pytest.raises(PlaybookError, match="neutral and also eligible"):
+        load_playbook(make_playbook(tmp_path, truth=truth))
+
+
+def test_a_detail_page_needs_its_id_and_a_default_opens_an_index(tmp_path: Path) -> None:
+    world_tools = json.loads((make_playbook(tmp_path) / "world.json").read_text(encoding="utf-8"))
+    world_tools["apps"][0]["tools"][0]["returns"]["require"] = ["tracking"]
+    (tmp_path / "late-parcels" / "world.json").write_text(json.dumps(world_tools), encoding="utf-8")
+    portals = SimulatedPortals(load_playbook(tmp_path / "late-parcels"))
+    assert json.loads(portals.answer("host.shipdesk.list_shipments", {})[1]) == {
+        "error": "this page needs tracking"
+    }
+    world_tools["apps"][0]["tools"][0]["returns"].pop("require")
+    world_tools["apps"][0]["tools"][0]["returns"]["default"] = {"tracking": "1ZD"}
+    (tmp_path / "late-parcels" / "world.json").write_text(json.dumps(world_tools), encoding="utf-8")
+    portals = SimulatedPortals(load_playbook(tmp_path / "late-parcels"))
+    rows = json.loads(portals.answer("host.shipdesk.list_shipments", {})[1])["rows"]
+    assert [r["tracking"] for r in rows] == ["1ZD"]
+
+
+def test_bench_json_keeps_earlier_runs_as_history_and_a_rescore_replaces_itself(
+    tmp_path: Path,
+) -> None:
+    book = load_playbook(make_playbook(tmp_path))
+    factory = _factory(scripted_model(_careful))
+    first = run_bench(book, BenchConfig(engine="nebius"), world_factory=factory)
+    write_bench(book, first, tmp_path / "r1")
+    second = dict(run_bench(book, BenchConfig(engine="nebius"), world_factory=factory))
+    second["run_at"] = "2099-01-01T00:00:00Z"
+    write_bench(book, second, tmp_path / "r2", note="after the harness fix")
+    summary = json.loads((book.root / "bench.json").read_text(encoding="utf-8"))
+    assert [h["run_at"] for h in summary["history"]] == [first["run_at"]]
+    assert summary["history"][0]["verdict"] == "exceeds"
+    assert summary["note"] == "after the harness fix"
+    write_bench(book, rescore(book, second), tmp_path / "r2")
+    again = json.loads((book.root / "bench.json").read_text(encoding="utf-8"))
+    assert len(again["history"]) == 1 and again["note"] == "after the harness fix"
+
+
+def test_every_turn_carries_the_playbook_as_the_active_project(tmp_path: Path) -> None:
+    """ADR 0044: the goal rides each tab's frame, while the phase names only this tab's part."""
+    seen: list[str] = []
+
+    def model(request: ModelRequest) -> str:
+        seen.append(frame_of(request))
+        return _careful(request)
+
+    book = load_playbook(make_playbook(tmp_path))
+    run_bench(book, BenchConfig(engine="nebius"), world_factory=_factory(scripted_model(model)))
+    assert seen and all("## Active project" in f for f in seen)
+    assert all("goal: File a refund claim for every late parcel." in f for f in seen)
+    assert all("kind: playbook" in f for f in seen)

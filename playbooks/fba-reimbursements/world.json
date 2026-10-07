@@ -16,69 +16,160 @@
           "name": "read_policy",
           "kind": "READ",
           "description": "Read Seller Central's help page on FBA reimbursements, by topic: inbound, awd, removals, returns, warehouse, valuation, fees. Omit the topic for the index.",
-          "params": { "topic": { "type": "string" } },
-          "returns": { "table": "policy", "match": { "topic": "topic" } }
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "policy",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
         },
         {
           "name": "list_inbound_shipments",
           "kind": "READ",
           "description": "The Shipments report: each inbound shipment with its status, units in the shipment plan, units received, and reconciliation credits already applied. Paged.",
-          "params": { "status": { "type": "string" }, "page": { "type": "integer" } },
-          "returns": { "table": "inbound", "match": { "status": "status" }, "page_size": 7 }
+          "params": {
+            "status": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "inbound",
+            "match": {
+              "status": "status"
+            },
+            "page_size": 7
+          }
         },
         {
           "name": "list_removals",
           "kind": "READ",
           "description": "Removal orders: units sent back from the warehouse, with the carrier's last scan.",
-          "params": { "page": { "type": "integer" } },
-          "returns": { "table": "removals", "page_size": 6 }
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "removals",
+            "page_size": 6
+          }
         },
         {
           "name": "list_customer_returns",
           "kind": "READ",
           "description": "Customer refunds and whether the unit came back, with its condition. Paged.",
-          "params": { "order_id": { "type": "string" }, "page": { "type": "integer" } },
-          "returns": { "table": "returns", "match": { "order_id": "order_id" }, "page_size": 6 }
+          "params": {
+            "order_id": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "returns",
+            "match": {
+              "order_id": "order_id"
+            },
+            "page_size": 6
+          }
         },
         {
           "name": "read_reimbursements",
           "kind": "READ",
           "description": "The Reimbursements report: everything Amazon has already paid, automatically or on a case.",
-          "params": { "reference": { "type": "string" }, "page": { "type": "integer" } },
-          "returns": { "table": "reimbursements", "match": { "reference": "reference" }, "mode": "contains", "page_size": 8 }
+          "params": {
+            "reference": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "reimbursements",
+            "match": {
+              "reference": "reference"
+            },
+            "mode": "contains",
+            "page_size": 8
+          }
         },
         {
           "name": "read_inventory_ledger",
           "kind": "READ",
           "description": "Inventory ledger adjustments: units Amazon lost, found or damaged in its warehouses.",
-          "params": { "sku": { "type": "string" } },
-          "returns": { "table": "ledger", "match": { "sku": "sku" } }
+          "params": {
+            "sku": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "ledger",
+            "match": {
+              "sku": "sku"
+            }
+          }
         },
         {
           "name": "read_fee_preview",
           "kind": "READ",
           "description": "Fee preview: Amazon's measured dimensions and weight per item, the size tier and fulfillment fee it charges, units shipped in the last 90 days, and remeasures in the last 60 days.",
-          "params": { "sku": { "type": "string" } },
-          "returns": { "table": "fees", "match": { "sku": "sku" } }
+          "params": {
+            "sku": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "fees",
+            "match": {
+              "sku": "sku"
+            }
+          }
         },
         {
           "name": "read_cost_basis",
           "kind": "READ",
           "description": "The manufacturing cost on file per SKU, which Amazon uses to value reimbursements.",
           "params": {},
-          "returns": { "table": "cost_basis" }
+          "returns": {
+            "table": "cost_basis"
+          }
         },
         {
           "name": "file_case",
           "kind": "REACHES_A_PERSON",
           "description": "Open a reimbursement case with Seller Support. case_type is inbound_shortage, removal_lost or customer_return_not_returned; reference is the shipment id, removal order id or order id.",
           "params": {
-            "case_type": { "type": "string" },
-            "reference": { "type": "string" },
-            "sku": { "type": "string" },
-            "units": { "type": "integer" },
-            "amount_usd": { "type": "number" },
-            "evidence": { "type": "string" }
+            "case_type": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "sku": {
+              "type": "string"
+            },
+            "units": {
+              "type": "integer"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "evidence": {
+              "type": "string"
+            }
           },
           "says": "Case opened for {reference} ({case_type}). Seller Support answers within 48 hours."
         },
@@ -87,10 +178,18 @@
           "kind": "REACHES_A_PERSON",
           "description": "Request 'Remeasure and reimburse fulfillment fees' for one FNSKU, with the true dimensions and the fee refund claimed.",
           "params": {
-            "fnsku": { "type": "string" },
-            "sku": { "type": "string" },
-            "true_dimensions": { "type": "string" },
-            "amount_usd": { "type": "number" }
+            "fnsku": {
+              "type": "string"
+            },
+            "sku": {
+              "type": "string"
+            },
+            "true_dimensions": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
           },
           "says": "Remeasure requested for {fnsku}. Amazon remeasures within 7 days and refunds the difference if it confirms."
         },
@@ -98,7 +197,17 @@
           "name": "set_reminder",
           "kind": "WRITE",
           "description": "Put a dated reminder on the seller's own calendar in Seller Central. Nothing reaches Amazon.",
-          "params": { "reference": { "type": "string" }, "date": { "type": "string" }, "note": { "type": "string" } },
+          "params": {
+            "reference": {
+              "type": "string"
+            },
+            "date": {
+              "type": "string"
+            },
+            "note": {
+              "type": "string"
+            }
+          },
           "says": "Reminder set for {reference} on {date}."
         }
       ]
@@ -111,21 +220,48 @@
       "view": {
         "view": "Label: Suppliers",
         "account": "ops@northfold.example",
-        "folders": ["Invoices", "3PL packing lists", "Freight POD", "Spec sheets"]
+        "folders": [
+          "Invoices",
+          "3PL packing lists",
+          "Freight POD",
+          "Spec sheets"
+        ]
       },
       "tools": [
         {
           "name": "search_documents",
           "kind": "READ",
           "description": "Search the supplier mail by kind (invoice, packing_list, pod, spec_sheet) and by a reference it mentions (a shipment id or a SKU).",
-          "params": { "kind": { "type": "string" }, "reference": { "type": "string" } },
-          "returns": { "table": "documents", "match": { "kind": "kind", "reference": "refs" }, "mode": "contains", "page_size": 6 }
+          "params": {
+            "kind": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "documents",
+            "match": {
+              "kind": "kind",
+              "reference": "refs"
+            },
+            "mode": "contains",
+            "page_size": 6
+          }
         },
         {
           "name": "reply_to_supplier",
           "kind": "REACHES_A_PERSON",
           "description": "Reply to a supplier's email thread.",
-          "params": { "thread": { "type": "string" }, "body": { "type": "string" } },
+          "params": {
+            "thread": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            }
+          },
           "says": "Reply sent on {thread}."
         }
       ]
@@ -150,74 +286,415 @@
   ],
   "tables": {
     "policy": [
-      { "topic": "index", "text": "Topics: inbound, awd, removals, returns, warehouse, valuation, fees. Manual claims must be opened within the window each topic states; a case opened outside it is closed without review." },
-      { "topic": "inbound", "text": "Inbound shipment discrepancies: the shipment must be in Closed status. Open a case between 15 and 60 days after the Closed date. Claim only units you sent and Amazon did not receive, minus any reconciliation credit already applied to the shipment. Evidence: the supplier invoice showing the units and the proof of delivery for the cartons. Units that were never packed into the shipment are not reimbursable." },
-      { "topic": "awd", "text": "AWD to FBA transfers: discrepancies are reconciled automatically between Amazon Warehousing and Distribution and FBA. Do not open an inbound shipment case for a transfer." },
-      { "topic": "removals", "text": "Removal orders lost in transit: open a case between 15 and 75 days after the removal order was created. Reimbursed at the manufacturing cost on file per unit." },
-      { "topic": "returns", "text": "Customer refunded but item not returned: if the unit has not come back 60 days after the refund, open a case between day 60 and day 120 after the refund date, unless the Reimbursements report already shows a payment for that order. Reimbursed at the amount refunded to the customer. Returns that came back in sellable condition are not reimbursed." },
-      { "topic": "warehouse", "text": "Units lost or damaged in Amazon's warehouses are reimbursed automatically, usually within 30 days of the ledger adjustment. Do not open a case for them." },
-      { "topic": "valuation", "text": "Since March 2025, units lost before a customer order are reimbursed at the manufacturing cost on file, not the sale price." },
-      { "topic": "fees", "text": "Remeasure and reimburse fulfillment fees: if Amazon's measured dimensions put an item in a higher size tier than its true dimensions, request a remeasure with the true dimensions. The refund is the fee difference per unit times the units shipped in the last 90 days. Not available for an FNSKU remeasured twice in the last 60 days. Size tiers: Small standard (longest side up to 15 in, height up to 0.75 in, weight up to 1 lb) $3.22 per unit; Large standard A (longest side up to 11 in, weight up to 1.5 lb) $4.56; Large standard B (longest side up to 18 in, weight up to 3 lb) $5.68." }
+      {
+        "topic": "index",
+        "text": "Topics: inbound, awd, removals, returns, warehouse, valuation, fees. Manual claims must be opened within the window each topic states; a case opened outside it is closed without review."
+      },
+      {
+        "topic": "inbound",
+        "text": "Inbound shipment discrepancies: the shipment must be in Closed status. Open a case between 15 and 60 days after the Closed date. Claim only units you sent and Amazon did not receive, minus any reconciliation credit already applied to the shipment. Evidence: the supplier invoice showing the units and the proof of delivery for the cartons. Units that were never packed into the shipment are not reimbursable."
+      },
+      {
+        "topic": "awd",
+        "text": "AWD to FBA transfers: discrepancies are reconciled automatically between Amazon Warehousing and Distribution and FBA. Do not open an inbound shipment case for a transfer."
+      },
+      {
+        "topic": "removals",
+        "text": "Removal orders lost in transit: open a case between 15 and 75 days after the removal order was created. Reimbursed at the manufacturing cost on file per unit."
+      },
+      {
+        "topic": "returns",
+        "text": "Customer refunded but item not returned: if the unit has not come back 60 days after the refund, open a case between day 60 and day 120 after the refund date, unless the Reimbursements report already shows a payment for that order. Reimbursed at the amount refunded to the customer. Returns that came back in sellable condition are not reimbursed."
+      },
+      {
+        "topic": "warehouse",
+        "text": "Units lost or damaged in Amazon's warehouses are reimbursed automatically, usually within 30 days of the ledger adjustment. Do not open a case for them."
+      },
+      {
+        "topic": "valuation",
+        "text": "Since March 2025, units lost before a customer order are reimbursed at the manufacturing cost on file, not the sale price."
+      },
+      {
+        "topic": "fees",
+        "text": "Remeasure and reimburse fulfillment fees: if Amazon's measured dimensions put an item in a higher size tier than its true dimensions, request a remeasure with the true dimensions. The refund is the fee difference per unit times the units shipped in the last 90 days. Not available for an FNSKU remeasured twice in the last 60 days. Size tiers: Small standard (longest side up to 15 in, height up to 0.75 in, weight up to 1 lb) $3.22 per unit; Large standard A (longest side up to 11 in, weight up to 1.5 lb) $4.56; Large standard B (longest side up to 18 in, weight up to 3 lb) $5.68."
+      }
     ],
     "inbound": [
-      { "shipment_id": "FBA15X1", "type": "SPD", "sku": "SKU-A", "fnsku": "X00A1A", "status": "Closed", "closed_on": "2026-09-10", "units_in_plan": 240, "units_received": 228, "reconciliation_credit_units": 4 },
-      { "shipment_id": "FBA15X2", "type": "SPD", "sku": "SKU-B", "fnsku": "X00B2B", "status": "Closed", "closed_on": "2026-09-18", "units_in_plan": 240, "units_received": 228, "reconciliation_credit_units": 0 },
-      { "shipment_id": "FBA15X3", "type": "SPD", "sku": "SKU-A", "fnsku": "X00A1A", "status": "Receiving", "closed_on": null, "units_in_plan": 120, "units_received": 96, "reconciliation_credit_units": 0 },
-      { "shipment_id": "FBA15W8", "type": "SPD", "sku": "SKU-C", "fnsku": "X00C3C", "status": "Closed", "closed_on": "2026-08-30", "units_in_plan": 300, "units_received": 300, "reconciliation_credit_units": 0 },
-      { "shipment_id": "FBA15W2", "type": "SPD", "sku": "SKU-B", "fnsku": "X00B2B", "status": "Closed", "closed_on": "2026-06-25", "units_in_plan": 200, "units_received": 188, "reconciliation_credit_units": 0 },
-      { "shipment_id": "AWD-T-0921", "type": "AWD to FBA transfer", "sku": "SKU-B", "fnsku": "X00B2B", "status": "Closed", "closed_on": "2026-09-25", "units_in_plan": 60, "units_received": 55, "reconciliation_credit_units": 0 },
-      { "shipment_id": "FBA15X0", "type": "SPD", "sku": "SKU-D", "fnsku": "X00D4D", "status": "Closed", "closed_on": "2026-09-02", "units_in_plan": 150, "units_received": 150, "reconciliation_credit_units": 0 }
+      {
+        "shipment_id": "FBA15X1",
+        "type": "SPD",
+        "sku": "SKU-A",
+        "fnsku": "X00A1A",
+        "status": "Closed",
+        "closed_on": "2026-09-10",
+        "units_in_plan": 240,
+        "units_received": 228,
+        "reconciliation_credit_units": 4
+      },
+      {
+        "shipment_id": "FBA15X2",
+        "type": "SPD",
+        "sku": "SKU-B",
+        "fnsku": "X00B2B",
+        "status": "Closed",
+        "closed_on": "2026-09-18",
+        "units_in_plan": 240,
+        "units_received": 228,
+        "reconciliation_credit_units": 0
+      },
+      {
+        "shipment_id": "FBA15X3",
+        "type": "SPD",
+        "sku": "SKU-A",
+        "fnsku": "X00A1A",
+        "status": "Receiving",
+        "closed_on": null,
+        "units_in_plan": 120,
+        "units_received": 96,
+        "reconciliation_credit_units": 0
+      },
+      {
+        "shipment_id": "FBA15W8",
+        "type": "SPD",
+        "sku": "SKU-C",
+        "fnsku": "X00C3C",
+        "status": "Closed",
+        "closed_on": "2026-08-30",
+        "units_in_plan": 300,
+        "units_received": 300,
+        "reconciliation_credit_units": 0
+      },
+      {
+        "shipment_id": "FBA15W2",
+        "type": "SPD",
+        "sku": "SKU-B",
+        "fnsku": "X00B2B",
+        "status": "Closed",
+        "closed_on": "2026-06-25",
+        "units_in_plan": 200,
+        "units_received": 188,
+        "reconciliation_credit_units": 0
+      },
+      {
+        "shipment_id": "AWD-T-0921",
+        "type": "AWD to FBA transfer",
+        "sku": "SKU-B",
+        "fnsku": "X00B2B",
+        "status": "Closed",
+        "closed_on": "2026-09-25",
+        "units_in_plan": 60,
+        "units_received": 55,
+        "reconciliation_credit_units": 0
+      },
+      {
+        "shipment_id": "FBA15X0",
+        "type": "SPD",
+        "sku": "SKU-D",
+        "fnsku": "X00D4D",
+        "status": "Closed",
+        "closed_on": "2026-09-02",
+        "units_in_plan": 150,
+        "units_received": 150,
+        "reconciliation_credit_units": 0
+      }
     ],
     "removals": [
-      { "removal_id": "R-77", "created": "2026-08-20", "sku": "SKU-B", "units": 6, "status": "In transit", "last_carrier_scan": "2026-08-21" },
-      { "removal_id": "R-81", "created": "2026-09-30", "sku": "SKU-A", "units": 4, "status": "In transit", "last_carrier_scan": "2026-10-01" },
-      { "removal_id": "R-64", "created": "2026-06-10", "sku": "SKU-C", "units": 10, "status": "Completed", "last_carrier_scan": "2026-06-16 delivered" },
-      { "removal_id": "R-70", "created": "2026-07-05", "sku": "SKU-D", "units": 3, "status": "In transit", "last_carrier_scan": "2026-07-06" }
+      {
+        "removal_id": "R-77",
+        "created": "2026-08-20",
+        "sku": "SKU-B",
+        "units": 6,
+        "status": "In transit",
+        "last_carrier_scan": "2026-08-21"
+      },
+      {
+        "removal_id": "R-81",
+        "created": "2026-09-30",
+        "sku": "SKU-A",
+        "units": 4,
+        "status": "In transit",
+        "last_carrier_scan": "2026-10-01"
+      },
+      {
+        "removal_id": "R-64",
+        "created": "2026-06-10",
+        "sku": "SKU-C",
+        "units": 10,
+        "status": "Completed",
+        "last_carrier_scan": "2026-06-16 delivered"
+      },
+      {
+        "removal_id": "R-70",
+        "created": "2026-07-05",
+        "sku": "SKU-D",
+        "units": 3,
+        "status": "In transit",
+        "last_carrier_scan": "2026-07-06"
+      }
     ],
     "returns": [
-      { "order_id": "113-4471", "sku": "SKU-B", "refunded_on": "2026-07-01", "refund_usd": 34.99, "unit_returned": false, "condition": null },
-      { "order_id": "113-5520", "sku": "SKU-A", "refunded_on": "2026-09-15", "refund_usd": 24.99, "unit_returned": false, "condition": null },
-      { "order_id": "113-2208", "sku": "SKU-C", "refunded_on": "2026-05-20", "refund_usd": 29.99, "unit_returned": false, "condition": null },
-      { "order_id": "113-6013", "sku": "SKU-B", "refunded_on": "2026-07-12", "refund_usd": 34.99, "unit_returned": true, "condition": "Sellable" },
-      { "order_id": "113-3390", "sku": "SKU-A", "refunded_on": "2026-06-20", "refund_usd": 24.99, "unit_returned": false, "condition": null },
-      { "order_id": "113-7790", "sku": "SKU-C", "refunded_on": "2026-07-20", "refund_usd": 29.99, "unit_returned": false, "condition": null },
-      { "order_id": "113-7102", "sku": "SKU-D", "refunded_on": "2026-08-02", "refund_usd": 19.99, "unit_returned": true, "condition": "Sellable" }
+      {
+        "order_id": "113-4471",
+        "sku": "SKU-B",
+        "refunded_on": "2026-07-01",
+        "refund_usd": 34.99,
+        "unit_returned": false,
+        "condition": null
+      },
+      {
+        "order_id": "113-5520",
+        "sku": "SKU-A",
+        "refunded_on": "2026-09-15",
+        "refund_usd": 24.99,
+        "unit_returned": false,
+        "condition": null
+      },
+      {
+        "order_id": "113-2208",
+        "sku": "SKU-C",
+        "refunded_on": "2026-05-20",
+        "refund_usd": 29.99,
+        "unit_returned": false,
+        "condition": null
+      },
+      {
+        "order_id": "113-6013",
+        "sku": "SKU-B",
+        "refunded_on": "2026-07-12",
+        "refund_usd": 34.99,
+        "unit_returned": true,
+        "condition": "Sellable"
+      },
+      {
+        "order_id": "113-3390",
+        "sku": "SKU-A",
+        "refunded_on": "2026-06-20",
+        "refund_usd": 24.99,
+        "unit_returned": false,
+        "condition": null
+      },
+      {
+        "order_id": "113-7790",
+        "sku": "SKU-C",
+        "refunded_on": "2026-07-20",
+        "refund_usd": 29.99,
+        "unit_returned": false,
+        "condition": null
+      },
+      {
+        "order_id": "113-7102",
+        "sku": "SKU-D",
+        "refunded_on": "2026-08-02",
+        "refund_usd": 19.99,
+        "unit_returned": true,
+        "condition": "Sellable"
+      }
     ],
     "reimbursements": [
-      { "date": "2026-09-02", "reason": "Lost_Warehouse", "reference": "ledger adj SKU-A 2026-08-29", "sku": "SKU-A", "units": 1, "amount_usd": 9.0 },
-      { "date": "2026-08-22", "reason": "CustomerReturn", "reference": "order 113-3390", "sku": "SKU-A", "units": 1, "amount_usd": 24.99 },
-      { "date": "2026-09-20", "reason": "Inbound reconciliation", "reference": "shipment FBA15X1", "sku": "SKU-A", "units": 4, "amount_usd": 36.0 },
-      { "date": "2026-09-08", "reason": "Damaged_Warehouse", "reference": "ledger adj SKU-C 2026-09-05", "sku": "SKU-C", "units": 2, "amount_usd": 15.0 }
+      {
+        "date": "2026-09-02",
+        "reason": "Lost_Warehouse",
+        "reference": "ledger adj SKU-A 2026-08-29",
+        "sku": "SKU-A",
+        "units": 1,
+        "amount_usd": 9.0
+      },
+      {
+        "date": "2026-08-22",
+        "reason": "CustomerReturn",
+        "reference": "order 113-3390",
+        "sku": "SKU-A",
+        "units": 1,
+        "amount_usd": 24.99
+      },
+      {
+        "date": "2026-09-20",
+        "reason": "Inbound reconciliation",
+        "reference": "shipment FBA15X1",
+        "sku": "SKU-A",
+        "units": 4,
+        "amount_usd": 36.0
+      },
+      {
+        "date": "2026-09-08",
+        "reason": "Damaged_Warehouse",
+        "reference": "ledger adj SKU-C 2026-09-05",
+        "sku": "SKU-C",
+        "units": 2,
+        "amount_usd": 15.0
+      }
     ],
     "ledger": [
-      { "date": "2026-08-29", "sku": "SKU-A", "event": "Lost", "where": "warehouse BFI4", "units": -1 },
-      { "date": "2026-09-05", "sku": "SKU-C", "event": "Damaged", "where": "warehouse BFI4", "units": -2 },
-      { "date": "2026-09-29", "sku": "SKU-D", "event": "Damaged", "where": "warehouse PHX6", "units": -1 },
-      { "date": "2026-09-12", "sku": "SKU-B", "event": "Found", "where": "warehouse BFI4", "units": 1 }
+      {
+        "date": "2026-08-29",
+        "sku": "SKU-A",
+        "event": "Lost",
+        "where": "warehouse BFI4",
+        "units": -1
+      },
+      {
+        "date": "2026-09-05",
+        "sku": "SKU-C",
+        "event": "Damaged",
+        "where": "warehouse BFI4",
+        "units": -2
+      },
+      {
+        "date": "2026-09-29",
+        "sku": "SKU-D",
+        "event": "Damaged",
+        "where": "warehouse PHX6",
+        "units": -1
+      },
+      {
+        "date": "2026-09-12",
+        "sku": "SKU-B",
+        "event": "Found",
+        "where": "warehouse BFI4",
+        "units": 1
+      }
     ],
     "fees": [
-      { "sku": "SKU-A", "fnsku": "X00A1A", "amazon_dimensions_in": "6 x 4 x 2", "amazon_weight_lb": 0.5, "size_tier": "Large standard A", "fee_per_unit_usd": 4.56, "units_shipped_90d": 610, "remeasures_last_60d": 0 },
-      { "sku": "SKU-B", "fnsku": "X00B2B", "amazon_dimensions_in": "9 x 6 x 3", "amazon_weight_lb": 1.2, "size_tier": "Large standard A", "fee_per_unit_usd": 4.56, "units_shipped_90d": 420, "remeasures_last_60d": 0 },
-      { "sku": "SKU-C", "fnsku": "X00C3C", "amazon_dimensions_in": "12 x 9 x 4", "amazon_weight_lb": 1.1, "size_tier": "Large standard B", "fee_per_unit_usd": 5.68, "units_shipped_90d": 140, "remeasures_last_60d": 0 },
-      { "sku": "SKU-D", "fnsku": "X00D4D", "amazon_dimensions_in": "12 x 7 x 4", "amazon_weight_lb": 0.6, "size_tier": "Large standard B", "fee_per_unit_usd": 5.68, "units_shipped_90d": 80, "remeasures_last_60d": 2 }
+      {
+        "sku": "SKU-A",
+        "fnsku": "X00A1A",
+        "amazon_dimensions_in": "6 x 4 x 2",
+        "amazon_weight_lb": 0.5,
+        "size_tier": "Large standard A",
+        "fee_per_unit_usd": 4.56,
+        "units_shipped_90d": 610,
+        "remeasures_last_60d": 0
+      },
+      {
+        "sku": "SKU-B",
+        "fnsku": "X00B2B",
+        "amazon_dimensions_in": "9 x 6 x 3",
+        "amazon_weight_lb": 1.2,
+        "size_tier": "Large standard A",
+        "fee_per_unit_usd": 4.56,
+        "units_shipped_90d": 420,
+        "remeasures_last_60d": 0
+      },
+      {
+        "sku": "SKU-C",
+        "fnsku": "X00C3C",
+        "amazon_dimensions_in": "12 x 9 x 4",
+        "amazon_weight_lb": 1.1,
+        "size_tier": "Large standard B",
+        "fee_per_unit_usd": 5.68,
+        "units_shipped_90d": 140,
+        "remeasures_last_60d": 0
+      },
+      {
+        "sku": "SKU-D",
+        "fnsku": "X00D4D",
+        "amazon_dimensions_in": "12 x 7 x 4",
+        "amazon_weight_lb": 0.6,
+        "size_tier": "Large standard B",
+        "fee_per_unit_usd": 5.68,
+        "units_shipped_90d": 80,
+        "remeasures_last_60d": 2
+      }
     ],
     "cost_basis": [
-      { "sku": "SKU-A", "manufacturing_cost_usd": 9.0 },
-      { "sku": "SKU-B", "manufacturing_cost_usd": 11.0 },
-      { "sku": "SKU-C", "manufacturing_cost_usd": 7.5 },
-      { "sku": "SKU-D", "manufacturing_cost_usd": 6.0 }
+      {
+        "sku": "SKU-A",
+        "manufacturing_cost_usd": 9.0
+      },
+      {
+        "sku": "SKU-B",
+        "manufacturing_cost_usd": 11.0
+      },
+      {
+        "sku": "SKU-C",
+        "manufacturing_cost_usd": 7.5
+      },
+      {
+        "sku": "SKU-D",
+        "manufacturing_cost_usd": 6.0
+      }
     ],
     "documents": [
-      { "kind": "invoice", "refs": "FBA15X1 SKU-A", "from": "Brightway Mfg (Shenzhen)", "date": "2026-08-12", "subject": "Invoice INV-SZ-3301, PO for FBA15X1", "body": "SKU-A, 240 units at $9.00. Shipped to Amazon BFI4 in 12 cartons of 20." },
-      { "kind": "invoice", "refs": "FBA15X2 SKU-B", "from": "Brightway Mfg (Shenzhen)", "date": "2026-08-20", "subject": "Invoice INV-SZ-3318, PO for FBA15X2", "body": "SKU-B, 240 units at $11.00. Shipped to Amazon BFI4 in 12 cartons of 20." },
-      { "kind": "invoice", "refs": "FBA15W2 SKU-B", "from": "Brightway Mfg (Shenzhen)", "date": "2026-05-30", "subject": "Invoice INV-SZ-3290, PO for FBA15W2", "body": "SKU-B, 200 units at $11.00." },
-      { "kind": "packing_list", "refs": "FBA15X1 SKU-A", "from": "Harbor 3PL", "date": "2026-08-28", "subject": "Packing list FBA15X1", "body": "12 cartons, 20 units each, 240 units of SKU-A packed and sealed. Carton labels FBA15X1U001-U012." },
-      { "kind": "packing_list", "refs": "FBA15X2 SKU-B", "from": "Harbor 3PL", "date": "2026-09-05", "subject": "Packing list FBA15X2", "body": "12 cartons. Carton 12 packed with 8 units: the supplier delivered 228 units of SKU-B to us, not 240. 228 units packed. We have asked Brightway for a credit on the 12 missing units." },
-      { "kind": "pod", "refs": "FBA15X1", "from": "Pacific Freight Lines", "date": "2026-09-03", "subject": "Proof of delivery FBA15X1", "body": "Delivered to Amazon BFI4 2026-09-03 09:40. 12 of 12 cartons, signed by J. Ruiz (AMZN BFI4). No damage noted." },
-      { "kind": "pod", "refs": "FBA15X2", "from": "Pacific Freight Lines", "date": "2026-09-11", "subject": "Proof of delivery FBA15X2", "body": "Delivered to Amazon BFI4 2026-09-11 14:05. 12 of 12 cartons, signed by M. Okafor (AMZN BFI4)." },
-      { "kind": "spec_sheet", "refs": "SKU-C", "from": "Brightway Mfg (Shenzhen)", "date": "2026-03-02", "subject": "Spec sheet SKU-C (packaged)", "body": "Packaged dimensions 10 x 8 x 3 in, packaged weight 1.1 lb." },
-      { "kind": "spec_sheet", "refs": "SKU-D", "from": "Brightway Mfg (Shenzhen)", "date": "2026-03-02", "subject": "Spec sheet SKU-D (packaged)", "body": "Packaged dimensions 7 x 5 x 2 in, packaged weight 0.6 lb." },
-      { "kind": "spec_sheet", "refs": "SKU-A", "from": "Brightway Mfg (Shenzhen)", "date": "2026-03-02", "subject": "Spec sheet SKU-A (packaged)", "body": "Packaged dimensions 6 x 4 x 2 in, packaged weight 0.5 lb." }
+      {
+        "kind": "invoice",
+        "refs": "FBA15X1 SKU-A",
+        "from": "Brightway Mfg (Shenzhen)",
+        "date": "2026-08-12",
+        "subject": "Invoice INV-SZ-3301, PO for FBA15X1",
+        "body": "SKU-A, 240 units at $9.00. Shipped to Amazon BFI4 in 12 cartons of 20."
+      },
+      {
+        "kind": "invoice",
+        "refs": "FBA15X2 SKU-B",
+        "from": "Brightway Mfg (Shenzhen)",
+        "date": "2026-08-20",
+        "subject": "Invoice INV-SZ-3318, PO for FBA15X2",
+        "body": "SKU-B, 240 units at $11.00. Shipped to Amazon BFI4 in 12 cartons of 20."
+      },
+      {
+        "kind": "invoice",
+        "refs": "FBA15W2 SKU-B",
+        "from": "Brightway Mfg (Shenzhen)",
+        "date": "2026-05-30",
+        "subject": "Invoice INV-SZ-3290, PO for FBA15W2",
+        "body": "SKU-B, 200 units at $11.00."
+      },
+      {
+        "kind": "packing_list",
+        "refs": "FBA15X1 SKU-A",
+        "from": "Harbor 3PL",
+        "date": "2026-08-28",
+        "subject": "Packing list FBA15X1",
+        "body": "12 cartons, 20 units each, 240 units of SKU-A packed and sealed. Carton labels FBA15X1U001-U012."
+      },
+      {
+        "kind": "packing_list",
+        "refs": "FBA15X2 SKU-B",
+        "from": "Harbor 3PL",
+        "date": "2026-09-05",
+        "subject": "Packing list FBA15X2",
+        "body": "12 cartons. Carton 12 packed with 8 units: the supplier delivered 228 units of SKU-B to us, not 240. 228 units packed. We have asked Brightway for a credit on the 12 missing units."
+      },
+      {
+        "kind": "pod",
+        "refs": "FBA15X1",
+        "from": "Pacific Freight Lines",
+        "date": "2026-09-03",
+        "subject": "Proof of delivery FBA15X1",
+        "body": "Delivered to Amazon BFI4 2026-09-03 09:40. 12 of 12 cartons, signed by J. Ruiz (AMZN BFI4). No damage noted."
+      },
+      {
+        "kind": "pod",
+        "refs": "FBA15X2",
+        "from": "Pacific Freight Lines",
+        "date": "2026-09-11",
+        "subject": "Proof of delivery FBA15X2",
+        "body": "Delivered to Amazon BFI4 2026-09-11 14:05. 12 of 12 cartons, signed by M. Okafor (AMZN BFI4)."
+      },
+      {
+        "kind": "spec_sheet",
+        "refs": "SKU-C",
+        "from": "Brightway Mfg (Shenzhen)",
+        "date": "2026-03-02",
+        "subject": "Spec sheet SKU-C (packaged)",
+        "body": "Packaged dimensions 10 x 8 x 3 in, packaged weight 1.1 lb."
+      },
+      {
+        "kind": "spec_sheet",
+        "refs": "SKU-D",
+        "from": "Brightway Mfg (Shenzhen)",
+        "date": "2026-03-02",
+        "subject": "Spec sheet SKU-D (packaged)",
+        "body": "Packaged dimensions 7 x 5 x 2 in, packaged weight 0.6 lb."
+      },
+      {
+        "kind": "spec_sheet",
+        "refs": "SKU-A",
+        "from": "Brightway Mfg (Shenzhen)",
+        "date": "2026-03-02",
+        "subject": "Spec sheet SKU-A (packaged)",
+        "body": "Packaged dimensions 6 x 4 x 2 in, packaged weight 0.5 lb."
+      }
     ]
   }
 }
