@@ -268,7 +268,7 @@ src/athena/
   daemon/                server.py, routes.py, sessions.py, ready.py
   channels/              mcp.py, voice/
   connectors/            port.py only; the connectors themselves live in the reference repository
-  proving/               the Gauntlet, model-played Characters, the Sandbox spike and the trigger page; section 9
+  proving/               the Gauntlet, model-played Characters, the Sandbox spike, the trigger page (section 9) and the playbook bench (section 14)
   wiring.py, cli.py
 constitution/            law.md, identity.md
 packages/athena-bridge/  inject.js, gate.js, protocol.md, test/
@@ -279,6 +279,7 @@ examples/                demo-kit/, ledgerbox/, hirelane/, tidycrm/, journey/ (A
 scripts/                 build-sidecar.py, sidecar_entry.py
 tests/                   core/, harness/, lane/, daemon/, test_contracts.py, test_ids_parity.py
 uat/                     Characters, journeys, rubric; the users the Proving Ground will play
+playbooks/               one directory per playbook: showcase, world, truth, latest bench (section 14)
 docs/                    design.md, adr/, demo.md, daemon.md, submission.md
 ```
 
@@ -724,6 +725,54 @@ Recorded as the prototypes run; each item names the run or call that showed it.
   quota, and a signed-in `nebius` CLI. Endpoint token auth is the platform's bearer header, so a
   page meant for browsers must run `--auth none` and do its own auth. `ai endpoint create`
   documents no health-check flag.
+
+## 14. Playbooks: what only Athena does
+
+A playbook is a chore worth real money that only an agent living in the person's own tabs can do:
+it spans portals no integration reaches, and it ends in something irreversible that wants a
+signature. Each one is data under `playbooks/<id>/` and earns its place on the desktop's
+Playbooks module by a run on the bench (ADR 0040).
+
+```bash
+uv run python -m athena.proving.playbooks check                          # every playbook loads
+uv run python -m athena.proving.playbooks bench fba-reimbursements --model sonnet --cap 5
+uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-runs/<ts>/playbook-fba-reimbursements/report.json
+```
+
+- **The files.** `playbook.json` is the showcase: persona, chore, command, portals, gates, traps,
+  economics with sources, edge scores and the expectation it is held to. `world.json` is the
+  portals as data: tools with honest flags, views, tables and the phases of the run. `truth.json`
+  is what a perfect run files and what looks eligible but is not; nothing but the scorer reads it.
+  `bench.json` is the latest measured run, committed.
+- **The bench.** A real Athena on a throwaway brain, on the person's own `claude` CLI, driven
+  through the daemon's own routes (`proving/world.py`). Each phase is one portal, as a turn is
+  pinned to one origin; what carries between portals is her memory. The simulated pages answer
+  host calls the way the desktop run loop does, bounded by its continuation limit; a "keep going"
+  nudge is decided from the bound, never from the truth.
+- **The score is read from cards.** Each card on a target tool is right, a duplicate, a trap, or
+  unfounded; traps avoided, exact amounts and the money found follow. A closing total in her own
+  words is audited against the cards, and the record wins.
+
+| Playbook | Portals | Edge (difficulty / usefulness) | Bench (2026-10-07, Claude Sonnet) |
+|---|---|---|---|
+| Amazon FBA reimbursements | Seller Central, supplier inbox | 4 / 4 | **exceeds**: 5 of 5 claims, $359.78 of $359.78, every amount exact, 14 of 14 traps avoided, 0 false claims; 8 turns, 2.0 min, $1.47 |
+
+What the FBA run showed, read from its transcript:
+
+- She refused the shipment that looked short when the 3PL's packing list showed the supplier had
+  packed short ("a credit to chase from Brightway, not a claim on Amazon"), and left out the AWD
+  transfer, the closed windows, the sellable returns and what Amazon had already paid.
+- The evidence crossed the tab switch: back in Seller Central she filed the inbound case citing the
+  invoice, the packing list and the proof of delivery she had read in the inbox.
+- What was not yet claimable she put on the calendar on the day its window opens: a removal on day
+  15, a refund on day 60, a remeasure after the 60-day limit rolls.
+- Her attempts to call the inbox's tools from the Seller Central tab were refused `origin_pinning`.
+- Her closing summary added the cards up to $392.98; they total $359.78. The cards were right and
+  the sentence was not, which is why the score and the module read the record.
+
+A playbook's portals are a model of the real ones: the bench proves her judgment on the data and
+the rules, not that a given site registers these tools. On a real site she reaches the same data
+through the generic hands (tier 2).
 
 ---
 

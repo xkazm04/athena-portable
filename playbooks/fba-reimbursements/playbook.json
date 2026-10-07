@@ -1,0 +1,103 @@
+{
+  "id": "fba-reimbursements",
+  "title": "Amazon FBA reimbursements",
+  "domain": "E-commerce",
+  "promise": "Every unit Amazon lost, short-received or overcharged, matched to your supplier's paperwork and filed as a case for your signature — with no contingency cut and no one else in your Seller Central.",
+  "persona": "An FBA seller doing $500k a year across a handful of SKUs",
+  "chore": "Once a month: download the inventory ledger, reimbursements, shipments, removals, returns and fee preview from Seller Central; match them against the supplier's invoices, the 3PL's packing lists and the freight proof of delivery; work out which gaps are Amazon's under rules that changed in 2024 and 2025; then open one case at a time in the Seller Central UI. Amazon offers no API to open a case, so every service that does this logs in as you.",
+  "command": "It's reimbursement day. Go through my Seller Central reports and find everything Amazon still owes me under its current rules, check the evidence in my supplier inbox, and file a case for each one that holds up — at the amount Amazon's rules allow.",
+  "apps": [
+    {
+      "name": "Seller Central",
+      "role": "the reports, the rules and the case form",
+      "api": "Cases cannot be opened by API",
+      "url": "https://sellercentral.amazon.com"
+    },
+    {
+      "name": "Supplier inbox",
+      "role": "invoices, 3PL packing lists, freight proof of delivery, spec sheets",
+      "api": "Documents, not data",
+      "url": "https://mail.google.com"
+    }
+  ],
+  "steps": [
+    "Reads Seller Central's own rules first: windows, valuation, what Amazon now pays automatically.",
+    "Walks the inbound shipments, removals, customer returns, reimbursements and fee preview, a page at a time.",
+    "Switches to the supplier inbox for the invoice, the packing list, the proof of delivery and the spec sheet each claim needs.",
+    "Rules out what is not Amazon's to pay: the supplier's own short shipment, a transfer that has its own path, a window not yet open or already closed.",
+    "Values each claim at the cost on file, nets off credits Amazon already applied, and files one case per claim — each a card."
+  ],
+  "gates": [
+    {
+      "action": "file_case",
+      "label": "Open a reimbursement case",
+      "why": "It reaches Amazon's support team under your account, and a weak or duplicate case costs credibility on the next one."
+    },
+    {
+      "action": "request_remeasure",
+      "label": "Request a remeasure and fee refund",
+      "why": "Amazon allows two remeasures per item in 60 days; spending one on a wrong guess blocks the right one."
+    }
+  ],
+  "traps": [
+    "A shipment Amazon received short — but the 3PL packing list shows the supplier packed short, so it is the supplier's debt, not Amazon's.",
+    "An AWD-to-FBA transfer that looks short: those are reconciled on their own path and have no supplier invoice.",
+    "A shipment still Receiving: a case filed now is closed, not queued.",
+    "A refund 22 days old: the return window has not run out, so the claim opens next month.",
+    "Returns and removals whose windows have already closed.",
+    "A lost unit and a refunded return Amazon has already reimbursed on its own — a second case is a duplicate.",
+    "A real fee overcharge on an item already remeasured twice in 60 days: blocked until the window rolls.",
+    "Inbound credits Amazon already applied, which must be netted off the units claimed."
+  ],
+  "memory": [
+    "The rules as they stand today, each cited to the help page and the date she read it.",
+    "SKU, FNSKU and supplier-invoice line aliases, and the manufacturing cost on file per SKU.",
+    "Every reference already claimed, so next month's sweep never files it twice.",
+    "The dates each pending window opens: this refund becomes claimable on 14 November."
+  ],
+  "economics": {
+    "value_usd": 5000,
+    "per": "year",
+    "manual_minutes": 300,
+    "incumbent": "Reimbursement services such as Getida and Seller Investigators keep about 25% of what they recover, Eva about 10%, and all of them need a user login to your Seller Central, because cases can only be filed in its UI.",
+    "sources": [
+      {
+        "label": "eComEngine: 1–3% of FBA revenue goes unreimbursed (vendor estimate)",
+        "url": "https://www.ecomengine.com/blog/fba-inventory-reimbursement"
+      },
+      {
+        "label": "Sellerboard, July 2026: what automation still misses",
+        "url": "https://blog.sellerboard.com/2026/07/14/amazon-fba-reimbursements-what-youre-owed-and-why-most-sellers-never-collect-it/"
+      },
+      {
+        "label": "SP-API Support API: cases can be listed and read, not created",
+        "url": "https://developer-docs.amazon/sp-api/docs/support-api"
+      },
+      {
+        "label": "EcomCrew: Getida's 25% contingency",
+        "url": "https://www.ecomcrew.com/getida-review/"
+      },
+      {
+        "label": "Riverbend: valuation moved to manufacturing cost in 2025",
+        "url": "https://riverbendconsulting.com/blog/amazon-reimbursement-policy-changes/"
+      },
+      {
+        "label": "Webgility: 4–6 hours per account per month by hand",
+        "url": "https://www.webgility.com/blog/amazon-lost-inventory-reimbursement"
+      }
+    ],
+    "incumbent_fee_pct": 25
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "UI-only case filing, evidence in two other systems, and a rulebook of windows and exclusions that changed twice in a year.",
+    "usefulness_why": "A recurring four-figure sum for an active seller, plus the 25% a service would keep."
+  },
+  "expectation": {
+    "recall": 0.8,
+    "false_claims": 0,
+    "minutes": 25,
+    "why": "A diligent person or a contingency service finds most of it; the bar is most of the money, no false case, inside a coffee break."
+  }
+}
