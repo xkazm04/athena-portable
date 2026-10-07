@@ -1,0 +1,586 @@
+/* The Playbooks module (ADR 0040): the edge map, the tiles, and one playbook's layer.
+ * Tokens only; the module never writes a width, a gutter or a scroll (the PageShell does). */
+
+.pb-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 46rem) minmax(16rem, 1fr);
+  gap: calc(var(--density-gap) * 1.5);
+  align-items: stretch;
+  padding: var(--density-pad);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--primary) 10%, transparent) 0%, transparent 55%),
+    var(--card-bg);
+  box-shadow: var(--shadow-elevation-1);
+}
+
+@media (max-width: 860px) {
+  .pb-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* -- the edge map ------------------------------------------------------------------------------ */
+.pb-map {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  min-width: 0;
+}
+
+.pb-map svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.pb-map__grid {
+  stroke: var(--border-subtle);
+  stroke-width: 1;
+}
+
+.pb-map__edge {
+  stroke: color-mix(in srgb, var(--primary) 50%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.pb-map__edge-label {
+  fill: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.pb-map__edge-note {
+  fill: var(--muted-foreground);
+  font-size: 11px;
+}
+
+.pb-map__tick {
+  fill: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pb-map__axis {
+  fill: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pb-map__mark {
+  cursor: pointer;
+  outline: none;
+}
+
+.pb-map__dot {
+  fill: var(--status-neutral);
+  fill-opacity: 0.85;
+  stroke: var(--background);
+  stroke-width: 2;
+  transition: fill-opacity var(--duration-fast) ease;
+}
+
+.pb-map__mark[data-verdict="exceeds"] .pb-map__dot {
+  fill: var(--status-success);
+}
+
+.pb-map__mark[data-verdict="meets"] .pb-map__dot {
+  fill: var(--status-info);
+}
+
+.pb-map__mark[data-verdict="short"] .pb-map__dot {
+  fill: var(--status-warning);
+}
+
+.pb-map__halo {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease;
+}
+
+.pb-map__mark:hover .pb-map__halo,
+.pb-map__mark:focus-visible .pb-map__halo,
+.pb-map__mark:hover .pb-map__label,
+.pb-map__mark:focus-visible .pb-map__label {
+  opacity: 1;
+}
+
+/* A mark on top while it is read, so its title is never under a neighbour. */
+.pb-map__mark:hover,
+.pb-map__mark:focus-visible {
+  filter: drop-shadow(0 0 6px var(--glow));
+}
+
+.pb-map__n {
+  fill: var(--background);
+  font-size: 12px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.pb-map__label {
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease;
+  pointer-events: none;
+  fill: var(--foreground);
+  font-size: 12px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: var(--card-bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.pb-map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.pb-map__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* -- the notes beside the map ------------------------------------------------------------------ */
+.pb-notes {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--density-gap);
+}
+
+.pb-notes__lede {
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.pb-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pb-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-interactive);
+  background: var(--recessed);
+}
+
+.pb-stats dt {
+  color: var(--muted-foreground);
+  white-space: normal;
+}
+
+.pb-stats__n {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* -- the grid of tiles -------------------------------------------------------------------------- */
+.pb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: var(--density-gap);
+}
+
+.pb-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.pb-chip--athena {
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+  color: var(--foreground);
+}
+
+.pb-chip--speed {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--status-success) 16%, transparent);
+  color: var(--foreground);
+}
+
+/* -- one playbook's layer ----------------------------------------------------------------------- */
+.pb-promise {
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  padding-left: 12px;
+  border-left: 3px solid var(--primary);
+}
+
+.pb-persona {
+  color: var(--muted-foreground);
+}
+
+.pb-command {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--role-human) 40%, transparent);
+  border-radius: var(--radius-interactive);
+  background: color-mix(in srgb, var(--role-human) 6%, var(--recessed));
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.pb-command::before {
+  content: "“";
+  margin-right: 2px;
+  color: var(--role-human);
+  font-weight: 700;
+}
+
+.pb-portals {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb-portal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-interactive);
+  background: var(--card-bg);
+}
+
+.pb-portal .btn {
+  margin-left: auto;
+}
+
+.pb-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.pb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb-list--traps li,
+.pb-list--memory li {
+  position: relative;
+  padding-left: 18px;
+}
+
+.pb-list--traps li::before,
+.pb-list--memory li::before {
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  content: "";
+}
+
+.pb-list--traps li::before {
+  background: var(--status-warning);
+  transform: rotate(45deg);
+}
+
+.pb-list--memory li::before {
+  border-radius: 50%;
+  background: var(--role-agent);
+}
+
+.pb-gate {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pb-gate__tag {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--role-human) 18%, transparent);
+  color: var(--foreground);
+  letter-spacing: 0.06em;
+}
+
+/* -- the proof ---------------------------------------------------------------------------------- */
+.pb-proof {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pb-proof__meter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pb-proof__big {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--status-success);
+}
+
+.pb-proof__bar {
+  display: block;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--recessed);
+  overflow: hidden;
+}
+
+.pb-proof__bar > span {
+  display: block;
+  width: var(--pct);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--status-success));
+}
+
+.pb-proof__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pb-proof__stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-interactive);
+  background: var(--recessed);
+}
+
+.pb-proof__stats dt {
+  color: var(--muted-foreground);
+  white-space: normal;
+}
+
+.pb-proof__stats .is-bad dd {
+  color: var(--status-error);
+}
+
+.pb-cards {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-interactive);
+  background: var(--recessed);
+}
+
+.pb-card {
+  display: grid;
+  grid-template-columns: auto minmax(7rem, auto) minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pb-card:last-child {
+  border-bottom: none;
+}
+
+.pb-card__v {
+  text-align: right;
+}
+
+.pb-card[data-outcome="trap"],
+.pb-card[data-outcome="unfounded"],
+.pb-card[data-outcome="forbidden"] {
+  background: color-mix(in srgb, var(--status-error) 8%, transparent);
+}
+
+.pb-quote {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--role-agent);
+  background: color-mix(in srgb, var(--role-agent) 6%, transparent);
+  border-radius: 0 var(--radius-interactive) var(--radius-interactive) 0;
+}
+
+.pb-quote blockquote {
+  margin: 0;
+  white-space: pre-line;
+}
+
+.pb-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.pb-sources a {
+  color: var(--accent);
+}
+
+.pb-meter {
+  display: grid;
+  grid-template-columns: minmax(10rem, auto) auto;
+  align-items: center;
+  gap: 2px 12px;
+}
+
+.pb-meter .typo-caption {
+  grid-column: 1 / -1;
+}
+
+.pb-meter__pips {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.pb-meter__pips > span {
+  width: 18px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--recessed);
+  border: 1px solid var(--border-subtle);
+}
+
+.pb-meter__pips > span[data-on] {
+  background: var(--primary);
+  border-color: transparent;
+}
+
+.pb-map__swatch {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border: 1px dashed color-mix(in srgb, var(--primary) 60%, transparent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.pb-tile-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+}
+
+.pb-rank {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--status-neutral);
+  color: var(--background);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.pb-rank[data-verdict="exceeds"] {
+  background: var(--status-success);
+}
+
+.pb-rank[data-verdict="meets"] {
+  background: var(--status-info);
+}
+
+.pb-rank[data-verdict="short"] {
+  background: var(--status-warning);
+}
+
+.pb-keep {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 10px 12px;
+  border: 1px dashed var(--border-emphasis);
+  border-radius: var(--radius-interactive);
+}
+
+.pb-keep > span:not(.pb-keep__vs) {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pb-keep .typo-label {
+  color: var(--muted-foreground);
+}
+
+.pb-keep__n {
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--status-success);
+}
+
+.pb-keep__n--them {
+  color: var(--foreground);
+  text-decoration: line-through;
+  text-decoration-color: var(--status-error);
+  text-decoration-thickness: 2px;
+}
+
+.pb-keep__vs {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.pb-audit {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-interactive);
+  background: color-mix(in srgb, var(--status-warning) 10%, transparent);
+}
+
+.pb-quote blockquote p + p,
+.pb-quote blockquote p + ul,
+.pb-quote blockquote ul + p {
+  margin-top: 6px;
+}
+
+.pb-prose-list {
+  margin: 4px 0 0;
+  padding-left: 1.1rem;
+}

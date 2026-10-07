@@ -21,6 +21,8 @@ and each file's header carries the argument for its own shape.
 | `Badge` | A small labelled pill. Its label is `--foreground` in every tone; the hue rides the `StatusDot` inside it. |
 | `StatusDot` | The hue of a state, beside the word that says the same thing. A graphic needs 3:1, not 4.5:1. |
 | `EmptyState` | "Nothing here yet": glyph, title, one line saying what would put something here, optional action. Not the same fact as "could not be read". |
+| `Tile` | One item on an overview grid, the whole of it one button: emblem, name, standing pill, an optional headline `figure`, one line, a foot. The only act an overview keeps is opening an item (ADR 0029). |
+| `Layer` | The second layer: a sheet from the right over a scrim, closed by Back, the scrim or Escape through one `onClose`, focus returned to its opener. `md` holds one form; `lg` holds a submodule, usually as `LayerColumns` (ADR 0029). |
 | `ModuleBar` | The thin band: the stamp-face mark, the module labels, and a presence pill that says what Athena is doing and summons her. Pure: a list, a selection, a presence, callbacks. Its height is a contract with `src-tauri/src/layout.rs`. Also exports `StampMark` and `BarIcon`. |
 
 ## Adding one

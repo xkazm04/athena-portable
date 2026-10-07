@@ -2,6 +2,10 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
+## Playbooks — the edge between difficulty and usefulness (in progress)
+
+- `feat(playbooks): a use case is data, proven on the gate by a real Athena, and the desktop shows the edge` — `playbooks/<id>/{playbook,world,truth,bench}.json`; `athena.proving.playbooks` (spec, simulated portals, bench, score from cards, prose audit, `check`/`bench`/`rescore`); the first playbook, Amazon FBA reimbursements, benched live (exceeds: 5 of 5, 14 of 14 traps avoided, $1.47); the Playbooks module with the edge map, tiles and a layer; `Tile` and `Layer` (ADR 0029's first callers); "Hand it to Athena" puts the command in her composer through `athena:offer`; ADR 0040.
+
 ## End to end — the seams, driven for the first time (in progress)
 
 - `fix(desktop): the panel never published a manifest, and three other seams the fakes hid` — `lib/manifest.ts` publishes the focused page's tools through `manifestOf`, without which `POST /run` refused every real turn `foreign_origin` before the stream opened; `GET /decisions` answers `pending`, not `decisions`; `TabTools` carries the app version a manifest needs; `apps/desktop/e2e/` drives the real client, run loop, connector store and voice socket against a real daemon on an ephemeral port.

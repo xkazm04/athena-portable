@@ -443,3 +443,10 @@ test("a collapse to the seal keeps drawing the ledger to fold it, but not a slip
   const settled = selectCompanion(inputs());
   expect(settled.exit).toBeNull();
 });
+
+test("a command Main offers becomes the composer's draft, and nothing is sent (ADR 0040)", () => {
+  expect(selectCompanion(inputs()).talk.draft).toEqual({ n: 0, text: "" });
+  const offered = selectCompanion(inputs({ offer: { n: 2, text: "It's reimbursement day." } }));
+  expect(offered.talk.draft).toEqual({ n: 2, text: "It's reimbursement day." });
+  expect(offered.talk.blocks).toEqual([]);
+});

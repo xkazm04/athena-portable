@@ -521,7 +521,9 @@ function Talk({ model }: { model: CompanionModel }) {
         <div ref={end} />
       </div>
       <form className="lg-compose" onSubmit={submit}>
-        <input name="message" aria-label="Message Athena" placeholder="Tell Athena what to do" autoComplete="off" disabled={!!talk.blocked} />
+        {/* Keyed by the offer, so a command Main hands over (ADR 0040) lands as the draft and the
+            person's own typing is never overwritten by a re-render. */}
+        <input key={talk.draft.n} name="message" aria-label="Message Athena" placeholder="Tell Athena what to do" autoComplete="off" defaultValue={talk.draft.text} autoFocus={talk.draft.n > 0} disabled={!!talk.blocked} />
         <button type="submit" className="aw-btn aw-btn-primary aw-btn-icon" aria-label="Send" disabled={!!talk.blocked}>
           <Icon name="send" />
         </button>

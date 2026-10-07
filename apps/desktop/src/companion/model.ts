@@ -284,6 +284,9 @@ export interface CompanionModel {
     /** Why the composer is disabled, in the app's own words. Empty when it is not. */
     blocked: string;
     host: string | null;
+    /** A command Main offered for the composer (ADR 0040). `n` changes with every offer, so the
+     *  composer takes a new one even when the text repeats. */
+    draft: { n: number; text: string };
   };
   record: RecordView;
   origins: {
@@ -328,6 +331,8 @@ export interface CompanionInputs {
   engine: string;
   /** The stored engine's id, and what the probe found (`null` until the daemon has answered). */
   engineId?: string;
+  /** The last command Main offered for her composer, if any. */
+  offer?: { n: number; text: string } | null;
   probes?: readonly EngineProbe[] | null;
   probing?: boolean;
   probeProblem?: string | null;
@@ -427,6 +432,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
       ready: i.daemonReady && i.origin !== null,
       blocked: blockedBecause(i.daemonReady, i.origin, busy),
       host: hostOf(i.origin),
+      draft: i.offer ?? { n: 0, text: "" },
     },
     record: recordView({
       calls: i.run.calls ?? i.run.transcript,

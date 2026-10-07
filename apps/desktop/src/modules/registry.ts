@@ -16,6 +16,7 @@ import type { ModuleEntry } from "./types";
 
 import { entry as browser } from "./browser";
 import { entry as connectors } from "./connectors";
+import { entry as playbooks } from "./playbooks";
 import { entry as setup } from "./setup";
 import { entry as voice } from "./voice";
 
@@ -23,8 +24,10 @@ import { entry as voice } from "./voice";
  * Athena's own window (ADR 0026). Voice sits after Setup (ADR 0028): Setup's letter is the first
  * act and asks for the two things a turn cannot run without; her voice is optional, comes after
  * it, and is the narrower configuration — and appending it leaves every existing position where
- * a returning hand expects it. */
-export const MODULE_ENTRIES: readonly ModuleEntry[] = [browser, connectors, setup, voice];
+ * a returning hand expects it. Playbooks sits beside the Browser (ADR 0040): it is the other
+ * thing the window does — the chores worth starting — and it reads, so it belongs before the
+ * configuration modules. */
+export const MODULE_ENTRIES: readonly ModuleEntry[] = [browser, playbooks, connectors, setup, voice];
 
 export const MODULE_REGISTRY: Readonly<Record<string, ModuleEntry>> = Object.fromEntries(
   MODULE_ENTRIES.map((m) => [m.id, m]),
