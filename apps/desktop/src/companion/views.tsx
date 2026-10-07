@@ -520,6 +520,15 @@ function Talk({ model }: { model: CompanionModel }) {
         {model.cards.length > 1 ? <p className="lg-foot">and {model.cards.length - 1} more waiting after this one</p> : null}
         <div ref={end} />
       </div>
+      {talk.project ? (
+        <p className="lg-project" role="status">
+          <span className="lg-project__label">Working on</span>
+          <span className="lg-project__title">{talk.project.title}</span>
+          <button type="button" className="aw-textbtn" aria-label={`Stop working on ${talk.project.title}`} onClick={actions.clearProject}>
+            done
+          </button>
+        </p>
+      ) : null}
       <form className="lg-compose" onSubmit={submit}>
         {/* Keyed by the offer, so a command Main hands over (ADR 0040) lands as the draft and the
             person's own typing is never overwritten by a re-render. */}

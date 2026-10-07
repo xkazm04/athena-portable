@@ -2098,3 +2098,29 @@ body.athena {
 .aw .wl:has(.wl-engine[data-engine="missing"]) .wl-stamp {
   display: none;
 }
+
+/* The active playbook (ADR 0044): one line above the composer, on her paper, that says what every
+   turn is working toward and lets the person end it. */
+.lg-project {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--paper-ink);
+  background: rgba(0, 0, 0, 0.04);
+  font-size: 13px;
+  color: var(--paper-ink);
+}
+.lg-project__label {
+  color: var(--paper-ink-2);
+  font-weight: 600;
+}
+.lg-project__title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

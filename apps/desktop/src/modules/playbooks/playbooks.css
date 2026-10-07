@@ -584,3 +584,26 @@
   margin: 4px 0 0;
   padding-left: 1.1rem;
 }
+
+.pb-runs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-left: 2px solid var(--border-default);
+}
+
+.pb-run {
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0 3px 10px;
+  opacity: 0.7;
+}
+
+.pb-run[data-latest] {
+  opacity: 1;
+}

@@ -110,7 +110,12 @@ export default function PlaybooksView({
               <Button variant="secondary" onClick={() => model.actions.copy(current.playbook.command)}>
                 Copy the command
               </Button>
-              <Button variant="primary" onClick={() => model.actions.hand(current.playbook.command)}>
+              <Button variant="primary" onClick={() =>
+                  model.actions.hand(current.playbook.command, {
+                    id: current.playbook.id,
+                    title: current.title,
+                  })
+                }>
                 Hand it to Athena
               </Button>
             </>
@@ -438,7 +443,7 @@ function Proof({ view }: { view: PlaybookView }) {
               <span className="typo-code">{c.key || c.action}</span>
               <span className="typo-caption">{c.why || o.word}</span>
               <span className="pb-card__v typo-data">
-                {c.valueUsd !== null ? usd(c.valueUsd) : ""}
+                {c.valueUsd ? usd(c.valueUsd) : ""}
               </span>
             </li>
           );
@@ -466,12 +471,43 @@ function Proof({ view }: { view: PlaybookView }) {
           {`Her summary says ${usd(b.proseAudit.saidUsd)} in total; the cards she filed add up to ${usd(b.proseAudit.recordUsd)}. The record is what you sign, so the record is what counts.`}
         </p>
       ) : null}
+      {b.history.length ? <Runs bench={b} /> : null}
       <p className="typo-caption">
         Scored from the cards the gate filed, against answers Athena never saw. Nothing was sent:
         every card waited for a signature.
         {b.rescoredAt ? ` Rescored ${b.rescoredAt.slice(0, 10)} from the run's own cards.` : ""}
       </p>
     </SectionCard>
+  );
+}
+
+/** Every run of this playbook, oldest first and the latest last: the story, not only the score. */
+function Runs({ bench }: { bench: Bench }) {
+  const latest = {
+    runAt: bench.runAt,
+    model: bench.model,
+    verdict: bench.verdict.word,
+    found: bench.found,
+    eligible: bench.eligible,
+    valueFoundUsd: bench.valueFoundUsd,
+    falseClaims: bench.falseClaims,
+    note: bench.note,
+  };
+  const tone = { exceeds: "success", meets: "info", short: "warning" } as const;
+  return (
+    <ol className="pb-runs" aria-label="Every run of this playbook">
+      {[...bench.history, latest].map((r, i, all) => (
+        <li key={`${r.runAt}-${i}`} className="pb-run" data-latest={i === all.length - 1 ? "1" : undefined}>
+          <StatusDot tone={tone[r.verdict]} />
+          <span className="typo-data">{r.runAt.slice(5, 16).replace("T", " ")}</span>
+          <span className="typo-label">{r.verdict}</span>
+          <span className="typo-caption">
+            {`${r.found} of ${r.eligible}, ${usd(r.valueFoundUsd)}, ${r.falseClaims} false`}
+            {r.note ? ` — ${r.note}` : ""}
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }
 

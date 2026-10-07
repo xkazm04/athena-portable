@@ -167,6 +167,8 @@ export interface TurnBody {
   host_state?: Record<string, unknown>;
   tool_results?: Array<Record<string, unknown>>;
   project_id?: string;
+  /** The person's active project, rendered in every turn's frame: a playbook's title and goal. */
+  active_project?: Record<string, unknown>;
   surface?: string;
   /**
    * Catalog origins (`host:<app_id>`) the user has switched off; the daemon's gate refuses a call

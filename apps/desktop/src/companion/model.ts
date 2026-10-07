@@ -43,6 +43,8 @@ export interface CompanionActions {
   /** Esc: put the slip away, close the ledger, leave the welcome page. */
   esc: () => void;
   send: (message: string) => void;
+  /** Stop working on the active playbook (ADR 0044). */
+  clearProject: () => void;
   clear: () => void;
   pin: () => void;
   tab: (tab: LedgerTab) => void;
@@ -69,6 +71,7 @@ export const NO_ACTIONS: CompanionActions = {
   decline: () => {},
   esc: () => {},
   send: () => {},
+  clearProject: () => {},
   clear: () => {},
   pin: () => {},
   tab: () => {},
@@ -287,6 +290,8 @@ export interface CompanionModel {
     /** A command Main offered for the composer (ADR 0040). `n` changes with every offer, so the
      *  composer takes a new one even when the text repeats. */
     draft: { n: number; text: string };
+    /** The playbook she is working on, sent with every turn; `null` when none (ADR 0044). */
+    project: { title: string } | null;
   };
   record: RecordView;
   origins: {
@@ -333,6 +338,8 @@ export interface CompanionInputs {
   engineId?: string;
   /** The last command Main offered for her composer, if any. */
   offer?: { n: number; text: string } | null;
+  /** The active playbook, if any. */
+  project?: { title: string } | null;
   probes?: readonly EngineProbe[] | null;
   probing?: boolean;
   probeProblem?: string | null;
@@ -433,6 +440,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
       blocked: blockedBecause(i.daemonReady, i.origin, busy),
       host: hostOf(i.origin),
       draft: i.offer ?? { n: 0, text: "" },
+      project: i.project ? { title: i.project.title } : null,
     },
     record: recordView({
       calls: i.run.calls ?? i.run.transcript,

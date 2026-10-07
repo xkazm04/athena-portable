@@ -28,8 +28,9 @@ export interface PlaybookActions {
   copy: (text: string) => void;
   /** Open a portal or a source in a Browser tab. */
   open: (url: string) => void;
-  /** Put the command in Athena's composer and bring her up; the person presses send. */
-  hand: (text: string) => void;
+  /** Put the command in Athena's composer and make the playbook her active project; the person
+   *  presses send (ADR 0044). */
+  hand: (text: string, playbook: { id: string; title: string }) => void;
 }
 
 export interface Verdict {
@@ -124,6 +125,7 @@ export function verdictOf(bench: Bench | null): Verdict {
 
 export const OUTCOME_WORDS: Record<CardOutcome, { word: string; tone: Tone }> = {
   correct: { word: "Right claim", tone: "success" },
+  neutral: { word: "Fair either way", tone: "info" },
   duplicate: { word: "Duplicate", tone: "warning" },
   trap: { word: "Fell for a trap", tone: "error" },
   unfounded: { word: "Unfounded", tone: "error" },

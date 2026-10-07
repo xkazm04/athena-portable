@@ -123,6 +123,8 @@ export const OFFER_EVENT = "athena:offer";
 
 export interface Offer {
   text: string;
+  /** When the command is a playbook's, which one: it becomes her active project (ADR 0044). */
+  playbook?: { id: string; title: string };
 }
 
 /**
@@ -130,9 +132,9 @@ export interface Offer {
  * window and presses send, so the turn starts with their act, not Main's. Without a shell this
  * rejects like every other command (`lib/ipc.ts`).
  */
-export async function athenaOffer(text: string): Promise<void> {
+export async function athenaOffer(text: string, playbook?: Offer["playbook"]): Promise<void> {
   if (!hasShell()) throw new Error("Athena's window is only there in the app.");
-  await emitTo("athena", OFFER_EVENT, { text } satisfies Offer);
+  await emitTo("athena", OFFER_EVENT, (playbook ? { text, playbook } : { text }) satisfies Offer);
   await athenaShow();
 }
 

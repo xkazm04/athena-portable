@@ -142,6 +142,14 @@ export interface RunDeps {
   now?: () => Date;
 }
 
+/** A playbook the person handed over: her active project on every turn until cleared (ADR 0044). */
+export interface ActivePlaybook {
+  id: string;
+  title: string;
+  /** The playbook's command, which is the goal every tab's turn works toward. */
+  goal: string;
+}
+
 export interface RunState {
   phase: RunPhase;
   transcript: TranscriptEntry[];
@@ -161,6 +169,10 @@ export interface RunState {
   answered: AnsweredDecision[];
   /** What earlier windows kept, read once at start. `null` until the store has answered. */
   earlier: EarlierRecord | null;
+  /** The playbook she is working on, sent as the active project with every turn (ADR 0044). */
+  project: ActivePlaybook | null;
+  /** Set or clear it. Clear (the transcript) does not touch it: it is the person's selection. */
+  setProject: (project: ActivePlaybook | null) => void;
   send: (message: string) => Promise<void>;
   /**
    * Answer a card. The card stays until the daemon says it took the answer; `settled` is called the
@@ -187,6 +199,7 @@ export const EMPTY = {
   refusals: {} as Record<string, string>,
   answered: [] as AnsweredDecision[],
   earlier: null as EarlierRecord | null,
+  project: null as ActivePlaybook | null,
 };
 
 /** The production wiring: the daemon store for the endpoint, the tabs store for the page. */
@@ -274,6 +287,15 @@ export function disabledOriginsOf(
 }
 
 /** `2026-10-01 10:08:07`, UTC, the way the store writes a stamp. */
+/** The turn body's `active_project` for a playbook, or nothing when none is active (ADR 0044). */
+export function activeProject(
+  project: ActivePlaybook | null,
+): { active_project?: Record<string, string> } {
+  return project
+    ? { active_project: { kind: "playbook", id: project.id, title: project.title, goal: project.goal } }
+    : {};
+}
+
 export function stampOf(date: Date): string {
   return date.toISOString().slice(0, 19).replace("T", " ");
 }
@@ -506,6 +528,7 @@ export const useRun = create<RunState>((set, get) => {
         host_state: deps.hostState(),
         tool_results: carried,
         disabled_origins: deps.disabledOrigins?.() ?? [],
+        ...activeProject(get().project),
       })) {
         await apply(event);
         if (isTerminal(event)) break;
@@ -708,6 +731,10 @@ export const useRun = create<RunState>((set, get) => {
       }
     },
 
+    setProject(project) {
+      set({ project });
+    },
+
     clear() {
       outstanding = [];
       proposed = new Map();
@@ -722,6 +749,7 @@ export const useRun = create<RunState>((set, get) => {
         refusals: keep.refusals,
         answered: keep.answered,
         earlier: keep.earlier,
+        project: keep.project,
       });
     },
   };

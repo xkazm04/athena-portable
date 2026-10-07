@@ -450,3 +450,9 @@ test("a command Main offers becomes the composer's draft, and nothing is sent (A
   expect(offered.talk.draft).toEqual({ n: 2, text: "It's reimbursement day." });
   expect(offered.talk.blocks).toEqual([]);
 });
+
+test("the active playbook is named above the composer, and absent when there is none (ADR 0044)", () => {
+  expect(selectCompanion(inputs()).talk.project).toBeNull();
+  const working = selectCompanion(inputs({ project: { title: "Amazon FBA reimbursements" } }));
+  expect(working.talk.project).toEqual({ title: "Amazon FBA reimbursements" });
+});

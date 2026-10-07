@@ -23,8 +23,10 @@ const ACTIONS: PlaybookActions = {
       console.error(`[playbooks] copy: ${String(error)}`);
     });
   },
-  hand: (text) => {
-    void athenaOffer(text).catch((error: unknown) => console.error(`[playbooks] hand: ${String(error)}`));
+  hand: (text, playbook) => {
+    void athenaOffer(text, playbook).catch((error: unknown) =>
+      console.error(`[playbooks] hand: ${String(error)}`),
+    );
   },
   open: (url) => {
     void useShell

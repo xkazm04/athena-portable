@@ -319,8 +319,9 @@ export default function Live() {
     if (!hasShell()) return;
     let off: (() => void) | null = null;
     let alive = true;
-    onOffer(({ text }) => {
+    onOffer(({ text, playbook }) => {
       setOffer((prev) => ({ n: (prev?.n ?? 0) + 1, text }));
+      if (playbook) useRun.getState().setProject({ id: playbook.id, title: playbook.title, goal: text });
       rt.dispatch({ t: "open" });
       rt.dispatch({ t: "tab", tab: "talk" });
     })
@@ -342,6 +343,7 @@ export default function Live() {
     esc: () => rt.dispatch({ t: "esc" }),
     send: (message) => void run.send(message).catch(report("send")),
     clear: () => run.clear(),
+    clearProject: () => run.setProject(null),
     pin: () => rt.dispatch({ t: "pin" }),
     tab: (tab) => rt.dispatch({ t: "tab", tab }),
     open: () => rt.dispatch({ t: "open" }),
@@ -385,6 +387,7 @@ export default function Live() {
     probeProblem,
     onboarded,
     offer,
+    project: run.project,
     actions,
   });
 

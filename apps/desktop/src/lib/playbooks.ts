@@ -65,6 +65,7 @@ export interface Expectation {
 
 export type CardOutcome =
   | "correct"
+  | "neutral"
   | "duplicate"
   | "trap"
   | "unfounded"
@@ -107,9 +108,25 @@ export interface Bench {
   proseAudit: { saidUsd: number; recordUsd: number; agrees: boolean } | null;
   /** The run was scored again later against a newer measure, without re-running it. */
   rescoredAt: string;
+  /** What changed since the run before, in a sentence; "" when nothing was said. */
+  note: string;
+  /** Earlier runs, oldest first. */
+  history: readonly RunLine[];
   cards: readonly BenchCard[];
   missed: readonly { action: string; key: string; valueUsd: number | null }[];
   closingWords: string;
+}
+
+/** One earlier run of a playbook, in a line. */
+export interface RunLine {
+  runAt: string;
+  model: string;
+  verdict: VerdictWord;
+  found: number;
+  eligible: number;
+  valueFoundUsd: number;
+  falseClaims: number;
+  note: string;
 }
 
 export interface Playbook {
@@ -146,6 +163,7 @@ const strings = (v: unknown): string[] => list(v).filter((s): s is string => typ
 
 const OUTCOMES: readonly CardOutcome[] = [
   "correct",
+  "neutral",
   "duplicate",
   "trap",
   "unfounded",
@@ -191,6 +209,21 @@ function parseBench(raw: unknown): Bench | null {
         }
       : null,
     rescoredAt: str(raw.rescored_at),
+    note: str(raw.note),
+    history: list(raw.history)
+      .filter(isRaw)
+      .map((h) => ({
+        runAt: str(h.run_at),
+        model: str(h.model),
+        verdict: (VERDICTS as readonly string[]).includes(str(h.verdict))
+          ? (str(h.verdict) as VerdictWord)
+          : "short",
+        found: num(h.found),
+        eligible: num(h.eligible),
+        valueFoundUsd: num(h.value_found_usd),
+        falseClaims: num(h.false_claims),
+        note: str(h.note),
+      })),
     cards: list(raw.cards)
       .filter(isRaw)
       .map((c) => ({
