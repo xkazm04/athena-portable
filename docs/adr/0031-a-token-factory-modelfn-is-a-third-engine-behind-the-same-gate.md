@@ -73,9 +73,10 @@ The comment beside the constant says how to check it.
 
 **Cost is an estimate from a table, or it is omitted.** `PRICES` maps a model to USD per million
 input and output tokens. A known model writes `cost_usd` with `cost_estimated = true`. A model
-missing from the table writes no cost at all, never 0, because a 0 would be believed. Super's
-$0.30 / $0.90 is the list price as third-party price trackers quote it for Token Factory and has
-not been checked against Nebius's pricing page.
+missing from the table writes no cost at all, never 0, because a 0 would be believed. The
+figures are read from Token Factory's own `GET /v1/models?verbose=true`, which carries per-token
+pricing. Lightning (`LIGHTNING_MODEL`, $0.06 / $0.24) is the first rung a measured role is tried on,
+and Super ($0.30 / $0.90) is the default and the escalation.
 
 **No extra.** The engine needs nothing outside the standard library, so `pyproject.toml` gains no
 `nebius` extra. An empty extra would suggest an install step that does not exist.

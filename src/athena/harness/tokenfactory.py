@@ -40,6 +40,7 @@ __all__ = [
     "DEFAULT_BASE_URL",
     "DEFAULT_MODEL",
     "ENGINE",
+    "LIGHTNING_MODEL",
     "PRICES",
     "REQUEST_TIMEOUT_S",
     "HttpPost",
@@ -60,18 +61,23 @@ API_KEY_ENV = "NEBIUS_API_KEY"
 #: example is ``POST https://api.tokenfactory.nebius.com/v1/chat/completions`` with a bearer key.
 DEFAULT_BASE_URL = "https://api.tokenfactory.nebius.com/v1/"
 
-#: Nemotron 3 Super. The id is the one Nebius's own announcement of the model on Token Factory
-#: uses; it has not been read back from the live catalog, because no key was available when this
-#: was written. Verify with ``GET {DEFAULT_BASE_URL}models`` and the bearer key, and change it
-#: here — this is the only place it is spelled.
+#: Nemotron 3 Super. Read back from the live catalog (``GET {DEFAULT_BASE_URL}models``) on
+#: 2026-10-07; this is the only place the default is spelled.
 DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b"
 
-#: USD per one million (input, output) tokens. Every figure is an *estimate* — the ledger row says
-#: so with ``cost_estimated`` — and a model missing from the table has its cost omitted, never
-#: written as 0. Super's figure is the public list price as third-party price trackers quote it
-#: for Token Factory; check it against the Token Factory pricing page before trusting a total.
+#: The cheapest NVIDIA model Token Factory serves: the first rung a Proving Ground role is tried
+#: on before it is escalated to :data:`DEFAULT_MODEL` (ADR 0030, "assume mediocre until measured").
+LIGHTNING_MODEL = "nvidia/Nemotron-3_5-Lightning"
+
+#: USD per one million (input, output) tokens, read from ``GET /v1/models?verbose=true`` on
+#: 2026-10-07 (``pricing.prompt`` / ``pricing.completion`` are per token). Still an *estimate* for
+#: the ledger — ``cost_estimated`` says so, because list prices move — and a model missing from
+#: the table has its cost omitted, never written as 0.
 PRICES: dict[str, tuple[float, float]] = {
+    LIGHTNING_MODEL: (0.06, 0.24),
+    "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B": (0.06, 0.24),
     DEFAULT_MODEL: (0.30, 0.90),
+    "nvidia/Nemotron-3-Ultra-550b-a55b": (1.00, 3.00),
 }
 
 #: One HTTP round may take this long. A wall for a hung connection, not a thinking budget.

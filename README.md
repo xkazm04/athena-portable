@@ -377,10 +377,11 @@ uv run athena serve --engine nebius --model <any Token Factory model id>
 - **Setup.** `GET /engines` reports `nebius` as found when `NEBIUS_API_KEY` is set. It checks only
   that the key exists and makes no call.
 
-*Status:* built and covered by offline tests that use a synthetic Token Factory reply. The default
-model id and the price ($0.30 / $0.90 per 1M input/output tokens) have not been checked against
-the live `/v1/models` catalog or the Token Factory pricing page. The live smoke test
-(`pytest -m provider`) runs only when `NEBIUS_API_KEY` is set.
+*Status:* built. Offline tests use a synthetic Token Factory reply. The live smoke test
+(`pytest -m provider -k live`, only with `NEBIUS_API_KEY` set) passes one real turn on each rung of
+the model ladder: Nemotron 3.5 Lightning ($0.06 / $0.24 per 1M input/output tokens), the first and
+cheapest, and Nemotron 3 Super ($0.30 / $0.90), the escalation if Lightning's quality is too poor.
+Model ids and prices were read from the live `GET /v1/models?verbose=true` on 2026-10-07.
 
 ### The Proving Ground roles (planned)
 

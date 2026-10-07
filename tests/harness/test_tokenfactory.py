@@ -41,6 +41,7 @@ from athena.harness.ports import ModelChunk, ModelRequest, stream_of
 from athena.harness.tokenfactory import (
     DEFAULT_BASE_URL,
     DEFAULT_MODEL,
+    LIGHTNING_MODEL,
     HttpReply,
     TokenFactoryModel,
     estimate_cost,
@@ -443,12 +444,14 @@ def test_athena_serve_builds_the_nebius_engine_behind_the_one_gate(tmp_path: Pat
 
 @pytest.mark.provider
 @pytest.mark.skipif(not os.environ.get("NEBIUS_API_KEY"), reason="NEBIUS_API_KEY is not set")
-def test_live_one_turn_against_nemotron_super(
-    catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger
+@pytest.mark.parametrize("model", [LIGHTNING_MODEL, DEFAULT_MODEL])
+def test_live_one_turn_against_nemotron(
+    model: str, catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger
 ) -> None:
-    """One real turn. Costs a fraction of a cent; never runs without the key."""
+    """One real turn per rung of the ladder; a fraction of a cent, and never without the key."""
     harness = build_harness(
         "nebius",
+        model=model,
         gate=GateHook(catalog, approvals),
         ledger=LedgerHook(ledger),
         truncation=TruncationHook(),
@@ -461,4 +464,6 @@ def test_live_one_turn_against_nemotron_super(
     assert events[-1].kind == "turn.finished", events[-1]
     row = ledger.rows[0]
     assert row.fields["engine"] == "nebius"
+    assert row.fields["model"] == model
     assert row.fields["input_tokens"] > 0 and row.fields["output_tokens"] > 0
+    assert row.fields["cost_usd"] is not None and row.fields["cost_usd"] > 0
