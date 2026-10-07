@@ -25,6 +25,9 @@ from typing import Any
 
 import pytest
 
+from athena.channels.voice.config import VoiceStudio
+from athena.channels.voice.home import EngineHomes
+from athena.connectors.seal import FileSeal
 from athena.contracts.manifest import HostManifest, HostTool
 from athena.core.brain import Brain
 from athena.daemon.server import (
@@ -250,7 +253,21 @@ def transport() -> ScriptedTransport:
 
 
 @pytest.fixture
-def local(tmp_path: Path, transport: ScriptedTransport) -> Iterator[AthenaLocal]:
+def studio(tmp_path: Path) -> VoiceStudio:
+    """The voice studio over an empty engine home and an empty environment, so no test reads the
+    machine's real Personas install or picks up a provider key from the shell (ADR 0028)."""
+    return VoiceStudio(
+        tmp_path / "voice",
+        homes=EngineHomes(tmp_path / "personas"),
+        seal=FileSeal(tmp_path / "voice" / "sealed"),
+        environ={},
+    )
+
+
+@pytest.fixture
+def local(
+    tmp_path: Path, transport: ScriptedTransport, studio: VoiceStudio
+) -> Iterator[AthenaLocal]:
     with build_local(
         brain_root=tmp_path / "brain",
         engine=ENGINE,
@@ -258,6 +275,7 @@ def local(tmp_path: Path, transport: ScriptedTransport) -> Iterator[AthenaLocal]
         transport=lambda dialect: transport,
         workspace=tmp_path / "engine",
         session_id="daemon",
+        voice_studio=studio,
     ) as built:
         yield built
 

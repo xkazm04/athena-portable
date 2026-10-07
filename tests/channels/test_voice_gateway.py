@@ -50,11 +50,25 @@ def test_an_origin_cors_would_not_allow_may_not_open_a_socket(voiced: Live) -> N
     assert json.loads(refused.value.body)["reason"] == "foreign_origin"
 
 
-def test_a_daemon_with_no_backend_has_no_socket(live: Live) -> None:
-    with pytest.raises(HandshakeError) as refused:
-        connect(live.host, live.port, VOICE_PATH, token=TOKEN)
-    assert refused.value.status == 404
-    assert live.request("/health").body["sockets"] == []
+def test_a_daemon_whose_voice_is_not_set_up_still_has_the_socket_and_says_why(live: Live) -> None:
+    """ADR 0028: the socket is always there; a ``start`` with nothing to hear on is refused with
+    ``engine_error`` and the studio's own first sentence, and no turn runs."""
+    assert live.request("/health").body["sockets"] == [VOICE_PATH]
+    reason = live.request("/voice/config").body["reason"]
+    assert reason and reason.startswith("Kokoro is not installed")
+    ws = connect(live.host, live.port, VOICE_PATH, token=TOKEN, origin=SHELL_ORIGIN)
+    client = VoiceClient(ws)
+    try:
+        client.start()
+        refused = client.until("turn.error")
+        assert refused["reason"] == "engine_error"
+        assert refused["detail"] == reason
+        client.chunks()
+        client.stop()
+        _settle()
+        assert client.kinds() == ["turn.error"]
+    finally:
+        client.close()
 
 
 def test_health_names_the_socket(voiced: Live) -> None:
@@ -221,6 +235,9 @@ def test_a_reply_longer_than_the_cap_is_spoken_truncated_and_announced(
     assert speaking["truncated"] is True
     total = len(long.strip())
     assert speaking["text"].endswith(f"(showing {TTS_CAP} of {total})")
+    # ``voice.speaking`` goes out before the backend is first pulled; the line is the backend's
+    # record only once playback has run, so read it after the stop, not racing the speaker.
+    client.until("voice.stopped", generation=speaking["generation"])
     assert backend.spoken == [speaking["text"]]
 
 

@@ -84,7 +84,9 @@ __all__ = [
     "PENDING_LINES",
     "PLAYBOOK_KINDS",
     "SSE_CONTENT_TYPE",
+    "BinaryReply",
     "EventStream",
+    "RawRequest",
     "Reply",
     "Request",
     "Route",
@@ -187,7 +189,28 @@ class EventStream:
     status: int = 200
 
 
-RouteFn = Callable[[Request], "Reply | EventStream"]
+@dataclass(frozen=True)
+class RawRequest(Request):
+    """A request to a path in :attr:`AthenaDaemon.raw_paths`: the body as bytes, unparsed."""
+
+    raw: bytes = b""
+
+
+@dataclass(frozen=True)
+class BinaryReply:
+    """A route's answer as bytes with a content type, and headers a browser may read.
+
+    The voice studio's preview is the one today (ADR 0028): PCM out, with the provider, the voice
+    and the time it took as headers the server exposes to a cross-origin reader.
+    """
+
+    status: int
+    body: bytes = b""
+    content_type: str = "application/octet-stream"
+    headers: Mapping[str, str] = field(default_factory=dict)
+
+
+RouteFn = Callable[[Request], "Reply | EventStream | BinaryReply"]
 
 
 @dataclass(frozen=True)

@@ -42,7 +42,7 @@ import queue
 import struct
 import threading
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
@@ -80,6 +80,7 @@ if TYPE_CHECKING:
 __all__ = [
     "CONTINUE_MESSAGE",
     "MAX_CONTINUATIONS",
+    "NOT_SET_UP",
     "RESULT_TIMEOUT_S",
     "VOICE_PATH",
     "VoiceGateway",
@@ -103,14 +104,46 @@ MAX_CONTINUATIONS = 8
 CONTINUE_MESSAGE = "(the tools you called have answered; continue)"
 
 
+#: What a ``start`` is refused with when no backend is set up and the studio gave no reason.
+NOT_SET_UP = "Athena's voice is not set up yet; open the voice studio."
+
+
 @dataclass
 class VoiceGateway:
-    """One backend, bound to one daemon. Called once per accepted socket, on the handler thread."""
+    """One backend slot, bound to one daemon. Called once per accepted socket, on the handler
+    thread.
+
+    **The slot is swappable** (ADR 0028). The studio calls :meth:`swap` when the choice or the
+    engine home changes, and every connection sees the new backend from its next utterance and
+    its next spoken line. What already started keeps what it started with: a transcriber is taken
+    when the key goes down and a line's backend when it starts playing, so a swap never cuts a
+    sentence in half or hands half an utterance to a different engine. An empty slot is a socket
+    that is open and says why it cannot hear — ``turn.error`` with ``engine_error`` and the
+    studio's reason — rather than no socket at all.
+    """
 
     daemon: AthenaDaemon
-    backend: VoiceBackend
+    backend: VoiceBackend | None
     result_timeout_s: float = RESULT_TIMEOUT_S
     max_continuations: int = MAX_CONTINUATIONS
+    #: Why :attr:`backend` is empty, in the studio's words. ``None`` while there is a backend.
+    reason: str | None = None
+    #: Asked to look again when a ``start`` finds the slot empty — the studio's refresh — so an
+    #: engine installed since the last look (by Personas, beside this daemon) is heard on the
+    #: next press rather than after someone opens the studio.
+    recheck: Callable[[], object] | None = None
+
+    def __post_init__(self) -> None:
+        self._slot = threading.Lock()
+
+    def swap(self, backend: VoiceBackend | None, reason: str | None = None) -> None:
+        with self._slot:
+            self.backend = backend
+            self.reason = None if backend is not None else (reason or NOT_SET_UP)
+
+    def current(self) -> tuple[VoiceBackend | None, str | None]:
+        with self._slot:
+            return self.backend, self.reason
 
     def __call__(self, ws: WebSocket, request: Request) -> None:
         VoiceSession(self, ws).serve()
@@ -231,12 +264,20 @@ class VoiceSession:
         interrupted = self.speaking
         if interrupted:
             self.interrupt()
+        backend, reason = self.gateway.current()
+        if backend is None and self.gateway.recheck is not None:
+            self.gateway.recheck()
+            backend, reason = self.gateway.current()
+        if backend is None:
+            self._utterance = None
+            self.send(TurnError(reason="engine_error", detail=reason or NOT_SET_UP))
+            return
         fields = self._job_fields(body)
         self._utterance = _Utterance(
             origin=fields["origin"],
             host_state=fields["host_state"],
             project_id=fields["project_id"],
-            transcriber=self.gateway.backend.transcriber(),
+            transcriber=backend.transcriber(),
             interrupted=interrupted,
         )
 
@@ -333,7 +374,6 @@ class VoiceSession:
         return generation
 
     def _speak_loop(self) -> None:
-        backend = self.gateway.backend
         while True:
             item = self._speech.get()
             if item is None:
@@ -344,7 +384,11 @@ class VoiceSession:
                     continue
                 self._playing = generation
             reason = "done"
+            # Taken per line: a swap lands between two lines, never inside one.
+            backend, _ = self.gateway.current()
             try:
+                if backend is None:
+                    raise VoiceBackendError("no voice backend is set up")
                 self.send(
                     VoiceSpeaking(
                         generation=generation,

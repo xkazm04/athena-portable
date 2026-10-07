@@ -97,6 +97,15 @@ def test_the_table_ships_every_route_the_daemon_answers(daemon: AthenaDaemon) ->
         "GET /ledger/rollup",
         "GET /playbooks",
         "POST /decisions/<id>",
+        # The voice studio's, added by wiring after the base table (ADR 0028).
+        "GET /voice/config",
+        "PUT /voice/config",
+        "POST /voice/preview",
+        "POST /voice/transcribe",
+        "POST /voice/install",
+        "GET /voice/install",
+        "PUT /voice/key",
+        "DELETE /voice/key",
     ]
 
 

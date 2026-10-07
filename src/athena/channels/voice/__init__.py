@@ -13,6 +13,16 @@ Five files, each one thing (ADR 0019):
 - :mod:`athena.channels.voice.gateway` — the socket's life: a reader, a worker that runs the
   ordinary browser-lane turn, a speaker, and barge-in by generation counter.
 
+And the studio that picks the backend (ADR 0028):
+
+- :mod:`athena.channels.voice.home` — where the local engines live (the home Personas shares)
+  and how a probe tells absent from broken from ready.
+- :mod:`athena.channels.voice.kokoro` — speech out through Kokoro's sherpa-onnx sidecar.
+- :mod:`athena.channels.voice.whisper` — speech in through ``whisper-cli``.
+- :mod:`athena.channels.voice.install` — the one-click installers and their progress.
+- :mod:`athena.channels.voice.config` — the saved choice, the probes, the sealed key, and the
+  live swap of the gateway's backend.
+
 Voice is a transport and not a feature. Nothing here decides policy, and a spoken "approve"
 answers a card through the same route as a button.
 """
@@ -20,22 +30,31 @@ answers a card through the same route as a button.
 from athena.channels.voice.backends import (
     BACKENDS,
     INPUT_SAMPLE_RATE,
+    BufferedTranscriber,
+    ComposedBackend,
+    Listener,
     OpenAIBackend,
     ScriptedBackend,
+    Speaker,
     Transcriber,
     VoiceBackend,
     VoiceBackendError,
     backend_from_name,
 )
 from athena.channels.voice.commands import Card, Spoken, recognise
+from athena.channels.voice.config import ConfigError, VoiceChoice, VoiceStudio
 from athena.channels.voice.gateway import (
     CONTINUE_MESSAGE,
     MAX_CONTINUATIONS,
+    NOT_SET_UP,
     RESULT_TIMEOUT_S,
     VOICE_PATH,
     VoiceGateway,
     VoiceSession,
 )
+from athena.channels.voice.home import EngineHomes, EngineProbe, resolve_homes
+from athena.channels.voice.install import Installer, InstallState
+from athena.channels.voice.kokoro import KokoroTTS
 from athena.channels.voice.tts import TTS_CAP, SpokenLine, spoken_line
 from athena.channels.voice.ws import (
     MAX_FRAME_BYTES,
@@ -54,27 +73,41 @@ __all__ = [
     "INPUT_SAMPLE_RATE",
     "MAX_CONTINUATIONS",
     "MAX_FRAME_BYTES",
+    "NOT_SET_UP",
     "PROTOCOL_PREFIX",
     "RESULT_TIMEOUT_S",
     "TTS_CAP",
     "VOICE_PATH",
+    "BufferedTranscriber",
     "Card",
+    "ComposedBackend",
+    "ConfigError",
+    "EngineHomes",
+    "EngineProbe",
     "HandshakeError",
+    "InstallState",
+    "Installer",
+    "KokoroTTS",
+    "Listener",
     "Message",
     "OpenAIBackend",
     "ScriptedBackend",
+    "Speaker",
     "Spoken",
     "SpokenLine",
     "Transcriber",
     "VoiceBackend",
     "VoiceBackendError",
+    "VoiceChoice",
     "VoiceGateway",
     "VoiceSession",
+    "VoiceStudio",
     "WebSocket",
     "WebSocketError",
     "accept_key",
     "backend_from_name",
     "connect",
     "recognise",
+    "resolve_homes",
     "spoken_line",
 ]

@@ -31,9 +31,9 @@ describe("GET /health", () => {
 
     expect(health.ok).toBe(true);
     expect(health.engine).toBe("claude_code");
-    // The daemon that starts with no voice backend registers no socket at all, which is the
-    // fact `stores/voice.ts` reads to decide whether the push-to-talk key does anything.
-    expect(health.sockets).toEqual([]);
+    // The voice socket is always registered (ADR 0028); whether the key does anything is
+    // `GET /voice/config`'s `ready`, which `stores/voice.ts` reads.
+    expect(health.sockets).toEqual(["/voice"]);
     expect(health.pending).toEqual({ showing: 0, total: 0, footer: "" });
   });
 

@@ -35,6 +35,7 @@ from pathlib import Path
 from typing import Any
 
 from athena.channels.voice.backends import VoiceBackend
+from athena.channels.voice.config import VoiceStudio
 from athena.channels.voice.gateway import VOICE_PATH, VoiceGateway
 from athena.connectors.service import Service, services_for
 from athena.connectors.vault import Vault
@@ -55,6 +56,7 @@ from athena.lane.turn_frame import FrameBuilder
 
 __all__ = [
     "ENGINE_DIRNAME",
+    "VOICE_DIRNAME",
     "AthenaLocal",
     "TransportFactory",
     "build_local",
@@ -67,6 +69,10 @@ __all__ = [
 #: brain under ``$ATHENA_HOME``, never the brain itself and never a checkout. A CLI engine has no
 #: business in either: one is the user's memory and the other is source it could be asked to edit.
 ENGINE_DIRNAME = "engine"
+
+#: Where the voice studio keeps its choice (``config.json``) and the sealed provider key — a sibling
+#: of the brain under ``$ATHENA_HOME``, like the engine's directory (ADR 0028).
+VOICE_DIRNAME = "voice"
 
 TransportFactory = Callable[[CliDialect], Transport]
 """How a dialect is actually run. ``SubprocessTransport`` in production, a scripted one in a test.
@@ -165,6 +171,8 @@ class AthenaLocal:
     daemon: AthenaDaemon
     #: The connector vault, or ``None`` for a deployment with none (README §4).
     vault: Vault | None = None
+    #: The voice studio behind ``/voice`` and the ``/voice/*`` routes (ADR 0028).
+    voice: VoiceStudio | None = None
 
     def close(self) -> None:
         """Close the brain and cancel any consent flow. Everything else holds no handle."""
@@ -192,6 +200,8 @@ def build_local(
     extra_args: tuple[str, ...] | None = None,
     voice: VoiceBackend | None = None,
     vault: Vault | None = None,
+    voice_studio: VoiceStudio | None = None,
+    voice_off: bool = False,
 ) -> AthenaLocal:
     """Assemble one local Athena: brain, tables, law, catalog, gate, engine, lane, daemon.
 
@@ -203,9 +213,13 @@ def build_local(
     pin per app as manifests arrive (``POST /manifest`` → :meth:`AthenaDaemon.pin`), because what
     a session may address is a fact about this process and not a configuration file.
 
-    ``voice`` is the backend that hears and speaks on ``/voice``. ``None`` — the default, and
-    what a machine with no provider key gets — registers no socket at all, so the daemon has no
-    voice channel rather than one that fails on the first utterance (ADR 0019).
+    ``/voice`` is always registered (ADR 0028), and what hears and speaks on it is the voice
+    studio's: ``voice_studio`` — by default one rooted at ``$ATHENA_HOME/voice`` beside the brain,
+    reading the engine home Personas shares — composes a backend from the saved choice and swaps
+    it in live; while the choice is not ready the socket is open and refuses a ``start`` with the
+    reason. ``voice`` pins a backend over the choice (``--voice-backend openai``, a test's scripted
+    one) and ``voice_off`` pins nothing at all (``--voice-backend none``); either way the studio's
+    routes still answer and a saved choice waits for the pin to go.
 
     ``vault`` is the connector vault (README §4, ADR 0021). When one is given, structural policy
     asks it whether a connector is live on every call, each live connector's tools are merged
@@ -276,8 +290,8 @@ def build_local(
         engine=engine,
         model=model,
     )
-    if voice is not None:
-        daemon.sockets.add(VOICE_PATH, VoiceGateway(daemon, voice))
+    studio = voice_studio or VoiceStudio(brain.root.parent / VOICE_DIRNAME)
+    _wire_voice(daemon, studio, voice, voice_off)
     if vault is not None:
         _wire_connectors(daemon, catalog, vault)
     return AthenaLocal(
@@ -294,7 +308,22 @@ def build_local(
         lane=lane,
         daemon=daemon,
         vault=vault,
+        voice=studio,
     )
+
+
+def _wire_voice(
+    daemon: AthenaDaemon, studio: VoiceStudio, pinned: VoiceBackend | None, off: bool
+) -> None:
+    """The socket, its backend slot fed by the studio, and the studio's routes (ADR 0028)."""
+    from athena.daemon.voice import RAW_PATHS, voice_routes
+
+    gateway = VoiceGateway(daemon, None)
+    studio.attach(gateway, pinned=pinned, off=off)
+    daemon.sockets.add(VOICE_PATH, gateway)
+    for route in voice_routes(daemon, studio):
+        daemon.routes.add(route)
+    daemon.raw_paths.update(RAW_PATHS)
 
 
 def _wire_connectors(daemon: AthenaDaemon, catalog: Catalog, vault: Vault) -> None:

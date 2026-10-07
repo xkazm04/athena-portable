@@ -17,8 +17,10 @@ says what rate it speaks at through :attr:`VoiceBackend.sample_rate`, because th
 agree and the surface plays whatever it is told.
 
 **No provider is mandatory (README §2, invariant 5).** The provider backend imports nothing but
-the standard library and reads its key from the environment; without a key the daemon starts
-with no voice channel rather than with a broken one, and ``/health`` says so.
+the standard library. Which backend ``/voice`` uses is the voice studio's to compose (ADR 0028,
+:mod:`athena.channels.voice.config`): one :class:`Speaker` and one :class:`Listener`, chosen
+separately, behind :class:`ComposedBackend` — local Kokoro and whisper.cpp by default, the provider
+for hearing when a person picks it and its key is sealed or in the environment.
 """
 
 from __future__ import annotations
@@ -31,7 +33,7 @@ import urllib.error
 import urllib.request
 import uuid
 import wave
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
@@ -39,9 +41,13 @@ __all__ = [
     "BACKENDS",
     "INPUT_SAMPLE_RATE",
     "OPENAI_KEY_ENV",
+    "BufferedTranscriber",
+    "ComposedBackend",
+    "Listener",
     "OpenAIBackend",
     "ScriptedBackend",
     "ScriptedTranscriber",
+    "Speaker",
     "Transcriber",
     "VoiceBackend",
     "VoiceBackendError",
@@ -54,9 +60,11 @@ INPUT_SAMPLE_RATE = 16_000
 
 OPENAI_KEY_ENV = "OPENAI_API_KEY"
 
-#: The names ``--voice-backend`` accepts. ``auto`` picks the first provider whose key is set and
-#: ``none`` starts the daemon with no voice channel at all.
-BACKENDS: tuple[str, ...] = ("auto", "openai", "none")
+#: The names ``--voice-backend`` accepts. ``config`` — the default — is the studio's choice in
+#: ``ATHENA_HOME/voice/config.json`` (ADR 0028), switchable live; ``auto`` is its old name and means
+#: the same. ``openai`` pins the provider for both directions over whatever the studio chose, and
+#: ``none`` starts the daemon with no voice channel at all, which is what a scripted test wants.
+BACKENDS: tuple[str, ...] = ("config", "auto", "openai", "none")
 
 
 class VoiceBackendError(Exception):
@@ -90,6 +98,55 @@ class VoiceBackend(Protocol):
 
     def synthesize(self, text: str) -> Iterator[bytes]:
         """PCM16 mono at :attr:`sample_rate`, in chunks a player can start on."""
+
+
+@runtime_checkable
+class Speaker(Protocol):
+    """The speaking half alone: what the studio picks as a TTS engine."""
+
+    @property
+    def name(self) -> str: ...
+
+    @property
+    def sample_rate(self) -> int: ...
+
+    def synthesize(self, text: str) -> Iterator[bytes]: ...
+
+
+@runtime_checkable
+class Listener(Protocol):
+    """The hearing half alone: what the studio picks as an STT engine."""
+
+    @property
+    def name(self) -> str: ...
+
+    def transcriber(self) -> Transcriber: ...
+
+
+@dataclass
+class ComposedBackend:
+    """One speaker and one listener, chosen separately, behind the one :class:`VoiceBackend` port.
+
+    The gateway never learns there are two — it asks one backend to hear and to speak — and the
+    studio can pick Kokoro to speak and the provider to hear without either knowing of the other.
+    """
+
+    speaker: Speaker
+    listener: Listener
+
+    @property
+    def name(self) -> str:
+        return f"{self.speaker.name}+{self.listener.name}"
+
+    @property
+    def sample_rate(self) -> int:
+        return self.speaker.sample_rate
+
+    def transcriber(self) -> Transcriber:
+        return self.listener.transcriber()
+
+    def synthesize(self, text: str) -> Iterator[bytes]:
+        return self.speaker.synthesize(text)
 
 
 # --- scripted, for tests ------------------------------------------------------------------------
@@ -156,11 +213,15 @@ class ScriptedBackend:
 # --- one provider ---------------------------------------------------------------------------------
 
 
-class _BufferedTranscriber:
-    """Collects the utterance and transcribes it whole on ``finish`` — no partials."""
+class BufferedTranscriber:
+    """Collects the utterance and transcribes it whole on ``finish`` — no partials.
 
-    def __init__(self, backend: OpenAIBackend) -> None:
-        self._backend = backend
+    Any one-request speech-to-text fits behind it: the provider here, and a local engine that
+    takes a file (:mod:`athena.channels.voice.whisper`).
+    """
+
+    def __init__(self, transcribe: Callable[[bytes], str]) -> None:
+        self._transcribe = transcribe
         self._chunks: list[bytes] = []
 
     def feed(self, pcm: bytes) -> Sequence[str]:
@@ -173,7 +234,7 @@ class _BufferedTranscriber:
         # Under a tenth of a second is a key tapped by mistake, not a sentence.
         if len(audio) < INPUT_SAMPLE_RATE * 2 // 10:
             return ""
-        return self._backend.transcribe(audio)
+        return self._transcribe(audio)
 
 
 @dataclass
@@ -188,7 +249,8 @@ class OpenAIBackend:
     wire anywhere but the ``Authorization`` header of these two requests.
     """
 
-    api_key: str
+    #: Never in a repr: a dataclass prints its fields, and a traceback prints a repr.
+    api_key: str = field(repr=False)
     stt_model: str = "gpt-4o-mini-transcribe"
     tts_model: str = "gpt-4o-mini-tts"
     voice: str = "alloy"
@@ -204,7 +266,7 @@ class OpenAIBackend:
         return "openai"
 
     def transcriber(self) -> Transcriber:
-        return _BufferedTranscriber(self)
+        return BufferedTranscriber(self.transcribe)
 
     def transcribe(self, pcm: bytes) -> str:
         wav = io.BytesIO()
@@ -280,15 +342,16 @@ class OpenAIBackend:
 def backend_from_name(name: str, environ: dict[str, str] | None = None) -> VoiceBackend | None:
     """The backend ``--voice-backend`` asked for, or ``None`` for no voice channel.
 
-    ``auto`` is the default and means "whichever provider has a key in the environment, else
-    none" — so a machine with no key starts a daemon with no ``/voice`` rather than a daemon whose
-    ``/voice`` fails on the first utterance. Asking for a provider by name without its key raises,
-    naming the variable and nothing else.
+    ``config`` and ``none`` are ``None`` here: the first is the studio's to compose
+    (``athena serve`` never asks this function for it), the second is no channel. ``auto`` keeps
+    its old meaning for a caller that still asks — the provider when its key is in the
+    environment, else ``None``.
+    Asking for a provider by name without its key raises, naming the variable and nothing else.
     """
     env = os.environ if environ is None else environ
     if name not in BACKENDS:
         raise ValueError(f"unknown voice backend {name!r}; expected one of {', '.join(BACKENDS)}")
-    if name == "none":
+    if name in ("none", "config"):
         return None
     key = env.get(OPENAI_KEY_ENV, "")
     if key:

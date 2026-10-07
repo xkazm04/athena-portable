@@ -32,6 +32,7 @@ from daemon.conftest import (  # noqa: F401 - fixtures are used by name
     daemon,
     live,
     local,
+    studio,
     transport,
 )
 
@@ -47,10 +48,15 @@ def backend() -> ScriptedBackend:
 
 @pytest.fixture
 def voiced(live: Live, backend: ScriptedBackend) -> Live:  # noqa: F811 - the fixture
-    """The live daemon with ``/voice`` registered on the scripted backend."""
-    live.daemon.sockets.add(
-        VOICE_PATH, VoiceGateway(live.daemon, backend, result_timeout_s=RESULT_TIMEOUT_S)
-    )
+    """The live daemon with ``/voice``'s slot holding the scripted backend.
+
+    The socket is always registered (ADR 0028); what a test changes is the backend in it, through
+    the same :meth:`VoiceGateway.swap` the studio uses.
+    """
+    gateway = live.daemon.sockets.get(VOICE_PATH)
+    assert isinstance(gateway, VoiceGateway)
+    gateway.swap(backend)
+    gateway.result_timeout_s = RESULT_TIMEOUT_S
     return live
 
 

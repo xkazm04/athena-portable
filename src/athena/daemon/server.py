@@ -38,6 +38,12 @@ path in :attr:`AthenaDaemon.sockets` is checked for the token exactly like every
 — from the header, or from the ``athena-token.<token>`` subprotocol a browser page can send when
 it cannot set a header — and then handed the socket for as long as the peer keeps it (ADR 0019).
 CORS does not fence a WebSocket, so an ``Origin`` that is not allowed is refused outright.
+
+**A few routes speak bytes.** The voice studio (ADR 0028) posts raw PCM to be transcribed and
+gets raw PCM back from a preview. A path in :attr:`AthenaDaemon.raw_paths` is handed its body
+unparsed as a :class:`RawRequest` — under its own, larger cap — and a route may answer with a
+:class:`BinaryReply`, whose own headers are exposed to a cross-origin reader. Everything else about
+the request — the token first, CORS, one request per connection — is the same.
 """
 
 from __future__ import annotations
@@ -69,7 +75,9 @@ from athena.daemon.ready import announce, failure_line, ready_line
 from athena.daemon.routes import (
     ENGINES_TTL_S,
     SSE_CONTENT_TYPE,
+    BinaryReply,
     EventStream,
+    RawRequest,
     Reply,
     Request,
     RouteTable,
@@ -88,6 +96,7 @@ __all__ = [
     "DEFAULT_PORT",
     "EXTENSION_SCHEME",
     "MAX_BODY_BYTES",
+    "MAX_RAW_BODY_BYTES",
     "TOKEN_FILENAME",
     "TOKEN_HEADER",
     "AthenaDaemon",
@@ -112,10 +121,13 @@ TOKEN_HEADER = "X-Athena-Token"
 #: Where a minted token is kept when ``--token-file`` did not name somewhere else.
 TOKEN_FILENAME = "daemon.json"
 EXTENSION_SCHEME = "chrome-extension://"
-ALLOWED_METHODS = "GET, POST, OPTIONS"
+ALLOWED_METHODS = "GET, POST, PUT, DELETE, OPTIONS"
 #: The largest body a route may be handed. A manifest is kilobytes; this is a cap on nonsense,
 #: refused before anything is read into memory.
 MAX_BODY_BYTES = 1_048_576
+#: The cap for a raw body (:attr:`AthenaDaemon.raw_paths`): two minutes of 16 kHz PCM16 mono,
+#: which is longer than anyone holds a push-to-talk key.
+MAX_RAW_BODY_BYTES = 4 * MAX_BODY_BYTES
 #: How much of a body the handler has already refused it will read and throw away, so that the
 #: refusal reaches the caller instead of aborting the caller's own write. Eight times the cap: an
 #: honest client that sent one manifest too many is answered, and a client that keeps talking
@@ -218,6 +230,8 @@ class AthenaDaemon:
     #: The WebSocket paths. Empty until wiring registers a channel — ``/voice`` when a voice
     #: backend is configured — so a daemon with no backend has no socket to fail on.
     sockets: SocketTable = field(default_factory=SocketTable)
+    #: Exact paths whose body is bytes rather than JSON (:class:`RawRequest`).
+    raw_paths: set[str] = field(default_factory=set)
     #: Per-engine binary overrides for ``GET /engines`` (tests; a non-default install).
     engine_executables: Mapping[str, str] = field(default_factory=dict)
     #: Taken only around the engine probe and its cache -- never the writer lock, so a probe
@@ -325,6 +339,23 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
 
         def _fail(self, reply: Reply) -> None:
             self._send(*reply)
+
+        def _send_bytes(self, answer: BinaryReply) -> None:
+            self.send_response(answer.status)
+            self._cors()
+            if answer.headers and config.cors_allows(self.headers.get("Origin") or ""):
+                # Without this a cross-origin page can read the body and not the provenance.
+                self.send_header("Access-Control-Expose-Headers", ", ".join(answer.headers))
+            for name, value in answer.headers.items():
+                self.send_header(name, value)
+            if answer.status != 204:
+                self.send_header("Content-Type", answer.content_type)
+            self.send_header("Content-Length", str(len(answer.body)))
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.close_connection = True
+            if answer.body:
+                self.wfile.write(answer.body)
 
         def _stream(self, answer: EventStream) -> None:
             """Write one Server-Sent Event stream, frame by frame (ADR 0012).
@@ -451,6 +482,19 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
                 return None
             return payload if isinstance(payload, dict) else None
 
+        def _raw_body(self) -> bytes | None:
+            """The body as bytes, ``b""`` for none, ``None`` when it is over the raw cap."""
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                return None
+            if length <= 0:
+                return b""
+            if length > MAX_RAW_BODY_BYTES:
+                self._discard(length)
+                return None
+            return self.rfile.read(length)
+
         def _discard(self, length: int) -> None:
             """Read and throw away up to :data:`DRAIN_LIMIT` bytes of a refused body.
 
@@ -489,6 +533,12 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
         def do_POST(self) -> None:
             self._dispatch("POST")
 
+        def do_PUT(self) -> None:
+            self._dispatch("PUT")
+
+        def do_DELETE(self) -> None:
+            self._dispatch("DELETE")
+
         def _dispatch(self, method: str) -> None:
             # The token is checked before the path is matched, so an unauthenticated caller
             # cannot map the daemon's routes by comparing a 404 against a 401.
@@ -501,23 +551,36 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
                 status = 405 if daemon.routes.knows(url.path) else 404
                 self._fail(error(status, "unknown", f"no route for {method} {url.path}"))
                 return
-            body = self._body()
-            if body is None:
-                self._fail(error(400, "parse_error", "body must be a JSON object"))
-                return
-            request = Request(
-                method=method,
-                path=url.path,
-                query={k: v[0] for k, v in parse_qs(url.query).items() if v},
-                body=body,
-                origin=self.headers.get("Origin") or "",
-            )
+            query = {k: v[0] for k, v in parse_qs(url.query).items() if v}
+            origin = self.headers.get("Origin") or ""
+            request: Request
+            if url.path in daemon.raw_paths:
+                raw = self._raw_body()
+                if raw is None:
+                    self._fail(
+                        error(400, "validator_failed", f"body over {MAX_RAW_BODY_BYTES} bytes")
+                    )
+                    return
+                request = RawRequest(
+                    method=method, path=url.path, query=query, origin=origin, raw=raw
+                )
+            else:
+                body = self._body()
+                if body is None:
+                    self._fail(error(400, "parse_error", "body must be a JSON object"))
+                    return
+                request = Request(
+                    method=method, path=url.path, query=query, body=body, origin=origin
+                )
             try:
                 answer = route.fn(request)
             except Exception as exc:  # a route's bug is a 500, never a dropped connection
                 # The type only: an exception's message can quote a request body, and a body
                 # may hold anything the caller put in it.
                 self._fail(error(500, "unknown", type(exc).__name__))
+                return
+            if isinstance(answer, BinaryReply):
+                self._send_bytes(answer)
                 return
             if isinstance(answer, EventStream):
                 # Nothing has been produced yet: a streaming route returns before its first
@@ -605,12 +668,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--voice-backend",
-        default="auto",
+        default="config",
         choices=list(VOICE_BACKENDS),
-        help="who hears and speaks on /voice: auto picks the provider whose key is set, "
-        "none starts the daemon without a voice channel",
+        help="who hears and speaks on /voice: config (or auto) is the voice studio's choice, "
+        "switchable live; openai pins the provider; none leaves the socket without a backend",
     )
     return parser
+
+
+def _voice_name(daemon: AthenaDaemon) -> str:
+    """What the ready line says is behind ``/voice``: the backend's name, or ``none``."""
+    from athena.channels.voice.gateway import VOICE_PATH, VoiceGateway
+
+    gateway = daemon.sockets.get(VOICE_PATH)
+    backend = gateway.backend if isinstance(gateway, VoiceGateway) else None
+    return backend.name if backend is not None else "none"
 
 
 def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) -> int:
@@ -629,10 +701,18 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
     args = build_parser().parse_args(None if argv is None else list(argv))
     try:
         token, token_file = resolve_token(args.token, args.token_file)
-        voice = backend_from_name(args.voice_backend)
+        # ``config`` and ``auto`` are the studio's (ADR 0028) and ``none`` is no backend at all;
+        # any other name — ``openai``, or a test harness's — is a pin, built here.
+        studied = args.voice_backend in ("config", "auto", "none")
+        voice = None if studied else backend_from_name(args.voice_backend)
         vault = None if args.no_connectors else Vault()
         local = build_local(
-            brain_root=args.brain, engine=args.engine, model=args.model, voice=voice, vault=vault
+            brain_root=args.brain,
+            engine=args.engine,
+            model=args.model,
+            voice=voice,
+            vault=vault,
+            voice_off=args.voice_backend == "none",
         )
     except (OSError, ValueError) as exc:
         announce(failure_line("unknown", f"{type(exc).__name__}: {exc}"), stream)
@@ -658,7 +738,7 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
             token_file=config.token_file,
             engine=config.engine,
             brain=str(local.brain.root),
-            voice=voice.name if voice is not None else "none",
+            voice=_voice_name(local.daemon),
         ),
         stream,
     )

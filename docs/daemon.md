@@ -23,6 +23,11 @@ the token on every route), ADR 0012 (one turn is one SSE stream of channel event
 | `GET /ledger/rollup?by=` | spend and errors summed on one dimension | read |
 | `GET /playbooks?origin=` | the procedurals the brain has distilled about one origin | read |
 | `GET /voice` + `Upgrade: websocket` | the voice channel: PCM16 in, events and audio out | writer, per turn |
+| `GET`/`PUT /voice/config` | the chosen speaker and listener, every engine's standing, `ready` and why not | read / writer |
+| `POST /voice/preview` | one line spoken by the chosen voice, raw PCM16 with `X-Tts-*` provenance | read |
+| `POST /voice/transcribe?engine=` | one take (PCM16, 16 kHz) through one listener, with its milliseconds | read |
+| `POST`/`GET /voice/install` | install Kokoro or a Whisper model into the shared engine home; its progress | writer / read |
+| `PUT`/`DELETE /voice/key?provider=` | seal or destroy a cloud listener's key; never echoed | writer |
 | `GET /connectors` | every connector spec with its connection record, never a credential | read |
 | `POST /connectors/<id>/connect` | a pasted token, or an OAuth client that starts the consent flow | writer |
 | `POST /connectors/<id>/flow` | where the consent flow stands | read |
@@ -273,9 +278,12 @@ Stop the daemon with `kill %1`, and delete `demo-brain/` and `demo-engine/` to s
 
 `GET /voice` with `Upgrade: websocket` is the same door with the same token: from the header, or
 — for a browser page that cannot set one — as the subprotocol `athena-token.<token>`, which the
-server echoes. An `Origin` CORS would not allow is refused with `foreign_origin`. It exists only
-when the daemon was started with a voice backend (`--voice-backend auto` finds one whose key is
-in the environment; `none` starts without it), and `/health` lists it under `sockets` (ADR 0019).
+server echoes. An `Origin` CORS would not allow is refused with `foreign_origin`. It is always
+registered (ADR 0028): its backend is the speaker and listener chosen in the Voice module and held
+in `ATHENA_HOME/voice/config.json`, swapped live by `PUT /voice/config`. While the chosen engines are
+not ready, a `start` is refused with `engine_error` and the reason `GET /voice/config` gives.
+`--voice-backend openai` pins the environment-key provider and `none` leaves the slot empty; both are
+for tests and the scripted harness (ADR 0019).
 
 **The client sends** text frames of JSON and binary frames of audio:
 
