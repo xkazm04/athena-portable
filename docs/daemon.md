@@ -88,6 +88,12 @@ ADR 0031). A `nebius` row says `engine: "nebius"`, and its `cost_usd` comes from
 `cost_estimated: true`. A model missing from the table has no cost, not a cost of 0. An unknown
 `--engine` fails on the failure line before a socket is bound.
 
+On `nebius`, Nemotron reasons before it answers, and that is the default. `--no-nebius-thinking`
+sends Token Factory's one reasoning switch (`chat_template_kwargs.enable_thinking=false`). A turn
+then runs about 3.5 times faster on Lightning (1.7 s against 6.1 s median), but Lightning often
+replies with an `OP:` line and no prose. In ADR 0035's A/B, 24 of 112 turns had no text without
+reasoning, against 3 of 112 with it. On Super the switch cost nothing measurable.
+
 ## The stream
 
 `POST /run` answers `text/event-stream`. One channel event is one frame: `event:` carries the

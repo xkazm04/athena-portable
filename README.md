@@ -482,6 +482,20 @@ uv run athena serve --engine nebius --model <any Token Factory model id>
   with a reason from the closed `ERROR_REASONS` set. The key never appears in an error message.
 - **Setup.** `GET /engines` reports `nebius` as found when `NEBIUS_API_KEY` is set. It checks only
   that the key exists and makes no call.
+- **Reasoning.** Nemotron reasons before it answers. That is the default, and
+  `--no-nebius-thinking` turns it off with Token Factory's one honoured switch
+  (`chat_template_kwargs.enable_thinking=false`). The roles turn it off (below), but the engine
+  keeps it on, because Athena answers a person rather than a schema. In a same-seed A/B on
+  Lightning (112 turns per arm: 72 Gauntlet attacks and 40 plain questions), turning reasoning off
+  made turns about 3.5 times faster (1.7 s against 6.1 s median under attack) and about 40%
+  cheaper. Turns with no text rose from 3 to 24, because without reasoning Lightning answers plain
+  questions with an `OP:` line and nothing said. On Super, the switch cost nothing measurable
+  (0 of 56 turns without text, against 1 of 56), and it is recorded but not yet the default
+  (ADR 0035).
+
+```bash
+uv run athena serve --engine nebius --no-nebius-thinking   # faster; Lightning may answer with only an op
+```
 
 *Status:* built. Offline tests use a synthetic Token Factory reply. The live smoke test
 (`pytest -m provider -k live`, only with `NEBIUS_API_KEY` set) passes one real turn on each rung of
@@ -503,8 +517,9 @@ is not served by Token Factory, so no role uses it; the control judges attack va
 | User simulator: plays mira, jonas, priya and ana from `uat/characters` | Lightning (held its proof; Super not needed) | Claude Haiku judges fidelity, blind | built |
 | Judge: scores conversations against `uat/rubric.md`, nonce-fenced | Super (Lightning failed agreement, rho 0.18) | Claude Haiku, judging the same transcripts blind | built |
 
-Every Nemotron role sends `chat_template_kwargs: {"enable_thinking": false}`, the only
-reasoning switch Token Factory honoured in a five-way probe (ADR 0034).
+Every Nemotron role sends `chat_template_kwargs: {"enable_thinking": false}`, the only reasoning
+switch Token Factory honoured in a five-way probe (ADR 0034). Athena under test does not, unless
+she is started with `--no-nebius-thinking` (ADR 0035).
 
 A judge never sets a verdict on its own and never decides whether something is gated; the gate is
 the policy (invariant 3). Open weights matter here for one reason: a run against a pinned open
@@ -570,7 +585,16 @@ Recorded as the prototypes run; each item names the run or call that showed it.
   reminder "was sent". It was a pending card; the user had only said "approve" in chat. Haiku
   scored that transcript 2 to 3 and named the pending card.
 - Athena-on-Nemotron with reasoning on (the `nebius` engine) returned an empty answer on 4 of 30
-  turns ("the answer held no text").
+  Characters turns ("the answer held no text"). Turning reasoning off does not fix it. In a
+  same-seed A/B on Lightning (ADR 0035, 112 turns per arm), turns with no text rose from 3 to 24.
+  Without reasoning, Lightning answers "Give me a two-line reminder to chase a late invoice
+  politely" with only `OP: {"op":"propose_action","action":"host.ledgerbox.draft_reminder",
+  "params":{"invoice":"",...}}`: a tool call with an empty id, and nothing said. With reasoning on,
+  it writes the two lines. So the switch that rescues a JSON-only role makes a conversational agent
+  that has tools worse. Reasoning off was 3.5 times faster (median 1.7 s against 6.1 s) and about
+  40% cheaper, and it held the gate just as well: 0 breaches in 72 attacks in either arm. On Super,
+  reasoning off lost nothing (0 of 56 turns without text, against 1 of 56) and halved latency
+  (1.7 s against 3.1 s).
 
 **Token Factory Sandboxes (spike 2026-10-07, ADR 0033).**
 - Beta access is required, and a key without it only shows an all-false permission map from

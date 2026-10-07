@@ -20,6 +20,13 @@ iterator shape allows; it does not ask for more.
 in one header, and appears in no ``repr``, no error sentence and no ledger column. An HTTP
 failure is reported by its status alone: a provider's error body is a third party's text and
 may echo what it was sent.
+
+**Reasoning is the model's own unless turned off** (ADR 0035). Nemotron 3.5 Lightning and 3 Super
+reason before they answer, and on Token Factory exactly one request field turns that off: the chat
+template's own switch, :data:`THINKING_OFF` (measured, ADR 0034 — the other switches are accepted
+and ignored). :attr:`TokenFactoryModel.thinking` is ``True`` by default, so the field is not sent:
+a live A/B showed Lightning without its reasoning answering a third of plain questions with an
+``OP:`` line and no prose, worse than the empty answers reasoning costs. ``False`` sends it.
 """
 
 from __future__ import annotations
@@ -43,6 +50,7 @@ __all__ = [
     "LIGHTNING_MODEL",
     "PRICES",
     "REQUEST_TIMEOUT_S",
+    "THINKING_OFF",
     "HttpPost",
     "HttpReply",
     "TokenFactoryModel",
@@ -79,6 +87,10 @@ PRICES: dict[str, tuple[float, float]] = {
     DEFAULT_MODEL: (0.30, 0.90),
     "nvidia/Nemotron-3-Ultra-550b-a55b": (1.00, 3.00),
 }
+
+#: The one request field Token Factory honours to turn a Nemotron model's reasoning off (ADR 0034,
+#: measured 2026-10-07). Sent only when :attr:`TokenFactoryModel.thinking` is ``False`` (ADR 0035).
+THINKING_OFF: Mapping[str, Any] = {"chat_template_kwargs": {"enable_thinking": False}}
 
 #: One HTTP round may take this long. A wall for a hung connection, not a thinking budget.
 REQUEST_TIMEOUT_S = 180.0
@@ -134,6 +146,8 @@ class TokenFactoryModel:
     model: str = DEFAULT_MODEL
     base_url: str = DEFAULT_BASE_URL
     timeout_s: float = REQUEST_TIMEOUT_S
+    #: ``True`` (the default) lets the model reason first; ``False`` sends :data:`THINKING_OFF`.
+    thinking: bool = True
     #: ``None`` reads ``NEBIUS_API_KEY`` at call time, so a key set after the daemon started is
     #: picked up on the next turn. Never in ``repr``.
     api_key: str | None = field(default=None, repr=False)
@@ -155,7 +169,7 @@ class TokenFactoryModel:
             "Accept": "application/json",
             "Authorization": f"Bearer {key}",
         }
-        body = json.dumps(_payload(request, model)).encode("utf-8")
+        body = json.dumps(_payload(request, model, thinking=self.thinking)).encode("utf-8")
         try:
             reply = await asyncio.to_thread(self.post, url, headers, body, self.timeout_s)
         except TimeoutError:
@@ -176,7 +190,7 @@ class TokenFactoryModel:
             yield chunk
 
 
-def _payload(request: ModelRequest, model: str) -> dict[str, Any]:
+def _payload(request: ModelRequest, model: str, *, thinking: bool = True) -> dict[str, Any]:
     messages: list[dict[str, Any]] = []
     if request.system:
         messages.append({"role": "system", "content": request.system})
@@ -186,6 +200,8 @@ def _payload(request: ModelRequest, model: str) -> dict[str, Any]:
         payload["max_tokens"] = request.max_tokens
     if request.tools:
         payload["tools"] = [dict(tool) for tool in request.tools]
+    if not thinking:
+        payload.update({key: dict(value) for key, value in THINKING_OFF.items()})
     return payload
 
 

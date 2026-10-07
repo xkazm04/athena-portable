@@ -42,6 +42,7 @@ from athena.harness.tokenfactory import (
     DEFAULT_BASE_URL,
     DEFAULT_MODEL,
     LIGHTNING_MODEL,
+    THINKING_OFF,
     HttpReply,
     TokenFactoryModel,
     estimate_cost,
@@ -206,6 +207,63 @@ def test_the_request_is_one_chat_completion_with_the_law_as_the_system_prompt(
     assert system["role"] == "system" and "The law" in system["content"]
     assert user["role"] == "user" and "## Host state" in user["content"]
     assert "The law" not in user["content"]
+
+
+# --- reasoning (ADR 0035) ------------------------------------------------------------------------
+
+
+def test_by_default_the_model_reasons_and_no_switch_is_sent(
+    catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger
+) -> None:
+    http = FakeHttp([_ok("<think>check dates</think>Nothing is late.")])
+    events = _drain(_harness(catalog, approvals, ledger, http), [])
+
+    (call,) = http.calls
+    assert "chat_template_kwargs" not in call.body
+    text = "".join(event.text for event in events if isinstance(event, TextDelta))
+    assert "Nothing is late." in text and "check dates" not in text
+
+
+def test_thinking_false_sends_the_one_switch_token_factory_honours(
+    catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger
+) -> None:
+    http = FakeHttp([_ok("Nothing is late.")])
+    harness = build_harness(
+        "nebius",
+        gate=GateHook(catalog, approvals),
+        ledger=LedgerHook(ledger),
+        truncation=TruncationHook(),
+        prompt_root=".",
+        cwd=".",
+        model_fn=TokenFactoryModel(api_key=KEY, post=http, thinking=False),
+    )
+    _drain(harness, [])
+
+    (call,) = http.calls
+    assert call.body["chat_template_kwargs"] == {"enable_thinking": False}
+    assert THINKING_OFF == {"chat_template_kwargs": {"enable_thinking": False}}
+    # The switches measured as ignored are not sent alongside it (ADR 0034).
+    for ignored in ("reasoning_effort", "reasoning"):
+        assert ignored not in call.body
+
+
+def test_the_engine_athena_builds_reasons_and_serve_can_turn_it_off(
+    catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger
+) -> None:
+    from athena.daemon.server import build_parser
+
+    built = build_harness(
+        "nebius",
+        gate=GateHook(catalog, approvals),
+        ledger=LedgerHook(ledger),
+        truncation=TruncationHook(),
+        prompt_root=".",
+        cwd=".",
+    )
+    assert isinstance(built, ApiHarness)
+    assert isinstance(built.model_fn, TokenFactoryModel) and built.model_fn.thinking is True
+    assert build_parser().parse_args(["--engine", "nebius"]).nebius_thinking is True
+    assert build_parser().parse_args(["--no-nebius-thinking"]).nebius_thinking is False
 
 
 # --- the gate, from inside a turn ----------------------------------------------------------------

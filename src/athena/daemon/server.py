@@ -89,6 +89,8 @@ from athena.daemon.sessions import Sessions
 from athena.harness.engines import probe_all
 from athena.harness.policy import PolicyHook
 from athena.harness.tokenfactory import DEFAULT_MODEL as NEBIUS_DEFAULT_MODEL
+from athena.harness.tokenfactory import ENGINE as NEBIUS_ENGINE
+from athena.harness.tokenfactory import TokenFactoryModel
 from athena.lane.browser_lane import BrowserLane
 
 __all__ = [
@@ -673,6 +675,14 @@ def build_parser() -> argparse.ArgumentParser:
         f"(nebius: {NEBIUS_DEFAULT_MODEL})",
     )
     parser.add_argument(
+        "--nebius-thinking",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="nebius only: let Nemotron reason before it answers (the default). "
+        "--no-nebius-thinking is about 3x faster, but Lightning then often answers with an "
+        "op and no prose (ADR 0035)",
+    )
+    parser.add_argument(
         "--no-connectors",
         action="store_true",
         help="start without the connector vault: no /connectors routes, no connector tools",
@@ -717,10 +727,18 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
         studied = args.voice_backend in ("config", "auto", "none")
         voice = None if studied else backend_from_name(args.voice_backend)
         vault = None if args.no_connectors else Vault()
+        # Reasoning is the one engine setting a flag reaches past ``--model``: the default
+        # ``TokenFactoryModel`` reasons, so only the opt-out builds one here (ADR 0035).
+        model_fn = (
+            TokenFactoryModel(model=args.model or NEBIUS_DEFAULT_MODEL, thinking=False)
+            if not args.nebius_thinking and args.engine == NEBIUS_ENGINE
+            else None
+        )
         local = build_local(
             brain_root=args.brain,
             engine=args.engine,
             model=args.model,
+            model_fn=model_fn,
             voice=voice,
             vault=vault,
             voice_off=args.voice_backend == "none",

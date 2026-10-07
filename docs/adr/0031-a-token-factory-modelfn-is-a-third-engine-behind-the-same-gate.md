@@ -106,3 +106,8 @@ for `codex`.
 The fixture `tests/fixtures/tokenfactory_turn.ndjson` is synthetic and says so. A real capture
 can replace it with no code change once a key exists. The live test
 `test_live_one_turn_against_nemotron_super` is a `provider` test and is skipped without the key.
+
+Amended by [0035](0035-the-nebius-engine-keeps-reasoning-on-and-can-turn-it-off.md): `TokenFactoryModel`
+takes a `thinking` setting. It defaults to on, where the model reasons as served, because a live
+A/B on Lightning found that turning reasoning off made empty answers more common. The opt-out is
+`--no-nebius-thinking`.
