@@ -245,6 +245,15 @@ export interface CompanionModel {
    * ledger or the welcome says what it is itself).
    */
   mood: Mood;
+  /**
+   * A collapse to the seal in progress: the form the window is still sized for, and its paper's
+   * epoch. The view keeps drawing that form and folds it into the seal over `SHRINK_MS`, so the
+   * rectangle never stands empty while the smaller size waits. Null otherwise, and after a slip,
+   * whose paper has already torn away.
+   */
+  exit: { form: AthenaState; epoch: number } | null;
+  /** She has just grown out of the seal: the fold played backwards, on the same clock. */
+  opening: boolean;
   /** A word under the seal only where no mood speaks for it (the welcome, the ledger). */
   caption: string;
   badge: string;
@@ -383,6 +392,11 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     epoch: m.epoch,
     arrive: m.arrive,
     mood,
+    exit:
+      m.leaving && (form === "seal" || form === "tab") && m.leaving.form !== "slip" && m.leaving.form !== "seal" && m.leaving.form !== "tab"
+        ? m.leaving
+        : null,
+    opening: m.opened,
     caption,
     badge: quietCard ? String(n) : "",
     sealLabel: sealLabel(form, n, mood),

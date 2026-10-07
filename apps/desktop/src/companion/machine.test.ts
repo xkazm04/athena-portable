@@ -458,3 +458,50 @@ test("formOf is the priority list: stamp, card, hear, tape, peek, home", () => {
   expect(formOf({ ...base, docked: "left", peek: true })).toBe("seal");
   expect(formOf({ ...base, docked: "left" })).toBe("tab");
 });
+
+test("while a collapse waits for its smaller size, she remembers the form the window still has", () => {
+  const r = rig();
+  r.d.dispatch({ t: "seal" });
+  expect(r.s().form).toBe("ledger");
+  expect(r.s().leaving).toBeNull();
+  const opened = r.s().epoch;
+
+  r.d.dispatch({ t: "seal" });
+  expect(r.s().form).toBe("seal");
+  expect(r.s().leaving).toEqual({ form: "ledger", epoch: opened });
+  r.advance(SHRINK_MS - 1);
+  expect(r.s().leaving).not.toBeNull();
+  r.advance(1);
+  // the window has its seal size now, so there is nothing left to fold
+  expect(r.s().leaving).toBeNull();
+  expect(r.sizes().at(-1)).toMatchObject({ name: "seal", at: SHRINK_MS });
+});
+
+test("growing again before the shrink fires forgets the fold", () => {
+  const r = rig();
+  r.d.dispatch({ t: "seal" });
+  r.d.dispatch({ t: "seal" });
+  expect(r.s().leaving?.form).toBe("ledger");
+  r.d.dispatch({ t: "seal" });
+  expect(r.s().form).toBe("ledger");
+  expect(r.s().leaving).toBeNull();
+});
+
+test("growing out of the seal is marked as an opening, and nothing else is", () => {
+  const r = rig();
+  expect(r.s().opened).toBe(false);
+  r.d.dispatch({ t: "seal" });
+  expect(r.s().form).toBe("ledger");
+  expect(r.s().opened).toBe(true);
+  r.d.dispatch({ t: "seal" });
+  expect(r.s().opened).toBe(false);
+
+  // a card while the ledger is open changes nothing about the seal; a slip from the seal opens
+  r.d.dispatch({ t: "cards", n: 1 });
+  expect(r.s().form).toBe("slip");
+  expect(r.s().opened).toBe(true);
+
+  const first = rig({ onboarded: false });
+  expect(first.s().form).toBe("welcome");
+  expect(first.s().opened).toBe(false);
+});

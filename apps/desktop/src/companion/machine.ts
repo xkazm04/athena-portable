@@ -17,7 +17,9 @@
  * **Sizes.** A form whose rectangle is at least as large as the last one asked for is requested
  * at once, before the paper unrolls; a smaller one is requested `SHRINK_MS` later, once the paper
  * has torn away, and only if she is still in that form by then. Nothing is sent on hover, because
- * nothing here listens to hover.
+ * nothing here listens to hover. While that smaller size waits, `leaving` names the form the window
+ * is still sized for, so a collapse to the seal can be drawn as one motion inside the old rectangle
+ * instead of an empty one.
  */
 import { SIZES, type AthenaState, type Side, type Valign } from "@/lib/companion";
 
@@ -88,6 +90,10 @@ export interface MachineState {
   /** The form last drawn, and the size name last asked for. */
   form: AthenaState;
   sized: AthenaState;
+  /** The larger form the window still has while a shrink waits, with its paper's epoch; else null. */
+  leaving: { form: AthenaState; epoch: number } | null;
+  /** The last change of form grew her out of the seal (or the tab): the view unfolds it. */
+  opened: boolean;
   /** What a screen reader is told, with a counter so the same sentence can be said twice. */
   say: { n: number; text: string };
 }
@@ -159,6 +165,8 @@ export const INITIAL: MachineState = {
   arrive: 0,
   form: "seal",
   sized: "seal",
+  leaving: null,
+  opened: false,
   say: { n: 0, text: "" },
 };
 
@@ -473,6 +481,7 @@ function step(s: MachineState, prev: MachineState, event: Event, fx: Effect[]): 
     }
     case "shrink": {
       if (s.form === event.name) {
+        s.leaving = null;
         fx.push({ type: "size", name: event.name, side: s.side, valign: s.valign });
       }
       return;
@@ -492,10 +501,15 @@ function finalize(s: MachineState, prev: MachineState, event: Event, fx: Effect[
   if (changed) {
     if (s.epoch === prev.epoch) s.epoch += 1;
     const grow = !prev.ready || area(form) >= area(prev.sized);
+    const home = (f: AthenaState) => f === "seal" || f === "tab";
+    s.opened = prev.ready && grow && home(prev.form) && !home(form);
     if (grow) {
+      s.leaving = null;
       fx.push({ type: "cancel", key: "shrink" });
       fx.push({ type: "size", name: form, side: s.side, valign: s.valign });
     } else {
+      // The window keeps the rectangle it actually has: the first form of a chain of shrinks.
+      s.leaving ??= { form: prev.sized, epoch: prev.epoch };
       schedule(fx, "shrink", SHRINK_MS, { t: "shrink", name: form });
     }
     s.sized = form;

@@ -11,10 +11,10 @@
  *
  * Nothing readable is under 12px, body is 15px, and a gate class is always a word in a box.
  */
-import { useEffect, useRef, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
 
 import { Chip, Defs, Icon, Mark, Mood, Ring, Sketch, Stamp } from "./drawing";
-import type { LedgerTab } from "./machine";
+import { SHRINK_MS, type LedgerTab } from "./machine";
 import { showingOf } from "./model";
 import type {
   CardView,
@@ -35,7 +35,9 @@ const TIERS = [
 ];
 
 export default function CompanionView({ model }: { model: CompanionModel }) {
-  const { form, actions } = model;
+  const { actions, exit } = model;
+  // During a collapse she is drawn in the form the window still has, folding (see `exit`).
+  const form = exit?.form ?? model.form;
   const hasPaper = form !== "seal" && form !== "tab";
   const cardCount = model.cards.length;
   return (
@@ -53,6 +55,9 @@ export default function CompanionView({ model }: { model: CompanionModel }) {
       data-sending={model.decision?.sending ? "1" : undefined}
       data-listening={model.listening ? "1" : "0"}
       data-mood={model.mood}
+      data-exit={exit ? "1" : undefined}
+      data-open={!exit && model.opening ? "1" : undefined}
+      style={{ "--dur-fold": `${SHRINK_MS}ms` } as CSSProperties}
     >
       <Defs />
       <div key={`arrive-${model.arrive}`} className={`aw-fig${model.arrive > 0 ? " arrive" : ""}`}>
@@ -71,13 +76,13 @@ export default function CompanionView({ model }: { model: CompanionModel }) {
             </button>
           </div>
           <div className="aw-rail">
-            <Rail model={model} />
+            <Rail model={model} form={form} />
           </div>
         </div>
         {hasPaper ? (
           <div
-            key={model.epoch}
-            className="aw-paper enter"
+            key={exit ? exit.epoch : model.epoch}
+            className={`aw-paper ${exit ? "leave" : "enter"}`}
             data-kind={form}
             data-tear={form === "slip" && model.decision?.tearing ? "1" : undefined}
           >
@@ -98,8 +103,7 @@ export default function CompanionView({ model }: { model: CompanionModel }) {
 
 // -- the rail ----------------------------------------------------------------------------------
 
-function Rail({ model }: { model: CompanionModel }) {
-  const { form } = model;
+function Rail({ model, form }: { model: CompanionModel; form: CompanionModel["form"] }) {
   if (form === "ledger") {
     const n = model.cards.length;
     const tabs: Array<[LedgerTab, string, "talk" | "record" | "origin"]> = [

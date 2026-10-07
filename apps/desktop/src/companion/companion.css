@@ -806,6 +806,169 @@ body.athena {
     translate: 0 0;
   }
 }
+/* -- the unfold: growing out of the seal is the fold played backwards -------------------------
+ * Same clock, same corner, same linear pace: the housing opens away from the seal and the paper
+ * unrolls out of it, their free edges travelling together. */
+.aw[data-open] {
+  --fold: calc(100% - var(--aw-house));
+}
+.aw[data-open] .aw-house {
+  animation: unfold-d var(--dur-fold) linear both;
+}
+.aw[data-open][data-valign="up"] .aw-house {
+  animation-name: unfold-u;
+}
+.aw[data-open] .aw-rail {
+  animation: unfold-fade var(--dur-fold) linear both;
+}
+.aw[data-open] .aw-paper.enter {
+  animation: unroll-dl var(--dur-fold) linear both;
+}
+.aw[data-open][data-side="right"] .aw-paper.enter {
+  animation-name: unroll-dr;
+}
+.aw[data-open][data-valign="up"] .aw-paper.enter {
+  animation-name: unroll-ul;
+}
+.aw[data-open][data-side="right"][data-valign="up"] .aw-paper.enter {
+  animation-name: unroll-ur;
+}
+@keyframes unfold-d {
+  from {
+    clip-path: inset(0 0 var(--fold) 0 round var(--r-house));
+  }
+  to {
+    clip-path: inset(0 0 0 0 round var(--r-house));
+  }
+}
+@keyframes unfold-u {
+  from {
+    clip-path: inset(var(--fold) 0 0 0 round var(--r-house));
+  }
+  to {
+    clip-path: inset(0 0 0 0 round var(--r-house));
+  }
+}
+@keyframes unfold-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes unroll-dl {
+  from {
+    clip-path: inset(0 100% var(--fold) 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes unroll-dr {
+  from {
+    clip-path: inset(0 0 var(--fold) 100%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes unroll-ul {
+  from {
+    clip-path: inset(var(--fold) 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes unroll-ur {
+  from {
+    clip-path: inset(var(--fold) 0 0 100%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* -- the fold: a collapse to the seal, drawn inside the rectangle the window still has ----------
+ * The housing and the paper close toward the seal's corner on one clock: linear, `--dur-fold`
+ * (the machine's SHRINK_MS), so the housing's free edge and the paper's travel together and the
+ * last frame is exactly the seal the window then shrinks to. Clip-path only: no layout moves. */
+.aw[data-exit] {
+  --fold: calc(100% - var(--aw-house));
+}
+.aw[data-exit] .aw-house {
+  animation: fold-d var(--dur-fold) linear both;
+}
+.aw[data-exit][data-valign="up"] .aw-house {
+  animation-name: fold-u;
+}
+.aw[data-exit] .aw-rail {
+  animation: fold-fade var(--dur-fold) linear both;
+}
+.aw-paper.leave {
+  animation: roll-dl var(--dur-fold) linear both;
+}
+.aw[data-side="right"] .aw-paper.leave {
+  animation-name: roll-dr;
+}
+.aw[data-valign="up"] .aw-paper.leave {
+  animation-name: roll-ul;
+}
+.aw[data-side="right"][data-valign="up"] .aw-paper.leave {
+  animation-name: roll-ur;
+}
+@keyframes fold-d {
+  from {
+    clip-path: inset(0 0 0 0 round var(--r-house));
+  }
+  to {
+    clip-path: inset(0 0 var(--fold) 0 round var(--r-house));
+  }
+}
+@keyframes fold-u {
+  from {
+    clip-path: inset(0 0 0 0 round var(--r-house));
+  }
+  to {
+    clip-path: inset(var(--fold) 0 0 0 round var(--r-house));
+  }
+}
+@keyframes fold-fade {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes roll-dl {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 100% var(--fold) 0);
+  }
+}
+@keyframes roll-dr {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 var(--fold) 100%);
+  }
+}
+@keyframes roll-ul {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(var(--fold) 100% 0 0);
+  }
+}
+@keyframes roll-ur {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    clip-path: inset(var(--fold) 0 0 100%);
+  }
+}
+
 .aw-paper[data-tear] {
   transform-origin: 0 0;
   animation: tear 560ms cubic-bezier(0.5, 0, 0.8, 0.4) both;

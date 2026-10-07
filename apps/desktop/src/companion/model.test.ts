@@ -431,3 +431,15 @@ test("an open form keeps its word; a speaking seal is named for a screen reader"
   expect(speaking.mood).toBe("speak");
   expect(speaking.sealLabel).toBe("Athena. Speaking.");
 });
+
+test("a collapse to the seal keeps drawing the ledger to fold it, but not a slip that already tore", () => {
+  const folding = selectCompanion(
+    inputs({ machine: machineAfter({ t: "init", onboarded: true, cards: 0 }, { t: "seal" }, { t: "seal" }) }),
+  );
+  expect(folding.form).toBe("seal");
+  expect(folding.exit?.form).toBe("ledger");
+  expect(folding.mood).toBe("sleep");
+
+  const settled = selectCompanion(inputs());
+  expect(settled.exit).toBeNull();
+});
