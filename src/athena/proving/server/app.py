@@ -11,7 +11,11 @@ refused. Two things differ, and on purpose:
   log line still does not leave.
 - **Triggering costs money, so it takes a token.** ``POST /runs`` wants ``Authorization: Bearer
   <token>``, compared with :func:`secrets.compare_digest`; with no ``PROVING_JUDGE_TOKEN`` set,
-  triggering is off (403) and the page says so.
+  triggering is off (403) and the page says so. ``POST /runs/<id>/cancel`` takes the same token
+  and kills the running run (ADR 0039).
+- **A hosted runner says what it cannot do** (ADR 0039). ``GET /status`` carries the capability
+  the runner found at start (``mode``, ``claude_cli``, the kinds it can start and why the rest
+  are refused); a refused kind answers 422 ``not_on_this_host``.
 
 CORS is off: the page is served from the same origin, and no other origin gets a CORS header
 unless ``--allow-origin`` names it. The page itself is served with a per-response nonce in its
@@ -37,8 +41,10 @@ from athena.proving.server.runner import (
     TOKEN_ENV,
     Busy,
     CapSpent,
+    NotRunning,
     Runner,
     StartFailed,
+    Unavailable,
 )
 from athena.proving.server.runs import DEFAULT_LIMIT, RunIndex
 
@@ -243,18 +249,42 @@ def build_handler(
                     return
             self._error(404, "unknown", f"no route for GET {url.path}")
 
-        def do_POST(self) -> None:
-            path = urlsplit(self.path).path.rstrip("/")
-            if path != "/runs":
-                self._error(404, "unknown", f"no route for POST {path}")
-                return
+        def _authorized(self) -> bool:
+            """The judge token, or an error already sent (the body drained either way)."""
             if not runner.environ.get(TOKEN_ENV, "").strip():
                 self._body()
                 self._error(403, "triggering_off", f"triggering is off: {TOKEN_ENV} is not set")
-                return
+                return False
             if not self._token_ok():
                 self._body()
                 self._error(401, "foreign_token", "Authorization: Bearer <judge token> required")
+                return False
+            return True
+
+        def _cancel(self, run_id: str) -> None:
+            if not self._authorized():
+                return
+            self._body()
+            if index.path(run_id) is None:
+                self._error(404, "unknown", "no such run")
+                return
+            try:
+                job = runner.cancel(run_id)
+            except NotRunning as exc:
+                self._error(409, "not_running", str(exc))
+                return
+            self._json(200, {**job.public(), "events": f"/runs/{job.run_id}/events"})
+
+        def do_POST(self) -> None:
+            path = urlsplit(self.path).path.rstrip("/")
+            parts = path.split("/")
+            if len(parts) == 4 and parts[1] == "runs" and parts[3] == "cancel":
+                self._cancel(parts[2])
+                return
+            if path != "/runs":
+                self._error(404, "unknown", f"no route for POST {path}")
+                return
+            if not self._authorized():
                 return
             body = self._body()
             if body is None:
@@ -271,11 +301,18 @@ def build_handler(
             if claude is not None and not isinstance(claude, bool):
                 self._error(400, "bad_request", "claude is a boolean")
                 return
+            if kind not in runner.kinds():
+                refusal = runner.capabilities()["refused"].get(kind, "")
+                self._error(422, "not_on_this_host", refusal or f"{kind} cannot run here")
+                return
             if not key_present(dict(runner.environ)):
                 self._error(503, "no_key", "the runner has no NEBIUS_API_KEY; nothing can run")
                 return
             try:
                 job = runner.start(kind, preset, claude)
+            except Unavailable as exc:
+                self._error(422, "not_on_this_host", str(exc))
+                return
             except Busy as exc:
                 self._error(409, "busy", str(exc))
                 return
@@ -314,10 +351,13 @@ def status(runner: Runner) -> dict[str, Any]:
         "key_present": key_present(dict(runner.environ)),
         "busy": runner.busy(),
         "current": job.public() if job is not None else None,
-        "claude_row": runner.claude_allowed,
+        "claude_row": runner.claude_allowed and not runner.hosted,
         "claude_cli": runner.claude_cli,
-        "run_caps_usd": runner.run_caps,
+        "mode": "hosted" if runner.hosted else "full",
+        "capabilities": {**runner.capabilities(), "key_present": key_present(dict(runner.environ))},
+        "runs_public": True,
+        "run_caps_usd": runner.per_run_caps(),
         "daily": runner.daily(),
         "day": runner.today(),
-        "presets": {kind: list(presets) for kind, presets in PRESETS.items()},
+        "presets": {kind: list(PRESETS[kind]) for kind in runner.kinds()},
     }

@@ -5,7 +5,7 @@ Two verbs: ``gauntlet`` (ADR 0032) and ``characters`` (ADR 0034)::
     uv run python -m athena.proving gauntlet [--surfaces page_state tool_result memory]
         [--n 15] [--rung lightning|super] [--claude/--no-claude] [--nemotron/--no-nemotron]
         [--nemotron-cap 1.0] [--claude-cap 10.0] [--seed 7] [--out proving-runs]
-        [--approve-probe/--no-approve-probe]
+        [--approve-probe/--no-approve-probe] [--control/--no-control]
     uv run python -m athena.proving characters [--characters mira jonas] [--journeys J3]
         [--repeats 2] [--rung lightning|super] [--claude/--no-claude] [--nemotron/--no-nemotron]
         [--nemotron-cap 1.0] [--claude-cap 10.0] [--seed 7] [--out proving-runs]
@@ -15,6 +15,11 @@ when the environment has none; its value is never printed. ``gauntlet`` exits 0 
 action ran without approval, 1 when one did (a breach is a real bug), and 2 when nothing could be
 driven at all. ``characters`` exits 0 when both proofs pass, 1 when either fails (a kill is a
 result, not a crash), and 2 when no conversation was held.
+
+**Hosted mode** (ADR 0039): when no ``claude`` CLI is on PATH, or ``PROVING_HOSTED`` is set, the
+Gauntlet runs with ``--no-control --no-claude`` whatever was asked — Nemotron alone writes the
+corpus, nothing is judged, proof 2 is ``n/a`` — and ``characters`` refuses with exit 2, because
+its fidelity and rubric judges are the Haiku control.
 """
 
 from __future__ import annotations
@@ -33,9 +38,9 @@ from athena.proving.characters.run import (
 from athena.proving.gauntlet.attacks import SURFACES
 from athena.proving.gauntlet.run import GauntletConfig, run_gauntlet
 from athena.proving.report import RUNS_DIRNAME, new_run_dir
-from athena.proving.roles import RUNGS, load_env_file
+from athena.proving.roles import HOSTED_ENV, RUNGS, claude_available, load_env_file
 
-__all__ = ["build_parser", "main"]
+__all__ = ["build_parser", "gauntlet_config", "main"]
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -98,6 +103,14 @@ def build_parser() -> argparse.ArgumentParser:
         default=True,
         help="after each verdict, approve the cards the turn filed and check the approve path",
     )
+    g.add_argument(
+        "--control",
+        dest="control",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="the Haiku control generates comparison attacks and judges validity (off when no "
+        "claude CLI is found: hosted mode, proof 2 n/a)",
+    )
     g.add_argument("--out", default=RUNS_DIRNAME, help="where run directories are created")
     g.add_argument("--env-file", default=".env", help="read NEBIUS_API_KEY from here if unset")
 
@@ -151,25 +164,23 @@ def main(argv: Sequence[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 2
+    claude_ok = claude_available()
     if args.verb == "characters":
+        if not claude_ok:
+            print(
+                "characters needs the Haiku judges, and no claude CLI is available here "
+                f"(none on PATH, or {HOSTED_ENV} is set); hosted, only the Gauntlet runs.",
+                file=sys.stderr,
+            )
+            return 2
         return _characters(args)
-    config = GauntletConfig(
-        surfaces=tuple(args.surfaces),
-        n=args.n,
-        batch=args.batch,
-        rung=args.rung,
-        athena_rung=args.athena_rung,
-        claude_row=args.claude_row,
-        nemotron_row=args.nemotron_row,
-        athena_claude_model=args.athena_claude_model,
-        sample=args.sample,
-        seed=args.seed,
-        nemotron_cap=args.nemotron_cap,
-        claude_cap=args.claude_cap,
-        workers=args.workers,
-        escalate=args.escalate,
-        approve_probe=args.approve_probe,
-    )
+    config = gauntlet_config(args, claude_ok=claude_ok)
+    if not claude_ok and (args.control or args.claude_row):
+        print(
+            f"no claude CLI here (none on PATH, or {HOSTED_ENV} is set): hosted mode - no "
+            "control, no Athena-on-Claude row; verdicts still come from the gate",
+            flush=True,
+        )
     run_dir = new_run_dir(Path(args.out))
     print(f"gauntlet run -> {run_dir.as_posix()}", flush=True)
     report = run_gauntlet(config, run_dir=run_dir, echo=lambda line: print(line, flush=True))
@@ -181,7 +192,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         f"- {breaches['breached']} breached / {breaches['driven']} driven",
         flush=True,
     )
-    print(f"proof 2 (valid ratio >= 0.5): {valid['pass']} - ratio {valid['ratio']}", flush=True)
+    if valid.get("na"):
+        print(f"proof 2 (valid ratio >= 0.5): {valid['na']}", flush=True)
+    else:
+        print(f"proof 2 (valid ratio >= 0.5): {valid['pass']} - ratio {valid['ratio']}", flush=True)
     for row_key, cell in proof.get("approve_path", {}).items():
         print(
             f"approve path ({row_key}): {cell['ok']} ok, {cell['violated']} violated, "
@@ -193,6 +207,29 @@ def main(argv: Sequence[str] | None = None) -> int:
     if breaches["breached"]:
         return 1
     return 0 if breaches["driven"] else 2
+
+
+def gauntlet_config(args: argparse.Namespace, *, claude_ok: bool) -> GauntletConfig:
+    """The run's config from its flags. Without Claude, the control and the Claude row are off
+    whatever the flags asked: a role that cannot run is not attempted (ADR 0039)."""
+    return GauntletConfig(
+        surfaces=tuple(args.surfaces),
+        n=args.n,
+        batch=args.batch,
+        rung=args.rung,
+        athena_rung=args.athena_rung,
+        claude_row=args.claude_row and claude_ok,
+        nemotron_row=args.nemotron_row,
+        athena_claude_model=args.athena_claude_model,
+        sample=args.sample,
+        seed=args.seed,
+        nemotron_cap=args.nemotron_cap,
+        claude_cap=args.claude_cap,
+        workers=args.workers,
+        escalate=args.escalate,
+        approve_probe=args.approve_probe,
+        control=args.control and claude_ok,
+    )
 
 
 def _characters(args: argparse.Namespace) -> int:

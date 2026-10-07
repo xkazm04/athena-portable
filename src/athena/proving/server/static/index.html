@@ -169,6 +169,9 @@ input[type="password"], input[type="text"] { width: 100%; background: var(--rais
 .seg label:last-child span { border-right: 0; }
 .seg input:checked + span { background: var(--wash); color: var(--accent); font-weight: 600; }
 .seg input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: -2px; }
+.seg input:disabled { cursor: not-allowed; }
+.seg input:disabled + span { opacity: 0.45; text-decoration: line-through; }
+.btn.danger { background: transparent; color: var(--bad); border: 1px solid color-mix(in srgb, var(--bad) 45%, transparent); padding: 4px 10px; font-weight: 500; font-size: 12px; }
 .hint { font-size: 12px; color: var(--ink-3); margin: 6px 0 0; }
 .btn { background: var(--btn); color: var(--on-btn); border: 0; border-radius: var(--r-sm); padding: 9px 16px; font-weight: 600; cursor: pointer; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -284,7 +287,7 @@ details.item > summary::-webkit-details-marker { display: none; }
         <form id="start-form" autocomplete="off">
           <label class="field" for="token">Judge token</label>
           <input id="token" type="password" spellcheck="false" autocomplete="off" placeholder="From the testing instructions">
-          <p class="hint">Kept in this tab only (session storage), sent as a bearer token when you start a run.</p>
+          <p class="hint">Kept in this tab only (session storage), sent as a bearer token when you start or cancel a run.</p>
           <span class="field" style="display:block;font-size:12px;color:var(--ink-2);margin:12px 0 5px">Prototype</span>
           <div class="seg" role="radiogroup" aria-label="Prototype">
             <label><input type="radio" name="kind" value="gauntlet" checked><span>Gauntlet</span></label>
@@ -304,10 +307,12 @@ details.item > summary::-webkit-details-marker { display: none; }
           <div class="msg" id="start-msg" role="status"></div>
         </form>
         <div class="facts" id="daily"></div>
+        <p class="footer-note" id="public-note"></p>
       </div>
       <div class="panel" id="live">
         <div class="feed-head">
-          <div><strong id="live-title">Live</strong> <span class="faint mono" id="live-id"></span></div>
+          <div><strong id="live-title">Live</strong> <span class="faint mono" id="live-id"></span>
+            <button class="btn danger" id="cancel" type="button" hidden>Cancel run</button></div>
           <div class="tally" id="tally"></div>
         </div>
         <div class="feed" id="feed" role="log" aria-live="polite" aria-label="Run progress">
@@ -419,9 +424,18 @@ details.item > summary::-webkit-details-marker { display: none; }
       return;
     }
     const proto = report.prototype;
+    const mode = report.mode || (report.proof ? "full" : "");
     box.append(h("div", { class: "eyebrow" },
-      h("span", { text: `${proto === "gauntlet" ? "Gauntlet" : "Characters"} · ${idTime(report.run_id)}` }),
+      h("span", { text: `${proto === "gauntlet" ? "Gauntlet" : "Characters"} · ${idTime(report.run_id)}${mode ? " · " + mode : ""}` }),
       h("span", { class: "mono", text: report.run_id })));
+    if (report.cancelled) {
+      box.append(h("div", { class: "big na" }, h("span", { class: "n", text: "—" }), h("span", { class: "what", text: "cancelled" })),
+        h("p", { class: "sub", text: `A judge cancelled this run after ${report.calls ?? "n/a"} model calls. No proof was read, so none is shown.` }));
+      const facts = h("div", { class: "facts" });
+      costFacts(facts, report);
+      box.append(facts);
+      return;
+    }
     if (proto === "gauntlet") {
       const b = (report.proof || {}).breaches_zero || {};
       const driven = b.driven || 0;
@@ -449,8 +463,11 @@ details.item > summary::-webkit-details-marker { display: none; }
         facts.append(fact(`Pressure · ${rowKey.replace("athena-", "")}`, h("span", {}, pct(p.rate), " ", h("small", { text: `${p.pressure}/${p.driven} reached for a gated tool` }))));
       }
       const vr = (report.proof || {}).valid_rate || {};
-      facts.append(fact("Valid attacks vs control", h("span", {}, has(vr.ratio) ? vr.ratio + "×" : "n/a", " ",
-        h("small", { text: `nemotron ${pct(vr.nemotron)}, control ${pct(vr.control)}` }))));
+      facts.append(fact("Valid attacks vs control", vr.na
+        ? h("span", {}, "n/a", " ", h("small", { title: vr.na, text: "hosted, no control" }))
+        : h("span", {}, has(vr.ratio) ? vr.ratio + "×" : "n/a", " ",
+          h("small", { text: `nemotron ${pct(vr.nemotron)}, control ${pct(vr.control)}` }))));
+      if (report.roles) facts.append(fact("Roles that ran", h("small", { text: report.roles.join(", ") })));
       costFacts(facts, report);
       facts.append(fact("Models", h("small", { text: ((entry && entry.models) || []).join(", ") || "n/a" })));
       box.append(facts);
@@ -491,10 +508,17 @@ details.item > summary::-webkit-details-marker { display: none; }
       default: "The CLI's defaults: every user Character, two journeys each, repeats on Claude. Slow; dollars." },
   };
   function selected(name) { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ""; }
+  const HOSTED_HINT = {
+    gauntlet: { small: "Hosted: Nemotron alone writes 2 attacks per surface; 1 per surface is driven against Athena-on-Nemotron. No Claude, no validity judge. Minutes, cents.",
+      default: "Hosted: Nemotron alone writes 15 attacks per surface; 3 per surface are driven against Athena-on-Nemotron. No Claude. Slower; still cents to a dollar." },
+  };
+  const hosted = () => !!(state.status && state.status.mode === "hosted");
   function refreshHints() {
     const kind = selected("kind"), preset = selected("preset");
-    $("kind-hint").textContent = KIND_HINT[kind] || "";
-    $("preset-hint").textContent = (PRESET_HINT[kind] || {})[preset] || "";
+    const refused = ((state.status || {}).capabilities || {}).refused || {};
+    const off = Object.entries(refused).map(([k, why]) => `${k[0].toUpperCase()}${k.slice(1)} is off here: ${why}`).join(" ");
+    $("kind-hint").textContent = `${KIND_HINT[kind] || ""} ${off}`.trim();
+    $("preset-hint").textContent = ((hosted() ? HOSTED_HINT : PRESET_HINT)[kind] || {})[preset] || "";
   }
   document.querySelectorAll('input[name="kind"], input[name="preset"]').forEach((el) => el.addEventListener("change", refreshHints));
 
@@ -505,7 +529,19 @@ details.item > summary::-webkit-details-marker { display: none; }
     pills.append(h("span", { class: `pill ${s.busy ? "pend" : "ok"}`, text: s.busy ? "A run is going" : "Runner idle" }));
     pills.append(h("span", { class: `pill ${s.key_present ? "ok" : "bad"}`, text: s.key_present ? "Athena-on-Nemotron live" : "No Nemotron key: nothing can run" }));
     pills.append(h("span", { class: `pill ${s.claude_row && s.claude_cli ? "ok" : "neutral"}`, text: s.claude_row && s.claude_cli ? "Athena-on-Claude live" : "Athena-on-Claude off here" }));
-    pills.append(h("span", { class: `pill ${s.claude_cli ? "ok" : "warn"}`, title: "The Haiku control generates comparison attacks and judges validity.", text: s.claude_cli ? "Haiku control live" : "Haiku control absent: its calls will fail" }));
+    const isHosted = s.mode === "hosted";
+    pills.append(h("span", { class: `pill ${isHosted ? "warn" : "ok"}`, title: "The Haiku control generates comparison attacks and judges validity.",
+      text: isHosted ? "Hosted: no Haiku control, Gauntlet only" : "Haiku control live" }));
+    const caps = s.capabilities || {};
+    const refused = caps.refused || {};
+    document.querySelectorAll('input[name="kind"]').forEach((el) => {
+      el.disabled = !!refused[el.value];
+      el.parentElement.title = refused[el.value] || "";
+      if (el.disabled && el.checked) { const g = document.querySelector('input[name="kind"][value="gauntlet"]'); if (g) g.checked = true; }
+    });
+    refreshHints();
+    $("public-note").textContent = (s.runs_public ? "Every run on this page is public: anyone with the URL can read it. Only starting and cancelling a run need the token." : "")
+      + (isHosted ? " Proof 2 (valid attacks vs the control) reads n/a on runs made here: the control needs Claude, which this host does not have." : "");
     const daily = clear($("daily"));
     for (const engine of ["nemotron", "claude"]) {
       const d = (s.daily || {})[engine] || {};
@@ -513,14 +549,37 @@ details.item > summary::-webkit-details-marker { display: none; }
       daily.append(fact(`Today · ${engine}`, h("span", {}, usd(d.spent_usd), " ", h("small", { text: `of ${usd(d.cap_usd)} a day` })),
         h("div", { class: `meter${share > 0.8 ? " hot" : ""}` }, h("i", { style: `width:${(share * 100).toFixed(1)}%` }))));
     }
-    const caps = s.run_caps_usd || {};
-    $("caps-hint").textContent = `Per run: Nemotron ${usd(caps.nemotron)}, Claude ${usd(caps.claude)}, never more than today's remainder.`;
+    const runCaps = s.run_caps_usd || {};
+    $("caps-hint").textContent = isHosted
+      ? `Per run: Nemotron ${usd(runCaps.nemotron)}, Claude $0 (none runs here), never more than today's remainder.`
+      : `Per run: Nemotron ${usd(runCaps.nemotron)}, Claude ${usd(runCaps.claude)}, never more than today's remainder.`;
     const start = $("start");
     start.disabled = !s.triggering || s.busy || !s.key_present;
     $("token").disabled = !s.triggering;
     if (!s.triggering) setMsg("Triggering is off on this host (no judge token is configured). The runs below are still readable.", false);
     if (s.busy && s.current && s.current.run_id && state.liveId !== s.current.run_id) follow(s.current.run_id, true);
+    const cancel = $("cancel");
+    cancel.hidden = !(s.triggering && s.busy && s.current && s.current.run_id);
+    cancel.dataset.run = (s.current && s.current.run_id) || "";
   }
+  $("cancel").addEventListener("click", async () => {
+    const runId = $("cancel").dataset.run;
+    const token = $("token").value.trim();
+    if (!runId) return;
+    if (!token) { setMsg("Enter the judge token to cancel a run.", true); return; }
+    $("cancel").disabled = true;
+    try {
+      const res = await fetch(`/runs/${encodeURIComponent(runId)}/cancel`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      let body = null; try { body = await res.json(); } catch { body = null; }
+      if (!res.ok) setMsg(`${{ 401: "The token was not accepted.", 403: "Triggering is off on this host.", 409: "That run is no longer going." }[res.status] || `Cancel failed (HTTP ${res.status}).`} ${(body && body.detail) || ""}`.trim(), true);
+      else setMsg(`Cancelled ${runId}. What it spent still counts toward today.`, false);
+    } catch (err) {
+      setMsg(`Could not reach the runner: ${err.message}`, true);
+    }
+    $("cancel").disabled = false;
+    loadStatus();
+    loadRuns();
+  });
   function setMsg(text, bad) { const m = $("start-msg"); m.textContent = text || ""; m.className = `msg${bad ? " bad" : ""}`; }
 
   $("token").value = store.get("pg-token");
@@ -536,7 +595,7 @@ details.item > summary::-webkit-details-marker { display: none; }
         body: JSON.stringify({ kind: selected("kind"), preset: selected("preset") }) });
       let body = null; try { body = await res.json(); } catch { body = null; }
       if (!res.ok) {
-        const why = { 401: "The token was not accepted.", 403: "Triggering is off on this host.", 409: "A run is already going; watch it, or wait for it to end.",
+        const why = { 401: "The token was not accepted.", 403: "Triggering is off on this host.", 409: "A run is already going; watch it, or wait for it to end.", 422: "This host cannot run that.",
           429: "Today's spending cap is reached.", 503: "The runner has no Nemotron key." }[res.status] || `The run did not start (HTTP ${res.status}).`;
         setMsg(`${why} ${(body && body.detail) || ""}`.trim(), true);
       } else {
@@ -600,6 +659,7 @@ details.item > summary::-webkit-details-marker { display: none; }
       es.close(); state.es = null;
       renderTally(false);
       const head = d.replay ? `replayed ${d.calls} ledger rows` : `ended: exit ${d.exit_code} — ${d.meaning}`;
+      $("cancel").hidden = true;
       feedLine(`end${d.exit_code === 1 ? " bad" : ""}`, `${head}${d.footer ? " " + d.footer : ""}${d.report ? "" : " · no report written"}`);
       if (!d.replay) { loadStatus(); loadRuns().then(() => { if (d.report) select(runId); }); }
     });
@@ -608,6 +668,7 @@ details.item > summary::-webkit-details-marker { display: none; }
 
   // --- history ------------------------------------------------------------------------------
   function headCell(r) {
+    if (r.status === "cancelled") return h("span", { class: "chip skipped", text: "cancelled" });
     if (r.status !== "done") return h("span", { class: r.status === "running" ? "pend" : "faint", text: r.status });
     if (r.prototype === "gauntlet") {
       const b = r.breaches || {};
@@ -628,9 +689,9 @@ details.item > summary::-webkit-details-marker { display: none; }
       body.append(h("tr", { "data-id": r.run_id, class: r.run_id === state.selected ? "sel" : "", tabindex: "0",
         onclick: () => openRun(r), onkeydown: (e) => { if (e.key === "Enter") openRun(r); } },
         h("td", {}, h("div", { text: idTime(r.run_id) }), h("div", { class: "faint mono", text: r.run_id })),
-        h("td", { text: r.prototype || "—" }),
+        h("td", {}, h("div", { text: r.prototype || "—" }), r.mode ? h("div", { class: "faint", text: r.mode === "hosted" ? "hosted, no control" : "full (recorded)" }) : null),
         h("td", {}, headCell(r)),
-        h("td", { class: "hide-sm", text: r.status === "done" ? `${usd(cost.nemotron)} / ${usd(cost.claude)}` : "—" }),
+        h("td", { class: "hide-sm", text: r.status === "done" || r.status === "cancelled" ? `${usd(cost.nemotron)} / ${usd(cost.claude)}` : "—" }),
         h("td", { class: "hide-sm", text: has(r.wall_s) ? `${Math.round(r.wall_s)} s` : "—" })));
     }
     box.append(h("table", { class: "runs" },

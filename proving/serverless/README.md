@@ -22,16 +22,45 @@ started in the container.
 | Page | `GET /` (public) |
 | Trigger | `POST /runs` with `Authorization: Bearer $PROVING_JUDGE_TOKEN` |
 | Secrets (by name) | `NEBIUS_API_KEY`, `PROVING_JUDGE_TOKEN` |
-| Optional env | `PROVING_DAILY_CAP_NEMOTRON` (default 3), `PROVING_DAILY_CAP_CLAUDE` (default 15), USD |
+| Optional env | `PROVING_DAILY_CAP_NEMOTRON` (default 3, USD); `PROVING_DAILY_CAP_CLAUDE` is moot hosted |
+| Set by the image | `PROVING_HOSTED=1`, `PROVING_RUNS_DIR=/data/proving-runs`, `PROVING_SEED_DIR=/opt/athena/seed-runs` |
+| Cancel | `POST /runs/<id>/cancel` with the same bearer token |
 | Runs | `/data/proving-runs`. Mount a volume here, or a restart forgets both the history and the day's spend |
 
-The image has no `claude` CLI, so it runs `--no-claude`. Only the Athena-on-Nemotron row is live,
-and the page says so. The Haiku control, which generates the comparison attacks and judges
-validity, cannot run either. Its calls are ledgered as `engine_error`, the valid-rate proof
-reads `n/a`, and the Nemotron sample is drawn without grades. The gate verdicts (held, breached,
-error) need no Claude at all. A Characters run needs the Haiku judges for fidelity, so on this
-image it is expected to end with exit 2. That is read from the code, not run. Hosted, the
-Gauntlet is the demo.
+## Hosted mode (ADR 0039)
+
+The image has no `claude` CLI, and sets `PROVING_HOSTED=1` so the runner is hosted even if one
+appeared. Hosted means **Gauntlet only, verdicts from the gate**:
+
+- `GET /status` says `mode: "hosted"`, with `capabilities` (`claude_cli`, `hosted_flag`, the kinds
+  it can start, the roles that run, and why Characters is refused). Every run stays public, and
+  the page says so.
+- `POST /runs` with `kind: "characters"` answers `422 not_on_this_host`. Its fidelity and rubric
+  judges are the Haiku control. The CLI refuses it the same way (exit 2) before any run starts.
+- A Gauntlet runs with `--no-claude --no-control` and a Claude cap of $0. Nemotron alone writes
+  the corpus. Nothing is judged and nothing escalates. Proof 2 reads `n/a — hosted, no control`.
+  Proof 1 (zero breaches), pressure and the approve-path probe are read off the gate, as in a full
+  run. No Claude call is made, so the Claude purse stays at $0.
+- `POST /runs/<id>/cancel` (judge token) kills the running run. The runner writes a `cancelled`
+  report with the spend read from its ledger, so the day's cap still counts it.
+
+### Recorded runs
+
+Characters runs and full Gauntlets are recorded where Claude is available, then copied in:
+
+```bash
+# on the recording machine, before docker build
+uv run python -m athena.proving.server.seed --from proving-runs \
+    --to proving/serverless/seed-runs [RUN_ID ...]
+```
+
+The image copies `/opt/athena/seed-runs` (`PROVING_SEED_DIR`) onto the volume
+(`PROVING_RUNS_DIR`, `/data/proving-runs`) at every start. It never writes over a run that is
+already there, so a restart changes nothing. To skip the rebuild, copy the same run directories
+straight onto the mounted volume. Only `report.json`, `report.md` and `ledger.jsonl` are seeded.
+A run holding the value of `NEBIUS_API_KEY` or `PROVING_JUDGE_TOKEN` is refused. A seeded run
+recorded today (UTC) counts toward today's Nemotron cap, because the day's spend is read from the
+runs on disk.
 
 ## Deploying (planned, not run)
 

@@ -24,6 +24,7 @@ from typing import Any
 
 import pytest
 
+from athena.proving.roles import HOSTED_ENV
 from athena.proving.server import app as app_module
 from athena.proving.server.app import ProvingServer, build_handler, page_html
 from athena.proving.server.runner import (
@@ -116,7 +117,7 @@ def script(tmp_path: Path) -> Path:
 
 
 def _environ(token: str | None = TOKEN) -> dict[str, str]:
-    env = {k: v for k, v in os.environ.items() if k != TOKEN_ENV}
+    env = {k: v for k, v in os.environ.items() if k not in (TOKEN_ENV, HOSTED_ENV)}
     env["NEBIUS_API_KEY"] = KEY
     if token is not None:
         env[TOKEN_ENV] = token
@@ -174,6 +175,7 @@ def make(tmp_path: Path, script: Path) -> Iterator[Any]:
         code: int = 0,
         run_id: str = "20261007T120000Z",
         daily: Mapping[str, float] | None = None,
+        claude_cli: bool = False,
     ) -> tuple[Served, FakeSpawn]:
         spawn = FakeSpawn(script, run_id, gate, code)
         runner = Runner(
@@ -181,7 +183,7 @@ def make(tmp_path: Path, script: Path) -> Iterator[Any]:
             spawn=spawn,
             environ=_environ(token),
             clock=lambda: NOW,
-            claude_cli=False,
+            claude_cli=claude_cli,
             daily_caps=dict(daily or {"nemotron": 3.0, "claude": 15.0}),
         )
         s = Served(runner)
@@ -306,7 +308,7 @@ def test_one_run_at_a_time(make: Any, tmp_path: Path) -> None:
 
 
 def test_the_command_carries_the_presets_and_the_servers_caps(make: Any) -> None:
-    s, spawn = make()
+    s, spawn = make(claude_cli=True)
     assert s.post_run(payload={"kind": "gauntlet", "preset": "small", "claude": True})[0] == 202
     _finish(s)
     argv, env = spawn.calls[0]
@@ -362,7 +364,7 @@ def test_the_daily_cap_is_read_from_the_runs_records_and_refuses(make: Any, tmp_
     _past_run(root, "20261006T230000Z", report={"cost_usd": {"claude": 99.0}}, ledger=None)
     spent = day_spend(root, "20261007")
     assert spent == {"nemotron": 0.25, "claude": 15.5}
-    s, spawn = make()
+    s, spawn = make(claude_cli=True)
     status, body = s.post_run()
     assert status == 429 and body["error"] == "budget_exhausted"
     assert "claude $15.50 of $15.00" in body["detail"]
@@ -376,7 +378,7 @@ def test_a_runs_caps_are_lowered_to_the_days_remainder(make: Any, tmp_path: Path
         report={"cost_usd": {"nemotron": 2.6, "claude": 1.0}},
         ledger=None,
     )
-    s, spawn = make()
+    s, spawn = make(claude_cli=True)
     assert s.post_run()[0] == 202
     _finish(s)
     argv = spawn.calls[0][0]
@@ -412,6 +414,10 @@ def test_a_runs_events_stream_live_and_end_with_its_exit(make: Any) -> None:
     assert all("excerpt" not in call for call in calls)  # model output stays on disk
     end = frames[-1]["data"]
     assert end["exit_code"] == 1 and "breach" in end["meaning"] and end["report"] is True
+    # the child names its run by absolute path; the stream shows only the runs directory's name
+    root = s.runner.runs_root.resolve()
+    assert root.as_posix() not in text and str(root) not in text
+    assert f"gauntlet run -> {root.name}/20261007T120000Z" in frames[0]["data"]["text"]
 
 
 def test_a_past_run_replays_from_its_ledger(make: Any, tmp_path: Path) -> None:
@@ -522,3 +528,130 @@ def test_a_childs_line_never_shows_the_hosts_runs_path(tmp_path: Path) -> None:
     line = f"gauntlet run -> {root.resolve().as_posix()}/20261007T120000Z key {KEY}"
     assert runner.scrub(line) == "gauntlet run -> runs/20261007T120000Z key [redacted]"
     assert runner.scrub(str(root.resolve() / "x")).startswith("runs")
+
+
+# --- hosted mode and cancel (ADR 0039) ----------------------------------------------------------
+
+
+def _status(s: Served) -> dict[str, Any]:
+    return dict(json.loads(s.request("GET", "/status")[2]))
+
+
+def test_status_says_what_the_host_can_do(make: Any, tmp_path: Path, script: Path) -> None:
+    hosted, _ = make()  # no claude CLI found
+    status = _status(hosted)
+    assert status["mode"] == "hosted" and status["runs_public"] is True
+    caps = status["capabilities"]
+    assert caps["mode"] == "hosted" and caps["claude_cli"] is False
+    assert caps["kinds"] == ["gauntlet"] and "Haiku" in caps["refused"]["characters"]
+    assert caps["key_present"] is True and caps["proof2"].startswith("n/a")
+    assert "judge:control" not in caps["roles"] and status["claude_row"] is False
+    assert list(status["presets"]) == ["gauntlet"]
+    assert status["run_caps_usd"] == {"nemotron": 1.0, "claude": 0.0}
+
+    full, _ = make(claude_cli=True)
+    caps = _status(full)["capabilities"]
+    assert caps["mode"] == "full" and caps["kinds"] == ["gauntlet", "characters"]
+    assert caps["refused"] == {} and "judge:control" in caps["roles"]
+
+    # the flag forces hosted even where a claude CLI exists
+    flagged = Runner(
+        tmp_path / "flagged",
+        environ={**_environ(), HOSTED_ENV: "1"},
+        claude_cli=True,
+        spawn=FakeSpawn(script, "20261007T120000Z", None),
+    )
+    assert flagged.hosted and flagged.capabilities()["hosted_flag"] is True
+    assert Runner(tmp_path / "x", environ=_environ(), claude_cli=True, force_hosted=True).hosted
+
+
+def test_hosted_refuses_characters_and_still_lists_recorded_ones(make: Any, tmp_path: Path) -> None:
+    _past_run(
+        tmp_path / "runs",
+        "20261006T090000Z",
+        report={
+            "run_id": "20261006T090000Z",
+            "prototype": "characters",
+            "proof": {"fidelity": {"rate": 0.9, "pass": True}},
+            "conversations": [{"id": "c1"}],
+        },
+        ledger=None,
+    )
+    s, spawn = make()
+    status, body = s.post_run(payload={"kind": "characters", "preset": "small"})
+    assert status == 422 and body["error"] == "not_on_this_host"
+    assert "Haiku" in body["detail"] and "Recorded Characters runs" in body["detail"]
+    assert spawn.calls == []
+    runs = json.loads(s.request("GET", "/runs")[2])["runs"]
+    assert runs[0]["prototype"] == "characters" and runs[0]["status"] == "done"
+    assert runs[0]["mode"] == "full"  # recorded before modes: it had the control
+    assert s.request("GET", "/runs/20261006T090000Z")[0] == 200
+
+
+def test_a_hosted_gauntlet_runs_without_claude_and_with_no_claude_money(
+    make: Any, tmp_path: Path
+) -> None:
+    # Claude's day is spent, and that does not matter hosted: nothing runs on Claude
+    _past_run(
+        tmp_path / "runs", "20261007T010000Z", report={"cost_usd": {"claude": 99.0}}, ledger=None
+    )
+    s, spawn = make()
+    status, body = s.post_run(payload={"kind": "gauntlet", "preset": "small", "claude": True})
+    assert status == 202, body
+    assert body["mode"] == "hosted" and body["claude_row"] is False
+    _finish(s)
+    argv, env = spawn.calls[0]
+    assert "--no-claude" in argv and "--no-control" in argv and "--claude" not in argv
+    assert argv[argv.index("--claude-cap") + 1] == "0.0000"
+    assert env[HOSTED_ENV] == "1"
+
+
+def test_cancel_takes_the_token_kills_the_child_and_marks_the_run(
+    make: Any, tmp_path: Path
+) -> None:
+    gate = tmp_path / "never"  # the fake run waits on this forever
+    s, _ = make(gate=gate)
+    status, body = s.post_run()
+    assert status == 202
+    run_id = body["run_id"]
+    cancel = f"/runs/{run_id}/cancel"
+    assert s.request("POST", cancel)[0] == 401
+    wrong = {"Authorization": "Bearer wrong-token-wrong"}
+    assert s.request("POST", cancel, b"", wrong)[0] == 401
+    assert s.runner.busy()  # neither attempt touched the run
+    ok = {"Authorization": f"Bearer {TOKEN}"}
+    assert s.request("POST", "/runs/20261001T000000Z/cancel", b"", ok)[0] == 404
+    status, _, text = s.request("POST", cancel, b"", ok)
+    assert status == 200, text
+    out = json.loads(text)
+    assert out["cancelled"] is True and out["done"] is True
+    job = s.runner.current
+    assert job is not None and job.process is not None and job.process.poll() is not None
+    report = json.loads(s.request("GET", f"/runs/{run_id}")[2])
+    assert report["cancelled"] is True and report["status"] == "cancelled"
+    assert report["mode"] == "hosted"
+    assert report["cost_usd"] == {"nemotron": 0.03, "claude": 0.0}  # read from its ledger
+    assert report["calls"] == 2 and "proof" not in report
+    listing = json.loads(s.request("GET", "/runs")[2])
+    assert listing["runs"][0]["status"] == "cancelled"
+    frames = _frames(s.request("GET", f"/runs/{run_id}/events")[2])
+    end = frames[-1]["data"]
+    assert frames[-1]["event"] == "end" and end["meaning"] == "cancelled by a judge"
+    assert end["cancelled"] is True
+    # a finished run cannot be cancelled, and the day's spend still counts the cancelled run
+    assert s.request("POST", cancel, b"", ok)[0] == 409
+    assert _status(s)["daily"]["nemotron"]["spent_usd"] == 0.03
+
+
+def test_cancel_is_off_without_a_configured_token(make: Any) -> None:
+    s, _ = make(token=None)
+    status, _, text = s.request(
+        "POST", "/runs/20261007T120000Z/cancel", b"", {"Authorization": "Bearer x-x-x-x-x"}
+    )
+    assert status == 403 and json.loads(text)["error"] == "triggering_off"
+
+
+def test_the_page_greys_out_what_the_host_cannot_run() -> None:
+    script = page_html().split("<script", 1)[1]
+    for needed in ("capabilities", "refused", "/cancel", "runs_public", "valid_rate", ".na"):
+        assert needed in script, needed

@@ -3,13 +3,19 @@
 ::
 
     PROVING_JUDGE_TOKEN=... uv run python -m athena.proving.server [--host 127.0.0.1]
-        [--port 8790] [--out proving-runs] [--claude/--no-claude] [--env-file .env]
-        [--uat-dir uat] [--allow-origin ORIGIN ...]
+        [--port 8790] [--out proving-runs] [--claude/--no-claude] [--hosted] [--env-file .env]
+        [--uat-dir uat] [--allow-origin ORIGIN ...] [--seed-from DIR]
 
 ``PROVING_JUDGE_TOKEN``, ``NEBIUS_API_KEY`` and the daily caps (``PROVING_DAILY_CAP_CLAUDE``,
 ``PROVING_DAILY_CAP_NEMOTRON``, USD) are read from the environment, or from the ``.env`` file when
 the environment has none. No value is ever printed: the start line says only whether triggering
 is on. ``PORT`` is honoured when ``--port`` is not given, as a container platform sets it.
+
+**Hosted** (ADR 0039): with no ``claude`` CLI on PATH, ``PROVING_HOSTED=1`` or ``--hosted``, the
+runner starts only the Gauntlet, without the control, and the start line says ``mode hosted``.
+``PROVING_RUNS_DIR`` is the runs directory when ``--out`` is not given (a mounted volume, hosted).
+``--seed-from`` (or ``PROVING_SEED_DIR``) copies recorded runs into it at start, never over a run
+already there (:mod:`.seed`), so the hosted page lists runs recorded where Claude was available.
 """
 
 from __future__ import annotations
@@ -31,6 +37,7 @@ from athena.proving.server.runner import (
     Runner,
 )
 from athena.proving.server.runs import RunIndex
+from athena.proving.server.seed import RUNS_DIR_ENV, SEED_DIR_ENV, seed_runs
 
 __all__ = ["build_parser", "main"]
 
@@ -41,13 +48,27 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m athena.proving.server")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=None)
-    parser.add_argument("--out", default=RUNS_DIRNAME, help="the runs directory (read and written)")
+    parser.add_argument(
+        "--out",
+        default=None,
+        help=f"the runs directory, read and written (default: ${RUNS_DIR_ENV} or {RUNS_DIRNAME})",
+    )
     parser.add_argument(
         "--claude",
         dest="claude_row",
         action=argparse.BooleanOptionalAction,
         default=True,
         help="offer the Athena-on-Claude row (needs a claude CLI on PATH)",
+    )
+    parser.add_argument(
+        "--hosted",
+        action="store_true",
+        help="run as the hosted container does: Gauntlet only, no Claude roles (ADR 0039)",
+    )
+    parser.add_argument(
+        "--seed-from",
+        default=None,
+        help=f"copy recorded runs from here into the runs directory at start (or ${SEED_DIR_ENV})",
     )
     parser.add_argument("--env-file", default=".env")
     parser.add_argument("--uat-dir", default="uat")
@@ -68,10 +89,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     load_env_file(args.env_file)
     port = args.port if args.port is not None else int(os.environ.get("PORT") or DEFAULT_PORT)
-    runs_root = Path(args.out).resolve()
+    runs_root = Path(args.out or os.environ.get(RUNS_DIR_ENV) or RUNS_DIRNAME).resolve()
+    seed_dir = args.seed_from or os.environ.get(SEED_DIR_ENV, "").strip()
+    seeded = seed_runs(Path(seed_dir), runs_root).seeded if seed_dir else []
     runner = Runner(
         runs_root,
         claude_allowed=args.claude_row,
+        force_hosted=args.hosted,
         env_file=args.env_file,
         uat_dir=args.uat_dir,
         daily_caps=daily_caps(os.environ),
@@ -83,8 +107,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     triggering = "on" if os.environ.get(TOKEN_ENV, "").strip() else f"off ({TOKEN_ENV} unset)"
     print(
         f"proving ground on http://{args.host}:{server.server_address[1]}/ - triggering "
-        f"{triggering}; athena-on-claude row {'on' if args.claude_row else 'off'}; "
-        f"claude cli {'found' if runner.claude_cli else 'absent'}",
+        f"{triggering}; athena-on-claude row "
+        f"{'on' if args.claude_row and not runner.hosted else 'off'}; "
+        f"claude cli {'found' if runner.claude_cli else 'absent'}; "
+        f"mode {'hosted' if runner.hosted else 'full'}"
+        + (f"; seeded {len(seeded)} recorded run(s)" if seed_dir else ""),
         flush=True,
     )
     try:

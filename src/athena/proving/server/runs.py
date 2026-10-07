@@ -4,6 +4,10 @@ Every number here is copied from a run's own ``report.json``; nothing is compute
 did not already say, except two sums the page needs for its headline (a row's pressure over its
 generators, and the models a run used). An absent value stays absent: a run that has not finished
 has no headline, never a headline of zeros (:func:`athena.proving.report.prune`'s rule).
+
+A run carries its ``mode`` (ADR 0039): ``hosted`` when the Haiku control did not run, ``full``
+otherwise; a report written before modes existed is ``full`` by construction (it had the control).
+A run a judge cancelled is listed as ``cancelled``, with what it spent and no proof.
 """
 
 from __future__ import annotations
@@ -76,6 +80,8 @@ def headline(report: Mapping[str, Any]) -> dict[str, Any]:
         "wall_s": report.get("wall_s"),
         "cost_usd": report.get("cost_usd"),
         "budget": report.get("budget"),
+        "mode": report.get("mode") or ("full" if report.get("proof") else None),
+        "roles": report.get("roles"),
         "models": _models(report),
         "rows": [
             {
@@ -144,7 +150,9 @@ class RunIndex:
             data = json.loads(report.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             return {"run_id": run_id, "status": "unreadable"}
-        entry = {"status": "done", **headline(data if isinstance(data, Mapping) else {})}
+        data = data if isinstance(data, Mapping) else {}
+        status = "cancelled" if data.get("cancelled") is True else "done"
+        entry = {"status": status, **headline(data)}
         entry["run_id"] = run_id
         with self._lock:
             self._cache[run_id] = (mtime, entry)

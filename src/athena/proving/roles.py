@@ -26,6 +26,7 @@ import asyncio
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import threading
@@ -51,6 +52,7 @@ from athena.proving.runlog import RunLog
 
 __all__ = [
     "HAIKU_MODEL",
+    "HOSTED_ENV",
     "RUNGS",
     "THINKING_OFF",
     "ClaudeRole",
@@ -62,7 +64,9 @@ __all__ = [
     "RoleReply",
     "Runner",
     "Validity",
+    "claude_available",
     "extract_json",
+    "hosted_flag",
     "load_env_file",
     "subprocess_runner",
 ]
@@ -495,6 +499,25 @@ def load_env_file(path: str | Path, environ: dict[str, str] | None = None) -> li
             target[name] = value
             names.append(name)
     return names
+
+
+#: Set to a truthy value (``1``, ``true``, ``yes``) to run as the hosted container does: as if no
+#: ``claude`` CLI existed, whatever is on PATH (ADR 0039). Inherited by a run's child process.
+HOSTED_ENV = "PROVING_HOSTED"
+
+
+def hosted_flag(environ: Mapping[str, str] | None = None) -> bool:
+    """Is :data:`HOSTED_ENV` set to a truthy value?"""
+    value = (environ if environ is not None else os.environ).get(HOSTED_ENV, "")
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
+
+def claude_available(
+    environ: Mapping[str, str] | None = None,
+    which: Callable[[str], str | None] = shutil.which,
+) -> bool:
+    """Can a Claude role run here: a ``claude`` CLI on PATH, and not forced hosted?"""
+    return not hosted_flag(environ) and which("claude") is not None
 
 
 def _ms(started: float) -> int:

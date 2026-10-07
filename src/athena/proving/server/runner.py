@@ -18,6 +18,13 @@ overshoot by the same.
 **Nothing secret leaves.** The child gets the environment minus the judge token; every line it
 prints is passed through :meth:`Runner.redact` before it becomes an event, and the ledger rows
 are forwarded field by field (sizes, costs, outcomes — never an excerpt of model output).
+
+**Hosted mode** (ADR 0039) is decided once, at start: no ``claude`` CLI on PATH, or
+``PROVING_HOSTED`` set, or ``--hosted``. Then only the Gauntlet runs, with ``--no-claude
+--no-control``, and its Claude cap is $0, so even a call that slipped past the flags would be
+refused by the purse. A Characters request raises :class:`Unavailable`. A judge may cancel the
+running run (:meth:`Runner.cancel`): the child is killed and, if it wrote no report, the runner
+writes a ``cancelled`` one from the ledger, so the run's spend still counts toward the day.
 """
 
 from __future__ import annotations
@@ -38,11 +45,14 @@ from typing import IO, Any, Protocol
 
 from athena.proving.budget import CLAUDE, DEFAULT_CAPS, ENGINES, NEMOTRON
 from athena.proving.report import announce
+from athena.proving.roles import HOSTED_ENV, hosted_flag
 
 __all__ = [
+    "CANCELLED",
     "DAILY_CAP_ENV",
     "DEFAULT_DAILY_CAPS",
     "EXIT_MEANING",
+    "HOSTED_KINDS",
     "KINDS",
     "MAX_CALL_EVENTS",
     "PRESETS",
@@ -51,8 +61,11 @@ __all__ = [
     "Busy",
     "CapSpent",
     "Job",
+    "NotRunning",
     "Runner",
     "StartFailed",
+    "Unavailable",
+    "cancelled_report",
     "day_spend",
     "purse_of",
     "run_spend",
@@ -70,6 +83,21 @@ DAILY_CAP_ENV: dict[str, str] = {
 DEFAULT_DAILY_CAPS: dict[str, float] = {CLAUDE: 15.0, NEMOTRON: 3.0}
 
 KINDS: tuple[str, ...] = ("gauntlet", "characters")
+
+#: What a hosted runner (no Claude) may start, and why the rest is refused (ADR 0039).
+HOSTED_KINDS: tuple[str, ...] = ("gauntlet",)
+HOSTED_REFUSALS: dict[str, str] = {
+    "characters": (
+        "Characters cannot run on this host: its persona-fidelity and rubric judges are the Haiku "
+        "control, and this host runs no Claude. Recorded Characters runs are still listed."
+    ),
+}
+
+#: The flags a hosted Gauntlet always carries, after its preset's.
+HOSTED_FLAGS: tuple[str, ...] = ("--no-claude", "--no-control")
+
+#: A run a judge stopped. Its exit code is whatever the kill produced; this is what it means.
+CANCELLED = "cancelled"
 
 #: Preset → the CLI flags it adds. ``default`` is the CLI's own defaults, unchanged. ``small`` is
 #: the cheapest run that still exercises every stage: one generator call per surface, one attack
@@ -159,6 +187,14 @@ class StartFailed(RuntimeError):
     """The child exited, or never said where it writes, before the run began."""
 
 
+class Unavailable(RuntimeError):
+    """This host cannot run that kind at all (hosted: no Claude). The page answers 422."""
+
+
+class NotRunning(RuntimeError):
+    """A cancel named a run that is not the one going. The page answers 409."""
+
+
 def purse_of(engine: str) -> str | None:
     """The purse a ledger row's ``engine`` is charged to. Role clients write the purse name;
     Athena-under-test rows carry her engine's name (``nebius``, ``claude_code``)."""
@@ -197,6 +233,32 @@ def run_spend(run_dir: Path) -> dict[str, float]:
         if purse is not None and isinstance(cost, int | float) and cost > 0:
             spent[purse] += float(cost)
     return spent
+
+
+def cancelled_report(
+    job_kind: str, run_dir: Path, cancelled_at: str, mode: str = "full"
+) -> dict[str, Any]:
+    """The report a cancelled run gets when it wrote none: what it spent (from its ledger, the
+    raw record), how many calls it made, and that a judge stopped it. No proof: none was read."""
+    spent = run_spend(run_dir)
+    calls = 0
+    ledger = run_dir / "ledger.jsonl"
+    if ledger.is_file():
+        calls = sum(1 for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip())
+    return {
+        "run_id": run_dir.name,
+        "prototype": job_kind,
+        "mode": mode,
+        "status": CANCELLED,
+        "cancelled": True,
+        "cancelled_at": cancelled_at,
+        "calls": calls,
+        "cost_usd": {engine: round(spent[engine], 6) for engine in ENGINES},
+        "notes": [
+            "A judge cancelled this run from the trigger page; the runner killed it. No proof "
+            "was evaluated, so none is reported. Its spend is read from its ledger.",
+        ],
+    }
 
 
 def day_spend(runs_root: Path, day: str) -> dict[str, float]:
@@ -267,6 +329,8 @@ class Job:
     exit_code: int | None = None
     exited: bool = False
     done: bool = False
+    cancelled: bool = False
+    hosted: bool = False
     process: Process | None = None
 
     def __post_init__(self) -> None:
@@ -306,6 +370,8 @@ class Job:
             "started_at": self.started_at,
             "done": self.done,
             "exit_code": self.exit_code,
+            "cancelled": self.cancelled,
+            "mode": "hosted" if self.hosted else "full",
         }
 
 
@@ -325,14 +391,59 @@ class Runner:
     environ: Mapping[str, str] = field(default_factory=lambda: os.environ)
     clock: Callable[[], datetime] = field(default=lambda: datetime.now(UTC))
     #: Is a ``claude`` CLI on PATH? The Haiku control (generator and judge) runs through it even
-    #: when the Athena-on-Claude row is off; without it those calls fail and are ledgered so.
+    #: when the Athena-on-Claude row is off. Without it, the runner is hosted (ADR 0039).
     claude_cli: bool = field(default_factory=lambda: shutil.which("claude") is not None)
+    #: ``--hosted``: run as the container does even where a ``claude`` CLI exists.
+    force_hosted: bool = False
 
     def __post_init__(self) -> None:
         self._lock = threading.Lock()
         self.current: Job | None = None
 
+    # -- capability ---------------------------------------------------------------------------
+
+    @property
+    def hosted(self) -> bool:
+        """No Claude here: no ``claude`` CLI, or ``PROVING_HOSTED``, or ``--hosted``."""
+        return self.force_hosted or hosted_flag(self.environ) or not self.claude_cli
+
+    def kinds(self) -> tuple[str, ...]:
+        return HOSTED_KINDS if self.hosted else KINDS
+
+    def capabilities(self) -> dict[str, Any]:
+        """What this host can do, decided from what it found at start. Never a value."""
+        refused = {k: v for k, v in HOSTED_REFUSALS.items() if k not in self.kinds()}
+        return {
+            "mode": "hosted" if self.hosted else "full",
+            "claude_cli": self.claude_cli,
+            "hosted_flag": self.force_hosted or hosted_flag(self.environ),
+            "kinds": list(self.kinds()),
+            "refused": refused,
+            "roles": (
+                ["attacker:nemotron", "athena:athena-nemotron", "approve-probe"]
+                if self.hosted
+                else [
+                    "attacker:nemotron",
+                    "attacker:control",
+                    "judge:control",
+                    "athena:athena-nemotron",
+                    *(["athena:athena-claude"] if self.claude_allowed else []),
+                    "approve-probe",
+                    "user:nemotron",
+                    "judge:nemotron",
+                ]
+            ),
+            "proof2": "n/a — hosted, no control" if self.hosted else "valid rate vs the control",
+        }
+
     # -- money --------------------------------------------------------------------------------
+
+    def per_run_caps(self) -> dict[str, float]:
+        """The operator's per-run caps as this host applies them: Claude's is $0 when hosted."""
+        return {
+            engine: 0.0 if self.hosted and engine == CLAUDE else self.run_caps.get(engine, 0.0)
+            for engine in ENGINES
+        }
 
     def today(self) -> str:
         return self.clock().strftime("%Y%m%d")
@@ -353,7 +464,9 @@ class Runner:
         :class:`CapSpent` when any purse has nothing left today — the Claude purse too, because
         the Haiku control is on Claude even when Athena-on-Claude is off."""
         daily = self.daily()
-        spent = [engine for engine in ENGINES if daily[engine]["remaining_usd"] <= 0]
+        # Hosted, nothing runs on Claude, so its purse neither blocks a run nor funds one.
+        live = (NEMOTRON,) if self.hosted else ENGINES
+        spent = [engine for engine in live if daily[engine]["remaining_usd"] <= 0]
         if spent:
             names = ", ".join(
                 f"{engine} ${daily[engine]['spent_usd']:.2f} of ${daily[engine]['cap_usd']:.2f}"
@@ -362,6 +475,8 @@ class Runner:
             raise CapSpent(f"today's cap is spent ({names}); it resets at 00:00 UTC")
         return {
             engine: round(min(self.run_caps.get(engine, 0.0), daily[engine]["remaining_usd"]), 4)
+            if engine in live
+            else 0.0
             for engine in ENGINES
         }
 
@@ -393,7 +508,10 @@ class Runner:
         if kind not in PRESETS or preset not in PRESETS[kind]:
             raise ValueError(f"unknown run {kind}/{preset}")
         argv = [self.python, "-m", "athena.proving", kind, *PRESETS[kind][preset]]
-        argv += ["--claude" if claude_row else "--no-claude"]
+        if self.hosted:
+            argv += list(HOSTED_FLAGS)
+        else:
+            argv += ["--claude" if claude_row else "--no-claude"]
         argv += ["--nemotron-cap", f"{caps[NEMOTRON]:.4f}", "--claude-cap", f"{caps[CLAUDE]:.4f}"]
         argv += ["--out", str(self.runs_root), "--env-file", self.env_file]
         if kind == "characters":
@@ -409,13 +527,18 @@ class Runner:
         :class:`CapSpent`, :class:`StartFailed` or ``ValueError``."""
         if kind not in PRESETS or preset not in PRESETS[kind]:
             raise ValueError(f"unknown run {kind}/{preset}")
+        if kind not in self.kinds():
+            raise Unavailable(HOSTED_REFUSALS.get(kind, f"{kind} cannot run on this host"))
         row = self.claude_allowed if claude_row is None else (claude_row and self.claude_allowed)
+        row = row and not self.hosted
         with self._lock:
             if self.busy():
                 raise Busy("a run is already in progress; one run at a time")
             caps = self.caps_for_run()
-            job = Job(kind, preset, row, caps, self.clock().isoformat())
+            job = Job(kind, preset, row, caps, self.clock().isoformat(), hosted=self.hosted)
             env = {k: v for k, v in self.environ.items() if k != TOKEN_ENV}
+            if self.hosted:
+                env[HOSTED_ENV] = "1"  # the child decides the same way, whatever is on PATH
             env["PYTHONUNBUFFERED"] = "1"
             env["PYTHONIOENCODING"] = "utf-8"
             self.runs_root.mkdir(parents=True, exist_ok=True)
@@ -438,6 +561,20 @@ class Runner:
         if job is not None and job.process is not None and job.process.poll() is None:
             job.process.kill()
 
+    def cancel(self, run_id: str, wait_s: float = 15.0) -> Job:
+        """Kill the running run ``run_id`` and wait for its ``end``. Raises :class:`NotRunning`
+        when ``run_id`` is not the run going. The reader thread writes the cancelled report."""
+        with self._lock:
+            job = self.current
+            if job is None or job.done or not job.run_id or job.run_id != run_id:
+                raise NotRunning(f"{run_id} is not running; only the current run can be cancelled")
+            job.cancelled = True
+            if job.process is not None and job.process.poll() is None:
+                job.process.kill()
+        with job.cond:
+            job.cond.wait_for(lambda: job.done, timeout=wait_s)
+        return job
+
     def _read(self, job: Job) -> None:
         """The stdout reader: one ``line`` event per line, then the ledger's tail, then ``end``."""
         process = job.process
@@ -445,7 +582,7 @@ class Runner:
         tail = threading.Thread(target=self._tail, args=(job,), daemon=True)
         if process.stdout is not None:
             for raw in process.stdout:
-                text = self.redact(raw.rstrip("\r\n"))
+                text = self.scrub(raw.rstrip("\r\n"))
                 match = _ANNOUNCE.match(text)
                 if match and not job.run_id:
                     candidate = Path(match.group(2).strip())
@@ -463,6 +600,16 @@ class Runner:
         if tail.ident is not None:
             tail.join(timeout=10)
         meaning = EXIT_MEANING.get(job.kind, {}).get(code, "the run failed before its report")
+        if job.cancelled:
+            meaning = "cancelled by a judge"
+            if job.run_dir is not None and not (job.run_dir / "report.json").is_file():
+                stamp = self.clock().isoformat()
+                record = cancelled_report(
+                    job.kind, job.run_dir, stamp, "hosted" if job.hosted else "full"
+                )
+                (job.run_dir / "report.json").write_text(
+                    json.dumps(record, indent=2) + "\n", encoding="utf-8"
+                )
         report = job.run_dir is not None and (job.run_dir / "report.json").is_file()
         dropped = job.calls_seen - job.calls_streamed
         job.emit(
@@ -472,6 +619,7 @@ class Runner:
                 "exit_code": code,
                 "meaning": meaning,
                 "report": report,
+                "cancelled": job.cancelled or None,
                 "calls": job.calls_seen,
                 "footer": announce(job.calls_streamed, job.calls_seen) if dropped else None,
             },
