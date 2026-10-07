@@ -11,7 +11,7 @@ import type { ModuleEntry } from "@/modules/types";
 import { useConnectors } from "@/stores/connectors";
 import { endpoint, useDaemon } from "@/stores/daemon";
 
-import { fixtureIds, fixtures } from "./fixtures";
+import { fixtureIds, fixtures, initialOpenFor } from "./fixtures";
 import { selectConnectors, type ConnectorActions } from "./model";
 import ConnectorsView from "./view";
 
@@ -49,6 +49,9 @@ export const entry: ModuleEntry = {
   blurb: "Mail and notes Athena may use from any page, each behind its own switch.",
   fixtureIds,
   preview: (fixture) =>
-    createElement(ConnectorsView, { model: fixtures[fixture] ?? fixtures.typical }),
+    createElement(ConnectorsView, {
+      model: fixtures[fixture] ?? fixtures.typical,
+      initialOpen: initialOpenFor(fixture),
+    }),
   Live,
 };

@@ -1377,3 +1377,63 @@ select:focus-visible {
   margin-top: auto;
   padding-top: 6px;
 }
+
+/* -- Emblem (ADR 0029): the stamp a tile's drawing is set in ---------------------------------- */
+.emblem {
+  flex: none;
+  overflow: visible;
+}
+
+.emblem__ghost {
+  fill: none;
+  stroke: var(--border-default);
+  stroke-width: 1.5;
+}
+
+.emblem__plate {
+  fill: var(--recessed);
+  stroke: var(--border-default);
+  stroke-width: 1;
+}
+
+.emblem__ring {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+}
+
+.emblem__glyph path {
+  fill: none;
+  stroke: var(--muted-foreground);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.emblem__mark {
+  fill: var(--muted);
+}
+
+.emblem--done .emblem__plate {
+  fill: var(--primary);
+  stroke: transparent;
+}
+
+.emblem--done .emblem__ring {
+  stroke: var(--primary-fg);
+  stroke-dasharray: none;
+  opacity: 0.55;
+}
+
+.emblem--done .emblem__glyph path {
+  stroke: var(--primary-fg);
+}
+
+.emblem--done .emblem__mark {
+  fill: var(--role-human);
+}
+
+.emblem--done .emblem__ghost {
+  stroke: color-mix(in srgb, var(--primary) 55%, transparent);
+}
