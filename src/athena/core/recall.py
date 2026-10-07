@@ -10,7 +10,8 @@ Three populations answer three different questions, so they are three blocks and
   include. Query-driven, and empty when the query matches nothing. An empty lane is the answer;
   padding it with whatever ranked next would be a lie the model cannot detect.
 - **episodes** — the last :data:`EPISODE_WINDOW` turns, relevance first and then a recency tail,
-  oldest first so the block reads as conversation.
+  oldest first so the block reads as conversation. A relevant episode longer than an excerpt is
+  shown as the excerpt-sized window around its match, not its first 500 bytes (ADR 0042).
 
 **Each block carries its own N of M.** :meth:`RecallBlock.footer` counts the population that
 block drew from, not the size of the brain: an always block that says ``(showing 8 of 41)`` is
@@ -33,7 +34,7 @@ from typing import Any
 
 from athena.contracts.harness import PromptBlock
 from athena.core.brain.store import Brain
-from athena.core.brain.text import fts_match
+from athena.core.brain.text import EXCERPT_BYTES, excerpt, fts_match, fts_terms
 
 #: A fact or procedural at this importance or above is in every prompt, query or no query.
 ALWAYS_IMPORTANCE_FLOOR = 4
@@ -44,6 +45,8 @@ ALWAYS_PROCEDURALS = 6
 #: The episode window is a budget, not a quota: relevant turns keep their slots and a recency
 #: tail fills whatever is left.
 EPISODE_WINDOW = 20
+#: The mark at a cut end of a window onto a longer episode.
+ELLIPSIS = " … "
 #: How many query-driven slots the distilled block gets.
 KEYWORD_SLOTS = 6
 #: Machine-written episodes may take at most this many of the window's relevance slots (ref §8);
@@ -217,6 +220,27 @@ def recall(
     return trace
 
 
+def around(body: str, query: str) -> str:
+    """An excerpt's worth of ``body``, centred on the first word of ``query`` it contains.
+
+    A short body is itself. A long one is the :data:`EXCERPT_BYTES` window around its first match
+    (ADR 0042), with :data:`ELLIPSIS` where it was cut — so the row a person asked about is shown
+    even when it sits past the head of a page of results. No match in the body (the index can
+    match a stem the text spells differently) falls back to the head, as before.
+    """
+    if len(body.encode("utf-8")) <= EXCERPT_BYTES:
+        return body
+    lower = body.lower()
+    hits = [i for t in fts_terms(query) if (i := lower.find(t.lower())) >= 0]
+    if not hits:
+        return excerpt(body)
+    start = max(0, min(hits) - EXCERPT_BYTES // 4)
+    window = excerpt(body[start:])
+    head = ELLIPSIS.lstrip() + " " if start > 0 else ""
+    tail = ELLIPSIS.rstrip() if start + len(window) < len(body) else ""
+    return f"{head}{window}{tail}"
+
+
 # -- the lanes ---------------------------------------------------------------------------------
 
 
@@ -322,9 +346,12 @@ def _episode_block(con: sqlite3.Connection, query: str, budget: int) -> RecallBl
     match = fts_match(query)
     if match:
         machine_taken = 0
+        # A matched episode shows where it matched (ADR 0042): the head excerpt of a page of
+        # results is its first rows, and the row asked about is often further down.
         for row in _rows(
             con,
-            f"""{_NODE_SELECT}, bm25(companion_fts)
+            """SELECT n.id, n.kind, f.body, n.file_path, n.created_at, n.machine,
+                    bm25(companion_fts)
                 FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
                 WHERE companion_fts MATCH ? AND n.kind = 'episode' AND n.importance > 0
                 ORDER BY bm25(companion_fts) ASC LIMIT ?""",
@@ -332,7 +359,11 @@ def _episode_block(con: sqlite3.Connection, query: str, budget: int) -> RecallBl
         ):
             if len(chosen) >= budget:
                 break
-            memory = _memory(row, KEYWORD_BLOCK, float(row[6]))
+            memory = _memory(
+                (row[0], row[1], around(str(row[2] or ""), query), *row[3:]),
+                KEYWORD_BLOCK,
+                float(row[6]),
+            )
             if memory.machine:
                 if machine_taken >= MACHINE_EPISODE_SLOTS:
                     continue
