@@ -210,6 +210,9 @@
           },
           "says": "Reminder set for {reference} on {date}."
         }
+      ],
+      "aliases": [
+        "Seller Central"
       ]
     },
     {
@@ -264,6 +267,10 @@
           },
           "says": "Reply sent on {thread}."
         }
+      ],
+      "aliases": [
+        "supplier inbox",
+        "inbox"
       ]
     }
   ],

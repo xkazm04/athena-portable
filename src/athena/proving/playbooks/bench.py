@@ -35,7 +35,7 @@ from typing import Any
 
 from athena.proving.characters.scene import CONTINUE
 from athena.proving.playbooks.page import SimulatedPortals
-from athena.proving.playbooks.spec import Playbook, Target, _norm
+from athena.proving.playbooks.spec import AppSpec, Playbook, Target, _norm
 from athena.proving.report import prune
 from athena.proving.world import TurnRecord, World
 
@@ -51,6 +51,7 @@ __all__ = [
     "run_bench",
     "score",
     "summary_of",
+    "switch_requested",
     "verdict",
     "write_bench",
     "write_report",
@@ -76,6 +77,8 @@ class BenchConfig:
     model: str = "sonnet"
     approve: str = "none"
     cap_usd: float = 5.0
+    #: How many times the person does what Athena asks when she asks them to switch tabs.
+    follow_ups: int = 3
 
 
 @dataclass
@@ -83,6 +86,7 @@ class _Run:
     cards: list[dict[str, Any]] = field(default_factory=list)
     turns: list[dict[str, Any]] = field(default_factory=list)
     nudges: int = 0
+    follow_ups: int = 0
     errors: list[str] = field(default_factory=list)
     cost: float = 0.0
     cost_known: bool = True
@@ -130,6 +134,22 @@ def run_bench(
             _phase(world, portals, run, app.app_id, phase.message, phase.nudges, config, echo)
             if run.errors and run.errors[-1].startswith("cap"):
                 break
+        # After the script, the person does what she asks when she asks them to switch tabs: the
+        # move a person makes when Athena says "switch to MyChart and I'll read the notes". It is
+        # decided from her words alone, never from the truth, and bounded (ADR 0040).
+        current = playbook.phases[-1].app if playbook.phases else ""
+        while run.follow_ups < config.follow_ups and not any(
+            e.startswith("cap") for e in run.errors
+        ):
+            asked = switch_requested(playbook, _last_said(run), current)
+            if asked is None:
+                break
+            run.follow_ups += 1
+            echo(f"follow-up {run.follow_ups}: the person switches to {asked.name}")
+            world.origin = asked.origin
+            message = f"I've switched to {asked.name} as you asked. Go ahead."
+            _phase(world, portals, run, asked.app_id, message, 1, config, echo)
+            current = asked.app_id
     finally:
         world.close()
     wall = round(time.monotonic() - started, 1)
@@ -143,6 +163,7 @@ def run_bench(
         "wall_s": wall,
         "turns": len(run.turns),
         "nudges": run.nudges,
+        "follow_ups": run.follow_ups,
         "reads": portals.reads,
         "cost_usd": round(run.cost, 4) if run.cost_known and run.turns else None,
         "tokens": {"input": run.tokens_in, "output": run.tokens_out},
@@ -160,6 +181,30 @@ def run_bench(
     report["verdict"] = verdict(playbook, report)
     pruned: dict[str, Any] = prune(report)
     return pruned
+
+
+_SWITCH = r"\b(?:switch|go|move|head|flip|change|open)\w*\b[^.\n]{0,60}?"
+
+
+def switch_requested(playbook: Playbook, said: str, current: str) -> AppSpec | None:
+    """The portal Athena's words ask the person to switch to, if any, other than the current one.
+
+    Read from her text alone: "switch to the MyChart tab", "go back to the insurance portal". The
+    first portal named after a verb of moving wins; a portal merely mentioned is not a request.
+    """
+    best: tuple[int, AppSpec] | None = None
+    for app in playbook.apps:
+        if app.app_id == current:
+            continue
+        for alias in app.aliases:
+            found = re.search(_SWITCH + rf"\b{re.escape(alias)}\b", said, re.IGNORECASE)
+            if found and (best is None or found.start() < best[0]):
+                best = (found.start(), app)
+    return best[1] if best else None
+
+
+def _last_said(run: _Run) -> str:
+    return next((str(t.get("said", "")) for t in reversed(run.turns) if t.get("said")), "")
 
 
 def _phase(
@@ -518,6 +563,7 @@ def summary_of(report: Mapping[str, Any]) -> dict[str, Any]:
             "wall_s": report.get("wall_s"),
             "turns": report.get("turns"),
             "nudges": report.get("nudges"),
+            "follow_ups": report.get("follow_ups"),
             "reads": report.get("reads"),
             "cost_usd": report.get("cost_usd"),
             "your_time_s": report.get("your_time_s"),

@@ -22,6 +22,7 @@ from athena.proving.playbooks.bench import (
     run_bench,
     score,
     summary_of,
+    switch_requested,
     write_bench,
 )
 from athena.proving.playbooks.page import SimulatedPortals
@@ -479,3 +480,48 @@ def test_every_turn_carries_the_playbook_as_the_active_project(tmp_path: Path) -
     assert seen and all("## Active project" in f for f in seen)
     assert all("goal: File a refund claim for every late parcel." in f for f in seen)
     assert all("kind: playbook" in f for f in seen)
+
+
+# --- the person does what she asks --------------------------------------------------------------
+
+
+def _two_portals(tmp_path: Path) -> Path:
+    root = make_playbook(tmp_path)
+    world = json.loads((root / "world.json").read_text(encoding="utf-8"))
+    second = json.loads(json.dumps(world["apps"][0]))
+    second.update(app_id="carrier", name="Carrier portal", origin="http://localhost:3102")
+    second["aliases"] = ["carrier site"]
+    second["tools"] = [t for t in second["tools"] if t["name"] == "list_shipments"]
+    second["tools"][0]["name"] = "track"
+    world["apps"].append(second)
+    (root / "world.json").write_text(json.dumps(world), encoding="utf-8")
+    return root
+
+
+def test_a_request_to_switch_tabs_is_heard_from_her_words_alone(tmp_path: Path) -> None:
+    book = load_playbook(_two_portals(tmp_path))
+    assert (
+        switch_requested(book, "Switch to the carrier site and I'll check.", "shipdesk").app_id
+        == "carrier"
+    )
+    assert (
+        switch_requested(book, "Please go back to Carrier portal tab.", "shipdesk").app_id
+        == "carrier"
+    )
+    assert switch_requested(book, "The carrier site shows nothing new.", "shipdesk") is None
+    assert switch_requested(book, "Switch to the carrier site.", "carrier") is None
+
+
+def test_the_person_follows_a_switch_she_asks_for_and_it_is_bounded(tmp_path: Path) -> None:
+    book = load_playbook(_two_portals(tmp_path))
+
+    def asks(request: ModelRequest) -> str:
+        return "I need the tracking. Switch to the carrier site and tell me."
+
+    report = run_bench(
+        book,
+        BenchConfig(engine="nebius", follow_ups=2),
+        world_factory=_factory(scripted_model(asks)),
+    )
+    assert report["follow_ups"] == 1, "she asked for the carrier while on the carrier: no loop"
+    assert any("switched to Carrier portal" in t["user"] for t in report["transcript"])

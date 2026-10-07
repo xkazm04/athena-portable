@@ -88,6 +88,9 @@ class AppSpec:
     path: str
     view: dict[str, Any]
     tools: tuple[ToolSpec, ...]
+    #: What a person calls this portal in a sentence ("MyChart", "the insurance portal"); the
+    #: name is always one. The bench uses them to hear a request to switch tabs.
+    aliases: tuple[str, ...] = ()
 
     def tool(self, name: str) -> ToolSpec | None:
         bare = name.rsplit(".", 1)[-1]
@@ -283,6 +286,11 @@ def load_playbook(root: str | Path) -> Playbook:
                 path=str(raw.get("path", "/")),
                 view=dict(raw.get("view", {})) if isinstance(raw.get("view"), Mapping) else {},
                 tools=tools,
+                aliases=tuple(
+                    dict.fromkeys(
+                        [str(raw.get("name", app_id)), *(str(a) for a in raw.get("aliases", []))]
+                    )
+                ),
             )
         )
     if not apps:
