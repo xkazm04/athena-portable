@@ -11,7 +11,14 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type { Player, SocketLike } from "@/lib/voice";
 import { useRun } from "@/stores/run";
 
-import { resetVoiceForTests, setVoiceDeps, startVoice, useVoice, type VoiceDeps } from "./voice";
+import {
+  applyVoiceConfig,
+  resetVoiceForTests,
+  setVoiceDeps,
+  startVoice,
+  useVoice,
+  type VoiceDeps,
+} from "./voice";
 
 type Event = Record<string, unknown>;
 
@@ -93,7 +100,7 @@ function wire(over: Partial<VoiceDeps> = {}) {
   const calls: Array<{ name: string; params: Record<string, unknown> }> = [];
   const deps: VoiceDeps = {
     endpoint: () => ({ url: "http://daemon", token: "t" }),
-    health: async () => ({ sockets: ["/voice"] }),
+    config: async () => ({ ready: true, reason: null }),
     socket: socket.factory,
     openMic: mic.open,
     player: () => player.player as unknown as Player,
@@ -121,11 +128,58 @@ beforeEach(() => {
 });
 
 describe("the key", () => {
-  it("lights up only when the daemon lists /voice", async () => {
-    wire({ health: async () => ({ sockets: [] }) });
+  it("stays dark while the voice config is not ready, and says the config's own reason", async () => {
+    wire({ config: async () => ({ ready: false, reason: "Kokoro is not installed." }) });
     await startVoice();
     expect(useVoice.getState().available).toBe(false);
-    expect(useVoice.getState().reason).toMatch(/without a voice backend/);
+    expect(useVoice.getState().phase).toBe("off");
+    expect(useVoice.getState().reason).toBe("Kokoro is not installed.");
+  });
+
+  it("a config that is not ready and gives no reason still says why", async () => {
+    wire({ config: async () => ({ ready: false, reason: null }) });
+    await startVoice();
+    expect(useVoice.getState().reason).toBe("voice is not set up yet");
+  });
+
+  it("a config that could not be read leaves the key dark with the error", async () => {
+    wire({
+      config: async () => {
+        throw new Error("the daemon did not answer");
+      },
+    });
+    await startVoice();
+    expect(useVoice.getState().available).toBe(false);
+    expect(useVoice.getState().reason).toBe("the daemon did not answer");
+  });
+
+  it("with no daemon at all the key is dark and says so", async () => {
+    wire({ endpoint: () => null });
+    await startVoice();
+    expect(useVoice.getState().available).toBe(false);
+    expect(useVoice.getState().reason).toMatch(/not running/);
+  });
+
+  it("lights up the moment the Voice module applies a ready config", async () => {
+    wire({ config: async () => ({ ready: false, reason: "Whisper base.en is not installed." }) });
+    await startVoice();
+    expect(useVoice.getState().available).toBe(false);
+    applyVoiceConfig({ ready: true, reason: null });
+    expect(useVoice.getState().available).toBe(true);
+    expect(useVoice.getState().phase).toBe("idle");
+    expect(useVoice.getState().reason).toBe("");
+  });
+
+  it("a press on a dark key asks the config once more before giving up", async () => {
+    let ready = false;
+    const { mic } = wire({ config: async () => ({ ready, reason: ready ? null : "not yet" }) });
+    await startVoice();
+    expect(useVoice.getState().available).toBe(false);
+    ready = true; // the studio finished in the other window
+    await useVoice.getState().press();
+    expect(useVoice.getState().available).toBe(true);
+    expect(useVoice.getState().phase).toBe("listening");
+    expect(mic.opened()).toBe(true);
   });
 
   it("sends start with the page, streams the microphone, and sends stop on release", async () => {

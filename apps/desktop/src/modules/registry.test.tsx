@@ -21,8 +21,15 @@ test("every module is registered under its own id, once", () => {
   expect(new Set(ids).size).toBe(ids.length);
 });
 
-test("Main carries Browser, Connectors and Setup, in that order — the panel left for her window (ADR 0026)", () => {
-  expect(MODULE_ENTRIES.map((m) => m.id)).toEqual(["browser", "connectors", "setup"]);
+test("Main carries Browser, Connectors, Setup and Voice, in that order — the panel left for her window (ADR 0026), Voice after Setup (ADR 0028)", () => {
+  expect(MODULE_ENTRIES.map((m) => m.id)).toEqual(["browser", "connectors", "setup", "voice"]);
+});
+
+test("the Voice module ships a fixture for every studio moment", () => {
+  const voice = MODULE_REGISTRY.voice;
+  for (const id of ["loading", "engine", "installing", "failed", "manual", "pick", "stt-compare", "ready"]) {
+    expect(voice.fixtureIds, `voice is missing ${id}`).toContain(id);
+  }
 });
 
 test("the default module resolves, and an unknown id falls back to it rather than blanking", () => {

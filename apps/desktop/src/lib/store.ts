@@ -46,6 +46,8 @@ export const SETTING_KEYS = {
   brainPath: "brain_path",
   /** Has the Setup wizard been finished once? It stays reachable from the bar afterwards. */
   onboarded: "onboarded",
+  /** Has the Voice studio been finished once (ADR 0028)? After it, the module opens on settings. */
+  voiceStudioDone: "voice_studio_done",
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];

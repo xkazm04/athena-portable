@@ -29,6 +29,7 @@
 import { create } from "zustand";
 
 import { DaemonApi, type ExecuteRow } from "@/lib/api";
+import { VoiceSetupApi, availabilityOf, refusalText } from "@/lib/voice-setup";
 import { bridgeCall } from "@/lib/bridge";
 import type { ChannelEvent, DecisionRequested, ToolCall } from "@/lib/events";
 import type { Args } from "@/lib/ipc";
@@ -41,7 +42,6 @@ import {
   type MicrophoneSession,
   type SocketFactory,
   type SocketLike,
-  VOICE_PATH,
 } from "@/lib/voice";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useRun } from "@/stores/run";
@@ -52,8 +52,12 @@ export type VoicePhase = "off" | "idle" | "listening" | "thinking" | "speaking" 
 
 export interface VoiceDeps {
   endpoint: () => { url: string; token: string } | null;
-  /** `GET /health`, for the `sockets` list: is there a `/voice` to talk to at all? */
-  health: () => Promise<{ sockets?: unknown }>;
+  /**
+   * `GET /voice/config`, for `ready` and `reason`: can the chosen engines speak and hear? ADR 0028
+   * replaced the `/health` socket list — `/voice` is always registered now, so its presence says
+   * nothing about whether a turn can be spoken.
+   */
+  config: () => Promise<{ ready: boolean; reason: string | null }>;
   socket: SocketFactory;
   /** Open the microphone; `null` where the webview offers none. */
   openMic: ((onChunk: (pcm: Int16Array) => void) => Promise<MicrophoneSession>) | null;
@@ -80,7 +84,7 @@ export interface VoiceDeps {
 
 export interface VoiceState {
   phase: VoicePhase;
-  /** `/voice` is listed by the daemon. False until `/health` says so. */
+  /** The daemon's voice config says `ready`. False until `GET /voice/config` says so. */
   available: boolean;
   /** Why the key does nothing, or what last went wrong. Empty when all is well. */
   reason: string;
@@ -116,10 +120,12 @@ const EMPTY = {
 /** The production wiring: the daemon store, the relay, the browser's own audio. */
 const LIVE: VoiceDeps = {
   endpoint: () => endpoint(useDaemon.getState()),
-  health: async () => {
+  config: async () => {
     const found = endpoint(useDaemon.getState());
     if (!found) throw new Error("the daemon is not ready");
-    return new DaemonApi(found).health();
+    const out = await new VoiceSetupApi(found).config();
+    if (!out.ok) throw new Error(refusalText(out));
+    return out.value;
   },
   // The DOM's `WebSocket` is the shape `SocketLike` names, with `this`-typed handlers TypeScript
   // will not unify; the cast is the one place the two meet.
@@ -367,6 +373,10 @@ export const useVoice = create<VoiceState>((set, get) => {
     ...EMPTY,
 
     async press() {
+      // The config may have changed in another window since the last check (the Voice module
+      // runs in Main; this store lives in hers), so a press on an unavailable key asks once more
+      // before it gives up.
+      if (!get().available) await checkConfig();
       const state = get();
       if (!state.available || state.phase === "listening") return;
       const focused = deps.focused();
@@ -428,40 +438,50 @@ export const useVoice = create<VoiceState>((set, get) => {
 let started = false;
 
 /**
- * Started by the app root and nothing else. Watches the daemon: when it is ready, `/health` says
- * whether `/voice` exists, and the key lights up or explains itself. A hotkey — `Ctrl+Space`,
- * held — mirrors the bar's control for as long as the chrome webview has the keyboard.
+ * Publish a config's availability. The Voice module calls this with every config it receives, so
+ * the key in the same window lights up the moment the studio makes voice ready, without waiting
+ * for the daemon's health to change.
+ */
+export function applyVoiceConfig(config: { ready: boolean; reason: string | null }): void {
+  const { available, reason } = availabilityOf(config);
+  useVoice.setState((s) => ({
+    available,
+    reason,
+    phase: available ? (s.phase === "off" ? "idle" : s.phase) : "off",
+  }));
+}
+
+/** Ask the daemon's voice config whether the key can light up, and say why when it cannot. */
+export async function checkConfig(): Promise<void> {
+  const found = deps.endpoint();
+  if (!found) {
+    useVoice.setState({ available: false, phase: "off", reason: "the daemon is not running yet" });
+    return;
+  }
+  try {
+    applyVoiceConfig(await deps.config());
+  } catch (error) {
+    useVoice.setState({
+      available: false,
+      phase: "off",
+      reason: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+/**
+ * Started by the app root and nothing else. Watches the daemon: when it is ready, `GET
+ * /voice/config` says whether the chosen engines are ready, and the key lights up or explains
+ * itself in the config's own sentence. A hotkey — `Ctrl+Space`, held — mirrors the bar's control
+ * for as long as the chrome webview has the keyboard.
  */
 export async function startVoice(): Promise<void> {
   if (started) return;
   started = true;
-  const check = async () => {
-    const found = deps.endpoint();
-    if (!found) {
-      useVoice.setState({ available: false, phase: "off", reason: "the daemon is not running yet" });
-      return;
-    }
-    try {
-      const health = await deps.health();
-      const sockets = Array.isArray(health.sockets) ? (health.sockets as unknown[]) : [];
-      const available = sockets.includes(VOICE_PATH);
-      useVoice.setState({
-        available,
-        phase: available ? "idle" : "off",
-        reason: available ? "" : "the daemon was started without a voice backend",
-      });
-    } catch (error) {
-      useVoice.setState({
-        available: false,
-        phase: "off",
-        reason: error instanceof Error ? error.message : String(error),
-      });
-    }
-  };
   useDaemon.subscribe((state, previous) => {
-    if (state.health !== previous.health || state.url !== previous.url) void check();
+    if (state.health !== previous.health || state.url !== previous.url) void checkConfig();
   });
-  await check();
+  await checkConfig();
   if (typeof window !== "undefined") {
     window.addEventListener("keydown", (ev) => {
       if (ev.code === "Space" && ev.ctrlKey && !ev.repeat) {

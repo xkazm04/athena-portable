@@ -18,6 +18,7 @@ import { request as httpRequest } from "node:http";
 import { randomBytes } from "node:crypto";
 
 import { DaemonApi } from "@/lib/api";
+import { VoiceSetupApi } from "@/lib/voice-setup";
 import { PROTOCOL_PREFIX, VOICE_PATH, VoiceSocket, voiceUrl, type Player, type SocketLike } from "@/lib/voice";
 import { resetRunForTests, setRunDeps, useRun, type RunDeps } from "@/stores/run";
 import { resetVoiceForTests, setVoiceDeps, startVoice, useVoice, type VoiceDeps } from "@/stores/voice";
@@ -79,7 +80,7 @@ async function live(
 
   const deps: VoiceDeps = {
     endpoint,
-    health: () => new DaemonApi(endpoint()).health(),
+    config: () => voiceConfigOf(endpoint()),
     // The real DOM-shaped `WebSocket`, which Node has had since 22. The client's own `connect`
     // is what puts the token in the subprotocol, and the daemon's `_socket_token` is what reads
     // it: both halves of ADR 0019's answer to "a browser cannot set a header on an upgrade".
@@ -337,7 +338,7 @@ function depsOf(daemon: Daemon): VoiceDeps {
   const endpoint = () => ({ url: daemon.url, token: daemon.token });
   return {
     endpoint,
-    health: () => new DaemonApi(endpoint()).health(),
+    config: () => voiceConfigOf(endpoint()),
     socket: (url, protocols) => new WebSocket(url, protocols) as unknown as SocketLike,
     openMic: null,
     player: () => null,
@@ -346,4 +347,11 @@ function depsOf(daemon: Daemon): VoiceDeps {
     call: async () => ({ ok: true, output: "" }),
     manifest: () => null,
   };
+}
+
+/** `GET /voice/config` for the store's availability check (ADR 0028), a refusal as a throw. */
+async function voiceConfigOf(at: { url: string; token: string }): Promise<{ ready: boolean; reason: string | null }> {
+  const out = await new VoiceSetupApi(at).config();
+  if (!out.ok) throw new Error(`${out.reason}: ${out.detail}`);
+  return out.value;
 }
