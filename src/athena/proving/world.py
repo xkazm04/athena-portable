@@ -4,9 +4,10 @@
 :func:`athena.wiring.build_local` — the composition ``athena serve`` uses — over a brain in a
 temporary directory, driven through the daemon's own route functions: ``POST /manifest`` is
 :func:`athena.daemon.routes.manifest` and ``POST /run`` is :func:`athena.daemon.routes.run`, whose
-Server-Sent Event frames are read back exactly as a surface would read them. The catalog, the
-structural policy, the gate, the fences, the round loop, the approval table and the ledger are the
-production classes. Only the socket is skipped: the claims under test are about turns, and the
+Server-Sent Event frames are read back exactly as a surface would read them, and ``POST
+/decisions/<id>`` (the user answering a card) is :func:`athena.daemon.routes.decide`. The catalog,
+the structural policy, the gate, the fences, the round loop, the approval table and the ledger are
+the production classes. Only the socket is skipped: the claims under test are about turns, and the
 socket layer has its own suite (``tests/daemon``, ``tests/e2e``).
 
 The engine is real too. ``claude_code`` runs the user's ``claude`` CLI through the production
@@ -46,6 +47,7 @@ from athena.proving.manifests import LEDGERBOX_ORIGIN, ledgerbox_manifest
 from athena.wiring import AthenaLocal, TransportFactory, build_local
 
 __all__ = [
+    "DecisionRecord",
     "GateRecord",
     "TurnRecord",
     "World",
@@ -107,6 +109,38 @@ class TurnRecord:
 
     def kinds(self) -> list[str]:
         return [str(event.get("kind", "")) for event in self.events]
+
+
+@dataclass
+class DecisionRecord:
+    """One answer to one card through ``POST /decisions/<id>``, and what the gate did with it.
+
+    ``status`` is the route's word — ``approved`` or ``declined`` — or ``refused`` when the route
+    answered with an error (an unknown id, a card already answered, a replay the gate refused).
+    """
+
+    approval_id: str
+    choice: str
+    http_status: int
+    status: str
+    reason: str | None = None
+    detail: str = ""
+    #: The ``execute`` instructions the route handed back: a host tool the page now runs, with the
+    #: parameters off the approval row.
+    execute: list[dict[str, Any]] = field(default_factory=list)
+    #: The output of a core tool that ran in the daemon, or ``""``.
+    output: str = ""
+    events: list[dict[str, Any]] = field(default_factory=list)
+    #: Every trip through the gate while the route ran — the replay, and nothing else.
+    gate: list[GateRecord] = field(default_factory=list)
+    writes: list[str] = field(default_factory=list)
+    approvals: list[dict[str, Any]] = field(default_factory=list)
+
+    @property
+    def ran(self) -> bool:
+        """The gate let the approved action through: a core tool executed, or a host tool was
+        handed to the page to run."""
+        return any(trip.allowed for trip in self.gate)
 
 
 def parse_sse(frames: Sequence[str] | Any) -> list[dict[str, Any]]:
@@ -229,6 +263,41 @@ class World:
         record.counts_after = self.local.brain.counts()
         record.approvals = self._approvals()
         record.ledger = self._ledger_since(rows_before)
+        return record
+
+    # -- one answer to a card ------------------------------------------------------------------
+
+    def decide(self, approval_id: str, choice: str, *, answer: str | None = None) -> DecisionRecord:
+        """``POST /decisions/<id>`` once, as a surface sends it, and read back what ran.
+
+        The route resolves the row and replays the gate with the approval id (README §3.2 step 6);
+        nothing here touches the approval table or the gate directly. ``choice`` is one of the
+        card's offered tokens (``approve`` / ``decline``); anything else is the route's to refuse.
+        """
+        self._gate_log.clear()
+        self._writes.clear()
+        body: dict[str, Any] = {"choice": choice, "origin": self.origin}
+        if answer is not None:
+            body["answer"] = answer
+        request = routes.Request("POST", f"{routes.DECISION_PREFIX}{approval_id}", body=body)
+        try:
+            status, reply = routes.decide(self.local.daemon, request, approval_id)
+        except Exception as exc:  # a world bug is a refusal on the record, never a crash
+            status, reply = 500, {"reason": "unknown", "detail": type(exc).__name__}
+        record = DecisionRecord(
+            approval_id=approval_id,
+            choice=choice,
+            http_status=status,
+            status=str(reply.get("status")) if status == 200 else "refused",
+            reason=None if status == 200 else str(reply.get("reason") or "unknown"),
+            detail="" if status == 200 else str(reply.get("detail", "")),
+            execute=[dict(row) for row in reply.get("execute", []) if isinstance(row, Mapping)],
+            output=str(reply.get("output", "")),
+            events=[dict(e) for e in reply.get("events", []) if isinstance(e, Mapping)],
+        )
+        record.gate = list(self._gate_log)
+        record.writes = list(self._writes)
+        record.approvals = self._approvals()
         return record
 
     # -- the records ---------------------------------------------------------------------------

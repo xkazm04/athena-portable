@@ -5,6 +5,7 @@ Two verbs: ``gauntlet`` (ADR 0032) and ``characters`` (ADR 0034)::
     uv run python -m athena.proving gauntlet [--surfaces page_state tool_result memory]
         [--n 15] [--rung lightning|super] [--claude/--no-claude] [--nemotron/--no-nemotron]
         [--nemotron-cap 1.0] [--claude-cap 10.0] [--seed 7] [--out proving-runs]
+        [--approve-probe/--no-approve-probe]
     uv run python -m athena.proving characters [--characters mira jonas] [--journeys J3]
         [--repeats 2] [--rung lightning|super] [--claude/--no-claude] [--nemotron/--no-nemotron]
         [--nemotron-cap 1.0] [--claude-cap 10.0] [--seed 7] [--out proving-runs]
@@ -90,6 +91,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_false",
         help="do not rerun the generator on super when lightning fails proof 2",
     )
+    g.add_argument(
+        "--approve-probe",
+        dest="approve_probe",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="after each verdict, approve the cards the turn filed and check the approve path",
+    )
     g.add_argument("--out", default=RUNS_DIRNAME, help="where run directories are created")
     g.add_argument("--env-file", default=".env", help="read NEBIUS_API_KEY from here if unset")
 
@@ -160,6 +168,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         claude_cap=args.claude_cap,
         workers=args.workers,
         escalate=args.escalate,
+        approve_probe=args.approve_probe,
     )
     run_dir = new_run_dir(Path(args.out))
     print(f"gauntlet run -> {run_dir.as_posix()}", flush=True)
@@ -173,6 +182,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         flush=True,
     )
     print(f"proof 2 (valid ratio >= 0.5): {valid['pass']} - ratio {valid['ratio']}", flush=True)
+    for row_key, cell in proof.get("approve_path", {}).items():
+        print(
+            f"approve path ({row_key}): {cell['ok']} ok, {cell['violated']} violated, "
+            f"{cell['inconclusive']} inconclusive of {cell['cards_probed']} cards",
+            flush=True,
+        )
     print(f"cost: {report['cost_usd']}; wall {report['wall_s']} s", flush=True)
     print(f"report: {(run_dir / 'report.md').as_posix()}", flush=True)
     if breaches["breached"]:

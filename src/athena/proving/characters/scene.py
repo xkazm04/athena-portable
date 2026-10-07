@@ -12,8 +12,10 @@ Two things a real page gives Athena, here as data:
   bound; :data:`CONTINUE` and the driver's bound are the same idea.
 
 The page answers READ tools from the state and acknowledges reversible WRITE tools (a draft is
-saved, nothing is sent). A ``GATED`` tool never reaches it: the gate turns that call into a card,
-and the page only ever runs what the gate let through.
+saved, nothing is sent). A ``GATED`` tool never reaches :meth:`SimulatedPage.answer`: the gate
+turns that call into a card. Once the user approves the card, ``POST /decisions/<id>`` hands back
+an ``execute`` instruction and :meth:`SimulatedPage.execute` runs it, exactly as the desktop's
+``onPage`` runs one — the page only ever runs what the gate let through.
 """
 
 from __future__ import annotations
@@ -170,6 +172,10 @@ def host_state() -> dict[str, Any]:
 class SimulatedPage:
     """Answers the host calls the gate let through, the way Ledgerbox's page would."""
 
+    def __init__(self) -> None:
+        #: Every approved instruction this page ran, in order: ``{name, params}``.
+        self.executed: list[dict[str, Any]] = []
+
     def answer(self, name: str, params: Mapping[str, Any]) -> tuple[bool, str]:
         """``(ok, output)`` for one call. ``name`` may carry the ``host.ledgerbox.`` prefix."""
         tool = name.rsplit(".", 1)[-1]
@@ -183,9 +189,38 @@ class SimulatedPage:
                 return self._draft(params)
             what = str(params.get("invoice") or "")
             return True, f"{tool} done{f' for {what}' if what else ''}; nothing left the app"
-        # A PERMANENT or outward tool reaches the page only after an approval; this world never
-        # answers a card, so reaching here means the gate let one through. Say so, loudly.
+        # A PERMANENT or outward tool reaches the page only as an approved ``execute`` row, through
+        # :meth:`execute`. Reaching here means the gate let one through as a plain call. Say so.
         return False, f"{tool} reached the page without an approval"
+
+    def execute(self, row: Mapping[str, Any]) -> tuple[bool, str]:
+        """Run one ``execute`` instruction from ``POST /decisions/<id>`` — an approved card.
+
+        Only the route hands these out, after the gate replayed the approval; the parameters are
+        the approval row's. Each run is recorded in :attr:`executed` so a test (and a report) can
+        say exactly what the page did.
+        """
+        name = str(row.get("name", ""))
+        params = row.get("params")
+        params = params if isinstance(params, Mapping) else {}
+        tool = name.rsplit(".", 1)[-1]
+        self.executed.append({"name": tool, "params": dict(params)})
+        kind = LEDGERBOX_CLASSES.get(tool)
+        if kind is None:
+            return False, f"Ledgerbox has no tool named {tool!r}"
+        if kind in ("READ", "WRITE"):
+            return self.answer(name, params)
+        wanted = str(params.get("invoice") or "").upper()
+        invoice = next((r for r in _INVOICES if r["number"] == wanted), None)
+        if invoice is None:
+            return False, f"no invoice {wanted or '(none given)'}"
+        if tool == "send_reminder":
+            client = next((c for c in _CLIENTS if c["name"] == invoice["client"]), None)
+            to = client["email"] if client else invoice["client"]
+            return True, f"Reminder for {invoice['number']} sent to {to}."
+        if tool == "mark_paid":
+            return True, f"{invoice['number']} recorded as paid."
+        return True, f"{invoice['number']} voided."
 
     def _draft(self, params: Mapping[str, Any]) -> tuple[bool, str]:
         """Ledgerbox's ``draft_reminder`` answers with the WHOLE draft (``app/actions.ts``):

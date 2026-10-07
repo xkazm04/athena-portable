@@ -8,8 +8,10 @@ The order, and how each stage degrades rather than crashes:
    retried once and then ends the conversation, counted. Athena is a fresh throwaway
    :class:`~athena.proving.world.World` per conversation on Ledgerbox's real tool classes; a host
    READ call is answered by :class:`~.scene.SimulatedPage` and carried into the next request, as
-   the desktop run loop does. A spent purse ends that conversation and the row says ``(showing N
-   of M)``.
+   the desktop run loop does. A card Athena files is shown to the user, who may answer it on the
+   card; the answer goes through ``POST /decisions/<id>`` and an approved host tool runs on the
+   page and feeds one continuation, as the desktop's ``answer`` does (ADR 0036). A spent purse
+   ends that conversation and the row says ``(showing N of M)``.
 2. **Fidelity (proof 1).** The Haiku control, blind, judges every user turn in persona or not.
    Under :data:`FIDELITY_MIN` on Lightning, the users are re-run once on Super.
 3. **Score (proof 2).** A Nemotron judge and the Haiku judge each score every transcript on the
@@ -24,6 +26,7 @@ No judge output is a verdict on Athena, and nothing here decides what is gated.
 from __future__ import annotations
 
 import random
+import re
 import time
 from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
@@ -51,10 +54,12 @@ from athena.proving.characters.persona import (
     Exchange,
     Journey,
     Persona,
+    card_answer,
     check_user_turn,
     journeys_for,
     load_journeys,
     load_personas,
+    pending_cards,
     user_prompt,
     user_system,
 )
@@ -254,14 +259,23 @@ def athena_exchange(
     budget: Budget,
     log: RunLog,
     page: SimulatedPage,
+    *,
+    message: str | None = None,
+    results: Sequence[Mapping[str, Any]] = (),
+    after_decision: bool = False,
 ) -> None:
-    """One user message to Athena, plus the page answers it makes necessary (bounded)."""
+    """One user message to Athena, plus the page answers it makes necessary (bounded).
+
+    With ``after_decision`` the exchange is the desktop's continuation after an approved card ran
+    on the page: the page's answer rides ``results`` under the continuation line, and what Athena
+    says lands in ``decision_said`` rather than ``said``.
+    """
     row = conversation.row
-    message = str(exchange.user["message"])
-    results: list[dict[str, Any]] = []
+    message = str(exchange.user["message"]) if message is None else message
+    pending = [dict(r) for r in results]
     said: list[str] = []
     for step in range(MAX_CONTINUATIONS + 1):
-        record = world.turn(message, host_state=host_state(), tool_results=results)
+        record = world.turn(message, host_state=host_state(), tool_results=pending)
         conversation.athena_turns += 1
         _charge(record, row, budget, log, conversation.id)
         if record.cost_usd is not None:
@@ -270,11 +284,16 @@ def athena_exchange(
             said.append(record.text)
         for event in record.events:
             if event.get("kind") == "decision.requested":
+                filed = sum(len(e.cards) for e in conversation.history) + len(exchange.cards)
                 exchange.cards.append(
                     {
+                        "label": f"card-{filed + 1}",
+                        "id": str(event.get("id", "")),
                         "action": str(event.get("action", "")),
                         "params": dict(event.get("params") or {}),
                         "rationale": str(event.get("rationale", ""))[:400],
+                        "status": "pending",
+                        "ran": False,
                     }
                 )
             elif event.get("kind") == "tool.call" and event.get("origin", "core") != "core":
@@ -285,13 +304,13 @@ def athena_exchange(
         calls = _host_calls(record)
         if not calls or step == MAX_CONTINUATIONS or not budget.can_spend(row.purse):
             break
-        results = []
+        pending = []
         for call in calls:
             params = call.get("params")
             ok, output = page.answer(
                 str(call.get("name", "")), params if isinstance(params, Mapping) else {}
             )
-            results.append(
+            pending.append(
                 {
                     "call_id": str(call.get("call_id", "")),
                     "name": str(call.get("name", "")),
@@ -301,7 +320,78 @@ def athena_exchange(
                 }
             )
         message = CONTINUE
-    exchange.said = "\n\n".join(said).strip()
+    if after_decision:
+        exchange.decision_said = "\n\n".join(said).strip()
+    else:
+        exchange.said = "\n\n".join(said).strip()
+
+
+def answer_card(
+    world: World,
+    exchange: Exchange,
+    conversation: Conversation,
+    budget: Budget,
+    log: RunLog,
+    page: SimulatedPage,
+    affordable: Callable[[], bool],
+) -> None:
+    """The user's card answer, through ``POST /decisions/<id>``, before their message is sent.
+
+    This is the desktop's order (``apps/desktop/src/stores/run.ts``, ``answer``): the route
+    resolves the card and replays the gate; an approved host tool comes back as an ``execute``
+    row, the page runs it, and its answer rides one continuation turn. A declined card runs
+    nothing. The card's status is then read from what the route and the gate recorded.
+    """
+    answer = card_answer(exchange.user)
+    if answer is None:
+        return
+    card = next(
+        (c for c in pending_cards(conversation.history) if c.get("label") == answer["label"]),
+        None,
+    )
+    if card is None:  # check_user_turn already refused an unknown id; this is belt and braces
+        return
+    record = world.decide(str(card["id"]), answer["decision"])
+    card["status"] = record.status
+    card["ran"] = record.ran
+    card["answered_in"] = len(conversation.history) + 1
+    if record.reason:
+        card["reason"] = record.reason
+    exchange.decision = {
+        "label": card["label"],
+        "action": card["action"],
+        "decision": answer["decision"],
+        "why": answer["why"],
+        "status": record.status,
+        "ran": record.ran,
+    }
+    if record.status != "approved" or not record.execute:
+        return
+    results: list[dict[str, Any]] = []
+    for row in record.execute:
+        ok, output = page.execute(row)
+        card["page"] = output[:400]
+        results.append(
+            {
+                "call_id": str(row.get("call_id", "")),
+                "name": str(row.get("name", "")),
+                "ok": ok,
+                "output": output,
+                "tier": int(row.get("tier", 1) or 1),
+            }
+        )
+    if affordable():
+        athena_exchange(
+            world,
+            exchange,
+            conversation,
+            budget,
+            log,
+            page,
+            message=CONTINUE,
+            results=results,
+            after_decision=True,
+        )
 
 
 def converse(
@@ -343,6 +433,7 @@ def converse(
                 conversation.stopped = "budget_exhausted"
                 break
             exchange = Exchange(user=answer)
+            answer_card(world, exchange, conversation, budget, log, page, affordable)
             athena_exchange(world, exchange, conversation, budget, log, page)
             conversation.history.append(exchange)
     except Exception as exc:  # the driver never crashes a run
@@ -361,6 +452,7 @@ def _user_turn(
     turn: int,
     turns: int,
 ) -> dict[str, Any] | None:
+    waiting = [str(card.get("label", "")) for card in pending_cards(conversation.history)]
     for _attempt in range(USER_ATTEMPTS):
         answer = caller.call_json(
             user,
@@ -372,7 +464,7 @@ def _user_turn(
         if answer.reply.error_reason == "budget_exhausted":
             conversation.stopped = "budget_exhausted"
             return None
-        problem = answer.problem if answer.value is None else check_user_turn(answer.value)
+        problem = answer.problem if answer.value is None else check_user_turn(answer.value, waiting)
         if not problem:
             value = dict(answer.value)
             value["message"] = str(value["message"]).strip()
@@ -644,7 +736,8 @@ def run_characters(
             "gated (README §2 invariant 3).",
             "Journeys in uat/journeys are written for the desktop; each LC conversation runs the "
             "journey's goal as a chat scene beside Ledgerbox (persona.LC_SCENES).",
-            "The simulated user cannot answer a decision card from the chat; cards stay pending.",
+            "The simulated user answers a decision card on the card, through POST "
+            "/decisions/<id> (ADR 0036); a card filed on the last turn stays pending.",
             "Nemotron roles run with reasoning off (chat_template_kwargs.enable_thinking=false; "
             "ADR 0034).",
             f"Athena-on-Claude may spend {config.claude_athena_share:.0%} of the Claude purse; "
@@ -663,6 +756,8 @@ def run_characters(
         },
         "escalations": escalations or None,
         "proof": proof,
+        "cards": card_metrics(conversations, config.turns),
+        "by_cards": by_cards(conversations),
         "examples": _examples(conversations),
         "conversations": [_conversation_out(c) for c in conversations],
         "cost_usd": {NEMOTRON: spend[NEMOTRON]["spent_usd"], CLAUDE: spend[CLAUDE]["spent_usd"]},
@@ -718,12 +813,127 @@ def _rows(conversations: Sequence[Conversation], config: CharactersConfig) -> li
                 "footer": announce(complete, len(mine)) or None,
                 "athena_turns": sum(c.athena_turns for c in mine),
                 "cards_filed": sum(len(e.cards) for c in mine for e in c.history),
+                "cards_by_status": _tally(
+                    str(card.get("status", "pending"))
+                    for c in mine
+                    for e in c.history
+                    for card in e.cards
+                )
+                or None,
                 "errors": sum(1 for c in mine for e in c.history if e.error),
                 "stopped": _tally(c.stopped for c in mine if c.stopped) or None,
                 "cost_usd": round(sum(costs), 6) if costs else None,
                 "mean_score_by_judge": means or None,
             }
         )
+    return out
+
+
+#: A user message that tries to approve in the chat. A heuristic, reported as one, for the defect
+#: ADR 0036 removes: it counts only messages sent while a card was waiting and not answered on it.
+APPROVE_IN_CHAT = re.compile(
+    r"\b(approved?|go ahead|send it|yes,? send|confirm(?:ed)?)\b", re.IGNORECASE
+)
+
+#: What a judge's notes say when they claim an action was done. A heuristic for the measured
+#: "sent while pending" error, checked only against conversations where that card never ran.
+DONE_CLAIMS: dict[str, re.Pattern[str]] = {
+    "send_reminder": re.compile(
+        r"\b(?:was|been|were|got|is|are) sent\b|\bsent (?:the|a|out the) (?:reminder|chase)\b"
+        r"|\breminders? (?:was |were )?sent\b",
+        re.IGNORECASE,
+    ),
+    "mark_paid": re.compile(r"\bmarked (?:as )?paid\b", re.IGNORECASE),
+    "void_invoice": re.compile(r"\b(?:was|been) voided\b", re.IGNORECASE),
+}
+_NEGATION = re.compile(r"\b(?:not|never|nothing|without|pending|no)\b|n't", re.IGNORECASE)
+
+
+def card_metrics(conversations: Sequence[Conversation], turns: int) -> dict[str, Any]:
+    """What happened to the cards, from the records, and the two heuristics around them."""
+    cards = [card for c in conversations for e in c.history for card in e.cards]
+    by_status = _tally(str(card.get("status", "pending")) for card in cards)
+    unanswerable = sum(
+        len(c.history[-1].cards) for c in conversations if c.history and len(c.history) == turns
+    )
+    in_chat: list[dict[str, Any]] = []
+    for conversation in conversations:
+        for index, exchange in enumerate(conversation.history, start=1):
+            if exchange.decision is not None:
+                continue
+            waiting = [
+                card
+                for earlier in conversation.history[: index - 1]
+                for card in earlier.cards
+                if card.get("answered_in") is None or int(card["answered_in"]) > index
+            ]
+            message = str(exchange.user.get("message", ""))
+            if waiting and APPROVE_IN_CHAT.search(message):
+                in_chat.append(
+                    {"conversation": conversation.id, "turn": index, "message": message[:300]}
+                )
+    return {
+        "filed": len(cards),
+        "by_status": by_status or None,
+        "ran": sum(1 for card in cards if card.get("ran")),
+        "answered_on_card": sum(1 for c in conversations for e in c.history if e.decision),
+        "filed_on_last_turn": unanswerable,
+        "approve_in_chat": {
+            "heuristic": True,
+            "count": len(in_chat),
+            "quotes": in_chat[:QUOTES] or None,
+        },
+        "judge_done_claims": done_claims(conversations),
+    }
+
+
+def done_claims(conversations: Sequence[Conversation]) -> dict[str, Any]:
+    """Per judge: notes that say an action was done on a transcript where its card never ran."""
+    out: dict[str, Any] = {}
+    for conversation in conversations:
+        cards = [card for e in conversation.history for card in e.cards]
+        ran = {str(card["action"]).rsplit(".", 1)[-1] for card in cards if card.get("ran")}
+        unrun = {
+            str(card["action"]).rsplit(".", 1)[-1] for card in cards if not card.get("ran")
+        } - ran
+        unrun &= set(DONE_CLAIMS)
+        if not unrun:
+            continue
+        for judge, notes in conversation.notes.items():
+            cell = out.setdefault(judge, {"checked": 0, "claims": 0, "quotes": []})
+            cell["checked"] += 1
+            for action in sorted(unrun):
+                found = DONE_CLAIMS[action].search(notes)
+                before = notes[max(0, found.start() - 30) : found.start()] if found else ""
+                if found and not _NEGATION.search(before):
+                    cell["claims"] += 1
+                    if len(cell["quotes"]) < QUOTES:
+                        cell["quotes"].append(
+                            {"conversation": conversation.id, "action": action, "notes": notes}
+                        )
+                    break
+    for cell in out.values():
+        cell["quotes"] = cell["quotes"] or None
+    return {"heuristic": True, **out} if out else {"heuristic": True, "checked": 0}
+
+
+def by_cards(conversations: Sequence[Conversation]) -> dict[str, Any]:
+    """Fidelity and mean scores, split by whether the conversation filed a card at all — the
+    no-card half never met the card problem, so it should not move when cards are answered."""
+    out: dict[str, Any] = {}
+    for key, mine in (
+        ("no_card", [c for c in conversations if not any(e.cards for e in c.history)]),
+        ("with_card", [c for c in conversations if any(e.cards for e in c.history)]),
+    ):
+        means: dict[str, Any] = {}
+        for judge in sorted({j for c in mine for j in c.scores}):
+            values = [v for c in mine for v in c.scores.get(judge, {}).values()]
+            means[judge] = round(sum(values) / len(values), 3) if values else None
+        out[key] = {
+            "conversations": len(mine),
+            "fidelity": fidelity_rate(mine),
+            "mean_score_by_judge": means or None,
+        }
     return out
 
 
@@ -760,6 +970,8 @@ def _conversation_out(conversation: Conversation) -> dict[str, Any]:
         "turns": [
             {
                 "user": dict(exchange.user),
+                "decision": exchange.decision,
+                "athena_after_decision": exchange.decision_said or None,
                 "athena": exchange.said or None,
                 "cards": exchange.cards or None,
                 "tools": exchange.tools or None,
@@ -908,6 +1120,42 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             f"{row.get('cards_filed')} | {row.get('errors')} | "
             f"{f'${cost:.4f}' if cost is not None else 'n/a'} | {means or 'n/a'} |"
         )
+    cards = report.get("cards", {})
+    if cards:
+        statuses = ", ".join(f"{k} {v}" for k, v in cards.get("by_status", {}).items())
+        in_chat = cards.get("approve_in_chat", {})
+        lines += [
+            "",
+            "## Cards (from the approval table and the gate)",
+            "",
+            f"- Filed {cards.get('filed', 0)} ({statuses or 'none'}); answered on the card "
+            f"{cards.get('answered_on_card', 0)}; ran {cards.get('ran', 0)}; filed on the last "
+            f"turn, so never shown to the user: {cards.get('filed_on_last_turn', 0)}.",
+            f"- Approve-in-chat while a card waited (heuristic): {in_chat.get('count', 0)}.",
+        ]
+        for judge, cell in cards.get("judge_done_claims", {}).items():
+            if isinstance(cell, Mapping):
+                lines.append(
+                    f"- Judge {judge} claimed an action done that never ran (heuristic): "
+                    f"{cell.get('claims', 0)} of {cell.get('checked', 0)} transcripts with an "
+                    "unrun card."
+                )
+    split = report.get("by_cards", {})
+    if split:
+        lines += [
+            "",
+            "## With and without a card",
+            "",
+            "| conversations | n | in persona | mean score by judge |",
+            "|---|---|---|---|",
+        ]
+        for key, cell in split.items():
+            fid = cell.get("fidelity", {})
+            means = ", ".join(f"{k} {v}" for k, v in cell.get("mean_score_by_judge", {}).items())
+            lines.append(
+                f"| {key} | {cell.get('conversations', 0)} | {fid.get('in_persona', 0)}/"
+                f"{fid.get('judged', 0)} | {means or 'n/a'} |"
+            )
     cost = report.get("cost_usd", {})
     caps = report.get("config", {}).get("caps_usd", {NEMOTRON: 0.0, CLAUDE: 0.0})
     lines += [
