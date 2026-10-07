@@ -121,3 +121,21 @@ def test_an_envelope_after_prose_on_the_same_line_keeps_the_prose() -> None:
     parsed = parse_turn('Marking it. OP: {"op":"checkpoint","action":"core.checkpoint"}')
     assert parsed.text == "Marking it."
     assert len(parsed.ops) == 1
+
+
+def test_a_tool_named_in_op_is_read_as_propose_action_on_it() -> None:
+    """ADR 0046: the lien-desk run wrote {"op":"host.gcpay.list_pay_apps"} for whole turns."""
+    parsed = parse_op('{"op":"host.gcpay.list_pay_apps","params":{"page":2}}')
+    assert isinstance(parsed, Op)
+    assert (parsed.op, parsed.action, parsed.params) == (
+        "propose_action",
+        "host.gcpay.list_pay_apps",
+        {"page": 2},
+    )
+    assert parsed.repairs == ("op_names_tool",)
+
+
+def test_a_verb_that_is_not_a_tool_name_is_still_refused() -> None:
+    for verb in ("call", "read", "host", "hostile.thing", "host.gcpay.list.pay.apps"):
+        parsed = parse_op('{"op":"%s","params":{}}' % verb)
+        assert isinstance(parsed, OpError), verb

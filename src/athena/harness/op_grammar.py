@@ -12,12 +12,15 @@ contract can express — an op becomes ``tool.call`` / ``tool.result`` or a deci
 ``TTS:`` first line becomes ``turn.finished.tts``. A third line format with no event behind it
 would be a grammar the model is taught and nothing reads.
 
-**Repairs, and why there are only three.** A model that writes JSON by hand gets the same three
+**Repairs, and why there are only four.** A model that writes JSON by hand gets the same few
 things wrong, and each has exactly one correct reading:
 
 - a **trailing comma** before ``}`` or ``]``;
 - an **unquoted key** (``{op: "propose_action"}``);
-- **missing closing braces** at the end, when the line was cut short.
+- **missing closing braces** at the end, when the line was cut short;
+- **the tool named in ``op``** (``{"op":"host.gcpay.list_pay_apps","params":{}}``) with no
+  ``action``: the only reading is ``propose_action`` on that name, which the catalog still has to
+  hold, so an unknown name is dropped exactly as before (ADR 0046).
 
 Anything else is a parse error carrying the offending line, and the caller tells the model next
 turn that its op was dropped and why (README §3.2 step 5's path, in reverse). Repairing further
@@ -59,7 +62,10 @@ TTS_CAP = 1200
 
 #: The repair names an :class:`Op` reports in ``repairs``. Closed, like ``ERROR_REASONS``: a
 #: repair you cannot count is a repair nobody notices the model needing.
-REPAIRS: tuple[str, ...] = ("unquoted_key", "trailing_comma", "closing_brace")
+REPAIRS: tuple[str, ...] = ("unquoted_key", "trailing_comma", "closing_brace", "op_names_tool")
+
+#: What a tool name looks like: ``host.<app>.<tool>``, ``core.<tool>``, ``connector.<id>.<tool>``.
+_TOOL_NAME = re.compile(r"^(?:host|core|connector)(?:\.[A-Za-z0-9_-]+){1,2}$")
 
 _OP_MARKER = re.compile(r"\bOP:\s*")
 _TTS = re.compile(r"^\s*TTS:\s*(?P<text>.+?)\s*$")
@@ -159,6 +165,9 @@ def parse_op(payload: str) -> Op | OpError:
     action = data.get("action", "")
     if not isinstance(action, str):
         return OpError(raw, "'action' must be a string")
+    if not action and _TOOL_NAME.match(op):
+        action, op = op, "propose_action"
+        repairs = (*repairs, "op_names_tool")
     if not action:
         # Whatever verb was used, an op without an action names nothing; say the one shape that
         # works, so the model can write it in the next round (ADR 0041).
