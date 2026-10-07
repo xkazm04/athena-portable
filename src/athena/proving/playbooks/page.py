@@ -19,6 +19,7 @@ import json
 from collections.abc import Mapping
 from typing import Any
 
+from athena.core.catalog import READ_CAP
 from athena.proving.playbooks.spec import Playbook, _norm
 from athena.proving.report import announce
 
@@ -84,6 +85,35 @@ class SimulatedPortals:
         if tool.kind == "READ":
             return self.answer(name, params)
         return True, tool.says.format_map(_Blank(params))
+
+    def oversized(self, cap: int = READ_CAP) -> list[str]:
+        """Every read the run loop would cut at ``cap``, as ``app.tool {params}: N chars``.
+
+        A cut page is honest about itself, but a bench whose page cuts a table measures the cap,
+        not her judgement: ``check`` names these so a world is paged before it is run. Each read
+        is probed bare and with every value its exact-match params can take from the table.
+        """
+        found: list[str] = []
+        for app in self.playbook.apps:
+            for tool in app.tools:
+                if tool.kind != "READ":
+                    continue
+                for params in self._probes(tool.returns):
+                    answer = self._read(tool.returns, tool.params, params)
+                    size = len(json.dumps(answer, ensure_ascii=False))
+                    if size > cap:
+                        found.append(f"{app.app_id}.{tool.name} {json.dumps(params)}: {size} chars")
+        return found
+
+    def _probes(self, returns: Mapping[str, Any]) -> list[dict[str, Any]]:
+        probes: list[dict[str, Any]] = [] if returns.get("require") else [{}]
+        if returns.get("mode") in ("contains", "words"):
+            return probes
+        rows = self.playbook.tables.get(str(returns.get("table", "")), [])
+        for param, column in dict(returns.get("match", {})).items():
+            values = sorted({str(r[column]) for r in rows if r.get(column) not in (None, "")})
+            probes.extend({param: v} for v in values)
+        return probes
 
     def _read(
         self,

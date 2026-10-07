@@ -745,6 +745,7 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
   is what a perfect run files and what looks eligible but is not; nothing but the scorer reads it.
   A read matches an exact key, a substring (`contains`) or every word in any order (`words`, as a
   mail search does); a target may be traps alone, for a tool every use of which is wrong there.
+  `check` fails on any read the run loop would cut at its 1,600-character cap: page it first.
   `bench.json` is the latest measured run, committed.
 - **The bench.** A real Athena on a throwaway brain, on the person's own `claude` CLI, driven
   through the daemon's own routes (`proving/world.py`). Each phase is one portal, as a turn is

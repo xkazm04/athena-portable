@@ -577,3 +577,18 @@ def test_a_words_search_matches_every_word_in_any_order(tmp_path: Path) -> None:
     assert found("1za rate con") == ["1ZA"], "every word, in any order, case-folded"
     assert found("rate confirmation") == ["1ZA", "1ZB"]
     assert found("1ZA Meijer") == [], "a word that is missing fails the row"
+
+
+def test_check_names_a_read_the_run_loop_would_cut(tmp_path: Path) -> None:
+    world = json.loads((make_playbook(tmp_path) / "world.json").read_text(encoding="utf-8"))
+    world["apps"][0]["tools"][0]["returns"].pop("page_size")
+    for row in world["tables"]["shipments"]:
+        row["note"] = "x" * 500
+    (tmp_path / "late-parcels" / "world.json").write_text(json.dumps(world), encoding="utf-8")
+    book = load_playbook(tmp_path / "late-parcels")
+
+    cut = SimulatedPortals(book).oversized(cap=1600)
+
+    assert len(cut) == 1, "the bare read is cut; one shipment by its tracking is not"
+    assert cut[0].startswith("shipdesk.list_shipments {}: ")
+    assert SimulatedPortals(book).oversized(cap=10_000) == []

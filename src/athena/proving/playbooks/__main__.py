@@ -21,6 +21,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from athena.core.catalog import READ_CAP
 from athena.proving.playbooks.bench import (
     BenchConfig,
     rescore,
@@ -28,6 +29,7 @@ from athena.proving.playbooks.bench import (
     write_bench,
     write_report,
 )
+from athena.proving.playbooks.page import SimulatedPortals
 from athena.proving.playbooks.spec import PLAYBOOKS_DIRNAME, PlaybookError, load_all, load_playbook
 from athena.proving.report import RUNS_DIRNAME, new_run_dir
 
@@ -61,6 +63,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         except PlaybookError as exc:
             print(f"refused: {exc}", file=sys.stderr)
             return 2
+        cut = 0
         for book in books:
             print(
                 f"{book.id}: {len(book.apps)} portals, {len(book.phases)} phases, "
@@ -68,7 +71,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 f"(${book.eligible_total():,.2f}), "
                 f"{sum(len(t.traps) for t in book.targets)} traps"
             )
-        return 0
+            for line in SimulatedPortals(book).oversized():
+                cut += 1
+                print(f"  cut at {READ_CAP} chars, page it: {line}")
+        return 1 if cut else 0
     try:
         book = load_playbook(Path(args.dir) / args.playbook)
     except PlaybookError as exc:
