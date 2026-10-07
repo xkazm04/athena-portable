@@ -42,6 +42,7 @@ from athena.harness.tokenfactory import (
     DEFAULT_MODEL,
     LIGHTNING_MODEL,
     HttpPost,
+    HttpReply,
     TokenFactoryModel,
     urllib_post,
 )
@@ -51,6 +52,7 @@ from athena.proving.runlog import RunLog
 __all__ = [
     "HAIKU_MODEL",
     "RUNGS",
+    "THINKING_OFF",
     "ClaudeRole",
     "JsonAnswer",
     "NebiusRole",
@@ -63,6 +65,7 @@ __all__ = [
     "extract_json",
     "load_env_file",
     "subprocess_runner",
+    "with_body_fields",
 ]
 
 #: The control. Pinned by id, so a run is comparable with the next one.
@@ -109,19 +112,55 @@ class RoleClient(Protocol):
 # --- Nemotron ------------------------------------------------------------------------------------
 
 
+#: The request field Token Factory honours to turn a Nemotron model's reasoning off: the chat
+#: template's own switch, passed through by the server. Measured 2026-10-07 on Lightning (WP3 A/B,
+#: ADR 0034): ``reasoning_effort``, ``reasoning: {enabled: false}``, a ``/no_think`` system line
+#: and "detailed thinking off" were all accepted and all ignored; only this one removed the
+#: reasoning. A role answers a schema, so it has no use for a hidden essay before the JSON.
+THINKING_OFF: dict[str, Any] = {"chat_template_kwargs": {"enable_thinking": False}}
+
+
+def with_body_fields(post: HttpPost, fields: Mapping[str, Any]) -> HttpPost:
+    """``post`` with ``fields`` merged into every JSON request body it sends.
+
+    The engine's request builder stays the engine's (``TokenFactoryModel``); a role only adds the
+    request fields it needs. A body that is not a JSON object is sent unchanged.
+    """
+    if not fields:
+        return post
+
+    def wrapped(url: str, headers: Mapping[str, str], body: bytes, timeout: float) -> HttpReply:
+        try:
+            payload = json.loads(body.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return post(url, headers, body, timeout)
+        if isinstance(payload, dict):
+            payload.update(dict(fields))
+            body = json.dumps(payload).encode("utf-8")
+        return post(url, headers, body, timeout)
+
+    return wrapped
+
+
 @dataclass
 class NebiusRole:
-    """A role on Nemotron. One non-streamed Chat Completions call per :meth:`complete`."""
+    """A role on Nemotron. One non-streamed Chat Completions call per :meth:`complete`.
+
+    ``thinking`` is off by default: the model answers the role's JSON directly instead of
+    reasoning first (:data:`THINKING_OFF`). Measured, not assumed — see ADR 0034.
+    """
 
     model: str = LIGHTNING_MODEL
     max_tokens: int = 8192
+    thinking: bool = False
     post: HttpPost = field(default=urllib_post, repr=False)
     api_key: str | None = field(default=None, repr=False)
     engine: ClassVar[str] = NEMOTRON
 
     def complete(self, system: str, prompt: str) -> RoleReply:
         started = time.monotonic()
-        fn = TokenFactoryModel(model=self.model, post=self.post, api_key=self.api_key)
+        post = self.post if self.thinking else with_body_fields(self.post, THINKING_OFF)
+        fn = TokenFactoryModel(model=self.model, post=post, api_key=self.api_key)
         request = ModelRequest(
             system=system,
             messages=[ModelMessage(role="user", content=prompt)],
