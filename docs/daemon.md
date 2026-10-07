@@ -272,7 +272,9 @@ curl -s -X POST "$ATHENA/decisions/$APR" -H "X-Athena-Token: $TOKEN" \
 ```
 
 The gate was replayed with the approval id and `describe` proved the grant covers this action with
-these parameters. `output` is empty because a host tool has no executor anywhere in this process:
+these parameters. The replay also spent the approval (`consumed_at` on its row, ADR 0038): the
+gate refuses any later replay of it `approval_spent`, so an approved card runs once whoever holds
+its id. `output` is empty because a host tool has no executor anywhere in this process:
 the page runs it on `execute`, and the answer comes back in the next turn's `tool_results`
 (ADR 0010). Sending `{"choice": "decline"}` instead answers `"status": "declined"` with
 `"execute": []`, and writes a ledger row of zero rounds carrying `user_denied`.

@@ -7,6 +7,9 @@ morning, and an answer the card never offered.
 
 from __future__ import annotations
 
+import re
+import sqlite3
+import threading
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -16,6 +19,7 @@ import pytest
 from athena.contracts import ids
 from athena.contracts.channel import DecisionRequested
 from athena.core.approvals import (
+    APPROVAL_SCHEMA,
     APPROVE_TOKEN,
     ApprovalError,
     ApprovalRow,
@@ -244,6 +248,97 @@ def test_a_resolved_row_leaves_the_inbox(approvals: Approvals) -> None:
     assert approvals.pending(now=T0 + timedelta(hours=1)).total == 0
 
 
+# -- an approval is spent once (ADR 0038) ------------------------------------------------------
+
+
+def test_consume_spends_an_approved_row_exactly_once(approvals: Approvals) -> None:
+    row = _create(approvals)
+    approvals.resolve(row.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=1))
+    assert not approvals.describe(row.id).consumed
+
+    assert approvals.consume(row.id, now=T0 + timedelta(minutes=2)) is True
+    assert approvals.consume(row.id, now=T0 + timedelta(minutes=3)) is False
+
+    grant = approvals.describe(row.id)
+    assert grant.consumed and grant.consumed_at == (T0 + timedelta(minutes=2)).isoformat()
+    assert grant.status == ApprovalStatus.APPROVED  # the user's answer is unchanged
+
+
+@pytest.mark.parametrize("choice", [None, "decline", "expire"])
+def test_a_row_that_is_not_approved_cannot_be_spent_and_is_left_alone(
+    approvals: Approvals, choice: str | None
+) -> None:
+    row = _create(approvals)
+    if choice == "expire":
+        approvals.expire_due(T0 + timedelta(days=2))
+    elif choice is not None:
+        approvals.resolve(row.id, choice, now=T0 + timedelta(minutes=1))
+    before = approvals.get(row.id)
+
+    assert approvals.consume(row.id) is False
+    assert approvals.get(row.id) == before
+
+
+def test_an_unknown_row_cannot_be_spent(approvals: Approvals) -> None:
+    assert approvals.consume("apr_000000000000") is False
+
+
+def test_two_replays_racing_on_one_approval_split_into_one_winner(tmp_path: Path) -> None:
+    """Two brains on one directory are two writers; ``BEGIN IMMEDIATE`` and the conditional
+    update are what make exactly one of many concurrent spends succeed."""
+    first = Approvals(Brain(tmp_path / "brain"))
+    second = Approvals(Brain(tmp_path / "brain"))
+    row = _create(first)
+    first.resolve(row.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=1))
+
+    tables = [first, second] * 4
+    start = threading.Barrier(len(tables))
+    wins: list[bool] = []
+    lock = threading.Lock()
+
+    def spend(table: Approvals) -> None:
+        start.wait()
+        won = table.consume(row.id)
+        with lock:
+            wins.append(won)
+
+    threads = [threading.Thread(target=spend, args=(table,)) for table in tables]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert sorted(wins) == [False] * (len(tables) - 1) + [True]
+
+
+def test_a_brain_from_before_consumed_at_gains_the_column_on_open(tmp_path: Path) -> None:
+    """The migration: a table created without ``consumed_at`` keeps its rows and can spend them."""
+    brain = Brain(tmp_path / "brain")
+    old_schema = re.sub(r",\s*consumed_at TEXT", "", APPROVAL_SCHEMA[0])
+    assert "consumed_at" not in old_schema
+    with brain.write_txn() as con:
+        con.execute(old_schema)
+        con.execute(
+            """INSERT INTO companion_approval
+               (id, action, params_json, origin, conversation_id, surface, options_json,
+                status, choice, created_at, expires_at, resolved_at)
+               VALUES ('apr_0123456789ab', 'host.invoices.fill', '{}', 'host:invoices', ?,
+                       'panel', '["approve","decline"]', 'approved', 'approve', ?, ?, ?)""",
+            (CONVERSATION, T0.isoformat(), (T0 + timedelta(days=1)).isoformat(), T0.isoformat()),
+        )
+
+    approvals = Approvals(brain)
+    Approvals(brain)  # a second open is a no-op, not a duplicate column
+
+    assert approvals.consume("apr_0123456789ab") is True
+    assert approvals.consume("apr_0123456789ab") is False
+    with (
+        pytest.raises(sqlite3.OperationalError, match="duplicate column"),
+        brain.write_txn() as con,
+    ):
+        con.execute("ALTER TABLE companion_approval ADD COLUMN consumed_at TEXT")
+
+
 # -- the table is not an index -----------------------------------------------------------------
 
 
@@ -260,3 +355,17 @@ def test_a_reconcile_rebuilds_the_index_and_keeps_the_approvals(tmp_path: Path) 
         assert stored is not None
         assert stored.status == ApprovalStatus.PENDING
         assert brain.counts()["episode"] == 1
+
+
+def test_a_reconcile_keeps_a_spent_approval_spent(tmp_path: Path) -> None:
+    """Spending is runtime state too: a rebuild from disk must not make a grant usable again."""
+    with Brain(tmp_path / "brain") as brain:
+        approvals = Approvals(brain)
+        row = _create(approvals)
+        approvals.resolve(row.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=1))
+        assert approvals.consume(row.id)
+
+        reconcile_from_disk(brain)
+
+        assert approvals.describe(row.id).consumed
+        assert approvals.consume(row.id) is False

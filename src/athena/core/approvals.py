@@ -5,8 +5,9 @@ Lifecycle, and there is no other edge::
     pending --resolve("approve")---------------> approved
     pending --resolve(another offered token)---> declined
     pending --expire_due(now >= expires_at)----> expired   (reason "expired")
+    approved --consume (the gate lets it through)--> approved, consumed_at set   (once, ever)
 
-Three rules hold the module together.
+Four rules hold the module together.
 
 **The row is the grant.** :meth:`Approvals.describe` returns the action and the parameters the row
 was created for, canonicalised. README §3.2 step 6 replays the gate with an approval id once the
@@ -21,6 +22,13 @@ table that guesses what "sure, go ahead" meant is a gate the model can talk its 
 (README §2 invariant 3). Of the offered tokens exactly one opens the gate, :data:`APPROVE_TOKEN`;
 every other offered token records the user's answer and leaves the row ``declined``, because this
 table answers one question — *was this action authorised* — and anything that is not a yes is a no.
+
+**An approval is spent when the gate lets its action through.** :meth:`consume` is one
+conditional write — ``consumed_at`` set where it is still empty on an ``approved`` row — so of two
+replays racing on one approval exactly one is told ``True`` (ADR 0038). The status stays
+``approved``, because that is still what the user answered; ``consumed_at`` is the gate's record,
+not the user's. Single use is policy, and policy lives in the gate (README §2 invariant 3): it
+does not depend on the route being the only caller that holds an approval id.
 
 **Expiry is checked at resolve, not only by the sweep.** :meth:`expire_due` is a background broom;
 a resolve that arrives after ``expires_at`` expires the row itself and refuses. A stale card in a
@@ -115,11 +123,18 @@ APPROVAL_SCHEMA: tuple[str, ...] = (
         reason TEXT,
         created_at TEXT NOT NULL,
         expires_at TEXT NOT NULL,
-        resolved_at TEXT
+        resolved_at TEXT,
+        consumed_at TEXT
     )""",
     "CREATE INDEX IF NOT EXISTS idx_approval_live ON companion_approval(status, expires_at)",
     "CREATE INDEX IF NOT EXISTS idx_approval_created ON companion_approval(created_at)",
 )
+
+
+#: Columns added after a brain could already hold the table, as ``(name, declaration)``. A table
+#: created before one of them existed gains it on open; ``CREATE TABLE IF NOT EXISTS`` alone would
+#: leave an old brain without it. An added column must be nullable, so old rows stay valid.
+_ADDED_COLUMNS: tuple[tuple[str, str], ...] = (("consumed_at", "TEXT"),)
 
 
 def _now() -> datetime:
@@ -157,10 +172,16 @@ class ApprovalGrant:
     surface: str
     capture_id: str | None = None
     choice: str | None = None
+    consumed_at: str | None = None
 
     @property
     def approved(self) -> bool:
         return self.status == ApprovalStatus.APPROVED
+
+    @property
+    def consumed(self) -> bool:
+        """Has the gate already let this grant's action through? A spent grant opens nothing."""
+        return self.consumed_at is not None
 
     def matches(self, action: str, params: Mapping[str, Any]) -> bool:
         """Is this the exact action and parameter set the user was shown?
@@ -192,6 +213,7 @@ class ApprovalRow:
     answer: str | None = None
     reason: str | None = None
     resolved_at: str | None = None
+    consumed_at: str | None = None
 
     @property
     def pending(self) -> bool:
@@ -250,7 +272,7 @@ class PendingPage:
 #: The projection :func:`_row` reads, in order. One string, so every SELECT agrees with it.
 _COLUMNS = (
     "id, action, params_json, origin, conversation_id, surface, options_json, status, "
-    "created_at, expires_at, summary, capture_id, choice, answer, reason, resolved_at"
+    "created_at, expires_at, summary, capture_id, choice, answer, reason, resolved_at, consumed_at"
 )
 
 
@@ -272,6 +294,7 @@ def _row(raw: Sequence[Any]) -> ApprovalRow:
         answer=None if raw[13] is None else str(raw[13]),
         reason=None if raw[14] is None else str(raw[14]),
         resolved_at=None if raw[15] is None else str(raw[15]),
+        consumed_at=None if raw[16] is None else str(raw[16]),
     )
 
 
@@ -283,6 +306,10 @@ class Approvals:
         with brain.write_txn() as con:
             for statement in APPROVAL_SCHEMA:
                 con.execute(statement)
+            present = {str(raw[1]) for raw in con.execute("PRAGMA table_info(companion_approval)")}
+            for name, declaration in _ADDED_COLUMNS:
+                if name not in present:
+                    con.execute(f"ALTER TABLE companion_approval ADD COLUMN {name} {declaration}")
 
     # -- writing -------------------------------------------------------------------------------
 
@@ -424,6 +451,24 @@ class Approvals:
                 )
         return expired
 
+    def consume(self, approval_id: str, *, now: datetime | None = None) -> bool:
+        """Spend an approved grant. ``True`` for exactly one caller per approved row, ever.
+
+        The gate calls this as it lets the approved action through (README §3.2 step 6, ADR
+        0038). One conditional ``UPDATE`` inside the writer's ``BEGIN IMMEDIATE``: the row must be
+        ``approved`` and not yet spent, and ``rowcount`` says whether *this* write is the one that
+        spent it. Two replays racing on one approval therefore split into one ``True`` and one
+        ``False`` without either reading first. An unknown, pending, declined or expired row is
+        ``False`` and is left exactly as it was — spending never moves a row's status.
+        """
+        with self.brain.write_txn() as con:
+            cursor = con.execute(
+                """UPDATE companion_approval SET consumed_at = ?
+                   WHERE id = ? AND status = 'approved' AND consumed_at IS NULL""",
+                (_iso(now or _now()), approval_id),
+            )
+            return cursor.rowcount == 1
+
     # -- reading -------------------------------------------------------------------------------
 
     def get(self, approval_id: str) -> ApprovalRow | None:
@@ -452,6 +497,7 @@ class Approvals:
             surface=row.surface,
             capture_id=row.capture_id,
             choice=row.choice,
+            consumed_at=row.consumed_at,
         )
 
     def pending(self, limit: int = 20, *, now: datetime | None = None) -> PendingPage:

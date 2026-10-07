@@ -157,6 +157,7 @@ export const REFUSAL_REASONS = Object.freeze([
   "unknown_ref",
   "validator_failed",
   "manifest_invalid",
+  "approval_spent",
   // the turn could not finish
   "budget_exhausted",
   "engine_error",

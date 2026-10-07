@@ -149,7 +149,9 @@ class GateHook:
 
         ``approval_id`` is README §3.2 step 6: the gate replayed once the user has answered. The
         replay proves the grant covers *this* action with *these* parameters before anything runs,
-        so an approved card can never be spent on a second, different call.
+        so an approved card can never be spent on a second, different call — and it spends the
+        grant as it lets the call through, so the same card can never run the same call twice
+        either, whoever the caller is (ADR 0038).
         """
         if approval_id is not None:
             refusal = self._check_grant(entry, params, approval_id)
@@ -184,6 +186,17 @@ class GateHook:
             return Cancel(
                 "validator_failed",
                 f"approval {approval_id} was not granted for {entry.name} with these parameters",
+                approval_id=approval_id,
+            )
+        # Single use is policy, so it lives here and not in whichever caller happens to hold the
+        # id (ADR 0038). The spend is the table's one conditional write, so of two replays racing
+        # on one approval exactly one gets ``True``; and it happens *before* anything executes, so
+        # a crash mid-execute leaves a spent grant rather than a replayable one. Fail closed: an
+        # action the user approved once may run at most once, never at least once.
+        if not self.approvals.consume(approval_id):
+            return Cancel(
+                "approval_spent",
+                f"approval {approval_id} has already been spent on {entry.name}",
                 approval_id=approval_id,
             )
         return None

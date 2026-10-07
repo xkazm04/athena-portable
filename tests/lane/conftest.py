@@ -119,6 +119,7 @@ class FakeCard:
     surface: str
     summary: str = ""
     status: str = "pending"
+    consumed: bool = False
 
     def to_event(self) -> DecisionRequested:
         return DecisionRequested(
@@ -181,6 +182,14 @@ class FakeApprovals:
             raise ValueError(f"approval {approval_id} is {card.status}, not pending")
         card.status = "approved" if choice == "approve" else "declined"
         return card
+
+    def consume(self, approval_id: str) -> bool:
+        """Spend an approved row once, as core's conditional update does (ADR 0038)."""
+        card = self.rows.get(approval_id)
+        if card is None or card.status != "approved" or card.consumed:
+            return False
+        card.consumed = True
+        return True
 
     @property
     def only(self) -> FakeCard:

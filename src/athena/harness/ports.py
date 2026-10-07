@@ -107,6 +107,11 @@ class ApprovalsPort(Protocol):
 
     :meth:`describe` raises ``ValueError`` for an id the table does not hold; the gate catches it
     and cancels with ``unknown_ref`` rather than letting an unknown id reach an executor.
+
+    :meth:`consume` spends an approved grant and answers whether *this* call spent it: ``True``
+    exactly once per approved row, ``False`` for a row already spent, unknown or not approved. It
+    must be one atomic step, because two replays racing on one approval are what it exists to
+    split (ADR 0038).
     """
 
     def create(
@@ -121,6 +126,8 @@ class ApprovalsPort(Protocol):
     ) -> Card: ...
 
     def describe(self, approval_id: str) -> Grant: ...
+
+    def consume(self, approval_id: str) -> bool: ...
 
 
 @runtime_checkable

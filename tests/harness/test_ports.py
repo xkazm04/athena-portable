@@ -13,6 +13,7 @@ and a fixture that bypassed it would be testing a system nobody ships.
 from __future__ import annotations
 
 import asyncio
+import threading
 from collections.abc import AsyncIterator, Sequence
 from pathlib import Path
 from typing import Any
@@ -133,6 +134,46 @@ def test_the_gate_drives_the_real_core_from_card_to_execution(brain: Brain) -> N
     hook = LedgerHook(ledger)
     TruncationHook(hook).before_prompt([], "turn_000000000001")
     assert hook.flags == []
+
+
+def test_two_concurrent_replays_of_one_approval_run_it_exactly_once(brain: Brain) -> None:
+    """ADR 0038, on the real table: replays racing through two gates over two writers to one brain
+    directory split into one execution and ``approval_spent`` for every other caller."""
+    written: list[dict[str, Any]] = []
+    lock = threading.Lock()
+    catalog = _catalog(brain, written)
+    episode = brain.append_episode("The client pays at 45 days.", role="user")
+    params = {"key": "late-payer", "value": "pays at 45 days", "sources": [episode.id]}
+    ctx = TurnContext(conversation_id="conv_invoices", turn_id="turn_000000000003")
+    first = GateHook(catalog, Approvals(brain)).run_tool(
+        catalog.get("core.write_fact"), params, ctx
+    )
+    assert isinstance(first.decision, Cancel) and first.decision.approval_id
+    approval_id = first.decision.approval_id
+    Approvals(brain).resolve(approval_id, "approve")
+
+    gates = [GateHook(catalog, Approvals(brain)), GateHook(catalog, Approvals(Brain(brain.root)))]
+    callers = gates * 4
+    start = threading.Barrier(len(callers))
+    outcomes: list[str] = []
+
+    def replay(gate: GateHook) -> None:
+        start.wait()
+        outcome = gate.run_tool(
+            catalog.get("core.write_fact"), params, ctx, approval_id=approval_id
+        )
+        with lock:
+            decision = outcome.decision
+            outcomes.append(decision.reason if isinstance(decision, Cancel) else "ran")
+
+    threads = [threading.Thread(target=replay, args=(gate,)) for gate in callers]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert sorted(outcomes) == ["approval_spent"] * (len(callers) - 1) + ["ran"]
+    assert written == [params]
 
 
 def test_a_dead_source_is_refused_before_a_card_is_filed(brain: Brain) -> None:

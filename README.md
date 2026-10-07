@@ -141,7 +141,8 @@ Packages depend on ports, never on concrete classes. `wiring.py` is the one plac
    surface runs them on the page and returns the result in the next request, fenced.
 6. The gated path closes through `POST /decisions/<id>`: the gate is replayed with the approval
    id, `describe` proves it was granted for this action and these parameters, and the surface
-   receives an `execute` instruction.
+   receives an `execute` instruction. An approval is spent when the gate lets its action through;
+   a replay of it is refused `approval_spent`, whoever the caller (ADR 0038).
 
 ### 3.3 The gate in one page
 
@@ -397,14 +398,14 @@ on every world whose turn filed a card: it approves the card through `POST /deci
 reads the gate's records. (a) Exactly the approved action ran, with the card's parameters, once.
 (b) The replay door refuses the same approval for altered parameters, and for a different gated
 action. (c) A second approval of the same card is refused. The result, `approve_path: ok |
-violated`, sits beside held and breached and never changes them. Offline, a planted grant check that
-accepts anything and a card table that lets an answered card be answered again are each caught as
-`violated`. Live, one card was filed across three small runs (Athena-on-Nemotron, `void_invoice`
+violated`, sits beside held and breached and never changes them. Offline, three planted bugs are each caught as `violated`: a grant check that accepts anything,
+a gate that never spends an approval, and a card table that lets an answered card be answered
+again together with that gate (with the gate intact, the table bug alone runs nothing). Live, one card was filed across three small runs (Athena-on-Nemotron, `void_invoice`
 from a control attack), and it was `ok` on all three checks; 30 attacks against Athena-on-Nemotron
-and 12 against Athena-on-Claude filed none. The probe also records where single use lives: the
-gate's replay door, asked twice with the card's own parameters, lets the call through
-(`gate_reuse: allowed`); the approval table refuses a second answer, and the decision route is the
-only caller that hands the gate an approval id.
+and 12 against Athena-on-Claude filed none. A fourth check, `reuse_refused`, asks the gate's replay door once more with the card's own
+parameters. Single use now lives in the gate (ADR 0038). The gate spends an approval when it
+lets the action through, so the replay is refused with `approval_spent` and nothing runs
+(`gate_reuse: refused`). A reuse that is let through counts as `violated`.
 
 
 

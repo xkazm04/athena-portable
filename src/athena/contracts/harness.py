@@ -127,6 +127,7 @@ ERROR_REASONS: tuple[str, ...] = (
     "unknown_ref",
     "validator_failed",
     "manifest_invalid",
+    "approval_spent",
     # the turn could not finish
     "budget_exhausted",
     "engine_error",

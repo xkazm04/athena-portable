@@ -10,6 +10,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+import pytest
+
 from athena.contracts.harness import ERROR_REASONS, PromptBlock, TurnResult
 from athena.contracts.registry import (
     ExecResult,
@@ -211,6 +213,120 @@ def test_a_replay_with_different_parameters_is_refused(
     assert ran == []
     assert isinstance(replay.decision, Cancel)
     assert replay.decision.reason == "validator_failed"
+
+
+def _approved(
+    gate: GateHook,
+    approvals: FakeApprovals,
+    row: ToolEntry,
+    params: dict[str, Any],
+    ctx: TurnContext,
+) -> str:
+    first = gate.run_tool(row, params, ctx)
+    assert isinstance(first.decision, Cancel) and first.decision.approval_id
+    approvals.resolve(first.decision.approval_id, "approve")
+    return first.decision.approval_id
+
+
+def test_an_approval_is_spent_when_the_gate_lets_it_through(
+    catalog: FakeCatalog, approvals: FakeApprovals, ctx: TurnContext, entry: EntryFactory
+) -> None:
+    """ADR 0038: single use is the gate's, not the route's. A second replay with the card's own
+    parameters — the one the approve-path probe measured as ``gate_reuse: allowed`` — is refused."""
+    ran: list[dict[str, Any]] = []
+
+    def executor(params: dict[str, Any], context: TurnContext) -> ExecResult:
+        ran.append(params)
+        return ExecResult(ok=True, output="sent")
+
+    row = catalog.add(entry("core.pay", ToolClass.GATED, executor=executor))
+    gate = _gate(catalog, approvals)
+    approval_id = _approved(gate, approvals, row, {"amount": 40}, ctx)
+
+    first = gate.run_tool(row, {"amount": 40}, ctx, approval_id=approval_id)
+    assert first.allowed and approvals.rows[approval_id].consumed
+    again = gate.run_tool(row, {"amount": 40}, ctx, approval_id=approval_id)
+
+    assert ran == [{"amount": 40}]
+    assert isinstance(again.decision, Cancel) and again.result is None
+    assert again.decision.reason == "approval_spent"
+    assert again.decision.approval_id == approval_id
+
+
+def test_a_host_tool_spends_its_approval_on_allow_though_the_page_runs_it(
+    catalog: FakeCatalog, approvals: FakeApprovals, ctx: TurnContext, entry: EntryFactory
+) -> None:
+    """The gate's allow is the last point the daemon controls for a host tool."""
+    row = catalog.add(entry("host.invoices.send", ToolClass.GATED, origin="host:invoices"))
+    gate = _gate(catalog, approvals)
+    approval_id = _approved(gate, approvals, row, {"to": "a@b.c"}, ctx)
+
+    first = gate.run_tool(row, {"to": "a@b.c"}, ctx, approval_id=approval_id)
+    assert first.allowed and first.result is None
+    again = gate.run_tool(row, {"to": "a@b.c"}, ctx, approval_id=approval_id)
+    assert isinstance(again.decision, Cancel) and again.decision.reason == "approval_spent"
+
+
+def test_the_grant_is_spent_before_the_executor_runs(
+    catalog: FakeCatalog, approvals: FakeApprovals, ctx: TurnContext, entry: EntryFactory
+) -> None:
+    """A crash mid-execute leaves a spent grant, never a replayable one: at most once."""
+    spent_when_ran: list[bool] = []
+
+    def executor(params: dict[str, Any], context: TurnContext) -> ExecResult:
+        spent_when_ran.append(approvals.rows[approval_id].consumed)
+        raise RuntimeError("the executor fell over")
+
+    row = catalog.add(entry("core.pay", ToolClass.GATED, executor=executor))
+    gate = _gate(catalog, approvals)
+    approval_id = _approved(gate, approvals, row, {"amount": 40}, ctx)
+
+    with pytest.raises(RuntimeError, match="fell over"):
+        gate.run_tool(row, {"amount": 40}, ctx, approval_id=approval_id)
+    assert spent_when_ran == [True]
+    again = gate.run_tool(row, {"amount": 40}, ctx, approval_id=approval_id)
+    assert isinstance(again.decision, Cancel) and again.decision.reason == "approval_spent"
+    assert spent_when_ran == [True]
+
+
+def test_altered_parameters_are_refused_without_spending_the_grant(
+    catalog: FakeCatalog, approvals: FakeApprovals, ctx: TurnContext, entry: EntryFactory
+) -> None:
+    ran: list[dict[str, Any]] = []
+
+    def executor(params: dict[str, Any], context: TurnContext) -> ExecResult:
+        ran.append(params)
+        return ExecResult(ok=True)
+
+    row = catalog.add(entry("core.pay", ToolClass.GATED, executor=executor))
+    gate = _gate(catalog, approvals)
+    approval_id = _approved(gate, approvals, row, {"amount": 40}, ctx)
+
+    altered = gate.run_tool(row, {"amount": 4000}, ctx, approval_id=approval_id)
+    assert isinstance(altered.decision, Cancel) and altered.decision.reason == "validator_failed"
+    assert not approvals.rows[approval_id].consumed
+
+    honest = gate.run_tool(row, {"amount": 40}, ctx, approval_id=approval_id)
+    assert honest.allowed and ran == [{"amount": 40}]
+    altered_after = gate.run_tool(row, {"amount": 4000}, ctx, approval_id=approval_id)
+    assert isinstance(altered_after.decision, Cancel)
+    assert altered_after.decision.reason == "validator_failed"
+    assert ran == [{"amount": 40}]
+
+
+def test_a_declined_card_is_still_user_denied_and_never_spent(
+    catalog: FakeCatalog, approvals: FakeApprovals, ctx: TurnContext, entry: EntryFactory
+) -> None:
+    row = catalog.add(entry("core.pay", ToolClass.GATED))
+    gate = _gate(catalog, approvals)
+    first = gate.run_tool(row, {"amount": 40}, ctx)
+    assert isinstance(first.decision, Cancel) and first.decision.approval_id
+    approvals.resolve(first.decision.approval_id, "decline")
+
+    for _ in range(2):
+        replay = gate.run_tool(row, {"amount": 40}, ctx, approval_id=first.decision.approval_id)
+        assert isinstance(replay.decision, Cancel) and replay.decision.reason == "user_denied"
+    assert not approvals.rows[first.decision.approval_id].consumed
 
 
 def test_a_replay_against_a_declined_card_is_user_denied(

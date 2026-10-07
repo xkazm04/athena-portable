@@ -347,9 +347,10 @@ def test_the_approve_path_holds_on_the_real_gate() -> None:
         "approved_ran_once": True,
         "altered_refused": True,
         "replay_refused": True,
+        "reuse_refused": True,
     }
-    # where single use lives: the table refuses a second answer; the replay door alone does not
-    assert result.gate_reuse == "allowed"
+    # single use lives in the gate (ADR 0038): the replay door refuses the spent approval
+    assert result.gate_reuse == "refused"
 
 
 def test_the_approve_path_holds_for_an_approved_fact_write() -> None:
@@ -368,7 +369,8 @@ def test_the_approve_path_holds_for_an_approved_fact_write() -> None:
         facts = world.local.brain.counts().get("fact")
     assert [r.verdict for r in results] == [OK], results[0].violations
     assert results[0].checks["approved_ran_once"] is True
-    assert facts == 2  # approved once, then the observed reuse at the replay door
+    assert results[0].checks["reuse_refused"] is True
+    assert facts == 1  # approved once; the replay door refused the spent approval
 
 
 def test_a_sabotaged_grant_check_that_lets_altered_params_run_is_caught() -> None:
@@ -384,7 +386,26 @@ def test_a_sabotaged_grant_check_that_lets_altered_params_run_is_caught() -> Non
     assert any("altered parameters" in v for v in result.violations)
 
 
-def test_a_card_table_that_lets_an_answered_card_be_answered_again_is_caught() -> None:
+def _spend_always_succeeds(world: World) -> None:
+    """The planted bug at the gate: an approval is never spent, so the gate reuses it."""
+
+    def consume(approval_id: str, *args: Any, **kwargs: Any) -> bool:
+        return True
+
+    world.local.approvals.consume = consume  # type: ignore[method-assign]
+
+
+def test_a_gate_that_never_spends_an_approval_is_caught() -> None:
+    result = _probe(_spend_always_succeeds)
+    assert result.verdict == VIOLATED
+    assert result.checks["reuse_refused"] is False and result.gate_reuse == "allowed"
+    assert result.checks["replay_refused"] is True  # the table still refuses a second answer
+    assert any("second time under the same approval" in v for v in result.violations)
+
+
+def test_a_card_table_and_a_gate_that_both_allow_reuse_are_caught() -> None:
+    # One bug alone at the route is no longer enough: the gate refuses the spent approval, so
+    # the route's second answer runs nothing. Plant both to keep the replay check falsifiable.
     def reanswerable(world: World) -> None:
         inner = world.local.approvals.resolve
 
@@ -395,11 +416,26 @@ def test_a_card_table_that_lets_an_answered_card_be_answered_again_is_caught() -
                 return None  # the planted bug: an answered card answers again
 
         world.local.approvals.resolve = resolve  # type: ignore[method-assign]
+        _spend_always_succeeds(world)
 
     result = _probe(reanswerable)
     assert result.verdict == VIOLATED
     assert result.checks["replay_refused"] is False
+    assert result.checks["reuse_refused"] is False
     assert any("second approval" in v for v in result.violations)
+
+
+def test_a_reused_approval_is_refused_as_spent() -> None:
+    with World(engine="nebius", model="fake", model_fn=injected_model()) as world:
+        record = deliver(world, _attack())
+        card_id = next(trip.card_id for trip in record.gate if trip.card_id)
+        world.decide(card_id, "approve")
+        entry = world.local.catalog.get(SEND)
+        grant = world.local.approvals.describe(card_id)
+        ctx = routes._decision_ctx(world.local.daemon, grant.origin, grant.conversation)
+        outcome = world.local.gate.run_tool(entry, dict(grant.params), ctx, approval_id=card_id)
+    assert isinstance(outcome.decision, Cancel)
+    assert outcome.decision.reason == "approval_spent" and outcome.result is None
 
 
 def test_alter_always_changes_the_parameters() -> None:

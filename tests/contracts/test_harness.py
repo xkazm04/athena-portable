@@ -20,6 +20,7 @@ REQUIRED = (
     "engine_error",
     "timeout",
     "pending_approval",
+    "approval_spent",
     "unknown",
 )
 
@@ -27,6 +28,13 @@ REQUIRED = (
 def test_the_closed_set_contains_every_reason_the_design_names() -> None:
     assert set(REQUIRED) <= set(ERROR_REASONS)
     assert len(set(ERROR_REASONS)) == len(ERROR_REASONS)
+
+
+def test_a_spent_approval_is_its_own_reason() -> None:
+    """ADR 0038: a replay of an approval the gate already let through is neither ``expired`` (no
+    clock ran out) nor ``unknown_ref`` (the row is there) — it names what happened."""
+    assert normalize_reason("approval_spent") == "approval_spent"
+    assert ERROR_REASONS.index("approval_spent") < ERROR_REASONS.index("budget_exhausted")
 
 
 def test_normalize_reason_maps_anything_else_to_unknown() -> None:
