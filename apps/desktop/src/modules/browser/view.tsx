@@ -8,17 +8,21 @@
  * gets the whole window, and the ledger of apps is what fills it. The preview harness always
  * shows all of it.
  *
- * The ledger is the page. There is no illustration: the way in is one field at the size of a
- * title at the top of the ledger, because registering an app is the whole of what a person does
- * on this surface when nothing is open, and under it every origin Athena has been told about,
- * one row each, with where it stands right now. The rows are the quieter, longer-lived part.
+ * The ledger is the page, in two layers (ADR 0029). It reads: every origin Athena has been told
+ * about, one row each, with where it stands right now, and on each row only navigation — open the
+ * app, or open its details. Registering is a layer, open from the start on a first run because it
+ * is the only thing to do there; an app's switch and Forget are in its own layer.
  */
 import { useState } from "react";
 
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
+import Facts, { Fact } from "@/components/Facts";
+import Layer from "@/components/Layer";
 import PageHeader from "@/components/PageHeader";
+import PageSection from "@/components/PageSection";
 import PageShell from "@/components/PageShell";
+import PillGroup from "@/components/PillGroup";
 import SectionCard from "@/components/SectionCard";
 import StatusDot, { type Tone } from "@/components/StatusDot";
 import { whenAgo } from "@/lib/time";
@@ -35,7 +39,14 @@ import {
   type RegisteredApp,
 } from "./model";
 
-export default function BrowserView({ model }: { model: BrowserModel }) {
+export default function BrowserView({
+  model,
+  initialApp = null,
+}: {
+  model: BrowserModel;
+  /** Preview only: open this origin's layer on first render. */
+  initialApp?: string | null;
+}) {
   const { actions, apps, appsLoaded, appsProblem, firstRun, focused, problem, tabs, tools } = model;
 
   const go = (typed: string) => {
@@ -94,6 +105,7 @@ export default function BrowserView({ model }: { model: BrowserModel }) {
             onForget={actions.forget}
             onRegister={actions.register}
             firstRun={firstRun}
+            initialApp={initialApp}
           />
 
           {focused ? (
@@ -144,6 +156,7 @@ function Ledger({
   onForget,
   onRegister,
   firstRun,
+  initialApp = null,
 }: {
   apps: readonly RegisteredApp[];
   loaded: boolean;
@@ -154,8 +167,14 @@ function Ledger({
   onForget: (origin: string) => void;
   onRegister: (url: string) => void;
   firstRun: FirstRun | null;
+  initialApp?: string | null;
 }) {
   const none = loaded && !problem && apps.length === 0;
+  // ADR 0029: registering is a layer. On a first run it starts open, because registering is the
+  // only thing to do there; which app's layer is open is view-local, looked up on every render.
+  const [registering, setRegistering] = useState(none && firstRun !== null);
+  const [open, setOpen] = useState<string | null>(initialApp);
+  const current = apps.find((a) => a.origin === open) ?? null;
   return (
     <section className="ledger" aria-labelledby="ledger-title">
       <header className="ledger__head">
@@ -165,11 +184,12 @@ function Ledger({
         <Badge tone={problem ? "error" : loaded ? (apps.length ? "success" : "neutral") : "pending"}>
           {problem ? "could not be read" : loaded ? `${apps.length} registered` : "reading the table"}
         </Badge>
+        <span className="ledger__head-act">
+          <Button variant={none ? "primary" : "secondary"} size="sm" onClick={() => setRegistering(true)}>
+            Register an app
+          </Button>
+        </span>
       </header>
-
-      <div className="ledger__lead">
-        <RegisterField lead={none} onRegister={onRegister} firstRun={none ? firstRun : null} />
-      </div>
 
       {problem ? (
         <div className="ledger__foot">
@@ -187,8 +207,7 @@ function Ledger({
               app={app}
               onScreen={app.tabId !== null && app.tabId === focusedTab}
               onOpen={onOpen}
-              onEnable={onEnable}
-              onForget={onForget}
+              onDetails={() => setOpen(app.origin)}
             />
           ))}
         </ol>
@@ -196,10 +215,47 @@ function Ledger({
 
       {none ? (
         <p className="ledger__foot typo-caption">
-          No app is registered yet. Register one above, or open a page and switch it on.
+          No app is registered yet. Register one, or open a page and switch it on.
         </p>
       ) : !loaded && !problem ? (
         <p className="ledger__foot typo-caption">The origins table has not answered yet.</p>
+      ) : null}
+
+      {registering ? (
+        <Layer eyebrow="Browser" title="Register an app" size="md" onClose={() => setRegistering(false)}>
+          <RegisterField
+            lead={none}
+            firstRun={none ? firstRun : null}
+            onRegister={(url) => {
+              // The layer closes before the tab opens: a page webview would cover it (ADR 0029).
+              setRegistering(false);
+              onRegister(url);
+            }}
+          />
+        </Layer>
+      ) : null}
+
+      {current ? (
+        <Layer
+          eyebrow="Registered app"
+          title={current.host}
+          size="md"
+          onClose={() => setOpen(null)}
+          actions={<Badge tone={STANDING_TONE[current.standing]}>{STANDING_WORD[current.standing]}</Badge>}
+        >
+          <AppLayer
+            app={current}
+            onOpen={() => {
+              setOpen(null);
+              onOpen(current.origin);
+            }}
+            onEnable={onEnable}
+            onForget={(origin) => {
+              setOpen(null);
+              onForget(origin);
+            }}
+          />
+        </Layer>
       ) : null}
     </section>
   );
@@ -214,16 +270,13 @@ function AppRow({
   app,
   onScreen,
   onOpen,
-  onEnable,
-  onForget,
+  onDetails,
 }: {
   app: RegisteredApp;
   onScreen: boolean;
   onOpen: (origin: string) => void;
-  onEnable: (origin: string, enabled: boolean) => void;
-  onForget: (origin: string) => void;
+  onDetails: () => void;
 }) {
-  const [confirming, setConfirming] = useState(false);
   const classes = ["app-row", `app-row--${app.standing}`];
   if (onScreen) classes.push("app-row--focused");
   return (
@@ -274,36 +327,86 @@ function AppRow({
         <span className="typo-caption">{whenAgo(app.lastSeen)}</span>
       </div>
 
-      <div className="app-row__acts" data-open={confirming ? "true" : undefined}>
+      <div className="app-row__acts">
+        <Button size="sm" variant="ghost" onClick={() => onOpen(app.origin)}>
+          {app.tabId === null ? "Open" : "Show"}
+        </Button>
+        <Button size="sm" variant="ghost" aria-label={`Details for ${app.host}`} onClick={onDetails}>
+          Details
+        </Button>
+      </div>
+    </li>
+  );
+}
+
+/**
+ * One app's layer (ADR 0029): what it is and how it stands, then the two writes — whether Athena
+ * may act here, and Forget, which asks once more because a forgotten origin is a first sight again.
+ */
+function AppLayer({
+  app,
+  onOpen,
+  onEnable,
+  onForget,
+}: {
+  app: RegisteredApp;
+  onOpen: () => void;
+  onEnable: (origin: string, enabled: boolean) => void;
+  onForget: (origin: string) => void;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  return (
+    <div className="app-layer">
+      <div className="app-layer__id">
+        <span className="app-row__tile app-layer__tile" aria-hidden="true">
+          {app.monogram}
+        </span>
+        <div className="stack" style={{ gap: 2 }}>
+          <span className="typo-title">{app.origin}</span>
+          <span className="typo-caption">{app.summary}</span>
+        </div>
+        <Button size="sm" variant="secondary" onClick={onOpen}>
+          {app.tabId === null ? "Open" : "Show"}
+        </Button>
+      </div>
+      <Facts>
+        <Fact label="Tools">
+          {app.tools ? `${app.tools.count} over ${app.tools.transport ?? "no transport"}` : "none answered yet"}
+        </Fact>
+        <Fact label="Pinned classes">{app.overrides ? String(app.overrides) : "none"}</Fact>
+        <Fact label="Last seen">{whenAgo(app.lastSeen) || "never"}</Fact>
+      </Facts>
+      <PageSection title="Athena may act here" note="Off, every call on this app is refused by the gate.">
+        <PillGroup
+          ariaLabel={`Athena may act on ${app.host}`}
+          value={app.enabled ? "on" : "off"}
+          onChange={(next) => onEnable(app.origin, next === "on")}
+          options={[
+            { value: "on", label: "on", hint: "Athena may read and propose here; every act is still a card." },
+            { value: "off", label: "off", hint: "She may not act on this app." },
+          ]}
+        />
+      </PageSection>
+      <PageSection title="Forget" note="The origin, its switch and its pinned classes go.">
         {confirming ? (
-          <>
+          <span className="row">
+            <span className="typo-caption">Forget {app.host}? It is a first sight again.</span>
             <Button size="sm" variant="primary" onClick={() => onForget(app.origin)}>
               Yes, forget
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
               Keep
             </Button>
-          </>
+          </span>
         ) : (
-          <>
-            <Button size="sm" variant="ghost" onClick={() => onOpen(app.origin)}>
-              {app.tabId === null ? "Open" : "Show"}
+          <span className="row">
+            <Button size="sm" variant="ghost" aria-label={`Forget ${app.host}`} onClick={() => setConfirming(true)}>
+              Forget this app
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => onEnable(app.origin, !app.enabled)}>
-              {app.enabled ? "Don't act here" : "Act here again"}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              aria-label={`Forget ${app.host}`}
-              onClick={() => setConfirming(true)}
-            >
-              Forget
-            </Button>
-          </>
+          </span>
         )}
-      </div>
-    </li>
+      </PageSection>
+    </div>
   );
 }
 

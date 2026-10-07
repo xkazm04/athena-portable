@@ -187,6 +187,22 @@ export const fixtures: Record<string, BrowserModel> = {
   ),
 };
 
-export const fixtureIds = ["empty", "first-run", "typical", "heavy", "degraded", "no-bridge", "apps-unread"] as const;
+fixtures["app-details"] = fixtures.typical;
+
+export const fixtureIds = [
+  "empty",
+  "first-run",
+  "typical",
+  "heavy",
+  "degraded",
+  "no-bridge",
+  "apps-unread",
+  "app-details",
+] as const;
+
+/** The fixture that renders one app's layer open (ADR 0029), and which origin. */
+export function initialAppFor(fixture: string): string | null {
+  return fixture === "app-details" ? (fixtures.typical.apps[0]?.origin ?? null) : null;
+}
 
 export type { BrowserTab };
