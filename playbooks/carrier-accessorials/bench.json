@@ -1,0 +1,128 @@
+{
+  "playbook": "carrier-accessorials",
+  "run_at": "2026-10-07T23:40:31Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 270.2,
+  "turns": 25,
+  "nudges": 0,
+  "follow_ups": 3,
+  "reads": 35,
+  "cost_usd": 4.8695,
+  "your_time_s": 270,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 30.0
+    },
+    "minutes": 4.5
+  },
+  "score": {
+    "eligible": 9,
+    "found": 9,
+    "exact": 9,
+    "value_total_usd": 1580.0,
+    "value_found_usd": 1580.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 13,
+    "traps_filed": 0,
+    "filed_usd": 1580.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "send_email",
+      "key": "CHR-1142",
+      "outcome": "correct",
+      "value_usd": 285.0,
+      "exact": true,
+      "why": "The portal's 2 business days closed on 10-06; only the CHR rep can take the $285 lumper now"
+    },
+    {
+      "action": "send_email",
+      "key": "LS-2201",
+      "outcome": "correct",
+      "value_usd": 150.0,
+      "exact": true,
+      "why": "Cancelled at 05:30 for a 06:00 pickup: within 24 hours, so the $150 TONU is owed"
+    },
+    {
+      "action": "send_email",
+      "key": "LS-2188",
+      "outcome": "correct",
+      "value_usd": 250.0,
+      "exact": true,
+      "why": "Held 26 hours, acknowledged by the rep: one day of layover, invoiced by 2026-10-09"
+    },
+    {
+      "action": "request_detention",
+      "key": "CHR-1101",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "BOL 07:55–11:35 is 3h40; 2 hours free leaves 1h40, rounded down to 1h30 at $50"
+    },
+    {
+      "action": "request_detention",
+      "key": "TQL-5530",
+      "outcome": "correct",
+      "value_usd": 60.0,
+      "exact": true,
+      "why": "4h40 at the facility, 3 free leaves 1h40, rounded down to 1h30 at $40; notice was given 40 minutes before detention began"
+    },
+    {
+      "action": "submit_lumper",
+      "key": "TQL-5502",
+      "outcome": "correct",
+      "value_usd": 340.0,
+      "exact": true,
+      "why": "The rep approved it before payment; the receipt sits under Lumper Receipt, which TQL does not pay from; due by 2026-10-09"
+    },
+    {
+      "action": "request_detention",
+      "key": "UF-77310",
+      "outcome": "correct",
+      "value_usd": 70.0,
+      "exact": true,
+      "why": "Free time runs from arrival 14:05 (later than the 14:00 appointment); 3h55 less 2 is 1h55, rounded down to 1h45 at $40; the window closes today at 18:00"
+    },
+    {
+      "action": "short_pay_inquiry",
+      "key": "CHR-0977",
+      "outcome": "correct",
+      "value_usd": 100.0,
+      "exact": true,
+      "why": "CHR paid the $100 detention to RTS on 09-29; RTS remitted the $1,850 linehaul only"
+    },
+    {
+      "action": "request_detention",
+      "key": "CHR-1188",
+      "outcome": "correct",
+      "value_usd": 250.0,
+      "exact": true,
+      "why": "BOL 06:00–15:00 is 9 hours; 7 billable at $50 is $350, capped at $250"
+    }
+  ],
+  "missed": [],
+  "closing_words": "CHR-1188 qualifies for $250, and I'm filing it on the BOL times, 06:00 to 15:00, which differ slightly from Motive's. CHR has no detention request on the load yet.\n\n- The BOL shows 9h00 in the stop, which leaves 7h after the 2 free hours.\n- At $50 an hour that is $350, so the $250 per-stop cap applies.\n\n\n**CHR-1120, Aldi: nothing to file.** The BOL shows 08:00 to 09:50, which is 1h50 against 2 hours free.\n\n**CHR-1142:** the BOL departure is 14:05, but the waiting email to Kelsey says 14:10, which is Motive's time. The email asks CHR for a favour, so the mismatch could undercut it. Decline that card and I'll redraft it with 14:05, or approve it as is.\n\n**Still open:**\n- **Uber UF-77102 ($40):** I need a rep's email, or your go-ahead to write to carriers@uberfreight.example.\n- **TQL-5488:** I'll draft a goodwill note to Dana at TQL if you want one.\n\n**Waiting on you:** the 8 earlier cards ",
+  "note": "after ADR 0047 (ask for the tab by name) and rep addresses on the mail and the CHR page",
+  "history": [
+    {
+      "run_at": "2026-10-07T23:33:58Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 6,
+      "eligible": 9,
+      "value_found_usd": 895.0,
+      "false_claims": 0,
+      "note": "first run"
+    }
+  ]
+}

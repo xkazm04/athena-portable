@@ -1,0 +1,73 @@
+{
+  "id": "carrier-accessorials",
+  "title": "Detention, lumper and TONU, collected",
+  "domain": "Trucking",
+  "promise": "Every stop of the last two weeks checked against its rate con, the signed BOL and the ELD, then filed in each broker's own tool, by that broker's rules, before its window shuts. The loads that don't qualify are left alone.",
+  "persona": "A three-truck owner-operator carrier hauling for C.H. Robinson, TQL, Uber Freight and a small email-only broker, factored through RTS",
+  "chore": "Drivers sit at docks on four stops in ten. The money for that time is owed only on terms that differ on every rate con: free time, rate, cap, a notice rule and a filing window that can be 24 hours. The carrier compares the ELD's geofence times, the signed BOL and the rate con for every stop. Then they file in the broker's own tool, in the form it checks: CHR wants the BOL times, TQL wants receipts in one document category, Uber wants the request within a day. They also check that what the broker approved actually arrived through the factor. Most small carriers bill for detention a fraction of the time and collect on fewer.",
+  "command": "Go through the last two weeks of loads. For each stop, check the rate con, the signed BOL and the ELD times, and file detention, lumper, layover or TONU wherever we qualify, in each broker's own tool and by its rules. Ask the rep about anything a portal window has closed on. Chase anything the factor didn't pass through. Leave alone whatever doesn't qualify.",
+  "apps": [
+    { "name": "Motive", "role": "ELD geofence arrival and departure for every stop", "api": "Fleet API on paid plans; the carrier reads the dashboard", "url": "https://gomotive.com" },
+    { "name": "Dispatch inbox", "role": "rate confirmations, rep approvals, receipts, the email-only broker", "api": "Mail", "url": "https://mail.google.com" },
+    { "name": "C.H. Robinson Navisphere Carrier", "role": "CHR loads, signed BOL times, detention and lumper requests, payments", "api": "Portal only for a small carrier", "url": "https://www.navispherecarrier.com" },
+    { "name": "TQL Carrier Dashboard", "role": "TQL loads, check calls, tracking, document categories, payments", "api": "Portal only", "url": "https://carrierdashboard.tql.com" },
+    { "name": "Uber Freight", "role": "Uber loads with GPS times and the 24-hour detention request", "api": "App only", "url": "https://www.uberfreight.com/carriers" },
+    { "name": "RTS Pro (factor)", "role": "what each broker's payment actually remitted", "api": "Portal only", "url": "https://www.rtsinc.com" }
+  ],
+  "steps": [
+    "Reads every stop's geofence times in Motive.",
+    "Reads each load's rate con and the rep emails in the inbox: free time, rate, cap, notice rule, window.",
+    "Files each broker's requests in its own tool and form: BOL times for CHR, the payment category for TQL, inside the day for Uber.",
+    "Leaves alone the stops that don't qualify: inside free time, tracker off, arrived late, window closed, already paid.",
+    "Checks the factor's remittances against what the brokers approved, and emails the brokers no portal serves."
+  ],
+  "gates": [
+    { "action": "request_detention", "label": "Request detention", "why": "It goes to the broker's billing team under the carrier's name. A request that fails the broker's checks costs standing on the next one." },
+    { "action": "request_lumper", "label": "Request a lumper refund", "why": "It goes to the broker, and the amount must match the receipt exactly." },
+    { "action": "submit_lumper", "label": "Submit lumper paperwork", "why": "It goes to TQL's payment team, and the category decides whether anyone pays it." },
+    { "action": "short_pay_inquiry", "label": "Ask the factor about a short pay", "why": "It goes to the factor's collections team about a broker's payment." },
+    { "action": "send_email", "label": "Email a broker", "why": "It leaves the company under the carrier's name: an invoice or a request for an exception." }
+  ],
+  "traps": [
+    "ELD times typed into a CHR request, where the signed BOL's times are the ones checked.",
+    "A detention request over the rate con's cap.",
+    "A CHR lumper refund requested in the portal after its two business days, instead of asking the rep.",
+    "TQL detention where the tracker was off for three hours.",
+    "An Uber request two days late, a stop inside free time, and detention for a truck that arrived late.",
+    "Detention TQL already approved and paid."
+  ],
+  "memory": [
+    "Per broker: free time, notice rule, windows, the document category that pays, the rep's name.",
+    "Per facility: typical dwell, and whether it signs out-times on the BOL.",
+    "Per driver: whether the tracking app stays on.",
+    "What each broker approved, so the factor's remittances can be checked next week."
+  ],
+  "economics": {
+    "value_usd": 12000,
+    "per": "year",
+    "basis": "ATRI found drivers detained at 39% of stops, with lost revenue of $11–19k per driver a year. Only 29% of carriers collect all the detention they bill. A three-truck carrier recovering a fraction of that is about $8–20k a year. The bench world holds $1,580 across two weeks.",
+    "manual_minutes": 150,
+    "incumbent": "Dispatch services charge 5–10% of gross revenue and file accessorials when they get to it. Factors advance the linehaul and chase accessorials last. Mostly, nobody files.",
+    "sources": [
+      { "label": "ATRI: detention at 39.3% of stops, $3.6B direct cost (2024)", "url": "https://truckingresearch.org/2024/09/new-research-documents-substantial-financial-and-safety-impacts-from-truck-driver-detention/" },
+      { "label": "Land Line: $11–19k lost per driver a year", "url": "https://landline.media/magazine/detention-time-new-study-outlines-true-costs-consequences/" },
+      { "label": "C.H. Robinson: requesting detention in Navisphere Carrier", "url": "https://www.chrobinson.com/en-us/resources/resource-center/guides/carrier-request-detention/" },
+      { "label": "TQL carrier FAQ: Final Payment Paperwork", "url": "https://www.tql.com/carrier-faqs" },
+      { "label": "Uber Freight: detention requested within 24 hours", "url": "https://www.uberfreight.com/blog/how-to-request-detention-on-uber-freight" },
+      { "label": "Dispatch service fees, 5–10% of gross (vendor)", "url": "https://otrucking.com/resources/guides/how-much-do-dispatchers-charge/" }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Six tools that each hold a third of the truth: ELD, BOL, rate con, three broker portals with their own forms, a factor. Every rate con sets different terms, and one window closes today.",
+    "usefulness_why": "Small sums at high frequency, against margins of a few percent: the difference between a truck paying for itself and not."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 30,
+    "why": "A careful dispatcher catches most of it in an afternoon. The bar is most of the money with no request that fails the broker's checks."
+  },
+  "caveat": "Brokers' rules here are fixed in the bench world from their public guides and sample rate confirmations; a real rate con's terms always win."
+}
