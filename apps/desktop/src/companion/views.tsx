@@ -465,7 +465,7 @@ function Talk({ model }: { model: CompanionModel }) {
   const empty = talk.blocks.length === 0 && model.cards.length === 0 && !talk.error;
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const input = e.currentTarget.elements.namedItem("message") as HTMLInputElement | null;
+    const input = e.currentTarget.elements.namedItem("message") as HTMLTextAreaElement | null;
     const value = input?.value.trim() ?? "";
     if (!value || talk.blocked) return;
     if (input) input.value = "";
@@ -532,7 +532,24 @@ function Talk({ model }: { model: CompanionModel }) {
       <form className="lg-compose" onSubmit={submit}>
         {/* Keyed by the offer, so a command Main hands over (ADR 0040) lands as the draft and the
             person's own typing is never overwritten by a re-render. */}
-        <input key={talk.draft.n} name="message" aria-label="Message Athena" placeholder="Tell Athena what to do" autoComplete="off" defaultValue={talk.draft.text} autoFocus={talk.draft.n > 0} disabled={!!talk.blocked} />
+        <textarea
+          key={talk.draft.n}
+          name="message"
+          aria-label="Message Athena"
+          placeholder="Tell Athena what to do"
+          autoComplete="off"
+          rows={talk.draft.text ? 3 : 1}
+          defaultValue={talk.draft.text}
+          autoFocus={talk.draft.n > 0}
+          disabled={!!talk.blocked}
+          onKeyDown={(e) => {
+            // Enter sends, as it did when this was one line; Shift+Enter starts a new one.
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              e.currentTarget.form?.requestSubmit();
+            }
+          }}
+        />
         <button type="submit" className="aw-btn aw-btn-primary aw-btn-icon" aria-label="Send" disabled={!!talk.blocked}>
           <Icon name="send" />
         </button>

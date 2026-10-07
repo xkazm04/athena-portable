@@ -189,6 +189,10 @@ const INIT: Event = { t: "init", onboarded: true, cards: 0 };
 
 interface Setup {
   events: Event[];
+  /** The active playbook's title (ADR 0044). */
+  project?: string;
+  /** A command Main offered for the composer. */
+  offer?: string;
   cards?: DecisionRequested[];
   held?: DecisionRequested | null;
   transcript?: TranscriptEntry[];
@@ -237,6 +241,8 @@ function model(setup: Setup): CompanionModel {
     probing: setup.probing ?? false,
     onboarded: setup.onboarded ?? true,
     nowMs: NOW,
+    project: setup.project ? { title: setup.project } : null,
+    offer: setup.offer ? { n: 1, text: setup.offer } : null,
     actions: NO_ACTIONS,
   });
   return setup.capture ? { ...built, cards: built.cards.map((c) => ({ ...c, capture: "sketch" })) } : built;
@@ -332,6 +338,15 @@ export const fixtures: Record<string, () => CompanionModel> = {
       transcript: TURN,
     }),
   "ledger empty": () => model({ events: [INIT, { t: "seal" }], origin: null }),
+  // A playbook handed over from Main (ADR 0044): its command waits in the composer, and its
+  // title names what every turn is working toward.
+  "ledger playbook": () =>
+    model({
+      events: [INIT, { t: "seal" }],
+      project: "Amazon FBA reimbursements",
+      offer:
+        "It's reimbursement day. Go through my Seller Central reports and find everything Amazon still owes me.",
+    }),
   /** The daemon offline, and the last turn stopped: the two things a person must be told. */
   "ledger degraded": () =>
     model({ events: [INIT, { t: "seal" }], origin: null, ready: false, phase: "error" }),
