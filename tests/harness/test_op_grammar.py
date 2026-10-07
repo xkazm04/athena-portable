@@ -137,5 +137,5 @@ def test_a_tool_named_in_op_is_read_as_propose_action_on_it() -> None:
 
 def test_a_verb_that_is_not_a_tool_name_is_still_refused() -> None:
     for verb in ("call", "read", "host", "hostile.thing", "host.gcpay.list.pay.apps"):
-        parsed = parse_op('{"op":"%s","params":{}}' % verb)
+        parsed = parse_op(f'{{"op":"{verb}","params":{{}}}}')
         assert isinstance(parsed, OpError), verb
