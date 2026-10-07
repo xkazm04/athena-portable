@@ -755,6 +755,10 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 - **The score is read from cards.** Each card on a target tool is right, a duplicate, a trap, or
   unfounded; traps avoided, exact amounts and the money found follow. A closing total in her own
   words is audited against the cards, and the record wins.
+- **The replay.** `bench.json` keeps the latest run's trace: each turn's portal, what the person
+  said (or that the run loop handed back the page's answers), her words cut at a sentence with
+  their length, what she read, and each card in the colour the scorer gave it. The playbook's
+  layer on the desktop plays it turn by turn, with the money found so far.
 
 | Playbook | Portals | Edge (difficulty / usefulness) | Latest bench (2026-10-07, Claude Sonnet) |
 |---|---|---|---|

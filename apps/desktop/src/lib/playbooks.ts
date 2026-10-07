@@ -115,6 +115,22 @@ export interface Bench {
   cards: readonly BenchCard[];
   missed: readonly { action: string; key: string; valueUsd: number | null }[];
   closingWords: string;
+  /** The run turn by turn, for the replay; empty for a run recorded before traces were kept. */
+  trace: readonly TraceTurn[];
+}
+
+/** One turn of a benched run: where she was, what the person said, what she read and filed. */
+export interface TraceTurn {
+  portal: string;
+  /** What the person said; "" when the run loop continued the turn instead. */
+  user: string;
+  /** The run loop sent the page's answers back to her: no one spoke. */
+  continued: boolean;
+  /** Her words, cut at a sentence end; `saidChars` is how long they were. */
+  said: string;
+  saidChars: number;
+  reads: readonly string[];
+  cards: readonly { action: string; key: string; outcome: CardOutcome; valueUsd: number | null }[];
 }
 
 /** One earlier run of a playbook, in a line. */
@@ -184,6 +200,9 @@ const OUTCOMES: readonly CardOutcome[] = [
 ];
 const VERDICTS: readonly VerdictWord[] = ["exceeds", "meets", "short"];
 
+const outcome = (v: unknown): CardOutcome =>
+  (OUTCOMES as readonly string[]).includes(str(v)) ? (str(v) as CardOutcome) : "other";
+
 function parseBench(raw: unknown): Bench | null {
   if (!isRaw(raw)) return null;
   const score = isRaw(raw.score) ? raw.score : {};
@@ -241,9 +260,7 @@ function parseBench(raw: unknown): Bench | null {
       .map((c) => ({
         action: str(c.action),
         key: str(c.key),
-        outcome: (OUTCOMES as readonly string[]).includes(str(c.outcome))
-          ? (str(c.outcome) as CardOutcome)
-          : "other",
+        outcome: outcome(c.outcome),
         valueUsd: numOrNull(c.value_usd),
         exact: typeof c.exact === "boolean" ? c.exact : null,
         why: str(c.why),
@@ -252,6 +269,24 @@ function parseBench(raw: unknown): Bench | null {
       .filter(isRaw)
       .map((m) => ({ action: str(m.action), key: str(m.key), valueUsd: numOrNull(m.value_usd) })),
     closingWords: str(raw.closing_words),
+    trace: list(raw.trace)
+      .filter(isRaw)
+      .map((t) => ({
+        portal: str(t.portal),
+        user: str(t.user),
+        continued: t.continued === true,
+        said: str(t.said),
+        saidChars: num(t.said_chars, str(t.said).length),
+        reads: strings(t.reads),
+        cards: list(t.cards)
+          .filter(isRaw)
+          .map((c) => ({
+            action: str(c.action),
+            key: str(c.key),
+            outcome: outcome(c.outcome),
+            valueUsd: numOrNull(c.value_usd),
+          })),
+      })),
   };
 }
 

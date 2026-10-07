@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
+- `feat(playbooks): watch the run — bench.json keeps each turn, and the playbook's layer replays it` — `trace_of` (portal, the person's words or the run loop's continuation, her words cut at a sentence with `said_chars`, reads, cards with their outcomes); the layer's "Watch the run": a rail of tab visits with a dot per turn coloured by what it did, play, step, arrow keys, the money found so far; every shipped bench.json backfilled from its saved report.
+
 - `feat(playbooks): the trucking accessorials desk, six portals and a window that closes today, benched to exceeds` — detention, lumper, layover and TONU checked against rate cons, BOLs and the ELD and filed in each broker's own tool; run 2: 9 of 9, $1,580, 13 of 13 traps avoided, after ADR 0047.
 - `feat(playbooks): the subcontractor's lien desk, benched to exceeds` — lien and notice deadlines in CA and TX, waivers with their exceptions and a clean pay app across the office, Procore, Textura and GCPay; six runs, the last 10 of 10 for $416,700 after two corrections to the bench's own world.
 

@@ -88,6 +88,44 @@ const REFUNDS = book(
     missed: [],
     closing_words:
       "Five parcels missed their guaranteed time with no covered exception; each claim is a card waiting for you. I left out 1Z88B7 (weather) and 1Z88A9 (claimed on 30 September).",
+    trace: [
+      {
+        portal: "Carrier billing centre",
+        user: "Refund day. Start with this week's invoice.",
+        said: "I'm reading this week's invoice and the service guarantee first. Nothing is filed yet.",
+        reads: ["list_invoice", "list_invoice", "read_guarantee"],
+      },
+      {
+        portal: "Carrier billing centre",
+        user: "",
+        continued: true,
+        said:
+          "**Three parcels missed their guaranteed time** with no exception that voids a refund.\n- 1Z88A0 was promised by 10:30 and delivered at 14:02.\n- 1Z88A3 and 1Z88B1 arrived a day late.\n\n1Z88B7 was late because of weather, which the guarantee excludes, so I'm leaving it.",
+        said_chars: 412,
+        reads: ["read_tracking", "read_tracking"],
+        cards: [
+          { action: "file_claim", key: "1Z88A0", outcome: "correct", value_usd: 24.1 },
+          { action: "file_claim", key: "1Z88A3", outcome: "correct", value_usd: 18.75 },
+          { action: "file_claim", key: "1Z88B1", outcome: "correct", value_usd: 21.3 },
+        ],
+      },
+      {
+        portal: "Store admin",
+        user: "I'm in the store admin now.",
+        said: "I'm checking the orders for addresses we changed after shipping, since a changed address voids the guarantee.",
+        reads: ["list_orders"],
+      },
+      {
+        portal: "Carrier billing centre",
+        user: "Back in the billing centre.",
+        said: "Two more parcels qualify. 1Z88A9 was already claimed on 30 September, so I'm not filing it again.",
+        reads: ["list_claims"],
+        cards: [
+          { action: "file_claim", key: "1Z88C4", outcome: "correct", value_usd: 16.9 },
+          { action: "file_claim", key: "1Z88C9", outcome: "correct", value_usd: 15.35 },
+        ],
+      },
+    ],
   },
 );
 
@@ -179,6 +217,7 @@ export const fixtures: Record<FixtureId, PlaybooksModel> = {
   heavy: selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS, ...MORE]), NOOP),
   degraded: selectPlaybooks([book({ id: "half-written", title: "A half-written playbook" })], NOOP),
   open: selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
+  "open-turn-2": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
   "open-short": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
   "open-unbenched": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
   /** What this build actually ships, with its real bench runs: the one fixture that is not invented. */
@@ -188,10 +227,16 @@ export const fixtures: Record<FixtureId, PlaybooksModel> = {
 
 export const fixtureIds: readonly FixtureId[] = Object.keys(fixtures);
 
+/** The replay's opening turn for a fixture, from 0. */
+export function initialTurnFor(fixture: FixtureId): number {
+  return fixture === "open-turn-2" ? 1 : 0;
+}
+
 /** The fixtures that render a playbook's layer open, and which one. */
 export function initialOpenFor(fixture: FixtureId): string | null {
   switch (fixture) {
     case "open":
+    case "open-turn-2":
       return REFUNDS.id;
     case "open-short":
       return CHARGEBACKS.id;

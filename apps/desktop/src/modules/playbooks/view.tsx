@@ -11,7 +11,7 @@
  * Which layer is open is view-local (ADR 0029, decision 3); the open playbook is looked up from
  * the model on every render.
  */
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
@@ -23,18 +23,29 @@ import PageSection from "@/components/PageSection";
 import SectionCard from "@/components/SectionCard";
 import StatusDot from "@/components/StatusDot";
 import Tile from "@/components/Tile";
-import { minutes, usd, type Bench, type Playbook } from "@/lib/playbooks";
+import { minutes, usd, type Bench, type Playbook, type TraceTurn } from "@/lib/playbooks";
 
 import "./playbooks.css";
-import { OUTCOME_WORDS, type PlaybookView, type PlaybooksModel } from "./model";
+import {
+  OUTCOME_WORDS,
+  foundBy,
+  readsOf,
+  turnState,
+  visitsOf,
+  type PlaybookView,
+  type PlaybooksModel,
+} from "./model";
 
 export default function PlaybooksView({
   model,
   initialOpen = null,
+  initialTurn = 0,
 }: {
   model: PlaybooksModel;
   /** Preview only: open this playbook's layer on first render. */
   initialOpen?: string | null;
+  /** Preview only: the replay's turn on first render, from 0. */
+  initialTurn?: number;
 }) {
   const [open, setOpen] = useState<string | null>(initialOpen);
   const current = model.items.find((v) => v.id === open) ?? null;
@@ -121,7 +132,7 @@ export default function PlaybooksView({
             </>
           }
         >
-          <PlaybookLayer view={current} model={model} />
+          <PlaybookLayer view={current} model={model} initialTurn={initialTurn} />
         </Layer>
       ) : null}
     </PageShell>
@@ -294,7 +305,15 @@ function EdgeNotes({ model }: { model: PlaybooksModel }) {
 
 // -- one playbook --------------------------------------------------------------------------------
 
-function PlaybookLayer({ view, model }: { view: PlaybookView; model: PlaybooksModel }) {
+function PlaybookLayer({
+  view,
+  model,
+  initialTurn = 0,
+}: {
+  view: PlaybookView;
+  model: PlaybooksModel;
+  initialTurn?: number;
+}) {
   const p = view.playbook;
   return (
     <LayerColumns
@@ -390,6 +409,7 @@ function PlaybookLayer({ view, model }: { view: PlaybookView; model: PlaybooksMo
             </p>
           ) : null}
           <Proof view={view} />
+          {p.bench?.trace.length ? <Replay trace={p.bench.trace} initialTurn={initialTurn} /> : null}
           {p.lessons.length ? <Lessons playbook={p} /> : null}
           <Money playbook={p} onOpen={model.actions.open} />
           <EdgeWhy playbook={p} />
@@ -488,6 +508,164 @@ function Proof({ view }: { view: PlaybookView }) {
         every card waited for a signature.
         {b.rescoredAt ? ` Rescored ${b.rescoredAt.slice(0, 10)} from the run's own cards.` : ""}
       </p>
+    </SectionCard>
+  );
+}
+
+/** How long the replay holds a turn before the next, when it plays on its own. */
+const REPLAY_STEP_MS = 2800;
+
+/**
+ * The latest run, turn by turn: the portal she was in, what the person said, what she read and
+ * what she filed, each card in the colour the scorer gave it. A rail of the portal visits above;
+ * play, step, or pick a turn. The money found so far rises as the run goes.
+ */
+function Replay({ trace, initialTurn = 0 }: { trace: readonly TraceTurn[]; initialTurn?: number }) {
+  const last = trace.length - 1;
+  const [at, setAt] = useState(Math.max(0, Math.min(last, initialTurn)));
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    if (!playing || at >= last) return;
+    const timer = window.setTimeout(() => {
+      setAt(Math.min(at + 1, last));
+      // Reaching the last turn ends the play; the button then offers a replay.
+      if (at + 1 >= last) setPlaying(false);
+    }, REPLAY_STEP_MS);
+    return () => window.clearTimeout(timer);
+  }, [playing, at, last]);
+
+  const visits = visitsOf(trace);
+  const turn = trace[Math.min(at, last)];
+  const go = (i: number) => {
+    setPlaying(false);
+    setAt(Math.max(0, Math.min(last, i)));
+  };
+  const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowRight") go(at + 1);
+    else if (e.key === "ArrowLeft") go(at - 1);
+    else return;
+    e.preventDefault();
+  };
+  const play = () => {
+    if (at >= last) {
+      setAt(0);
+      setPlaying(true);
+    } else setPlaying((p) => !p);
+  };
+  const found = foundBy(trace, at);
+  const reads = readsOf(turn);
+
+  return (
+    <SectionCard
+      title="Watch the run"
+      note={`${trace.length} turns, ${visits.length} tab visits`}
+      action={
+        <Button size="sm" variant={playing ? "ghost" : "primary"} onClick={play}>
+          {playing ? "Pause" : at >= last ? "Replay" : "Play"}
+        </Button>
+      }
+    >
+      <div className="pb-replay" tabIndex={0} onKeyDown={onKey} aria-label="The run, turn by turn">
+        <ol className="pb-rail" aria-label="Turns, by tab">
+          {visits.map((v) => (
+            <li
+              key={`${v.portal}-${v.from}`}
+              className="pb-rail__visit"
+              data-here={at >= v.from && at <= v.to ? "" : undefined}
+            >
+              <span className="pb-rail__name typo-label" title={v.portal}>
+                {v.portal}
+              </span>
+              <span className="pb-rail__dots">
+                {trace.slice(v.from, v.to + 1).map((t, k) => {
+                  const i = v.from + k;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      className="pb-rail__dot"
+                      data-state={turnState(t)}
+                      data-past={i < at ? "" : undefined}
+                      aria-current={i === at ? "step" : undefined}
+                      aria-label={`Turn ${i + 1}, ${t.portal}`}
+                      onClick={() => go(i)}
+                    />
+                  );
+                })}
+              </span>
+            </li>
+          ))}
+        </ol>
+
+        <div className="pb-turn" key={at} aria-live="polite">
+          <div className="pb-turn__head">
+            <span className="typo-label">{`Turn ${at + 1} of ${trace.length}`}</span>
+            <span className="pb-chip">{turn.portal}</span>
+            <span className="pb-turn__found typo-data" title="What her right cards were worth so far">
+              {usd(found)}
+            </span>
+          </div>
+          {turn.user ? (
+            <p className="pb-turn__you typo-body">
+              <span className="pb-turn__who typo-label">You</span>
+              {turn.user}
+            </p>
+          ) : turn.continued ? (
+            <p className="pb-turn__you pb-turn__you--loop typo-caption">
+              <span className="pb-turn__who typo-label">Page</span>
+              The tools she called answered, and the run loop handed her their results.
+            </p>
+          ) : null}
+          {turn.said ? (
+            <div className="pb-turn__her typo-body">
+              <span className="pb-turn__who typo-label">Athena</span>
+              <div className="pb-turn__words">
+                <Prose text={turn.said} />
+                {turn.saidChars > turn.said.length ? (
+                  <span className="typo-caption">{`… (showing ${turn.said.length} of ${turn.saidChars} characters)`}</span>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+          {reads.length ? (
+            <p className="pb-turn__reads">
+              <span className="typo-label">Read</span>
+              {reads.map((r) => (
+                <span key={r.name} className="pb-chip">
+                  {r.times > 1 ? `${r.name} ×${r.times}` : r.name}
+                </span>
+              ))}
+            </p>
+          ) : null}
+          {turn.cards.length ? (
+            <ul className="pb-turn__cards" aria-label="Cards filed this turn">
+              {turn.cards.map((c, i) => {
+                const o = OUTCOME_WORDS[c.outcome];
+                return (
+                  <li key={`${c.key}-${i}`} className="pb-card" data-outcome={c.outcome}>
+                    <StatusDot tone={o.tone} />
+                    <span className="typo-code">{c.key || c.action}</span>
+                    <span className="typo-caption">{`${c.action.replace(/_/g, " ")} · ${o.word}`}</span>
+                    <span className="pb-card__v typo-data">{c.valueUsd ? usd(c.valueUsd) : ""}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+        </div>
+
+        <div className="pb-replay__nav">
+          <Button size="sm" variant="ghost" onClick={() => go(at - 1)} disabledReason={at === 0 ? "This is the first turn" : undefined}>
+            Previous
+          </Button>
+          <span className="pb-replay__progress" aria-hidden="true">
+            <span style={{ width: `${trace.length > 1 ? (at / last) * 100 : 100}%` }} />
+          </span>
+          <Button size="sm" variant="ghost" onClick={() => go(at + 1)} disabledReason={at >= last ? "This is the last turn" : undefined}>
+            Next
+          </Button>
+        </div>
+      </div>
     </SectionCard>
   );
 }

@@ -640,3 +640,223 @@
   border: 1px solid color-mix(in srgb, var(--status-warning) 40%, transparent);
   border-radius: var(--radius-interactive);
 }
+
+/* -- the replay: the latest run, turn by turn ---------------------------------------------------- */
+.pb-replay {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  outline: none;
+}
+
+.pb-replay:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary);
+  border-radius: var(--radius-card);
+}
+
+.pb-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb-rail__visit {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  max-width: 11rem;
+  padding: 6px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-bg) 70%, transparent);
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.pb-rail__visit[data-here] {
+  border-color: color-mix(in srgb, var(--primary) 60%, transparent);
+  background: color-mix(in srgb, var(--primary) 9%, var(--card-bg));
+}
+
+.pb-rail__name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--muted-foreground);
+}
+
+.pb-rail__visit[data-here] .pb-rail__name {
+  color: var(--foreground);
+}
+
+.pb-rail__dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pb-rail__dot {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 1.5px solid var(--muted-foreground);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.pb-rail__dot[data-past],
+.pb-rail__dot[aria-current] {
+  opacity: 1;
+}
+
+.pb-rail__dot[data-state="read"] {
+  border-color: var(--role-agent, var(--accent));
+}
+
+.pb-rail__dot[data-state="filed"] {
+  border-color: var(--status-success);
+  background: var(--status-success);
+}
+
+.pb-rail__dot[data-state="wrong"] {
+  border-color: var(--status-error);
+  background: var(--status-error);
+}
+
+.pb-rail__dot[aria-current] {
+  transform: scale(1.35);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.pb-rail__dot:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.pb-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 15rem;
+  padding: 12px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  animation: pb-turn-in 220ms ease-out;
+}
+
+@keyframes pb-turn-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pb-turn__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pb-turn__found {
+  margin-left: auto;
+  color: var(--status-success);
+  font-weight: 700;
+}
+
+.pb-turn__you,
+.pb-turn__her {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  column-gap: 8px;
+  margin: 0;
+}
+
+.pb-turn__who {
+  padding-top: 2px;
+  color: var(--muted-foreground);
+}
+
+.pb-turn__you {
+  color: var(--muted-foreground);
+}
+
+.pb-turn__you--loop {
+  font-style: italic;
+}
+
+.pb-turn__words {
+  padding-left: 10px;
+  border-left: 3px solid var(--role-agent, var(--accent));
+}
+
+.pb-turn__words .pb-prose-list {
+  margin: 0 0 6px;
+  padding-left: 1.1rem;
+}
+
+.pb-turn__her .pb-turn__who {
+  color: var(--role-agent, var(--accent));
+}
+
+.pb-turn__her p {
+  margin: 0 0 6px;
+}
+
+.pb-turn__reads {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.pb-turn__cards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+}
+
+.pb-replay__nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pb-replay__progress {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-subtle);
+  overflow: hidden;
+}
+
+.pb-replay__progress > span {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+  transition: width 220ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pb-turn {
+    animation: none;
+  }
+  .pb-rail__dot,
+  .pb-replay__progress > span,
+  .pb-rail__visit {
+    transition: none;
+  }
+}

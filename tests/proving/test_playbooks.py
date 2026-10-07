@@ -14,6 +14,7 @@ from typing import Any
 import pytest
 
 from athena.harness.ports import ModelRequest
+from athena.proving.characters.scene import CONTINUE
 from athena.proving.playbooks.bench import (
     BenchConfig,
     cards_of,
@@ -23,6 +24,7 @@ from athena.proving.playbooks.bench import (
     score,
     summary_of,
     switch_requested,
+    trace_of,
     write_bench,
 )
 from athena.proving.playbooks.page import SimulatedPortals
@@ -366,6 +368,38 @@ def test_the_summary_is_what_the_desktop_reads(tmp_path: Path) -> None:
     assert summary["verdict"]["word"] == "exceeds"
     assert summary["closing_words"]
     assert (tmp_path / "run" / "report.json").is_file()
+
+
+def test_the_trace_replays_each_turn_with_its_cards_outcomes(tmp_path: Path) -> None:
+    book = load_playbook(make_playbook(tmp_path))
+    report = run_bench(
+        book, BenchConfig(engine="nebius"), world_factory=_factory(scripted_model(_careful))
+    )
+    trace = summary_of(report)["trace"]
+    assert [t["portal"] for t in trace] == ["Shipdesk"] * len(trace), "the portal by its name"
+    assert trace[0]["reads"] == ["list_shipments"] and not trace[0].get("cards")
+    filing = next(t for t in trace if t.get("cards"))
+    assert [(c["key"], c["outcome"]) for c in filing["cards"]] == [
+        ("1ZA", "correct"),
+        ("1ZB", "correct"),
+    ]
+    assert filing["user"] or trace[0]["user"], "the person's words ride along"
+
+
+def test_a_long_answer_is_cut_at_a_sentence_and_says_how_long_it_was() -> None:
+    said = "First sentence here. " * 40
+    turn = {"app": "x", "said": said, "calls": [], "cards": []}
+    (row,) = trace_of({"transcript": [turn], "portals": {"x": "X portal"}})
+    assert row["portal"] == "X portal"
+    assert len(row["said"]) <= 520 and row["said"].endswith("here.")
+    assert row["said_chars"] == len(said)
+    assert row["continued"] is False
+
+
+def test_a_turn_the_run_loop_continued_is_marked_not_quoted() -> None:
+    turn = {"app": "x", "user": CONTINUE, "said": "Filed.", "calls": [], "cards": []}
+    (row,) = trace_of({"transcript": [turn]})
+    assert row["continued"] is True and row["user"] == ""
 
 
 # --- the prose audit -----------------------------------------------------------------------------

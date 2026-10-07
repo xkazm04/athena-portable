@@ -102,6 +102,171 @@
     }
   ],
   "closing_words": "I'm filing one appeal and skipping the other denial.\n\n- **C-1004, Bayview MRI ($1,240): appeal.** It was denied 2026-09-07 as \"not medically necessary: no record of six weeks of conservative therapy.\" The 180-day window runs to 2027-03-06, so it's in time. Your MyChart records answer the denial reason directly:\n  - Physical therapy ran from 2026-07-01 to 2026-08-05 (six weeks). The week-6 note says there was no improvement and the pain was radiating to the left leg.\n  - The 2026-08-28 office visit records six weeks of PT without improvement and new radicular symptoms, and it ordered the MRI.\n- **C-1008, Bayview CT ($980): not appealing.** It was denied 2026-03-20 for no prior authorization. The deadline was 2026-09-16, three weeks ago, so it's too late. If you have a reason it should be reopened, such as a late denial notice, tell me and I'll look at it.\n\nI'm quoting the MyChart evidence",
+  "trace": [
+    {
+      "portal": "Bluepoint Health member portal",
+      "user": "My medical bills are a mess. Start here in my insurance portal: go through this year's claims and EOBs and work out what I actually owe each provider, and anything that looks wrong.",
+      "continued": false,
+      "said": "I'll start by pulling this year's claims and the plan rules, then open each claim for its full EOB.\n\n\nPlan:\n1. Read every claim's EOB here (patient responsibility, denials, appeal deadlines).\n2. Then check MyChart and Cedar, tab by tab, to compare what each biller is charging against the EOBs.\n3. Propose disputes, appeals, refunds or payments as decision cards. I won't act on any of them before you answer.\n\nI'll report the totals once the claims and plan rules come back.",
+      "said_chars": 475,
+      "reads": [
+        "list_claims",
+        "read_plan"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Bluepoint Health member portal",
+      "user": "",
+      "continued": true,
+      "said": "This is only half the list (showing 5 of 10 claims), so I'm pulling page 2 and opening the five I have for their full EOBs.\n\n\nWhat I can say so far, from the list only:\n- Plan rules: the $1,500 deductible was met on 2026-03-02, and coinsurance is 25% after that. Northstar Anesthesia is out of network, so its bill is capped at the patient responsibility on the EOB. A denial can be appealed within 180 days.\n- C-1004 (Bayview MRI, denied, $1,240) is the only denial so far.",
+      "said_chars": 696,
+      "reads": [
+        "list_claims",
+        "read_claim",
+        "read_claim",
+        "read_claim",
+        "read_claim",
+        "read_claim"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Bluepoint Health member portal",
+      "user": "",
+      "continued": true,
+      "said": "Five of the ten EOBs are open. I'm opening the other five now. C-1008 (denied CT) needs its denial date before I can say whether an appeal is still in time.\n\n\nFrom the five EOBs read so far:\n- **C-1001, ED visit (Valley Medical Center), Final:** you owe $87.50. The EOB shows no problem.\n- **C-1002, metabolic panel (Valley Medical Center), Final:** you owe $64.00. The EOB says one unit was billed and allowed, so I'll compare that against what MyChart charges.",
+      "said_chars": 1436,
+      "reads": [
+        "read_claim",
+        "read_claim",
+        "read_claim",
+        "read_claim",
+        "read_claim"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Bluepoint Health member portal",
+      "user": "",
+      "continued": true,
+      "said": "Here's what I can establish from the insurance portal. I have all ten EOBs, but nothing has been compared with what the billers charge yet.\n\n| Claim | Provider | Status | You owe per EOB |\n|---|---|---|---|\n| C-1001 ED visit | Valley Medical | Final | $87.50 |\n| C-1002 Metabolic panel | Valley Medical | Final | $64.00 |\n| C-1003 Anesthesia | Northstar (out of network) | Final | $150.00 (capped by No Surprises Act) |\n| C-1005 Office visit, Jan | Valley Medical | Final | $240.00 (applied to deductible) |\n| C-1007",
+      "said_chars": 3725,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "MyChart (Valley Medical)",
+      "user": "Now I'm in MyChart for Valley Medical. Compare these bills to what the EOBs say. Dispute what's wrong and pay what I genuinely owe.",
+      "continued": false,
+      "said": "I'll read the MyChart bills, payments and visits first, then compare them with the EOBs. Nothing is disputed or paid until I've seen the line items.\n\nMy last three lines used the wrong format and were dropped, so I'm sending them again.",
+      "said_chars": 236,
+      "reads": [
+        "list_bills",
+        "list_payments",
+        "list_visits"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "MyChart (Valley Medical)",
+      "user": "",
+      "continued": true,
+      "said": "Several balances don't match the EOBs. B-1 is $412 against $87.50 owed. B-2 is $128 against $64. B-10 repeats B-1's date of service and amount. I'm opening the line items before I propose anything.",
+      "said_chars": 197,
+      "reads": [
+        "read_bill",
+        "read_bill",
+        "read_bill",
+        "read_bill",
+        "read_bill"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "MyChart (Valley Medical)",
+      "user": "",
+      "continued": true,
+      "said": "Three of the five bills I opened match their EOBs, and two don't. I'm filing two disputes and two payments, and I'm not paying anything else here.\n\n| Bill | Charged | EOB owes | Verdict |\n|---|---|---|---|\n| B-1, ED visit (C-1001) | $412.00 | $87.50 | Dispute $324.50 |\n| B-2, metabolic panel (C-1002) | $128.00 | $64.00 | Dispute $64.00. The same 80053 line appears twice, and the EOB allowed one unit. |\n| B-5, Jan office visit (C-1005) | $240.00 | $240.00 | Pay. The EOB applied it to your deductible.",
+      "said_chars": 2674,
+      "reads": [],
+      "cards": [
+        {
+          "action": "dispute_bill",
+          "key": "B-1",
+          "outcome": "correct",
+          "value_usd": 324.5
+        },
+        {
+          "action": "dispute_bill",
+          "key": "B-2",
+          "outcome": "correct",
+          "value_usd": 64.0
+        },
+        {
+          "action": "pay_bill",
+          "key": "B-5",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "pay_bill",
+          "key": "B-9",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    },
+    {
+      "portal": "Cedar",
+      "user": "This is Cedar, where the anesthesia group and the dermatologist bill me. Same thing here.",
+      "continued": false,
+      "said": "I'm reading every statement on Cedar now, then I'll compare each one against the EOBs. The Northstar balance and the C-1007 dermatology charge are the two I'm checking first.",
+      "said_chars": 174,
+      "reads": [
+        "list_statements"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Cedar",
+      "user": "",
+      "continued": true,
+      "said": "Cedar has two things to act on and one I'm holding.\n\n- **CB-3, Northstar anesthesia:** They bill $1,900 after insurance. The EOB for C-1003 caps what you owe at $150 under the No Surprises Act, because the facility was in network. I'm disputing $1,750.\n- **CB-7, Lakeside excision:** You paid $180 from the HSA card on 2026-06-01. The EOB for C-1007 says you owe $135. I'm asking for the $45 back.\n- **CB-11, Lakeside follow-up:** The balance is $95, and my notes list a $95 EOB, C-1010.",
+      "said_chars": 973,
+      "reads": [],
+      "cards": [
+        {
+          "action": "dispute_bill",
+          "key": "CB-3",
+          "outcome": "correct",
+          "value_usd": 1750.0
+        },
+        {
+          "action": "request_refund",
+          "key": "CB-7",
+          "outcome": "correct",
+          "value_usd": 45.0
+        }
+      ]
+    },
+    {
+      "portal": "Bluepoint Health member portal",
+      "user": "Back in the insurance portal. Appeal any denial that's worth appealing and still in time, with whatever evidence you found.",
+      "continued": false,
+      "said": "I'm filing one appeal and skipping the other denial.\n\n- **C-1004, Bayview MRI ($1,240): appeal.** It was denied 2026-09-07 as \"not medically necessary: no record of six weeks of conservative therapy.\" The 180-day window runs to 2027-03-06, so it's in time. Your MyChart records answer the denial reason directly:\n  - Physical therapy ran from 2026-07-01 to 2026-08-05 (six weeks). The week-6 note says there was no improvement and the pain was radiating to the left leg.",
+      "said_chars": 1019,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_appeal",
+          "key": "C-1004",
+          "outcome": "correct",
+          "value_usd": 1240.0
+        }
+      ]
+    }
+  ],
   "note": "after ADR 0045 (evidence is what a page says; gather in each tab) and the action-shape fix",
   "history": [
     {

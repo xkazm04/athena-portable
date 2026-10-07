@@ -124,6 +124,7 @@
     {
       "portal": "Office",
       "user": "Lien desk for the week. Start here in the office: read our rules and every job, and tell me which deadlines are due or coming and what you need from the GC portals.",
+      "continued": false,
       "said": "I'll start with the office rules, the full job list, and the bank receipts. The receipts matter because no waiver gets signed for money we haven't received.\n\n\nI'll report once the results come back. Then I'll read each job in full and tell you which deadlines are due, which are coming, and what I need from Procore, Textura and GCPay.\n\nMy first batch used the wrong format and was dropped. Here it is again in the correct one.",
       "said_chars": 427,
       "reads": [
@@ -140,7 +141,8 @@
     },
     {
       "portal": "Office",
-      "user": "(the tools you called have answered; continue)",
+      "user": "",
+      "continued": true,
       "said": "The first page shows 4 of 8 jobs. I'm pulling page 2 and reading each job in full before I give you dates.\n\n\nEarly read from page 1, still to be confirmed against the full job records:\n- **Fremont Tower (CA):** the Notice of Completion was recorded 2026-09-10. The 30-day lien window ends Saturday 2026-10-10, which under our rule moves to **Friday 2026-10-09**. That's the most urgent item.\n- **Mission Bay Lab (CA):** no preliminary notice has been served.",
       "said_chars": 834,
       "reads": [
@@ -154,7 +156,8 @@
     },
     {
       "portal": "Office",
-      "user": "(the tools you called have answered; continue)",
+      "user": "",
+      "continued": true,
       "said": "I still need the last four jobs (Daly City, San Jose Library, Round Rock, Katy) and the waiver rules before the picture is complete.",
       "said_chars": 132,
       "reads": [
@@ -170,7 +173,8 @@
     },
     {
       "portal": "Office",
-      "user": "(the tools you called have answered; continue)",
+      "user": "",
+      "continued": true,
       "said": "Four notices are due this week or next, and the Fremont Tower lien has to be recorded by Friday 2026-10-09. I've read all 8 jobs and the rules.\n\n**Due now or this week**\n\n| Job | What | Deadline | Basis |\n|---|---|---|---|\n| Fremont Tower (CA) | Record lien in Alameda County and serve the owner | **Fri 2026-10-09** | NOC recorded 9/10, so 30 days ends Sat 10/10. California weekend rule moves it to Friday. Prelim was served 2025-10-28, which was timely.",
       "said_chars": 3587,
       "reads": [],
@@ -179,6 +183,7 @@
     {
       "portal": "Procore",
       "user": "I'm in Procore Pay. Deal with the waiver requests here.",
+      "continued": false,
       "said": "I'll read the Procore waiver requests and check the bank receipts, since nothing gets signed for money we haven't received.\n\n\nI'll file the sign or decline cards once those answers come back.\n\nThe Office tools can't be called from Procore, so I'll check memory for what I already read there. The waiver list is on the page and its answer comes next turn.\n\nThe waiver requests haven't reached me yet, so I can't file any sign or decline card.",
       "said_chars": 1834,
       "reads": [
@@ -188,7 +193,8 @@
     },
     {
       "portal": "Procore",
-      "user": "(the tools you called have answered; continue)",
+      "user": "",
+      "continued": true,
       "said": "I'm filing two cards: sign the Oakland request on the conditional form, and decline the Sunnyvale final.\n\n**Oakland Clinic (OAK-W-0926, Harbor GC, $38,400):** sign. 8132 is a conditional progress form, so it only takes effect if the payment arrives. The $4,267 retention and the $6,100 unapproved extra ductwork both go under Exceptions, which comes to $10,367. I can't see a through-date on the request. Check that it doesn't cover work after 2026-09-16 that this draw doesn't bill.",
       "said_chars": 1263,
       "reads": [],
@@ -210,6 +216,7 @@
     {
       "portal": "Oracle Textura",
       "user": "Now Textura, for Mission Bay.",
+      "continued": false,
       "said": "I'll read the Textura draws first. Nothing gets signed or released until I know what the draw requires and whether the money has arrived.",
       "said_chars": 137,
       "reads": [
@@ -219,7 +226,8 @@
     },
     {
       "portal": "Oracle Textura",
-      "user": "(the tools you called have answered; continue)",
+      "user": "",
+      "continued": true,
       "said": "**The September draw ($55,000) needs a non-payment notice filed tonight. The 60-hour window closes at 02:00 Pacific on 2026-10-08.**\n\n- **The draw:** MB-SEP covers materials delivered 9/24 to 9/30. It requires an unconditional progress waiver (request MB-W-SEP).\n- **The timing:** the payment instruction went out 2026-10-05 at 14:00 Pacific. Textura releases the attached waiver automatically 72 hours later, at 14:00 on 10-08. That release happens unless I file notice within 60 hours, which is 02:00 on 10-08.",
       "said_chars": 2345,
       "reads": [],
@@ -235,6 +243,7 @@
     {
       "portal": "GCPay",
       "user": "Now GCPay for the Texas jobs. Get this month's pay app in clean and deal with anything waiting here.",
+      "continued": false,
       "said": "I'm reading everything GCPay holds for the Texas jobs before I file anything. That's the draft pay apps, the waivers waiting here, the change order log, the document library and the compliance documents. I'm also pulling back what I already read about the Texas jobs and the bank receipts.\n\n\nI'll file the pay app and waiver cards once those answers come back. Until then, nothing here is signed or submitted.\n\nThe GCPay answers (pay apps, waivers, change orders, documents, compliance) haven't reached me yet.",
       "said_chars": 1782,
       "reads": [
@@ -248,7 +257,8 @@
     },
     {
       "portal": "GCPay",
-      "user": "(the tools you called have answered; continue)",
+      "user": "",
+      "continued": true,
       "said": "I'm filing two cards: submit the Katy September pay app at $71,500, and decline Gulfline's custom release.\n\n**Katy pay app (KATY-PA-09):** the draft totals $84,000. It includes CO #7 for $12,500, which the GC's log shows as Pending, so I'm taking it out. That leaves the $71,500 base line with no change orders. I'm also swapping the attachment. The draft carries COI-2025-26.pdf, which expired 2026-09-30. The library already holds COI-2026-27.pdf, covering 2026-10-01 to 2027-10-01.",
       "said_chars": 2326,
       "reads": [],
@@ -270,6 +280,7 @@
     {
       "portal": "Office",
       "user": "Back in the office. Serve, send or record whatever is due, and tell me what's on the calendar.",
+      "continued": false,
       "said": "I'm re-reading the job records before I file any notice, because each notice needs exact dates and amounts. The recall I have is cut short.\n\n\nThe calendar and the notice cards come once these answers are back. I haven't served, sent or recorded anything yet.",
       "said_chars": 258,
       "reads": [
@@ -285,7 +296,8 @@
     },
     {
       "portal": "Office",
-      "user": "(the tools you called have answered; continue)",
+      "user": "",
+      "continued": true,
       "said": "Five cards are filed: one lien to record, one late preliminary notice, one Texas monthly notice, one Texas retainage notice, and a preliminary notice for Mission Bay that waits on a figure I don't have.\n\n**1. Fremont Tower lien: record by Friday 2026-10-09.** The Notice of Completion was recorded 2026-09-10, so the 30 days end Saturday 10/10. Our California weekend rule moves that to Friday. The preliminary notice was served 2025-10-28, eight days after first furnishing, so it's valid.",
       "said_chars": 2891,
       "reads": [
@@ -320,7 +332,8 @@
     },
     {
       "portal": "Office",
-      "user": "(the tools you called have answered; continue)",
+      "user": "",
+      "continued": true,
       "said": "I'm filing the Mission Bay preliminary notice with an estimated price of $240,000, the contract value on the job record.\n\nThe notice is due Wednesday 2026-10-14, which is day 20 from the first delivery on 9/24. Nothing has been served on this job yet. Serving today protects work furnished from 20 days before today, so the 9/24 to 9/30 deliveries are covered. The $55,000 September draw is the billed amount, not the contract, so I'm not using it as the price.\n\n\n**Decisions waiting on you:** ten cards in all.",
       "said_chars": 2073,
       "reads": [],

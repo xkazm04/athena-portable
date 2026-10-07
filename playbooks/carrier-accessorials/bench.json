@@ -112,6 +112,344 @@
   ],
   "missed": [],
   "closing_words": "CHR-1188 qualifies for $250, and I'm filing it on the BOL times, 06:00 to 15:00, which differ slightly from Motive's. CHR has no detention request on the load yet.\n\n- The BOL shows 9h00 in the stop, which leaves 7h after the 2 free hours.\n- At $50 an hour that is $350, so the $250 per-stop cap applies.\n\n\n**CHR-1120, Aldi: nothing to file.** The BOL shows 08:00 to 09:50, which is 1h50 against 2 hours free.\n\n**CHR-1142:** the BOL departure is 14:05, but the waiting email to Kelsey says 14:10, which is Motive's time. The email asks CHR for a favour, so the mismatch could undercut it. Decline that card and I'll redraft it with 14:05, or approve it as is.\n\n**Still open:**\n- **Uber UF-77102 ($40):** I need a rep's email, or your go-ahead to write to carriers@uberfreight.example.\n- **TQL-5488:** I'll draft a goodwill note to Dana at TQL if you want one.\n\n**Waiting on you:** the 8 earlier cards ",
+  "trace": [
+    {
+      "portal": "Motive",
+      "user": "Accessorials day. Start in Motive: pull the last two weeks of stops and tell me what you'll need to check for each.",
+      "continued": false,
+      "said": "I'll pull the Motive stops first, then lay out what each one needs checked.",
+      "said_chars": 75,
+      "reads": [
+        "list_stops"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Motive",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of 2 is in (showing 6 of 11 stops), so I'll fetch page 2 before I finish the plan.\n\n\nDwell so far, from the Motive geofence times. These are arrival to departure, not yet compared with appointment times:",
+      "said_chars": 1553,
+      "reads": [
+        "list_stops"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Motive",
+      "user": "",
+      "continued": true,
+      "said": "All 11 stops are in, with no gaps (showing 11 of 11). Motive only gives arrival and departure by geofence. It doesn't show appointment times, free time, rates or lumper, so every load still needs checking elsewhere.",
+      "said_chars": 2780,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Dispatch inbox",
+      "user": "This is the dispatch inbox: rate cons, rep emails, receipts. Read the terms for every load you'll need.",
+      "continued": false,
+      "said": "I'll search the inbox for the rate cons and related terms for each load.",
+      "said_chars": 72,
+      "reads": [
+        "search_mail",
+        "search_mail",
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Dispatch inbox",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of each search is in, so I have 3 of 13 \"rate con\" hits and 3 of 5 \"lumper\" hits. I'm pulling the remaining pages.",
+      "said_chars": 121,
+      "reads": [
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Dispatch inbox",
+      "user": "",
+      "continued": true,
+      "said": "All 13 rate cons and all 5 lumper hits are read (showing 13 of 13, 5 of 5). Lone Star's layover and TONU terms depend on emails I haven't seen, so I'm searching the inbox for those now.",
+      "said_chars": 185,
+      "reads": [
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Dispatch inbox",
+      "user": "",
+      "continued": true,
+      "said": "One Lone Star hit is still unread (3 of 6 shown), so I'm fetching it before I file anything to them. I'm filing the CHR-1142 lumper email now because its portal window has already closed.\n\n**What the inbox settles**\n- **LS-2201 TONU, $150:** Lone Star cancelled at 05:30 on 10-03 for a 06:00 pickup, which is inside the 24-hour rule. It's invoiced by email.\n- **LS-2188 layover, $250 per day:** Marcus Bell confirmed a 26-hour hold in writing. The invoice is due within 7 days of the 10-02 delivery, so by 10-09.",
+      "said_chars": 1791,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": [
+        {
+          "action": "send_email",
+          "key": "CHR-1142",
+          "outcome": "correct",
+          "value_usd": 285.0
+        }
+      ]
+    },
+    {
+      "portal": "Dispatch inbox",
+      "user": "",
+      "continued": true,
+      "said": "Two Lone Star invoices are ready as cards: the LS-2201 TONU and the LS-2188 layover. LS-2210 is on hold, and the CHR-1142 lumper email is still waiting on your answer.\n\n**LS-2210 detention:** The only evidence in the inbox is our own note saying the driver \"sat 4 hours.\" That isn't a signed time. The rate con also pays only if the truck arrived on time for its 08:00 appointment on 10-05. I need the Motive arrival and departure and the BOL times before I put an amount on it.",
+      "said_chars": 734,
+      "reads": [],
+      "cards": [
+        {
+          "action": "send_email",
+          "key": "LS-2201",
+          "outcome": "correct",
+          "value_usd": 150.0
+        },
+        {
+          "action": "send_email",
+          "key": "LS-2188",
+          "outcome": "correct",
+          "value_usd": 250.0
+        }
+      ]
+    },
+    {
+      "portal": "C.H. Robinson Navisphere Carrier",
+      "user": "Navisphere. File what CHR owes us, the way CHR checks it, and leave the rest.",
+      "continued": false,
+      "said": "I'm reading CHR's rules, the BOL times and what CHR has already paid before I file anything.",
+      "said_chars": 92,
+      "reads": [
+        "read_rules",
+        "list_loads",
+        "list_payments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "C.H. Robinson Navisphere Carrier",
+      "user": "",
+      "continued": true,
+      "said": "CHR-1101 qualifies for detention. I'm filing it on the BOL times, 07:55 to 11:35, which are not the Motive times.\n\n\n**CHR so far**\n- **CHR-1101, Kroger Indianapolis:** The BOL shows 3h40 in the stop. After 2 hours free that leaves 1h40, which rounds down to 1h30 at $50 an hour, so $75. The card carries the BOL times because CHR fails any other times.\n- **CHR-1188, Meijer Lansing:** The BOL shows 9h00 in the stop, so it very likely qualifies. I haven't seen its rate con terms, so I'm not putting an amount on it.",
+      "said_chars": 2410,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_detention",
+          "key": "CHR-1101",
+          "outcome": "correct",
+          "value_usd": 75.0
+        }
+      ]
+    },
+    {
+      "portal": "TQL Carrier Dashboard",
+      "user": "Now TQL's dashboard. Same: file what qualifies under TQL's rules.",
+      "continued": false,
+      "said": "I'm reading TQL's rules, loads, documents and payments before I file anything.",
+      "said_chars": 78,
+      "reads": [
+        "read_rules",
+        "list_loads",
+        "list_documents",
+        "list_payments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "TQL Carrier Dashboard",
+      "user": "",
+      "continued": true,
+      "said": "Two TQL items qualify. I'm filing both as cards, and I'm leaving TQL-5488 and TQL-5391 alone.\n\n**TQL-5530, Kroger Shelbyville: detention, $60.**\n- The BOL shows 10:20 to 15:00, which is 4h40 in the stop.\n- The rate con gives 3 hours free, then $40 an hour in 15-minute increments rounded down, capped at $200. That leaves 1h40, which rounds down to 1h30, so $60.\n- Detention began at 13:20. The notice went to TQL at 12:40, which is 40 minutes ahead and meets the 30-minute rule.",
+      "said_chars": 1898,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_detention",
+          "key": "TQL-5530",
+          "outcome": "correct",
+          "value_usd": 60.0
+        },
+        {
+          "action": "submit_lumper",
+          "key": "TQL-5502",
+          "outcome": "correct",
+          "value_usd": 340.0
+        }
+      ]
+    },
+    {
+      "portal": "Uber Freight",
+      "user": "Uber Freight. Some of these windows are short.",
+      "continued": false,
+      "said": "I'm in the Uber Freight tab. I'm reading the app's rules and its GPS times before I file anything.",
+      "said_chars": 98,
+      "reads": [
+        "read_rules",
+        "list_loads"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Uber Freight",
+      "user": "",
+      "continued": true,
+      "said": "UF-77310 qualifies for $70 and the card is filed below. UF-77102 qualifies for $40, but Uber's 24-hour window on it has closed.\n\n\n**UF-77310, Home Depot RDC Columbus: $70**\n- The appointment was 14:00 and the app's GPS shows arrival at 14:05. The rate con counts the 2 free hours from the later of the two, so free time ends at 16:05.\n- GPS departure was 18:00, which leaves 1h55 billable. Rounded down to 15-minute increments that is 1h45, and 1.75 hours at $40 is $70. That is under the $240 cap.",
+      "said_chars": 1493,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_detention",
+          "key": "UF-77310",
+          "outcome": "correct",
+          "value_usd": 70.0
+        }
+      ]
+    },
+    {
+      "portal": "RTS Pro (factor)",
+      "user": "RTS, our factor. Check what actually reached us against what the brokers approved.",
+      "continued": false,
+      "said": "I'm in the RTS tab, so I'm reading its remittances first. Then I'll compare them with what CHR and TQL show as paid.",
+      "said_chars": 116,
+      "reads": [
+        "list_remittances"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "RTS Pro (factor)",
+      "user": "",
+      "continued": true,
+      "said": "RTS is $100 short: it remitted CHR-0977's linehaul but not its detention. The other loads match.\n\n| Load | Broker paid | RTS remitted | Result |\n|---|---|---|---|\n| CHR-0977 linehaul | $1,850 to RTS on 9-29 | $1,850 on 9-30 | Matches |\n| CHR-0977 detention | $100 to RTS on 9-29 (approved 9-24) | Nothing | **$100 missing** |\n| TQL-5391 linehaul | $1,420 on 10-01 | $1,420 on 10-02 | Matches |\n| TQL-5391 detention | $80 on 10-01 | $80 on 10-02 | Matches |\n| TQL-5488 linehaul | $1,320 on 10-06 | $1,320 on 10-07 |",
+      "said_chars": 886,
+      "reads": [],
+      "cards": [
+        {
+          "action": "short_pay_inquiry",
+          "key": "CHR-0977",
+          "outcome": "correct",
+          "value_usd": 100.0
+        }
+      ]
+    },
+    {
+      "portal": "Dispatch inbox",
+      "user": "Back in the inbox. Invoice what the email-only broker owes, and ask a rep about anything a portal window closed on.",
+      "continued": false,
+      "said": "The LS-2201 TONU, the LS-2188 layover and the CHR-1142 lumper email to the CHR rep are already filed and waiting on you, so I won't file them again. The other closed window is Uber's on UF-77102. I'm looking for an Uber rep's address before I draft that email.",
+      "said_chars": 260,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Dispatch inbox",
+      "user": "",
+      "continued": true,
+      "said": "The UF-77102 search only found Uber's automated rate confirmation, sent from carriers@uberfreight.example. That's a sender address, not a rep, so I'm searching once more for a named Uber contact.",
+      "said_chars": 195,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Dispatch inbox",
+      "user": "",
+      "continued": true,
+      "said": "Uber's side is not filed. The inbox has no named Uber rep, only automated rate confirmations from carriers@uberfreight.example. Searching \"Uber\" returned 2 emails, and neither names a person. I won't send a claim to an address that may be unmonitored.\n\n**UF-77102, Lowe's Findlay: $40, window closed.**\n- The app's GPS shows 13:30 to 16:30, which is 3h in the stop against an appointment of 13:30.\n- The rate con gives 2 hours free, then $40 an hour, so 1h is $40.\n- The 24-hour app window closed on 10-05 at 16:30.",
+      "said_chars": 1038,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Motive",
+      "user": "I've switched to Motive as you asked. Go ahead.",
+      "continued": false,
+      "said": "I'm in Motive. I'm pulling both pages of stops to find LS-2210's arrival and departure.",
+      "said_chars": 87,
+      "reads": [
+        "list_stops",
+        "list_stops"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Motive",
+      "user": "",
+      "continued": true,
+      "said": "LS-2210 doesn't qualify, so I'm leaving it alone and filing nothing.\n\n- The Lone Star rate con pays detention only if the truck arrives on time for its appointment.\n- The appointment was 10-05 at 08:00, and Motive shows arrival at 09:40, which is 1h40 late.\n- The \"sat 4 hours\" note matches Motive's 09:40 to 13:40, but lateness rules it out whatever the dwell.\n\n**One thing to recheck: TQL-5488, Target Oconomowoc.**\n- Motive shows the ELD on throughout the stop, 09:30 to 14:30.",
+      "said_chars": 1298,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Dispatch inbox",
+      "user": "I've switched to Dispatch inbox as you asked. Go ahead.",
+      "continued": false,
+      "said": "I'm in the inbox. I'm searching for the TQL-5488 and CHR-1188 rate cons, and for a rate con for CHR-1120.",
+      "said_chars": 105,
+      "reads": [
+        "search_mail",
+        "search_mail",
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Dispatch inbox",
+      "user": "",
+      "continued": true,
+      "said": "CHR-1188 qualifies for $250, but I can't file it from here. CHR needs the BOL-signed times, and those are in the CHR tab.\n\n**CHR-1188, Meijer Lansing: $250.**\n- The rate con gives 2 hours free, then $50 an hour in 15-minute increments, capped at $250 per stop.\n- The BOL showed 9h00 in the stop, which leaves 7h billable. That is $350 before the cap, so the cap applies and the claim is $250.\n- The delivery appointment was 06:00 and Motive shows arrival at 05:58. The rate con has no on-time clause.",
+      "said_chars": 1285,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "C.H. Robinson Navisphere Carrier",
+      "user": "I've switched to C.H. Robinson Navisphere Carrier as you asked. Go ahead.",
+      "continued": false,
+      "said": "I'm in Navisphere. I'm reading the BOL times for CHR-1188 and CHR-1120, and what CHR has paid.",
+      "said_chars": 94,
+      "reads": [
+        "list_loads",
+        "list_payments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "C.H. Robinson Navisphere Carrier",
+      "user": "",
+      "continued": true,
+      "said": "CHR-1188 qualifies for $250, and I'm filing it on the BOL times, 06:00 to 15:00, which differ slightly from Motive's. CHR has no detention request on the load yet.\n\n- The BOL shows 9h00 in the stop, which leaves 7h after the 2 free hours.\n- At $50 an hour that is $350, so the $250 per-stop cap applies.\n\n\n**CHR-1120, Aldi: nothing to file.** The BOL shows 08:00 to 09:50, which is 1h50 against 2 hours free.\n\n**CHR-1142:** the BOL departure is 14:05, but the waiting email to Kelsey says 14:10, which is Motive's time.",
+      "said_chars": 914,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_detention",
+          "key": "CHR-1188",
+          "outcome": "correct",
+          "value_usd": 250.0
+        }
+      ]
+    }
+  ],
   "note": "after ADR 0047 (ask for the tab by name) and rep addresses on the mail and the CHR page",
   "history": [
     {

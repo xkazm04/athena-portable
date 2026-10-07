@@ -85,6 +85,147 @@
     "record_usd": 359.78,
     "agrees": false
   },
+  "trace": [
+    {
+      "portal": "Seller Central",
+      "user": "It's reimbursement day. Go through my Seller Central reports and find everything Amazon still owes me under its current rules. If something needs documents from my supplier inbox before you can file it, tell me what to look for.",
+      "continued": false,
+      "said": "I'll start with the rules, then pull every report they apply to.\n\n\nI've requested the help pages and all the reports, and nothing is filed yet. I'll go through the results when they come back and send you a plan before proposing any case. I'll also list the supplier documents each case needs, such as packing lists and proof of delivery.\n\nMy ops used the wrong format, so none of them ran. Here they are again in the correct form.\n\n\nNothing has been filed. I'll lay out a plan once the results are in.",
+      "said_chars": 502,
+      "reads": [
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "list_inbound_shipments",
+        "list_removals",
+        "list_customer_returns",
+        "read_inventory_ledger",
+        "read_reimbursements",
+        "read_cost_basis",
+        "read_fee_preview"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Seller Central",
+      "user": "",
+      "continued": true,
+      "said": "You can't file everything yet. Three cases are ready to file now, two need supplier documents first, and four items missed their windows. Date used: 2026-10-07.\n\n**Ready to file (Seller Central evidence is enough)**\n- Removal R-77, SKU-B: 6 units × $11.00 cost = **$66.00**. It was created 48 days ago (window is days 15–75), and the last carrier scan was 2026-08-21.\n- Return 113-4471, SKU-B: **$34.99**. Refunded 98 days ago (window is days 60–120), not returned, and no payment on the Reimbursements report.",
+      "said_chars": 4000,
+      "reads": [
+        "set_reminder",
+        "set_reminder"
+      ],
+      "cards": [
+        {
+          "action": "file_case",
+          "key": "R-77",
+          "outcome": "correct",
+          "value_usd": 66.0
+        },
+        {
+          "action": "file_case",
+          "key": "113-4471",
+          "outcome": "correct",
+          "value_usd": 34.99
+        },
+        {
+          "action": "file_case",
+          "key": "113-7790",
+          "outcome": "correct",
+          "value_usd": 29.99
+        }
+      ]
+    },
+    {
+      "portal": "Seller Central",
+      "user": "",
+      "continued": true,
+      "said": "Both reminders are set: R-81 on 2026-10-15 and order 113-5520 on 2026-11-14. The page 2 returns result never arrived, so the 7th return row is still unseen. I'm asking for it once more.\n\nThree cases still wait on you: R-77 ($66.00), order 113-4471 ($34.99) and order 113-7790 ($29.99). I've filed nothing, and the inbound and remeasure claims still need the Supplier inbox tab.",
+      "said_chars": 377,
+      "reads": [
+        "list_customer_returns"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Seller Central",
+      "user": "",
+      "continued": true,
+      "said": "The Seller Central review is finished, and the 7th return row changes nothing. Order 113-7102 (SKU-D, $19.99) came back in sellable condition, so there's no claim on it. That makes 7 of 7 returns reviewed.\n\n**Waiting on you (Seller Central):** three decision cards, none approved yet.\n- Removal R-77: $66.00\n- Order 113-4471: $34.99\n- Order 113-7790: $29.99\n\nTogether they come to $130.98.\n\n**Waiting on the Supplier inbox tab:** I can't search the inbox from this tab.",
+      "said_chars": 882,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Supplier inbox",
+      "user": "I've switched to my supplier inbox. Check the invoices, packing lists, proofs of delivery and spec sheets you need for the claims you're unsure about.",
+      "continued": false,
+      "said": "I'm searching the supplier inbox for the documents behind the two inbound claims (FBA15X1 and FBA15X2) and the spec sheets for the remeasure claims. I've filed nothing.\n\n\nI'll go through the results when they come back. Then I'll tell you which claims the documents support and what I'd file.",
+      "said_chars": 292,
+      "reads": [
+        "search_documents",
+        "search_documents",
+        "search_documents",
+        "search_documents",
+        "search_documents",
+        "search_documents",
+        "search_documents",
+        "search_documents",
+        "search_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Supplier inbox",
+      "user": "",
+      "continued": true,
+      "said": "One inbound claim holds up and I'm filing it. The other inbound claim doesn't hold up, and the remeasure claims aren't ready.\n\n**FBA15X1, SKU-A: file, 8 units × $9.00 = $72.00.**\n- Invoice INV-SZ-3301 shows 240 units.\n- Harbor 3PL packed 240 units in 12 cartons.\n- Pacific Freight's proof of delivery shows 12 of 12 cartons signed for at BFI4 on 2026-09-03.\n- The 8 units is the shortfall I worked out from the Shipments report earlier, after the 4-unit reconciliation credit already paid ($36.00).",
+      "said_chars": 3709,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Seller Central",
+      "user": "Back in Seller Central. File a case for everything that holds up, at the amount Amazon's rules allow, and tell me what to come back for later and when.",
+      "continued": false,
+      "said": "I'm re-reading the pages the two remaining claims depend on: the shipment record for FBA15X1, and Amazon's measurements and the size-tier rules for SKU-C. I'm not filing anything until I've seen them. The three existing cards are still waiting for you.\n\nThe inbox evidence is recalled. The shipment record, SKU-C fee preview and fee rules went to the page, and their answers arrive with my next turn. I'm not calling them again.\n\nI'm waiting on those answers before proposing the FBA15X1 case or the SKU-C remeasure.",
+      "said_chars": 834,
+      "reads": [
+        "list_inbound_shipments",
+        "read_fee_preview",
+        "read_policy"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Seller Central",
+      "user": "",
+      "continued": true,
+      "said": "Two more cases hold up, and I'm filing both for your approval. That makes five waiting on you, worth $389.98 in total. Nothing has been filed yet.\n\n\n**What I'm filing**\n- **FBA15X1, SKU-A: $72.00.** The shipment is Closed and in window. Of the 12 units short, 4 are already credited. The invoice, packing list and proof of delivery all support the remaining 8, at $9.00 each.",
+      "said_chars": 1497,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_case",
+          "key": "FBA15X1",
+          "outcome": "correct",
+          "value_usd": 72.0
+        },
+        {
+          "action": "request_remeasure",
+          "key": "X00C3C",
+          "outcome": "correct",
+          "value_usd": 156.8
+        }
+      ]
+    }
+  ],
   "note": "after ADR 0045 (evidence is what a page says; gather in each tab) and the action-shape fix",
   "history": [
     {

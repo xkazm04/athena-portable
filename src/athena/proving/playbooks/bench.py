@@ -52,6 +52,7 @@ __all__ = [
     "score",
     "summary_of",
     "switch_requested",
+    "trace_of",
     "verdict",
     "write_bench",
     "write_report",
@@ -178,6 +179,7 @@ def run_bench(
         },
         "executed": portals.executed,
         "cards": run.cards,
+        "portals": {app.app_id: app.name for app in playbook.apps},
         "transcript": run.turns,
     }
     report["verdict"] = verdict(playbook, report)
@@ -577,9 +579,71 @@ def summary_of(report: Mapping[str, Any]) -> dict[str, Any]:
             "missed": scored.get("missed", []),
             "closing_words": str(last_said)[:900],
             "prose_audit": prose_audit(str(last_said), scored.get("filed_usd")),
+            "trace": trace_of(report),
         }
     )
     return summary
+
+
+#: How much of each turn's words the trace keeps; ``said_chars`` says how much there was.
+TRACE_SAID = 520
+
+
+def trace_of(report: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """The run turn by turn, for the desktop's replay: who said what, what she read, what she filed.
+
+    Each card carries the outcome the scorer gave it, paired by order: the transcript's cards,
+    turn after turn, are the run's cards in the order the gate filed them. Her words are cut at a
+    sentence end within :data:`TRACE_SAID`, and ``said_chars`` keeps the length that was there.
+    A turn the run loop continued, with the page's answers rather than the person's words, says
+    ``continued``.
+    """
+    names = dict(report.get("portals", {}))
+    scored = list(dict(report.get("score", {})).get("cards", []))
+    filed = 0
+    trace: list[dict[str, Any]] = []
+    for turn in report.get("transcript", []):
+        cards = []
+        for card in turn.get("cards", []):
+            row = dict(scored[filed]) if filed < len(scored) else {}
+            filed += 1
+            cards.append(
+                {
+                    "action": str(card.get("action", "")),
+                    "key": str(row.get("key", "")),
+                    "outcome": str(row.get("outcome", "other")),
+                    "value_usd": row.get("value_usd"),
+                }
+            )
+        said = str(turn.get("said", ""))
+        user = str(turn.get("user", ""))
+        trace.append(
+            prune(
+                {
+                    "portal": str(names.get(turn.get("app"), turn.get("app", ""))),
+                    # The run loop's own continuation is not the person speaking: it is the page's
+                    # answers going back to her, so it is marked rather than quoted.
+                    "user": "" if user == CONTINUE else user[:240],
+                    "continued": user == CONTINUE,
+                    "said": _excerpt(said, TRACE_SAID),
+                    "said_chars": len(said),
+                    "reads": [str(c.get("name", "")) for c in turn.get("calls", [])],
+                    "cards": cards,
+                }
+            )
+        )
+    return trace
+
+
+def _excerpt(text: str, limit: int) -> str:
+    """``text`` cut at the last sentence or line end within ``limit``, never mid-word."""
+    if len(text) <= limit:
+        return text
+    head = text[:limit]
+    cut = max(head.rfind(". "), head.rfind(".\n"), head.rfind("\n\n"))
+    if cut < limit // 3:
+        cut = head.rfind(" ")
+    return head[: cut + 1].rstrip()
 
 
 def cards_of(report: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -601,6 +665,7 @@ def rescore(playbook: Playbook, report: Mapping[str, Any]) -> dict[str, Any]:
     """A saved run scored again against today's truth and scorer. Nothing is re-run; the cards are
     the run's own, so a change of score is a change of the measure, and ``rescored_at`` says so."""
     again = dict(report)
+    again.setdefault("portals", {app.app_id: app.name for app in playbook.apps})
     again["score"] = score(playbook, cards_of(report))
     again["verdict"] = verdict(playbook, again)
     again["rescored_at"] = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
