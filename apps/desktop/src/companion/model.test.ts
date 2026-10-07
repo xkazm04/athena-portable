@@ -19,6 +19,7 @@ import {
   groupMessages,
   hostOf,
   ledgerFrom,
+  moodOf,
   selectCompanion,
   stepOf,
   suggestionsFor,
@@ -148,7 +149,7 @@ test("while the stamp lands the answered card is still the first waiting one, th
   expect(settled.decision).toBeNull();
 });
 
-test("the seal says what it carries: a count when a card is put away, its caption otherwise", () => {
+test("the seal says what it carries by its mood: a count and a pink ripple for a card, sleep at rest", () => {
   const snoozed = selectCompanion(
     inputs({
       machine: machineAfter({ t: "init", onboarded: true, cards: 0 }, { t: "cards", n: 2 }, { t: "esc" }),
@@ -156,13 +157,16 @@ test("the seal says what it carries: a count when a card is put away, its captio
     }),
   );
   expect(snoozed.form).toBe("seal");
-  expect(snoozed.caption).toBe("waiting");
+  expect(snoozed.mood).toBe("wait");
+  expect(snoozed.caption).toBe("");
   expect(snoozed.badge).toBe("2");
   expect(snoozed.tone).toBe("human");
   expect(snoozed.sealLabel).toMatch(/2 decisions waiting on you/);
 
   const rest = selectCompanion(inputs());
-  expect(rest.caption).toBe("resting");
+  expect(rest.mood).toBe("sleep");
+  expect(rest.caption).toBe("");
+  expect(rest.sealLabel).toMatch(/Resting/);
   expect(rest.badge).toBe("");
   expect(rest.tone).toBe("idle");
 });
@@ -408,4 +412,22 @@ test("Main is reported hidden only while the welcome has not been answered", () 
   expect(selectCompanion(inputs({ onboarded: false })).talk.mainHidden).toBe(true);
   expect(selectCompanion(inputs({ onboarded: true })).talk.mainHidden).toBe(false);
   expect(selectCompanion(inputs()).talk.mainHidden).toBe(false);
+});
+
+test("the mood is one precedence: a card, then the person, then her voice, then work, then sleep", () => {
+  expect(moodOf("seal", 1, true, "speaking", true)).toBe("wait");
+  expect(moodOf("seal", 0, true, "speaking", true)).toBe("hear");
+  expect(moodOf("hear", 0, false, "idle", false)).toBe("hear");
+  expect(moodOf("seal", 0, false, "speaking", true)).toBe("speak");
+  expect(moodOf("seal", 0, false, "thinking", false)).toBe("work");
+  expect(moodOf("tape", 0, false, "idle", false)).toBe("work");
+  expect(moodOf("seal", 0, false, "idle", false)).toBe("sleep");
+  expect(moodOf("ledger", 0, false, "idle", false)).toBe("none");
+  expect(moodOf("welcome", 0, false, "off", false)).toBe("none");
+});
+
+test("an open form keeps its word; a speaking seal is named for a screen reader", () => {
+  const speaking = selectCompanion(inputs({ voice: { phase: "speaking", available: true, partial: "" } }));
+  expect(speaking.mood).toBe("speak");
+  expect(speaking.sealLabel).toBe("Athena. Speaking.");
 });

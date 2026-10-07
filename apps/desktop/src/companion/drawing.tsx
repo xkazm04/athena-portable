@@ -163,6 +163,41 @@ export function Ring({ lit, working }: { lit: number; working: boolean }) {
   );
 }
 
+/**
+ * The seal's mood, drawn instead of written: the same 76-unit box as the ring, the face at (38, 31).
+ * Every group is always present and `companion.css` shows the one `data-mood` names, so a change
+ * of mood is a cross-fade, never a remount. Sleep is three Zs drifting off the face, work a comet
+ * round the ring, hearing ripples leaving the face, speaking five bars under it, waiting a pink
+ * ripple. Each moves by transform and opacity only.
+ */
+export function Mood() {
+  return (
+    <svg className="aw-mood" viewBox="0 0 76 76" aria-hidden="true">
+      <g className="md md-sleep">
+        {[0, 1, 2].map((i) => (
+          <path key={i} className={`z z${i}`} d="M49.5 17h6.5l-6.5 7h6.5" />
+        ))}
+      </g>
+      <g className="md md-work">
+        <circle className="comet-tail" cx="38" cy="31" r="25" pathLength="100" />
+        <circle className="comet" cx="38" cy="31" r="25" pathLength="100" />
+      </g>
+      <g className="md md-hear">
+        <circle className="ripple r0" cx="38" cy="31" r="18" />
+        <circle className="ripple r1" cx="38" cy="31" r="18" />
+      </g>
+      <g className="md md-speak">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <rect key={i} className={`bar b${i}`} x={29.6 + i * 3.6} y="60" width="2" height="9" rx="1" />
+        ))}
+      </g>
+      <g className="md md-wait">
+        <circle className="ripple" cx="38" cy="31" r="18" />
+      </g>
+    </svg>
+  );
+}
+
 /** A stand-in for the page capture, labelled as one wherever it is shown. */
 export function Sketch() {
   return (

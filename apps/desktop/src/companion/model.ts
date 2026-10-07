@@ -239,6 +239,13 @@ export interface CompanionModel {
   /** Keys the paper (it unrolls when this changes) and the figure (she arrives when it does). */
   epoch: number;
   arrive: number;
+  /**
+   * What the seal shows instead of a word: `sleep` resting, `work` a turn in flight, `hear` the key
+   * held, `speak` her voice playing, `wait` a card for the person, `none` when she is open (the
+   * ledger or the welcome says what it is itself).
+   */
+  mood: Mood;
+  /** A word under the seal only where no mood speaks for it (the welcome, the ledger). */
   caption: string;
   badge: string;
   sealLabel: string;
@@ -335,6 +342,21 @@ const CAPTION: Record<AthenaState, string> = {
   tab: "",
 };
 
+export type Mood = "sleep" | "work" | "hear" | "speak" | "wait" | "none";
+
+/**
+ * The seal's mood, in precedence order: a card waiting on the person outranks everything, then the
+ * person talking, then her voice, then work in flight; at rest she sleeps, and an open form (the
+ * ledger, the welcome, the docked tab) shows no mood of its own.
+ */
+export function moodOf(form: AthenaState, cards: number, listening: boolean, voice: VoicePhase, working: boolean): Mood {
+  if (cards > 0) return "wait";
+  if (listening || form === "hear" || voice === "listening") return "hear";
+  if (voice === "speaking") return "speak";
+  if (working || form === "tape" || voice === "thinking") return "work";
+  return form === "seal" ? "sleep" : "none";
+}
+
 /** Build the view-model. Pure: every argument is a snapshot the caller already read. */
 export function selectCompanion(i: CompanionInputs): CompanionModel {
   const m = i.machine;
@@ -346,7 +368,8 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
   const working = busy || m.working;
 
   const quietCard = n > 0 && form !== "slip" && form !== "ledger";
-  const caption = quietCard ? "waiting" : form === "seal" && m.listening ? "hearing" : CAPTION[form];
+  const mood = moodOf(form, n, m.listening, i.voice.phase, working);
+  const caption = mood === "none" ? CAPTION[form] : "";
 
   return {
     form,
@@ -359,9 +382,10 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     quiet: m.quiet,
     epoch: m.epoch,
     arrive: m.arrive,
+    mood,
     caption,
     badge: quietCard ? String(n) : "",
-    sealLabel: sealLabel(form, n),
+    sealLabel: sealLabel(form, n, mood),
     cards: waiting,
     decision: m.decided
       ? { kind: m.decided.kind, by: m.decided.by, tearing: m.decided.tearing, sending: m.decided.sending }
@@ -453,8 +477,10 @@ function spell(value: unknown): string {
   }
 }
 
-function sealLabel(form: AthenaState, n: number): string {
+function sealLabel(form: AthenaState, n: number, mood: Mood): string {
   if (n) return `Athena. ${n} decision${n > 1 ? "s" : ""} waiting on you. Press Enter to open.`;
+  if (mood === "hear") return "Athena. Listening.";
+  if (mood === "speak") return "Athena. Speaking.";
   switch (form) {
     case "tape":
       return "Athena. Working. Press Enter to open the ledger.";

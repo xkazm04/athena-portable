@@ -195,6 +195,8 @@ interface Setup {
   phase?: "idle" | "running" | "acting" | "error";
   partial?: string;
   voice?: boolean;
+  /** Her voice is playing (the seal speaks). */
+  speaking?: boolean;
   origin?: string | null;
   ready?: boolean;
   capture?: boolean;
@@ -221,7 +223,7 @@ function model(setup: Setup): CompanionModel {
       refusals: setup.refusals,
       earlier: setup.earlier === undefined ? EARLIER : setup.earlier,
     },
-    voice: { phase: setup.voice ? "listening" : "idle", available: true, partial: setup.partial ?? "" },
+    voice: { phase: setup.voice ? "listening" : setup.speaking ? "speaking" : "idle", available: true, partial: setup.partial ?? "" },
     daemonReady: setup.ready ?? true,
     origin: setup.origin === undefined ? ORIGIN : setup.origin,
     tools: TOOLS,
@@ -249,6 +251,8 @@ export const fixtures: Record<string, () => CompanionModel> = {
   "seal waiting": () =>
     model({ events: [INIT, { t: "cards", n: 2 }, { t: "esc" }], cards: all.slice(0, 2) }),
   "seal quiet": () => model({ events: [INIT, { t: "quietStart" }] }),
+  "seal speaking": () => model({ events: [INIT], speaking: true }),
+  "seal hearing": () => model({ events: [INIT], voice: true }),
   tape: () =>
     model({ events: [INIT, { t: "work", on: true }], transcript: TURN.slice(0, 4), phase: "acting" }),
   "tape thinking": () =>

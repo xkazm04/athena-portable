@@ -13,7 +13,7 @@
  */
 import { useEffect, useRef, type FormEvent, type KeyboardEvent } from "react";
 
-import { Chip, Defs, Icon, Mark, Ring, Sketch, Stamp } from "./drawing";
+import { Chip, Defs, Icon, Mark, Mood, Ring, Sketch, Stamp } from "./drawing";
 import type { LedgerTab } from "./machine";
 import { showingOf } from "./model";
 import type {
@@ -52,6 +52,7 @@ export default function CompanionView({ model }: { model: CompanionModel }) {
       data-decided={model.decision && !model.decision.sending ? model.decision.kind : undefined}
       data-sending={model.decision?.sending ? "1" : undefined}
       data-listening={model.listening ? "1" : "0"}
+      data-mood={model.mood}
     >
       <Defs />
       <div key={`arrive-${model.arrive}`} className={`aw-fig${model.arrive > 0 ? " arrive" : ""}`}>
@@ -59,6 +60,7 @@ export default function CompanionView({ model }: { model: CompanionModel }) {
           <div className="aw-sealwrap">
             <button type="button" className="aw-seal" aria-label={model.sealLabel} onClick={actions.seal}>
               <Ring lit={model.lit} working={model.tone === "work"} />
+              <Mood />
               <span className="aw-face">
                 <Mark className="aw-mk" field="var(--house-glow)" cut="#081417" />
               </span>
