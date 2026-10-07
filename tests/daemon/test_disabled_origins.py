@@ -26,9 +26,13 @@ def test_a_run_with_the_app_switched_off_refuses_gated_and_auto_and_ledgers_the_
     live: Live,
 ) -> None:
     live.register()
+    # Each refusal is told to the model in the same turn (ADR 0041), so each run takes two rounds:
+    # the op, then what she says once she has heard it was refused.
     live.script(
         claude_round(op("host.invoices.pay", "why", invoice="7")),
+        claude_round("That app is switched off, so I can't pay it from here."),
         claude_round(op("host.invoices.chase", invoice="7")),
+        claude_round("That app is switched off, so I can't chase it from here."),
     )
 
     for _ in range(2):
@@ -63,6 +67,7 @@ def test_runs_with_different_lists_back_to_back_do_not_leak(live: Live) -> None:
     live.register()
     live.script(
         claude_round(op("host.invoices.chase", invoice="1")),
+        claude_round("It is switched off; nothing was chased."),
         claude_round(op("host.invoices.chase", invoice="2")),
     )
 
@@ -81,3 +86,23 @@ def test_a_malformed_list_is_read_as_empty(live: Live) -> None:
     reply = live.run("a", disabled_origins="host:invoices")
 
     assert "tool.call" in [k for k, _ in reply.frames()]
+
+
+def test_a_refusal_is_told_to_the_model_in_the_same_turn_once(live: Live) -> None:
+    """ADR 0041: a refused op is final, so she hears it now rather than promising a result. The
+    same refusal is told once: a model that retries it ends the turn instead of spending it."""
+    live.register()
+    live.script(
+        claude_round(op("host.invoices.chase", invoice="1")),
+        claude_round(op("host.invoices.chase", invoice="1")),
+        claude_round("never asked"),
+    )
+
+    reply = live.run("chase it", disabled_origins=[f"host:{APP_ID}"])
+
+    errors = [p["error"] for k, p in reply.frames() if k == "tool.result"]
+    assert errors == ["foreign_origin", "foreign_origin"]
+    assert len(live.transport.requests) == 2, "the retried refusal was not told a second time"
+    told = live.transport.requests[1].stdin
+    assert "foreign_origin" in told and "switched off" in told
+    assert live.daemon.ledger.recent(1).rows[0].rounds == 2

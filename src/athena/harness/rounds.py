@@ -118,6 +118,7 @@ class RoundHarness:
         self.truncation.before_prompt([*static_blocks, *frame], turn_id)
 
         entries = {entry.name: entry for entry in tools}
+        self._told: set[tuple[str, str]] = set()
         static_text = _joined(static_blocks)
         self._turn_started(conversation_id, static_text)
         history = [_opening_message(frame, user_message)]
@@ -187,9 +188,10 @@ class RoundHarness:
     ) -> tuple[list[ChannelEvent], list[ToolResult]]:
         """Every op through the gate. Returns the events to stream and what to feed back.
 
-        Only what *executed* is fed back. A gated op is waiting on the user, a host tool is
-        waiting on the page, and a dropped envelope is told to the model in the next turn's frame
-        — none of the three is a reason to spend another round asking the same model again.
+        What *executed* is fed back, and so is a refusal, once per name and reason (ADR 0041). A
+        gated op is waiting on the user, a host tool is waiting on the page, and a dropped
+        envelope is told to the model in the next turn's frame — none of the three is a reason to
+        spend another round asking the same model again.
         """
         events: list[ChannelEvent] = []
         feedback: list[ToolResult] = []
@@ -246,16 +248,23 @@ class RoundHarness:
         if isinstance(outcome.decision, Cancel):
             if outcome.card is not None:
                 events.append(_card(outcome.card, op.rationale))
-            events.append(
-                ToolResult(
-                    call_id=call_id,
-                    name=entry.name,
-                    ok=False,
-                    output=outcome.decision.detail or outcome.decision.reason,
-                    error=outcome.decision.reason,
-                    tier=entry.tier,
-                )
+            refusal = ToolResult(
+                call_id=call_id,
+                name=entry.name,
+                ok=False,
+                output=outcome.decision.detail or outcome.decision.reason,
+                error=outcome.decision.reason,
+                tier=entry.tier,
             )
+            events.append(refusal)
+            # A card waits on the user. A refusal is final, and the model is told in this turn
+            # (ADR 0041): a turn that ends on a refused read leaves her promising a result that
+            # will never come. The same refusal is told once, so a model that retries it cannot
+            # spend the round budget on it.
+            told = (entry.name, refusal.error or "")
+            if outcome.card is None and told not in self._told:
+                self._told.add(told)
+                feedback.append(refusal)
             return events
 
         if outcome.result is None:
