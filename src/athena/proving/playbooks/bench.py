@@ -87,6 +87,8 @@ class _Run:
     turns: list[dict[str, Any]] = field(default_factory=list)
     nudges: int = 0
     follow_ups: int = 0
+    #: Her latest words in full; the transcript keeps an excerpt.
+    last_said: str = ""
     errors: list[str] = field(default_factory=list)
     cost: float = 0.0
     cost_known: bool = True
@@ -204,7 +206,7 @@ def switch_requested(playbook: Playbook, said: str, current: str) -> AppSpec | N
 
 
 def _last_said(run: _Run) -> str:
-    return next((str(t.get("said", "")) for t in reversed(run.turns) if t.get("said")), "")
+    return run.last_said
 
 
 def _phase(
@@ -276,6 +278,8 @@ def _absorb(run: _Run, record: TurnRecord, app_id: str, message: str) -> list[di
             }
             run.cards.append(card)
             filed.append(card)
+    if record.text:
+        run.last_said = record.text
     cost = record.cost_usd
     if cost is None:
         run.cost_known = False
@@ -288,7 +292,7 @@ def _absorb(run: _Run, record: TurnRecord, app_id: str, message: str) -> list[di
         {
             "app": app_id,
             "user": message[:300],
-            "said": record.text[:1500],
+            "said": record.text[:4000],
             "calls": [
                 {"name": str(c.get("name", "")).rsplit(".", 1)[-1], "params": _params(c)}
                 for c in _host_calls(record)

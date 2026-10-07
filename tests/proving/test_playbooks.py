@@ -525,3 +525,14 @@ def test_the_person_follows_a_switch_she_asks_for_and_it_is_bounded(tmp_path: Pa
     )
     assert report["follow_ups"] == 1, "she asked for the carrier while on the carrier: no loop"
     assert any("switched to Carrier portal" in t["user"] for t in report["transcript"])
+
+
+def test_a_switch_asked_for_late_in_a_long_answer_is_still_heard(tmp_path: Path) -> None:
+    book = load_playbook(_two_portals(tmp_path))
+    long = "Here is everything I found. " * 200 + "Switch to the carrier site and I'll file it."
+    report = run_bench(
+        book,
+        BenchConfig(engine="nebius", follow_ups=1),
+        world_factory=_factory(scripted_model(lambda r: long)),
+    )
+    assert report["follow_ups"] == 1
