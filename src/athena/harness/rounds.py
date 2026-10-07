@@ -144,7 +144,9 @@ class RoundHarness:
             if tts is None and parsed.tts:
                 tts = parsed.tts
 
-            events, feedback = self._dispatch(parsed, entries, ctx, turn_id, result)
+            # Call ids carry the round: a turn's rounds each number their ops from zero, and a
+            # core result in one round must never be read as the answer to a page call in another.
+            events, feedback = self._dispatch(parsed, entries, ctx, f"{turn_id}_r{_round}", result)
             for event in events:
                 yield event
             if feedback:

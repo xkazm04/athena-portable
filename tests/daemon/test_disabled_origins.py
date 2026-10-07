@@ -137,3 +137,20 @@ def test_told_of_a_drop_she_also_hears_which_page_calls_are_in_flight(live: Live
     told = live.transport.requests[1].stdin
     assert "Your calls to chase went to the page" in told
     assert "Do not call them again" in told
+
+
+def test_a_page_call_is_never_answered_by_another_rounds_result(live: Live) -> None:
+    """Rounds numbered their ops from zero, so a core result in round 1 and a page call in round 2
+    shared an id and the page call was taken as answered. Ids now carry the round."""
+    live.register()
+    live.script(
+        claude_round(op("core.recall", query="invoice")),
+        claude_round(op("host.invoices.chase", invoice="1")),
+    )
+
+    reply = live.run("recall, then chase")
+
+    frames = reply.frames()
+    answered = {p["call_id"] for k, p in frames if k == "tool.result"}
+    page_calls = [p for k, p in frames if k == "tool.call" and p["name"] == "host.invoices.chase"]
+    assert page_calls and page_calls[0]["call_id"] not in answered
