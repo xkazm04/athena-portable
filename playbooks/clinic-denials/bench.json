@@ -1,0 +1,139 @@
+{
+  "playbook": "clinic-denials",
+  "run_at": "2026-10-07T23:07:07Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 182.7,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 50,
+  "cost_usd": 2.593,
+  "your_time_s": 240,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 30.0
+    },
+    "minutes": 3.0
+  },
+  "score": {
+    "eligible": 10,
+    "found": 8,
+    "exact": 8,
+    "value_total_usd": 2120.0,
+    "value_found_usd": 1910.0,
+    "recall_value": 0.901,
+    "false_claims": 0,
+    "traps_total": 22,
+    "traps_filed": 0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "submit_corrected_claim",
+      "key": "CL-2201",
+      "outcome": "correct",
+      "value_usd": 142.0,
+      "exact": true,
+      "why": "Separately identifiable problem visit: modifier 25, day 50 of Cigna's 90"
+    },
+    {
+      "action": "submit_corrected_claim",
+      "key": "CL-2207",
+      "outcome": "correct",
+      "value_usd": 142.0,
+      "exact": true,
+      "why": "Hypertension managed at a preventive visit: modifier 25, day 43 of UHC's 90"
+    },
+    {
+      "action": "submit_corrected_claim",
+      "key": "CL-2213",
+      "outcome": "correct",
+      "value_usd": 96.0,
+      "exact": true,
+      "why": "Rash treated at a preventive visit: modifier 25, day 34 of Aetna's 120"
+    },
+    {
+      "action": "file_reconsideration",
+      "key": "CL-2198",
+      "outcome": "correct",
+      "value_usd": 1150.0,
+      "exact": true,
+      "why": "Authorisation UH-88213 approved 2026-08-05 was left off the claim"
+    },
+    {
+      "action": "file_reconsideration",
+      "key": "CL-2150",
+      "outcome": "correct",
+      "value_usd": 380.0,
+      "exact": true,
+      "why": "277CA: Aetna accepted it on 2026-07-20, day 40 of 120"
+    },
+    {
+      "action": "write_off",
+      "key": "CL-2205",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "No authorisation and none retroactively"
+    },
+    {
+      "action": "write_off",
+      "key": "CL-2142",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Late, and no proof otherwise"
+    },
+    {
+      "action": "write_off",
+      "key": "CL-2101",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Reconsideration window closed"
+    }
+  ],
+  "missed": [
+    {
+      "action": "submit_corrected_claim",
+      "key": "CL-2215",
+      "value_usd": 210.0
+    },
+    {
+      "action": "write_off",
+      "key": "CL-2190",
+      "value_usd": 0
+    }
+  ],
+  "closing_words": "Dr. Okoye's NPI is 1093847562. Dr. Patel is 1720394851, which is the NPI the CL-2215 claim went out under. I'm still not proposing the CL-2215 correction, because I haven't seen whose name the authorisation carries. Its answer went to the page from the Availity tab and never reached me, and I can't call it from here.\n\n- **If the authorisation names Dr. Okoye:** Correcting the rendering NPI to 1093847562 fixes the denial.\n- **If it names Dr. Patel:** The mismatch is with the authorisation, and a different fix is needed.\n\nThere's no rush, since UnitedHealthcare's 90-day corrected-claim limit for DOS 09-08 runs to 12-07. When you're next on Availity, open that tab and I'll re-read the authorisation for CL-2215, then file the correction.\n\nEight decisions are waiting on you:\n- **Corrected claims (modifier 25):** CL-2201, CL-2207, CL-2213.\n- **Reconsiderations:** CL-2198 and CL-2150.\n- **Write",
+  "note": "after ADR 0045 (evidence is what a page says; gather in each tab) and the action-shape fix",
+  "history": [
+    {
+      "run_at": "2026-10-07T22:30:21Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 2,
+      "eligible": 10,
+      "value_found_usd": 0.0,
+      "false_claims": 0
+    },
+    {
+      "run_at": "2026-10-07T22:45:19Z",
+      "model": "sonnet",
+      "verdict": "exceeds",
+      "found": 9,
+      "eligible": 10,
+      "value_found_usd": 2120.0,
+      "false_claims": 0,
+      "note": "after ADR 0041 amended (dropped ops told in the turn) and ADR 0043 (every result that fits)"
+    }
+  ]
+}

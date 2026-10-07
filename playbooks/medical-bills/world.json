@@ -1,0 +1,673 @@
+{
+  "today": "2026-10-07",
+  "apps": [
+    {
+      "app_id": "insurer",
+      "name": "Bluepoint Health member portal",
+      "origin": "https://member.bluepoint.example",
+      "path": "/claims",
+      "view": {
+        "view": "Claims and EOBs",
+        "member": "Dana Reyes (and 3 dependents)",
+        "plan": "Bluepoint PPO 1500, plan year 2026"
+      },
+      "tools": [
+        {
+          "name": "read_plan",
+          "kind": "READ",
+          "description": "Read the plan's rules by topic: deductible, network, surprise_billing, eob, appeals. Omit the topic for all of them.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "plan",
+            "match": {
+              "topic": "topic"
+            }
+          }
+        },
+        {
+          "name": "list_claims",
+          "kind": "READ",
+          "description": "This year's claims: date of service, provider, service, status and what the patient owes. Paged. Open one with read_claim for the full EOB.",
+          "params": {
+            "status": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "claims",
+            "match": {
+              "status": "status"
+            },
+            "page_size": 5,
+            "fields": [
+              "claim_id",
+              "dos",
+              "provider",
+              "service",
+              "status",
+              "patient_owes_usd"
+            ]
+          }
+        },
+        {
+          "name": "read_claim",
+          "kind": "READ",
+          "description": "One claim's EOB in full, by claim id.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "claims",
+            "match": {
+              "claim_id": "claim_id"
+            },
+            "require": [
+              "claim_id"
+            ]
+          }
+        },
+        {
+          "name": "file_appeal",
+          "kind": "REACHES_A_PERSON",
+          "description": "File an internal appeal of a denied claim, with the reason and the evidence.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "evidence": {
+              "type": "string"
+            }
+          },
+          "says": "Appeal filed for {claim_id}. Bluepoint decides within 30 days."
+        }
+      ],
+      "aliases": [
+        "insurance portal",
+        "insurer",
+        "Bluepoint",
+        "member portal"
+      ]
+    },
+    {
+      "app_id": "mychart",
+      "name": "MyChart (Valley Medical)",
+      "origin": "https://mychart.valleymedical.example",
+      "path": "/billing",
+      "view": {
+        "view": "Billing summary",
+        "patient": "Dana Reyes",
+        "guarantor_account": "44871"
+      },
+      "tools": [
+        {
+          "name": "list_bills",
+          "kind": "READ",
+          "description": "Open statements from Valley Medical Center and VMC Physicians Group: bill id, biller, date of service, amount due. Open one with read_bill for its line items.",
+          "params": {},
+          "returns": {
+            "table": "vmc_bills",
+            "fields": [
+              "bill_id",
+              "biller",
+              "dos",
+              "amount_due_usd",
+              "note"
+            ]
+          }
+        },
+        {
+          "name": "read_bill",
+          "kind": "READ",
+          "description": "One statement in full, with its line items, by bill id.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "vmc_bills",
+            "match": {
+              "bill_id": "bill_id"
+            },
+            "require": [
+              "bill_id"
+            ]
+          }
+        },
+        {
+          "name": "list_payments",
+          "kind": "READ",
+          "description": "Payments made on this account, this year and last.",
+          "params": {},
+          "returns": {
+            "table": "vmc_payments"
+          }
+        },
+        {
+          "name": "list_visits",
+          "kind": "READ",
+          "description": "Visit history with the reason and the clinician's note.",
+          "params": {
+            "kind": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "visits",
+            "match": {
+              "kind": "kind"
+            },
+            "mode": "contains"
+          }
+        },
+        {
+          "name": "dispute_bill",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send the billing office a dispute on one statement: the amount you say is wrong and why.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_disputed_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute sent on {bill_id}. The statement is on hold while billing reviews it."
+        },
+        {
+          "name": "pay_bill",
+          "kind": "REACHES_A_PERSON",
+          "description": "Pay a statement from the card on file.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Paid {amount_usd} on {bill_id}."
+        }
+      ],
+      "aliases": [
+        "MyChart"
+      ]
+    },
+    {
+      "app_id": "cedar",
+      "name": "Cedar",
+      "origin": "https://pay.cedar.example",
+      "path": "/statements",
+      "view": {
+        "view": "Your statements",
+        "billers": [
+          "Northstar Anesthesia Associates",
+          "Lakeside Dermatology"
+        ]
+      },
+      "tools": [
+        {
+          "name": "list_statements",
+          "kind": "READ",
+          "description": "Statements from every biller on Cedar, with balance, insurance paid and payments received.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "cedar_bills",
+            "match": {
+              "bill_id": "bill_id"
+            }
+          }
+        },
+        {
+          "name": "dispute_bill",
+          "kind": "REACHES_A_PERSON",
+          "description": "Dispute a statement with its biller: the amount you say is wrong and why.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_disputed_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute sent on {bill_id}."
+        },
+        {
+          "name": "request_refund",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask a biller to refund an overpayment to the card or HSA it came from.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Refund of {amount_usd} requested on {bill_id}."
+        },
+        {
+          "name": "pay_bill",
+          "kind": "REACHES_A_PERSON",
+          "description": "Pay a statement from the card on file.",
+          "params": {
+            "bill_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Paid {amount_usd} on {bill_id}."
+        }
+      ],
+      "aliases": [
+        "Cedar"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "insurer",
+      "message": "My medical bills are a mess. Start here in my insurance portal: go through this year's claims and EOBs and work out what I actually owe each provider, and anything that looks wrong.",
+      "nudges": 2
+    },
+    {
+      "app": "mychart",
+      "message": "Now I'm in MyChart for Valley Medical. Compare these bills to what the EOBs say. Dispute what's wrong and pay what I genuinely owe.",
+      "nudges": 2
+    },
+    {
+      "app": "cedar",
+      "message": "This is Cedar, where the anesthesia group and the dermatologist bill me. Same thing here.",
+      "nudges": 1
+    },
+    {
+      "app": "insurer",
+      "message": "Back in the insurance portal. Appeal any denial that's worth appealing and still in time, with whatever evidence you found.",
+      "nudges": 1
+    }
+  ],
+  "tables": {
+    "plan": [
+      {
+        "topic": "deductible",
+        "text": "In-network deductible $1,500 per plan year (January 1 to December 31). 2026: met in full on 2026-03-02. 2025: met on 2025-02-14. After the deductible the plan pays 75% of the allowed amount for most services; you pay 25% coinsurance."
+      },
+      {
+        "topic": "network",
+        "text": "In network: Valley Medical Center, VMC Physicians Group (Valley Medical's physician billing), Bayview Imaging, Lakeside Dermatology. Out of network: Northstar Anesthesia Associates."
+      },
+      {
+        "topic": "surprise_billing",
+        "text": "No Surprises Act: an out-of-network clinician who treats you at an in-network facility may not bill you more than your in-network cost sharing, which is the patient responsibility shown on the EOB. A balance bill above it can be disputed with the clinician."
+      },
+      {
+        "topic": "eob",
+        "text": "On a Final EOB, patient responsibility is the most an in-network provider may bill you for that claim. A claim In process is not decided: do not pay or dispute a bill for it until the EOB is final. A Reprocessed EOB replaces the earlier one; if you paid more than the new patient responsibility, ask the provider for a refund."
+      },
+      {
+        "topic": "appeals",
+        "text": "Internal appeal: file within 180 days of the denial date, with the reason and supporting records. One internal appeal per denial. External review is available within 4 months of a final internal denial."
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "C-1001",
+        "dos": "2026-08-14",
+        "provider": "Valley Medical Center",
+        "network": "in",
+        "service": "Emergency department visit",
+        "billed_usd": 1850.0,
+        "allowed_usd": 620.0,
+        "plan_paid_usd": 532.5,
+        "patient_owes_usd": 87.5,
+        "status": "Final",
+        "remark": ""
+      },
+      {
+        "claim_id": "C-1002",
+        "dos": "2026-08-21",
+        "provider": "Valley Medical Center",
+        "network": "in",
+        "service": "Comprehensive metabolic panel (80053), one unit",
+        "billed_usd": 420.0,
+        "allowed_usd": 256.0,
+        "plan_paid_usd": 192.0,
+        "patient_owes_usd": 64.0,
+        "status": "Final",
+        "remark": "One unit billed and allowed."
+      },
+      {
+        "claim_id": "C-1003",
+        "dos": "2026-06-03",
+        "provider": "Northstar Anesthesia Associates",
+        "network": "out",
+        "facility": "Valley Medical Center (in network)",
+        "service": "Anesthesia for knee arthroscopy",
+        "billed_usd": 2400.0,
+        "allowed_usd": 650.0,
+        "plan_paid_usd": 500.0,
+        "patient_owes_usd": 150.0,
+        "status": "Final",
+        "remark": "No Surprises Act applies: patient responsibility is limited to in-network cost sharing."
+      },
+      {
+        "claim_id": "C-1004",
+        "dos": "2026-09-02",
+        "provider": "Bayview Imaging",
+        "network": "in",
+        "service": "MRI lumbar spine",
+        "billed_usd": 1240.0,
+        "allowed_usd": 0.0,
+        "plan_paid_usd": 0.0,
+        "patient_owes_usd": 1240.0,
+        "status": "Denied",
+        "denial_date": "2026-09-07",
+        "remark": "Not medically necessary: no record of six weeks of conservative therapy before imaging."
+      },
+      {
+        "claim_id": "C-1005",
+        "dos": "2026-01-12",
+        "provider": "Valley Medical Center",
+        "network": "in",
+        "service": "Office visit, established patient",
+        "billed_usd": 310.0,
+        "allowed_usd": 240.0,
+        "plan_paid_usd": 0.0,
+        "patient_owes_usd": 240.0,
+        "status": "Final",
+        "remark": "Applied to deductible."
+      },
+      {
+        "claim_id": "C-1006",
+        "dos": "2026-09-28",
+        "provider": "Valley Medical Center",
+        "network": "in",
+        "service": "Urgent care visit",
+        "billed_usd": 410.0,
+        "status": "In process",
+        "remark": "We are reviewing this claim."
+      },
+      {
+        "claim_id": "C-1007",
+        "dos": "2026-05-15",
+        "provider": "Lakeside Dermatology",
+        "network": "in",
+        "service": "Excision, benign lesion",
+        "billed_usd": 520.0,
+        "allowed_usd": 360.0,
+        "plan_paid_usd": 225.0,
+        "patient_owes_usd": 135.0,
+        "status": "Reprocessed",
+        "remark": "Reprocessed 2026-07-30: corrected coinsurance; patient responsibility was $180.00, now $135.00."
+      },
+      {
+        "claim_id": "C-1008",
+        "dos": "2026-02-10",
+        "provider": "Bayview Imaging",
+        "network": "in",
+        "service": "CT abdomen",
+        "billed_usd": 980.0,
+        "allowed_usd": 0.0,
+        "plan_paid_usd": 0.0,
+        "patient_owes_usd": 980.0,
+        "status": "Denied",
+        "denial_date": "2026-03-20",
+        "remark": "Prior authorization not obtained."
+      },
+      {
+        "claim_id": "C-1009",
+        "dos": "2026-07-22",
+        "provider": "Valley Medical Center",
+        "network": "in",
+        "service": "Physical therapy",
+        "billed_usd": 260.0,
+        "allowed_usd": 180.0,
+        "plan_paid_usd": 135.0,
+        "patient_owes_usd": 45.0,
+        "status": "Final",
+        "remark": ""
+      },
+      {
+        "claim_id": "C-1010",
+        "dos": "2026-09-10",
+        "provider": "Lakeside Dermatology",
+        "network": "in",
+        "service": "Follow-up visit",
+        "billed_usd": 480.0,
+        "allowed_usd": 380.0,
+        "plan_paid_usd": 285.0,
+        "patient_owes_usd": 95.0,
+        "status": "Final",
+        "remark": ""
+      }
+    ],
+    "vmc_bills": [
+      {
+        "bill_id": "B-1",
+        "biller": "Valley Medical Center",
+        "statement_date": "2026-09-15",
+        "account": "44871",
+        "dos": "2026-08-14",
+        "lines": [
+          {
+            "item": "Emergency department visit",
+            "patient_balance_usd": 412.0
+          }
+        ],
+        "amount_due_usd": 412.0,
+        "due": "2026-10-15"
+      },
+      {
+        "bill_id": "B-2",
+        "biller": "Valley Medical Center",
+        "statement_date": "2026-09-20",
+        "account": "44871",
+        "dos": "2026-08-21",
+        "lines": [
+          {
+            "item": "Comprehensive metabolic panel 80053",
+            "patient_balance_usd": 64.0
+          },
+          {
+            "item": "Comprehensive metabolic panel 80053",
+            "patient_balance_usd": 64.0
+          }
+        ],
+        "amount_due_usd": 128.0,
+        "due": "2026-10-20"
+      },
+      {
+        "bill_id": "B-5",
+        "biller": "Valley Medical Center",
+        "statement_date": "2026-02-20",
+        "account": "44871",
+        "dos": "2026-01-12",
+        "lines": [
+          {
+            "item": "Office visit, established patient",
+            "patient_balance_usd": 240.0
+          }
+        ],
+        "amount_due_usd": 240.0,
+        "due": "2026-10-20",
+        "note": "Second notice."
+      },
+      {
+        "bill_id": "B-6",
+        "biller": "Valley Medical Center",
+        "statement_date": "2026-10-02",
+        "account": "44871",
+        "dos": "2026-09-28",
+        "lines": [
+          {
+            "item": "Urgent care visit",
+            "patient_balance_usd": 410.0
+          }
+        ],
+        "amount_due_usd": 410.0,
+        "due": "2026-11-01",
+        "note": "Insurance pending."
+      },
+      {
+        "bill_id": "B-9",
+        "biller": "Valley Medical Center",
+        "statement_date": "2026-08-30",
+        "account": "44871",
+        "dos": "2026-07-22",
+        "lines": [
+          {
+            "item": "Physical therapy",
+            "patient_balance_usd": 45.0
+          }
+        ],
+        "amount_due_usd": 45.0,
+        "due": "2026-10-10"
+      },
+      {
+        "bill_id": "B-10",
+        "biller": "VMC Physicians Group",
+        "statement_date": "2026-10-01",
+        "account": "44871",
+        "dos": "2026-08-14",
+        "lines": [
+          {
+            "item": "Reminder: balance from your emergency visit, statement B-1",
+            "patient_balance_usd": 412.0
+          }
+        ],
+        "amount_due_usd": 412.0,
+        "due": "2026-10-15"
+      }
+    ],
+    "vmc_payments": [
+      {
+        "date": "2025-11-24",
+        "bill": "statement 2025-11 (office visit, established patient, 2025-11-20)",
+        "amount_usd": 40.0,
+        "method": "card"
+      },
+      {
+        "date": "2026-06-20",
+        "bill": "statement 2026-06 (knee arthroscopy facility fee)",
+        "amount_usd": 600.0,
+        "method": "HSA card"
+      }
+    ],
+    "visits": [
+      {
+        "date": "2026-07-01",
+        "kind": "physical therapy",
+        "reason": "Lumbar pain",
+        "note": "Start of 6-week conservative therapy plan: exercises, manual therapy."
+      },
+      {
+        "date": "2026-07-08",
+        "kind": "physical therapy",
+        "reason": "Lumbar pain",
+        "note": "Week 2. Pain 6/10."
+      },
+      {
+        "date": "2026-07-15",
+        "kind": "physical therapy",
+        "reason": "Lumbar pain",
+        "note": "Week 3."
+      },
+      {
+        "date": "2026-07-22",
+        "kind": "physical therapy",
+        "reason": "Lumbar pain",
+        "note": "Week 4. Limited progress."
+      },
+      {
+        "date": "2026-07-29",
+        "kind": "physical therapy",
+        "reason": "Lumbar pain",
+        "note": "Week 5."
+      },
+      {
+        "date": "2026-08-05",
+        "kind": "physical therapy",
+        "reason": "Lumbar pain",
+        "note": "Week 6. No improvement; radiating pain to left leg. Refer back to physician."
+      },
+      {
+        "date": "2026-08-28",
+        "kind": "office visit",
+        "reason": "Lumbar pain after failed conservative therapy",
+        "note": "Six weeks of physical therapy without improvement; new radicular symptoms. Ordered MRI lumbar spine."
+      },
+      {
+        "date": "2026-08-14",
+        "kind": "emergency",
+        "reason": "Chest pain",
+        "note": "Cardiac work-up negative. Discharged."
+      }
+    ],
+    "cedar_bills": [
+      {
+        "bill_id": "CB-3",
+        "biller": "Northstar Anesthesia Associates",
+        "dos": "2026-06-03",
+        "service": "Anesthesia, knee arthroscopy at Valley Medical Center",
+        "charges_usd": 2400.0,
+        "insurance_paid_usd": 500.0,
+        "adjustments_usd": 0.0,
+        "payments_received_usd": 0.0,
+        "balance_usd": 1900.0,
+        "note": "Balance due after insurance."
+      },
+      {
+        "bill_id": "CB-7",
+        "biller": "Lakeside Dermatology",
+        "dos": "2026-05-15",
+        "service": "Excision, benign lesion",
+        "charges_usd": 520.0,
+        "insurance_paid_usd": 225.0,
+        "adjustments_usd": 115.0,
+        "payments_received_usd": 180.0,
+        "payment_note": "Paid 2026-06-01 from HSA card",
+        "balance_usd": 0.0,
+        "note": "Paid in full."
+      },
+      {
+        "bill_id": "CB-11",
+        "biller": "Lakeside Dermatology",
+        "dos": "2026-09-10",
+        "service": "Follow-up visit",
+        "charges_usd": 480.0,
+        "insurance_paid_usd": 285.0,
+        "adjustments_usd": 100.0,
+        "payments_received_usd": 0.0,
+        "balance_usd": 95.0,
+        "note": ""
+      }
+    ]
+  }
+}

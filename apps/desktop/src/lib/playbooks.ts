@@ -129,6 +129,15 @@ export interface RunLine {
   note: string;
 }
 
+/** A product fix one of this playbook's runs uncovered. */
+export interface Lesson {
+  /** The decision record it became, e.g. "0041"; "" when it is a finding, not a change. */
+  adr: string;
+  title: string;
+  /** What the run showed, in a sentence. */
+  found: string;
+}
+
 export interface Playbook {
   id: string;
   title: string;
@@ -145,6 +154,9 @@ export interface Playbook {
   economics: Economics;
   edge: Edge;
   expectation: Expectation;
+  lessons: readonly Lesson[];
+  /** A limit a reader must know before using it for real (e.g. a BAA for patient data). */
+  caveat: string;
   bench: Bench | null;
 }
 
@@ -289,6 +301,11 @@ export function parsePlaybook(raw: unknown, bench: unknown = null): Playbook | n
       minutes: num(expect.minutes, 30),
       why: str(expect.why),
     },
+    lessons: list(raw.lessons)
+      .filter(isRaw)
+      .map((l) => ({ adr: str(l.adr), title: str(l.title), found: str(l.found) }))
+      .filter((l) => l.title),
+    caveat: str(raw.caveat),
     bench: parseBench(bench),
   };
 }

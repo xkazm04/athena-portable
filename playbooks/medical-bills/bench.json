@@ -1,0 +1,167 @@
+{
+  "playbook": "medical-bills",
+  "run_at": "2026-10-07T23:06:25Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 140.8,
+  "turns": 10,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 22,
+  "cost_usd": 1.7855,
+  "your_time_s": 210,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 30.0
+    },
+    "minutes": 2.3
+  },
+  "score": {
+    "eligible": 8,
+    "found": 7,
+    "exact": 7,
+    "value_total_usd": 3423.5,
+    "value_found_usd": 3423.5,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 12,
+    "traps_filed": 0,
+    "filed_usd": 2183.5,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "dispute_bill",
+      "key": "B-1",
+      "outcome": "correct",
+      "value_usd": 324.5,
+      "exact": true,
+      "why": "Bill $412 against $87.50 on the final EOB (C-1001): $324.50 over"
+    },
+    {
+      "action": "dispute_bill",
+      "key": "B-2",
+      "outcome": "correct",
+      "value_usd": 64.0,
+      "exact": true,
+      "why": "The panel billed twice; the EOB (C-1002) allowed one unit: $64 duplicate"
+    },
+    {
+      "action": "pay_bill",
+      "key": "B-5",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Matches the final EOB (deductible)"
+    },
+    {
+      "action": "pay_bill",
+      "key": "B-9",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Matches the final EOB"
+    },
+    {
+      "action": "dispute_bill",
+      "key": "CB-3",
+      "outcome": "correct",
+      "value_usd": 1750.0,
+      "exact": true,
+      "why": "Out-of-network anesthesia at an in-network hospital: No Surprises Act limits it to $150; $1,750 balance bill"
+    },
+    {
+      "action": "request_refund",
+      "key": "CB-7",
+      "outcome": "correct",
+      "value_usd": 45.0,
+      "exact": true,
+      "why": "Paid $180 from the HSA; the reprocessed EOB (C-1007) says $135"
+    },
+    {
+      "action": "file_appeal",
+      "key": "C-1004",
+      "outcome": "correct",
+      "value_usd": 1240.0,
+      "exact": true,
+      "why": "Denied 09-07 for no conservative therapy; MyChart shows six weeks of physical therapy: day 30 of 180"
+    }
+  ],
+  "missed": [
+    {
+      "action": "pay_bill",
+      "key": "CB-11",
+      "value_usd": 0
+    }
+  ],
+  "closing_words": "I'm filing one appeal and skipping the other denial.\n\n- **C-1004, Bayview MRI ($1,240): appeal.** It was denied 2026-09-07 as \"not medically necessary: no record of six weeks of conservative therapy.\" The 180-day window runs to 2027-03-06, so it's in time. Your MyChart records answer the denial reason directly:\n  - Physical therapy ran from 2026-07-01 to 2026-08-05 (six weeks). The week-6 note says there was no improvement and the pain was radiating to the left leg.\n  - The 2026-08-28 office visit records six weeks of PT without improvement and new radicular symptoms, and it ordered the MRI.\n- **C-1008, Bayview CT ($980): not appealing.** It was denied 2026-03-20 for no prior authorization. The deadline was 2026-09-16, three weeks ago, so it's too late. If you have a reason it should be reopened, such as a late denial notice, tell me and I'll look at it.\n\nI'm quoting the MyChart evidence",
+  "note": "after ADR 0045 (evidence is what a page says; gather in each tab) and the action-shape fix",
+  "history": [
+    {
+      "run_at": "2026-10-07T22:11:03Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 4,
+      "eligible": 8,
+      "value_found_usd": 388.5,
+      "false_claims": 1,
+      "note": "first run: refused reads went unheard; one card (disputing reminder B-10) was later judged fair, so the truth was corrected"
+    },
+    {
+      "run_at": "2026-10-07T22:18:17Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 6,
+      "eligible": 8,
+      "value_found_usd": 433.5,
+      "false_claims": 0
+    },
+    {
+      "run_at": "2026-10-07T22:29:00Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 7,
+      "eligible": 8,
+      "value_found_usd": 2183.5,
+      "false_claims": 0,
+      "note": "after ADR 0041 (refusals told in the turn) and ADR 0042 (recall matches any word, shows where)"
+    },
+    {
+      "run_at": "2026-10-07T22:49:50Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 7,
+      "eligible": 8,
+      "value_found_usd": 2183.5,
+      "false_claims": 0,
+      "note": "after ADR 0043 (every result that fits) and ADR 0044 (the playbook rides every turn)"
+    },
+    {
+      "run_at": "2026-10-07T22:55:45Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 7,
+      "eligible": 8,
+      "value_found_usd": 2183.5,
+      "false_claims": 0,
+      "note": "after the in-flight note (ADR 0041) and the person following a switch she asks for"
+    },
+    {
+      "run_at": "2026-10-07T22:58:51Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 5,
+      "eligible": 8,
+      "value_found_usd": 1628.5,
+      "false_claims": 0,
+      "note": "after hearing a switch request from her whole answer"
+    }
+  ]
+}

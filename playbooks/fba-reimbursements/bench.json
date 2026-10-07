@@ -1,15 +1,15 @@
 {
   "playbook": "fba-reimbursements",
-  "run_at": "2026-10-07T21:58:18Z",
-  "rescored_at": "2026-10-07T22:01:23Z",
+  "run_at": "2026-10-07T23:06:39Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 120.5,
+  "wall_s": 154.8,
   "turns": 8,
   "nudges": 0,
-  "reads": 24,
-  "cost_usd": 1.4695,
+  "follow_ups": 0,
+  "reads": 28,
+  "cost_usd": 2.6638,
   "your_time_s": 150,
   "verdict": {
     "word": "exceeds",
@@ -19,7 +19,7 @@
       "false_claims": 0,
       "minutes": 25.0
     },
-    "minutes": 2.0
+    "minutes": 2.6
   },
   "score": {
     "eligible": 5,
@@ -39,6 +39,14 @@
   "cards": [
     {
       "action": "file_case",
+      "key": "R-77",
+      "outcome": "correct",
+      "value_usd": 66.0,
+      "exact": true,
+      "why": "Removal created 08-20, no scan since 08-21, day 48 of the 15-75 window: 6 units at $11"
+    },
+    {
+      "action": "file_case",
       "key": "113-4471",
       "outcome": "correct",
       "value_usd": 34.99,
@@ -52,14 +60,6 @@
       "value_usd": 29.99,
       "exact": true,
       "why": "Refunded 07-20, not returned, no reimbursement: day 79 of the 60-120 window"
-    },
-    {
-      "action": "file_case",
-      "key": "R-77",
-      "outcome": "correct",
-      "value_usd": 66.0,
-      "exact": true,
-      "why": "Removal created 08-20, no scan since 08-21, day 48 of the 15-75 window: 6 units at $11"
     },
     {
       "action": "file_case",
@@ -79,10 +79,32 @@
     }
   ],
   "missed": [],
-  "closing_words": "All the cases are filed as cards and the reminders are set. Nothing runs until you answer the five cards.\n\n**Waiting on you ($392.98 in total):**\n- Return 113-4471 (SKU-B), $34.99.\n- Return 113-7790 (SKU-C), $29.99.\n- Removal R-77 (SKU-B, 6 units), $66.00.\n- Inbound shortage FBA15X1 (SKU-A, 8 units), $72.00.\n- Fee remeasure SKU-C, $156.80.\n\n**Reminders on your Seller Central calendar** (these are your own, and nothing reaches Amazon):\n- 10-15: removal R-81 (SKU-A, 4 units). Check whether the carrier has scanned it by then. If not, it becomes claimable.\n- 11-05: FBA15X1 follow-up. The case window closes 11-09.\n- 11-14: return 113-5520 (SKU-A, $24.99). It reaches day 60 after the refund then, and the claim window opens.\n- 12-06: SKU-D remeasure. It's worth about $89.60 if the two earlier remeasures have aged out.\n\n**Left out on purpose:**\n- FBA15X2: the 12 missing SKU-B units were never pa",
+  "closing_words": "Two more cases hold up, and I'm filing both for your approval. That makes five waiting on you, worth $389.98 in total. Nothing has been filed yet.\n\n\n**What I'm filing**\n- **FBA15X1, SKU-A: $72.00.** The shipment is Closed and in window. Of the 12 units short, 4 are already credited. The invoice, packing list and proof of delivery all support the remaining 8, at $9.00 each.\n- **SKU-C remeasure: $156.80.** The refund is the $1.12 fee difference per unit ($5.68 minus $4.56) times 140 units shipped in the last 90 days. It has had no remeasure in the last 60 days. It rests on the supplier's packaged dimensions, which is the only true-dimension evidence I have.\n\n**What I'm not filing**\n- **FBA15X2, SKU-B:** Amazon received 228 of 240 units, and only 228 were ever packed. The 12 missing units were short-shipped by Brightway, so the claim is against them: $132.00 at cost. I can draft that reply ",
   "prose_audit": {
-    "said_usd": 392.98,
+    "said_usd": 389.98,
     "record_usd": 359.78,
     "agrees": false
-  }
+  },
+  "note": "after ADR 0045 (evidence is what a page says; gather in each tab) and the action-shape fix",
+  "history": [
+    {
+      "run_at": "2026-10-07T21:58:18Z",
+      "model": "sonnet",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 359.78,
+      "false_claims": 0
+    },
+    {
+      "run_at": "2026-10-07T22:59:05Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 359.78,
+      "false_claims": 1,
+      "note": "second run, on the harness after ADRs 0041-0044"
+    }
+  ]
 }

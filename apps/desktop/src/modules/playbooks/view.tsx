@@ -278,6 +278,10 @@ function EdgeNotes({ model }: { model: PlaybooksModel }) {
           <dt className="typo-label">Money the bench found</dt>
           <dd className="pb-stats__n">{totals.availableUsd ? usd(totals.foundUsd) : "–"}</dd>
         </div>
+        <div>
+          <dt className="typo-label">Fixes they taught Athena</dt>
+          <dd className="pb-stats__n">{String(totals.lessons)}</dd>
+        </div>
       </dl>
       {best ? (
         <p className="typo-caption">
@@ -379,7 +383,14 @@ function PlaybookLayer({ view, model }: { view: PlaybookView; model: PlaybooksMo
       }
       right={
         <>
+          {p.caveat ? (
+            <p className="pb-caveat typo-body" role="note">
+              <StatusDot tone="warning" />
+              {p.caveat}
+            </p>
+          ) : null}
           <Proof view={view} />
+          {p.lessons.length ? <Lessons playbook={p} /> : null}
           <Money playbook={p} onOpen={model.actions.open} />
           <EdgeWhy playbook={p} />
         </>
@@ -581,6 +592,25 @@ function Stat({ term, value, bad = false }: { term: string; value: string; bad?:
       <dt className="typo-label">{term}</dt>
       <dd className="typo-data">{value}</dd>
     </div>
+  );
+}
+
+/** What this playbook's runs taught Athena: the product fixes they uncovered. */
+function Lessons({ playbook }: { playbook: Playbook }) {
+  return (
+    <SectionCard title="What it taught Athena" note="Fixes its runs uncovered" posture="flat">
+      <ol className="pb-lessons">
+        {playbook.lessons.map((l) => (
+          <li key={`${l.adr}-${l.title}`} className="pb-lesson">
+            <span className="pb-lesson__adr typo-label">{l.adr ? `ADR ${l.adr}` : "finding"}</span>
+            <span className="stack" style={{ gap: 2 }}>
+              <span className="typo-title">{l.title}</span>
+              <span className="typo-caption">{l.found}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </SectionCard>
   );
 }
 

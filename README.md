@@ -753,22 +753,41 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
   unfounded; traps avoided, exact amounts and the money found follow. A closing total in her own
   words is audited against the cards, and the record wins.
 
-| Playbook | Portals | Edge (difficulty / usefulness) | Bench (2026-10-07, Claude Sonnet) |
+| Playbook | Portals | Edge (difficulty / usefulness) | Latest bench (2026-10-07, Claude Sonnet) |
 |---|---|---|---|
-| Amazon FBA reimbursements | Seller Central, supplier inbox | 4 / 4 | **exceeds**: 5 of 5 claims, $359.78 of $359.78, every amount exact, 14 of 14 traps avoided, 0 false claims; 8 turns, 2.0 min, $1.47 |
+| Denied claims, reworked (clinics) | practice management, clearinghouse, Availity | 5 / 5 | **exceeds**: 8 of 10, $1,910 of $2,120, every claim exact, 0 false; 3.0 min, $2.59 |
+| Amazon FBA reimbursements | Seller Central, supplier inbox | 4 / 4 | **exceeds**: 5 of 5, $359.78 of $359.78, 14 of 14 traps avoided, 0 false; 2.6 min, $2.66 |
+| Medical bills against the EOBs | insurer portal, MyChart, Cedar | 4 / 4 | **exceeds**: $3,423.50 of $3,423.50 (7 of 8; one correct $95 bill left unpaid), 0 false; 2.3 min, $1.79 |
 
-What the FBA run showed, read from its transcript:
+### What the runs taught Athena
 
-- She refused the shipment that looked short when the 3PL's packing list showed the supplier had
-  packed short ("a credit to chase from Brightway, not a claim on Amazon"), and left out the AWD
-  transfer, the closed windows, the sellable returns and what Amazon had already paid.
-- The evidence crossed the tab switch: back in Seller Central she filed the inbound case citing the
-  invoice, the packing list and the proof of delivery she had read in the inbox.
-- What was not yet claimable she put on the calendar on the day its window opens: a removal on day
-  15, a refund on day 60, a remeasure after the 60-day limit rolls.
-- Her attempts to call the inbox's tools from the Seller Central tab were refused `origin_pinning`.
-- Her closing summary added the cards up to $392.98; they total $359.78. The cards were right and
-  the sentence was not, which is why the score and the module read the record.
+The bench is not only a showcase. Each failed run was read in full, and most failures were the
+product's, not the model's. Each became a fix with its own decision record and test, and the
+playbooks were re-run after it; every run is kept in the playbook's `bench.json` history.
+
+| Fix | Found by | What the run showed |
+|---|---|---|
+| ADR 0041: a refused or dropped op is told in the same turn, once, with the calls still in flight | medical-bills, clinic-denials | She ended turns promising "once these reads return, I'll file…" when every read had been refused and nothing was in flight; a session whose first ops were dropped starved every later tab (clinic: 2 of 10, $0) |
+| ADR 0042: recall matches any word and shows where it matched | medical-bills | Her recall of an EOB read in another tab came back empty: every word was required, and only an episode's first 500 bytes were shown |
+| ADR 0043: tool results are bounded by the frame's budget, not a count of eight | clinic-denials | She read twelve pages in a turn, saw eight, and re-read four every turn |
+| ADR 0044: a handed-over playbook is the active project on every turn | medical-bills | In MyChart she worked the bills and never read the therapy notes the appeal needed: the goal had been said once, in another tab |
+| ADR 0045: a proposal rests on what a page says; cross-tab work is gathered in each tab | fba-reimbursements, medical-bills | A card claimed "12 of 12 cartons (240 units)"; no page said 240 units. After the clause, medical-bills found every dollar with no switch back |
+| The OP grammar names the one shape that works | medical-bills | An envelope with another verb and no action reached the catalog as the name '' |
+
+How the money moved, run by run, on the same worlds:
+
+- **Medical bills:** $388 → $433 → $2,184 → $2,184 → $2,184 → $1,629 → **$3,424** (exceeds), across
+  ADRs 0041–0045 and the bench's follow-ups.
+- **Clinic denials:** $0 (2 of 10) → **$2,120** (exceeds) after the dropped-op and result-budget
+  fixes → $1,910 (exceeds) after ADR 0045.
+- **FBA reimbursements:** $359.78 (exceeds) → $359.78 with one false claim (short) → $359.78
+  with none (exceeds) after ADR 0045. On Claude Haiku, before the fixes, it found 4 of 5 with
+  no false claim for $0.08, about a nineteenth of Sonnet's cost.
+
+Two things the bench does that a person would. When the run loop stops with her still calling
+tools, the person says "keep going"; when her latest words ask the person to switch to a named
+portal, the person does, at most three times. Both are decided from the run loop and from her
+words, never from the truth.
 
 A playbook's portals are a model of the real ones: the bench proves her judgment on the data and
 the rules, not that a given site registers these tools. On a real site she reaches the same data

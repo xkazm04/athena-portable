@@ -75,6 +75,8 @@ export interface PlaybooksModel {
     benched: number;
     exceeds: number;
     onEdge: number;
+    /** Product fixes the playbooks' runs uncovered, counted once per decision record. */
+    lessons: number;
     /** Money the bench found across every benched playbook, and what was there to find. */
     foundUsd: number;
     availableUsd: number;
@@ -200,6 +202,9 @@ export function selectPlaybooks(
       benched: benched.length,
       exceeds: items.filter((v) => v.verdict.word === "exceeds").length,
       onEdge: items.filter((v) => v.onEdge).length,
+      lessons: new Set(
+        items.flatMap((v) => v.playbook.lessons.filter((l) => l.adr).map((l) => l.adr)),
+      ).size,
       foundUsd: benched.reduce((s, v) => s + (v.playbook.bench?.valueFoundUsd ?? 0), 0),
       availableUsd: benched.reduce((s, v) => s + (v.playbook.bench?.valueTotalUsd ?? 0), 0),
     },

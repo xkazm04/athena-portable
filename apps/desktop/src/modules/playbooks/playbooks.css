@@ -164,7 +164,7 @@
 
 .pb-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -606,4 +606,37 @@
 
 .pb-run[data-latest] {
   opacity: 1;
+}
+
+.pb-lessons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb-lesson {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pb-lesson__adr {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--role-agent) 16%, transparent);
+  color: var(--foreground);
+  text-align: center;
+}
+
+.pb-caveat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--status-warning) 40%, transparent);
+  border-radius: var(--radius-interactive);
 }

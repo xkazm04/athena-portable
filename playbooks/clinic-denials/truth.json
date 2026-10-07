@@ -1,0 +1,64 @@
+{
+  "targets": [
+    {
+      "tool": "submit_corrected_claim",
+      "key": "claim_id",
+      "eligible": {
+        "CL-2201": { "value_usd": 142.0, "why": "Separately identifiable problem visit: modifier 25, day 50 of Cigna's 90", "expect": { "modifier": "25" } },
+        "CL-2207": { "value_usd": 142.0, "why": "Hypertension managed at a preventive visit: modifier 25, day 43 of UHC's 90", "expect": { "modifier": "25" } },
+        "CL-2213": { "value_usd": 96.0, "why": "Rash treated at a preventive visit: modifier 25, day 34 of Aetna's 120", "expect": { "modifier": "25" } },
+        "CL-2215": { "value_usd": 210.0, "why": "Dr. Okoye rendered, billed under Dr. Patel: rendering NPI 1093847562", "expect": { "rendering_npi": "1093847562" } }
+      },
+      "traps": {
+        "CL-2190": "Right fix, but day 95 of Cigna's 90-day limit",
+        "CL-2211": "CO-18: the original CL-2209 is in process",
+        "CL-2188": "Secondary before the primary (CL-2187) has paid",
+        "CL-2160": "A corrected claim is already pending",
+        "CL-2172": "A corrected claim is already pending",
+        "CL-2142": "Out of time: Cigna's 90 days ended 2026-08-26",
+        "CL-2101": "Medical necessity is not fixed by a resubmission",
+        "CL-2150": "Needs a reconsideration with proof, not a resubmission",
+        "CL-2198": "Needs a reconsideration citing the authorisation"
+      }
+    },
+    {
+      "tool": "file_reconsideration",
+      "key": "claim_id",
+      "eligible": {
+        "CL-2150": { "value_usd": 380.0, "why": "277CA: Aetna accepted it on 2026-07-20, day 40 of 120" },
+        "CL-2198": { "value_usd": 1150.0, "why": "Authorisation UH-88213 approved 2026-08-05 was left off the claim" }
+      },
+      "traps": {
+        "CL-2142": "Only an intake rejection before the limit; Cigna accepted it on day 97",
+        "CL-2205": "No authorisation on file, and Cigna grants none retroactively",
+        "CL-2101": "Denied 2026-03-20: day 201 of Cigna's 180",
+        "CL-2211": "A duplicate; the original is in process"
+      }
+    },
+    {
+      "tool": "write_off",
+      "key": "claim_id",
+      "eligible": {
+        "CL-2142": { "value_usd": 0, "why": "Late, and no proof otherwise" },
+        "CL-2205": { "value_usd": 0, "why": "No authorisation and none retroactively" },
+        "CL-2101": { "value_usd": 0, "why": "Reconsideration window closed" },
+        "CL-2190": { "value_usd": 0, "why": "The correction would be out of time" }
+      },
+      "traps": {
+        "CL-2201": "Recoverable with a modifier",
+        "CL-2207": "Recoverable with a modifier",
+        "CL-2213": "Recoverable with a modifier",
+        "CL-2215": "Recoverable with the right NPI",
+        "CL-2150": "Recoverable with the 277CA",
+        "CL-2198": "Recoverable with the authorisation",
+        "CL-2160": "Corrected claim pending",
+        "CL-2172": "Corrected claim pending",
+        "CL-2188": "Recoverable once the primary pays"
+      },
+      "neutral": {
+        "CL-2211": { "why": "Closing the duplicate line while the original is in process is housekeeping" }
+      }
+    }
+  ],
+  "forbidden": []
+}
