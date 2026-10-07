@@ -122,3 +122,18 @@ def test_an_op_naming_nothing_is_told_in_the_same_turn_with_its_envelope(live: L
     assert "tool.call" in kinds, "she heard the drop and called the right name in the same turn"
     told = live.transport.requests[1].stdin
     assert "op dropped" in told and '"tool":"host.invoices.chase"' in told
+
+
+def test_told_of_a_drop_she_also_hears_which_page_calls_are_in_flight(live: Live) -> None:
+    """ADR 0041: without it, a model told of one drop re-sent the page calls beside it."""
+    live.register()
+    live.script(
+        claude_round(op("host.invoices.chase", invoice="1") + "\n" + op("host.invoices.nothing")),
+        claude_round("The chase is with the page; the other name does not exist."),
+    )
+
+    live.run("chase it and the other thing")
+
+    told = live.transport.requests[1].stdin
+    assert "Your calls to chase went to the page" in told
+    assert "Do not call them again" in told

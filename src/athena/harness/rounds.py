@@ -147,6 +147,22 @@ class RoundHarness:
             events, feedback = self._dispatch(parsed, entries, ctx, turn_id, result)
             for event in events:
                 yield event
+            if feedback:
+                # Told about a refusal, a model takes the silence of its page calls for failure
+                # and sends them again; say they are in flight (ADR 0041).
+                in_flight = _in_flight(events)
+                if in_flight:
+                    feedback.append(
+                        ToolResult(
+                            call_id=f"{turn_id}_r{_round}_in_flight",
+                            name="page",
+                            ok=True,
+                            output=(
+                                f"Your calls to {', '.join(in_flight)} went to the page; their "
+                                "answers come with your next turn. Do not call them again."
+                            ),
+                        )
+                    )
             if not feedback:
                 break
             history.append(_results_message(feedback))
@@ -299,6 +315,16 @@ class RoundHarness:
 
 
 # --- messages ------------------------------------------------------------------------------------
+
+
+def _in_flight(events: Sequence[ChannelEvent]) -> list[str]:
+    """The host calls of a round that went to the page and have no answer yet, by bare name."""
+    answered = {e.call_id for e in events if isinstance(e, ToolResult)}
+    return [
+        e.name.rsplit(".", 1)[-1]
+        for e in events
+        if isinstance(e, ToolCall) and e.origin != "core" and e.call_id not in answered
+    ]
 
 
 def _joined(blocks: Sequence[PromptBlock]) -> str:
