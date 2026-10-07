@@ -41,7 +41,10 @@ def test_a_missing_binary_is_not_found_and_a_present_one_is_found(
     assert reply.status == 200
     assert reply.body["ok"] is True
     rows = {row["id"]: row for row in reply.body["engines"]}
-    assert set(rows) == {"claude_code", "codex"}
+    assert set(rows) == {"claude_code", "codex", "nebius"}
+    # An API engine is probed by its key's presence, and the row never carries the key.
+    assert rows["nebius"]["state"] in ("found", "not_found")
+    assert set(rows["nebius"]) == {"id", "state", "detail"}
     assert rows["claude_code"]["state"] == "not_found"
     assert rows["claude_code"]["detail"]
     assert rows["codex"]["state"] in ("found", "not_logged_in")

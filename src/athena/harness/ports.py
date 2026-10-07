@@ -11,10 +11,11 @@ Three of the protocols return *values* rather than core types: :class:`Card`, :c
 put the import back. Naming the two or three members the harness actually reads keeps the seam
 the width of its use, and the core classes satisfy them as they are.
 
-:data:`ModelFn` is the seam for an engine that is not a CLI. Nothing in this build implements one —
-the two dialects of ``cli_harness`` are the engines — and it is declared here for the same reason
-``connectors.port`` is declared before a connector exists: the hooks and the gate are written
-against the seam once, so a later engine is a new adapter and not a second gate.
+:data:`ModelFn` is the seam for an engine that is not a CLI. It was declared before anything
+implemented it, for the same reason ``connectors.port`` was declared before a connector existed:
+the hooks and the gate are written against the seam once, so a later engine is a new adapter and
+not a second gate. ``tokenfactory.TokenFactoryModel`` is that adapter (ADR 0031), and
+``api_harness.ApiHarness`` drives it through the same round loop as the CLIs.
 """
 
 from __future__ import annotations

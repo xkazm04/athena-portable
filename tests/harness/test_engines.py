@@ -33,8 +33,8 @@ def on_path(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("athena.harness.engines.shutil.which", lambda binary: f"/usr/bin/{binary}")
 
 
-def test_the_two_engines_are_the_two_dialects() -> None:
-    assert ENGINES == ("claude_code", "codex")
+def test_the_engines_are_the_two_dialects_and_token_factory() -> None:
+    assert ENGINES == ("claude_code", "codex", "nebius")
 
 
 def test_an_unknown_engine_is_a_status_and_not_an_exception() -> None:
@@ -107,7 +107,7 @@ def test_probe_all_answers_for_every_engine(
     monkeypatch.setattr(
         "athena.harness.engines.subprocess.run", lambda *a, **k: _Completed(0, stdout="1.0")
     )
-    statuses = probe_all(home=tmp_path)
+    statuses = probe_all(home=tmp_path, env={"NEBIUS_API_KEY": "nb-test"})
     assert [status.name for status in statuses] == list(ENGINES)
     assert all(status.available for status in statuses)
 

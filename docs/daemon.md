@@ -62,13 +62,31 @@ sentence "Open the app this is about and focus its tab, then try again."
 
 ```json
 {"ok": true, "engines": [{"id": "claude_code", "state": "found", "detail": "2.1.0 (Claude Code)"},
-                         {"id": "codex", "state": "not_found", "detail": "codex is not on PATH"}]}
+                         {"id": "codex", "state": "not_found", "detail": "codex is not on PATH"},
+                         {"id": "nebius", "state": "not_found", "detail": "NEBIUS_API_KEY is not set"}]}
 ```
 
 `state` is `found`, `not_found` or `not_logged_in` (installed, but the CLI's credential file is
-absent). The probe is a `--version` subprocess, so it takes its own lock and never the writer
-lock or a brain connection. The answer is cached for 10 seconds; `?fresh=1` skips the cache (the
+absent). For the two CLIs the probe is a `--version` subprocess, so it takes its own lock and never
+the writer lock or a brain connection. `nebius` (NVIDIA Nemotron on Nebius Token Factory, ADR
+0031) is `found` exactly when `NEBIUS_API_KEY` is set in the daemon's environment: presence only,
+no request made, and the key never appears in the row. The answer is cached for 10 seconds; `?fresh=1` skips the cache (the
 Check again button).
+
+## Choosing the engine
+
+`athena serve --engine <id> [--model <model>]` picks the engine every turn runs on:
+
+| `--engine` | What runs a turn | `--model` empty means |
+|---|---|---|
+| `claude_code` (default) | the user's `claude` CLI, on their Claude subscription | the CLI's own default |
+| `codex` | the user's `codex` CLI, read-only sandbox, on their ChatGPT plan | the CLI's own default |
+| `nebius` | Token Factory's Chat Completions API with `NEBIUS_API_KEY` | `nvidia/nemotron-3-super-120b-a12b` |
+
+All three run behind the same gate, the same `OP:` grammar and the same ledger row (ADR 0007,
+ADR 0031). A `nebius` row says `engine: "nebius"`, and its `cost_usd` comes from a price table with
+`cost_estimated: true`. A model missing from the table has no cost, not a cost of 0. An unknown
+`--engine` fails on the failure line before a socket is bound.
 
 ## The stream
 

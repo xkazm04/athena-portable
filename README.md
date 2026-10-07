@@ -19,8 +19,8 @@ the companion. NVIDIA Nemotron models on Nebius Token Factory attack Athena's ga
 directions (host page state, tool results, a foreign agent over MCP, memory poisoning), play her
 users from the `uat/` Characters, and judge the result next to a Claude Haiku control row. Token
 Factory Sandboxes are spiked as branching worlds, checkpointed and forked once per attack. Athena
-is run under test on her Claude CLI and on Nemotron through a new `nebius` engine. **None of the
-Proving Ground is built yet**; section 9 lists each prototype with its status and the test that
+is run under test on her Claude CLI and on Nemotron through the `nebius` engine, which is built
+(section 10); **the rest of the Proving Ground is not built yet**, and section 9 lists each prototype with its status and the test that
 has to pass before it is developed further.
 
 ---
@@ -115,7 +115,7 @@ channels      daemon (HTTP + SSE, token, CORS, Connection: close), mcp (JSON-RPC
 lane          the browser lane: one turn, streamed; never holds a gated executor
 harness       CLI harness in two dialects (claude, codex), hooks (gate, ledger, truncation),
               structural policy, the OP grammar, engine probes; an API engine (`nebius`, Nemotron
-              on Token Factory) behind the `ModelFn` port is planned, landing in WP1
+              on Token Factory) behind the `ModelFn` port (ADR 0031)
 core          brain, recall, catalog, approvals, ledger, constitution, prompt composer
 contracts     dataclasses and Protocols only: ToolEntry, HostManifest, channel events, Harness,
               ERROR_REASONS, every id prefix
@@ -336,7 +336,7 @@ proves (ADR 0030). The hackathon track is chosen after the proofs, not before.
 
 | Proving Ground prototype | Status | Proof test |
 |---|---|---|
-| `nebius` engine: Nemotron on Token Factory behind the same gate and ledger row | planned, landing in WP1 | one live turn against Nemotron Super, gated on the key; the ledger row carries `engine=nebius`, model, tokens and an estimated cost |
+| `nebius` engine: Nemotron on Token Factory behind the same gate and ledger row | built; live run waits on a key | one live turn against Nemotron Super, gated on the key; the ledger row carries `engine=nebius`, model, tokens and an estimated cost |
 | Gauntlet: Nemotron generates attacks on four channels, replayed against Athena on Claude and on Nemotron | planned | zero gated actions or fact writes ran without approval across all rows; Nemotron's valid-attack rate at least half of the Haiku control's |
 | Model-played Characters: Nemotron plays the `uat/` users; Nemotron and Haiku judge blind against `uat/rubric.md` | planned | the control judges persona fidelity at 80% or above; judge agreement Spearman 0.5 or above |
 | Branching worlds: Token Factory Sandboxes, checkpoint then fork once per attack | planned (spike) | the image boots, the daemon answers `/health`, Token Factory is reachable from inside, checkpoint then four forks each run a different attack |
@@ -347,9 +347,44 @@ No result is reported here until a run has produced it. Reports will land in a g
 
 ---
 
-## 10. How NVIDIA models are used (planned)
+## 10. How NVIDIA models are used
 
-All roles below are planned; none is called today. Model ids are checked against Token Factory's
+### The `nebius` engine (built)
+
+Athena can run a turn on NVIDIA Nemotron served by Nebius Token Factory. `nebius` is an engine
+alongside `claude_code` and `codex`, not a separate code path. All three share one round loop
+(`harness/rounds.py`), so the gate, the `OP:` grammar, the nonce fence around tool results, the
+eight-round budget and the single ledger row per turn are the same code for every engine
+(ADR 0007, ADR 0031). A Nemotron turn that proposes a gated action files the same approval card a
+Claude turn would, and that action does not run until the user approves it.
+
+```bash
+export NEBIUS_API_KEY=...            # read at call time; never logged, never in the ledger
+uv run athena serve --engine nebius  # default model: nvidia/nemotron-3-super-120b-a12b
+uv run athena serve --engine nebius --model <any Token Factory model id>
+```
+
+- **Transport.** It uses the standard library only (`urllib`): one non-streamed `POST
+  https://api.tokenfactory.nebius.com/v1/chat/completions` per round. No SDK and no extra is
+  needed.
+- **Calling convention.** The model is not offered provider tools. It asks for a tool by writing
+  an `OP:` line, as the CLIs do, so one parser reads every engine.
+- **Ledger.** Each row records `engine: "nebius"`, the model, and input and output tokens.
+  `cost_usd` comes from a per-model price table and is marked `cost_estimated: true`. A model
+  missing from the table has no cost recorded, not a cost of 0.
+- **Failures.** A timeout, a 401, a rate limit or an unreadable body each become one ledger row
+  with a reason from the closed `ERROR_REASONS` set. The key never appears in an error message.
+- **Setup.** `GET /engines` reports `nebius` as found when `NEBIUS_API_KEY` is set. It checks only
+  that the key exists and makes no call.
+
+*Status:* built and covered by offline tests that use a synthetic Token Factory reply. The default
+model id and the price ($0.30 / $0.90 per 1M input/output tokens) have not been checked against
+the live `/v1/models` catalog or the Token Factory pricing page. The live smoke test
+(`pytest -m provider`) runs only when `NEBIUS_API_KEY` is set.
+
+### The Proving Ground roles (planned)
+
+The roles below other than Athena under test are planned; none is called today. Model ids are checked against Token Factory's
 `/v1/models` before the first run, because the catalog names have not been verified.
 
 | Role | NVIDIA model (planned) | Control |

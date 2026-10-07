@@ -48,8 +48,11 @@ from athena.core.ledger import Ledger
 from athena.core.recall import EPISODE_WINDOW, recall
 from athena.daemon.server import AthenaDaemon
 from athena.harness.cli_harness import CLAUDE_EXTRA_ARGS, DIALECTS, CliDialect, CliHarness
+from athena.harness.engines import API_ENGINES, ENGINES, build_api_harness
 from athena.harness.hooks import LedgerHook, TruncationHook
 from athena.harness.policy import Policy, PolicyHook
+from athena.harness.ports import ModelFn
+from athena.harness.rounds import RoundHarness
 from athena.harness.transports import SubprocessTransport, Transport
 from athena.lane.browser_lane import BrowserLane
 from athena.lane.turn_frame import FrameBuilder
@@ -165,7 +168,7 @@ class AthenaLocal:
     gate: PolicyHook
     ledger_hook: LedgerHook
     truncation_hook: TruncationHook
-    harness: CliHarness
+    harness: RoundHarness
     frames: FrameBuilder
     lane: BrowserLane
     daemon: AthenaDaemon
@@ -202,12 +205,16 @@ def build_local(
     vault: Vault | None = None,
     voice_studio: VoiceStudio | None = None,
     voice_off: bool = False,
+    model_fn: ModelFn | None = None,
 ) -> AthenaLocal:
     """Assemble one local Athena: brain, tables, law, catalog, gate, engine, lane, daemon.
 
-    ``engine`` names a dialect from :data:`~athena.harness.cli_harness.DIALECTS` and an unknown
-    one raises ``ValueError`` naming the engines that exist — before a socket is bound, which is
-    what lets ``athena serve`` fail on its failure line rather than at the first turn.
+    ``engine`` names a dialect from :data:`~athena.harness.cli_harness.DIALECTS` or an API engine
+    (``nebius``, ADR 0031), and an unknown one raises ``ValueError`` naming the engines that exist
+    — before a socket is bound, which is what lets ``athena serve`` fail on its failure line
+    rather than at the first turn. ``model_fn`` stands in for Token Factory behind an API engine,
+    as ``transport`` stands in for the binary behind a CLI one; ``model`` empty means the engine's
+    default model.
 
     ``policy`` is the structural policy the gate starts with. It is empty by default and gains a
     pin per app as manifests arrive (``POST /manifest`` → :meth:`AthenaDaemon.pin`), because what
@@ -228,8 +235,8 @@ def build_local(
     no connector it may ever call, which is what rule 4 refuses closed.
     """
     dialect = DIALECTS.get(engine)
-    if dialect is None:
-        raise ValueError(f"unknown engine {engine!r}; expected one of {', '.join(DIALECTS)}")
+    if dialect is None and engine not in API_ENGINES:
+        raise ValueError(f"unknown engine {engine!r}; expected one of {', '.join(ENGINES)}")
 
     brain = Brain(brain_root, session_id=session_id)
     approvals = Approvals(brain)
@@ -253,18 +260,28 @@ def build_local(
     truncation_hook = TruncationHook(ledger_hook)
     run_dir = Path(workspace) if workspace is not None else brain.root.parent / ENGINE_DIRNAME
     run_dir.mkdir(parents=True, exist_ok=True)
-    make_transport = transport or (lambda chosen: SubprocessTransport(chosen.executable))
-    harness = CliHarness(
-        gate=gate,
-        ledger=ledger_hook,
-        truncation=truncation_hook,
-        transport=make_transport(dialect),
-        dialect=dialect,
-        prompt_root=str(run_dir),
-        cwd=str(run_dir),
-        model=model,
-        extra_args=extra_args if extra_args is not None else _default_args(dialect),
-    )
+    harness: RoundHarness
+    if dialect is None:
+        harness = build_api_harness(
+            gate=gate,
+            ledger=ledger_hook,
+            truncation=truncation_hook,
+            model=model,
+            model_fn=model_fn,
+        )
+    else:
+        make_transport = transport or (lambda chosen: SubprocessTransport(chosen.executable))
+        harness = CliHarness(
+            gate=gate,
+            ledger=ledger_hook,
+            truncation=truncation_hook,
+            transport=make_transport(dialect),
+            dialect=dialect,
+            prompt_root=str(run_dir),
+            cwd=str(run_dir),
+            model=model,
+            extra_args=extra_args if extra_args is not None else _default_args(dialect),
+        )
 
     frames = FrameBuilder(
         constitution=constitution,
@@ -288,7 +305,7 @@ def build_local(
         gate=gate,
         lane=lane,
         engine=engine,
-        model=model,
+        model=harness.model,
     )
     studio = voice_studio or VoiceStudio(brain.root.parent / VOICE_DIRNAME)
     _wire_voice(daemon, studio, voice, voice_off)

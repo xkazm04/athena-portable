@@ -5,13 +5,16 @@
  * daemon becomes ready, and again on `check()` (the "Check again" button) without a restart. `null` means
  * "nobody has answered yet", which is different from "not found" and is rendered differently.
  *
+ * Only the companion's engines are kept: the daemon also reports `nebius`, the Proving Ground's measured
+ * engine (ADR 0031), which is not one she runs on and must not read as "not found" in Setup.
+ *
  * Started by both roots (Main and the Athena window): the welcome names the engine in her window and Setup
  * names it in Main, and both read this one shape, so they cannot disagree.
  */
 import { create } from "zustand";
 
 import { DaemonApi } from "@/lib/api";
-import type { EngineProbe } from "@/lib/engines";
+import { type EngineProbe, isEngineId } from "@/lib/engines";
 import { endpoint, useDaemon } from "@/stores/daemon";
 
 export interface EnginesState {
@@ -38,7 +41,8 @@ export const useEngines = create<EnginesState>((set) => ({
     set({ checking: true });
     try {
       const page = await new DaemonApi(found).engines();
-      set({ probes: page.engines.map((e) => ({ id: e.id, state: e.state, detail: e.detail })), problem: null });
+      const probes = page.engines.filter((e) => isEngineId(e.id));
+      set({ probes: probes.map((e) => ({ id: e.id, state: e.state, detail: e.detail })), problem: null });
     } catch (e) {
       set({ problem: String(e instanceof Error ? e.message : e) });
     } finally {

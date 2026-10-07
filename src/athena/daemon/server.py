@@ -88,6 +88,7 @@ from athena.daemon.routes import (
 from athena.daemon.sessions import Sessions
 from athena.harness.engines import probe_all
 from athena.harness.policy import PolicyHook
+from athena.harness.tokenfactory import DEFAULT_MODEL as NEBIUS_DEFAULT_MODEL
 from athena.lane.browser_lane import BrowserLane
 
 __all__ = [
@@ -659,8 +660,18 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="ORIGIN",
         help=f"an extra CORS origin; repeatable. {EXTENSION_SCHEME}* is always allowed",
     )
-    parser.add_argument("--engine", default="claude_code", help="which engine a turn will run on")
-    parser.add_argument("--model", default="", help="the model that engine should use, if it asks")
+    parser.add_argument(
+        "--engine",
+        default="claude_code",
+        help="which engine a turn will run on: claude_code, codex, or nebius "
+        "(Token Factory, needs NEBIUS_API_KEY)",
+    )
+    parser.add_argument(
+        "--model",
+        default="",
+        help="the model that engine should use; empty is the engine's own default "
+        f"(nebius: {NEBIUS_DEFAULT_MODEL})",
+    )
     parser.add_argument(
         "--no-connectors",
         action="store_true",
@@ -722,7 +733,7 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
             port=args.port,
             token=token,
             engine=args.engine,
-            model=args.model,
+            model=local.harness.model,
             allow_origins=tuple(args.allow_origin),
             token_file=token_file,
         )

@@ -1,0 +1,5 @@
+# SYNTHETIC. Written by hand from the documented shape of an OpenAI-compatible Chat Completions
+# reply (POST https://api.tokenfactory.nebius.com/v1/chat/completions, "stream": false), not
+# captured from Token Factory. One line is one whole response body; a blank line separates rounds.
+# Replace it with a real capture when a key is available, and say so here.
+{"id": "chatcmpl-01J9NEBIUS", "object": "chat.completion", "created": 1791331200, "model": "nvidia/nemotron-3-super-120b-a12b", "choices": [{"index": 0, "message": {"role": "assistant", "content": "<think>The page lists three invoices over thirty days; INV-118 is the oldest.</think>\nThree invoices are past thirty days.\nTTS: \"Three invoices are past thirty days.\"\nOP: {\"op\":\"propose_action\",\"action\":\"host.invoices.chase\",\"params\":{\"invoice\":\"INV-118\"},\"rationale\":\"thirty-one days late\"}"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 1840, "completion_tokens": 96, "total_tokens": 1936}}

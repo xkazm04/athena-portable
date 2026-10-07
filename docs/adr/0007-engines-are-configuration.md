@@ -84,3 +84,6 @@ the frame — recalled episodes and last turn's results — so a long codex conv
 input tokens than the same conversation on `claude`, and remembers only what recall puts in front
 of it. That is a property of a single-shot CLI, and the two-output composer is what makes it
 survivable rather than broken.
+
+Extended by [0031](0031-a-token-factory-modelfn-is-a-third-engine-behind-the-same-gate.md): an engine
+may be a `ModelFn` as well as a dialect, and the round loop is `RoundHarness`, which both share.
