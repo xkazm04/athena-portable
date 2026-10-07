@@ -82,6 +82,55 @@ export function splitAudioFrame(data: Uint8Array): AudioFrame | null {
   return { generation: view.getUint32(0, false), pcm: data.subarray(4) };
 }
 
+/** The quiet end of the level scale: a room's hiss, which the halo should not ripple to. */
+export const LEVEL_FLOOR_DB = -55;
+
+/** The loud end: a close voice or her TTS at speaking volume. Anything louder is a full halo. */
+export const LEVEL_CEIL_DB = -10;
+
+/**
+ * How loud `samples` are, as 0..1 for the halo (ADR 0027).
+ *
+ * Decibel-scaled, not a clamped gain: loudness is heard logarithmically, so a linear RMS spends
+ * nearly all its range on the last few dB and a normal voice — RMS 0.01 to 0.1, -40 to -20 dB —
+ * would barely move the edge. The RMS in dBFS is mapped linearly from {@link LEVEL_FLOOR_DB} (0)
+ * to {@link LEVEL_CEIL_DB} (1) and clamped, so silence and hiss read 0 and a voice spans the
+ * middle of the scale.
+ */
+export function rms(samples: Float32Array): number {
+  if (samples.length === 0) return 0;
+  let sum = 0;
+  for (let i = 0; i < samples.length; i += 1) sum += samples[i] * samples[i];
+  const power = sum / samples.length;
+  if (power <= 0) return 0;
+  const db = 10 * Math.log10(power);
+  const level = (db - LEVEL_FLOOR_DB) / (LEVEL_CEIL_DB - LEVEL_FLOOR_DB);
+  return Math.max(0, Math.min(1, level));
+}
+
+// -- the level the halo reads --------------------------------------------------------------------
+
+/** The microphone's latest level while one is capturing; `null` when none is. */
+let micLevel: number | null = null;
+
+/** The player that played last: the one whose voice the halo follows. */
+let lastPlayer: Player | null = null;
+
+/** The halo follows whichever player played last. */
+function follow(player: Player): void {
+  lastPlayer = player;
+}
+
+/**
+ * The one level the halo polls (`lib/halo.ts`): the microphone while it captures, her voice
+ * otherwise, 0 when neither. Cheap — a stored number, or one analyser read — so a 30 Hz poll
+ * costs nothing worth measuring.
+ */
+export function currentLevel(): number {
+  if (micLevel !== null) return micLevel;
+  return lastPlayer?.level() ?? 0;
+}
+
 // -- the socket --------------------------------------------------------------------------------
 
 /** The subset of `WebSocket` the client uses, so a test can hand in a fake. */
@@ -225,6 +274,8 @@ export async function openMicrophone(
   const processor = context.createScriptProcessor(4096, 1, 1);
   processor.onaudioprocess = (ev) => {
     const input = ev.inputBuffer.getChannelData(0);
+    // The halo's ripple: one number per buffer, read by `currentLevel`, never rendered by React.
+    micLevel = rms(input);
     onChunk(downsample(input, context.sampleRate, INPUT_SAMPLE_RATE));
   };
   source.connect(processor);
@@ -234,11 +285,14 @@ export async function openMicrophone(
   silence.gain.value = 0;
   processor.connect(silence);
   silence.connect(context.destination);
+  // Capturing: the halo reads the microphone from here on, silence included, not her last line.
+  micLevel = 0;
   let stopped = false;
   return {
     stop: () => {
       if (stopped) return;
       stopped = true;
+      micLevel = null;
       processor.disconnect();
       source.disconnect();
       silence.disconnect();
@@ -282,9 +336,14 @@ export async function checkMicrophone(
  * gapless and starts on the first chunk rather than the last. `drop` stops every source of a
  * generation and forgets it, which is what `voice.stopped` with `barge_in` asks for; a chunk of
  * a dropped generation that arrives late is ignored.
+ *
+ * Every source plays through one `AnalyserNode` on its way to the speakers, so `level` can say
+ * how loud she is right now for the halo (ADR 0027) without a second graph.
  */
 export class Player {
   private context: AudioContext | null = null;
+  private analyser: AnalyserNode | null = null;
+  private scratch: Float32Array<ArrayBuffer> | null = null;
   private sources = new Map<number, AudioBufferSourceNode[]>();
   private ends = new Map<number, number>();
   private dropped = new Set<number>();
@@ -294,12 +353,18 @@ export class Player {
   play(generation: number, pcm: Uint8Array, sampleRate: number): void {
     if (this.dropped.has(generation) || pcm.byteLength < 2) return;
     const context = (this.context ??= this.audioContext());
+    if (this.analyser === null) {
+      this.analyser = context.createAnalyser();
+      this.analyser.fftSize = 1024;
+      this.analyser.connect(context.destination);
+    }
+    follow(this);
     const samples = pcm16ToFloat32(pcm);
     const buffer = context.createBuffer(1, samples.length, sampleRate);
     buffer.copyToChannel(samples, 0);
     const source = context.createBufferSource();
     source.buffer = buffer;
-    source.connect(context.destination);
+    source.connect(this.analyser);
     const at = Math.max(context.currentTime, this.ends.get(generation) ?? 0);
     source.start(at);
     this.ends.set(generation, at + buffer.duration);
@@ -311,6 +376,14 @@ export class Player {
       if (remaining.length) this.sources.set(generation, remaining);
       else this.sources.delete(generation);
     };
+  }
+
+  /** How loud her voice is this instant, 0..1 (`rms`); 0 when nothing is scheduled. */
+  level(): number {
+    if (this.analyser === null || this.sources.size === 0) return 0;
+    this.scratch ??= new Float32Array(this.analyser.fftSize);
+    this.analyser.getFloatTimeDomainData(this.scratch);
+    return rms(this.scratch);
   }
 
   /** Whether anything of `generation` is still scheduled. */

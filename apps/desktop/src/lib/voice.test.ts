@@ -7,11 +7,15 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  LEVEL_CEIL_DB,
+  LEVEL_FLOOR_DB,
   PROTOCOL_PREFIX,
   VoiceSocket,
+  currentLevel,
   downsample,
   int16ToBytes,
   pcm16ToFloat32,
+  rms,
   splitAudioFrame,
   voiceUrl,
   type SocketLike,
@@ -137,5 +141,36 @@ describe("the socket", () => {
     expect(() => fake.socket()?.onmessage?.({ data: JSON.stringify({ kind: "voice.invented" }) })).toThrow(
       /unknown channel event kind/,
     );
+  });
+});
+
+describe("the level the halo reads", () => {
+  /** A constant signal of amplitude `a` has an RMS of `a`, so its dBFS is exact. */
+  const at = (db: number) => new Float32Array(480).fill(10 ** (db / 20));
+
+  it("is 0 for silence, for an empty buffer and for a room's hiss below the floor", () => {
+    expect(rms(new Float32Array(480))).toBe(0);
+    expect(rms(new Float32Array(0))).toBe(0);
+    expect(rms(at(LEVEL_FLOOR_DB - 10))).toBe(0);
+  });
+
+  it("is decibel-scaled: the floor is 0, the ceiling 1, halfway in dB is a half", () => {
+    expect(rms(at(LEVEL_FLOOR_DB))).toBeCloseTo(0, 5);
+    expect(rms(at(LEVEL_CEIL_DB))).toBeCloseTo(1, 5);
+    expect(rms(at((LEVEL_FLOOR_DB + LEVEL_CEIL_DB) / 2))).toBeCloseTo(0.5, 5);
+  });
+
+  it("clamps a full-scale sine to 1 and climbs with loudness", () => {
+    const sine = new Float32Array(480).map((_, i) => Math.sin((2 * Math.PI * i) / 48));
+    expect(rms(sine)).toBe(1);
+    const levels = [-50, -40, -30, -20].map((db) => rms(at(db)));
+    expect(levels).toEqual([...levels].sort((a, b) => a - b));
+    // A normal voice, -40 to -20 dB, spans the middle of the scale rather than its last sliver.
+    expect(levels[1]).toBeGreaterThan(0.2);
+    expect(levels[3]).toBeLessThan(0.9);
+  });
+
+  it("is 0 with no microphone capturing and nothing played", () => {
+    expect(currentLevel()).toBe(0);
   });
 });

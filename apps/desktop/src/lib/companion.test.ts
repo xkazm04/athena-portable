@@ -6,7 +6,18 @@
  */
 import { expect, test, vi } from "vitest";
 
-import { athenaPin, athenaSetSize, ATHENA_STATES, beginDrag, dragged, HOUSE, MARGIN, SIZES } from "./companion";
+import {
+  athenaPin,
+  athenaSetSize,
+  ATHENA_STATES,
+  beginDrag,
+  dragged,
+  HOUSE,
+  MARGIN,
+  pttHandler,
+  SIZES,
+  type PttDeps,
+} from "./companion";
 
 test("the named states and their sizes are the ADR's table", () => {
   expect(ATHENA_STATES).toEqual(["seal", "tape", "hear", "slip", "welcome", "ledger", "tab"]);
@@ -99,4 +110,82 @@ test("only the primary button drags", () => {
   const h = harness();
   beginDrag({ clientX: 0, clientY: 0, button: 2 }, h.deps);
   expect(h.doc.count("pointermove")).toBe(0);
+});
+
+// -- the global push-to-talk (ADR 0027) ---------------------------------------------------------
+
+function ptt(over: Partial<PttDeps> = {}) {
+  const log: string[] = [];
+  const deps: PttDeps = {
+    available: () => true,
+    press: async () => void log.push("press"),
+    release: () => void log.push("release"),
+    visible: async () => false,
+    ambient: (on) => void log.push(`ambient:${on}`),
+    summon: () => void log.push("summon"),
+    rehearsal: null,
+    ...over,
+  };
+  return { handle: pttHandler(deps), log };
+}
+
+const settle = () => new Promise((r) => setTimeout(r, 0));
+
+test("the held chord is press and its release is release, and a hidden window stays hidden", async () => {
+  const { handle, log } = ptt();
+  handle({ down: true });
+  handle({ down: false });
+  await settle();
+  // The window was hidden: the turn is ambient, and nothing asks for a show or a summon.
+  expect(log).toEqual(["ambient:true", "press", "release"]);
+});
+
+test("a visible window takes the turn as before", async () => {
+  const { handle, log } = ptt({ visible: async () => true });
+  handle({ down: true });
+  await settle();
+  handle({ down: false });
+  await settle();
+  expect(log).toEqual(["ambient:false", "press", "release"]);
+});
+
+test("a release never overtakes its own press", async () => {
+  const log: string[] = [];
+  let finish: () => void = () => {};
+  const { handle } = ptt({
+    press: () =>
+      new Promise<void>((resolve) => {
+        log.push("press");
+        finish = () => {
+          log.push("listening");
+          resolve();
+        };
+      }),
+    release: () => void log.push("release"),
+    ambient: () => {},
+  });
+  handle({ down: true });
+  handle({ down: false });
+  await settle();
+  expect(log).toEqual(["press"]);
+  finish();
+  await settle();
+  expect(log).toEqual(["press", "listening", "release"]);
+});
+
+test("with no voice backend, production summons her window and development rehearses", async () => {
+  const prod = ptt({ available: () => false });
+  prod.handle({ down: true });
+  prod.handle({ down: false });
+  await settle();
+  expect(prod.log).toEqual(["summon"]);
+
+  const rehearsal = { down: vi.fn(), up: vi.fn() };
+  const dev = ptt({ available: () => false, rehearsal });
+  dev.handle({ down: true });
+  dev.handle({ down: false });
+  await settle();
+  expect(rehearsal.down).toHaveBeenCalledTimes(1);
+  expect(rehearsal.up).toHaveBeenCalledTimes(1);
+  expect(dev.log).toEqual([]);
 });

@@ -88,6 +88,14 @@ export interface VoiceState {
   partial: string;
   /** The generation playing, if any. */
   generation: number | null;
+  /**
+   * The line she is speaking (`voice.speaking.text`), for the halo's caption (ADR 0027). Empty
+   * when she is not. The audio *level* is deliberately not state: it changes 30 times a second and
+   * nothing should re-render on it, so `lib/halo.ts` polls `currentLevel` instead.
+   */
+  speakingText: string;
+  /** The last final transcript of this turn — what she heard — until she answers or a new press. */
+  heard: string;
   press: () => Promise<void>;
   release: () => void;
   /** The typed path of the same channel, for a test or a keyboard fallback. */
@@ -101,6 +109,8 @@ const EMPTY = {
   reason: "",
   partial: "",
   generation: null as number | null,
+  speakingText: "",
+  heard: "",
 };
 
 /** The production wiring: the daemon store, the relay, the browser's own audio. */
@@ -196,7 +206,7 @@ export const useVoice = create<VoiceState>((set, get) => {
     switch (event.kind) {
       case "voice.transcript":
         if (event.final) {
-          set({ partial: "" });
+          set({ partial: "", heard: event.text.trim() || get().heard });
           if (event.text.trim()) runPush({ id: `v${Date.now()}`, kind: "user", text: event.text });
         } else {
           set({ partial: event.text });
@@ -235,18 +245,23 @@ export const useVoice = create<VoiceState>((set, get) => {
         const calls = [...proposed.values()];
         proposed = new Map();
         if (get().phase === "thinking") set({ phase: "idle" });
+        set({ heard: "" });
         for (const call of calls) await onPage(call);
         break;
       }
       case "voice.speaking":
         sampleRate = event.sample_rate;
-        set({ phase: "speaking", generation: event.generation });
+        set({ phase: "speaking", generation: event.generation, speakingText: event.text, heard: "" });
         break;
       case "voice.stopped":
         if (event.reason === "barge_in") player?.drop(event.generation);
         else player?.finished(event.generation);
         if (get().generation === event.generation) {
-          set({ generation: null, phase: get().phase === "speaking" ? "idle" : get().phase });
+          set({
+            generation: null,
+            speakingText: "",
+            phase: get().phase === "speaking" ? "idle" : get().phase,
+          });
         }
         break;
     }
@@ -332,6 +347,7 @@ export const useVoice = create<VoiceState>((set, get) => {
         proposed = new Map();
         set((s) => ({
           generation: null,
+          speakingText: "",
           phase: s.phase === "off" ? "off" : "idle",
           reason: s.phase === "listening" || s.phase === "thinking" ? `voice closed: ${reason}` : s.reason,
         }));
@@ -362,7 +378,7 @@ export const useVoice = create<VoiceState>((set, get) => {
       const live = await ensureSocket();
       if (!live) return;
       if (state.generation !== null) player?.drop(state.generation);
-      set({ phase: "listening", reason: "", partial: "", generation: null });
+      set({ phase: "listening", reason: "", partial: "", generation: null, speakingText: "", heard: "" });
       live.send({ type: "start", origin: focused.origin, host_state: deps.hostState() });
       if (deps.openMic === null) {
         fail("this webview offers no microphone");
@@ -394,7 +410,7 @@ export const useVoice = create<VoiceState>((set, get) => {
       const live = await ensureSocket();
       if (!live) return;
       if (get().generation !== null) player?.drop(get().generation as number);
-      set({ phase: "thinking", reason: "", generation: null });
+      set({ phase: "thinking", reason: "", generation: null, speakingText: "", heard: "" });
       live.send({ type: "text", text, origin: focused.origin, host_state: deps.hostState() });
     },
 

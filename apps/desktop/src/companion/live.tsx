@@ -9,6 +9,10 @@
  * stores — becomes an `Event` for the machine; everything she asks for — a size, a show, an
  * answer — leaves through `RuntimeDeps`.
  *
+ * Rust's `athena:ptt` is the exception (ADR 0027): the held chord goes to the voice store, not the
+ * machine, and a turn it starts with her window hidden is *ambient* — the halo shows it, and her
+ * form is left where it was until the turn ends.
+ *
  * A store this file reads it does not start: `src/athena.tsx` starts the ones ADR 0026 assigns to
  * her window (tabs, tools, daemon, settings, origins, run, voice) and nothing else does.
  */
@@ -26,11 +30,16 @@ import {
   beginDrag,
   onChord,
   onOrient,
+  onPtt,
   onSnap,
   onSummon,
+  pttHandler,
 } from "@/lib/companion";
 import { engineLabel, isEngineId } from "@/lib/engines";
+import { setHaloOverride } from "@/lib/halo";
+import { createRehearsal, type Rehearsal } from "@/lib/halo-rehearsal";
 import { hasShell } from "@/lib/ipc";
+import { openMicrophone } from "@/lib/voice";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
@@ -89,6 +98,25 @@ function busy(): boolean {
   return phase === "running" || phase === "acting" || useVoice.getState().phase === "thinking";
 }
 
+/** A spoken turn in progress: an ambient turn ends when the voice leaves these. */
+const TURN_PHASES = new Set(["listening", "thinking", "speaking"]);
+
+/** The rehearsal, in a development build only (ADR 0027, decision 6). */
+function liveRehearsal(): Rehearsal | null {
+  if (!import.meta.env.DEV) return null;
+  const media = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
+  return createRehearsal({
+    drive: setHaloOverride,
+    // The real microphone, for its level only: `lib/voice.ts` publishes it to the halo itself.
+    openMic: media?.getUserMedia
+      ? () => openMicrophone({ getUserMedia: (c) => media.getUserMedia(c), audioContext: () => new AudioContext() }, () => {})
+      : null,
+    now: () => performance.now(),
+    setTimeout: (f, ms) => window.setTimeout(f, ms),
+    clearTimeout: (handle) => window.clearTimeout(handle as number),
+  });
+}
+
 /** Everything the window hears, as events for the machine. Returns what to undo. */
 function connect(rt: Runtime): () => void {
   const off: Array<() => void> = [];
@@ -114,9 +142,12 @@ function connect(rt: Runtime): () => void {
   start();
 
   // -- the run and the voice stores ------------------------------------------------------------
+  // An ambient turn (a global push-to-talk with her window hidden) tells the machine nothing until
+  // it ends; then `sync` and `hear` tell it the truth, which by then is usually "resting".
+  let ambient = false;
   let working = busy();
   const sync = () => {
-    if (!started) return;
+    if (!started || ambient) return;
     const now = busy();
     if (now !== working) {
       working = now;
@@ -131,17 +162,45 @@ function connect(rt: Runtime): () => void {
     }),
   );
   let listening = useVoice.getState().phase === "listening";
+  const hear = () => {
+    if (!started || ambient) return;
+    const now = useVoice.getState().phase === "listening";
+    if (now !== listening) {
+      listening = now;
+      rt.dispatch({ t: "listen", on: now });
+    }
+  };
   off.push(
-    useVoice.subscribe((s) => {
-      if (!started) return;
-      const now = s.phase === "listening";
-      if (now !== listening) {
-        listening = now;
-        rt.dispatch({ t: "listen", on: now });
-      }
+    useVoice.subscribe((s, prev) => {
+      if (ambient && s.phase !== prev.phase && !TURN_PHASES.has(s.phase)) ambient = false;
+      // `hear` and `sync` below tell the machine what it missed, if anything.
+      hear();
       sync();
     }),
   );
+
+  // -- the global push-to-talk (ADR 0027) ------------------------------------------------------
+  const setAmbient = (on: boolean) => {
+    ambient = on;
+    hear();
+    sync();
+  };
+  const rehearsal = liveRehearsal();
+  off.push(() => rehearsal?.dispose());
+  const ptt = pttHandler({
+    available: () => useVoice.getState().available,
+    press: async () => {
+      await useVoice.getState().press();
+      // A press that never started a turn (refused, or failed into the error it was already in)
+      // ends the ambient turn here, since no phase change will.
+      if (!TURN_PHASES.has(useVoice.getState().phase)) setAmbient(false);
+    },
+    release: () => useVoice.getState().release(),
+    visible: () => (hasShell() ? getCurrentWindow().isVisible() : Promise.resolve(true)),
+    ambient: (on) => setAmbient(on),
+    summon: () => rt.dispatch({ t: "summon" }),
+    rehearsal,
+  });
 
   // -- Rust's events -------------------------------------------------------------------------
   if (hasShell()) {
@@ -150,6 +209,7 @@ function connect(rt: Runtime): () => void {
       onSnap((s) => rt.dispatch({ t: "snap", docked: s.docked })),
       onSummon(() => rt.dispatch({ t: "summon" })),
       onChord((c) => rt.dispatch({ t: "decide", kind: c.kind, by: "chord" })),
+      onPtt(ptt),
     ])
       .then((unlisten) => {
         if (alive) off.push(...unlisten);

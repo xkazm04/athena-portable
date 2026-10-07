@@ -256,6 +256,23 @@ describe("playback and barge-in", () => {
     expect(useVoice.getState().generation).toBeNull();
   });
 
+  it("keeps what she heard and what she says for the halo's caption, and lets go of both", async () => {
+    const { socket } = wire();
+    await startVoice();
+    await useVoice.getState().press();
+    useVoice.getState().release();
+    await socket.emit({ kind: "voice.transcript", text: "what is overdue", final: true });
+    expect(useVoice.getState().heard).toBe("what is overdue");
+    expect(useVoice.getState().phase).toBe("thinking");
+    await socket.emit(finished("Two are late."));
+    expect(useVoice.getState().heard).toBe("");
+    await socket.emit({ kind: "voice.speaking", generation: 2, text: "Two are late.", truncated: false, sample_rate: 24000 });
+    expect(useVoice.getState().speakingText).toBe("Two are late.");
+    await socket.emit({ kind: "voice.stopped", generation: 2, reason: "done" });
+    expect(useVoice.getState().speakingText).toBe("");
+    expect(useVoice.getState().phase).toBe("idle");
+  });
+
   it("pressing the key over a reply drops it locally and sends start, which the daemon reads as a barge-in", async () => {
     const { socket, player } = wire();
     await startVoice();

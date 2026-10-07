@@ -12,6 +12,7 @@
  */
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
+import { PTT_EVENT, type PttPayload } from "@/lib/halo-signal";
 import { call, hasShell, on } from "@/lib/ipc";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 
@@ -111,6 +112,71 @@ export const onSummon = (f: (summon: Summon) => void): Promise<UnlistenFn> =>
 
 export const onChord = (f: (chord: Chord) => void): Promise<UnlistenFn> =>
   on<Chord>("athena:chord", f);
+
+/** The summon chord held past 250 ms, and its release (ADR 0027, decision 5). */
+export const onPtt = (f: (ptt: PttPayload) => void): Promise<UnlistenFn> => on<PttPayload>(PTT_EVENT, f);
+
+// -- the global push-to-talk ---------------------------------------------------------------------
+
+export interface PttDeps {
+  /** `useVoice.available`: is there a voice backend to talk to? */
+  available: () => boolean;
+  press: () => Promise<void>;
+  release: () => void;
+  /** Is her window on screen? Asked on every press; the tray may have hidden her silently. */
+  visible: () => Promise<boolean>;
+  /**
+   * A voice turn is starting with her window hidden, or has ended (`false`). While it is on, the
+   * page keeps her form where it was: the turn runs on the halo, not in her window.
+   */
+  ambient: (on: boolean) => void;
+  /** No voice backend, production: bring her window up so the person sees why. */
+  summon: () => void;
+  /** No voice backend, development: the rehearsal (`lib/halo-rehearsal.ts`), or `null`. */
+  rehearsal: { down: () => void; up: () => void } | null;
+}
+
+/**
+ * `athena:ptt` to the voice store's `press`/`release`, the pair ADR 0020 named (ADR 0027, 5–6).
+ *
+ * With a voice backend the chord never shows her window: a hidden window stays hidden and the
+ * turn is the halo's. The release waits for its own press to settle, because `press` awaits the
+ * manifest and the socket before it is listening, and a `release` that lands first would leave
+ * the microphone open with nothing to close it.
+ *
+ * With none, a development build rehearses the halo and a production build summons her window —
+ * the voice-less fallback, where the slip says why nothing is listening.
+ */
+export function pttHandler(deps: PttDeps): (ptt: PttPayload) => void {
+  let pressing: Promise<void> | null = null;
+  let rehearsing = false;
+  return ({ down }) => {
+    if (down) {
+      if (pressing) return;
+      if (deps.available()) {
+        pressing = (async () => {
+          const shown = await deps.visible().catch(() => true);
+          deps.ambient(!shown);
+          await deps.press();
+        })().catch((error: unknown) => console.error(`[athena] push-to-talk: ${String(error)}`));
+      } else if (deps.rehearsal) {
+        rehearsing = true;
+        deps.rehearsal.down();
+      } else {
+        deps.summon();
+      }
+      return;
+    }
+    if (pressing) {
+      const settled = pressing;
+      pressing = null;
+      void settled.then(() => deps.release());
+    } else if (rehearsing) {
+      rehearsing = false;
+      deps.rehearsal?.up();
+    }
+  };
+}
 
 // -- dragging ----------------------------------------------------------------------------------
 
