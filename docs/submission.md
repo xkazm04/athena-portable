@@ -75,7 +75,8 @@ blind to each other.
 | Nemotron / Claude cost | $0.053 / $6.07 | $0.048 / $6.96 | $0.054 / $8.07 |
 
 Proof 1 passes on Lightning. Proof 2 fails on Lightning (below the 0.3 kill line in the first run)
-and passes on Super, borderline. Nemotron judges therefore sit beside Haiku, never in place of it.
+and passes on Super only in one of three runs (0.528, then 0.360 and 0.495 in the repeats below).
+Nemotron judges therefore sit beside Haiku, never in place of it.
 Users decide like the people they play: Mira declined an irreversible `mark_paid` because the bank
 match had no payment reference; Jonas declined a send until he had verified the recipient.
 
@@ -100,8 +101,26 @@ blocked on Sandboxes beta access, so worlds stay local processes.
 and answers `/health` and `/status` locally. It is not deployed: an endpoint needs a Nebius AI Cloud
 project, IAM role and compute quota, which a Token Factory key does not provide.
 
-<!-- WP9: repeat-run stability numbers go here (Gauntlet and Characters, seeds 11 and 12, on the
-final gate). Name each run id. Until filled, the numbers above are single runs per configuration. -->
+### Repeat runs: what is stable and what is not
+
+Two more full runs of each prototype on the final gate, at seeds 11 and 12 (2026-10-07, Haiku 4.5
+control, so they compare with the runs above):
+
+| | first or shipped run | seed 11 | seed 12 |
+|---|---|---|---|
+| Gauntlet breaches | 0 of 93 (`20261007T140609Z`) | 0 of 107 (`20261007T205627Z`) | 0 of 106 (`20261007T213007Z`) |
+| Gauntlet valid-attack ratio, Lightning to control (proof at 0.5) | 0.60 | 0.88 | 0.72 |
+| Characters persona fidelity on Lightning (proof at 0.8) | 0.972 (`20261007T162204Z`) | 0.958 (`20261007T210930Z`) | 0.944 (`20261007T214341Z`) |
+| Characters rubric agreement, Super against Haiku (proof at 0.5) | 0.528 | **0.360** | **0.495** |
+| Characters rubric agreement, Lightning against Haiku | 0.377 | 0.238 | 0.079 |
+
+- **Stable:** the gate. 306 hostile turns across three runs, zero breaches. Nemotron as an attacker
+  cleared its bar every time (0.60 to 0.88). Nemotron as a user stayed in persona 94% to 97% of turns.
+- **Not stable:** Nemotron as a second judge. Super passed agreement once in three runs on the
+  shipped code (0.528, 0.360, 0.495). Lightning never did. The Proving Ground keeps Haiku as the
+  judge of record; a Nemotron judge's scores are reported beside it, never instead of it.
+- Cost of the four repeat runs: Nemotron $0.12, Claude CLI $22.1.
+
 
 ## How NVIDIA Nemotron is used
 
@@ -115,8 +134,8 @@ Factory, so no role uses it.
 |---|---|---|---|
 | Attacker, three surfaces | Lightning | Haiku writes the same number | valid rate 0.53 against 0.89 (`20261007T140609Z`) |
 | Athena under test, the `nebius` engine | Lightning | Athena on the Claude CLI (Sonnet) | 0 breaches in 18 turns (`20261007T140609Z`) |
-| User simulator, four `uat/` Characters | Lightning | Haiku judges fidelity, blind | 0.958 to 0.972 in persona (three runs above) |
-| Rubric judge | Super (Lightning failed agreement) | Haiku on the same transcripts, blind | rho 0.517 to 0.528 (three runs above) |
+| User simulator, four `uat/` Characters | Lightning | Haiku judges fidelity, blind | 0.944 to 0.972 in persona (five runs) |
+| Rubric judge | Super (Lightning failed agreement) | Haiku on the same transcripts, blind | rho 0.360 to 0.528 over five runs; passes 0.5 in two of five, so Haiku stays the judge of record |
 
 **The `nebius` engine (ADR 0031).** Nemotron runs Athena as a third engine beside `claude_code` and
 `codex`, through the same round loop, the same `OP:` grammar, the same nonce fence, the same gate

@@ -47,8 +47,9 @@ flag. *Suggestion:* a path from a Token Factory account to a small endpoint.
 **Lightning is a good user simulator.** 69 of 72 turns in persona and 72 of 72 valid JSON
 (`20261007T144722Z`); 70 of 72 on the shipped code (`20261007T162204Z`).
 
-**Lightning is not a judge; Super is a borderline one.** Rubric agreement with Haiku was rho 0.183
-on Lightning and 0.517 to 0.528 on Super over three runs. Both were lenient (mean 4.23 and 3.52
+**Lightning is not a judge, and Super is not a stable one.** Rubric agreement with Haiku ranged rho
+0.079 to 0.424 on Lightning and 0.360 to 0.528 on Super over five runs; Super passed 0.5 in two of five
+(`20261007T210930Z` 0.360, `20261007T214341Z` 0.495). Both were lenient (mean 4.23 and 3.52
 against Haiku's 2.34), and both scored a pending card as "sent" (`20261007T144722Z`). Stating each card's status in the
 prompt removed that error. *Suggestion:* publish judge-calibration guidance for Nemotron.
 
