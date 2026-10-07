@@ -159,8 +159,14 @@ def parse_op(payload: str) -> Op | OpError:
     action = data.get("action", "")
     if not isinstance(action, str):
         return OpError(raw, "'action' must be a string")
-    if op == "propose_action" and not action:
-        return OpError(raw, "propose_action needs an 'action' name")
+    if not action:
+        # Whatever verb was used, an op without an action names nothing; say the one shape that
+        # works, so the model can write it in the next round (ADR 0041).
+        return OpError(
+            raw,
+            f"{op} needs an 'action' naming the tool; write "
+            '{"op":"propose_action","action":"<name from your capabilities>","params":{...}}',
+        )
     params = data.get("params", {})
     if not isinstance(params, Mapping):
         return OpError(raw, "'params' must be an object")

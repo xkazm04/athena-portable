@@ -301,7 +301,7 @@ def _absorb(run: _Run, record: TurnRecord, app_id: str, message: str) -> list[di
                 {"action": c["action"].rsplit(".", 1)[-1], "params": c["params"]} for c in filed
             ],
             "dropped": [
-                str(e.get("output", ""))[:200]
+                str(e.get("output", ""))[:800]
                 for e in record.events
                 if e.get("kind") == "tool.result" and e.get("ok") is False
             ],

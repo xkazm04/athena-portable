@@ -101,7 +101,14 @@ def test_an_envelope_with_no_op_field_is_rejected() -> None:
 def test_propose_action_without_an_action_name_is_rejected() -> None:
     parsed = parse_op('{"op":"propose_action","params":{}}')
     assert isinstance(parsed, OpError)
-    assert "needs an 'action' name" in parsed.detail
+    assert "needs an 'action' naming the tool" in parsed.detail
+
+
+def test_any_verb_without_an_action_is_rejected_with_the_shape_that_works() -> None:
+    """A model that wrote {"op":"call","tool":...} used to reach the catalog as the name ''."""
+    parsed = parse_op('{"op":"call","tool":"host.cedar.list_statements"}')
+    assert isinstance(parsed, OpError)
+    assert '{"op":"propose_action","action":' in parsed.detail
 
 
 def test_a_bare_envelope_with_no_marker_is_still_read() -> None:
