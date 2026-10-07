@@ -1437,3 +1437,11 @@ select:focus-visible {
 .emblem--done .emblem__ghost {
   stroke: color-mix(in srgb, var(--primary) 55%, transparent);
 }
+
+.emblem__glyph {
+  color: var(--muted-foreground);
+}
+
+.emblem--done .emblem__glyph {
+  color: var(--primary-fg);
+}

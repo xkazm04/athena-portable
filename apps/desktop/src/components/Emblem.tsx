@@ -7,15 +7,22 @@
  * read. One accent stroke — the diamond at the ring's foot — is the mark's countersign.
  *
  * `glyph` is a 24×24 path (or several, joined with `|`), stroked, never filled: the drawings stay
- * one family whatever draws them.
+ * one family whatever draws them. `art` takes a module's own drawing of the same size that strokes
+ * `currentColor`, which the stamp sets.
  */
+import type { ReactNode } from "react";
+
 export default function Emblem({
-  glyph,
+  glyph = "",
+  art,
   done,
   size = 56,
   label,
 }: {
-  glyph: string;
+  /** A 24×24 stroked path, or several joined with `|`. */
+  glyph?: string;
+  /** Or a 24×24 drawing of the caller's own that strokes `currentColor`. */
+  art?: ReactNode;
   done: boolean;
   size?: number;
   /** For a screen reader; omit when the tile's own title already names the item. */
@@ -35,9 +42,11 @@ export default function Emblem({
       <rect className="emblem__plate" x="8" y="8" width="48" height="48" rx="12" />
       <circle className="emblem__ring" cx="32" cy="32" r="19" />
       <g transform="translate(20 20)" className="emblem__glyph">
-        {glyph.split("|").map((d) => (
-          <path key={d} d={d} />
-        ))}
+        {art ??
+          glyph
+            .split("|")
+            .filter(Boolean)
+            .map((d) => <path key={d} d={d} />)}
       </g>
       <path className="emblem__mark" d="M32 47.5l2.5 2.5-2.5 2.5-2.5-2.5z" />
     </svg>
