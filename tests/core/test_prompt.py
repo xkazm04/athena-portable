@@ -16,6 +16,7 @@ from athena.core.catalog import Catalog, CoreServices, build_catalog
 from athena.core.constitution import Constitution, Source
 from athena.core.fence import close_marker, is_fenced, open_marker
 from athena.core.prompt import (
+    BUDGETS,
     RECALL_BLOCKS,
     STATIC_NAMES,
     Composed,
@@ -352,3 +353,23 @@ def test_a_host_state_port_and_a_plain_mapping_compose_the_same() -> None:
     from_mapping = composed(host_state=state, nonce="a1b2c3d4e5f60718")
 
     assert from_port.frame.text == from_mapping.frame.text
+
+
+def test_tool_results_are_bounded_by_the_blocks_budget_not_by_a_count() -> None:
+    """ADR 0043: twelve short reads are all shown; long ones stop at the character budget."""
+    short = [
+        ToolResult(call_id=f"c{n}", name="host.pm.read_claim", output=f"claim {n}")
+        for n in range(12)
+    ]
+    tools = composed(tool_results=short).frame.block("frame.tools")
+    assert tools is not None and "(showing 12 of 12)" in tools.text
+
+    long = [
+        ToolResult(call_id=f"c{n}", name="host.pm.read_claim", output=f"claim {n} " + "x" * 1500)
+        for n in range(12)
+    ]
+    block = composed(tool_results=long).frame.block("frame.tools")
+    assert block is not None and block.total == 12 and 0 < block.shown < 12
+    assert "claim 11" in block.text and "claim 0 " not in block.text  # the newest kept
+    assert block.announces_truncation()
+    assert len(block.text) <= BUDGETS["frame.tools"]

@@ -361,7 +361,13 @@ def test_a_gated_op_becomes_a_card_and_ends_the_turn(
 def test_a_dropped_envelope_is_reported_and_does_not_stop_the_turn(
     catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger, tmp_path: Path
 ) -> None:
-    transport = ScriptedTransport([_round('On it.\nOP: {"op":"propose_action","action":')])
+    # The drop is told to the model in the same turn (ADR 0041), so it answers a second round.
+    transport = ScriptedTransport(
+        [
+            _round('On it.\nOP: {"op":"propose_action","action":'),
+            _round("That op was cut short; I'll say it plainly instead."),
+        ]
+    )
     harness = _harness(catalog, approvals, ledger, transport, tmp_path)
 
     events = _drain(harness, [])
@@ -370,6 +376,7 @@ def test_a_dropped_envelope_is_reported_and_does_not_stop_the_turn(
     assert answer.output.startswith("op dropped:")
     assert events[-1].kind == "turn.finished"
     assert ledger.error_rows == []
+    assert len(transport.requests) == 2 and "op dropped" in transport.requests[1].stdin
 
 
 def test_an_op_naming_something_outside_the_catalog_is_dropped(

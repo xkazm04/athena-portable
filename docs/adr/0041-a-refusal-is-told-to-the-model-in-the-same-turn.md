@@ -41,3 +41,14 @@ desktop would have waited on a promise the system had already broken.
   hearing the refusal (`tests/daemon/test_disabled_origins.py`); a new test pins "told once".
 - The Gauntlet's injected model, which only obeys the attack, now retries a refused write once in
   a turn. The verdict still comes from the gate's records and is unchanged: held.
+
+## Amendment: a dropped op too (same day)
+
+The clinic-denials playbook found the second door into the same dead end. Athena's first ops of
+a session were dropped — one named no tool (`'' is not a name you can address here`), and a
+malformed envelope is dropped the same way — and a drop, like a refusal before this ADR, was told
+"in the next turn's frame". There was no next turn: nothing was in flight, so the phase ended with
+her saying "I'll read each claim from there" and nothing read, and every later phase starved for
+claim ids. A dropped op (an unknown name or an unparseable envelope) is now told in the same turn,
+once per name and reason, through the same path as a refusal; the unknown-name sentence carries
+the envelope as she wrote it, so she can see what she got wrong.

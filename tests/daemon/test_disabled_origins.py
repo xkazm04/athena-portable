@@ -106,3 +106,19 @@ def test_a_refusal_is_told_to_the_model_in_the_same_turn_once(live: Live) -> Non
     told = live.transport.requests[1].stdin
     assert "foreign_origin" in told and "switched off" in told
     assert live.daemon.ledger.recent(1).rows[0].rounds == 2
+
+
+def test_an_op_naming_nothing_is_told_in_the_same_turn_with_its_envelope(live: Live) -> None:
+    """ADR 0041, the second door: a dropped op used to end a turn with nothing in flight."""
+    live.register()
+    live.script(
+        claude_round('Reading the list.\nOP: {"op":"propose_action","tool":"host.invoices.chase"}'),
+        claude_round(op("host.invoices.chase", invoice="1")),
+    )
+
+    reply = live.run("chase it")
+
+    kinds = [k for k, _ in reply.frames()]
+    assert "tool.call" in kinds, "she heard the drop and called the right name in the same turn"
+    told = live.transport.requests[1].stdin
+    assert "op dropped" in told and '"tool":"host.invoices.chase"' in told

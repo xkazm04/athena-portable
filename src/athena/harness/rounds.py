@@ -188,41 +188,52 @@ class RoundHarness:
     ) -> tuple[list[ChannelEvent], list[ToolResult]]:
         """Every op through the gate. Returns the events to stream and what to feed back.
 
-        What *executed* is fed back, and so is a refusal, once per name and reason (ADR 0041). A
-        gated op is waiting on the user, a host tool is waiting on the page, and a dropped
-        envelope is told to the model in the next turn's frame — none of the three is a reason to
-        spend another round asking the same model again.
+        What *executed* is fed back, and so is a refusal or a dropped op, once per name and reason
+        (ADR 0041). A gated op is waiting on the user and a host tool is waiting on the page —
+        neither is a reason to spend another round asking the same model again.
         """
         events: list[ChannelEvent] = []
         feedback: list[ToolResult] = []
 
         for index, error in enumerate(parsed.errors):
-            events.append(
-                ToolResult(
-                    call_id=f"{turn_id}_op{index}",
-                    name="OP",
-                    ok=False,
-                    output=f"op dropped: {error.detail}\n{error.line}",
-                    error=error.reason,
-                )
+            dropped = ToolResult(
+                call_id=f"{turn_id}_op{index}",
+                name="OP",
+                ok=False,
+                output=f"op dropped: {error.detail}\n{error.line}",
+                error=error.reason,
             )
+            events.append(dropped)
+            self._tell(dropped, feedback)
 
         for index, op in enumerate(parsed.ops):
             call_id = f"{turn_id}_{index:02d}"
             entry = entries.get(op.action)
             if entry is None:
-                events.append(
-                    ToolResult(
-                        call_id=call_id,
-                        name=op.action or op.op,
-                        ok=False,
-                        output=f"op dropped: {op.action!r} is not a name you can address here",
-                        error="unknown_ref",
-                    )
+                dropped = ToolResult(
+                    call_id=call_id,
+                    name=op.action or op.op,
+                    ok=False,
+                    output=(
+                        f"op dropped: {op.action!r} is not a name you can address here; "
+                        "the names you can call are in your capabilities, and an op names one "
+                        f"in its action field\n{op.raw}".rstrip()
+                    ),
+                    error="unknown_ref",
                 )
+                events.append(dropped)
+                self._tell(dropped, feedback)
                 continue
             events.extend(self._one_op(op, entry, call_id, ctx, result, feedback))
         return events, feedback
+
+    def _tell(self, result: ToolResult, feedback: list[ToolResult]) -> None:
+        """Feed a refused or dropped op back in this turn, once per name and reason (ADR 0041),
+        so a model that repeats it ends the turn instead of spending the round budget on it."""
+        told = (result.name, result.error or "")
+        if told not in self._told:
+            self._told.add(told)
+            feedback.append(result)
 
     def _one_op(
         self,
@@ -259,12 +270,9 @@ class RoundHarness:
             events.append(refusal)
             # A card waits on the user. A refusal is final, and the model is told in this turn
             # (ADR 0041): a turn that ends on a refused read leaves her promising a result that
-            # will never come. The same refusal is told once, so a model that retries it cannot
-            # spend the round budget on it.
-            told = (entry.name, refusal.error or "")
-            if outcome.card is None and told not in self._told:
-                self._told.add(told)
-                feedback.append(refusal)
+            # will never come.
+            if outcome.card is None:
+                self._tell(refusal, feedback)
             return events
 
         if outcome.result is None:
