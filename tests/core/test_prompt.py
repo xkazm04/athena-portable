@@ -17,10 +17,12 @@ from athena.core.constitution import Constitution, Source
 from athena.core.fence import close_marker, is_fenced, open_marker
 from athena.core.prompt import (
     BUDGETS,
+    DECISION_LIMIT,
     RECALL_BLOCKS,
     STATIC_NAMES,
     Composed,
     PromptError,
+    _decisions_block,
     assert_split,
     churn,
     compose,
@@ -373,3 +375,13 @@ def test_tool_results_are_bounded_by_the_blocks_budget_not_by_a_count() -> None:
     assert "claim 11" in block.text and "claim 0 " not in block.text  # the newest kept
     assert block.announces_truncation()
     assert len(block.text) <= BUDGETS["frame.tools"]
+
+
+def test_the_decisions_digest_names_twenty_and_counts_every_card() -> None:
+    """ADR 0052: with thirteen cards waiting she saw ten, '(showing 10 of 10)', and re-filed one."""
+    lines = [f"apr_{i:02d}: host.bank.pay_bill {{}}" for i in range(25)]
+    block = _decisions_block(lines)
+    assert block.shown == DECISION_LIMIT == 20
+    assert block.total == 25
+    assert "(showing 20 of 25)" in block.text
+    assert "apr_19" in block.text and "apr_20" not in block.text

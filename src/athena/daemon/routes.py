@@ -126,9 +126,13 @@ MAX_LIMIT = 200
 #: real inbox never reaches this; the total is honest up to here and the footer never overstates.
 PENDING_CEILING = 500
 
-#: How many waiting cards the turn frame lists, so the model can say what it is waiting for
-#: rather than proposing the same action again.
-PENDING_LINES = 10
+#: How many waiting cards the daemon hands the turn frame, so the model can say what it is waiting
+#: for rather than proposing the same action again. The composer names up to its own bound and
+#: announces the rest against this count: a ceiling on the count, not the list (ADR 0052).
+PENDING_LINES = 100
+
+#: One pending card's line is cut here, so a long letter's body cannot spend the digest's budget.
+PENDING_LINE_CAP = 220
 
 #: What a person is told when the app a turn or a card is about has not been seen. One sentence,
 #: in the user's words: the machine-readable ``reason`` beside it is the contract, this is not.
@@ -619,9 +623,15 @@ def pending_lines(daemon: AthenaDaemon, limit: int = PENDING_LINES) -> list[str]
     can say what it is waiting for, never so it can answer one.
     """
     page = daemon.approvals.pending(limit)
-    return [
+    lines = [
         f"{row.id}: {row.action} {json.dumps(row.params, sort_keys=True, default=str)}"
         for row in page.rows
+    ]
+    # Every card goes to the composer, which names as many as its bound allows and announces the
+    # rest against the true count (ADR 0052); a line is cut, never a card dropped silently.
+    return [
+        line if len(line) <= PENDING_LINE_CAP else f"{line[: PENDING_LINE_CAP - 1]}…"
+        for line in lines
     ]
 
 

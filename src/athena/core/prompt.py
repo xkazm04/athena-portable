@@ -145,8 +145,9 @@ HOST_STATE_CHARS = BUDGETS["frame.host_state"]
 #: character budget (``BUDGETS["frame.tools"]``): as many results as fit are shown, so a turn that
 #: read twelve short pages sees twelve, not the last eight (ADR 0043).
 TOOL_RESULT_LIMIT = 32
-#: How many pending decisions the digest names before it announces the rest.
-DECISION_LIMIT = 10
+#: How many pending decisions the digest names before it announces the rest. A cross-portal chore
+#: leaves a dozen cards waiting at once, and ten hid the eleventh from her (ADR 0052).
+DECISION_LIMIT = 20
 
 
 # --- what came out ----------------------------------------------------------------------------
