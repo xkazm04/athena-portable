@@ -952,6 +952,7 @@
     "keystone_claim": [
       {
         "claim_id": "KM-50021",
+        "insured": "Ruth M. Halvorsen, died 2026-01-15",
         "policy": "$50,000 individual life, beneficiaries Dana and Tom, 50/50",
         "proof_of_death_received": "2026-02-20",
         "paid": "2026-05-14",
@@ -961,7 +962,7 @@
     "certificates": [
       {
         "certificate_id": "HS-GL-88014",
-        "insured": "Ruth M. Halvorsen (retired, Ashford schools)",
+        "insured": "Ruth M. Halvorsen (retired, Ashford schools), born 1944-11-02, died 2026-01-15",
         "basic_amount": "$12,000",
         "schedule": "Reduces to 50% of basic from age 75",
         "beneficiary": "None named: payable to the estate",

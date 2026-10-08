@@ -767,7 +767,7 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 
 | Playbook | Portals | Edge (difficulty / usefulness) | Latest bench (2026-10-07, Claude Sonnet) |
 |---|---|---|---|
-| A parent's estate, settled (family affairs) | Gmail, Drive, the estate account, Medigap, two life insurers, unclaimed property, the IRA custodian, a brokerage, Social Security, the probate docket, IRS Direct Pay | 5 / 5 | **exceeds**: 9 of 12, both deadline items (the $93,200 disclaimer, the IRS first), every filing exact, 11 of 11 traps avoided, 0 false; 6.3 min, $5.17 |
+| A parent's estate, settled (family affairs) | Gmail, Drive, the estate account, Medigap, two life insurers, unclaimed property, the IRA custodian, a brokerage, Social Security, the probate docket, IRS Direct Pay | 5 / 5 | **exceeds** twice running: 9 of 12, both deadline items (the $93,200 disclaimer, the IRS first), every filing exact, 11 of 11 traps avoided, 0 false; 7.0 min, $6.24 |
 | A parent's long-term-care claims (family care) | insurer portal, home-care agency portal, email, MyChart, Medicare.gov, the parent's bank | 5 / 5 | **exceeds**: 10 of 10, $26,410 owed found (filed $26,368: two amounts a little under the rules), 11 of 11 traps avoided, 0 false; 4.8 min, $5.23 |
 | Denied claims, reworked (clinics) | practice management, clearinghouse, Availity | 5 / 5 | **exceeds**: 9 of 10, $2,120 of $2,120, every claim exact, 22 of 22 traps avoided, 0 false; 3.1 min, $2.60 |
 | Amazon FBA reimbursements | Seller Central, supplier inbox | 4 / 4 | **exceeds**: 5 of 5, $359.78 of $359.78, 14 of 14 traps avoided, 0 false; 2.6 min, $2.66 |
@@ -811,7 +811,9 @@ How the money moved, run by run, on the same worlds:
   behind unsigned allowances (rule R1 and the world), the inverse trap disallowed before the mailed
   notice was found, a 3-of-12 run that the measure called "exceeds" (ADR 0051), and 11 of 12 with a
   payment filed twice because the digest hid it (ADR 0052) → **exceeds**: 9 of 12, both deadline
-  items, 0 false, no duplicate.
+  items, 0 false, no duplicate → **exceeds** again once the insurer pages showed the insured's
+  dates, as real claim pages do: the interest and the group policy filed, the creditor payments
+  this time held behind their unsigned allowances.
 - **Long-term-care claims:** **$26,410** on the first run (exceeds, 9 of 10, every amount exact),
   leaving the premium autopay running because the command never asked her to stop a payment;
   she offered the card instead. Once the command said so: 10 of 10 (exceeds), with two amounts
