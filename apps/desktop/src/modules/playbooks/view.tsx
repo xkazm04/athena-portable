@@ -20,6 +20,7 @@ import Layer, { LayerColumns } from "@/components/Layer";
 import PageHeader from "@/components/PageHeader";
 import PageShell from "@/components/PageShell";
 import PageSection from "@/components/PageSection";
+import PillGroup from "@/components/PillGroup";
 import SectionCard from "@/components/SectionCard";
 import StatusDot from "@/components/StatusDot";
 import Tile from "@/components/Tile";
@@ -28,12 +29,15 @@ import { minutes, usd, type Bench, type Playbook, type TraceTurn } from "@/lib/p
 import "./playbooks.css";
 import {
   OUTCOME_WORDS,
+  arrange,
   foundBy,
   readsOf,
   turnState,
   visitsOf,
+  type AudienceFilter,
   type PlaybookView,
   type PlaybooksModel,
+  type SortBy,
 } from "./model";
 
 export default function PlaybooksView({
@@ -48,6 +52,9 @@ export default function PlaybooksView({
   initialTurn?: number;
 }) {
   const [open, setOpen] = useState<string | null>(initialOpen);
+  const [audience, setAudience] = useState<AudienceFilter>("all");
+  const [by, setBy] = useState<SortBy>("edge");
+  const grid = arrange(model.items, audience, by);
   const current = model.items.find((v) => v.id === open) ?? null;
   const { totals } = model;
 
@@ -83,16 +90,38 @@ export default function PlaybooksView({
             <EdgeNotes model={model} />
           </section>
 
-          <PageSection title="Playbooks" note="Hardest for anyone else and most useful first.">
+          <PageSection title="Playbooks" note={SORT_NOTES[by]}>
+            <div className="pb-toolbar">
+              <PillGroup
+                ariaLabel="Whose chore"
+                value={audience}
+                onChange={setAudience}
+                options={[
+                  { value: "all", label: `All ${model.items.length}` },
+                  { value: "home", label: `At home ${count(model.items, "home")}` },
+                  { value: "work", label: `At work ${count(model.items, "work")}` },
+                ]}
+              />
+              <PillGroup
+                ariaLabel="Order"
+                value={by}
+                onChange={setBy}
+                options={[
+                  { value: "edge", label: "Hardest first", hint: SORT_NOTES.edge },
+                  { value: "money", label: "Most money", hint: SORT_NOTES.money },
+                  { value: "time", label: "Most time saved", hint: SORT_NOTES.time },
+                ]}
+              />
+            </div>
             <div className="pb-grid">
-              {model.items.map((v, i) => (
+              {grid.map(({ view: v, rank }) => (
                 <Tile
                   key={v.id}
                   accent={v.onEdge}
                   emblem={
                     <span className="pb-tile-head">
                       <span className="pb-rank" data-verdict={v.verdict.word} aria-hidden="true">
-                        {i + 1}
+                        {rank}
                       </span>
                       <span className="typo-label">{v.playbook.domain}</span>
                     </span>
@@ -138,6 +167,15 @@ export default function PlaybooksView({
     </PageShell>
   );
 }
+
+const SORT_NOTES: Record<SortBy, string> = {
+  edge: "Hardest for anyone else and most useful first.",
+  money: "Most money a year first.",
+  time: "Most hours by hand first.",
+};
+
+const count = (items: readonly PlaybookView[], audience: "home" | "work") =>
+  items.filter((v) => v.playbook.audience === audience).length;
 
 function TileFoot({ view }: { view: PlaybookView }) {
   return (

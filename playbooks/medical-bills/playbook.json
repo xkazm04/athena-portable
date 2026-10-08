@@ -2,6 +2,7 @@
   "id": "medical-bills",
   "title": "Medical bills against the EOBs",
   "domain": "Daily life",
+  "audience": "home",
   "promise": "Every bill checked against what your insurer says you owe: overcharges and surprise bills disputed, a wrongful denial appealed with the records that prove it, refunds asked for, and only what is truly owed paid.",
   "persona": "A family on a PPO with an ER visit, a surgery and some follow-up care this year",
   "chore": "Download every Explanation of Benefits from the insurer's member portal, then every bill from each provider's billing portal — the hospital's MyChart, the anesthesia group and the dermatologist on Cedar — and match them by date of service. Work out which bills ask for more than the EOB allows, which are duplicates or reminders of the same balance, which balance bills the No Surprises Act forbids, which EOBs are still pending, and which denials can still be appealed. Then write each billing office, file the appeal with the medical records, and pay the rest. Bills have no API; payer data does not reach provider portals.",

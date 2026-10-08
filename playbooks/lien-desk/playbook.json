@@ -2,6 +2,7 @@
   "id": "lien-desk",
   "title": "The subcontractor's lien desk",
   "domain": "Construction",
+  "audience": "work",
   "promise": "Every lien deadline met, every waiver signed on the right form with the right exceptions, every pay app clean before it is rejected — across each general contractor's own portal, so a missed day never costs the security for a whole receivable.",
   "persona": "A $6M mechanical subcontractor with a dozen jobs in California and Texas and one office manager",
   "chore": "Each general contractor picks its own portal: Procore, Oracle Textura, GCPay, or email. Every month the office manager bills each job against its schedule of values, attaches the right lien waiver and a current certificate of insurance, leaves out change orders the GC has not approved, and watches the statute: California's 20-day preliminary notice and its 30-day lien window after a recorded Notice of Completion, Texas's monthly notices by the 15th of the third month and its retainage notice, Textura's 72-hour auto-release of a waiver. A wrong form, an unconditional waiver signed before the money lands, or one missed date forfeits the lien rights on a whole receivable.",

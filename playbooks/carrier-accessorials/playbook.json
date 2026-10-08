@@ -2,6 +2,7 @@
   "id": "carrier-accessorials",
   "title": "Detention, lumper and TONU, collected",
   "domain": "Trucking",
+  "audience": "work",
   "promise": "Every stop of the last two weeks checked against its rate con, the signed BOL and the ELD, then filed in each broker's own tool, by that broker's rules, before its window shuts. The loads that don't qualify are left alone.",
   "persona": "A three-truck owner-operator carrier hauling for C.H. Robinson, TQL, Uber Freight and a small email-only broker, factored through RTS",
   "chore": "Drivers sit at docks on four stops in ten. The money for that time is owed only on terms that differ on every rate con: free time, rate, cap, a notice rule and a filing window that can be 24 hours. The carrier compares the ELD's geofence times, the signed BOL and the rate con for every stop. Then they file in the broker's own tool, in the form it checks: CHR wants the BOL times, TQL wants receipts in one document category, Uber wants the request within a day. They also check that what the broker approved actually arrived through the factor. Most small carriers bill for detention a fraction of the time and collect on fewer.",

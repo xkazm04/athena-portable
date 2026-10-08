@@ -50,3 +50,12 @@ test("the traps she walked past are listed by id, a filed one first, folded past
   expect(short.includes("(showing 5 of 7)")).toBe(true);
   expect(short.includes("DP-129")).toBe(false);
 });
+
+test("the grid offers whose chore and the order as two radio groups, counted", () => {
+  const html = renderToStaticMarkup(entry.preview("typical"));
+  expect(html.match(/role="radiogroup"/g)?.length).toBe(2);
+  expect(html.includes("All 3")).toBe(true);
+  expect(html.includes("At home 1")).toBe(true);
+  expect(html.includes("At work 2")).toBe(true);
+  expect(html.includes("Hardest first")).toBe(true);
+});

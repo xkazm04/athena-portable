@@ -740,7 +740,8 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 ```
 
 - **The files.** `playbook.json` is the showcase: persona, chore, command, portals, gates, traps,
-  economics with sources, edge scores and the expectation it is held to. `world.json` is the
+  economics with sources, edge scores, whose chore it is (`audience`: home or work, which the
+  desktop's grid filters by) and the expectation it is held to. `world.json` is the
   portals as data: tools with honest flags, views, tables and the phases of the run. `truth.json`
   is what a perfect run files and what looks eligible but is not; nothing but the scorer reads it.
   A read matches an exact key, a substring (`contains`) or every word in any order (`words`, as a

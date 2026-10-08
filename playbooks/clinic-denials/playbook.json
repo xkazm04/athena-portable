@@ -2,6 +2,7 @@
   "id": "clinic-denials",
   "title": "Denied claims, reworked",
   "domain": "Clinics",
+  "audience": "work",
   "promise": "Every denied claim read by its reason code, fixed or appealed in the payer's own portal with the proof it needs, and written off only when it truly cannot be won — before the windows close.",
   "persona": "A three-doctor family practice billing four payers, with one part-time biller",
   "chore": "Pull the denial worklist from the practice management system and read each claim's reason code. For a missing modifier or a wrong NPI, correct and resubmit — inside the payer's filing limit. For a timely-filing denial, find the clearinghouse report that proves the payer received the claim in time. For a missing authorisation, look it up in the payer portal. Never resubmit a duplicate, never file a secondary before the primary pays, never appeal what is out of time — and write off what cannot be won so it stops sitting on the books. Each payer's portal is different and UI-only.",

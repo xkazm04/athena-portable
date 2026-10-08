@@ -2,6 +2,7 @@
   "id": "fba-reimbursements",
   "title": "Amazon FBA reimbursements",
   "domain": "E-commerce",
+  "audience": "work",
   "promise": "Every unit Amazon lost, short-received or overcharged, matched to your supplier's paperwork and filed as a case for your signature — with no contingency cut and no one else in your Seller Central.",
   "persona": "An FBA seller doing $500k a year across a handful of SKUs",
   "chore": "Once a month: download the inventory ledger, reimbursements, shipments, removals, returns and fee preview from Seller Central; match them against the supplier's invoices, the 3PL's packing lists and the freight proof of delivery; work out which gaps are Amazon's under rules that changed in 2024 and 2025; then open one case at a time in the Seller Central UI. Amazon offers no API to open a case, so every service that does this logs in as you.",

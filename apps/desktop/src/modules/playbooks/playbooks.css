@@ -910,3 +910,12 @@
 .pb-trap[data-filed] .pb-trap__mark {
   color: var(--status-error);
 }
+
+/* -- the grid's filter and order ----------------------------------------------------------------- */
+.pb-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}

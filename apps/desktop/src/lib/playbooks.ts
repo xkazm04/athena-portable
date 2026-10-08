@@ -156,11 +156,15 @@ export interface Lesson {
   found: string;
 }
 
+export type Audience = "home" | "work";
+
 export interface Playbook {
   id: string;
   title: string;
   promise: string;
   domain: string;
+  /** Whose chore it is: a household's, or a business's (a sole trader's counts as work). */
+  audience: Audience;
   persona: string;
   chore: string;
   command: string;
@@ -306,6 +310,7 @@ export function parsePlaybook(raw: unknown, bench: unknown = null): Playbook | n
     title: str(raw.title, str(raw.id)),
     promise: str(raw.promise),
     domain: str(raw.domain),
+    audience: str(raw.audience) === "home" ? "home" : "work",
     persona: str(raw.persona),
     chore: str(raw.chore),
     command: str(raw.command),

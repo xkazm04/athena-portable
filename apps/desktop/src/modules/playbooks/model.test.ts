@@ -6,7 +6,8 @@ import { expect, test } from "vitest";
 
 import type { TraceTurn } from "@/lib/playbooks";
 
-import { foundBy, readsOf, turnState, visitsOf } from "./model";
+import { fixtures } from "./fixtures";
+import { arrange, foundBy, readsOf, turnState, visitsOf } from "./model";
 
 const turn = (portal: string, over: Partial<TraceTurn> = {}): TraceTurn => ({
   portal,
@@ -58,4 +59,22 @@ test("reads are named in words, each once with its count", () => {
     { name: "list stops", times: 2 },
     { name: "search mail", times: 1 },
   ]);
+});
+
+test("the grid filters by whose chore it is and keeps each tile's number from the map", () => {
+  const items = fixtures.typical.items;
+  const all = arrange(items, "all", "edge");
+  expect(all.map((r) => r.rank)).toEqual([1, 2, 3]);
+  const home = arrange(items, "home", "edge");
+  expect(home.map((r) => r.view.playbook.audience)).toEqual(["home"]);
+  expect(home[0].rank).toBe(items.findIndex((v) => v.playbook.audience === "home") + 1);
+  expect(arrange(items, "work", "edge").every((r) => r.view.playbook.audience === "work")).toBe(true);
+});
+
+test("the grid orders by money a year or hours by hand, the map's order breaking ties", () => {
+  const items = fixtures.typical.items;
+  const money = arrange(items, "all", "money").map((r) => r.view.title);
+  expect(money[0]).toBe("Chargeback evidence packs");
+  const time = arrange(items, "all", "time").map((r) => r.view.playbook.economics.manualMinutes);
+  expect([...time].sort((a, b) => b - a)).toEqual(time);
 });

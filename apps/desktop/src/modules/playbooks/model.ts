@@ -268,3 +268,31 @@ export function readsOf(turn: TraceTurn): { name: string; times: number }[] {
   }
   return out;
 }
+
+// --- the grid's filter and order -----------------------------------------------------------------
+
+/** Which playbooks the grid shows: all, a household's, or a business's. */
+export type AudienceFilter = "all" | Playbook["audience"];
+
+/** How the grid is ordered: the edge (the map's order), the money a year, or the hours by hand. */
+export type SortBy = "edge" | "money" | "time";
+
+/**
+ * The grid's items, filtered and ordered. Pure. Each keeps its rank on the map (`rank`), so the
+ * number on a tile is the number of its mark whatever the order.
+ */
+export function arrange(
+  items: readonly PlaybookView[],
+  audience: AudienceFilter,
+  by: SortBy,
+): { view: PlaybookView; rank: number }[] {
+  const ranked = items.map((view, i) => ({ view, rank: i + 1 }));
+  const shown = ranked.filter((r) => audience === "all" || r.view.playbook.audience === audience);
+  const key = (r: { view: PlaybookView; rank: number }): number =>
+    by === "money"
+      ? annualValue(r.view.playbook)
+      : by === "time"
+        ? r.view.playbook.economics.manualMinutes
+        : -r.rank;
+  return [...shown].sort((a, b) => key(b) - key(a) || a.rank - b.rank);
+}

@@ -197,6 +197,7 @@ const FLIGHTS = book({
   id: "flight-compensation",
   title: "Delayed-flight compensation",
   domain: "Daily life",
+  audience: "home",
   promise: "Every delay that qualifies, claimed from the airline directly, with no agency's cut.",
   persona: "A family that flies four times a year",
   chore: "Find the booking, check the delay against the rules, and fill the airline's own form.",
