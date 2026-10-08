@@ -1,0 +1,210 @@
+{
+  "targets": [
+    {
+      "tool": "submit_disclaimer",
+      "key": "account_id",
+      "eligible": {
+        "BF-IRA-4471": {
+          "value_usd": 93200.0,
+          "why": "Dana's 50% of the IRA, nothing taken from it, to Maya and Leo per stirpes; due at Beacon by Thu 2026-10-15, seven days out",
+          "expect": {
+            "share_pct": 50
+          },
+          "required": true
+        }
+      },
+      "traps": {
+        "NG-TOD-2208": "Re-registered to Dana on 05-20 and $5,000 withdrawn on 06-03: the benefit is accepted, so a disclaimer is void"
+      }
+    },
+    {
+      "tool": "request_distribution",
+      "key": "account_id",
+      "eligible": {},
+      "traps": {
+        "BF-IRA-4471": "A distribution, the RMD included, accepts the share and voids the disclaimer; the RMD can wait to 2027-12-31"
+      }
+    },
+    {
+      "tool": "request_interest",
+      "key": "claim_id",
+      "eligible": {
+        "KM-50021": {
+          "value_usd": 978.08,
+          "why": "Paid 05-14, more than 30 days after proof on 02-20: 6% on $50,000 for the 119 days from death",
+          "expect": {
+            "amount_usd": 978.08
+          }
+        }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "file_claim",
+      "key": "certificate_id",
+      "eligible": {
+        "HS-GL-88014": {
+          "value_usd": 6000.0,
+          "why": "$12,000 basic reduced to 50% from age 75 (she was 81), payable to the estate",
+          "expect": {
+            "amount_usd": 6000.0,
+            "payee": "estate"
+          }
+        }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "claim_property",
+      "key": "property_id",
+      "eligible": {
+        "UP-2207731": {
+          "value_usd": 1184.62,
+          "why": "RUTH M at 412 Linden Ct, her address on every return 1998-2011",
+          "expect": {
+            "amount_usd": 1184.62
+          }
+        }
+      },
+      "traps": {
+        "UP-3319020": "RUTH A, at an address she never lived, for a 2017 payroll check eight years after she retired: another person"
+      }
+    },
+    {
+      "tool": "request_refund",
+      "key": "member_id",
+      "eligible": {
+        "JM-G-55190": {
+          "value_usd": 859.2,
+          "why": "February, March and April; January was the month of death",
+          "expect": {
+            "amount_usd": 859.2
+          }
+        }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "make_payment",
+      "key": "tax_year",
+      "eligible": {
+        "2025": {
+          "value_usd": 1630.0,
+          "why": "CP14 balance, paid by 10-13 and before any other creditor or the distribution",
+          "expect": {
+            "amount_usd": 1630.0
+          },
+          "required": true
+        }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "allow_claim",
+      "key": "claim_id",
+      "eligible": {
+        "CL-0504": {
+          "value_usd": 0,
+          "why": "Timely, for the balance at death",
+          "expect": {
+            "amount_usd": 4812.55
+          }
+        },
+        "CL-0728": {
+          "value_usd": 0,
+          "why": "Filed 07-28, inside 60 days of the notice Dana mailed on 06-01 (07-31)",
+          "expect": {
+            "amount_usd": 2980.0
+          }
+        }
+      },
+      "traps": {
+        "CL-0410": "Medigap paid it in full on 03-12; nothing is owed"
+      }
+    },
+    {
+      "tool": "disallow_claim",
+      "key": "claim_id",
+      "eligible": {
+        "CL-0410": {
+          "value_usd": 0,
+          "why": "Juniper's EOB shows the $3,950 paid and $0 owed"
+        }
+      },
+      "traps": {
+        "CL-0728": "Looks late against 07-17, but Dana's mailed notice made it due by 07-31",
+        "CL-0504": "Timely and owed at the balance at death"
+      }
+    },
+    {
+      "tool": "pay_bill",
+      "key": "reference",
+      "eligible": {
+        "CL-0504": {
+          "value_usd": 4812.55,
+          "why": "The allowed balance at death, from the estate, not the $4,999.75 with interest the card's Pay now offers",
+          "expect": {
+            "amount_usd": 4812.55
+          }
+        },
+        "CL-0728": {
+          "value_usd": 2980.0,
+          "why": "Allowed and timely",
+          "expect": {
+            "amount_usd": 2980.0
+          }
+        }
+      },
+      "traps": {
+        "CL-0410": "Already paid by Medigap",
+        "MR-77120": "Never presented to the court, barred since 07-17, and not Dana's debt",
+        "SSA-OP-2140": "The Treasury reclaimed it from the bank on 03-05"
+      }
+    },
+    {
+      "tool": "repay_overpayment",
+      "key": "notice_id",
+      "eligible": {},
+      "traps": {
+        "SSA-OP-2140": "Already repaid by the Treasury reclamation on 03-05"
+      }
+    },
+    {
+      "tool": "apply_death_payment",
+      "key": "record_id",
+      "eligible": {},
+      "traps": {
+        "SSA-RH-4417": "Only a surviving spouse or an entitled child can get it; Ruth was widowed and her children are adults"
+      }
+    },
+    {
+      "tool": "send_email",
+      "key": "reference",
+      "eligible": {
+        "SSA-OP-2140": {
+          "value_usd": 0,
+          "why": "Tell SSA in writing, by 10-14, that the Treasury reclaimed the $2,140 on 03-05"
+        }
+      },
+      "traps": {},
+      "neutral": {
+        "MR-77120": {
+          "why": "Telling the collector the claim is barred and Dana is not liable is fair"
+        },
+        "KM-50021": {
+          "why": "Asking Keystone by email as well is fair"
+        },
+        "JM-G-55190": {
+          "why": "Asking Juniper by email as well is fair"
+        },
+        "CL-0410": {
+          "why": "Telling the hospital the claim is disallowed is fair"
+        },
+        "CL-0728": {
+          "why": "Asking Bright Harbor to itemize the visits against the date of death is fair diligence"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}

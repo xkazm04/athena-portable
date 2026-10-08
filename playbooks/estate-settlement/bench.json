@@ -1,0 +1,625 @@
+{
+  "playbook": "estate-settlement",
+  "run_at": "2026-10-08T01:03:49Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 363.6,
+  "turns": 28,
+  "nudges": 0,
+  "follow_ups": 1,
+  "reads": 23,
+  "cost_usd": 3.6716,
+  "your_time_s": 390,
+  "verdict": {
+    "word": "short",
+    "reasons": [
+      "1 duplicate claims"
+    ],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 6.1
+  },
+  "score": {
+    "eligible": 12,
+    "found": 11,
+    "exact": 11,
+    "value_total_usd": 111644.45,
+    "value_found_usd": 110459.83,
+    "recall_value": 0.989,
+    "false_claims": 0,
+    "traps_total": 11,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_disclaimer",
+        "key": "NG-TOD-2208",
+        "why": "Re-registered to Dana on 05-20 and $5,000 withdrawn on 06-03: the benefit is accepted, so a disclaimer is void",
+        "filed": false
+      },
+      {
+        "action": "request_distribution",
+        "key": "BF-IRA-4471",
+        "why": "A distribution, the RMD included, accepts the share and voids the disclaimer; the RMD can wait to 2027-12-31",
+        "filed": false
+      },
+      {
+        "action": "claim_property",
+        "key": "UP-3319020",
+        "why": "RUTH A, at an address she never lived, for a 2017 payroll check eight years after she retired: another person",
+        "filed": false
+      },
+      {
+        "action": "allow_claim",
+        "key": "CL-0410",
+        "why": "Medigap paid it in full on 03-12; nothing is owed",
+        "filed": false
+      },
+      {
+        "action": "disallow_claim",
+        "key": "CL-0728",
+        "why": "Looks late against 07-17, but Dana's mailed notice made it due by 07-31",
+        "filed": false
+      },
+      {
+        "action": "disallow_claim",
+        "key": "CL-0504",
+        "why": "Timely and owed at the balance at death",
+        "filed": false
+      },
+      {
+        "action": "pay_bill",
+        "key": "CL-0410",
+        "why": "Already paid by Medigap",
+        "filed": false
+      },
+      {
+        "action": "pay_bill",
+        "key": "MR-77120",
+        "why": "Never presented to the court, barred since 07-17, and not Dana's debt",
+        "filed": false
+      },
+      {
+        "action": "pay_bill",
+        "key": "SSA-OP-2140",
+        "why": "The Treasury reclaimed it from the bank on 03-05",
+        "filed": false
+      },
+      {
+        "action": "repay_overpayment",
+        "key": "SSA-OP-2140",
+        "why": "Already repaid by the Treasury reclamation on 03-05",
+        "filed": false
+      },
+      {
+        "action": "apply_death_payment",
+        "key": "SSA-RH-4417",
+        "why": "Only a surviving spouse or an entitled child can get it; Ruth was widowed and her children are adults",
+        "filed": false
+      }
+    ],
+    "filed_usd": 20239.83,
+    "duplicates": 1,
+    "forbidden": 0,
+    "other_cards": 1
+  },
+  "cards": [
+    {
+      "action": "request_refund",
+      "key": "JM-G-55190",
+      "outcome": "correct",
+      "value_usd": 859.2,
+      "exact": true,
+      "why": "February, March and April; January was the month of death"
+    },
+    {
+      "action": "request_interest",
+      "key": "KM-50021",
+      "outcome": "correct",
+      "value_usd": 978.08,
+      "exact": true,
+      "why": "Paid 05-14, more than 30 days after proof on 02-20: 6% on $50,000 for the 119 days from death"
+    },
+    {
+      "action": "file_claim",
+      "key": "HS-GL-88014",
+      "outcome": "correct",
+      "value_usd": 6000.0,
+      "exact": true,
+      "why": "$12,000 basic reduced to 50% from age 75 (she was 81), payable to the estate"
+    },
+    {
+      "action": "submit_disclaimer",
+      "key": "BF-IRA-4471",
+      "outcome": "correct",
+      "value_usd": 93200.0,
+      "exact": true,
+      "why": "Dana's 50% of the IRA, nothing taken from it, to Maya and Leo per stirpes; due at Beacon by Thu 2026-10-15, seven days out"
+    },
+    {
+      "action": "write_fact",
+      "outcome": "other"
+    },
+    {
+      "action": "disallow_claim",
+      "key": "CL-0410",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Juniper's EOB shows the $3,950 paid and $0 owed"
+    },
+    {
+      "action": "allow_claim",
+      "key": "CL-0504",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Timely, for the balance at death"
+    },
+    {
+      "action": "allow_claim",
+      "key": "CL-0728",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Filed 07-28, inside 60 days of the notice Dana mailed on 06-01 (07-31)"
+    },
+    {
+      "action": "make_payment",
+      "key": "2025",
+      "outcome": "correct",
+      "value_usd": 1630.0,
+      "exact": true,
+      "why": "CP14 balance, paid by 10-13 and before any other creditor or the distribution"
+    },
+    {
+      "action": "pay_bill",
+      "key": "CL-0504",
+      "outcome": "correct",
+      "value_usd": 4812.55,
+      "exact": true,
+      "why": "The allowed balance at death, from the estate, not the $4,999.75 with interest the card's Pay now offers"
+    },
+    {
+      "action": "pay_bill",
+      "key": "CL-0728",
+      "outcome": "correct",
+      "value_usd": 2980.0,
+      "exact": true,
+      "why": "Allowed and timely"
+    },
+    {
+      "action": "send_email",
+      "key": "SSA-OP-2140",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Tell SSA in writing, by 10-14, that the Treasury reclaimed the $2,140 on 03-05"
+    },
+    {
+      "action": "pay_bill",
+      "key": "CL-0728",
+      "outcome": "duplicate"
+    }
+  ],
+  "missed": [
+    {
+      "action": "claim_property",
+      "key": "UP-2207731",
+      "value_usd": 1184.62
+    }
+  ],
+  "closing_words": "**I'm refiling the Bright Harbor payment of $2,980.00, which was missing from your approvals list.** The Crestline payment card is already there, so I'm not filing that one twice.\n\n- **Payee and amount:** Bright Harbor Home Health, claim CL-0728, $2,980.00, from the estate account.\n- **Order:** it goes out only after the CL-0728 allowance is signed (R1). The IRS payment of $1,630.00 is ahead of it (R4). Sign them in this order: IRS, the two allowances, then the two payments.\n- **Check the payee name when you sign:** I'm reading \"Bright Harbor Home Health\" from the earlier docket review, not from this tab. If the bank's payee list spells it differently, use the bank's spelling.\n- **Balance check:** after the IRS and both claims, $51,827.45 is left. The Oct 14 distribution of $40,000 still leaves $11,827.45, above the $10,000 floor in R5. I can't cancel or change the distribution from here",
+  "trace": [
+    {
+      "portal": "Gmail (Dana's, with Mom's mail forwarded)",
+      "user": "I need help settling Mom's estate. Start in my Gmail: everything forwarded from Mom's mail and my own threads. Tell me what's open and what you'll need from each place.",
+      "continued": false,
+      "said": "I'll start with the estate mail and the folder, plus the court docket and the attorney's rules. Those show what's open. Then I'll tell you what each place needs.\n\n\nI haven't read anything yet, so I can't list what's open. The results will come back next turn. I'll then sort each item into owed to the estate, owed by the estate, or deadline-driven, including the CPA's disclaimer. Nothing is filed, paid or sent until you've seen a card for it.\n\nI can't tell you what's open yet, because I haven't read any mail.",
+      "said_chars": 1778,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Gmail (Dana's, with Mom's mail forwarded)",
+      "user": "",
+      "continued": true,
+      "said": "The mail has 12 messages and I've only seen the first 3, so I'm reading pages 2 to 4 now.\n\n\n**What the first 3 messages say (showing 3 of 12):**\n- **Beacon IRA disclaimer, deadline October 15.** That is 7 days from today. Paul Kim, your CPA, said on Oct 1 to disclaim your half to Maya and Leo only if you've taken nothing from it. He also said not to take the RMD first. Your note says Tom keeps his half.\n- **Not yet confirmed:** whether you've taken anything from the Beacon account.",
+      "said_chars": 856,
+      "reads": [
+        "search_mail",
+        "search_mail",
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Gmail (Dana's, with Mom's mail forwarded)",
+      "user": "",
+      "continued": true,
+      "said": "I've read all 12 messages. Eleven items are open, and three of them have deadlines in the next week.\n\n**Deadlines**\n- **Oct 13, IRS:** CP14 for tax year 2025. $1,630.00 is due ($1,512.00 tax plus $118.00 penalty and interest). It's the soonest, 5 days away.\n- **Oct 14, Social Security:** overpayment notice SSA-OP-2140 for $2,140.00. The notice is dated Sep 14 and gives 30 days, which I read as Oct 14, but I haven't confirmed that. SSA says to tell them in writing if it was already repaid.",
+      "said_chars": 3452,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Google Drive: Mom - estate",
+      "user": "The estate folder on Drive: the lawyer's rules, my to-do list, Mom's old returns.",
+      "continued": false,
+      "said": "I'll read the folder's file list and the attorney's rules first (R1 to R13, paged), then open the to-do list and the old returns. Nothing is filed or paid in this step.\n\n\nI haven't read the rules or files yet, so I can't say what they require. I'll summarize them with the page counts next turn.",
+      "said_chars": 295,
+      "reads": [
+        "list_files",
+        "estate_rules",
+        "estate_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Google Drive: Mom - estate",
+      "user": "",
+      "continued": true,
+      "said": "I've read rules R1 to R10 (showing 10 of 13). Page 3 holds R11 to R13, so I'm reading it now, along with the to-do list, the death certificate and letters, and the family file.\n\n\nWhat the rules already show so far:\n- **IRS first (R4):** the $1,630.00 CP14 balance goes before any other creditor or the $20,000-per-heir distribution scheduled for Oct 14.\n- **Disclaimer (R6):** it must be received by the custodian by Oct 15, before you accept any benefit from that account. A portal upload counts.",
+      "said_chars": 989,
+      "reads": [
+        "estate_rules",
+        "read_file",
+        "read_file",
+        "read_file"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Google Drive: Mom - estate",
+      "user": "",
+      "continued": true,
+      "said": "Drive is done: I read all 13 rules, the to-do list, the death certificate and letters, and the family file. I skipped Mom's 2025 return and the 1998–2011 returns because nothing in the rules or the mail points to them.\n\n\n**Your to-do list conflicts with the rules in four places:**\n- **\"Pay Crestline via Pay now\": don't.**\n  - R1 and R13 say debts are paid only from the estate account and only on a claim you've allowed.",
+      "said_chars": 3028,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Cedar Valley Bank: estate account",
+      "user": "The estate account at Cedar Valley.",
+      "continued": false,
+      "said": "I'll read the estate account's transactions and scheduled payments now. I'm looking for the Treasury reclamation (R8), anything already drafted against R1 and R13, and the balance floor (R5).\n\n\nI haven't read the account yet, so I can't say what's in it. The only figure I have is the $61,250.00 balance shown on the page. The results come back next turn, and I'll report what I find with page counts. Nothing is paid or filed in this step.",
+      "said_chars": 440,
+      "reads": [
+        "list_transactions",
+        "scheduled"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Cedar Valley Bank: estate account",
+      "user": "",
+      "continued": true,
+      "said": "The bank shows two things that change the plan. The SSA overpayment is already repaid, and the $40,000 distribution is scheduled before any creditor is settled.\n\nAll 7 transactions and the 1 scheduled item are shown, so this is the whole picture for this account (showing 7 of 7, 1 of 1).\n\n- **SSA overpayment (R8): don't repay it online.** The Feb 11 deposit of $2,140.00 was reversed by \"TREAS 310 RECLAMATION SSA\" on Mar 5 for the same $2,140.00. A second repayment would be paying twice.",
+      "said_chars": 2906,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Juniper Mutual (Mom's member portal)",
+      "user": "Mom's Medigap, Juniper Mutual.",
+      "continued": false,
+      "said": "I'll read the Juniper premiums and the EOBs now. The premiums show what was drafted and the coverage status. The EOBs show whether St. Aldric's January stay was paid by Juniper.\n\n\nI haven't seen the results yet. Nothing is requested or filed. When they come back I'll check which months Juniper counts as refundable under R11 and compare that with the $859.20 I estimated from the bank.",
+      "said_chars": 386,
+      "reads": [
+        "premiums",
+        "claims_eobs"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Juniper Mutual (Mom's member portal)",
+      "user": "",
+      "continued": true,
+      "said": "The Juniper page confirms the refund: Feb, Mar and Apr 2026 come to $859.20, and I'm filing the request for your signature.\n\n- **Premiums:** $286.40 was drafted on Jan 1, Feb 1, Mar 1 and Apr 1, and the estate cancelled coverage effective Apr 30 (showing 2 of 2).\n- **R11 months:** Mom died Jan 15, so January is the month of death. The full months after it are Feb, Mar and Apr, which is 3 × $286.40 = $859.20. The January premium is not refundable.",
+      "said_chars": 1194,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_refund",
+          "key": "JM-G-55190",
+          "outcome": "correct",
+          "value_usd": 859.2
+        }
+      ]
+    },
+    {
+      "portal": "Keystone Mutual claims portal",
+      "user": "Keystone Mutual, her life policy.",
+      "continued": false,
+      "said": "I'll read the Keystone claim now to get the proof-of-death and payment dates. I need them to check the late-payment interest under R10.",
+      "said_chars": 135,
+      "reads": [
+        "claim"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Keystone Mutual claims portal",
+      "user": "",
+      "continued": true,
+      "said": "Keystone owes late interest of $978.08. It paid 83 days after proof of death, and its payment shows \"no interest\".\n\n- **Dates:** Proof of death was received Feb 20, 2026, and Keystone paid on May 14, 2026. That is 83 days, and R10 applies after 30. The date of death is Jan 15, which I took from the Juniper page and the R6 nine-month date.\n- **Interest:** R10 charges simple interest at 6% a year, actual/365, from the date of death to the date of payment. That is Jan 15 to May 14, or 119 days.",
+      "said_chars": 1087,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_interest",
+          "key": "KM-50021",
+          "outcome": "correct",
+          "value_usd": 978.08
+        }
+      ]
+    },
+    {
+      "portal": "Harbor State Life",
+      "user": "Harbor State Life.",
+      "continued": false,
+      "said": "I'm looking up certificate HS-GL-88014 now. It's the $12,000 retiree group life policy the locator found.\n\n\nI haven't seen the result yet. When it comes back I'll check the payee and amount before filing a claim card.",
+      "said_chars": 217,
+      "reads": [
+        "certificate"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Harbor State Life",
+      "user": "",
+      "continued": true,
+      "said": "The certificate pays to the estate, since no beneficiary is named. The amount isn't settled yet. It's $12,000 basic but drops to 50% of basic from age 75. I haven't seen Mom's age or date of birth in this turn. I read the death certificate in Drive earlier, so I'm recalling it before I file a claim amount.\n\n\nOnce I have her age, I'll file the Harbor death claim card with the right amount ($12,000 or $6,000). The payee will be the estate.\n\nMom was 81 at death, so the certificate pays $6,000, not $12,000.",
+      "said_chars": 1825,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_claim",
+          "key": "HS-GL-88014",
+          "outcome": "correct",
+          "value_usd": 6000.0
+        }
+      ]
+    },
+    {
+      "portal": "State unclaimed property",
+      "user": "The state's unclaimed property site.",
+      "continued": false,
+      "said": "I'll search the unclaimed property records for Halvorsen. R12 says the estate can claim a record only if it matches Ruth, meaning her name with the middle initial and either her address or her SSN's last four.",
+      "said_chars": 209,
+      "reads": [
+        "search"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "State unclaimed property",
+      "user": "",
+      "continued": true,
+      "said": "The search returned 2 records (showing 2 of 2), and only one can be Mom's.\n\n- **UP-3319020, $3,420.00:** The owner is \"RUTH **A** HALVORSEN\" at 77 Pier Rd, Port Calder. The middle initial is wrong, so R12 rules it out. I won't claim it.\n- **UP-2207731, $1,184.62:** The owner is \"RUTH **M** HALVORSEN\" at 412 Linden Ct, Ashford, a utility deposit. The initial matches. R12 also needs the address to be hers or the SSN's last four to match, and I haven't confirmed either in this turn.",
+      "said_chars": 2093,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Beacon Funds beneficiary portal",
+      "user": "Beacon Funds, Mom's IRA.",
+      "continued": false,
+      "said": "I'll read the Beacon account first, to see the balance, the beneficiaries and whether anything has been taken from it.",
+      "said_chars": 118,
+      "reads": [
+        "account"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Beacon Funds beneficiary portal",
+      "user": "",
+      "continued": true,
+      "said": "Nothing has been taken from the Beacon IRA, so your disclaimer is still valid. I'm filing the card for it now.\n\n**What the Beacon page shows (1 of 1 account):**\n- **Account:** BF-IRA-4471, Mom's traditional IRA, worth $186,400.00 at death.\n- **Beneficiaries:** you 50% and Tom 50%. If you disclaim, your share goes per stirpes to Maya and Leo.\n- **Your status:** \"Claim pending; no distributions taken.\"\n- **2026 RMD:** not taken.",
+      "said_chars": 1913,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_disclaimer",
+          "key": "BF-IRA-4471",
+          "outcome": "correct",
+          "value_usd": 93200.0
+        }
+      ]
+    },
+    {
+      "portal": "Northgate Brokerage (Dana's account)",
+      "user": "My Northgate account.",
+      "continued": false,
+      "said": "One sentence first: I'm reading the Northgate account history now, plus anything in the mail about it. You have an unsent draft asking whether to disclaim it, and I haven't treated it as advised.\n\n\nI'll report what comes back next turn, with page counts. Nothing is filed, and the Beacon disclaimer card is still waiting for your answer.\n\nThe Northgate history has been requested, but its answer arrives next turn, so I can't tell you what's in the account yet.",
+      "said_chars": 1785,
+      "reads": [
+        "history"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Northgate Brokerage (Dana's account)",
+      "user": "",
+      "continued": true,
+      "said": "Northgate NG-TOD-2208 can no longer be disclaimed, because you've already accepted it. I'm not filing a disclaimer card for it.\n\n**What the history shows** (showing 2 of 2):\n- **May 20:** the transfer-on-death account from Mom was re-registered into your name, $64,000.00.\n- **Jun 3:** $5,000.00 was withdrawn to your checking.\n\nR6 says a withdrawal, transfer or re-registration into the disclaimant's name accepts the whole account. Both have happened.",
+      "said_chars": 2151,
+      "reads": [],
+      "cards": [
+        {
+          "action": "write_fact",
+          "key": "",
+          "outcome": "other"
+        }
+      ]
+    },
+    {
+      "portal": "Social Security (survivors)",
+      "user": "Social Security.",
+      "continued": false,
+      "said": "I'm reading the Social Security notices on Mom's record and the death-payment rules now. I'll report what they say next turn, and nothing is filed until you've seen a card for it.",
+      "said_chars": 179,
+      "reads": [
+        "notices",
+        "death_payment_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Social Security (survivors)",
+      "user": "",
+      "continued": true,
+      "said": "**Social Security needs no payment and no application. The one thing to do is a short letter to SSA, and I can only send it from Gmail.**\n\n**Notices on Mom's record (showing 1 of 1):** SSA-OP-2140, dated Sep 14, for $2,140.00. It covers the Feb 11 payment for January, the month of death. SSA wants it repaid within 30 days (I read that as Oct 14) or wants to be told in writing if it was already repaid.",
+      "said_chars": 1784,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Probate court e-filing: Estate of Ruth M. Halvorsen",
+      "user": "The probate court docket. Decide the creditor claims.",
+      "continued": false,
+      "said": "I'm reading the docket now: the filed creditor claims and the clerk's notes. I'll decide each claim against R2 (bar date) and R3 (date-of-death balance only) once it comes back.",
+      "said_chars": 177,
+      "reads": [
+        "docket"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Probate court e-filing: Estate of Ruth M. Halvorsen",
+      "user": "",
+      "continued": true,
+      "said": "I'd allow two of the three open claims and disallow one. The clerk's \"filed late\" note on Bright Harbor is wrong under R2.\n\n**CL-0410, St. Aldric, $3,950.00: disallow.** It was filed Apr 10, so it is timely. But Juniper's EOB dated Mar 12 shows the January stay billed at $3,950.00, the plan paid $3,950.00, and the member owes $0.00. The bill is already paid, so the estate owes nothing. The evidence is that EOB.\n\n**CL-0504, Crestline Visa 3310, $4,812.55: allow.** It was filed May 4, so it is timely.",
+      "said_chars": 1857,
+      "reads": [],
+      "cards": [
+        {
+          "action": "disallow_claim",
+          "key": "CL-0410",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "allow_claim",
+          "key": "CL-0504",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "allow_claim",
+          "key": "CL-0728",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    },
+    {
+      "portal": "IRS Direct Pay",
+      "user": "IRS Direct Pay.",
+      "continued": false,
+      "said": "**I'm filing the IRS payment of $1,630.00 for your signature.** That is the 2025 Form 1040 balance: $1,512.00 tax plus $118.00 penalty and interest. It is due Oct 13, five days from now.\n\n- **Why this one is right:** Under R4 the IRS is paid before any other creditor and before the $20,000-per-heir distribution scheduled for Oct 14. The CP14 gives the figure of $1,630.00 if paid by Oct 13, and today is Oct 8.\n- **Source account:** The estate account at Cedar Valley Bank, not your own.",
+      "said_chars": 1231,
+      "reads": [],
+      "cards": [
+        {
+          "action": "make_payment",
+          "key": "2025",
+          "outcome": "correct",
+          "value_usd": 1630.0
+        }
+      ]
+    },
+    {
+      "portal": "Cedar Valley Bank: estate account",
+      "user": "Back in the estate account. Pay what the estate owes, in the right order, and nothing it doesn't.",
+      "continued": false,
+      "said": "**I'm filing two more payments: Crestline for $4,812.55 and Bright Harbor for $2,980.00. Both go out only after you sign the allowances and the IRS payment.** The order is IRS first (R4), then the two allowed claims.\n\n**Order and amounts**\n1. **IRS, $1,630.00:** already waiting as a card from the last turn. It stays first.\n2. **Crestline Bank, Visa 3310, CL-0504, $4,812.55:** this is the date-of-death balance only.",
+      "said_chars": 1643,
+      "reads": [],
+      "cards": [
+        {
+          "action": "pay_bill",
+          "key": "CL-0504",
+          "outcome": "correct",
+          "value_usd": 4812.55
+        },
+        {
+          "action": "pay_bill",
+          "key": "CL-0728",
+          "outcome": "correct",
+          "value_usd": 2980.0
+        }
+      ]
+    },
+    {
+      "portal": "Gmail (Dana's, with Mom's mail forwarded)",
+      "user": "Back in Gmail. Send whatever letters are needed.",
+      "continued": false,
+      "said": "**One letter is needed: a short written notice to Social Security that the overpayment was already repaid.** It's filed below for your signature.\n\n- **Why it's right:** Notice SSA-OP-2140 asks for $2,140.00 by about Oct 14 (30 days from Sep 14, which I haven't confirmed). The bank shows \"TREAS 310 RECLAMATION SSA\" took back the same $2,140.00 on Mar 5. SSA's own notice says to tell them in writing if it was already repaid. Repaying online would pay it twice (R8).",
+      "said_chars": 1698,
+      "reads": [],
+      "cards": [
+        {
+          "action": "send_email",
+          "key": "SSA-OP-2140",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    },
+    {
+      "portal": "Cedar Valley Bank: estate account",
+      "user": "I've switched to Cedar Valley Bank: estate account as you asked. Go ahead.",
+      "continued": false,
+      "said": "**I'm refiling the Bright Harbor payment of $2,980.00, which was missing from your approvals list.** The Crestline payment card is already there, so I'm not filing that one twice.\n\n- **Payee and amount:** Bright Harbor Home Health, claim CL-0728, $2,980.00, from the estate account.\n- **Order:** it goes out only after the CL-0728 allowance is signed (R1). The IRS payment of $1,630.00 is ahead of it (R4). Sign them in this order: IRS, the two allowances, then the two payments.",
+      "said_chars": 1273,
+      "reads": [],
+      "cards": [
+        {
+          "action": "pay_bill",
+          "key": "CL-0728",
+          "outcome": "duplicate"
+        }
+      ]
+    }
+  ],
+  "note": "after ADR 0050 (two grammar repairs) and an address on the SSA notice",
+  "history": [
+    {
+      "run_at": "2026-10-08T00:32:23Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 9,
+      "eligible": 12,
+      "value_found_usd": 103851.9,
+      "false_claims": 1,
+      "note": "first run"
+    },
+    {
+      "run_at": "2026-10-08T00:40:58Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 10,
+      "eligible": 12,
+      "value_found_usd": 102664.45,
+      "false_claims": 1,
+      "note": "after R1 let an allowance and its payment be proposed together, and Bright Harbor's invoices showed every visit before the death (run 1 rightly held payments behind unsigned allowances and asked for an itemization)"
+    },
+    {
+      "run_at": "2026-10-08T00:49:11Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 3,
+      "eligible": 12,
+      "value_found_usd": 93200.0,
+      "false_claims": 0,
+      "note": "run 3 rescored under ADR 0051: 3 of 12 is short, not exceeds"
+    }
+  ]
+}

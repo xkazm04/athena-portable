@@ -1,0 +1,86 @@
+{
+  "id": "estate-settlement",
+  "title": "A parent's estate, settled without a wrong move",
+  "domain": "Family affairs",
+  "audience": "home",
+  "promise": "Everything a parent left, found and claimed, and everything the estate owes paid in the order the law requires. The disclaimer goes in before its nine months are up, and nothing is paid that the estate or the family doesn't owe.",
+  "persona": "A daughter three states away, court-appointed personal representative of her widowed mother's estate, holding a full-time job and her mother's still-signed-in portals",
+  "chore": "An estate takes about 16 months and hundreds of hours. The executor reads a parent's mail, banks, insurers, benefits and old tax returns to build a ledger. She looks for what nobody told her about: a group life policy, an unclaimed deposit, interest an insurer owes on a late payment. Then she decides before deadlines that never move: a disclaimer in nine months, the creditor bar date, the IRS before anyone else. She also has to refuse what looks like a duty: a collector asking her to pay from her own pocket, a hospital bill insurance already paid, a Social Security 'overpayment' the bank already returned. Guidance apps and lawyers tell her what an estate involves; nobody reads her mother's portals with her.",
+  "command": "Help me settle Mom's estate. Go through everything forwarded from her mail, her accounts and the court docket. Claim what's owed to the estate or to us, decide the creditor claims, pay what the estate owes in the order the law requires and nothing it doesn't, and get the disclaimer my CPA advised in before its deadline. Don't do anything that can't be undone without telling me why it's right.",
+  "apps": [
+    { "name": "Gmail (Mom's mail forwarded)", "role": "the IRS and Social Security notices, the collector's letter, the CPA's advice, the policy locator's match", "api": "Mail", "url": "https://mail.google.com" },
+    { "name": "Google Drive", "role": "the lawyer's rules, the to-do list, old tax returns, the family facts", "api": "Documents", "url": "https://drive.google.com" },
+    { "name": "Estate bank account", "role": "what came in and went out, the scheduled distribution, bill pay", "api": "Portal only", "url": "" },
+    { "name": "Medigap insurer", "role": "premiums drafted after death, the EOB that paid the hospital", "api": "Portal only", "url": "" },
+    { "name": "Life insurer and group-life insurer", "role": "a late payment's interest, a found retiree policy", "api": "Portal only", "url": "" },
+    { "name": "State unclaimed property", "role": "records held for the owner's name", "api": "Search only", "url": "https://www.missingmoney.com" },
+    { "name": "IRA custodian and brokerage", "role": "the inherited IRA, the transfer-on-death account already re-registered", "api": "Portal only", "url": "" },
+    { "name": "Social Security", "role": "the overpayment notice, the death payment's rules", "api": "Portal only", "url": "https://www.ssa.gov" },
+    { "name": "Probate court e-filing", "role": "the notice date and the creditor claims", "api": "Portal only", "url": "" },
+    { "name": "IRS Direct Pay", "role": "the decedent's balance due", "api": "Public form", "url": "https://directpay.irs.gov" }
+  ],
+  "steps": [
+    "Reads the forwarded mail, the lawyer's rules, the bank, the insurers, the custodians and the docket into one ledger as of the date of death.",
+    "Works each claim out by its rule: interest from the date of death, a group benefit's age reduction, refunds only for the months after death.",
+    "Matches every found record to the person before claiming it, and every bill to what already paid it.",
+    "Decides the creditor claims by the bar date and by whether notice was mailed, and pays the IRS before anyone else.",
+    "Files the disclaimer only where nothing was accepted, and refuses what neither the estate nor the family owes."
+  ],
+  "gates": [
+    { "action": "submit_disclaimer", "label": "File a disclaimer", "why": "It is irrevocable and redirects an inheritance." },
+    { "action": "pay_bill", "label": "Pay from the estate", "why": "A personal representative who pays the wrong creditor, or pays in the wrong order, is personally liable." },
+    { "action": "make_payment", "label": "Pay the IRS", "why": "Federal claims come first, and the money leaves the estate." },
+    { "action": "allow_claim", "label": "Allow a creditor claim", "why": "It binds the estate to pay." },
+    { "action": "disallow_claim", "label": "Disallow a creditor claim", "why": "It refuses a creditor on the record." },
+    { "action": "file_claim", "label": "Claim a benefit", "why": "Signed under penalty of perjury." },
+    { "action": "claim_property", "label": "Claim unclaimed property", "why": "Claiming another person's property is fraud." },
+    { "action": "request_interest", "label": "Demand interest", "why": "It goes to the insurer in the estate's name." },
+    { "action": "request_refund", "label": "Ask for a refund", "why": "A written request to the insurer." },
+    { "action": "send_email", "label": "Send a letter", "why": "It speaks for the estate." }
+  ],
+  "traps": [
+    "A disclaimer of an account she already took money from, which would be void.",
+    "Taking the IRA's required distribution first, which would void the disclaimer that matters.",
+    "An unclaimed-property record for a different Ruth Halvorsen.",
+    "A Social Security 'overpayment' the Treasury already pulled back from the bank.",
+    "The $255 death payment, which an adult child cannot get.",
+    "A collector's demand that the daughter pay her mother's debt from her own card.",
+    "A hospital claim the Medigap plan already paid.",
+    "A card balance with post-death interest, where the claim is the balance at death.",
+    "A creditor claim that looks late but is timely, because she mailed that creditor notice herself."
+  ],
+  "memory": [
+    "The ledger as of the date of death, each line cited to the portal that showed it.",
+    "Every deadline: the disclaimer, the bar date, each insurer's window.",
+    "Which accounts were accepted, so no disclaimer is ever offered on them.",
+    "What already paid each bill, so nothing is paid twice."
+  ],
+  "economics": {
+    "value_usd": 20000,
+    "per": "estate",
+    "basis": "Professional estate fees run to tens of thousands (California's statutory fee on a $1M estate is $23,000 for the attorney and $23,000 for the executor), and executors report about 570 hours (vendor survey). The bench world holds $111,644 handled rightly: a $93,200 disclaimer, $9,022 recovered and $9,423 paid, with $8,396 of wrong payments refused.",
+    "manual_minutes": 1200,
+    "incumbent": "Probate attorneys do the legal steps, not the portal legwork; done-for-you services charge flat fees from $250; guidance apps explain. Nobody reads the open portals and stops the executor before an irreversible act.",
+    "sources": [
+      { "label": "Stacker/KTVZ: average time to settle an estate (EstateExec survey, vendor)", "url": "https://ktvz.com/stacker-money/2025/10/08/what-is-the-average-time-to-settle-an-estate/" },
+      { "label": "NAIC: the policy locator has connected consumers with $13B", "url": "https://content.naic.org/article/naic-life-insurance-policy-locator-tool-helps-consumers-connect-more-13-billion-benefits" },
+      { "label": "FTC: dealing with a deceased relative's debt", "url": "https://www.consumer.ftc.gov/consumer-alerts/2020/06/dealing-deceased-relatives-debt" },
+      { "label": "Cal. Prob. Code §19100: the creditor claim bar", "url": "https://california.public.law/codes/probate_code_section_19100" },
+      { "label": "CRS: Social Security's lump-sum death payment", "url": "https://www.everycrsreport.com/reports/R43637.html" },
+      { "label": "Probate fees in California (law-firm summary)", "url": "https://baylegal.com/how-much-does-probate-cost-in-california-attorney-fees-explained/" }
+    ]
+  },
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 5,
+    "difficulty_why": "Twelve portals, three bodies of rules (probate, tax, benefits), deadlines in both directions, an order that matters, and acts that cannot be undone.",
+    "usefulness_why": "About three million estates a year, hundreds of hours each, five- and six-figure decisions, and personal liability for the person doing it."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful executor with a lawyer on call gets most of it right over several evenings. The bar is the disclaimer in time, most of the money, and no wrong payment or void filing."
+  },
+  "caveat": "The estate, its counterparties and its rules are invented and fixed in the bench world; estates follow state law and the will. This is not legal advice, and an executor works with a probate lawyer."
+}
