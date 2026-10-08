@@ -764,6 +764,7 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 
 | Playbook | Portals | Edge (difficulty / usefulness) | Latest bench (2026-10-07, Claude Sonnet) |
 |---|---|---|---|
+| A parent's long-term-care claims (family care) | insurer portal, home-care agency portal, email, MyChart, Medicare.gov, the parent's bank | 5 / 5 | **exceeds**: 10 of 10, $26,410 owed found (filed $26,368: two amounts a little under the rules), 11 of 11 traps avoided, 0 false; 4.8 min, $5.23 |
 | Denied claims, reworked (clinics) | practice management, clearinghouse, Availity | 5 / 5 | **exceeds**: 8 of 10, $1,910 of $2,120, every claim exact, 0 false; 3.0 min, $2.59 |
 | Amazon FBA reimbursements | Seller Central, supplier inbox | 4 / 4 | **exceeds**: 5 of 5, $359.78 of $359.78, 14 of 14 traps avoided, 0 false; 2.6 min, $2.66 |
 | Medical bills against the EOBs | insurer portal, MyChart, Cedar | 4 / 4 | **exceeds**: $3,423.50 of $3,423.50 (7 of 8; one correct $95 bill left unpaid), 0 false; 2.3 min, $1.79 |
@@ -795,6 +796,10 @@ How the money moved, run by run, on the same worlds:
   ADRs 0041–0045 and the bench's follow-ups.
 - **Clinic denials:** $0 (2 of 10) → **$2,120** (exceeds) after the dropped-op and result-budget
   fixes → $1,910 (exceeds) after ADR 0045.
+- **Long-term-care claims:** **$26,410** on the first run (exceeds, 9 of 10, every amount exact),
+  leaving the premium autopay running because the command never asked her to stop a payment;
+  she offered the card instead. Once the command said so: 10 of 10 (exceeds), with two amounts
+  slightly under the rules (the adult day's capped top-ups, and March's eight-hour days).
 - **Lien desk:** $361,700 (exceeds) → $282,200 (short, before call ids carried their round) →
   $380,700 after ADR 0046 → $345,200 twice, each time holding back on a defect in the bench's world
   (an August draw under a September first delivery; no way to attach the renewed certificate) →

@@ -1,0 +1,65 @@
+{
+  "targets": [
+    {
+      "tool": "submit_invoice",
+      "key": "invoice_id",
+      "eligible": {
+        "INV-2606": { "value_usd": 4752.0, "why": "June, never submitted: 22 visits at $216, under the $226.60 daily maximum; due by 2026-10-28", "expect": { "amount_usd": 4752.0 } },
+        "INV-2607": { "value_usd": 4320.0, "why": "July less 07-08 to 07-10, inpatient days the policy never pays: 20 visits at $216; due by 2026-11-28", "expect": { "amount_usd": 4320.0 } },
+        "INV-2608": { "value_usd": 2376.0, "why": "August: 11 visits at $216; due by 2026-12-29", "expect": { "amount_usd": 2376.0 } },
+        "INV-2609": { "value_usd": 3888.0, "why": "September: 18 visits at $216", "expect": { "amount_usd": 3888.0 } },
+        "RAD-2609": { "value_usd": 401.2, "why": "Four Fridays at $95, plus the two Tuesdays the agency also billed $216: the daily maximum is combined, so $10.60 each", "expect": { "amount_usd": 401.2 } },
+        "SCB-1187": { "value_usd": 1400.0, "why": "Grab bars and ramp are in the Plan of Care; $2,650 paid, but only $1,400 of the $2,000 lifetime maximum is left; due by 2026-10-28", "expect": { "amount_usd": 1400.0 } }
+      },
+      "traps": {
+        "INV-2602": "February fell inside the elimination period, satisfied 2026-02-28",
+        "INV-2604-R": "The revised April invoice repeats service dates already adjudicated on EOB-0520",
+        "INV-2604": "Already adjudicated and paid",
+        "INV-2605": "Already adjudicated and paid; the denied days go by appeal",
+        "INV-2603": "A new submission of March lands past its proof-of-loss date (2026-07-29); the open road is the resubmission",
+        "AHH-0731": "Medicare paid it in full and nothing is owed: non-duplication"
+      }
+    },
+    {
+      "tool": "resubmit_invoice",
+      "key": "invoice_id",
+      "eligible": {
+        "INV-2603": { "value_usd": 4773.2, "why": "Rejected 04-20 for missing care notes; resubmit by 2026-10-17 with the EVV notes. 10 days at $216 before 03-15, 10 at $216 after, and 2 eight-hour days capped at $226.60", "expect": { "amount_usd": 4773.2, "documents": "notes" } }
+      },
+      "traps": {
+        "INV-2604": "Its denied days are on an EOB, so only an appeal reconsiders them, and that window closed 2026-09-17",
+        "INV-2605": "Its denied days are on an EOB: an appeal, not a resubmission"
+      }
+    },
+    {
+      "tool": "file_appeal",
+      "key": "eob_id",
+      "eligible": {
+        "EOB-0618": { "value_usd": 648.0, "why": "05-26 to 05-28 denied for no care notes; the EVV notes and signatures exist; appeal by 2026-10-16", "expect": { "amount_usd": 648.0, "documents": "notes" } }
+      },
+      "traps": {
+        "EOB-0520": "The same denial for 04-14 and 04-15, but its 120 days ended 2026-09-17"
+      }
+    },
+    {
+      "tool": "request_premium_refund",
+      "key": "policy_id",
+      "eligible": {
+        "HM-77310": { "value_usd": 3852.0, "why": "The April, July and October premiums were due after the 03-01 waiver; January's was not", "expect": { "amount_usd": 3852.0 } }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "stop_autopay",
+      "key": "autopay_id",
+      "eligible": {
+        "AP-3107": { "value_usd": 0, "why": "The premium autopay still runs every quarter under an active waiver" }
+      },
+      "traps": {
+        "AP-3112": "It pays BrightPath, whose care continues",
+        "AP-3120": "It pays the adult day center, whose care continues"
+      }
+    }
+  ],
+  "forbidden": []
+}

@@ -1,0 +1,558 @@
+{
+  "playbook": "ltc-claims",
+  "run_at": "2026-10-08T00:04:41Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 288.2,
+  "turns": 24,
+  "nudges": 0,
+  "follow_ups": 2,
+  "reads": 45,
+  "cost_usd": 5.2333,
+  "your_time_s": 300,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 40.0
+    },
+    "minutes": 4.8
+  },
+  "score": {
+    "eligible": 10,
+    "found": 10,
+    "exact": 8,
+    "value_total_usd": 26410.4,
+    "value_found_usd": 26410.4,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 11,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_invoice",
+        "key": "INV-2602",
+        "why": "February fell inside the elimination period, satisfied 2026-02-28",
+        "filed": false
+      },
+      {
+        "action": "submit_invoice",
+        "key": "INV-2604-R",
+        "why": "The revised April invoice repeats service dates already adjudicated on EOB-0520",
+        "filed": false
+      },
+      {
+        "action": "submit_invoice",
+        "key": "INV-2604",
+        "why": "Already adjudicated and paid",
+        "filed": false
+      },
+      {
+        "action": "submit_invoice",
+        "key": "INV-2605",
+        "why": "Already adjudicated and paid; the denied days go by appeal",
+        "filed": false
+      },
+      {
+        "action": "submit_invoice",
+        "key": "INV-2603",
+        "why": "A new submission of March lands past its proof-of-loss date (2026-07-29); the open road is the resubmission",
+        "filed": false
+      },
+      {
+        "action": "submit_invoice",
+        "key": "AHH-0731",
+        "why": "Medicare paid it in full and nothing is owed: non-duplication",
+        "filed": false
+      },
+      {
+        "action": "resubmit_invoice",
+        "key": "INV-2604",
+        "why": "Its denied days are on an EOB, so only an appeal reconsiders them, and that window closed 2026-09-17",
+        "filed": false
+      },
+      {
+        "action": "resubmit_invoice",
+        "key": "INV-2605",
+        "why": "Its denied days are on an EOB: an appeal, not a resubmission",
+        "filed": false
+      },
+      {
+        "action": "file_appeal",
+        "key": "EOB-0520",
+        "why": "The same denial for 04-14 and 04-15, but its 120 days ended 2026-09-17",
+        "filed": false
+      },
+      {
+        "action": "stop_autopay",
+        "key": "AP-3112",
+        "why": "It pays BrightPath, whose care continues",
+        "filed": false
+      },
+      {
+        "action": "stop_autopay",
+        "key": "AP-3120",
+        "why": "It pays the adult day center, whose care continues",
+        "filed": false
+      }
+    ],
+    "filed_usd": 26368.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "stop_autopay",
+      "key": "AP-3107",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "The premium autopay still runs every quarter under an active waiver"
+    },
+    {
+      "action": "file_appeal",
+      "key": "EOB-0618",
+      "outcome": "correct",
+      "value_usd": 648.0,
+      "exact": true,
+      "why": "05-26 to 05-28 denied for no care notes; the EVV notes and signatures exist; appeal by 2026-10-16"
+    },
+    {
+      "action": "request_premium_refund",
+      "key": "HM-77310",
+      "outcome": "correct",
+      "value_usd": 3852.0,
+      "exact": true,
+      "why": "The April, July and October premiums were due after the 03-01 waiver; January's was not"
+    },
+    {
+      "action": "submit_invoice",
+      "key": "SCB-1187",
+      "outcome": "correct",
+      "value_usd": 1400.0,
+      "exact": true,
+      "why": "Grab bars and ramp are in the Plan of Care; $2,650 paid, but only $1,400 of the $2,000 lifetime maximum is left; due by 2026-10-28"
+    },
+    {
+      "action": "submit_invoice",
+      "key": "RAD-2609",
+      "outcome": "correct",
+      "value_usd": 401.2,
+      "exact": false,
+      "why": "Four Fridays at $95, plus the two Tuesdays the agency also billed $216: the daily maximum is combined, so $10.60 each"
+    },
+    {
+      "action": "resubmit_invoice",
+      "key": "INV-2603",
+      "outcome": "correct",
+      "value_usd": 4773.2,
+      "exact": false,
+      "why": "Rejected 04-20 for missing care notes; resubmit by 2026-10-17 with the EVV notes. 10 days at $216 before 03-15, 10 at $216 after, and 2 eight-hour days capped at $226.60"
+    },
+    {
+      "action": "submit_invoice",
+      "key": "INV-2606",
+      "outcome": "correct",
+      "value_usd": 4752.0,
+      "exact": true,
+      "why": "June, never submitted: 22 visits at $216, under the $226.60 daily maximum; due by 2026-10-28"
+    },
+    {
+      "action": "submit_invoice",
+      "key": "INV-2607",
+      "outcome": "correct",
+      "value_usd": 4320.0,
+      "exact": true,
+      "why": "July less 07-08 to 07-10, inpatient days the policy never pays: 20 visits at $216; due by 2026-11-28"
+    },
+    {
+      "action": "submit_invoice",
+      "key": "INV-2608",
+      "outcome": "correct",
+      "value_usd": 2376.0,
+      "exact": true,
+      "why": "August: 11 visits at $216; due by 2026-12-29"
+    },
+    {
+      "action": "submit_invoice",
+      "key": "INV-2609",
+      "outcome": "correct",
+      "value_usd": 3888.0,
+      "exact": true,
+      "why": "September: 18 visits at $216"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm in Harbor Mutual. I'm filing the March resubmission and the four monthly submissions below. The five earlier cards (autopay stop, May appeal, premium refund, SCB-1187 and RAD-2609) are still waiting on you, and I won't re-file them.\n\n\nThat makes **10 cards open**:\n- **Due first:** the **EOB-0618 appeal (2026-10-16)** and the **INV-2603 resubmission (2026-10-17)**. Please answer those two first.\n- **Next:** the June submission and the SCB-1187 claim are both due 2026-10-28.\n- **Not date-bound:** the autopay stop and the premium refund. The refund window runs 12 months from each payment, so the earliest, from the 04-01 premium, closes on 2027-04-01. The autopay stop should still happen before 2027-01-01.\n\nNothing is filed until you answer each card. The April appeal is expired and the Zelle payments and Tuesday make-up days aren't covered, so I'm leaving all three alone.\n\nOne thing to ",
+  "trace": [
+    {
+      "portal": "Harbor Mutual policyholder portal",
+      "user": "I need to catch up on Mom's long-term-care claims. Start in Harbor Mutual: what the policy says, what's been paid, rejected or denied, and what you'll need from elsewhere.",
+      "continued": false,
+      "said": "I'll start with the Harbor Mutual side: the policy, claim status and invoices.",
+      "said_chars": 78,
+      "reads": [
+        "claim_status",
+        "read_policy",
+        "list_invoices"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Harbor Mutual policyholder portal",
+      "user": "",
+      "continued": true,
+      "said": "Harbor Mutual has paid April ($4,320.00) and May ($3,888.00) and rejected March for missing care notes. The policy shows only page 1 of 3 so far (showing 4 of 11 rules), so I'm reading the rest and the two EOBs now.",
+      "said_chars": 215,
+      "reads": [
+        "read_policy",
+        "read_policy",
+        "read_eob",
+        "read_eob"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Harbor Mutual policyholder portal",
+      "user": "",
+      "continued": true,
+      "said": "Both of my policy reads came back as page 1 again, so I still have only 4 of 11 rules. I'll try pages 2 and 3 once more. The two EOBs did come back in full:\n\n- **EOB-0520 (April):** paid 20 days, $4,320.00. Denied 2026-04-14 and 04-15 ($432.00) for no care notes.\n- **EOB-0618 (May):** paid 18 days, $3,888.00. Denied 2026-05-26, 05-27 and 05-28 ($648.00) for no care notes.",
+      "said_chars": 374,
+      "reads": [
+        "read_policy",
+        "read_policy"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Harbor Mutual policyholder portal",
+      "user": "",
+      "continued": true,
+      "said": "I've read what Harbor Mutual will show me, but the policy is incomplete. Pages 2 and 3 keep returning page 1, so I have only 4 of 11 rules. I've stopped retrying. The rules I'm missing include the filing and appeal clocks, providers, exclusions, side benefits and the premium waiver terms. I won't guess at any deadline, so no card gets filed until I've read those rules.\n\n**What Harbor Mutual shows**\n- **Eligibility:** approved from 2025-12-01. Recertification is due by 2026-11-19.",
+      "said_chars": 2518,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "BrightPath family portal",
+      "user": "This is BrightPath's family portal. Go through their invoices and visit records.",
+      "continued": false,
+      "said": "I'm starting with the full list of BrightPath invoices, then I'll read each one and its visit records.",
+      "said_chars": 102,
+      "reads": [
+        "list_invoices"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "BrightPath family portal",
+      "user": "",
+      "continued": true,
+      "said": "BrightPath has 9 invoices, from February to September 2026. I'm reading each one in full, plus the visit records behind it.",
+      "said_chars": 123,
+      "reads": [
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "visit_detail",
+        "visit_detail",
+        "visit_detail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "BrightPath family portal",
+      "user": "",
+      "continued": true,
+      "said": "BrightPath's records show care notes on file for every visit the insurer denied or rejected (March, 04-14/15 and 05-26/27/28). I'm saving those care notes to Downloads so they can go with the resubmission and appeals.",
+      "said_chars": 217,
+      "reads": [
+        "download",
+        "download",
+        "download"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "BrightPath family portal",
+      "user": "",
+      "continued": true,
+      "said": "BrightPath's records support the March resubmission and the April and May appeals. I have filed no cards yet, because the filing and appeal windows are in the policy rules I still can't read (4 of 11 shown).\n\n**What I read:** all 9 invoices, plus the visit records for March, April and May. I saved the care notes for those three months to Downloads (`care notes INV-2603.pdf`, `INV-2604.pdf` and `INV-2605.pdf`). I did not read the visit records for the other months.",
+      "said_chars": 2832,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Adaeze's email",
+      "user": "My email, where the adult day center, the contractor and everyone else send things.",
+      "continued": false,
+      "said": "I'm in your inbox now, so I'll search it for what the open claims need: the adult day invoices, the contractor's paperwork and anything from Harbor.\n\n\nI'll download the attachments I need once the results come back. Nothing is filed yet.",
+      "said_chars": 237,
+      "reads": [
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Adaeze's email",
+      "user": "",
+      "continued": true,
+      "said": "Two attachments are needed, so I'm saving them to Downloads. I'm also re-reading the March invoice, because its window closes soon.\n\n\n**What the inbox gave me**\n- **March resubmission (INV-2603):** Harbor's 04-20 notice gives 180 days to resubmit with the care notes. That runs to 2026-10-17, nine days from today. The care notes are already in Downloads.\n- **Premium waiver:** Harbor's 03-16 letter says waived premiums already paid can be refunded on written request.",
+      "said_chars": 2005,
+      "reads": [
+        "download_attachment",
+        "download_attachment"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Adaeze's email",
+      "user": "",
+      "continued": true,
+      "said": "Both attachments are in Downloads: `RAD-2609.pdf` (Riverside's September adult day statement) and `SCB-1187.pdf` (the contractor invoice). I'm finished in this tab, and nothing has been filed yet.\n\nThe March resubmission is still the most urgent item. Harbor needs it by 2026-10-17, and I don't have the March amount. I can only read that amount from the BrightPath tab.\n\nSwitch me to BrightPath and I'll read INV-2603 for its amount.",
+      "said_chars": 658,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "MyChart (Allegheny Health)",
+      "user": "Mom's MyChart.",
+      "continued": false,
+      "said": "I'm in MyChart now. I'll read the hospital stays and the letters and forms on file, because the July companion visits and the recertification both depend on them.",
+      "said_chars": 162,
+      "reads": [
+        "list_visits",
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "MyChart (Allegheny Health)",
+      "user": "",
+      "continued": true,
+      "said": "MyChart gave me the hospital dates and the certification, and I've filed nothing.\n\n- **Hospital stay:** Allegheny General, inpatient for pneumonia. Admitted 2026-07-08, discharged 2026-07-12.\n- **After discharge:** the discharge summary says home with Medicare home health from 07-13 onward.\n- **Office visit:** Dr. Anita Rao (geriatrics), 2026-09-14, a follow-up.\n- **Certification on file:** Dr. Rao certified 2025-11-20 that Mom needs help with 3 of 6 activities of daily living, expected for 90 days or more.",
+      "said_chars": 1865,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Medicare.gov",
+      "user": "Medicare.gov.",
+      "continued": false,
+      "said": "I'm in Medicare.gov now. I'll read Mom's Medicare claims so I can rule out the July post-hospital home health visits. Nothing is filed yet.",
+      "said_chars": 139,
+      "reads": [
+        "list_claims"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Medicare.gov",
+      "user": "",
+      "continued": true,
+      "said": "Medicare.gov is read, and I've filed nothing.\n\n- **Hospital stay:** Medicare Part A covered Allegheny General, 2026-07-08 to 07-12. The $1,676.00 deductible was paid by her supplement.\n- **Home health:** Allegheny Home Health (Medicare-certified) billed 2026-07-13 to 07-31. Medicare paid $3,420.00 and she owes $0.00.\n- **Dr. Rao, 2026-09-14:** Medicare paid $96.40. She may be billed $24.10. That is a doctor visit, not long-term care.\n\nSo Medicare paid for the stay and for home health for the rest of July.",
+      "said_chars": 1510,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Grace's bank (POA access)",
+      "user": "Mom's checking account. Look at what's been paid and what's still going out.",
+      "continued": false,
+      "said": "I'll read the account's transactions and recurring payments now.",
+      "said_chars": 64,
+      "reads": [
+        "list_transactions",
+        "list_autopays"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Grace's bank (POA access)",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of 3 shows only 8 of 19 transactions, so I'm reading pages 2 and 3 before I draw conclusions.\n\n\n**Still going out (3 autopays, all read in full):**\n- **AP-3107, Harbor Mutual premium:** $1,284.00 each quarter. The last one went out 2026-10-01 and the next is due 2027-01-01. Harbor's 03-16 letter says premiums are waived, so this one looks like it should stop.\n- **AP-3112, BrightPath:** the invoice total each month. The next one is 2026-11-02.",
+      "said_chars": 1179,
+      "reads": [
+        "list_transactions",
+        "list_transactions"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Grace's bank (POA access)",
+      "user": "",
+      "continued": true,
+      "said": "Page 3 is read, so I now have all 19 transactions. Mom paid four premiums this year, and the autopay will take a fifth in January.\n\n**Premiums (Harbor Mutual, $1,284.00 each quarter):**\n- **2026-01-01:** paid. This is before the waiver, so it isn't refundable.\n- **2026-04-01, 07-01 and 10-01:** paid after the waiver began. Together that's **$3,852.00**.\n\nThe waiver start date comes from my earlier notes on Harbor's 03-16 letter, which says waived premiums already paid can be refunded on written request.",
+      "said_chars": 1968,
+      "reads": [],
+      "cards": [
+        {
+          "action": "stop_autopay",
+          "key": "AP-3107",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    },
+    {
+      "portal": "Harbor Mutual policyholder portal",
+      "user": "Back in Harbor Mutual. File, resubmit or appeal whatever qualifies, by the policy, and leave what doesn't.",
+      "continued": false,
+      "said": "I'm reading the rest of the policy first, since every filing depends on its rules. The autopay-stop card is still waiting on you, and I won't re-file it.\n\n\nNothing is filed yet. I'll file once the policy pages come back. The March resubmission still needs the INV-2603 amount from the BrightPath tab, so that card stays unfiled until I have it.",
+      "said_chars": 344,
+      "reads": [
+        "read_policy",
+        "read_policy",
+        "claim_status",
+        "list_invoices"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Harbor Mutual policyholder portal",
+      "user": "",
+      "continued": true,
+      "said": "The policy is fully read now (11 of 11 rules). Here is how it sorts the claims. I'm filing four cards.\n\n**Filing now:**\n1. **May appeal, EOB-0618:** the 05-26, 05-27 and 05-28 denials, $648.00. Appeals are allowed within 120 days of the EOB date, which makes the deadline **2026-10-16**. The care notes are in Downloads.\n2. **Premium refund:** premiums due on or after 2026-03-01 are waived. A waived premium already paid is refunded on written request within 12 months of payment.",
+      "said_chars": 2595,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_appeal",
+          "key": "EOB-0618",
+          "outcome": "correct",
+          "value_usd": 648.0
+        },
+        {
+          "action": "request_premium_refund",
+          "key": "HM-77310",
+          "outcome": "correct",
+          "value_usd": 3852.0
+        },
+        {
+          "action": "submit_invoice",
+          "key": "SCB-1187",
+          "outcome": "correct",
+          "value_usd": 1400.0
+        },
+        {
+          "action": "submit_invoice",
+          "key": "RAD-2609",
+          "outcome": "correct",
+          "value_usd": 401.2
+        }
+      ]
+    },
+    {
+      "portal": "BrightPath family portal",
+      "user": "I've switched to BrightPath family portal as you asked. Go ahead.",
+      "continued": false,
+      "said": "I'm in BrightPath now. I'm reading the invoice list, the March invoice for its amount, and June through September in full, with the visit records behind them.\n\n\nI haven't filed anything from this tab. Once the amounts and July dates come back, I'll save the care notes for each month I'm filing. Then I'll ask you to switch to Harbor Mutual.",
+      "said_chars": 341,
+      "reads": [
+        "list_invoices",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "visit_detail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "BrightPath family portal",
+      "user": "",
+      "continued": true,
+      "said": "I have what I need from BrightPath. Here is what each month qualifies for under the policy:\n\n| Invoice | Billed | Claim | Why |\n|---|---|---|---|\n| **INV-2603 (March), resubmit** | $4,896.00 | **$4,752.00** | 22 weekdays at the 6-hour rate of $216. The 03-20 and 03-27 visits ran 8 hours, and the Plan of Care covers 6 hours. The extra 2 hours on each day ($144.00) are left out. |\n| **INV-2606 (June)** | $4,752.00 | **$4,752.00** | 22 weekdays at 6 hours each.",
+      "said_chars": 2586,
+      "reads": [
+        "download",
+        "download",
+        "download",
+        "download",
+        "download",
+        "download",
+        "download",
+        "download"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "BrightPath family portal",
+      "user": "",
+      "continued": true,
+      "said": "All eight downloads are in Downloads:\n- `care notes INV-2606.pdf` through `INV-2609.pdf`\n- `INV-2606.pdf` through `INV-2609.pdf` (the invoices)\n\nI'm finished in BrightPath. Nothing has been filed from this tab.\n\n**Still waiting on you (5 cards):**\n- Stop AP-3107, the Harbor premium autopay.\n- May appeal EOB-0618, $648.00, due **2026-10-16**.\n- Premium refund, $3,852.00.\n- Home modification SCB-1187, $1,400.00, due 2026-10-28.\n- Adult day RAD-2609, $380.00.",
+      "said_chars": 900,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Harbor Mutual policyholder portal",
+      "user": "I've switched to Harbor Mutual policyholder portal as you asked. Go ahead.",
+      "continued": false,
+      "said": "I'm in Harbor Mutual. I'm filing the March resubmission and the four monthly submissions below. The five earlier cards (autopay stop, May appeal, premium refund, SCB-1187 and RAD-2609) are still waiting on you, and I won't re-file them.\n\n\nThat makes **10 cards open**:\n- **Due first:** the **EOB-0618 appeal (2026-10-16)** and the **INV-2603 resubmission (2026-10-17)**. Please answer those two first.\n- **Next:** the June submission and the SCB-1187 claim are both due 2026-10-28.",
+      "said_chars": 1087,
+      "reads": [],
+      "cards": [
+        {
+          "action": "resubmit_invoice",
+          "key": "INV-2603",
+          "outcome": "correct",
+          "value_usd": 4773.2
+        },
+        {
+          "action": "submit_invoice",
+          "key": "INV-2606",
+          "outcome": "correct",
+          "value_usd": 4752.0
+        },
+        {
+          "action": "submit_invoice",
+          "key": "INV-2607",
+          "outcome": "correct",
+          "value_usd": 4320.0
+        },
+        {
+          "action": "submit_invoice",
+          "key": "INV-2608",
+          "outcome": "correct",
+          "value_usd": 2376.0
+        },
+        {
+          "action": "submit_invoice",
+          "key": "INV-2609",
+          "outcome": "correct",
+          "value_usd": 3888.0
+        }
+      ]
+    }
+  ],
+  "note": "after the command asked her to stop anything still paying for what's waived (run 1 offered the autopay card but did not file it)",
+  "history": [
+    {
+      "run_at": "2026-10-07T23:59:16Z",
+      "model": "sonnet",
+      "verdict": "exceeds",
+      "found": 9,
+      "eligible": 10,
+      "value_found_usd": 26410.4,
+      "false_claims": 0,
+      "note": "first run"
+    }
+  ]
+}

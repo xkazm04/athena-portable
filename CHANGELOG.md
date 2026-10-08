@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
+- `feat(playbooks): a parent's long-term-care claims across six portals, benched to exceeds` — a daily maximum that steps on the anniversary and spans the agency and the adult day center, inpatient and Medicare-paid days, a granddaughter's Zelles, a rejected invoice and an open appeal beside a closed one, a capped home modification and waived premiums; $26,410 found on both runs, 0 false.
+
 - `feat(playbooks): the traps she walked past, by name` — `score()` keeps a `trap_ledger` (every trap, why, filed or not); the layer's "What she was right to leave alone", a filed trap first and in the error colour, folded past five; every shipped bench.json backfilled with its counts unchanged.
 
 - `feat(playbooks): watch the run — bench.json keeps each turn, and the playbook's layer replays it` — `trace_of` (portal, the person's words or the run loop's continuation, her words cut at a sentence with `said_chars`, reads, cards with their outcomes); the layer's "Watch the run": a rail of tab visits with a dot per turn coloured by what it did, play, step, arrow keys, the money found so far; every shipped bench.json backfilled from its saved report.
