@@ -1,0 +1,94 @@
+{
+  "targets": [
+    {
+      "tool": "serve_preliminary_notice",
+      "key": "job_id",
+      "eligible": {
+        "MB-LAB": { "value_usd": 36000, "why": "First furnished 09-24; the 20 days run to 10-14 and no notice is on file" },
+        "OAK-CLINIC": { "value_usd": 52000, "why": "Late, but served today it protects work from 09-17 on ($14,800 done, $37,200 to come); the $48,200 before is lost" }
+      },
+      "traps": {
+        "DALY-RES": "Contract directly with the owner: no preliminary notice is required",
+        "SJ-LIB": "Served 2026-09-02 by certified mail: a duplicate",
+        "FREMONT": "Served 2025-10-28",
+        "SUNNYVALE": "Served 2026-01-14"
+      }
+    },
+    {
+      "tool": "record_lien",
+      "key": "job_id",
+      "eligible": {
+        "FREMONT": { "value_usd": 63000, "why": "Notice of Completion recorded 09-10: 30 days end Sat 10-10, so record by Fri 10-09; $41,000 unpaid plus $22,000 retention", "expect": { "amount_usd": 63000 } }
+      },
+      "traps": {
+        "SUNNYVALE": "No Notice of Completion: the 90 days from 09-01 completion run to 11-30, and the retention may yet be paid",
+        "OAK-CLINIC": "No valid preliminary notice yet",
+        "MB-LAB": "Work is in progress and nothing is late enough to lien"
+      }
+    },
+    {
+      "tool": "send_texas_notice",
+      "key": "job_id",
+      "eligible": {
+        "KATY": { "value_usd": 18900, "why": "July work unpaid: notice due by 10-15", "expect": { "amount_usd": 18900 } }
+      },
+      "traps": {},
+      "neutral": {
+        "RR-DC": { "why": "August work: due 11-16 (11-15 is a Sunday); sending now is early but lawful", "expect": { "amount_usd": 62400 } }
+      }
+    },
+    {
+      "tool": "send_retainage_notice",
+      "key": "job_id",
+      "eligible": {
+        "RR-DC": { "value_usd": 27000, "why": "Subcontract completed 09-18: the 30th day is Sun 10-18, so by Mon 10-19 at the latest; $27,000 retainage", "expect": { "amount_usd": 27000 } }
+      },
+      "traps": {
+        "KATY": "Not completed"
+      }
+    },
+    {
+      "tool": "file_nonpayment_notice",
+      "key": "draw_id",
+      "eligible": {
+        "MB-SEP": { "value_usd": 55000, "why": "Instruction 10-05 14:00; no deposit; notice due within 60 hours, by 10-08 02:00", "expect": { "amount_usd": 55000 } }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "sign_waiver",
+      "key": "request_id",
+      "eligible": {
+        "OAK-W-0926": { "value_usd": 38400, "why": "Conditional progress for $38,400, with $4,267 retention and the $6,100 disputed extra under Exceptions", "expect": { "exceptions_usd": 10367 } }
+      },
+      "traps": {
+        "MB-W-SEP": "Unconditional for $55,000 the bank has not received",
+        "SUN-W-FINAL": "Unconditional final while $31,000 retention is unpaid",
+        "KATY-W-AUG": "A custom release with indemnity: return the statutory form"
+      }
+    },
+    {
+      "tool": "decline_waiver",
+      "key": "request_id",
+      "eligible": {
+        "SUN-W-FINAL": { "value_usd": 31000, "why": "Decline the 8138 and offer the 8136 conditional final", "expect": { "offer_form": "8136" } },
+        "KATY-W-AUG": { "value_usd": 23900, "why": "Decline the custom release and offer the Property Code 53.284 statutory form", "expect": { "offer_form": "53.284" } }
+      },
+      "traps": {
+        "OAK-W-0926": "A conditional progress waiver on the right form: sign it with exceptions"
+      },
+      "neutral": {
+        "MB-W-SEP": { "why": "Declining the unconditional waiver until paid is fair, beside the non-payment notice" }
+      }
+    },
+    {
+      "tool": "submit_pay_app",
+      "key": "pay_app_id",
+      "eligible": {
+        "KATY-PA-09": { "value_usd": 71500, "why": "Without pending CO #7 ($12,500) and with the renewed certificate of insurance attached", "expect": { "amount_usd": 71500, "attachments": "COI-2026-27" } }
+      },
+      "traps": {}
+    }
+  ],
+  "forbidden": []
+}

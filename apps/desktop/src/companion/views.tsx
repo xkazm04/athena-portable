@@ -21,6 +21,7 @@ import type {
   CompanionModel,
   EngineView,
   MessageBlock,
+  ProjectView,
   RecordRow,
   StepView,
 } from "./model";
@@ -453,6 +454,46 @@ function Ledger({ model }: { model: CompanionModel }) {
   );
 }
 
+/** A handed-over playbook before the first turn: her plan, the tabs she will ask for, her stops. */
+function Plan({ project }: { project: ProjectView }) {
+  return (
+    <div className="lg-plan" aria-label={`The plan for ${project.title}`}>
+      <p className="lg-plan__eyebrow">The plan</p>
+      <p className="lg-plan__title">{project.title}</p>
+      <ol className="lg-plan__steps">
+        {project.steps.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
+      {project.portals.length ? (
+        <div className="lg-plan__row">
+          <span className="lg-plan__label">Tabs she will ask for</span>
+          <span className="lg-plan__chips">
+            {project.portals.map((p) => (
+              <span key={p} className="lg-plan__chip">
+                {p}
+              </span>
+            ))}
+          </span>
+        </div>
+      ) : null}
+      {project.stops.length ? (
+        <div className="lg-plan__row">
+          <span className="lg-plan__label">She stops for your signature to</span>
+          <span className="lg-plan__chips">
+            {project.stops.map((g) => (
+              <span key={g} className="lg-plan__chip lg-plan__chip--gate">
+                {g}
+              </span>
+            ))}
+          </span>
+        </div>
+      ) : null}
+      <p className="lg-plan__note">The command is in the box below. Send it when you are on the first tab.</p>
+    </div>
+  );
+}
+
 function Talk({ model }: { model: CompanionModel }) {
   const { talk, actions } = model;
   const end = useRef<HTMLDivElement>(null);
@@ -465,7 +506,7 @@ function Talk({ model }: { model: CompanionModel }) {
   const empty = talk.blocks.length === 0 && model.cards.length === 0 && !talk.error;
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const input = e.currentTarget.elements.namedItem("message") as HTMLInputElement | null;
+    const input = e.currentTarget.elements.namedItem("message") as HTMLTextAreaElement | null;
     const value = input?.value.trim() ?? "";
     if (!value || talk.blocked) return;
     if (input) input.value = "";
@@ -474,7 +515,9 @@ function Talk({ model }: { model: CompanionModel }) {
   return (
     <>
       <div className="lg-scroll" tabIndex={0} role="log" aria-label="Conversation">
-        {empty ? (
+        {empty && talk.project?.steps.length ? (
+          <Plan project={talk.project} />
+        ) : empty ? (
           <div className="lg-empty">
             <p className="lg-lead">
               {talk.host ? `Ask about ${talk.host}.` : "Open a page, then ask about it."} Nothing she does there runs
@@ -520,8 +563,36 @@ function Talk({ model }: { model: CompanionModel }) {
         {model.cards.length > 1 ? <p className="lg-foot">and {model.cards.length - 1} more waiting after this one</p> : null}
         <div ref={end} />
       </div>
+      {talk.project ? (
+        <p className="lg-project" role="status">
+          <span className="lg-project__label">Working on</span>
+          <span className="lg-project__title">{talk.project.title}</span>
+          <button type="button" className="aw-textbtn" aria-label={`Stop working on ${talk.project.title}`} onClick={actions.clearProject}>
+            done
+          </button>
+        </p>
+      ) : null}
       <form className="lg-compose" onSubmit={submit}>
-        <input name="message" aria-label="Message Athena" placeholder="Tell Athena what to do" autoComplete="off" disabled={!!talk.blocked} />
+        {/* Keyed by the offer, so a command Main hands over (ADR 0040) lands as the draft and the
+            person's own typing is never overwritten by a re-render. */}
+        <textarea
+          key={talk.draft.n}
+          name="message"
+          aria-label="Message Athena"
+          placeholder="Tell Athena what to do"
+          autoComplete="off"
+          rows={talk.draft.text ? 3 : 1}
+          defaultValue={talk.draft.text}
+          autoFocus={talk.draft.n > 0}
+          disabled={!!talk.blocked}
+          onKeyDown={(e) => {
+            // Enter sends, as it did when this was one line; Shift+Enter starts a new one.
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              e.currentTarget.form?.requestSubmit();
+            }
+          }}
+        />
         <button type="submit" className="aw-btn aw-btn-primary aw-btn-icon" aria-label="Send" disabled={!!talk.blocked}>
           <Icon name="send" />
         </button>

@@ -14,7 +14,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { PTT_EVENT, type PttPayload } from "@/lib/halo-signal";
 import { call, hasShell, on } from "@/lib/ipc";
-import type { UnlistenFn } from "@tauri-apps/api/event";
+import { emitTo, type UnlistenFn } from "@tauri-apps/api/event";
 
 /** The seven named states, in the ADR's order. */
 export const ATHENA_STATES = ["seal", "tape", "hear", "slip", "welcome", "ledger", "tab"] as const;
@@ -115,6 +115,31 @@ export const onChord = (f: (chord: Chord) => void): Promise<UnlistenFn> =>
 
 /** The summon chord held past 250 ms, and its release (ADR 0027, decision 5). */
 export const onPtt = (f: (ptt: PttPayload) => void): Promise<UnlistenFn> => on<PttPayload>(PTT_EVENT, f);
+
+// -- an offered command ------------------------------------------------------------------------
+
+/** Main hands her a command to consider: a playbook's, from the Playbooks module (ADR 0040). */
+export const OFFER_EVENT = "athena:offer";
+
+export interface Offer {
+  text: string;
+  /** When the command is a playbook's, which one: it becomes her active project (ADR 0044). */
+  playbook?: { id: string; title: string };
+}
+
+/**
+ * Put `text` in her composer and bring her up. Nothing is sent: the person reads it in her
+ * window and presses send, so the turn starts with their act, not Main's. Without a shell this
+ * rejects like every other command (`lib/ipc.ts`).
+ */
+export async function athenaOffer(text: string, playbook?: Offer["playbook"]): Promise<void> {
+  if (!hasShell()) throw new Error("Athena's window is only there in the app.");
+  await emitTo("athena", OFFER_EVENT, (playbook ? { text, playbook } : { text }) satisfies Offer);
+  await athenaShow();
+}
+
+export const onOffer = (f: (offer: Offer) => void): Promise<UnlistenFn> =>
+  on<Offer>(OFFER_EVENT, f);
 
 // -- the global push-to-talk ---------------------------------------------------------------------
 

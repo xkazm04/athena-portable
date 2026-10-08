@@ -1,10 +1,11 @@
 /**
  * The Connectors module's surface — a pure function of `ConnectorsModel`.
  *
- * One card per service, and the same order inside every card: what it is and how it stands, what
- * it yields (reads, then writes marked GATED), the two decisions a person makes (may it write at
- * all, and to whom or where), and the way in. The way in is last because a connected service
- * hardly needs it and an unconnected one has nothing above it worth deciding yet.
+ * Two layers (ADR 0029). The overview is a grid of tiles: each service's emblem, inked when it is
+ * connected, its standing and one sentence — the only act is opening one. Its layer holds every
+ * write: on the left the two decisions a person makes (may it write at all, and to whom or where)
+ * with the switch, the probe and Disconnect, or the way in when it is not connected; on the right
+ * what it yields (reads, then writes marked GATED) and the guide.
  *
  * Nothing here is stored and nothing is guessed: the standing word, the seal sentence and the age
  * of the last probe come from the daemon's record through the selector, and a refusal is shown in
@@ -14,19 +15,33 @@ import { useState } from "react";
 
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
+import Emblem, { GLYPHS } from "@/components/Emblem";
 import FormField, { TextInput } from "@/components/FormField";
+import Layer, { LayerColumns } from "@/components/Layer";
 import PageHeader from "@/components/PageHeader";
+import PageSection from "@/components/PageSection";
 import PageShell from "@/components/PageShell";
 import PillGroup from "@/components/PillGroup";
 import ProblemNote from "@/components/ProblemNote";
 import SectionCard from "@/components/SectionCard";
+import Tile from "@/components/Tile";
 import type { ConnectorToolView } from "@/lib/api";
 
 import "./connectors.css";
 import { paragraphsOf, type ConnectorRow, type ConnectorsModel } from "./model";
 
-export default function ConnectorsView({ model }: { model: ConnectorsModel }) {
+export default function ConnectorsView({
+  model,
+  initialOpen = null,
+}: {
+  model: ConnectorsModel;
+  /** Preview only: open this connector's layer on first render. */
+  initialOpen?: string | null;
+}) {
+  const [open, setOpen] = useState<string | null>(initialOpen);
   const connected = model.rows.filter((r) => r.standing === "connected").length;
+  // The layer shows the connector as it is now: looked up from the model on every render.
+  const current = model.rows.find((r) => r.id === open) ?? null;
   return (
     <PageShell>
       <PageHeader
@@ -65,85 +80,146 @@ export default function ConnectorsView({ model }: { model: ConnectorsModel }) {
       ) : !model.loaded ? (
         <p className="typo-caption">Asking the daemon what is connected…</p>
       ) : (
-        <div className="connectors">
+        <div className="connectors-grid">
           {model.rows.map((row) => (
-            <ConnectorCard key={row.id} row={row} model={model} />
+            <Tile
+              key={row.id}
+              emblem={<Emblem glyph={GLYPHS[row.id] ?? GLYPHS.generic} done={row.standing === "connected"} />}
+              title={row.label}
+              pill={<Badge tone={row.tone}>{row.busy ? `${row.busy}…` : row.word}</Badge>}
+              line={row.sentence}
+              foot={<TileFoot row={row} />}
+              onOpen={() => setOpen(row.id)}
+            />
           ))}
         </div>
       )}
+
+      {current ? (
+        <Layer
+          eyebrow="Connector"
+          title={current.label}
+          onClose={() => setOpen(null)}
+          actions={<Badge tone={current.tone}>{current.busy ? `${current.busy}…` : current.word}</Badge>}
+        >
+          <ConnectorLayer row={current} model={model} />
+        </Layer>
+      ) : null}
     </PageShell>
   );
 }
 
-// -- one card ----------------------------------------------------------------------------------
+function TileFoot({ row }: { row: ConnectorRow }) {
+  return (
+    <>
+      <span className="connector-chip">{plural(row.reads.length, "read")}</span>
+      <span className="connector-chip connector-chip--gated">{`${plural(row.writes.length, "write")}, gated`}</span>
+      {row.writes.length && row.standing === "connected" ? (
+        <span className="connector-chip">{row.writesEnabled ? "writes on" : "writes off"}</span>
+      ) : null}
+    </>
+  );
+}
 
-function ConnectorCard({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) {
+function plural(n: number, noun: string): string {
+  return `${n} ${noun}${n === 1 ? "" : "s"}`;
+}
+
+/** A guide paragraph that numbers its steps inline ("1. Open … 2. Copy …") reads as a list. */
+function GuideParagraph({ text }: { text: string }) {
+  const steps = text.split(/\s+(?=\d+\.\s)/).filter(Boolean);
+  if (steps.length < 2 || !/^\d+\.\s/.test(steps[0])) return <p className="typo-body">{text}</p>;
+  return (
+    <ol className="connector__steps">
+      {steps.map((step, i) => (
+        <li key={i} className="typo-body">
+          {step.replace(/^\d+\.\s/, "")}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+// -- one connector's layer -------------------------------------------------------------------------
+
+/** What is set on the left, what it yields and how to connect on the right (ADR 0029). */
+function ConnectorLayer({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) {
   const { actions } = model;
   const on = row.standing === "connected" || row.standing === "off" || row.standing === "broken";
   return (
-    <SectionCard
-      title={row.label}
-      note={row.description}
-      action={<Badge tone={row.tone}>{row.busy ? `${row.busy}…` : row.word}</Badge>}
-    >
-      <p className="typo-body connector__sentence">{row.sentence}</p>
-      {row.seal ? <p className="typo-caption">The credential is {row.seal}.</p> : null}
-      {!row.sealAvailable ? (
-        <p className="typo-caption">
-          Nothing on this machine can seal a credential, so nothing will be stored.
-        </p>
-      ) : null}
-      {row.error ? (
-        <ProblemNote title={`${row.label} refused.`} reason={row.error} tone="error" />
-      ) : null}
-
-      <Tools row={row} />
-
-      {on ? <Decisions row={row} model={model} /> : null}
-
-      {row.standing === "connected" || row.standing === "off" || row.standing === "broken" ? null : (
-        <ConnectForm row={row} model={model} />
-      )}
-
-      <details className="connector__guide">
-        <summary className="typo-caption">How to connect</summary>
-        <div className="connector__guide-body">
-          {paragraphsOf(row.guide).map((p, i) => (
-            <p key={i} className="typo-body">
-              {p}
-            </p>
-          ))}
-        </div>
-      </details>
-
-      {on || row.standing === "needs-reauth" ? (
-        <div className="connector__foot">
-          {on ? (
-            <PillGroup
-              ariaLabel={`${row.label} switch`}
-              value={row.enabled ? "on" : "off"}
-              onChange={(next) => actions.setEnabled(row.id, next === "on")}
-              disabled={Boolean(row.busy)}
-              options={[
-                { value: "on", label: "on", hint: "Athena may call this connector." },
-                { value: "off", label: "off", hint: "Connected, but nothing runs." },
-              ]}
-            />
+    <LayerColumns
+      left={
+        <>
+          <div className="connector-hero">
+            <Emblem glyph={GLYPHS[row.id] ?? GLYPHS.generic} done={row.standing === "connected"} size={72} />
+            <div className="stack" style={{ gap: 4 }}>
+              <p className="typo-body">{row.description}</p>
+              <p className="typo-title">{row.sentence}</p>
+              {row.seal ? <p className="typo-caption">The credential is {row.seal}.</p> : null}
+              {!row.sealAvailable ? (
+                <p className="typo-caption">
+                  Nothing on this machine can seal a credential, so nothing will be stored.
+                </p>
+              ) : null}
+            </div>
+          </div>
+          {row.error ? (
+            <ProblemNote title={`${row.label} refused.`} reason={row.error} tone="error" />
           ) : null}
+
           {on ? (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => actions.probe(row.id)}
-              disabledReason={row.busy ? `${row.busy}…` : undefined}
-            >
-              Check now
-            </Button>
-          ) : null}
-          <Disconnect row={row} onDisconnect={() => actions.disconnect(row.id)} />
-        </div>
-      ) : null}
-    </SectionCard>
+            <PageSection title="Decisions" note="The gate reads these on every call.">
+              <Decisions row={row} model={model} />
+              <div className="connector__foot">
+                <span className="typo-title">Athena may call it</span>
+                <PillGroup
+                  ariaLabel={`${row.label} switch`}
+                  value={row.enabled ? "on" : "off"}
+                  onChange={(next) => actions.setEnabled(row.id, next === "on")}
+                  disabled={Boolean(row.busy)}
+                  options={[
+                    { value: "on", label: "on", hint: "Athena may call this connector." },
+                    { value: "off", label: "off", hint: "Connected, but nothing runs." },
+                  ]}
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => actions.probe(row.id)}
+                  disabledReason={row.busy ? `${row.busy}…` : undefined}
+                >
+                  Check now
+                </Button>
+                <Disconnect row={row} onDisconnect={() => actions.disconnect(row.id)} />
+              </div>
+            </PageSection>
+          ) : (
+            <PageSection title="Connect" note="Probed before it is sealed.">
+              <ConnectForm row={row} model={model} />
+              {row.standing === "needs-reauth" ? (
+                <div className="connector__foot">
+                  <Disconnect row={row} onDisconnect={() => actions.disconnect(row.id)} />
+                </div>
+              ) : null}
+            </PageSection>
+          )}
+        </>
+      }
+      right={
+        <>
+          <SectionCard title="What it yields" posture="flat">
+            <Tools row={row} />
+          </SectionCard>
+          <SectionCard title="How to connect" posture="flat">
+            <div className="connector__guide-body">
+              {paragraphsOf(row.guide).map((p, i) => (
+                <GuideParagraph key={i} text={p} />
+              ))}
+            </div>
+          </SectionCard>
+        </>
+      }
+    />
   );
 }
 

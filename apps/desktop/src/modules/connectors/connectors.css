@@ -161,3 +161,45 @@
   padding-top: 8px;
   border-top: 1px solid var(--border-subtle);
 }
+
+/* -- the overview (ADR 0029): a grid of tiles ----------------------------------------------------- */
+.connectors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--density-gap);
+}
+
+.connector-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.connector-chip--gated {
+  border-color: color-mix(in srgb, var(--role-human) 40%, transparent);
+}
+
+/* -- the layer --------------------------------------------------------------------------------------- */
+.connector-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--density-gap);
+  padding: var(--density-pad);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+}
+
+.connector__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding-left: 1.25rem;
+}

@@ -20,7 +20,7 @@ import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
 import type { ModuleEntry } from "@/modules/types";
 
-import { fixtureIds, fixtures } from "./fixtures";
+import { fixtureIds, fixtures, initialAppFor } from "./fixtures";
 import { originOf, selectBrowser, tabOn, type BrowserActions } from "./model";
 import BrowserView from "./view";
 
@@ -92,6 +92,9 @@ export const entry: ModuleEntry = {
   blurb: "The apps Athena works in: what is open, what is registered, and the one rectangle this app does not paint.",
   fixtureIds,
   preview: (fixture) =>
-    createElement(BrowserView, { model: fixtures[fixture] ?? fixtures.typical }),
+    createElement(BrowserView, {
+      model: fixtures[fixture] ?? fixtures.typical,
+      initialApp: initialAppFor(fixture),
+    }),
   Live,
 };

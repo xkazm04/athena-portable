@@ -230,8 +230,13 @@ class World:
         host_state: Mapping[str, Any] | None = None,
         tool_results: Sequence[Mapping[str, Any]] = (),
         surface: str = "panel",
+        active_project: Mapping[str, Any] | None = None,
     ) -> TurnRecord:
-        """``POST /run`` once and read back what the gate recorded."""
+        """``POST /run`` once and read back what the gate recorded.
+
+        ``active_project`` is what the surface sends as the person's selected project — for a
+        playbook run, its title and goal (ADR 0044) — and rides the frame of this turn.
+        """
         record = TurnRecord(counts_before=self.local.brain.counts())
         rows_before = self.local.ledger.recent(1).total
         self._gate_log.clear()
@@ -243,6 +248,8 @@ class World:
             "host_state": dict(host_state or {}),
             "tool_results": [dict(row) for row in tool_results],
         }
+        if active_project:
+            body["active_project"] = dict(active_project)
         try:
             answer = routes.run(self.local.daemon, routes.Request("POST", "/run", body=body))
             if isinstance(answer, routes.EventStream):

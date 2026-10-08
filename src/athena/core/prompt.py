@@ -141,10 +141,13 @@ BUDGETS: Mapping[str, int] = {
 
 #: How much of a host-state payload reaches the prompt before it is cut and announced.
 HOST_STATE_CHARS = BUDGETS["frame.host_state"]
-#: How many of last turn's tool results are rendered, newest last.
-TOOL_RESULT_LIMIT = 8
-#: How many pending decisions the digest names before it announces the rest.
-DECISION_LIMIT = 10
+#: The most of last turn's tool results ever rendered, newest last. The real bound is the block's
+#: character budget (``BUDGETS["frame.tools"]``): as many results as fit are shown, so a turn that
+#: read twelve short pages sees twelve, not the last eight (ADR 0043).
+TOOL_RESULT_LIMIT = 32
+#: How many pending decisions the digest names before it announces the rest. A cross-portal chore
+#: leaves a dozen cards waiting at once, and ten hid the eleventh from her (ADR 0052).
+DECISION_LIMIT = 20
 
 
 # --- what came out ----------------------------------------------------------------------------
@@ -352,9 +355,16 @@ def _tool_results_block(
     """What the tools you called last turn returned. Tool output is untrusted: a page that can
     write its own tool's result can write anything into this block."""
     total = len(results)
-    shown = min(total, max(limit, 0))
-    kept = list(results)[total - shown :] if shown else []
-    items = [f"- {result.name} → {_outcome(result)}\n{_output(result)}" for result in kept]
+    budget = BUDGETS["frame.tools"] - 400  # the heading, the fence and the footer
+    items: list[str] = []
+    used = 0
+    for result in reversed(list(results)[max(total - max(limit, 0), 0) :]):
+        item = f"- {result.name} → {_outcome(result)}\n{_output(result)}"
+        if items and used + len(item) + 2 > budget:
+            break
+        items.insert(0, item)
+        used += len(item) + 2
+    shown = len(items)
     body = "\n\n".join(items) or "(no tools ran last turn)"
     text = (
         "## Results from the tools you called last turn\n\n"

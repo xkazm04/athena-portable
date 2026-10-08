@@ -3,7 +3,7 @@
  * do on a page today (B12, B2).
  */
 import { renderToStaticMarkup } from "react-dom/server";
-import { expect, test } from "vitest";
+import { describe, expect, it, test } from "vitest";
 
 import { entry } from "./index";
 import { fixtureIds } from "./fixtures";
@@ -22,4 +22,20 @@ test("no fixture claims hands that are not wired, or a switch that is not enforc
     const html = renderToStaticMarkup(entry.preview(id));
     expect(html, id).not.toMatch(/hands|switched off|Switch off/i);
   }
+});
+
+describe("two layers (ADR 0029)", () => {
+  it("leaves only navigation on the ledger: no field, no switch, no Forget", () => {
+    const html = renderToStaticMarkup(entry.preview("typical"));
+    expect(html).not.toMatch(/<input class="input register__field|role="radiogroup"|role="dialog"/);
+    expect(html).not.toContain("Forget");
+    expect(html).toContain("Register an app");
+  });
+
+  it("opens the register layer on a first run, and an app's layer holds its switch and Forget", () => {
+    expect(renderToStaticMarkup(entry.preview("first-run"))).toContain('role="dialog"');
+    const app = renderToStaticMarkup(entry.preview("app-details"));
+    expect(app).toContain('role="radiogroup"');
+    expect(app).toContain("Forget this app");
+  });
 });

@@ -1,0 +1,709 @@
+{
+  "today": "2026-10-07",
+  "apps": [
+    {
+      "app_id": "pm",
+      "name": "Ridgeview practice management",
+      "origin": "https://pm.ridgeviewfamily.example",
+      "path": "/billing/denials",
+      "view": {
+        "view": "Denial worklist",
+        "practice": "Ridgeview Family Medicine (3 physicians)"
+      },
+      "tools": [
+        {
+          "name": "list_denials",
+          "kind": "READ",
+          "description": "The denial worklist: claim, payer, date of service, reason code, amount and status. Paged.",
+          "params": {
+            "payer": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "claims",
+            "match": {
+              "payer": "payer"
+            },
+            "page_size": 7,
+            "fields": [
+              "claim_id",
+              "payer",
+              "dos",
+              "reason_code",
+              "amount_usd",
+              "status"
+            ]
+          }
+        },
+        {
+          "name": "read_claim",
+          "kind": "READ",
+          "description": "One claim in full: codes, modifiers, rendering NPI, when it was sent, the denial and its remark.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "claims",
+            "match": {
+              "claim_id": "claim_id"
+            },
+            "require": [
+              "claim_id"
+            ]
+          }
+        },
+        {
+          "name": "read_encounter",
+          "kind": "READ",
+          "description": "The encounter note behind a claim: who saw the patient and what was done.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "encounters",
+            "match": {
+              "claim_id": "claim_id"
+            },
+            "require": [
+              "claim_id"
+            ]
+          }
+        },
+        {
+          "name": "list_providers",
+          "kind": "READ",
+          "description": "The practice's physicians and their NPIs.",
+          "params": {},
+          "returns": {
+            "table": "providers"
+          }
+        },
+        {
+          "name": "write_off",
+          "kind": "PERMANENT",
+          "description": "Write off a denied claim's balance and close it in the books.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "{claim_id} written off and closed."
+        }
+      ],
+      "aliases": [
+        "practice system",
+        "practice management"
+      ]
+    },
+    {
+      "app_id": "clearinghouse",
+      "name": "Clearinghouse",
+      "origin": "https://portal.clearinghouse.example",
+      "path": "/reports",
+      "view": {
+        "view": "Claim reports",
+        "submitter": "Ridgeview Family Medicine"
+      },
+      "tools": [
+        {
+          "name": "search_reports",
+          "kind": "READ",
+          "description": "Acknowledgement reports for a claim: 999 (accepted or rejected at intake) and 277CA (accepted by the payer), with dates.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "reports",
+            "match": {
+              "claim_id": "claim_id"
+            },
+            "require": [
+              "claim_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "clearinghouse"
+      ]
+    },
+    {
+      "app_id": "availity",
+      "name": "Availity",
+      "origin": "https://apps.availity.com",
+      "path": "/claims",
+      "view": {
+        "view": "Claims and appeals",
+        "organization": "Ridgeview Family Medicine",
+        "payers": [
+          "Cigna",
+          "UnitedHealthcare",
+          "Aetna"
+        ]
+      },
+      "tools": [
+        {
+          "name": "read_payer_rules",
+          "kind": "READ",
+          "description": "A payer's own rules: corrected-claim limits, reconsideration windows, authorisations, timely filing proof.",
+          "params": {
+            "payer": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "payer": "payer"
+            },
+            "mode": "contains"
+          }
+        },
+        {
+          "name": "claim_status",
+          "kind": "READ",
+          "description": "The payer's status for a claim, including corrected claims in process.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "status",
+            "match": {
+              "claim_id": "claim_id"
+            },
+            "require": [
+              "claim_id"
+            ]
+          }
+        },
+        {
+          "name": "lookup_authorization",
+          "kind": "READ",
+          "description": "Authorisations on file with the payer for a claim's patient and service.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "auths",
+            "match": {
+              "claim_id": "claim_id"
+            },
+            "require": [
+              "claim_id"
+            ]
+          }
+        },
+        {
+          "name": "submit_corrected_claim",
+          "kind": "REACHES_A_PERSON",
+          "description": "Resubmit a claim as a corrected claim (frequency 7) with the correction made.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "correction": {
+              "type": "string"
+            },
+            "modifier": {
+              "type": "string"
+            },
+            "rendering_npi": {
+              "type": "string"
+            }
+          },
+          "says": "Corrected claim for {claim_id} sent to {payer}."
+        },
+        {
+          "name": "file_reconsideration",
+          "kind": "REACHES_A_PERSON",
+          "description": "File a reconsideration of a denied claim with the reason and the supporting evidence.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            },
+            "payer": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "evidence": {
+              "type": "string"
+            }
+          },
+          "says": "Reconsideration for {claim_id} filed with {payer}."
+        }
+      ],
+      "aliases": [
+        "Availity",
+        "payer portal"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "pm",
+      "message": "Let's work this week's denial worklist. Start here in the practice system: read each denial and what's behind it, and tell me what you'll need from the clearinghouse and the payer portal.",
+      "nudges": 2
+    },
+    {
+      "app": "clearinghouse",
+      "message": "I've opened the clearinghouse. Pull the reports you need.",
+      "nudges": 1
+    },
+    {
+      "app": "availity",
+      "message": "Now Availity. Check the payer rules and authorisations, then resubmit and reconsider whatever holds up.",
+      "nudges": 2
+    },
+    {
+      "app": "pm",
+      "message": "Back in the practice system. Write off only what can't be won, and leave anything still pending alone.",
+      "nudges": 1
+    }
+  ],
+  "tables": {
+    "providers": [
+      {
+        "name": "Dr. Anika Patel",
+        "npi": "1720394851"
+      },
+      {
+        "name": "Dr. Samuel Okoye",
+        "npi": "1093847562"
+      },
+      {
+        "name": "Dr. Lena Brandt",
+        "npi": "1386502947"
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "CL-2201",
+        "payer": "Cigna",
+        "dos": "2026-08-18",
+        "cpt": "99396 + 99213",
+        "modifiers": "none",
+        "rendering_npi": "1720394851",
+        "amount_usd": 142.0,
+        "sent": "2026-08-20",
+        "denied": "2026-09-02",
+        "reason_code": "CO-16",
+        "remark": "Claim lacks information: modifier required for the problem visit billed with a preventive visit.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2207",
+        "payer": "UnitedHealthcare",
+        "dos": "2026-08-25",
+        "cpt": "99395 + 99214",
+        "modifiers": "none",
+        "rendering_npi": "1386502947",
+        "amount_usd": 142.0,
+        "sent": "2026-08-27",
+        "denied": "2026-09-10",
+        "reason_code": "CO-16",
+        "remark": "Missing modifier on the problem-oriented E/M.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2213",
+        "payer": "Aetna",
+        "dos": "2026-09-03",
+        "cpt": "99397 + 99212",
+        "modifiers": "none",
+        "rendering_npi": "1093847562",
+        "amount_usd": 96.0,
+        "sent": "2026-09-05",
+        "denied": "2026-09-19",
+        "reason_code": "CO-16",
+        "remark": "Separately identifiable E/M requires a modifier.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2190",
+        "payer": "Cigna",
+        "dos": "2026-07-04",
+        "cpt": "99396 + 99213",
+        "modifiers": "none",
+        "rendering_npi": "1720394851",
+        "amount_usd": 118.0,
+        "sent": "2026-07-07",
+        "denied": "2026-07-21",
+        "reason_code": "CO-16",
+        "remark": "Modifier required for the problem visit.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2215",
+        "payer": "UnitedHealthcare",
+        "dos": "2026-09-08",
+        "cpt": "99215",
+        "modifiers": "none",
+        "rendering_npi": "1720394851",
+        "amount_usd": 210.0,
+        "sent": "2026-09-10",
+        "denied": "2026-09-24",
+        "reason_code": "CO-16",
+        "remark": "Rendering provider does not match the provider on the authorisation and the record.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2150",
+        "payer": "Aetna",
+        "dos": "2026-06-10",
+        "cpt": "99214 + 93000",
+        "modifiers": "25",
+        "rendering_npi": "1093847562",
+        "amount_usd": 380.0,
+        "sent": "2026-07-19",
+        "denied": "2026-09-15",
+        "reason_code": "CO-29",
+        "remark": "The time limit for filing has expired.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2142",
+        "payer": "Cigna",
+        "dos": "2026-05-28",
+        "cpt": "99214",
+        "modifiers": "none",
+        "rendering_npi": "1386502947",
+        "amount_usd": 165.0,
+        "sent": "2026-06-01, resent 2026-09-01",
+        "denied": "2026-09-14",
+        "reason_code": "CO-29",
+        "remark": "The time limit for filing has expired.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2198",
+        "payer": "UnitedHealthcare",
+        "dos": "2026-08-12",
+        "cpt": "72148 (MRI lumbar)",
+        "modifiers": "none",
+        "rendering_npi": "1093847562",
+        "amount_usd": 1150.0,
+        "sent": "2026-08-14",
+        "denied": "2026-09-01",
+        "reason_code": "CO-197",
+        "remark": "Precertification or authorisation absent.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2205",
+        "payer": "Cigna",
+        "dos": "2026-08-21",
+        "cpt": "74177 (CT abdomen)",
+        "modifiers": "none",
+        "rendering_npi": "1386502947",
+        "amount_usd": 640.0,
+        "sent": "2026-08-23",
+        "denied": "2026-09-08",
+        "reason_code": "CO-197",
+        "remark": "Precertification or authorisation absent.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2211",
+        "payer": "Aetna",
+        "dos": "2026-09-01",
+        "cpt": "99213",
+        "modifiers": "none",
+        "rendering_npi": "1720394851",
+        "amount_usd": 88.0,
+        "sent": "2026-09-12",
+        "denied": "2026-09-22",
+        "reason_code": "CO-18",
+        "remark": "Exact duplicate of claim CL-2209.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2188",
+        "payer": "Aetna (secondary)",
+        "dos": "2026-08-05",
+        "cpt": "99214",
+        "modifiers": "none",
+        "rendering_npi": "1093847562",
+        "amount_usd": 74.0,
+        "sent": "2026-08-08",
+        "denied": "2026-08-30",
+        "reason_code": "CO-22 / MA130",
+        "remark": "Secondary claim received without the primary payer's EOB. Primary claim CL-2187 with UnitedHealthcare.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2101",
+        "payer": "Cigna",
+        "dos": "2026-03-02",
+        "cpt": "97110 x4",
+        "modifiers": "GP",
+        "rendering_npi": "1386502947",
+        "amount_usd": 260.0,
+        "sent": "2026-03-04",
+        "denied": "2026-03-20",
+        "reason_code": "CO-50",
+        "remark": "Not deemed a medical necessity.",
+        "status": "Denied"
+      },
+      {
+        "claim_id": "CL-2160",
+        "payer": "UnitedHealthcare",
+        "dos": "2026-07-15",
+        "cpt": "99214",
+        "modifiers": "25",
+        "rendering_npi": "1720394851",
+        "amount_usd": 132.0,
+        "sent": "2026-07-17",
+        "denied": "2026-08-02",
+        "reason_code": "CO-16",
+        "remark": "Corrected claim sent 2026-09-25.",
+        "status": "Corrected claim pending"
+      },
+      {
+        "claim_id": "CL-2172",
+        "payer": "Aetna",
+        "dos": "2026-07-22",
+        "cpt": "99213",
+        "modifiers": "none",
+        "rendering_npi": "1093847562",
+        "amount_usd": 91.0,
+        "sent": "2026-07-24",
+        "denied": "2026-08-10",
+        "reason_code": "CO-16",
+        "remark": "Corrected claim sent 2026-09-28.",
+        "status": "Corrected claim pending"
+      }
+    ],
+    "encounters": [
+      {
+        "claim_id": "CL-2201",
+        "provider": "Dr. Anika Patel",
+        "note": "Annual preventive exam. Separately evaluated new knee pain: history, exam, X-ray ordered. Significant, separately identifiable problem visit."
+      },
+      {
+        "claim_id": "CL-2207",
+        "provider": "Dr. Lena Brandt",
+        "note": "Preventive exam, plus management of uncontrolled hypertension: medication changed. Separately identifiable."
+      },
+      {
+        "claim_id": "CL-2213",
+        "provider": "Dr. Samuel Okoye",
+        "note": "Preventive exam; separately addressed a rash, prescribed cream. Separately identifiable."
+      },
+      {
+        "claim_id": "CL-2190",
+        "provider": "Dr. Anika Patel",
+        "note": "Preventive exam; separately addressed asthma flare. Separately identifiable."
+      },
+      {
+        "claim_id": "CL-2215",
+        "provider": "Dr. Samuel Okoye",
+        "note": "Seen by Dr. Okoye (Dr. Patel's schedule, covered). High-complexity visit."
+      },
+      {
+        "claim_id": "CL-2150",
+        "provider": "Dr. Samuel Okoye",
+        "note": "Chest pain evaluation with ECG."
+      },
+      {
+        "claim_id": "CL-2142",
+        "provider": "Dr. Lena Brandt",
+        "note": "Follow-up for diabetes."
+      },
+      {
+        "claim_id": "CL-2198",
+        "provider": "Dr. Samuel Okoye",
+        "note": "MRI ordered for radiculopathy; authorisation requested 2026-08-04."
+      },
+      {
+        "claim_id": "CL-2205",
+        "provider": "Dr. Lena Brandt",
+        "note": "CT ordered same day for abdominal pain. No authorisation requested."
+      },
+      {
+        "claim_id": "CL-2211",
+        "provider": "Dr. Anika Patel",
+        "note": "Office visit. Billed once as CL-2209; CL-2211 was a re-send by mistake."
+      },
+      {
+        "claim_id": "CL-2188",
+        "provider": "Dr. Samuel Okoye",
+        "note": "Office visit. Patient has UnitedHealthcare primary, Aetna secondary."
+      },
+      {
+        "claim_id": "CL-2101",
+        "provider": "Dr. Lena Brandt",
+        "note": "Therapeutic exercise, 4 units."
+      }
+    ],
+    "reports": [
+      {
+        "claim_id": "CL-2150",
+        "report": "999",
+        "date": "2026-07-19",
+        "result": "Accepted"
+      },
+      {
+        "claim_id": "CL-2150",
+        "report": "277CA",
+        "date": "2026-07-20",
+        "result": "Accepted by Aetna",
+        "payer_claim_number": "AET-55190832"
+      },
+      {
+        "claim_id": "CL-2142",
+        "report": "999",
+        "date": "2026-06-02",
+        "result": "Rejected at intake: invalid subscriber id. Not forwarded to the payer."
+      },
+      {
+        "claim_id": "CL-2142",
+        "report": "999",
+        "date": "2026-09-01",
+        "result": "Accepted"
+      },
+      {
+        "claim_id": "CL-2142",
+        "report": "277CA",
+        "date": "2026-09-02",
+        "result": "Accepted by Cigna"
+      },
+      {
+        "claim_id": "CL-2201",
+        "report": "277CA",
+        "date": "2026-08-21",
+        "result": "Accepted by Cigna"
+      },
+      {
+        "claim_id": "CL-2198",
+        "report": "277CA",
+        "date": "2026-08-15",
+        "result": "Accepted by UnitedHealthcare"
+      }
+    ],
+    "rules": [
+      {
+        "payer": "Cigna",
+        "text": "Participating providers: claims and corrected claims within 90 days of the date of service. Reconsideration within 180 days of the denial. Timely filing reconsideration needs a payer acceptance report (277CA) dated within the limit; an intake rejection is not proof. No retroactive authorisation for outpatient advanced imaging."
+      },
+      {
+        "payer": "UnitedHealthcare",
+        "text": "Claims and corrected claims within 90 days of the date of service. Reconsideration within 12 months of the denial. If an authorisation was obtained but not on the claim, file a reconsideration citing the authorisation number."
+      },
+      {
+        "payer": "Aetna",
+        "text": "Claims and corrected claims within 120 days of the date of service. Reconsideration within 180 days of the denial. A timely-filing denial is overturned on a 277CA showing Aetna accepted the claim within the limit."
+      },
+      {
+        "payer": "All payers (CMS-1500 rules)",
+        "text": "Never resubmit a claim denied CO-18 (duplicate) while the original is in process. A secondary claim needs the primary payer's EOB attached; file it after the primary pays. A claim with a corrected claim pending must not be sent again. Modifier 25 marks a significant, separately identifiable E/M on the day of a preventive visit."
+      }
+    ],
+    "status": [
+      {
+        "claim_id": "CL-2160",
+        "status": "Corrected claim received 2026-09-26, in process"
+      },
+      {
+        "claim_id": "CL-2172",
+        "status": "Corrected claim received 2026-09-29, in process"
+      },
+      {
+        "claim_id": "CL-2209",
+        "status": "In process"
+      },
+      {
+        "claim_id": "CL-2211",
+        "status": "Denied CO-18; original CL-2209 in process"
+      },
+      {
+        "claim_id": "CL-2187",
+        "status": "UnitedHealthcare primary: in process"
+      },
+      {
+        "claim_id": "CL-2188",
+        "status": "Denied: primary EOB required"
+      },
+      {
+        "claim_id": "CL-2201",
+        "status": "Denied CO-16"
+      },
+      {
+        "claim_id": "CL-2207",
+        "status": "Denied CO-16"
+      },
+      {
+        "claim_id": "CL-2213",
+        "status": "Denied CO-16"
+      },
+      {
+        "claim_id": "CL-2215",
+        "status": "Denied CO-16"
+      },
+      {
+        "claim_id": "CL-2190",
+        "status": "Denied CO-16"
+      },
+      {
+        "claim_id": "CL-2150",
+        "status": "Denied CO-29"
+      },
+      {
+        "claim_id": "CL-2142",
+        "status": "Denied CO-29"
+      },
+      {
+        "claim_id": "CL-2198",
+        "status": "Denied CO-197"
+      },
+      {
+        "claim_id": "CL-2205",
+        "status": "Denied CO-197"
+      },
+      {
+        "claim_id": "CL-2101",
+        "status": "Denied CO-50"
+      }
+    ],
+    "auths": [
+      {
+        "claim_id": "CL-2198",
+        "payer": "UnitedHealthcare",
+        "auth_number": "UH-88213",
+        "service": "MRI lumbar spine (72148)",
+        "approved": "2026-08-05",
+        "valid": "2026-08-05 to 2026-11-03"
+      },
+      {
+        "claim_id": "CL-2205",
+        "payer": "Cigna",
+        "auth_number": null,
+        "service": "CT abdomen (74177)",
+        "approved": null,
+        "valid": null,
+        "note": "No authorisation on file."
+      }
+    ]
+  }
+}

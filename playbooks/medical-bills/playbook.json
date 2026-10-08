@@ -1,0 +1,132 @@
+{
+  "id": "medical-bills",
+  "title": "Medical bills against the EOBs",
+  "domain": "Daily life",
+  "audience": "home",
+  "promise": "Every bill checked against what your insurer says you owe: overcharges and surprise bills disputed, a wrongful denial appealed with the records that prove it, refunds asked for, and only what is truly owed paid.",
+  "persona": "A family on a PPO with an ER visit, a surgery and some follow-up care this year",
+  "chore": "Download every Explanation of Benefits from the insurer's member portal, then every bill from each provider's billing portal — the hospital's MyChart, the anesthesia group and the dermatologist on Cedar — and match them by date of service. Work out which bills ask for more than the EOB allows, which are duplicates or reminders of the same balance, which balance bills the No Surprises Act forbids, which EOBs are still pending, and which denials can still be appealed. Then write each billing office, file the appeal with the medical records, and pay the rest. Bills have no API; payer data does not reach provider portals.",
+  "command": "My medical bills are a mess. Go through my insurer's EOBs and every provider's billing portal, dispute anything that's wrong, appeal any denial that's worth it and still in time, ask for any refund I'm owed, and pay only what I genuinely owe.",
+  "apps": [
+    {
+      "name": "Insurer member portal",
+      "role": "the claims, the EOBs, the plan's rules and the appeal form",
+      "api": "EOBs, but no bills",
+      "url": ""
+    },
+    {
+      "name": "MyChart (Valley Medical)",
+      "role": "the hospital's bills, payments and visit records",
+      "api": "Patient portal only",
+      "url": ""
+    },
+    {
+      "name": "Cedar",
+      "role": "the anesthesia group's and the dermatologist's bills",
+      "api": "Patient portal only",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the plan's rules in the member portal: deductible, network, No Surprises Act protection, appeal windows.",
+    "Walks every claim and its EOB, two pages of them, and notes what each provider may bill.",
+    "In MyChart, matches each bill to its EOB line by date of service, and spots the duplicate line and the reminder that restates a balance.",
+    "In Cedar, holds the out-of-network anesthesia group to the in-network cost share, and finds a payment the insurer later reduced.",
+    "Back at the insurer, appeals the denial that is still in time, citing the therapy visits it read in MyChart."
+  ],
+  "gates": [
+    {
+      "action": "dispute_bill",
+      "label": "Dispute a bill",
+      "why": "It reaches a billing office in your name, with the amount you say is wrong."
+    },
+    {
+      "action": "request_refund",
+      "label": "Ask for a refund",
+      "why": "It reaches a billing office and asks for money back to your HSA."
+    },
+    {
+      "action": "file_appeal",
+      "label": "File an appeal",
+      "why": "An appeal reaches the insurer, and you usually get one internal appeal per denial."
+    },
+    {
+      "action": "pay_bill",
+      "label": "Pay a bill",
+      "why": "Money leaves your account, and paying a disputed bill concedes it."
+    }
+  ],
+  "traps": [
+    "A January bill much higher than last year's identical visit — because the deductible reset. It is right; pay it.",
+    "A bill sent while the EOB is still pending: neither pay nor dispute it yet.",
+    "A reminder from the hospital's physicians group that restates a balance already in dispute — the same bill under another name.",
+    "A denial from 201 days ago: the 180-day internal appeal window has closed.",
+    "A payment the insurer later reduced: that is a refund, not a dispute.",
+    "Never pay a bill that is being disputed."
+  ],
+  "memory": [
+    "The plan's rules: the deductible and when it was met, the network, the appeal window — each cited to the page.",
+    "Provider aliases: VMC Physicians Group is Valley Medical's billing for the same accounts.",
+    "Which bills are in dispute, so none of them is paid by mistake next month.",
+    "The therapy visits that make the MRI medically necessary, for the appeal."
+  ],
+  "economics": {
+    "value_usd": 3423,
+    "per": "episode",
+    "basis": "One year with an ER visit and a surgery, as in the bench world: $2,138.50 in billing errors and surprise bills, a $1,240 denial, a $45 refund. Not an average; a typical shape.",
+    "manual_minutes": 480,
+    "incumbent": "Patient advocates charge 25–30% of what they save you, or $50–250 an hour. AI letter tools draft one appeal for about $40 and reconcile nothing across portals.",
+    "incumbent_fee_pct": 25,
+    "sources": [
+      {
+        "label": "KFF: marketplace insurers denied 19% of in-network claims in 2024; under 1% were appealed",
+        "url": "https://www.kff.org/patient-consumer-protections/claims-denials-and-appeals-in-aca-marketplace-plans-in-2024/"
+      },
+      {
+        "label": "USC Schaeffer / JAMA Health Forum: most people who report a billing error get it corrected",
+        "url": "https://schaeffer.usc.edu/research/challenging-medical-bills-cost-study/"
+      },
+      {
+        "label": "CMS: No Surprises Act protections against balance billing",
+        "url": "https://www.cms.gov/newsroom/fact-sheets/no-surprises-understand-your-rights-against-surprise-medical-bills"
+      },
+      {
+        "label": "HealthCare.gov: internal appeals within 180 days, then external review",
+        "url": "https://www.healthcare.gov/how-do-i-appeal-a-health-insurance-companys-decision/external-review/"
+      },
+      {
+        "label": "KFF Health News: what patient advocates charge",
+        "url": "https://kffhealthnews.org/health-industry/advocate-sidebar/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Three portals with no shared data, a federal rule to apply, aliases, and evidence that has to cross from one portal into another.",
+    "usefulness_why": "Thousands of dollars a year for a family with one bad health year, and the fear of a bill nobody understands."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 30,
+    "why": "A patient advocate gets most of it; the bar is most of the money, nothing paid that is disputed, nothing filed that is not owed."
+  },
+  "lessons": [
+    {
+      "adr": "0041",
+      "title": "A refusal is told to the model in the same turn",
+      "found": "In Cedar she promised \"once these reads return, I'll file the dispute\" — the reads had been refused and nothing was in flight."
+    },
+    {
+      "adr": "0042",
+      "title": "Recall matches any word, and shows where it matched",
+      "found": "Her recall of the Northstar EOB she had read in the insurer's tab came back empty: every word was required, and only an episode's first 500 bytes were shown."
+    },
+    {
+      "adr": "0044",
+      "title": "A handed-over playbook is the active project on every turn",
+      "found": "In MyChart she worked the bills and never read the therapy notes the appeal needed: the goal had been said once, in another tab."
+    }
+  ]
+}

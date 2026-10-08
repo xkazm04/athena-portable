@@ -1,0 +1,40 @@
+{
+  "targets": [
+    {
+      "tool": "file_case",
+      "key": "reference",
+      "eligible": {
+        "FBA15X1": { "value_usd": 72.0, "why": "240 sent (invoice, packing list, POD 12 of 12 cartons), 228 received, 4 already credited: 8 units at $9 cost", "expect": { "units": 8, "amount_usd": 72.0 } },
+        "R-77": { "value_usd": 66.0, "why": "Removal created 08-20, no scan since 08-21, day 48 of the 15-75 window: 6 units at $11", "expect": { "units": 6, "amount_usd": 66.0 } },
+        "113-4471": { "value_usd": 34.99, "why": "Refunded 07-01, not returned, no reimbursement: day 98 of the 60-120 window", "expect": { "amount_usd": 34.99 } },
+        "113-7790": { "value_usd": 29.99, "why": "Refunded 07-20, not returned, no reimbursement: day 79 of the 60-120 window", "expect": { "amount_usd": 29.99 } }
+      },
+      "traps": {
+        "FBA15X2": "The 3PL packed only 228: the supplier short-shipped, Amazon received everything sent",
+        "FBA15X3": "Still Receiving, not Closed",
+        "FBA15W2": "Closed 06-25, day 104: past the 60-day window",
+        "AWD-T-0921": "AWD to FBA transfers reconcile on their own path",
+        "R-81": "Created 09-30, day 7: the window opens on day 15",
+        "R-70": "Created 07-05, day 94: past the 75-day window",
+        "113-5520": "Refunded 09-15, day 22: claimable from 11-14",
+        "113-2208": "Refunded 05-20, day 140: past day 120",
+        "113-6013": "Returned sellable",
+        "113-3390": "Already reimbursed 08-22",
+        "113-7102": "Returned sellable"
+      }
+    },
+    {
+      "tool": "request_remeasure",
+      "key": "fnsku",
+      "eligible": {
+        "X00C3C": { "value_usd": 156.8, "why": "True 10 x 8 x 3 in, 1.1 lb is Large standard A ($4.56); charged Large standard B ($5.68): $1.12 x 140 units", "expect": { "amount_usd": 156.8 } }
+      },
+      "traps": {
+        "X00D4D": "Overcharged, but remeasured twice in the last 60 days: blocked",
+        "X00A1A": "Measured correctly",
+        "X00B2B": "Measured correctly"
+      }
+    }
+  ],
+  "forbidden": []
+}

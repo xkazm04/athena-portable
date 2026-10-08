@@ -136,3 +136,30 @@ def test_an_error_reason_outside_the_vocabulary_collapses_to_unknown() -> None:
 
     assert status == 418
     assert body == {"ok": False, "reason": "unknown", "detail": "because I could"}
+
+
+def test_every_pending_card_reaches_the_frame_and_a_long_one_is_cut() -> None:
+    """ADR 0052: the daemon passed ten lines, so the digest counted the page, not the inbox."""
+    from types import SimpleNamespace
+
+    from athena.daemon.routes import PENDING_LINE_CAP, pending_lines
+
+    rows = [
+        SimpleNamespace(
+            id=f"apr_{i:02d}", action="host.bank.pay_bill", params={"reference": f"CL-{i}"}
+        )
+        for i in range(13)
+    ]
+    rows.append(
+        SimpleNamespace(id="apr_letter", action="host.mail.send_email", params={"body": "x" * 900})
+    )
+    asked: list[int] = []
+
+    def pending(limit: int) -> SimpleNamespace:
+        asked.append(limit)
+        return SimpleNamespace(rows=rows[:limit])
+
+    lines = pending_lines(SimpleNamespace(approvals=SimpleNamespace(pending=pending)))  # type: ignore[arg-type]
+    assert len(lines) == 14 and asked == [100]
+    assert len(lines[-1]) == PENDING_LINE_CAP and lines[-1].endswith("…")
+    assert lines[0] == 'apr_00: host.bank.pay_bill {"reference": "CL-0"}'

@@ -22,7 +22,7 @@ import { useShell } from "@/stores/shell";
 import { useTabs } from "@/stores/tabs";
 import { useVoice } from "@/stores/voice";
 
-import { fixtureIds, fixtures } from "./fixtures";
+import { fixtureIds, fixtures, initialOpenFor } from "./fixtures";
 import { selectSetup, type SetupActions } from "./model";
 import SetupView from "./view";
 
@@ -131,6 +131,10 @@ export const entry: ModuleEntry = {
   label: "Setup",
   blurb: "What this machine needs before the first turn, and every setting after it — derived, never stored.",
   fixtureIds,
-  preview: (fixture) => createElement(SetupView, { model: fixtures[fixture] ?? fixtures.typical }),
+  preview: (fixture) =>
+    createElement(SetupView, {
+      model: fixtures[fixture] ?? fixtures.typical,
+      initialOpen: initialOpenFor(fixture),
+    }),
   Live,
 };

@@ -2,6 +2,36 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
+## Playbooks — the edge between difficulty and usefulness (in progress)
+
+- `docs: module documentation in docs/features and a build report across the waves` — one page per module (core, harness, daemon and channels, connectors, bridge, desktop, playbooks, Proving Ground, examples and UAT) with its current state; `docs/report/index.html`, a standalone page of the five waves, the nine playbooks' latest runs, the twelve fixes and the limits.
+
+- `feat(playbooks): a parent's estate across twelve portals, benched to exceeds` — the disclaimer before its nine months, the IRS first, claims allowed at the balance at death, a paid hospital claim refused, eleven traps; five runs that found ADRs 0050 to 0052.
+
+- `feat(playbooks): a freelancer's receivables across three client portals, the bank and New York's freelancer law, benched to exceeds` — a Coupa PO flip, a demand under the Freelance Isn't Free Act where a contract overrides Ariba's Net 120, a W-9 that holds a Tipalti payment, and four things not to chase; four runs, ADRs 0048 and 0049 found on the way; run 4: $21,100 of $21,550, 0 false.
+
+- `feat(companion): a handed-over playbook shows her plan before the first turn` — Talk's empty state becomes the plan: her steps, the tabs she will ask for, where she stops for a signature, from the bundled playbook by id; the "Working on" chip stays.
+
+- `feat(playbooks): the overview's record says what she walked past, her time and the cost` — totals add the latest runs' traps, false claims, minutes, the hours by hand and the model's cost; six stats, each with its context line.
+
+- `feat(playbooks): the grid filters by whose chore it is and orders by edge, money or hours` — `audience` in playbook.json (home or work); `arrange()` keeps each tile's number from the map; two `PillGroup` radio groups, counted.
+
+- `feat(playbooks): a parent's long-term-care claims across six portals, benched to exceeds` — a daily maximum that steps on the anniversary and spans the agency and the adult day center, inpatient and Medicare-paid days, a granddaughter's Zelles, a rejected invoice and an open appeal beside a closed one, a capped home modification and waived premiums; $26,410 found on both runs, 0 false.
+
+- `feat(playbooks): the traps she walked past, by name` — `score()` keeps a `trap_ledger` (every trap, why, filed or not); the layer's "What she was right to leave alone", a filed trap first and in the error colour, folded past five; every shipped bench.json backfilled with its counts unchanged.
+
+- `feat(playbooks): watch the run — bench.json keeps each turn, and the playbook's layer replays it` — `trace_of` (portal, the person's words or the run loop's continuation, her words cut at a sentence with `said_chars`, reads, cards with their outcomes); the layer's "Watch the run": a rail of tab visits with a dot per turn coloured by what it did, play, step, arrow keys, the money found so far; every shipped bench.json backfilled from its saved report.
+
+- `feat(playbooks): the trucking accessorials desk, six portals and a window that closes today, benched to exceeds` — detention, lumper, layover and TONU checked against rate cons, BOLs and the ELD and filed in each broker's own tool; run 2: 9 of 9, $1,580, 13 of 13 traps avoided, after ADR 0047.
+- `feat(playbooks): the subcontractor's lien desk, benched to exceeds` — lien and notice deadlines in CA and TX, waivers with their exceptions and a clean pay app across the office, Procore, Textura and GCPay; six runs, the last 10 of 10 for $416,700 after two corrections to the bench's own world.
+
+- `feat(playbooks): distributor deductions for a food brand, across UNFI, KeHE, the Drive and the warehouse, benched to exceeds` — six deductions over-taken or duplicated and one with no proof it ran ($10,882), beside eight valid ones, two expired and one only KeHE's advanced search shows; run 2: 7 of 7, every amount exact, 0 false, 4.2 minutes.
+
+- `feat(playbooks): medical bills against the EOBs and denied clinic claims, benched to exceeds, and what each taught Athena` — two playbooks with their run histories (medical: seven runs, $388 to $3,423.50; clinic: $0 to $2,120); `lessons` and `caveat` in playbook.json, shown in the layer and counted on the overview; README §14 records every fix the runs found.
+- Fixes found by the runs: ADR 0041 (refusals and drops told in the turn, with calls in flight), ADR 0042 (recall: any word, the matched region), ADR 0043 (tool results by budget), ADR 0044 (the playbook rides every turn), ADR 0045 (evidence is what a page says; gather in each tab), the OP grammar's one shape; ADR 0029's three surfaces built (Connectors, Setup, Browser).
+
+- `feat(playbooks): a use case is data, proven on the gate by a real Athena, and the desktop shows the edge` — `playbooks/<id>/{playbook,world,truth,bench}.json`; `athena.proving.playbooks` (spec, simulated portals, bench, score from cards, prose audit, `check`/`bench`/`rescore`); the first playbook, Amazon FBA reimbursements, benched live (exceeds: 5 of 5, 14 of 14 traps avoided, $1.47); the Playbooks module with the edge map, tiles and a layer; `Tile` and `Layer` (ADR 0029's first callers); "Hand it to Athena" puts the command in her composer through `athena:offer`; ADR 0040.
+
 ## End to end — the seams, driven for the first time (in progress)
 
 - `fix(desktop): the panel never published a manifest, and three other seams the fakes hid` — `lib/manifest.ts` publishes the focused page's tools through `manifestOf`, without which `POST /run` refused every real turn `foreign_origin` before the stream opened; `GET /decisions` answers `pending`, not `decisions`; `TabTools` carries the app version a manifest needs; `apps/desktop/e2e/` drives the real client, run loop, connector store and voice socket against a real daemon on an ephemeral port.

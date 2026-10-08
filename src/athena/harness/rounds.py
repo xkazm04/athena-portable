@@ -118,6 +118,7 @@ class RoundHarness:
         self.truncation.before_prompt([*static_blocks, *frame], turn_id)
 
         entries = {entry.name: entry for entry in tools}
+        self._told: set[tuple[str, str]] = set()
         static_text = _joined(static_blocks)
         self._turn_started(conversation_id, static_text)
         history = [_opening_message(frame, user_message)]
@@ -143,9 +144,27 @@ class RoundHarness:
             if tts is None and parsed.tts:
                 tts = parsed.tts
 
-            events, feedback = self._dispatch(parsed, entries, ctx, turn_id, result)
+            # Call ids carry the round: a turn's rounds each number their ops from zero, and a
+            # core result in one round must never be read as the answer to a page call in another.
+            events, feedback = self._dispatch(parsed, entries, ctx, f"{turn_id}_r{_round}", result)
             for event in events:
                 yield event
+            if feedback:
+                # Told about a refusal, a model takes the silence of its page calls for failure
+                # and sends them again; say they are in flight (ADR 0041).
+                in_flight = _in_flight(events)
+                if in_flight:
+                    feedback.append(
+                        ToolResult(
+                            call_id=f"{turn_id}_r{_round}_in_flight",
+                            name="page",
+                            ok=True,
+                            output=(
+                                f"Your calls to {', '.join(in_flight)} went to the page; their "
+                                "answers come with your next turn. Do not call them again."
+                            ),
+                        )
+                    )
             if not feedback:
                 break
             history.append(_results_message(feedback))
@@ -187,40 +206,52 @@ class RoundHarness:
     ) -> tuple[list[ChannelEvent], list[ToolResult]]:
         """Every op through the gate. Returns the events to stream and what to feed back.
 
-        Only what *executed* is fed back. A gated op is waiting on the user, a host tool is
-        waiting on the page, and a dropped envelope is told to the model in the next turn's frame
-        — none of the three is a reason to spend another round asking the same model again.
+        What *executed* is fed back, and so is a refusal or a dropped op, once per name and reason
+        (ADR 0041). A gated op is waiting on the user and a host tool is waiting on the page —
+        neither is a reason to spend another round asking the same model again.
         """
         events: list[ChannelEvent] = []
         feedback: list[ToolResult] = []
 
         for index, error in enumerate(parsed.errors):
-            events.append(
-                ToolResult(
-                    call_id=f"{turn_id}_op{index}",
-                    name="OP",
-                    ok=False,
-                    output=f"op dropped: {error.detail}\n{error.line}",
-                    error=error.reason,
-                )
+            dropped = ToolResult(
+                call_id=f"{turn_id}_op{index}",
+                name="OP",
+                ok=False,
+                output=f"op dropped: {error.detail}\n{error.line}",
+                error=error.reason,
             )
+            events.append(dropped)
+            self._tell(dropped, feedback)
 
         for index, op in enumerate(parsed.ops):
             call_id = f"{turn_id}_{index:02d}"
             entry = entries.get(op.action)
             if entry is None:
-                events.append(
-                    ToolResult(
-                        call_id=call_id,
-                        name=op.action or op.op,
-                        ok=False,
-                        output=f"op dropped: {op.action!r} is not a name you can address here",
-                        error="unknown_ref",
-                    )
+                dropped = ToolResult(
+                    call_id=call_id,
+                    name=op.action or op.op,
+                    ok=False,
+                    output=(
+                        f"op dropped: {op.action!r} is not a name you can address here; "
+                        "the names you can call are in your capabilities, and an op names one "
+                        f"in its action field\n{op.raw}".rstrip()
+                    ),
+                    error="unknown_ref",
                 )
+                events.append(dropped)
+                self._tell(dropped, feedback)
                 continue
             events.extend(self._one_op(op, entry, call_id, ctx, result, feedback))
         return events, feedback
+
+    def _tell(self, result: ToolResult, feedback: list[ToolResult]) -> None:
+        """Feed a refused or dropped op back in this turn, once per name and reason (ADR 0041),
+        so a model that repeats it ends the turn instead of spending the round budget on it."""
+        told = (result.name, result.error or "")
+        if told not in self._told:
+            self._told.add(told)
+            feedback.append(result)
 
     def _one_op(
         self,
@@ -246,16 +277,20 @@ class RoundHarness:
         if isinstance(outcome.decision, Cancel):
             if outcome.card is not None:
                 events.append(_card(outcome.card, op.rationale))
-            events.append(
-                ToolResult(
-                    call_id=call_id,
-                    name=entry.name,
-                    ok=False,
-                    output=outcome.decision.detail or outcome.decision.reason,
-                    error=outcome.decision.reason,
-                    tier=entry.tier,
-                )
+            refusal = ToolResult(
+                call_id=call_id,
+                name=entry.name,
+                ok=False,
+                output=outcome.decision.detail or outcome.decision.reason,
+                error=outcome.decision.reason,
+                tier=entry.tier,
             )
+            events.append(refusal)
+            # A card waits on the user. A refusal is final, and the model is told in this turn
+            # (ADR 0041): a turn that ends on a refused read leaves her promising a result that
+            # will never come.
+            if outcome.card is None:
+                self._tell(refusal, feedback)
             return events
 
         if outcome.result is None:
@@ -282,6 +317,16 @@ class RoundHarness:
 
 
 # --- messages ------------------------------------------------------------------------------------
+
+
+def _in_flight(events: Sequence[ChannelEvent]) -> list[str]:
+    """The host calls of a round that went to the page and have no answer yet, by bare name."""
+    answered = {e.call_id for e in events if isinstance(e, ToolResult)}
+    return [
+        e.name.rsplit(".", 1)[-1]
+        for e in events
+        if isinstance(e, ToolCall) and e.origin != "core" and e.call_id not in answered
+    ]
 
 
 def _joined(blocks: Sequence[PromptBlock]) -> str:

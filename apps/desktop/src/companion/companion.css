@@ -1670,15 +1670,19 @@ body.athena {
 }
 .lg-compose {
   display: flex;
+  align-items: flex-end;
   gap: 8px;
   padding-top: 10px;
   border-top: 1.5px solid var(--paper-rule);
 }
-.lg-compose input {
+.lg-compose textarea {
   flex: 1;
   min-width: 0;
-  height: 38px;
-  padding: 0 10px;
+  min-height: 38px;
+  max-height: 120px;
+  padding: 9px 10px;
+  resize: none;
+  line-height: 1.35;
   border: 1.5px solid var(--paper-rule);
   border-radius: 4px;
   background: #fff;
@@ -1686,11 +1690,11 @@ body.athena {
   font: inherit;
   font-size: 14px;
 }
-.lg-compose input::placeholder {
+.lg-compose textarea::placeholder {
   color: var(--paper-ink-2);
   opacity: 1;
 }
-.lg-compose input:focus-visible {
+.lg-compose textarea:focus-visible {
   outline: 2px solid var(--paper-ink);
   outline-offset: 1px;
 }
@@ -1892,7 +1896,7 @@ body.athena {
   line-height: 1.3;
   color: var(--paper-ink-2);
 }
-.aw .lg-compose input:disabled {
+.aw .lg-compose textarea:disabled {
   background: var(--paper-2);
 }
 .aw .offers li .aw-btn-toggle {
@@ -2097,4 +2101,103 @@ body.athena {
 }
 .aw .wl:has(.wl-engine[data-engine="missing"]) .wl-stamp {
   display: none;
+}
+
+/* The active playbook (ADR 0044): one line above the composer, on her paper, that says what every
+   turn is working toward and lets the person end it. */
+.lg-project {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--paper-ink);
+  background: rgba(0, 0, 0, 0.04);
+  font-size: 13px;
+  color: var(--paper-ink);
+}
+.lg-project__label {
+  color: var(--paper-ink-2);
+  font-weight: 600;
+}
+.lg-project__title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* -- a handed-over playbook's plan, before the first turn (ADR 0044) ----------------------------- */
+.lg-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--paper-rule);
+  border-left: 3px solid var(--paper-agent);
+  border-radius: var(--r-card);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--paper-ink);
+}
+
+.lg-plan__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-agent);
+}
+
+.lg-plan__title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.lg-plan__steps {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: var(--t-caption);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lg-plan__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lg-plan__label {
+  font-size: 12px;
+  color: var(--paper-ink-2);
+}
+
+.lg-plan__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lg-plan__chip {
+  padding: 2px 8px;
+  border: 1px solid var(--paper-rule);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--paper-ink);
+}
+
+.lg-plan__chip--gate {
+  border-color: var(--paper-stamp);
+  color: var(--paper-stamp);
+}
+
+.lg-plan__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--paper-ink-2);
 }

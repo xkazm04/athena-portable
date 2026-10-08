@@ -220,3 +220,46 @@ def test_asking_for_a_block_that_does_not_exist_names_the_ones_that_do(tmp_path:
 
         with pytest.raises(KeyError, match="vector"):
             trace.block("vector")
+
+
+def test_a_question_in_a_persons_words_finds_the_episode_that_holds_one_of_them(
+    tmp_path: Path,
+) -> None:
+    """ADR 0042: any term, ranked by BM25. An implicit AND of every word matched nothing."""
+    with Brain(tmp_path / "brain") as brain:
+        brain.append_episode(
+            "host.insurer.list_claims returned: Northstar Anesthesia, $150", "system"
+        )
+        brain.append_episode("the weather was fine", "user")
+
+        trace = recall(brain, "what did the Northstar EOB say about surprise billing?")
+
+        matched = [m for m in trace.block(EPISODE_BLOCK).items if m.lane == KEYWORD_BLOCK]
+        assert [m.excerpt for m in matched] == [
+            "host.insurer.list_claims returned: Northstar Anesthesia, $150"
+        ]
+
+
+def test_a_long_matched_episode_shows_the_region_that_matched(tmp_path: Path) -> None:
+    """A page of results is longer than an excerpt; the row asked about is often past its head."""
+    words = " ".join(f"word{n}" for n in range(30))
+    rows = [{"claim": f"C-{i}", "provider": "Valley Medical", "note": words} for i in range(6)]
+    rows.append({"claim": "C-9", "provider": "Northstar Anesthesia", "owes": 150})
+    with Brain(tmp_path / "brain") as brain:
+        brain.append_episode(f"list_claims returned: {rows}", "system")
+
+        trace = recall(brain, "Northstar")
+
+        (memory,) = trace.block(EPISODE_BLOCK).items
+        assert "Northstar Anesthesia" in memory.excerpt and "150" in memory.excerpt
+        assert memory.excerpt.startswith("… ")
+        assert len(memory.excerpt.encode("utf-8")) <= 500 + len("…  …".encode())
+
+
+def test_a_query_of_only_common_words_still_queries(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        brain.append_episode("what was that", "user")
+
+        trace = recall(brain, "what was that")
+
+        assert [m.lane for m in trace.block(EPISODE_BLOCK).items] == [KEYWORD_BLOCK]

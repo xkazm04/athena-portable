@@ -1,0 +1,127 @@
+{
+  "targets": [
+    {
+      "tool": "dispute_bill",
+      "key": "bill_id",
+      "eligible": {
+        "B-1": {
+          "value_usd": 324.5,
+          "why": "Bill $412 against $87.50 on the final EOB (C-1001): $324.50 over",
+          "expect": {
+            "amount_disputed_usd": 324.5
+          }
+        },
+        "B-2": {
+          "value_usd": 64.0,
+          "why": "The panel billed twice; the EOB (C-1002) allowed one unit: $64 duplicate",
+          "expect": {
+            "amount_disputed_usd": 64.0
+          }
+        },
+        "CB-3": {
+          "value_usd": 1750.0,
+          "why": "Out-of-network anesthesia at an in-network hospital: No Surprises Act limits it to $150; $1,750 balance bill",
+          "expect": {
+            "amount_disputed_usd": 1750.0
+          }
+        }
+      },
+      "traps": {
+        "B-5": "Higher than last year's $40 because the 2026 deductible reset; it matches the EOB",
+        "B-6": "The EOB (C-1006) is still in process",
+        "B-9": "Matches the EOB",
+        "CB-7": "Overpaid after reprocessing: a refund, not a dispute",
+        "CB-11": "Matches the EOB"
+      },
+      "neutral": {
+        "B-10": {
+          "why": "A reminder that restates B-1's balance; disputing it as a duplicate of B-1 is fair, and so is leaving it to the B-1 dispute"
+        }
+      }
+    },
+    {
+      "tool": "request_refund",
+      "key": "bill_id",
+      "eligible": {
+        "CB-7": {
+          "value_usd": 45.0,
+          "why": "Paid $180 from the HSA; the reprocessed EOB (C-1007) says $135",
+          "expect": {
+            "amount_usd": 45.0
+          }
+        }
+      },
+      "traps": {
+        "B-1": "Nothing paid on it",
+        "CB-3": "Nothing paid on it"
+      }
+    },
+    {
+      "tool": "file_appeal",
+      "key": "claim_id",
+      "eligible": {
+        "C-1004": {
+          "value_usd": 1240.0,
+          "why": "Denied 09-07 for no conservative therapy; MyChart shows six weeks of physical therapy: day 30 of 180"
+        }
+      },
+      "traps": {
+        "C-1008": "Denied 03-20: day 201, past the 180-day window",
+        "C-1006": "In process, not denied",
+        "C-1003": "Paid correctly by the plan; the problem is the anesthesia group's bill"
+      }
+    },
+    {
+      "tool": "pay_bill",
+      "key": "bill_id",
+      "eligible": {
+        "B-5": {
+          "value_usd": 0,
+          "why": "Matches the final EOB (deductible)",
+          "expect": {
+            "amount_usd": 240.0
+          }
+        },
+        "B-9": {
+          "value_usd": 0,
+          "why": "Matches the final EOB",
+          "expect": {
+            "amount_usd": 45.0
+          }
+        },
+        "CB-11": {
+          "value_usd": 0,
+          "why": "Matches the final EOB",
+          "expect": {
+            "amount_usd": 95.0
+          }
+        }
+      },
+      "traps": {
+        "B-6": "The EOB is still in process",
+        "B-10": "The same balance as B-1, which is disputed"
+      },
+      "neutral": {
+        "B-1": {
+          "why": "Paying only the $87.50 the EOB allows, while the rest is disputed, is fair either way",
+          "expect": {
+            "amount_usd": 87.5
+          }
+        },
+        "B-2": {
+          "why": "Paying the one $64 panel the EOB allows, while the duplicate is disputed, is fair either way",
+          "expect": {
+            "amount_usd": 64.0
+          }
+        },
+        "CB-3": {
+          "why": "Paying only the $150 in-network cost share, while the balance bill is disputed, is fair either way",
+          "expect": {
+            "amount_usd": 150.0
+          }
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}

@@ -891,3 +891,29 @@ describe("refusals", () => {
     expect(daemon.runs()).toHaveLength(0);
   });
 });
+
+// -- the active playbook (ADR 0044) ------------------------------------------------------------------
+
+describe("the active playbook", () => {
+  const playbook = { id: "fba-reimbursements", title: "Amazon FBA reimbursements", goal: "File what Amazon owes." };
+
+  it("rides every turn as the active project until it is cleared", async () => {
+    const daemon = fakeDaemon({ runs: [[finished()], [finished()]] });
+    wire(daemon, fakePage());
+    useRun.getState().setProject(playbook);
+
+    await useRun.getState().send("start");
+    expect(daemon.runs()[0].body!.active_project).toEqual({ kind: "playbook", ...playbook });
+
+    useRun.getState().setProject(null);
+    await useRun.getState().send("hello");
+    expect(daemon.runs()[1].body!.active_project).toBeUndefined();
+  });
+
+  it("is the person's selection, so clearing the conversation keeps it", () => {
+    useRun.getState().setProject(playbook);
+    useRun.getState().clear();
+    expect(useRun.getState().project).toEqual(playbook);
+    useRun.getState().setProject(null);
+  });
+});

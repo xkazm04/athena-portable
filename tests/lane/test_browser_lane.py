@@ -156,7 +156,11 @@ def test_a_model_that_tries_to_answer_a_card_is_dropped_and_the_card_stays_pendi
         surface="panel",
     )
     answered = op("core.answer_decision", id=card.id, choice="approve")
-    built.transport.rounds = [claude_round(f"They said yes.\n{answered}")]
+    # The drop is told in the same turn (ADR 0041); she answers it with words, not a second try.
+    built.transport.rounds = [
+        claude_round(f"They said yes.\n{answered}"),
+        claude_round("Only you can answer the card; it is waiting for you."),
+    ]
 
     events = drain(built.lane, built)
 

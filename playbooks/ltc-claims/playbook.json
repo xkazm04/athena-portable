@@ -1,0 +1,145 @@
+{
+  "id": "ltc-claims",
+  "title": "A parent's long-term-care claims, caught up",
+  "domain": "Family care",
+  "audience": "home",
+  "promise": "Every month of Mom's care claimed against her policy: the daily maximum applied to the right days, rejected and denied invoices put back inside their windows, and nothing filed that the policy excludes.",
+  "persona": "An adult daughter in Chicago with power of attorney for her 82-year-old mother at home in Pittsburgh, who has a tax-qualified long-term-care policy bought in 2011",
+  "chore": "The policy pays real money for in-home care. The daughter has to earn it every month, at night. She gathers the agency's invoice and the visit care notes the insurer wants but the invoice leaves out. She applies a daily maximum that rose on the policy's anniversary and covers the agency and the adult day center combined. She leaves out hospital days, days Medicare paid and the granddaughter's help. Then she tracks three clocks: 120 days to file, 180 to resubmit a rejected invoice, 120 to appeal a denial. Agencies file only their own invoices, facilities only theirs, and nobody sees the hospital, Medicare and the bank together.",
+  "command": "Catch up on Mom's long-term-care claims. Check every month of care against her policy: the agency, the adult day center, the home modification and her premiums. Use the hospital stay, Medicare and her bank to rule things out. File, resubmit or appeal everything that qualifies before its window closes, with the documents it needs. Get back any premiums she shouldn't have paid, stop anything still paying for what's waived, and leave alone anything the policy doesn't pay.",
+  "apps": [
+    {
+      "name": "Harbor Mutual policyholder portal",
+      "role": "the policy schedule, invoices, EOBs, premium status, uploads",
+      "api": "Portal only",
+      "url": ""
+    },
+    {
+      "name": "BrightPath family portal",
+      "role": "agency invoices and the EVV visit records with care notes",
+      "api": "Portal only",
+      "url": ""
+    },
+    {
+      "name": "Email",
+      "role": "the adult day statements, the contractor's invoice, look-alike bills",
+      "api": "Mail",
+      "url": "https://mail.google.com"
+    },
+    {
+      "name": "MyChart",
+      "role": "the hospital stay and the practitioner's certification",
+      "api": "Portal only for a proxy",
+      "url": "https://www.mychart.org"
+    },
+    {
+      "name": "Medicare.gov",
+      "role": "what Medicare already paid",
+      "api": "Blue Button for claims; the person reads the summary notices",
+      "url": "https://www.medicare.gov"
+    },
+    {
+      "name": "Mom's bank (POA access)",
+      "role": "what was paid, the premium autopay, the family's Zelles",
+      "api": "Portal only",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the policy schedule: elimination period, the daily maximum and its anniversary step, combined charges, exclusions, and the three clocks.",
+    "Reads every invoice, EOB and rejection on file, and what each is still open to.",
+    "Pulls the care notes for the invoices that need them, and the bills from outside the agency.",
+    "Rules out inpatient days, Medicare-paid services, family care and duplicates, and computes the payable amount day by day.",
+    "Files, resubmits or appeals each claim by the route the policy allows, and asks for the waived premiums back and the autopay stopped."
+  ],
+  "gates": [
+    {
+      "action": "submit_invoice",
+      "label": "Submit an invoice",
+      "why": "It carries the personal representative's attestation, and an invoice for an excluded day is a false claim."
+    },
+    {
+      "action": "resubmit_invoice",
+      "label": "Resubmit a rejected invoice",
+      "why": "The same attestation, inside a 180-day window that runs once."
+    },
+    {
+      "action": "file_appeal",
+      "label": "Appeal a denial",
+      "why": "It reaches the insurer's appeals unit, and an appeal is argued once."
+    },
+    {
+      "action": "request_premium_refund",
+      "label": "Ask for waived premiums back",
+      "why": "A written request to the insurer for money."
+    },
+    {
+      "action": "stop_autopay",
+      "label": "Stop a recurring payment",
+      "why": "It changes how her money moves, and stopping the wrong one stops her care."
+    }
+  ],
+  "traps": [
+    "February's invoice, inside the elimination period.",
+    "A revised April invoice repeating dates already paid.",
+    "April's denied days, whose appeal window closed three weeks ago, beside May's identical denial still open.",
+    "March's eight-hour days billed at $288, over the $226.60 maximum, and the pre-anniversary $220 maximum.",
+    "Three July days the aide spent at the hospital.",
+    "A home-health statement that looks like a bill and that Medicare paid in full.",
+    "Ten Zelles to the granddaughter who covered the agency's staffing gap.",
+    "Adult day on two days the agency also billed: the maximum is per day, combined.",
+    "The January premium, due before the waiver began."
+  ],
+  "memory": [
+    "The policy's numbers, cited to the schedule: the elimination period, the daily maximum by date, the clocks.",
+    "That BrightPath's care notes live under Visit Detail, not on the invoice.",
+    "What was paid, rejected and denied, and each window's date.",
+    "Who in the family is paid privately, and why the policy will not pay it."
+  ],
+  "economics": {
+    "value_usd": 20000,
+    "per": "year",
+    "basis": "Home-aide care runs about $77,800 a year (Genworth/CareScout 2024), and the average long-term-care claim is $185,572 (AHIP). A family that files late or loses a denial gives up whole months; the figure a year is an estimate. The bench world holds $26,410 owed and unclaimed across eight months.",
+    "manual_minutes": 360,
+    "incumbent": "Agencies file their own invoices and nothing else; facilities file for residents only; consultants who handle claims for families charge by the hour. Mostly it is the family, at night.",
+    "sources": [
+      {
+        "label": "Genworth: reimbursement claims with care notes",
+        "url": "https://www.genworth.com/claims/long-term-care-claims/reimbursement-benefits"
+      },
+      {
+        "label": "Becker's: $16.9B in LTC claims paid in 2024, $185,572 average claim (AHIP)",
+        "url": "https://www.beckerspayer.com/?p=20347"
+      },
+      {
+        "label": "Genworth/CareScout cost of care 2024",
+        "url": "https://investor.genworth.com/news-events/press-releases/detail/982/"
+      },
+      {
+        "label": "Next Avenue: the long-term-care insurance mistake families make",
+        "url": "https://www.nextavenue.org/long-term-care-insurance-mistake/amp/"
+      },
+      {
+        "label": "Kiplinger: obstacles of long-term-care claims",
+        "url": "https://www.kiplinger.com/article/insurance/T036-C000-S002-avoid-the-obstacles-of-long-term-care-claims.html"
+      },
+      {
+        "label": "ACL: receiving long-term-care insurance benefits",
+        "url": "https://acl.gov/ltc/costs-and-who-pays/what-is-long-term-care-insurance/receiving-long-term-care-insurance-benefits"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 5,
+    "difficulty_why": "Six portals with no shared record, a daily maximum that changes on the anniversary and spans two providers, four exclusions, and three clocks that each run once.",
+    "usefulness_why": "Thousands a month for an ordinary family, and the hours of an adult child who is already caring from a distance."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 40,
+    "why": "A practised claims consultant catches most of it in a long evening. The bar is most of the money with no claim the policy excludes."
+  },
+  "caveat": "Harbor Mutual and its policy are invented; the rules are the common provisions of tax-qualified policies, fixed in the bench world. A real policy's schedule always wins."
+}

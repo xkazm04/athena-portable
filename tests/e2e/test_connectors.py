@@ -24,7 +24,11 @@ def test_without_the_vault_there_are_no_connector_routes_and_no_connector_name_t
     spawn: Spawn,
 ) -> None:
     daemon = spawn.scripted(
-        [claude_round("Searching your mail.\n" + op(SEARCH_MAIL, query="invoice"))],
+        [
+            claude_round("Searching your mail.\n" + op(SEARCH_MAIL, query="invoice")),
+            # The drop is told in the same turn (ADR 0041), and she says so instead.
+            claude_round("No mail connector is set up, so I can't search your mail."),
+        ],
         connectors=False,
     )
     daemon.register()
@@ -49,6 +53,7 @@ def test_without_the_vault_there_are_no_connector_routes_and_no_connector_name_t
     assert [kind for kind, _ in reply.frames()] == [
         "text.delta",
         "tool.result",
+        "text.delta",
         "turn.summary",
         "turn.finished",
     ]

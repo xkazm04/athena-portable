@@ -1,0 +1,68 @@
+{
+  "targets": [
+    {
+      "tool": "request_detention",
+      "key": "load_id",
+      "eligible": {
+        "CHR-1101": { "value_usd": 75.0, "why": "BOL 07:55–11:35 is 3h40; 2 hours free leaves 1h40, rounded down to 1h30 at $50", "expect": { "amount_usd": 75.0, "arrived": "07:55", "departed": "11:35" } },
+        "CHR-1188": { "value_usd": 250.0, "why": "BOL 06:00–15:00 is 9 hours; 7 billable at $50 is $350, capped at $250", "expect": { "amount_usd": 250.0 } },
+        "TQL-5530": { "value_usd": 60.0, "why": "4h40 at the facility, 3 free leaves 1h40, rounded down to 1h30 at $40; notice was given 40 minutes before detention began", "expect": { "amount_usd": 60.0 } },
+        "UF-77310": { "value_usd": 70.0, "why": "Free time runs from arrival 14:05 (later than the 14:00 appointment); 3h55 less 2 is 1h55, rounded down to 1h45 at $40; the window closes today at 18:00", "expect": { "amount_usd": 70.0 } }
+      },
+      "traps": {
+        "CHR-1120": "1h50 on the BOL: inside the 2 hours free",
+        "TQL-5488": "Tracking was off 12:40–15:40, and the rate con pays no detention for any stop where it was",
+        "UF-77102": "Delivered 2026-10-04 16:30; Uber's 24 hours closed on 10-05",
+        "TQL-5391": "Detention already approved and paid",
+        "CHR-0977": "Detention already approved; what is missing is the factor's remittance",
+        "CHR-1142": "No detention was asked for; the lumper is the claim",
+        "TQL-5502": "2h55 at the facility: inside 3 hours free"
+      }
+    },
+    {
+      "tool": "submit_lumper",
+      "key": "load_id",
+      "eligible": {
+        "TQL-5502": { "value_usd": 340.0, "why": "The rep approved it before payment; the receipt sits under Lumper Receipt, which TQL does not pay from; due by 2026-10-09", "expect": { "amount_usd": 340.0, "category": "Final Payment Paperwork" } }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "short_pay_inquiry",
+      "key": "load_id",
+      "eligible": {
+        "CHR-0977": { "value_usd": 100.0, "why": "CHR paid the $100 detention to RTS on 09-29; RTS remitted the $1,850 linehaul only", "expect": { "amount_usd": 100.0 } }
+      },
+      "traps": {
+        "TQL-5391": "Remitted in full, detention included",
+        "TQL-5488": "The linehaul was remitted in full; no detention was ever owed"
+      }
+    },
+    {
+      "tool": "send_email",
+      "key": "load_id",
+      "eligible": {
+        "LS-2201": { "value_usd": 150.0, "why": "Cancelled at 05:30 for a 06:00 pickup: within 24 hours, so the $150 TONU is owed", "expect": { "amount_usd": 150.0 } },
+        "LS-2188": { "value_usd": 250.0, "why": "Held 26 hours, acknowledged by the rep: one day of layover, invoiced by 2026-10-09", "expect": { "amount_usd": 250.0 } },
+        "CHR-1142": { "value_usd": 285.0, "why": "The portal's 2 business days closed on 10-06; only the CHR rep can take the $285 lumper now", "expect": { "amount_usd": 285.0 } }
+      },
+      "traps": {
+        "LS-2210": "Arrived 09:40 for an 08:00 appointment; the rate con pays detention only for an on-time truck",
+        "TQL-5488": "The tracker was off; the rate con's rule is not the rep's to waive"
+      },
+      "neutral": {
+        "UF-77102": { "why": "Asking Uber for an exception after its window is a long shot but harms nothing" }
+      }
+    },
+    {
+      "tool": "request_lumper",
+      "key": "load_id",
+      "eligible": {},
+      "traps": {
+        "CHR-1142": "Departed 10-02 14:10; CHR's 2 business days closed 10-06, so the portal request fails: the rep is the way",
+        "TQL-5502": "A TQL lumper is paid from Final Payment Paperwork, not requested"
+      }
+    }
+  ],
+  "forbidden": []
+}

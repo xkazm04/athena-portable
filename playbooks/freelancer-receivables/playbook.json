@@ -1,0 +1,145 @@
+{
+  "id": "freelancer-receivables",
+  "title": "A freelancer's receivables, collected",
+  "domain": "Freelance",
+  "audience": "work",
+  "promise": "Every unpaid invoice traced through the client's own portal and your bank. The fixable ones are fixed in that portal, and the late ones get a demand under New York's freelancer law. What the contract says you are not owed is left alone.",
+  "persona": "A solo product designer in Brooklyn, trading as a one-person LLC, with seven clients: three force a supplier portal (Coupa, Ariba, Tipalti), the rest pay by email invoice",
+  "chore": "The invoice leaves QuickBooks, and then it disappears. One client's Coupa rejects it because the purchase order is short. Another's Ariba approves it on payment terms the contract overrides. A third's Tipalti holds it over a tax form. Email clients pay late or keep part of it. To collect, she has to check each portal, the bank and the contracts. She also has to know when New York's Freelance Isn't Free Act applies: $800, counting a client's contracts across 120 days, and 30 days after completion when the contract names no date. Freelancers spend about 36 hours chasing each unpaid invoice, and invoicing apps cannot see inside a client's portal.",
+  "command": "Go through everything clients owe me. Check each invoice against the client's portal, the bank and the contract, fix whatever a portal is holding, send a demand under the Freelance Isn't Free Act for anything that's legally late, and don't chase anything I'm not owed.",
+  "apps": [
+    {
+      "name": "QuickBooks",
+      "role": "the invoices and each client's contract terms",
+      "api": "Has an API; the clients' portals do not read it",
+      "url": "https://quickbooks.intuit.com"
+    },
+    {
+      "name": "Chase Business",
+      "role": "what actually arrived, and the memo on a short payment",
+      "api": "Portal only for a sole operator",
+      "url": "https://www.chase.com"
+    },
+    {
+      "name": "Coupa Supplier Portal",
+      "role": "Northwind's POs, invoice status and the buyer's comments",
+      "api": "Supplier side is the portal",
+      "url": "https://supplier.coupahost.com"
+    },
+    {
+      "name": "SAP Business Network (Ariba)",
+      "role": "Acme's and Brightline's invoice status and standard terms",
+      "api": "Supplier side is the portal",
+      "url": "https://service.ariba.com"
+    },
+    {
+      "name": "Tipalti supplier hub",
+      "role": "Lumen's payee profile, tax form and holds",
+      "api": "Supplier side is the portal",
+      "url": "https://tipalti.com"
+    },
+    {
+      "name": "Gmail",
+      "role": "delivery and acceptance, the IRS letter, the client threads, the demand",
+      "api": "Mail",
+      "url": "https://mail.google.com"
+    }
+  ],
+  "steps": [
+    "Reads every open invoice and each client's contract terms.",
+    "Matches the bank's deposits, including a short payment's memo.",
+    "Reads each client portal's status and the reason behind a rejection or a hold.",
+    "Works out when each invoice was legally due: the contract's date, or 30 days after completion, with the $800 threshold counted across a client's contracts.",
+    "Fixes in the portal what the portal holds, sends a demand for what is late, and leaves alone what the contract or the bank settles."
+  ],
+  "gates": [
+    {
+      "action": "submit_invoice",
+      "label": "Submit an invoice in Coupa",
+      "why": "It goes to the client's AP team and its number can never be reused."
+    },
+    {
+      "action": "update_tax_form",
+      "label": "Replace the W-9",
+      "why": "It is signed under penalty of perjury."
+    },
+    {
+      "action": "send_demand_letter",
+      "label": "Send a demand for payment",
+      "why": "It invokes the law against a client; sent wrongly, it ends a relationship."
+    },
+    {
+      "action": "send_email",
+      "label": "Email a client",
+      "why": "It speaks for her to a client."
+    }
+  ],
+  "traps": [
+    "Acme's Ariba shows payment scheduled on Net 120; the contract says 30 days and governs.",
+    "Orbit kept $500, and the contract's late-delivery credit lets it.",
+    "Brightline's Ariba still says pending; the bank shows it paid.",
+    "Northwind's second invoice is approved and not yet due.",
+    "Pixel Pup's $450 looks under the law's $800, but its two contracts add to $950.",
+    "Lumen's hold is her own W-9, not the client's default."
+  ],
+  "memory": [
+    "Each client's portal, terms and the reason it last rejected an invoice.",
+    "Which entity each contract is with, and its tax form.",
+    "When each invoice became legally late, and what was sent.",
+    "Credits and deductions a contract allows, so they are never chased."
+  ],
+  "economics": {
+    "value_usd": 6000,
+    "per": "year",
+    "basis": "Freelancers Union found 71% had trouble collecting and lost $5,968 a year on average, 13% of income, with 36 hours spent chasing each missing payment (2014–2015). The bench world holds $21,550 stuck across five invoices.",
+    "manual_minutes": 240,
+    "incumbent": "Invoicing apps send reminders but cannot see inside Coupa, Ariba or Tipalti. Collection agencies take 25–50% and are slow. Mostly the freelancer chases, or writes it off.",
+    "sources": [
+      {
+        "label": "Freelancers Union: nonpayment report (2014)",
+        "url": "https://onlabor.org/wp-content/uploads/2017/05/FU_NonpaymentReport_r3.pdf"
+      },
+      {
+        "label": "Freelancers Union: 36 hours per missing payment (2015)",
+        "url": "https://blog.freelancersunion.org/2015/05/13/new-york-freelancers-have-you-been-victim-non-paying-client-we-want-hear-you/"
+      },
+      {
+        "label": "Epstein Becker: New York State's Freelance Isn't Free Act",
+        "url": "https://www.ebglaw.com/workforce-bulletin/freelance-isnt-free-act-soon-takes-effect-throughout-new-york-state"
+      },
+      {
+        "label": "NYC DCWP: BuzzFeed settlement over late freelancer pay",
+        "url": "https://www.nyc.gov/site/dca/news/017-25/dcwp-settlement-buzzfeed-late-payments-freelancers"
+      },
+      {
+        "label": "Coupa buyer FAQ: a rejected invoice is fixed with a new one",
+        "url": "https://www.harbourenergy.com/media/jbznhqcy/10-coupa-faq-english-harbour.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Three enterprise portals that each fail differently, the bank and the contracts, and a statute whose threshold adds contracts across 120 days.",
+    "usefulness_why": "A month's income stuck at any time for a typical freelancer, and the hours of chasing it."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 30,
+    "why": "An organised freelancer collects most of it in an afternoon. The bar is most of the money and no demand sent to a client who owes nothing."
+  },
+  "lessons": [
+    {
+      "adr": "0048",
+      "title": "Look before you ask",
+      "found": "She held a $2,400 demand because Fern's terms were 'on no page I've read' (she had read them in QuickBooks), and asked the person for the LLC's tax id type while the IRS letter sat in the Gmail she had searched."
+    },
+    {
+      "adr": "0049",
+      "title": "A recall carries three page reads",
+      "found": "The recall meant to bring three tabs' reads into Gmail came back cut at 1,600 of 3,074 characters, through the second episode, and the terms she needed were past the cut."
+    }
+  ],
+  "caveat": "The clients are invented and the Freelance Isn't Free Act is summarised as practitioners describe it; this is not legal advice, and a demand letter is worth a lawyer's look."
+}

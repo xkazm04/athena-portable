@@ -6,9 +6,9 @@
  * button. The microphone is one optional line under them. Nothing is numbered, because these are
  * not a sequence: a person who cannot install an engine can still open a page.
  *
- * **Settings** is the same facts as a list a returning person adjusts: one row per fact, a
- * hairline between rows, the fact in a sentence on the left and its control on the right. No
- * cards per item — eleven words of engine and three of theme do not each need a fold.
+ * **Settings** is the same facts for a returning person, in two layers (ADR 0029): an overview of
+ * large emblem tiles that reads, each opening a layer where its fact is changed, tested and — for
+ * the theme — previewed.
  *
  * Neither mood claims anything the machine has not said. Readiness is derived at render; a
  * restart is offered only when a running daemon disagrees with the stored row; a probe's words
@@ -17,12 +17,17 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 
+import Badge from "@/components/Badge";
 import Button from "@/components/Button";
+import Emblem from "@/components/Emblem";
+import Layer, { LayerColumns } from "@/components/Layer";
 import PageHeader from "@/components/PageHeader";
+import PageSection from "@/components/PageSection";
 import PageShell from "@/components/PageShell";
 import PillGroup from "@/components/PillGroup";
 import ProblemNote from "@/components/ProblemNote";
-import StatusDot, { type Tone } from "@/components/StatusDot";
+import StatusDot from "@/components/StatusDot";
+import Tile from "@/components/Tile";
 import { TextInput } from "@/components/FormField";
 import { engineLabel, probeOf, remedyFor, usable } from "@/lib/engines";
 import { normaliseUrl } from "@/lib/url";
@@ -34,6 +39,7 @@ import {
   STANDING_TONE,
   WHAT_ATHENA_IS,
   type Fact,
+  type Standing,
   brainFact,
   engineFact,
   engineLead,
@@ -53,8 +59,19 @@ const THEME_HINTS: Record<ThemeChoice, string> = {
   dark: "Always dark.",
 };
 
-export default function SetupView({ model }: { model: SetupModel }) {
-  return model.mode === "onboarding" ? <Onboarding model={model} /> : <Settings model={model} />;
+export default function SetupView({
+  model,
+  initialOpen = null,
+}: {
+  model: SetupModel;
+  /** Preview only: open this fact's layer on first render. */
+  initialOpen?: Topic | null;
+}) {
+  return model.mode === "onboarding" ? (
+    <Onboarding model={model} />
+  ) : (
+    <Settings model={model} initialOpen={initialOpen} />
+  );
 }
 
 // -- onboarding: the letter --------------------------------------------------------------------
@@ -165,13 +182,45 @@ function Passage({
 
 // -- settings: the list ----------------------------------------------------------------------
 
-function Settings({ model }: { model: SetupModel }) {
+type Topic = "engine" | "page" | "theme" | "brain" | "microphone" | "voice" | "data";
+
+const STANDING_WORD: Record<Standing, string> = {
+  done: "set",
+  todo: "not yet",
+  missing: "needs you",
+  unknown: "checking",
+};
+
+/**
+ * The returning person's Setup (ADR 0029): an overview of large emblem tiles, one per fact, that
+ * reads — and a layer for each, where the fact is changed, tested and previewed. The restart
+ * notice stays on the overview because it is the one thing here that asks to be done now.
+ */
+function Settings({ model, initialOpen = null }: { model: SetupModel; initialOpen?: Topic | null }) {
+  const [open, setOpen] = useState<Topic | null>(initialOpen);
   const notice = restartNotice(model);
   const engine = engineFact(model);
   const page = pageFact(model);
   const brain = brainFact(model);
   const mic = micFact(model);
   const voice = voiceFact(model);
+  const tiles: { topic: Topic; label: string; standing: Standing | null; line: string }[] = [
+    { topic: "engine", label: "Engine", standing: engine.standing, line: engineSentence(model) },
+    { topic: "page", label: "Page", standing: page.standing, line: pageSentence(model) },
+    { topic: "theme", label: "Theme", standing: null, line: THEME_HINTS[model.theme] },
+    {
+      topic: "brain",
+      label: "Brain",
+      standing: brain.standing,
+      line: model.brainPath
+        ? "Episodes, facts and playbooks are written here."
+        : "Episodes go to Athena's own folder.",
+    },
+    { topic: "microphone", label: "Microphone", standing: mic.standing, line: micSentence(model) },
+    { topic: "voice", label: "Voice", standing: voice.standing, line: voiceSentence(model) },
+    { topic: "data", label: "Data", standing: null, line: "One SQLite file holds this machine's Athena." },
+  ];
+  const current = tiles.find((t) => t.topic === open) ?? null;
   return (
     <PageShell>
       <PageHeader
@@ -193,112 +242,186 @@ function Settings({ model }: { model: SetupModel }) {
         />
       ) : null}
 
-      <div className="setup-list">
-        <Row glyph="engine" label="Engine" tone={STANDING_TONE[engine.standing]} fact={engineSentence(model)}>
-          <div className="setup-row__stack">
-            <EngineChoice model={model} />
-            {notice ? (
-              <div className="setup-notice" role="status">
-                <p className="typo-body">{notice.title}</p>
-                <p className="typo-caption">{notice.detail}</p>
-                <span className="row">
-                  <Button variant="primary" size="sm" onClick={model.actions.restart}>
-                    {notice.actionLabel}
-                  </Button>
-                </span>
-              </div>
-            ) : null}
-            <EngineDetail model={model} compact />
-            <EngineCheck model={model} />
+      {notice ? (
+        <div className="setup-notice setup-notice--banner" role="status">
+          <div className="stack" style={{ gap: 2 }}>
+            <p className="typo-body">{notice.title}</p>
+            <p className="typo-caption">{notice.detail}</p>
           </div>
-        </Row>
+          <Button variant="primary" size="sm" onClick={model.actions.restart}>
+            {notice.actionLabel}
+          </Button>
+        </div>
+      ) : null}
 
-        <Row glyph="page" label="Page" tone={STANDING_TONE[page.standing]} fact={pageSentence(model)}>
-          <OpenPage model={model} compact />
-        </Row>
+      <div className="setup-tiles">
+        {tiles.map((t) => {
+          const Drawing = GLYPHS[t.topic];
+          return (
+            <Tile
+              key={t.topic}
+              emblem={
+                <Emblem
+                  art={<Drawing size={24} />}
+                  done={t.standing ? t.standing === "done" : t.topic !== "data" || Boolean(model.storePath)}
+                  size={64}
+                />
+              }
+              title={t.label}
+              pill={
+                t.standing ? (
+                  <Badge tone={STANDING_TONE[t.standing]}>{STANDING_WORD[t.standing]}</Badge>
+                ) : undefined
+              }
+              line={t.line}
+              onOpen={() => setOpen(t.topic)}
+            />
+          );
+        })}
+      </div>
 
-        <Row glyph="theme" label="Theme" tone="neutral" fact={THEME_HINTS[model.theme]}>
-          <PillGroup
-            ariaLabel="Theme"
-            value={model.theme}
-            onChange={model.actions.setTheme}
-            options={THEME_CHOICES.map((choice) => ({
-              value: choice,
-              label: choice,
-              hint: THEME_HINTS[choice],
-            }))}
-          />
-        </Row>
-
-        <Row
-          glyph="brain"
-          label="Brain"
-          tone={STANDING_TONE[brain.standing]}
-          fact={
-            model.brainPath
-              ? "Episodes, facts and playbooks are written here."
-              : "Episodes go to Athena's own folder."
+      {current ? (
+        <Layer
+          eyebrow="Setup"
+          title={current.label}
+          size={current.topic === "engine" || current.topic === "theme" ? "lg" : "md"}
+          onClose={() => setOpen(null)}
+          actions={
+            current.standing ? (
+              <Badge tone={STANDING_TONE[current.standing]}>{STANDING_WORD[current.standing]}</Badge>
+            ) : undefined
           }
         >
-          <BrainField model={model} />
-        </Row>
-
-        <Row glyph="microphone" label="Microphone" tone={STANDING_TONE[mic.standing]} fact={micSentence(model)}>
-          <MicControl model={model} compact />
-        </Row>
-
-        <Row glyph="voice" label="Voice" tone={STANDING_TONE[voice.standing]} fact={voiceSentence(model)}>
-          <span className="typo-caption">{voice.summary}</span>
-        </Row>
-
-        <Row
-          glyph="data"
-          label="Data"
-          tone="neutral"
-          fact="One SQLite file: settings, origins, projects, activity and captures. Copy it to move this machine's Athena."
-        >
-          <code className="typo-code setup-path">
-            {model.storePath ?? "the shell has not answered store_path yet"}
-          </code>
-        </Row>
-      </div>
+          <SettingsLayer topic={current.topic} line={current.line} model={model} />
+        </Layer>
+      ) : null}
     </PageShell>
   );
 }
 
-/**
- * One fact and its control. The hairline between rows is the only structure the list has. The
- * glyph names the fact; the dot beside the label keeps the standing hue, because a graphic in a
- * status colour would be asked to carry a word's meaning.
- */
-function Row({
-  glyph,
-  label,
-  tone,
-  fact,
-  children,
-}: {
-  glyph: GlyphName;
-  label: string;
-  tone: Tone;
-  fact: string;
-  children: ReactNode;
-}) {
-  const Drawing = GLYPHS[glyph];
+function SettingsLayer({ topic, line, model }: { topic: Topic; line: string; model: SetupModel }) {
+  const lead = <p className="typo-body setup-layer__lead">{line}</p>;
+  switch (topic) {
+    case "engine":
+      return (
+        <LayerColumns
+          left={
+            <>
+              {lead}
+              <PageSection title="Which engine runs her turns">
+                <EngineChoice model={model} />
+              </PageSection>
+            </>
+          }
+          right={
+            <PageSection title="What this machine has" note="The probe's own words.">
+              <EngineDetail model={model} />
+              <EngineCheck model={model} />
+            </PageSection>
+          }
+        />
+      );
+    case "page":
+      return (
+        <>
+          {lead}
+          <OpenPage model={model} />
+        </>
+      );
+    case "theme":
+      return (
+        <LayerColumns
+          left={
+            <>
+              {lead}
+              <PageSection title="Theme">
+                <PillGroup
+                  ariaLabel="Theme"
+                  value={model.theme}
+                  onChange={model.actions.setTheme}
+                  options={THEME_CHOICES.map((choice) => ({
+                    value: choice,
+                    label: choice,
+                    hint: THEME_HINTS[choice],
+                  }))}
+                />
+              </PageSection>
+            </>
+          }
+          right={
+            <PageSection title="What each one looks like">
+              <div className="theme-previews">
+                <ThemePreview theme="light" chosen={model.theme === "light"} />
+                <ThemePreview theme="dark" chosen={model.theme === "dark"} />
+              </div>
+              <p className="typo-caption">
+                System follows the operating system and switches when it does.
+              </p>
+            </PageSection>
+          }
+        />
+      );
+    case "brain":
+      return (
+        <>
+          {lead}
+          <BrainField model={model} />
+          <p className="typo-caption">
+            Memory is markdown on disk; copy the folder and her memory goes with it.
+          </p>
+        </>
+      );
+    case "microphone":
+      return (
+        <>
+          {lead}
+          <MicControl model={model} />
+        </>
+      );
+    case "voice":
+      return (
+        <>
+          {lead}
+          <p className="typo-body">{voiceFact(model).summary}</p>
+          <p className="typo-caption">The Voice module sets up how she hears and speaks.</p>
+        </>
+      );
+    case "data":
+      return (
+        <>
+          <p className="typo-body setup-layer__lead">
+            One SQLite file: settings, origins, projects, activity and captures. Copy it to move
+            this machine&apos;s Athena.
+          </p>
+          <code className="typo-code setup-path">
+            {model.storePath ?? "the shell has not answered store_path yet"}
+          </code>
+        </>
+      );
+  }
+}
+
+/** A miniature of the app in one theme: the tokens re-scoped by `data-theme` on its own root. */
+function ThemePreview({ theme, chosen }: { theme: "light" | "dark"; chosen: boolean }) {
   return (
-    <div className="setup-row">
-      <div className="setup-row__fact">
-        <span className="setup-row__title">
-          <span className="setup-row__glyph">
-            <Drawing size={22} />
-          </span>
-          <StatusDot tone={tone} />
-          <span className="typo-title">{label}</span>
-        </span>
-        <p className="typo-caption">{fact}</p>
+    <figure className="theme-preview" data-theme={theme} data-chosen={chosen ? "1" : undefined}>
+      <div className="theme-preview__bar">
+        <span className="theme-preview__mark" />
+        <span className="theme-preview__tab theme-preview__tab--on" />
+        <span className="theme-preview__tab" />
+        <span className="theme-preview__tab" />
       </div>
-      <div className="setup-row__control">{children}</div>
-    </div>
+      <div className="theme-preview__body">
+        <span className="theme-preview__title" />
+        <span className="theme-preview__line" />
+        <div className="theme-preview__cards">
+          <span className="theme-preview__card theme-preview__card--done" />
+          <span className="theme-preview__card" />
+          <span className="theme-preview__card" />
+        </div>
+      </div>
+      <figcaption className="typo-label">{chosen ? `${theme}, chosen` : theme}</figcaption>
+    </figure>
   );
 }
 

@@ -12,7 +12,14 @@ from typing import Any
 import pytest
 
 from athena.contracts import HostManifest, Lane, ToolClass, TurnContext
-from athena.core.catalog import Catalog, CatalogError, CoreServices, build_catalog
+from athena.core.catalog import (
+    READ_CAP,
+    RECALL_CAP,
+    Catalog,
+    CatalogError,
+    CoreServices,
+    build_catalog,
+)
 
 CTX = TurnContext(conversation_id="conv_invoices", turn_id="turn-1")
 
@@ -68,7 +75,7 @@ def test_the_three_core_names_are_registered_with_the_classes_the_design_fixes()
     assert catalog.classify("core.write_fact") is ToolClass.GATED
     assert catalog.classify("core.recall") is ToolClass.READ
     assert catalog.classify("core.checkpoint") is ToolClass.AUTO
-    assert catalog.get("core.recall").cap_chars == 1600
+    assert catalog.get("core.recall").cap_chars == RECALL_CAP == 3 * READ_CAP
 
 
 def test_write_fact_refuses_dead_sources_and_accepts_live_ones() -> None:
@@ -230,7 +237,7 @@ def test_the_block_is_byte_for_byte_stable_across_two_calls() -> None:
 def test_the_block_shows_the_read_cap_and_the_parameters_of_each_name() -> None:
     catalog = build_catalog(services(), manifest())
     text = catalog.render_capabilities(Lane.BROWSER).text
-    assert "[cap 1600 chars]" in text
+    assert "[cap 4800 chars]" in text, "recall answers with several episodes, so it carries more"
     assert "key: string" in text
     assert 'scope?: ["user", "project", "world"]' in text
     assert '`host.invoices.list_invoices`(status?: ["open", "paid"])' in text

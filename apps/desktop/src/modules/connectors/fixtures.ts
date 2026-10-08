@@ -223,6 +223,34 @@ export const fixtures: Record<string, ConnectorsModel> = {
   unreachable,
   "needs-reauth": needsReauth,
   "flow-failed": flowFailed,
+  "open-notion": typical,
+  "open-gmail": typical,
+  "open-reauth": needsReauth,
+  "open-flow-failed": flowFailed,
 };
 
-export const fixtureIds = ["empty", "typical", "heavy", "degraded", "unreadable", "unreachable", "needs-reauth", "flow-failed"] as const;
+export const fixtureIds = [
+  "empty",
+  "typical",
+  "heavy",
+  "degraded",
+  "unreadable",
+  "unreachable",
+  "needs-reauth",
+  "flow-failed",
+  "open-notion",
+  "open-gmail",
+  "open-reauth",
+  "open-flow-failed",
+] as const;
+
+/** The fixtures that render a connector's layer open (ADR 0029), and which connector. */
+export function initialOpenFor(fixture: string): string | null {
+  const opened: Record<string, string> = {
+    "open-notion": "notion",
+    "open-gmail": "gmail",
+    "open-reauth": "gmail",
+    "open-flow-failed": "gmail",
+  };
+  return opened[fixture] ?? null;
+}

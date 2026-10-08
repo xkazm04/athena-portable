@@ -1,0 +1,406 @@
+{
+  "playbook": "medical-bills",
+  "run_at": "2026-10-07T23:06:25Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 140.8,
+  "turns": 10,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 22,
+  "cost_usd": 1.7855,
+  "your_time_s": 210,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 30.0
+    },
+    "minutes": 2.3
+  },
+  "score": {
+    "eligible": 8,
+    "found": 7,
+    "exact": 7,
+    "value_total_usd": 3423.5,
+    "value_found_usd": 3423.5,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 12,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "dispute_bill",
+        "key": "B-5",
+        "why": "Higher than last year's $40 because the 2026 deductible reset; it matches the EOB",
+        "filed": false
+      },
+      {
+        "action": "dispute_bill",
+        "key": "B-6",
+        "why": "The EOB (C-1006) is still in process",
+        "filed": false
+      },
+      {
+        "action": "dispute_bill",
+        "key": "B-9",
+        "why": "Matches the EOB",
+        "filed": false
+      },
+      {
+        "action": "dispute_bill",
+        "key": "CB-7",
+        "why": "Overpaid after reprocessing: a refund, not a dispute",
+        "filed": false
+      },
+      {
+        "action": "dispute_bill",
+        "key": "CB-11",
+        "why": "Matches the EOB",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "B-1",
+        "why": "Nothing paid on it",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "CB-3",
+        "why": "Nothing paid on it",
+        "filed": false
+      },
+      {
+        "action": "file_appeal",
+        "key": "C-1008",
+        "why": "Denied 03-20: day 201, past the 180-day window",
+        "filed": false
+      },
+      {
+        "action": "file_appeal",
+        "key": "C-1006",
+        "why": "In process, not denied",
+        "filed": false
+      },
+      {
+        "action": "file_appeal",
+        "key": "C-1003",
+        "why": "Paid correctly by the plan; the problem is the anesthesia group's bill",
+        "filed": false
+      },
+      {
+        "action": "pay_bill",
+        "key": "B-6",
+        "why": "The EOB is still in process",
+        "filed": false
+      },
+      {
+        "action": "pay_bill",
+        "key": "B-10",
+        "why": "The same balance as B-1, which is disputed",
+        "filed": false
+      }
+    ],
+    "filed_usd": 2183.5,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "dispute_bill",
+      "key": "B-1",
+      "outcome": "correct",
+      "value_usd": 324.5,
+      "exact": true,
+      "why": "Bill $412 against $87.50 on the final EOB (C-1001): $324.50 over"
+    },
+    {
+      "action": "dispute_bill",
+      "key": "B-2",
+      "outcome": "correct",
+      "value_usd": 64.0,
+      "exact": true,
+      "why": "The panel billed twice; the EOB (C-1002) allowed one unit: $64 duplicate"
+    },
+    {
+      "action": "pay_bill",
+      "key": "B-5",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Matches the final EOB (deductible)"
+    },
+    {
+      "action": "pay_bill",
+      "key": "B-9",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Matches the final EOB"
+    },
+    {
+      "action": "dispute_bill",
+      "key": "CB-3",
+      "outcome": "correct",
+      "value_usd": 1750.0,
+      "exact": true,
+      "why": "Out-of-network anesthesia at an in-network hospital: No Surprises Act limits it to $150; $1,750 balance bill"
+    },
+    {
+      "action": "request_refund",
+      "key": "CB-7",
+      "outcome": "correct",
+      "value_usd": 45.0,
+      "exact": true,
+      "why": "Paid $180 from the HSA; the reprocessed EOB (C-1007) says $135"
+    },
+    {
+      "action": "file_appeal",
+      "key": "C-1004",
+      "outcome": "correct",
+      "value_usd": 1240.0,
+      "exact": true,
+      "why": "Denied 09-07 for no conservative therapy; MyChart shows six weeks of physical therapy: day 30 of 180"
+    }
+  ],
+  "missed": [
+    {
+      "action": "pay_bill",
+      "key": "CB-11",
+      "value_usd": 0
+    }
+  ],
+  "closing_words": "I'm filing one appeal and skipping the other denial.\n\n- **C-1004, Bayview MRI ($1,240): appeal.** It was denied 2026-09-07 as \"not medically necessary: no record of six weeks of conservative therapy.\" The 180-day window runs to 2027-03-06, so it's in time. Your MyChart records answer the denial reason directly:\n  - Physical therapy ran from 2026-07-01 to 2026-08-05 (six weeks). The week-6 note says there was no improvement and the pain was radiating to the left leg.\n  - The 2026-08-28 office visit records six weeks of PT without improvement and new radicular symptoms, and it ordered the MRI.\n- **C-1008, Bayview CT ($980): not appealing.** It was denied 2026-03-20 for no prior authorization. The deadline was 2026-09-16, three weeks ago, so it's too late. If you have a reason it should be reopened, such as a late denial notice, tell me and I'll look at it.\n\nI'm quoting the MyChart evidence",
+  "trace": [
+    {
+      "portal": "Bluepoint Health member portal",
+      "user": "My medical bills are a mess. Start here in my insurance portal: go through this year's claims and EOBs and work out what I actually owe each provider, and anything that looks wrong.",
+      "continued": false,
+      "said": "I'll start by pulling this year's claims and the plan rules, then open each claim for its full EOB.\n\n\nPlan:\n1. Read every claim's EOB here (patient responsibility, denials, appeal deadlines).\n2. Then check MyChart and Cedar, tab by tab, to compare what each biller is charging against the EOBs.\n3. Propose disputes, appeals, refunds or payments as decision cards. I won't act on any of them before you answer.\n\nI'll report the totals once the claims and plan rules come back.",
+      "said_chars": 475,
+      "reads": [
+        "list_claims",
+        "read_plan"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Bluepoint Health member portal",
+      "user": "",
+      "continued": true,
+      "said": "This is only half the list (showing 5 of 10 claims), so I'm pulling page 2 and opening the five I have for their full EOBs.\n\n\nWhat I can say so far, from the list only:\n- Plan rules: the $1,500 deductible was met on 2026-03-02, and coinsurance is 25% after that. Northstar Anesthesia is out of network, so its bill is capped at the patient responsibility on the EOB. A denial can be appealed within 180 days.\n- C-1004 (Bayview MRI, denied, $1,240) is the only denial so far.",
+      "said_chars": 696,
+      "reads": [
+        "list_claims",
+        "read_claim",
+        "read_claim",
+        "read_claim",
+        "read_claim",
+        "read_claim"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Bluepoint Health member portal",
+      "user": "",
+      "continued": true,
+      "said": "Five of the ten EOBs are open. I'm opening the other five now. C-1008 (denied CT) needs its denial date before I can say whether an appeal is still in time.\n\n\nFrom the five EOBs read so far:\n- **C-1001, ED visit (Valley Medical Center), Final:** you owe $87.50. The EOB shows no problem.\n- **C-1002, metabolic panel (Valley Medical Center), Final:** you owe $64.00. The EOB says one unit was billed and allowed, so I'll compare that against what MyChart charges.",
+      "said_chars": 1436,
+      "reads": [
+        "read_claim",
+        "read_claim",
+        "read_claim",
+        "read_claim",
+        "read_claim"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Bluepoint Health member portal",
+      "user": "",
+      "continued": true,
+      "said": "Here's what I can establish from the insurance portal. I have all ten EOBs, but nothing has been compared with what the billers charge yet.\n\n| Claim | Provider | Status | You owe per EOB |\n|---|---|---|---|\n| C-1001 ED visit | Valley Medical | Final | $87.50 |\n| C-1002 Metabolic panel | Valley Medical | Final | $64.00 |\n| C-1003 Anesthesia | Northstar (out of network) | Final | $150.00 (capped by No Surprises Act) |\n| C-1005 Office visit, Jan | Valley Medical | Final | $240.00 (applied to deductible) |\n| C-1007",
+      "said_chars": 3725,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "MyChart (Valley Medical)",
+      "user": "Now I'm in MyChart for Valley Medical. Compare these bills to what the EOBs say. Dispute what's wrong and pay what I genuinely owe.",
+      "continued": false,
+      "said": "I'll read the MyChart bills, payments and visits first, then compare them with the EOBs. Nothing is disputed or paid until I've seen the line items.\n\nMy last three lines used the wrong format and were dropped, so I'm sending them again.",
+      "said_chars": 236,
+      "reads": [
+        "list_bills",
+        "list_payments",
+        "list_visits"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "MyChart (Valley Medical)",
+      "user": "",
+      "continued": true,
+      "said": "Several balances don't match the EOBs. B-1 is $412 against $87.50 owed. B-2 is $128 against $64. B-10 repeats B-1's date of service and amount. I'm opening the line items before I propose anything.",
+      "said_chars": 197,
+      "reads": [
+        "read_bill",
+        "read_bill",
+        "read_bill",
+        "read_bill",
+        "read_bill"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "MyChart (Valley Medical)",
+      "user": "",
+      "continued": true,
+      "said": "Three of the five bills I opened match their EOBs, and two don't. I'm filing two disputes and two payments, and I'm not paying anything else here.\n\n| Bill | Charged | EOB owes | Verdict |\n|---|---|---|---|\n| B-1, ED visit (C-1001) | $412.00 | $87.50 | Dispute $324.50 |\n| B-2, metabolic panel (C-1002) | $128.00 | $64.00 | Dispute $64.00. The same 80053 line appears twice, and the EOB allowed one unit. |\n| B-5, Jan office visit (C-1005) | $240.00 | $240.00 | Pay. The EOB applied it to your deductible.",
+      "said_chars": 2674,
+      "reads": [],
+      "cards": [
+        {
+          "action": "dispute_bill",
+          "key": "B-1",
+          "outcome": "correct",
+          "value_usd": 324.5
+        },
+        {
+          "action": "dispute_bill",
+          "key": "B-2",
+          "outcome": "correct",
+          "value_usd": 64.0
+        },
+        {
+          "action": "pay_bill",
+          "key": "B-5",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "pay_bill",
+          "key": "B-9",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    },
+    {
+      "portal": "Cedar",
+      "user": "This is Cedar, where the anesthesia group and the dermatologist bill me. Same thing here.",
+      "continued": false,
+      "said": "I'm reading every statement on Cedar now, then I'll compare each one against the EOBs. The Northstar balance and the C-1007 dermatology charge are the two I'm checking first.",
+      "said_chars": 174,
+      "reads": [
+        "list_statements"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Cedar",
+      "user": "",
+      "continued": true,
+      "said": "Cedar has two things to act on and one I'm holding.\n\n- **CB-3, Northstar anesthesia:** They bill $1,900 after insurance. The EOB for C-1003 caps what you owe at $150 under the No Surprises Act, because the facility was in network. I'm disputing $1,750.\n- **CB-7, Lakeside excision:** You paid $180 from the HSA card on 2026-06-01. The EOB for C-1007 says you owe $135. I'm asking for the $45 back.\n- **CB-11, Lakeside follow-up:** The balance is $95, and my notes list a $95 EOB, C-1010.",
+      "said_chars": 973,
+      "reads": [],
+      "cards": [
+        {
+          "action": "dispute_bill",
+          "key": "CB-3",
+          "outcome": "correct",
+          "value_usd": 1750.0
+        },
+        {
+          "action": "request_refund",
+          "key": "CB-7",
+          "outcome": "correct",
+          "value_usd": 45.0
+        }
+      ]
+    },
+    {
+      "portal": "Bluepoint Health member portal",
+      "user": "Back in the insurance portal. Appeal any denial that's worth appealing and still in time, with whatever evidence you found.",
+      "continued": false,
+      "said": "I'm filing one appeal and skipping the other denial.\n\n- **C-1004, Bayview MRI ($1,240): appeal.** It was denied 2026-09-07 as \"not medically necessary: no record of six weeks of conservative therapy.\" The 180-day window runs to 2027-03-06, so it's in time. Your MyChart records answer the denial reason directly:\n  - Physical therapy ran from 2026-07-01 to 2026-08-05 (six weeks). The week-6 note says there was no improvement and the pain was radiating to the left leg.",
+      "said_chars": 1019,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_appeal",
+          "key": "C-1004",
+          "outcome": "correct",
+          "value_usd": 1240.0
+        }
+      ]
+    }
+  ],
+  "note": "after ADR 0045 (evidence is what a page says; gather in each tab) and the action-shape fix",
+  "history": [
+    {
+      "run_at": "2026-10-07T22:11:03Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 4,
+      "eligible": 8,
+      "value_found_usd": 388.5,
+      "false_claims": 1,
+      "note": "first run: refused reads went unheard; one card (disputing reminder B-10) was later judged fair, so the truth was corrected"
+    },
+    {
+      "run_at": "2026-10-07T22:18:17Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 6,
+      "eligible": 8,
+      "value_found_usd": 433.5,
+      "false_claims": 0
+    },
+    {
+      "run_at": "2026-10-07T22:29:00Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 7,
+      "eligible": 8,
+      "value_found_usd": 2183.5,
+      "false_claims": 0,
+      "note": "after ADR 0041 (refusals told in the turn) and ADR 0042 (recall matches any word, shows where)"
+    },
+    {
+      "run_at": "2026-10-07T22:49:50Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 7,
+      "eligible": 8,
+      "value_found_usd": 2183.5,
+      "false_claims": 0,
+      "note": "after ADR 0043 (every result that fits) and ADR 0044 (the playbook rides every turn)"
+    },
+    {
+      "run_at": "2026-10-07T22:55:45Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 7,
+      "eligible": 8,
+      "value_found_usd": 2183.5,
+      "false_claims": 0,
+      "note": "after the in-flight note (ADR 0041) and the person following a switch she asks for"
+    },
+    {
+      "run_at": "2026-10-07T22:58:51Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 5,
+      "eligible": 8,
+      "value_found_usd": 1628.5,
+      "false_claims": 0,
+      "note": "after hearing a switch request from her whole answer"
+    }
+  ]
+}

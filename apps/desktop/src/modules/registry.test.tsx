@@ -21,8 +21,8 @@ test("every module is registered under its own id, once", () => {
   expect(new Set(ids).size).toBe(ids.length);
 });
 
-test("Main carries Browser, Connectors, Setup and Voice, in that order — the panel left for her window (ADR 0026), Voice after Setup (ADR 0028)", () => {
-  expect(MODULE_ENTRIES.map((m) => m.id)).toEqual(["browser", "connectors", "setup", "voice"]);
+test("Main carries Browser, Playbooks, Connectors, Setup and Voice, in that order — the panel left for her window (ADR 0026), Voice after Setup (ADR 0028), Playbooks beside the Browser (ADR 0040)", () => {
+  expect(MODULE_ENTRIES.map((m) => m.id)).toEqual(["browser", "playbooks", "connectors", "setup", "voice"]);
 });
 
 test("the Voice module ships a fixture for every studio moment", () => {

@@ -6,7 +6,9 @@ cannot take back.
 Built for the Nebius x NVIDIA Global AI Hackathon, **Personal AI track**. Licensed under
 [Apache-2.0](LICENSE). The submission text is [`docs/submission.md`](docs/submission.md), the
 product feedback is [`docs/feedback.md`](docs/feedback.md), and the requirement checklist is
-[`docs/submission-checklist.md`](docs/submission-checklist.md).
+[`docs/submission-checklist.md`](docs/submission-checklist.md). Each module's current state is
+documented in [`docs/features/`](docs/features/README.md), and
+[`docs/report/index.html`](docs/report/index.html) summarises what each build wave added.
 
 Athena is a single-user desktop agent whose environment is the web applications the user already
 has open: an invoicing tool, a CRM, a support inbox. She holds them in tabs, reads the page in
@@ -169,7 +171,7 @@ Packages depend on ports, never on concrete classes. `wiring.py` is the one plac
 | Class | Meaning | Where the answer goes |
 |---|---|---|
 | `GATED` | approval row and a decision card; executes only after a resolved decision | the executor, or the host on `execute` |
-| `READ` | synchronous, capped at 1,600 chars, announces truncation | a system episode |
+| `READ` | synchronous, capped at 1,600 chars (a recall at 4,800, ADR 0049), announces truncation | a system episode |
 | `AUTO` | fires after its validator passes | the executor, or the host |
 
 A page's tools enter the catalog through a manifest. The class is derived from the manifest's own
@@ -288,7 +290,7 @@ src/athena/
   daemon/                server.py, routes.py, sessions.py, ready.py
   channels/              mcp.py, voice/
   connectors/            port.py only; the connectors themselves live in the reference repository
-  proving/               the Gauntlet, model-played Characters, the Sandbox spike and the trigger page; section 9
+  proving/               the Gauntlet, model-played Characters, the Sandbox spike, the trigger page (section 9) and the playbook bench (section 14)
   wiring.py, cli.py
 constitution/            law.md, identity.md
 packages/athena-bridge/  inject.js, gate.js, protocol.md, test/
@@ -299,6 +301,7 @@ examples/                demo-kit/, ledgerbox/, hirelane/, tidycrm/, journey/ (A
 scripts/                 build-sidecar.py, sidecar_entry.py
 tests/                   core/, harness/, lane/, daemon/, test_contracts.py, test_ids_parity.py
 uat/                     Characters, journeys, rubric; the users the Proving Ground plays
+playbooks/               one directory per playbook: showcase, world, truth, latest bench (section 14)
 docs/                    design.md, adr/, demo.md, daemon.md, submission.md
 ```
 
@@ -776,6 +779,126 @@ Recorded as the prototypes run; each item names the run or call that showed it.
   quota, and a signed-in `nebius` CLI. Endpoint token auth is the platform's bearer header, so a
   page meant for browsers must run `--auth none` and do its own auth. `ai endpoint create`
   documents no health-check flag.
+
+## 14. Playbooks: what only Athena does
+
+A playbook is a chore worth real money that only an agent living in the person's own tabs can do:
+it spans portals no integration reaches, and it ends in something irreversible that wants a
+signature. Each one is data under `playbooks/<id>/` and earns its place on the desktop's
+Playbooks module by a run on the bench (ADR 0040).
+
+```bash
+uv run python -m athena.proving.playbooks check                          # every playbook loads
+uv run python -m athena.proving.playbooks bench fba-reimbursements --model sonnet --cap 5
+uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-runs/<ts>/playbook-fba-reimbursements/report.json
+```
+
+- **The files.** `playbook.json` is the showcase: persona, chore, command, portals, gates, traps,
+  economics with sources, edge scores, whose chore it is (`audience`: home or work, which the
+  desktop's grid filters by) and the expectation it is held to. `world.json` is the
+  portals as data: tools with honest flags, views, tables and the phases of the run. `truth.json`
+  is what a perfect run files and what looks eligible but is not; nothing but the scorer reads it.
+  A read matches an exact key, a substring (`contains`) or every word in any order (`words`, as a
+  mail search does); a target may be traps alone, for a tool every use of which is wrong there.
+  `check` fails on any read the run loop would cut at its 1,600-character cap: page it first.
+  `bench.json` is the latest measured run, committed.
+- **The bench.** A real Athena on a throwaway brain, on the person's own `claude` CLI, driven
+  through the daemon's own routes (`proving/world.py`). Each phase is one portal, as a turn is
+  pinned to one origin; what carries between portals is her memory. The simulated pages answer
+  host calls the way the desktop run loop does, bounded by its continuation limit; a "keep going"
+  nudge is decided from the bound, never from the truth.
+- **The score is read from cards.** Each card on a target tool is right, a duplicate, a trap, or
+  unfounded; traps avoided, exact amounts and the money found follow. The verdict holds both the
+  money and the count of items to the playbook's bar, and an item marked `required` (a deadline
+  that cannot wait) is short if missed (ADR 0051). A closing total in her own
+  words is audited against the cards, and the record wins.
+- **The replay.** `bench.json` keeps the latest run's trace: each turn's portal, what the person
+  said (or that the run loop handed back the page's answers), her words cut at a sentence with
+  their length, what she read, and each card in the colour the scorer gave it. The playbook's
+  layer on the desktop plays it turn by turn, with the money found so far.
+- **The traps by name.** The score keeps a ledger of every trap the world held, why it was one and
+  whether she filed it, and the layer lists them: what she was right to leave alone.
+
+| Playbook | Portals | Edge (difficulty / usefulness) | Latest bench (2026-10-07, Claude Sonnet) |
+|---|---|---|---|
+| A parent's estate, settled (family affairs) | Gmail, Drive, the estate account, Medigap, two life insurers, unclaimed property, the IRA custodian, a brokerage, Social Security, the probate docket, IRS Direct Pay | 5 / 5 | **exceeds** twice running: 9 of 12, both deadline items (the $93,200 disclaimer, the IRS first), every filing exact, 11 of 11 traps avoided, 0 false; 7.0 min, $6.24 |
+| A parent's long-term-care claims (family care) | insurer portal, home-care agency portal, email, MyChart, Medicare.gov, the parent's bank | 5 / 5 | **exceeds**: 10 of 10, $26,410 owed found (filed $26,368: two amounts a little under the rules), 11 of 11 traps avoided, 0 false; 4.8 min, $5.23 |
+| Denied claims, reworked (clinics) | practice management, clearinghouse, Availity | 5 / 5 | **exceeds**: 9 of 10, $2,120 of $2,120, every claim exact, 22 of 22 traps avoided, 0 false; 3.1 min, $2.60 |
+| Amazon FBA reimbursements | Seller Central, supplier inbox | 4 / 4 | **exceeds**: 5 of 5, $359.78 of $359.78, 14 of 14 traps avoided, 0 false; 2.6 min, $2.66 |
+| Medical bills against the EOBs | insurer portal, MyChart, Cedar | 4 / 4 | **exceeds**: $3,423.50 of $3,423.50 (7 of 8; one correct $95 bill left unpaid), 0 false; 2.3 min, $1.79 |
+| The subcontractor's lien desk (construction) | office ERP and mail, Procore, Oracle Textura, GCPay | 5 / 5 | **exceeds**: 10 of 10, $416,700 of $416,700, every filing exact, 12 of 12 traps avoided, 0 false; 3.8 min, $2.59 |
+| Detention, lumper and TONU (trucking) | Motive, dispatch inbox, CHR Navisphere, TQL, Uber Freight, RTS | 4 / 4 | **exceeds**: 9 of 9, $1,580 of $1,580, every request exact, 13 of 13 traps avoided, 0 false; 4.5 min, $4.87 |
+| A freelancer's receivables (sole trader) | QuickBooks, Chase, Coupa, Ariba, Tipalti, Gmail | 4 / 4 | **exceeds**: 4 of 5, $21,100 of $21,550, every filing exact, 9 of 9 traps avoided, 0 false; 3.5 min, $2.70 |
+| Distributor deductions, disputed (food brands) | myUNFI, KeHE K-Solve, Drive, warehouse portal | 4 / 4 | **exceeds**: 7 of 7, $10,882 of $10,882, every claim exact, 10 of 10 traps avoided, 0 false; 4.2 min, $3.57 |
+
+### What the runs taught Athena
+
+The bench is not only a showcase. Each failed run was read in full, and most failures were the
+product's, not the model's. Each became a fix with its own decision record and test, and the
+playbooks were re-run after it; every run is kept in the playbook's `bench.json` history.
+
+| Fix | Found by | What the run showed |
+|---|---|---|
+| ADR 0041: a refused or dropped op is told in the same turn, once, with the calls still in flight | medical-bills, clinic-denials | She ended turns promising "once these reads return, I'll file…" when every read had been refused and nothing was in flight; a session whose first ops were dropped starved every later tab (clinic: 2 of 10, $0) |
+| ADR 0042: recall matches any word and shows where it matched | medical-bills | Her recall of an EOB read in another tab came back empty: every word was required, and only an episode's first 500 bytes were shown |
+| ADR 0043: tool results are bounded by the frame's budget, not a count of eight | clinic-denials | She read twelve pages in a turn, saw eight, and re-read four every turn |
+| ADR 0044: a handed-over playbook is the active project on every turn | medical-bills | In MyChart she worked the bills and never read the therapy notes the appeal needed: the goal had been said once, in another tab |
+| ADR 0045: a proposal rests on what a page says; cross-tab work is gathered in each tab | fba-reimbursements, medical-bills | A card claimed "12 of 12 cartons (240 units)"; no page said 240 units. After the clause, medical-bills found every dollar with no switch back |
+| ADR 0046: a tool named in `op` is read as the action | lien-desk | Ops written as `{"op":"host.gcpay.list_pay_apps"}` were refused and re-sent a turn later, three phases over |
+| ADR 0047: when the work left is in another tab, she asks for it by name | carrier-accessorials | She ended on "I'll do that there" in the inbox; nothing asked the person to switch, and a rep-approved $340 lumper went unfiled |
+| ADR 0048: look before you ask | freelancer-receivables | She held a demand because the terms were "on no page I've read" (she had read them two tabs earlier) and asked for a tax id type the IRS letter in Gmail stated |
+| ADR 0049: a recall carries three page reads' worth | freelancer-receivables | The recall that was to carry three tabs into Gmail came back cut at 1,600 of 3,074 characters, through the second episode |
+| ADR 0050: a tool in `name` or `tool`, and parameters outside `params`, are repaired | estate-settlement | `{"op":"call","name":"host.bank.list_transactions"}` was dropped and re-sent in five tabs |
+| ADR 0051: the count of items is held to the bar, and a deadline can be required | estate-settlement | A run that filed 3 of 12 came back "exceeds" on the $93,200 disclaimer alone |
+| ADR 0052: the decisions digest counts every waiting card | estate-settlement | With 13 cards waiting she saw "(showing 10 of 10)", missed one she had filed, and filed it again |
+| Call ids carry their round | lien-desk | A recall and a page read in consecutive rounds shared an id; the draw was taken as answered and a $55,000 non-payment notice went unfiled (the bug predated the night) |
+| The OP grammar names the one shape that works | medical-bills | An envelope with another verb and no action reached the catalog as the name '' |
+
+How the money moved, run by run, on the same worlds:
+
+- **Medical bills:** $388 → $433 → $2,184 → $2,184 → $2,184 → $1,629 → **$3,424** (exceeds), across
+  ADRs 0041–0045 and the bench's follow-ups.
+- **Clinic denials:** $0 (2 of 10) → **$2,120** (exceeds) after the dropped-op and result-budget
+  fixes → $1,910 (exceeds) after ADR 0045 → **$2,120**, 9 of 10 exact (exceeds) on a regression
+  run after ADRs 0046–0048.
+- **Estate settlement:** short four times, each for a reason that became a fix: payments held
+  behind unsigned allowances (rule R1 and the world), the inverse trap disallowed before the mailed
+  notice was found, a 3-of-12 run that the measure called "exceeds" (ADR 0051), and 11 of 12 with a
+  payment filed twice because the digest hid it (ADR 0052) → **exceeds**: 9 of 12, both deadline
+  items, 0 false, no duplicate → **exceeds** again once the insurer pages showed the insured's
+  dates, as real claim pages do: the interest and the group policy filed, the creditor payments
+  this time held behind their unsigned allowances.
+- **Long-term-care claims:** **$26,410** on the first run (exceeds, 9 of 10, every amount exact),
+  leaving the premium autopay running because the command never asked her to stop a payment;
+  she offered the card instead. Once the command said so: 10 of 10 (exceeds), with two amounts
+  slightly under the rules (the adult day's capped top-ups, and March's eight-hour days).
+- **Lien desk:** $361,700 (exceeds) → $282,200 (short, before call ids carried their round) →
+  $380,700 after ADR 0046 → $345,200 twice, each time holding back on a defect in the bench's world
+  (an August draw under a September first delivery; no way to attach the renewed certificate) →
+  **$416,700**, 10 of 10 exact, once both were fixed.
+- **Carrier accessorials:** $895 (short, 6 of 9): no page gave the CHR rep's address, and she
+  ended in the inbox saying she would move a TQL receipt "there" → **$1,580**, 9 of 9 exact, after
+  ADR 0047 and rep addresses on the mail. The person switched tabs three times at her request.
+- **Freelancer receivables:** $8,400 (short): no page gave two clients' addresses, and she would
+  not guess them → $14,500 twice (short), once the world gave them: lapses of memory across tabs
+  (ADR 0048), then a recall cut through its second episode (ADR 0049) → **$21,100** (exceeds),
+  4 of 5 exact, with the W-9 fixed after she asked to go back to Tipalti. Pixel Pup's $450 got a
+  reminder, not a demand: she did not add its two contracts together against the law's $800.
+- **Distributor deductions:** $10,882 with one false claim (short): she asked KeHE for the
+  backup behind a promotion billed at its deal sheet's "forecast" quantity, a fair question the
+  world had left open → $10,882 with none (exceeds) once the deal sheet named a fixed quantity.
+- **FBA reimbursements:** $359.78 (exceeds) → $359.78 with one false claim (short) → $359.78
+  with none (exceeds) after ADR 0045. On Claude Haiku, before the fixes, it found 4 of 5 with
+  no false claim for $0.08, about a nineteenth of Sonnet's cost.
+
+Two things the bench does that a person would. When the run loop stops with her still calling
+tools, the person says "keep going"; when her latest words ask the person to switch to a named
+portal, the person does, at most three times. Both are decided from the run loop and from her
+words, never from the truth.
+
+A playbook's portals are a model of the real ones: the bench proves her judgment on the data and
+the rules, not that a given site registers these tools. On a real site she reaches the same data
+through the generic hands (tier 2).
 
 ---
 

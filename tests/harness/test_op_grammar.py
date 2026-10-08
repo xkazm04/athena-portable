@@ -7,7 +7,14 @@ is the one that says so.
 
 from __future__ import annotations
 
-from athena.harness.op_grammar import MAX_BRACE_REPAIR, Op, OpError, parse_op, parse_turn
+from athena.harness.op_grammar import (
+    MAX_BRACE_REPAIR,
+    REPAIRS,
+    Op,
+    OpError,
+    parse_op,
+    parse_turn,
+)
 
 
 def test_a_clean_envelope_parses_and_leaves_the_prose_behind() -> None:
@@ -101,7 +108,15 @@ def test_an_envelope_with_no_op_field_is_rejected() -> None:
 def test_propose_action_without_an_action_name_is_rejected() -> None:
     parsed = parse_op('{"op":"propose_action","params":{}}')
     assert isinstance(parsed, OpError)
-    assert "needs an 'action' name" in parsed.detail
+    assert "needs an 'action' naming the tool" in parsed.detail
+
+
+def test_any_verb_without_an_action_is_rejected_with_the_shape_that_works() -> None:
+    """A model that wrote {"op":"call","tool":...} used to reach the catalog as the name ''. A
+    bare word in "tool" is not shaped like a name, so it is still refused (ADR 0050)."""
+    parsed = parse_op('{"op":"call","tool":"list_statements"}')
+    assert isinstance(parsed, OpError)
+    assert '{"op":"propose_action","action":' in parsed.detail
 
 
 def test_a_bare_envelope_with_no_marker_is_still_read() -> None:
@@ -114,3 +129,57 @@ def test_an_envelope_after_prose_on_the_same_line_keeps_the_prose() -> None:
     parsed = parse_turn('Marking it. OP: {"op":"checkpoint","action":"core.checkpoint"}')
     assert parsed.text == "Marking it."
     assert len(parsed.ops) == 1
+
+
+def test_a_tool_named_in_op_is_read_as_propose_action_on_it() -> None:
+    """ADR 0046: the lien-desk run wrote {"op":"host.gcpay.list_pay_apps"} for whole turns."""
+    parsed = parse_op('{"op":"host.gcpay.list_pay_apps","params":{"page":2}}')
+    assert isinstance(parsed, Op)
+    assert (parsed.op, parsed.action, parsed.params) == (
+        "propose_action",
+        "host.gcpay.list_pay_apps",
+        {"page": 2},
+    )
+    assert parsed.repairs == ("op_names_tool",)
+
+
+def test_a_verb_that_is_not_a_tool_name_is_still_refused() -> None:
+    for verb in ("call", "read", "host", "hostile.thing", "host.gcpay.list.pay.apps"):
+        parsed = parse_op(f'{{"op":"{verb}","params":{{}}}}')
+        assert isinstance(parsed, OpError), verb
+
+
+def test_a_tool_named_in_name_or_tool_is_read_as_the_action() -> None:
+    """ADR 0050: the estate run wrote {"op":"call","name":"host.bank.scheduled"} in five tabs."""
+    for field in ("name", "tool"):
+        parsed = parse_op(f'{{"op":"call","{field}":"host.bank.scheduled","params":{{"page":1}}}}')
+        assert isinstance(parsed, Op), field
+        assert (parsed.op, parsed.action, parsed.params) == (
+            "propose_action",
+            "host.bank.scheduled",
+            {"page": 1},
+        )
+        assert parsed.repairs == ("name_field_names_tool",)
+
+
+def test_parameters_written_at_the_top_level_are_read_as_params() -> None:
+    """ADR 0050: {"action":"core.recall","query":...} lost its query for want of a wrapper."""
+    parsed = parse_op('{"op":"propose_action","action":"core.recall","query":"date of death"}')
+    assert isinstance(parsed, Op)
+    assert parsed.params == {"query": "date of death"}
+    assert parsed.repairs == ("params_at_top",)
+    # An envelope that has params keeps them, and a stray key beside them is not a parameter.
+    kept = parse_op('{"op":"propose_action","action":"core.recall","params":{"query":"x"},"q":"y"}')
+    assert isinstance(kept, Op)
+    assert kept.params == {"query": "x"} and kept.repairs == ()
+
+
+def test_the_repairs_are_a_closed_list_of_six() -> None:
+    assert REPAIRS == (
+        "unquoted_key",
+        "trailing_comma",
+        "closing_brace",
+        "op_names_tool",
+        "name_field_names_tool",
+        "params_at_top",
+    )

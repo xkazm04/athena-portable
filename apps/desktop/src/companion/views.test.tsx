@@ -259,3 +259,14 @@ test("the preview query falls back to the seal on anything it does not know", ()
   expect(readQuery(new URLSearchParams("scale=1.5")).scale).toBe(1.5);
   expect(modelFor(readQuery(new URLSearchParams("fixture=tab&dock=left"))).docked).toBe("left");
 });
+
+test("a handed-over playbook shows her plan before the first turn: steps, tabs, stops", () => {
+  const out = html("ledger playbook");
+  expect(out).toContain("The plan for Amazon FBA reimbursements");
+  expect(out).toContain('class="lg-plan__steps"');
+  expect(out).toContain("Seller Central");
+  expect(out).toContain("Open a reimbursement case");
+  expect(out).toContain("Working on");
+  // The generic suggestions give way to the plan.
+  expect(out).not.toContain("aw-btn-sugg");
+});

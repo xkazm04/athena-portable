@@ -9,14 +9,14 @@ sentence, where ``total`` is the population the page was cut from and never the 
 
 from __future__ import annotations
 
-from athena.core.catalog import READ_CAP
+from athena.core.catalog import RECALL_CAP
 from athena.daemon.routes import DEFAULT_LIMIT, MAX_LIMIT
 
 from .conftest import APP_ID, MODEL, Spawn, claude_round, op
 
-#: Enough turns that the episodes recall renders exceed the cap. Each one's message is longer
-#: than the brain's 500-byte excerpt, so four of them are two and a half caps of text.
-STUFFING = 4
+#: Enough turns that the episodes recall renders exceed its cap. Each one's message is longer
+#: than the brain's 500-byte excerpt, so ten of them are more than recall's 4,800 characters.
+STUFFING = 10
 LONG_MESSAGE = (
     "invoice INV-118 is thirty-one days late and the studio has not been paid for it yet, "
     "which is the kind of thing the record has to hold in full rather than in summary. "
@@ -47,10 +47,10 @@ def test_a_read_whose_answer_exceeds_the_cap_announces_what_it_cut(spawn: Spawn)
     assert answer["ok"] is True
     assert answer["truncated"] is True
     body, _, footer = answer["output"].rpartition("\n")
-    assert len(body) == READ_CAP, "the cap is the catalog's, in characters"
+    assert len(body) == RECALL_CAP, "the cap is the catalog's, in characters"
     total = int(footer.removeprefix("(showing ").removesuffix(")").split(" of ")[1])
-    assert footer == f"(showing {READ_CAP} of {total})"
-    assert total > READ_CAP
+    assert footer == f"(showing {RECALL_CAP} of {total})"
+    assert total > RECALL_CAP
 
 
 def test_the_ledger_and_its_rollup_answer_in_the_documented_shape_and_page_their_lists(

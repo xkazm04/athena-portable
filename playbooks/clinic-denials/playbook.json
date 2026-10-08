@@ -1,0 +1,124 @@
+{
+  "id": "clinic-denials",
+  "title": "Denied claims, reworked",
+  "domain": "Clinics",
+  "audience": "work",
+  "promise": "Every denied claim read by its reason code, fixed or appealed in the payer's own portal with the proof it needs, and written off only when it truly cannot be won — before the windows close.",
+  "persona": "A three-doctor family practice billing four payers, with one part-time biller",
+  "chore": "Pull the denial worklist from the practice management system and read each claim's reason code. For a missing modifier or a wrong NPI, correct and resubmit — inside the payer's filing limit. For a timely-filing denial, find the clearinghouse report that proves the payer received the claim in time. For a missing authorisation, look it up in the payer portal. Never resubmit a duplicate, never file a secondary before the primary pays, never appeal what is out of time — and write off what cannot be won so it stops sitting on the books. Each payer's portal is different and UI-only.",
+  "command": "Work this week's denial worklist: fix and resubmit what can be corrected, file a reconsideration where we have proof, write off only what can't be won, and leave anything still pending alone.",
+  "apps": [
+    {
+      "name": "Practice management",
+      "role": "the denial worklist, the claims, the encounter notes",
+      "api": "Vendor-specific, rarely open",
+      "url": ""
+    },
+    {
+      "name": "Clearinghouse",
+      "role": "acceptance reports: what each payer received, and when",
+      "api": "Batch files, not answers",
+      "url": ""
+    },
+    {
+      "name": "Availity",
+      "role": "payer rules, authorisations, corrected claims, reconsiderations",
+      "api": "No API for a small practice",
+      "url": "https://www.availity.com"
+    }
+  ],
+  "steps": [
+    "Reads every payer's filing and appeal limits in the payer portal before deciding anything.",
+    "Walks the worklist by reason code: CO-16, CO-18, CO-29, CO-197 and the rest.",
+    "Checks the encounter notes for the missing modifier and the rendering NPI.",
+    "Finds the clearinghouse acceptance report that proves a claim reached the payer in time.",
+    "Looks up the authorisation the claim left out.",
+    "Corrects, reconsiders or writes off each one — every act a card."
+  ],
+  "gates": [
+    {
+      "action": "submit_corrected_claim",
+      "label": "Resubmit a corrected claim",
+      "why": "It reaches the payer; a bad resubmission becomes a duplicate or a timely-filing denial."
+    },
+    {
+      "action": "file_reconsideration",
+      "label": "File a reconsideration",
+      "why": "Most payers allow one; spending it without the proof loses the claim."
+    },
+    {
+      "action": "write_off",
+      "label": "Write off a balance",
+      "why": "It closes the claim in the books for good."
+    }
+  ],
+  "traps": [
+    "A timely-filing denial whose only clearinghouse record is a rejection at intake: that is not proof the payer received it.",
+    "An authorisation denial with no authorisation on file: an appeal would be refused.",
+    "A duplicate-claim denial: the original is still in process. Never resubmit.",
+    "A correction that is right but would reach the payer on day 95 of a 90-day limit.",
+    "A secondary claim filed before the primary paid: wait for the primary EOB.",
+    "A reconsideration window of 180 days that closed 20 days ago.",
+    "Two denials already resubmitted and pending."
+  ],
+  "memory": [
+    "Each payer's filing limit and reconsideration window, cited to the payer's own page.",
+    "Reason code to fix, per payer: what won last time.",
+    "Rendering NPIs per doctor, and which claims went out with the wrong one.",
+    "Which claims are already resubmitted, so none goes twice."
+  ],
+  "economics": {
+    "value_usd": 4200,
+    "per": "month",
+    "basis": "A practice collecting about $70k a month with a 10–12% initial denial rate, of which most is recoverable and much is never reworked. The bench world alone holds $2,120 across fifteen denials.",
+    "manual_minutes": 600,
+    "incumbent": "Revenue-cycle outsourcers take about 4–9% of all collections, not just the denials; in-house, reworking one claim costs a practice around $25 of staff time.",
+    "sources": [
+      {
+        "label": "Experian State of Claims: ~11.8% initial denial rate (2024)",
+        "url": "https://www.experian.com/healthcare/resources-insights/thought-leadership/white-papers-insights/state-claims-report"
+      },
+      {
+        "label": "Aptarro: the cost of reworking a denied claim",
+        "url": "https://www.aptarro.com/insights/us-healthcare-denial-rates-reimbursement-statistics"
+      },
+      {
+        "label": "Cigna: timely filing limits",
+        "url": "https://static.cigna.com/assets/chcp/resourceLibrary/clinicalReimbursementPayment/medicalClinicalReimburseWhenToFile.html"
+      },
+      {
+        "label": "Prospyr: filing limits across major payers",
+        "url": "https://prospyrmed.com/blog/post/timely-filing-limits-major-payers"
+      },
+      {
+        "label": "MedCity / KFF: prior-authorisation denials and overturn rates (2025)",
+        "url": "https://medcitynews.com/2026/08/kff-insurers-denied-12-18-of-prior-authorization-requests-in-2025/"
+      }
+    ]
+  },
+  "caveat": "Real patient data needs a model path covered by a business associate agreement. This playbook's bench runs on synthetic claims only.",
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 5,
+    "difficulty_why": "Three systems, payer-specific rules and windows, reason codes that each want a different remedy, and proof that lives in a batch report.",
+    "usefulness_why": "Thousands of dollars a month that a small practice leaves on the table for want of a biller's hours."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 30,
+    "why": "A good biller recovers most of it in an afternoon; the bar is most of the money, no duplicate resubmission, nothing filed out of time."
+  },
+  "lessons": [
+    {
+      "adr": "0041",
+      "title": "A dropped op is told in the same turn too",
+      "found": "Her first ops of a session were dropped, the turn ended with nothing in flight, and every later tab starved for claim ids: 2 of 10, $0."
+    },
+    {
+      "adr": "0043",
+      "title": "Tool results are bounded by the frame's budget, not a count",
+      "found": "She read twelve pages in one turn and saw eight; four re-reads every turn."
+    }
+  ]
+}

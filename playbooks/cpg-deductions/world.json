@@ -1,0 +1,102 @@
+{
+  "today": "2026-10-07",
+  "apps": [
+    {
+      "app_id": "unfi", "name": "myUNFI Dispute Center", "aliases": ["myUNFI", "UNFI"],
+      "origin": "https://www.myunfi.com", "path": "/supplier/deductions",
+      "view": { "view": "Dispute Center: open deductions", "supplier": "Juniper Snacks Co. (Natural)" },
+      "tools": [
+        { "name": "read_supplier_notices", "kind": "READ", "description": "UNFI's notices and rules for Natural suppliers: dispute windows, the SSA change, promo chargeback pricing.", "params": {}, "returns": { "table": "unfi_rules" } },
+        { "name": "list_deductions", "kind": "READ", "description": "Open UNFI deductions: id, date, code, description, amount. Paged.", "params": { "page": { "type": "integer" } }, "returns": { "table": "unfi_deductions", "page_size": 7, "fields": ["deduction_id", "date", "code", "description", "amount_usd"] } },
+        { "name": "read_deduction", "kind": "READ", "description": "One UNFI deduction in full, with its backup detail.", "params": { "deduction_id": { "type": "string" } }, "returns": { "table": "unfi_deductions", "match": { "deduction_id": "deduction_id" }, "require": ["deduction_id"] } },
+        { "name": "dispute_deduction", "kind": "REACHES_A_PERSON", "description": "Dispute a UNFI deduction: the amount disputed, the reason and the evidence.", "params": { "deduction_id": { "type": "string" }, "amount_usd": { "type": "number" }, "reason": { "type": "string" }, "evidence": { "type": "string" } }, "says": "Dispute filed on {deduction_id}." }
+      ]
+    },
+    {
+      "app_id": "kehe", "name": "KeHE K-Solve", "aliases": ["K-Solve", "KeHE"],
+      "origin": "https://connect.kehe.com", "path": "/ksolve",
+      "view": { "view": "K-Solve: deductions", "supplier": "Juniper Snacks Co." },
+      "tools": [
+        { "name": "read_rules", "kind": "READ", "description": "KeHE's supplier rules: the dispute window, the promo chargeback fee, damage reports.", "params": {}, "returns": { "table": "kehe_rules" } },
+        { "name": "quick_search", "kind": "READ", "description": "Deductions from the last 90 days.", "params": {}, "returns": { "table": "kehe_recent" } },
+        { "name": "advanced_search", "kind": "READ", "description": "Deductions over any date range, including older than 90 days.", "params": { "from": { "type": "string" }, "to": { "type": "string" } }, "returns": { "table": "kehe_all" } },
+        { "name": "dispute_deduction", "kind": "REACHES_A_PERSON", "description": "Dispute a KeHE deduction: the amount disputed, the reason and the evidence.", "params": { "deduction_id": { "type": "string" }, "amount_usd": { "type": "number" }, "reason": { "type": "string" }, "evidence": { "type": "string" } }, "says": "Dispute filed on {deduction_id}." },
+        { "name": "request_backup", "kind": "REACHES_A_PERSON", "description": "Ask KeHE for the backup behind a deduction before deciding.", "params": { "deduction_id": { "type": "string" }, "amount_usd": { "type": "number" }, "note": { "type": "string" } }, "says": "Backup requested for {deduction_id}." }
+      ]
+    },
+    {
+      "app_id": "drive", "name": "Brand Drive", "aliases": ["Drive", "the Drive"],
+      "origin": "https://drive.google.com", "path": "/drive/folders/finance",
+      "view": { "view": "Finance / Distributors", "owner": "finance@junipersnacks.example" },
+      "tools": [
+        { "name": "search_files", "kind": "READ", "description": "Search the finance folder by kind (deal_sheet, agreement, price_change, ad_proof) and a word it mentions (a retailer, a promo, a distributor).", "params": { "kind": { "type": "string" }, "q": { "type": "string" } }, "returns": { "table": "files", "match": { "kind": "kind", "q": "text" }, "mode": "contains", "page_size": 6 } }
+      ]
+    },
+    {
+      "app_id": "wms", "name": "Warehouse portal", "aliases": ["warehouse portal", "warehouse", "3PL"],
+      "origin": "https://portal.coastal3pl.example", "path": "/pods",
+      "view": { "view": "Proofs of delivery", "client": "Juniper Snacks Co." },
+      "tools": [
+        { "name": "find_pod", "kind": "READ", "description": "The proof of delivery for a purchase order, with cases shipped, cases signed for and the receiver's notes.", "params": { "po": { "type": "string" } }, "returns": { "table": "pods", "match": { "po": "po" }, "require": ["po"] } }
+      ]
+    }
+  ],
+  "phases": [
+    { "app": "unfi", "message": "Deductions day. Start in myUNFI: go through what UNFI took this month and tell me what you'll need to check each one.", "nudges": 2 },
+    { "app": "kehe", "message": "Now K-Solve for KeHE. Same thing.", "nudges": 1 },
+    { "app": "drive", "message": "I'm in our Drive. Pull the deal sheets, the agreement and anything else you need.", "nudges": 1 },
+    { "app": "wms", "message": "This is the warehouse portal for the proofs of delivery.", "nudges": 1 },
+    { "app": "unfi", "message": "Back in myUNFI. Dispute what's wrong, with the evidence, and leave what's right.", "nudges": 1 },
+    { "app": "kehe", "message": "And K-Solve. Same: dispute what's wrong, ask for backup where we can't tell, leave what's right.", "nudges": 1 }
+  ],
+  "tables": {
+    "unfi_rules": [
+      { "rule": "Dispute window", "text": "Dispute within 60 days of the deduction date where possible; deductions older than 12 months are not reviewed." },
+      { "rule": "SSA change", "text": "From 2026-02-01, the Supplier Service Allowance for Natural suppliers is taken as one consolidated deduction per region each month. An SSA still taken per invoice after that date is a duplicate and may be disputed." },
+      { "rule": "Promo chargebacks", "text": "Promotional chargebacks are calculated on the units shipped at the per-unit rate approved in the promotion, unless otherwise agreed." }
+    ],
+    "unfi_deductions": [
+      { "deduction_id": "UN-88411", "date": "2026-08-20", "code": "MCB", "description": "Promo chargeback, Sprouts September promotion", "amount_usd": 3240.0, "detail": "2,400 units at $1.35 per unit" },
+      { "deduction_id": "UN-80102", "date": "2025-09-15", "code": "UPA", "description": "Unauthorized promotion adjustment", "amount_usd": 1900.0, "detail": "Retailer promo billed back" },
+      { "deduction_id": "UN-88207", "date": "2026-08-12", "code": "SSA", "description": "Supplier service allowance, invoice 9917342", "amount_usd": 612.0, "detail": "2% of invoice 9917342" },
+      { "deduction_id": "UN-88520", "date": "2026-08-31", "code": "SSA", "description": "Supplier service allowance, August, West region (consolidated)", "amount_usd": 4180.0, "detail": "Monthly consolidated SSA" },
+      { "deduction_id": "UN-88902", "date": "2026-09-02", "code": "SHT", "description": "Shortage, PO 4471820", "amount_usd": 1180.0, "detail": "24 cases short of 240" },
+      { "deduction_id": "UN-88977", "date": "2026-09-10", "code": "SHT", "description": "Shortage, PO 4472013", "amount_usd": 395.0, "detail": "10 cases short of 120" },
+      { "deduction_id": "UN-87810", "date": "2026-07-30", "code": "SPL", "description": "Spoilage billing", "amount_usd": 2050.0, "detail": "Unsaleables Q2" },
+      { "deduction_id": "UN-89120", "date": "2026-09-25", "code": "NIF", "description": "New item free fill, Cocoa Crunch", "amount_usd": 4800.0, "detail": "1 case x 400 stores x $12" },
+      { "deduction_id": "UN-89210", "date": "2026-09-28", "code": "PAA", "description": "Post-audit: overlapping allowances, March-April 2024", "amount_usd": 3600.0, "detail": "Audit claims the March and April 2024 promotions overlapped" }
+    ],
+    "kehe_rules": [
+      { "rule": "Dispute window", "text": "Dispute within 180 days of the deduction date in K-Solve. Quick search shows the last 90 days only; use advanced search for older items." },
+      { "rule": "Promo chargeback fee", "text": "KeHE adds a fee of 8% (minimum $65 per distribution centre) to each promotional chargeback. The fee is valid when the promotion is." },
+      { "rule": "Pricing", "text": "A pricing deduction corrects invoices billed at a price before its effective date." }
+    ],
+    "kehe_recent": [
+      { "deduction_id": "KE-55120", "date": "2026-09-14", "type": "Promo chargeback, Fresh Thyme October", "amount_usd": 1350.0, "fee_usd": 108.0, "detail": "1,800 units at $0.75" },
+      { "deduction_id": "KE-54480", "date": "2026-08-05", "type": "Promo chargeback, Natural Grocers August event NG-0811", "amount_usd": 1620.0, "detail": "Event NG-0811" },
+      { "deduction_id": "KE-54760", "date": "2026-08-19", "type": "Promo chargeback, Natural Grocers August event NG-0811", "amount_usd": 1620.0, "detail": "Event NG-0811" }
+    ],
+    "kehe_all": [
+      { "deduction_id": "KE-55120", "date": "2026-09-14", "type": "Promo chargeback, Fresh Thyme October", "amount_usd": 1350.0, "fee_usd": 108.0, "detail": "1,800 units at $0.75" },
+      { "deduction_id": "KE-54480", "date": "2026-08-05", "type": "Promo chargeback, Natural Grocers August event NG-0811", "amount_usd": 1620.0, "detail": "Event NG-0811" },
+      { "deduction_id": "KE-54760", "date": "2026-08-19", "type": "Promo chargeback, Natural Grocers August event NG-0811", "amount_usd": 1620.0, "detail": "Event NG-0811" },
+      { "deduction_id": "KE-51230", "date": "2026-05-01", "type": "Advertising fee, Natural Grocers flyer", "amount_usd": 980.0, "detail": "Flyer placement" },
+      { "deduction_id": "KE-50944", "date": "2026-04-20", "type": "Pricing", "amount_usd": 1140.0, "detail": "Invoices billed at the new price before its effective date" },
+      { "deduction_id": "KE-50310", "date": "2026-03-30", "type": "Pricing", "amount_usd": 2300.0, "detail": "Price difference, Q1" }
+    ],
+    "files": [
+      { "kind": "deal_sheet", "text": "UNFI Sprouts September promotion", "name": "Deal sheet - Sprouts Sept 2026 (UNFI).pdf", "body": "Approved: $1.00 per unit off, shipped units, September 1-30. Signed by broker and Sprouts category manager." },
+      { "kind": "deal_sheet", "text": "KeHE Fresh Thyme October promotion", "name": "Deal sheet - Fresh Thyme Oct 2026 (KeHE).pdf", "body": "Approved: $0.75 per unit off on a fixed 1,800 units, billed once as $1,350 plus KeHE's promo fee; no reconciliation to actual movement. Signed by broker and Fresh Thyme category manager." },
+      { "kind": "deal_sheet", "text": "KeHE Natural Grocers August event NG-0811", "name": "Deal sheet - Natural Grocers Aug 2026 NG-0811 (KeHE).pdf", "body": "One event, NG-0811, August 1-31: $1,620 total." },
+      { "kind": "deal_sheet", "text": "UNFI March 2024 promotion", "name": "Deal sheet - UNFI March 2024.pdf", "body": "Promotion March 1-31, 2024." },
+      { "kind": "deal_sheet", "text": "UNFI April 2024 promotion", "name": "Deal sheet - UNFI April 2024.pdf", "body": "Promotion April 1-30, 2024. Does not overlap March." },
+      { "kind": "agreement", "text": "UNFI distribution agreement spoils free fill", "name": "UNFI distribution agreement 2026.pdf", "body": "Spoils: covered by a 1% off-invoice spoils allowance; no separate spoilage billing. New items: free fill of 1 case per store, up to 400 stores, at $12 per case." },
+      { "kind": "price_change", "text": "KeHE price change letter", "name": "Price change letter - KeHE.pdf", "body": "New price effective 2026-05-01. (Our April invoices were billed at the new price.)" },
+      { "kind": "ad_proof", "text": "KeHE Natural Grocers flyer advertising", "name": "Natural Grocers flyer - approval email.pdf", "body": "Approved the May flyer placement. No tear sheet or proof that it ran has been received." }
+    ],
+    "pods": [
+      { "po": "4471820", "shipped_cases": 240, "signed_cases": 240, "receiver_notes": "None. Signed clean.", "date": "2026-08-28" },
+      { "po": "4472013", "shipped_cases": 120, "signed_cases": 110, "receiver_notes": "10 cs short", "date": "2026-09-06" }
+    ]
+  }
+}
