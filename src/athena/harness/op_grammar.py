@@ -12,7 +12,7 @@ contract can express — an op becomes ``tool.call`` / ``tool.result`` or a deci
 ``TTS:`` first line becomes ``turn.finished.tts``. A third line format with no event behind it
 would be a grammar the model is taught and nothing reads.
 
-**Repairs, and why there are only four.** A model that writes JSON by hand gets the same few
+**Repairs, and why there are only six.** A model that writes JSON by hand gets the same few
 things wrong, and each has exactly one correct reading:
 
 - a **trailing comma** before ``}`` or ``]``;
@@ -20,7 +20,13 @@ things wrong, and each has exactly one correct reading:
 - **missing closing braces** at the end, when the line was cut short;
 - **the tool named in ``op``** (``{"op":"host.gcpay.list_pay_apps","params":{}}``) with no
   ``action``: the only reading is ``propose_action`` on that name, which the catalog still has to
-  hold, so an unknown name is dropped exactly as before (ADR 0046).
+  hold, so an unknown name is dropped exactly as before (ADR 0046);
+- **the tool named in ``name`` or ``tool``** (``{"op":"call","name":"host.bank.scheduled"}``)
+  with no ``action``: the field holds a name shaped like a tool's, and nothing else could be
+  meant by it (ADR 0050);
+- **the parameters at the top level** (``{"op":"propose_action","action":"core.recall",
+  "query":"x"}``) with no ``params``: every key the envelope does not define is a parameter, as
+  the only place they could have been meant to go (ADR 0050).
 
 Anything else is a parse error carrying the offending line, and the caller tells the model next
 turn that its op was dropped and why (README §3.2 step 5's path, in reverse). Repairing further
@@ -62,7 +68,17 @@ TTS_CAP = 1200
 
 #: The repair names an :class:`Op` reports in ``repairs``. Closed, like ``ERROR_REASONS``: a
 #: repair you cannot count is a repair nobody notices the model needing.
-REPAIRS: tuple[str, ...] = ("unquoted_key", "trailing_comma", "closing_brace", "op_names_tool")
+REPAIRS: tuple[str, ...] = (
+    "unquoted_key",
+    "trailing_comma",
+    "closing_brace",
+    "op_names_tool",
+    "name_field_names_tool",
+    "params_at_top",
+)
+
+#: The keys an envelope defines; any other key is a parameter written outside ``params``.
+_ENVELOPE_KEYS = frozenset({"op", "action", "params", "rationale", "name", "tool"})
 
 #: What a tool name looks like: ``host.<app>.<tool>``, ``core.<tool>``, ``connector.<id>.<tool>``.
 _TOOL_NAME = re.compile(r"^(?:host|core|connector)(?:\.[A-Za-z0-9_-]+){1,2}$")
@@ -169,6 +185,18 @@ def parse_op(payload: str) -> Op | OpError:
         action, op = op, "propose_action"
         repairs = (*repairs, "op_names_tool")
     if not action:
+        named = next(
+            (
+                v
+                for k in ("name", "tool")
+                if isinstance(v := data.get(k), str) and _TOOL_NAME.match(v)
+            ),
+            "",
+        )
+        if named:
+            action, op = named, "propose_action"
+            repairs = (*repairs, "name_field_names_tool")
+    if not action:
         # Whatever verb was used, an op without an action names nothing; say the one shape that
         # works, so the model can write it in the next round (ADR 0041).
         return OpError(
@@ -179,6 +207,10 @@ def parse_op(payload: str) -> Op | OpError:
     params = data.get("params", {})
     if not isinstance(params, Mapping):
         return OpError(raw, "'params' must be an object")
+    stray = {k: v for k, v in data.items() if k not in _ENVELOPE_KEYS}
+    if stray and "params" not in data:
+        params = stray
+        repairs = (*repairs, "params_at_top")
     rationale = data.get("rationale", "")
     if not isinstance(rationale, str):
         return OpError(raw, "'rationale' must be a string")
