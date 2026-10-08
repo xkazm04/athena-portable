@@ -41,6 +41,7 @@ from athena.core.validators import all_of, live_sources, schema_validator
 
 __all__ = [
     "READ_CAP",
+    "RECALL_CAP",
     "Catalog",
     "CatalogError",
     "CoreServices",
@@ -51,6 +52,10 @@ __all__ = [
 #: A ``READ`` answer is capped before it becomes a system episode, and announces what it cut
 #: (README §3.3).
 READ_CAP = 1600
+
+#: ``core.recall``'s cap: three page reads' worth. A recall answers with several episodes, each
+#: already a capped read, so one page's cap cut the second episode off mid-row (ADR 0049).
+RECALL_CAP = 4800
 
 #: A tool name a host or a connector declares. The catalog namespaces it as
 #: ``<kind>.<id>.<name>``, so a dot inside the name would make the namespace unparseable to
@@ -157,7 +162,7 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
             validator=schema_validator(RECALL_SCHEMA),
             executor=services.recall or _unattached("core.recall"),
             description="Search memory; the capped answer returns as a system episode.",
-            cap_chars=READ_CAP,
+            cap_chars=RECALL_CAP,
         ),
         ToolEntry(
             name="core.write_fact",

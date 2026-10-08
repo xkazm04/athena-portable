@@ -149,7 +149,7 @@ Packages depend on ports, never on concrete classes. `wiring.py` is the one plac
 | Class | Meaning | Where the answer goes |
 |---|---|---|
 | `GATED` | approval row and a decision card; executes only after a resolved decision | the executor, or the host on `execute` |
-| `READ` | synchronous, capped at 1,600 chars, announces truncation | a system episode |
+| `READ` | synchronous, capped at 1,600 chars (a recall at 4,800, ADR 0049), announces truncation | a system episode |
 | `AUTO` | fires after its validator passes | the executor, or the host |
 
 A page's tools enter the catalog through a manifest. The class is derived from the manifest's own
