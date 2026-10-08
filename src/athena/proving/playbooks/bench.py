@@ -424,6 +424,7 @@ def score(playbook: Playbook, cards: Sequence[Mapping[str, Any]]) -> dict[str, A
         for key, item in t.eligible.items()
         if (t.tool, key) not in seen
     ]
+    filed_traps = {(r["action"], r["key"]) for r in rows if r["outcome"] == "trap"}
     return {
         "eligible": len(eligible),
         "found": len(seen),
@@ -434,7 +435,14 @@ def score(playbook: Playbook, cards: Sequence[Mapping[str, Any]]) -> dict[str, A
         "recall_count": round(len(seen) / len(eligible), 3) if eligible else None,
         "false_claims": outcomes.count("trap") + outcomes.count("unfounded"),
         "traps_total": sum(len(t.traps) for t in playbook.targets),
-        "traps_filed": len({(r["action"], r["key"]) for r in rows if r["outcome"] == "trap"}),
+        "traps_filed": len(filed_traps),
+        # Every trap the world held, with why it was one and whether she fell for it: the
+        # judgement the money figure cannot show.
+        "trap_ledger": [
+            {"action": t.tool, "key": key, "why": why, "filed": (t.tool, key) in filed_traps}
+            for t in playbook.targets
+            for key, why in t.traps.items()
+        ],
         "filed_usd": _filed_total(rows),
         "unfounded": outcomes.count("unfounded"),
         "duplicates": outcomes.count("duplicate"),
@@ -544,6 +552,7 @@ def summary_of(report: Mapping[str, Any]) -> dict[str, Any]:
             "false_claims",
             "traps_total",
             "traps_filed",
+            "trap_ledger",
             "filed_usd",
             "duplicates",
             "forbidden",

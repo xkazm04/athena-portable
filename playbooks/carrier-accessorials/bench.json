@@ -31,6 +31,86 @@
     "false_claims": 0,
     "traps_total": 13,
     "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "request_detention",
+        "key": "CHR-1120",
+        "why": "1h50 on the BOL: inside the 2 hours free",
+        "filed": false
+      },
+      {
+        "action": "request_detention",
+        "key": "TQL-5488",
+        "why": "Tracking was off 12:40–15:40, and the rate con pays no detention for any stop where it was",
+        "filed": false
+      },
+      {
+        "action": "request_detention",
+        "key": "UF-77102",
+        "why": "Delivered 2026-10-04 16:30; Uber's 24 hours closed on 10-05",
+        "filed": false
+      },
+      {
+        "action": "request_detention",
+        "key": "TQL-5391",
+        "why": "Detention already approved and paid",
+        "filed": false
+      },
+      {
+        "action": "request_detention",
+        "key": "CHR-0977",
+        "why": "Detention already approved; what is missing is the factor's remittance",
+        "filed": false
+      },
+      {
+        "action": "request_detention",
+        "key": "CHR-1142",
+        "why": "No detention was asked for; the lumper is the claim",
+        "filed": false
+      },
+      {
+        "action": "request_detention",
+        "key": "TQL-5502",
+        "why": "2h55 at the facility: inside 3 hours free",
+        "filed": false
+      },
+      {
+        "action": "short_pay_inquiry",
+        "key": "TQL-5391",
+        "why": "Remitted in full, detention included",
+        "filed": false
+      },
+      {
+        "action": "short_pay_inquiry",
+        "key": "TQL-5488",
+        "why": "The linehaul was remitted in full; no detention was ever owed",
+        "filed": false
+      },
+      {
+        "action": "send_email",
+        "key": "LS-2210",
+        "why": "Arrived 09:40 for an 08:00 appointment; the rate con pays detention only for an on-time truck",
+        "filed": false
+      },
+      {
+        "action": "send_email",
+        "key": "TQL-5488",
+        "why": "The tracker was off; the rate con's rule is not the rep's to waive",
+        "filed": false
+      },
+      {
+        "action": "request_lumper",
+        "key": "CHR-1142",
+        "why": "Departed 10-02 14:10; CHR's 2 business days closed 10-06, so the portal request fails: the rep is the way",
+        "filed": false
+      },
+      {
+        "action": "request_lumper",
+        "key": "TQL-5502",
+        "why": "A TQL lumper is paid from Final Payment Paperwork, not requested",
+        "filed": false
+      }
+    ],
     "filed_usd": 1580.0,
     "duplicates": 0,
     "forbidden": 0,

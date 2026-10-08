@@ -31,6 +31,68 @@
     "false_claims": 0,
     "traps_total": 10,
     "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "dispute_deduction",
+        "key": "UN-80102",
+        "why": "Dated 2025-09-15: older than twelve months",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "UN-88977",
+        "why": "The proof of delivery notes 10 cases short",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "UN-89120",
+        "why": "Free fill the agreement promised: 1 case x 400 stores x $12",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "UN-88520",
+        "why": "The consolidated monthly SSA is the valid one",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "KE-55120",
+        "why": "Deducted at the approved $0.75 a unit; the 8% fee is valid",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "KE-50944",
+        "why": "The new price took effect 05-01 and April was billed at it",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "KE-50310",
+        "why": "Dated 2026-03-30: past KeHE's 180 days, and only advanced search shows it",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "KE-54480",
+        "why": "The first deduction for NG-0811 is the valid one",
+        "filed": false
+      },
+      {
+        "action": "request_backup",
+        "key": "KE-55120",
+        "why": "The deal sheet already backs it",
+        "filed": false
+      },
+      {
+        "action": "request_backup",
+        "key": "KE-50310",
+        "why": "Expired",
+        "filed": false
+      }
+    ],
     "filed_usd": 10882.0,
     "duplicates": 0,
     "forbidden": 0,

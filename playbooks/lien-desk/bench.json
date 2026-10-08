@@ -31,6 +31,80 @@
     "false_claims": 0,
     "traps_total": 12,
     "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "serve_preliminary_notice",
+        "key": "DALY-RES",
+        "why": "Contract directly with the owner: no preliminary notice is required",
+        "filed": false
+      },
+      {
+        "action": "serve_preliminary_notice",
+        "key": "SJ-LIB",
+        "why": "Served 2026-09-02 by certified mail: a duplicate",
+        "filed": false
+      },
+      {
+        "action": "serve_preliminary_notice",
+        "key": "FREMONT",
+        "why": "Served 2025-10-28",
+        "filed": false
+      },
+      {
+        "action": "serve_preliminary_notice",
+        "key": "SUNNYVALE",
+        "why": "Served 2026-01-14",
+        "filed": false
+      },
+      {
+        "action": "record_lien",
+        "key": "SUNNYVALE",
+        "why": "No Notice of Completion: the 90 days from 09-01 completion run to 11-30, and the retention may yet be paid",
+        "filed": false
+      },
+      {
+        "action": "record_lien",
+        "key": "OAK-CLINIC",
+        "why": "No valid preliminary notice yet",
+        "filed": false
+      },
+      {
+        "action": "record_lien",
+        "key": "MB-LAB",
+        "why": "Work is in progress and nothing is late enough to lien",
+        "filed": false
+      },
+      {
+        "action": "send_retainage_notice",
+        "key": "KATY",
+        "why": "Not completed",
+        "filed": false
+      },
+      {
+        "action": "sign_waiver",
+        "key": "MB-W-SEP",
+        "why": "Unconditional for $55,000 the bank has not received",
+        "filed": false
+      },
+      {
+        "action": "sign_waiver",
+        "key": "SUN-W-FINAL",
+        "why": "Unconditional final while $31,000 retention is unpaid",
+        "filed": false
+      },
+      {
+        "action": "sign_waiver",
+        "key": "KATY-W-AUG",
+        "why": "A custom release with indemnity: return the statutory form",
+        "filed": false
+      },
+      {
+        "action": "decline_waiver",
+        "key": "OAK-W-0926",
+        "why": "A conditional progress waiver on the right form: sign it with exceptions",
+        "filed": false
+      }
+    ],
     "filed_usd": 273800.0,
     "duplicates": 0,
     "forbidden": 0,

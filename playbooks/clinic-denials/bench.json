@@ -31,6 +31,140 @@
     "false_claims": 0,
     "traps_total": 22,
     "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_corrected_claim",
+        "key": "CL-2190",
+        "why": "Right fix, but day 95 of Cigna's 90-day limit",
+        "filed": false
+      },
+      {
+        "action": "submit_corrected_claim",
+        "key": "CL-2211",
+        "why": "CO-18: the original CL-2209 is in process",
+        "filed": false
+      },
+      {
+        "action": "submit_corrected_claim",
+        "key": "CL-2188",
+        "why": "Secondary before the primary (CL-2187) has paid",
+        "filed": false
+      },
+      {
+        "action": "submit_corrected_claim",
+        "key": "CL-2160",
+        "why": "A corrected claim is already pending",
+        "filed": false
+      },
+      {
+        "action": "submit_corrected_claim",
+        "key": "CL-2172",
+        "why": "A corrected claim is already pending",
+        "filed": false
+      },
+      {
+        "action": "submit_corrected_claim",
+        "key": "CL-2142",
+        "why": "Out of time: Cigna's 90 days ended 2026-08-26",
+        "filed": false
+      },
+      {
+        "action": "submit_corrected_claim",
+        "key": "CL-2101",
+        "why": "Medical necessity is not fixed by a resubmission",
+        "filed": false
+      },
+      {
+        "action": "submit_corrected_claim",
+        "key": "CL-2150",
+        "why": "Needs a reconsideration with proof, not a resubmission",
+        "filed": false
+      },
+      {
+        "action": "submit_corrected_claim",
+        "key": "CL-2198",
+        "why": "Needs a reconsideration citing the authorisation",
+        "filed": false
+      },
+      {
+        "action": "file_reconsideration",
+        "key": "CL-2142",
+        "why": "Only an intake rejection before the limit; Cigna accepted it on day 97",
+        "filed": false
+      },
+      {
+        "action": "file_reconsideration",
+        "key": "CL-2205",
+        "why": "No authorisation on file, and Cigna grants none retroactively",
+        "filed": false
+      },
+      {
+        "action": "file_reconsideration",
+        "key": "CL-2101",
+        "why": "Denied 2026-03-20: day 201 of Cigna's 180",
+        "filed": false
+      },
+      {
+        "action": "file_reconsideration",
+        "key": "CL-2211",
+        "why": "A duplicate; the original is in process",
+        "filed": false
+      },
+      {
+        "action": "write_off",
+        "key": "CL-2201",
+        "why": "Recoverable with a modifier",
+        "filed": false
+      },
+      {
+        "action": "write_off",
+        "key": "CL-2207",
+        "why": "Recoverable with a modifier",
+        "filed": false
+      },
+      {
+        "action": "write_off",
+        "key": "CL-2213",
+        "why": "Recoverable with a modifier",
+        "filed": false
+      },
+      {
+        "action": "write_off",
+        "key": "CL-2215",
+        "why": "Recoverable with the right NPI",
+        "filed": false
+      },
+      {
+        "action": "write_off",
+        "key": "CL-2150",
+        "why": "Recoverable with the 277CA",
+        "filed": false
+      },
+      {
+        "action": "write_off",
+        "key": "CL-2198",
+        "why": "Recoverable with the authorisation",
+        "filed": false
+      },
+      {
+        "action": "write_off",
+        "key": "CL-2160",
+        "why": "Corrected claim pending",
+        "filed": false
+      },
+      {
+        "action": "write_off",
+        "key": "CL-2172",
+        "why": "Corrected claim pending",
+        "filed": false
+      },
+      {
+        "action": "write_off",
+        "key": "CL-2188",
+        "why": "Recoverable once the primary pays",
+        "filed": false
+      }
+    ],
     "duplicates": 0,
     "forbidden": 0,
     "other_cards": 0

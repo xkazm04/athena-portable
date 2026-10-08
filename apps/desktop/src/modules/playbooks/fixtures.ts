@@ -77,6 +77,12 @@ const REFUNDS = book(
       value_found_usd: 96.4,
       false_claims: 0,
       duplicates: 0,
+      traps_total: 2,
+      traps_filed: 0,
+      trap_ledger: [
+        { action: "file_claim", key: "1Z88B7", why: "Late because of weather, which the guarantee excludes", filed: false },
+        { action: "file_claim", key: "1Z88A9", why: "Already claimed on 30 September", filed: false },
+      ],
     },
     cards: [
       { action: "file_claim", key: "1Z88A0", outcome: "correct", value_usd: 24.1, exact: true },
@@ -165,6 +171,17 @@ const CHARGEBACKS = book(
       value_found_usd: 455,
       false_claims: 1,
       duplicates: 0,
+      traps_total: 7,
+      traps_filed: 1,
+      trap_ledger: [
+        { action: "submit_evidence", key: "DP-119", why: "The customer was refunded already", filed: false },
+        { action: "submit_evidence", key: "DP-122", why: "Past the response deadline", filed: false },
+        { action: "submit_evidence", key: "DP-124", why: "Refunded already; contesting it loses the fee twice.", filed: true },
+        { action: "submit_evidence", key: "DP-125", why: "A partial refund settled it", filed: false },
+        { action: "submit_evidence", key: "DP-126", why: "Fraud flagged by the bank, not winnable", filed: false },
+        { action: "submit_evidence", key: "DP-128", why: "A duplicate of DP-119", filed: false },
+        { action: "submit_evidence", key: "DP-129", why: "Under the fee it costs to answer", filed: false },
+      ],
     },
     cards: [
       { action: "submit_evidence", key: "DP-118", outcome: "correct", value_usd: 189, exact: true },

@@ -37,3 +37,16 @@ test("a turn the run loop continued says the page answered, not that the person 
   expect(html.includes("the run loop handed her their results")).toBe(true);
   expect(html.includes("1Z88A0")).toBe(true);
 });
+
+test("the traps she walked past are listed by id, a filed one first, folded past five", () => {
+  const clean = renderToStaticMarkup(entry.preview("open"));
+  expect(clean.includes("2 of 2 traps walked past")).toBe(true);
+  expect(clean.includes("1Z88B7")).toBe(true);
+  const short = renderToStaticMarkup(entry.preview("open-short"));
+  expect(short.includes("6 of 7 traps walked past")).toBe(true);
+  const first = short.indexOf('class="pb-trap"');
+  expect(short.slice(first, first + 400).includes("DP-124")).toBe(true);
+  expect(short.includes("Filed anyway.")).toBe(true);
+  expect(short.includes("(showing 5 of 7)")).toBe(true);
+  expect(short.includes("DP-129")).toBe(false);
+});

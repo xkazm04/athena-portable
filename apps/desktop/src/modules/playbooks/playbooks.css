@@ -860,3 +860,53 @@
     transition: none;
   }
 }
+
+/* -- the traps she walked past ------------------------------------------------------------------- */
+.pb-traps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.pb-traps__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.pb-traps__list {
+  align-self: stretch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+}
+
+.pb-trap {
+  display: grid;
+  grid-template-columns: 1.2rem minmax(6.5rem, auto) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pb-trap:last-child {
+  border-bottom: none;
+}
+
+.pb-trap__mark {
+  color: var(--status-success);
+  font-weight: 700;
+}
+
+.pb-trap[data-filed] {
+  background: color-mix(in srgb, var(--status-error) 8%, transparent);
+}
+
+.pb-trap[data-filed] .pb-trap__mark {
+  color: var(--status-error);
+}

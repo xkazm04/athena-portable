@@ -759,6 +759,8 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
   said (or that the run loop handed back the page's answers), her words cut at a sentence with
   their length, what she read, and each card in the colour the scorer gave it. The playbook's
   layer on the desktop plays it turn by turn, with the money found so far.
+- **The traps by name.** The score keeps a ledger of every trap the world held, why it was one and
+  whether she filed it, and the layer lists them: what she was right to leave alone.
 
 | Playbook | Portals | Edge (difficulty / usefulness) | Latest bench (2026-10-07, Claude Sonnet) |
 |---|---|---|---|

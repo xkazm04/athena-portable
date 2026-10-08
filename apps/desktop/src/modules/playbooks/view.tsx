@@ -488,6 +488,7 @@ function Proof({ view }: { view: PlaybookView }) {
           </li>
         ))}
       </ul>
+      {b.trapLedger.length ? <TrapLedger ledger={b.trapLedger} /> : null}
       {b.closingWords ? (
         <figure className="pb-quote">
           <blockquote className="typo-body">
@@ -509,6 +510,42 @@ function Proof({ view }: { view: PlaybookView }) {
         {b.rescoredAt ? ` Rescored ${b.rescoredAt.slice(0, 10)} from the run's own cards.` : ""}
       </p>
     </SectionCard>
+  );
+}
+
+/**
+ * The traps the world held, each by its own id with why it was one: what she was right to leave
+ * alone. Folded to the first few; a filed trap is listed first and in the error colour.
+ */
+function TrapLedger({ ledger }: { ledger: Bench["trapLedger"] }) {
+  const [all, setAll] = useState(false);
+  const ordered = [...ledger].sort((a, b) => Number(b.filed) - Number(a.filed));
+  const avoided = ledger.filter((t) => !t.filed).length;
+  const SHOWN = 5;
+  const shown = all ? ordered : ordered.slice(0, SHOWN);
+  return (
+    <div className="pb-traps">
+      <div className="pb-traps__head">
+        <span className="typo-title">What she was right to leave alone</span>
+        <span className="typo-caption">{`${avoided} of ${ledger.length} traps walked past`}</span>
+      </div>
+      <ul className="pb-traps__list">
+        {shown.map((t) => (
+          <li key={`${t.action}-${t.key}`} className="pb-trap" data-filed={t.filed ? "" : undefined}>
+            <span className="pb-trap__mark" aria-hidden="true">
+              {t.filed ? "✕" : "✓"}
+            </span>
+            <span className="typo-code">{t.key}</span>
+            <span className="typo-caption">{t.filed ? `Filed anyway. ${t.why}` : t.why}</span>
+          </li>
+        ))}
+      </ul>
+      {ordered.length > SHOWN ? (
+        <Button size="sm" variant="ghost" onClick={() => setAll((v) => !v)}>
+          {all ? "Show fewer" : `Show all ${ordered.length} (showing ${SHOWN} of ${ordered.length})`}
+        </Button>
+      ) : null}
+    </div>
   );
 }
 

@@ -102,6 +102,8 @@ export interface Bench {
   duplicates: number;
   trapsTotal: number;
   trapsFiled: number;
+  /** Every trap the world held, why it was one, and whether she fell for it. */
+  trapLedger: readonly { action: string; key: string; why: string; filed: boolean }[];
   /** What the cards asked for, from their own amounts; `null` when they named none. */
   filedUsd: number | null;
   /** Her closing words stated a total; did the cards add up to it? */
@@ -231,6 +233,9 @@ function parseBench(raw: unknown): Bench | null {
     duplicates: num(score.duplicates),
     trapsTotal: num(score.traps_total),
     trapsFiled: num(score.traps_filed),
+    trapLedger: list(score.trap_ledger)
+      .filter(isRaw)
+      .map((t) => ({ action: str(t.action), key: str(t.key), why: str(t.why), filed: t.filed === true })),
     filedUsd: numOrNull(score.filed_usd),
     proseAudit: isRaw(raw.prose_audit)
       ? {

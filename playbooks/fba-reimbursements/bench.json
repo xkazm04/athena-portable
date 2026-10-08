@@ -31,6 +31,92 @@
     "false_claims": 0,
     "traps_total": 14,
     "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "file_case",
+        "key": "FBA15X2",
+        "why": "The 3PL packed only 228: the supplier short-shipped, Amazon received everything sent",
+        "filed": false
+      },
+      {
+        "action": "file_case",
+        "key": "FBA15X3",
+        "why": "Still Receiving, not Closed",
+        "filed": false
+      },
+      {
+        "action": "file_case",
+        "key": "FBA15W2",
+        "why": "Closed 06-25, day 104: past the 60-day window",
+        "filed": false
+      },
+      {
+        "action": "file_case",
+        "key": "AWD-T-0921",
+        "why": "AWD to FBA transfers reconcile on their own path",
+        "filed": false
+      },
+      {
+        "action": "file_case",
+        "key": "R-81",
+        "why": "Created 09-30, day 7: the window opens on day 15",
+        "filed": false
+      },
+      {
+        "action": "file_case",
+        "key": "R-70",
+        "why": "Created 07-05, day 94: past the 75-day window",
+        "filed": false
+      },
+      {
+        "action": "file_case",
+        "key": "113-5520",
+        "why": "Refunded 09-15, day 22: claimable from 11-14",
+        "filed": false
+      },
+      {
+        "action": "file_case",
+        "key": "113-2208",
+        "why": "Refunded 05-20, day 140: past day 120",
+        "filed": false
+      },
+      {
+        "action": "file_case",
+        "key": "113-6013",
+        "why": "Returned sellable",
+        "filed": false
+      },
+      {
+        "action": "file_case",
+        "key": "113-3390",
+        "why": "Already reimbursed 08-22",
+        "filed": false
+      },
+      {
+        "action": "file_case",
+        "key": "113-7102",
+        "why": "Returned sellable",
+        "filed": false
+      },
+      {
+        "action": "request_remeasure",
+        "key": "X00D4D",
+        "why": "Overcharged, but remeasured twice in the last 60 days: blocked",
+        "filed": false
+      },
+      {
+        "action": "request_remeasure",
+        "key": "X00A1A",
+        "why": "Measured correctly",
+        "filed": false
+      },
+      {
+        "action": "request_remeasure",
+        "key": "X00B2B",
+        "why": "Measured correctly",
+        "filed": false
+      }
+    ],
     "filed_usd": 359.78,
     "duplicates": 0,
     "forbidden": 0,

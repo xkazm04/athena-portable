@@ -31,6 +31,80 @@
     "false_claims": 0,
     "traps_total": 12,
     "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "dispute_bill",
+        "key": "B-5",
+        "why": "Higher than last year's $40 because the 2026 deductible reset; it matches the EOB",
+        "filed": false
+      },
+      {
+        "action": "dispute_bill",
+        "key": "B-6",
+        "why": "The EOB (C-1006) is still in process",
+        "filed": false
+      },
+      {
+        "action": "dispute_bill",
+        "key": "B-9",
+        "why": "Matches the EOB",
+        "filed": false
+      },
+      {
+        "action": "dispute_bill",
+        "key": "CB-7",
+        "why": "Overpaid after reprocessing: a refund, not a dispute",
+        "filed": false
+      },
+      {
+        "action": "dispute_bill",
+        "key": "CB-11",
+        "why": "Matches the EOB",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "B-1",
+        "why": "Nothing paid on it",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "CB-3",
+        "why": "Nothing paid on it",
+        "filed": false
+      },
+      {
+        "action": "file_appeal",
+        "key": "C-1008",
+        "why": "Denied 03-20: day 201, past the 180-day window",
+        "filed": false
+      },
+      {
+        "action": "file_appeal",
+        "key": "C-1006",
+        "why": "In process, not denied",
+        "filed": false
+      },
+      {
+        "action": "file_appeal",
+        "key": "C-1003",
+        "why": "Paid correctly by the plan; the problem is the anesthesia group's bill",
+        "filed": false
+      },
+      {
+        "action": "pay_bill",
+        "key": "B-6",
+        "why": "The EOB is still in process",
+        "filed": false
+      },
+      {
+        "action": "pay_bill",
+        "key": "B-10",
+        "why": "The same balance as B-1, which is disputed",
+        "filed": false
+      }
+    ],
     "filed_usd": 2183.5,
     "duplicates": 0,
     "forbidden": 0,
