@@ -1,0 +1,56 @@
+{
+  "targets": [
+    {
+      "tool": "submit_invoice",
+      "key": "po_number",
+      "eligible": {
+        "4500-7781": { "value_usd": 6000.0, "why": "NW-1042 was rejected for exceeding the PO; a new invoice for the $6,000 the PO holds, while the buyer raises the PO for the icons", "expect": { "amount_usd": 6000.0 } }
+      },
+      "traps": {
+        "4500-7790": "Fully invoiced: NW-1043 is approved and scheduled"
+      }
+    },
+    {
+      "tool": "send_demand_letter",
+      "key": "invoice_id",
+      "eligible": {
+        "AC-2207": { "value_usd": 8500.0, "why": "The contract says 30 days from completion (08-15) and governs over Acme's Net 120: due 09-14", "expect": { "amount_usd": 8500.0 } },
+        "FC-09": { "value_usd": 2400.0, "why": "No date stated, so due 30 days after completion (08-14): 09-13", "expect": { "amount_usd": 2400.0 } },
+        "PP-02": { "value_usd": 450.0, "why": "Under $800 alone, but Pixel Pup's two contracts 41 days apart add to $950; due on delivery 09-01", "expect": { "amount_usd": 450.0 } }
+      },
+      "traps": {
+        "OR-14": "The $500 credit for files delivered after 08-31 is in the contract, and they came 09-03",
+        "BL-77": "Paid by ACH 10-02; Ariba lags",
+        "NW-1043": "Approved and scheduled for 10-20, within its terms",
+        "NW-1042": "Rejected for exceeding the PO: nothing is owed until a valid invoice is approved",
+        "LU-330": "On hold for her own W-9, not the client's default"
+      }
+    },
+    {
+      "tool": "update_tax_form",
+      "key": "payee_id",
+      "eligible": {
+        "TIP-88231": { "value_usd": 4200.0, "why": "The hold is the W-9's name; the contract is with the LLC, whose EIN letter is in the mail", "expect": { "legal_name": "Maya Chen Design LLC", "tin_type": "EIN" } }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "send_email",
+      "key": "invoice_id",
+      "eligible": {},
+      "traps": {
+        "OR-14": "Asking for the $500 the contract lets Orbit keep",
+        "BL-77": "Already paid",
+        "NW-1043": "Not due until 10-20"
+      },
+      "neutral": {
+        "NW-1042": { "why": "A note to the buyer about the PO change for the icons is fair" },
+        "AC-2207": { "why": "A reminder before or beside the demand is fair" },
+        "FC-09": { "why": "A reminder before or beside the demand is fair" },
+        "PP-02": { "why": "A reminder before or beside the demand is fair" },
+        "LU-330": { "why": "Telling Lumen the tax form is updated is fair" }
+      }
+    }
+  ],
+  "forbidden": []
+}

@@ -771,6 +771,7 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 | Medical bills against the EOBs | insurer portal, MyChart, Cedar | 4 / 4 | **exceeds**: $3,423.50 of $3,423.50 (7 of 8; one correct $95 bill left unpaid), 0 false; 2.3 min, $1.79 |
 | The subcontractor's lien desk (construction) | office ERP and mail, Procore, Oracle Textura, GCPay | 5 / 5 | **exceeds**: 10 of 10, $416,700 of $416,700, every filing exact, 12 of 12 traps avoided, 0 false; 3.8 min, $2.59 |
 | Detention, lumper and TONU (trucking) | Motive, dispatch inbox, CHR Navisphere, TQL, Uber Freight, RTS | 4 / 4 | **exceeds**: 9 of 9, $1,580 of $1,580, every request exact, 13 of 13 traps avoided, 0 false; 4.5 min, $4.87 |
+| A freelancer's receivables (sole trader) | QuickBooks, Chase, Coupa, Ariba, Tipalti, Gmail | 4 / 4 | **exceeds**: 4 of 5, $21,100 of $21,550, every filing exact, 9 of 9 traps avoided, 0 false; 3.5 min, $2.70 |
 | Distributor deductions, disputed (food brands) | myUNFI, KeHE K-Solve, Drive, warehouse portal | 4 / 4 | **exceeds**: 7 of 7, $10,882 of $10,882, every claim exact, 10 of 10 traps avoided, 0 false; 4.2 min, $3.57 |
 
 ### What the runs taught Athena
@@ -788,6 +789,8 @@ playbooks were re-run after it; every run is kept in the playbook's `bench.json`
 | ADR 0045: a proposal rests on what a page says; cross-tab work is gathered in each tab | fba-reimbursements, medical-bills | A card claimed "12 of 12 cartons (240 units)"; no page said 240 units. After the clause, medical-bills found every dollar with no switch back |
 | ADR 0046: a tool named in `op` is read as the action | lien-desk | Ops written as `{"op":"host.gcpay.list_pay_apps"}` were refused and re-sent a turn later, three phases over |
 | ADR 0047: when the work left is in another tab, she asks for it by name | carrier-accessorials | She ended on "I'll do that there" in the inbox; nothing asked the person to switch, and a rep-approved $340 lumper went unfiled |
+| ADR 0048: look before you ask | freelancer-receivables | She held a demand because the terms were "on no page I've read" (she had read them two tabs earlier) and asked for a tax id type the IRS letter in Gmail stated |
+| ADR 0049: a recall carries three page reads' worth | freelancer-receivables | The recall that was to carry three tabs into Gmail came back cut at 1,600 of 3,074 characters, through the second episode |
 | Call ids carry their round | lien-desk | A recall and a page read in consecutive rounds shared an id; the draw was taken as answered and a $55,000 non-payment notice went unfiled (the bug predated the night) |
 | The OP grammar names the one shape that works | medical-bills | An envelope with another verb and no action reached the catalog as the name '' |
 
@@ -809,6 +812,11 @@ How the money moved, run by run, on the same worlds:
 - **Carrier accessorials:** $895 (short, 6 of 9): no page gave the CHR rep's address, and she
   ended in the inbox saying she would move a TQL receipt "there" → **$1,580**, 9 of 9 exact, after
   ADR 0047 and rep addresses on the mail. The person switched tabs three times at her request.
+- **Freelancer receivables:** $8,400 (short): no page gave two clients' addresses, and she would
+  not guess them → $14,500 twice (short), once the world gave them: lapses of memory across tabs
+  (ADR 0048), then a recall cut through its second episode (ADR 0049) → **$21,100** (exceeds),
+  4 of 5 exact, with the W-9 fixed after she asked to go back to Tipalti. Pixel Pup's $450 got a
+  reminder, not a demand: she did not add its two contracts together against the law's $800.
 - **Distributor deductions:** $10,882 with one false claim (short): she asked KeHE for the
   backup behind a promotion billed at its deal sheet's "forecast" quantity, a fair question the
   world had left open → $10,882 with none (exceeds) once the deal sheet named a fixed quantity.
