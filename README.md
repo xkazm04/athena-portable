@@ -767,6 +767,7 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 
 | Playbook | Portals | Edge (difficulty / usefulness) | Latest bench (2026-10-07, Claude Sonnet) |
 |---|---|---|---|
+| A parent's estate, settled (family affairs) | Gmail, Drive, the estate account, Medigap, two life insurers, unclaimed property, the IRA custodian, a brokerage, Social Security, the probate docket, IRS Direct Pay | 5 / 5 | **exceeds**: 9 of 12, both deadline items (the $93,200 disclaimer, the IRS first), every filing exact, 11 of 11 traps avoided, 0 false; 6.3 min, $5.17 |
 | A parent's long-term-care claims (family care) | insurer portal, home-care agency portal, email, MyChart, Medicare.gov, the parent's bank | 5 / 5 | **exceeds**: 10 of 10, $26,410 owed found (filed $26,368: two amounts a little under the rules), 11 of 11 traps avoided, 0 false; 4.8 min, $5.23 |
 | Denied claims, reworked (clinics) | practice management, clearinghouse, Availity | 5 / 5 | **exceeds**: 9 of 10, $2,120 of $2,120, every claim exact, 22 of 22 traps avoided, 0 false; 3.1 min, $2.60 |
 | Amazon FBA reimbursements | Seller Central, supplier inbox | 4 / 4 | **exceeds**: 5 of 5, $359.78 of $359.78, 14 of 14 traps avoided, 0 false; 2.6 min, $2.66 |
@@ -793,6 +794,9 @@ playbooks were re-run after it; every run is kept in the playbook's `bench.json`
 | ADR 0047: when the work left is in another tab, she asks for it by name | carrier-accessorials | She ended on "I'll do that there" in the inbox; nothing asked the person to switch, and a rep-approved $340 lumper went unfiled |
 | ADR 0048: look before you ask | freelancer-receivables | She held a demand because the terms were "on no page I've read" (she had read them two tabs earlier) and asked for a tax id type the IRS letter in Gmail stated |
 | ADR 0049: a recall carries three page reads' worth | freelancer-receivables | The recall that was to carry three tabs into Gmail came back cut at 1,600 of 3,074 characters, through the second episode |
+| ADR 0050: a tool in `name` or `tool`, and parameters outside `params`, are repaired | estate-settlement | `{"op":"call","name":"host.bank.list_transactions"}` was dropped and re-sent in five tabs |
+| ADR 0051: the count of items is held to the bar, and a deadline can be required | estate-settlement | A run that filed 3 of 12 came back "exceeds" on the $93,200 disclaimer alone |
+| ADR 0052: the decisions digest counts every waiting card | estate-settlement | With 13 cards waiting she saw "(showing 10 of 10)", missed one she had filed, and filed it again |
 | Call ids carry their round | lien-desk | A recall and a page read in consecutive rounds shared an id; the draw was taken as answered and a $55,000 non-payment notice went unfiled (the bug predated the night) |
 | The OP grammar names the one shape that works | medical-bills | An envelope with another verb and no action reached the catalog as the name '' |
 
@@ -803,6 +807,11 @@ How the money moved, run by run, on the same worlds:
 - **Clinic denials:** $0 (2 of 10) → **$2,120** (exceeds) after the dropped-op and result-budget
   fixes → $1,910 (exceeds) after ADR 0045 → **$2,120**, 9 of 10 exact (exceeds) on a regression
   run after ADRs 0046–0048.
+- **Estate settlement:** short four times, each for a reason that became a fix: payments held
+  behind unsigned allowances (rule R1 and the world), the inverse trap disallowed before the mailed
+  notice was found, a 3-of-12 run that the measure called "exceeds" (ADR 0051), and 11 of 12 with a
+  payment filed twice because the digest hid it (ADR 0052) → **exceeds**: 9 of 12, both deadline
+  items, 0 false, no duplicate.
 - **Long-term-care claims:** **$26,410** on the first run (exceeds, 9 of 10, every amount exact),
   leaving the premium autopay running because the command never asked her to stop a payment;
   she offered the card instead. Once the command said so: 10 of 10 (exceeds), with two amounts

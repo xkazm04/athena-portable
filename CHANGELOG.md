@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
+- `feat(playbooks): a parent's estate across twelve portals, benched to exceeds` — the disclaimer before its nine months, the IRS first, claims allowed at the balance at death, a paid hospital claim refused, eleven traps; five runs that found ADRs 0050 to 0052.
+
 - `feat(playbooks): a freelancer's receivables across three client portals, the bank and New York's freelancer law, benched to exceeds` — a Coupa PO flip, a demand under the Freelance Isn't Free Act where a contract overrides Ariba's Net 120, a W-9 that holds a Tipalti payment, and four things not to chase; four runs, ADRs 0048 and 0049 found on the way; run 4: $21,100 of $21,550, 0 false.
 
 - `feat(companion): a handed-over playbook shows her plan before the first turn` — Talk's empty state becomes the plan: her steps, the tabs she will ask for, where she stops for a signature, from the bundled playbook by id; the "Working on" chip stays.
