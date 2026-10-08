@@ -1,16 +1,16 @@
 {
   "playbook": "clinic-denials",
-  "run_at": "2026-10-07T23:07:07Z",
+  "run_at": "2026-10-08T00:15:18Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 182.7,
+  "wall_s": 187.4,
   "turns": 11,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 50,
-  "cost_usd": 2.593,
-  "your_time_s": 240,
+  "reads": 52,
+  "cost_usd": 2.5953,
+  "your_time_s": 270,
   "verdict": {
     "word": "exceeds",
     "reasons": [],
@@ -19,15 +19,15 @@
       "false_claims": 0,
       "minutes": 30.0
     },
-    "minutes": 3.0
+    "minutes": 3.1
   },
   "score": {
     "eligible": 10,
-    "found": 8,
-    "exact": 8,
+    "found": 9,
+    "exact": 9,
     "value_total_usd": 2120.0,
-    "value_found_usd": 1910.0,
-    "recall_value": 0.901,
+    "value_found_usd": 2120.0,
+    "recall_value": 1.0,
     "false_claims": 0,
     "traps_total": 22,
     "traps_filed": 0,
@@ -171,6 +171,22 @@
   },
   "cards": [
     {
+      "action": "file_reconsideration",
+      "key": "CL-2198",
+      "outcome": "correct",
+      "value_usd": 1150.0,
+      "exact": true,
+      "why": "Authorisation UH-88213 approved 2026-08-05 was left off the claim"
+    },
+    {
+      "action": "file_reconsideration",
+      "key": "CL-2150",
+      "outcome": "correct",
+      "value_usd": 380.0,
+      "exact": true,
+      "why": "277CA: Aetna accepted it on 2026-07-20, day 40 of 120"
+    },
+    {
       "action": "submit_corrected_claim",
       "key": "CL-2201",
       "outcome": "correct",
@@ -195,20 +211,12 @@
       "why": "Rash treated at a preventive visit: modifier 25, day 34 of Aetna's 120"
     },
     {
-      "action": "file_reconsideration",
-      "key": "CL-2198",
+      "action": "submit_corrected_claim",
+      "key": "CL-2215",
       "outcome": "correct",
-      "value_usd": 1150.0,
+      "value_usd": 210.0,
       "exact": true,
-      "why": "Authorisation UH-88213 approved 2026-08-05 was left off the claim"
-    },
-    {
-      "action": "file_reconsideration",
-      "key": "CL-2150",
-      "outcome": "correct",
-      "value_usd": 380.0,
-      "exact": true,
-      "why": "277CA: Aetna accepted it on 2026-07-20, day 40 of 120"
+      "why": "Dr. Okoye rendered, billed under Dr. Patel: rendering NPI 1093847562"
     },
     {
       "action": "write_off",
@@ -237,24 +245,19 @@
   ],
   "missed": [
     {
-      "action": "submit_corrected_claim",
-      "key": "CL-2215",
-      "value_usd": 210.0
-    },
-    {
       "action": "write_off",
       "key": "CL-2190",
       "value_usd": 0
     }
   ],
-  "closing_words": "Dr. Okoye's NPI is 1093847562. Dr. Patel is 1720394851, which is the NPI the CL-2215 claim went out under. I'm still not proposing the CL-2215 correction, because I haven't seen whose name the authorisation carries. Its answer went to the page from the Availity tab and never reached me, and I can't call it from here.\n\n- **If the authorisation names Dr. Okoye:** Correcting the rendering NPI to 1093847562 fixes the denial.\n- **If it names Dr. Patel:** The mismatch is with the authorisation, and a different fix is needed.\n\nThere's no rush, since UnitedHealthcare's 90-day corrected-claim limit for DOS 09-08 runs to 12-07. When you're next on Availity, open that tab and I'll re-read the authorisation for CL-2215, then file the correction.\n\nEight decisions are waiting on you:\n- **Corrected claims (modifier 25):** CL-2201, CL-2207, CL-2213.\n- **Reconsiderations:** CL-2198 and CL-2150.\n- **Write",
+  "closing_words": "Filing the three write-offs now. These are the only claims where the payer's own rules or the reports rule out a win.\n\n- **CL-2205 (Cigna, $640):** There is no authorisation on file, and Cigna allows no retroactive authorisation for outpatient advanced imaging.\n- **CL-2142 (Cigna, $165):** The 90-day limit ended 08-26. The only report inside it is an intake rejection, which Cigna says is not proof. The first acceptance came on 09-02.\n- **CL-2101 (Cigna, $260):** The 180-day reconsideration window ended 09-16.\n\nI'm leaving the rest alone:\n- **CL-2160 and CL-2172:** Corrected claims are in process.\n- **CL-2211 and CL-2188:** Each waits on a claim that is still in process, CL-2209 and CL-2187.\n- **CL-2190:** Your decision on a reconsideration is open, so it isn't written off.\n- **CL-2198, CL-2150, CL-2201, CL-2207, CL-2213 and CL-2215:** Their cards are waiting on you.",
   "trace": [
     {
       "portal": "Ridgeview practice management",
       "user": "Let's work this week's denial worklist. Start here in the practice system: read each denial and what's behind it, and tell me what you'll need from the clearinghouse and the payer portal.",
       "continued": false,
-      "said": "I'll start by pulling the denial worklist, then read each claim and its encounter.\n\nMy checkpoint line was malformed, so it was dropped. I'm re-issuing it in the right form, along with the two reads.\n\nThe checkpoint is saved. The denial list and provider list went to the page, and I'll get their answers on my next turn. I'm not calling them again. When they arrive, I'll read each claim and its encounter, then list what I need from the clearinghouse and Availity.",
-      "said_chars": 466,
+      "said": "I'll start by pulling the denial worklist and the provider list. Once they're back, I'll read each claim and its encounter.\n\n\nNext turn I'll read each claim and encounter, then list what to pull from the clearinghouse and Availity.",
+      "said_chars": 231,
       "reads": [
         "list_denials",
         "list_providers"
@@ -265,8 +268,8 @@
       "portal": "Ridgeview practice management",
       "user": "",
       "continued": true,
-      "said": "The worklist has 14 denials and I've only seen the first 7 (page 1 of 2). I'm fetching page 2 and reading the claim and encounter behind each of the 7 I have.",
-      "said_chars": 158,
+      "said": "The first page shows 7 of 14 denials, so I'm fetching page 2. I'm also reading the claim and encounter for each of the 7 I can see.\n\n\nOnce those answer, I'll tell you what I need from the clearinghouse and Availity. The seven CO-16 and CO-29 rows so far point to missing or incorrect claim data and timely filing. I'll confirm that from the claims before I commit to it.",
+      "said_chars": 370,
       "reads": [
         "list_denials",
         "read_claim",
@@ -290,8 +293,8 @@
       "portal": "Ridgeview practice management",
       "user": "",
       "continued": true,
-      "said": "All 14 denials are listed now. I've read 7 of them. I'm reading the other 7 (the page 2 claims) before I summarize, so I can name exactly what I need from the clearinghouse and Availity.",
-      "said_chars": 186,
+      "said": "I've read 7 of the 14 claims so far. The other 7 are on page 2, so I'm reading those now, including the two marked \"Corrected claim pending\". I'm only reading those two. I won't touch them.\n\n\nAfter these answer, I'll give you the full 14-claim picture and the clearinghouse and Availity checklist.",
+      "said_chars": 297,
       "reads": [
         "read_claim",
         "read_encounter",
@@ -304,9 +307,7 @@
         "read_claim",
         "read_encounter",
         "read_claim",
-        "read_encounter",
-        "read_claim",
-        "read_encounter"
+        "read_claim"
       ],
       "cards": []
     },
@@ -314,8 +315,8 @@
       "portal": "Ridgeview practice management",
       "user": "",
       "continued": true,
-      "said": "All 14 denials are read, and nothing has been filed. I'm also reading CL-2209 and CL-2187 in this practice system, because the CL-2211 and CL-2188 decisions depend on them.\n\n\n**What I found, grouped by what it needs**\n\n1. **Missing modifier 25 (CO-16): CL-2201, CL-2207, CL-2213, CL-2190 ($142, $142, $96, $118).**\n   - Each encounter note documents a separately identifiable problem visit alongside the preventive exam. These look correctable as corrected claims (frequency 7) with modifier 25 on the problem E/M.",
-      "said_chars": 3638,
+      "said": "I've read all 14 denials. Most can be fixed or checked, but nothing is filed yet. Four more details live in this system, so I'm reading them before you switch tabs.\n\n\n**Worklist (14: 12 denied, 2 pending)**\n\n| Group | Claims | What I read | Likely path |\n|---|---|---|---|\n| Missing modifier 25 | CL-2201, 2207, 2213, 2190 (4) | Each encounter documents a separate problem visit alongside a preventive exam. | Corrected claim (freq 7) with modifier 25 |\n| Wrong rendering provider | CL-2215 | Billed under Dr.",
+      "said_chars": 2749,
       "reads": [
         "read_claim",
         "read_claim"
@@ -326,8 +327,8 @@
       "portal": "Ridgeview practice management",
       "user": "",
       "continued": true,
-      "said": "CL-2209 and CL-2187 returned nothing in the practice system. They aren't in the billing records I can reach, so I can't confirm CL-2209 was paid or what happened to the CL-2187 primary.\n\nThat changes two items:\n\n- **CL-2211 (duplicate, $88):** The encounter note says it was a mistaken re-send of CL-2209. That fits a correct denial, but I haven't seen CL-2209's outcome. I'm holding this one, with no write-off proposed, until Availity's `claim_status` for CL-2209 shows it paid or in process.",
-      "said_chars": 1292,
+      "said": "Neither CL-2209 nor CL-2187 is in the practice system: both reads returned nothing. The duplicate and the primary claim can only be checked through the payer, so I'll check them on Availity.\n\nI'm stopping in this tab. Everything left to read here is already read, and the rest needs the other two tabs.\n\nFindings so far from the practice system:\n- **Fixable with a corrected claim:** CL-2201, CL-2207, CL-2213 and CL-2190 each need modifier 25. CL-2215 needs the rendering provider changed to Dr.",
+      "said_chars": 1163,
       "reads": [],
       "cards": []
     },
@@ -335,8 +336,8 @@
       "portal": "Clearinghouse",
       "user": "I've opened the clearinghouse. Pull the reports you need.",
       "continued": false,
-      "said": "I'm pulling the acknowledgement reports now. They cover CL-2150 and CL-2142, which are the timely-filing proof, and CL-2209 and CL-2187, which are the duplicate and primary-payer questions. I'm also pulling CL-2160 and CL-2172, because their pending corrected claims will show 999 and 277CA acknowledgements here too.\n\n\nThe answers will arrive on my next turn. I won't call these again. After that I'll move to the Availity tab for payer rules, authorisations and claim status.",
-      "said_chars": 477,
+      "said": "I'll pull the 999 and 277CA reports for CL-2142 and CL-2150 now. The IDs of the four modifier claims aren't in what I can see, so I'm recalling them first.\n\n\nWhen the reports and the recall answer, I'll pull reports for the four modifier claims. I haven't filed or written off anything.\n\nThe reports for CL-2142 and CL-2150 are with the page. I'll read them when they arrive and won't ask for them again.",
+      "said_chars": 1476,
       "reads": [
         "search_reports",
         "search_reports",
@@ -351,8 +352,8 @@
       "portal": "Clearinghouse",
       "user": "",
       "continued": true,
-      "said": "The clearinghouse gave me proof for CL-2150 and not for CL-2142, and it had nothing on the other four claims.\n\n**CL-2150 (Aetna, $380, CO-29):** There is proof of timely filing.\n- The date of service was 2026-06-10. The 999 accepted it on 2026-07-19, and the 277CA was accepted by Aetna on 2026-07-20. Aetna's claim number is AET-55190832.\n- That is 39 days after the date of service. I haven't read Aetna's filing limit, so I'm not calling it inside the limit yet. The limit is in Availity's payer rules.",
-      "said_chars": 2505,
+      "said": "The reports support one claim and not another, and three of the four modifier claims came back empty.\n\n**Filing-deadline claims**\n- **CL-2150 (Aetna, CO-29):** The original is proven. The 999 was accepted on 2026-07-19, and the 277CA was accepted by Aetna on 2026-07-20, with payer claim number AET-55190832. That is the proof a reconsideration needs. I still need Aetna's window and filing limit from Availity before I propose filing.\n- **CL-2142 (Cigna, CO-29):** The original has no proof.",
+      "said_chars": 2857,
       "reads": [],
       "cards": []
     },
@@ -360,17 +361,14 @@
       "portal": "Availity",
       "user": "Now Availity. Check the payer rules and authorisations, then resubmit and reconsider whatever holds up.",
       "continued": false,
-      "said": "I'm reading Availity first: the three payers' rules, the authorisations behind the two CO-197 denials, and claim status for the corrected-claim candidates and the two pending ones. I'm not filing anything yet, because each resubmission or reconsideration depends on what these return. They'll arrive on my next turn.",
-      "said_chars": 316,
+      "said": "I'm in Availity now, so I'll start with the read-only checks. I'm not filing anything yet.\n\nI'm pulling the three payers' rules, the authorisations for the two CO-197 claims (CL-2198 and CL-2205), and the status of the duplicate and primary claims (CL-2209, CL-2187). I'm also recalling the IDs of the two pending claims, which I haven't seen in this turn. I'll only read those two and leave them alone.",
+      "said_chars": 1424,
       "reads": [
         "read_payer_rules",
         "read_payer_rules",
         "read_payer_rules",
         "lookup_authorization",
         "lookup_authorization",
-        "claim_status",
-        "claim_status",
-        "claim_status",
         "claim_status",
         "claim_status"
       ],
@@ -380,8 +378,39 @@
       "portal": "Availity",
       "user": "",
       "continued": true,
-      "said": "Seven items are ready for your decision, five are held, and one more read is going out for CL-2215.\n\n**Resubmit with modifier 25 (frequency 7)**\n- **CL-2201 (Cigna, DOS 08-18):** The 90-day limit runs to 11-16.\n- **CL-2207 (UnitedHealthcare, DOS 08-25):** The 90-day limit runs to 11-23.\n- **CL-2213 (Aetna, DOS 09-03):** The 120-day limit runs to 2027-01-01.\n\nI'm leaving the rendering NPI blank on these cards. I don't have it written in anything I read here.",
+      "said": "Two reconsiderations and three write-offs hold up on the evidence, so I'm filing those cards. The four modifier-25 corrected claims and CL-2215 wait on one more read each.\n\n**Filing now**\n- **CL-2198 (UnitedHealthcare, $1,150):** Authorisation UH-88213 is on file for the MRI. It is valid 2026-08-05 to 2026-11-03, and the DOS of 08-12 falls inside that. UnitedHealthcare's rule says to file a reconsideration citing the auth number, and the 12-month window is open.",
       "said_chars": 4000,
+      "reads": [
+        "claim_status",
+        "claim_status",
+        "claim_status",
+        "claim_status",
+        "claim_status",
+        "claim_status",
+        "claim_status",
+        "lookup_authorization"
+      ],
+      "cards": [
+        {
+          "action": "file_reconsideration",
+          "key": "CL-2198",
+          "outcome": "correct",
+          "value_usd": 1150.0
+        },
+        {
+          "action": "file_reconsideration",
+          "key": "CL-2150",
+          "outcome": "correct",
+          "value_usd": 380.0
+        }
+      ]
+    },
+    {
+      "portal": "Availity",
+      "user": "",
+      "continued": true,
+      "said": "Four corrected claims are ready for your decision. CL-2198 and CL-2150 are already waiting on you, and I won't re-file them.\n\n**What the status checks showed**\n- **CL-2201, CL-2207, CL-2213, CL-2190 and CL-2215** are all still \"Denied CO-16\", and no corrected claim is in process on any of them.\n- **CL-2160 and CL-2172** each have a corrected claim in process, received 09-26 and 09-29. They are pending, so I'm leaving them alone.",
+      "said_chars": 1567,
       "reads": [],
       "cards": [
         {
@@ -403,16 +432,10 @@
           "value_usd": 96.0
         },
         {
-          "action": "file_reconsideration",
-          "key": "CL-2198",
+          "action": "submit_corrected_claim",
+          "key": "CL-2215",
           "outcome": "correct",
-          "value_usd": 1150.0
-        },
-        {
-          "action": "file_reconsideration",
-          "key": "CL-2150",
-          "outcome": "correct",
-          "value_usd": 380.0
+          "value_usd": 210.0
         }
       ]
     },
@@ -420,11 +443,9 @@
       "portal": "Ridgeview practice management",
       "user": "Back in the practice system. Write off only what can't be won, and leave anything still pending alone.",
       "continued": false,
-      "said": "I'm filing the three write-offs for CL-2205, CL-2142 and CL-2101, and reading the provider list so CL-2215 can move. The write-offs wait on your answer. I'm not writing off anything pending (CL-2160, CL-2172, CL-2211, CL-2188), and CL-2190 stays open until you decide.\n\nThe five Availity cards (three corrected claims, two reconsiderations) are still waiting on you.",
-      "said_chars": 366,
-      "reads": [
-        "list_providers"
-      ],
+      "said": "Filing the three write-offs now. These are the only claims where the payer's own rules or the reports rule out a win.\n\n- **CL-2205 (Cigna, $640):** There is no authorisation on file, and Cigna allows no retroactive authorisation for outpatient advanced imaging.\n- **CL-2142 (Cigna, $165):** The 90-day limit ended 08-26. The only report inside it is an intake rejection, which Cigna says is not proof. The first acceptance came on 09-02.\n- **CL-2101 (Cigna, $260):** The 180-day reconsideration window ended 09-16.",
+      "said_chars": 878,
+      "reads": [],
       "cards": [
         {
           "action": "write_off",
@@ -445,18 +466,9 @@
           "value_usd": 0.0
         }
       ]
-    },
-    {
-      "portal": "Ridgeview practice management",
-      "user": "",
-      "continued": true,
-      "said": "Dr. Okoye's NPI is 1093847562. Dr. Patel is 1720394851, which is the NPI the CL-2215 claim went out under. I'm still not proposing the CL-2215 correction, because I haven't seen whose name the authorisation carries. Its answer went to the page from the Availity tab and never reached me, and I can't call it from here.\n\n- **If the authorisation names Dr. Okoye:** Correcting the rendering NPI to 1093847562 fixes the denial.\n- **If it names Dr.",
-      "said_chars": 1150,
-      "reads": [],
-      "cards": []
     }
   ],
-  "note": "after ADR 0045 (evidence is what a page says; gather in each tab) and the action-shape fix",
+  "note": "regression check after ADRs 0046-0048",
   "history": [
     {
       "run_at": "2026-10-07T22:30:21Z",
@@ -476,6 +488,16 @@
       "value_found_usd": 2120.0,
       "false_claims": 0,
       "note": "after ADR 0041 amended (dropped ops told in the turn) and ADR 0043 (every result that fits)"
+    },
+    {
+      "run_at": "2026-10-07T23:07:07Z",
+      "model": "sonnet",
+      "verdict": "exceeds",
+      "found": 8,
+      "eligible": 10,
+      "value_found_usd": 1910.0,
+      "false_claims": 0,
+      "note": "after ADR 0045 (evidence is what a page says; gather in each tab) and the action-shape fix"
     }
   ]
 }
