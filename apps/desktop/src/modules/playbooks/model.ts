@@ -81,6 +81,14 @@ export interface PlaybooksModel {
     /** Money the bench found across every benched playbook, and what was there to find. */
     foundUsd: number;
     availableUsd: number;
+    /** Across the latest runs: traps the worlds held and how many she filed; claims that were wrong. */
+    trapsTotal: number;
+    trapsFiled: number;
+    falseClaims: number;
+    /** Her minutes on the bench, the minutes the same chores take by hand, and the model's cost. */
+    athenaMinutes: number;
+    manualMinutes: number;
+    costUsd: number;
   };
   actions: PlaybookActions;
 }
@@ -208,10 +216,19 @@ export function selectPlaybooks(
       ).size,
       foundUsd: benched.reduce((s, v) => s + (v.playbook.bench?.valueFoundUsd ?? 0), 0),
       availableUsd: benched.reduce((s, v) => s + (v.playbook.bench?.valueTotalUsd ?? 0), 0),
+      trapsTotal: sumBench(benched, (b) => b.trapsTotal),
+      trapsFiled: sumBench(benched, (b) => b.trapsFiled),
+      falseClaims: sumBench(benched, (b) => b.falseClaims),
+      athenaMinutes: sumBench(benched, (b) => b.wallS / 60),
+      manualMinutes: benched.reduce((s, v) => s + v.playbook.economics.manualMinutes, 0),
+      costUsd: sumBench(benched, (b) => b.costUsd ?? 0),
     },
     actions,
   };
 }
+
+const sumBench = (views: readonly PlaybookView[], f: (b: Bench) => number): number =>
+  views.reduce((s, v) => s + (v.playbook.bench ? f(v.playbook.bench) : 0), 0);
 
 // --- the replay ----------------------------------------------------------------------------------
 

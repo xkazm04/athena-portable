@@ -78,3 +78,13 @@ test("the grid orders by money a year or hours by hand, the map's order breaking
   const time = arrange(items, "all", "time").map((r) => r.view.playbook.economics.manualMinutes);
   expect([...time].sort((a, b) => b - a)).toEqual(time);
 });
+
+test("the totals add the latest runs' traps, false claims, minutes and cost", () => {
+  const t = fixtures.typical.totals;
+  expect(t.trapsTotal).toBe(9);
+  expect(t.trapsFiled).toBe(1);
+  expect(t.falseClaims).toBe(1);
+  expect(t.athenaMinutes).toBeCloseTo((372 + 1640) / 60);
+  expect(t.manualMinutes).toBe(180 + 45);
+  expect(t.costUsd).toBeCloseTo(0.41 + 1.12);
+});

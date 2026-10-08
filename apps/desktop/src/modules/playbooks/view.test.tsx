@@ -59,3 +59,11 @@ test("the grid offers whose chore and the order as two radio groups, counted", (
   expect(html.includes("At work 2")).toBe(true);
   expect(html.includes("Hardest first")).toBe(true);
 });
+
+test("the overview says what the bench walked past, not only what it found", () => {
+  const html = renderToStaticMarkup(entry.preview("typical"));
+  expect(html.includes("Traps walked past")).toBe(true);
+  expect(html.includes("8 of 9")).toBe(true);
+  expect(html.includes("1 false claim")).toBe(true);
+  expect(html.includes("by hand")).toBe(true);
+});

@@ -316,20 +316,44 @@ function EdgeNotes({ model }: { model: PlaybooksModel }) {
       </p>
       <dl className="pb-stats">
         <div>
-          <dt className="typo-label">On the edge</dt>
-          <dd className="pb-stats__n">{`${totals.onEdge} of ${totals.count}`}</dd>
+          <dt className="typo-label">Money the bench found</dt>
+          <dd className="pb-stats__n">{totals.availableUsd ? usd(totals.foundUsd) : "–"}</dd>
+          <dd className="typo-caption">
+            {totals.availableUsd ? `of ${usd(totals.availableUsd)} there to find` : "nothing benched yet"}
+          </dd>
+        </div>
+        <div>
+          <dt className="typo-label">Traps walked past</dt>
+          <dd className="pb-stats__n">
+            {totals.trapsTotal ? `${totals.trapsTotal - totals.trapsFiled} of ${totals.trapsTotal}` : "–"}
+          </dd>
+          <dd className="typo-caption">
+            {totals.falseClaims === 1 ? "1 false claim" : `${totals.falseClaims} false claims`}
+          </dd>
+        </div>
+        <div>
+          <dt className="typo-label">Her time</dt>
+          <dd className="pb-stats__n">{totals.athenaMinutes ? minutes(totals.athenaMinutes) : "–"}</dd>
+          <dd className="typo-caption">
+            {totals.manualMinutes ? `against ${minutes(totals.manualMinutes)} by hand` : ""}
+          </dd>
         </div>
         <div>
           <dt className="typo-label">Beat their bar</dt>
           <dd className="pb-stats__n">{`${totals.exceeds} of ${totals.benched || 0}`}</dd>
-        </div>
-        <div>
-          <dt className="typo-label">Money the bench found</dt>
-          <dd className="pb-stats__n">{totals.availableUsd ? usd(totals.foundUsd) : "–"}</dd>
+          <dd className="typo-caption">
+            {totals.costUsd ? `${usd(totals.costUsd)} of model time in all` : ""}
+          </dd>
         </div>
         <div>
           <dt className="typo-label">Fixes they taught Athena</dt>
           <dd className="pb-stats__n">{String(totals.lessons)}</dd>
+          <dd className="typo-caption">each a decision record</dd>
+        </div>
+        <div>
+          <dt className="typo-label">On the edge</dt>
+          <dd className="pb-stats__n">{`${totals.onEdge} of ${totals.count}`}</dd>
+          <dd className="typo-caption">hard for anyone else, worth real money</dd>
         </div>
       </dl>
       {best ? (
