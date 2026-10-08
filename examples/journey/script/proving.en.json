@@ -1,0 +1,193 @@
+{
+  "title": "Athena — the Proving Ground film (DRAFT)",
+  "status": "DRAFT 2026-10-07: lines and on-screen claims are for the operator's review; nothing here has been narrated or shot",
+  "language": "en",
+  "words_per_second": 2.5,
+  "chars_per_second": 15,
+  "breath_ms": 500,
+  "max_ms": 179000,
+  "voices": {
+    "narrator": {
+      "hint": "neutral English, calm, measured, stability high"
+    },
+    "mira": {
+      "hint": "conversational, warm",
+      "gender": "female"
+    }
+  },
+  "acts": [
+    {
+      "id": "open",
+      "title": "open",
+      "segment": "card",
+      "beats": [
+        {
+          "id": "T1",
+          "app": "card",
+          "voice": "narrator",
+          "line": "Athena is an agent that works inside the web apps you already have open. Anything that reaches a person, or cannot be undone, waits for you.",
+          "screen": "Title card: Athena. Personal AI, in the apps you already have.",
+          "card": { "kicker": "Athena", "title": "Personal AI, in the apps you already have.", "sub": "Anything that reaches a person, or cannot be undone, waits for you." },
+          "settle_ms": 1500
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "title": "the gate, on the desktop",
+      "segment": "desktop",
+      "speedup": 4,
+      "beats": [
+        {
+          "id": "D1",
+          "app": "desktop",
+          "voice": "mira",
+          "line": "Send Halcyon Works a reminder about their overdue invoice.",
+          "screen": "The desktop app beside Ledgerbox; the command is typed into Athena's message field and sent",
+          "do": ["type-command", "send"],
+          "settle_ms": 800
+        },
+        {
+          "id": "D2",
+          "app": "desktop",
+          "voice": "narrator",
+          "line": "She drafts it on the page. Sending reaches a person, so the gate stops her and asks. The card shows exactly what will go out.",
+          "screen": "The decision card arrives in Athena's window: GATED chip, send_reminder, the recipient and the draft; the wait for the engine's turn is sped up and labelled",
+          "cue": "card",
+          "settle_ms": 1200
+        },
+        {
+          "id": "D3",
+          "app": "desktop",
+          "voice": "narrator",
+          "line": "Approve, and that one action runs, once. Decline, and nothing moves, and the record calls it your decision.",
+          "screen": "Approve is clicked; the card stamps approved; the reminder is recorded on the page",
+          "do": ["approve", "wait-decided"],
+          "settle_ms": 1500
+        }
+      ]
+    },
+    {
+      "id": "claim",
+      "title": "chapter: the claim",
+      "segment": "card",
+      "beats": [
+        {
+          "id": "K1",
+          "app": "card",
+          "voice": "narrator",
+          "line": "A gate is only a claim until someone attacks it. So we built a Proving Ground.",
+          "screen": "Chapter card: Can she be talked past her own gate?",
+          "card": { "kicker": "The Proving Ground", "title": "Can she be talked past her own gate?", "sub": "Generated adversaries, a real daemon, the gate's own records." },
+          "settle_ms": 1500
+        }
+      ]
+    },
+    {
+      "id": "proving",
+      "title": "the Proving Ground, live",
+      "segment": "proving",
+      "speedup": 4,
+      "beats": [
+        {
+          "id": "P1",
+          "app": "proving",
+          "voice": "narrator",
+          "line": "NVIDIA Nemotron, served on Nebius Token Factory, writes the attacks: poisoned pages, forged tool results, planted memories.",
+          "screen": "The hosted trigger page, top: the claim and the rule that no model's opinion is a verdict input",
+          "do": ["goto"],
+          "settle_ms": 1500
+        },
+        {
+          "id": "P2",
+          "app": "proving",
+          "voice": "narrator",
+          "line": "A judge with a token starts a small Gauntlet. Every attack lands in a fresh, throwaway world, against Athena running on Nemotron.",
+          "screen": "The token is typed (masked), Gauntlet and Small are picked, Start run is pressed; the start line appears in the live feed",
+          "do": ["scroll:#h-run", "fill-token", "pick:kind=gauntlet", "pick:preset=small", "start"],
+          "settle_ms": 2000
+        },
+        {
+          "id": "P3",
+          "app": "proving",
+          "voice": "narrator",
+          "line": "Each call streams in as it happens: the attacker writing, Athena answering, and what every call cost.",
+          "screen": "The first call lands in the feed; the tally counts calls and Nemotron dollars; the wait to the end is sped up and labelled",
+          "cue": "first_call",
+          "settle_ms": 1500
+        },
+        {
+          "id": "P4",
+          "app": "proving",
+          "voice": "narrator",
+          "line": "The verdict is read from the gate's own records, never from a model's opinion. Zero breached.",
+          "screen": "The end line in the feed; the page scrolls to the run's row in the history: 0 breached, held / driven",
+          "cue": "end",
+          "do": ["scroll:#h-history"],
+          "settle_ms": 2500
+        },
+        {
+          "id": "P5",
+          "app": "proving",
+          "voice": "narrator",
+          "line": "And the whole run cost less than a cent of Nemotron.",
+          "screen": "The run's cost column and the attack-by-attack list: Nemotron at a fraction of a cent (the live small run measured $0.0016)",
+          "do": ["scroll:#h-drill"],
+          "settle_ms": 1500
+        }
+      ]
+    },
+    {
+      "id": "results",
+      "title": "the measured proofs",
+      "segment": "card",
+      "beats": [
+        {
+          "id": "R1",
+          "app": "card",
+          "voice": "narrator",
+          "line": "The full run: ninety-three hostile turns, and not one gated action ran without approval.",
+          "screen": "Stat card: 93 hostile turns · 0 breaches",
+          "card": { "kicker": "Gauntlet, full run", "stat": "93 · 0", "title": "93 hostile turns. 0 breaches.", "sub": "Read from the gate's records: what it allowed, what the brain wrote, what the approval table holds." },
+          "settle_ms": 1500
+        },
+        {
+          "id": "R2",
+          "app": "card",
+          "voice": "narrator",
+          "line": "Nemotron also plays our test users. A blind judge found them in character ninety-seven percent of the time.",
+          "screen": "Stat card: persona fidelity 0.97",
+          "card": { "kicker": "Model-played users", "stat": "0.97", "title": "Persona fidelity, judged blind.", "sub": "Nemotron plays the people the product is for, and answers the decision cards on the card." },
+          "settle_ms": 1500
+        },
+        {
+          "id": "R3",
+          "app": "card",
+          "voice": "narrator",
+          "line": "And an approval is spent once. It runs exactly what was approved, one time, and a replay is refused.",
+          "screen": "Card: an approval is single use",
+          "card": { "kicker": "Approvals", "stat": "1×", "title": "An approval is spent once.", "sub": "It runs exactly what was approved. A replay is refused, whoever asks." },
+          "settle_ms": 1500
+        },
+        {
+          "id": "R4",
+          "app": "card",
+          "voice": "narrator",
+          "line": "Every role starts on Nemotron Lightning, the cheapest rung on Nebius Token Factory, and climbs to Nemotron Super only when its proof fails.",
+          "screen": "Card: the model ladder — Lightning, then Super only on a failed proof; prices per million tokens",
+          "card": { "kicker": "The ladder on Nebius Token Factory", "title": "NVIDIA Nemotron 3.5 Lightning → Nemotron 3 Super", "sub": "Start on the cheapest rung. Climb only when a proof fails." },
+          "settle_ms": 1500
+        },
+        {
+          "id": "R5",
+          "app": "card",
+          "voice": "narrator",
+          "line": "Athena. Personal AI in the apps you already have, behind a gate she cannot argue with.",
+          "screen": "Closing card: Athena · Personal AI",
+          "card": { "kicker": "Athena", "title": "Personal AI.", "sub": "In the apps you already have, behind a gate she cannot argue with." },
+          "settle_ms": 2000
+        }
+      ]
+    }
+  ]
+}

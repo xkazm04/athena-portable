@@ -13,6 +13,12 @@
  *   ELEVENLABS_VOICE_NARRATOR   voice id or name; otherwise chosen from the account library
  *   ELEVENLABS_VOICE_MIRA       "
  *   ELEVENLABS_VOICE_ATHENA     "
+ *   ELEVENLABS_VOICE_<ROLE>     " for any other role the script casts (upper-cased, non-letters as _)
+ *
+ * Roles are data (docs/demo.md section 5): every `voice` a beat names is cast, and the script's
+ * `voices` map may give a role a `hint` (words matched against the library's labels), a `gender`
+ * ("female" | "male") and `settings` (ElevenLabs voice_settings). narrator, mira and athena keep
+ * the scoring and settings the journey films were cast with.
  */
 
 import { execFile } from 'node:child_process';
@@ -36,8 +42,23 @@ const DEFAULT_MODEL = 'eleven_multilingual_v2';
 const CHAR_BUDGET = 20_000;
 const CONCURRENCY = 3;
 
-/** The three roles, most constrained first: narrator takes whatever is left. */
-const ROLES = ['mira', 'athena', 'narrator'];
+/** The journey's three roles, most constrained first: narrator takes whatever is left. */
+const KNOWN_ROLES = ['mira', 'athena', 'narrator'];
+
+/**
+ * The roles this script casts, in casting order: the beats' voices, plus any the `voices` map
+ * declares; known roles keep their order, other roles go before narrator, narrator last.
+ */
+function rolesOf(script, beats) {
+  const named = new Set([...beats.map((b) => b.voice), ...Object.keys(script.voices ?? {})]);
+  const others = [...named].filter((r) => !KNOWN_ROLES.includes(r)).sort();
+  const known = KNOWN_ROLES.filter((r) => named.has(r) && r !== 'narrator');
+  return [...known, ...others, ...(named.has('narrator') ? ['narrator'] : [])];
+}
+
+function envName(role) {
+  return `ELEVENLABS_VOICE_${String(role).toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
+}
 
 const VOICE_SETTINGS = {
   narrator: { stability: 0.6, similarity_boost: 0.75, style: 0.0, use_speaker_boost: true },
@@ -136,11 +157,21 @@ function isEnglish(voice) {
   return /english|american|british|australian|transatlantic|irish|us\b|uk\b/.test(t) || !lang;
 }
 
-function scoreFor(role, voice) {
+function scoreFor(role, voice, spec = {}) {
   const t = labelText(voice);
   let score = 0;
   if (isEnglish(voice)) score += 3;
   if (normalise(voice.category) === 'premade') score += 1;
+  if (spec.gender === 'female' && !isFemale(voice)) return -100;
+  if (spec.gender === 'male' && isFemale(voice)) return -100;
+  if (!KNOWN_ROLES.includes(role)) {
+    // A role the journey never cast: the script's hint words, matched against the labels.
+    for (const word of normalise(spec.hint).split(/[^a-z]+/).filter((w) => w.length > 3)) {
+      if (t.includes(word)) score += 2;
+    }
+    if (/whisper|character|child/.test(t)) score -= 4;
+    return score;
+  }
   if (role === 'narrator') {
     if (/narrat|storytell|documentar|informativ/.test(t)) score += 6;
     if (/calm|neutral|even|measured|clear|deep|warm/.test(t)) score += 3;
@@ -181,17 +212,12 @@ async function listVoices(apiKey) {
   return voices;
 }
 
-function chooseVoices(voices, env) {
-  const overrides = {
-    narrator: env.ELEVENLABS_VOICE_NARRATOR,
-    mira: env.ELEVENLABS_VOICE_MIRA,
-    athena: env.ELEVENLABS_VOICE_ATHENA,
-  };
+function chooseVoices(voices, env, roles, specs) {
   const picked = {};
   const taken = new Set();
 
-  for (const role of ROLES) {
-    const wanted = overrides[role];
+  for (const role of roles) {
+    const wanted = env[envName(role)];
     if (!wanted) continue;
     const match = findOverride(voices, wanted);
     if (!match) fail(3, `no voice in the account library matches ${role} override "${wanted}"`);
@@ -199,13 +225,13 @@ function chooseVoices(voices, env) {
     taken.add(match.voice_id);
   }
 
-  for (const role of ROLES) {
+  for (const role of roles) {
     if (picked[role]) continue;
     let best = null;
     let bestScore = -Infinity;
     for (const v of voices) {
       if (taken.has(v.voice_id)) continue;
-      const s = scoreFor(role, v);
+      const s = scoreFor(role, v, specs[role] ?? {});
       if (s > bestScore) {
         bestScore = s;
         best = v;
@@ -222,7 +248,7 @@ function chooseVoices(voices, env) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function synthesise({ apiKey, voiceId, role, text, model, file }) {
+async function synthesise({ apiKey, voiceId, settings, text, model, file }) {
   for (let attempt = 0; attempt < 2; attempt += 1) {
     let res;
     try {
@@ -236,7 +262,7 @@ async function synthesise({ apiKey, voiceId, role, text, model, file }) {
         body: JSON.stringify({
           text,
           model_id: model,
-          voice_settings: VOICE_SETTINGS[role] ?? VOICE_SETTINGS.narrator,
+          voice_settings: settings,
         }),
       });
     } catch (err) {
@@ -321,6 +347,10 @@ async function main() {
   }
   const beats = args.only ? allBeats.filter((b) => args.only.has(b.id)) : allBeats;
   const wps = Number(script.words_per_second) || 2.5;
+  const cps = Number(script.chars_per_second) || 0;
+  const specs = script.voices ?? {};
+  const roles = rolesOf(script, allBeats);
+  const settingsOf = (role) => specs[role]?.settings ?? VOICE_SETTINGS[role] ?? VOICE_SETTINGS.narrator;
 
   await mkdir(AUDIO_DIR, { recursive: true });
   const durationsPath = path.join(AUDIO_DIR, 'durations.json');
@@ -342,7 +372,7 @@ async function main() {
     const entries = [];
     for (const beat of beats) {
       const words = beat.line.trim().split(/\s+/).filter(Boolean).length;
-      const ms = Math.round((words / wps) * 1000);
+      const ms = cps > 0 ? Math.round((beat.line.length / cps) * 1000) : Math.round((words / wps) * 1000);
       durations[beat.id] = ms;
       entries.push({
         id: beat.id,
@@ -362,14 +392,28 @@ async function main() {
           generated_at: new Date().toISOString(),
           model: process.env.ELEVENLABS_MODEL ?? DEFAULT_MODEL,
           words_per_second: wps,
-          voices: { narrator: null, mira: null, athena: null },
+          chars_per_second: cps || null,
+          voices: Object.fromEntries(roles.map((r) => [r, null])),
           beats: entries,
         },
         null,
         2,
       )}\n`,
     );
-    report(entries, durations, allBeats, `dry run: ${beats.length} beats estimated at ${wps} words/second`);
+    report(
+      entries,
+      durations,
+      allBeats,
+      `dry run: ${beats.length} beats estimated at ${cps > 0 ? `${cps} characters` : `${wps} words`}/second`,
+    );
+    const held = beats.reduce(
+      (sum, b) => sum + Math.max(durations[b.id] ?? 0, Number(b.settle_ms) || 0) + (Number(script.breath_ms) || 0),
+      0,
+    );
+    console.log(
+      `ElevenLabs characters this would spend: ${totalChars} (${roles.join(', ')}); ` +
+        `held on screen with settles and breaths: ${formatMs(held)} (${held} ms) before any live wait.`,
+    );
     return;
   }
 
@@ -385,9 +429,9 @@ async function main() {
   const model = env.ELEVENLABS_MODEL ?? DEFAULT_MODEL;
 
   const voices = await listVoices(apiKey);
-  const cast = chooseVoices(voices, env);
+  const cast = chooseVoices(voices, env, roles, specs);
   console.log('Voices');
-  for (const role of ['narrator', 'mira', 'athena']) {
+  for (const role of roles) {
     console.log(`  ${role}: ${cast[role].name} (${cast[role].voice_id})`);
   }
   console.log(`  model: ${model}`);
@@ -416,7 +460,7 @@ async function main() {
       await synthesise({
         apiKey,
         voiceId: cast[beat.voice].voice_id,
-        role: beat.voice,
+        settings: settingsOf(beat.voice),
         text: beat.line,
         model,
         file,
@@ -458,7 +502,7 @@ async function main() {
         model,
         words_per_second: wps,
         voices: Object.fromEntries(
-          ['narrator', 'mira', 'athena'].map((r) => [
+          roles.map((r) => [
             r,
             { name: cast[r].name, voice_id: cast[r].voice_id },
           ]),

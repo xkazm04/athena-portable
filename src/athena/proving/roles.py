@@ -8,7 +8,7 @@ hostile content, a user a Character is played by, a judge. Two engines play role
   ``NEBIUS_API_KEY``, never printed). The model follows the operator's ladder: it starts on
   :data:`~athena.harness.tokenfactory.LIGHTNING_MODEL` and is escalated to
   :data:`~athena.harness.tokenfactory.DEFAULT_MODEL` (Super) only when its proof fails.
-- :class:`ClaudeRole` — the control: ``claude -p --model claude-haiku-4-5-20251001
+- :class:`ClaudeRole` — the control: ``claude -p --model claude-haiku-5-5
   --output-format json`` with the prompt on stdin, its own tools off, its cost read from
   ``total_cost_usd``.
 
@@ -71,8 +71,10 @@ __all__ = [
     "subprocess_runner",
 ]
 
-#: The control. Pinned by id, so a run is comparable with the next one.
-HAIKU_MODEL = "claude-haiku-4-5-20251001"
+#: The control. Pinned by id, so a run is comparable with the next one. Haiku 5.5 from
+#: 2026-10-07; every run recorded before that day's WP9 repeats used ``claude-haiku-4-5-20251001``,
+#: and the report's roles name the id, so the two are never compared as one series.
+HAIKU_MODEL = "claude-haiku-5-5"
 
 #: The operator's ladder (design note, "Resume 2026-10-07"): Lightning first, Super if too poor.
 RUNGS: dict[str, str] = {"lightning": LIGHTNING_MODEL, "super": DEFAULT_MODEL}

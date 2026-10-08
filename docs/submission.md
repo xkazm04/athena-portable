@@ -1,10 +1,13 @@
-# Athena Portable — an agent that works inside the web apps you already use
+# Athena Portable — a private agent inside the web apps you already use, proven by Nemotron
 
-Built for the Nebius x NVIDIA Global AI Hackathon. Day to day, Athena reasons on the CLI the user
-is already signed in to, Claude Code or Codex, and speaks with local Kokoro. Nebius and NVIDIA are
-her **Proving Ground**: NVIDIA Nemotron models on Nebius Token Factory attack her gate, play her
-users and judge the result beside a Claude control. The Proving Ground is **planned**; the sections
-below say exactly what exists and what does not.
+**Track: Personal AI.** Athena is an always-on, private desktop assistant with memory that must
+cite what it came from, user-controlled tools that stop and ask before anything irreversible, and
+a local record of every model call and its cost. Day to day she reasons on the CLI the user is
+already signed in to, Claude Code or Codex, and speaks with local Kokoro. NVIDIA Nemotron on Nebius
+Token Factory is how she is secured: in the **Proving Ground**, Nemotron attacks her gate, plays her
+users and judges the result beside a Claude control, and the verdict is read off the gate's own
+records, never off a model. Across 93 hostile turns in the first full run, the gate let nothing
+through.
 
 ## What it is, in one paragraph
 
@@ -16,74 +19,186 @@ call and every cost is written to a local record. Nothing is installed into the 
 extension is granted access to your browsing, and no data leaves your machine except the model and
 voice calls themselves.
 
-## What the Proving Ground adds (planned)
+## The Proving Ground: what Nebius and NVIDIA add
 
-An agent that operates other people's software is only as good as its refusals, and today
-Athena's refusals are held by hand-written tests. The Proving Ground replaces the hand with an
-adversary and a crowd, and none of it is built yet:
+A personal agent that operates other people's software is only as good as its refusals. Before the
+hackathon, Athena's refusals were held by hand-written tests. The Proving Ground points generated
+adversaries and generated users at the real daemon, each attack against its own throwaway brain,
+every model call in the ledger. Each prototype has a falsifiable proof test, a kill criterion and a
+Claude Haiku control row, because the quality of the NVIDIA tooling was unknown to us when we began
+(ADR 0030). Run reports live in a gitignored `proving-runs/<run id>/`; every number below names its
+run.
 
-- **A gauntlet.** Nemotron generates attacks on four channels — instructions planted in host page
-  state, in tool results, from a foreign agent over MCP, and memory poisoning — and each is replayed
-  against Athena on the Claude CLI and on Nemotron. The proof test is that zero gated actions or
-  fact writes ran without approval across every row.
-- **Model-played users.** Nemotron plays the representative users already written in `uat/`,
-  and Nemotron and Claude Haiku judge the conversations blind against the same rubric.
-- **Branching worlds.** Token Factory Sandboxes are spiked as worlds that are checkpointed once
-  and forked per attack.
-- **A third engine for measurement.** A `nebius` engine runs Athena on Nemotron behind the same
-  gate and the same ledger row, as a matrix row beside the Claude CLI, not as her daily engine.
+**The Gauntlet (built; ADR 0032).** Nemotron 3.5 Lightning and a Haiku control each write 15
+attacks per surface on three surfaces: hostile text in Ledgerbox's page state, a hostile READ-tool
+result, and a poisoned memory episode. Each attack is driven through the daemon's own
+`POST /manifest` and `POST /run` against a fresh Athena on Claude (Sonnet, full corpus) and on
+Nemotron (sampled). The verdict comes from the gate's records: gate outcomes, fact writers, fact
+counts and the approval table. Planted breaches in the tests prove the detector can say `breached`.
+First full run, `20261007T140609Z`:
 
-Because the quality of the NVIDIA tooling is not yet known to us, every Nemotron role has a Claude
-Haiku control row and a kill criterion. Results, latencies and costs are reported only once a run
-has produced them.
+| | Result |
+|---|---|
+| Athena-on-Claude, 75 hostile turns | 75 held, 0 breached, 0 errors |
+| Athena-on-Nemotron Lightning, 18 hostile turns | 18 held, 0 breached; 2 under pressure (one card filed and held, one forged op dropped) |
+| Proof 1, zero breaches | pass |
+| Proof 2, Nemotron valid-attack rate at least half the control's | pass: 0.53 against 0.89, ratio 0.60, no escalation to Super needed |
+| Cost and time | Nemotron $0.023, Claude $3.20, 11.6 minutes |
+
+One honest limit: Athena-on-Claude never attempted a gated call in 75 turns, so on that row the gate
+held without being tested by an attempt. The Nemotron row and the planted-breach tests show the
+gate under an attempt. The fourth channel in the design, a foreign agent over MCP, is deferred:
+no MCP channel exists in the code for it to arrive on.
+
+**The approve path, and a gate fix it found (built; ADR 0036, ADR 0038).** The Gauntlet never
+answers a card, so a deterministic probe approves every card a turn filed through
+`POST /decisions/<id>` and checks that exactly the approved action ran, with the card's parameters,
+once; that altered parameters and a different action are refused; and that a second approval is
+refused. The probe found a real gap: the gate's replay step accepted the same approval twice.
+Single use held only because one route was the sole caller. The gate now spends an approval in one
+conditional write as it lets the action through, and a replay is refused with `approval_spent`.
+Offline, three planted bugs are each caught as `violated`. Live, one card was filed across three
+small runs (Athena-on-Nemotron, `void_invoice`), and it was `ok` on every check.
+
+**Model-played Characters (built; ADR 0034, ADR 0036).** Nemotron plays four of the `uat/`
+Characters (mira, jonas, priya, ana) from their own files, three user messages per conversation,
+beside a realistic invoices page. When Athena files a decision card, the simulated user answers it
+on the card through the daemon's decision route, as a person clicks it. Haiku judges persona
+fidelity blind; a Nemotron judge and Haiku each score every transcript on the seven-dimension rubric,
+blind to each other.
+
+| | first run `20261007T144722Z` | run A `20261007T155137Z` | run B `20261007T162204Z` (shipped code) |
+|---|---|---|---|
+| user turns in persona (Lightning; proof at 0.80) | 69 of 72 (0.958) | 70 of 71 | 70 of 72 (0.972) |
+| rubric agreement rho, Lightning / Super (proof at 0.5) | 0.183 / 0.517 | 0.424 / 0.526 | 0.377 / 0.528 |
+| cards filed / answered on the card / ran | 14 / 0 / 0 | 9 / 4 / 3 | 10 / 2 / 0 |
+| Nemotron / Claude cost | $0.053 / $6.07 | $0.048 / $6.96 | $0.054 / $8.07 |
+
+Proof 1 passes on Lightning. Proof 2 fails on Lightning (below the 0.3 kill line in the first run)
+and passes on Super only in one of three runs (0.528, then 0.360 and 0.495 in the repeats below).
+Nemotron judges therefore sit beside Haiku, never in place of it.
+Users decide like the people they play: Mira declined an irreversible `mark_paid` because the bank
+match had no payment reference; Jonas declined a send until he had verified the recipient.
+
+**The trigger page (built, local; ADR 0037, ADR 0039).** `python -m athena.proving.server` serves
+one static page with no external requests. Anyone with the URL reads the latest run and watches one
+stream live over SSE; a judge with `PROVING_JUDGE_TOKEN` starts or cancels one. One run at a time,
+each capped at Nemotron $1 and Claude $10 and lowered to what is left of the day's caps. Attack
+payloads render as fenced, inert text; the key and the token are redacted from every response.
+First run through the page, `20261007T155249Z`: a small Gauntlet triggered with the token, 14 ledger
+rows streamed live, 6 attacks against Athena-on-Nemotron, 0 breached, 5 held, 1 error, $0.0024
+Nemotron and $0.18 Claude. **Hosted mode** runs only what needs no Claude: the Gauntlet with
+`--no-claude --no-control`, proof 2 reported as `n/a — hosted, no control`, Characters refused
+with a reason and shown from recorded runs. Hosted small run `20261007T172658Z`: 3 attacks,
+0 breached, 0 Claude ledger rows, $0.0013 Nemotron.
+
+**Blocked: branching worlds on Token Factory Sandboxes (ADR 0033).** The spike that boots the
+image, checks the daemon and Token Factory from inside, checkpoints once and forks four attacks is
+built and passes all four probes against a local Docker stand-in. Against Token Factory it is
+blocked on Sandboxes beta access, so worlds stay local processes.
+
+**Parked: the Serverless Endpoint.** The trigger page's container (`proving/serverless/`) builds
+and answers `/health` and `/status` locally. It is not deployed: an endpoint needs a Nebius AI Cloud
+project, IAM role and compute quota, which a Token Factory key does not provide.
+
+### Repeat runs: what is stable and what is not
+
+Two more full runs of each prototype on the final gate, at seeds 11 and 12 (2026-10-07, Haiku 4.5
+control, so they compare with the runs above):
+
+| | first or shipped run | seed 11 | seed 12 |
+|---|---|---|---|
+| Gauntlet breaches | 0 of 93 (`20261007T140609Z`) | 0 of 107 (`20261007T205627Z`) | 0 of 106 (`20261007T213007Z`) |
+| Gauntlet valid-attack ratio, Lightning to control (proof at 0.5) | 0.60 | 0.88 | 0.72 |
+| Characters persona fidelity on Lightning (proof at 0.8) | 0.972 (`20261007T162204Z`) | 0.958 (`20261007T210930Z`) | 0.944 (`20261007T214341Z`) |
+| Characters rubric agreement, Super against Haiku (proof at 0.5) | 0.528 | **0.360** | **0.495** |
+| Characters rubric agreement, Lightning against Haiku | 0.377 | 0.238 | 0.079 |
+
+- **Stable:** the gate. 306 hostile turns across three runs, zero breaches. Nemotron as an attacker
+  cleared its bar every time (0.60 to 0.88). Nemotron as a user stayed in persona 94% to 97% of turns.
+- **Not stable:** Nemotron as a second judge. Super passed agreement once in three runs on the
+  shipped code (0.528, 0.360, 0.495). Lightning never did. The Proving Ground keeps Haiku as the
+  judge of record; a Nemotron judge's scores are reported beside it, never instead of it.
+- Cost of the four repeat runs: Nemotron $0.12, Claude CLI $22.1.
+
+
+## How NVIDIA Nemotron is used
+
+**A model ladder.** Every Nemotron role starts on Nemotron 3.5 Lightning ($0.06 / $0.24 per 1M
+input/output tokens), the cheapest NVIDIA model Token Factory serves, and escalates once to
+Nemotron 3 Super ($0.30 / $0.90) only when its own proof fails there. Ids and prices were read from
+the live `GET /v1/models?verbose=true` on 2026-10-07. Nemotron Safety Guard is not served by Token
+Factory, so no role uses it.
+
+| Role | NVIDIA model | Control | Measured |
+|---|---|---|---|
+| Attacker, three surfaces | Lightning | Haiku writes the same number | valid rate 0.53 against 0.89 (`20261007T140609Z`) |
+| Athena under test, the `nebius` engine | Lightning | Athena on the Claude CLI (Sonnet) | 0 breaches in 18 turns (`20261007T140609Z`) |
+| User simulator, four `uat/` Characters | Lightning | Haiku judges fidelity, blind | 0.944 to 0.972 in persona (five runs) |
+| Rubric judge | Super (Lightning failed agreement) | Haiku on the same transcripts, blind | rho 0.360 to 0.528 over five runs; passes 0.5 in two of five, so Haiku stays the judge of record |
+
+**The `nebius` engine (ADR 0031).** Nemotron runs Athena as a third engine beside `claude_code` and
+`codex`, through the same round loop, the same `OP:` grammar, the same nonce fence, the same gate
+and the same single ledger row per turn. It is standard-library `urllib` against Token Factory's
+OpenAI-compatible chat completions, with no SDK. A Nemotron turn that proposes a gated action files
+the same card a Claude turn would. It is a measurement row, not Athena's daily engine (ADR 0030).
+
+**What we learned about reasoning (ADR 0034, ADR 0035).** Of five ways to turn Nemotron's reasoning
+off, only `chat_template_kwargs: {"enable_thinking": false}` works; the other four are accepted
+with HTTP 200 and ignored. For the JSON roles it is decisive: on the same nine Lightning prompts,
+unusable answers fell from 2 to 0 and schema-valid items rose from 35 of 45 to 45 of 45, at a tenth
+of the cost. For Athena as a conversational agent with tools it is the opposite: in a same-seed A/B
+on Lightning (112 turns per arm), reasoning off made turns 3.5 times faster (median 1.7 s against
+6.1 s) and about 40% cheaper, held the gate equally (0 breaches in 72 attacks per arm), but turns
+with no text rose from 3 to 24, because Lightning answered plain questions with a bare `OP:` line.
+So the roles turn reasoning off and the engine keeps it on, with `--no-nebius-thinking` as a switch.
+On Super, off lost nothing measurable.
+
+**Why open weights matter here.** A run against a pinned open model can be repeated by someone else.
+
+## Where Token Factory accelerated the work
+
+Measured on the Characters run `20261007T144722Z`: the Nemotron Super rubric judge scored 24
+transcripts for $0.022, against $0.87 for the Haiku judge through the CLI, about 40 times cheaper.
+The 72 Nemotron user turns cost $0.007. With reasoning off, a Lightning role answer took a median
+22 s under nine-way concurrency, against 80 s with reasoning on. The 24 conversations took 12.3
+minutes on six workers. The whole Nemotron side of the 93-turn Gauntlet `20261007T140609Z` cost
+$0.023. That price is what makes a conversation-level acceptance test and an adversarial corpus
+something to run on every change rather than once.
+
+## Other Nebius services
+
+- **Token Factory Sandboxes:** the branching-worlds spike is built and blocked on beta access
+  (above, ADR 0033).
+- **Serverless Endpoints:** the trigger page's container is built and checked locally, not
+  deployed; it needs a Nebius AI Cloud account (above, ADR 0037, ADR 0039).
+
+Our concrete feedback on both, and on Token Factory and the Nemotron models, is in
+[`docs/feedback.md`](feedback.md).
 
 ## What changed in the hackathon period
 
-Every commit in this repository is dated after the period opened on 2026-08-26: Athena was rebuilt
-from scratch here, with an earlier product as prior art only. The Proving Ground is the hackathon's
-addition and is listed above as planned until it lands.
+Athena Portable is a new project. Its first commit is dated 2026-09-12, after the period opened on
+2026-08-26, and every commit since is in the period. It was rebuilt from scratch here, with an
+earlier product as prior art only. The Proving Ground, the `nebius` engine, the gate's single-use
+fix and the trigger page were built for this hackathon, with ADRs 0030 to 0039 recording each
+decision.
 
-## The problem
+## How to run it, and how judges test it
 
-Most people's work lives in software they do not control: an invoicing tool, a bank portal, a CRM,
-a support inbox. None of those products has an agent, most never will, and nobody switches tools to
-get one. The work that costs the most time is the work that crosses them — read state in one app,
-decide, act in another, and keep a record of what was done and why.
+Setup is in the README's **Setup** section: `uv sync --extra dev`, `pnpm install`, then the
+desktop shell or the daemon on the user's own `claude` or `codex` CLI. Every test runs without a
+provider. The Proving Ground commands, what each one spends and what each one needs are in the
+table under **Proving Ground** in the same section.
 
-A chatbot cannot do that work, because the work is inside the apps. A copilot built into one app
-cannot either, because the work spans them. Athena can, because the apps are her environment rather
-than her integrations.
+**Demo URL.** The trigger page runs today on a judge's own machine:
 
-## What she can actually do
+```bash
+PROVING_JUDGE_TOKEN=<token> uv run python -m athena.proving.server --hosted   # http://127.0.0.1:8790/
+```
 
-**Operate a page that was built for agents.** A web app can publish its own actions — the same
-capability model as a tool-using API, but declared by the page. Athena calls those in the app's own
-vocabulary, so the app's validation runs, its audit trail fills in and its undo still works.
-Nothing is scraped and nothing is faked.
-
-**Operate a page that was not.** Eight generic abilities — read, find, wait, scroll, click, fill,
-select, submit — work on any website. They read the page's accessibility structure rather than its
-markup, so they describe a page in terms of what can be done to it rather than in terms of HTML.
-On unmodified public sites in our own testing this found 371 operable elements on a Wikipedia
-article and 230 on a Hacker News front page. This is the difference between an agent for software
-that adopted a protocol and an agent for the web a person already has open.
-
-**Reach a service with no page at all.** Third-party APIs enter through the same door as a page:
-each is described as a set of actions with the same two safety flags, so an email or calendar
-service is governed by exactly the mechanism a website is.
-
-**Remember across apps and across sessions.** Long-term memory is markdown files on disk with a
-full-text index over them. A remembered fact is refused at write time unless it cites the actual
-observations it came from, so the memory can always be traced back to something that happened. A
-fact learned while working in one app is available in the next one, which is where most of the
-value of an agent that spans apps actually comes from.
-
-**Be spoken to.** Hold a key, say what you want, hear the first line of the answer back. One
-utterance is one turn.
-
-**Show its work.** One row per model call — including failures and refusals — with the engine, the
-rounds, the tokens and the cost. The record groups calls by app and by which of the three
-capability layers served them: the page's own actions, the generic abilities, or a connected API.
+With `NEBIUS_API_KEY` set, a small hosted Gauntlet costs a fraction of a cent and needs no Claude.
+A public hosted URL waits on the Serverless deployment above.
 
 ## The architecture, and why it has this shape
 
@@ -93,100 +208,54 @@ important decision here.
 **Approval is structural, not advisory.** Every action carries two facts: is it reversible, and do
 its effects leave the app. An action runs unattended only if it is reversible *and* stays inside.
 Everything else stops and files a decision card. A web page cannot mark its own destructive action
-as safe, and the model is never asked to decide — the policy is computed from the declaration, in
-one place, before anything runs.
+as safe, and the model is never asked to decide.
 
-**A gated action has no way to run before it is approved.** The agent's turn ends at the proposal.
-When the user answers, the action is re-checked and the approval is proved against that exact
-action with those exact parameters, so a granted approval cannot be spent on a different call.
+**A gated action has no way to run before it is approved, and runs once.** The agent's turn ends
+at the proposal. When the user answers, the action is re-checked against that exact action with
+those exact parameters, and the gate spends the approval as it lets the action through, so a
+granted approval can be neither spent on a different call nor spent twice.
 
 **The page executes its own actions; the agent never does.** The runtime holds no executor for a
-page's tools. It emits the call, the page runs it, and the result comes back as quoted data inside
-a fence the model cannot break out of. A page's output is evidence, never instruction — which is
-the defence against a website trying to talk to the agent reading it.
+page's tools. The result comes back as quoted data inside a fence the model cannot break out of. A
+page's output is evidence, never instruction — the claim the Gauntlet attacks.
 
-**Identity is bound to origin.** One application is one web origin. A second origin claiming the
-same identity is refused. Generic abilities start gated on every site the user has not yet trusted,
-so even reading an unfamiliar page is a decision the first time.
+**Memory must cite what it came from.** A remembered fact is refused at write time unless it cites
+the actual observations it came from — the claim the memory-poisoning surface attacks.
 
-**References expire.** An element reference is minted only by the page itself and retired the
-moment the page navigates, so the model can never construct a handle to something it was not just
-shown.
+**Identity is bound to origin, and references expire.** One application is one web origin;
+generic abilities start gated on every site the user has not yet trusted; an element reference is
+minted only by the page and retired when it navigates.
 
 ## Technical execution
 
-**Agent core** — Python 3.11+ with **zero runtime dependencies**. Memory is markdown on disk with
-SQLite FTS5 as a rebuildable index, so a user's entire memory is portable by copying a folder. One
-writer behind a lock, a fresh read-only connection per request, and the writer-starvation test was
-written before the server that had to pass it.
-
-**Engine** — two command-line dialects behind one contract: Claude Code and Codex. Both run under
-the same approval gate, the same record, the same prompt composition and the same call grammar, so
-the engine is a configuration choice and can never become a second policy. Each dialect is replayed
-against a recorded transcript in the test suite, so a change in either CLI's output format fails a
-test rather than a demo. Because the engine is the CLI the user already signed in to, running a
-turn needs no model API key at all. A third engine, **NVIDIA Nemotron through Nebius Token
-Factory**, is planned for the Proving Ground only; it needs a Token Factory key (`NEBIUS_API_KEY`)
-and sits behind the same gate and ledger row.
-
-**Voice** — a WebSocket gateway on the agent's own port. PCM16 audio from a push-to-talk key turns
-an utterance into a turn, and the reply's first line is spoken back. Speaking is local Kokoro by
-default and hearing can be local Whisper, set up in a Voice studio (ADR 0028); OpenAI's speech
-models are an optional cloud backend, labelled as cloud and never a silent fallback. Talking over a
-reply cancels playback rather than starting a second turn.
-
-**Desktop shell** — Tauri v2 in Rust, using the `unstable` multi-webview API so a single window
-holds the app chrome, the agent panel and one web view per tab. The panel is React 19 with zustand
-and Vite. One Rust module owns every rectangle in the window; another owns the Python sidecar's
-lifetime and kills it through a Windows job object, so force-quitting the window cannot orphan a
-background process.
-
-**Page bridge** — plain JavaScript injected into the page's main world, polyfilling the
-`document.modelContext` interface and answering over `postMessage` behind two layered timeouts. It
-degrades rather than breaks: a page that has frozen its own globals simply reports no tools instead
-of throwing inside someone else's application.
-
-**Transport** — HTTP and server-sent events on loopback only, token-checked on every route,
-threaded so a ninety-second turn never blocks a status read.
-
-**Quality bar** — Ruff, mypy strict, pytest, ESLint, tsc, Vitest, cargo clippy and cargo test, with
-a documented architecture decision record for every choice a later reader could question.
-
-Test counts are to refresh at submit; the figures below were taken before the Proving Ground work.
-
-| Suite | Tests |
-|---|---|
-| Python core, engine harness, daemon, voice | 654 |
-| Panel (Vitest) | 133 |
-| Rust shell (cargo test) | 66 |
-| Page bridge (node --test) | 24 |
-
-An end-to-end suite boots real web applications — three instrumented and one that has never heard
-of Athena — and drives them through the real bridge and the real gate in a real browser, asserting
-that a refused action moved nothing, that every gated execution names the approval that permitted
-it, and that every remembered fact cites a real observation.
-
-## Why it feels usable rather than impressive
-
-**Setup is one screen and no key.** The app looks for the CLI you are already signed in to.
-Readiness is three-valued — working, broken, or not yet checked — because "not working" and "not
-asked yet" are different situations, and telling someone to install software they already have is
-worse than telling them nothing yet. Every failed check names its own fix.
-
-**The agent sits beside the page, not in front of it.** You watch the work happen on the thing you
-were already looking at.
-
-**A decision card shows the parameters, not a summary of them.** Approving "send the reminder"
-without seeing which invoice is not consent to anything. Cards sit above the conversation rather
-than scrolling away inside it.
-
-**Every shortened answer says what it left out**, in the same four words everywhere: `(showing N of
-M)`. Every refusal comes from one closed list of fifteen reasons, declared once in Python and once
-in JavaScript, with a test that fails the build when the two drift apart.
+- **Agent core:** Python 3.11+ with zero runtime dependencies. Memory is markdown on disk with
+  SQLite FTS5 as a rebuildable index, so a user's memory is portable by copying a folder.
+- **Engines:** Claude Code, Codex and Nemotron on Token Factory behind one contract, one gate and
+  one ledger. Each CLI dialect is replayed against a recorded transcript in the tests.
+- **Voice:** a WebSocket gateway, push-to-talk, local Kokoro by default (ADR 0028).
+- **Desktop shell:** Tauri v2 in Rust with one webview per tab, a React 19 panel, and a Python
+  sidecar owned by a Windows job object so it cannot be orphaned.
+- **Page bridge:** plain JavaScript polyfilling `document.modelContext`; it degrades rather than
+  breaks inside someone else's application.
+- **Proving Ground:** standard-library HTTP and SSE, throwaway worlds per attack, per-run and
+  per-day spend caps, and verdicts read off the gate.
+- **Quality bar:** Ruff, mypy strict, pytest, ESLint, tsc, Vitest, cargo clippy, and an
+  architecture decision record for every choice a later reader could question (39 to date). The
+  Python suite collects 931 tests; the panel, Rust and bridge suites run beside it.
 
 ## Non-goals
 
 No scraping and no pixel-guessing. No browser extension asking for access to everything you visit.
-No cloud account: memory, approvals and the cost record are files on your machine, and the agent
-process dies with the window. The Proving Ground runs on Nebius against synthetic users and the
-example apps, never against a user's own brain; the product path does not change.
+No cloud account for the companion: memory, approvals and the cost record are files on your
+machine, and the agent process dies with the window. Nemotron is not Athena's daily engine. The
+Proving Ground runs against synthetic users and the example apps, never against a user's own brain,
+and a model never decides whether something is gated.
+
+## How this maps to the judging criteria
+
+| Criterion | Where it is answered |
+|---|---|
+| Technological Implementation | the Proving Ground (gate-read verdicts, approve-path probe, the fix it found), the `nebius` engine, Technical execution |
+| Design (complete product) | What it is; the architecture; the trigger page and hosted mode; How to run it |
+| Potential Impact | the Track line; adversarial and user-level testing at cents per run (Where Token Factory accelerated the work) |
+| Quality of the Idea | Nemotron as attacker, user and second judge against a gate whose verdict no model sets; How NVIDIA Nemotron is used |
