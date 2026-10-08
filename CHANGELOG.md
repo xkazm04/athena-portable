@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
+- `feat(companion): a handed-over playbook shows her plan before the first turn` — Talk's empty state becomes the plan: her steps, the tabs she will ask for, where she stops for a signature, from the bundled playbook by id; the "Working on" chip stays.
+
 - `feat(playbooks): the overview's record says what she walked past, her time and the cost` — totals add the latest runs' traps, false claims, minutes, the hours by hand and the model's cost; six stats, each with its context line.
 
 - `feat(playbooks): the grid filters by whose chore it is and orders by edge, money or hours` — `audience` in playbook.json (home or work); `arrange()` keeps each tile's number from the map; two `PillGroup` radio groups, counted.

@@ -2128,3 +2128,76 @@ body.athena {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* -- a handed-over playbook's plan, before the first turn (ADR 0044) ----------------------------- */
+.lg-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--paper-rule);
+  border-left: 3px solid var(--paper-agent);
+  border-radius: var(--r-card);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--paper-ink);
+}
+
+.lg-plan__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-agent);
+}
+
+.lg-plan__title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.lg-plan__steps {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: var(--t-caption);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lg-plan__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lg-plan__label {
+  font-size: 12px;
+  color: var(--paper-ink-2);
+}
+
+.lg-plan__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lg-plan__chip {
+  padding: 2px 8px;
+  border: 1px solid var(--paper-rule);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--paper-ink);
+}
+
+.lg-plan__chip--gate {
+  border-color: var(--paper-stamp);
+  color: var(--paper-stamp);
+}
+
+.lg-plan__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--paper-ink-2);
+}

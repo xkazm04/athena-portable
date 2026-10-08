@@ -21,6 +21,7 @@ import type {
   CompanionModel,
   EngineView,
   MessageBlock,
+  ProjectView,
   RecordRow,
   StepView,
 } from "./model";
@@ -453,6 +454,46 @@ function Ledger({ model }: { model: CompanionModel }) {
   );
 }
 
+/** A handed-over playbook before the first turn: her plan, the tabs she will ask for, her stops. */
+function Plan({ project }: { project: ProjectView }) {
+  return (
+    <div className="lg-plan" aria-label={`The plan for ${project.title}`}>
+      <p className="lg-plan__eyebrow">The plan</p>
+      <p className="lg-plan__title">{project.title}</p>
+      <ol className="lg-plan__steps">
+        {project.steps.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
+      {project.portals.length ? (
+        <div className="lg-plan__row">
+          <span className="lg-plan__label">Tabs she will ask for</span>
+          <span className="lg-plan__chips">
+            {project.portals.map((p) => (
+              <span key={p} className="lg-plan__chip">
+                {p}
+              </span>
+            ))}
+          </span>
+        </div>
+      ) : null}
+      {project.stops.length ? (
+        <div className="lg-plan__row">
+          <span className="lg-plan__label">She stops for your signature to</span>
+          <span className="lg-plan__chips">
+            {project.stops.map((g) => (
+              <span key={g} className="lg-plan__chip lg-plan__chip--gate">
+                {g}
+              </span>
+            ))}
+          </span>
+        </div>
+      ) : null}
+      <p className="lg-plan__note">The command is in the box below. Send it when you are on the first tab.</p>
+    </div>
+  );
+}
+
 function Talk({ model }: { model: CompanionModel }) {
   const { talk, actions } = model;
   const end = useRef<HTMLDivElement>(null);
@@ -474,7 +515,9 @@ function Talk({ model }: { model: CompanionModel }) {
   return (
     <>
       <div className="lg-scroll" tabIndex={0} role="log" aria-label="Conversation">
-        {empty ? (
+        {empty && talk.project?.steps.length ? (
+          <Plan project={talk.project} />
+        ) : empty ? (
           <div className="lg-empty">
             <p className="lg-lead">
               {talk.host ? `Ask about ${talk.host}.` : "Open a page, then ask about it."} Nothing she does there runs

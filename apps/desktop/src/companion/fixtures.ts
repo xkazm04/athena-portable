@@ -191,6 +191,8 @@ interface Setup {
   events: Event[];
   /** The active playbook's title (ADR 0044). */
   project?: string;
+  /** The project's id, when it is a playbook this build ships. */
+  projectId?: string;
   /** A command Main offered for the composer. */
   offer?: string;
   cards?: DecisionRequested[];
@@ -241,7 +243,7 @@ function model(setup: Setup): CompanionModel {
     probing: setup.probing ?? false,
     onboarded: setup.onboarded ?? true,
     nowMs: NOW,
-    project: setup.project ? { title: setup.project } : null,
+    project: setup.project ? { id: setup.projectId, title: setup.project } : null,
     offer: setup.offer ? { n: 1, text: setup.offer } : null,
     actions: NO_ACTIONS,
   });
@@ -344,6 +346,7 @@ export const fixtures: Record<string, () => CompanionModel> = {
     model({
       events: [INIT, { t: "seal" }],
       project: "Amazon FBA reimbursements",
+      projectId: "fba-reimbursements",
       offer:
         "It's reimbursement day. Go through my Seller Central reports and find everything Amazon still owes me.",
     }),

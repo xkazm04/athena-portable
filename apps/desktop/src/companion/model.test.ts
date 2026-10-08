@@ -454,5 +454,20 @@ test("a command Main offers becomes the composer's draft, and nothing is sent (A
 test("the active playbook is named above the composer, and absent when there is none (ADR 0044)", () => {
   expect(selectCompanion(inputs()).talk.project).toBeNull();
   const working = selectCompanion(inputs({ project: { title: "Amazon FBA reimbursements" } }));
-  expect(working.talk.project).toEqual({ title: "Amazon FBA reimbursements" });
+  // Without an id this build ships, the title rides alone and the plan is empty.
+  expect(working.talk.project).toEqual({
+    title: "Amazon FBA reimbursements",
+    steps: [],
+    portals: [],
+    stops: [],
+  });
+});
+
+test("a project's plan comes from the bundled playbook by id, and an unknown one has none", async () => {
+  const { fixtures } = await import("./fixtures");
+  const known = fixtures["ledger playbook"]().talk.project;
+  expect(known?.steps.length).toBeGreaterThan(0);
+  expect(known?.portals).toContain("Seller Central");
+  const plain = fixtures.ledger().talk.project;
+  expect(plain).toBeNull();
 });

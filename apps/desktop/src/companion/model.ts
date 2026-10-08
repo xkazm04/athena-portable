@@ -18,6 +18,7 @@ import type { AthenaState } from "@/lib/companion";
 import type { Side, Valign } from "@/lib/companion";
 import type { ToolRow } from "@/lib/api";
 import { ENGINE_IDS, engineLabel, type EngineProbe } from "@/lib/engines";
+import { PLAYBOOKS } from "@/lib/playbooks";
 import type { DecisionRequested, TurnSummary } from "@/lib/events";
 import type { ActivityRow } from "@/lib/store";
 import { clockOf, whenAgo } from "@/lib/time";
@@ -290,8 +291,9 @@ export interface CompanionModel {
     /** A command Main offered for the composer (ADR 0040). `n` changes with every offer, so the
      *  composer takes a new one even when the text repeats. */
     draft: { n: number; text: string };
-    /** The playbook she is working on, sent with every turn; `null` when none (ADR 0044). */
-    project: { title: string } | null;
+    /** The playbook she is working on, sent with every turn; `null` when none (ADR 0044). Its
+     *  plan comes from the bundled playbook when the id is one this build ships, else is empty. */
+    project: ProjectView | null;
   };
   record: RecordView;
   origins: {
@@ -339,7 +341,7 @@ export interface CompanionInputs {
   /** The last command Main offered for her composer, if any. */
   offer?: { n: number; text: string } | null;
   /** The active playbook, if any. */
-  project?: { title: string } | null;
+  project?: { id?: string; title: string } | null;
   probes?: readonly EngineProbe[] | null;
   probing?: boolean;
   probeProblem?: string | null;
@@ -440,7 +442,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
       blocked: blockedBecause(i.daemonReady, i.origin, busy),
       host: hostOf(i.origin),
       draft: i.offer ?? { n: 0, text: "" },
-      project: i.project ? { title: i.project.title } : null,
+      project: i.project ? projectView(i.project) : null,
     },
     record: recordView({
       calls: i.run.calls ?? i.run.transcript,
@@ -857,4 +859,25 @@ export function phraseFor(phase: RunPhase): string {
     default:
       return "ready";
   }
+}
+
+/** A handed-over playbook as Talk shows it before the first turn: what she will do and where. */
+export interface ProjectView {
+  title: string;
+  /** Her steps, in order; empty when the playbook is not one this build ships. */
+  steps: readonly string[];
+  /** The portals she will ask to be switched to, by name. */
+  portals: readonly string[];
+  /** Where she stops for a signature, by label. */
+  stops: readonly string[];
+}
+
+function projectView(project: { id?: string; title: string }): ProjectView {
+  const shipped = project.id ? PLAYBOOKS.find((p) => p.id === project.id) : undefined;
+  return {
+    title: project.title,
+    steps: shipped?.steps ?? [],
+    portals: shipped?.apps.map((a) => a.name) ?? [],
+    stops: shipped?.gates.map((g) => g.label) ?? [],
+  };
 }
