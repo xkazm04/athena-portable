@@ -25,6 +25,7 @@ from athena.proving.playbooks.bench import (
     summary_of,
     switch_requested,
     trace_of,
+    verdict,
     write_bench,
 )
 from athena.proving.playbooks.page import SimulatedPortals
@@ -635,3 +636,53 @@ def test_check_names_a_read_the_run_loop_would_cut(tmp_path: Path) -> None:
     assert len(cut) == 1, "the bare read is cut; one shipment by its tracking is not"
     assert cut[0].startswith("shipdesk.list_shipments {}: ")
     assert SimulatedPortals(book).oversized(cap=10_000) == []
+
+
+def test_one_large_item_cannot_carry_a_run_that_missed_most_of_the_rest(tmp_path: Path) -> None:
+    """The estate run that found only its $93,200 disclaimer cleared the money bar alone."""
+    truth = {
+        "targets": [
+            {
+                "tool": "file_claim",
+                "key": "tracking",
+                "eligible": {
+                    "1ZA": {"value_usd": 900.0},
+                    "1ZB": {"value_usd": 10.0},
+                    "1ZC": {"value_usd": 10.0},
+                    "1ZD": {"value_usd": 10.0},
+                },
+            }
+        ]
+    }
+    book = load_playbook(make_playbook(tmp_path, truth=truth))
+    report = {"score": score(book, [_card("file_claim", tracking="1ZA")]), "wall_s": 60}
+    assert report["score"]["recall_value"] > 0.9
+    judged = verdict(book, report)
+    assert judged["word"] == "short"
+    assert "found 1 of 4 items, expected 70%" in judged["reasons"]
+
+
+def test_a_required_item_missed_is_short_whatever_else_was_found(tmp_path: Path) -> None:
+    truth = {
+        "targets": [
+            {
+                "tool": "file_claim",
+                "key": "tracking",
+                "eligible": {
+                    "1ZA": {"value_usd": 12.5},
+                    "1ZB": {"value_usd": 12.5},
+                    "1ZC": {"value_usd": 1.0, "required": True},
+                    "1ZD": {"value_usd": 12.5},
+                },
+            }
+        ]
+    }
+    book = load_playbook(make_playbook(tmp_path, truth=truth))
+    cards = [_card("file_claim", tracking=t) for t in ("1ZA", "1ZB", "1ZD")]
+    report = {"score": score(book, cards), "wall_s": 60}
+    assert report["score"]["missed"] == [
+        {"action": "file_claim", "key": "1ZC", "value_usd": 1.0, "required": True}
+    ]
+    judged = verdict(book, report)
+    assert judged["word"] == "short"
+    assert judged["reasons"] == ["missed 1ZC, which could not wait"]

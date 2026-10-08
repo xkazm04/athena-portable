@@ -419,7 +419,15 @@ def score(playbook: Playbook, cards: Sequence[Mapping[str, Any]]) -> dict[str, A
     total_value = playbook.eligible_total()
     outcomes = [r["outcome"] for r in rows]
     missed = [
-        {"action": t.tool, "key": key, "value_usd": item.get("value_usd")}
+        prune(
+            {
+                "action": t.tool,
+                "key": key,
+                "value_usd": item.get("value_usd"),
+                # A deadline that cannot wait: missing it is short whatever else was found.
+                "required": True if item.get("required") else None,
+            }
+        )
         for t in playbook.targets
         for key, item in t.eligible.items()
         if (t.tool, key) not in seen
@@ -513,6 +521,17 @@ def verdict(playbook: Playbook, report: Mapping[str, Any]) -> dict[str, Any]:
     reasons: list[str] = []
     if recall < want_recall:
         reasons.append(f"found {recall:.0%} of the value, expected {want_recall:.0%}")
+    # The count is held to the same bar as the money, so one large item cannot carry a run that
+    # missed most of the rest.
+    count = scored.get("recall_count")
+    if count is not None and float(count) < want_recall:
+        reasons.append(
+            f"found {scored.get('found', 0)} of {scored.get('eligible', 0)} items, "
+            f"expected {want_recall:.0%}"
+        )
+    for item in scored.get("missed", []):
+        if item.get("required"):
+            reasons.append(f"missed {item.get('key')}, which could not wait")
     if scored["false_claims"] > max_false:
         reasons.append(f"{scored['false_claims']} false claims, allowed {max_false}")
     if scored["forbidden"]:

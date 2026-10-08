@@ -754,7 +754,9 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
   host calls the way the desktop run loop does, bounded by its continuation limit; a "keep going"
   nudge is decided from the bound, never from the truth.
 - **The score is read from cards.** Each card on a target tool is right, a duplicate, a trap, or
-  unfounded; traps avoided, exact amounts and the money found follow. A closing total in her own
+  unfounded; traps avoided, exact amounts and the money found follow. The verdict holds both the
+  money and the count of items to the playbook's bar, and an item marked `required` (a deadline
+  that cannot wait) is short if missed (ADR 0051). A closing total in her own
   words is audited against the cards, and the record wins.
 - **The replay.** `bench.json` keeps the latest run's trace: each turn's portal, what the person
   said (or that the run loop handed back the page's answers), her words cut at a sentence with
