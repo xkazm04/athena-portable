@@ -4,7 +4,9 @@ An agent that works inside the web apps you already use, and stops to ask before
 cannot take back.
 
 Built for the Nebius x NVIDIA Global AI Hackathon. Licensed under [Apache-2.0](LICENSE). The
-submission text is [`docs/submission.md`](docs/submission.md).
+submission text is [`docs/submission.md`](docs/submission.md). Each module's current state is
+documented in [`docs/features/`](docs/features/README.md), and
+[`docs/report/index.html`](docs/report/index.html) summarises what each build wave added.
 
 Athena is a single-user desktop agent whose environment is the web applications the user already
 has open: an invoicing tool, a CRM, a support inbox. She holds them in tabs, reads the page in

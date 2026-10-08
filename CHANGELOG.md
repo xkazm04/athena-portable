@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
+- `docs: module documentation in docs/features and a build report across the waves` — one page per module (core, harness, daemon and channels, connectors, bridge, desktop, playbooks, Proving Ground, examples and UAT) with its current state; `docs/report/index.html`, a standalone page of the five waves, the nine playbooks' latest runs, the twelve fixes and the limits.
+
 - `feat(playbooks): a parent's estate across twelve portals, benched to exceeds` — the disclaimer before its nine months, the IRS first, claims allowed at the balance at death, a paid hospital claim refused, eleven traps; five runs that found ADRs 0050 to 0052.
 
 - `feat(playbooks): a freelancer's receivables across three client portals, the bank and New York's freelancer law, benched to exceeds` — a Coupa PO flip, a demand under the Freelance Isn't Free Act where a contract overrides Ariba's Net 120, a W-9 that holds a Tipalti payment, and four things not to chase; four runs, ADRs 0048 and 0049 found on the way; run 4: $21,100 of $21,550, 0 false.
