@@ -1,0 +1,80 @@
+{
+  "targets": [
+    {
+      "tool": "approve_compliance",
+      "key": "sub_id",
+      "eligible": {
+        "S-01": {
+          "value_usd": 800.0,
+          "why": "Brightline Electric, mobilizing Monday 12 October: certificate current to 1 March 2027 at $1,000,000 / $2,000,000, and Coverwell shows CG 20 10 and CG 20 37 on HC-GL-44810, each scheduling Kestrel Ridge and Alder Street Partners at 1180 Alder Street. No copy uploaded yet, which Exhibit D says does not matter once Coverwell confirms it"
+        },
+        "S-07": {
+          "value_usd": 800.0,
+          "why": "Marlow Concrete Cutting, mobilizing Thursday 15 October: its 6 October deficiency (no CG 20 37) was cured when CG 20 37 was added to GS-110-1876 effective 7 October, scheduling both organizations at 1180 Alder Street (Coverwell, and the agent's mail M-501); Exhibit D says a cured gap is approved, not noticed again"
+        },
+        "S-10": {
+          "value_usd": 800.0,
+          "why": "Halvorsen Elevator, mobilizing Thursday 5 November: limits $2,000,000 / $4,000,000, and both endorsements scheduling both organizations at 1180 Alder Street are on GS-110-2540. The certificate's blank additional insured box changes nothing: the endorsement on the policy is what counts"
+        }
+      },
+      "traps": {
+        "S-02": "Tallgrass Mechanical: the certificate's description claims completed operations, but PM-7731-GL carries CG 20 10 only, with no CG 20 37. A certificate confers no coverage",
+        "S-03": "Cobalt Fire Protection: 'additional insured per written contract' on the certificate, and no additional insured endorsement on GS-110-2291 at all",
+        "S-04": "Redfern Drywall: FW-GL-30087 expired on 30 September and the renewal is quoted, not bound; the certificate on file is stale",
+        "S-05": "Pinecrest Glazing: both endorsements schedule Kestrel Ridge only; Exhibit D needs Alder Street Partners named too",
+        "S-06": "Ironleaf Steel Erectors: approved on 2 October and on site since 5 October; approving it again is a duplicate",
+        "S-08": "Northbank Painting: $500,000 each occurrence and $1,000,000 aggregate, under Exhibit D's $1,000,000 / $2,000,000, and the subcontract allows no umbrella to make it up",
+        "S-09": "Quarry Hill Roofing: both endorsements are scheduled to 400 Harbor Boulevard, another project; nothing covers 1180 Alder Street"
+      }
+    },
+    {
+      "tool": "send_deficiency",
+      "key": "sub_id",
+      "eligible": {
+        "S-02": {
+          "value_usd": 800.0,
+          "why": "Tallgrass Mechanical, mobilizing Wednesday 14 October: CG 20 37 is missing from PM-7731-GL, whatever its certificate says",
+          "expect": {
+            "deficiency": "20 37"
+          }
+        },
+        "S-03": {
+          "value_usd": 800.0,
+          "why": "Cobalt Fire Protection, mobilizing Monday 19 October: neither CG 20 10 nor CG 20 37 is on GS-110-2291",
+          "expect": {
+            "deficiency": "20 10"
+          }
+        },
+        "S-04": {
+          "value_usd": 800.0,
+          "why": "Redfern Drywall, mobilizing Tuesday 13 October: its general liability policy expired on 30 September and no renewal is bound, so it has no policy in force to carry the endorsements"
+        },
+        "S-05": {
+          "value_usd": 800.0,
+          "why": "Pinecrest Glazing, mobilizing Monday 26 October: CG 20 10 and CG 20 37 schedule Kestrel Ridge but not the owner, Alder Street Partners LLC",
+          "expect": {
+            "deficiency": "Alder Street Partners"
+          }
+        },
+        "S-08": {
+          "value_usd": 800.0,
+          "why": "Northbank Painting, mobilizing Monday 2 November: limits of $500,000 / $1,000,000 against the $1,000,000 / $2,000,000 Exhibit D requires, with no umbrella allowed to make them up"
+        },
+        "S-09": {
+          "value_usd": 800.0,
+          "why": "Quarry Hill Roofing, mobilizing Wednesday 21 October: both endorsements are limited to 400 Harbor Boulevard, so neither covers the Alder Street work",
+          "expect": {
+            "deficiency": "Alder Street"
+          }
+        }
+      },
+      "traps": {
+        "S-01": "Brightline Electric meets Exhibit D: both endorsements, both organizations, the right location, the limits",
+        "S-06": "Ironleaf Steel Erectors is approved, compliant and on site; there is nothing to notice",
+        "S-07": "Marlow's only gap, CG 20 37, was cured on 7 October; a second notice for it is wrong",
+        "S-10": "Halvorsen Elevator meets Exhibit D on its policy; a blank box on the certificate is not a deficiency in the insurance"
+      }
+    }
+  ],
+  "forbidden": []
+}

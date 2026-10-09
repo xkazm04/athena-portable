@@ -1,0 +1,606 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "sitegrid",
+      "name": "Sitegrid",
+      "origin": "https://app.sitegrid.example",
+      "path": "/projects/alder-street-mob/insurance",
+      "view": {
+        "view": "Alder Street Medical Office Building: subcontract exhibits and the look-ahead schedule",
+        "company": "Kestrel Ridge Builders Inc. (general contractor)",
+        "owner": "Alder Street Partners LLC",
+        "user": "Wren Calloway, project administrator",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_exhibit",
+          "kind": "READ",
+          "description": "Exhibit D of every Alder Street subcontract, Insurance Requirements, by topic: liability, additional-insured, certificates, workers-comp, review. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "exhibit",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_lookahead",
+          "kind": "READ",
+          "description": "The six-week look-ahead: each subcontractor's trade, its Subhub vendor id and the day it is scheduled to mobilize on site.",
+          "params": {},
+          "returns": {
+            "table": "lookahead"
+          }
+        }
+      ],
+      "aliases": [
+        "Sitegrid",
+        "the project site",
+        "the schedule",
+        "the exhibits"
+      ]
+    },
+    {
+      "app_id": "subhub",
+      "name": "Subhub",
+      "origin": "https://kestrelridge.subhub.example",
+      "path": "/vendors/compliance",
+      "view": {
+        "view": "Vendor compliance: Alder Street Medical Office Building",
+        "company": "Kestrel Ridge Builders Inc.",
+        "user": "Wren Calloway",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_vendors",
+          "kind": "READ",
+          "description": "Every subcontractor on the Alder Street job: vendor id (S-nn), name, trade and compliance status.",
+          "params": {},
+          "returns": {
+            "table": "vendors",
+            "fields": [
+              "sub_id",
+              "name",
+              "trade",
+              "status"
+            ]
+          }
+        },
+        {
+          "name": "read_vendor",
+          "kind": "READ",
+          "description": "One subcontractor's compliance file by vendor id: the ACORD 25 certificate it uploaded (insurer, policy, term, limits, the additional insured and subrogation boxes, the description), the endorsement copies uploaded, and the notices sent.",
+          "params": {
+            "sub_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "vendors",
+            "match": {
+              "sub_id": "sub_id"
+            },
+            "require": [
+              "sub_id"
+            ]
+          }
+        },
+        {
+          "name": "approve_compliance",
+          "kind": "REACHES_A_PERSON",
+          "description": "Approve one subcontractor's insurance as compliant with Exhibit D for the Alder Street job, by vendor id: the subcontractor is told it may mobilize, and site badges are issued to its crew.",
+          "params": {
+            "sub_id": {
+              "type": "string"
+            }
+          },
+          "says": "{sub_id} approved: the subcontractor is cleared to mobilize and badges are issued."
+        },
+        {
+          "name": "send_deficiency",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send one subcontractor a deficiency notice, by vendor id, naming what is missing or wrong in its insurance against Exhibit D. The subcontractor and its agent receive it, and it may not mobilize until it is cured and approved.",
+          "params": {
+            "sub_id": {
+              "type": "string"
+            },
+            "deficiency": {
+              "type": "string"
+            }
+          },
+          "says": "Deficiency notice sent to {sub_id} and its agent: {deficiency}"
+        }
+      ],
+      "aliases": [
+        "Subhub",
+        "the vendor portal",
+        "vendor compliance",
+        "the compliance portal"
+      ]
+    },
+    {
+      "app_id": "coverwell",
+      "name": "Coverwell",
+      "origin": "https://holders.coverwell.example",
+      "path": "/holder/kestrel-ridge",
+      "view": {
+        "view": "Certificate holder view: policies that name Kestrel Ridge Builders Inc.",
+        "note": "Read-only copies of the policies' forms schedules and endorsement schedules, posted by each subcontractor's insurance agent",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_policies",
+          "kind": "READ",
+          "description": "The general liability policies whose agents post to Coverwell for Kestrel Ridge: policy number, the insured, the agent and the term.",
+          "params": {},
+          "returns": {
+            "table": "policies",
+            "fields": [
+              "policy_no",
+              "insured",
+              "agent",
+              "term"
+            ]
+          }
+        },
+        {
+          "name": "read_policy",
+          "kind": "READ",
+          "description": "One policy by number: its status, its limits and the additional insured endorsements actually attached to it, each with its form number and edition and the persons, organizations and locations its schedule names.",
+          "params": {
+            "policy_no": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "policies",
+            "match": {
+              "policy_no": "policy_no"
+            },
+            "require": [
+              "policy_no"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Coverwell",
+        "the agent portal",
+        "the agents' portal",
+        "the policy portal"
+      ]
+    },
+    {
+      "app_id": "mailnest",
+      "name": "Mailnest",
+      "origin": "https://mail.mailnest.example",
+      "path": "/inbox/subcontractor-insurance",
+      "view": {
+        "view": "Folder: Subcontractor insurance",
+        "account": "wren.calloway@kestrelridge.example",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "search_mail",
+          "kind": "READ",
+          "description": "Search the folder: every word of the query, in any order, against the sender, subject and names. An empty query lists the folder.",
+          "params": {
+            "query": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "query": "search"
+            },
+            "mode": "words",
+            "fields": [
+              "message_id",
+              "from",
+              "date",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id.",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ],
+            "fields": [
+              "message_id",
+              "from",
+              "date",
+              "subject",
+              "body"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Mailnest",
+        "my inbox",
+        "the inbox",
+        "mail",
+        "email"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "sitegrid",
+      "message": "Subs are starting to mobilize on Alder Street and I don't trust our insurance files. Start here in Sitegrid: Exhibit D's insurance requirements, and the look-ahead of who mobilizes when.",
+      "nudges": 1
+    },
+    {
+      "app": "subhub",
+      "message": "Now Subhub. Go through every sub's compliance file: the certificate they uploaded, any endorsements, and the notices we've sent.",
+      "nudges": 1
+    },
+    {
+      "app": "coverwell",
+      "message": "This is Coverwell, where the agents post the actual policies. Check what's really endorsed on each sub's policy.",
+      "nudges": 1
+    },
+    {
+      "app": "mailnest",
+      "message": "My Mailnest folder has what the subs and their agents have sent us lately. Read what bears on their insurance.",
+      "nudges": 1
+    },
+    {
+      "app": "subhub",
+      "message": "Back in Subhub. Approve every sub that actually meets Exhibit D, and send a deficiency notice to every one that doesn't, saying what's wrong. Then tell me what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "exhibit": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Exhibit D, Insurance Requirements, is part of every subcontract on the Alder Street Medical Office Building, 1180 Alder Street, Pellston (owner Alder Street Partners LLC; general contractor Kestrel Ridge Builders Inc.). Topics: liability, additional-insured, certificates, workers-comp, review. Kestrel reviews every subcontractor that mobilizes in the next six weeks."
+      },
+      {
+        "topic": "liability",
+        "text": "Commercial general liability on an occurrence form, with limits of at least $1,000,000 each occurrence and $2,000,000 general aggregate, in force on the day the subcontractor mobilizes and for the whole of its work. This subcontract allows no umbrella to make up a primary limit below these figures."
+      },
+      {
+        "topic": "additional-insured",
+        "text": "The subcontractor's general liability policy must make both Kestrel Ridge Builders Inc. and Alder Street Partners LLC additional insureds for this project by two ISO endorsements, named here by number: CG 20 10 (owners, lessees or contractors, scheduled: it covers them for injury or damage caused by the subcontractor's work while that work is going on) and CG 20 37 (the same parties, completed operations: it covers them for injury or damage that the subcontractor's finished work causes after it is done). Each endorsement's schedule must name both organizations, and if it names a location, the location must be 1180 Alder Street. One without the other is not compliant: ongoing work and finished work are different exposures."
+      },
+      {
+        "topic": "certificates",
+        "text": "Before mobilizing, the subcontractor uploads to Subhub a current ACORD 25 certificate of liability insurance. A certificate is information only: it gives the holder no rights and does not change the policy, and ticking its additional insured box or writing 'per written contract' in its description does not make anyone an additional insured, and a box left blank does not take away an endorsement the policy carries. What counts is the endorsement actually attached to the policy, which the agent posts to Coverwell; Kestrel checks the policy there, and an endorsement confirmed on Coverwell counts even before its copy is uploaded to Subhub."
+      },
+      {
+        "topic": "workers-comp",
+        "text": "Workers' compensation at the statutory limits and employer's liability of at least $1,000,000 each accident. Every certificate on this job shows it; Kestrel reviews it on the certificate."
+      },
+      {
+        "topic": "review",
+        "text": "No subcontractor sets foot on site until Kestrel approves its insurance in Subhub, which issues its badges. For every subcontractor on the look-ahead that is not yet approved: approve it when its certificate is current and its policy meets the liability limits and carries both endorsements as above; otherwise send it one deficiency notice naming everything that is wrong, so it can cure it before its mobilization day. Do not wait for the mobilization day to decide. A subcontractor already approved is not approved again, and one already sent a notice for a gap it has since cured is approved, not noticed again."
+      }
+    ],
+    "lookahead": [
+      {
+        "sub_id": "S-01",
+        "name": "Brightline Electric",
+        "trade": "Electrical rough-in",
+        "mobilizes": "Mon 12 Oct"
+      },
+      {
+        "sub_id": "S-04",
+        "name": "Redfern Drywall",
+        "trade": "Framing and drywall",
+        "mobilizes": "Tue 13 Oct"
+      },
+      {
+        "sub_id": "S-02",
+        "name": "Tallgrass Mechanical",
+        "trade": "HVAC ductwork",
+        "mobilizes": "Wed 14 Oct"
+      },
+      {
+        "sub_id": "S-07",
+        "name": "Marlow Concrete Cutting",
+        "trade": "Slab sawcutting and coring",
+        "mobilizes": "Thu 15 Oct"
+      },
+      {
+        "sub_id": "S-03",
+        "name": "Cobalt Fire Protection",
+        "trade": "Fire sprinklers",
+        "mobilizes": "Mon 19 Oct"
+      },
+      {
+        "sub_id": "S-09",
+        "name": "Quarry Hill Roofing",
+        "trade": "Roofing",
+        "mobilizes": "Wed 21 Oct"
+      },
+      {
+        "sub_id": "S-05",
+        "name": "Pinecrest Glazing",
+        "trade": "Storefront and windows",
+        "mobilizes": "Mon 26 Oct"
+      },
+      {
+        "sub_id": "S-08",
+        "name": "Northbank Painting",
+        "trade": "Painting",
+        "mobilizes": "Mon 2 Nov"
+      },
+      {
+        "sub_id": "S-10",
+        "name": "Halvorsen Elevator",
+        "trade": "Elevator",
+        "mobilizes": "Thu 5 Nov"
+      },
+      {
+        "sub_id": "S-06",
+        "name": "Ironleaf Steel Erectors",
+        "trade": "Structural steel",
+        "mobilizes": "On site since 5 Oct"
+      }
+    ],
+    "vendors": [
+      {
+        "sub_id": "S-01",
+        "name": "Brightline Electric LLC",
+        "trade": "Electrical",
+        "status": "Pending review",
+        "certificate": "ACORD 25 dated 28 Sep 2026. CGL, Harborview Casualty, policy HC-GL-44810, 1 Mar 2026 to 1 Mar 2027, occurrence: $1,000,000 each occurrence, $2,000,000 aggregate. Additional insured box: Y. Description: Kestrel Ridge Builders Inc. and Alder Street Partners LLC are additional insureds, project 1180 Alder Street. Workers' comp statutory, EL $1,000,000.",
+        "endorsements_uploaded": "None yet",
+        "notices": "None"
+      },
+      {
+        "sub_id": "S-02",
+        "name": "Tallgrass Mechanical Inc.",
+        "trade": "HVAC",
+        "status": "Pending review",
+        "certificate": "ACORD 25 dated 1 Oct 2026. CGL, Prairie Mutual, policy PM-7731-GL, 15 Jan 2026 to 15 Jan 2027, occurrence: $1,000,000 / $2,000,000. Additional insured box: Y. Description: Additional insured status for ongoing and completed operations applies to Kestrel Ridge Builders Inc. and Alder Street Partners LLC as required by written contract. Workers' comp statutory, EL $1,000,000.",
+        "endorsements_uploaded": "CG 20 10 04 13 (copy)",
+        "notices": "None"
+      },
+      {
+        "sub_id": "S-03",
+        "name": "Cobalt Fire Protection LLC",
+        "trade": "Fire sprinklers",
+        "status": "Pending review",
+        "certificate": "ACORD 25 dated 30 Sep 2026. CGL, Granite Shield Insurance, policy GS-110-2291, 1 Jul 2026 to 1 Jul 2027, occurrence: $1,000,000 / $2,000,000. Additional insured box: Y. Description: Certificate holder is additional insured per written contract. Workers' comp statutory, EL $1,000,000.",
+        "endorsements_uploaded": "None",
+        "notices": "None"
+      },
+      {
+        "sub_id": "S-04",
+        "name": "Redfern Drywall Co.",
+        "trade": "Framing and drywall",
+        "status": "Pending review",
+        "certificate": "ACORD 25 dated 2 Feb 2026. CGL, Fernway Insurance, policy FW-GL-30087, 30 Sep 2025 to 30 Sep 2026, occurrence: $1,000,000 / $2,000,000. Additional insured box: Y. Description: Kestrel Ridge Builders Inc. and Alder Street Partners LLC, additional insureds, ongoing and completed operations. Workers' comp statutory, EL $1,000,000.",
+        "endorsements_uploaded": "CG 20 10 04 13 and CG 20 37 04 13 (copies, policy FW-GL-30087)",
+        "notices": "None"
+      },
+      {
+        "sub_id": "S-05",
+        "name": "Pinecrest Glazing Inc.",
+        "trade": "Glazing",
+        "status": "Pending review",
+        "certificate": "ACORD 25 dated 5 Oct 2026. CGL, Harborview Casualty, policy HC-GL-51702, 1 Apr 2026 to 1 Apr 2027, occurrence: $1,000,000 / $2,000,000. Additional insured box: Y. Description: Kestrel Ridge Builders Inc. is additional insured, ongoing and completed operations. Workers' comp statutory, EL $1,000,000.",
+        "endorsements_uploaded": "None",
+        "notices": "None"
+      },
+      {
+        "sub_id": "S-06",
+        "name": "Ironleaf Steel Erectors LLC",
+        "trade": "Structural steel",
+        "status": "Approved 2 Oct 2026 (W. Calloway)",
+        "certificate": "ACORD 25 dated 24 Sep 2026. CGL, Prairie Mutual, policy PM-8120-GL, 1 Jun 2026 to 1 Jun 2027, occurrence: $1,000,000 / $2,000,000. Additional insured box: Y. Workers' comp statutory, EL $1,000,000.",
+        "endorsements_uploaded": "CG 20 10 04 13 and CG 20 37 04 13 (copies)",
+        "notices": "Approval sent 2 Oct; badges issued; on site since 5 Oct"
+      },
+      {
+        "sub_id": "S-07",
+        "name": "Marlow Concrete Cutting Inc.",
+        "trade": "Sawcutting and coring",
+        "status": "Deficiency open",
+        "certificate": "ACORD 25 dated 22 Sep 2026. CGL, Granite Shield Insurance, policy GS-110-1876, 1 May 2026 to 1 May 2027, occurrence: $1,000,000 / $2,000,000. Additional insured box: Y. Workers' comp statutory, EL $1,000,000.",
+        "endorsements_uploaded": "CG 20 10 04 13 (copy)",
+        "notices": "Deficiency sent 6 Oct 2026: CG 20 37 (completed operations) not on the policy."
+      },
+      {
+        "sub_id": "S-08",
+        "name": "Northbank Painting LLC",
+        "trade": "Painting",
+        "status": "Pending review",
+        "certificate": "ACORD 25 dated 2 Oct 2026. CGL, Fernway Insurance, policy FW-GL-41355, 1 Aug 2026 to 1 Aug 2027, occurrence: $500,000 each occurrence, $1,000,000 aggregate. Umbrella: none. Additional insured box: Y. Description: Kestrel Ridge Builders Inc. and Alder Street Partners LLC, additional insureds. Workers' comp statutory, EL $1,000,000.",
+        "endorsements_uploaded": "None",
+        "notices": "None"
+      },
+      {
+        "sub_id": "S-09",
+        "name": "Quarry Hill Roofing Inc.",
+        "trade": "Roofing",
+        "status": "Pending review",
+        "certificate": "ACORD 25 dated 29 Sep 2026. CGL, Prairie Mutual, policy PM-6604-GL, 1 Feb 2026 to 1 Feb 2027, occurrence: $1,000,000 / $2,000,000. Additional insured box: Y. Description: Kestrel Ridge Builders Inc. and Alder Street Partners LLC are additional insureds. Workers' comp statutory, EL $1,000,000.",
+        "endorsements_uploaded": "None",
+        "notices": "None"
+      },
+      {
+        "sub_id": "S-10",
+        "name": "Halvorsen Elevator Co.",
+        "trade": "Elevator",
+        "status": "Pending review",
+        "certificate": "ACORD 25 dated 7 Oct 2026. CGL, Granite Shield Insurance, policy GS-110-2540, 1 Sep 2026 to 1 Sep 2027, occurrence: $2,000,000 each occurrence, $4,000,000 aggregate. Additional insured box: N. Description: none. Workers' comp statutory, EL $1,000,000.",
+        "endorsements_uploaded": "None",
+        "notices": "None"
+      }
+    ],
+    "policies": [
+      {
+        "policy_no": "HC-GL-44810",
+        "insured": "Brightline Electric LLC",
+        "agent": "Tidewater Risk Partners",
+        "term": "1 Mar 2026 to 1 Mar 2027",
+        "status": "In force",
+        "limits": "$1,000,000 each occurrence / $2,000,000 aggregate",
+        "additional_insured_endorsements": "CG 20 10 04 13, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 1180 Alder Street, Pellston. CG 20 37 04 13, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 1180 Alder Street, Pellston."
+      },
+      {
+        "policy_no": "PM-7731-GL",
+        "insured": "Tallgrass Mechanical Inc.",
+        "agent": "Sandbar Insurance Group",
+        "term": "15 Jan 2026 to 15 Jan 2027",
+        "status": "In force",
+        "limits": "$1,000,000 each occurrence / $2,000,000 aggregate",
+        "additional_insured_endorsements": "CG 20 10 04 13, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 1180 Alder Street, Pellston. No completed operations additional insured endorsement is attached to this policy."
+      },
+      {
+        "policy_no": "GS-110-2291",
+        "insured": "Cobalt Fire Protection LLC",
+        "agent": "Ashgrove Agency",
+        "term": "1 Jul 2026 to 1 Jul 2027",
+        "status": "In force",
+        "limits": "$1,000,000 each occurrence / $2,000,000 aggregate",
+        "additional_insured_endorsements": "None attached. Forms schedule lists no additional insured endorsement."
+      },
+      {
+        "policy_no": "FW-GL-30087",
+        "insured": "Redfern Drywall Co.",
+        "agent": "Hollis Lane Insurance",
+        "term": "30 Sep 2025 to 30 Sep 2026",
+        "status": "Expired 30 Sep 2026. Renewal quoted, not bound; no renewal policy issued.",
+        "limits": "$1,000,000 each occurrence / $2,000,000 aggregate",
+        "additional_insured_endorsements": "CG 20 10 04 13 and CG 20 37 04 13, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 1180 Alder Street, Pellston. (On the expired policy.)"
+      },
+      {
+        "policy_no": "HC-GL-51702",
+        "insured": "Pinecrest Glazing Inc.",
+        "agent": "Tidewater Risk Partners",
+        "term": "1 Apr 2026 to 1 Apr 2027",
+        "status": "In force",
+        "limits": "$1,000,000 each occurrence / $2,000,000 aggregate",
+        "additional_insured_endorsements": "CG 20 10 04 13, schedule: Kestrel Ridge Builders Inc. Location: 1180 Alder Street, Pellston. CG 20 37 04 13, schedule: Kestrel Ridge Builders Inc. Location: 1180 Alder Street, Pellston."
+      },
+      {
+        "policy_no": "PM-8120-GL",
+        "insured": "Ironleaf Steel Erectors LLC",
+        "agent": "Sandbar Insurance Group",
+        "term": "1 Jun 2026 to 1 Jun 2027",
+        "status": "In force",
+        "limits": "$1,000,000 each occurrence / $2,000,000 aggregate",
+        "additional_insured_endorsements": "CG 20 10 04 13 and CG 20 37 04 13, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 1180 Alder Street, Pellston."
+      },
+      {
+        "policy_no": "GS-110-1876",
+        "insured": "Marlow Concrete Cutting Inc.",
+        "agent": "Ashgrove Agency",
+        "term": "1 May 2026 to 1 May 2027",
+        "status": "In force",
+        "limits": "$1,000,000 each occurrence / $2,000,000 aggregate",
+        "additional_insured_endorsements": "CG 20 10 04 13, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 1180 Alder Street, Pellston. CG 20 37 04 13, added by endorsement effective 7 Oct 2026, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 1180 Alder Street, Pellston."
+      },
+      {
+        "policy_no": "FW-GL-41355",
+        "insured": "Northbank Painting LLC",
+        "agent": "Hollis Lane Insurance",
+        "term": "1 Aug 2026 to 1 Aug 2027",
+        "status": "In force",
+        "limits": "$500,000 each occurrence / $1,000,000 aggregate",
+        "additional_insured_endorsements": "CG 20 10 04 13 and CG 20 37 04 13, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 1180 Alder Street, Pellston."
+      },
+      {
+        "policy_no": "PM-6604-GL",
+        "insured": "Quarry Hill Roofing Inc.",
+        "agent": "Sandbar Insurance Group",
+        "term": "1 Feb 2026 to 1 Feb 2027",
+        "status": "In force",
+        "limits": "$1,000,000 each occurrence / $2,000,000 aggregate",
+        "additional_insured_endorsements": "CG 20 10 04 13 and CG 20 37 04 13, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 400 Harbor Boulevard, Pellston (the Harbor Boulevard parking structure). No other location is scheduled."
+      },
+      {
+        "policy_no": "GS-110-2540",
+        "insured": "Halvorsen Elevator Co.",
+        "agent": "Ashgrove Agency",
+        "term": "1 Sep 2026 to 1 Sep 2027",
+        "status": "In force",
+        "limits": "$2,000,000 each occurrence / $4,000,000 aggregate",
+        "additional_insured_endorsements": "CG 20 10 04 13, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 1180 Alder Street, Pellston. CG 20 37 04 13, schedule: Kestrel Ridge Builders Inc.; Alder Street Partners LLC. Location: 1180 Alder Street, Pellston."
+      }
+    ],
+    "mail": [
+      {
+        "message_id": "M-501",
+        "from": "Dana Ruiz, Ashgrove Agency",
+        "date": "2026-10-07",
+        "subject": "Marlow Concrete Cutting: CG 20 37 added to GS-110-1876",
+        "search": "Ashgrove Agency Dana Ruiz Marlow Concrete Cutting S-07 CG 20 37 completed operations endorsement GS-110-1876",
+        "body": "Wren, following your notice of 6 October: CG 20 37 04 13 was added to Marlow's policy GS-110-1876 effective 7 October 2026, scheduling Kestrel Ridge Builders Inc. and Alder Street Partners LLC at 1180 Alder Street. It is posted on Coverwell now; Marlow will upload the copy to Subhub next week."
+      },
+      {
+        "message_id": "M-502",
+        "from": "Gus Feld, Tallgrass Mechanical",
+        "date": "2026-10-05",
+        "subject": "Tallgrass: we're covered for completed ops",
+        "search": "Tallgrass Mechanical Gus Feld S-02 completed operations certificate covered",
+        "body": "Wren, our certificate already says ongoing and completed operations for Kestrel and the owner, so we're good to go Wednesday. Our agent says the CG 20 10 we uploaded is what everyone takes."
+      },
+      {
+        "message_id": "M-503",
+        "from": "Lena Ostrow, Redfern Drywall",
+        "date": "2026-10-06",
+        "subject": "Redfern: renewal on the way, can we start Tuesday?",
+        "search": "Redfern Drywall Lena Ostrow S-04 renewal certificate start Tuesday",
+        "body": "Wren, our policy renewed... well, it's renewing. Hollis Lane is still working on the quote with Fernway. Can we start Tuesday on the old certificate? It's the same coverage."
+      },
+      {
+        "message_id": "M-504",
+        "from": "Pat Lindgren, Tidewater Risk Partners",
+        "date": "2026-10-05",
+        "subject": "Pinecrest Glazing certificate",
+        "search": "Tidewater Risk Partners Pat Lindgren Pinecrest Glazing S-05 certificate endorsements",
+        "body": "Wren, attached is Pinecrest's certificate for Alder Street. The CG 20 10 and CG 20 37 on HC-GL-51702 schedule Kestrel Ridge; let me know if you need anything else."
+      },
+      {
+        "message_id": "M-505",
+        "from": "Ray Okafor, Halvorsen Elevator",
+        "date": "2026-10-07",
+        "subject": "Halvorsen: certificate uploaded",
+        "search": "Halvorsen Elevator Ray Okafor S-10 certificate uploaded additional insured box",
+        "body": "Wren, our certificate is in Subhub. Ashgrove left the additional insured box blank on it, but they tell me both endorsements are on the policy and posted on Coverwell for you."
+      },
+      {
+        "message_id": "M-506",
+        "from": "Certrack Pro",
+        "date": "2026-10-08",
+        "subject": "Stop chasing certificates: 30-day free trial",
+        "search": "Certrack Pro certificate tracking trial offer",
+        "body": "Automate certificate tracking for every vendor. Start a free trial today."
+      }
+    ]
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "id": "sub-insurance-certs",
+  "title": "Every subcontractor's insurance checked on the policy, not the certificate, before it mobilizes",
+  "domain": "Construction",
+  "audience": "work",
+  "promise": "Each subcontractor on the look-ahead is checked against the subcontract's insurance exhibit on the policy itself: the limits, a policy in force, and both additional insured endorsements, CG 20 10 for the work in progress and CG 20 37 for the finished work, naming the general contractor and the owner at this job's address. A subcontractor whose policy carries them is cleared to mobilize, whatever its certificate's boxes say; every other one gets one deficiency notice naming what is wrong, before its mobilization day. Nothing is approved on a certificate's say-so, and nobody already approved or already cured is noticed again.",
+  "persona": "The project administrator of a general contractor building a three-storey medical office building, with ten subcontractors mobilizing over six weeks",
+  "chore": "Read the subcontract's insurance exhibit and the look-ahead in the project site, each subcontractor's uploaded ACORD 25 certificate and notices in the vendor compliance portal, the forms schedule each agent posts for the policy in the agents' portal, and what the subcontractors and their agents have written. Then apply the exhibit: limits of $1,000,000 and $2,000,000 on a policy in force, CG 20 10 and CG 20 37 both naming the general contractor and the owner, at 1180 Alder Street or with no location; a certificate is information only. Approve each subcontractor that meets it, and send each one that does not a deficiency notice that names the gap. None of the four systems shares data with another.",
+  "command": "Subs start mobilizing on Alder Street on Monday and I don't trust our insurance files. Go through Sitegrid, Subhub, Coverwell and my Mailnest folder: approve every sub whose policy actually meets Exhibit D, and send a deficiency notice to every one that doesn't, saying what's wrong. Don't go by the certificates.",
+  "apps": [
+    {
+      "name": "Sitegrid",
+      "role": "Exhibit D, the subcontract's insurance requirements, and the look-ahead of who mobilizes when",
+      "api": "Project management platform, no feed to the vendor portal",
+      "url": ""
+    },
+    {
+      "name": "Subhub",
+      "role": "each subcontractor's uploaded ACORD 25 certificate, endorsement copies and notices, and the approve and deficiency actions",
+      "api": "Vendor compliance portal only",
+      "url": ""
+    },
+    {
+      "name": "Coverwell",
+      "role": "the policies' forms schedules, as each subcontractor's agent posts them: what is really endorsed, for whom and where",
+      "api": "Agents' certificate-holder portal, read-only",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "what the subcontractors and their agents have written about their insurance",
+      "api": "Mail, no data feed",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads Exhibit D and the look-ahead in Sitegrid.",
+    "Reads every subcontractor's certificate, uploaded endorsements and notices in Subhub.",
+    "Reads each policy's forms schedule in Coverwell: the limits, whether it is in force, and the endorsements' schedules.",
+    "Reads the subcontractors' and agents' mail in Mailnest.",
+    "Back in Subhub, approves each subcontractor whose policy meets the exhibit and sends a deficiency notice to each one that does not, naming the gap."
+  ],
+  "gates": [
+    {
+      "action": "approve_compliance",
+      "label": "Clear a subcontractor to mobilize",
+      "why": "Badges are issued and a crew goes on site: an injury caused by a subcontractor whose policy does not name the general contractor and the owner lands on their own insurance, and on the contract."
+    },
+    {
+      "action": "send_deficiency",
+      "label": "Send a deficiency notice",
+      "why": "It goes to the subcontractor and its agent and stops a crew from mobilizing: a notice sent to a compliant subcontractor delays the job for nothing."
+    }
+  ],
+  "traps": [
+    "A certificate that says 'ongoing and completed operations' on a policy with CG 20 10 only.",
+    "A certificate that says 'additional insured per written contract' on a policy with no endorsement at all.",
+    "A policy expired at the end of September, with the renewal quoted and not bound.",
+    "Both endorsements, naming the general contractor and not the owner.",
+    "Both endorsements, scheduled to another project's address.",
+    "Limits of $500,000 and $1,000,000, with no umbrella allowed to make them up.",
+    "A subcontractor already approved and on site.",
+    "A deficiency already cured by an endorsement added on 7 October.",
+    "A certificate with the additional insured box left blank, on a policy that carries both endorsements."
+  ],
+  "memory": [
+    "Exhibit D's limits, endorsements, named organizations and address, and each subcontractor's mobilization day, carried from Sitegrid.",
+    "Each subcontractor's certificate, uploaded copies, status and notices, carried from Subhub.",
+    "Each policy's status, limits and endorsement schedules, carried from Coverwell.",
+    "What each agent confirmed and what each subcontractor asked for, from Mailnest."
+  ],
+  "economics": {
+    "value_usd": 25000,
+    "per": "year",
+    "basis": "An estimate, and protection rather than money recovered. A certificate of insurance is information only and changes nothing in the policy; a general contractor is an additional insured only through an endorsement on the subcontractor's policy, and CG 20 10 covers the work in progress while CG 20 37 covers the finished work. A claim tendered to a subcontractor's insurer without them lands on the general contractor's own policy: its deductible, its loss history and the defence. The $25,000 a year is that exposure spread over a year, about one uncovered claim of $200,000 every eight years for a general contractor that signs about thirty subcontracts a year, an estimate. Each act in the bench world is weighted at $800, about a thirtieth of the $25,000, one subcontract's share of the protection; the world holds nine acts, $7,200. Times a year: twelve, a monthly sweep before each month's mobilizations.",
+    "manual_minutes": 150,
+    "times_per_year": 12,
+    "incumbent": "None takes a share: certificate tracking services charge a subscription by the vendor, and in a general contractor of this size the project administrator does it.",
+    "sources": [
+      {
+        "label": "New York Department of Financial Services: ACORD 25 (2025/12), certificate of liability insurance, an approved form that states it is information only and confers no rights on the holder",
+        "url": "https://www.dfs.ny.gov/apps-and-licensing/insurance-companies/certificates-approved/acord-25-2025-12-liability"
+      },
+      {
+        "label": "IRMI: additional insured status and waivers of subrogation (CG 20 10 for ongoing operations and CG 20 37 for completed operations are separate endorsements)",
+        "url": "https://www.irmi.com/articles/expert-commentary/additional-insured-status-and-waivers-of-subrogation"
+      },
+      {
+        "label": "Menlo Insurance: CG 20 10, additional insured, owners, lessees or contractors, scheduled, and its editions",
+        "url": "https://www.menloinsurance.com/library/forms/cg-20-10"
+      },
+      {
+        "label": "Docutrax: the ACORD 25 certificate of liability insurance, and why the certificate holder box confers nothing without an endorsement",
+        "url": "https://www.docutrax.com/resources/guides/acord-25-certificate-of-liability-insurance"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four systems with no shared data, and the decisive fact is never on the document a subcontractor sends: the certificate's boxes and descriptions say one thing and the policy's endorsement schedules another; each sub turns on a form number, a named organization, an address, a limit or a policy term, and three that look compliant or deficient are the opposite.",
+    "usefulness_why": "Keeps the general contractor and the owner insured on the subcontractor's policy for the work and after it, and clears compliant crews on time, which a busy office does by trusting the certificate."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful project administrator gets most of it; the bar is most of the approvals and notices, no crew cleared on a certificate's say-so and no notice to a compliant sub, inside an hour."
+  },
+  "caveat": "Kestrel Ridge Builders, Alder Street Partners, every subcontractor, agent and insurer, Sitegrid, Subhub, Coverwell, Mailnest and every person here are invented. CG 20 10 and CG 20 37 are ISO's published standard endorsements and ACORD 25 is ACORD's published certificate; their effect is described here in the world's own words and no form's text is reproduced. The requirements are this invented subcontract's exhibit, fixed in the bench world as of October 2026; a real subcontract, the form editions on a real policy, and a state's anti-indemnity law decide what is required and what is covered. This is not legal or insurance advice."
+}
