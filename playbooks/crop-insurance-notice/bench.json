@@ -1,0 +1,348 @@
+{
+  "playbook": "crop-insurance-notice",
+  "run_at": "2026-10-09T18:54:11Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 219.5,
+  "turns": 15,
+  "nudges": 0,
+  "follow_ups": 2,
+  "reads": 27,
+  "cost_usd": 2.7548,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 3.7
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 34527.0,
+    "value_found_usd": 34527.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "give_notice",
+        "key": "U-203",
+        "why": "Harvested on 1 October, before the freeze: no damage to give notice of",
+        "filed": false
+      },
+      {
+        "action": "give_notice",
+        "key": "U-204",
+        "why": "Hail already noticed on 21 September, and harvested before the freeze: a second notice is a duplicate",
+        "filed": false
+      },
+      {
+        "action": "give_notice",
+        "key": "U-206",
+        "why": "The Kessler rental was added after the 15 July acreage report: not insured, so there is nothing to notice to this policy",
+        "filed": false
+      },
+      {
+        "action": "give_notice",
+        "key": "U-207",
+        "why": "Mature since 3 October, walked after the freeze and found undamaged: no loss",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "U-103",
+        "why": "Harvested 12,600 bu against a 12,150 bu guarantee: no indemnity despite the wind",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "U-104",
+        "why": "The loss came from the pivot's gearbox failing from wear: a breakdown of irrigation equipment is not insured",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "U-105",
+        "why": "Dicamba drift from the neighbor's spraying: an act of a person, not insured (his insurer is the place for it)",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "U-205",
+        "why": "Waterhemp after a skipped herbicide pass: failure to follow good farming practices is not insured",
+        "filed": false
+      }
+    ],
+    "filed_usd": 34527.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "submit_claim",
+      "key": "U-101",
+      "outcome": "correct",
+      "value_usd": 15640.0,
+      "exact": true,
+      "why": "Hail on 24 July, noticed the next day; harvested 19,400 bu against a 22,800 bu guarantee: 3,400 bu x $4.60 = $15,640"
+    },
+    {
+      "action": "submit_claim",
+      "key": "U-102",
+      "outcome": "correct",
+      "value_usd": 12650.0,
+      "exact": true,
+      "why": "Drought (41% of normal rain, D2), noticed on 20 August; harvested 13,900 bu against 16,650 bu: 2,750 bu x $4.60 = $12,650"
+    },
+    {
+      "action": "submit_claim",
+      "key": "U-204",
+      "outcome": "correct",
+      "value_usd": 6237.0,
+      "exact": true,
+      "why": "Hail on 20 September, noticed on the 21st; harvested 2,310 bu against 2,887.5 bu: 577.5 bu x $10.80 = $6,237"
+    },
+    {
+      "action": "give_notice",
+      "key": "U-202",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Standing soybeans at R6 frozen in the same freeze; damage found on 8 October at 16:00, so notice is due by 11 October at 16:00"
+    },
+    {
+      "action": "give_notice",
+      "key": "U-201",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Standing soybeans at R6 frozen in the 27 F freeze, an insured cause; damage found on 7 October at 07:30, so notice is due by 10 October at 07:30. A deadline, not money: the indemnity is settled after harvest"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm back in Fieldmark, and all five items are still waiting on your answers. Nothing has been filed yet, and I won't re-file them.\n\n**Waiting on you**\n- **apr_bb5396e121db:** freeze notice for U-201, discovered 7 October. The 72 hours end tomorrow, 10 October at 07:30, so answer this one first.\n- **apr_93f3d26eaf9f:** freeze notice for U-202, discovered 8 October. It's due by 11 October at 16:00.\n- **apr_8d9c38f14108:** claim for U-101 (hail), 19,400 bu, $15,640.\n- **apr_0e4aaf337adc:** claim for U-102 (drought), 13,900 bu, $12,650.\n- **apr_5a29c540fca0:** claim for U-204 (hail), 2,310 bu, $6,237.\n\nOnce you've answered, I'll read the notices list to confirm they went through. After that, the only work left is the freeze claims on U-201 and U-202 once they're harvested, planned for 20 and 22 October.",
+  "trace": [
+    {
+      "portal": "Fieldmark agent portal",
+      "user": "That freeze hit the beans and we have corn claims to file. Start here in Fieldmark: read the policy on notices, causes and claims, our units and guarantees, and the notices we've already given.",
+      "continued": false,
+      "said": "Reading the policy, units and existing notices now.",
+      "said_chars": 51,
+      "reads": [
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "list_units",
+        "list_notices"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Fieldmark agent portal",
+      "user": "",
+      "continued": true,
+      "said": "Fieldmark is read. Policy terms, 11 units and 7 existing notices are in, and no claims have been filed yet.\n\n**Policy**\n- **Notice:** due within 72 hours of first discovery. There is one notice per unit and cause. A unit already noticed for a cause needs no second notice for it.\n- **Insured causes:** drought, excess moisture, hail, wind, frost and freeze, insects and disease (if control measures were applied), wildlife and fire.",
+      "said_chars": 2327,
+      "reads": [
+        "read_policy"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Fieldmark agent portal",
+      "user": "",
+      "continued": true,
+      "said": "Projected prices are in: corn $4.60 a bushel and soybeans $10.80 a bushel. Both are in the policy text.\n\nThe Fieldmark reading is finished. I'm saving what I'll need from here before you switch tabs. My Fieldmark tools can't be reached from the other tabs.\n\n**Fieldmark facts to carry**\n- **Indemnity:** (guarantee − scale-ticket bushels) × price × 100% share. Corn is $4.60 and soybeans $10.80.\n- **Corn guarantees (bu):** U-101 22,800; U-102 16,650; U-103 12,150; U-104 9,900 (irrigated); U-105 5,550.",
+      "said_chars": 1874,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Acrelog farm records",
+      "user": "Now Acrelog. Go through every field: what's harvested and for how many bushels, what's still standing, and the scouting notes.",
+      "continued": false,
+      "said": "Starting with the Acrelog field list, page 1.",
+      "said_chars": 45,
+      "reads": [
+        "list_fields"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Acrelog farm records",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of 2 is in (showing 7 of 12 fields). I'm fetching page 2 and the scouting notes for each field now.",
+      "said_chars": 106,
+      "reads": [
+        "list_fields",
+        "read_field_notes",
+        "read_field_notes",
+        "read_field_notes",
+        "read_field_notes",
+        "read_field_notes",
+        "read_field_notes",
+        "read_field_notes"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Acrelog farm records",
+      "user": "",
+      "continued": true,
+      "said": "Page 2 is in, so all 12 fields are listed. I still need the scouting notes for U-203, U-204, U-205, U-206 and U-207.",
+      "said_chars": 116,
+      "reads": [
+        "read_field_notes",
+        "read_field_notes",
+        "read_field_notes",
+        "read_field_notes",
+        "read_field_notes"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Acrelog farm records",
+      "user": "",
+      "continued": true,
+      "said": "Acrelog is fully read: all 12 fields and all 12 sets of notes. I'm saving a checkpoint so the facts carry to the other tabs.\n\n\n**All 12 Acrelog fields are read.** Nothing is filed yet.\n\n**Harvested (scale-ticket bushels against guarantee)**\n- **U-101, corn:** 19,400 bu against 22,800. The cause is hail on 24 July, scouted the next day and noticed on 25 July. A claim looks payable at 3,400 bu × $4.60 = **$15,640**.\n- **U-102, corn:** 13,900 bu against 16,650.",
+      "said_chars": 2403,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Rainmark station",
+      "user": "This is our Rainmark station. Check what the weather actually did, and when.",
+      "continued": false,
+      "said": "I'll read the station's events first.",
+      "said_chars": 37,
+      "reads": [
+        "list_events"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Rainmark station",
+      "user": "",
+      "continued": true,
+      "said": "The station confirms the freeze, the hail, the wind and the drought. It also shows 28 June was clear and calm.\n\n**What the station recorded in 2026 (6 events)**\n- **Hail, 24 July:** 1.25 inches for 14 minutes over sections 12 and 13, which cover U-101 and the edge of U-102. This matches the hail cause for U-101.\n- **Drought, 1 June to 31 August:** 4.9 inches of rain, which is 41% of normal. The county was in severe drought (D2) from 21 July. This supports drought as the cause on U-102, which is dryland.",
+      "said_chars": 2426,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "And my Mailnest farm folder. Anything there that bears on the notices or the claims.",
+      "continued": false,
+      "said": "I'll list every message in the farm folder first.",
+      "said_chars": 49,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Four messages came back. I'll open the three that could change a notice or a claim. F-401 is only the acreage report confirmation, and I'm reading it too, in case it lists the units.",
+      "said_chars": 182,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Nothing in the farm folder changes the plan, and two messages confirm exclusions. I'm saving the Mailnest facts now, because my Mailnest tools can't be reached from Fieldmark.\n\n\n**The Mailnest read is finished. Nothing in it adds a notice or a claim, and it rules out two units.**\n- **U-206 is not insured.** The Kessler lease was signed 20 July. The acreage report was filed 10 July and lists only U-101 to U-105, U-201 to U-205 and U-207, and the agent says only reported acreage is insured.",
+      "said_chars": 2486,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Fieldmark agent portal",
+      "user": "Back in Fieldmark. Give notice on every unit that needs it before its 72 hours are up, and file a claim on every harvested unit the policy pays, with the production and the amount. Then tell me what you left alone and why.",
+      "continued": false,
+      "said": "I'm recalling the full Acrelog, Rainmark and Mailnest findings first. My context shows only part of them, and I won't file from partial figures.\n\nI can file three claims now from figures I have in full. I still need the U-201, U-202, U-205 and U-207 details, so I'm recalling those too.\n\n- **U-101 (hail):** 22,800 − 19,400 = 3,400 bu × $4.60 = $15,640. Hail was noticed on 25 July.\n- **U-102 (drought):** 16,650 − 13,900 = 2,750 bu × $4.60 = $12,650. Drought was noticed on 20 August.",
+      "said_chars": 2847,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_claim",
+          "key": "U-101",
+          "outcome": "correct",
+          "value_usd": 15640.0
+        },
+        {
+          "action": "submit_claim",
+          "key": "U-102",
+          "outcome": "correct",
+          "value_usd": 12650.0
+        },
+        {
+          "action": "submit_claim",
+          "key": "U-204",
+          "outcome": "correct",
+          "value_usd": 6237.0
+        },
+        {
+          "action": "give_notice",
+          "key": "U-202",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "give_notice",
+          "key": "U-201",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    },
+    {
+      "portal": "Acrelog farm records",
+      "user": "I've switched to Acrelog farm records as you asked. Go ahead.",
+      "continued": false,
+      "said": "I have nothing left to do in Acrelog, because I've read all 12 fields and their notes. What's open is five cards waiting for your answer in Fieldmark. I haven't re-filed anything.\n\n**Freeze notices (the deadlines are close)**\n- **U-201** (apr_bb5396e121db): discovered 7 October. Notice is due by **10 October 07:30**, which is less than 24 hours from now.\n- **U-202** (apr_93f3d26eaf9f): discovered 8 October. Notice is due by 11 October 16:00.\n\n**Claims**\n- **U-101** (apr_8d9c38f14108): hail, 19,400 bu, $15,640.",
+      "said_chars": 1113,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Fieldmark agent portal",
+      "user": "I've switched to Fieldmark agent portal as you asked. Go ahead.",
+      "continued": false,
+      "said": "I'm back in Fieldmark, and all five items are still waiting on your answers. Nothing has been filed yet, and I won't re-file them.\n\n**Waiting on you**\n- **apr_bb5396e121db:** freeze notice for U-201, discovered 7 October. The 72 hours end tomorrow, 10 October at 07:30, so answer this one first.\n- **apr_93f3d26eaf9f:** freeze notice for U-202, discovered 8 October. It's due by 11 October at 16:00.\n- **apr_8d9c38f14108:** claim for U-101 (hail), 19,400 bu, $15,640.",
+      "said_chars": 810,
+      "reads": [],
+      "cards": []
+    }
+  ],
+  "note": "World fixed: U-102's field notes now say the drought damage was first found on 18 August, two days before its notice; run 1 held the claim because no page gave the discovery date.",
+  "history": [
+    {
+      "run_at": "2026-10-09T18:48:45Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 4,
+      "eligible": 5,
+      "value_found_usd": 21877.0,
+      "false_claims": 0
+    }
+  ]
+}

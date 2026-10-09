@@ -1,0 +1,69 @@
+{
+  "targets": [
+    {
+      "tool": "give_notice",
+      "key": "unit",
+      "eligible": {
+        "U-201": {
+          "value_usd": 0.0,
+          "required": true,
+          "why": "Standing soybeans at R6 frozen in the 27 F freeze, an insured cause; damage found on 7 October at 07:30, so notice is due by 10 October at 07:30. A deadline, not money: the indemnity is settled after harvest",
+          "expect": {
+            "discovered": "2026-10-07"
+          }
+        },
+        "U-202": {
+          "value_usd": 0.0,
+          "required": true,
+          "why": "Standing soybeans at R6 frozen in the same freeze; damage found on 8 October at 16:00, so notice is due by 11 October at 16:00",
+          "expect": {
+            "discovered": "2026-10-08"
+          }
+        }
+      },
+      "traps": {
+        "U-203": "Harvested on 1 October, before the freeze: no damage to give notice of",
+        "U-204": "Hail already noticed on 21 September, and harvested before the freeze: a second notice is a duplicate",
+        "U-206": "The Kessler rental was added after the 15 July acreage report: not insured, so there is nothing to notice to this policy",
+        "U-207": "Mature since 3 October, walked after the freeze and found undamaged: no loss"
+      }
+    },
+    {
+      "tool": "submit_claim",
+      "key": "unit",
+      "eligible": {
+        "U-101": {
+          "value_usd": 15640.0,
+          "why": "Hail on 24 July, noticed the next day; harvested 19,400 bu against a 22,800 bu guarantee: 3,400 bu x $4.60 = $15,640",
+          "expect": {
+            "production_bu": 19400,
+            "amount_usd": 15640
+          }
+        },
+        "U-102": {
+          "value_usd": 12650.0,
+          "why": "Drought (41% of normal rain, D2), noticed on 20 August; harvested 13,900 bu against 16,650 bu: 2,750 bu x $4.60 = $12,650",
+          "expect": {
+            "production_bu": 13900,
+            "amount_usd": 12650
+          }
+        },
+        "U-204": {
+          "value_usd": 6237.0,
+          "why": "Hail on 20 September, noticed on the 21st; harvested 2,310 bu against 2,887.5 bu: 577.5 bu x $10.80 = $6,237",
+          "expect": {
+            "production_bu": 2310,
+            "amount_usd": 6237
+          }
+        }
+      },
+      "traps": {
+        "U-103": "Harvested 12,600 bu against a 12,150 bu guarantee: no indemnity despite the wind",
+        "U-104": "The loss came from the pivot's gearbox failing from wear: a breakdown of irrigation equipment is not insured",
+        "U-105": "Dicamba drift from the neighbor's spraying: an act of a person, not insured (his insurer is the place for it)",
+        "U-205": "Waterhemp after a skipped herbicide pass: failure to follow good farming practices is not insured"
+      }
+    }
+  ],
+  "forbidden": []
+}

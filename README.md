@@ -838,6 +838,7 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 | Data brokers told to delete, and checked (privacy) | Mailnest, Erasepoint registry, Findwho, Lookabout | 3 / 3 | **exceeds** (2026-10-09, run 2 of 2): 5 of 5 (weighted at $32.25, a removal service's price for one sweep, not money recovered), 10 of 10 traps avoided, 0 false; 1.9 min, $0.85 |
 | Every new hire screened for the Work Opportunity Tax Credit, inside 28 days (hiring) | Talentry ATS, Payroll Harbor, Mailnest, WorkCredit Online | 4 / 4 | **exceeds** (2026-10-09): 5 of 5, $19,200 of $19,200, every form under the right target group, 9 of 9 traps avoided, 0 false; 3.0 min, $1.88 |
 | Duties refunded on what was exported: drawback, matched export by export (customs & trade) | Portline Entries, Forwarden broker, Ledgerline ERP, Docshelf | 5 / 4 | **exceeds** (2026-10-09): 4 of 4, $13,747.14 of $13,747.14 (99% of the duty on two manufacturing and two unused-merchandise exports), every claim exact, 8 of 8 traps avoided, 0 false; 3.9 min, $2.56 |
+| Crop damage noticed inside 72 hours, and the claims filed with the yields (agriculture) | Fieldmark agent portal, Acrelog farm records, Rainmark station, Mailnest | 4 / 5 | **exceeds** (2026-10-09, run 2 of 2): 5 of 5, $34,527 of $34,527, both freeze notices inside their 72 hours and every claim exact (the guarantee less the production, at the projected price), 8 of 8 traps avoided, 0 false; 3.7 min, $2.75 |
 
 ### What the runs taught Athena
 

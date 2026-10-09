@@ -1,0 +1,106 @@
+{
+  "id": "crop-insurance-notice",
+  "title": "Crop damage noticed inside 72 hours, and the claims filed with the yields",
+  "domain": "Agriculture",
+  "audience": "work",
+  "promise": "Every unit of a farm's crop insurance read against the weather, the field notes and the scale tickets: notice given on each freshly damaged unit before its 72 hours run out, a claim filed on each harvested unit the policy pays at the production and indemnity the policy sets, and nothing given or claimed for an uninsured cause, an uninsured field, an undamaged crop or a unit that made its guarantee.",
+  "persona": "Ines and Carl Brandt, who farm about a thousand acres of corn and soybeans in central Iowa, the morning after an early freeze",
+  "chore": "Read the policy, the insured units and their guarantees, and the notices already given in the agent's portal; every field's stage, harvest and bushels, and the agronomist's notes in the farm records; what the farm's weather station recorded and when; and the agent's and neighbors' mail. Then apply the policy: notice by unit within 72 hours of discovering damage; only units on the acreage report; insured causes only, not drift, a skipped weed pass or a broken pivot; and an indemnity of the guarantee less the production to count, at the projected price. Give each notice and file each claim on the agent's portal, which shares nothing with the farm records or the station.",
+  "command": "The freeze got into the beans, and we still have corn claims to file. Go through Fieldmark, Acrelog, the Rainmark station and my Mailnest, give notice on every unit that needs it before its 72 hours are up, and file a claim on every harvested unit the policy pays, with the production and the amount. Nothing the policy doesn't cover.",
+  "apps": [
+    {
+      "name": "Fieldmark agent portal",
+      "role": "the policy's terms, the insured units with their guarantees, the notices already given, and the notice and claim forms",
+      "api": "Agent portal only",
+      "url": ""
+    },
+    {
+      "name": "Acrelog farm records",
+      "role": "every field's planting date, stage or harvest and bushels, and the scouting and agronomist notes",
+      "api": "Farm records, no insurance link",
+      "url": ""
+    },
+    {
+      "name": "Rainmark station",
+      "role": "the farm's own weather record: hail, drought, wind, the freeze, and a calm day",
+      "api": "Station data, no insurance link",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the agent's note on the acreage report and the freeze, a landlord's lease, a neighbor's admission of drift",
+      "api": "Mail, not data",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the policy's notice, causes, claim and price terms, the insured units and guarantees, and the notices already given.",
+    "Reads every field in Acrelog: what is harvested and for how much, what still stands, and the notes on each loss.",
+    "Reads the station's record of each weather event.",
+    "Reads the agent's, the landlord's and the neighbor's mail.",
+    "Back in Fieldmark, gives notice on the two frozen units inside their 72 hours and files the three claims the policy pays, at guarantee less production times price."
+  ],
+  "gates": [
+    {
+      "action": "give_notice",
+      "label": "Give notice of loss",
+      "why": "It reaches the insurance company in the farm's name and starts an adjustment; a notice missed by the 72 hours can leave the loss treated as uninsured."
+    },
+    {
+      "action": "submit_claim",
+      "label": "File a claim for indemnity",
+      "why": "It is signed as true and complete; a claim for an uninsured cause or a unit that made its guarantee is a false claim on a federally reinsured policy."
+    }
+  ],
+  "traps": [
+    "Beans harvested before the freeze: nothing to notice.",
+    "A hailed unit already noticed and harvested: a second notice is a duplicate.",
+    "Thirty rented acres added after the acreage report, frozen like the rest: not insured.",
+    "Mature beans walked after the freeze and found undamaged.",
+    "Wind-lodged corn that still out-yielded its guarantee.",
+    "Irrigated corn that lost yield when the pivot's gearbox wore out: equipment breakdown is not insured.",
+    "Corn hit by a neighbor's dicamba drift: an act of a person, not a natural cause.",
+    "Beans choked by waterhemp after a skipped herbicide pass: not a good farming practice."
+  ],
+  "memory": [
+    "Each unit's guarantee and the notices already given, carried from the agent's portal.",
+    "Each field's harvest and bushels, or its stage, and the cause the notes give, carried from the farm records.",
+    "When each weather event happened, and when each freeze damage was found.",
+    "Which acres were on the acreage report."
+  ],
+  "economics": {
+    "value_usd": 18000,
+    "per": "year",
+    "basis": "The roster's $18,000 a year is an estimate, not a statistic: in a loss year a thousand-acre corn and soybean farm's indemnities run to tens of thousands of dollars, and not every year is a loss year. The bench world holds $34,527 across three claims, and two notices on 260 acres of frozen beans whose 72 hours were running. Times a year: one, a season's notices and claims, as the world holds them.",
+    "manual_minutes": 240,
+    "times_per_year": 1,
+    "incumbent": "None takes a share: the crop insurance agent and the company's adjuster cost the farmer nothing beyond the premium; the work is the farmer's own hours, gathering yields, notes and weather from systems that do not talk to each other.",
+    "sources": [
+      {
+        "label": "7 CFR 457.8, Common Crop Insurance Policy Basic Provisions: §12 causes of loss not insured; §14 notice within 72 hours, claim within 60 days",
+        "url": "https://www.law.cornell.edu/cfr/text/7/457.8"
+      },
+      {
+        "label": "7 CFR 457.113, coarse grains crop provisions (corn and soybeans)",
+        "url": "https://www.law.cornell.edu/cfr/text/7/457.113"
+      },
+      {
+        "label": "USDA Risk Management Agency: crop policies and the Federal Crop Insurance Corporation",
+        "url": "https://www.rma.usda.gov/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 5,
+    "difficulty_why": "Four systems with no shared data and two acts with different clocks: the 72-hour notice on standing crops and the claims on harvested ones, each against causes the policy excludes that look like weather losses.",
+    "usefulness_why": "Tens of thousands of dollars in a loss year, and a notice missed by a day can cost the whole claim, in the week a farm is busiest."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful farmer gets the notices in and most of the claims filed; the bar is most of the indemnity, both notices, nothing the policy excludes, inside an hour."
+  },
+  "caveat": "Brandt Ridge Farm, Fieldmark, Acrelog, Rainmark, Mailnest and every person here are invented, and so are the 2026 projected prices on the policy page. The rules are the Common Crop Insurance Policy (7 CFR 457.8) and the coarse grains crop provisions as in force in October 2026, with Yield Protection kept simple: no quality adjustment, replant or revenue terms. The insurance company and its adjuster decide every claim; this is not legal advice."
+}

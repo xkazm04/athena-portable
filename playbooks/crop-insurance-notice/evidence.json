@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "crop-insurance-notice",
+  "captured_at": "2026-10-09T18:59:49Z",
+  "bench_run_at": "2026-10-09T18:54:11Z",
+  "narration": {
+    "text": "Crop damage noticed inside 72 hours, and the claims filed with the yields. This is a chore for ines and Carl Brandt, who farm about a thousand acres of corn and soybeans in central Iowa, the morning after an early freeze. Athena works it across 4 portals: Fieldmark agent portal, Acrelog farm records, Rainmark station and Mailnest. On the bench, she found 5 of 5 eligible items, worth 34,527 dollars of the 34,527 dollars there was to find. All 5 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. Among them: Beans harvested before the freeze: nothing to notice. A hailed unit already noticed and harvested: a second notice is a duplicate. She took 4 minutes. By hand, the same chore takes 4 hours, so she was about 65 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 65.093,
+    "sha256": "410d32975be6f275ddd62fbc0d4c679d046ede98934e49f202a35a46b0b06aac"
+  },
+  "video": {
+    "path": "evidence/crop-insurance-notice/evidence.mp4",
+    "duration_s": 65.093,
+    "bytes": 2971815,
+    "sha256": "2977e8c4418ae37b81e7af7b403ba79086a257255f1594c763ff98a9ce185d05"
+  },
+  "thumbnail": {
+    "path": "playbooks/crop-insurance-notice/thumb.jpg",
+    "bytes": 85762,
+    "sha256": "79a4cdce630b7b690435e3394238448d6c22b237f1875201adbb2a6e3b89a4fa"
+  }
+}
