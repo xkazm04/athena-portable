@@ -1,0 +1,81 @@
+{
+  "targets": [
+    {
+      "tool": "file_protest",
+      "key": "account",
+      "eligible": {
+        "R-10422": {
+          "value_usd": 1470.0,
+          "why": "Notice delivered 04-10, deadline May 15; comps S-1, S-2, S-3 adjusted to $466,000, $463,000 and $468,000, median $466,000, less the $24,000 foundation repair: $442,000; $70,000 off at 2.10% is $1,470 a year",
+          "expect": {
+            "opinion_of_value_usd": 442000
+          }
+        },
+        "R-20977": {
+          "value_usd": 840.0,
+          "why": "Notice delivered 04-28, deadline May 28; comps D-1 and D-2 adjusted to $596,000 and $604,000, median $600,000; $40,000 off at 2.10% is $840 a year",
+          "expect": {
+            "opinion_of_value_usd": 600000
+          }
+        }
+      },
+      "traps": {
+        "R-31505": "Its comparable sales adjust to $87,000 to $89,000, above the $85,000 notice: the value is fair",
+        "R-08814": "Sold on 2025-11-14: the Ferreiras did not own it on January 1, 2026"
+      }
+    },
+    {
+      "tool": "attach_comparable",
+      "key": "sale_id",
+      "eligible": {
+        "S-1": {
+          "value_usd": 0,
+          "why": "Same street, open market, 2025, alike in size and age"
+        },
+        "S-2": {
+          "value_usd": 0,
+          "why": "Same street, open market, 2025, alike in size and age"
+        },
+        "S-3": {
+          "value_usd": 0,
+          "why": "Same subdivision, open market, 2025, alike in size and age"
+        },
+        "D-1": {
+          "value_usd": 0,
+          "why": "Same neighbourhood duplex, open market, 2025, average condition"
+        },
+        "D-2": {
+          "value_usd": 0,
+          "why": "Same neighbourhood duplex, open market, 2025, average condition"
+        }
+      },
+      "traps": {
+        "S-4": "A sale from mother to son, never listed: not an open-market sale",
+        "S-5": "Sold 2023-09-08, 28 months before January 1, with enough recent sales: outside 24 months",
+        "S-6": "Across the highway in another school district, 23% smaller: not alike in location or size",
+        "S-7": "35% larger, two storeys and a pool: not alike in size",
+        "D-3": "Fire-damaged and sold as-is at auction: not alike in condition"
+      }
+    },
+    {
+      "tool": "attach_document",
+      "key": "document_id",
+      "eligible": {
+        "NM-412": {
+          "value_usd": 0,
+          "why": "The contractor's $24,000 estimate for the foundation repair, a defect the engineer found in November 2025"
+        }
+      },
+      "traps": {
+        "NM-413": "A kitchen upgrade quote: not a defect",
+        "NM-414": "A 2019 roof leak; the roof was replaced in 2023"
+      },
+      "neutral": {
+        "NM-411": {
+          "why": "The engineer's report behind the estimate: fair to submit beside it, and fair to leave"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}

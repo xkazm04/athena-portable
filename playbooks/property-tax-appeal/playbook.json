@@ -1,0 +1,116 @@
+{
+  "id": "property-tax-appeal",
+  "title": "The property tax protest, with comparable sales",
+  "domain": "Housing",
+  "audience": "home",
+  "promise": "Every appraisal notice read against its deadline and against the sales that are truly comparable: a protest filed with the right comps, the defect that lowers the value and an opinion of value the evidence supports, and no protest where the value is fair or the property is not yours.",
+  "persona": "A Texas couple with their home, a rental duplex and a vacant lot, and four appraisal notices in the mail",
+  "chore": "Read each notice of appraised value and work out its deadline. Pull the sales near each property, keep only the ones the law calls comparable, and find the contractor's estimate for a defect the house had on January 1. Check the deeds for what is still yours, then file each protest online with the comps, the evidence and an opinion of value. The notices are in the mail, the sales in one site, the deeds in another, and the protest is filed only in the appraisal district's portal.",
+  "command": "Our appraisal notices came. Read them in Mailnest, check what we own in Deedvault and the sales in Compsmith, and file a protest in Countyline for every property whose value the comparable sales don't support, with the right evidence, before the deadlines.",
+  "apps": [
+    {
+      "name": "Mailnest",
+      "role": "the appraisal notices, a foundation engineer's report and repair estimate, a remodel quote, an old roof inspection and its replacement invoice",
+      "api": "Mail, not data",
+      "url": ""
+    },
+    {
+      "name": "Deedvault",
+      "role": "the recorded deeds: what the couple bought and what they sold",
+      "api": "Records search only",
+      "url": ""
+    },
+    {
+      "name": "Compsmith sales",
+      "role": "sales near each property with their dates, sizes, sale types and prices adjusted to the subject",
+      "api": "Web search only",
+      "url": ""
+    },
+    {
+      "name": "Countyline Appraisal",
+      "role": "the district's accounts, its protest rules, and the online protest with its evidence uploads",
+      "api": "Online protest only",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads every notice in Mailnest: the value, the date it was delivered, and so the deadline; and the documents about the house's condition.",
+    "Checks the deeds in Deedvault: which properties the couple owned on January 1.",
+    "Pulls the sales for each property in Compsmith, and keeps only those inside 24 months, sold on the open market, and alike in location, size and condition.",
+    "Reads Countyline's rules, then files one protest per property that the comps support, attaches the comps and the defect's estimate, and states the opinion of value the rule gives.",
+    "Leaves alone the lot the sales say is fairly valued, the condo sold last year, and every sale and document that would not hold up."
+  ],
+  "gates": [
+    {
+      "action": "file_protest",
+      "label": "File a protest",
+      "why": "It opens a case before the appraisal review board in the owners' name, with a value they must defend at a hearing."
+    },
+    {
+      "action": "attach_comparable",
+      "label": "Submit a comparable sale",
+      "why": "Evidence goes to the board as the owners' own; a sale that is not comparable undermines the ones that are."
+    },
+    {
+      "action": "attach_document",
+      "label": "Submit a document",
+      "why": "A document submitted as evidence is the owners' statement about the property's condition."
+    }
+  ],
+  "traps": [
+    "A vacant lot whose comparable sales come out above its notice: the value is fair, so there is nothing to protest.",
+    "A condo sold last November, whose notice still came: the couple did not own it on January 1.",
+    "A sale between a mother and her son, far under the market: not an open-market sale.",
+    "A sale from 28 months before January 1, when recent sales are plenty: outside the 24 months the law allows.",
+    "A smaller house across the highway, and a much larger one on the same street: not comparable in location or size.",
+    "A fire-damaged duplex sold as-is at auction: not comparable in condition.",
+    "A kitchen remodel quote: an upgrade they want, not a defect the house had.",
+    "A roof leak from 2019, on a roof replaced in 2023."
+  ],
+  "memory": [
+    "Each notice's value, delivery date and deadline.",
+    "Which properties the deeds say were owned on January 1.",
+    "The comparable sales kept for each property and why each other sale was left out.",
+    "The rule for the opinion of value, and the defect's cost to cure."
+  ],
+  "economics": {
+    "value_usd": 1100,
+    "per": "year",
+    "basis": "Ownwell publishes an average saving of $774 a year for each customer it won a reduction for in 2025; a household that protests a home and a rental, as here, is put at about $1,100 a year, an estimate. The bench world holds $2,310 a year: $70,000 off the home and $40,000 off the duplex at a combined rate of 2.10%. Times a year: once, as notices come once a year.",
+    "manual_minutes": 240,
+    "times_per_year": 1,
+    "incumbent": "Property tax consultants such as Ownwell keep 25% of the first year's savings in Texas (35% in some states), and re-enrol every year.",
+    "incumbent_fee_pct": 25,
+    "sources": [
+      {
+        "label": "Texas Tax Code ch. 41: protest by May 15 or 30 days after the notice is delivered, whichever is later (§41.44)",
+        "url": "https://statutes.capitol.texas.gov/Docs/TX/htm/TX.41.htm"
+      },
+      {
+        "label": "Texas Tax Code §23.013: comparable sales within 24 months, adjusted, alike in location, size, age and condition",
+        "url": "https://texas.public.law/statutes/tex._tax_code_section_23.013"
+      },
+      {
+        "label": "Texas Comptroller: property taxpayer remedies and the protest process",
+        "url": "https://comptroller.texas.gov/taxes/property-tax/protests/"
+      },
+      {
+        "label": "Money Crashers: Ownwell's fee (25% in Texas) and its $774 average saving",
+        "url": "https://www.moneycrashers.com/ownwell-review/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Four portals, a deadline per notice, and the judgement of which sales are comparable: related-party, stale, mismatched and damaged sales all look like evidence.",
+    "usefulness_why": "Hundreds to a few thousand dollars a year, recurring, that most owners leave to the district or give a quarter of to a consultant."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner with an evening finds most of it; the bar is most of the protests and the evidence, no protest the facts do not support and no evidence that would not hold up, inside an hour."
+  },
+  "caveat": "Countyline, Compsmith, Deedvault, Mailnest and the Ferreira household are invented; the rules are the Texas Tax Code's, fixed in the bench world as of May 2026 for a county under 150,000 people. This is not legal or tax advice, and an appraisal review board decides every value."
+}
