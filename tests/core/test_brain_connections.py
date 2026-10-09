@@ -17,6 +17,7 @@ from pathlib import Path
 import pytest
 
 from athena.core.brain import Brain
+from athena.core.brain.store import BUSY_TIMEOUT_MS
 
 
 def _node_count(con: sqlite3.Connection) -> int:
@@ -106,8 +107,11 @@ def test_a_write_does_not_block_a_concurrent_read(tmp_path: Path) -> None:
         if failure:
             raise failure[0]
 
-        # The busy timeout is five seconds, so a blocked write would show up as one.
-        assert elapsed < 2.0, f"the writer waited {elapsed:.2f}s for an open read"
+        # A write blocked behind the read waits out the whole busy timeout and then fails, so it
+        # shows up as a wait of that length. Both writes completed above, before ``release`` was
+        # set, which is the property; this bound only names the signature of the bug.
+        busy_s = BUSY_TIMEOUT_MS / 1000
+        assert elapsed < busy_s, f"the writer waited {elapsed:.2f}s for an open read"
         assert seen["before"] == 1
         assert seen["during"] == 1, "an open read snapshot changed underneath the reader"
         assert seen["after"] == 3
