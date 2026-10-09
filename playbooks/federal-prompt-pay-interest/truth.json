@@ -1,0 +1,85 @@
+{
+  "targets": [
+    {
+      "tool": "request_interest",
+      "key": "invoice",
+      "eligible": {
+        "INV-3101": {
+          "value_usd": 107.67,
+          "why": "Received 2026-08-03, accepted 2026-08-05, so due 2026-09-04; settled 2026-09-21 with no interest: 17 days, $48,000 x 4.75% x 17 / 360 = $107.67",
+          "expect": {
+            "days_late": 17,
+            "interest_usd": 107.67
+          }
+        },
+        "INV-3118": {
+          "value_usd": 6.54,
+          "why": "Received 2026-08-07 before the 2026-08-10 delivery; no acceptance recorded, so accepted on the 7th day, 2026-08-17, and due 2026-09-16; settled 2026-09-24: 8 days, $6,200 x 4.75% x 8 / 360 = $6.54",
+          "expect": {
+            "days_late": 8,
+            "interest_usd": 6.54
+          }
+        },
+        "INV-3054": {
+          "value_usd": 104.3,
+          "why": "Returned as improper; the corrected invoice was received 2026-07-08, after the 2026-07-02 acceptance, so due 2026-08-07; settled 2026-08-24 with no interest: 17 days, $46,500 x 4.75% x 17 / 360 = $104.30",
+          "expect": {
+            "days_late": 17,
+            "interest_usd": 104.3
+          }
+        },
+        "INV-3127": {
+          "value_usd": 44.49,
+          "why": "Received 2026-08-17, accepted 2026-08-26 inside the contract's 15 days, so due 2026-09-25; settled 2026-09-28 with no interest: 3 days, $112,400 x 4.75% x 3 / 360 = $44.49",
+          "expect": {
+            "days_late": 3,
+            "interest_usd": 44.49
+          }
+        }
+      },
+      "traps": {
+        "INV-3092": "The $1,400 is held back in a dispute over the amount, and the undisputed $8,450 was paid before its due date: no interest",
+        "INV-3109": "Due on Saturday 2026-09-12 and paid on Monday 2026-09-14, the next business day: on time",
+        "INV-3066": "Paid late, with the $28.50 interest owed included in the payment",
+        "INV-3123": "Two days late on $310: $0.08 of interest, under the $1.00 owed",
+        "INV-3112": "Accepted 2026-08-17 inside the contract's 15 days, so due 2026-09-16; paid 2026-09-15: on time",
+        "INV-3081": "The corrected invoice was received 2026-08-10, so it was due 2026-09-09; paid 2026-09-08: on time",
+        "INV-3135": "Not due until 2026-10-15: nothing is late yet"
+      }
+    },
+    {
+      "tool": "request_penalty",
+      "key": "invoice",
+      "eligible": {
+        "INV-3101": {
+          "value_usd": 107.67,
+          "why": "Paid 2026-09-21 without the interest, which was not paid in the 10 days after; the 40th day is 2026-10-31: 100% of the $107.67 interest",
+          "expect": {
+            "penalty_usd": 107.67
+          }
+        },
+        "INV-3118": {
+          "value_usd": 25.0,
+          "why": "Paid 2026-09-24 without the $6.54 interest; the 40th day is 2026-11-03: 100% of the interest, but not less than $25",
+          "expect": {
+            "penalty_usd": 25
+          }
+        },
+        "INV-3127": {
+          "value_usd": 44.49,
+          "why": "Paid 2026-09-28 without the interest, not paid by 2026-10-08; the 40th day is 2026-11-07: 100% of the $44.49 interest",
+          "expect": {
+            "penalty_usd": 44.49
+          }
+        }
+      },
+      "traps": {
+        "INV-3054": "Paid 2026-08-24: the 40th day was 2026-10-03, so only the interest can still be asked for",
+        "INV-3092": "A disputed amount owes no interest, so no penalty",
+        "INV-3066": "The interest was paid with the payment",
+        "INV-3123": "The interest was under $1.00, so no penalty is owed"
+      }
+    }
+  ],
+  "forbidden": []
+}

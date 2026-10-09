@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The nineteen playbooks (latest runs, Claude Sonnet)
+## The twenty playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -62,9 +62,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | Duties refunded on what was exported: drawback, matched export by export | work | 4 | exceeds: 4 of 4, $13,747.14 of $13,747.14, 8 of 8 traps, 0 false |
 | Crop damage noticed inside 72 hours, and the claims filed with the yields | work | 4 | exceeds: 5 of 5, $34,527 of $34,527, both notices in time, 8 of 8 traps, 0 false |
 | A federal grant drawn down against what was spent, and the quarter's SF-425 filed | work | 4 | exceeds: 6 of 6, $31,492.60 of $31,492.60 drawn, 9 of 9 traps, 0 false |
+| The interest federal agencies owe on late payments, claimed with the penalty | work | 4 | exceeds: 7 of 7, $440.16 of $440.16, 11 of 11 traps, 0 false |
 
-Across the latest runs: $733,347 of $743,614 found, 200 of 200 traps walked past, no false claim,
-70 minutes of her time against about 140 hours by hand, $52.31 of model time. 50 runs are recorded
+Across the latest runs: $733,787 of $744,054 found, 211 of 211 traps walked past, no false claim,
+75 minutes of her time against about 143 hours by hand, $54.39 of model time. 51 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

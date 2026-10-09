@@ -1,0 +1,564 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "invoicepoint",
+      "name": "Invoicepoint",
+      "origin": "https://vendor.invoicepoint.example",
+      "path": "/invoices",
+      "view": {
+        "view": "Invoices to federal agencies",
+        "vendor": "Tallis Facility Services LLC",
+        "user": "Dev Raman, office manager",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The Prompt Payment rules as Invoicepoint states them, by topic: due, interest, improper, dispute, penalty. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_invoices",
+          "kind": "READ",
+          "description": "Invoices submitted since June: invoice number, contract, amount, the day the agency's billing office received it, and the status. Paged. Open one with read_invoice.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "invoices",
+            "page_size": 6,
+            "fields": [
+              "invoice",
+              "contract",
+              "amount_usd",
+              "received",
+              "status"
+            ]
+          }
+        },
+        {
+          "name": "read_invoice",
+          "kind": "READ",
+          "description": "One invoice in full, by invoice number: what it bills, when it was received, any return as improper, and the agency's notes.",
+          "params": {
+            "invoice": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "invoices",
+            "match": {
+              "invoice": "invoice"
+            },
+            "require": [
+              "invoice"
+            ]
+          }
+        },
+        {
+          "name": "request_interest",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask the paying office for Prompt Payment interest on one invoice paid late without it: the invoice number, the days late, and the interest in dollars to the cent.",
+          "params": {
+            "invoice": {
+              "type": "string"
+            },
+            "days_late": {
+              "type": "integer"
+            },
+            "interest_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Interest request on {invoice} sent to the paying office."
+        },
+        {
+          "name": "request_penalty",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask in writing for the additional penalty on one invoice whose late payment came without the interest owed: the invoice number and the penalty in dollars.",
+          "params": {
+            "invoice": {
+              "type": "string"
+            },
+            "penalty_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Additional penalty request on {invoice} sent to the paying office."
+        }
+      ],
+      "aliases": [
+        "Invoicepoint",
+        "the invoicing portal",
+        "the vendor portal"
+      ]
+    },
+    {
+      "app_id": "contractdesk",
+      "name": "Contractdesk",
+      "origin": "https://app.contractdesk.example",
+      "path": "/tallis/contracts",
+      "view": {
+        "view": "Federal contracts and receiving reports",
+        "company": "Tallis Facility Services LLC",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_contracts",
+          "kind": "READ",
+          "description": "Tallis's federal contracts: number, what it covers, and its payment and acceptance terms.",
+          "params": {},
+          "returns": {
+            "table": "contracts"
+          }
+        },
+        {
+          "name": "list_receiving_reports",
+          "kind": "READ",
+          "description": "The agencies' receiving reports by invoice: the work or delivery, the day it was completed or delivered, and the day the agency accepted it, if it recorded one. Paged.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "receiving",
+            "page_size": 6
+          }
+        }
+      ],
+      "aliases": [
+        "Contractdesk",
+        "the contracts",
+        "the contract portal"
+      ]
+    },
+    {
+      "app_id": "ledgerline",
+      "name": "Ledgerline bank",
+      "origin": "https://business.ledgerline.example",
+      "path": "/accounts/operating/deposits",
+      "view": {
+        "view": "Operating account ...6620: deposits from the U.S. Treasury since July",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "search_deposits",
+          "kind": "READ",
+          "description": "Treasury deposits since 1 July 2026: the day each settled, the amount and the payment memo. Every word of the query must appear in the memo; omit it for all of them.",
+          "params": {
+            "query": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "deposits",
+            "match": {
+              "query": "memo"
+            },
+            "mode": "words"
+          }
+        }
+      ],
+      "aliases": [
+        "Ledgerline",
+        "the bank",
+        "online banking"
+      ]
+    },
+    {
+      "app_id": "mailnest",
+      "name": "Mailnest",
+      "origin": "https://mail.mailnest.example",
+      "path": "/inbox/government",
+      "view": {
+        "view": "Folder: Government billing",
+        "account": "dev.raman@tallisfs.example",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "search_mail",
+          "kind": "READ",
+          "description": "Search the folder; every word must appear in the sender, the subject or the invoice number. Omit the query for every message. Open one with read_message.",
+          "params": {
+            "query": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "query": "search"
+            },
+            "mode": "words",
+            "fields": [
+              "message_id",
+              "from",
+              "date",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id.",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ],
+            "fields": [
+              "message_id",
+              "from",
+              "date",
+              "subject",
+              "body"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Mailnest",
+        "my inbox",
+        "the inbox",
+        "mail"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "invoicepoint",
+      "message": "I think the agencies have been paying us late and skipping the interest. Start here in Invoicepoint: read the rules, every invoice since June, when it was received, and anything returned.",
+      "nudges": 1
+    },
+    {
+      "app": "contractdesk",
+      "message": "Now Contractdesk: the payment and acceptance terms of each contract, and when each job was finished and accepted.",
+      "nudges": 1
+    },
+    {
+      "app": "ledgerline",
+      "message": "This is our Ledgerline bank. Check when each payment actually landed and for how much.",
+      "nudges": 1
+    },
+    {
+      "app": "mailnest",
+      "message": "And my Mailnest government billing folder. Anything there that changes when an invoice was due, or what was paid.",
+      "nudges": 1
+    },
+    {
+      "app": "invoicepoint",
+      "message": "Back in Invoicepoint. Request the interest on every invoice paid late without it, to the cent, and the additional penalty wherever we're still entitled to it. Then tell me what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. The Prompt Payment Act (31 U.S.C. 3901-3907) and 5 CFR Part 1315. Topics: due, interest, improper, dispute, penalty. Requests are made per invoice."
+      },
+      {
+        "topic": "due",
+        "text": "Payment is due 30 days after the later of: the billing office's receipt of a proper invoice; and acceptance, which is the day the agency accepted, or, where the contract sets no other period and no acceptance is recorded, the 7th day after delivery or completion. A contract may give the agency a longer acceptance period. A due date on a Saturday, Sunday or federal holiday may be paid on the next business day without interest. The payment date is the day the payment settles in the vendor's account."
+      },
+      {
+        "topic": "interest",
+        "text": "Interest runs from the day after the due date through the payment date, at the rate in effect on the day after the due date: 4.75% a year from 1 July to 31 December 2026 (Treasury). Interest = amount x rate x days late / 360, to the cent; unpaid interest is added to the principal every 30 days. Interest under $1.00 is not owed. Interest owed is due with the payment, without a request."
+      },
+      {
+        "topic": "improper",
+        "text": "An invoice missing required information is returned as improper within 7 days, with its defects. The clock then runs from the day the corrected invoice is received."
+      },
+      {
+        "topic": "dispute",
+        "text": "No interest is owed on an amount whose payment is delayed by a dispute between the agency and the vendor over the amount or the contract's performance (5 CFR 1315.10(c)(1))."
+      },
+      {
+        "topic": "penalty",
+        "text": "When a late payment came without the interest owed ($1.00 or more) and the interest was not paid within 10 days after it, the vendor may ask in writing for an additional penalty by the 40th day after the payment: 100% of the interest, but not less than $25 nor more than $5,000 (5 CFR 1315.11). After the 40th day only the interest itself can still be asked for."
+      }
+    ],
+    "invoices": [
+      {
+        "invoice": "INV-3054",
+        "contract": "NFC-25-C-0112",
+        "amount_usd": 46500.0,
+        "received": "2026-07-08",
+        "status": "Paid",
+        "bills": "Custodial services, June 2026",
+        "notes": "First submitted 2026-07-01; returned as improper on 2026-07-06 (no contract line item number). Corrected invoice received 2026-07-08."
+      },
+      {
+        "invoice": "INV-3066",
+        "contract": "NFC-25-C-0112",
+        "amount_usd": 18000.0,
+        "received": "2026-06-05",
+        "status": "Paid",
+        "bills": "Post-renovation deep cleaning, May 2026"
+      },
+      {
+        "invoice": "INV-3081",
+        "contract": "NFC-25-C-0112",
+        "amount_usd": 7400.0,
+        "received": "2026-08-10",
+        "status": "Paid",
+        "bills": "Exterior window cleaning, July 2026",
+        "notes": "First submitted 2026-07-20; returned as improper on 2026-07-24 (no contract line item number). Corrected invoice received 2026-08-10."
+      },
+      {
+        "invoice": "INV-3092",
+        "contract": "NFC-26-P-0207",
+        "amount_usd": 9850.0,
+        "received": "2026-07-28",
+        "status": "Partly paid: $8,450 paid; $1,400 in dispute",
+        "bills": "Janitorial supplies, 197 cases"
+      },
+      {
+        "invoice": "INV-3101",
+        "contract": "NFC-25-C-0112",
+        "amount_usd": 48000.0,
+        "received": "2026-08-03",
+        "status": "Paid",
+        "bills": "Custodial services, July 2026"
+      },
+      {
+        "invoice": "INV-3109",
+        "contract": "CFO-26-C-0040",
+        "amount_usd": 22750.0,
+        "received": "2026-08-03",
+        "status": "Paid",
+        "bills": "Quarterly HVAC maintenance, May to July 2026"
+      },
+      {
+        "invoice": "INV-3112",
+        "contract": "CFO-26-C-0040",
+        "amount_usd": 9600.0,
+        "received": "2026-08-03",
+        "status": "Paid",
+        "bills": "Annual chiller inspection"
+      },
+      {
+        "invoice": "INV-3118",
+        "contract": "NFC-26-P-0207",
+        "amount_usd": 6200.0,
+        "received": "2026-08-07",
+        "status": "Paid",
+        "bills": "Floor care equipment and supplies"
+      },
+      {
+        "invoice": "INV-3123",
+        "contract": "NFC-26-P-0207",
+        "amount_usd": 310.0,
+        "received": "2026-08-20",
+        "status": "Paid",
+        "bills": "Replacement mop heads"
+      },
+      {
+        "invoice": "INV-3127",
+        "contract": "CFO-26-C-0040",
+        "amount_usd": 112400.0,
+        "received": "2026-08-17",
+        "status": "Paid",
+        "bills": "Compressor replacement, rooftop unit 2"
+      },
+      {
+        "invoice": "INV-3135",
+        "contract": "NFC-25-C-0112",
+        "amount_usd": 48000.0,
+        "received": "2026-09-02",
+        "status": "Approved; payment scheduled for 2026-10-15",
+        "bills": "Custodial services, August 2026"
+      }
+    ],
+    "contracts": [
+      {
+        "contract": "NFC-25-C-0112",
+        "covers": "Custodial and cleaning services at the Northfield Federal Center",
+        "terms": "Payment 30 days after the later of a proper invoice's receipt and acceptance. Acceptance: the day the agency accepts, or the 7th day after the work is completed if none is recorded."
+      },
+      {
+        "contract": "CFO-26-C-0040",
+        "covers": "HVAC maintenance and repair at the Corbin Field Office",
+        "terms": "Payment 30 days after the later of a proper invoice's receipt and acceptance. Acceptance: the agency has 15 days after completion to inspect and accept (a longer period, set in the contract)."
+      },
+      {
+        "contract": "NFC-26-P-0207",
+        "covers": "Janitorial supplies for the Northfield Federal Center (purchase order)",
+        "terms": "Payment 30 days after the later of a proper invoice's receipt and acceptance. Acceptance: on inspection at delivery, or the 7th day after delivery if none is recorded."
+      }
+    ],
+    "receiving": [
+      {
+        "invoice": "INV-3054",
+        "completed": "2026-06-30",
+        "accepted": "2026-07-02"
+      },
+      {
+        "invoice": "INV-3066",
+        "completed": "2026-05-29",
+        "accepted": "2026-06-08"
+      },
+      {
+        "invoice": "INV-3081",
+        "completed": "2026-07-17",
+        "accepted": "2026-07-22"
+      },
+      {
+        "invoice": "INV-3092",
+        "completed": "Delivered 2026-07-27",
+        "accepted": "2026-08-03, 157 of 197 cases"
+      },
+      {
+        "invoice": "INV-3101",
+        "completed": "2026-07-31",
+        "accepted": "2026-08-05"
+      },
+      {
+        "invoice": "INV-3109",
+        "completed": "2026-07-31",
+        "accepted": "2026-08-13"
+      },
+      {
+        "invoice": "INV-3112",
+        "completed": "2026-08-01",
+        "accepted": "2026-08-17"
+      },
+      {
+        "invoice": "INV-3118",
+        "completed": "Delivered 2026-08-10",
+        "accepted": "None recorded"
+      },
+      {
+        "invoice": "INV-3123",
+        "completed": "Delivered 2026-08-19",
+        "accepted": "2026-08-24"
+      },
+      {
+        "invoice": "INV-3127",
+        "completed": "2026-08-14",
+        "accepted": "2026-08-26"
+      },
+      {
+        "invoice": "INV-3135",
+        "completed": "2026-08-31",
+        "accepted": "2026-09-15"
+      }
+    ],
+    "deposits": [
+      {
+        "settled": "2026-07-20",
+        "amount_usd": 18028.5,
+        "memo": "TREAS 310 VENDOR PAY NFC INV-3066 INCL PPA INT 28.50"
+      },
+      {
+        "settled": "2026-08-24",
+        "amount_usd": 46500.0,
+        "memo": "TREAS 310 VENDOR PAY NFC INV-3054"
+      },
+      {
+        "settled": "2026-08-27",
+        "amount_usd": 8450.0,
+        "memo": "TREAS 310 VENDOR PAY NFC INV-3092 PARTIAL"
+      },
+      {
+        "settled": "2026-09-08",
+        "amount_usd": 7400.0,
+        "memo": "TREAS 310 VENDOR PAY NFC INV-3081"
+      },
+      {
+        "settled": "2026-09-14",
+        "amount_usd": 22750.0,
+        "memo": "TREAS 310 VENDOR PAY CFO INV-3109"
+      },
+      {
+        "settled": "2026-09-15",
+        "amount_usd": 9600.0,
+        "memo": "TREAS 310 VENDOR PAY CFO INV-3112"
+      },
+      {
+        "settled": "2026-09-21",
+        "amount_usd": 48000.0,
+        "memo": "TREAS 310 VENDOR PAY NFC INV-3101"
+      },
+      {
+        "settled": "2026-09-24",
+        "amount_usd": 6200.0,
+        "memo": "TREAS 310 VENDOR PAY NFC INV-3118"
+      },
+      {
+        "settled": "2026-09-25",
+        "amount_usd": 310.0,
+        "memo": "TREAS 310 VENDOR PAY NFC INV-3123"
+      },
+      {
+        "settled": "2026-09-28",
+        "amount_usd": 112400.0,
+        "memo": "TREAS 310 VENDOR PAY CFO INV-3127"
+      }
+    ],
+    "mail": [
+      {
+        "message_id": "P-501",
+        "from": "Northfield Federal Center, accounts payable",
+        "date": "2026-07-06",
+        "subject": "Invoice INV-3054 returned as improper",
+        "search": "Northfield Federal Center accounts payable invoice returned improper INV-3054",
+        "body": "INV-3054 is returned: it has no contract line item number. Please submit a corrected invoice."
+      },
+      {
+        "message_id": "P-502",
+        "from": "Northfield Federal Center, accounts payable",
+        "date": "2026-07-24",
+        "subject": "Invoice INV-3081 returned as improper",
+        "search": "Northfield Federal Center accounts payable invoice returned improper INV-3081",
+        "body": "INV-3081 is returned: it has no contract line item number. Please submit a corrected invoice."
+      },
+      {
+        "message_id": "P-503",
+        "from": "Northfield Federal Center, contracting officer",
+        "date": "2026-08-12",
+        "subject": "INV-3092: quantity disputed",
+        "search": "Northfield Federal Center contracting officer quantity disputed INV-3092",
+        "body": "We received 157 of the 197 cases billed on INV-3092. We will pay for the 157 cases and dispute the $1,400 billed for the other 40 until delivery is shown. This is a dispute over the amount under the contract."
+      },
+      {
+        "message_id": "P-504",
+        "from": "Bureau of the Fiscal Service",
+        "date": "2026-07-20",
+        "subject": "Payment advice: INV-3066",
+        "search": "Bureau Fiscal Service payment advice INV-3066",
+        "body": "Payment of $18,028.50 for INV-3066: principal $18,000.00 and Prompt Payment interest $28.50 for 12 days at 4.75%."
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "federal-prompt-pay-interest",
+  "captured_at": "2026-10-09T19:04:39Z",
+  "bench_run_at": "2026-10-09T19:01:44Z",
+  "narration": {
+    "text": "The interest federal agencies owe on late payments, claimed with the penalty. This is a chore for the office manager of a forty-person facility services contractor in Kansas City that bills three federal contracts. Athena works it across 4 portals: Invoicepoint, Contractdesk, Ledgerline bank and Mailnest. On the bench, she found 7 of 7 eligible items, worth 440 dollars and 16 cents of the 440 dollars and 16 cents there was to find. All 7 were filed at the exact amount the rules allow. She made no false claim. The world held 11 traps, and she walked past 11. Among them: A supplies invoice with 1,400 dollars held back in a quantity dispute. An invoice due on a Saturday and paid on the Monday. She took 5 minutes. By hand, the same chore takes 3 hours, so she was about 39 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 61.785,
+    "sha256": "562932d64d3fb09246346974c6d044e8069e192c714c2e697ba3c7a16e8bf9ad"
+  },
+  "video": {
+    "path": "evidence/federal-prompt-pay-interest/evidence.mp4",
+    "duration_s": 61.8,
+    "bytes": 2780078,
+    "sha256": "1b8f169784b4a27736fb26d8391cb06bd57860458c56d9d7062c76ee26273f1c"
+  },
+  "thumbnail": {
+    "path": "playbooks/federal-prompt-pay-interest/thumb.jpg",
+    "bytes": 80020,
+    "sha256": "2994f8d332e7e7b2340cd9ad58ca52c51af0a7a8a58e588f54293ee0275e3b4e"
+  }
+}

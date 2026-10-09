@@ -1,0 +1,115 @@
+{
+  "id": "federal-prompt-pay-interest",
+  "title": "The interest federal agencies owe on late payments, claimed with the penalty",
+  "domain": "Government contracting",
+  "audience": "work",
+  "promise": "Every federal invoice's due date worked out from its receipt, its acceptance and the contract's terms, and checked against the day the money landed: the Prompt Payment interest requested to the cent on each one paid late without it, the additional penalty asked for wherever it is still owed, and nothing asked for a disputed, on-time, already-paid, too-small or not-yet-due invoice.",
+  "persona": "The office manager of a forty-person facility services contractor in Kansas City that bills three federal contracts",
+  "chore": "Read every invoice's receipt date, returns as improper and status in the invoicing portal; each contract's acceptance terms and each job's completion and acceptance dates in the contract portal; the day each Treasury payment settled and what it included at the bank; and the agencies' returns, a dispute and a payment advice in the mail. Then apply the Prompt Payment rules: due 30 days after the later of a proper invoice and acceptance, a weekend's grace, the clock restarted by a corrected invoice, nothing during a dispute, interest at the rate of the day after the due date on a 360-day year, nothing under a dollar, and the additional penalty of at least $25 only inside 40 days. Request each on the invoicing portal; none of the four systems shares data with another.",
+  "command": "I'm sure the agencies have been paying us late without the interest. Go through Invoicepoint, Contractdesk, our Ledgerline bank and my Mailnest, and request the Prompt Payment interest on every invoice paid late without it, to the cent, plus the additional penalty wherever we're still entitled to it. Leave alone anything that wasn't late.",
+  "apps": [
+    {
+      "name": "Invoicepoint",
+      "role": "the Prompt Payment rules, every invoice with its receipt date, returns and status, and the interest and penalty request forms",
+      "api": "Vendor invoicing portal only",
+      "url": ""
+    },
+    {
+      "name": "Contractdesk",
+      "role": "each contract's acceptance terms, and the receiving reports with completion and acceptance dates",
+      "api": "Contract portal, no payment feed",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline bank",
+      "role": "the day each Treasury payment settled, its amount and its memo",
+      "api": "Online banking only",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "two invoices returned as improper, a quantity dispute and a payment advice that included interest",
+      "api": "Mail, not data",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules and every invoice in Invoicepoint: received when, returned or not, paid or not.",
+    "Reads each contract's acceptance terms and each job's completion and acceptance in Contractdesk.",
+    "Reads the day each payment settled, and for how much, in the bank.",
+    "Reads the returns, the dispute and the payment advice in Mailnest.",
+    "Back in Invoicepoint, requests the interest on each late invoice paid without it, and the penalty on each still inside its 40 days."
+  ],
+  "gates": [
+    {
+      "action": "request_interest",
+      "label": "Request late-payment interest",
+      "why": "It reaches the agency's paying office in the company's name; a request on an invoice paid on time or in dispute costs credibility with the customer that pays the bills."
+    },
+    {
+      "action": "request_penalty",
+      "label": "Request the additional penalty",
+      "why": "A written demand for money from a federal agency; one the rule does not allow is a false claim."
+    }
+  ],
+  "traps": [
+    "A supplies invoice with $1,400 held back in a quantity dispute.",
+    "An invoice due on a Saturday and paid on the Monday.",
+    "A late payment that came with its interest.",
+    "Two days late on $310: eight cents of interest.",
+    "An HVAC invoice that looks two weeks late from its receipt, and was on time from its acceptance under the contract's 15 days.",
+    "A window-cleaning invoice whose clock restarted with the corrected invoice.",
+    "August's invoice, approved and not yet due.",
+    "A penalty on a June invoice whose 40 days ran out on 3 October.",
+    "Penalties on the disputed invoice, the one paid with interest, and the one owed eight cents."
+  ],
+  "memory": [
+    "Each invoice's receipt date, and any return and corrected receipt, carried from Invoicepoint.",
+    "Each contract's acceptance period and each job's completion and acceptance, carried from Contractdesk.",
+    "Each payment's settlement day and amount, carried from the bank.",
+    "The dispute, the returns and the interest already paid, from the mail."
+  ],
+  "economics": {
+    "value_usd": 3500,
+    "per": "year",
+    "basis": "An estimate. A contractor billing about $3.3 million a year to federal agencies, a fifth of it paid around 20 days late without interest (a State Department audit found 34% of sampled payments owed interest and 24% paid it), is owed about $1,740 of interest at 4.75% and the same again in additional penalties, about $3,500. The bench world holds $440.16 across four invoices, $263.00 of interest and $177.16 of penalties. Times a year: four, a quarterly sweep, as the world holds about four months of invoices.",
+    "manual_minutes": 180,
+    "times_per_year": 4,
+    "incumbent": "None takes a share: the agency must pay the interest unasked, and in practice the contractor's own bookkeeper checks it, when anyone does.",
+    "sources": [
+      {
+        "label": "5 CFR 1315.4: payment due dates, acceptance, weekends and improper invoices",
+        "url": "https://www.law.cornell.edu/cfr/text/5/1315.4"
+      },
+      {
+        "label": "5 CFR 1315.10: late payment interest (360-day year, the rate of the day after the due date, under $1, disputes)",
+        "url": "https://www.law.cornell.edu/cfr/text/5/1315.10"
+      },
+      {
+        "label": "5 CFR 1315.11: additional penalties (40 days, 100%, not less than $25 nor more than $5,000)",
+        "url": "https://www.law.cornell.edu/cfr/text/5/1315.11"
+      },
+      {
+        "label": "Bureau of the Fiscal Service: Prompt Payment interest rate, 4.75% for July to December 2026",
+        "url": "https://fiscal.treasury.gov/prompt-payment/rates.html"
+      },
+      {
+        "label": "State Department OIG, AUD/IP-09-24: 34% of sampled payments owed interest, 24% were paid it",
+        "url": "https://www.stateoig.gov/uploads/report/report_pdf_file/aud_ip-09-24_1.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Four systems with no shared data; each due date is the later of two dates with a contract's own acceptance period, a corrected invoice or a weekend in the way, and seven invoices that look late or owed are not.",
+    "usefulness_why": "Interest and penalties agencies owe but rarely pay unasked, a few thousand dollars a year for a small contractor, and a check nobody has time for."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful bookkeeper finds most of it; the bar is most of the interest and penalties, nothing asked on an invoice that was not late or not owed, inside an hour."
+  },
+  "caveat": "Tallis Facility Services, its contracts and their agencies, Invoicepoint, Contractdesk, Ledgerline, Mailnest and every person here are invented. The rules are the Prompt Payment Act and 5 CFR Part 1315 with Treasury's published rate, fixed in the bench world as of October 2026; a contract's own payment clauses can change the dates, and a disputed amount goes under the Contract Disputes Act. This is not legal advice."
+}

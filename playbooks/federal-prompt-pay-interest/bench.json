@@ -1,0 +1,364 @@
+{
+  "playbook": "federal-prompt-pay-interest",
+  "run_at": "2026-10-09T19:01:44Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 276.9,
+  "turns": 13,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 28,
+  "cost_usd": 2.0778,
+  "your_time_s": 210,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 4.6
+  },
+  "score": {
+    "eligible": 7,
+    "found": 7,
+    "exact": 7,
+    "value_total_usd": 440.16,
+    "value_found_usd": 440.16,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 11,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "request_interest",
+        "key": "INV-3092",
+        "why": "The $1,400 is held back in a dispute over the amount, and the undisputed $8,450 was paid before its due date: no interest",
+        "filed": false
+      },
+      {
+        "action": "request_interest",
+        "key": "INV-3109",
+        "why": "Due on Saturday 2026-09-12 and paid on Monday 2026-09-14, the next business day: on time",
+        "filed": false
+      },
+      {
+        "action": "request_interest",
+        "key": "INV-3066",
+        "why": "Paid late, with the $28.50 interest owed included in the payment",
+        "filed": false
+      },
+      {
+        "action": "request_interest",
+        "key": "INV-3123",
+        "why": "Two days late on $310: $0.08 of interest, under the $1.00 owed",
+        "filed": false
+      },
+      {
+        "action": "request_interest",
+        "key": "INV-3112",
+        "why": "Accepted 2026-08-17 inside the contract's 15 days, so due 2026-09-16; paid 2026-09-15: on time",
+        "filed": false
+      },
+      {
+        "action": "request_interest",
+        "key": "INV-3081",
+        "why": "The corrected invoice was received 2026-08-10, so it was due 2026-09-09; paid 2026-09-08: on time",
+        "filed": false
+      },
+      {
+        "action": "request_interest",
+        "key": "INV-3135",
+        "why": "Not due until 2026-10-15: nothing is late yet",
+        "filed": false
+      },
+      {
+        "action": "request_penalty",
+        "key": "INV-3054",
+        "why": "Paid 2026-08-24: the 40th day was 2026-10-03, so only the interest can still be asked for",
+        "filed": false
+      },
+      {
+        "action": "request_penalty",
+        "key": "INV-3092",
+        "why": "A disputed amount owes no interest, so no penalty",
+        "filed": false
+      },
+      {
+        "action": "request_penalty",
+        "key": "INV-3066",
+        "why": "The interest was paid with the payment",
+        "filed": false
+      },
+      {
+        "action": "request_penalty",
+        "key": "INV-3123",
+        "why": "The interest was under $1.00, so no penalty is owed",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "request_interest",
+      "key": "INV-3054",
+      "outcome": "correct",
+      "value_usd": 104.3,
+      "exact": true,
+      "why": "Returned as improper; the corrected invoice was received 2026-07-08, after the 2026-07-02 acceptance, so due 2026-08-07; settled 2026-08-24 with no interest: 17 days, $46,500 x 4.75% x 17 / 360 = $104.30"
+    },
+    {
+      "action": "request_interest",
+      "key": "INV-3101",
+      "outcome": "correct",
+      "value_usd": 107.67,
+      "exact": true,
+      "why": "Received 2026-08-03, accepted 2026-08-05, so due 2026-09-04; settled 2026-09-21 with no interest: 17 days, $48,000 x 4.75% x 17 / 360 = $107.67"
+    },
+    {
+      "action": "request_interest",
+      "key": "INV-3118",
+      "outcome": "correct",
+      "value_usd": 6.54,
+      "exact": true,
+      "why": "Received 2026-08-07 before the 2026-08-10 delivery; no acceptance recorded, so accepted on the 7th day, 2026-08-17, and due 2026-09-16; settled 2026-09-24: 8 days, $6,200 x 4.75% x 8 / 360 = $6.54"
+    },
+    {
+      "action": "request_interest",
+      "key": "INV-3127",
+      "outcome": "correct",
+      "value_usd": 44.49,
+      "exact": true,
+      "why": "Received 2026-08-17, accepted 2026-08-26 inside the contract's 15 days, so due 2026-09-25; settled 2026-09-28 with no interest: 3 days, $112,400 x 4.75% x 3 / 360 = $44.49"
+    },
+    {
+      "action": "request_penalty",
+      "key": "INV-3101",
+      "outcome": "correct",
+      "value_usd": 107.67,
+      "exact": true,
+      "why": "Paid 2026-09-21 without the interest, which was not paid in the 10 days after; the 40th day is 2026-10-31: 100% of the $107.67 interest"
+    },
+    {
+      "action": "request_penalty",
+      "key": "INV-3118",
+      "outcome": "correct",
+      "value_usd": 25.0,
+      "exact": true,
+      "why": "Paid 2026-09-24 without the $6.54 interest; the 40th day is 2026-11-03: 100% of the interest, but not less than $25"
+    },
+    {
+      "action": "request_penalty",
+      "key": "INV-3127",
+      "outcome": "correct",
+      "value_usd": 44.49,
+      "exact": true,
+      "why": "Paid 2026-09-28 without the interest, not paid by 2026-10-08; the 40th day is 2026-11-07: 100% of the $44.49 interest"
+    }
+  ],
+  "missed": [],
+  "closing_words": "The recalled history is cut off, and I won't compute from fragments. I'm pulling the saved Contractdesk terms and the full deposit list first.\n\nFour invoices were paid late with no interest, and I'm filing seven requests for you to approve: four for interest and three for the penalty. Each is below with its working.\n\n**Requests**\n\n| Invoice | Due | Paid | Days late | Interest | Penalty |\n|---|---|---|---|---|---|\n| INV-3054 | 7 Aug | 24 Aug | 17 | $104.30 | Not claimable, window closed 3 Oct |\n| INV-3101 | 4 Sep | 21 Sep | 17 | $107.67 | $107.67 (by 31 Oct) |\n| INV-3118 | 16 Sep | 24 Sep | 8 | $6.54 | $25.00, the minimum (by 3 Nov) |\n| INV-3127 | 25 Sep | 28 Sep | 3 | $44.49 | $44.49 (by 7 Nov) |\n\n- **Interest total:** $263.00.\n- **Penalty total:** $177.16.\n- **INV-3054:** the clock ran from the corrected invoice, received 8 Jul, not from acceptance on 2 Jul. $46,500 × 4.75% × 17 / 360 =",
+  "trace": [
+    {
+      "portal": "Invoicepoint",
+      "user": "I think the agencies have been paying us late and skipping the interest. Start here in Invoicepoint: read the rules, every invoice since June, when it was received, and anything returned.",
+      "continued": false,
+      "said": "I'll read the rules and the first page of invoices now, then open anything that was returned.\n\nThe rules and the invoice list are on their way. My first line was malformed and got dropped, but the two correct calls went through. I'll wait for their answers before opening any invoice.",
+      "said_chars": 284,
+      "reads": [
+        "read_rules",
+        "list_invoices"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Invoicepoint",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of 2 is in (6 of 11 invoices). I'll fetch page 2 and read the rules topics now, since the index gave only topic names.",
+      "said_chars": 125,
+      "reads": [
+        "list_invoices",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Invoicepoint",
+      "user": "",
+      "continued": true,
+      "said": "I have all 11 invoices (6 + 5) and the rules. I'll open each one for returns and agency notes, because the list shows neither.",
+      "said_chars": 126,
+      "reads": [
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice",
+        "read_invoice"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Invoicepoint",
+      "user": "",
+      "continued": true,
+      "said": "Invoicepoint is read: 11 invoices since June, three of them returned or in dispute, and none is ready to claim yet.\n\n**Rules, as Invoicepoint states them**\n- Payment is due 30 days after the later of proper-invoice receipt and acceptance. If no acceptance is recorded and the contract sets no other period, acceptance is the 7th day after delivery or completion.\n- Interest is 4.75% a year, so amount × 0.0475 × days late / 360. It is owed from the day after the due date through the payment-settled date.",
+      "said_chars": 2815,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Contractdesk",
+      "user": "Now Contractdesk: the payment and acceptance terms of each contract, and when each job was finished and accepted.",
+      "continued": false,
+      "said": "Reading both Contractdesk lists now.",
+      "said_chars": 36,
+      "reads": [
+        "list_contracts",
+        "list_receiving_reports"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Contractdesk",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of the receiving reports is in (6 of 11), so I'm fetching page 2 to finish Contractdesk.",
+      "said_chars": 95,
+      "reads": [
+        "list_receiving_reports"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Contractdesk",
+      "user": "",
+      "continued": true,
+      "said": "Contractdesk is read: all 3 contracts and all 11 receiving reports. I'm saving the key dates now so they carry to the other tabs.\n\n\nContractdesk gave me everything I needed from it. The settle dates are in Ledgerline, and I can't reach that tab's tools from here. Switch me to Ledgerline bank and I'll read the deposits since 1 July. Then I'll go to Mailnest for any interest already paid and any dispute notes.\n\nThe checkpoint is saved as ep_83c48e6b, so the Contractdesk dates are on record.",
+      "said_chars": 704,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "This is our Ledgerline bank. Check when each payment actually landed and for how much.",
+      "continued": false,
+      "said": "I'll read all the Treasury deposits since 1 July.",
+      "said_chars": 49,
+      "reads": [
+        "search_deposits"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "",
+      "continued": true,
+      "said": "Ledgerline shows 10 Treasury deposits since 1 July (showing 10 of 10). I'm saving them now so they carry over to Mailnest.\n\n\n**What landed**\n- Only INV-3066 shows interest paid, $28.50 inside its $18,028.50 deposit on 20 July.\n- INV-3092 was a partial payment of $8,450.00 on 27 August. Contractdesk shows 157 of 197 cases accepted, so I'll check the invoice amount and the remainder before computing anything.\n- INV-3135 has no deposit. It is scheduled for 15 October, so it hasn't been paid late yet.",
+      "said_chars": 1195,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "And my Mailnest government billing folder. Anything there that changes when an invoice was due, or what was paid.",
+      "continued": false,
+      "said": "I'll list everything in the Government billing folder first, then open what looks relevant.",
+      "said_chars": 91,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Four messages are in the folder. I'll open all four.",
+      "said_chars": 52,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "The Mailnest messages change nothing about the due dates, but they do affect two invoices. To compute each invoice I need the deposit dates and amounts and the Contractdesk terms I saved earlier, so I'm recalling them now.\n\nMailnest is done. The recall came back truncated, so I'm saving the Mailnest findings and pulling the full deposit list.\n\nFour invoices were paid late without interest, and three of those still qualify for the penalty. I'm filing seven requests for your approval.",
+      "said_chars": 2781,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Invoicepoint",
+      "user": "Back in Invoicepoint. Request the interest on every invoice paid late without it, to the cent, and the additional penalty wherever we're still entitled to it. Then tell me what you left alone and why.",
+      "continued": false,
+      "said": "The recalled history is cut off, and I won't compute from fragments. I'm pulling the saved Contractdesk terms and the full deposit list first.\n\nFour invoices were paid late with no interest, and I'm filing seven requests for you to approve: four for interest and three for the penalty. Each is below with its working.\n\n**Requests**",
+      "said_chars": 2380,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_interest",
+          "key": "INV-3054",
+          "outcome": "correct",
+          "value_usd": 104.3
+        },
+        {
+          "action": "request_interest",
+          "key": "INV-3101",
+          "outcome": "correct",
+          "value_usd": 107.67
+        },
+        {
+          "action": "request_interest",
+          "key": "INV-3118",
+          "outcome": "correct",
+          "value_usd": 6.54
+        },
+        {
+          "action": "request_interest",
+          "key": "INV-3127",
+          "outcome": "correct",
+          "value_usd": 44.49
+        },
+        {
+          "action": "request_penalty",
+          "key": "INV-3101",
+          "outcome": "correct",
+          "value_usd": 107.67
+        },
+        {
+          "action": "request_penalty",
+          "key": "INV-3118",
+          "outcome": "correct",
+          "value_usd": 25.0
+        },
+        {
+          "action": "request_penalty",
+          "key": "INV-3127",
+          "outcome": "correct",
+          "value_usd": 44.49
+        }
+      ]
+    }
+  ]
+}
