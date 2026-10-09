@@ -143,10 +143,20 @@ def test_the_next_sentence_renders_while_this_one_is_played(homes: EngineHomes, 
     assert first.startswith(b"Sentence number one")
     assert tts.started == ["Sentence number one is here.", "Sentence number two follows it."]
 
-    time.sleep(delay + 1.0)  # playing sentence one, for as long as the engine takes
-    before = time.monotonic()
+    # Playing sentence one: wait, undrained, for sentence two's render to finish by itself. Without
+    # prefetch it is never started until the drain, so this deadline expires. The wait is an event,
+    # not a clock budget, so a loaded machine only makes it longer.
+    deadline = time.monotonic() + 60
+    while len(runs(log)) < 2 and time.monotonic() < deadline:
+        time.sleep(0.05)
+    seen = runs(log)
+    assert len(seen) == 2, "sentence two was not rendered ahead"
+    drain_began = time.time()
     rest = b"".join(stream)
-    assert time.monotonic() - before < delay / 2, "sentence two was not rendered ahead"
+    one, two = seen
+    assert one["argv"][-1] == "Sentence number one is here."  # type: ignore[index]
+    assert two["argv"][-1] == "Sentence number two follows it."  # type: ignore[index]
+    assert two["end"] < drain_began, "sentence two finished only once the drain began"  # type: ignore[operator]
     assert rest.endswith(_pcm("Sentence number two follows it."))
 
 
