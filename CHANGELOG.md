@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `test(playbooks): the insurer's depreciation holdback re-benched after ADR 0058 and it still exceeds` — ADR 0058 step 2: 4 of 4, $15,190 of $15,190, 8 of 8 traps avoided, 0 false, 2.3 min, $1.86, no follow-ups; the run before was 4.7 min, $3.05, 3 follow-ups; she made no recall call, so the fix was not reached; filmed.
+
 - `test(playbooks): the property tax protest re-benched after ADR 0058 and it exceeds` — ADR 0058 step 2: 8 of 8, $2,310 of $2,310, 9 of 9 traps avoided, 0 false, 1.8 min, $0.93, no follow-ups; the run before was short at 5 of 8, $1,470; she made no recall call, so the fix was not reached; filmed.
 
 - `fix(recall): a recall she asks for returns the episodes it matched whole, best match first, packed under the same 4,800 cap` — ADR 0058 step 1, §3.3: `core.recall` no longer reuses the frame's 500-byte excerpts or adds a recency tail and an always tier; it announces `(showing N of M)` in episodes; the frame's ambient window is unchanged.

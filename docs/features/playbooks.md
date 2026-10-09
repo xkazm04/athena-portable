@@ -55,7 +55,7 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A family's delayed flights, claimed under EU 261 | home | 4 | exceeds: 4 of 4, $5,445 of $5,445, 9 of 9 traps, 0 false |
 | Public Service Loan Forgiveness, every month certified | home | 4 | exceeds: 5 of 5, $20,000 of $20,000, 8 of 8 traps, 0 false |
 | The property tax protest, with comparable sales | home | 4 | exceeds (re-benched after ADR 0058, 2026-10-09): 8 of 8, $2,310 of $2,310, 9 of 9 traps, 0 false, 1.8 min, $0.93; was short, 5 of 8, $1,470, 4.4 min, $2.35 |
-| The insurer's depreciation holdback, collected | home | 4 | exceeds: 4 of 4, $15,190 of $15,190, 8 of 8 traps, 0 false |
+| The insurer's depreciation holdback, collected | home | 4 | exceeds (re-benched after ADR 0058, 2026-10-09): 4 of 4, $15,190 of $15,190, 8 of 8 traps, 0 false, 2.3 min, $1.86; was 4.7 min, $3.05 |
 | The Medicaid renewal, answered before coverage lapses | home | 4 | exceeds: 8 of 8, $7,000 of $7,000, 8 of 8 traps, 0 false |
 | Data brokers told to delete, and checked | home | 4 | exceeds: 5 of 5 (a $32.25 weight, not money), 10 of 10 traps, 0 false |
 | Every new hire screened for the Work Opportunity Tax Credit, inside 28 days | work | 4 | exceeds: 5 of 5, $19,200 of $19,200, 9 of 9 traps, 0 false |
