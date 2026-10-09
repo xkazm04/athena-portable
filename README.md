@@ -835,6 +835,7 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 | The property tax protest, with comparable sales (housing) | Mailnest, Deedvault, Compsmith sales, Countyline Appraisal | 4 / 3 | **short** (2026-10-09, run 3 of 3): 5 of 8, $1,470 of $2,310; the home protested at the exact opinion of value with its three comps and the repair estimate, the duplex never filed (its comps came back cut from memory, and the follow-ups ran out); 9 of 9 traps avoided, 0 false; 4.4 min, $2.35 |
 | The insurer's depreciation holdback, collected (home insurance) | Hearthguard claims, Buildmark contractor, Ledgerline bank, Mailnest | 4 / 4 | **exceeds** (2026-10-09): 4 of 4, $15,190 of $15,190, every request exact (the lesser of cost and replacement cost, less the cash value paid), 8 of 8 traps avoided, 0 false; 4.7 min, $3.05 |
 | The Medicaid renewal, answered before coverage lapses (public benefits) | Mailnest, Payroll Harbor, Ledgerline bank, Statecare Benefits | 4 / 4 | **exceeds** (2026-10-09): 8 of 8, $7,000 of $7,000 (a year of an adult's coverage), every correction exact, 8 of 8 traps avoided, 0 false; 2.8 min, $0.98 |
+| Data brokers told to delete, and checked (privacy) | Mailnest, Erasepoint registry, Findwho, Lookabout | 3 / 3 | **exceeds** (2026-10-09, run 2 of 2): 5 of 5 (weighted at $32.25, a removal service's price for one sweep, not money recovered), 10 of 10 traps avoided, 0 false; 1.9 min, $0.85 |
 
 ### What the runs taught Athena
 

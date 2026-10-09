@@ -1,0 +1,115 @@
+{
+  "id": "data-broker-deletion",
+  "title": "Data brokers told to delete, and checked",
+  "domain": "Privacy",
+  "audience": "home",
+  "promise": "One deletion request to every registered data broker tracked to its answer: the former name added so the old listings are found, each listing that is still live and truly yours removed on the broker's own form, and a complaint only where a broker has run past its deadline, never for a namesake or for someone else.",
+  "persona": "A Californian who sent the state's one-step deletion request in January and still finds herself on people-search sites",
+  "chore": "Read each broker's answer on the state's deletion platform: deleted, opted out, exempt, not found, or nothing yet. Search the people-search sites for every name she has used, and tell her listings from her namesakes' and her family's. Remove the live ones with each site's own form, add her former name to the request, and complain only about a broker past its 45 days. Each site has its own form, and none of them tells you which listing is yours.",
+  "command": "I asked the state's Erasepoint to make data brokers delete me back in January, and I'm still on people-search sites. Check what each broker answered, find what's still up on Findwho and Lookabout, get my listings removed, and complain about any broker that's ignoring the law. Leave my family's listings and anyone who just shares my name alone.",
+  "apps": [
+    {
+      "name": "Mailnest",
+      "role": "the brokers' answers, the platform's confirmation, and a message from her son",
+      "api": "Mail, not data",
+      "url": ""
+    },
+    {
+      "name": "Erasepoint registry",
+      "role": "the state's deletion platform: her request and its identifiers, each broker's status, and the complaint form",
+      "api": "Web platform only",
+      "url": ""
+    },
+    {
+      "name": "Findwho",
+      "role": "a people-search site: listings by name, and its own removal form",
+      "api": "Web form only",
+      "url": ""
+    },
+    {
+      "name": "Lookabout",
+      "role": "a people-search site: listings by name, and its own removal form",
+      "api": "Web form only",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the brokers' answers in Mailnest, and a message from her son asking her not to act for him.",
+    "In Erasepoint, reads the rule, her request's identifiers and each broker's status; adds the former name the request missed; complains about the one broker past its deadline.",
+    "On Findwho, searches every name she has used and asks for removal of her two listings, under her name now and her name before.",
+    "On Lookabout, finds the listing that came back after the deletion and asks for its removal.",
+    "Leaves alone the namesakes, her mother's and her son's listings, the broker whose exemption the law allows, and the brokers still inside their time."
+  ],
+  "gates": [
+    {
+      "action": "request_removal",
+      "label": "Ask a site to remove a listing",
+      "why": "It is a request in her name, with her email, to delete a record; for a namesake or a relative it would act on someone else's data."
+    },
+    {
+      "action": "add_identifier",
+      "label": "Add an identifier to the request",
+      "why": "It goes to every registered broker as hers."
+    },
+    {
+      "action": "file_complaint",
+      "label": "Complain to the agency",
+      "why": "It reaches the state's privacy agency and accuses a business of breaking the law."
+    }
+  ],
+  "traps": [
+    "A Noor Haddad, 29, in Fresno, and another, 52, in Sacramento: namesakes, not her.",
+    "Her mother's listing: she has no authority to act for her mother.",
+    "Her adult son's listing: he asked to handle it himself.",
+    "A broker that opted her out of sale because it could not verify her: the law allows exactly that, so a complaint is wrong; its own removal form is the way.",
+    "A broker exempt for consumer-report data under federal law.",
+    "A broker that retrieved the request ten days ago: inside its 45 days.",
+    "A broker whose re-listing is inside its next 45-day cycle: remove it on its form, but it is not a violation yet.",
+    "Adding her mother's name to her own request."
+  ],
+  "memory": [
+    "Every name, address and birth year she has used, to tell her listings from her namesakes'.",
+    "Each broker's status, the date it retrieved the request, and the day its 45 days end.",
+    "The listings removed and the dates to check again.",
+    "Whose listings are not hers to remove."
+  ],
+  "economics": {
+    "value_usd": 0,
+    "per": "year",
+    "basis": "Nothing is recovered: the value is hours and privacy. A sweep of the registry and two people-search sites takes about 3 hours by hand, and brokers re-collect, so it is repeated as the Delete Act's 45-day cycles and DeleteMe's quarterly reports suggest: four times a year, about 12 hours. In the bench world each act is weighted at $6.45, a fifth of $32.25, which is DeleteMe's $129 a year for one person over four sweeps; that weight is a price avoided, not money recovered.",
+    "manual_minutes": 180,
+    "times_per_year": 4,
+    "incumbent": "Removal services such as DeleteMe charge $129 a year for one person, with quarterly reports, and cover far fewer sites automatically than they list.",
+    "sources": [
+      {
+        "label": "California Privacy Protection Agency: the Delete Request and Opt-out Platform (DROP), Civil Code §1798.99.86",
+        "url": "https://cppa.ca.gov/data_brokers"
+      },
+      {
+        "label": "California Civil Code §1798.105: the right to delete (CCPA)",
+        "url": "https://california.public.law/codes/civil_code_section_1798.105"
+      },
+      {
+        "label": "Freshfields: DROP is live, brokers process every 45 days from August 1, 2026",
+        "url": "https://www.freshfields.com/en/our-thinking/blogs/a-fresh-take/drop-is-live-what-data-brokers-need-to-know-as-calprivacy-ramps-up-oversight-102nqhf"
+      },
+      {
+        "label": "Security.org: DeleteMe review and pricing",
+        "url": "https://www.security.org/data-removal/deleteme/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 3,
+    "usefulness": 3,
+    "difficulty_why": "Four portals and listings that look alike: namesakes, a former name, relatives, and a broker whose lawful answer looks like a refusal.",
+    "usefulness_why": "Hours a year and a real privacy harm, though no money; a subscription service does part of it for a fee."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful person with an afternoon gets most of it; the bar is most of the removals, nothing done to a namesake or a relative and no complaint the law does not support, inside an hour."
+  },
+  "caveat": "Erasepoint, Findwho, Lookabout, the other brokers and Noor Haddad are invented; the rule is California's Delete Act and the CCPA as in force in October 2026, fixed in the bench world. This is not legal advice: the state's privacy agency decides a complaint."
+}

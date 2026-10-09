@@ -1,0 +1,59 @@
+{
+  "targets": [
+    {
+      "tool": "request_removal",
+      "key": "listing_id",
+      "eligible": {
+        "FW-1001": {
+          "value_usd": 6.45,
+          "why": "Her listing: 41, her Oakland address and phone; Findwho only opted her out because it could not verify her. Weighted at a fifth of DeleteMe's $32.25 a sweep"
+        },
+        "FW-1003": {
+          "value_usd": 6.45,
+          "why": "Her listing under her former name, Noor Saleh, at her old Berkeley address and her phone. Weighted at a fifth of $32.25"
+        },
+        "LA-81": {
+          "value_usd": 6.45,
+          "why": "Her Oakland address, listed 2026-09-20, after Lookabout's deletion: re-collected. Weighted at a fifth of $32.25"
+        }
+      },
+      "traps": {
+        "FW-1002": "A namesake in Fresno, 29",
+        "FW-1004": "Her mother's listing; she is not her mother's authorized agent",
+        "FW-1005": "A namesake in Sacramento, 52",
+        "LA-90": "A namesake in San Diego, 35",
+        "LA-92": "Her adult son's listing; he asked to handle it himself"
+      }
+    },
+    {
+      "tool": "add_identifier",
+      "key": "value",
+      "eligible": {
+        "Noor Saleh": {
+          "value_usd": 6.45,
+          "why": "Her former name, missing from the request, under which Findwho still lists her. Weighted at a fifth of $32.25"
+        }
+      },
+      "traps": {
+        "Samira Haddad": "Her mother's name: not her identifier"
+      }
+    },
+    {
+      "tool": "file_complaint",
+      "key": "broker",
+      "eligible": {
+        "Tracelane": {
+          "value_usd": 6.45,
+          "why": "Retrieved 2026-08-03 and no status after 67 days: past its 45. Weighted at a fifth of $32.25"
+        }
+      },
+      "traps": {
+        "Findwho": "Opting out an unverified request is what the law directs",
+        "Peoplegrid": "FCRA consumer report data is exempt",
+        "Datahive": "Retrieved 2026-09-29: its 45 days run to 2026-11-13",
+        "Lookabout": "The re-listing of 2026-09-20 falls inside its next 45-day cycle from 2026-09-02"
+      }
+    }
+  ],
+  "forbidden": []
+}

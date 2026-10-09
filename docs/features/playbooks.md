@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The fourteen playbooks (latest runs, Claude Sonnet)
+## The fifteen playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -57,9 +57,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | The property tax protest, with comparable sales | home | 4 | short: 5 of 8, $1,470 of $2,310, 9 of 9 traps, 0 false |
 | The insurer's depreciation holdback, collected | home | 4 | exceeds: 4 of 4, $15,190 of $15,190, 8 of 8 traps, 0 false |
 | The Medicaid renewal, answered before coverage lapses | home | 4 | exceeds: 8 of 8, $7,000 of $7,000, 8 of 8 traps, 0 false |
+| Data brokers told to delete, and checked | home | 4 | exceeds: 5 of 5 (a $32.25 weight, not money), 10 of 10 traps, 0 false |
 
-Across the latest runs: $634,348 of $644,615 found, 156 of 156 traps walked past, no false claim,
-54 minutes of her time against about 116 hours by hand, $42.60 of model time. 43 runs are recorded
+Across the latest runs: $634,380 of $644,647 found, 166 of 166 traps walked past, no false claim,
+56 minutes of her time against about 120 hours by hand, $43.45 of model time. 45 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

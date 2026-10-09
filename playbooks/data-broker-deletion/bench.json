@@ -1,0 +1,332 @@
+{
+  "playbook": "data-broker-deletion",
+  "run_at": "2026-10-09T17:56:03Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 116.9,
+  "turns": 12,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 25,
+  "cost_usd": 0.8527,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.9
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 32.25,
+    "value_found_usd": 32.25,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 10,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "request_removal",
+        "key": "FW-1002",
+        "why": "A namesake in Fresno, 29",
+        "filed": false
+      },
+      {
+        "action": "request_removal",
+        "key": "FW-1004",
+        "why": "Her mother's listing; she is not her mother's authorized agent",
+        "filed": false
+      },
+      {
+        "action": "request_removal",
+        "key": "FW-1005",
+        "why": "A namesake in Sacramento, 52",
+        "filed": false
+      },
+      {
+        "action": "request_removal",
+        "key": "LA-90",
+        "why": "A namesake in San Diego, 35",
+        "filed": false
+      },
+      {
+        "action": "request_removal",
+        "key": "LA-92",
+        "why": "Her adult son's listing; he asked to handle it himself",
+        "filed": false
+      },
+      {
+        "action": "add_identifier",
+        "key": "SAMIRAHADDAD",
+        "why": "Her mother's name: not her identifier",
+        "filed": false
+      },
+      {
+        "action": "file_complaint",
+        "key": "FINDWHO",
+        "why": "Opting out an unverified request is what the law directs",
+        "filed": false
+      },
+      {
+        "action": "file_complaint",
+        "key": "PEOPLEGRID",
+        "why": "FCRA consumer report data is exempt",
+        "filed": false
+      },
+      {
+        "action": "file_complaint",
+        "key": "DATAHIVE",
+        "why": "Retrieved 2026-09-29: its 45 days run to 2026-11-13",
+        "filed": false
+      },
+      {
+        "action": "file_complaint",
+        "key": "LOOKABOUT",
+        "why": "The re-listing of 2026-09-20 falls inside its next 45-day cycle from 2026-09-02",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "add_identifier",
+      "key": "NOORSALEH",
+      "outcome": "correct",
+      "value_usd": 6.45,
+      "exact": true,
+      "why": "Her former name, missing from the request, under which Findwho still lists her. Weighted at a fifth of $32.25"
+    },
+    {
+      "action": "file_complaint",
+      "key": "TRACELANE",
+      "outcome": "correct",
+      "value_usd": 6.45,
+      "exact": true,
+      "why": "Retrieved 2026-08-03 and no status after 67 days: past its 45. Weighted at a fifth of $32.25"
+    },
+    {
+      "action": "request_removal",
+      "key": "FW-1001",
+      "outcome": "correct",
+      "value_usd": 6.45,
+      "exact": true,
+      "why": "Her listing: 41, her Oakland address and phone; Findwho only opted her out because it could not verify her. Weighted at a fifth of DeleteMe's $32.25 a sweep"
+    },
+    {
+      "action": "request_removal",
+      "key": "FW-1003",
+      "outcome": "correct",
+      "value_usd": 6.45,
+      "exact": true,
+      "why": "Her listing under her former name, Noor Saleh, at her old Berkeley address and her phone. Weighted at a fifth of $32.25"
+    },
+    {
+      "action": "request_removal",
+      "key": "LA-81",
+      "outcome": "correct",
+      "value_usd": 6.45,
+      "exact": true,
+      "why": "Her Oakland address, listed 2026-09-20, after Lookabout's deletion: re-collected. Weighted at a fifth of $32.25"
+    }
+  ],
+  "missed": [],
+  "closing_words": "LA-81 is yours, and I'm filing a removal for it. I haven't done anything else on Lookabout.\n\n\n**What I found on Lookabout (4 listings)**\n- **LA-77, Noor Haddad, Oakland:** this is your old listing. It is Removed as of 2026-09-02, and the record is empty. Lookabout did delete it.\n- **LA-81, Noor N. Haddad, age 41, Oakland:** this is yours. It's Live, listed 2026-09-20, and has your 1290 Alcatraz Ave address. It's the one I'm filing the removal for.\n- **LA-90, Noor Haddad, age 35, San Diego:** this is someone who shares your name, so I'm leaving it alone.\n- **LA-92, Karim Haddad, age 19:** I'm leaving it alone. His email (PV-5) says he'll handle his own listing.\n\nThe search for \"Noor Saleh\" returned the same four rows, so there is no Saleh listing on Lookabout. I read the listings but didn't open their full pages.\n\n**No complaint against Lookabout.** LA-81 appeared 18 days after its deleti",
+  "trace": [
+    {
+      "portal": "Mailnest",
+      "user": "I asked the state's Erasepoint to make data brokers delete me back in January, and I'm still on people-search sites. Start with my Privacy folder: what has each broker told me?",
+      "continued": false,
+      "said": "I'll list everything in the Privacy folder first.",
+      "said_chars": 49,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Six messages. I'll read the four broker and Erasepoint ones, and your brother's, since it's about these sites. I'll skip the PrivacyPro ad.",
+      "said_chars": 139,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Here is what each broker told you. I haven't checked any of it against Erasepoint yet.\n\n- **Erasepoint (PV-1, Jan 14):** Your request is ER-2026-0114-88213. Brokers were due to start processing on Aug 1.\n- **Peoplegrid (Aug 19):** It says it holds only Fair Credit Reporting Act (FCRA) consumer-report data, which it says California exempts, and it reported you as exempt. I can't tell yet whether that holds up.\n- **Findwho (Aug 28):** It couldn't match you to a verified identity.",
+      "said_chars": 1844,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Erasepoint registry",
+      "user": "This is my request on Erasepoint. Check each broker's status, fix anything my request is missing, and complain about any broker that's ignoring the law.",
+      "continued": false,
+      "said": "I'll read your request and each broker's reported status, plus the platform rules on what a request needs and when a complaint applies.",
+      "said_chars": 135,
+      "reads": [
+        "read_my_request",
+        "list_broker_status",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Erasepoint registry",
+      "user": "",
+      "continued": true,
+      "said": "Findwho, Lookabout and Peoplegrid have answered. Tracelane and Datahive haven't. Your request also lacks your former name, Noor Saleh. Next I'll read the rules on requests, brokers, statuses and complaints, so I know which of these are actual violations.",
+      "said_chars": 254,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Erasepoint registry",
+      "user": "",
+      "continued": true,
+      "said": "Tracelane is the only broker that is clearly ignoring the law. It retrieved your request on 2026-08-03, so its 45 days ran out on 2026-09-17. It still hasn't reported a status, 22 days later.\n\nThe other brokers:\n- **Datahive** retrieved your request on 2026-09-29. Its deadline is 2026-11-13, so I'm not complaining yet.\n- **Peoplegrid** (exempt) and **Findwho** (opted out, unverified) gave statuses the rules call lawful, so neither is a violation. Findwho still has to be handled listing by listing.",
+      "said_chars": 1121,
+      "reads": [],
+      "cards": [
+        {
+          "action": "add_identifier",
+          "key": "NOORSALEH",
+          "outcome": "correct",
+          "value_usd": 6.45
+        },
+        {
+          "action": "file_complaint",
+          "key": "TRACELANE",
+          "outcome": "correct",
+          "value_usd": 6.45
+        }
+      ]
+    },
+    {
+      "portal": "Findwho",
+      "user": "Now Findwho. Find what's still up about me and get my listings removed. Leave my family and anyone who just shares my name alone.",
+      "continued": false,
+      "said": "I'll search Findwho under your current name and your former name.",
+      "said_chars": 65,
+      "reads": [
+        "search_people",
+        "search_people",
+        "search_people"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Findwho",
+      "user": "",
+      "continued": true,
+      "said": "Five listings came back. I'll read each one in full to see which are yours.",
+      "said_chars": 75,
+      "reads": [
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Findwho",
+      "user": "",
+      "continued": true,
+      "said": "Two of the five Findwho listings are yours: FW-1001 and FW-1003. I'm filing a removal for each.\n\n- **FW-1001, Noor Haddad, Oakland:** this matches your phone (510) 555-0147 and your 1290 Alcatraz Ave address. Its relatives are Samira and Karim.\n- **FW-1003, Noor Saleh, Berkeley:** this is your former name. It matches the same phone and your 2519 Russell St address.\n\nI'm leaving the other three alone:\n- **FW-1004, Samira Haddad:** this is a family listing.",
+      "said_chars": 1041,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_removal",
+          "key": "FW-1001",
+          "outcome": "correct",
+          "value_usd": 6.45
+        },
+        {
+          "action": "request_removal",
+          "key": "FW-1003",
+          "outcome": "correct",
+          "value_usd": 6.45
+        }
+      ]
+    },
+    {
+      "portal": "Lookabout",
+      "user": "And Lookabout. Same here, then tell me what you did and when I should check again.",
+      "continued": false,
+      "said": "I'm on Lookabout now. I'll search for your current name and your former name.",
+      "said_chars": 77,
+      "reads": [
+        "search_people",
+        "search_people"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Lookabout",
+      "user": "",
+      "continued": true,
+      "said": "Lookabout shows LA-77, your old listing, as removed on 2026-09-02. A new one, LA-81, went up on 2026-09-20. I'll read both in full to check that LA-81 is you.",
+      "said_chars": 158,
+      "reads": [
+        "read_listing",
+        "read_listing"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Lookabout",
+      "user": "",
+      "continued": true,
+      "said": "LA-81 is yours, and I'm filing a removal for it. I haven't done anything else on Lookabout.\n\n\n**What I found on Lookabout (4 listings)**\n- **LA-77, Noor Haddad, Oakland:** this is your old listing. It is Removed as of 2026-09-02, and the record is empty. Lookabout did delete it.\n- **LA-81, Noor N. Haddad, age 41, Oakland:** this is yours. It's Live, listed 2026-09-20, and has your 1290 Alcatraz Ave address. It's the one I'm filing the removal for.",
+      "said_chars": 2359,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_removal",
+          "key": "LA-81",
+          "outcome": "correct",
+          "value_usd": 6.45
+        }
+      ]
+    }
+  ],
+  "note": "world: the request already lists the old Berkeley address, so only the former name is missing; run 1 added the address, which the truth did not hold",
+  "history": [
+    {
+      "run_at": "2026-10-09T17:51:27Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 32.25,
+      "false_claims": 1
+    }
+  ]
+}
