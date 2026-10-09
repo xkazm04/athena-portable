@@ -1,0 +1,116 @@
+{
+  "id": "eu261-flight-compensation",
+  "title": "A family's delayed flights, claimed under EU 261",
+  "domain": "Air travel",
+  "audience": "home",
+  "promise": "Every delayed or cancelled flight of the year checked against EU Regulation 261/2004: the ones the rule compensates claimed with each airline at the fixed amount for the right number of passengers, and the ones it excludes left alone.",
+  "persona": "A family of four in Lisbon that flew fourteen times this year, two airlines, one baby on a lap",
+  "chore": "Pull every booking from the travel organiser, find each delay and cancellation in the airlines' emails, and read the real arrival time and the cause on each airline's own status page. Then apply the rule: departing from the EU or on an EU airline, three hours late at the gate or cancelled inside 14 days, no extraordinary circumstance, a fixed 250, 400 or 600 euros by distance for every passenger who paid a fare, and nothing claimed twice. Each airline has its own claim form, and none of them shares data with the others.",
+  "command": "Our flights this year were a mess. Go through Tripfold and my Mailnest inbox, work out which delayed or cancelled flights EU 261 compensates and for how many of us, and file a claim with each airline for every one that holds up, at the amount the rule sets. Don't settle for less than the rule gives.",
+  "apps": [
+    {
+      "name": "Tripfold itineraries",
+      "role": "every booking: the flight, the route and its distance, the scheduled times, who flew and on what fare",
+      "api": "Itineraries, no claims",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the airlines' cancellation notices, post-flight apologies with the real arrival time, and a settlement offer",
+      "api": "Mail, not data",
+      "url": ""
+    },
+    {
+      "name": "Aerolark claims",
+      "role": "an EU airline's rules, its flight status page with the cause of each disruption, past claims, and the claim form",
+      "api": "Web form only",
+      "url": ""
+    },
+    {
+      "name": "Skyrail claims",
+      "role": "a US airline's rules, its flight status page and its EU 261 claim form",
+      "api": "Web form only",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads every booking in Tripfold: route, distance, scheduled arrival, and who flew on a paid fare.",
+    "Reads the airlines' mail in Mailnest: when each cancellation was announced, and when each delayed flight really reached the gate.",
+    "In Aerolark's portal, reads the rule and the cause of each disruption, checks what was already claimed, and files one claim per booking that holds up.",
+    "In Skyrail's portal, checks which Skyrail flights the rule reaches at all, then files the one that holds up.",
+    "Leaves alone the weather, the bird strike, the air-traffic strike, the short delay, the early notice, the flights outside the rule and the claim already paid, and declines nothing on the person's behalf."
+  ],
+  "gates": [
+    {
+      "action": "file_claim",
+      "label": "File an EU 261 claim",
+      "why": "It reaches the airline in the family's name, with an amount and a statement of the facts; a wrong claim costs credibility on the right one."
+    },
+    {
+      "action": "accept_voucher",
+      "label": "Accept a voucher in settlement",
+      "why": "Accepting a voucher in full and final settlement gives up the cash claim for good."
+    }
+  ],
+  "traps": [
+    "A flight four hours late because thunderstorms closed Berlin's airport: an extraordinary circumstance, so nothing is owed.",
+    "A flight that left three hours late and reached the gate two hours and 48 minutes late: the arrival is what counts.",
+    "A cancellation announced 17 days before the flight: notice of 14 days or more means no compensation.",
+    "A US airline's flight from New York into Lisbon, five hours late: a non-EU airline flying into the EU is outside the rule.",
+    "A US domestic flight, five hours late: outside the EU altogether.",
+    "A delay from an air-traffic-control strike, and another from a bird strike: both extraordinary.",
+    "A delayed return flight whose claim the airline already paid: a second claim is a duplicate.",
+    "A 300-euro voucher offered in full and final settlement of a claim worth 1,200 euros in cash.",
+    "A baby on a parent's lap who flew free: not a passenger the rule pays for. A child on an award ticket is."
+  ],
+  "memory": [
+    "The rule as each airline states it: scope, the three bands by distance, the 14-day notice, what is and is not extraordinary.",
+    "Each booking's distance, its scheduled arrival and the passengers who paid a fare, carried from Tripfold into each airline's tab.",
+    "The real arrival times from the airlines' own mail, and which claims are already paid.",
+    "The offer not to accept, and why."
+  ],
+  "economics": {
+    "value_usd": 1300,
+    "per": "episode",
+    "basis": "One episode is a year of a family's flights with at least one claimable disruption: three paying passengers on one intra-EU flight over 1,500 km that reached the gate three hours late are owed 1,200 euros, about $1,300. The bench world holds 4,950 euros owed across four bookings, $5,445 at the bench's fixed rate of $1.10 to the euro. Times a year: one sweep a year, after the summer's travel, as the bench world holds it; a family that flies more would sweep more often, which is not claimed here.",
+    "manual_minutes": 240,
+    "times_per_year": 1,
+    "incumbent": "Claim agencies such as AirHelp keep about 35% of what the airline pays, including VAT, and more when a claim goes to court; airlines' own forms are free but one per airline and per booking.",
+    "incumbent_fee_pct": 35,
+    "sources": [
+      {
+        "label": "Regulation (EC) No 261/2004 (EUR-Lex): scope (Art. 3), cancellation (Art. 5), compensation (Art. 7)",
+        "url": "https://eur-lex.europa.eu/eli/reg/2004/261/oj"
+      },
+      {
+        "label": "CJEU, Sturgeon (C-402/07): an arrival three hours late or more is compensated as a cancellation",
+        "url": "https://curia.europa.eu/juris/liste.jsf?num=C-402/07"
+      },
+      {
+        "label": "CJEU, Airhelp v SAS (C-28/20): a strike by the airline's own pilots is not an extraordinary circumstance",
+        "url": "https://curia.europa.eu/juris/liste.jsf?num=C-28/20"
+      },
+      {
+        "label": "Your Europe: air passenger rights, compensation of 250 to 600 euros",
+        "url": "https://europa.eu/youreurope/citizens/travel/passenger-rights/air/index_en.htm"
+      },
+      {
+        "label": "AirHelp price list: a 35% service fee including VAT, 15% more if it goes to court",
+        "url": "https://www.airhelp.com/en/price-list/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four portals with no shared data: the arrival time is in the mail, the distance and the fares in the organiser, the cause on each airline's status page; and the rule's exclusions (weather, third-party strikes, scope, notice, free passengers) each look like a claim.",
+    "usefulness_why": "Thousands of euros a year for a family that flies, which most never claim, and the 35% a claims agency would keep."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful traveller finds most of it; the bar is most of the money, no claim the rule excludes, and no settlement accepted, inside an hour."
+  },
+  "caveat": "Aerolark, Skyrail, Tripfold, Mailnest and the Vidal family are invented; the rule is Regulation 261/2004 as the Court of Justice reads it, fixed in the bench world as of October 2026, and a revision of the Regulation under negotiation is not applied. This is not legal advice: the airline, a national enforcement body or a court decides a real claim."
+}

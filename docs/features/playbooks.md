@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The nine playbooks (latest runs, Claude Sonnet)
+## The ten playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -52,9 +52,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A freelancer's receivables | work | 6 | exceeds: 4 of 5, $21,100 of $21,550, 0 false |
 | Distributor deductions (food brands) | work | 4 | exceeds: 7 of 7, $10,882, 0 false |
 | Amazon FBA reimbursements | work | 2 | exceeds: 5 of 5, $359.78, 0 false |
+| A family's delayed flights, claimed under EU 261 | home | 4 | exceeds: 4 of 4, $5,445 of $5,445, 9 of 9 traps, 0 false |
 
-Across the latest runs: $585,243 of $594,670 found, 114 of 114 traps walked past, no false claim,
-36 minutes of her time against about 95 hours by hand, $32.24 of model time. 36 runs are recorded
+Across the latest runs: $590,688 of $600,115 found, 123 of 123 traps walked past, no false claim,
+39 minutes of her time against about 100 hours by hand, $34.24 of model time. 37 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

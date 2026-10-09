@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "eu261-flight-compensation",
+  "captured_at": "2026-10-09T17:20:45Z",
+  "bench_run_at": "2026-10-09T17:18:02Z",
+  "narration": {
+    "text": "A family's delayed flights, claimed under EU 261. This is a chore for a family of four in Lisbon that flew fourteen times this year, two airlines, one baby on a lap. Athena works it across 4 portals: Tripfold itineraries, Mailnest, Aerolark claims and Skyrail claims. On the bench, she found 4 of 4 eligible items, worth 5,445 dollars of the 5,445 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A flight four hours late because thunderstorms closed Berlin's airport: an extraordinary circumstance, so nothing is owed. A flight that left three hours late and reached the gate two hours and 48 minutes late: the arrival is what counts. She took 3 minutes. By hand, the same chore takes 4 hours, so she was about 77 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.075,
+    "sha256": "cf85b82e749a23e97383aa7da99a4e8464fa1b264f9730b89bafd2fb5573e3ec"
+  },
+  "video": {
+    "path": "evidence/eu261-flight-compensation/evidence.mp4",
+    "duration_s": 63.08,
+    "bytes": 2739139,
+    "sha256": "eab40c88e0f82cbe65c3a3576b93ff590dd05c2b7ec37b3bd79b2f1979a27fdb"
+  },
+  "thumbnail": {
+    "path": "playbooks/eu261-flight-compensation/thumb.jpg",
+    "bytes": 89302,
+    "sha256": "3560f2aab471ceb2de1c6c111bf3e26e6fcd057229aa7f9f0e7110701fab96cd"
+  }
+}

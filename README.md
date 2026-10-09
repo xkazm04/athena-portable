@@ -819,7 +819,7 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 - **The traps by name.** The score keeps a ledger of every trap the world held, why it was one and
   whether she filed it, and the layer lists them: what she was right to leave alone.
 
-| Playbook | Portals | Edge (difficulty / usefulness) | Latest bench (2026-10-07, Claude Sonnet) |
+| Playbook | Portals | Edge (difficulty / usefulness) | Latest bench (Claude Sonnet; 2026-10-07 unless dated) |
 |---|---|---|---|
 | A parent's estate, settled (family affairs) | Gmail, Drive, the estate account, Medigap, two life insurers, unclaimed property, the IRA custodian, a brokerage, Social Security, the probate docket, IRS Direct Pay | 5 / 5 | **exceeds** twice running: 9 of 12, both deadline items (the $93,200 disclaimer, the IRS first), every filing exact, 11 of 11 traps avoided, 0 false; 7.0 min, $6.24 |
 | A parent's long-term-care claims (family care) | insurer portal, home-care agency portal, email, MyChart, Medicare.gov, the parent's bank | 5 / 5 | **exceeds**: 10 of 10, $26,410 owed found (filed $26,368: two amounts a little under the rules), 11 of 11 traps avoided, 0 false; 4.8 min, $5.23 |
@@ -830,6 +830,7 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
 | Detention, lumper and TONU (trucking) | Motive, dispatch inbox, CHR Navisphere, TQL, Uber Freight, RTS | 4 / 4 | **exceeds**: 9 of 9, $1,580 of $1,580, every request exact, 13 of 13 traps avoided, 0 false; 4.5 min, $4.87 |
 | A freelancer's receivables (sole trader) | QuickBooks, Chase, Coupa, Ariba, Tipalti, Gmail | 4 / 4 | **exceeds**: 4 of 5, $21,100 of $21,550, every filing exact, 9 of 9 traps avoided, 0 false; 3.5 min, $2.70 |
 | Distributor deductions, disputed (food brands) | myUNFI, KeHE K-Solve, Drive, warehouse portal | 4 / 4 | **exceeds**: 7 of 7, $10,882 of $10,882, every claim exact, 10 of 10 traps avoided, 0 false; 4.2 min, $3.57 |
+| A family's delayed flights, claimed under EU 261 (air travel) | Tripfold itineraries, Mailnest, Aerolark claims, Skyrail claims | 4 / 4 | **exceeds** (2026-10-09): 4 of 4, $5,445 of $5,445 (4,950 euros), every claim exact, 9 of 9 traps avoided, 0 false; 3.1 min, $2.00 |
 
 ### What the runs taught Athena
 

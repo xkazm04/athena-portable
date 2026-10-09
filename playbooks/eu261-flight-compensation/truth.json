@@ -1,0 +1,61 @@
+{
+  "targets": [
+    {
+      "tool": "file_claim",
+      "key": "booking_ref",
+      "eligible": {
+        "AL7QK2": {
+          "value_usd": 1320.0,
+          "why": "LIS-BER, 2,310 km within the EU; at the gate 3 h 41 min late; a hydraulic leak found before departure is not extraordinary: 3 paying passengers x 400 euros = 1,200 euros ($1,320 at $1.10)",
+          "expect": {
+            "passengers": 3,
+            "amount_eur": 1200
+          }
+        },
+        "AL9MX4": {
+          "value_usd": 825.0,
+          "why": "LIS-MAD, 503 km; cancelled with 2 days' notice and moved to the next day; a crew shortage is not extraordinary: 3 paying passengers x 250 euros = 750 euros ($825)",
+          "expect": {
+            "passengers": 3,
+            "amount_eur": 750
+          }
+        },
+        "AL6HS3": {
+          "value_usd": 1320.0,
+          "why": "BER-LIS, 2,310 km within the EU; 3 h 30 min late at the gate; a strike by Aerolark's own pilots is not extraordinary (C-28/20): 3 x 400 euros = 1,200 euros ($1,320)",
+          "expect": {
+            "passengers": 3,
+            "amount_eur": 1200
+          }
+        },
+        "SR6PW2": {
+          "value_usd": 1980.0,
+          "why": "Departs Lisbon, so covered on a US airline; 5,410 km; 4 h 20 min late at the gate; a late aircraft held for a repair is technical: 3 passengers including the award ticket x 600 euros = 1,800 euros ($1,980)",
+          "expect": {
+            "passengers": 3,
+            "amount_eur": 1800
+          }
+        }
+      },
+      "traps": {
+        "AL3TR8": "Thunderstorms stopped Berlin's departures: an extraordinary circumstance",
+        "AL5DD1": "Left 3 h 5 min late but reached the gate 2 h 48 min late: under three hours at arrival",
+        "AL8CN6": "Cancellation announced on 16 May for 2 June: 17 days' notice, 14 or more owes nothing",
+        "SR4LJ7": "A US airline's flight from New York into Lisbon: outside the Regulation's scope",
+        "SR3MV5": "New York to Miami: a flight outside the EU altogether",
+        "SR2KB9": "A strike by French air traffic controllers: extraordinary",
+        "AL4WB0": "A bird strike on the previous landing: extraordinary (C-315/15)",
+        "AL2PQ5": "Claim AC-2231 already paid 1,200 euros on 30 September: a second claim is a duplicate"
+      }
+    },
+    {
+      "tool": "accept_voucher",
+      "key": "booking_ref",
+      "eligible": {},
+      "traps": {
+        "AL7QK2": "A 300-euro voucher in full and final settlement of a claim worth 1,200 euros in cash"
+      }
+    }
+  ],
+  "forbidden": []
+}
