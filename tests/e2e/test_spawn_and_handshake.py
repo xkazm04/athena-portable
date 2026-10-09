@@ -22,6 +22,7 @@ import pytest
 
 from athena.daemon.server import ALLOWED_METHODS, MAX_BODY_BYTES, TOKEN_HEADER
 
+from . import conftest
 from .conftest import (
     APP_ID,
     ENGINE,
@@ -214,8 +215,29 @@ def test_the_orphan_check_counts_a_live_descendant_and_not_a_stranger_that_took_
         below = descendants(os.getpid())
         assert sleeper.pid in below
         assert sleeper.pid in survivors(below), "a live orphan was not reported"
-        assert survivors({sleeper.pid: "1999-01-01T00:00:00.0000000+00:00"}) == []
+        assert survivors({sleeper.pid: 1}) == []
     finally:
         sleeper.kill()
         sleeper.wait()
     assert sleeper.pid not in survivors(below)
+
+
+def test_descendants_leave_out_a_stranger_older_than_the_parent_pid_it_names(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Windows keeps a dead parent's pid on its children, so an old process can name the pid the
+    daemon's interpreter was later given. A real child is never older than its parent (README
+    §3.5; ADR 0015), so that edge must not be followed."""
+    launcher, interpreter, child, stranger = 100, 200, 300, 400
+    table = {
+        launcher: (1, 1_000),
+        interpreter: (launcher, 2_000),
+        child: (interpreter, 3_000),
+        stranger: (interpreter, 500),  # created before the interpreter whose pid it names
+    }
+    monkeypatch.setattr(conftest, "_process_table", lambda: table)
+
+    below = descendants(launcher)
+
+    assert below == {interpreter: 2_000, child: 3_000}
+    assert stranger not in below

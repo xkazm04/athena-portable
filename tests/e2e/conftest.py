@@ -263,8 +263,12 @@ def _kill_tree(process: subprocess.Popen[str]) -> None:
         process.kill()
 
 
-def _process_table() -> dict[int, tuple[int, str]]:
-    """Every live process as ``pid -> (parent pid, creation date)``; empty without the query."""
+def _process_table() -> dict[int, tuple[int, int]]:
+    """Every live process as ``pid -> (parent pid, creation instant)``; empty without the query.
+
+    The instant is the creation date as an integer FILETIME (UTC, 100 ns ticks), so two of them
+    compare as instants and not as strings that happen to format alike.
+    """
     if os.name != "nt":  # pragma: no cover - this suite runs on Windows here
         return {}
     done = subprocess.run(
@@ -274,43 +278,55 @@ def _process_table() -> dict[int, tuple[int, str]]:
             "-NonInteractive",
             "-Command",
             "Get-CimInstance Win32_Process | ForEach-Object "
-            "{ \"$($_.ProcessId) $($_.ParentProcessId) $($_.CreationDate.ToString('o'))\" }",
+            '{ "$($_.ProcessId) $($_.ParentProcessId) $($_.CreationDate.ToFileTimeUtc())" }',
         ],
         capture_output=True,
         text=True,
         check=False,
     )
-    table: dict[int, tuple[int, str]] = {}
+    table: dict[int, tuple[int, int]] = {}
     for line in done.stdout.splitlines():
         words = line.split()
-        if len(words) == 3 and words[0].isdigit() and words[1].isdigit():
-            table[int(words[0])] = (int(words[1]), words[2])
+        if len(words) == 3 and all(word.isdigit() for word in words):
+            table[int(words[0])] = (int(words[1]), int(words[2]))
     return table
 
 
-def descendants(pid: int) -> dict[int, str]:
-    """The processes below ``pid`` right now as ``pid -> creation date``, grandchildren included.
+def descendants(pid: int) -> dict[int, int]:
+    """The processes below ``pid`` right now as ``pid -> creation instant``, grandchildren included.
 
     Taken while the daemon is alive, so each entry is a real descendant of *this* daemon; the
-    creation date is what lets :func:`survivors` tell it from a stranger that later got its pid.
+    creation instant is what lets :func:`survivors` tell it from a stranger that later got its pid.
+
+    An edge parent -> child is followed only when the child was created at or after its parent,
+    because a real child is never older than its parent. Windows keeps a process's parent pid after
+    that parent exits, so an unrelated, older process can name a pid the daemon's interpreter has
+    since been given; without this rule it would be counted as that interpreter's child (pid reuse
+    *before* the snapshot, where :func:`survivors` covers reuse after the stop). If ``pid`` itself
+    is missing from the table its edges are followed unchecked, and the rule still applies below it.
     """
     table = _process_table()
-    found: dict[int, str] = {}
+    found: dict[int, int] = {}
     frontier = [pid]
     while frontier:
         parent = frontier.pop()
+        parent_row = table.get(parent)
         for child, (ppid, created) in table.items():
-            if ppid == parent and child not in found and child != pid:
-                found[child] = created
-                frontier.append(child)
+            if ppid != parent or child in found or child == pid:
+                continue
+            if parent_row is not None and created < parent_row[1]:
+                continue
+            found[child] = created
+            frontier.append(child)
     return found
 
 
-def survivors(snapshot: dict[int, str]) -> list[int]:
-    """The pids of ``snapshot`` still running *as the same process* (same creation date).
+def survivors(snapshot: dict[int, int]) -> list[int]:
+    """The pids of ``snapshot`` still running *as the same process* (same creation instant).
 
-    A pid reused by an unrelated process on a loaded machine has another creation date and is not
-    counted, so only a true orphan of the snapshotted daemon is reported.
+    A pid reused by an unrelated process on a loaded machine has another creation instant and is
+    not counted, so only a true orphan of the snapshotted daemon is reported. A stranger that was
+    never below the daemon is kept out of the snapshot by :func:`descendants`, not here.
     """
     table = _process_table()
     return [pid for pid, created in snapshot.items() if pid in table and table[pid][1] == created]
