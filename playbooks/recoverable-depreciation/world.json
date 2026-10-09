@@ -1,0 +1,645 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "hearthguard",
+      "name": "Hearthguard claims",
+      "origin": "https://claims.hearthguard.example",
+      "path": "/my-claims",
+      "view": {
+        "view": "My claims",
+        "policyholder": "Grace and Emeka Okafor",
+        "policy": "HG-HO3-4471902 (homeowners, replacement cost)",
+        "property": "1180 Ridgeview Ln, a California home"
+      },
+      "tools": [
+        {
+          "name": "read_policy",
+          "kind": "READ",
+          "description": "The policy's terms, by topic: replacement_cost, california, other_structures, contents, proof. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "policy",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_claims",
+          "kind": "READ",
+          "description": "Your claims: loss date and cause, whether it relates to a declared state of emergency, the first actual cash value payment, and the state of the depreciation holdback.",
+          "params": {},
+          "returns": {
+            "table": "claims"
+          }
+        },
+        {
+          "name": "list_lines",
+          "kind": "READ",
+          "description": "The adjuster's estimate for one claim, line by line: replacement cost (RCV), depreciation held back, actual cash value (ACV) paid, and whether the depreciation is withheld or released. Paged.",
+          "params": {
+            "claim_id": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "lines",
+            "match": {
+              "claim_id": "claim_id"
+            },
+            "require": [
+              "claim_id"
+            ],
+            "page_size": 6
+          }
+        },
+        {
+          "name": "list_payments",
+          "kind": "READ",
+          "description": "Every payment Hearthguard has made on your claims.",
+          "params": {},
+          "returns": {
+            "table": "payments"
+          }
+        },
+        {
+          "name": "request_depreciation",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask for the depreciation held back on one estimate line, by line id, now that it is repaired or replaced: the amount and the evidence (invoice, payment, receipt).",
+          "params": {
+            "line_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "evidence": {
+              "type": "string"
+            }
+          },
+          "says": "Request received for {line_id}. Your adjuster reviews it within 15 days."
+        }
+      ],
+      "aliases": [
+        "Hearthguard",
+        "the insurer",
+        "the claims portal"
+      ]
+    },
+    {
+      "app_id": "buildmark",
+      "name": "Buildmark contractor",
+      "origin": "https://portal.buildmark.example",
+      "path": "/customer/jobs",
+      "view": {
+        "view": "Your jobs",
+        "customer": "Okafor, 1180 Ridgeview Ln",
+        "contractor": "Buildmark Restoration, CSLB licensed"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "Buildmark's invoices and quotes for this customer: number, the Hearthguard line it covers, the work, the amount, and when it was completed or scheduled.",
+          "params": {},
+          "returns": {
+            "table": "buildmark_docs"
+          }
+        },
+        {
+          "name": "message_contractor",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send Buildmark a message.",
+          "params": {
+            "body": {
+              "type": "string"
+            }
+          },
+          "says": "Message sent to Buildmark."
+        }
+      ],
+      "aliases": [
+        "Buildmark",
+        "the contractor",
+        "Buildmark's portal"
+      ]
+    },
+    {
+      "app_id": "ledgerline",
+      "name": "Ledgerline bank",
+      "origin": "https://online.ledgerline.example",
+      "path": "/accounts/checking",
+      "view": {
+        "view": "Checking and card activity",
+        "accounts": [
+          "Joint checking ...4410",
+          "Card ...9921"
+        ]
+      },
+      "tools": [
+        {
+          "name": "search_transactions",
+          "kind": "READ",
+          "description": "Search transactions since 2024-11-01 by payee (every word must appear). Omit the payee for all of them.",
+          "params": {
+            "payee": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "transactions",
+            "match": {
+              "payee": "payee"
+            },
+            "mode": "words"
+          }
+        }
+      ],
+      "aliases": [
+        "Ledgerline",
+        "the bank",
+        "online banking"
+      ]
+    },
+    {
+      "app_id": "mailnest",
+      "name": "Mailnest",
+      "origin": "https://mail.mailnest.example",
+      "path": "/inbox/claims",
+      "view": {
+        "view": "Folder: Claims and receipts",
+        "account": "grace.okafor@mailnest.example"
+      },
+      "tools": [
+        {
+          "name": "search_mail",
+          "kind": "READ",
+          "description": "Search the folder; every word must appear in the sender, the subject or the message's labels. Omit the query for every message. Open one with read_message.",
+          "params": {
+            "query": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "query": "search"
+            },
+            "mode": "words",
+            "fields": [
+              "message_id",
+              "from",
+              "date",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id.",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ],
+            "fields": [
+              "message_id",
+              "from",
+              "date",
+              "subject",
+              "body"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Mailnest",
+        "my mail",
+        "the inbox"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "hearthguard",
+      "message": "Hearthguard still holds back depreciation on our claims. Start here: read the policy, both claims, every line of the estimates and what's been paid.",
+      "nudges": 1
+    },
+    {
+      "app": "buildmark",
+      "message": "This is Buildmark's portal. Note what's been finished, when, and for how much, and what's only quoted.",
+      "nudges": 1
+    },
+    {
+      "app": "ledgerline",
+      "message": "Now our Ledgerline bank. Check what we actually paid, and anything we bought to replace damaged things.",
+      "nudges": 1
+    },
+    {
+      "app": "mailnest",
+      "message": "And my Mailnest folder with the receipts and Hearthguard's letters.",
+      "nudges": 1
+    },
+    {
+      "app": "hearthguard",
+      "message": "Back in Hearthguard. Request the depreciation on every line that's repaired or replaced, at the right amount, and tell me what's left and when.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "policy": [
+      {
+        "topic": "index",
+        "text": "Topics: replacement_cost, california, other_structures, contents, proof."
+      },
+      {
+        "topic": "replacement_cost",
+        "text": "Dwelling and Other Structures are settled at replacement cost. Until the damaged property is actually repaired or replaced we pay its actual cash value (replacement cost less depreciation). When the work is complete we pay the rest: the lesser of the replacement cost on the estimate or the amount you actually and necessarily spent, less the actual cash value already paid. You must claim this within 180 days of the loss."
+      },
+      {
+        "topic": "california",
+        "text": "California amendatory endorsement: where Insurance Code §2051.5(b) gives more time, it applies. You have at least 12 months from our first actual cash value payment to collect the full replacement cost, and 36 months if the loss relates to a declared state of emergency. Extensions of six months are given for good cause."
+      },
+      {
+        "topic": "other_structures",
+        "text": "Endorsement HG-OS-ACV: detached sheds, workshops and barns are settled at actual cash value only, and their depreciation is not recoverable. Fences and every other Other Structure keep replacement cost."
+      },
+      {
+        "topic": "contents",
+        "text": "Contents are settled at replacement cost. Until an item is replaced we pay its actual cash value; once you buy the replacement after the loss we pay the lesser of its replacement cost or what you paid for the replacement, less the actual cash value already paid. If the replacement cost you less than the cash value already paid, nothing more is owed."
+      },
+      {
+        "topic": "proof",
+        "text": "With each request, give the contractor's final invoice and proof of payment, or for contents the receipt for the replacement."
+      }
+    ],
+    "claims": [
+      {
+        "claim_id": "HG-25-04471",
+        "loss": "2025-01-08, windstorm: roof, interior, floors, fence, shed, gutters and contents",
+        "state_of_emergency": "Yes: the Governor's state of emergency for the county's January 2025 windstorms (catastrophe code CA-25-03)",
+        "first_acv_payment": "2025-02-20",
+        "holdback": "Open"
+      },
+      {
+        "claim_id": "HG-24-01920",
+        "loss": "2024-06-02, water leak in the kitchen",
+        "state_of_emergency": "No",
+        "first_acv_payment": "2024-08-15",
+        "holdback": "Closed 2026-02-16: the 12-month window and one six-month extension (to 2026-02-15, granted for a contractor backlog) both ran out"
+      }
+    ],
+    "lines": [
+      {
+        "line_id": "L1",
+        "claim_id": "HG-25-04471",
+        "item": "Roof replacement, 34 squares",
+        "coverage": "Dwelling",
+        "rcv_usd": 28400,
+        "depreciation_usd": 9940,
+        "acv_paid_usd": 18460,
+        "depreciation": "Withheld"
+      },
+      {
+        "line_id": "L2",
+        "claim_id": "HG-25-04471",
+        "item": "Drywall and paint, living room and hall",
+        "coverage": "Dwelling",
+        "rcv_usd": 7200,
+        "depreciation_usd": 1800,
+        "acv_paid_usd": 5400,
+        "depreciation": "Withheld"
+      },
+      {
+        "line_id": "L3",
+        "claim_id": "HG-25-04471",
+        "item": "Wood fence, 120 feet",
+        "coverage": "Other Structures",
+        "rcv_usd": 4600,
+        "depreciation_usd": 2300,
+        "acv_paid_usd": 2300,
+        "depreciation": "Withheld"
+      },
+      {
+        "line_id": "L4",
+        "claim_id": "HG-25-04471",
+        "item": "Hardwood flooring, 680 sq ft",
+        "coverage": "Dwelling",
+        "rcv_usd": 11800,
+        "depreciation_usd": 3540,
+        "acv_paid_usd": 8260,
+        "depreciation": "Withheld"
+      },
+      {
+        "line_id": "L5",
+        "claim_id": "HG-25-04471",
+        "item": "Television, 65 inch",
+        "coverage": "Contents",
+        "rcv_usd": 1400,
+        "depreciation_usd": 560,
+        "acv_paid_usd": 840,
+        "depreciation": "Withheld"
+      },
+      {
+        "line_id": "L6",
+        "claim_id": "HG-25-04471",
+        "item": "Kitchen wall cabinets",
+        "coverage": "Dwelling",
+        "rcv_usd": 9000,
+        "depreciation_usd": 2700,
+        "acv_paid_usd": 6300,
+        "depreciation": "Withheld"
+      },
+      {
+        "line_id": "L7",
+        "claim_id": "HG-25-04471",
+        "item": "Gutters and downspouts",
+        "coverage": "Dwelling",
+        "rcv_usd": 2100,
+        "depreciation_usd": 630,
+        "acv_paid_usd": 1470,
+        "depreciation": "Released 2025-07-02"
+      },
+      {
+        "line_id": "L8",
+        "claim_id": "HG-25-04471",
+        "item": "Detached garden shed",
+        "coverage": "Other Structures",
+        "rcv_usd": 5500,
+        "depreciation_usd": 2200,
+        "acv_paid_usd": 3300,
+        "depreciation": "Withheld"
+      },
+      {
+        "line_id": "L9",
+        "claim_id": "HG-25-04471",
+        "item": "Laptop computer",
+        "coverage": "Contents",
+        "rcv_usd": 1800,
+        "depreciation_usd": 900,
+        "acv_paid_usd": 900,
+        "depreciation": "Withheld"
+      },
+      {
+        "line_id": "L10",
+        "claim_id": "HG-25-04471",
+        "item": "Dining chairs, set of six",
+        "coverage": "Contents",
+        "rcv_usd": 1900,
+        "depreciation_usd": 190,
+        "acv_paid_usd": 1710,
+        "depreciation": "Withheld"
+      },
+      {
+        "line_id": "W1",
+        "claim_id": "HG-24-01920",
+        "item": "Kitchen floor tile",
+        "coverage": "Dwelling",
+        "rcv_usd": 6400,
+        "depreciation_usd": 1920,
+        "acv_paid_usd": 4480,
+        "depreciation": "Withheld; holdback closed"
+      },
+      {
+        "line_id": "W2",
+        "claim_id": "HG-24-01920",
+        "item": "Baseboards",
+        "coverage": "Dwelling",
+        "rcv_usd": 900,
+        "depreciation_usd": 270,
+        "acv_paid_usd": 630,
+        "depreciation": "Withheld; holdback closed"
+      }
+    ],
+    "payments": [
+      {
+        "date": "2024-08-15",
+        "claim_id": "HG-24-01920",
+        "what": "Actual cash value, all lines",
+        "amount_usd": 5110
+      },
+      {
+        "date": "2025-02-20",
+        "claim_id": "HG-25-04471",
+        "what": "Actual cash value, all lines",
+        "amount_usd": 48940
+      },
+      {
+        "date": "2025-07-02",
+        "claim_id": "HG-25-04471",
+        "what": "Depreciation released, line L7 (gutters)",
+        "amount_usd": 630
+      }
+    ],
+    "buildmark_docs": [
+      {
+        "number": "INV-3296",
+        "line": "HG-25-04471 L7",
+        "work": "Gutters and downspouts replaced",
+        "amount_usd": 2100,
+        "state": "Completed 2025-06-20; paid"
+      },
+      {
+        "number": "INV-3308",
+        "line": "HG-25-04471 L8",
+        "work": "Garden shed rebuilt",
+        "amount_usd": 5400,
+        "state": "Completed 2025-08-11; paid"
+      },
+      {
+        "number": "INV-3301",
+        "line": "HG-25-04471 L1",
+        "work": "Roof replaced, 34 squares",
+        "amount_usd": 27900,
+        "state": "Completed 2025-09-05; paid"
+      },
+      {
+        "number": "INV-3302",
+        "line": "HG-25-04471 L2",
+        "work": "Drywall and paint, living room and hall",
+        "amount_usd": 7350,
+        "state": "Completed 2025-10-20; paid"
+      },
+      {
+        "number": "INV-3304",
+        "line": "HG-25-04471 L4",
+        "work": "Hardwood flooring, 680 sq ft",
+        "amount_usd": 11800,
+        "state": "Completed 2026-03-02; paid"
+      },
+      {
+        "number": "INV-3311",
+        "line": "HG-24-01920 W1, W2",
+        "work": "Kitchen floor tile and baseboards",
+        "amount_usd": 7180,
+        "state": "Completed 2026-05-14; paid"
+      },
+      {
+        "number": "Q-3310",
+        "line": "HG-25-04471 L3",
+        "work": "Quote: wood fence, 120 feet",
+        "amount_usd": 4450,
+        "state": "Quote sent 2025-04-02; not accepted"
+      },
+      {
+        "number": "Q-3315",
+        "line": "HG-25-04471 L6",
+        "work": "Quote: kitchen wall cabinets",
+        "amount_usd": 9100,
+        "state": "Accepted; work scheduled to start 2026-11-16"
+      }
+    ],
+    "transactions": [
+      {
+        "date": "2024-12-02",
+        "payee": "Oakline Furniture",
+        "amount_usd": -1900.0,
+        "memo": "Card ...9921"
+      },
+      {
+        "date": "2025-02-21",
+        "payee": "Hearthguard Insurance deposit",
+        "amount_usd": 48940.0,
+        "memo": "Claim HG-25-04471"
+      },
+      {
+        "date": "2025-02-28",
+        "payee": "Renewly refurbished electronics",
+        "amount_usd": -850.0,
+        "memo": "Card ...9921"
+      },
+      {
+        "date": "2025-03-15",
+        "payee": "Brightline Electronics",
+        "amount_usd": -1250.0,
+        "memo": "Card ...9921"
+      },
+      {
+        "date": "2025-06-24",
+        "payee": "Buildmark Restoration",
+        "amount_usd": -2100.0,
+        "memo": "INV-3296"
+      },
+      {
+        "date": "2025-07-03",
+        "payee": "Hearthguard Insurance deposit",
+        "amount_usd": 630.0,
+        "memo": "Claim HG-25-04471 L7"
+      },
+      {
+        "date": "2025-08-15",
+        "payee": "Buildmark Restoration",
+        "amount_usd": -5400.0,
+        "memo": "INV-3308"
+      },
+      {
+        "date": "2025-09-12",
+        "payee": "Buildmark Restoration",
+        "amount_usd": -27900.0,
+        "memo": "INV-3301"
+      },
+      {
+        "date": "2025-10-28",
+        "payee": "Buildmark Restoration",
+        "amount_usd": -7350.0,
+        "memo": "INV-3302"
+      },
+      {
+        "date": "2026-03-09",
+        "payee": "Buildmark Restoration",
+        "amount_usd": -11800.0,
+        "memo": "INV-3304"
+      },
+      {
+        "date": "2026-05-20",
+        "payee": "Buildmark Restoration",
+        "amount_usd": -7180.0,
+        "memo": "INV-3311"
+      },
+      {
+        "date": "2026-09-30",
+        "payee": "Buildmark Restoration",
+        "amount_usd": -2730.0,
+        "memo": "Deposit, Q-3315 cabinets"
+      }
+    ],
+    "mail": [
+      {
+        "message_id": "RM-201",
+        "from": "Oakline Furniture",
+        "date": "2024-12-02",
+        "subject": "Your receipt: dining chairs",
+        "search": "Oakline Furniture receipt dining chairs",
+        "body": "Six oak dining chairs, $1,900, paid by card ...9921. Delivered 2024-12-06."
+      },
+      {
+        "message_id": "RM-202",
+        "from": "Hearthguard Claims",
+        "date": "2025-02-19",
+        "subject": "Your claim HG-25-04471: payment and next steps",
+        "search": "Hearthguard claim HG-25-04471 payment depreciation holdback",
+        "body": "We are paying the actual cash value of every line today. The depreciation we hold back is paid line by line once each repair or replacement is complete and you send the invoice and proof of payment, or the receipt. Your adjuster noted the dining chairs' purchase receipt of December 2024 at the first inspection."
+      },
+      {
+        "message_id": "RM-203",
+        "from": "Renewly",
+        "date": "2025-02-28",
+        "subject": "Order confirmed: refurbished laptop",
+        "search": "Renewly receipt laptop refurbished",
+        "body": "Refurbished 14-inch laptop, $850, paid by card ...9921. This replaces a laptop damaged in the January storm, per your note."
+      },
+      {
+        "message_id": "RM-204",
+        "from": "Brightline Electronics",
+        "date": "2025-03-15",
+        "subject": "Your receipt: 65-inch television",
+        "search": "Brightline Electronics receipt television",
+        "body": "65-inch 4K television, $1,250 including tax, paid by card ...9921."
+      },
+      {
+        "message_id": "RM-205",
+        "from": "Hearthguard Claims",
+        "date": "2025-07-02",
+        "subject": "Depreciation released: gutters",
+        "search": "Hearthguard claim HG-25-04471 depreciation released gutters L7",
+        "body": "We have paid the $630 depreciation held on line L7, gutters and downspouts, against Buildmark's invoice INV-3296."
+      },
+      {
+        "message_id": "RM-206",
+        "from": "Hearthguard Claims",
+        "date": "2026-02-16",
+        "subject": "Claim HG-24-01920: replacement cost holdback closed",
+        "search": "Hearthguard claim HG-24-01920 holdback closed extension",
+        "body": "The 12-month period from our first payment (2024-08-15) and the six-month extension we granted to 2026-02-15 have both ended, and the work was not complete. The holdback on HG-24-01920 is closed."
+      },
+      {
+        "message_id": "RM-207",
+        "from": "Buildmark Restoration",
+        "date": "2026-09-28",
+        "subject": "Cabinets: start date confirmed",
+        "search": "Buildmark Restoration cabinets start date",
+        "body": "Your wall cabinets are on order; installation starts 2026-11-16 and takes about a week. Deposit of $2,730 received."
+      }
+    ]
+  }
+}

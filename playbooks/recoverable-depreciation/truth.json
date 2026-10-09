@@ -1,0 +1,49 @@
+{
+  "targets": [
+    {
+      "tool": "request_depreciation",
+      "key": "line_id",
+      "eligible": {
+        "L1": {
+          "value_usd": 9440.0,
+          "why": "Roof finished 2025-09-05, INV-3301 $27,900 paid 2025-09-12; the lesser of $28,400 and $27,900, less $18,460 paid: $9,440 (not the full $9,940)",
+          "expect": {
+            "amount_usd": 9440
+          }
+        },
+        "L2": {
+          "value_usd": 1800.0,
+          "why": "Drywall finished 2025-10-20, INV-3302 $7,350 paid; the lesser of $7,200 and $7,350, less $5,400: $1,800",
+          "expect": {
+            "amount_usd": 1800
+          }
+        },
+        "L4": {
+          "value_usd": 3540.0,
+          "why": "Floors finished 2026-03-02, INV-3304 $11,800 paid 2026-03-09: $11,800 less $8,260 = $3,540",
+          "expect": {
+            "amount_usd": 3540
+          }
+        },
+        "L5": {
+          "value_usd": 410.0,
+          "why": "Television replaced 2025-03-15 for $1,250: the lesser of $1,400 and $1,250, less $840 = $410",
+          "expect": {
+            "amount_usd": 410
+          }
+        }
+      },
+      "traps": {
+        "L3": "The fence was only quoted, never repaired",
+        "L6": "The cabinets start 2026-11-16: not yet replaced",
+        "L7": "Its $630 depreciation was released on 2025-07-02",
+        "L8": "Endorsement HG-OS-ACV: the shed is actual cash value only",
+        "L9": "Replaced for $850, less than the $900 cash value already paid: nothing more is owed",
+        "L10": "The December 2024 receipt is the chairs' original purchase, before the storm; no replacement was bought",
+        "W1": "Claim HG-24-01920's window and its extension ended 2026-02-15; the work finished 2026-05-14",
+        "W2": "Claim HG-24-01920's window and its extension ended 2026-02-15; the work finished 2026-05-14"
+      }
+    }
+  ],
+  "forbidden": []
+}

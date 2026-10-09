@@ -1,0 +1,329 @@
+{
+  "playbook": "recoverable-depreciation",
+  "run_at": "2026-10-09T17:45:33Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 282.4,
+  "turns": 15,
+  "nudges": 0,
+  "follow_ups": 3,
+  "reads": 20,
+  "cost_usd": 3.0532,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 4.7
+  },
+  "score": {
+    "eligible": 4,
+    "found": 4,
+    "exact": 4,
+    "value_total_usd": 15190.0,
+    "value_found_usd": 15190.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "request_depreciation",
+        "key": "L3",
+        "why": "The fence was only quoted, never repaired",
+        "filed": false
+      },
+      {
+        "action": "request_depreciation",
+        "key": "L6",
+        "why": "The cabinets start 2026-11-16: not yet replaced",
+        "filed": false
+      },
+      {
+        "action": "request_depreciation",
+        "key": "L7",
+        "why": "Its $630 depreciation was released on 2025-07-02",
+        "filed": false
+      },
+      {
+        "action": "request_depreciation",
+        "key": "L8",
+        "why": "Endorsement HG-OS-ACV: the shed is actual cash value only",
+        "filed": false
+      },
+      {
+        "action": "request_depreciation",
+        "key": "L9",
+        "why": "Replaced for $850, less than the $900 cash value already paid: nothing more is owed",
+        "filed": false
+      },
+      {
+        "action": "request_depreciation",
+        "key": "L10",
+        "why": "The December 2024 receipt is the chairs' original purchase, before the storm; no replacement was bought",
+        "filed": false
+      },
+      {
+        "action": "request_depreciation",
+        "key": "W1",
+        "why": "Claim HG-24-01920's window and its extension ended 2026-02-15; the work finished 2026-05-14",
+        "filed": false
+      },
+      {
+        "action": "request_depreciation",
+        "key": "W2",
+        "why": "Claim HG-24-01920's window and its extension ended 2026-02-15; the work finished 2026-05-14",
+        "filed": false
+      }
+    ],
+    "filed_usd": 15190.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 1
+  },
+  "cards": [
+    {
+      "action": "request_depreciation",
+      "key": "L1",
+      "outcome": "correct",
+      "value_usd": 9440.0,
+      "exact": true,
+      "why": "Roof finished 2025-09-05, INV-3301 $27,900 paid 2025-09-12; the lesser of $28,400 and $27,900, less $18,460 paid: $9,440 (not the full $9,940)"
+    },
+    {
+      "action": "request_depreciation",
+      "key": "L2",
+      "outcome": "correct",
+      "value_usd": 1800.0,
+      "exact": true,
+      "why": "Drywall finished 2025-10-20, INV-3302 $7,350 paid; the lesser of $7,200 and $7,350, less $5,400: $1,800"
+    },
+    {
+      "action": "request_depreciation",
+      "key": "L4",
+      "outcome": "correct",
+      "value_usd": 3540.0,
+      "exact": true,
+      "why": "Floors finished 2026-03-02, INV-3304 $11,800 paid 2026-03-09: $11,800 less $8,260 = $3,540"
+    },
+    {
+      "action": "request_depreciation",
+      "key": "L5",
+      "outcome": "correct",
+      "value_usd": 410.0,
+      "exact": true,
+      "why": "Television replaced 2025-03-15 for $1,250: the lesser of $1,400 and $1,250, less $840 = $410"
+    },
+    {
+      "action": "write_fact",
+      "outcome": "other"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Nothing has changed in Buildmark, and I have nothing more to do here. Buildmark doesn't show the fence work done or the cabinet work started, so there's still nothing to claim on either.\n\nFive cards are waiting on you:\n- **Four Hearthguard requests, $15,190 in total:** roof $9,440, drywall and paint $1,800, flooring $3,540 and TV $410.\n- **One memory note:** it records what's still open on HG-25-04471.\n\nI'm not acting on any of them until you answer.\n\nI'm also not messaging Buildmark. The cabinets start 2026-11-16, and the final invoice will exist only after that work is done. Once you've paid it, switch me back here and to Ledgerline. I'll then file L6 at the lesser of the estimate's $9,000 or what you actually spent, less the $6,300 ACV already paid. The deadline is 2028-02-20.",
+  "prose_audit": {
+    "said_usd": 9440.0,
+    "record_usd": 15190.0,
+    "agrees": false
+  },
+  "trace": [
+    {
+      "portal": "Hearthguard claims",
+      "user": "Hearthguard still holds back depreciation on our claims. Start here: read the policy, both claims, every line of the estimates and what's been paid.",
+      "continued": false,
+      "said": "I'll start with the policy index, the claims and the payments.",
+      "said_chars": 62,
+      "reads": [
+        "read_policy",
+        "list_claims",
+        "list_payments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hearthguard claims",
+      "user": "",
+      "continued": true,
+      "said": "Two claims: HG-24-01920 is closed, and HG-25-04471 is open. Next I'll read the policy topics and the estimate lines for both claims.",
+      "said_chars": 132,
+      "reads": [
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "list_lines",
+        "list_lines"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hearthguard claims",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of the HG-25-04471 estimate showed 6 of 10 lines, so I'm fetching page 2.",
+      "said_chars": 80,
+      "reads": [
+        "list_lines"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hearthguard claims",
+      "user": "",
+      "continued": true,
+      "said": "The policy and both claims are read, and every estimate line and payment is checked. Two lines are already settled and two others can't be collected, which leaves eight lines open for the next step. I haven't checked any invoices, bank entries or receipts yet.\n\n**What Hearthguard has paid**\n- HG-24-01920 (kitchen leak): $5,110 actual cash value (ACV), paid 2024-08-15.\n- HG-25-04471 (windstorm): $48,940 ACV, paid 2025-02-20, plus $630 depreciation released on L7 gutters on 2025-07-02.",
+      "said_chars": 2717,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Buildmark contractor",
+      "user": "This is Buildmark's portal. Note what's been finished, when, and for how much, and what's only quoted.",
+      "continued": false,
+      "said": "I'll read Buildmark's invoices and quotes first.\n\n\nWait, that name is AUTO, so it fires without a card. Here is the call in the right form:",
+      "said_chars": 139,
+      "reads": [
+        "list_documents",
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Buildmark contractor",
+      "user": "",
+      "continued": true,
+      "said": "Buildmark shows six jobs finished and paid, and two jobs only quoted. I haven't checked the bank or the receipts yet.\n\n**Finished and invoiced (Buildmark says \"paid\")**\n\n| Invoice | Hearthguard line | Work | Invoiced | Completed |\n|---|---|---|---|---|\n| INV-3301 | L1 | Roof, 34 squares | $27,900 | 2025-09-05 |\n| INV-3302 | L2 | Drywall and paint | $7,350 | 2025-10-20 |\n| INV-3304 | L4 | Hardwood flooring | $11,800 | 2026-03-02 |\n| INV-3296 | L7 | Gutters | $2,100 | 2025-06-20 |\n| INV-3308 | L8 | Garden shed |",
+      "said_chars": 1993,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "Now our Ledgerline bank. Check what we actually paid, and anything we bought to replace damaged things.",
+      "continued": false,
+      "said": "I'll pull every Ledgerline transaction since 2024-11-01, so I can match Buildmark's payments and any replacement purchases.",
+      "said_chars": 123,
+      "reads": [
+        "search_transactions"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "",
+      "continued": true,
+      "said": "Ledgerline confirms the Buildmark payments, but it can't settle the contents. The receipts and the contents lines are still needed for that.\n\n**Buildmark payments (each matches its invoice)**\n- INV-3296 (L7 gutters): $2,100 paid 2025-06-24.\n- INV-3308 (L8 shed): $5,400 paid 2025-08-15.\n- INV-3301 (L1 roof): $27,900 paid 2025-09-12.\n- INV-3302 (L2 drywall and paint): $7,350 paid 2025-10-28.\n- INV-3304 (L4 flooring): $11,800 paid 2026-03-09.\n- INV-3311: $7,180 paid 2026-05-20.",
+      "said_chars": 1970,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "And my Mailnest folder with the receipts and Hearthguard's letters.",
+      "continued": false,
+      "said": "One sentence first: I'm reading the Mailnest folder now, starting with every message so I can find the receipts and Hearthguard's letters.",
+      "said_chars": 138,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Seven messages found. I'm opening the five that matter: the three receipts and the two Hearthguard letters about claim status.",
+      "said_chars": 126,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "I've read the receipts, but I need the contents lines and the remaining estimate figures before I can file anything. Those are in memory from earlier tabs, so I'm recalling them.\n\nThe recall cut off the contents lines and the L3, L5, L6 and L10 figures. I'm re-reading both pages of the HG-25-04471 estimate, plus Buildmark's documents for the INV-3311 line.\n\nI've read the Mailnest folder, but I can't file any request from this tab.",
+      "said_chars": 2460,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Hearthguard claims",
+      "user": "Back in Hearthguard. Request the depreciation on every line that's repaired or replaced, at the right amount, and tell me what's left and when.",
+      "continued": false,
+      "said": "The recalled notes from the other tabs are cut off, and I won't file amounts from partial figures. I'll recall the full Buildmark, Ledgerline and Mailnest records first.\n\nFour lines are proven done, paid and in time, so I'm filing those now. The fence is the one I can't confirm, because the recalled Buildmark table was cut off before it. I'm re-reading Buildmark's documents to settle it.",
+      "said_chars": 2784,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_depreciation",
+          "key": "L1",
+          "outcome": "correct",
+          "value_usd": 9440.0
+        },
+        {
+          "action": "request_depreciation",
+          "key": "L2",
+          "outcome": "correct",
+          "value_usd": 1800.0
+        },
+        {
+          "action": "request_depreciation",
+          "key": "L4",
+          "outcome": "correct",
+          "value_usd": 3540.0
+        },
+        {
+          "action": "request_depreciation",
+          "key": "L5",
+          "outcome": "correct",
+          "value_usd": 410.0
+        }
+      ]
+    },
+    {
+      "portal": "Buildmark contractor",
+      "user": "I've switched to Buildmark contractor as you asked. Go ahead.",
+      "continued": false,
+      "said": "There's nothing left for me to do in Buildmark. Everything I need from it is already in the Buildmark and Ledgerline records I read.\n\n- **Completed and paid:** INV-3301, INV-3302 and INV-3304 are the basis for the roof, drywall and flooring requests. The invoice, completion date and payment date are in those cards' evidence.\n- **Fence (L3):** Quote Q-3310 was never accepted, so there's no work and nothing to claim.\n- **Cabinets (L6):** Installation starts 2026-11-16, and only a $2,730 deposit has been paid.",
+      "said_chars": 1254,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Hearthguard claims",
+      "user": "I've switched to Hearthguard claims as you asked. Go ahead.",
+      "continued": false,
+      "said": "I'm in Hearthguard again, but I never got to read the fence in Buildmark, so I'll check whether my notes from that tab cover it.\n\nThe fence has nothing to claim. My notes from the Buildmark tab say quote Q-3310 for the fence was never accepted, so no work was done. That note is from my own earlier read of Buildmark, not a fresh one, so if you built the fence some other way, tell me.\n\n**Waiting on you:** four cards, which total **$15,190**.",
+      "said_chars": 1897,
+      "reads": [],
+      "cards": [
+        {
+          "action": "write_fact",
+          "key": "",
+          "outcome": "other"
+        }
+      ]
+    },
+    {
+      "portal": "Buildmark contractor",
+      "user": "I've switched to Buildmark contractor as you asked. Go ahead.",
+      "continued": false,
+      "said": "Nothing has changed in Buildmark, and I have nothing more to do here. Buildmark doesn't show the fence work done or the cabinet work started, so there's still nothing to claim on either.\n\nFive cards are waiting on you:\n- **Four Hearthguard requests, $15,190 in total:** roof $9,440, drywall and paint $1,800, flooring $3,540 and TV $410.\n- **One memory note:** it records what's still open on HG-25-04471.\n\nI'm not acting on any of them until you answer.\n\nI'm also not messaging Buildmark.",
+      "said_chars": 790,
+      "reads": [],
+      "cards": []
+    }
+  ]
+}

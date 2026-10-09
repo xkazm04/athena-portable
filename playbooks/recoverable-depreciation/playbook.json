@@ -1,0 +1,105 @@
+{
+  "id": "recoverable-depreciation",
+  "title": "The insurer's depreciation holdback, collected",
+  "domain": "Home insurance",
+  "audience": "home",
+  "promise": "Every line of the adjuster's estimate matched to the contractor's invoice, the bank's payment and the receipts: the depreciation held back on finished repairs claimed at what was actually spent, inside the window the law gives, and nothing claimed for work not done, money already paid or a window that closed.",
+  "persona": "A California household with a windstorm claim and an older water claim, a contractor still at work, and a replacement cost policy",
+  "chore": "Read the adjuster's estimate line by line: replacement cost, depreciation held back, actual cash value paid. Match each line to the contractor's invoice and completion date, the bank's payment and any receipt, and work out what was actually spent. Then claim the holdback on each finished line at the lesser of the replacement cost and the cost, minus what was paid, inside the window the law gives, which for a state of emergency is three years.",
+  "command": "Hearthguard still holds back depreciation on our claims. Go through the estimate, Buildmark's invoices, our Ledgerline bank and my Mailnest receipts, and claim the depreciation for everything that's been repaired or replaced, at the right amount and in time. Nothing for work that isn't done.",
+  "apps": [
+    {
+      "name": "Hearthguard claims",
+      "role": "the policy, both claims, the adjuster's estimate line by line, the payments, and the request form",
+      "api": "Policyholder portal only",
+      "url": ""
+    },
+    {
+      "name": "Buildmark contractor",
+      "role": "the contractor's invoices, completion dates and quotes, each tied to an estimate line",
+      "api": "Customer portal only",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline bank",
+      "role": "what was paid, to whom and when",
+      "api": "Online banking only",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "receipts for replaced belongings, the insurer's letters, the adjuster's mail",
+      "api": "Mail, not data",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the policy, both claims and every estimate line in Hearthguard, and the payments made so far.",
+    "Reads Buildmark's invoices and quotes: which lines are finished, when, and for how much.",
+    "Reads the bank: which invoices were paid, and what was bought after the loss.",
+    "Reads the mail: receipts for belongings replaced, and the insurer's letters about each claim's window.",
+    "Back in Hearthguard, requests the holdback on each finished line at the amount the policy pays, and leaves the rest."
+  ],
+  "gates": [
+    {
+      "action": "request_depreciation",
+      "label": "Request the depreciation holdback",
+      "why": "It reaches the insurer in the household's name, stating that work is done and money spent; a wrong one is a misstatement on a claim."
+    }
+  ],
+  "traps": [
+    "A fence the contractor only quoted for: not repaired, so nothing is owed yet.",
+    "Kitchen cabinets scheduled for November: the window is open until 2028, but the work is not done.",
+    "Gutters whose holdback the insurer already released: a second request is a duplicate.",
+    "A shed under an endorsement that pays actual cash value only: its depreciation is not recoverable.",
+    "A laptop replaced for less than the cash value already paid: nothing more is owed.",
+    "A furniture receipt dated before the storm: the original purchase, not a replacement.",
+    "Two lines of the older water claim, repaired after the extended window closed."
+  ],
+  "memory": [
+    "Each claim's first cash-value payment, whether it relates to a state of emergency, and so its window.",
+    "Each line's replacement cost, depreciation and cash value paid, and the invoice, payment or receipt behind it.",
+    "Which holdbacks are already released, which lines wait on work, and when that work is scheduled.",
+    "The endorsement that makes the shed cash value only."
+  ],
+  "economics": {
+    "value_usd": 6500,
+    "per": "episode",
+    "basis": "The average homeowners claim was $20,062 in 2023 (Triple-I, from ISO). Insurers hold back the depreciation on a replacement cost claim until the work is done; at about a third of an average claim, an estimate, that is about $6,500 an episode, and it is lost when the window closes unclaimed. The bench world holds $15,190 of holdback on four finished lines of one windstorm claim. Times a year: once, one claim's holdback swept when its repairs finish.",
+    "manual_minutes": 240,
+    "times_per_year": 1,
+    "incumbent": "Public adjusters work on contingency, commonly 10 to 20% of what they recover; the California Department of Insurance reported complaints of fees of 30% and more after disasters. The figure used is 15%, an estimate.",
+    "incumbent_fee_pct": 15,
+    "sources": [
+      {
+        "label": "California Insurance Code §2051.5: replacement cost paid once repaired, at least 12 months to collect, 36 after a state of emergency",
+        "url": "https://california.public.law/codes/insurance_code_section_2051.5"
+      },
+      {
+        "label": "United Policyholders: post-disaster insurance claim rules in California (2025)",
+        "url": "https://uphelp.org/claim-guidance-publications/insurance-claim-rules-in-california-2025/"
+      },
+      {
+        "label": "Triple-I: homeowners claim severity, $20,062 in 2023",
+        "url": "https://www.iii.org/fact-statistic/facts-statistics-homeowners-and-renters-insurance"
+      },
+      {
+        "label": "California Assembly Insurance Committee, AB 597 analysis: public adjuster fees of 30% and more",
+        "url": "https://ains.assembly.ca.gov/system/files/2025-03/ab-597-harabedian-analysis-031725.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four portals and two claims; each line's amount is the lesser of two figures less a third, and an unrepaired line, a released one, an endorsement and a closed window each look like money owed.",
+    "usefulness_why": "Thousands of dollars per claim that insurers keep when nobody asks in time, at a moment when the household is busy rebuilding."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A methodical homeowner finds most of it; the bar is most of the holdback, no request for work not done or money already paid, inside an hour."
+  },
+  "caveat": "Hearthguard, Buildmark, Ledgerline, Mailnest and the Okafor household are invented, and so is the state of emergency on the claim; the rules are California Insurance Code §2051.5 and a common replacement cost policy, fixed in the bench world as of October 2026. A real policy's terms and endorsements decide; this is not legal advice."
+}
