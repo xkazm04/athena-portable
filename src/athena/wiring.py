@@ -42,10 +42,10 @@ from athena.connectors.vault import Vault
 from athena.contracts.registry import ExecResult, ExecutorFn, TurnContext
 from athena.core.approvals import Approvals
 from athena.core.brain.store import DEFAULT_CONFIDENCE, Brain, ProvenanceError
-from athena.core.catalog import Catalog, CoreServices, build_catalog
+from athena.core.catalog import RECALL_CAP, Catalog, CoreServices, build_catalog
 from athena.core.constitution import Constitution, load_or_empty
 from athena.core.ledger import Ledger
-from athena.core.recall import EPISODE_WINDOW, recall
+from athena.core.recall import recall, recall_whole
 from athena.daemon.server import AthenaDaemon
 from athena.harness.cli_harness import CLAUDE_EXTRA_ARGS, DIALECTS, CliDialect, CliHarness
 from athena.harness.engines import API_ENGINES, ENGINES, build_api_harness
@@ -90,19 +90,18 @@ deployment would hand to two harnesses.
 
 
 def recall_executor(brain: Brain) -> ExecutorFn:
-    """``core.recall``: the ordinary recall bundle, rendered.
+    """``core.recall``: the matched episodes whole, best first, packed under the cap (ADR 0058).
 
-    No ``shown``/``total`` is set on the result, and that is deliberate: recall's three blocks
-    each carry their own ``(showing N of M)`` and there is no global M that any of them is bounded
-    by (see :mod:`athena.core.recall`). What the gate then caps is the *rendering*, and
-    :meth:`~athena.harness.hooks.GateHook.enforce_cap` announces that cut in characters, which is
-    the only truncation this executor actually performs.
+    No ``shown``/``total`` is set on the result, and that is deliberate: each block carries its
+    own ``(showing N of M)`` and there is no global M that any of them is bounded by (see
+    :mod:`athena.core.recall`). Packing already keeps the rendering inside the cap, so the gate's
+    character cut is announced only for one episode longer than the cap on its own.
     """
 
     def run(params: dict[str, Any], ctx: TurnContext) -> ExecResult:
         query = str(params.get("query", ""))
-        budget = int(params.get("limit", EPISODE_WINDOW) or EPISODE_WINDOW)
-        trace = recall(brain, query, episode_budget=budget)
+        limit = int(params["limit"]) if params.get("limit") else None
+        trace = recall_whole(brain, query, cap=RECALL_CAP, limit=limit)
         blocks = "\n\n".join(f"### {block.name}\n{block.render()}" for block in trace.blocks)
         notes = "\n".join(f"({note})" for note in trace.notes)
         return ExecResult(ok=True, output="\n\n".join(part for part in (blocks, notes) if part))

@@ -220,6 +220,75 @@ def recall(
     return trace
 
 
+def recall_whole(
+    brain: Brain,
+    query: str,
+    *,
+    cap: int,
+    limit: int | None = None,
+    keyword_slots: int = KEYWORD_SLOTS,
+) -> RecallTrace:
+    """The recall she asks for: matched episodes whole, best first, packed under ``cap`` (ADR 0058).
+
+    The keyword lane of distilled memory comes first, then the episodes the query matches, ranked
+    by BM25 with the newer first on a tie, each with its full stored body. There is no always tier
+    and no recency tail: the frame's window already carries both. Packing stops before the first
+    episode that would pass ``cap``, and the block's M counts every episode that matched. The one
+    episode ever left to the gate's cut is one longer than the cap on its own.
+    """
+    with closing(brain.read_connection()) as con:
+        keyword = _keyword_block(con, query, keyword_slots, set())
+        episodes = _whole_episodes(con, query, cap, limit, _packed_chars(keyword))
+    trace = RecallTrace(query=query, blocks=(keyword, episodes))
+    if not keyword.total:
+        trace.notes.append("no distilled memory matched the query")
+    return trace
+
+
+def _packed_chars(block: RecallBlock) -> int:
+    """What a block costs in the rendered answer: its header, its lines, its footer, a separator."""
+    return len("### " + block.name + "\n" + block.render()) + 2
+
+
+def _whole_episodes(
+    con: sqlite3.Connection, query: str, cap: int, limit: int | None, spent: int
+) -> RecallBlock:
+    match = fts_match(query)
+    if not match:
+        return RecallBlock(EPISODE_BLOCK, (), 0)
+    where = "companion_fts MATCH ? AND n.kind = 'episode' AND n.importance > 0"
+    total = _count(
+        con,
+        f"""SELECT COUNT(*) FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
+            WHERE {where}""",
+        (match,),
+    )
+    rows = _rows(
+        con,
+        f"""SELECT n.id, n.kind, f.body, n.file_path, n.created_at, n.machine, bm25(companion_fts)
+            FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
+            WHERE {where}
+            ORDER BY bm25(companion_fts) ASC, n.created_at DESC, n.id DESC""",
+        (match,),
+    )
+    # The header, the worst-case footer and the notes line are reserved before any episode is.
+    overhead = len(f"### {EPISODE_BLOCK}\n(showing {total} of {total})") + 2
+    room = cap - spent - overhead
+    items: list[Memory] = []
+    for row in rows:
+        if limit is not None and len(items) >= limit:
+            break
+        memory = _memory(row[:6], KEYWORD_BLOCK, float(row[6]))
+        cost = len(memory.render()) + 1
+        if cost > room:
+            if not items and spent == 0 and cost + overhead > cap:
+                items.append(memory)
+            break
+        items.append(memory)
+        room -= cost
+    return RecallBlock(EPISODE_BLOCK, tuple(items), total)
+
+
 def around(body: str, query: str) -> str:
     """An excerpt's worth of ``body``, centred on the first word of ``query`` it contains.
 

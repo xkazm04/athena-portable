@@ -166,8 +166,8 @@ def test_recall_answers_with_the_blocks_and_each_ones_own_footer(local: AthenaLo
 
     assert result.ok
     assert "Northwind" in result.output
-    # Three populations, three footers, and deliberately no global M over their union.
-    assert result.output.count("(showing ") == 3
+    # Two blocks, two footers (no always tier, ADR 0058), and no global M over their union.
+    assert result.output.count("(showing ") == 2
 
 
 def test_write_fact_refuses_a_source_that_is_not_a_live_episode(local: AthenaLocal) -> None:

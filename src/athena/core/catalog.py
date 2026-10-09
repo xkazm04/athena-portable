@@ -161,7 +161,10 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
             params_schema=RECALL_SCHEMA,
             validator=schema_validator(RECALL_SCHEMA),
             executor=services.recall or _unattached("core.recall"),
-            description="Search memory; the capped answer returns as a system episode.",
+            description=(
+                "Search memory. Matching episodes come back whole, best first, as many as fit; "
+                "a narrower query reaches the rest. The answer returns as a system episode."
+            ),
             cap_chars=RECALL_CAP,
         ),
         ToolEntry(

@@ -9,6 +9,8 @@ sentence, where ``total`` is the population the page was cut from and never the 
 
 from __future__ import annotations
 
+import re
+
 from athena.core.catalog import RECALL_CAP
 from athena.daemon.routes import DEFAULT_LIMIT, MAX_LIMIT
 
@@ -26,7 +28,7 @@ LONG_MESSAGE = (
 ROUND_COST = 0.04
 
 
-def test_a_read_whose_answer_exceeds_the_cap_announces_what_it_cut(spawn: Spawn) -> None:
+def test_a_recall_past_the_cap_packs_whole_episodes_and_announces_the_rest(spawn: Spawn) -> None:
     daemon = spawn.scripted(
         [
             *[claude_round("Noted.") for _ in range(STUFFING)],
@@ -45,12 +47,38 @@ def test_a_read_whose_answer_exceeds_the_cap_announces_what_it_cut(spawn: Spawn)
     answer = results[0]
     assert answer["name"] == "core.recall"
     assert answer["ok"] is True
-    assert answer["truncated"] is True
-    body, _, footer = answer["output"].rpartition("\n")
-    assert len(body) == RECALL_CAP, "the cap is the catalog's, in characters"
-    total = int(footer.removeprefix("(showing ").removesuffix(")").split(" of ")[1])
-    assert footer == f"(showing {RECALL_CAP} of {total})"
-    assert total > RECALL_CAP
+    assert answer["truncated"] is False, "packing stops between episodes; the gate cuts nothing"
+    output = answer["output"]
+    assert len(output) <= RECALL_CAP
+    announced = re.search(r"\(showing (\d+) of (\d+)\)", output.split("### episodes")[1])
+    assert announced is not None
+    shown, total = int(announced[1]), int(announced[2])
+    assert 0 < shown < total, "the episodes that did not fit are counted, not dropped silently"
+    assert output.count(LONG_MESSAGE.strip()) == shown, "every shown episode is whole"
+
+
+def test_a_summary_written_in_one_origin_is_recalled_whole_from_another(spawn: Spawn) -> None:
+    summary = "Compsmith summary for R-10422 and R-20977. " + "Comparable sale notes. " * 40
+    summary += "Duplex comparables D-1 adjusted $596,000 and D-2 adjusted $604,000."
+    other = "https://countyline.example"
+    daemon = spawn.scripted(
+        [
+            claude_round(summary),
+            claude_round("Let me look it up.\n" + op("core.recall", query="duplex")),
+            claude_round("That is what I have."),
+        ]
+    )
+    daemon.register()
+    daemon.register(app_id="countyline", page_origin=other)
+    assert daemon.run("write up the comparables").status == 200
+    assert summary.index("D-2") > 500
+
+    reply = daemon.run("what did the duplex come to?", origin=other)
+
+    (answer,) = [p for kind, p in reply.frames() if kind == "tool.result"]
+    assert answer["name"] == "core.recall"
+    assert summary in answer["output"], "the figures past byte 500 come back"
+    assert answer["truncated"] is False
 
 
 def test_the_ledger_and_its_rollup_answer_in_the_documented_shape_and_page_their_lists(

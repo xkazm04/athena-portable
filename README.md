@@ -174,6 +174,10 @@ Packages depend on ports, never on concrete classes. `wiring.py` is the one plac
 | `READ` | synchronous, capped at 1,600 chars (a recall at 4,800, ADR 0049), announces truncation | a system episode |
 | `AUTO` | fires after its validator passes | the executor, or the host |
 
+`core.recall` answers with the episodes its query matches, whole and best match first, packed under
+its cap and announcing `(showing N of M)` in episodes; only the frame's ambient window shows
+500-byte excerpts (ADR 0058).
+
 A page's tools enter the catalog through a manifest. The class is derived from the manifest's own
 flags: `AUTO` only if `reversible: true` and `side_effects` is not `external`; otherwise `GATED`
 regardless of what the host prefers. A manifest that fails validation is refused whole. A surface

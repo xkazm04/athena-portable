@@ -15,6 +15,7 @@ from athena.core.recall import (
     EPISODE_WINDOW,
     KEYWORD_BLOCK,
     recall,
+    recall_whole,
 )
 
 BASE = datetime(2026, 9, 1, 9, 0, tzinfo=UTC)
@@ -263,3 +264,67 @@ def test_a_query_of_only_common_words_still_queries(tmp_path: Path) -> None:
         trace = recall(brain, "what was that")
 
         assert [m.lane for m in trace.block(EPISODE_BLOCK).items] == [KEYWORD_BLOCK]
+
+
+def test_a_matched_episode_longer_than_an_excerpt_comes_back_with_its_tail(tmp_path: Path) -> None:
+    body = "Compsmith summary for the duplex. " + "filler text. " * 80 + "D-2 adjusted $604,000."
+    assert len(body.encode()) > 500
+    with Brain(tmp_path / "brain") as brain:
+        brain.append_episode(body, "assistant")
+
+        (memory,) = recall_whole(brain, "duplex", cap=4800).block(EPISODE_BLOCK).items
+
+        assert memory.excerpt == body
+
+
+def test_packing_stops_before_an_episode_that_would_pass_the_cap_and_counts_all(
+    tmp_path: Path,
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        for n in range(5):
+            brain.append_episode(
+                f"invoice {n} " + "x" * 800, "user", created=BASE + timedelta(minutes=n)
+            )
+
+        trace = recall_whole(brain, "invoice", cap=2000)
+
+        episodes = trace.block(EPISODE_BLOCK)
+        assert (episodes.shown, episodes.total) == (2, 5)
+        assert all(m.excerpt.endswith("x" * 800) for m in episodes.items), "none is cut"
+        assert episodes.footer() == "(showing 2 of 5)"
+        assert sum(len(block.render()) for block in trace.blocks) <= 2000
+
+
+def test_the_best_match_comes_first_and_a_tie_goes_to_the_newer(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        old = brain.append_episode("duplex notes", "user", created=BASE).id
+        best = brain.append_episode("duplex duplex duplex", "user", created=BASE).id
+        new = brain.append_episode("duplex notes", "user", created=BASE + timedelta(hours=1)).id
+
+        items = recall_whole(brain, "duplex", cap=4800).block(EPISODE_BLOCK).items
+
+        assert [m.id for m in items] == [best, new, old]
+
+
+def test_a_recall_for_a_person_has_no_tail_and_no_always_tier(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("unrelated chatter", "user").id
+        brain.write_fact(
+            "rule", "always true", sources=[source], importance=ALWAYS_IMPORTANCE_FLOOR
+        )
+
+        trace = recall_whole(brain, "duplex", cap=4800)
+
+        assert [block.name for block in trace.blocks] == [KEYWORD_BLOCK, EPISODE_BLOCK]
+        assert trace.block(EPISODE_BLOCK).footer() == "(showing 0 of 0)"
+
+
+def test_the_frame_window_still_shows_500_byte_excerpts(tmp_path: Path) -> None:
+    body = "duplex " + "filler text. " * 80 + "tail-figure"
+    with Brain(tmp_path / "brain") as brain:
+        brain.append_episode(body, "assistant")
+
+        (memory,) = recall(brain, "duplex").block(EPISODE_BLOCK).items
+
+        assert len(memory.excerpt.encode()) <= 500 + len("…  …".encode())
+        assert "tail-figure" not in memory.excerpt
