@@ -108,6 +108,34 @@ def _host_calls(record: TurnRecord) -> list[dict[str, Any]]:
     ]
 
 
+_FOOTER = re.compile(r"\(showing \d+ of \d+\)")
+
+
+def _core_calls(record: TurnRecord) -> list[dict[str, Any]]:
+    """Every call the core answered itself (``core.recall``), with the footer its answer ended on.
+
+    The output is not kept: the footer is what says how much of the brain the call returned.
+    """
+    results = {str(e.get("call_id")): e for e in record.events if e.get("kind") == "tool.result"}
+    calls: list[dict[str, Any]] = []
+    for event in record.events:
+        if event.get("kind") != "tool.call" or event.get("origin", "core") != "core":
+            continue
+        result = results.get(str(event.get("call_id")))
+        footers = _FOOTER.findall(str(result.get("output", ""))) if result else []
+        calls.append(
+            {
+                "name": str(event.get("name", "")).rsplit(".", 1)[-1],
+                "params": {
+                    k: v[:300] if isinstance(v, str) else v for k, v in _params(event).items()
+                },
+                "ok": result.get("ok") if result else None,
+                "footer": footers[-1] if footers else "",
+            }
+        )
+    return calls
+
+
 def _default_world(playbook: Playbook, config: BenchConfig) -> World:
     first, *rest = playbook.apps
     world = World(engine=config.engine, model=config.model, manifest=first.manifest())
@@ -299,6 +327,7 @@ def _absorb(run: _Run, record: TurnRecord, app_id: str, message: str) -> list[di
                 {"name": str(c.get("name", "")).rsplit(".", 1)[-1], "params": _params(c)}
                 for c in _host_calls(record)
             ],
+            "core_calls": _core_calls(record),
             "cards": [
                 {"action": c["action"].rsplit(".", 1)[-1], "params": c["params"]} for c in filed
             ],

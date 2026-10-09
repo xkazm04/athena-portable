@@ -18,6 +18,8 @@ from athena.proving.characters.scene import CONTINUE
 from athena.proving.playbooks import spec
 from athena.proving.playbooks.bench import (
     BenchConfig,
+    _absorb,
+    _Run,
     cards_of,
     prose_audit,
     rescore,
@@ -31,7 +33,7 @@ from athena.proving.playbooks.bench import (
 )
 from athena.proving.playbooks.page import SimulatedPortals
 from athena.proving.playbooks.spec import PlaybookError, load_all, load_playbook
-from athena.proving.world import World
+from athena.proving.world import TurnRecord, World
 
 from .conftest import frame_of, op_line, scripted_model
 
@@ -520,6 +522,41 @@ def test_a_detail_page_needs_its_id_and_a_default_opens_an_index(tmp_path: Path)
     portals = SimulatedPortals(load_playbook(tmp_path / "late-parcels"))
     rows = json.loads(portals.answer("host.shipdesk.list_shipments", {})[1])["rows"]
     assert [r["tracking"] for r in rows] == ["1ZD"]
+
+
+def test_the_transcript_keeps_the_calls_the_core_answered_with_their_footers() -> None:
+    def call(call_id: str, name: str, origin: str, **params: Any) -> dict[str, Any]:
+        return {
+            "kind": "tool.call",
+            "call_id": call_id,
+            "name": name,
+            "origin": origin,
+            "params": params,
+        }
+
+    def answer(call_id: str, output: str) -> dict[str, Any]:
+        return {"kind": "tool.result", "call_id": call_id, "ok": True, "output": output}
+
+    query = "late parcels " + "x" * 400
+    record = TurnRecord(
+        events=[
+            call("c1", "core.recall", "core", query=query),
+            answer("c1", "3 episodes\n(showing 3 of 7)"),
+            call("c2", "core.read_fact", "core", key="k"),
+            answer("c2", "whole"),
+            call("c3", "host.shipdesk.list_shipments", "host:shipdesk"),
+        ]
+    )
+    run = _Run()
+    _absorb(run, record, "shipdesk", "go")
+    turn = run.turns[0]
+    assert [c["name"] for c in turn["calls"]] == ["list_shipments"]
+    assert [(c["name"], c["ok"], c["footer"]) for c in turn["core_calls"]] == [
+        ("recall", True, "(showing 3 of 7)"),
+        ("read_fact", True, ""),
+    ]
+    assert turn["core_calls"][0]["params"]["query"] == query[:300]
+    assert "output" not in turn["core_calls"][0]
 
 
 def test_bench_json_keeps_earlier_runs_as_history_and_a_rescore_replaces_itself(
