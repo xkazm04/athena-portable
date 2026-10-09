@@ -1,0 +1,323 @@
+{
+  "playbook": "wotc-screening",
+  "run_at": "2026-10-09T18:36:50Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 180.9,
+  "turns": 12,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 36,
+  "cost_usd": 1.8829,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 3.0
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 19200.0,
+    "value_found_usd": 19200.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_8850",
+        "key": "T-202",
+        "why": "Began work 2025-11-05, so the 28 days ended 2025-12-03: a late submission cannot be certified",
+        "filed": false
+      },
+      {
+        "action": "submit_8850",
+        "key": "T-207",
+        "why": "The 100% owner's nephew (her sister's son): a relative under IRC §51(i)(1)",
+        "filed": false
+      },
+      {
+        "action": "submit_8850",
+        "key": "T-208",
+        "why": "Employed by Hollow Creek from 2023-05-01 to 2024-09-30: a rehire, excluded by IRC §51(i)(2)",
+        "filed": false
+      },
+      {
+        "action": "submit_8850",
+        "key": "T-209",
+        "why": "Signed Form 8850 on 2025-11-21, three days after the 2025-11-18 offer: the form must be signed on or before the offer day",
+        "filed": false
+      },
+      {
+        "action": "submit_8850",
+        "key": "T-210",
+        "why": "Aged 47: the SNAP group is 18 to 39, and he is in no other group",
+        "filed": false
+      },
+      {
+        "action": "submit_8850",
+        "key": "T-211",
+        "why": "Answered no to every screening question: in no group",
+        "filed": false
+      },
+      {
+        "action": "submit_8850",
+        "key": "T-212",
+        "why": "A veteran unemployed only three weeks, discharged in 2022, with no service-connected disability and no SNAP: in no veteran group",
+        "filed": false
+      },
+      {
+        "action": "submit_8850",
+        "key": "T-213",
+        "why": "Already submitted on 2025-12-05, confirmation WC-55120: a second submission is a duplicate",
+        "filed": false
+      },
+      {
+        "action": "submit_8850",
+        "key": "T-214",
+        "why": "Never began work: the offer was withdrawn after she did not report",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "submit_8850",
+      "key": "T-201",
+      "outcome": "correct",
+      "value_usd": 2400.0,
+      "exact": true,
+      "why": "Aged 24, household on SNAP every month since April 2025, signed on the offer day; began work 2025-11-17, so due by 2025-12-15, three days after today: SNAP, 40% of the first $6,000 = $2,400"
+    },
+    {
+      "action": "submit_8850",
+      "key": "T-203",
+      "outcome": "correct",
+      "value_usd": 9600.0,
+      "exact": true,
+      "why": "A veteran with a service-connected disability (VA letter, 30%), unemployed since 2025-04-15, about seven and a half months of the year before his 2025-12-01 start: VET-DIS-UNEMP6, 40% of the first $24,000 = $9,600; due by 2025-12-29"
+    },
+    {
+      "action": "submit_8850",
+      "key": "T-204",
+      "outcome": "correct",
+      "value_usd": 2400.0,
+      "exact": true,
+      "why": "Unemployed from 2025-05-02 to her 2025-12-02 start, about 30 weeks, with unemployment compensation through October: LTUR, $2,400; due by 2025-12-30"
+    },
+    {
+      "action": "submit_8850",
+      "key": "T-205",
+      "outcome": "correct",
+      "value_usd": 2400.0,
+      "exact": true,
+      "why": "Released from prison after a felony conviction on 2025-06-20 and hired within a year: EXFELON, $2,400; began 2025-12-08, due by 2026-01-05"
+    },
+    {
+      "action": "submit_8850",
+      "key": "T-206",
+      "outcome": "correct",
+      "value_usd": 2400.0,
+      "exact": true,
+      "why": "Received SSI every month of 2025, so for a month ending in the 60 days before hire: SSI, $2,400; began 2025-12-03, due by 2025-12-31"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Most hires can now be decided against the rules. I'm still missing Curtis Hale's details and the start dates for Jamal Reed and Priya Nand, so I'm recalling those before I file anything.\n\nI'm filing five cards, one per qualifying hire. Nothing is submitted until you answer each card.\n\n| Hire | Group | Max credit | Started | Due | Evidence |\n|---|---|---|---|---|---|\n| T-201 Marisol Vega | SNAP | $2,400 | 17 Nov | 15 Dec | Age 24. County letter H-301: SNAP every month since April. 8850 signed on the offer day. |\n| T-203 Curtis Hale | VET-DIS-UNEMP6 | $9,600 | 1 Dec | 29 Dec | VA letter H-302: Army veteran with a 30% service-connected disability. He reports being unemployed since 15 April. He was discharged in 2019, so VET-DIS doesn't apply. |\n| T-204 Bea Lindqvist | LTUR | $2,400 | 2 Dec | 30 Dec | Unemployed since 2 May, about 30 weeks, with unemployment compensation paid through October",
+  "trace": [
+    {
+      "portal": "Talentry ATS",
+      "user": "It's holiday hiring and I'm behind on WOTC. Start here in Talentry: go through every hire since November, their screening answers, their age, and when they signed the 8850 against when we offered the job.",
+      "continued": false,
+      "said": "I'll start by pulling the hire list, along with the agency rules and the payroll start dates I'll need for the 28-day count.\n\nThe other tabs' tools can't be called from Talentry, so I'll stay here. The hire list is still loading, and I'll read each application once it arrives. Before I leave this tab, I'll check memory for anything already read elsewhere.\n\nNothing is in memory about the WOTC rules or payroll start dates, so I'll read those in their own tabs later.",
+      "said_chars": 1303,
+      "reads": [
+        "list_hires"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Talentry ATS",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 shows 7 of 14 hires. I'll read those seven applications and fetch page 2.",
+      "said_chars": 80,
+      "reads": [
+        "list_hires",
+        "read_application",
+        "read_application",
+        "read_application",
+        "read_application",
+        "read_application",
+        "read_application",
+        "read_application"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Talentry ATS",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 is read. Next are the seven page 2 applications.",
+      "said_chars": 55,
+      "reads": [
+        "read_application",
+        "read_application",
+        "read_application",
+        "read_application",
+        "read_application",
+        "read_application",
+        "read_application"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Talentry ATS",
+      "user": "",
+      "continued": true,
+      "said": "All fourteen Talentry applications are read, and nothing has been submitted. Seven look like clear candidates and seven need a rule check or a payroll fact before I can say. Group codes and the 28-day deadlines have to wait for the rules and the start dates.\n\n| Hire | Age | Screening answer (Talentry) | 8850 signed vs.",
+      "said_chars": 3113,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "Now Payroll Harbor. Note the day each of them actually began work, and anything about their history with us.",
+      "continued": false,
+      "said": "I'll read both pages of new employees in Payroll Harbor.",
+      "said_chars": 56,
+      "reads": [
+        "list_new_employees",
+        "list_new_employees"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "",
+      "continued": true,
+      "said": "Payroll Harbor is read. One hire, T-214 Kay Moreno, never started, and the facts for the other thirteen are below. Nothing has been submitted.\n\n| Hire | Began work | Hrs/wk | Earlier employment with us | 28 days from start (provisional) |\n|---|---|---|---|---|\n| T-201 Marisol Vega | 17 Nov | 38 | None | 15 Dec |\n| T-202 Ray Okonjo | 5 Nov | 35 | None | 3 Dec (already past) |\n| T-203 Curtis Hale | 1 Dec | 36 | None | 29 Dec |\n| T-204 Bea Lindqvist | 2 Dec | 40 | None | 30 Dec |\n| T-205 Jamal Reed | 8 Dec | 32 |",
+      "said_chars": 2433,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "My Mailnest hiring folder has what people sent us: benefit letters, the VA, release papers, and a few notes. Read what bears on the credit.",
+      "continued": false,
+      "said": "I'll list the whole hiring folder first, then open the messages that bear on the credit.",
+      "said_chars": 88,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Nine messages are in the folder. I'm opening all of them now, since each one is either evidence for a hire or a note about one.",
+      "said_chars": 127,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "The folder confirms the screening answers for six hires, shows one is already filed, one won't start, and one note isn't a WOTC document. I haven't submitted anything.\n\n| Msg | Hire | What the letter says | Bears on |\n|---|---|---|---|\n| H-301 | T-201 Marisol Vega | The county confirms SNAP every month from April 2025 to date. | Supports SNAP, matching Talentry. |\n| H-302 | T-203 Curtis Hale | Army, honorably discharged 14 June 2019. Service-connected disability, 30% rating.",
+      "said_chars": 3428,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "WorkCredit Online",
+      "user": "This is WorkCredit Online. Submit an 8850 for every hire who qualifies and is still inside the 28 days, with the right group, then tell me who you left out and why.",
+      "continued": false,
+      "said": "I'll read the agency rules and the existing submissions first, and recall what I stored from the other tabs. I haven't submitted anything yet.\n\nI haven't submitted anything yet. The answers to the rules read and the submissions list haven't reached me, and I won't pick target groups or deadlines without them.\n\nHere is what I can say from memory:\n- **T-214 Kay Moreno:** leave out. She emailed on 7 December that she won't start (H-307), and Payroll Harbor shows no start date.",
+      "said_chars": 2583,
+      "reads": [
+        "read_rules",
+        "list_submissions",
+        "read_rules",
+        "list_submissions"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "WorkCredit Online",
+      "user": "",
+      "continued": true,
+      "said": "The rules index came back, but the rules themselves are under four topics. I'm reading each one, and I'm recalling the full hire tables from the other tabs.\n\nFour rules reads are with the page, and their answers will arrive on my next turn. I won't repeat them. Nothing is filed yet, and I don't want to file under rules I haven't read.\n\nWhat I have so far:\n\n| Hire | Screening | Start | Note |\n|---|---|---|---|\n| T-201 Marisol Vega | SNAP, confirmed by the county letter | 17 Nov | Candidate.",
+      "said_chars": 2381,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "WorkCredit Online",
+      "user": "",
+      "continued": true,
+      "said": "Most hires can now be decided against the rules. I'm still missing Curtis Hale's details and the start dates for Jamal Reed and Priya Nand, so I'm recalling those before I file anything.\n\nI'm filing five cards, one per qualifying hire. Nothing is submitted until you answer each card.\n\n| Hire | Group | Max credit | Started | Due | Evidence |\n|---|---|---|---|---|---|\n| T-201 Marisol Vega | SNAP | $2,400 | 17 Nov | 15 Dec | Age 24. County letter H-301: SNAP every month since April. 8850 signed on the offer day.",
+      "said_chars": 2369,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_8850",
+          "key": "T-201",
+          "outcome": "correct",
+          "value_usd": 2400.0
+        },
+        {
+          "action": "submit_8850",
+          "key": "T-203",
+          "outcome": "correct",
+          "value_usd": 9600.0
+        },
+        {
+          "action": "submit_8850",
+          "key": "T-204",
+          "outcome": "correct",
+          "value_usd": 2400.0
+        },
+        {
+          "action": "submit_8850",
+          "key": "T-205",
+          "outcome": "correct",
+          "value_usd": 2400.0
+        },
+        {
+          "action": "submit_8850",
+          "key": "T-206",
+          "outcome": "correct",
+          "value_usd": 2400.0
+        }
+      ]
+    }
+  ]
+}

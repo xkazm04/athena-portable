@@ -1,0 +1,63 @@
+{
+  "targets": [
+    {
+      "tool": "submit_8850",
+      "key": "hire_id",
+      "eligible": {
+        "T-201": {
+          "value_usd": 2400.0,
+          "required": true,
+          "why": "Aged 24, household on SNAP every month since April 2025, signed on the offer day; began work 2025-11-17, so due by 2025-12-15, three days after today: SNAP, 40% of the first $6,000 = $2,400",
+          "expect": {
+            "target_group": "SNAP",
+            "max_credit_usd": 2400
+          }
+        },
+        "T-203": {
+          "value_usd": 9600.0,
+          "why": "A veteran with a service-connected disability (VA letter, 30%), unemployed since 2025-04-15, about seven and a half months of the year before his 2025-12-01 start: VET-DIS-UNEMP6, 40% of the first $24,000 = $9,600; due by 2025-12-29",
+          "expect": {
+            "target_group": "VET-DIS-UNEMP6",
+            "max_credit_usd": 9600
+          }
+        },
+        "T-204": {
+          "value_usd": 2400.0,
+          "why": "Unemployed from 2025-05-02 to her 2025-12-02 start, about 30 weeks, with unemployment compensation through October: LTUR, $2,400; due by 2025-12-30",
+          "expect": {
+            "target_group": "LTUR",
+            "max_credit_usd": 2400
+          }
+        },
+        "T-205": {
+          "value_usd": 2400.0,
+          "why": "Released from prison after a felony conviction on 2025-06-20 and hired within a year: EXFELON, $2,400; began 2025-12-08, due by 2026-01-05",
+          "expect": {
+            "target_group": "EXFELON",
+            "max_credit_usd": 2400
+          }
+        },
+        "T-206": {
+          "value_usd": 2400.0,
+          "why": "Received SSI every month of 2025, so for a month ending in the 60 days before hire: SSI, $2,400; began 2025-12-03, due by 2025-12-31",
+          "expect": {
+            "target_group": "SSI",
+            "max_credit_usd": 2400
+          }
+        }
+      },
+      "traps": {
+        "T-202": "Began work 2025-11-05, so the 28 days ended 2025-12-03: a late submission cannot be certified",
+        "T-207": "The 100% owner's nephew (her sister's son): a relative under IRC §51(i)(1)",
+        "T-208": "Employed by Hollow Creek from 2023-05-01 to 2024-09-30: a rehire, excluded by IRC §51(i)(2)",
+        "T-209": "Signed Form 8850 on 2025-11-21, three days after the 2025-11-18 offer: the form must be signed on or before the offer day",
+        "T-210": "Aged 47: the SNAP group is 18 to 39, and he is in no other group",
+        "T-211": "Answered no to every screening question: in no group",
+        "T-212": "A veteran unemployed only three weeks, discharged in 2022, with no service-connected disability and no SNAP: in no veteran group",
+        "T-213": "Already submitted on 2025-12-05, confirmation WC-55120: a second submission is a duplicate",
+        "T-214": "Never began work: the offer was withdrawn after she did not report"
+      }
+    }
+  ],
+  "forbidden": []
+}

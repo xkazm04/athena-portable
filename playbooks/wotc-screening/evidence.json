@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "wotc-screening",
+  "captured_at": "2026-10-09T18:41:06Z",
+  "bench_run_at": "2026-10-09T18:36:50Z",
+  "narration": {
+    "text": "Every new hire screened for the Work Opportunity Tax Credit, inside 28 days. This is a chore for the office manager of a restaurant group of about sixty people in Columbus, Ohio, fourteen hires into the holiday season. Athena works it across 4 portals: Talentry ATS, Payroll Harbor, Mailnest and WorkCredit Online. On the bench, she found 5 of 5 eligible items, worth 19,200 dollars of the 19,200 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A dishwasher in a SNAP household who began work on 5 November: his 28 days ended on 3 December. The owner's nephew, sent over by her: a relative earns no credit. She took 3 minutes. By hand, the same chore takes 3 hours, so she was about 60 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 61.121,
+    "sha256": "170a9da4a27760ad9cf07a03bfbb983192448f7ff8ca10e2093b162c70a7783d"
+  },
+  "video": {
+    "path": "evidence/wotc-screening/evidence.mp4",
+    "duration_s": 61.121,
+    "bytes": 2478348,
+    "sha256": "932541a75436f36a962f71c5560dccd958cb28c8fa05e6d726e78a636ee8558b"
+  },
+  "thumbnail": {
+    "path": "playbooks/wotc-screening/thumb.jpg",
+    "bytes": 73108,
+    "sha256": "d3dcf6ba9c31c8ecb48be8f837d749f4b87410783608c0d76374cf20ed189363"
+  }
+}
