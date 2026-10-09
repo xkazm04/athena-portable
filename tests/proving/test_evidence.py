@@ -193,6 +193,7 @@ def test_piper_speaks_only_when_kokoro_is_missing(tmp_path: Path) -> None:
 
 
 def _index(root: Path, run_at: str) -> None:
+    showcase, bench = _json(root / "playbook.json"), _json(root / "bench.json")
     thumb = root / "thumb.jpg"
     thumb.write_bytes(b"\xff\xd8 a still \xff\xd9")
     index = {
@@ -200,7 +201,12 @@ def _index(root: Path, run_at: str) -> None:
         "playbook": root.name,
         "captured_at": "2026-10-09T10:00:00Z",
         "bench_run_at": run_at,
-        "narration": {"text": "…", "engine": "kokoro", "voice": "af_heart", "duration_s": 70.0},
+        "narration": {
+            "text": narration(showcase, bench),
+            "engine": "kokoro",
+            "voice": "af_heart",
+            "duration_s": 70.0,
+        },
         "video": {"path": f"evidence/{root.name}/evidence.mp4", "duration_s": 70.0, "bytes": 1},
         "thumbnail": {
             "path": f"playbooks/{root.name}/thumb.jpg",
@@ -289,3 +295,18 @@ def test_every_committed_index_is_schema_1_with_a_small_thumbnail(index_path: Pa
 
 def test_the_shipped_playbooks_still_load_with_their_evidence_beside_them() -> None:
     assert len(load_all(SHIPPED)) >= 9
+
+
+def test_verify_catches_a_rescore_that_kept_the_run_at_but_changed_what_is_said(
+    tmp_path: Path,
+) -> None:
+    root = _copy(tmp_path)
+    _index(root, str(_json(root / "bench.json")["run_at"]))
+    bench = _json(root / "bench.json")
+    bench["rescored_at"] = "2026-10-10T00:00:00Z"
+    bench["score"]["false_claims"] = 1
+    (root / "bench.json").write_text(json.dumps(bench), encoding="utf-8")
+    [standing] = verify([load_playbook(root)], tmp_path)
+    assert standing.state == "current"
+    assert standing.notes == ("the narration no longer says what the record says: film it again",)
+    assert not standing.ok

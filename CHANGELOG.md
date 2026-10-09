@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(playbooks): evidence --verify catches a narration that drifted from its record` — ADR 0055's flaw: a rescore keeps `run_at`, so the template is filled again and compared with the committed text; `narration.sha256` is stated to be the WAV's.
+
 - `chore(playbooks): the nine shipped playbooks filmed` — `evidence --all` on Kokoro af_heart: films of 63.5 to 70.1 s, one H.264 and one AAC stream each, kept in the gitignored `evidence/`; the nine `evidence.json` indexes (schema 1, current against their bench) and thumbnails of 74 to 99.9 KB committed.
 
 - `feat(playbooks): a benched playbook is filmed — the evidence verb narrates it, speaks it with Kokoro, captures the layer and muxes the film` — ADR 0055; `evidence <id>|--all [--dry] [--verify]`, a deterministic 45–90 s narration from playbook.json and bench.json, the media in a gitignored `evidence/`, `evidence.json` (schema 1) and a thumbnail under 100 KB committed beside the playbook.

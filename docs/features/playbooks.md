@@ -92,7 +92,9 @@ H.264 and AAC and shrinks a still of the result to a JPEG under 100 KB. The film
 capture stay in the gitignored `evidence/<id>/`; `playbooks/<id>/evidence.json` (schema 1:
 narration text, engine, voice, durations, bytes and sha256, repo-relative paths, and the
 `bench_run_at` it filmed) and `thumb.jpg` are committed. `--verify` calls an index stale when its
-`bench_run_at` is not the bench's `run_at`, and re-hashes whatever media is on this machine. A
+`bench_run_at` is not the bench's `run_at`, notes a narration that no longer matches what
+`playbook.json` and `bench.json` say now (a rescore keeps `run_at`), and re-hashes whatever media
+is on this machine; `narration.sha256` is of the spoken WAV. A
 playbook without a bench is refused, and `check` does not fail one that has no evidence yet.
 
 On the desktop the still sits on the playbook's tile with the film's length, and the layer gains

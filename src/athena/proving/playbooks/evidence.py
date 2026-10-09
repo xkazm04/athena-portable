@@ -20,7 +20,13 @@ replaying that run. Five steps per playbook, each a tool the machine already has
 The media lives under ``evidence/`` at the repository root, which is gitignored: the index and the
 thumbnail are committed, the film is not. :func:`verify` says whether each index is still current
 against its ``bench.json`` (``bench_run_at`` equal to ``run_at``) and re-hashes whatever media is
-present on this machine.
+present on this machine. Every ``sha256`` in the index is of a file's bytes: ``narration.sha256`` is
+the spoken WAV, since the text it was spoken from is already in the index word for word.
+
+A rescore keeps ``run_at`` (``bench.write_bench``), and an edit to ``playbook.json`` changes no date
+at all, so either can leave an index "current" whose narration no longer says what the record says.
+:func:`verify` therefore also fills the narration again and compares it with the committed text; a
+difference is reported, and the playbook wants filming again.
 """
 
 from __future__ import annotations
@@ -761,5 +767,9 @@ def verify(books: Iterable[Playbook], repo: Path) -> list[Standing]:
                     notes.append(f"{where} does not match its sha256")
             elif required:
                 notes.append(f"{where or part} is missing")
+        if state == "current" and index.get("narration", {}).get("text") != narration(
+            book.showcase, bench
+        ):
+            notes.append("the narration no longer says what the record says: film it again")
         out.append(Standing(book.id, state, tuple(notes)))
     return out
