@@ -1,0 +1,71 @@
+{
+  "targets": [
+    {
+      "tool": "claim_cost",
+      "key": "cost_id",
+      "eligible": {
+        "PAY-Q3-LIND": {
+          "value_usd": 15750.0,
+          "why": "The program coordinator's timesheets are 100% on the award: $12,600 salary + $3,150 fringe = $15,750, paid this quarter",
+          "expect": {
+            "amount_usd": 15750
+          }
+        },
+        "PAY-Q3-HADDAD": {
+          "value_usd": 7650.0,
+          "why": "The executive director's timesheets put 30% of his hours on the award: 30% of ($20,400 + $5,100) = $7,650",
+          "expect": {
+            "amount_usd": 7650
+          }
+        },
+        "GL-5512": {
+          "value_usd": 3180.0,
+          "why": "Tutoring workbooks for the summer cohort, a budgeted supply, paid 2026-08-04",
+          "expect": {
+            "amount_usd": 3180
+          }
+        },
+        "GL-5530": {
+          "value_usd": 412.6,
+          "why": "Tutors' local mileage, budgeted travel, paid 2026-09-10",
+          "expect": {
+            "amount_usd": 412.6
+          }
+        },
+        "GL-5541": {
+          "value_usd": 4500.0,
+          "why": "The external evaluation, budgeted contractual, paid 2026-09-25",
+          "expect": {
+            "amount_usd": 4500
+          }
+        }
+      },
+      "traps": {
+        "GL-5498": "A curriculum license bought in August 2025, before the award began on 2025-10-01, and recoded since: a pre-award cost with no approval (200.458)",
+        "GL-5503": "The tablets were drawn on D-0611 on 2026-07-21: a cost already drawn cannot be drawn again",
+        "GL-5519": "Wine and catering for a celebration evening: alcohol and entertainment are unallowable (200.423, 200.438)",
+        "GL-5524": "The Fall Gala is the fundraising dinner: fundraising is unallowable (200.442)",
+        "GL-5527": "The Coalition spends all of the assessment on legislative advocacy: lobbying is unallowable (200.450)",
+        "GL-5533": "An IRS penalty for a late Form 990: fines and penalties are unallowable (200.441)",
+        "GL-5538": "Rent coded to the housing counseling award FA-2026-0090: another award's cost (200.405(c))",
+        "GL-5545": "The fall workbooks are not paid until 2026-10-29: the award reimburses only costs already paid",
+        "PAY-Q3-ODUM": "The development director's timesheets are 100% fundraising; the 40% in payroll is a budget estimate, and charges follow the timesheets (200.430(i))"
+      }
+    },
+    {
+      "tool": "file_sf425",
+      "key": "award_id",
+      "eligible": {
+        "FA-2025-0417": {
+          "value_usd": 0.0,
+          "why": "Due 2026-10-30. Cash basis, cumulative to 2026-09-30: 10e is the $94,310 reported through June, plus this quarter's allowable costs paid: the $31,492.60 in this request and the $2,950 tablets drawn in July, $128,752.60. A report, not money",
+          "expect": {
+            "federal_expenditures_usd": 128752.6
+          }
+        }
+      },
+      "traps": {}
+    }
+  ],
+  "forbidden": []
+}

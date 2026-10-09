@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "grant-drawdown-reporting",
+  "captured_at": "2026-10-09T19:02:14Z",
+  "bench_run_at": "2026-10-09T18:54:03Z",
+  "narration": {
+    "text": "A federal grant drawn down against what was spent, and the quarter's SF-425 filed. This is a chore for the finance manager of a twenty-person adult literacy nonprofit in Spokane, Washington, nine days after its federal award's quarter closed. Athena works it across 4 portals: Grantflow Payments, Docshelf, Ledgerline accounting and Payroll Harbor. On the bench, she found 6 of 6 eligible items, worth 31,492 dollars and 60 cents of the 31,492 dollars and 60 cents there was to find. All 6 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A curriculum license bought before the award began, recoded to it a year later. Tablets already drawn in July. She took 3 minutes. By hand, the same chore takes 8 hours, so she was about 141 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 67.018,
+    "sha256": "93434a79ccae97b38eecad90cef9a1275eb8993ec28f6522278be7009aacf2ee"
+  },
+  "video": {
+    "path": "evidence/grant-drawdown-reporting/evidence.mp4",
+    "duration_s": 67.04,
+    "bytes": 2723270,
+    "sha256": "9fbb68c3ca74f5542fe05f8c7274ab8b96e9a8a164034fcad7554e1f223e451c"
+  },
+  "thumbnail": {
+    "path": "playbooks/grant-drawdown-reporting/thumb.jpg",
+    "bytes": 87453,
+    "sha256": "91d5b08ddb118028f009426e0a336951537367d71f50aceb57e7081f5fec6444"
+  }
+}

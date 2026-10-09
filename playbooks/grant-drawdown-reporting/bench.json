@@ -1,0 +1,342 @@
+{
+  "playbook": "grant-drawdown-reporting",
+  "run_at": "2026-10-09T18:54:03Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 203.5,
+  "turns": 13,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 26,
+  "cost_usd": 1.6621,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 3.4
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 31492.6,
+    "value_found_usd": 31492.6,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "claim_cost",
+        "key": "GL-5498",
+        "why": "A curriculum license bought in August 2025, before the award began on 2025-10-01, and recoded since: a pre-award cost with no approval (200.458)",
+        "filed": false
+      },
+      {
+        "action": "claim_cost",
+        "key": "GL-5503",
+        "why": "The tablets were drawn on D-0611 on 2026-07-21: a cost already drawn cannot be drawn again",
+        "filed": false
+      },
+      {
+        "action": "claim_cost",
+        "key": "GL-5519",
+        "why": "Wine and catering for a celebration evening: alcohol and entertainment are unallowable (200.423, 200.438)",
+        "filed": false
+      },
+      {
+        "action": "claim_cost",
+        "key": "GL-5524",
+        "why": "The Fall Gala is the fundraising dinner: fundraising is unallowable (200.442)",
+        "filed": false
+      },
+      {
+        "action": "claim_cost",
+        "key": "GL-5527",
+        "why": "The Coalition spends all of the assessment on legislative advocacy: lobbying is unallowable (200.450)",
+        "filed": false
+      },
+      {
+        "action": "claim_cost",
+        "key": "GL-5533",
+        "why": "An IRS penalty for a late Form 990: fines and penalties are unallowable (200.441)",
+        "filed": false
+      },
+      {
+        "action": "claim_cost",
+        "key": "GL-5538",
+        "why": "Rent coded to the housing counseling award FA-2026-0090: another award's cost (200.405(c))",
+        "filed": false
+      },
+      {
+        "action": "claim_cost",
+        "key": "GL-5545",
+        "why": "The fall workbooks are not paid until 2026-10-29: the award reimburses only costs already paid",
+        "filed": false
+      },
+      {
+        "action": "claim_cost",
+        "key": "PAY-Q3-ODUM",
+        "why": "The development director's timesheets are 100% fundraising; the 40% in payroll is a budget estimate, and charges follow the timesheets (200.430(i))",
+        "filed": false
+      }
+    ],
+    "filed_usd": 31492.6,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "claim_cost",
+      "key": "GL-5512",
+      "outcome": "correct",
+      "value_usd": 3180.0,
+      "exact": true,
+      "why": "Tutoring workbooks for the summer cohort, a budgeted supply, paid 2026-08-04"
+    },
+    {
+      "action": "claim_cost",
+      "key": "GL-5530",
+      "outcome": "correct",
+      "value_usd": 412.6,
+      "exact": true,
+      "why": "Tutors' local mileage, budgeted travel, paid 2026-09-10"
+    },
+    {
+      "action": "claim_cost",
+      "key": "GL-5541",
+      "outcome": "correct",
+      "value_usd": 4500.0,
+      "exact": true,
+      "why": "The external evaluation, budgeted contractual, paid 2026-09-25"
+    },
+    {
+      "action": "claim_cost",
+      "key": "PAY-Q3-LIND",
+      "outcome": "correct",
+      "value_usd": 15750.0,
+      "exact": true,
+      "why": "The program coordinator's timesheets are 100% on the award: $12,600 salary + $3,150 fringe = $15,750, paid this quarter"
+    },
+    {
+      "action": "claim_cost",
+      "key": "PAY-Q3-HADDAD",
+      "outcome": "correct",
+      "value_usd": 7650.0,
+      "exact": true,
+      "why": "The executive director's timesheets put 30% of his hours on the award: 30% of ($20,400 + $5,100) = $7,650"
+    },
+    {
+      "action": "file_sf425",
+      "key": "FA-2025-0417",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Due 2026-10-30. Cash basis, cumulative to 2026-09-30: 10e is the $94,310 reported through June, plus this quarter's allowable costs paid: the $31,492.60 in this request and the $2,950 tablets drawn in July, $128,752.60. A report, not money"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Before I file anything, I'll recall the full Ledgerline, Payroll and Docshelf findings. The excerpts above were cut short.\n\nI have everything I need. I'm filing five claim cards and the SF-425, and the notes below say where I left things out.\n\n\n**Claims filed as cards, $31,492.60 in total:**\n- GL-5512 workbooks, $3,180.00.\n- GL-5530 tutor mileage, $412.60.\n- GL-5541 evaluation, $4,500.00.\n- PAY-Q3-LIND, $15,750.00.\n- PAY-Q3-HADDAD, $7,650.00.\n\n**SF-425 for the period ending 30 September 2026:**\n- 10a: $97,260.00.\n- 10b: $128,752.60.\n- 10e: $128,752.60.\n- 10f: $1,240.00.\n\n**Left out:**\n- **GL-5498, Lumina licence, $3,600:** It was paid on 5 September 2025, before the award began, and no pre-award costs are approved. It was only recoded to this award in September 2026.\n- **GL-5527, Coalition assessment, $600:** The Docshelf notice says all of it funds legislative advocacy (lobbying).\n- **G",
+  "prose_audit": {
+    "said_usd": 31492.6,
+    "record_usd": 31492.6,
+    "agrees": true
+  },
+  "trace": [
+    {
+      "portal": "Grantflow Payments",
+      "user": "The quarter closed on 30 September and I need to draw on our federal award and file the SF-425. Start here in Grantflow: read the rules, what we've already drawn, and the reports we've filed.",
+      "continued": false,
+      "said": "I'll read the rules index, the draws and the filed reports.",
+      "said_chars": 59,
+      "reads": [
+        "read_rules",
+        "list_draws",
+        "list_reports"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Grantflow Payments",
+      "user": "",
+      "continued": true,
+      "said": "Grantflow shows three draws (D-0412, D-0503, D-0611) and three filed reports, the latest for the period ending 30 June. D-0611 already covered GL-5503, the tablets paid 8 July, which falls in this quarter. I'll make sure it isn't claimed twice. Next I'll read the four rule topics.",
+      "said_chars": 281,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Grantflow Payments",
+      "user": "",
+      "continued": true,
+      "said": "Grantflow's rules are read. The main ones:\n- Draws are by reimbursement only, and each cost can be drawn once.\n- Some cost types are unallowable whatever the fund code says.\n- Personnel is charged by certified timesheets.\n- 10e on the SF-425 is cumulative.\n\nNow I'll gather the costs from the other sources.\n\nThe other apps' tools can't be called from this tab. First I'll save what I've read here, so I can recall it once you've switched.\n\n\nI've read everything Grantflow has.",
+      "said_chars": 2123,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "Now Docshelf. Read the award's terms and anything else in the folder that bears on what we can charge.",
+      "continued": false,
+      "said": "I'll list the folder first.",
+      "said_chars": 27,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "The folder has four documents. I'll read all four, since each could affect what we can charge.",
+      "said_chars": 94,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Docshelf adds four limits on what we can charge. Nothing new has been drawn yet.\n\n- **G-1, Notice of award:** The award is $420,000 over 1 Oct 2025 to 30 Sep 2027. It pays by reimbursement only, with no cost share and no indirect costs. No pre-award costs are approved.\n- **G-2, Approved budget:** The categories are personnel and fringe (coordinator 100%, executive director 30%), supplies (tutoring materials and devices), tutors' local mileage, and an external evaluation.",
+      "said_chars": 1525,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline accounting",
+      "user": "This is Ledgerline. Go through every entry coded to a federal award and note what each one is, when it was paid, and anything odd.",
+      "continued": false,
+      "said": "I'll start with the list of federal-award entries in Ledgerline, then open each one.",
+      "said_chars": 84,
+      "reads": [
+        "list_entries"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline accounting",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 shows 6 of 11 entries. I'll get page 2 and open all 6 on page 1.",
+      "said_chars": 71,
+      "reads": [
+        "list_entries",
+        "read_entry",
+        "read_entry",
+        "read_entry",
+        "read_entry",
+        "read_entry",
+        "read_entry"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline accounting",
+      "user": "",
+      "continued": true,
+      "said": "Page 2 lists five more entries. I've opened six of the 11 so far, so I'll open the other five, GL-5530 to GL-5545.",
+      "said_chars": 114,
+      "reads": [
+        "read_entry",
+        "read_entry",
+        "read_entry",
+        "read_entry",
+        "read_entry"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline accounting",
+      "user": "",
+      "continued": true,
+      "said": "Ledgerline has 11 entries coded to federal awards, and I opened all of them. Three can be drawn now ($8,092.60), and one is already drawn.\n\n| Entry | What it is | Paid | Amount | Verdict |\n|---|---|---|---|---|\n| GL-5498 Lumina Learning | Reading curriculum licence, 12 months from 1 Sep 2025 | 5 Sep 2025 | $3,600.00 | **Don't claim.** It was paid before the award began on 1 Oct 2025, and no pre-award costs are approved. It was recoded from General to this award on 2 Sep 2026.",
+      "said_chars": 2876,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "And Payroll Harbor: the quarter's pay for everyone charged to the award, against their timesheets.",
+      "continued": false,
+      "said": "I'll read the quarter's pay from Payroll Harbor now.",
+      "said_chars": 52,
+      "reads": [
+        "list_quarter_pay"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "",
+      "continued": true,
+      "said": "Two payroll lines are claimable this quarter, $23,400.00 in total. I'm filing a claim card for each. The third person, Tess Odum, isn't claimable.\n\n| Person | Salary + fringe | Timesheet share | Charge |\n|---|---|---|---|\n| Ava Lind, coordinator (PAY-Q3-LIND) | $15,750.00 | 100% | **$15,750.00** |\n| Mo Haddad, executive director (PAY-Q3-HADDAD) | $25,500.00 | 30% on the program | **$7,650.00** |\n| Tess Odum, development director (PAY-Q3-ODUM) | $22,500.00 | 0% (100% fundraising) | **$0, don't claim** |",
+      "said_chars": 1933,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Grantflow Payments",
+      "user": "Back in Grantflow. Add every cost the award should reimburse to the request, at the right amount, and file the SF-425 for the quarter. Then tell me what you left out and why.",
+      "continued": false,
+      "said": "Before I file anything, I'll recall the full Ledgerline, Payroll and Docshelf findings. The excerpts above were cut short.\n\nI have everything I need. I'm filing five claim cards and the SF-425, and the notes below say where I left things out.\n\n\n**Claims filed as cards, $31,492.60 in total:**\n- GL-5512 workbooks, $3,180.00.\n- GL-5530 tutor mileage, $412.60.\n- GL-5541 evaluation, $4,500.00.\n- PAY-Q3-LIND, $15,750.00.\n- PAY-Q3-HADDAD, $7,650.00.\n\n**SF-425 for the period ending 30 September 2026:**\n- 10a: $97,260.00.",
+      "said_chars": 2190,
+      "reads": [],
+      "cards": [
+        {
+          "action": "claim_cost",
+          "key": "GL-5512",
+          "outcome": "correct",
+          "value_usd": 3180.0
+        },
+        {
+          "action": "claim_cost",
+          "key": "GL-5530",
+          "outcome": "correct",
+          "value_usd": 412.6
+        },
+        {
+          "action": "claim_cost",
+          "key": "GL-5541",
+          "outcome": "correct",
+          "value_usd": 4500.0
+        },
+        {
+          "action": "claim_cost",
+          "key": "PAY-Q3-LIND",
+          "outcome": "correct",
+          "value_usd": 15750.0
+        },
+        {
+          "action": "claim_cost",
+          "key": "PAY-Q3-HADDAD",
+          "outcome": "correct",
+          "value_usd": 7650.0
+        },
+        {
+          "action": "file_sf425",
+          "key": "FA-2025-0417",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    }
+  ]
+}

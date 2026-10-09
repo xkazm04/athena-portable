@@ -1,0 +1,115 @@
+{
+  "id": "grant-drawdown-reporting",
+  "title": "A federal grant drawn down against what was spent, and the quarter's SF-425 filed",
+  "domain": "Nonprofit",
+  "audience": "work",
+  "promise": "Every cost coded to a federal award read against the award's terms, the cost principles and the timesheets: each allowable cost already paid added to the quarter's reimbursement at what the award may carry, nothing unallowable, unpaid, pre-award, already drawn or belonging to another award, and the SF-425 filed with the expenditures the ledger supports.",
+  "persona": "The finance manager of a twenty-person adult literacy nonprofit in Spokane, Washington, nine days after its federal award's quarter closed",
+  "chore": "Read the payment portal's rules, the draws already taken and the reports already filed; the award's terms and budget in the document folder; every ledger entry coded to the award, what it bought and when it was paid; and the quarter's payroll against the certified timesheets. Then apply the Uniform Guidance: reimbursement only for costs paid, each drawn once, only this award's costs inside its period; no alcohol, entertainment, fundraising, lobbying or penalties; salaries by the timesheets, not by a budget estimate. Add each cost to the request on the payment portal, then file the SF-425 on a cash basis, cumulative to the quarter's end.",
+  "command": "The quarter's closed. Go through Grantflow, Docshelf, our Ledgerline books and Payroll Harbor, draw on our federal award for every cost it should reimburse, at the right amount, and file the SF-425 for the quarter. Nothing the award can't pay for.",
+  "apps": [
+    {
+      "name": "Grantflow Payments",
+      "role": "the award's payment and reporting rules, the draws and SF-425s so far, the reimbursement request and the SF-425 form",
+      "api": "Payment portal only",
+      "url": ""
+    },
+    {
+      "name": "Docshelf",
+      "role": "the notice of award, the approved budget, a coalition's assessment letter, the other award",
+      "api": "Documents, not data",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline accounting",
+      "role": "every ledger entry coded to a federal award: vendor, amount, fund, what it bought and when it was paid",
+      "api": "Accounting, no grants feed",
+      "url": ""
+    },
+    {
+      "name": "Payroll Harbor",
+      "role": "the quarter's salary and fringe for each person allocated to the award, against their certified timesheets",
+      "api": "Payroll, no grants feed",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the award's rules in Grantflow, and what has been drawn and reported so far.",
+    "Reads the notice of award, the budget and the letters in Docshelf.",
+    "Reads every ledger entry coded to an award in Ledgerline: what it bought, when it was paid, and the bookkeeper's notes.",
+    "Reads the quarter's pay against the timesheets in Payroll Harbor.",
+    "Back in Grantflow, adds each allowable paid cost at its allowable share, then files the SF-425 with the cumulative expenditures."
+  ],
+  "gates": [
+    {
+      "action": "claim_cost",
+      "label": "Draw on the award for a cost",
+      "why": "It certifies to a federal agency that the cost is allowable and paid, and moves federal money; an unallowable draw has to be repaid and can put the award at risk."
+    },
+    {
+      "action": "file_sf425",
+      "label": "File the SF-425",
+      "why": "A federal financial report certified true and complete; wrong figures are a false statement to the government."
+    }
+  ],
+  "traps": [
+    "A curriculum license bought before the award began, recoded to it a year later.",
+    "Tablets already drawn in July.",
+    "Wine and catering for the volunteers' celebration.",
+    "The deposit on the fundraising gala.",
+    "A coalition assessment spent entirely on lobbying.",
+    "An IRS penalty for a late Form 990.",
+    "Rent that belongs to the organization's other federal award.",
+    "Workbooks invoiced but not yet paid, on a reimbursement-only award.",
+    "A development director whose payroll says 40% on the award and whose timesheets say 100% fundraising."
+  ],
+  "memory": [
+    "The award's period, payment method, budget and reporting basis, carried from the rules and the notice of award.",
+    "What was drawn and reported through June.",
+    "Each ledger entry's purpose, fund and paid date, carried from the books.",
+    "Each person's timesheet share, carried from payroll."
+  ],
+  "economics": {
+    "value_usd": 2500,
+    "per": "quarter",
+    "basis": "Mostly minutes. A quarter's draw and SF-425 take a small nonprofit's finance lead about two working days; bought in, that is about sixteen hours of a nonprofit finance consultant at the $159 an hour average of Nonprofit.ist's 2025 survey, about $2,500 a quarter, an estimate. The bench world's items are the reimbursement itself, $31,492.60 of allowable costs paid, which the award would pay in time anyway; an unallowable draw would have to be repaid. Times a year: four, one per quarter, as the world holds one.",
+    "manual_minutes": 480,
+    "times_per_year": 4,
+    "incumbent": "An outsourced nonprofit accountant or consultant, billed monthly or by the hour; nobody takes a share of the grant.",
+    "sources": [
+      {
+        "label": "2 CFR 200.305, federal payment: reimbursement and advances",
+        "url": "https://www.law.cornell.edu/cfr/text/2/200.305"
+      },
+      {
+        "label": "2 CFR 200.328, financial reporting (SF-425 due 30 days after the period)",
+        "url": "https://www.law.cornell.edu/cfr/text/2/200.328"
+      },
+      {
+        "label": "2 CFR 200.430, compensation: charges based on records of the work performed",
+        "url": "https://www.law.cornell.edu/cfr/text/2/200.430"
+      },
+      {
+        "label": "2 CFR 200.442, fundraising and investment management costs (one of Subpart E's selected items of cost)",
+        "url": "https://www.law.cornell.edu/cfr/text/2/200.442"
+      },
+      {
+        "label": "Nonprofit.ist 2025 consultant survey: about $159 an hour on average",
+        "url": "https://www.nonprofit.ist/nonprofitconsultantsurvey"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Four systems with no shared data; nine costs coded to the award fail a cost principle, a payment condition or the timesheets, and the SF-425's cash-basis total has to include a cost drawn early and leave out one not yet paid.",
+    "usefulness_why": "Hours every quarter for a small nonprofit's only finance person, and an unallowable draw that would otherwise surface in an audit."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful finance manager draws most of it and files on time; the bar is most of the allowable costs, no unallowable draw, inside an hour."
+  },
+  "caveat": "Riverbend Literacy Alliance, award FA-2025-0417 and its terms, Grantflow, Docshelf, Ledgerline, Payroll Harbor and every person here are invented. The rules are the Uniform Guidance (2 CFR 200) as revised in 2024, fixed in the bench world as of October 2026; a real award's terms and the agency's grants officer decide. This is not legal or accounting advice."
+}
