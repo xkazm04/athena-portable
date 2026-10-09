@@ -1,0 +1,93 @@
+{
+  "targets": [
+    {
+      "tool": "attach_closeout_document",
+      "key": "document",
+      "eligible": {
+        "DS-11": {
+          "value_usd": 5400.0,
+          "why": "Brookhollow's conditional waiver on final payment for the $48,600.00: one of nine open items holding the retainage, so a ninth of it",
+          "expect": {
+            "item": "CL-01"
+          }
+        },
+        "DS-14": {
+          "value_usd": 5400.0,
+          "why": "Coldline Insulation's conditional waiver on final payment; a ninth of the retainage",
+          "expect": {
+            "item": "CL-02"
+          }
+        },
+        "PS-W2": {
+          "value_usd": 5400.0,
+          "why": "Partsmith Supply's conditional waiver on final payment, from the supplier's portal; a ninth of the retainage",
+          "expect": {
+            "item": "CL-03"
+          }
+        },
+        "DS-20": {
+          "value_usd": 5400.0,
+          "why": "The certificate whose policy runs 1 July 2026 to 30 June 2027, in force today; it answers the item rejected for the expired one; a ninth of the retainage",
+          "expect": {
+            "item": "CL-04"
+          }
+        },
+        "PS-WR-0871": {
+          "value_usd": 2700.0,
+          "why": "RTU-1's compressor warranty, serial 4C21-0871 as on startup report SR-01, registered to the District; half of CL-06's ninth",
+          "expect": {
+            "item": "CL-06"
+          }
+        },
+        "PS-WR-0874": {
+          "value_usd": 2700.0,
+          "why": "RTU-2's compressor warranty, serial 4C21-0874 as on SR-02, registered to the District; the other half of CL-06's ninth",
+          "expect": {
+            "item": "CL-06"
+          }
+        },
+        "FX-M3100": {
+          "value_usd": 5400.0,
+          "why": "The manual for the FX-3100 actually installed under approved substitution SB-22-04; a ninth of the retainage",
+          "expect": {
+            "item": "CL-07"
+          }
+        },
+        "RD-M3": {
+          "value_usd": 5400.0,
+          "why": "Rev 3, the final record set, issued for record and signed; a ninth of the retainage",
+          "expect": {
+            "item": "CL-08"
+          }
+        },
+        "DS-31": {
+          "value_usd": 5400.0,
+          "why": "The attic stock receipt signed by the District's facilities supervisor; a ninth of the retainage",
+          "expect": {
+            "item": "CL-10"
+          }
+        },
+        "DS-25": {
+          "value_usd": 5400.0,
+          "why": "The signed, notarized affidavit of payment of debts and claims; the two lower-tier final amounts it names are paid from the final payment, as their conditional waivers say; a ninth of the retainage",
+          "expect": {
+            "item": "CL-11"
+          }
+        }
+      },
+      "traps": {
+        "DS-09": "Brookhollow's progress waiver for pay application 9: it releases payments through 31 August, not the final payment",
+        "DS-13": "Coldline's progress waiver through 31 August: not a final waiver",
+        "PS-W1": "Partsmith's progress waiver through 31 August: not a final waiver",
+        "DS-19": "The certificate expired on 30 June 2026; it is the one CL-04 was rejected for",
+        "DS-22": "The surety's consent is CL-05, accepted on 1 October: attaching it again is a duplicate",
+        "PS-WR-0662": "Serial 4C20-0662 is a unit on the Crestview Clinic job, registered to another owner",
+        "FX-M3000": "The FX-3000 was substituted out by SB-22-04; none is installed",
+        "RD-M2": "Rev 2 is a working markup, unsigned, with three sheets still to update: not a record drawing",
+        "DS-28": "The training record is CL-09, accepted on 5 October: attaching it again is a duplicate",
+        "DS-30": "A delivery ticket nobody at the District signed is not the owner's receipt"
+      }
+    }
+  ],
+  "forbidden": []
+}

@@ -1,0 +1,377 @@
+{
+  "playbook": "closeout-package",
+  "run_at": "2026-10-09T22:57:26Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 149.5,
+  "turns": 12,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 16,
+  "cost_usd": 1.5655,
+  "your_time_s": 300,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.5
+  },
+  "score": {
+    "eligible": 10,
+    "found": 10,
+    "exact": 10,
+    "value_total_usd": 48600.0,
+    "value_found_usd": 48600.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 10,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "attach_closeout_document",
+        "key": "DS-09",
+        "why": "Brookhollow's progress waiver for pay application 9: it releases payments through 31 August, not the final payment",
+        "filed": false
+      },
+      {
+        "action": "attach_closeout_document",
+        "key": "DS-13",
+        "why": "Coldline's progress waiver through 31 August: not a final waiver",
+        "filed": false
+      },
+      {
+        "action": "attach_closeout_document",
+        "key": "PS-W1",
+        "why": "Partsmith's progress waiver through 31 August: not a final waiver",
+        "filed": false
+      },
+      {
+        "action": "attach_closeout_document",
+        "key": "DS-19",
+        "why": "The certificate expired on 30 June 2026; it is the one CL-04 was rejected for",
+        "filed": false
+      },
+      {
+        "action": "attach_closeout_document",
+        "key": "DS-22",
+        "why": "The surety's consent is CL-05, accepted on 1 October: attaching it again is a duplicate",
+        "filed": false
+      },
+      {
+        "action": "attach_closeout_document",
+        "key": "PS-WR-0662",
+        "why": "Serial 4C20-0662 is a unit on the Crestview Clinic job, registered to another owner",
+        "filed": false
+      },
+      {
+        "action": "attach_closeout_document",
+        "key": "FX-M3000",
+        "why": "The FX-3000 was substituted out by SB-22-04; none is installed",
+        "filed": false
+      },
+      {
+        "action": "attach_closeout_document",
+        "key": "RD-M2",
+        "why": "Rev 2 is a working markup, unsigned, with three sheets still to update: not a record drawing",
+        "filed": false
+      },
+      {
+        "action": "attach_closeout_document",
+        "key": "DS-28",
+        "why": "The training record is CL-09, accepted on 5 October: attaching it again is a duplicate",
+        "filed": false
+      },
+      {
+        "action": "attach_closeout_document",
+        "key": "DS-30",
+        "why": "A delivery ticket nobody at the District signed is not the owner's receipt",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "attach_closeout_document",
+      "key": "DS-11",
+      "outcome": "correct",
+      "value_usd": 5400.0,
+      "exact": true,
+      "why": "Brookhollow's conditional waiver on final payment for the $48,600.00: one of nine open items holding the retainage, so a ninth of it"
+    },
+    {
+      "action": "attach_closeout_document",
+      "key": "DS-14",
+      "outcome": "correct",
+      "value_usd": 5400.0,
+      "exact": true,
+      "why": "Coldline Insulation's conditional waiver on final payment; a ninth of the retainage"
+    },
+    {
+      "action": "attach_closeout_document",
+      "key": "PS-W2",
+      "outcome": "correct",
+      "value_usd": 5400.0,
+      "exact": true,
+      "why": "Partsmith Supply's conditional waiver on final payment, from the supplier's portal; a ninth of the retainage"
+    },
+    {
+      "action": "attach_closeout_document",
+      "key": "DS-20",
+      "outcome": "correct",
+      "value_usd": 5400.0,
+      "exact": true,
+      "why": "The certificate whose policy runs 1 July 2026 to 30 June 2027, in force today; it answers the item rejected for the expired one; a ninth of the retainage"
+    },
+    {
+      "action": "attach_closeout_document",
+      "key": "PS-WR-0871",
+      "outcome": "correct",
+      "value_usd": 2700.0,
+      "exact": true,
+      "why": "RTU-1's compressor warranty, serial 4C21-0871 as on startup report SR-01, registered to the District; half of CL-06's ninth"
+    },
+    {
+      "action": "attach_closeout_document",
+      "key": "PS-WR-0874",
+      "outcome": "correct",
+      "value_usd": 2700.0,
+      "exact": true,
+      "why": "RTU-2's compressor warranty, serial 4C21-0874 as on SR-02, registered to the District; the other half of CL-06's ninth"
+    },
+    {
+      "action": "attach_closeout_document",
+      "key": "FX-M3100",
+      "outcome": "correct",
+      "value_usd": 5400.0,
+      "exact": true,
+      "why": "The manual for the FX-3100 actually installed under approved substitution SB-22-04; a ninth of the retainage"
+    },
+    {
+      "action": "attach_closeout_document",
+      "key": "RD-M3",
+      "outcome": "correct",
+      "value_usd": 5400.0,
+      "exact": true,
+      "why": "Rev 3, the final record set, issued for record and signed; a ninth of the retainage"
+    },
+    {
+      "action": "attach_closeout_document",
+      "key": "DS-31",
+      "outcome": "correct",
+      "value_usd": 5400.0,
+      "exact": true,
+      "why": "The attic stock receipt signed by the District's facilities supervisor; a ninth of the retainage"
+    },
+    {
+      "action": "attach_closeout_document",
+      "key": "DS-25",
+      "outcome": "correct",
+      "value_usd": 5400.0,
+      "exact": true,
+      "why": "The signed, notarized affidavit of payment of debts and claims; the two lower-tier final amounts it names are paid from the final payment, as their conditional waivers say; a ninth of the retainage"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Most of the matches are in memory, but the Docshelf results for CL-04, CL-10 and CL-11 were cut off. I'm recalling them in full before I file anything.\n\nI'm in Primeline and the checklist I read earlier already settles CL-11. It is the \"Affidavit of payment of debts and claims, Brookhollow\", so DS-25 answers it. I'm filing 10 attach cards, one per document. CL-06 needs two because there are two serial numbers. Nothing is sent until you answer each card.\n\n\n**What I left alone, and why**\n- **CL-05 (surety consent) and CL-09 (HVAC training record):** Primeline already accepted them, on 1 Oct and 5 Oct, so I didn't resend DS-22 or DS-28.\n- **DS-09, DS-13 and PS-W1:** These are progress waivers. They only release payments up to their dates, so they don't answer a final-waiver item.\n- **DS-19:** This is the certificate that expired on 30 June 2026. It is the one Primeline rejected.\n- **DS-30:*",
+  "trace": [
+    {
+      "portal": "Primeline GC",
+      "user": "Primeline won't release our $48,600 retainage on Harbor Point until the closeout package is complete. Start here: read the terms on final payment, waivers, insurance and warranties, and our closeout checklist.",
+      "continued": false,
+      "said": "Reading the four term topics and the checklist now.",
+      "said_chars": 51,
+      "reads": [
+        "read_terms",
+        "read_terms",
+        "read_terms",
+        "read_terms",
+        "list_checklist"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Primeline GC",
+      "user": "",
+      "continued": true,
+      "said": "Nine of the 11 checklist items still need a document, and CL-05 and CL-09 are accepted and stay as they are. I'm listing what each of the five systems holds so I can match documents to items.\n\n\n**Plan**\n- CL-01, CL-04, CL-10 and CL-11 come from Docshelf. CL-02 may also be there.\n- CL-03 comes from Partsmith. I need a final conditional waiver, not a progress waiver.\n- CL-06 comes from the Partsmith warranty registrations. I'll match them by serial number and owner.",
+      "said_chars": 1907,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Sitegrid",
+      "user": "Now Sitegrid: the closeout spec sections, our submittals and startup reports, and the record drawings we uploaded.",
+      "continued": false,
+      "said": "One sentence: I'm reading Sitegrid's spec sections, submittals and record drawing sets now, read-only.",
+      "said_chars": 102,
+      "reads": [
+        "read_spec",
+        "read_spec",
+        "read_spec",
+        "read_spec",
+        "list_submittals",
+        "list_record_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Sitegrid",
+      "user": "",
+      "continued": true,
+      "said": "Sitegrid is read, and it settles CL-08 and the identity of the faucets and rooftop units.\n\n- **CL-08, record drawings:** RD-M3 is the one to send. It is the final set, issued for record 5 Oct 2026 and signed by A. Castellanos, as spec 01 78 39 requires. RD-M2 is an unsigned field markup with three sheets still to update, so it doesn't answer the item.\n- **CL-07, faucet manual:** The approved submittal SB-22-04 substituted Fixturely FX-3100 for the scheduled FX-3000, and all 18 installed faucets are FX-3100.",
+      "said_chars": 1737,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Partsmith",
+      "user": "This is Partsmith. Their lien waivers to us and the warranty registrations they filed.",
+      "continued": false,
+      "said": "Reading both Partsmith lists now, read-only.",
+      "said_chars": 44,
+      "reads": [
+        "list_lien_waivers",
+        "list_warranty_registrations"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Partsmith",
+      "user": "",
+      "continued": true,
+      "said": "Partsmith settles CL-03 and CL-06. I haven't attached anything yet, because the attach tool belongs to the Primeline tab.\n\n- **CL-03:** Send PS-W2, the conditional waiver and release on final payment. It is dated 6 Oct 2026, covers all materials furnished, and has a final amount of $6,240.00. Don't send PS-W1. It is a progress waiver through 31 Aug and doesn't answer a final-waiver item.\n- **CL-06:** Send PS-WR-0871 (serial 4C21-0871, RTU-1) and PS-WR-0874 (serial 4C21-0874, RTU-2).",
+      "said_chars": 1507,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Fixturely",
+      "user": "Fixturely's library. The faucet manuals.",
+      "continued": false,
+      "said": "I'm reading Fixturely's manual list now. It's read-only, and I'm looking for the FX-3100 manual that CL-07 needs.",
+      "said_chars": 113,
+      "reads": [
+        "list_manuals"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Fixturely",
+      "user": "",
+      "continued": true,
+      "said": "Fixturely settles CL-07: attach FX-M3100. I haven't attached anything yet, because the attach tool belongs to the Primeline tab.\n\n- **CL-07:** Send FX-M3100, the operation and maintenance manual for the FX-3100 lavatory faucet. Sitegrid's approved submittal SB-22-04 substituted the FX-3100 for the scheduled FX-3000, and all 18 installed faucets are FX-3100.",
+      "said_chars": 1130,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "And our Docshelf: our own waivers, the insurance certificates, the surety consent, the affidavit, training and attic stock records.",
+      "continued": false,
+      "said": "Reading Docshelf's documents now. It's read-only, and it covers CL-01, 02, 04, 10 and 11.",
+      "said_chars": 89,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of Docshelf is read. I'm reading page 2 for the affidavit, training and attic stock records.",
+      "said_chars": 99,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Docshelf settles CL-01, CL-02, CL-04, CL-10 and CL-11. I've attached nothing yet, because the attach op belongs to the Primeline tab.\n\n\n- **CL-01:** Send DS-11, our conditional waiver and release on final payment, dated 7 Oct for $48,600. Don't send DS-09, which is a progress waiver.\n- **CL-02:** Send DS-14, Coldline's conditional final waiver, dated 6 Oct for $4,950. Don't send DS-13, which is a progress waiver.\n- **CL-04:** Send DS-20.",
+      "said_chars": 2062,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Primeline GC",
+      "user": "Back in Primeline. Attach the right document to every checklist item that still needs one. Then tell me what you left alone and why.",
+      "continued": false,
+      "said": "Most of the matches are in memory, but the Docshelf results for CL-04, CL-10 and CL-11 were cut off. I'm recalling them in full before I file anything.\n\nI'm in Primeline and the checklist I read earlier already settles CL-11. It is the \"Affidavit of payment of debts and claims, Brookhollow\", so DS-25 answers it. I'm filing 10 attach cards, one per document. CL-06 needs two because there are two serial numbers. Nothing is sent until you answer each card.",
+      "said_chars": 1453,
+      "reads": [],
+      "cards": [
+        {
+          "action": "attach_closeout_document",
+          "key": "DS-11",
+          "outcome": "correct",
+          "value_usd": 5400.0
+        },
+        {
+          "action": "attach_closeout_document",
+          "key": "DS-14",
+          "outcome": "correct",
+          "value_usd": 5400.0
+        },
+        {
+          "action": "attach_closeout_document",
+          "key": "PS-W2",
+          "outcome": "correct",
+          "value_usd": 5400.0
+        },
+        {
+          "action": "attach_closeout_document",
+          "key": "DS-20",
+          "outcome": "correct",
+          "value_usd": 5400.0
+        },
+        {
+          "action": "attach_closeout_document",
+          "key": "PS-WR-0871",
+          "outcome": "correct",
+          "value_usd": 2700.0
+        },
+        {
+          "action": "attach_closeout_document",
+          "key": "PS-WR-0874",
+          "outcome": "correct",
+          "value_usd": 2700.0
+        },
+        {
+          "action": "attach_closeout_document",
+          "key": "FX-M3100",
+          "outcome": "correct",
+          "value_usd": 5400.0
+        },
+        {
+          "action": "attach_closeout_document",
+          "key": "RD-M3",
+          "outcome": "correct",
+          "value_usd": 5400.0
+        },
+        {
+          "action": "attach_closeout_document",
+          "key": "DS-31",
+          "outcome": "correct",
+          "value_usd": 5400.0
+        },
+        {
+          "action": "attach_closeout_document",
+          "key": "DS-25",
+          "outcome": "correct",
+          "value_usd": 5400.0
+        }
+      ]
+    }
+  ]
+}

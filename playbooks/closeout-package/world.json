@@ -1,0 +1,517 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "primeline",
+      "name": "Primeline GC",
+      "origin": "https://subs.primeline-gc.example",
+      "path": "/projects/harbor-point-library/brookhollow",
+      "view": {
+        "view": "Subcontractor portal: Harbor Point Library, closeout",
+        "subcontract": "PL-2307, Brookhollow Mechanical LLC",
+        "user": "Tess Okonjo, office manager, Brookhollow Mechanical",
+        "retainage_held": "$48,600.00",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_terms",
+          "kind": "READ",
+          "description": "The subcontract's terms as this portal states them, by topic: contract, final-payment, waivers, insurance, warranties. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "terms",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_checklist",
+          "kind": "READ",
+          "description": "Brookhollow's closeout checklist: each item, what it requires, and its status.",
+          "params": {},
+          "returns": {
+            "table": "checklist"
+          }
+        },
+        {
+          "name": "attach_closeout_document",
+          "kind": "REACHES_A_PERSON",
+          "description": "Attach one document from Brookhollow's systems to one closeout checklist item and send it to Primeline: the document id as its system lists it (for example DS-11, PS-W2, RD-M3) and the checklist item (CL-nn).",
+          "params": {
+            "document": {
+              "type": "string"
+            },
+            "item": {
+              "type": "string"
+            }
+          },
+          "says": "{document} attached to {item} and sent to Primeline."
+        }
+      ],
+      "aliases": [
+        "Primeline GC",
+        "Primeline",
+        "the GC's portal",
+        "the subcontractor portal"
+      ]
+    },
+    {
+      "app_id": "sitegrid",
+      "name": "Sitegrid",
+      "origin": "https://app.sitegrid.example",
+      "path": "/harbor-point-library/closeout",
+      "view": {
+        "view": "Harbor Point Library: specifications, submittals and record documents",
+        "company": "Brookhollow Mechanical LLC",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_spec",
+          "kind": "READ",
+          "description": "One specification section in full, by number (for example 01 77 00). Omit it for the list of sections.",
+          "params": {
+            "section": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "specs",
+            "match": {
+              "section": "section"
+            }
+          }
+        },
+        {
+          "name": "list_submittals",
+          "kind": "READ",
+          "description": "Brookhollow's submittals and startup reports: number, title, status and note.",
+          "params": {},
+          "returns": {
+            "table": "submittals"
+          }
+        },
+        {
+          "name": "list_record_documents",
+          "kind": "READ",
+          "description": "The record drawing sets Brookhollow has uploaded: document id, title, date and note.",
+          "params": {},
+          "returns": {
+            "table": "drawings"
+          }
+        }
+      ],
+      "aliases": [
+        "Sitegrid",
+        "the project platform",
+        "the specs"
+      ]
+    },
+    {
+      "app_id": "partsmith",
+      "name": "Partsmith",
+      "origin": "https://pro.partsmith.example",
+      "path": "/accounts/brookhollow",
+      "view": {
+        "view": "Partsmith Supply: Brookhollow Mechanical's account",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_lien_waivers",
+          "kind": "READ",
+          "description": "The lien waivers Partsmith Supply has issued to Brookhollow for the Harbor Point Library: document id, title, date and what it covers.",
+          "params": {},
+          "returns": {
+            "table": "waivers"
+          }
+        },
+        {
+          "name": "list_warranty_registrations",
+          "kind": "READ",
+          "description": "Manufacturer warranty registrations Partsmith filed for equipment it sold Brookhollow: document id, the warranty, the serial number, who it is registered to and its start date.",
+          "params": {},
+          "returns": {
+            "table": "registrations"
+          }
+        }
+      ],
+      "aliases": [
+        "Partsmith",
+        "the supplier portal",
+        "Partsmith Supply"
+      ]
+    },
+    {
+      "app_id": "fixturely",
+      "name": "Fixturely",
+      "origin": "https://trade.fixturely.example",
+      "path": "/library/lavatory-faucets",
+      "view": {
+        "view": "Fixturely trade library: lavatory faucets",
+        "account": "Brookhollow Mechanical (trade)",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_manuals",
+          "kind": "READ",
+          "description": "Operation and maintenance manuals for Fixturely's lavatory faucets: document id, model, title and note.",
+          "params": {},
+          "returns": {
+            "table": "manuals"
+          }
+        }
+      ],
+      "aliases": [
+        "Fixturely",
+        "the manufacturer's library",
+        "the fixture library"
+      ]
+    },
+    {
+      "app_id": "docshelf",
+      "name": "Docshelf",
+      "origin": "https://brookhollow.docshelf.example",
+      "path": "/jobs/harbor-point-library",
+      "view": {
+        "view": "Brookhollow's documents: Harbor Point Library",
+        "company": "Brookhollow Mechanical LLC",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "Brookhollow's own documents for the Harbor Point Library: waivers, certificates, the surety's consent, the affidavit, training and attic stock records. Document id, title, date and note. Paged.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "docs",
+            "page_size": 6
+          }
+        }
+      ],
+      "aliases": [
+        "Docshelf",
+        "our documents",
+        "the document store"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "primeline",
+      "message": "Primeline won't release our $48,600 retainage on Harbor Point until the closeout package is complete. Start here: read the terms on final payment, waivers, insurance and warranties, and our closeout checklist.",
+      "nudges": 1
+    },
+    {
+      "app": "sitegrid",
+      "message": "Now Sitegrid: the closeout spec sections, our submittals and startup reports, and the record drawings we uploaded.",
+      "nudges": 1
+    },
+    {
+      "app": "partsmith",
+      "message": "This is Partsmith. Their lien waivers to us and the warranty registrations they filed.",
+      "nudges": 1
+    },
+    {
+      "app": "fixturely",
+      "message": "Fixturely's library. The faucet manuals.",
+      "nudges": 1
+    },
+    {
+      "app": "docshelf",
+      "message": "And our Docshelf: our own waivers, the insurance certificates, the surety consent, the affidavit, training and attic stock records.",
+      "nudges": 1
+    },
+    {
+      "app": "primeline",
+      "message": "Back in Primeline. Attach the right document to every checklist item that still needs one. Then tell me what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "terms": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Primeline GC, subcontractor portal for the Harbor Point Library. Subcontract PL-2307 with Brookhollow Mechanical LLC (plumbing and HVAC). Topics: contract, final-payment, waivers, insurance, warranties. Substantial completion was certified on 25 September 2026. Attach one document at a time to a closeout checklist item; Primeline forwards the package to the architect."
+      },
+      {
+        "topic": "contract",
+        "text": "Subcontract PL-2307 incorporates by reference AIA Document A201-2017, General Conditions of the Contract for Construction, as it forms part of the prime contract between the Harbor Point Library District and Primeline Builders, and binds Brookhollow to Primeline as Primeline is bound to the owner. A201-2017 is a published standard form; the clauses relied on are summarized here in Primeline's words, not quoted. Section 01 77 00 of the specifications lists the closeout submittals."
+      },
+      {
+        "topic": "final-payment",
+        "text": "Final payment (A201-2017 section 9.10, summarized, applied by Subcontract section 9.4): Brookhollow's final payment, which is its retainage of $48,600.00, is not due until every item on its closeout checklist is accepted. Section 9.10.2 asks, in substance, for an affidavit that the bills for the work are paid, a certificate that the insurance required after final payment is in force, the surety's consent, the special warranties, and releases or waivers of liens; the specifications add the record drawings, the operation and maintenance manuals and the owner's receipts. An item already accepted is not attached again."
+      },
+      {
+        "topic": "waivers",
+        "text": "With the closeout package Primeline takes a conditional waiver and release on final payment from Brookhollow and from each lower-tier subcontractor and supplier, for the final amount: it releases everything once the final payment is received. A progress waiver releases only the payments up to its date and does not answer a final-waiver item. An unconditional final waiver is given after payment, not before."
+      },
+      {
+        "topic": "insurance",
+        "text": "The subcontract requires completed-operations coverage to stay in force for two years after final payment. The certificate attached must show a policy period that includes today; an expired certificate does not answer the item."
+      },
+      {
+        "topic": "warranties",
+        "text": "Warranties are documented for the equipment and products actually installed: the manufacturer's warranty for each unit, by serial number, registered to the owner; and the operation and maintenance manual for the model actually installed under its approved submittal, not a model that was substituted out. A document for equipment on another job does not answer the item."
+      }
+    ],
+    "checklist": [
+      {
+        "item": "CL-01",
+        "requires": "Conditional waiver and release on final payment, Brookhollow Mechanical, $48,600.00",
+        "status": "Not received"
+      },
+      {
+        "item": "CL-02",
+        "requires": "Conditional waiver and release on final payment, Coldline Insulation (lower-tier subcontractor)",
+        "status": "Not received"
+      },
+      {
+        "item": "CL-03",
+        "requires": "Conditional waiver and release on final payment, Partsmith Supply (supplier)",
+        "status": "Not received"
+      },
+      {
+        "item": "CL-04",
+        "requires": "Certificate of insurance: completed-operations coverage in force",
+        "status": "Rejected 2 Oct: the certificate attached had expired on 30 June 2026"
+      },
+      {
+        "item": "CL-05",
+        "requires": "Consent of surety to final payment",
+        "status": "Accepted 1 Oct"
+      },
+      {
+        "item": "CL-06",
+        "requires": "Manufacturer's 5-year compressor warranty, each rooftop unit, by serial (spec 23 74 13)",
+        "status": "Not received"
+      },
+      {
+        "item": "CL-07",
+        "requires": "Operation and maintenance manual, lavatory faucets as installed (spec 22 40 00)",
+        "status": "Not received"
+      },
+      {
+        "item": "CL-08",
+        "requires": "Record drawings, mechanical and plumbing, final and signed (spec 01 78 39)",
+        "status": "Not received"
+      },
+      {
+        "item": "CL-09",
+        "requires": "Owner training record, HVAC controls (spec 01 79 00)",
+        "status": "Accepted 5 Oct"
+      },
+      {
+        "item": "CL-10",
+        "requires": "Attic stock receipt signed by the owner (spec 01 78 46)",
+        "status": "Not received"
+      },
+      {
+        "item": "CL-11",
+        "requires": "Affidavit of payment of debts and claims, Brookhollow",
+        "status": "Not received"
+      }
+    ],
+    "specs": [
+      {
+        "section": "01 77 00",
+        "title": "Closeout procedures",
+        "text": "Before the final application for payment, each subcontractor submits through the general contractor the items on its closeout checklist: final conditional lien waivers from itself and from every lower-tier subcontractor and supplier, an affidavit of payment of debts and claims, a current certificate of insurance, the surety's consent, warranties, operation and maintenance manuals, record drawings, the training record and the attic stock receipt."
+      },
+      {
+        "section": "01 78 39",
+        "title": "Project record documents",
+        "text": "Record drawings show the work as built. Submit the final record set, complete, issued for record and signed by the subcontractor's project manager. Working markups and drafts are not record drawings."
+      },
+      {
+        "section": "01 78 46",
+        "title": "Extra stock materials",
+        "text": "Deliver the attic stock listed in each section to the owner's facilities staff and submit their signed receipt. A delivery ticket that the owner has not signed is not a receipt. Plumbing and HVAC: 24 filters and 2 fan belts."
+      },
+      {
+        "section": "22 40 00",
+        "title": "Plumbing fixtures",
+        "text": "Lavatory faucets: as scheduled, or an approved substitution. Submit the manufacturer's operation and maintenance manual for the faucet model installed."
+      },
+      {
+        "section": "23 74 13",
+        "title": "Packaged rooftop units",
+        "text": "Two units, RTU-1 and RTU-2. The manufacturer's 5-year compressor warranty, registered to the owner, for each unit by serial number, from the day of startup."
+      }
+    ],
+    "submittals": [
+      {
+        "submittal": "SB-22-04",
+        "title": "Lavatory faucets",
+        "status": "Approved 14 April 2026",
+        "note": "Fixturely FX-3100 substituted for the scheduled FX-3000, which Fixturely discontinued. All 18 faucets installed are FX-3100."
+      },
+      {
+        "submittal": "SB-23-07",
+        "title": "Packaged rooftop units",
+        "status": "Approved 2 March 2026",
+        "note": "Northair 4C21 series, two units."
+      },
+      {
+        "submittal": "SR-01",
+        "title": "Startup report, RTU-1",
+        "status": "Filed 18 Sept 2026",
+        "note": "Northair 4C21, serial 4C21-0871, started 18 September 2026."
+      },
+      {
+        "submittal": "SR-02",
+        "title": "Startup report, RTU-2",
+        "status": "Filed 18 Sept 2026",
+        "note": "Northair 4C21, serial 4C21-0874, started 18 September 2026."
+      }
+    ],
+    "drawings": [
+      {
+        "document": "RD-M2",
+        "title": "Record drawings, mechanical and plumbing, rev 2",
+        "date": "2026-09-12",
+        "note": "Working markup from the field; three sheets still to update; not signed."
+      },
+      {
+        "document": "RD-M3",
+        "title": "Record drawings, mechanical and plumbing, rev 3",
+        "date": "2026-10-05",
+        "note": "Final record set, issued for record, signed by Brookhollow's project manager, A. Castellanos."
+      }
+    ],
+    "waivers": [
+      {
+        "document": "PS-W1",
+        "title": "Partsmith Supply: conditional waiver and release on progress payment",
+        "date": "2026-09-04",
+        "note": "Harbor Point Library. Covers invoices through 31 August 2026, $11,860.00."
+      },
+      {
+        "document": "PS-W2",
+        "title": "Partsmith Supply: conditional waiver and release on final payment",
+        "date": "2026-10-06",
+        "note": "Harbor Point Library. All materials furnished; final amount $6,240.00, released on its payment."
+      }
+    ],
+    "registrations": [
+      {
+        "document": "PS-WR-0662",
+        "title": "Northair 5-year compressor warranty",
+        "serial": "4C20-0662",
+        "registered_to": "Crestview Clinic (owner)",
+        "start": "2025-11-03"
+      },
+      {
+        "document": "PS-WR-0871",
+        "title": "Northair 5-year compressor warranty",
+        "serial": "4C21-0871",
+        "registered_to": "Harbor Point Library District (owner)",
+        "start": "2026-09-18"
+      },
+      {
+        "document": "PS-WR-0874",
+        "title": "Northair 5-year compressor warranty",
+        "serial": "4C21-0874",
+        "registered_to": "Harbor Point Library District (owner)",
+        "start": "2026-09-18"
+      }
+    ],
+    "manuals": [
+      {
+        "document": "FX-M3000",
+        "model": "FX-3000 lavatory faucet",
+        "title": "Operation and maintenance manual",
+        "note": "Discontinued model; manual kept for existing installations."
+      },
+      {
+        "document": "FX-M3100",
+        "model": "FX-3100 lavatory faucet",
+        "title": "Operation and maintenance manual",
+        "note": "Current model: cartridge, aerator and sensor service, parts list."
+      }
+    ],
+    "docs": [
+      {
+        "document": "DS-09",
+        "title": "Brookhollow: conditional waiver and release on progress payment, pay application 9",
+        "date": "2026-09-02",
+        "note": "Harbor Point Library. Payments through 31 August 2026, $64,300.00."
+      },
+      {
+        "document": "DS-11",
+        "title": "Brookhollow: conditional waiver and release on final payment",
+        "date": "2026-10-07",
+        "note": "Harbor Point Library. Final payment $48,600.00; releases all claims on its receipt."
+      },
+      {
+        "document": "DS-13",
+        "title": "Coldline Insulation: conditional waiver and release on progress payment",
+        "date": "2026-08-30",
+        "note": "Harbor Point Library. Payments through 31 August 2026, $18,200.00."
+      },
+      {
+        "document": "DS-14",
+        "title": "Coldline Insulation: conditional waiver and release on final payment",
+        "date": "2026-10-06",
+        "note": "Harbor Point Library. Final amount $4,950.00, released on its payment."
+      },
+      {
+        "document": "DS-19",
+        "title": "Certificate of insurance, Brookhollow",
+        "date": "2025-06-24",
+        "note": "General liability with completed operations; policy period 1 July 2025 to 30 June 2026."
+      },
+      {
+        "document": "DS-20",
+        "title": "Certificate of insurance, Brookhollow",
+        "date": "2026-06-26",
+        "note": "General liability with completed operations; policy period 1 July 2026 to 30 June 2027."
+      },
+      {
+        "document": "DS-22",
+        "title": "Consent of surety to final payment, Ashmore Surety",
+        "date": "2026-09-29",
+        "note": "Harbor Point Library, subcontract PL-2307."
+      },
+      {
+        "document": "DS-25",
+        "title": "Affidavit of payment of debts and claims, Brookhollow",
+        "date": "2026-10-07",
+        "note": "Signed and notarized: all payrolls, bills and debts for the work are paid, except the final amounts of Coldline Insulation and Partsmith Supply, to be paid from the final payment."
+      },
+      {
+        "document": "DS-28",
+        "title": "Owner training sign-in sheet, HVAC controls",
+        "date": "2026-10-02",
+        "note": "Two hours; signed by the District's facilities staff."
+      },
+      {
+        "document": "DS-30",
+        "title": "Attic stock delivery ticket",
+        "date": "2026-10-06",
+        "note": "24 filters and 2 fan belts dropped at the loading dock. No signature."
+      },
+      {
+        "document": "DS-31",
+        "title": "Attic stock receipt",
+        "date": "2026-10-06",
+        "note": "24 filters and 2 fan belts received; signed by J. Whitcombe, the District's facilities supervisor."
+      }
+    ]
+  }
+}

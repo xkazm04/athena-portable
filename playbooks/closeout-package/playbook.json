@@ -1,0 +1,112 @@
+{
+  "id": "closeout-package",
+  "title": "The closeout package assembled, so the general contractor releases the retainage",
+  "domain": "Construction",
+  "audience": "work",
+  "promise": "Every open item on the subcontractor's closeout checklist is answered with the one document that satisfies it, found across the GC's portal, the project platform, the supplier's and the manufacturer's portals and the company's own files: final waivers and not progress ones, the certificate in force, the warranty for each installed unit by serial, the manual for the model actually installed, the signed record set and the owner's signed receipt. Nothing already accepted is sent again, and nothing for another job, an old period or a model substituted out.",
+  "persona": "The office manager of a thirty-person plumbing and HVAC subcontractor closing out a public library job, under a subcontract that incorporates AIA A201-2017",
+  "chore": "Read the subcontract's terms on final payment, waivers, insurance and warranties and the closeout checklist in the general contractor's portal; the closeout specification sections, the approved submittals, the startup reports and the record drawing sets in the project platform; the supplier's lien waivers and warranty registrations in its portal; the faucet manuals in the manufacturer's library; and the company's own waivers, certificates, affidavit and receipts. Then match each open item to the document that answers it under A201-2017 section 9.10 as the subcontract states it and the specifications: a final conditional waiver, a current certificate, the installed unit's serial, the installed model, the final signed record set, the owner's signature. Attach each in the GC's portal. None of the five systems shares data with another.",
+  "command": "Primeline is holding our $48,600 retainage on Harbor Point until the closeout package is complete. Go through Primeline GC, Sitegrid, Partsmith, Fixturely and our Docshelf, and attach the right document to every checklist item that still needs one. Don't resend anything they've accepted, and don't send anything that doesn't actually answer the item.",
+  "apps": [
+    {
+      "name": "Primeline GC",
+      "role": "the subcontract's terms on final payment, waivers, insurance and warranties, the closeout checklist, and the attachments",
+      "api": "General contractor's subcontractor portal only",
+      "url": ""
+    },
+    {
+      "name": "Sitegrid",
+      "role": "the closeout specification sections, the approved submittals and startup reports with serial numbers, and the record drawing sets",
+      "api": "Project platform, no feed to the GC's checklist",
+      "url": ""
+    },
+    {
+      "name": "Partsmith",
+      "role": "the supplier's lien waivers to the subcontractor and the warranty registrations it filed, by serial",
+      "api": "Supplier portal only",
+      "url": ""
+    },
+    {
+      "name": "Fixturely",
+      "role": "the manufacturer's operation and maintenance manuals by model",
+      "api": "Manufacturer's trade library, no export",
+      "url": ""
+    },
+    {
+      "name": "Docshelf",
+      "role": "the company's own waivers, insurance certificates, the surety's consent, the affidavit and the owner's receipts",
+      "api": "Document store, no data feed",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the terms and the closeout checklist in Primeline GC.",
+    "Reads the closeout specifications, the submittals and startup reports, and the record drawing sets in Sitegrid.",
+    "Reads Partsmith's lien waivers and warranty registrations.",
+    "Reads the faucet manuals in Fixturely.",
+    "Reads the company's own documents in Docshelf.",
+    "Back in Primeline GC, attaches the one document that answers each open checklist item."
+  ],
+  "gates": [
+    {
+      "action": "attach_closeout_document",
+      "label": "Attach a closeout document",
+      "why": "It goes to the GC and on to the architect and the owner in the company's name; a progress waiver sent as a final one, an expired certificate or another job's warranty is a misrepresentation, and a wrong document resets the GC's review."
+    }
+  ],
+  "traps": [
+    "Three progress waivers: Brookhollow's, Coldline's and Partsmith's.",
+    "The insurance certificate that expired on 30 June.",
+    "The surety's consent and the training record, both already accepted.",
+    "A compressor warranty for a unit on another job.",
+    "The manual for the faucet model that was substituted out.",
+    "A record drawing markup, unsigned and unfinished.",
+    "An attic stock delivery ticket nobody signed."
+  ],
+  "memory": [
+    "The checklist's open items and what each requires, carried from Primeline GC.",
+    "The installed models and serials, and which record set is final, carried from Sitegrid.",
+    "Which supplier waiver is final and which warranties are for the units installed, carried from Partsmith.",
+    "Which manual is for the faucet installed, carried from Fixturely.",
+    "Which of the company's own documents are final, current and signed, from Docshelf."
+  ],
+  "economics": {
+    "value_usd": 30000,
+    "per": "year",
+    "basis": "An estimate, and payments released rather than money recovered. A plumbing and HVAC subcontractor billing about $3 million a year carries about $150,000 of retainage at 5%; a 2026 survey found 43% of subcontractors wait more than 90 days after the work for final payment and retainage, and missing closeout documents are a common cause. The $30,000 a year is about a fifth of a year's retainage released sooner by a complete package, an estimate. The bench world holds one job's $48,600 retainage, split evenly across the nine checklist items still open. Times a year: five, about the jobs such a subcontractor closes out in a year.",
+    "manual_minutes": 180,
+    "times_per_year": 5,
+    "incumbent": "None takes a share: the office manager or the project manager assembles it, and closeout software is sold by subscription.",
+    "sources": [
+      {
+        "label": "AIA Contract Documents: summary of A201-2017, General Conditions of the Contract for Construction, incorporated by reference into the subcontract",
+        "url": "https://help.aiacontracts.com/hc/en-us/articles/1500010259162-Summary-A201-2017-General-Conditions-of-the-Contract-for-Construction"
+      },
+      {
+        "label": "AGC's 2017 commentary on A201, including section 9.10.2's conditions for final payment (affidavit of payment, insurance, surety consent, special warranties, lien releases)",
+        "url": "https://www.agc.org/sites/default/files/AGC%20commentary%20August%208%202017.pdf"
+      },
+      {
+        "label": "Contractor magazine: 2026 survey, 43% of subcontractors wait more than 90 days for final payment and retainage",
+        "url": "https://www.contractormag.com/management/news/55403190/subcontractors-are-still-financing-their-own-jobs-2026-survey-finds"
+      },
+      {
+        "label": "Siteline: retainage, a guide for subcontractors (final lien waivers and closeout documents before release)",
+        "url": "https://www.siteline.com/blog/guide-to-construction-retainage"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 3,
+    "usefulness": 4,
+    "difficulty_why": "Five systems with no shared data and twenty documents for nine open items; each answer turns on one fact found elsewhere: final or progress, the policy period, the serial on the startup report, the model on the approved substitution, signed or not.",
+    "usefulness_why": "Retainage is often most of a subcontractor's profit on a job, and it sits with the GC for months when one document in the package is wrong or missing."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful office manager gets most of it; the bar is most of the open items answered with the right document, nothing sent that does not answer its item or was already accepted, inside an hour."
+  },
+  "caveat": "Brookhollow Mechanical, Primeline Builders, the Harbor Point Library District, Coldline Insulation, Partsmith, Fixturely, Northair, Ashmore Surety, Sitegrid, Docshelf and every person here are invented. The subcontract incorporates AIA Document A201-2017, a published standard form, and its final payment clause is stated in the world's own words, not quoted; the checklist and the specifications are the invented project's. Real projects change these clauses, and lien waiver forms are set by state law in many states. This is not legal advice."
+}

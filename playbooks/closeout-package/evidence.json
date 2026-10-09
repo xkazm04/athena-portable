@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "closeout-package",
+  "captured_at": "2026-10-09T23:00:21Z",
+  "bench_run_at": "2026-10-09T22:57:26Z",
+  "narration": {
+    "text": "The closeout package assembled, so the general contractor releases the retainage. This is a chore for the office manager of a thirty-person plumbing and HVAC subcontractor closing out a public library job, under a subcontract that incorporates AIA A201-2017. Athena works it across 5 portals: Primeline GC, Sitegrid, Partsmith, Fixturely and Docshelf. On the bench, she found 10 of 10 eligible items, worth 48,600 dollars of the 48,600 dollars there was to find. All 10 were filed at the exact amount the rules allow. She made no false claim. The world held 10 traps, and she walked past 10. Among them: Three progress waivers: Brookhollow's, Coldline's and Partsmith's. The insurance certificate that expired on 30 June. She took 2 minutes. By hand, the same chore takes 3 hours, so she was about 72 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 65.645,
+    "sha256": "0343d9ccb6f58c20ff783f24daef7671895363c8582ef903c2fb442eca34b9f7"
+  },
+  "video": {
+    "path": "evidence/closeout-package/evidence.mp4",
+    "duration_s": 65.68,
+    "bytes": 3299642,
+    "sha256": "add10bae4298624642c77996557c8c5bc3e0c3b166c622d559024c28c5164837"
+  },
+  "thumbnail": {
+    "path": "playbooks/closeout-package/thumb.jpg",
+    "bytes": 79105,
+    "sha256": "1641dd0361ac044744aa8ee502c8b39f551aa1b02ef93ea8acfeaca72e4bc2dd"
+  }
+}
