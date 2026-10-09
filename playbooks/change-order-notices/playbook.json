@@ -1,0 +1,110 @@
+{
+  "id": "change-order-notices",
+  "title": "Every field change priced and noticed inside the contract's claim window",
+  "domain": "Construction",
+  "audience": "work",
+  "promise": "Every RFI answer, instruction, directive and field event of the month is read against the subcontract's scope and the general conditions it incorporates: each real change is priced from its estimate with the subcontract's markup and noticed with the right date before its 21 days run out, and nothing is noticed that is base scope, Corvane's own rework or delay, a price rise, already a change order or already noticed, or past its window.",
+  "persona": "The project manager of a forty-person electrical subcontractor on a medical office building, under a subcontract that incorporates AIA A201-2017",
+  "chore": "Read the subcontract's terms on claims, changes, markup and scope, and the change orders and notices already on file, in the general contractor's portal; every RFI, instruction and directive in the project platform; the foremen's daily logs; and each potential change order's cost in the estimating system. Then apply the general conditions as the subcontract states them: notice within 21 days after the event or after first recognizing the condition, whichever is later, with a direction dated the day it was given; a concealed condition within 14 days of observing that it differs; base scope, 'as shown' answers, own rework, own delay and price escalation are not changes; nothing noticed twice. Price each at cost plus 15% on Corvane's own work and 5% on a lower-tier sub's, and give notice on the GC's portal. None of the four systems shares data with another.",
+  "command": "I'm sure we're doing changed work on Westfold that we never gave notice on. Go through Primeline GC, Sitegrid, our Dailylog and Estimato, and give notice on every change we're still inside the window for, priced with our markup and dated right. Leave alone anything that's our own scope, our own fault, already handled, or too late.",
+  "apps": [
+    {
+      "name": "Primeline GC",
+      "role": "the subcontract's terms (claims, changes, markup, scope), the change orders and notices on file, and the notice of change",
+      "api": "General contractor's subcontractor portal only",
+      "url": ""
+    },
+    {
+      "name": "Sitegrid",
+      "role": "every RFI with its question and answer, the architect's supplemental instructions and the change directives",
+      "api": "Project platform, no feed to the sub's systems",
+      "url": ""
+    },
+    {
+      "name": "Dailylog",
+      "role": "the foremen's daily entries: what was found, directed, delayed or redone, and when",
+      "api": "Field log app, no export",
+      "url": ""
+    },
+    {
+      "name": "Estimato",
+      "role": "each potential change order's labor, material and lower-tier cost, before markup",
+      "api": "Estimating system, no portal link",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the subcontract's terms, the executed change orders and the notices already given in Primeline GC.",
+    "Reads every RFI, instruction and directive in Sitegrid, and what each one directs.",
+    "Reads the foremen's daily logs in Dailylog for conditions found, directions given, delays and rework.",
+    "Reads each potential change order's cost in Estimato.",
+    "Back in Primeline GC, gives notice on each change still inside its window, priced with the markup and dated by its event or recognition."
+  ],
+  "gates": [
+    {
+      "action": "submit_change_notice",
+      "label": "Give notice of a change",
+      "why": "A written claim to the general contractor in the company's name; a notice for base scope, its own rework or a duplicate costs credibility with the GC that pays the bills, and a wrong date or price is hard to walk back."
+    }
+  ],
+  "traps": [
+    "A lobby fixture change already executed as a change order.",
+    "An exam-room controls change already noticed and under review.",
+    "An RFI answered 'as shown': base scope.",
+    "Fire alarm devices moved, none added, in Corvane's own Division 28.",
+    "Conduit Corvane's crew ran at the wrong height.",
+    "Data drops instructed on 3 September, past their 21 days.",
+    "A standby on 16 and 17 September, past its 21 days.",
+    "Copper up 14% since the bid, under a fixed price.",
+    "Standby after an inspection failed on Corvane's own labels."
+  ],
+  "memory": [
+    "The notice window, the markup, the scope and what is not a change, carried from Primeline GC's terms.",
+    "Each RFI's answer, each instruction and directive, and its date, carried from Sitegrid.",
+    "What the foremen found, were told, waited for or redid, and when, carried from Dailylog.",
+    "Each PCO's own cost and any lower-tier cost, carried from Estimato."
+  ],
+  "economics": {
+    "value_usd": 60000,
+    "per": "year",
+    "basis": "An estimate. Change orders average about 10% of contract value (a Dodge figure the AIA and others repeat), and specialty contractors report writing off change work as bad debt (77% in a 2026 Clearstory and Dodge survey, a vendor figure) and taking about 22 days from a field tag to a priced request, longer than the 21-day window. An electrical subcontractor billing about $6 million a year sees about $600,000 of changes; losing one in ten to a missed or late notice is about $60,000 a year. The bench world holds $33,254.50 across six changes in about a month of work. Times a year: twelve, a monthly sweep, because the window is 21 days.",
+    "manual_minutes": 240,
+    "times_per_year": 12,
+    "incumbent": "None takes a share: the project manager does it, and claims consultants bill by the hour after a dispute has started.",
+    "sources": [
+      {
+        "label": "AIA Contract Documents: summary of A201-2017, General Conditions of the Contract for Construction, incorporated by reference into the subcontract",
+        "url": "https://help.aiacontracts.com/hc/en-us/articles/1500010259162-Summary-A201-2017-General-Conditions-of-the-Contract-for-Construction"
+      },
+      {
+        "label": "National Law Review: notice requirements under the revised A201 (claims within 21 days after the event or after first recognizing the condition; concealed conditions within 14 days)",
+        "url": "https://natlawreview.com/article/notice-requirements-under-revised-a201-general-conditions-document-revisions-to-aia"
+      },
+      {
+        "label": "AGC's 2017 commentary on the A201 general conditions (changes, claims)",
+        "url": "https://www.agc.org/sites/default/files/AGC%20commentary%20August%208%202017.pdf"
+      },
+      {
+        "label": "AIA Contract Documents: The Truth About Change Orders",
+        "url": "https://learn.aiacontracts.com/wp-content/uploads/2023/07/The-Truth-About-Change-Orders.pdf"
+      },
+      {
+        "label": "Clearstory and Dodge, 2026 specialty contractor change order report (write-offs; 22 days from tag to priced request), a vendor survey",
+        "url": "https://www.clearstory.build/construction-blog/2026-sc-change-order-report"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four systems with no shared data; each change's window runs from its direction or from when a condition was recognized, each price carries two markups, and nine events that look like changes are base scope, Corvane's own doing, a price rise, already handled or too late.",
+    "usefulness_why": "A change noticed late is waived for good under the contract; a subcontractor recovers money it has already spent on work it was told to do, and avoids notices that cost it credibility with the GC."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful project manager catches most of it; the bar is most of the changed work noticed in time and priced right, nothing noticed that is not a change or is already too late, inside an hour."
+  },
+  "caveat": "Corvane Electric, Primeline Builders, Westfold Health Partners, their subcontract, Sitegrid, Dailylog, Estimato and every person here are invented. The subcontract incorporates AIA Document A201-2017, a published standard form, and its clauses are stated in the world's own words, not quoted; the markup and the waiver are the invented subcontract's. Real contracts often change the notice period and the markup, and whether a late notice waives a claim varies by state and by contract. This is not legal advice."
+}

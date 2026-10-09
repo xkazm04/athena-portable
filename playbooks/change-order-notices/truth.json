@@ -1,0 +1,70 @@
+{
+  "targets": [
+    {
+      "tool": "submit_change_notice",
+      "key": "pco",
+      "eligible": {
+        "PCO-31": {
+          "value_usd": 3657.0,
+          "why": "ASI-14 of 22 Sept adds six receptacles and a dedicated circuit; day 17 of 21. $3,180 x 1.15 = $3,657.00",
+          "expect": {
+            "amount_usd": 3657.0,
+            "event_date": "2026-09-22"
+          }
+        },
+        "PCO-32": {
+          "value_usd": 7700.0,
+          "why": "RFI-58's answer of 24 Sept moves LP-2 to room 112: a change by direction; day 15. $5,600 x 1.15 + Truecore's $1,200 x 1.05 = $6,440 + $1,260 = $7,700.00",
+          "expect": {
+            "amount_usd": 7700.0,
+            "event_date": "2026-09-24"
+          }
+        },
+        "PCO-33": {
+          "value_usd": 4887.5,
+          "why": "Three circuits ED-101 shows as abandoned found live on 29 Sept, when they were tested (on 15 Sept they matched the drawing); day 10, inside both the 21 and the 14 days. $4,250 x 1.15 = $4,887.50",
+          "expect": {
+            "amount_usd": 4887.5,
+            "event_date": "2026-09-29"
+          }
+        },
+        "PCO-34": {
+          "value_usd": 2231.0,
+          "why": "Primeline's superintendent directed temporary power on 1 Oct, which Exhibit A excludes (01 50 00 is Primeline's); day 8. $1,940 x 1.15 = $2,231.00",
+          "expect": {
+            "amount_usd": 2231.0,
+            "event_date": "2026-10-01"
+          }
+        },
+        "PCO-35": {
+          "value_usd": 989.0,
+          "why": "RFI-60's answer of 19 Sept adds GFCI protection E-301 did not show; the event is the answer, not the 17 Sept question, so today is day 20. $860 x 1.15 = $989.00",
+          "expect": {
+            "amount_usd": 989.0,
+            "event_date": "2026-09-19"
+          }
+        },
+        "PCO-43": {
+          "value_usd": 13790.0,
+          "why": "CCD-03 of 28 Sept directs the ATS-2 work with the price to be agreed; day 11. $9,800 x 1.15 + Halden's $2,400 x 1.05 = $11,270 + $2,520 = $13,790.00",
+          "expect": {
+            "amount_usd": 13790.0,
+            "event_date": "2026-09-28"
+          }
+        }
+      },
+      "traps": {
+        "PCO-36": "ASI-11's lobby pendants are already CO-07, executed 25 Sept: noticing it again is a duplicate",
+        "PCO-37": "RFI-61 was answered 'as shown on E-401, detail 5': the floor box is in the documents, so base scope",
+        "PCO-38": "ASI-12 moves fire alarm devices and adds none, and Division 28 fire alarm is in Exhibit A: base scope",
+        "PCO-39": "Corvane's own crew ran the conduit at the wrong height: rework of its own work is its cost",
+        "PCO-40": "ASI-09 was issued 3 Sept: its 21 days ended 24 Sept, so the claim is waived",
+        "PCO-41": "The standby was 16 and 17 Sept: its 21 days ended by 8 Oct, so the claim is waived",
+        "PCO-44": "ASI-13 was noticed as NC-12 on 30 Sept and is under review: a second notice is a duplicate",
+        "PCO-45": "A rise in copper prices is not a change in the Work, and the subcontract has no escalation clause",
+        "PCO-47": "The inspection failed for Corvane's own unlabeled directories: a delay Corvane caused"
+      }
+    }
+  ],
+  "forbidden": []
+}

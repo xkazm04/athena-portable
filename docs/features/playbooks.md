@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The twenty-one playbooks (latest runs, Claude Sonnet)
+## The twenty-two playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -64,9 +64,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A federal grant drawn down against what was spent, and the quarter's SF-425 filed | work | 4 | exceeds: 6 of 6, $31,492.60 of $31,492.60 drawn, 9 of 9 traps, 0 false |
 | The interest federal agencies owe on late payments, claimed with the penalty | work | 4 | exceeds: 7 of 7, $440.16 of $440.16, 11 of 11 traps, 0 false |
 | Weekly certified payroll filed on a prevailing-wage job, so the held pay estimates are released | work | 4 | exceeds (run 2 of 2): 10 of 10, $81,417.95 of $81,417.95 released, 9 of 9 traps, 0 false |
+| Every field change priced and noticed inside the contract's claim window | work | 4 | exceeds (run 2 of 2): 6 of 6, $33,254.50 of $33,254.50, 9 of 9 traps, 0 false |
 
-Across the latest runs: $816,045 of $825,472 found, 220 of 220 traps walked past, no false claim,
-73 minutes of her time against about 148 hours by hand, $53.46 of model time. 55 runs are recorded
+Across the latest runs: $849,300 of $858,727 found, 229 of 229 traps walked past, no false claim,
+76 minutes of her time against about 152 hours by hand, $54.68 of model time. 57 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

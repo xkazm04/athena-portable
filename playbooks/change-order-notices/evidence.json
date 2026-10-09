@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "change-order-notices",
+  "captured_at": "2026-10-09T22:57:31Z",
+  "bench_run_at": "2026-10-09T22:54:28Z",
+  "narration": {
+    "text": "Every field change priced and noticed inside the contract's claim window. This is a chore for the project manager of a forty-person electrical subcontractor on a medical office building, under a subcontract that incorporates AIA A201-2017. Athena works it across 4 portals: Primeline GC, Sitegrid, Dailylog and Estimato. On the bench, she found 6 of 6 eligible items, worth 33,254 dollars and 50 cents of the 33,254 dollars and 50 cents there was to find. All 6 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A lobby fixture change already executed as a change order. An exam-room controls change already noticed and under review. She took 3 minutes. By hand, the same chore takes 4 hours, so she was about 89 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 67.775,
+    "sha256": "1d8f60c8fedb00630f60032a46903c85c42c963e32b8d0372ebe416bd1ffdc8d"
+  },
+  "video": {
+    "path": "evidence/change-order-notices/evidence.mp4",
+    "duration_s": 67.775,
+    "bytes": 2719410,
+    "sha256": "ddfba6369db226fbae6ebc4bf32f348c36515c2ffed3810afbdcde26219eba2e"
+  },
+  "thumbnail": {
+    "path": "playbooks/change-order-notices/thumb.jpg",
+    "bytes": 97212,
+    "sha256": "8803204707c9cd98b7f0afef1641f4bad369b12e03c883b4bb46654215e34a3a"
+  }
+}

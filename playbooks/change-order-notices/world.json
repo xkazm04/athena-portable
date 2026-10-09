@@ -1,0 +1,626 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "primeline",
+      "name": "Primeline GC",
+      "origin": "https://subs.primeline-gc.example",
+      "path": "/projects/westfold-mob/corvane",
+      "view": {
+        "view": "Subcontractor portal: Westfold Medical Office Building",
+        "subcontract": "PL-2291, Corvane Electric LLC",
+        "user": "Noor Haddad, project manager, Corvane Electric",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_terms",
+          "kind": "READ",
+          "description": "The subcontract's terms as this portal states them, by topic: contract, claims, changes, markup, scope. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "terms",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_change_orders",
+          "kind": "READ",
+          "description": "Change orders executed on Corvane's subcontract: number, Corvane's PCO, subject, amount and date.",
+          "params": {},
+          "returns": {
+            "table": "change_orders"
+          }
+        },
+        {
+          "name": "list_notices",
+          "kind": "READ",
+          "description": "Notices of change Corvane has already given through this portal, with their status.",
+          "params": {},
+          "returns": {
+            "table": "notices"
+          }
+        },
+        {
+          "name": "submit_change_notice",
+          "kind": "REACHES_A_PERSON",
+          "description": "Give Primeline written notice of a change and its price, one per change event: Corvane's PCO number, the total in dollars to the cent with the subcontract's markup, the date of the event or of recognition (YYYY-MM-DD), and what it rests on.",
+          "params": {
+            "pco": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "event_date": {
+              "type": "string"
+            },
+            "basis": {
+              "type": "string"
+            }
+          },
+          "says": "Notice of change {pco} given to Primeline."
+        }
+      ],
+      "aliases": [
+        "Primeline GC",
+        "Primeline",
+        "the GC's portal",
+        "the subcontractor portal"
+      ]
+    },
+    {
+      "app_id": "sitegrid",
+      "name": "Sitegrid",
+      "origin": "https://app.sitegrid.example",
+      "path": "/westfold-mob/documents",
+      "view": {
+        "view": "Westfold Medical Office Building: RFIs, ASIs and directives",
+        "company": "Corvane Electric LLC (electrical)",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_items",
+          "kind": "READ",
+          "description": "RFIs, architect's supplemental instructions and change directives that touch the electrical work: id, type, date and subject. Open one with read_item.",
+          "params": {},
+          "returns": {
+            "table": "items",
+            "fields": [
+              "item",
+              "type",
+              "date",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_item",
+          "kind": "READ",
+          "description": "One RFI, ASI or directive in full, by id.",
+          "params": {
+            "item": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "items",
+            "match": {
+              "item": "item"
+            },
+            "require": [
+              "item"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Sitegrid",
+        "the project platform",
+        "the RFIs"
+      ]
+    },
+    {
+      "app_id": "dailylog",
+      "name": "Dailylog",
+      "origin": "https://corvane.dailylog.example",
+      "path": "/jobs/westfold-mob",
+      "view": {
+        "view": "Daily logs: Westfold Medical Office Building",
+        "company": "Corvane Electric LLC",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_entries",
+          "kind": "READ",
+          "description": "The foremen's daily log entries since 15 September, oldest first: the date, the foreman and the note. Paged.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "logs",
+            "page_size": 5
+          }
+        }
+      ],
+      "aliases": [
+        "Dailylog",
+        "the daily logs",
+        "the field logs"
+      ]
+    },
+    {
+      "app_id": "estimato",
+      "name": "Estimato",
+      "origin": "https://corvane.estimato.example",
+      "path": "/estimates/westfold-mob",
+      "view": {
+        "view": "Change estimates (PCOs): Westfold Medical Office Building",
+        "company": "Corvane Electric LLC",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_estimates",
+          "kind": "READ",
+          "description": "Corvane's potential change orders on this job: PCO number, title, what it refers to, Corvane's own cost (labor and material) and any lower-tier subcontractor's cost, before markup. Paged. Open one with read_estimate.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "estimates",
+            "fields": [
+              "pco",
+              "title",
+              "ref",
+              "corvane_cost_usd",
+              "lower_tier_usd"
+            ],
+            "page_size": 8
+          }
+        },
+        {
+          "name": "read_estimate",
+          "kind": "READ",
+          "description": "One PCO's estimate in full, by PCO number: Corvane's own cost as labor and material, any lower-tier subcontractor's cost (separate from Corvane's own), and notes. Markup is not applied here.",
+          "params": {
+            "pco": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "estimates",
+            "match": {
+              "pco": "pco"
+            },
+            "require": [
+              "pco"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Estimato",
+        "the estimates",
+        "estimating"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "primeline",
+      "message": "I'm worried we're letting changes slide on Westfold. Start here in Primeline GC: read the subcontract terms on claims, changes, markup and scope, and what's already been made a change order or noticed.",
+      "nudges": 1
+    },
+    {
+      "app": "sitegrid",
+      "message": "Now Sitegrid: every RFI, ASI and directive that touches our work, and what each one actually tells us to do.",
+      "nudges": 1
+    },
+    {
+      "app": "dailylog",
+      "message": "This is Dailylog. Read the foremen's entries since mid-September for anything that changed our work, and when.",
+      "nudges": 1
+    },
+    {
+      "app": "estimato",
+      "message": "Now Estimato. Get the cost of every PCO, and any lower-tier sub in it.",
+      "nudges": 1
+    },
+    {
+      "app": "primeline",
+      "message": "Back in Primeline GC. Give notice on every change we're still entitled to claim, priced with the markup and dated right. Then tell me what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "terms": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Primeline GC, subcontractor portal for the Westfold Medical Office Building. Subcontract PL-2291 with Corvane Electric LLC. Topics: contract, claims, changes, markup, scope. Give one notice per change event (Corvane's PCO number); a notice given here is written notice under the subcontract."
+      },
+      {
+        "topic": "contract",
+        "text": "Subcontract PL-2291 incorporates by reference AIA Document A201-2017, General Conditions of the Contract for Construction, as it forms part of the prime contract between Westfold Health Partners and Primeline Builders. Corvane is bound to Primeline as Primeline is bound to the owner. A201-2017 is a published standard form; the clauses this portal relies on are summarized here in Primeline's words, not quoted."
+      },
+      {
+        "topic": "claims",
+        "text": "The notice window (A201-2017 section 15.1.3.1, summarized, applied by Subcontract section 11.2): a claim for more money or time is started by written notice within 21 days after the event that gives rise to it, or within 21 days after Corvane first recognizes the condition that gives rise to it, whichever is later. Days are calendar days. For a change directed by an RFI answer, an ASI, a field directive or a CCD, the event is the day of the direction. A concealed or unknown condition (section 3.7.4, summarized) is noticed within 14 days after Corvane first observes that it differs from the documents. A claim not noticed inside its window is waived (Subcontract section 11.3)."
+      },
+      {
+        "topic": "changes",
+        "text": "Changes (A201-2017 Article 7, summarized): the Work is changed by change order, by construction change directive (CCD), or by the architect's order for a minor change. A CCD directs the work now and leaves the price to be agreed: answer it with a notice and your price. Work the contract documents already show or specify is not a change, and an RFI answer that confirms the documents ('as shown') changes nothing. Rework of Corvane's own non-conforming work, and delay Corvane caused, are Corvane's cost. The subcontract price is fixed, with no escalation clause: a rise in material prices is not a change. An event already made a change order, or already noticed, is not noticed again."
+      },
+      {
+        "topic": "markup",
+        "text": "Price a notice at Corvane's cost from its estimate plus markup (Subcontract section 11.5): 15% on Corvane's own labor and material (10% overhead and 5% profit, each on cost), and 5% on a lower-tier subcontractor's cost. Enter the total in dollars to the cent, and the date of the event or of recognition."
+      },
+      {
+        "topic": "scope",
+        "text": "Exhibit A, Corvane's scope: Divisions 26 (electrical), 27 (communications) and 28 (fire detection and alarm: devices, wiring and panel) complete, per the drawings and specifications. Excluded: temporary power and temporary lighting, which are Primeline's under section 01 50 00."
+      }
+    ],
+    "change_orders": [
+      {
+        "co": "CO-05",
+        "pco": "PCO-22",
+        "subject": "Added site lighting pole base",
+        "amount_usd": 3410.0,
+        "executed": "2026-08-14"
+      },
+      {
+        "co": "CO-06",
+        "pco": "PCO-27",
+        "subject": "Relocated roof-top unit disconnect",
+        "amount_usd": 1980.0,
+        "executed": "2026-09-02"
+      },
+      {
+        "co": "CO-07",
+        "pco": "PCO-36",
+        "subject": "Lobby pendants changed from type L2 to type L4 (ASI-11)",
+        "amount_usd": 6420.0,
+        "executed": "2026-09-25"
+      }
+    ],
+    "notices": [
+      {
+        "notice": "NC-10",
+        "pco": "PCO-22",
+        "subject": "Site lighting pole base",
+        "sent": "2026-08-03",
+        "status": "Closed: CO-05"
+      },
+      {
+        "notice": "NC-11",
+        "pco": "PCO-27",
+        "subject": "Roof-top unit disconnect",
+        "sent": "2026-08-20",
+        "status": "Closed: CO-06"
+      },
+      {
+        "notice": "NC-12",
+        "pco": "PCO-44",
+        "subject": "Exam-room dual-level occupancy sensors (ASI-13)",
+        "amount_usd": 2978.5,
+        "sent": "2026-09-30",
+        "status": "Received; pricing under review"
+      }
+    ],
+    "items": [
+      {
+        "item": "ASI-09",
+        "type": "Architect's supplemental instruction",
+        "date": "2026-09-03",
+        "subject": "Nurses' station data drops",
+        "text": "Add four data drops at the nurses' station, room 140, cabled per section 27 15 00."
+      },
+      {
+        "item": "ASI-11",
+        "type": "Architect's supplemental instruction",
+        "date": "2026-09-08",
+        "subject": "Lobby pendants",
+        "text": "Lobby pendants change from type L2 to type L4. Price and submit."
+      },
+      {
+        "item": "ASI-12",
+        "type": "Architect's supplemental instruction",
+        "date": "2026-09-15",
+        "subject": "Corridor fire alarm layout",
+        "text": "Corridor fire alarm devices are relocated to match the revised ceiling grid. No devices are added; the fire alarm remains as specified in section 28 31 00."
+      },
+      {
+        "item": "RFI-58",
+        "type": "Request for information",
+        "date": "2026-09-24",
+        "subject": "Panel LP-2 location",
+        "text": "Asked 21 Sept by Corvane: panel LP-2, installed in corridor 1B where E-101 locates it, blocks the access to the fire damper the mechanical drawings put beside it. Answered 24 Sept by the architect: relocate LP-2 to electrical room 112 per sketch SK-E-07, and extend the feeders as required."
+      },
+      {
+        "item": "RFI-60",
+        "type": "Request for information",
+        "date": "2026-09-19",
+        "subject": "Break-room receptacles",
+        "text": "Asked 17 Sept by Corvane: the city plan reviewer's comment 14 asks for GFCI protection in the break rooms; E-301 shows standard receptacles. Answered 19 Sept by the architect: provide GFCI protection at every break-room receptacle, rooms 118 and 214."
+      },
+      {
+        "item": "RFI-61",
+        "type": "Request for information",
+        "date": "2026-09-23",
+        "subject": "Reception desk receptacle",
+        "text": "Asked 21 Sept by Corvane: is the reception desk receptacle wall-mounted or in a floor box? Answered 23 Sept by the architect: provide as shown on E-401, detail 5 (floor box). No change to the contract documents."
+      },
+      {
+        "item": "ASI-14",
+        "type": "Architect's supplemental instruction",
+        "date": "2026-09-22",
+        "subject": "Exam rooms 4 to 6 receptacles",
+        "text": "Add six duplex receptacles and one dedicated 20 A circuit in exam rooms 4 to 6 for the owner's new equipment."
+      },
+      {
+        "item": "ASI-13",
+        "type": "Architect's supplemental instruction",
+        "date": "2026-09-25",
+        "subject": "Exam-room lighting controls",
+        "text": "Exam-room lighting controls change to dual-level occupancy sensors."
+      },
+      {
+        "item": "CCD-03",
+        "type": "Construction change directive",
+        "date": "2026-09-28",
+        "subject": "Second transfer switch, imaging suite",
+        "text": "Signed by the owner, the architect and Primeline: provide feeders, conduit and controls wiring for a second automatic transfer switch (ATS-2) serving the imaging suite. Proceed now; the price is to be agreed under the change provisions. Answer with your cost and markup."
+      }
+    ],
+    "logs": [
+      {
+        "date": "2026-09-15",
+        "foreman": "R. Sallis",
+        "note": "Opened the ceiling in corridor B of the existing wing. Old conduit and cable above it, which the existing-conditions drawing ED-101 shows as abandoned. Left in place, as ED-101 says."
+      },
+      {
+        "date": "2026-09-16",
+        "foreman": "R. Sallis",
+        "note": "Crew of four stood by 16 and 17 Sept: Primeline's drywall crew had not closed the corridor C ceiling, so our rough-in there could not go on. Told Primeline's superintendent."
+      },
+      {
+        "date": "2026-09-19",
+        "foreman": "R. Sallis",
+        "note": "RFI-60 answered: GFCI protection in both break rooms. Devices ordered."
+      },
+      {
+        "date": "2026-09-22",
+        "foreman": "M. Doyle",
+        "note": "Our crew ran conduit in corridor D at 9'-0\"; E-201 shows 10'-6\". Pulling it and re-running it, two days, our cost."
+      },
+      {
+        "date": "2026-09-24",
+        "foreman": "M. Doyle",
+        "note": "RFI-58 answered: LP-2 moves to room 112. Core drilling booked with Truecore Cutting."
+      },
+      {
+        "date": "2026-09-29",
+        "foreman": "R. Sallis",
+        "note": "Meter-tested the old circuits above corridor B: three are live and feed the pharmacy's refrigerators, though ED-101 shows them abandoned. Westfold facilities (K. Abernathy) confirmed. They must be re-fed from LP-3 before the corridor ceiling work goes on."
+      },
+      {
+        "date": "2026-09-30",
+        "foreman": "M. Doyle",
+        "note": "Notice NC-12 sent to Primeline for the ASI-13 lighting controls."
+      },
+      {
+        "date": "2026-10-01",
+        "foreman": "R. Sallis",
+        "note": "Primeline's superintendent, D. Rourke, told us on site to run temporary power to the trailer compound, two 100 A services. Done 1 and 2 Oct."
+      },
+      {
+        "date": "2026-10-02",
+        "foreman": "M. Doyle",
+        "note": "City rough-in inspection failed: our panel directories were not labeled. Re-inspection booked for 6 Oct; half a day of standby."
+      },
+      {
+        "date": "2026-10-05",
+        "foreman": "M. Doyle",
+        "note": "Supplier letter: copper building wire is up 14% since our bid in March."
+      },
+      {
+        "date": "2026-10-06",
+        "foreman": "M. Doyle",
+        "note": "Rough-in re-inspection passed."
+      },
+      {
+        "date": "2026-10-07",
+        "foreman": "R. Sallis",
+        "note": "CCD-03 rough-in started. Halden Power Services booked for the ATS-2 startup and testing."
+      },
+      {
+        "date": "2026-10-08",
+        "foreman": "R. Sallis",
+        "note": "Exam rooms 4 to 6 receptacles (ASI-14) roughed in."
+      }
+    ],
+    "estimates": [
+      {
+        "pco": "PCO-31",
+        "title": "Exam rooms 4-6 receptacles and dedicated circuit",
+        "ref": "ASI-14",
+        "corvane_cost_usd": 3180.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 2140.0,
+        "material_usd": 1040.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-32",
+        "title": "Relocate panel LP-2 to room 112",
+        "ref": "RFI-58",
+        "corvane_cost_usd": 5600.0,
+        "lower_tier_usd": 1200.0,
+        "labor_usd": 3900.0,
+        "material_usd": 1700.0,
+        "lower_tier": "Truecore Cutting, core drilling, billed to Corvane separately, on top of Corvane's own cost",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-33",
+        "title": "Re-feed three live pharmacy circuits from LP-3",
+        "ref": "Daily log 29 Sept",
+        "corvane_cost_usd": 4250.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 2850.0,
+        "material_usd": 1400.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-34",
+        "title": "Temporary power to the trailer compound",
+        "ref": "Daily log 1 Oct",
+        "corvane_cost_usd": 1940.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 1120.0,
+        "material_usd": 820.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-35",
+        "title": "GFCI protection, break rooms 118 and 214",
+        "ref": "RFI-60",
+        "corvane_cost_usd": 860.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 240.0,
+        "material_usd": 620.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-36",
+        "title": "Lobby pendants L2 to L4",
+        "ref": "ASI-11",
+        "corvane_cost_usd": 5580.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 1180.0,
+        "material_usd": 4400.0,
+        "lower_tier": "none",
+        "markup": "not applied",
+        "note": "Became CO-07"
+      },
+      {
+        "pco": "PCO-37",
+        "title": "Reception desk floor box",
+        "ref": "RFI-61",
+        "corvane_cost_usd": 1310.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 690.0,
+        "material_usd": 620.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-38",
+        "title": "Corridor fire alarm devices",
+        "ref": "ASI-12",
+        "corvane_cost_usd": 2760.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 1460.0,
+        "material_usd": 1300.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-39",
+        "title": "Corridor D conduit re-run",
+        "ref": "Daily log 22 Sept",
+        "corvane_cost_usd": 1880.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 1520.0,
+        "material_usd": 360.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-40",
+        "title": "Nurses' station data drops",
+        "ref": "ASI-09",
+        "corvane_cost_usd": 1150.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 640.0,
+        "material_usd": 510.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-41",
+        "title": "Standby, corridor C, 16-17 Sept",
+        "ref": "Daily log 16 Sept",
+        "corvane_cost_usd": 3520.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 3520.0,
+        "material_usd": 0.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-43",
+        "title": "ATS-2 feeders, conduit and controls",
+        "ref": "CCD-03",
+        "corvane_cost_usd": 9800.0,
+        "lower_tier_usd": 2400.0,
+        "labor_usd": 6300.0,
+        "material_usd": 3500.0,
+        "lower_tier": "Halden Power Services, startup and testing, billed to Corvane separately, on top of Corvane's own cost",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-44",
+        "title": "Exam-room dual-level occupancy sensors",
+        "ref": "ASI-13",
+        "corvane_cost_usd": 2590.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 1090.0,
+        "material_usd": 1500.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-45",
+        "title": "Copper building wire price increase",
+        "ref": "Supplier letter 5 Oct",
+        "corvane_cost_usd": 4600.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 0.0,
+        "material_usd": 4600.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      },
+      {
+        "pco": "PCO-47",
+        "title": "Re-inspection standby",
+        "ref": "Daily log 2 Oct",
+        "corvane_cost_usd": 640.0,
+        "lower_tier_usd": 0.0,
+        "labor_usd": 640.0,
+        "material_usd": 0.0,
+        "lower_tier": "none",
+        "markup": "not applied"
+      }
+    ]
+  }
+}
