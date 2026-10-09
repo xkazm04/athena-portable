@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `test(playbooks): the property tax protest re-benched after ADR 0058 and it exceeds` — ADR 0058 step 2: 8 of 8, $2,310 of $2,310, 9 of 9 traps avoided, 0 false, 1.8 min, $0.93, no follow-ups; the run before was short at 5 of 8, $1,470; she made no recall call, so the fix was not reached; filmed.
+
 - `fix(recall): a recall she asks for returns the episodes it matched whole, best match first, packed under the same 4,800 cap` — ADR 0058 step 1, §3.3: `core.recall` no longer reuses the frame's 500-byte excerpts or adds a recency tail and an always tier; it announces `(showing N of M)` in episodes; the frame's ambient window is unchanged.
 
 - `feat(playbooks): the interest federal agencies owe on late payments claimed with the penalty across four portals, benched to exceeds` — ADR 0057 row 11: each invoice's due date worked from its receipt, its acceptance and the contract's own period, against the day the Treasury payment settled; interest requested to the cent at 4.75% on a 360-day year on four invoices, the additional penalty on the three still inside 40 days, one at the $25 floor; a dispute, a weekend due date, interest already paid, eight cents, a longer acceptance period, a corrected invoice, an invoice not yet due and a penalty past its 40 days left alone; run 1: 7 of 7, $440.16, every request exact, 11 of 11 traps avoided, 0 false, 4.6 min; filmed. B1 is complete.

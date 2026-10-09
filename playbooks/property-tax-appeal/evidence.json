@@ -1,24 +1,24 @@
 {
   "schema": 1,
   "playbook": "property-tax-appeal",
-  "captured_at": "2026-10-09T17:49:25Z",
-  "bench_run_at": "2026-10-09T17:45:12Z",
+  "captured_at": "2026-10-09T19:49:00Z",
+  "bench_run_at": "2026-10-09T19:46:50Z",
   "narration": {
-    "text": "The property tax protest, with comparable sales. This is a chore for a Texas couple with their home, a rental duplex and a vacant lot, and four appraisal notices in the mail. Read each notice of appraised value and work out its deadline. Athena works it across 4 portals: Mailnest, Deedvault, Compsmith sales and Countyline Appraisal. On the bench, she found 5 of 8 eligible items, worth 1,470 dollars of the 2,310 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A vacant lot whose comparable sales come out above its notice: the value is fair, so there is nothing to protest. A condo sold last November, whose notice still came: the couple did not own it on January 1. She took 4 minutes. By hand, the same chore takes 4 hours, so she was about 55 times faster. The verdict: short. Found 64% of the value, expected 75%; found 5 of 8 items, expected 75%. Every card she filed waited for a person's signature, and nothing was sent.",
+    "text": "The property tax protest, with comparable sales. This is a chore for a Texas couple with their home, a rental duplex and a vacant lot, and four appraisal notices in the mail. Read each notice of appraised value and work out its deadline. Athena works it across 4 portals: Mailnest, Deedvault, Compsmith sales and Countyline Appraisal. On the bench, she found 8 of 8 eligible items, worth 2,310 dollars of the 2,310 dollars there was to find. All 8 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes 4 hours, so she was about 133 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
     "engine": "kokoro",
     "voice": "af_heart",
-    "duration_s": 63.425,
-    "sha256": "dcb92b4d95030f07b327ca06316034464c41d35f9b0f3736cf45e45ad44a6d00"
+    "duration_s": 54.151,
+    "sha256": "20c62465f66f89da907714b5c86b31625f7d98a842eb12196a5052f74c165f02"
   },
   "video": {
     "path": "evidence/property-tax-appeal/evidence.mp4",
-    "duration_s": 63.44,
-    "bytes": 3458225,
-    "sha256": "655365fa22d25faf8e862ec60aafb15aed19ce74cc3ed2a99b97289c1dedbc77"
+    "duration_s": 54.16,
+    "bytes": 2736444,
+    "sha256": "80a67efbcf72e578c1d9203ad7c3a07f89c736c0538afbf6937dee347d1cc9ed"
   },
   "thumbnail": {
     "path": "playbooks/property-tax-appeal/thumb.jpg",
-    "bytes": 87886,
-    "sha256": "3b37ffd43eaeb0974b43f8d08384c78ff0b46ba9c5ecddf1bffe6b2b5a1dff0b"
+    "bytes": 99251,
+    "sha256": "a2de7368546380babb2ed5aace9a04de1272fd014e4edee88f08ddfc0d9b386f"
   }
 }

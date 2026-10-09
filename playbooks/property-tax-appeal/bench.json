@@ -1,36 +1,33 @@
 {
   "playbook": "property-tax-appeal",
-  "run_at": "2026-10-09T17:45:12Z",
+  "run_at": "2026-10-09T19:46:50Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 261.8,
-  "turns": 15,
+  "wall_s": 106.5,
+  "turns": 11,
   "nudges": 0,
-  "follow_ups": 3,
-  "reads": 42,
-  "cost_usd": 2.3519,
-  "your_time_s": 180,
+  "follow_ups": 0,
+  "reads": 34,
+  "cost_usd": 0.93,
+  "your_time_s": 270,
   "verdict": {
-    "word": "short",
-    "reasons": [
-      "found 64% of the value, expected 75%",
-      "found 5 of 8 items, expected 75%"
-    ],
+    "word": "exceeds",
+    "reasons": [],
     "expected": {
       "recall": 0.75,
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 4.4
+    "minutes": 1.8
   },
   "score": {
     "eligible": 8,
-    "found": 5,
-    "exact": 5,
+    "found": 8,
+    "exact": 8,
     "value_total_usd": 2310.0,
-    "value_found_usd": 1470.0,
-    "recall_value": 0.636,
+    "value_found_usd": 2310.0,
+    "recall_value": 1.0,
     "false_claims": 0,
     "traps_total": 9,
     "traps_filed": 0,
@@ -140,33 +137,41 @@
       "value_usd": 0.0,
       "exact": true,
       "why": "The contractor's $24,000 estimate for the foundation repair, a defect the engineer found in November 2025"
-    }
-  ],
-  "missed": [
+    },
     {
       "action": "file_protest",
       "key": "R-20977",
-      "value_usd": 840.0
+      "outcome": "correct",
+      "value_usd": 840.0,
+      "exact": true,
+      "why": "Notice delivered 04-28, deadline May 28; comps D-1 and D-2 adjusted to $596,000 and $604,000, median $600,000; $40,000 off at 2.10% is $840 a year"
     },
     {
       "action": "attach_comparable",
       "key": "D-1",
-      "value_usd": 0
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Same neighbourhood duplex, open market, 2025, average condition"
     },
     {
       "action": "attach_comparable",
       "key": "D-2",
-      "value_usd": 0
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Same neighbourhood duplex, open market, 2025, average condition"
     }
   ],
-  "closing_words": "Compsmith has confirmed the duplex figures, and there's nothing left to read in this tab. I haven't filed anything.\n\n**R-20977, 2210 Pecan St (notice $640,000)**\n- **D-1** (2304 Pecan St, sold 2025-07-18): adjusted $596,000. It's an open-market duplex with both units let, in average condition, so it qualifies.\n- **D-2** (1915 Walnut St, sold 2025-10-30): adjusted $604,000. It has the same profile, so it qualifies.\n- **D-3** (2118 Pecan St): the notes say fire damage to unit B, uninhabitable, sold at an as-is auction. It fails the \"open-market\" and \"alike in condition\" tests in the district's comparables rule, so I'm excluding it.\n\nOpinion of value: $600,000. That's the average of $596,000 and $604,000, which the district's rule gives as the median for two comparables. There's no documented defect, so no cost to cure. The notice is $40,000 over that. The deadline is May 28, and the eviden",
+  "missed": [],
+  "closing_words": "Two protests are ready to file, and the district's rules settle both opinions of value.\n\n- **R-10422, 418 Oak Hollow Dr:** The median of S-1, S-2 and S-3 ($466,000, $463,000, $468,000) is $466,000. The foundation defect existed on January 1. Halvorsen's report (NM-411) is dated November 2025, and Bedrock's $24,000 estimate (NM-412) says the work isn't scheduled. Subtracting the cost to cure gives an opinion of **$442,000**. The deadline is May 15, and today is May 8.\n- **R-20977, 2210 Pecan St:** The average of D-1 and D-2 ($596,000 and $604,000) is **$600,000**. D-3 was an as-is auction of a fire-damaged duplex, so it's out. The deadline is May 28.\n- **No protest:** R-31505 and R-08814. The lot's sales support its $85,000 value, and the condo is no longer ours. We didn't own it on January 1, so we have no right to protest it.\n- **Left out of the evidence:** The 2019 roof report (NM-414)",
   "trace": [
     {
       "portal": "Mailnest",
       "user": "Our appraisal notices came. Start in Mailnest: read every notice and work out each deadline, and find anything about the house's condition that matters to its value.",
       "continued": false,
-      "said": "I'll start by listing every message in the House folder and the accounts that were mailed notices.\n\nThe mail search is running. Countyline tools can't be called from this Mailnest tab, so I'll wait for the search results before reading any messages.",
-      "said_chars": 249,
+      "said": "I'll start by listing every message in the House folder, the accounts that got notices, and the district's rules index.\n\nThe mail search is running, but its results haven't arrived yet. The two Countyline calls were refused because this session is pinned to Mailnest. I'll read the Countyline accounts and rules once I'm switched to that tab.\n\nI'm not repeating the search. When the results arrive, I'll open each notice and work out its deadline. I'll also look for anything about the house's condition.",
+      "said_chars": 504,
       "reads": [
         "search_mail"
       ],
@@ -176,10 +181,9 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Ten messages came back. I'll read the four notices and the condition-related ones (foundation, repair estimate, kitchen, roof). I'm skipping NM-420, the TaxSlash solicitation, for now.",
-      "said_chars": 184,
+      "said": "The search returned 10 messages (showing 10 of 10). I'm opening the four notices and the condition-related mail now. I'm skipping NM-420, the TaxSlash solicitation, and NM-413, the kitchen quote, which I'll open if the remodel looks relevant.",
+      "said_chars": 242,
       "reads": [
-        "read_message",
         "read_message",
         "read_message",
         "read_message",
@@ -195,8 +199,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Two of the four deadlines are written in the notices. The 418 Oak Hollow Dr foundation damage is the condition issue that matters to value.\n\n**Deadlines** (the notice rule is \"May 15 or 30 days after delivery, whichever is later\")\n- **R-10422, 418 Oak Hollow Dr:** delivered Apr 10, so 30 days is May 10. The deadline is **May 15**. The app shows today as May 8, so that leaves 7 days. The value went from $480,000 to $512,000.\n- **R-20977, 2210 Pecan St duplex:** delivered Apr 28, so 30 days is May 28.",
-      "said_chars": 2523,
+      "said": "Two deadlines are clear and the foundation is the condition issue. The notices for R-31505 and R-08814 state no deadline, so I need the district's rules page for those.\n\n**Deadlines** (the notices say \"May 15 or 30 days after delivery, whichever is later\"; the page shows today as 2026-05-08)\n\n| Account | Property | 2026 value (2025) | Delivered | Deadline |\n|---|---|---|---|---|\n| R-10422 (NM-401) | 418 Oak Hollow Dr, homestead | $512,000 ($480,000) | Apr 10 | **May 15**.",
+      "said_chars": 2178,
       "reads": [],
       "cards": []
     },
@@ -204,8 +208,8 @@
       "portal": "Deedvault",
       "user": "This is Deedvault, the county's deed records. Check what we actually own.",
       "continued": false,
-      "said": "Checking the deed records now.\n\nThe last call was dropped because my text ran onto the same line as the OP. I'm sending it again on its own line.",
-      "said_chars": 145,
+      "said": "I'll pull the Ferreiras' recorded deeds from Deedvault.\n\n\nI'll compare the results with the four accounts on the notices (R-10422, R-20977, R-31505, R-08814) once they arrive. I'm not drawing any conclusions about ownership until then.",
+      "said_chars": 235,
       "reads": [
         "search_deeds"
       ],
@@ -215,8 +219,8 @@
       "portal": "Deedvault",
       "user": "",
       "continued": true,
-      "said": "We still own three of the four properties. We sold the fourth, 77 Riverside Ct #3, so it shouldn't be protested.\n\n- **R-10422, 418 Oak Hollow Dr:** bought 2014 (instrument 2014-0031877). We own it.\n- **R-20977, 2210 Pecan St duplex:** bought 2019 (instrument 2019-0104412). We own it.\n- **R-31505, Lot 14, Mesquite Ridge:** bought 2021 (instrument 2021-0058310). We own it.\n- **R-08814, 77 Riverside Ct #3:** bought 2017 (2017-0072215), then sold to Dana Whitlock.",
-      "said_chars": 1130,
+      "said": "We own three of the four noticed properties. The fourth, 77 Riverside Ct #3 (R-08814), was sold in 2025. (Deedvault returned 5 of 5 deeds.)\n\n| Account | Property | Deedvault record | Status |\n|---|---|---|---|\n| R-10422 | 418 Oak Hollow Dr | Bought 2014-06-30, instrument 2014-0031877 | Owned |\n| R-20977 | 2210 Pecan St (duplex) | Bought 2019-09-12, instrument 2019-0104412 | Owned |\n| R-31505 | Lot 14, Mesquite Ridge | Bought 2021-04-02, instrument 2021-0058310 | Owned |\n| R-08814 | 77 Riverside Ct #3 | Bought",
+      "said_chars": 1492,
       "reads": [],
       "cards": []
     },
@@ -224,8 +228,8 @@
       "portal": "Compsmith sales",
       "user": "Now Compsmith. Look at the sales for each property and work out which ones are real comparables.",
       "continued": false,
-      "said": "Pulling the subjects and the nearby sales for the three properties we still own: R-10422, R-20977 and R-31505. I'll judge which sales are real comparables once the results are in.",
-      "said_chars": 179,
+      "said": "One sentence first: I'm pulling the subjects and nearby sales for the three properties you still own. R-08814 was sold in 2025, so I'm skipping it.\n\n\nWhen the results arrive, I'll open the sale notes before judging any sale. The notes show whether a sale was arm's-length, distressed, or a different property type. I'll then say which sales are real comparables and which are not.",
+      "said_chars": 380,
       "reads": [
         "read_subject",
         "find_comps",
@@ -240,12 +244,9 @@
       "portal": "Compsmith sales",
       "user": "",
       "continued": true,
-      "said": "The numbers alone don't settle it, so I'm opening every sale for its listing and deed notes before I rule on any of them.",
-      "said_chars": 121,
+      "said": "Here is where the sales stand so far. I haven't opened any sale notes yet, so none of this is final.\n\n- **R-10422, the homestead at $512,000:** S-1, S-2 and S-3 look like real comparables. They are open-market sales in Oak Hollow from 2025, and they adjust to $463,000–$468,000.\n- **R-10422, probable exclusions:**\n  - S-4 is a related-party sale.\n  - S-5 is from 2023.\n  - S-6 is in a different neighborhood and about 500 sqft smaller.\n  - S-7 is about 750 sqft larger.",
+      "said_chars": 1018,
       "reads": [
-        "read_sale",
-        "read_sale",
-        "read_sale",
         "read_sale",
         "read_sale",
         "read_sale",
@@ -263,8 +264,8 @@
       "portal": "Compsmith sales",
       "user": "",
       "continued": true,
-      "said": "**Real comparables: R-10422 and R-20977 have them, and both notices run above what they support. R-31505 doesn't need a protest.** I haven't filed or attached anything.\n\n**R-10422, 418 Oak Hollow Dr (notice $512,000)**\n- **Real comparables:**\n  - S-1 (402 Oak Hollow), adjusted $466,000.\n  - S-2 (455 Oak Hollow), adjusted $463,000.\n  - S-3 (17 Hollow Bend), adjusted $468,000.\n  - All three are open-market 2025 sales in the same neighborhood, within about 5% of our 2,150 sqft, in average condition.",
-      "said_chars": 2686,
+      "said": "Two of the three properties you still own look over-assessed, so I'd protest those. The lot's $85,000 value is supported by the sales, so I'd leave it alone.\n\n**R-10422, 418 Oak Hollow Dr, assessed $512,000: protest.**\n- **Real comparables:** S-1 ($466,000), S-2 ($463,000) and S-3 ($468,000). All are open-market sales in Oak Hollow from 2025, with similar size and age, and the notes say average condition. Their adjusted prices average about $466,000, roughly $46,000 under the notice.",
+      "said_chars": 2578,
       "reads": [],
       "cards": []
     },
@@ -272,11 +273,11 @@
       "portal": "Countyline Appraisal",
       "user": "And this is Countyline's protest portal. Protest every property the comparable sales don't support, with its opinion of value, and submit its evidence with it, each sale and document on its own.",
       "continued": false,
-      "said": "I'll first pull the prior findings and the district's rules before filing anything.\n\nThe rules and account list are still on their way back from the page, so I won't call them again. The recalled Compsmith summary was cut off. I'm pulling the full version so the opinions of value come from what I wrote down, not from my own sums.\n\nI haven't filed anything yet, because I don't have the figures a protest needs.\n\n- **Page results:** the answers to `read_rules` and `list_accounts` haven't come back.",
-      "said_chars": 1753,
+      "said": "One sentence first: I'm recalling what I gathered in the other tabs and reading Countyline's accounts and rules before I file anything.\n\nI haven't filed anything yet. The account list and the rules page are still on their way, and the opinion of value for the homestead depends on them.\n\n- **Homestead, R-10422 ($512,000):** If the district counts cost-to-cure for the foundation, I'll put the opinion at about $442,000, which is $466,000 less Bedrock's $24,000. If it doesn't, I'll use about $466,000.",
+      "said_chars": 956,
       "reads": [
-        "read_rules",
-        "list_accounts"
+        "list_accounts",
+        "read_rules"
       ],
       "cards": []
     },
@@ -284,8 +285,8 @@
       "portal": "Countyline Appraisal",
       "user": "",
       "continued": true,
-      "said": "The accounts match what we found. The rules index only lists topics, so I'm reading the ones that bear on filing.",
-      "said_chars": 113,
+      "said": "Only the index came back, so I'm reading the topic pages that decide how I file: deadline, owner, grounds, comparables, condition and opinion.",
+      "said_chars": 142,
       "reads": [
         "read_rules",
         "read_rules",
@@ -300,8 +301,8 @@
       "portal": "Countyline Appraisal",
       "user": "",
       "continued": true,
-      "said": "I'm filing the Oak Hollow protest now. I'm holding the duplex until I've confirmed which of its sales qualify.\n\n**R-10422, 418 Oak Hollow Dr: opinion of value $442,000**\n- The district's rule is the median of the submitted adjusted prices, less the documented cost to cure.\n- Median of $466,000, $463,000 and $468,000 is $466,000.\n- Cost to cure is $24,000, from Bedrock's estimate (NM-412) for the foundation.",
-      "said_chars": 1262,
+      "said": "Two protests are ready to file, and the district's rules settle both opinions of value.\n\n- **R-10422, 418 Oak Hollow Dr:** The median of S-1, S-2 and S-3 ($466,000, $463,000, $468,000) is $466,000. The foundation defect existed on January 1. Halvorsen's report (NM-411) is dated November 2025, and Bedrock's $24,000 estimate (NM-412) says the work isn't scheduled. Subtracting the cost to cure gives an opinion of **$442,000**. The deadline is May 15, and today is May 8.",
+      "said_chars": 1420,
       "reads": [],
       "cards": [
         {
@@ -338,52 +339,29 @@
           "key": "NM-412",
           "outcome": "correct",
           "value_usd": 0.0
+        },
+        {
+          "action": "file_protest",
+          "key": "R-20977",
+          "outcome": "correct",
+          "value_usd": 840.0
+        },
+        {
+          "action": "attach_comparable",
+          "key": "D-1",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "attach_comparable",
+          "key": "D-2",
+          "outcome": "correct",
+          "value_usd": 0.0
         }
       ]
-    },
-    {
-      "portal": "Compsmith sales",
-      "user": "I've switched to Compsmith sales as you asked. Go ahead.",
-      "continued": false,
-      "said": "Nothing is left to read in Compsmith. Before I leave, I'm recalling the two duplex sales and their adjusted prices from memory. That way the R-20977 filing uses the recorded figures rather than my own sums.\n\nRecall confirmed the duplex figures. D-1 sold 2025-07-18 and adjusts to $596,000. D-2 sold 2025-10-30 and adjusts to $604,000. Both are open-market duplexes with both units let and in average condition. D-3 is the fire-damaged as-is auction, so I'm leaving it out.",
-      "said_chars": 1354,
-      "reads": [],
-      "cards": []
-    },
-    {
-      "portal": "Countyline Appraisal",
-      "user": "I've switched to Countyline Appraisal as you asked. Go ahead.",
-      "continued": false,
-      "said": "Six cards for Oak Hollow are waiting for your answer, and I'm not re-filing any of them. For the duplex, I'll try reading its sales from here. If this tab can't reach Compsmith, the calls will drop.\n\nThe duplex is the only protest left, and I can't file it from here. This tab is pinned to Countyline, so the Compsmith calls were refused. I can't confirm which Pecan Heights sales qualify, and the opinion of value depends on that. I won't guess a median from D-1 (adjusted $596,000) alone.",
-      "said_chars": 1271,
-      "reads": [],
-      "cards": []
-    },
-    {
-      "portal": "Compsmith sales",
-      "user": "I've switched to Compsmith sales as you asked. Go ahead.",
-      "continued": false,
-      "said": "I'm back in Compsmith. I'm re-reading the three Pecan Heights sales now, so the duplex opinion of value rests on figures in front of me and not on a cut-off recall.",
-      "said_chars": 164,
-      "reads": [
-        "find_comps",
-        "read_sale",
-        "read_sale",
-        "read_sale"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Compsmith sales",
-      "user": "",
-      "continued": true,
-      "said": "Compsmith has confirmed the duplex figures, and there's nothing left to read in this tab. I haven't filed anything.\n\n**R-20977, 2210 Pecan St (notice $640,000)**\n- **D-1** (2304 Pecan St, sold 2025-07-18): adjusted $596,000. It's an open-market duplex with both units let, in average condition, so it qualifies.\n- **D-2** (1915 Walnut St, sold 2025-10-30): adjusted $604,000. It has the same profile, so it qualifies.",
-      "said_chars": 1459,
-      "reads": [],
-      "cards": []
     }
   ],
-  "note": "world: the attach tools and the rules say evidence goes in with a protest still awaiting signature; run 2 held every sale and document until the protests were signed",
+  "note": "after ADR 0058 (a recall returns whole episodes; run 3's duplex summary came back as its first 500 bytes)",
   "history": [
     {
       "run_at": "2026-10-09T17:35:38Z",
@@ -403,6 +381,16 @@
       "value_found_usd": 2310.0,
       "false_claims": 0,
       "note": "world: the foundation repair estimate's price is held to 2026-06-30; run 1 held it back as a lapsed 90-day quote and refiled the protest"
+    },
+    {
+      "run_at": "2026-10-09T17:45:12Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 5,
+      "eligible": 8,
+      "value_found_usd": 1470.0,
+      "false_claims": 0,
+      "note": "world: the attach tools and the rules say evidence goes in with a protest still awaiting signature; run 2 held every sale and document until the protests were signed"
     }
   ]
 }
