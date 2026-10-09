@@ -229,3 +229,52 @@ What the table shows, read before anything new is benched:
   a wrong claim.
 - **Counting a one-off as a fraction of a year** (an estate every twenty years). It ranks the
   chore by how rarely it happens rather than by what it is worth to the person who has it.
+
+## Amendment, 2026-10-09: a playbook worth no money, and a chore she does no faster
+
+Checked against the code and the data before writing. `bench.py` sets `recall_value` to `None`
+when the truth's total value is 0 (`round(found_value / total_value, 3) if total_value else
+None`), and `verdict` reads that as `float(… or 0.0)`. A world whose items are all worth $0 is
+therefore always `short`, whatever it finds. `playbooks/data-broker-deletion` (ADR 0057 row 6,
+"$0 / year, mostly minutes") was authored around this: each truth item is weighted $6.45, a fifth
+of DeleteMe's $32.25 a sweep, the weight is stated in each item's `why` and in `economics.basis`
+as a price avoided, and `economics.value_usd` stays 0. Three more rows of ADR 0057 start their
+value cell with "$0 /": `name-change-everywhere` (B4), `denied-party-screening` (B5) and
+`bid-opportunity-triage` (B9). Section (d) has a second hole of the same kind: `log10` is
+undefined at 0 and below, and `proven_usd_year` is 0 for every one of these rows, while
+`saved_minutes_year / 60` is not above 0 for any playbook whose person minutes reach
+`manual_minutes`. `rank` and M4's ranking command need a rule, and the method has to be fixed
+before the data reaches them.
+
+**The rule, from here on:**
+
+1. **A row worth $0 keeps `economics.value_usd` at 0.** Each truth item is weighted at a stated
+   per-act price: the price an incumbent publicly charges for that act, with its source, equal
+   across items whose acts are alike. Where no public price exists, each item is weighted $1 and
+   called a count weight. The weight is written in each item's `why` and in `economics.basis` as a
+   price avoided, not money recovered, and the README section 14 row says so. The verdict then
+   reads the count. The weights give the ranking no money, because `proven_usd_year = annual_usd ×
+   recall_value = 0 × recall_value = 0`.
+2. **A non-positive input to either logarithm in (d) scores 0 points on that axis,** which is the
+   clamp's lower bound. `rank` never evaluates `log10` of a value ≤ 0: it tests the input first. Such
+   a playbook is still ranked on its other points, unless one of (b)'s exclusions applies.
+
+**The constraint that forced it.** The scorer's fallback cannot be changed to make a bench pass
+(the operator's rule: never weaken a gate, the scorer or `truth.json`), and the ranking needs a
+finite score for every ranked row. The weights give the bench a number to divide by; the clamp
+gives the ranking a number to add.
+
+**Alternatives that lost**
+
+- **Making `bench.py` fall back to count recall when the total value is 0.** It edits the scorer,
+  which the operator's rule keeps out of bounds for making a bench pass, and the convention
+  leaves all 15 benched verdicts unchanged, so it buys nothing the convention does not.
+- **Excluding $0 rows from the ranking.** They are the roster's purest test of the time axis,
+  which ADR 0057 chose on purpose; dropping them would drop the rows that test it.
+- **A $1 floor on money** (`proven_usd_year` of at least $1, so the logarithm is defined). It
+  invents money the row does not find, and a fitted floor is the nudge this ADR exists to
+  prevent.
+
+**What this does not change.** The table of nine above, the clamp's bounds, the weights of the
+three axes and the exclusions in (b) stand. Nothing already ranked moves: none of the nine has a
+non-positive input.
