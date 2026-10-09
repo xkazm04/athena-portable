@@ -31,6 +31,7 @@ from athena.connectors.seal import FileSeal
 from athena.contracts.manifest import HostManifest, HostTool
 from athena.core.brain import Brain
 from athena.daemon.server import (
+    IDLE_TIMEOUT_S,
     TOKEN_HEADER,
     AthenaDaemon,
     DaemonConfig,
@@ -48,9 +49,13 @@ MODEL = "fake-model"
 TOKEN = "test-token-not-a-secret"
 SHELL_ORIGIN = "http://tauri.localhost"
 EXTENSION_ORIGIN = "chrome-extension://abcdefghijklmnopabcdefghijklmnop"
-#: A response that takes longer than this to arrive while another request holds the writer lock
-#: is the starvation this daemon exists to avoid. Generous: the bug it catches was unbounded.
-FAST_S = 2.0
+#: A starved daemon answers only when the idle connection times out (``IDLE_TIMEOUT_S``) or when
+#: the slow route lets go, about thirty seconds. So a fast answer is one well inside that: half of
+#: it. A loaded machine lengthens a pass toward this line; only the bug reaches it.
+STARVED_AFTER_S = IDLE_TIMEOUT_S
+FAST_S = STARVED_AFTER_S / 2
+#: A client socket's patience: it must not fire on a merely slow answer, only on a hung one.
+PATIENT_S = STARVED_AFTER_S * 2
 
 #: The page every test registers. One reversible tool and one that leaves the app, so the class
 #: of each falls out of the manifest's own flags and never out of a preference (README §3.3).

@@ -13,7 +13,10 @@ Three different ways of holding the daemon, all of them answered in the same bre
 2. a client that sends a request, reads the answer, and keeps the socket;
 3. a route that takes the writer lock and does not give it back.
 
-Each one gets its own ``GET /health`` from a second client, timed.
+Each one gets its own ``GET /health`` from a second client, timed. The budget is not a speed
+claim: a starved daemon answers after ``IDLE_TIMEOUT_S`` or when the route lets go, so the answer
+has to arrive well inside that, and while the hold is still in place. A slow machine only lengthens
+a pass.
 """
 
 from __future__ import annotations
@@ -25,25 +28,26 @@ import time
 
 from athena.daemon.routes import Reply, Request, Route
 
-from .conftest import EXTENSION_ORIGIN, FAST_S, SHELL_ORIGIN, TOKEN, Live, Response
+from .conftest import EXTENSION_ORIGIN, FAST_S, PATIENT_S, SHELL_ORIGIN, TOKEN, Live, Response
 
 # -- the starvation test -----------------------------------------------------------------------
 
 
 def _timed_health(live: Live) -> tuple[Response, float]:
     started = time.monotonic()
-    reply = live.request("/health")
+    reply = live.request("/health", timeout=PATIENT_S)
     return reply, time.monotonic() - started
 
 
 def test_a_connection_that_says_nothing_does_not_delay_another_client(live: Live) -> None:
     """The exact shape of the first build's bug: a socket opened and left silent."""
-    silent = socket.create_connection((live.host, live.port), timeout=FAST_S)
+    silent = socket.create_connection((live.host, live.port), timeout=PATIENT_S)
     try:
         reply, elapsed = _timed_health(live)
 
         assert reply.status == 200
-        assert elapsed < FAST_S
+        assert elapsed < FAST_S, f"answered after {elapsed:.1f}s: the idle timeout, not the daemon"
+        assert silent.fileno() != -1  # the silent socket was still ours when the answer came
     finally:
         silent.close()
 
@@ -54,7 +58,7 @@ def test_a_client_that_holds_its_connection_open_does_not_delay_another(live: Li
     The daemon answers with ``Connection: close``, so the socket is finished whether the client
     believes that or not — and either way the next client is served immediately.
     """
-    held = socket.create_connection((live.host, live.port), timeout=FAST_S)
+    held = socket.create_connection((live.host, live.port), timeout=PATIENT_S)
     try:
         held.sendall(
             b"GET /health HTTP/1.1\r\nHost: localhost\r\n"
@@ -65,7 +69,7 @@ def test_a_client_that_holds_its_connection_open_does_not_delay_another(live: Li
         reply, elapsed = _timed_health(live)
 
         assert reply.status == 200
-        assert elapsed < FAST_S
+        assert elapsed < FAST_S, f"answered after {elapsed:.1f}s: the idle timeout, not the daemon"
     finally:
         held.close()
 
@@ -102,7 +106,11 @@ def test_health_answers_while_a_slow_route_holds_the_writer_lock(live: Live) -> 
         reply, elapsed = _timed_health(live)
 
         assert reply.status == 200
-        assert elapsed < FAST_S
+        assert not release.is_set(), "the answer came only after the slow route let go"
+        assert live.daemon.lock.locked(), "the answer came after the writer lock was released"
+        assert elapsed < FAST_S, (
+            f"answered after {elapsed:.1f}s: the route's release, not the daemon"
+        )
         # And the read really was a read of the brain, not a cached number.
         assert reply.body["pending"]["total"] == 0
     finally:
@@ -207,7 +215,7 @@ def test_every_response_says_connection_close(live: Live) -> None:
 
 def test_the_socket_is_finished_when_the_answer_is(live: Live) -> None:
     """Close semantics, not just the header: the server hangs up after one answer."""
-    connection = socket.create_connection((live.host, live.port), timeout=FAST_S)
+    connection = socket.create_connection((live.host, live.port), timeout=PATIENT_S)
     try:
         connection.sendall(
             b"GET /health HTTP/1.1\r\nHost: localhost\r\nX-Athena-Token: "
