@@ -234,7 +234,10 @@ def recall_whole(
     by BM25 with the newer first on a tie, each with its full stored body. There is no always tier
     and no recency tail: the frame's window already carries both. Packing stops before the first
     episode that would pass ``cap``, and the block's M counts every episode that matched. The one
-    episode ever left to the gate's cut is one longer than the cap on its own.
+    episode ever left to the gate's cut is one longer than the cap on its own. Machine-written
+    episodes take at most :data:`MACHINE_EPISODE_SLOTS` of the answer (ref §8), as in the frame
+    window: one past that limit is skipped and packing goes on, so fleet chatter never fills
+    ``cap`` ahead of anything she wrote or read, yet M still counts it.
     """
     with closing(brain.read_connection()) as con:
         keyword = _keyword_block(con, query, keyword_slots, set())
@@ -275,10 +278,15 @@ def _whole_episodes(
     overhead = len(f"### {EPISODE_BLOCK}\n(showing {total} of {total})") + 2
     room = cap - spent - overhead
     items: list[Memory] = []
+    machine_taken = 0
     for row in rows:
         if limit is not None and len(items) >= limit:
             break
         memory = _memory(row[:6], KEYWORD_BLOCK, float(row[6]))
+        if memory.machine:
+            if machine_taken >= MACHINE_EPISODE_SLOTS:
+                continue
+            machine_taken += 1
         cost = len(memory.render()) + 1
         if cost > room:
             if not items and spent == 0 and cost + overhead > cap:

@@ -306,6 +306,44 @@ def test_the_best_match_comes_first_and_a_tie_goes_to_the_newer(tmp_path: Path) 
         assert [m.id for m in items] == [best, new, old]
 
 
+def test_a_whole_recall_packs_at_most_two_machine_episodes_and_counts_all(
+    tmp_path: Path,
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        machine = [
+            brain.append_episode(
+                f"fleet-event worker {n} duplex duplex duplex",
+                role="system",
+                created=BASE + timedelta(minutes=n),
+            ).id
+            for n in range(4)
+        ]
+        spoken = brain.append_episode("duplex notes", "user", created=BASE).id
+
+        episodes = recall_whole(brain, "duplex", cap=4800).block(EPISODE_BLOCK)
+
+        ids = [m.id for m in episodes.items]
+        assert sorted(i for i in ids if i in machine) == sorted(machine[2:]), "the newer two"
+        assert spoken in ids
+        assert len(ids) == 3
+        assert episodes.total == 5
+
+
+def test_a_machine_episode_past_the_limit_does_not_stop_packing(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        for n in range(3):
+            brain.append_episode(
+                f"fleet-event worker {n} duplex duplex duplex",
+                role="system",
+                created=BASE + timedelta(minutes=n),
+            )
+        spoken = brain.append_episode("duplex notes", "user", created=BASE).id
+
+        ids = [m.id for m in recall_whole(brain, "duplex", cap=4800).block(EPISODE_BLOCK).items]
+
+        assert spoken in ids
+
+
 def test_a_recall_for_a_person_has_no_tail_and_no_always_tier(tmp_path: Path) -> None:
     with Brain(tmp_path / "brain") as brain:
         source = brain.append_episode("unrelated chatter", "user").id
