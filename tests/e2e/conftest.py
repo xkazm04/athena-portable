@@ -66,9 +66,11 @@ __all__ = [
     "Spawn",
     "child_pids",
     "claude_round",
+    "descendants",
     "manifest_body",
     "op",
     "port_answers",
+    "survivors",
     "transcript_text",
 ]
 
@@ -259,6 +261,59 @@ def _kill_tree(process: subprocess.Popen[str]) -> None:
         process.wait(timeout=5)
     except subprocess.TimeoutExpired:  # pragma: no cover
         process.kill()
+
+
+def _process_table() -> dict[int, tuple[int, str]]:
+    """Every live process as ``pid -> (parent pid, creation date)``; empty without the query."""
+    if os.name != "nt":  # pragma: no cover - this suite runs on Windows here
+        return {}
+    done = subprocess.run(
+        [
+            "powershell",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "Get-CimInstance Win32_Process | ForEach-Object "
+            "{ \"$($_.ProcessId) $($_.ParentProcessId) $($_.CreationDate.ToString('o'))\" }",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    table: dict[int, tuple[int, str]] = {}
+    for line in done.stdout.splitlines():
+        words = line.split()
+        if len(words) == 3 and words[0].isdigit() and words[1].isdigit():
+            table[int(words[0])] = (int(words[1]), words[2])
+    return table
+
+
+def descendants(pid: int) -> dict[int, str]:
+    """The processes below ``pid`` right now as ``pid -> creation date``, grandchildren included.
+
+    Taken while the daemon is alive, so each entry is a real descendant of *this* daemon; the
+    creation date is what lets :func:`survivors` tell it from a stranger that later got its pid.
+    """
+    table = _process_table()
+    found: dict[int, str] = {}
+    frontier = [pid]
+    while frontier:
+        parent = frontier.pop()
+        for child, (ppid, created) in table.items():
+            if ppid == parent and child not in found and child != pid:
+                found[child] = created
+                frontier.append(child)
+    return found
+
+
+def survivors(snapshot: dict[int, str]) -> list[int]:
+    """The pids of ``snapshot`` still running *as the same process* (same creation date).
+
+    A pid reused by an unrelated process on a loaded machine has another creation date and is not
+    counted, so only a true orphan of the snapshotted daemon is reported.
+    """
+    table = _process_table()
+    return [pid for pid, created in snapshot.items() if pid in table and table[pid][1] == created]
 
 
 def child_pids(pid: int) -> list[int]:

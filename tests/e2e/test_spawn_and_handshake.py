@@ -13,11 +13,25 @@ started is the process that is gone, and the port it held is free for the next o
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 from athena.daemon.server import ALLOWED_METHODS, MAX_BODY_BYTES, TOKEN_HEADER
 
-from .conftest import APP_ID, ENGINE, MODEL, PAGE_ORIGIN, Spawn, child_pids, port_answers
+from .conftest import (
+    APP_ID,
+    ENGINE,
+    MODEL,
+    PAGE_ORIGIN,
+    Spawn,
+    descendants,
+    port_answers,
+    survivors,
+)
 
 
 def _probe(label: str) -> tuple[str, str]:
@@ -120,13 +134,16 @@ def test_stopping_the_daemon_leaves_no_port_bound_no_child_and_a_home_the_next_o
     first = spawn.real()
     home, port, pid = first.home, first.port, first.process.pid
     assert port_answers(first.host, port)
+    below = descendants(pid)  # while alive: pid reuse after the stop cannot make a stranger count
+    if os.name == "nt":  # pragma: no cover - the launcher runs the daemon as a child
+        assert below, "the snapshot found no process below the launcher"
 
     first.stop()
 
     assert first.process.returncode is not None, "the daemon did not exit"
     assert not first.alive
     assert not port_answers("127.0.0.1", port), "something is still listening on the port"
-    assert child_pids(pid) == [], "the daemon left a child behind"
+    assert survivors(below) == [], "the daemon left a child behind"
 
     second = spawn.real(home=home)
     health = second.request("/health")
@@ -186,3 +203,19 @@ def test_a_body_over_the_cap_is_refused_in_the_one_shape_rather_than_by_dropping
         "detail": "body must be a JSON object",
     }
     assert daemon.request("/health").status == 200, "the daemon is still serving"
+
+
+@pytest.mark.skipif(os.name != "nt", reason="the process table query is Windows-only here")
+def test_the_orphan_check_counts_a_live_descendant_and_not_a_stranger_that_took_its_pid() -> None:
+    """The check behind the exit-hygiene test must still fail on a true orphan, and must not
+    fail on an unrelated process that merely holds a pid the daemon's child once had."""
+    sleeper = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+    try:
+        below = descendants(os.getpid())
+        assert sleeper.pid in below
+        assert sleeper.pid in survivors(below), "a live orphan was not reported"
+        assert survivors({sleeper.pid: "1999-01-01T00:00:00.0000000+00:00"}) == []
+    finally:
+        sleeper.kill()
+        sleeper.wait()
+    assert sleeper.pid not in survivors(below)
