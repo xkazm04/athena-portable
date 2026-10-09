@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "clinic-denials",
+  "captured_at": "2026-10-09T15:54:36Z",
+  "bench_run_at": "2026-10-08T00:15:18Z",
+  "narration": {
+    "text": "Denied claims, reworked. This is a chore for a three-doctor family practice billing four payers, with one part-time biller. Pull the denial worklist from the practice management system and read each claim's reason code. Athena works it across 3 portals: Practice management, Clearinghouse and Availity. On the bench, she found 9 of 10 eligible items, worth 2,120 dollars of the 2,120 dollars there was to find. All 9 were filed at the exact amount the rules allow. She made no false claim. The world held 22 traps, and she walked past 22. Among them: A timely-filing denial whose only clearinghouse record is a rejection at intake: that is not proof the payer received it. An authorisation denial with no authorisation on file: an appeal would be refused. She took 3 minutes. By hand, the same chore takes 10 hours, so she was about 194 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 30 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 65.007,
+    "sha256": "77fd1b4632c2c9a178d8c48f6c2372003aa216f213477691662fd0692cbba345"
+  },
+  "video": {
+    "path": "evidence/clinic-denials/evidence.mp4",
+    "duration_s": 65.04,
+    "bytes": 2947009,
+    "sha256": "2792994dae07304c255522986f2c950b63d09402af46a5d47a560b7627ab61ca"
+  },
+  "thumbnail": {
+    "path": "playbooks/clinic-denials/thumb.jpg",
+    "bytes": 81567,
+    "sha256": "886fe8b90933fdb42f77ef3819a95c930b3aa8060048b35077e3892d240fe27d"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "estate-settlement",
+  "captured_at": "2026-10-09T16:00:42Z",
+  "bench_run_at": "2026-10-08T01:25:59Z",
+  "narration": {
+    "text": "A parent's estate, settled without a wrong move. This is a chore for a daughter three states away, court-appointed personal representative of her widowed mother's estate, holding a full-time job and her mother's still-signed-in portals. An estate takes about 16 months and hundreds of hours. Athena works it across 10 portals: Gmail, Google Drive, Estate bank account, Medigap insurer, Life insurer and group-life insurer, State unclaimed property, IRA custodian and brokerage, Social Security, Probate court e-filing and IRS Direct Pay. On the bench, she found 9 of 12 eligible items, worth 102,667 dollars and 28 cents of the 111,644 dollars and 45 cents there was to find. She made no false claim. The world held 11 traps, and she walked past 11. She took 7 minutes. By hand, the same chore takes 20 hours, so she was about 171 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 69.046,
+    "sha256": "f823c0953d2ef07d297a7f36bcf1bf67edca1763e4a1b8e4a518a3c641204615"
+  },
+  "video": {
+    "path": "evidence/estate-settlement/evidence.mp4",
+    "duration_s": 69.08,
+    "bytes": 4356241,
+    "sha256": "bb55bc84d89e29a2d0849b91c6f21b04fd4beef988ceec8808a180878faaa6bc"
+  },
+  "thumbnail": {
+    "path": "playbooks/estate-settlement/thumb.jpg",
+    "bytes": 94695,
+    "sha256": "8c224bf6082b28875ce4fcc2cb4cb34be3d7d697d52bbe316a5548aba38e3ff1"
+  }
+}

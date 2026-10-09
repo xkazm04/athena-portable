@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "freelancer-receivables",
+  "captured_at": "2026-10-09T16:05:34Z",
+  "bench_run_at": "2026-10-08T00:19:01Z",
+  "narration": {
+    "text": "A freelancer's receivables, collected. This is a chore for a solo product designer in Brooklyn, trading as a one-person LLC, with seven clients: three force a supplier portal (Coupa, Ariba, Tipalti), the rest pay by email invoice. The invoice leaves QuickBooks, and then it disappears. Athena works it across 6 portals: QuickBooks, Chase Business, Coupa Supplier Portal, SAP Business Network, Tipalti supplier hub and Gmail. On the bench, she found 4 of 5 eligible items, worth 21,100 dollars of the 21,550 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: Acme's Ariba shows payment scheduled on Net 120; the contract says 30 days and governs. Orbit kept 500 dollars, and the contract's late-delivery credit lets it. She took 4 minutes. By hand, the same chore takes 4 hours, so she was about 69 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 30 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 68.207,
+    "sha256": "cfb9cbb125d9b011eaf5529ec88400e94b64c7e28491e0a7c23a594f60ff3105"
+  },
+  "video": {
+    "path": "evidence/freelancer-receivables/evidence.mp4",
+    "duration_s": 68.24,
+    "bytes": 3136942,
+    "sha256": "b44ea30602522655553660d613d9989b6f0a01b742b4bdeec809b5b39b789671"
+  },
+  "thumbnail": {
+    "path": "playbooks/freelancer-receivables/thumb.jpg",
+    "bytes": 99931,
+    "sha256": "4dd9b3777b16a5fb0a962cbb263c475ff1a4f1dcb7b552c83f52b1d92d9fd8d5"
+  }
+}

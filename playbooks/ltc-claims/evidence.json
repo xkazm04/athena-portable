@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "ltc-claims",
+  "captured_at": "2026-10-09T16:11:21Z",
+  "bench_run_at": "2026-10-08T00:04:41Z",
+  "narration": {
+    "text": "A parent's long-term-care claims, caught up. This is a chore for an adult daughter in Chicago with power of attorney for her 82-year-old mother at home in Pittsburgh, who has a tax-qualified long-term-care policy bought in 2011. The policy pays real money for in-home care. Athena works it across 6 portals: Harbor Mutual policyholder portal, BrightPath family portal, Email, MyChart, Medicare.gov and Mom's bank. On the bench, she found 10 of 10 eligible items, worth 26,410 dollars and 40 cents of the 26,410 dollars and 40 cents there was to find. She made no false claim. The world held 11 traps, and she walked past 11. Among them: February's invoice, inside the elimination period. A revised April invoice repeating dates already paid. She took 5 minutes. By hand, the same chore takes 6 hours, so she was about 75 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 40 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 66.526,
+    "sha256": "fa0358e0539ce8f6bde2733ad33accc3fb701409cc39d2ea5fbb59a40e1d261f"
+  },
+  "video": {
+    "path": "evidence/ltc-claims/evidence.mp4",
+    "duration_s": 66.56,
+    "bytes": 3932844,
+    "sha256": "473ea1ac4ff1bda36c642f56764d113e2d7919b16312d2049690a795d6f931fd"
+  },
+  "thumbnail": {
+    "path": "playbooks/ltc-claims/thumb.jpg",
+    "bytes": 76653,
+    "sha256": "5c6ac7f8f4e65ae038b2dd06511ec51581e01082ac94f723190145f56b0183bd"
+  }
+}

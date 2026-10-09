@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "lien-desk",
+  "captured_at": "2026-10-09T16:08:43Z",
+  "bench_run_at": "2026-10-07T23:43:59Z",
+  "narration": {
+    "text": "The subcontractor's lien desk. This is a chore for a 6-million-dollar mechanical subcontractor with a dozen jobs in California and Texas and one office manager. Each general contractor picks its own portal: Procore, Oracle Textura, GCPay, or email. Athena works it across 4 portals: Office, Procore, Oracle Textura and GCPay. On the bench, she found 10 of 10 eligible items, worth 416,700 dollars of the 416,700 dollars there was to find. All 10 were filed at the exact amount the rules allow. She made no false claim. The world held 12 traps, and she walked past 12. Among them: A job contracted directly with the owner needs no California preliminary notice. A preliminary notice already served on the 2nd of last month: serving it again is a duplicate. She took 4 minutes. By hand, the same chore takes 25 hours, so she was about 395 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 35 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 70.063,
+    "sha256": "1a46f770c4724920687593fd5e37a931c4609693ed5ae6a2286af62bbf78d8eb"
+  },
+  "video": {
+    "path": "evidence/lien-desk/evidence.mp4",
+    "duration_s": 70.08,
+    "bytes": 3398153,
+    "sha256": "546efe239b78c0d189443868169d1b0ab64cfc878bdca4b697ee9b751a234bb8"
+  },
+  "thumbnail": {
+    "path": "playbooks/lien-desk/thumb.jpg",
+    "bytes": 74473,
+    "sha256": "8930cea76ff5c08752f3e68de0674bbd9c0fa896e157fe5cad587eb81ddd27ba"
+  }
+}

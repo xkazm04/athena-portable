@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "carrier-accessorials",
+  "captured_at": "2026-10-09T15:51:56Z",
+  "bench_run_at": "2026-10-07T23:40:31Z",
+  "narration": {
+    "text": "Detention, lumper and TONU, collected. This is a chore for a three-truck owner-operator carrier hauling for C.H. Robinson, TQL, Uber Freight and a small email-only broker, factored through RTS. Drivers sit at docks on four stops in ten. Athena works it across 6 portals: Motive, Dispatch inbox, C.H. Robinson Navisphere Carrier, TQL Carrier Dashboard, Uber Freight and RTS Pro. On the bench, she found 9 of 9 eligible items, worth 1,580 dollars of the 1,580 dollars there was to find. She made no false claim. The world held 13 traps, and she walked past 13. Among them: ELD times typed into a CHR request, where the signed BOL's times are the ones checked. A detention request over the rate con's cap. She took 4 minutes. By hand, the same chore takes about 2 hours, so she was about 33 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 30 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 65.735,
+    "sha256": "89306aef9733abc6aab9dbec3141546ed5f7f13e34b84c9ee474750e13c86b55"
+  },
+  "video": {
+    "path": "evidence/carrier-accessorials/evidence.mp4",
+    "duration_s": 65.735,
+    "bytes": 3619691,
+    "sha256": "0ccc1e114e5e025353a1e469579d68c8366fac1f92dd1bd9a8d35913f48dfad0"
+  },
+  "thumbnail": {
+    "path": "playbooks/carrier-accessorials/thumb.jpg",
+    "bytes": 98615,
+    "sha256": "288bae07cf325f1ce2cdcad8c9fee3e96dc2002b0898d6a050b5998cf8afb1f1"
+  }
+}
