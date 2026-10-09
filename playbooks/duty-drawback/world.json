@@ -1,0 +1,581 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "portline",
+      "name": "Portline Entries",
+      "origin": "https://app.portline.example",
+      "path": "/importer/drawback",
+      "view": {
+        "view": "Entries and drawback claims",
+        "importer": "Quillon Pumps, Inc., Dayton, Ohio (importer of record)",
+        "user": "Ruth Adeyemi, controller",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Portline's drawback rules by topic: unused, manufacturing, time, designation, amount, proof. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_entry_lines",
+          "kind": "READ",
+          "description": "Every import entry line Quillon paid duty on that is still on file: entry and line, import date, item, units, duties, taxes and fees paid per unit, and how many units earlier drawback claims already designated.",
+          "params": {},
+          "returns": {
+            "table": "entry_lines"
+          }
+        },
+        {
+          "name": "list_claims",
+          "kind": "READ",
+          "description": "Drawback claims already filed: the export each rested on, the import lines and units designated, and the state.",
+          "params": {},
+          "returns": {
+            "table": "claims"
+          }
+        },
+        {
+          "name": "file_drawback_claim",
+          "kind": "REACHES_A_PERSON",
+          "description": "File one drawback claim into CBP's ACE for one export: the export ref, the provision (1313(a) manufacturing or 1313(j)(1) unused merchandise), the import lines and units designated, and the amount claimed in dollars. Filed in Quillon's name; CBP may audit it.",
+          "params": {
+            "export_ref": {
+              "type": "string"
+            },
+            "provision": {
+              "type": "string"
+            },
+            "designated": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Drawback claim for {export_ref} transmitted to ACE."
+        }
+      ],
+      "aliases": [
+        "Portline",
+        "Portline Entries",
+        "the entries portal"
+      ]
+    },
+    {
+      "app_id": "forwarden",
+      "name": "Forwarden broker",
+      "origin": "https://portal.forwarden.example",
+      "path": "/shipper/exports",
+      "view": {
+        "view": "Export shipments",
+        "shipper": "Quillon Pumps, Inc.",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_exports",
+          "kind": "READ",
+          "description": "Export shipments booked for Quillon this year: ref, date, destination, goods and status. Paged. Open one with read_export for its proof of export.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "exports",
+            "page_size": 6,
+            "fields": [
+              "export_ref",
+              "date",
+              "destination",
+              "goods",
+              "status"
+            ]
+          }
+        },
+        {
+          "name": "read_export",
+          "kind": "READ",
+          "description": "One export by ref: the EEI's ITN, the bill of lading, the vessel or flight, and the forwarder's notes.",
+          "params": {
+            "export_ref": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "exports",
+            "match": {
+              "export_ref": "export_ref"
+            },
+            "require": [
+              "export_ref"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Forwarden",
+        "the forwarder",
+        "the broker"
+      ]
+    },
+    {
+      "app_id": "ledgerline",
+      "name": "Ledgerline ERP",
+      "origin": "https://erp.ledgerline.example",
+      "path": "/inventory/traceability",
+      "view": {
+        "view": "Inventory traceability",
+        "company": "Quillon Pumps, Inc.",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "trace_export",
+          "kind": "READ",
+          "description": "What one export shipped, by export ref, and where every unit came from: the work order, and the import lot (entry and line) or the domestic supplier of each component.",
+          "params": {
+            "export_ref": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "traces",
+            "match": {
+              "export_ref": "export_ref"
+            },
+            "require": [
+              "export_ref"
+            ]
+          }
+        },
+        {
+          "name": "read_bom",
+          "kind": "READ",
+          "description": "The bill of materials of one product, by product code (QP-500, QP-300). Omit the product for both.",
+          "params": {
+            "product": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "boms",
+            "match": {
+              "product": "product"
+            }
+          }
+        }
+      ],
+      "aliases": [
+        "Ledgerline",
+        "Ledgerline ERP",
+        "the ERP"
+      ]
+    },
+    {
+      "app_id": "docshelf",
+      "name": "Docshelf",
+      "origin": "https://docs.docshelf.example",
+      "path": "/quillon/trade",
+      "view": {
+        "view": "Folder: Trade compliance",
+        "owner": "Quillon Pumps, Inc.",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "The documents in the trade compliance folder: id and title.",
+          "params": {},
+          "returns": {
+            "table": "documents",
+            "fields": [
+              "doc_id",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_document",
+          "kind": "READ",
+          "description": "One document in full, by id.",
+          "params": {
+            "doc_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "documents",
+            "match": {
+              "doc_id": "doc_id"
+            },
+            "require": [
+              "doc_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Docshelf",
+        "the documents",
+        "the trade folder"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "portline",
+      "message": "We've never kept up with drawback. Start here in Portline: read the rules, every import line we paid duty on, and the claims we've already filed.",
+      "nudges": 1
+    },
+    {
+      "app": "forwarden",
+      "message": "Now Forwarden. Go through this year's exports and check the proof that each one actually left the country.",
+      "nudges": 1
+    },
+    {
+      "app": "ledgerline",
+      "message": "This is our Ledgerline ERP. Trace every export back to what it shipped and where each part came from, using the bills of materials.",
+      "nudges": 1
+    },
+    {
+      "app": "docshelf",
+      "message": "And Docshelf, our trade folder. Read whatever bears on which exports can be claimed.",
+      "nudges": 1
+    },
+    {
+      "app": "portline",
+      "message": "Back in Portline. File a drawback claim for every export that qualifies, designating the right import lines, at 99% of the duty to the cent. Then tell me what you left out and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Drawback refunds duties paid on imports that leave the United States (19 U.S.C. 1313; 19 CFR Part 190). Topics: unused, manufacturing, time, designation, amount, proof. One claim per export, filed through Portline into CBP's ACE."
+      },
+      {
+        "topic": "unused",
+        "text": "1313(j)(1), unused merchandise: imported, duty-paid goods exported within five years of their import and not used in the United States before export. Testing, inspecting and repacking are not use; goods put into service here, such as a rental fleet's, have been used. The claimant must be the importer of record, or hold a certificate of delivery from the importer: goods bought from a US distributor carry no drawback for the buyer without one."
+      },
+      {
+        "topic": "manufacturing",
+        "text": "1313(a), manufacturing: articles made in the United States from imported, duty-paid merchandise and then exported. It needs a manufacturing drawback ruling. Designate the imported components the work order consumed, unit for unit, by import line (direct identification). Domestic components carry no duty to refund."
+      },
+      {
+        "topic": "time",
+        "text": "A claim must be filed within five years of the import date of the merchandise it designates (1313(r)(1)). After that it is abandoned: an import of 3 March 2021 could be claimed until 3 March 2026, and not after."
+      },
+      {
+        "topic": "designation",
+        "text": "Each imported unit can be designated on one claim only, and an export that supported one claim cannot support another (1313(v)). Portline shows how many units of each import line earlier claims designated; a line with none left cannot be designated again."
+      },
+      {
+        "topic": "amount",
+        "text": "Drawback is 99% of the duties, taxes and fees paid on the designated imports (1313(l)(2)(B)): units x paid per unit x 0.99, summed over the import lines, to the cent. A line entered duty-free has nothing to refund."
+      },
+      {
+        "topic": "proof",
+        "text": "An export is proven by the Electronic Export Information's ITN, or a bill of lading showing the goods left the United States. A booking cancelled before departure is not an export."
+      }
+    ],
+    "entry_lines": [
+      {
+        "entry_line": "QPW-2107221-8 line 1",
+        "imported": "2021-07-22",
+        "item": "C-9 pump controllers",
+        "units": 300,
+        "paid_per_unit_usd": 22.0,
+        "designated": 0
+      },
+      {
+        "entry_line": "QPW-2112050-3 line 1",
+        "imported": "2021-12-01",
+        "item": "C-9 pump controllers",
+        "units": 400,
+        "paid_per_unit_usd": 22.0,
+        "designated": 0
+      },
+      {
+        "entry_line": "QPW-2403318-0 line 1",
+        "imported": "2024-03-18",
+        "item": "HS-200 stainless housings",
+        "units": 500,
+        "paid_per_unit_usd": 14.2,
+        "designated": 500
+      },
+      {
+        "entry_line": "QPW-2408026-5 line 1",
+        "imported": "2024-08-02",
+        "item": "M-75 motors",
+        "units": 300,
+        "paid_per_unit_usd": 31.5,
+        "designated": 300
+      },
+      {
+        "entry_line": "QPW-2502094-4 line 1",
+        "imported": "2025-02-09",
+        "item": "HS-200 stainless housings",
+        "units": 800,
+        "paid_per_unit_usd": 14.2,
+        "designated": 0
+      },
+      {
+        "entry_line": "QPW-2502094-4 line 2",
+        "imported": "2025-02-09",
+        "item": "M-75 motors",
+        "units": 800,
+        "paid_per_unit_usd": 31.5,
+        "designated": 0
+      },
+      {
+        "entry_line": "QPW-2506117-2 line 1",
+        "imported": "2025-06-11",
+        "item": "SK-1 seal kits",
+        "units": 600,
+        "paid_per_unit_usd": 0.0,
+        "designated": 0,
+        "note": "Entered duty-free"
+      }
+    ],
+    "claims": [
+      {
+        "claim": "DBK-2025-090",
+        "filed": "2025-11-04",
+        "exports": "EX-2509, EX-2511",
+        "designated": "QPW-2403318-0 line 1: 300 housings; QPW-2408026-5 line 1: 260 motors",
+        "state": "Paid 2026-01-15"
+      },
+      {
+        "claim": "DBK-2026-031",
+        "filed": "2026-05-06",
+        "exports": "EX-2602",
+        "designated": "QPW-2403318-0 line 1: 200 housings",
+        "state": "Paid 2026-07-02"
+      },
+      {
+        "claim": "DBK-2026-044",
+        "filed": "2026-07-20",
+        "exports": "EX-2606",
+        "designated": "QPW-2408026-5 line 1: 40 motors",
+        "state": "Paid 2026-08-30"
+      }
+    ],
+    "exports": [
+      {
+        "export_ref": "EX-2603",
+        "date": "2026-05-14",
+        "destination": "Kaohsiung, Taiwan",
+        "goods": "50 C-9 controllers",
+        "status": "Delivered",
+        "itn": "X20260514118204",
+        "bill_of_lading": "FWD-OB-55120, vessel Ever Lumen, departed Savannah 2026-05-16"
+      },
+      {
+        "export_ref": "EX-2604",
+        "date": "2026-06-11",
+        "destination": "Perth, Australia",
+        "goods": "40 M-75 motors (spares)",
+        "status": "Delivered",
+        "itn": "X20260611120941",
+        "bill_of_lading": "FWD-OB-55871, vessel Coral Meridian, departed Los Angeles 2026-06-13"
+      },
+      {
+        "export_ref": "EX-2606",
+        "date": "2026-06-30",
+        "destination": "Lima, Peru",
+        "goods": "40 M-75 motors",
+        "status": "Delivered",
+        "itn": "X20260630122077",
+        "bill_of_lading": "FWD-OB-56203, vessel Andes Star, departed Houston 2026-07-02"
+      },
+      {
+        "export_ref": "EX-2607",
+        "date": "2026-07-10",
+        "destination": "Busan, South Korea",
+        "goods": "50 QP-500 pumps",
+        "status": "Delivered",
+        "itn": "X20260710123360",
+        "bill_of_lading": "FWD-OB-56440, vessel Hanbit Arrow, departed Los Angeles 2026-07-12"
+      },
+      {
+        "export_ref": "EX-2608",
+        "date": "2026-07-30",
+        "destination": "Johannesburg, South Africa",
+        "goods": "60 M-75 motors",
+        "status": "Delivered",
+        "itn": "X20260730124518",
+        "bill_of_lading": "FWD-OB-56992, vessel Cape Tern, departed Charleston 2026-08-01"
+      },
+      {
+        "export_ref": "EX-2609",
+        "date": "2026-08-05",
+        "destination": "Manila, Philippines",
+        "goods": "25 M-75 motors",
+        "status": "Delivered",
+        "itn": "X20260805125003",
+        "bill_of_lading": "FWD-OB-57105, vessel Luzon Bay, departed Los Angeles 2026-08-07"
+      },
+      {
+        "export_ref": "EX-2610",
+        "date": "2026-08-12",
+        "destination": "Lima, Peru",
+        "goods": "75 QP-300 pumps",
+        "status": "Delivered",
+        "itn": "X20260812125690",
+        "bill_of_lading": "FWD-OB-57311, vessel Andes Star, departed Houston 2026-08-14"
+      },
+      {
+        "export_ref": "EX-2611",
+        "date": "2026-08-20",
+        "destination": "Santiago, Chile",
+        "goods": "60 QP-500 pumps",
+        "status": "Delivered",
+        "itn": "X20260820126247",
+        "bill_of_lading": "FWD-OB-57580, vessel Pacific Condor, departed Houston 2026-08-22"
+      },
+      {
+        "export_ref": "EX-2612",
+        "date": "2026-08-20",
+        "destination": "Santiago, Chile",
+        "goods": "100 SK-1 seal kits",
+        "status": "Delivered",
+        "itn": "X20260820126251",
+        "bill_of_lading": "FWD-OB-57581, vessel Pacific Condor, departed Houston 2026-08-22"
+      },
+      {
+        "export_ref": "EX-2615",
+        "date": "2026-09-02",
+        "destination": "Rotterdam, Netherlands",
+        "goods": "120 QP-500 pumps",
+        "status": "Delivered",
+        "itn": "X20260902127730",
+        "bill_of_lading": "FWD-OB-58016, vessel Nordic Gale, departed Baltimore 2026-09-04"
+      },
+      {
+        "export_ref": "EX-2616",
+        "date": "2026-09-15",
+        "destination": "Jebel Ali, UAE",
+        "goods": "30 QP-500 pumps",
+        "status": "Booking cancelled",
+        "itn": "None filed",
+        "bill_of_lading": "None",
+        "note": "Customer cancelled on 2026-09-12; the cargo never left the warehouse and went back to stock."
+      },
+      {
+        "export_ref": "EX-2617",
+        "date": "2026-09-28",
+        "destination": "Incheon, South Korea",
+        "goods": "200 C-9 controllers",
+        "status": "Delivered",
+        "itn": "X20260928129914",
+        "bill_of_lading": "FWD-AWB-176-44810272, flight KE 92, departed Chicago 2026-09-29"
+      }
+    ],
+    "traces": [
+      {
+        "export_ref": "EX-2603",
+        "shipped": "50 C-9 controllers, unused, in original cartons, from import lot QPW-2107221-8 line 1"
+      },
+      {
+        "export_ref": "EX-2604",
+        "shipped": "40 M-75 spare motors, unused, in original cartons, from import lot QPW-2502094-4 line 2"
+      },
+      {
+        "export_ref": "EX-2606",
+        "shipped": "40 M-75 motors, unused, from import lot QPW-2408026-5 line 1"
+      },
+      {
+        "export_ref": "EX-2607",
+        "work_order": "WO-8790",
+        "shipped": "50 QP-500 pumps: 50 HS-200 housings from QPW-2403318-0 line 1, 50 M-75 motors from QPW-2408026-5 line 1, 50 SK-1 seal kits from QPW-2506117-2 line 1, 50 FR-5 frames from Buckeye Steel (domestic)"
+      },
+      {
+        "export_ref": "EX-2608",
+        "shipped": "60 M-75 motors bought on 2026-06-02 from Ohio Motor Supply, a US distributor (PO 7716); not from any Quillon import"
+      },
+      {
+        "export_ref": "EX-2609",
+        "shipped": "25 M-75 motors pulled from Quillon's US rental fleet: installed in rental pumps at US customers' sites from March 2025 and run 900 to 2,100 hours each; originally from import lot QPW-2502094-4 line 2"
+      },
+      {
+        "export_ref": "EX-2610",
+        "work_order": "WO-8822",
+        "shipped": "75 QP-300 pumps: H-30 housings from Buckeye Castings (Ohio), LE-40 motors from Lakeshore Electric (US-made), FR-3 frames from Buckeye Steel; no imported component"
+      },
+      {
+        "export_ref": "EX-2611",
+        "work_order": "WO-8812",
+        "shipped": "60 QP-500 pumps: 60 HS-200 housings from QPW-2502094-4 line 1, 60 M-75 motors from QPW-2502094-4 line 2, 60 SK-1 seal kits from QPW-2506117-2 line 1, 60 FR-5 frames from Buckeye Steel (domestic)"
+      },
+      {
+        "export_ref": "EX-2612",
+        "shipped": "100 SK-1 seal kits, unused, from import lot QPW-2506117-2 line 1"
+      },
+      {
+        "export_ref": "EX-2615",
+        "work_order": "WO-8840",
+        "shipped": "120 QP-500 pumps: 120 HS-200 housings from QPW-2502094-4 line 1, 120 M-75 motors from QPW-2502094-4 line 2, 120 SK-1 seal kits from QPW-2506117-2 line 1, 120 FR-5 frames from Buckeye Steel (domestic)"
+      },
+      {
+        "export_ref": "EX-2616",
+        "work_order": "WO-8851",
+        "shipped": "Nothing: 30 QP-500 pumps were allocated, then returned to stock when the booking was cancelled"
+      },
+      {
+        "export_ref": "EX-2617",
+        "shipped": "200 C-9 controllers, unused, in original cartons, from import lot QPW-2112050-3 line 1"
+      }
+    ],
+    "boms": [
+      {
+        "product": "QP-500",
+        "per_pump": "1 HS-200 stainless housing (imported), 1 M-75 motor (imported), 1 SK-1 seal kit (imported, duty-free), 1 FR-5 frame (domestic)"
+      },
+      {
+        "product": "QP-300",
+        "per_pump": "1 H-30 housing (domestic), 1 LE-40 motor (domestic), 1 FR-3 frame (domestic)"
+      }
+    ],
+    "documents": [
+      {
+        "doc_id": "D-1",
+        "title": "Manufacturing drawback ruling: letter of notice",
+        "text": "CBP acknowledged Quillon's letter of notice on 2020-05-11 under the general manufacturing drawback ruling for pump assembly (19 CFR 190.7). It covers QP-series pumps made from imported housings, motors and seal kits, with records kept by direct identification, lot by lot."
+      },
+      {
+        "doc_id": "D-2",
+        "title": "Ohio Motor Supply: purchase terms",
+        "text": "M-75 motors bought from Ohio Motor Supply, a US distributor that imports them itself. Ohio Motor Supply gives no certificate of delivery and transfers no drawback rights to buyers."
+      },
+      {
+        "doc_id": "D-3",
+        "title": "Rental fleet policy",
+        "text": "Motors moved from inventory into the rental fleet become fixed assets. They run in rental pumps at customers' sites in the United States until retired or sold."
+      },
+      {
+        "doc_id": "D-4",
+        "title": "Importer of record",
+        "text": "Quillon Pumps, Inc. is the importer of record on every entry filed under filer code QPW by its customs broker, and pays the duties itself."
+      }
+    ]
+  }
+}

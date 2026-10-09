@@ -1,0 +1,317 @@
+{
+  "playbook": "duty-drawback",
+  "run_at": "2026-10-09T18:44:23Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 231.3,
+  "turns": 13,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 40,
+  "cost_usd": 2.5576,
+  "your_time_s": 120,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 3.9
+  },
+  "score": {
+    "eligible": 4,
+    "found": 4,
+    "exact": 4,
+    "value_total_usd": 13747.14,
+    "value_found_usd": 13747.14,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "file_drawback_claim",
+        "key": "EX-2603",
+        "why": "Its controllers were imported on 2021-07-22: the five years to file ended on 2026-07-22",
+        "filed": false
+      },
+      {
+        "action": "file_drawback_claim",
+        "key": "EX-2606",
+        "why": "Already the basis of claim DBK-2026-044, paid 2026-08-30: an export supports one claim only",
+        "filed": false
+      },
+      {
+        "action": "file_drawback_claim",
+        "key": "EX-2607",
+        "why": "Its housings and motors came from QPW-2403318-0 line 1 and QPW-2408026-5 line 1, both fully designated on earlier claims; its seal kits were duty-free",
+        "filed": false
+      },
+      {
+        "action": "file_drawback_claim",
+        "key": "EX-2608",
+        "why": "Motors bought from a US distributor, with no certificate of delivery: Quillon was not their importer",
+        "filed": false
+      },
+      {
+        "action": "file_drawback_claim",
+        "key": "EX-2609",
+        "why": "Motors that ran 900 to 2,100 hours in the US rental fleet: used in the United States, so not unused merchandise",
+        "filed": false
+      },
+      {
+        "action": "file_drawback_claim",
+        "key": "EX-2610",
+        "why": "QP-300 pumps made only of domestic components: no duty was paid to refund",
+        "filed": false
+      },
+      {
+        "action": "file_drawback_claim",
+        "key": "EX-2612",
+        "why": "Seal kits entered duty-free: nothing was paid, so nothing is refunded",
+        "filed": false
+      },
+      {
+        "action": "file_drawback_claim",
+        "key": "EX-2616",
+        "why": "The booking was cancelled and the cargo never left: not an export",
+        "filed": false
+      }
+    ],
+    "filed_usd": 13747.14,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "file_drawback_claim",
+      "key": "EX-2604",
+      "outcome": "correct",
+      "value_usd": 1247.4,
+      "exact": true,
+      "why": "40 spare M-75 motors exported unused to Perth on 2026-06-11, ITN and bill of lading on file, from QPW-2502094-4 line 2 (imported 2025-02-09, none designated): unused merchandise, 40 x $31.50 x 0.99 = $1,247.40"
+    },
+    {
+      "action": "file_drawback_claim",
+      "key": "EX-2611",
+      "outcome": "correct",
+      "value_usd": 2714.58,
+      "exact": true,
+      "why": "60 QP-500 pumps made under the manufacturing ruling and exported to Santiago: 60 housings from QPW-2502094-4 line 1 and 60 motors from line 2; the seal kits were duty-free and the frames domestic: 60 x ($14.20 + $31.50) x 0.99 = $2,714.58"
+    },
+    {
+      "action": "file_drawback_claim",
+      "key": "EX-2615",
+      "outcome": "correct",
+      "value_usd": 5429.16,
+      "exact": true,
+      "why": "120 QP-500 pumps exported to Rotterdam: 120 housings and 120 motors from QPW-2502094-4 lines 1 and 2: 120 x $45.70 x 0.99 = $5,429.16"
+    },
+    {
+      "action": "file_drawback_claim",
+      "key": "EX-2617",
+      "outcome": "correct",
+      "value_usd": 4356.0,
+      "exact": true,
+      "why": "200 C-9 controllers exported unused to Incheon on 2026-09-28 from QPW-2112050-3 line 1, imported 2021-12-01, so claimable until 2026-12-01: 200 x $22.00 x 0.99 = $4,356.00"
+    }
+  ],
+  "missed": [],
+  "closing_words": "The recalled history is cut off, and I need the exact traces, proofs and documents before I compute any amount. I'm recalling them narrowly.\n\nOne claim is ready to file: EX-2604. I'm filing it now. The traces for EX-2611, EX-2615 and EX-2617 weren't in what came back, so I'm searching memory for them.\n\nEX-2604 shipped 40 unused M-75 spare motors in original cartons from QPW-2502094-4 line 2. Quillon is the importer of record (D-4), the export is proven by ITN X20260611120941, and the import is from 2025, so it's inside the five-year limit. The amount is 40 × $31.50 × 0.99 = $1,247.40.\n\nThree more claims are ready to file, and I'm filing them now.\n\n- **EX-2611:** 60 QP-500 pumps from work order WO-8812. This is 1313(a) under the Docshelf D-1 ruling. It designates 60 housings from QPW-2502094-4 line 1 and 60 motors from line 2. The amount is 60 × ($14.20 + $31.50) × 0.99 = $2,714.58. The s",
+  "trace": [
+    {
+      "portal": "Portline Entries",
+      "user": "We've never kept up with drawback. Start here in Portline: read the rules, every import line we paid duty on, and the claims we've already filed.",
+      "continued": false,
+      "said": "Reading all three Portline sources now.",
+      "said_chars": 39,
+      "reads": [
+        "read_rules",
+        "list_entry_lines",
+        "list_claims"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Portline Entries",
+      "user": "",
+      "continued": true,
+      "said": "Portline has seven import lines and three paid claims. The rules index is only a table of contents, so I'm reading each rule topic next.",
+      "said_chars": 136,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Portline Entries",
+      "user": "",
+      "continued": true,
+      "said": "Portline is done: I've read the rules, all seven import lines and the three paid claims. Next I'm reading the exports in Forwarden, the Ledgerline bills of materials and the Docshelf folder. The rules mean the Portline data alone can't tell me which exports qualify.\n\nMy plan, so you can correct it before I file anything:\n1. Forwarden: list every export and open each one for its proof of export (ITN or bill of lading). A cancelled booking is not an export.\n2.",
+      "said_chars": 3155,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Forwarden broker",
+      "user": "Now Forwarden. Go through this year's exports and check the proof that each one actually left the country.",
+      "continued": false,
+      "said": "Reading the Forwarden export list now. I'll open each export for its proof once the list is back.\n\n\nNote: that op name is AUTO, not GATED, so it should run directly.",
+      "said_chars": 165,
+      "reads": [
+        "list_exports"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Forwarden broker",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of 2 is back (6 of 12 exports). I'm reading page 2 and opening each export on page 1 for its proof.\n\n\nCorrection: my previous turn used the wrong format. These ops are AUTO, so they should run when written as the ops below, not as `propose_action`.\n\nThe page 2 listing and the six proof reads were sent, but their answers haven't come back yet. I'm not calling them again. I have no proof of export for any shipment so far, so I'm not drawing conclusions yet.\n\nWhen the answers arrive I'll do three things:\n1.",
+      "said_chars": 879,
+      "reads": [
+        "list_exports",
+        "read_export",
+        "read_export",
+        "read_export",
+        "read_export",
+        "read_export",
+        "read_export"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Forwarden broker",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 is proven. All six exports (EX-2603, 2604, 2606, 2607, 2608, 2609) have an ITN and a bill of lading with a departure date. Page 2 listed six more exports, so I'm opening those for their proof now.",
+      "said_chars": 203,
+      "reads": [
+        "read_export",
+        "read_export",
+        "read_export",
+        "read_export",
+        "read_export",
+        "read_export"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Forwarden broker",
+      "user": "",
+      "continued": true,
+      "said": "Eleven of this year's 12 exports have proof they left the country. One doesn't: EX-2616 was cancelled, so it's not an export and gets no claim. I read the proof for all 12 (showing 12 of 12).",
+      "said_chars": 2419,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline ERP",
+      "user": "This is our Ledgerline ERP. Trace every export back to what it shipped and where each part came from, using the bills of materials.",
+      "continued": false,
+      "said": "I'm reading both bills of materials and tracing the 11 exports that have proof of export. EX-2616 was cancelled, so I'm skipping it.\n\n\nThe results will come back as system episodes. I'll write up the trace when they arrive. I'm not filing any claims yet.",
+      "said_chars": 254,
+      "reads": [
+        "read_bom",
+        "trace_export",
+        "trace_export",
+        "trace_export",
+        "trace_export",
+        "trace_export",
+        "trace_export",
+        "trace_export",
+        "trace_export",
+        "trace_export",
+        "trace_export",
+        "trace_export"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline ERP",
+      "user": "",
+      "continued": true,
+      "said": "I've traced all 11 exports with proof. Each traces to a source, but nothing is ready to file yet. I still need the manufacturing ruling and the proof of who imported the goods, and both are in Docshelf.\n\n| Export | Shipped | Source | Route / what to check |\n|---|---|---|---|\n| EX-2603 | 50 C-9 controllers, unused | QPW-2107221-8 line 1 | 1313(j)(1) unused. Check the five-year limit against the import date. |\n| EX-2604 | 40 M-75 motors, unused | QPW-2502094-4 line 2 | 1313(j)(1) unused.",
+      "said_chars": 2895,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "And Docshelf, our trade folder. Read whatever bears on which exports can be claimed.",
+      "continued": false,
+      "said": "I'm listing the Docshelf folder first, then I'll open the documents that bear on the claims.",
+      "said_chars": 92,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Four documents are in the folder. I'm reading all four.",
+      "said_chars": 55,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "The Docshelf documents settle the manufacturing ruling, the importer of record and the Ohio Motor Supply question. Before I work out amounts, I'm recalling the exact trace and entry-line figures from earlier tabs.\n\nThe recalled data is cut off. It's missing the paid-per-unit figures for the 2024 lines, and the traces for EX-2608 and EX-2609. I'm re-reading those directly before I compute any amount.\n\nThose tools belong to other tabs, so I'm recalling what I read there with narrower queries.",
+      "said_chars": 2815,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Portline Entries",
+      "user": "Back in Portline. File a drawback claim for every export that qualifies, designating the right import lines, at 99% of the duty to the cent. Then tell me what you left out and why.",
+      "continued": false,
+      "said": "The recalled history is cut off, and I need the exact traces, proofs and documents before I compute any amount. I'm recalling them narrowly.\n\nOne claim is ready to file: EX-2604. I'm filing it now. The traces for EX-2611, EX-2615 and EX-2617 weren't in what came back, so I'm searching memory for them.\n\nEX-2604 shipped 40 unused M-75 spare motors in original cartons from QPW-2502094-4 line 2.",
+      "said_chars": 2839,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_drawback_claim",
+          "key": "EX-2604",
+          "outcome": "correct",
+          "value_usd": 1247.4
+        },
+        {
+          "action": "file_drawback_claim",
+          "key": "EX-2611",
+          "outcome": "correct",
+          "value_usd": 2714.58
+        },
+        {
+          "action": "file_drawback_claim",
+          "key": "EX-2615",
+          "outcome": "correct",
+          "value_usd": 5429.16
+        },
+        {
+          "action": "file_drawback_claim",
+          "key": "EX-2617",
+          "outcome": "correct",
+          "value_usd": 4356.0
+        }
+      ]
+    }
+  ]
+}

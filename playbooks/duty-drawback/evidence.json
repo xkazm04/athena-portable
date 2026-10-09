@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "duty-drawback",
+  "captured_at": "2026-10-09T18:47:11Z",
+  "bench_run_at": "2026-10-09T18:44:23Z",
+  "narration": {
+    "text": "Duties refunded on what was exported: drawback, matched export by export. This is a chore for the controller of a pump maker of about 140 people in Dayton, Ohio, that imports motors, housings and controllers and exports a fifth of what it makes. Athena works it across 4 portals: Portline Entries, Forwarden broker, Ledgerline ERP and Docshelf. On the bench, she found 4 of 4 eligible items, worth 13,747 dollars and 14 cents of the 13,747 dollars and 14 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. Among them: Controllers imported in July 2021: the five years to file have run out. An export already paid on an earlier claim. She took 4 minutes. By hand, the same chore takes 5 hours, so she was about 77 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 64.244,
+    "sha256": "e781347ea1a390415e34ffddd56d3c36881d391e61bb8cdd49260bd7e0fda0cc"
+  },
+  "video": {
+    "path": "evidence/duty-drawback/evidence.mp4",
+    "duration_s": 64.28,
+    "bytes": 2968444,
+    "sha256": "82e69fd620be386f18ccc4c2d9260e985bb4507fd7af1352acadec2d80d0803c"
+  },
+  "thumbnail": {
+    "path": "playbooks/duty-drawback/thumb.jpg",
+    "bytes": 93802,
+    "sha256": "4b5677315a124830e13e31c080abf526bbae5eb34aedd84bef24728dee5c84f5"
+  }
+}

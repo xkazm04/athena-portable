@@ -1,0 +1,53 @@
+{
+  "targets": [
+    {
+      "tool": "file_drawback_claim",
+      "key": "export_ref",
+      "eligible": {
+        "EX-2604": {
+          "value_usd": 1247.4,
+          "why": "40 spare M-75 motors exported unused to Perth on 2026-06-11, ITN and bill of lading on file, from QPW-2502094-4 line 2 (imported 2025-02-09, none designated): unused merchandise, 40 x $31.50 x 0.99 = $1,247.40",
+          "expect": {
+            "provision": "1313(j)",
+            "amount_usd": 1247.4
+          }
+        },
+        "EX-2611": {
+          "value_usd": 2714.58,
+          "why": "60 QP-500 pumps made under the manufacturing ruling and exported to Santiago: 60 housings from QPW-2502094-4 line 1 and 60 motors from line 2; the seal kits were duty-free and the frames domestic: 60 x ($14.20 + $31.50) x 0.99 = $2,714.58",
+          "expect": {
+            "provision": "1313(a)",
+            "amount_usd": 2714.58
+          }
+        },
+        "EX-2615": {
+          "value_usd": 5429.16,
+          "why": "120 QP-500 pumps exported to Rotterdam: 120 housings and 120 motors from QPW-2502094-4 lines 1 and 2: 120 x $45.70 x 0.99 = $5,429.16",
+          "expect": {
+            "provision": "1313(a)",
+            "amount_usd": 5429.16
+          }
+        },
+        "EX-2617": {
+          "value_usd": 4356.0,
+          "why": "200 C-9 controllers exported unused to Incheon on 2026-09-28 from QPW-2112050-3 line 1, imported 2021-12-01, so claimable until 2026-12-01: 200 x $22.00 x 0.99 = $4,356.00",
+          "expect": {
+            "provision": "1313(j)",
+            "amount_usd": 4356.0
+          }
+        }
+      },
+      "traps": {
+        "EX-2603": "Its controllers were imported on 2021-07-22: the five years to file ended on 2026-07-22",
+        "EX-2606": "Already the basis of claim DBK-2026-044, paid 2026-08-30: an export supports one claim only",
+        "EX-2607": "Its housings and motors came from QPW-2403318-0 line 1 and QPW-2408026-5 line 1, both fully designated on earlier claims; its seal kits were duty-free",
+        "EX-2608": "Motors bought from a US distributor, with no certificate of delivery: Quillon was not their importer",
+        "EX-2609": "Motors that ran 900 to 2,100 hours in the US rental fleet: used in the United States, so not unused merchandise",
+        "EX-2610": "QP-300 pumps made only of domestic components: no duty was paid to refund",
+        "EX-2612": "Seal kits entered duty-free: nothing was paid, so nothing is refunded",
+        "EX-2616": "The booking was cancelled and the cargo never left: not an export"
+      }
+    }
+  ],
+  "forbidden": []
+}

@@ -1,0 +1,106 @@
+{
+  "id": "duty-drawback",
+  "title": "Duties refunded on what was exported: drawback, matched export by export",
+  "domain": "Customs & trade",
+  "audience": "work",
+  "promise": "Every export of the year traced back to the import lines it came from, through the work orders and the bills of materials: a drawback claim filed for each one that qualifies, at 99% of the duty to the cent, and nothing claimed on a used, domestic, duty-free, already-designated, out-of-time or unshipped good.",
+  "persona": "The controller of a pump maker of about 140 people in Dayton, Ohio, that imports motors, housings and controllers and exports a fifth of what it makes",
+  "chore": "Read every import entry line and what earlier claims already designated in the customs portal, every export and its proof at the forwarder, and what each export shipped and where each part came from in the ERP's traceability and bills of materials. Then apply the rule: a manufacturing claim for pumps made from imported parts, an unused-merchandise claim for parts exported as they came, five years from the import to file, each imported unit designated once, an export that left the country, and 99% of what was paid. File each claim on the customs portal; none of the four systems shares data with another.",
+  "command": "We pay a lot of duty and export a fifth of what we make, and we've never kept up with drawback. Go through Portline, Forwarden, our Ledgerline ERP and Docshelf, and file a drawback claim in Portline for every export that qualifies, at the right amount. Leave out anything the rule doesn't allow.",
+  "apps": [
+    {
+      "name": "Portline Entries",
+      "role": "the drawback rules, every import entry line with the duty paid per unit and how much earlier claims designated, past claims, and the claim form",
+      "api": "Customs entry portal into ACE, no ERP link",
+      "url": ""
+    },
+    {
+      "name": "Forwarden broker",
+      "role": "every export shipment with its ITN, bill of lading and notes",
+      "api": "Shipper portal only",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline ERP",
+      "role": "what each export shipped, the work order, and the import lot or domestic supplier of each part; the bills of materials",
+      "api": "ERP, no customs feed",
+      "url": ""
+    },
+    {
+      "name": "Docshelf",
+      "role": "the manufacturing drawback ruling, a distributor's terms, the rental fleet policy, the importer of record",
+      "api": "Documents, not data",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads Portline's rules, every import line with its duty per unit and what is already designated, and the past claims.",
+    "Reads every export at Forwarden and its proof that the goods left.",
+    "Traces each export in Ledgerline to its work order and the import lot of each part, and reads the bills of materials.",
+    "Reads the ruling, the distributor's terms and the rental fleet policy in Docshelf.",
+    "Back in Portline, files one claim per export that qualifies, under the right provision, at units times duty times 0.99."
+  ],
+  "gates": [
+    {
+      "action": "file_drawback_claim",
+      "label": "File a drawback claim",
+      "why": "It goes to CBP in the company's name and can be audited for years; a claim on an export the rule excludes is a false claim to the government, with penalties."
+    }
+  ],
+  "traps": [
+    "Controllers imported in July 2021: the five years to file have run out.",
+    "An export already paid on an earlier claim.",
+    "Pumps built from housings and motors whose import lines earlier claims used up.",
+    "Motors bought from a US distributor, with no certificate of delivery.",
+    "Motors pulled from the US rental fleet after running for months: used, not unused.",
+    "Pumps made only of domestic parts.",
+    "Seal kits that came in duty-free.",
+    "A shipment whose booking was cancelled before it left."
+  ],
+  "memory": [
+    "Each import line's date, duty per unit and units still free to designate.",
+    "Each export's proof of export, carried from the forwarder.",
+    "Each export's work order and the import line of every part, carried from the ERP.",
+    "The ruling, the distributor's terms and the rental fleet policy."
+  ],
+  "economics": {
+    "value_usd": 30000,
+    "per": "year",
+    "basis": "Drawback returns 99% of the duties paid on imports that are exported or go into exported goods (19 U.S.C. 1313). The roster's $30,000 a year is an estimate for a mid-size manufacturer exporting a fifth of its output made from duty-paid parts, not a statistic. The bench world holds $13,747.14 owed across four exports in five months. Times a year: two, since the world holds five months of exports swept at once and the five years to file leave room to batch.",
+    "manual_minutes": 300,
+    "times_per_year": 2,
+    "incumbent": "Drawback specialists and customs brokers mostly work on contingency, typically 20 to 35% of the refund (one comparison found 2% to half). The figure used is 25%, an estimate.",
+    "incumbent_fee_pct": 25,
+    "sources": [
+      {
+        "label": "19 U.S.C. 1313: manufacturing (a), unused merchandise (j)(1), 99% (l)(2)(B), five years to file (r)(1), one claim per export (v)",
+        "url": "https://www.law.cornell.edu/uscode/text/19/1313"
+      },
+      {
+        "label": "19 CFR Part 190, modernized drawback",
+        "url": "https://www.ecfr.gov/current/title-19/chapter-I/part-190"
+      },
+      {
+        "label": "CBP: drawback overview",
+        "url": "https://www.cbp.gov/trade/programs-administration/entry-summary/drawback"
+      },
+      {
+        "label": "LightSource: drawback specialists' contingency fees of 20 to 35%",
+        "url": "https://lightsource.ai/blog/duty-drawback-practical-guide-recovering-import-duties-2026"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 4,
+    "difficulty_why": "Four systems and two provisions; each claim is a trace from an export through a work order and a bill of materials to an import line, priced to the cent, and eight exports that look claimable each fail a different part of the rule.",
+    "usefulness_why": "Tens of thousands of dollars a year of duty that most small exporters never reclaim, and the quarter of it a specialist would keep."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful controller recovers most of it; the bar is most of the refund, no claim the rule excludes, inside an hour."
+  },
+  "caveat": "Quillon Pumps, Portline, Forwarden, Ledgerline, Docshelf, Ohio Motor Supply and every person here are invented. The rules are 19 U.S.C. 1313 and 19 CFR Part 190 as in force in October 2026, applied to ordinary duties only: duties imposed under emergency or national-security tariff actions, which their own orders may exclude from drawback, are not in this world. CBP decides each claim, and a licensed customs broker or a lawyer should be asked before a real one; this is not legal advice."
+}
