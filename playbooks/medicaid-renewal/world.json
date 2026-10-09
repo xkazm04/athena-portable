@@ -1,0 +1,562 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "mailnest",
+      "name": "Mailnest",
+      "origin": "https://mail.mailnest.example",
+      "path": "/inbox/all",
+      "view": {
+        "view": "All mail",
+        "account": "marisol.ortega@mailnest.example"
+      },
+      "tools": [
+        {
+          "name": "search_mail",
+          "kind": "READ",
+          "description": "Search the mail; every word must appear in the sender, the subject or the message's labels. Omit the query for every message. Open one with read_message. A message id is also the document id of the letter it carries.",
+          "params": {
+            "query": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "query": "search"
+            },
+            "mode": "words",
+            "fields": [
+              "message_id",
+              "from",
+              "date",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id.",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ],
+            "fields": [
+              "message_id",
+              "from",
+              "date",
+              "subject",
+              "body"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Mailnest",
+        "my mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "payroll",
+      "name": "Payroll Harbor",
+      "origin": "https://employee.payrollharbor.example",
+      "path": "/me/paystubs",
+      "view": {
+        "view": "My pay stubs",
+        "employee": "Marisol Ortega",
+        "employers": [
+          "Northside Pharmacy (semi-monthly)",
+          "Brightway Cleaning (ended)"
+        ]
+      },
+      "tools": [
+        {
+          "name": "list_paystubs",
+          "kind": "READ",
+          "description": "Pay stubs this year, newest first: stub id, employer, pay date, gross pay, pre-tax deductions and taxable wages. Paged.",
+          "params": {
+            "employer": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "paystubs",
+            "match": {
+              "employer": "employer"
+            },
+            "mode": "contains",
+            "page_size": 8
+          }
+        }
+      ],
+      "aliases": [
+        "Payroll Harbor",
+        "payroll",
+        "my pay stubs"
+      ]
+    },
+    {
+      "app_id": "ledgerline",
+      "name": "Ledgerline bank",
+      "origin": "https://online.ledgerline.example",
+      "path": "/accounts/checking",
+      "view": {
+        "view": "Checking ...2207: deposits",
+        "holder": "Marisol Ortega"
+      },
+      "tools": [
+        {
+          "name": "list_deposits",
+          "kind": "READ",
+          "description": "Deposits since 2026-01-01, newest first, with the payer and memo. Paged.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "deposits",
+            "page_size": 10
+          }
+        }
+      ],
+      "aliases": [
+        "Ledgerline",
+        "the bank",
+        "my bank"
+      ]
+    },
+    {
+      "app_id": "statecare",
+      "name": "Statecare Benefits",
+      "origin": "https://benefits.statecare.example.gov",
+      "path": "/renewal",
+      "view": {
+        "view": "Your Medicaid renewal",
+        "case": "SC-5520814",
+        "head_of_household": "Marisol Ortega",
+        "due": "2026-10-20"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "How Statecare counts income and household for Medicaid (MAGI), by topic: renewal, household, income, excluded, children, proof. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_household",
+          "kind": "READ",
+          "description": "The household on the renewal form, as the state's records prefilled it: member id, name, age, relationship, tax filing.",
+          "params": {},
+          "returns": {
+            "table": "household"
+          }
+        },
+        {
+          "name": "read_income",
+          "kind": "READ",
+          "description": "The income lines the state prefilled from wage and benefit data, with the period the data is from.",
+          "params": {},
+          "returns": {
+            "table": "income_lines"
+          }
+        },
+        {
+          "name": "update_income",
+          "kind": "REACHES_A_PERSON",
+          "description": "Correct one prefilled income line: its current monthly amount in dollars (0 if it has ended) and a note.",
+          "params": {
+            "income_id": {
+              "type": "string"
+            },
+            "monthly_amount_usd": {
+              "type": "number"
+            },
+            "note": {
+              "type": "string"
+            }
+          },
+          "says": "Income line {income_id} updated on your renewal."
+        },
+        {
+          "name": "update_household",
+          "kind": "REACHES_A_PERSON",
+          "description": "Remove a member from this Medicaid household, by member id, with the reason.",
+          "params": {
+            "member_id": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "{member_id} removed from the renewal household."
+        },
+        {
+          "name": "upload_proof",
+          "kind": "REACHES_A_PERSON",
+          "description": "Attach a document to the renewal, by its id: a pay stub id from Payroll Harbor or a Mailnest message id. One document per call.",
+          "params": {
+            "document_id": {
+              "type": "string"
+            },
+            "for": {
+              "type": "string"
+            }
+          },
+          "says": "Document {document_id} attached to your renewal."
+        }
+      ],
+      "aliases": [
+        "Statecare",
+        "the benefits portal",
+        "the state's portal"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "mailnest",
+      "message": "My Medicaid renewal is due on the 20th and the form has old numbers. Start in my mail: find the renewal notice and anything about my jobs, benefits and money this year.",
+      "nudges": 1
+    },
+    {
+      "app": "payroll",
+      "message": "This is Payroll Harbor with my pay stubs. Work out what I earn now.",
+      "nudges": 1
+    },
+    {
+      "app": "ledgerline",
+      "message": "Now my Ledgerline account. Check what's been coming in.",
+      "nudges": 1
+    },
+    {
+      "app": "statecare",
+      "message": "And this is the renewal in Statecare. Fix whatever's wrong on the form and send the proof it needs, so we keep our coverage.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "mail": [
+      {
+        "message_id": "ML-30",
+        "from": "Statecare Benefits",
+        "date": "2026-09-20",
+        "subject": "Your Medicaid renewal is due 2026-10-20",
+        "search": "Statecare Benefits Medicaid renewal due notice",
+        "body": "We could not renew your household's coverage from the records we have. Review the prefilled form at Statecare, correct anything that has changed, and attach proof of current income by 2026-10-20. If coverage ends because the form was not returned, you have 90 days to send it and be reconsidered."
+      },
+      {
+        "message_id": "ML-31",
+        "from": "Brightway Cleaning",
+        "date": "2026-07-31",
+        "subject": "Your last day",
+        "search": "Brightway Cleaning separation letter last day job ended",
+        "body": "This confirms your employment with Brightway Cleaning ended on 2026-07-31, when our contract at the clinic closed. Your final pay was issued the same day. No further pay is due."
+      },
+      {
+        "message_id": "ML-32",
+        "from": "State Department of Labor, Unemployment Insurance",
+        "date": "2026-03-28",
+        "subject": "Your unemployment benefits have ended",
+        "search": "Department of Labor unemployment insurance benefits ended exhausted",
+        "body": "Your claim's benefits are exhausted. The last payment, for the week ending 2026-03-21, was issued 2026-03-26. No further payments will be made on this claim."
+      },
+      {
+        "message_id": "ML-33",
+        "from": "State Disbursement Unit",
+        "date": "2026-07-05",
+        "subject": "Child support payment history",
+        "search": "State Disbursement Unit child support payment history",
+        "body": "Payments received for Marisol Ortega from Dario Vela, case CS-77120: $450 on the 1st of each month, January to July 2026."
+      },
+      {
+        "message_id": "ML-34",
+        "from": "Andres Ortega",
+        "date": "2026-08-18",
+        "subject": "The car money",
+        "search": "Andres Ortega car money loan",
+        "body": "Sent you the $2,000 for the transmission. Pay me back when you can, no rush, $100 a month is fine."
+      },
+      {
+        "message_id": "ML-35",
+        "from": "Internal Revenue Service",
+        "date": "2026-03-02",
+        "subject": "Your refund is on its way",
+        "search": "Internal Revenue Service IRS refund tax",
+        "body": "Your 2025 federal tax refund of $1,120 will be deposited on 2026-03-06."
+      },
+      {
+        "message_id": "ML-36",
+        "from": "Lumen Cinemas",
+        "date": "2026-08-23",
+        "subject": "Teo's final pay stub",
+        "search": "Lumen Cinemas pay stub Teo summer job",
+        "body": "Teo Ortega (16), concessions, summer season 2026-06-08 to 2026-08-23. Season gross pay $1,240. Final stub attached."
+      },
+      {
+        "message_id": "ML-37",
+        "from": "Social Security Administration",
+        "date": "2026-01-03",
+        "subject": "Your benefit amount for 2026",
+        "search": "Social Security Administration benefit amount Rosa",
+        "body": "Rosa Ortega: your monthly retirement benefit for 2026 is $1,240."
+      },
+      {
+        "message_id": "ML-38",
+        "from": "Northside Pharmacy",
+        "date": "2026-08-05",
+        "subject": "Schedule change from August 16",
+        "search": "Northside Pharmacy schedule change hours",
+        "body": "As discussed, your hours are reduced from 2026-08-16. Your gross pay each semi-monthly period will be $1,080, down from $1,440; your 401(k) deferral stays at $60 a pay."
+      }
+    ],
+    "paystubs": [
+      {
+        "stub_id": "PS-0930",
+        "employer": "Northside Pharmacy",
+        "pay_date": "2026-09-30",
+        "gross_usd": 1080.0,
+        "pretax_401k_usd": 60.0,
+        "taxable_wages_usd": 1020.0
+      },
+      {
+        "stub_id": "PS-0915",
+        "employer": "Northside Pharmacy",
+        "pay_date": "2026-09-15",
+        "gross_usd": 1080.0,
+        "pretax_401k_usd": 60.0,
+        "taxable_wages_usd": 1020.0
+      },
+      {
+        "stub_id": "PS-0831",
+        "employer": "Northside Pharmacy",
+        "pay_date": "2026-08-31",
+        "gross_usd": 1080.0,
+        "pretax_401k_usd": 60.0,
+        "taxable_wages_usd": 1020.0
+      },
+      {
+        "stub_id": "PS-0815",
+        "employer": "Northside Pharmacy",
+        "pay_date": "2026-08-15",
+        "gross_usd": 1440.0,
+        "pretax_401k_usd": 60.0,
+        "taxable_wages_usd": 1380.0
+      },
+      {
+        "stub_id": "BW-0731",
+        "employer": "Brightway Cleaning",
+        "pay_date": "2026-07-31",
+        "gross_usd": 320.0,
+        "pretax_401k_usd": 0.0,
+        "taxable_wages_usd": 320.0,
+        "note": "Final pay"
+      },
+      {
+        "stub_id": "PS-0731",
+        "employer": "Northside Pharmacy",
+        "pay_date": "2026-07-31",
+        "gross_usd": 1440.0,
+        "pretax_401k_usd": 60.0,
+        "taxable_wages_usd": 1380.0
+      },
+      {
+        "stub_id": "BW-0715",
+        "employer": "Brightway Cleaning",
+        "pay_date": "2026-07-15",
+        "gross_usd": 320.0,
+        "pretax_401k_usd": 0.0,
+        "taxable_wages_usd": 320.0
+      },
+      {
+        "stub_id": "PS-0331",
+        "employer": "Northside Pharmacy",
+        "pay_date": "2026-03-31",
+        "gross_usd": 1440.0,
+        "pretax_401k_usd": 60.0,
+        "taxable_wages_usd": 1380.0
+      }
+    ],
+    "deposits": [
+      {
+        "date": "2026-09-30",
+        "payer": "Northside Pharmacy payroll",
+        "amount_usd": 912.4,
+        "memo": "Net pay"
+      },
+      {
+        "date": "2026-09-15",
+        "payer": "Northside Pharmacy payroll",
+        "amount_usd": 912.4,
+        "memo": "Net pay"
+      },
+      {
+        "date": "2026-09-01",
+        "payer": "State Disbursement Unit",
+        "amount_usd": 450.0,
+        "memo": "Child support CS-77120"
+      },
+      {
+        "date": "2026-08-31",
+        "payer": "Northside Pharmacy payroll",
+        "amount_usd": 912.4,
+        "memo": "Net pay"
+      },
+      {
+        "date": "2026-08-18",
+        "payer": "Zelle from Andres Ortega",
+        "amount_usd": 2000.0,
+        "memo": "car loan"
+      },
+      {
+        "date": "2026-08-15",
+        "payer": "Northside Pharmacy payroll",
+        "amount_usd": 1201.8,
+        "memo": "Net pay"
+      },
+      {
+        "date": "2026-08-01",
+        "payer": "State Disbursement Unit",
+        "amount_usd": 450.0,
+        "memo": "Child support CS-77120"
+      },
+      {
+        "date": "2026-07-31",
+        "payer": "Brightway Cleaning payroll",
+        "amount_usd": 295.5,
+        "memo": "Final net pay"
+      },
+      {
+        "date": "2026-03-26",
+        "payer": "State Department of Labor",
+        "amount_usd": 272.0,
+        "memo": "UI benefit, last payment"
+      },
+      {
+        "date": "2026-03-06",
+        "payer": "IRS TREAS 310 TAX REF",
+        "amount_usd": 1120.0,
+        "memo": "Federal tax refund"
+      }
+    ],
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Topics: renewal, household, income, excluded, children, proof. Medicaid for adults and children here uses MAGI rules (42 CFR 435.603)."
+      },
+      {
+        "topic": "renewal",
+        "text": "We renew from our own records first. When we cannot, we send a prefilled form and give you at least 30 days to return it (42 CFR 435.916). Correct every line that has changed. If coverage ends because the form is not returned, you have 90 days to return it and be reconsidered."
+      },
+      {
+        "topic": "household",
+        "text": "A household is the tax filer, a spouse, and the dependents she claims (435.603(f)). A relative living with you who files her own tax return and whom you do not claim is not in your household: she applies on her own case."
+      },
+      {
+        "topic": "income",
+        "text": "We count current monthly income (435.603(h)): pay from jobs you have now, and benefits you get now. A job or benefit that has ended counts as 0. For wages, count taxable wages: gross pay less pre-tax retirement and pre-tax health deductions. Semi-monthly pay is two pays a month; weekly pay is multiplied by 52 and divided by 12."
+      },
+      {
+        "topic": "excluded",
+        "text": "Not counted: child support you receive, SSI, loans, gifts, and tax refunds. Do not report them as income and do not send proof of them."
+      },
+      {
+        "topic": "children",
+        "text": "A dependent child's income is not counted unless the child is expected to have to file a tax return; a child whose only income is earnings under the standard deduction ($15,750 for 2026) does not. The child stays on the household and the case."
+      },
+      {
+        "topic": "proof",
+        "text": "For each job you have now, send the pay stubs from the last 30 days. For a job or benefit that ended, send the letter that shows it ended. Send nothing else: every document you send becomes part of your case."
+      }
+    ],
+    "household": [
+      {
+        "member_id": "M-1",
+        "name": "Marisol Ortega",
+        "age": 38,
+        "relationship": "Self",
+        "tax_filing": "Files as head of household; claims M-2 and M-3"
+      },
+      {
+        "member_id": "M-2",
+        "name": "Lucia Ortega",
+        "age": 9,
+        "relationship": "Daughter",
+        "tax_filing": "Claimed by M-1"
+      },
+      {
+        "member_id": "M-3",
+        "name": "Teo Ortega",
+        "age": 16,
+        "relationship": "Son",
+        "tax_filing": "Claimed by M-1"
+      },
+      {
+        "member_id": "M-4",
+        "name": "Rosa Ortega",
+        "age": 67,
+        "relationship": "Mother",
+        "tax_filing": "Files her own return; not claimed by anyone"
+      }
+    ],
+    "income_lines": [
+      {
+        "income_id": "IN-1",
+        "member": "M-1 Marisol",
+        "source": "Wages, Northside Pharmacy",
+        "monthly_usd": 2950,
+        "data_from": "State wage records, January to March 2026"
+      },
+      {
+        "income_id": "IN-2",
+        "member": "M-1 Marisol",
+        "source": "Wages, Brightway Cleaning",
+        "monthly_usd": 640,
+        "data_from": "State wage records, January to March 2026"
+      },
+      {
+        "income_id": "IN-3",
+        "member": "M-1 Marisol",
+        "source": "Unemployment insurance",
+        "monthly_usd": 1180,
+        "data_from": "Department of Labor, January to March 2026"
+      },
+      {
+        "income_id": "IN-4",
+        "member": "M-3 Teo",
+        "source": "Wages, Lumen Cinemas",
+        "monthly_usd": 0,
+        "data_from": "Shown for your information: a dependent child's earnings under the filing threshold are not counted"
+      }
+    ]
+  }
+}

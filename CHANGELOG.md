@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `feat(playbooks): a household's Medicaid renewal answered across four portals, benched to exceeds` — ADR 0057 row 5: stale wage and benefit lines corrected to current monthly income under 42 CFR 435.603 (taxable wages after a pre-tax 401(k), a job and benefits that ended), a mother with her own return taken off the household, only the proof asked for; child support, a loan, a refund, a teenager's pay, the mother's Social Security and an old stub left out; run 1: 8 of 8, every correction exact, 8 of 8 traps avoided, 0 false, 2.8 min; filmed.
+
 - `feat(playbooks): the insurer's depreciation holdback collected across four portals, benched to exceeds` — ADR 0057 row 4: each estimate line matched to the contractor's invoice, the bank and the receipts under California Insurance Code §2051.5's 36 months after a state of emergency; an unrepaired fence, scheduled cabinets, a released line, a cash-value-only shed, a cheap replacement, a pre-storm receipt and a closed claim left alone; run 1: 4 of 4, $15,190, every request exact, 8 of 8 traps avoided, 0 false, 4.7 min; filmed.
 
 - `feat(playbooks): the property tax protest with comparable sales across four portals, benched and shipped short` — ADR 0057 row 3: deadlines from each notice's delivery, ownership on January 1 from the deeds, Texas Tax Code §23.013's 24 months and likeness, a related-party sale, a stale one, two mismatched and a fire-damaged one left out, the repair estimate's cost to cure; three runs, the world fixed twice (a lapsed estimate, evidence awaiting signature); run 3: 5 of 8, $1,470 of $2,310, short, 9 of 9 traps avoided, 0 false; filmed.

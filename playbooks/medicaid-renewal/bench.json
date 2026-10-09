@@ -1,0 +1,311 @@
+{
+  "playbook": "medicaid-renewal",
+  "run_at": "2026-10-09T17:47:16Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 167.7,
+  "turns": 9,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 18,
+  "cost_usd": 0.9754,
+  "your_time_s": 240,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.8
+  },
+  "score": {
+    "eligible": 8,
+    "found": 8,
+    "exact": 8,
+    "value_total_usd": 7000.0,
+    "value_found_usd": 7000.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "update_household",
+        "key": "M-3",
+        "why": "Teo is a claimed dependent; his pay is not counted, and he stays on the case",
+        "filed": false
+      },
+      {
+        "action": "update_household",
+        "key": "M-2",
+        "why": "Lucia is a claimed dependent",
+        "filed": false
+      },
+      {
+        "action": "upload_proof",
+        "key": "ML-33",
+        "why": "Child support received is not counted: no proof of it is sent",
+        "filed": false
+      },
+      {
+        "action": "upload_proof",
+        "key": "ML-34",
+        "why": "A loan from her brother is not income",
+        "filed": false
+      },
+      {
+        "action": "upload_proof",
+        "key": "ML-35",
+        "why": "A tax refund is not income",
+        "filed": false
+      },
+      {
+        "action": "upload_proof",
+        "key": "ML-36",
+        "why": "Teo's pay is under the filing threshold and not counted",
+        "filed": false
+      },
+      {
+        "action": "upload_proof",
+        "key": "ML-37",
+        "why": "Rosa's Social Security: she is not in this household",
+        "filed": false
+      },
+      {
+        "action": "upload_proof",
+        "key": "PS-0331",
+        "why": "A March stub from before the cut misstates current income",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "update_income",
+      "key": "IN-1",
+      "outcome": "correct",
+      "value_usd": 3000.0,
+      "exact": true,
+      "why": "The state's $2,950 is from before the August cut: taxable wages are $1,020 a pay ($1,080 less the $60 pre-tax 401(k)), twice a month, $2,040"
+    },
+    {
+      "action": "update_income",
+      "key": "IN-2",
+      "outcome": "correct",
+      "value_usd": 2000.0,
+      "exact": true,
+      "why": "Brightway ended 2026-07-31: 0"
+    },
+    {
+      "action": "update_income",
+      "key": "IN-3",
+      "outcome": "correct",
+      "value_usd": 2000.0,
+      "exact": true,
+      "why": "Unemployment was exhausted in March: 0"
+    },
+    {
+      "action": "update_household",
+      "key": "M-4",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Rosa files her own return and is not claimed: not in Marisol's MAGI household"
+    },
+    {
+      "action": "upload_proof",
+      "key": "PS-0930",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "A current pay stub, inside 30 days"
+    },
+    {
+      "action": "upload_proof",
+      "key": "PS-0915",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "A current pay stub, inside 30 days"
+    },
+    {
+      "action": "upload_proof",
+      "key": "ML-31",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "The letter that shows Brightway ended"
+    },
+    {
+      "action": "upload_proof",
+      "key": "ML-32",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "The letter that shows unemployment ended"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm filing eight cards: three income corrections, one household removal and four proof documents. The rules settle each one.\n\n**Plan**\n- **IN-1, Northside Pharmacy:** change $2,950 to **$2,040** a month. The rule counts taxable wages: two pays of $1,020 (PS-0915, PS-0930). That is $1,080 gross less the $60 pre-tax 401(k), twice a month.\n- **IN-2, Brightway Cleaning:** change $640 to **$0**. The job ended 2026-07-31 (ML-31).\n- **IN-3, Unemployment:** change $1,180 to **$0**. The benefits were exhausted in March (ML-32).\n- **IN-4, Teo:** no change. It is already $0.\n- **Rosa (M-4):** remove her from the household. She files her own return and you don't claim her. She applies on her own case.\n- **Proof:** I'm sending only what the rules ask for.\n  - Northside stubs from the last 30 days (since 09-09): PS-0915 and PS-0930. PS-0831 is older than 30 days, so I'm leaving it out.\n  - The two let",
+  "trace": [
+    {
+      "portal": "Mailnest",
+      "user": "My Medicaid renewal is due on the 20th and the form has old numbers. Start in my mail: find the renewal notice and anything about my jobs, benefits and money this year.",
+      "continued": false,
+      "said": "Starting with a mail search for the renewal notice and anything on jobs, benefits and money.",
+      "said_chars": 92,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Nine messages came back. I'll read all of them, since each bears on income or household.",
+      "said_chars": 88,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "I've read all nine letters. Four things changed this year, and I'll check the rest against the Statecare rules later.\n\n- **Renewal notice (ML-30):** The form and proof of current income are due 2026-10-20. If coverage lapses, you have 90 days to send it and be reconsidered.\n- **Brightway Cleaning (ML-31):** That job ended 2026-07-31.\n- **Unemployment (ML-32):** Benefits are exhausted. The last payment was for the week ending 2026-03-21.",
+      "said_chars": 1818,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "This is Payroll Harbor with my pay stubs. Work out what I earn now.",
+      "continued": false,
+      "said": "I'll pull your pay stubs and Statecare's income rules together, so I count pay the way the state does.\n\nThe pay stub results arrive next turn, so I won't call that again. The Statecare rules are in another tab, so I'm checking whether I already have them in memory.\n\nMy recall line was malformed, so I'm sending it again in the right format.\n\nI can't give you a final figure yet. The pay stub results haven't reached me, and I haven't read Statecare's income rules.",
+      "said_chars": 1427,
+      "reads": [
+        "list_paystubs"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "",
+      "continued": true,
+      "said": "You earn about $2,160 a month gross now, or $2,040 a month in taxable wages after the 401(k). All of it is from Northside Pharmacy.\n\n- **Northside Pharmacy:** the last three stubs are PS-0831, PS-0915 and PS-0930. Each is $1,080 gross, with a $60 pre-tax 401(k) and $1,020 taxable wages. Two pays a month makes $2,160 gross, $120 of 401(k) and $2,040 taxable.\n- **Brightway Cleaning:** the final stub was BW-0731 for $320 on 2026-07-31. It pays $0 now, and the form should show that job as ended.",
+      "said_chars": 1303,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "Now my Ledgerline account. Check what's been coming in.",
+      "continued": false,
+      "said": "I'll pull the deposits since January, starting with page 1.",
+      "said_chars": 59,
+      "reads": [
+        "list_deposits"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "",
+      "continued": true,
+      "said": "Your deposits show one job paying you now, Northside Pharmacy, plus child support that is still coming in. This is all 10 deposits since 2026-01-01 (showing 10 of 10).\n\n- **Northside Pharmacy:** Net pay of $912.40 landed on 2026-08-31, 09-15 and 09-30. The 08-15 deposit of $1,201.80 was at the old, higher rate. The new pay matches the $1,080 gross stubs.\n- **Child support (CS-77120):** $450 arrived on 2026-08-01 and 2026-09-01. Mail only showed payments through July, so this confirms they continued.",
+      "said_chars": 1770,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Statecare Benefits",
+      "user": "And this is the renewal in Statecare. Fix whatever's wrong on the form and send the proof it needs, so we keep our coverage.",
+      "continued": false,
+      "said": "I'll start by reading the household, the prefilled income lines and the rules.\n\n\nI'll propose corrections once those answers arrive. I won't guess at which figures count before then.",
+      "said_chars": 182,
+      "reads": [
+        "read_household",
+        "read_income",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Statecare Benefits",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing eight cards: three income corrections, one household removal and four proof documents. The rules settle each one.\n\n**Plan**\n- **IN-1, Northside Pharmacy:** change $2,950 to **$2,040** a month. The rule counts taxable wages: two pays of $1,020 (PS-0915, PS-0930). That is $1,080 gross less the $60 pre-tax 401(k), twice a month.\n- **IN-2, Brightway Cleaning:** change $640 to **$0**. The job ended 2026-07-31 (ML-31).\n- **IN-3, Unemployment:** change $1,180 to **$0**.",
+      "said_chars": 1379,
+      "reads": [],
+      "cards": [
+        {
+          "action": "update_income",
+          "key": "IN-1",
+          "outcome": "correct",
+          "value_usd": 3000.0
+        },
+        {
+          "action": "update_income",
+          "key": "IN-2",
+          "outcome": "correct",
+          "value_usd": 2000.0
+        },
+        {
+          "action": "update_income",
+          "key": "IN-3",
+          "outcome": "correct",
+          "value_usd": 2000.0
+        },
+        {
+          "action": "update_household",
+          "key": "M-4",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "upload_proof",
+          "key": "PS-0930",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "upload_proof",
+          "key": "PS-0915",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "upload_proof",
+          "key": "ML-31",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "upload_proof",
+          "key": "ML-32",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    }
+  ]
+}

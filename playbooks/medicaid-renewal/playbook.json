@@ -1,0 +1,114 @@
+{
+  "id": "medicaid-renewal",
+  "title": "The Medicaid renewal, answered before coverage lapses",
+  "domain": "Public benefits",
+  "audience": "home",
+  "promise": "The renewal form's income corrected to what the rule counts this month, the household as the tax rules define it, and only the proof the state asked for, sent before the due date, so a family's coverage does not lapse on stale data.",
+  "persona": "A pharmacy technician raising two children, whose mother lives with them, and whose hours were cut in August",
+  "chore": "Read the state's prefilled renewal form, which found income from last winter's wage and benefit data. Check each line against this month's pay stubs, the bank and the mail, and correct it to current monthly income as the rule counts it. Then fix the household to the tax filer and her dependents, and upload the proof the form asks for and nothing that is not income. The form is answered only in the state's portal, and the facts are in three other places.",
+  "command": "My Medicaid renewal is due on the 20th and the form has old numbers. Check my pay in Payroll Harbor, my Ledgerline bank and my Mailnest letters, then fix the form in Statecare and send the proof it needs, so we don't lose coverage.",
+  "apps": [
+    {
+      "name": "Statecare Benefits",
+      "role": "the prefilled renewal form, its household and income lines, the rules, and the proof upload",
+      "api": "Benefits portal only",
+      "url": ""
+    },
+    {
+      "name": "Payroll Harbor",
+      "role": "the pharmacy's and the cleaning company's pay stubs",
+      "api": "Employee self-service",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline bank",
+      "role": "every deposit: payroll, benefits, child support, a loan from her brother, a tax refund",
+      "api": "Online banking only",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the renewal notice, a separation letter, the unemployment office's last letter, and documents that are not income",
+      "api": "Mail, not data",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the mail: the renewal notice and its due date, which jobs and benefits ended, and the letters that are not income.",
+    "Reads the pay stubs in Payroll Harbor: the current gross, the pre-tax deductions, the last pay from the job that ended.",
+    "Reads the bank: which deposits are income and which are not.",
+    "In Statecare, reads the rule, corrects each income line to current monthly income, takes out of the household the mother who files her own taxes, and uploads the current stubs and the letters for what ended.",
+    "Leaves out child support, the loan, the tax refund, the teenager's summer pay and the mother's Social Security letter."
+  ],
+  "gates": [
+    {
+      "action": "update_income",
+      "label": "Correct an income line",
+      "why": "It is a statement to the state, signed under penalty of perjury, and it decides the family's coverage."
+    },
+    {
+      "action": "update_household",
+      "label": "Change the household",
+      "why": "Removing someone ends their coverage on this case."
+    },
+    {
+      "action": "upload_proof",
+      "label": "Upload proof",
+      "why": "A document sent to the state becomes part of the case, and income on it may be counted."
+    }
+  ],
+  "traps": [
+    "Child support she receives: not counted as income under the rule, so no proof of it is sent.",
+    "Two thousand dollars from her brother for a car repair: a loan, not income.",
+    "A federal tax refund: not income.",
+    "Her 16-year-old's summer pay, far under the amount that requires a tax return: not counted.",
+    "Her mother's Social Security letter: her mother files her own return and is not in this household.",
+    "A March pay stub from before her hours were cut: not current income.",
+    "Taking a child off the case because his summer pay showed up in the data."
+  ],
+  "memory": [
+    "The rule as the state's page gives it: current monthly income, what counts, who is in the household.",
+    "The current pay after the cut, net of pre-tax deductions, and the dates the second job and the benefits ended.",
+    "Which deposits are not income, and why.",
+    "The due date, and that the state gives 90 days to reconsider if coverage ends for a missing form."
+  ],
+  "economics": {
+    "value_usd": 7000,
+    "per": "year",
+    "basis": "Medicaid spent $6,704 a year on each full-benefit expansion adult in 2022 (KFF), about $7,000: the value of the coverage a renewal answered wrongly or late takes away. The bench world puts the mother's coverage at stake: the state's stale data adds $4,770 a month against a limit she is under at $2,040. Times a year: once, at each annual renewal.",
+    "manual_minutes": 180,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share: navigators and legal aid help for free where they have the hours; many families miss the form, and most of the people disenrolled in 2023-24 lost coverage for procedural reasons.",
+    "sources": [
+      {
+        "label": "42 CFR 435.916: renewals, ex parte first, at least 30 days to return the form, 90 days to reconsider",
+        "url": "https://www.law.cornell.edu/cfr/text/42/435.916"
+      },
+      {
+        "label": "42 CFR 435.603: MAGI household and income, current monthly income, a child's income not counted below the filing threshold",
+        "url": "https://www.law.cornell.edu/cfr/text/42/435.603"
+      },
+      {
+        "label": "KFF: Medicaid spending per full-benefit enrollee, $6,704 per expansion adult (2022)",
+        "url": "https://www.kff.org/medicaid/state-indicator/medicaid-spending-per-full-benefit-enrollee/"
+      },
+      {
+        "label": "Medicaid.gov: renewals and the unwinding",
+        "url": "https://www.medicaid.gov/resources-for-states/coverage-and-enrollment/renewals/index.html"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four portals and a rule whose exclusions (child support, loans, refunds, a child's pay, a parent with her own return, pre-tax deductions) each look like income or a household member.",
+    "usefulness_why": "A year of a parent's health coverage, lost far more often to a missed or misread form than to income."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A navigator with the file in hand gets most of it; the bar is most of the corrections and proof, nothing sent that is not income, inside an hour."
+  },
+  "caveat": "Statecare, Payroll Harbor, Ledgerline, Mailnest and the Ortega family are invented; the rules are 42 CFR 435.603 and 435.916 as in force in October 2026, before the six-month renewals for expansion adults that federal law adds from 2027, and a real state's form and limits decide. This is not legal advice: the state agency decides eligibility."
+}

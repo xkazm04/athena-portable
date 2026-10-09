@@ -1,0 +1,96 @@
+{
+  "targets": [
+    {
+      "tool": "update_income",
+      "key": "income_id",
+      "eligible": {
+        "IN-1": {
+          "value_usd": 3000.0,
+          "why": "The state's $2,950 is from before the August cut: taxable wages are $1,020 a pay ($1,080 less the $60 pre-tax 401(k)), twice a month, $2,040",
+          "expect": {
+            "monthly_amount_usd": 2040
+          }
+        },
+        "IN-2": {
+          "value_usd": 2000.0,
+          "why": "Brightway ended 2026-07-31: 0",
+          "expect": {
+            "monthly_amount_usd": 0
+          }
+        },
+        "IN-3": {
+          "value_usd": 2000.0,
+          "why": "Unemployment was exhausted in March: 0",
+          "expect": {
+            "monthly_amount_usd": 0
+          }
+        }
+      },
+      "traps": {},
+      "neutral": {
+        "IN-4": {
+          "why": "Teo's pay is already shown as not counted; confirming it at 0 is fair either way",
+          "expect": {
+            "monthly_amount_usd": 0
+          }
+        }
+      }
+    },
+    {
+      "tool": "update_household",
+      "key": "member_id",
+      "eligible": {
+        "M-4": {
+          "value_usd": 0,
+          "why": "Rosa files her own return and is not claimed: not in Marisol's MAGI household"
+        }
+      },
+      "traps": {
+        "M-3": "Teo is a claimed dependent; his pay is not counted, and he stays on the case",
+        "M-2": "Lucia is a claimed dependent"
+      }
+    },
+    {
+      "tool": "upload_proof",
+      "key": "document_id",
+      "eligible": {
+        "PS-0930": {
+          "value_usd": 0,
+          "why": "A current pay stub, inside 30 days"
+        },
+        "PS-0915": {
+          "value_usd": 0,
+          "why": "A current pay stub, inside 30 days"
+        },
+        "ML-31": {
+          "value_usd": 0,
+          "why": "The letter that shows Brightway ended"
+        },
+        "ML-32": {
+          "value_usd": 0,
+          "why": "The letter that shows unemployment ended"
+        }
+      },
+      "traps": {
+        "ML-33": "Child support received is not counted: no proof of it is sent",
+        "ML-34": "A loan from her brother is not income",
+        "ML-35": "A tax refund is not income",
+        "ML-36": "Teo's pay is under the filing threshold and not counted",
+        "ML-37": "Rosa's Social Security: she is not in this household",
+        "PS-0331": "A March stub from before the cut misstates current income"
+      },
+      "neutral": {
+        "PS-0831": {
+          "why": "The first stub after the cut, 39 days old: more than asked for, not wrong"
+        },
+        "ML-38": {
+          "why": "The employer's letter about the cut: fair support for the new pay, not required"
+        },
+        "BW-0731": {
+          "why": "Brightway's final stub says final pay: fair beside the letter, not required"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}

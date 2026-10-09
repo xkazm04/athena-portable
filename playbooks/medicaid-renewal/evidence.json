@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "medicaid-renewal",
+  "captured_at": "2026-10-09T17:58:18Z",
+  "bench_run_at": "2026-10-09T17:47:16Z",
+  "narration": {
+    "text": "The Medicaid renewal, answered before coverage lapses. This is a chore for a pharmacy technician raising two children, whose mother lives with them, and whose hours were cut in August. Read the state's prefilled renewal form, which found income from last winter's wage and benefit data. Athena works it across 4 portals: Statecare Benefits, Payroll Harbor, Ledgerline bank and Mailnest. On the bench, she found 8 of 8 eligible items, worth 7,000 dollars of the 7,000 dollars there was to find. All 8 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. She took 3 minutes. By hand, the same chore takes 3 hours, so she was about 64 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 55.07,
+    "sha256": "8b4236ebc293702fd4634851219aa9684cdde9c948773644d3f3b78da2db9138"
+  },
+  "video": {
+    "path": "evidence/medicaid-renewal/evidence.mp4",
+    "duration_s": 55.08,
+    "bytes": 2396664,
+    "sha256": "bfbf41198decf12241bfcd365e5afd0ac6fa00639219b24bfb1cf44186d1385f"
+  },
+  "thumbnail": {
+    "path": "playbooks/medicaid-renewal/thumb.jpg",
+    "bytes": 99991,
+    "sha256": "cff736476ae7f0b5af57e6f8d844c00a8cfb15c7426f5db9b16d7b569f34b964"
+  }
+}
