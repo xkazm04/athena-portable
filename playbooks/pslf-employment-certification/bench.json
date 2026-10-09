@@ -1,0 +1,335 @@
+{
+  "playbook": "pslf-employment-certification",
+  "run_at": "2026-10-09T17:30:28Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 200.6,
+  "turns": 13,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 44,
+  "cost_usd": 1.9752,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 3.3
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 20000.0,
+    "value_found_usd": 20000.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_certification",
+        "key": "87-2290415",
+        "why": "Brightpath Tutoring LLC is organized for profit",
+        "filed": false
+      },
+      {
+        "action": "submit_certification",
+        "key": "94-1180933",
+        "why": "The Harbor Teachers Association is a labor union",
+        "filed": false
+      },
+      {
+        "action": "submit_certification",
+        "key": "94-2756610",
+        "why": "She worked for Bayside on a 1099, as a contractor, in a role it fills with employees",
+        "filed": false
+      },
+      {
+        "action": "request_reconsideration",
+        "key": "PQ-01",
+        "why": "The grace period: no payment was due",
+        "filed": false
+      },
+      {
+        "action": "request_reconsideration",
+        "key": "PQ-03",
+        "why": "General forbearance she asked for does not count",
+        "filed": false
+      },
+      {
+        "action": "request_reconsideration",
+        "key": "PQ-04",
+        "why": "Already counted, 22 of 22",
+        "filed": false
+      },
+      {
+        "action": "request_reconsideration",
+        "key": "PQ-06",
+        "why": "Her employer then was Brightpath, a for-profit company",
+        "filed": false
+      },
+      {
+        "action": "request_buyback",
+        "key": "PQ-03",
+        "why": "Two months bought back would bring the count to 114, not 120: a buyback is processed only when it completes the count",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "submit_certification",
+      "key": "94-6002817",
+      "outcome": "correct",
+      "value_usd": 7200.0,
+      "exact": true,
+      "why": "Harbor Unified, a school district, full time to 2023-06-30; certified only to 2021-12-31: 18 pause months (Jan 2022 to Jun 2023) wait on it, at a 120th of $48,200 rounded to $400 each"
+    },
+    {
+      "action": "submit_certification",
+      "key": "94-3318842",
+      "outcome": "correct",
+      "value_usd": 5000.0,
+      "exact": true,
+      "why": "Eastside, a 501(c)(3), 20 hours a week since 2024-02-05; with the library's 12 that is 32, full time: half of the 25 paid months from Aug 2024 to Sep 2026 that wait on the two forms"
+    },
+    {
+      "action": "submit_certification",
+      "key": "94-6001175",
+      "outcome": "correct",
+      "value_usd": 5000.0,
+      "exact": true,
+      "why": "Northgate County Library, a government employer, 12 hours a week since 2024-02-01: the other half of the 25 paid months"
+    },
+    {
+      "action": "request_reconsideration",
+      "key": "PQ-07",
+      "outcome": "correct",
+      "value_usd": 2400.0,
+      "exact": true,
+      "why": "An economic hardship deferment counts under 685.219(c)(2), and she worked 32 qualifying hours a week: 6 months"
+    },
+    {
+      "action": "request_reconsideration",
+      "key": "PQ-09",
+      "outcome": "correct",
+      "value_usd": 400.0,
+      "exact": true,
+      "why": "Paid in full 25 days late; late payments count since July 2023: 1 month"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Three employers are clear, and I'm filing them now. Two periods were miscounted, and I'm filing those too. Bayside still needs its dates and hours, so I'm looking for them in memory first.\n\n\n**Plan, so you can correct it before the cards are answered:**\n\n| Tracker period | Months | Action | Why |\n|---|---|---|---|\n| PQ-05, 2022-01 to 2023-06 | 18 of 20 | Certify Harbor Unified | Pause months count while employed by a qualifying employer. 2023-07 and 2023-08 had no qualifying job, so those 2 months don't count. |\n| PQ-07, 2024-02 to 07 | 6 | Reconsideration | An economic hardship deferment counts. |\n| PQ-08 and PQ-10, 2024-08 to 2026-09 | 25 | Certify Eastside and Northgate | These periods wait only for certification. |\n| PQ-09, 2025-03 | 1 | Reconsideration | A late but full payment counts. |\n\n**Not asking for, because the rules don't give it:**\n- **Harbor Teachers Association:** a labor",
+  "trace": [
+    {
+      "portal": "Loanbridge servicer",
+      "user": "My PSLF count looks too low. Start here at Loanbridge: go through my loan and the whole payment history and note what happened in each period: payments, deferments, forbearance, anything late.",
+      "continued": false,
+      "said": "I'll start by reading the loan and the full payment history.",
+      "said_chars": 60,
+      "reads": [
+        "read_account",
+        "list_history"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Loanbridge servicer",
+      "user": "",
+      "continued": true,
+      "said": "The history has nine periods. I'm opening the ones that aren't plain payments: the grace period, the forbearance, the payment pause, the deferment and the late payment.",
+      "said_chars": 168,
+      "reads": [
+        "read_history_entry",
+        "read_history_entry",
+        "read_history_entry",
+        "read_history_entry",
+        "read_history_entry"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Loanbridge servicer",
+      "user": "",
+      "continued": true,
+      "said": "Loanbridge is done: every period is noted below, and the forbearance and deferment are the ones most likely to be miscounted. I haven't checked the PSLF rules yet, so I'm not saying which months count.\n\n**Loan:** Direct Consolidation Loan, consolidated 2016-05-20. It's on PAYE, an income-driven plan, with a $212.40 monthly payment due on the 28th. The balance is $48,200.\n\n| Period | Status | What happened |\n|---|---|---|\n| 2016-06 to 2016-08 | Grace period | No payment due.",
+      "said_chars": 2293,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "This is Payroll Harbor, where my two current jobs pay me. Note what you need about each employer and my hours.",
+      "continued": false,
+      "said": "Reading both employers and your hours from Payroll Harbor now.",
+      "said_chars": 62,
+      "reads": [
+        "list_employers",
+        "read_hours"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "",
+      "continued": true,
+      "said": "Payroll Harbor is done: both jobs are current W-2 positions with steady hours. I haven't checked whether either employer qualifies.\n\n| Employer | EIN | Start | Position | Hours/week |\n|---|---|---|---|---|\n| Eastside Community Clinic | 94-3318842 | 2024-02-05 | Speech-language pathologist, part time | 20.0 |\n| Northgate County Library | 94-6001175 | 2024-02-01 | Literacy program specialist, part time | 12.0 |\n\n- **Status and pay:** both are Active and paid as W-2 employees, not contractors.",
+      "said_chars": 1384,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "Now my mail. Find every earlier employer and job in there, with dates, hours and how I was paid.",
+      "continued": false,
+      "said": "I'll search the mail for earlier-job messages (offer letters, pay and hours, contractor paperwork, PSLF forms) before I read any of them.",
+      "said_chars": 137,
+      "reads": [
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Four messages look like earlier jobs. I'll open them now. PM-180 looks like a scam-style notice, so I'm skipping it for now.",
+      "said_chars": 124,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "I found three earlier jobs in the mail, but no hours or end dates for two of them, and nothing yet covers 2022 to mid-2023.\n\n| Employer | EIN | Dates | Role and hours | Pay |\n|---|---|---|---|---|\n| Harbor Unified School District | 94-6002817 | Started 2016-08-15. AidPath certified it through 2021-12-31. | Speech-language pathologist, full time, 40 hrs/wk (PM-101) | Not stated. An \"appointment\" letter doesn't say W-2. |\n| Brightpath Tutoring LLC | 87-2290415 | Started 2023-07-05. No end date found.",
+      "said_chars": 1639,
+      "reads": [
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail",
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Three new messages bear on the job dates: PM-162, PM-173 and PM-133. I'll read them now.",
+      "said_chars": 88,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "The mail now covers every earlier job, except that none of the letters says how you were paid at Harbor Unified or Brightpath. Four of the five have dates, and Bayside's hours are missing.",
+      "said_chars": 2687,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "AidPath",
+      "user": "And this is AidPath. Certify every employer that counts, ask for reconsideration of any period that was miscounted, and tell me where my count stands after that.",
+      "continued": false,
+      "said": "I'll start with the AidPath rules, tracker and certifications, and look up each employer. I'll also recall what I noted from the mail.\n\n\nI've asked for the rules, the tracker, the certification list, the employer lookups and a memory recall. I'll file nothing until they come back. Then I'll give you a plan of which employers to certify and which periods to dispute.\n\nThe AidPath answers haven't arrived yet.",
+      "said_chars": 1657,
+      "reads": [
+        "read_rules",
+        "read_tracker",
+        "list_certifications",
+        "search_employers",
+        "search_employers",
+        "search_employers",
+        "search_employers",
+        "search_employers",
+        "search_employers"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "AidPath",
+      "user": "",
+      "continued": true,
+      "said": "The tracker and employer lookups are in. Before I plan anything, I'm reading the rule topics that decide each period.\n\n\nI'm holding all filings until the rules come back. The page answers on my next turn.",
+      "said_chars": 204,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "AidPath",
+      "user": "",
+      "continued": true,
+      "said": "Three employers are clear, and I'm filing them now. Two periods were miscounted, and I'm filing those too. Bayside still needs its dates and hours, so I'm looking for them in memory first.\n\n\n**Plan, so you can correct it before the cards are answered:**\n\n| Tracker period | Months | Action | Why |\n|---|---|---|---|\n| PQ-05, 2022-01 to 2023-06 | 18 of 20 | Certify Harbor Unified | Pause months count while employed by a qualifying employer. 2023-07 and 2023-08 had no qualifying job, so those 2 months don't count.",
+      "said_chars": 3377,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_certification",
+          "key": "94-6002817",
+          "outcome": "correct",
+          "value_usd": 7200.0
+        },
+        {
+          "action": "submit_certification",
+          "key": "94-3318842",
+          "outcome": "correct",
+          "value_usd": 5000.0
+        },
+        {
+          "action": "submit_certification",
+          "key": "94-6001175",
+          "outcome": "correct",
+          "value_usd": 5000.0
+        },
+        {
+          "action": "request_reconsideration",
+          "key": "PQ-07",
+          "outcome": "correct",
+          "value_usd": 2400.0
+        },
+        {
+          "action": "request_reconsideration",
+          "key": "PQ-09",
+          "outcome": "correct",
+          "value_usd": 400.0
+        }
+      ]
+    }
+  ]
+}

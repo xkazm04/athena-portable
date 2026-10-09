@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "pslf-employment-certification",
+  "captured_at": "2026-10-09T17:33:30Z",
+  "bench_run_at": "2026-10-09T17:30:28Z",
+  "narration": {
+    "text": "Public Service Loan Forgiveness, every month certified. This is a chore for a speech-language pathologist ten years into public service, with a 48,200-dollar consolidation loan and two part-time jobs. Read the loan servicer's payment history, month by month, against the forgiveness tracker that says which months counted. Athena works it across 4 portals: Loanbridge servicer, Payroll Harbor, Mailnest and AidPath. On the bench, she found 5 of 5 eligible items, worth 20,000 dollars of the 20,000 dollars there was to find. All 5 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. She took 3 minutes. By hand, the same chore takes 6 hours, so she was about 109 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 58.532,
+    "sha256": "1255d231232a72d5b50e183146d6753033e31d96b29cf36bb4473afa38d97c15"
+  },
+  "video": {
+    "path": "evidence/pslf-employment-certification/evidence.mp4",
+    "duration_s": 58.56,
+    "bytes": 2708399,
+    "sha256": "206845aa6aca8a7077e6c7a48a5f765913f2cb36cc0d3b7b62afb5ee96c82f79"
+  },
+  "thumbnail": {
+    "path": "playbooks/pslf-employment-certification/thumb.jpg",
+    "bytes": 85368,
+    "sha256": "ccaa7d99fe1784b192656afb832cfd62a0b55b838b105e1cdd9e578801d33c07"
+  }
+}

@@ -1,0 +1,740 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "loanbridge",
+      "name": "Loanbridge servicer",
+      "origin": "https://my.loanbridge.example",
+      "path": "/account/history",
+      "view": {
+        "view": "My loans: payment history",
+        "borrower": "Priya Castellanos",
+        "account": "LB-7730-1184"
+      },
+      "tools": [
+        {
+          "name": "read_account",
+          "kind": "READ",
+          "description": "The loan: type, repayment plan, balance and the current monthly payment.",
+          "params": {},
+          "returns": {
+            "table": "account"
+          }
+        },
+        {
+          "name": "list_history",
+          "kind": "READ",
+          "description": "The payment history by period since repayment began: from, to and status. Open one with read_history_entry by its 'from' month (YYYY-MM) for the detail.",
+          "params": {},
+          "returns": {
+            "table": "history",
+            "fields": [
+              "from",
+              "to",
+              "status"
+            ]
+          }
+        },
+        {
+          "name": "read_history_entry",
+          "kind": "READ",
+          "description": "One period of the payment history in full, by its 'from' month (YYYY-MM): what was due, what was paid and when, and the kind of any deferment or forbearance.",
+          "params": {
+            "from": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "history",
+            "match": {
+              "from": "from"
+            },
+            "require": [
+              "from"
+            ]
+          }
+        },
+        {
+          "name": "send_message",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send a secure message to Loanbridge's customer service.",
+          "params": {
+            "subject": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            }
+          },
+          "says": "Message sent. Loanbridge answers within 10 business days."
+        }
+      ],
+      "aliases": [
+        "Loanbridge",
+        "the servicer",
+        "my servicer"
+      ]
+    },
+    {
+      "app_id": "payroll",
+      "name": "Payroll Harbor",
+      "origin": "https://employee.payrollharbor.example",
+      "path": "/me/employers",
+      "view": {
+        "view": "My employers",
+        "employee": "Priya Castellanos",
+        "employers_on_this_login": 2
+      },
+      "tools": [
+        {
+          "name": "list_employers",
+          "kind": "READ",
+          "description": "The employers paying you through Payroll Harbor: name, EIN, start date, position and status.",
+          "params": {},
+          "returns": {
+            "table": "employers"
+          }
+        },
+        {
+          "name": "read_hours",
+          "kind": "READ",
+          "description": "Average hours worked per week, by half-year, for one employer by name or for both.",
+          "params": {
+            "employer": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "hours",
+            "match": {
+              "employer": "employer"
+            },
+            "mode": "contains"
+          }
+        }
+      ],
+      "aliases": [
+        "Payroll Harbor",
+        "payroll",
+        "the payroll"
+      ]
+    },
+    {
+      "app_id": "mailnest",
+      "name": "Mailnest",
+      "origin": "https://mail.mailnest.example",
+      "path": "/inbox/all",
+      "view": {
+        "view": "All mail",
+        "account": "priya.castellanos@mailnest.example"
+      },
+      "tools": [
+        {
+          "name": "search_mail",
+          "kind": "READ",
+          "description": "Search the mail; every word must appear in the sender, the subject or the message's labels. Omit the query for every message. Paged. Open one with read_message.",
+          "params": {
+            "query": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "query": "search"
+            },
+            "mode": "words",
+            "page_size": 8,
+            "fields": [
+              "message_id",
+              "from",
+              "date",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id.",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ],
+            "fields": [
+              "message_id",
+              "from",
+              "date",
+              "subject",
+              "body"
+            ]
+          }
+        },
+        {
+          "name": "reply",
+          "kind": "REACHES_A_PERSON",
+          "description": "Reply to a message.",
+          "params": {
+            "message_id": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            }
+          },
+          "says": "Reply sent on {message_id}."
+        }
+      ],
+      "aliases": [
+        "Mailnest",
+        "my mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "aidpath",
+      "name": "AidPath",
+      "origin": "https://aidpath.example.gov",
+      "path": "/pslf",
+      "view": {
+        "view": "Public Service Loan Forgiveness",
+        "borrower": "Priya Castellanos",
+        "qualifying_payments_counted": 62,
+        "needed": 120
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The rule (34 CFR 685.219) as AidPath explains it, by topic: employers, full_time, contractors, payments, deferments, buyback, certification, reconsideration. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_tracker",
+          "kind": "READ",
+          "description": "The forgiveness tracker: each period of the payment history with the months in it, the months counted and the reason a month was not counted.",
+          "params": {},
+          "returns": {
+            "table": "tracker"
+          }
+        },
+        {
+          "name": "list_certifications",
+          "kind": "READ",
+          "description": "Employment certifications already processed or pending.",
+          "params": {},
+          "returns": {
+            "table": "certifications"
+          }
+        },
+        {
+          "name": "search_employers",
+          "kind": "READ",
+          "description": "The PSLF employer database: search by EIN or by words of the name. Says whether the employer is a qualifying employer and why.",
+          "params": {
+            "query": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "employer_db",
+            "match": {
+              "query": "search"
+            },
+            "mode": "words"
+          }
+        },
+        {
+          "name": "submit_certification",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send an employment certification form to an employer's official to sign: the EIN as the employer database shows it, the employer's name, the dates of employment being certified (YYYY-MM-DD; leave end_date empty if still employed) and the average hours per week.",
+          "params": {
+            "employer_ein": {
+              "type": "string"
+            },
+            "employer_name": {
+              "type": "string"
+            },
+            "start_date": {
+              "type": "string"
+            },
+            "end_date": {
+              "type": "string"
+            },
+            "hours_per_week": {
+              "type": "number"
+            }
+          },
+          "says": "Certification for {employer_name} sent to the employer's official to sign."
+        },
+        {
+          "name": "request_reconsideration",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask the Department to reconsider the count for one tracker period, by its period id, with the months you say should count and why.",
+          "params": {
+            "period_id": {
+              "type": "string"
+            },
+            "months": {
+              "type": "integer"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Reconsideration request received for {period_id}."
+        },
+        {
+          "name": "request_buyback",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask to buy back the months of one tracker period spent in a deferment or forbearance that does not count, by its period id.",
+          "params": {
+            "period_id": {
+              "type": "string"
+            },
+            "months": {
+              "type": "integer"
+            }
+          },
+          "says": "Buyback request received for {period_id}. You will be told the amount to pay."
+        }
+      ],
+      "aliases": [
+        "AidPath",
+        "the federal portal",
+        "the PSLF portal"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "loanbridge",
+      "message": "My PSLF count looks too low. Start here at Loanbridge: go through my loan and the whole payment history and note what happened in each period: payments, deferments, forbearance, anything late.",
+      "nudges": 1
+    },
+    {
+      "app": "payroll",
+      "message": "This is Payroll Harbor, where my two current jobs pay me. Note what you need about each employer and my hours.",
+      "nudges": 1
+    },
+    {
+      "app": "mailnest",
+      "message": "Now my mail. Find every earlier employer and job in there, with dates, hours and how I was paid.",
+      "nudges": 1
+    },
+    {
+      "app": "aidpath",
+      "message": "And this is AidPath. Certify every employer that counts, ask for reconsideration of any period that was miscounted, and tell me where my count stands after that.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "account": [
+      {
+        "loan": "Direct Consolidation Loan (Direct Loan program), consolidated 2016-05-20",
+        "plan": "Pay As You Earn (PAYE), an income-driven plan, since 2016-09",
+        "balance_usd": 48200.0,
+        "monthly_payment_usd": 212.4,
+        "due_day": 28
+      }
+    ],
+    "history": [
+      {
+        "from": "2016-06",
+        "to": "2016-08",
+        "status": "Grace period",
+        "detail": "No payment due during the grace period after consolidation; repayment began with the payment due 2016-09-28."
+      },
+      {
+        "from": "2016-09",
+        "to": "2019-12",
+        "status": "Paid",
+        "detail": "PAYE payments, each paid in full by its due date."
+      },
+      {
+        "from": "2020-01",
+        "to": "2020-02",
+        "status": "Forbearance",
+        "detail": "General forbearance requested by the borrower by phone on 2019-12-20 (discretionary). No payments due."
+      },
+      {
+        "from": "2020-03",
+        "to": "2023-08",
+        "status": "Payment pause",
+        "detail": "COVID-19 payment pause under the CARES Act and its extensions: no payments due, 0% interest."
+      },
+      {
+        "from": "2023-09",
+        "to": "2024-01",
+        "status": "Paid",
+        "detail": "PAYE payments of $212.40, each paid in full by its due date."
+      },
+      {
+        "from": "2024-02",
+        "to": "2024-07",
+        "status": "Deferment",
+        "detail": "Economic hardship deferment (34 CFR 685.204(g)), approved 2024-01-29 on the borrower's application. No payments due."
+      },
+      {
+        "from": "2024-08",
+        "to": "2025-02",
+        "status": "Paid",
+        "detail": "PAYE payments of $212.40, each paid in full by its due date."
+      },
+      {
+        "from": "2025-03",
+        "to": "2025-03",
+        "status": "Paid late",
+        "detail": "The $212.40 due 2025-03-28 was paid in full on 2025-04-22, 25 days after the due date."
+      },
+      {
+        "from": "2025-04",
+        "to": "2026-09",
+        "status": "Paid",
+        "detail": "PAYE payments of $212.40, each paid in full by its due date."
+      }
+    ],
+    "employers": [
+      {
+        "employer": "Eastside Community Clinic",
+        "ein": "94-3318842",
+        "start_date": "2024-02-05",
+        "position": "Speech-language pathologist, part time",
+        "status": "Active",
+        "pay": "W-2 employee"
+      },
+      {
+        "employer": "Northgate County Library",
+        "ein": "94-6001175",
+        "start_date": "2024-02-01",
+        "position": "Literacy program specialist, part time",
+        "status": "Active",
+        "pay": "W-2 employee"
+      }
+    ],
+    "hours": [
+      {
+        "employer": "Eastside Community Clinic",
+        "period": "2024 Feb-Jun",
+        "avg_hours_per_week": 20.0
+      },
+      {
+        "employer": "Eastside Community Clinic",
+        "period": "2024 Jul-Dec",
+        "avg_hours_per_week": 20.0
+      },
+      {
+        "employer": "Eastside Community Clinic",
+        "period": "2025 Jan-Jun",
+        "avg_hours_per_week": 20.0
+      },
+      {
+        "employer": "Eastside Community Clinic",
+        "period": "2025 Jul-Dec",
+        "avg_hours_per_week": 20.0
+      },
+      {
+        "employer": "Eastside Community Clinic",
+        "period": "2026 Jan-Sep",
+        "avg_hours_per_week": 20.0
+      },
+      {
+        "employer": "Northgate County Library",
+        "period": "2024 Feb-Jun",
+        "avg_hours_per_week": 12.0
+      },
+      {
+        "employer": "Northgate County Library",
+        "period": "2024 Jul-Dec",
+        "avg_hours_per_week": 12.0
+      },
+      {
+        "employer": "Northgate County Library",
+        "period": "2025 Jan-Jun",
+        "avg_hours_per_week": 12.0
+      },
+      {
+        "employer": "Northgate County Library",
+        "period": "2025 Jul-Dec",
+        "avg_hours_per_week": 12.0
+      },
+      {
+        "employer": "Northgate County Library",
+        "period": "2026 Jan-Sep",
+        "avg_hours_per_week": 12.0
+      }
+    ],
+    "mail": [
+      {
+        "message_id": "PM-101",
+        "from": "Harbor Unified School District HR",
+        "date": "2016-07-18",
+        "subject": "Welcome to Harbor Unified",
+        "search": "Harbor Unified School District HR welcome offer employment",
+        "body": "Your appointment as a speech-language pathologist, full time (40 hours a week), starts 2016-08-15. Employer EIN 94-6002817."
+      },
+      {
+        "message_id": "PM-133",
+        "from": "Harbor Teachers Association",
+        "date": "2021-08-30",
+        "subject": "Your building representative stipend",
+        "search": "Harbor Teachers Association union stipend building representative",
+        "body": "Thank you for serving as the Association's paid building representative, 6 hours a week from 2021-09-01 to 2022-06-30. The Association is a labor organization exempt under section 501(c)(5); EIN 94-1180933. Your stipend is paid on a W-2."
+      },
+      {
+        "message_id": "PM-140",
+        "from": "AidPath",
+        "date": "2022-02-14",
+        "subject": "Your PSLF form was processed",
+        "search": "AidPath PSLF form processed certification Harbor Unified",
+        "body": "We processed your employment certification for Harbor Unified School District (EIN 94-6002817), 2016-08-15 to 2021-12-31, full time. Certify again whenever you change employers, and at least once a year."
+      },
+      {
+        "message_id": "PM-162",
+        "from": "Harbor Unified School District HR",
+        "date": "2023-06-30",
+        "subject": "Your separation is complete",
+        "search": "Harbor Unified School District HR separation resignation",
+        "body": "Your resignation is effective 2023-06-30, the last day of the school year. You were full time (40 hours a week) throughout your employment, 2016-08-15 to 2023-06-30."
+      },
+      {
+        "message_id": "PM-164",
+        "from": "Brightpath Tutoring LLC",
+        "date": "2023-06-26",
+        "subject": "Offer of employment",
+        "search": "Brightpath Tutoring LLC offer employment",
+        "body": "We are delighted to offer you the role of lead learning specialist, full time, starting 2023-07-05. Brightpath Tutoring LLC is a private tutoring company. EIN 87-2290415."
+      },
+      {
+        "message_id": "PM-171",
+        "from": "Bayside Speech Partners",
+        "date": "2024-01-25",
+        "subject": "Your 2023 Form 1099-NEC",
+        "search": "Bayside Speech Partners 1099-NEC tax form contractor",
+        "body": "Attached is your 2023 Form 1099-NEC for teletherapy sessions you provided as an independent contractor, evenings, 2023-10-02 to 2023-12-20. Bayside Speech Partners is a 501(c)(3) nonprofit, EIN 94-2756610; it employs its own speech-language pathologists directly."
+      },
+      {
+        "message_id": "PM-173",
+        "from": "Brightpath Tutoring LLC",
+        "date": "2024-01-31",
+        "subject": "Last day",
+        "search": "Brightpath Tutoring LLC last day resignation",
+        "body": "Confirming your resignation; your last day is 2024-01-31."
+      },
+      {
+        "message_id": "PM-174",
+        "from": "Loanbridge",
+        "date": "2024-01-29",
+        "subject": "Your deferment is approved",
+        "search": "Loanbridge deferment approved economic hardship",
+        "body": "Your economic hardship deferment is approved from 2024-02-01 to 2024-07-31."
+      },
+      {
+        "message_id": "PM-180",
+        "from": "PSLF Relief Center",
+        "date": "2026-09-14",
+        "subject": "Final notice: your forgiveness is at risk",
+        "search": "PSLF Relief Center final notice forgiveness",
+        "body": "Act now. For a one-time fee of $499 our specialists will file your forms. Reply with your FSA ID to start."
+      }
+    ],
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Topics: employers, full_time, contractors, payments, deferments, buyback, certification, reconsideration. Forgiveness follows 120 qualifying monthly payments on Direct Loans under a qualifying plan while working full time for a qualifying employer."
+      },
+      {
+        "topic": "employers",
+        "text": "Qualifying employers: a government organization (federal, state, local or tribal, including school districts and public libraries), a 501(c)(3) nonprofit, or another nonprofit providing a qualifying public service. Not qualifying: a business organized for profit, a labor union, or a partisan political organization (685.219(b))."
+      },
+      {
+        "topic": "full_time",
+        "text": "Full time means an average of at least 30 hours a week during the period certified, in one or more qualifying jobs. Hours at two qualifying employers in the same period are added together; certify each employer with its own hours."
+      },
+      {
+        "topic": "contractors",
+        "text": "Only employees count. A worker paid as an independent contractor counts only where state law prevents the qualifying employer from employing someone in that role directly (685.219(b))."
+      },
+      {
+        "topic": "payments",
+        "text": "A month counts when the full scheduled amount was paid under a qualifying plan (income-driven plans and the 10-year standard plan) while employed full time by a qualifying employer. A payment paid in full but late still counts: the rule that a payment be made within 15 days of the due date ended on July 1, 2023. Months of the COVID-19 payment pause (March 2020 to August 2023) count as if paid, for months of qualifying employment."
+      },
+      {
+        "topic": "deferments",
+        "text": "These months count when employment qualified (685.219(c)(2)): economic hardship deferment, cancer treatment, military service and post-active-duty deferments, AmeriCorps, National Guard and Department of Defense forbearances, and administrative and mandatory administrative forbearance. General (discretionary) forbearance does not count. The grace period does not count: no payment was due."
+      },
+      {
+        "topic": "buyback",
+        "text": "Months in a deferment or forbearance that does not count can be bought back, if employment qualified in those months, by paying what a qualifying plan would have required (685.219(g)(6)). A buyback is processed only if it results in forgiveness: the months bought back must complete the 120."
+      },
+      {
+        "topic": "certification",
+        "text": "Certify each employer separately, with the dates and the average weekly hours to be certified; the employer's official signs. A processed certification is credited to every month it covers. Employment at a non-qualifying employer cannot be certified."
+      },
+      {
+        "topic": "reconsideration",
+        "text": "If the tracker did not count a month that the rule counts, ask for reconsideration of that period with the reason. Periods that wait only for an employment certification are counted once the certification is processed."
+      }
+    ],
+    "tracker": [
+      {
+        "period_id": "PQ-01",
+        "from": "2016-06",
+        "to": "2016-08",
+        "months": 3,
+        "counted": 0,
+        "reason": "No payment due"
+      },
+      {
+        "period_id": "PQ-02",
+        "from": "2016-09",
+        "to": "2019-12",
+        "months": 40,
+        "counted": 40,
+        "reason": ""
+      },
+      {
+        "period_id": "PQ-03",
+        "from": "2020-01",
+        "to": "2020-02",
+        "months": 2,
+        "counted": 0,
+        "reason": "Forbearance"
+      },
+      {
+        "period_id": "PQ-04",
+        "from": "2020-03",
+        "to": "2021-12",
+        "months": 22,
+        "counted": 22,
+        "reason": "Payment pause, certified employment"
+      },
+      {
+        "period_id": "PQ-05",
+        "from": "2022-01",
+        "to": "2023-08",
+        "months": 20,
+        "counted": 0,
+        "reason": "No certified employment"
+      },
+      {
+        "period_id": "PQ-06",
+        "from": "2023-09",
+        "to": "2024-01",
+        "months": 5,
+        "counted": 0,
+        "reason": "No certified employment"
+      },
+      {
+        "period_id": "PQ-07",
+        "from": "2024-02",
+        "to": "2024-07",
+        "months": 6,
+        "counted": 0,
+        "reason": "Deferment"
+      },
+      {
+        "period_id": "PQ-08",
+        "from": "2024-08",
+        "to": "2025-02",
+        "months": 7,
+        "counted": 0,
+        "reason": "No certified employment"
+      },
+      {
+        "period_id": "PQ-09",
+        "from": "2025-03",
+        "to": "2025-03",
+        "months": 1,
+        "counted": 0,
+        "reason": "Payment late; no certified employment"
+      },
+      {
+        "period_id": "PQ-10",
+        "from": "2025-04",
+        "to": "2026-09",
+        "months": 18,
+        "counted": 0,
+        "reason": "No certified employment"
+      }
+    ],
+    "certifications": [
+      {
+        "employer": "Harbor Unified School District",
+        "ein": "94-6002817",
+        "dates": "2016-08-15 to 2021-12-31",
+        "hours_per_week": 40,
+        "state": "Processed 2022-02-14"
+      }
+    ],
+    "employer_db": [
+      {
+        "ein": "94-6002817",
+        "name": "Harbor Unified School District",
+        "search": "94-6002817 Harbor Unified School District",
+        "type": "Government (public school district)",
+        "qualifying": "Yes"
+      },
+      {
+        "ein": "94-3318842",
+        "name": "Eastside Community Clinic",
+        "search": "94-3318842 Eastside Community Clinic",
+        "type": "501(c)(3) nonprofit",
+        "qualifying": "Yes"
+      },
+      {
+        "ein": "94-6001175",
+        "name": "Northgate County Library",
+        "search": "94-6001175 Northgate County Library",
+        "type": "Government (county public library)",
+        "qualifying": "Yes"
+      },
+      {
+        "ein": "94-2756610",
+        "name": "Bayside Speech Partners",
+        "search": "94-2756610 Bayside Speech Partners",
+        "type": "501(c)(3) nonprofit",
+        "qualifying": "Yes, for its employees"
+      },
+      {
+        "ein": "94-1180933",
+        "name": "Harbor Teachers Association",
+        "search": "94-1180933 Harbor Teachers Association",
+        "type": "501(c)(5) labor organization",
+        "qualifying": "No: a labor union"
+      },
+      {
+        "ein": "87-2290415",
+        "name": "Brightpath Tutoring LLC",
+        "search": "87-2290415 Brightpath Tutoring LLC",
+        "type": "For-profit limited liability company",
+        "qualifying": "No: organized for profit"
+      }
+    ]
+  }
+}

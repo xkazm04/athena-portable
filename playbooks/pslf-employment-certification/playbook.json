@@ -1,0 +1,113 @@
+{
+  "id": "pslf-employment-certification",
+  "title": "Public Service Loan Forgiveness, every month certified",
+  "domain": "Student loans",
+  "audience": "home",
+  "promise": "Every employer period that counts toward Public Service Loan Forgiveness certified, every month the tracker miscounted put up for reconsideration with its reason, and nothing asked for that the rule does not give.",
+  "persona": "A speech-language pathologist ten years into public service, with a 48,200-dollar consolidation loan and two part-time jobs",
+  "chore": "Read the loan servicer's payment history, month by month, against the forgiveness tracker that says which months counted. Find the employment behind each month in two payrolls and ten years of mail, check each employer against the rule, and certify the ones that qualify with their dates and hours. Then ask for reconsideration of the months the tracker got wrong, and only those. The servicer, the payroll and the federal portal share nothing, and each employer is certified one form at a time.",
+  "command": "My PSLF count looks too low. Go through my Loanbridge history, my payroll and my mail, certify every employer that counts, and ask for a recount of any month that was miscounted. Don't ask for anything the rules don't give me.",
+  "apps": [
+    {
+      "name": "Loanbridge servicer",
+      "role": "the loan, the repayment plan, and the payment history with each deferment, forbearance and late payment",
+      "api": "Account pages only",
+      "url": ""
+    },
+    {
+      "name": "Payroll Harbor",
+      "role": "two current employers' payroll: their EINs, start dates and hours worked",
+      "api": "Employee self-service",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "ten years of mail: W-2s, offer letters, a 1099, a union stipend letter, past certification notices",
+      "api": "Mail, not data",
+      "url": ""
+    },
+    {
+      "name": "AidPath",
+      "role": "the federal portal: the forgiveness tracker by period, the employer database, the rule, the certification form, reconsideration and buyback",
+      "api": "Web forms only",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the loan and its payment history in Loanbridge: what kind of deferment, which forbearance, which payment was late.",
+    "Reads both current employers' EINs and hours in Payroll Harbor.",
+    "Reads the mail for every earlier employer's dates and terms: W-2s, offer letters, a 1099 and a union letter.",
+    "In AidPath, reads the rule and the tracker, checks each employer in the employer database, and certifies the ones that qualify with dates and hours, one form each.",
+    "Asks for reconsideration of each period the tracker miscounted, leaves alone the ones it got right, and does not ask for a buyback that would not complete the count."
+  ],
+  "gates": [
+    {
+      "action": "submit_certification",
+      "label": "Send an employment certification",
+      "why": "It goes to the employer's official to sign in the borrower's name; a wrong one is a form an employer refuses and a record that follows the borrower."
+    },
+    {
+      "action": "request_reconsideration",
+      "label": "Ask for reconsideration",
+      "why": "It reaches the Department with a claim about the borrower's own history, and a weak request slows the strong one."
+    },
+    {
+      "action": "request_buyback",
+      "label": "Ask to buy back months",
+      "why": "It commits the borrower to pay for months, and it is refused when it would not complete the count."
+    }
+  ],
+  "traps": [
+    "A full-time job at a for-profit tutoring company: not a qualifying employer, so neither the form nor the months.",
+    "A paid part-time post with the teachers' union: a labor union is not a qualifying employer, even a nonprofit one.",
+    "Evening work for a nonprofit on a 1099: a contractor is not its employee.",
+    "Two months of forbearance she asked for: not a month that counts, and a buyback is only processed when it completes the count.",
+    "The grace period after school, when no payment was due.",
+    "Months of the payment pause the tracker has already counted."
+  ],
+  "memory": [
+    "The rule as the federal portal states it, cited by topic: employers, full time, contractors, payments, deferments, buyback.",
+    "Each employer's EIN, dates and hours, from the payroll and the mail, carried into the federal portal.",
+    "Which tracker periods were put up for reconsideration and why, and which were right as they stand.",
+    "The count once the forms are processed, and the month it reaches 120."
+  ],
+  "economics": {
+    "value_usd": 40000,
+    "per": "episode",
+    "basis": "The average Public Service Loan Forgiveness discharge is about $75,000 (Brookings, January 2026). One episode is a borrower's count put right once, and the figure is the part of an average discharge that rests on months the borrower has to certify or contest: about half, an estimate. The bench world holds 50 of 120 months that rest on it, valued at a 120th each of a $48,200 balance: $20,000. Times a year: once, as the Department asks borrowers to certify employment every year.",
+    "manual_minutes": 360,
+    "times_per_year": 1,
+    "incumbent": "Paid PSLF helpers sell flat-fee plans; the federal Help Tool is free but certifies one employer at a time and checks nothing against the payment history.",
+    "sources": [
+      {
+        "label": "34 CFR 685.219, Public Service Loan Forgiveness (full time, qualifying employers, contractors, qualifying deferments, buyback)",
+        "url": "https://www.law.cornell.edu/cfr/text/34/685.219"
+      },
+      {
+        "label": "Federal Student Aid: Public Service Loan Forgiveness",
+        "url": "https://studentaid.gov/manage-loans/forgiveness-cancellation/public-service"
+      },
+      {
+        "label": "MOHELA (Federal Student Aid): buyback only where it would result in forgiveness",
+        "url": "https://mohela.studentaid.gov/DL/resourceCenter/PSLFInformation.aspx"
+      },
+      {
+        "label": "Brookings: 1.2 million borrowers, $90.6 billion forgiven, nearly $75,000 each (January 2026)",
+        "url": "https://www.brookings.edu/articles/the-past-present-and-future-of-the-public-service-loan-forgiveness-program/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 5,
+    "difficulty_why": "Ten years of months across a servicer, two payrolls, a mailbox and the federal portal, with a rule whose exclusions (for-profit, union, contractor, forbearance, buyback) each look like a month owed.",
+    "usefulness_why": "Tens of thousands of dollars of forgiveness that a short count delays or loses, for public servants who rarely have the hours to audit it."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful borrower with a free afternoon finds most of it; the bar is most of the months, no form for an employer that does not qualify, and no request the rule does not support, inside an hour."
+  },
+  "caveat": "Loanbridge, Payroll Harbor, AidPath, the employers and Priya Castellanos are invented; the rule is 34 CFR 685.219 as in force in October 2026, fixed in the bench world, and real counts are being re-examined by the Department. This is not legal or financial advice: the Department of Education decides every count."
+}

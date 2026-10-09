@@ -1,0 +1,82 @@
+{
+  "targets": [
+    {
+      "tool": "submit_certification",
+      "key": "employer_ein",
+      "eligible": {
+        "94-6002817": {
+          "value_usd": 7200.0,
+          "why": "Harbor Unified, a school district, full time to 2023-06-30; certified only to 2021-12-31: 18 pause months (Jan 2022 to Jun 2023) wait on it, at a 120th of $48,200 rounded to $400 each",
+          "expect": {
+            "end_date": "2023-06"
+          }
+        },
+        "94-3318842": {
+          "value_usd": 5000.0,
+          "why": "Eastside, a 501(c)(3), 20 hours a week since 2024-02-05; with the library's 12 that is 32, full time: half of the 25 paid months from Aug 2024 to Sep 2026 that wait on the two forms",
+          "expect": {
+            "hours_per_week": 20
+          }
+        },
+        "94-6001175": {
+          "value_usd": 5000.0,
+          "why": "Northgate County Library, a government employer, 12 hours a week since 2024-02-01: the other half of the 25 paid months",
+          "expect": {
+            "hours_per_week": 12
+          }
+        }
+      },
+      "traps": {
+        "87-2290415": "Brightpath Tutoring LLC is organized for profit",
+        "94-1180933": "The Harbor Teachers Association is a labor union",
+        "94-2756610": "She worked for Bayside on a 1099, as a contractor, in a role it fills with employees"
+      }
+    },
+    {
+      "tool": "request_reconsideration",
+      "key": "period_id",
+      "eligible": {
+        "PQ-07": {
+          "value_usd": 2400.0,
+          "why": "An economic hardship deferment counts under 685.219(c)(2), and she worked 32 qualifying hours a week: 6 months",
+          "expect": {
+            "months": 6
+          }
+        },
+        "PQ-09": {
+          "value_usd": 400.0,
+          "why": "Paid in full 25 days late; late payments count since July 2023: 1 month",
+          "expect": {
+            "months": 1
+          }
+        }
+      },
+      "traps": {
+        "PQ-01": "The grace period: no payment was due",
+        "PQ-03": "General forbearance she asked for does not count",
+        "PQ-04": "Already counted, 22 of 22",
+        "PQ-06": "Her employer then was Brightpath, a for-profit company"
+      },
+      "neutral": {
+        "PQ-05": {
+          "why": "Waits on Harbor Unified's certification; asking for a recount once it is sent is fair either way"
+        },
+        "PQ-08": {
+          "why": "Waits on the two current employers' certifications; fair either way"
+        },
+        "PQ-10": {
+          "why": "Waits on the two current employers' certifications; fair either way"
+        }
+      }
+    },
+    {
+      "tool": "request_buyback",
+      "key": "period_id",
+      "eligible": {},
+      "traps": {
+        "PQ-03": "Two months bought back would bring the count to 114, not 120: a buyback is processed only when it completes the count"
+      }
+    }
+  ],
+  "forbidden": []
+}

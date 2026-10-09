@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `feat(playbooks): Public Service Loan Forgiveness certified across a servicer, two payrolls, the mail and the federal portal, benched to exceeds` — ADR 0057 row 2: three qualifying employers certified with their dates and hours, an economic hardship deferment and a late payment put up for reconsideration; a for-profit, a union, a 1099, a forbearance and a buyback that would not complete the count left alone; run 1: 5 of 5, $20,000, every filing exact, 8 of 8 traps avoided, 0 false, 3.3 min; filmed.
+
 - `feat(playbooks): a family's delayed flights claimed under EU 261, across four portals, benched to exceeds` — ADR 0057 row 1: arrival times in the mail, causes on each airline's status page, scope, notice, extraordinary circumstances and free passengers as traps, a settlement voucher left alone; run 1: 4 of 4, $5,445 (4,950 euros), every claim exact, 9 of 9 traps avoided, 0 false, 3.1 min; filmed.
 
 - `fix(playbooks): evidence --verify catches a narration that drifted from its record` — ADR 0055's flaw: a rescore keeps `run_at`, so the template is filled again and compared with the committed text; `narration.sha256` is stated to be the WAV's.
