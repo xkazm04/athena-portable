@@ -9,10 +9,13 @@
  *
  * Every number here is derived from the shipped `playbook.json` and `bench.json` at render. A
  * playbook with no bench run says so and claims nothing measured: "not benched" is a fact, and a
- * zero would be a lie.
+ * zero would be a lie. Likewise the film (ADR 0055): a playbook whose `evidence.json` films an
+ * earlier run than its `bench.json` says it is stale rather than passing it off as the latest.
  */
 import type { Tone } from "@/components/StatusDot";
 import {
+  clock,
+  evidenceCurrent,
   minutes,
   onTheEdge,
   speedup,
@@ -51,6 +54,23 @@ export interface MapPoint {
   weight: number;
 }
 
+/** The run filmed and narrated (ADR 0055), as the card and the layer show it. */
+export interface EvidenceView {
+  /** It films the run `bench.json` holds now. */
+  current: boolean;
+  standing: { label: string; tone: Tone; sentence: string };
+  /** "1:12". */
+  length: string;
+  /** "2026-10-09". */
+  capturedAt: string;
+  /** "kokoro af_heart". */
+  voice: string;
+  narration: string;
+  thumbnailUrl: string;
+  /** `null` where nothing serves the film: the layer shows the still instead. */
+  videoUrl: string | null;
+}
+
 export interface PlaybookView {
   playbook: Playbook;
   id: string;
@@ -67,6 +87,7 @@ export interface PlaybookView {
   verdict: Verdict;
   onEdge: boolean;
   point: MapPoint;
+  evidence: EvidenceView | null;
 }
 
 export interface PlaybooksModel {
@@ -144,6 +165,32 @@ export const OUTCOME_WORDS: Record<CardOutcome, { word: string; tone: Tone }> = 
   other: { word: "Other card", tone: "neutral" },
 };
 
+/** A playbook's film, read against its bench: current or stale, and how long. Pure. */
+export function evidenceOf(p: Playbook): EvidenceView | null {
+  const e = p.evidence;
+  if (e === null) return null;
+  const current = evidenceCurrent(p);
+  const filmed = e.benchRunAt.slice(0, 10) || "an unknown date";
+  return {
+    current,
+    standing: current
+      ? { label: "Current", tone: "success", sentence: `Films the latest bench run, of ${filmed}.` }
+      : {
+          label: "Stale",
+          tone: "warning",
+          sentence: p.bench
+            ? `Films the bench run of ${filmed}; the latest is of ${p.bench.runAt.slice(0, 10)}, so the figures may differ.`
+            : `Films a bench run of ${filmed} that this build no longer carries.`,
+        },
+    length: clock(e.video.durationS || e.narration.durationS),
+    capturedAt: e.capturedAt.slice(0, 10),
+    voice: [e.narration.engine, e.narration.voice].filter(Boolean).join(" "),
+    narration: e.narration.text,
+    thumbnailUrl: e.thumbnailUrl,
+    videoUrl: e.videoUrl,
+  };
+}
+
 /** Spread playbooks that share a point around it, so no mark hides another. Pure. */
 export function layoutPoints(playbooks: readonly Playbook[]): MapPoint[] {
   const max = Math.max(1, ...playbooks.map(annualValue));
@@ -201,6 +248,7 @@ export function selectPlaybooks(
       verdict: verdictOf(bench),
       onEdge: onTheEdge(p),
       point: points[i],
+      evidence: evidenceOf(p),
     };
   });
   const benched = items.filter((v) => v.playbook.bench !== null);
@@ -325,6 +373,7 @@ export type FacetId =
   | "result"
   | "traps"
   | "run"
+  | "evidence"
   | "lessons"
   | "money";
 
@@ -422,6 +471,16 @@ export function facetsOf(view: PlaybookView): Facet[] {
       title: "Watch the run",
       summary: `${plural(b.trace.length, "turn")} across ${plural(visitsOf(b.trace).length, "tab visit")}`,
       figure: minutes(b.wallS / 60),
+    });
+  }
+  if (view.evidence) {
+    const e = view.evidence;
+    out.push({
+      id: "evidence",
+      group: "proof",
+      title: "The run, filmed",
+      summary: `Narrated, captured ${e.capturedAt}, ${e.current ? "current" : "stale against the latest run"}`,
+      figure: e.length,
     });
   }
   if (p.lessons.length) {

@@ -70,6 +70,16 @@ leave alone"), **Watch the run** (a rail of tab visits, a dot per turn coloured 
 play, step and arrow keys, the money found so far; her closing words; the runs over time), what it
 taught Athena, and the economics against the incumbent. Back steps one level.
 
+## Evidence
+
+A benched playbook can be filmed (ADR 0055); `playbooks/<id>/evidence.json` (schema 1) indexes the film and
+`thumb.jpg` is its still.
+
+On the desktop the still sits on the playbook's tile with the film's length, and the layer gains
+*The run, filmed*: the film where the dev server serves `evidence/` (with byte ranges, so it
+seeks), the still elsewhere, its length, when it was captured, the voice, the narration's words,
+and whether it is current against the bench or stale.
+
 ## Limits
 
 A playbook's portals are a model of the real ones: the bench proves her judgement on the data and

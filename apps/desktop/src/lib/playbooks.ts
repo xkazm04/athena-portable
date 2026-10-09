@@ -5,7 +5,9 @@
  * bench (`src/athena/proving/playbooks/`): `playbook.json` is the showcase this app renders and
  * `bench.json` is the latest measured run, absent until one ran. `world.json` and `truth.json`
  * are the bench's and are never imported here — a surface that could read the answers would be
- * tempted to show them.
+ * tempted to show them. `evidence.json` and `thumb.jpg` are the run filmed (ADR 0055): the index of
+ * a narrated recording that lives in the repository's gitignored `evidence/`, and a still of the
+ * result that is committed beside it.
  *
  * The files are bundled at build time (`import.meta.glob`, eager), so the module needs no daemon
  * and no route: a playbook is something the app ships, like the constitution. `parsePlaybook`
@@ -180,6 +182,24 @@ export interface Playbook {
   /** A limit a reader must know before using it for real (e.g. a BAA for patient data). */
   caveat: string;
   bench: Bench | null;
+  /** The run filmed and narrated (ADR 0055); `null` until `evidence <id>` ran. */
+  evidence: Evidence | null;
+}
+
+/** One playbook's `evidence.json` (schema 1, ADR 0055), read leniently. */
+export interface Evidence {
+  schema: number;
+  capturedAt: string;
+  /** The `run_at` of the bench run it filmed: equal to `bench.runAt` while it is current. */
+  benchRunAt: string;
+  narration: { text: string; engine: string; voice: string; durationS: number; sha256: string };
+  /** Repo-relative paths: the film under the gitignored `evidence/`, the committed thumbnail. */
+  video: { path: string; durationS: number; bytes: number; sha256: string };
+  thumbnail: { path: string; bytes: number; sha256: string };
+  /** The bundled thumbnail's URL; "" when the file is not in this build. */
+  thumbnailUrl: string;
+  /** Where the dev server serves the film; `null` in a build, which carries no media. */
+  videoUrl: string | null;
 }
 
 // -- reading -------------------------------------------------------------------------------------
@@ -299,8 +319,46 @@ function parseBench(raw: unknown): Bench | null {
   };
 }
 
+/**
+ * One `evidence.json` into an `Evidence`, or `null` when there is none. `thumbnailUrl` is the
+ * bundled still; `serve` says whether a dev server is there to hand out the film itself.
+ */
+export function parseEvidence(raw: unknown, thumbnailUrl = "", serve = false): Evidence | null {
+  if (!isRaw(raw)) return null;
+  const narration = isRaw(raw.narration) ? raw.narration : {};
+  const video = isRaw(raw.video) ? raw.video : {};
+  const thumb = isRaw(raw.thumbnail) ? raw.thumbnail : {};
+  const videoPath = str(video.path);
+  return {
+    schema: num(raw.schema),
+    capturedAt: str(raw.captured_at),
+    benchRunAt: str(raw.bench_run_at),
+    narration: {
+      text: str(narration.text),
+      engine: str(narration.engine),
+      voice: str(narration.voice),
+      durationS: num(narration.duration_s),
+      sha256: str(narration.sha256),
+    },
+    video: {
+      path: videoPath,
+      durationS: num(video.duration_s, num(narration.duration_s)),
+      bytes: num(video.bytes),
+      sha256: str(video.sha256),
+    },
+    thumbnail: { path: str(thumb.path), bytes: num(thumb.bytes), sha256: str(thumb.sha256) },
+    thumbnailUrl,
+    // Only a repo-relative path under `evidence/` is ever turned into a URL.
+    videoUrl: serve && /^evidence\/[\w.-]+\/[\w.-]+\.mp4$/.test(videoPath) ? `/${videoPath}` : null,
+  };
+}
+
 /** One `playbook.json` (and its `bench.json`, if any) into a `Playbook`, or `null` without an id. */
-export function parsePlaybook(raw: unknown, bench: unknown = null): Playbook | null {
+export function parsePlaybook(
+  raw: unknown,
+  bench: unknown = null,
+  evidence: Evidence | null = null,
+): Playbook | null {
   if (!isRaw(raw) || !str(raw.id)) return null;
   const econ = isRaw(raw.economics) ? raw.economics : {};
   const edge = isRaw(raw.edge) ? raw.edge : {};
@@ -352,6 +410,7 @@ export function parsePlaybook(raw: unknown, bench: unknown = null): Playbook | n
       .filter((l) => l.title),
     caveat: str(raw.caveat),
     bench: parseBench(bench),
+    evidence,
   };
 }
 
@@ -363,10 +422,22 @@ function clampScore(n: number): number {
 export function loadPlaybooks(
   showcases: Record<string, unknown>,
   benches: Record<string, unknown>,
+  evidences: Record<string, unknown> = {},
+  thumbnails: Record<string, unknown> = {},
+  serve = false,
 ): Playbook[] {
-  const benchFor = (path: string) => benches[path.replace(/playbook\.json$/, "bench.json")] ?? null;
+  const beside = (path: string, name: string) => path.replace(/playbook\.json$/, name);
+  const benchFor = (path: string) => benches[beside(path, "bench.json")] ?? null;
+  const evidenceFor = (path: string) => {
+    const thumb = unwrap(thumbnails[beside(path, "thumb.jpg")]);
+    return parseEvidence(
+      unwrap(evidences[beside(path, "evidence.json")] ?? null),
+      typeof thumb === "string" ? thumb : "",
+      serve,
+    );
+  };
   return Object.entries(showcases)
-    .map(([path, raw]) => parsePlaybook(unwrap(raw), unwrap(benchFor(path))))
+    .map(([path, raw]) => parsePlaybook(unwrap(raw), unwrap(benchFor(path)), evidenceFor(path)))
     .filter((p): p is Playbook => p !== null)
     .sort((a, b) => edgeRank(b) - edgeRank(a) || a.title.localeCompare(b.title));
 }
@@ -415,6 +486,29 @@ export function speedup(manual: number, measured: number): string {
 
 const SHOWCASES = import.meta.glob("../../../../playbooks/*/playbook.json", { eager: true });
 const BENCHES = import.meta.glob("../../../../playbooks/*/bench.json", { eager: true });
+const EVIDENCES = import.meta.glob("../../../../playbooks/*/evidence.json", { eager: true });
+const THUMBNAILS = import.meta.glob<string>("../../../../playbooks/*/thumb.jpg", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
 
-/** What this build ships. */
-export const PLAYBOOKS: readonly Playbook[] = loadPlaybooks(SHOWCASES, BENCHES);
+/** What this build ships. The film plays only where the dev server serves `evidence/`. */
+export const PLAYBOOKS: readonly Playbook[] = loadPlaybooks(
+  SHOWCASES,
+  BENCHES,
+  EVIDENCES,
+  THUMBNAILS,
+  import.meta.env.DEV,
+);
+
+/** Whether the evidence films the bench run it is filed against, or an earlier one. */
+export function evidenceCurrent(p: Playbook): boolean {
+  return p.evidence !== null && p.bench !== null && p.evidence.benchRunAt === p.bench.runAt;
+}
+
+/** "1:12" from seconds. */
+export function clock(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}

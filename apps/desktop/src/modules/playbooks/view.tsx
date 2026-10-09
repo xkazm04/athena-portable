@@ -7,7 +7,9 @@
  * verdict in the corner, two chips and no prose. The second layer opens one playbook on an
  * abstract (ADR 0053): the promise, the proof in three numbers, and one line for each part of it.
  * A part opens in place as the third level — the chore, the portals, the cards the gate filed,
- * the traps, the run — and Back returns to the abstract before it closes the layer.
+ * the traps, the run — and Back returns to the abstract before it closes the layer. A filmed run
+ * (ADR 0055) puts its still on the tile and opens as a part of its own: the film where the dev
+ * server serves it, else the still, with the narration and whether it is current.
  *
  * Which layer and which part are open is view-local (ADR 0029, decision 3); the open playbook is
  * looked up from the model on every render.
@@ -37,6 +39,7 @@ import {
   visitsOf,
   facetsOf,
   type AudienceFilter,
+  type EvidenceView,
   type Facet,
   type FacetId,
   type PlaybookView,
@@ -202,8 +205,15 @@ const count = (items: readonly PlaybookView[], audience: "home" | "work") =>
 function TileFoot({ view }: { view: PlaybookView }) {
   const by = view.manual.replace(/ by hand$/, "");
   const run = view.measured.replace(/ with Athena$/, "");
+  const film = view.evidence;
   return (
     <>
+      {film?.thumbnailUrl ? (
+        <span className="pb-tile-thumb" data-stale={film.current ? undefined : ""}>
+          <img src={film.thumbnailUrl} alt="" loading="lazy" decoding="async" />
+          <span className="pb-tile-thumb__len typo-data">{film.current ? film.length : `${film.length}, stale`}</span>
+        </span>
+      ) : null}
       {view.manual ? (
         <span className="pb-chip pb-chip--athena" title={[view.manual, view.measured].filter(Boolean).join(", ")}>
           {run ? `${by} → ${run}` : view.manual}
@@ -676,6 +686,8 @@ function FacetBody({
           ) : null}
         </>
       ) : null;
+    case "evidence":
+      return view.evidence ? <Film film={view.evidence} /> : null;
     case "lessons":
       return <Lessons playbook={p} />;
     case "money":
@@ -951,6 +963,51 @@ function Replay({ trace, initialTurn = 0 }: { trace: readonly TraceTurn[]; initi
           </Button>
         </div>
       </div>
+    </SectionCard>
+  );
+}
+
+/**
+ * The run filmed (ADR 0055): the film where something serves it, the committed still where nothing
+ * does, and what the narration says. A film of an earlier run than the bench holds says so.
+ */
+function Film({ film }: { film: EvidenceView }) {
+  const [playable, setPlayable] = useState(film.videoUrl !== null);
+  return (
+    <SectionCard
+      title="The run, filmed"
+      note={`captured ${film.capturedAt}`}
+      action={<Badge tone={film.standing.tone}>{film.standing.label}</Badge>}
+    >
+      {playable && film.videoUrl ? (
+        <video
+          className="pb-film"
+          controls
+          preload="metadata"
+          poster={film.thumbnailUrl || undefined}
+          src={film.videoUrl}
+          onError={() => setPlayable(false)}
+        />
+      ) : film.thumbnailUrl ? (
+        <img className="pb-film" src={film.thumbnailUrl} alt="What she filed, at the end of the filmed run" />
+      ) : null}
+      {!playable ? (
+        <p className="typo-caption">
+          The film stays in evidence/ on the machine that made it; the dev server plays it there.
+        </p>
+      ) : null}
+      <dl className="pb-proof__stats">
+        <Stat term="Length" value={film.length} />
+        <Stat term="Captured" value={film.capturedAt || "–"} />
+        <Stat term="Voice" value={film.voice || "–"} />
+      </dl>
+      <p className="typo-body pb-film__standing">
+        <StatusDot tone={film.standing.tone} />
+        {film.standing.sentence}
+      </p>
+      <PageSection title="What the narration says" note="Written from the bench's own numbers, not by a model.">
+        <blockquote className="pb-narration typo-body">{film.narration}</blockquote>
+      </PageSection>
     </SectionCard>
   );
 }

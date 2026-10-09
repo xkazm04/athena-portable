@@ -2,6 +2,10 @@
 
 One line per commit, newest phase first. Written by the orchestrator at the end of each phase.
 
+## [Unreleased]
+
+- `feat(playbooks): a filmed run shows on its tile and opens as a part of the layer` — ADR 0055; `parseEvidence` reads `evidence.json` and `thumb.jpg` through eager globs into `Playbook.evidence`; the tile carries the still and the length, *The run, filmed* plays the film where the dev server serves `evidence/` (byte ranges) and shows the still elsewhere, with the narration and current or stale against the bench; a `shipped:<id>` fixture per shipped playbook.
+
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
 - `docs: module documentation in docs/features and a build report across the waves` — one page per module (core, harness, daemon and channels, connectors, bridge, desktop, playbooks, Proving Ground, examples and UAT) with its current state; `docs/report/index.html`, a standalone page of the five waves, the nine playbooks' latest runs, the twelve fixes and the limits.

@@ -94,3 +94,36 @@ test("the overview says what the bench walked past, not only what it found", () 
   expect(html.includes("1 false claim")).toBe(true);
   expect(html.includes("by hand")).toBe(true);
 });
+
+test("a filmed playbook's tile carries its still and its length; a stale one says so", () => {
+  const html = renderToStaticMarkup(entry.preview("typical"));
+  expect(html.match(/class="pb-tile-thumb"/g)?.length).toBe(2);
+  expect(html.match(/data-stale=""/g)?.length).toBe(1);
+  expect(html).toContain("1:11");
+  expect(html).toContain("1:05, stale");
+});
+
+test("the film plays where it is served and shows its still where it is not", () => {
+  const served = renderToStaticMarkup(entry.preview("open-evidence"));
+  expect(served).toContain("The run, filmed");
+  expect(served).toContain('<video class="pb-film"');
+  expect(served).toContain('src="/evidence/carrier-refunds/evidence.mp4"');
+  expect(served).toContain("Current");
+  expect(served).toContain("narrated for the preview");
+  expect(served).toContain("kokoro af_heart");
+  const still = renderToStaticMarkup(entry.preview("open-short-evidence"));
+  expect(still).not.toContain("<video");
+  expect(still).toContain('<img class="pb-film"');
+  expect(still).toContain("Stale");
+  expect(still).toContain("the dev server plays it there");
+});
+
+test("a playbook with no film shows no film part", () => {
+  expect(renderToStaticMarkup(entry.preview("open-unbenched"))).not.toContain("The run, filmed");
+});
+
+test("each shipped playbook's fixture opens its own layer", () => {
+  const html = renderToStaticMarkup(entry.preview("shipped:lien-desk"));
+  expect(html).toContain('class="pb-abstract"');
+  expect(html).toContain("The subcontractor&#x27;s lien desk");
+});

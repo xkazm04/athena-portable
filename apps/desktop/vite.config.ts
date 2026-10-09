@@ -16,17 +16,66 @@
  * defaults to, because a developer machine is expected to have the reference app's dev server on
  * one of those already — and two shells that fight over a port is a morning lost to a blank
  * window.
+ *
+ * The dev server also hands out a playbook's film from the repository's gitignored `evidence/`
+ * (ADR 0055), so the Playbooks module can play it; a build carries no media and the module shows
+ * the committed thumbnail instead.
  */
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
+import { createReadStream, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import react from "@vitejs/plugin-react";
+import type { Plugin } from "vite";
+import { defineConfig } from "vitest/config";
+
 const root = path.dirname(fileURLToPath(import.meta.url));
+const EVIDENCE = path.resolve(root, "../../evidence");
+
+/**
+ * `GET /evidence/<id>/<file>.mp4` from `evidence/`, with byte ranges so a `<video>` can seek. One
+ * directory deep and one name pattern: nothing else under the repository is reachable this way.
+ */
+function evidenceFilms(): Plugin {
+  return {
+    name: "athena-evidence-films",
+    apply: "serve",
+    configureServer(server) {
+      server.middlewares.use("/evidence", (req, res, next) => {
+        const m = /^\/([\w.-]+)\/([\w.-]+\.mp4)$/.exec((req.url ?? "").split("?")[0]);
+        if (!m || m[1].startsWith(".")) return next();
+        const file = path.join(EVIDENCE, m[1], m[2]);
+        let size: number;
+        try {
+          size = statSync(file).size;
+        } catch {
+          res.statusCode = 404;
+          res.end();
+          return;
+        }
+        const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? "");
+        const start = range && range[1] ? Number(range[1]) : 0;
+        const end = range && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+        if (start > end || start >= size) {
+          res.statusCode = 416;
+          res.setHeader("Content-Range", `bytes */${size}`);
+          res.end();
+          return;
+        }
+        res.statusCode = range ? 206 : 200;
+        res.setHeader("Content-Type", "video/mp4");
+        res.setHeader("Accept-Ranges", "bytes");
+        res.setHeader("Content-Length", String(end - start + 1));
+        if (range) res.setHeader("Content-Range", `bytes ${start}-${end}/${size}`);
+        createReadStream(file, { start, end }).pipe(res);
+      });
+    },
+  };
+}
 
 export default defineConfig({
   base: "./",
-  plugins: [react()],
+  plugins: [react(), evidenceFilms()],
   resolve: {
     alias: { "@": path.resolve(root, "src") },
   },

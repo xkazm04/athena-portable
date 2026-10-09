@@ -8,6 +8,8 @@ import type { TraceTurn } from "@/lib/playbooks";
 
 import { fixtures } from "./fixtures";
 import { arrange, facetsOf, foundBy, readsOf, turnState, visitsOf } from "./model";
+import { fixtureIds, initialOpenFor } from "./fixtures";
+import { PLAYBOOKS } from "@/lib/playbooks";
 
 const turn = (portal: string, over: Partial<TraceTurn> = {}): TraceTurn => ({
   portal,
@@ -107,4 +109,37 @@ test("an unbenched playbook's result line is its verdict sentence, with no figur
   const result = facetsOf(unbenched!).find((f) => f.id === "result");
   expect(result?.summary).toBe(unbenched!.verdict.sentence);
   expect(result?.figure).toBe("");
+});
+
+test("a film is current while it films the bench's run, stale once the bench moved on", () => {
+  const byId = (id: string) => fixtures.typical.items.find((v) => v.id === id)!;
+  const current = byId("carrier-refunds").evidence;
+  expect(current?.current).toBe(true);
+  expect(current?.standing.label).toBe("Current");
+  expect(current?.length).toBe("1:11");
+  const stale = byId("chargeback-evidence").evidence;
+  expect(stale?.current).toBe(false);
+  expect(stale?.standing.label).toBe("Stale");
+  expect(stale?.standing.sentence).toContain("the latest is of 2026-10-07");
+  expect(byId("flight-compensation").evidence).toBeNull();
+});
+
+test("the abstract lists the film as a part of the proof only when there is one", () => {
+  for (const view of fixtures.heavy.items) {
+    const film = facetsOf(view).find((f) => f.id === "evidence");
+    expect(Boolean(film), view.id).toBe(view.evidence !== null);
+    if (film) {
+      expect(film.group).toBe("proof");
+      expect(film.figure).toBe(view.evidence?.length);
+      expect(film.summary).toContain(view.evidence?.current ? "current" : "stale");
+    }
+  }
+});
+
+test("every shipped playbook has a fixture that opens its layer, generated from the shipped set", () => {
+  for (const p of PLAYBOOKS) {
+    expect(fixtureIds, p.id).toContain(`shipped:${p.id}`);
+    expect(initialOpenFor(`shipped:${p.id}`)).toBe(p.id);
+  }
+  expect(initialOpenFor("shipped:no-such-playbook")).toBeNull();
 });

@@ -4,19 +4,55 @@
  * Built from raw JSON through `parsePlaybook`, the same reader the shipped set goes through, so a
  * fixture cannot drift into a shape no real `playbook.json` could produce. They are invented and
  * stay invented: the shipped playbooks change every round, and a fixture that tracked them would
- * be a second copy to keep in step.
+ * be a second copy to keep in step. The exception is `shipped:<id>`, one per playbook this build
+ * ships, generated from the shipped set: each opens that playbook's layer, and it is what the
+ * evidence capture films (ADR 0055).
  */
 import type { FixtureId } from "@/modules/types";
-import { PLAYBOOKS, parsePlaybook, type Playbook } from "@/lib/playbooks";
+import { PLAYBOOKS, parseEvidence, parsePlaybook, type Evidence, type Playbook } from "@/lib/playbooks";
 
 import { selectPlaybooks, type FacetId, type PlaybookActions, type PlaybooksModel } from "./model";
 
 const NOOP: PlaybookActions = { copy: () => {}, open: () => {}, hand: () => {} };
 
-function book(raw: Record<string, unknown>, bench: Record<string, unknown> | null = null): Playbook {
-  const p = parsePlaybook(raw, bench);
+function book(
+  raw: Record<string, unknown>,
+  bench: Record<string, unknown> | null = null,
+  evidence: Evidence | null = null,
+): Playbook {
+  const p = parsePlaybook(raw, bench, evidence);
   if (p === null) throw new Error("fixture without an id");
   return p;
+}
+
+/** A still for the invented films: a flat card, so a fixture needs no image file. */
+const STILL =
+  "data:image/svg+xml," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="320" height="200" fill="#0f1c1f"/><rect x="16" y="16" width="180" height="14" rx="4" fill="#2f6f73"/><rect x="16" y="44" width="288" height="120" rx="8" fill="#16292d"/></svg>',
+  );
+
+/** An `evidence.json` for an invented playbook, through the same reader the shipped ones go through. */
+function film(id: string, benchRunAt: string, seconds: number, served: boolean): Evidence | null {
+  return parseEvidence(
+    {
+      schema: 1,
+      playbook: id,
+      captured_at: "2026-10-09T08:30:00Z",
+      bench_run_at: benchRunAt,
+      narration: {
+        text: `The ${id} run, narrated for the preview: what the chore is, what she found, the traps she walked past, and the verdict.`,
+        engine: "kokoro",
+        voice: "af_heart",
+        duration_s: seconds,
+        sha256: "0".repeat(64),
+      },
+      video: { path: `evidence/${id}/evidence.mp4`, duration_s: seconds, bytes: 2_400_000, sha256: "1".repeat(64) },
+      thumbnail: { path: `playbooks/${id}/thumb.jpg`, bytes: 48_000, sha256: "2".repeat(64) },
+    },
+    STILL,
+    served,
+  );
 }
 
 const REFUNDS = book(
@@ -133,6 +169,8 @@ const REFUNDS = book(
       },
     ],
   },
+  // Filmed from this same run, and served: the layer plays it.
+  film("carrier-refunds", "2026-10-07T22:10:00Z", 71.4, true),
 );
 
 const CHARGEBACKS = book(
@@ -191,6 +229,8 @@ const CHARGEBACKS = book(
     ],
     missed: [{ action: "submit_evidence", key: "DP-127", value_usd: 157 }],
   },
+  // Filmed from an earlier run, in a build with no dev server: the still, marked stale.
+  film("chargeback-evidence", "2026-10-06T18:02:00Z", 64.9, false),
 );
 
 const FLIGHTS = book({
@@ -229,6 +269,11 @@ const sorted = (list: Playbook[]) =>
     (a, b) => b.edge.difficulty * b.edge.usefulness - a.edge.difficulty * a.edge.usefulness,
   );
 
+const SHIPPED = selectPlaybooks(PLAYBOOKS, NOOP);
+
+/** The prefix of the per-playbook fixtures: `shipped:lien-desk` opens the lien desk's layer. */
+export const SHIPPED_PREFIX = "shipped:";
+
 export const fixtures: Record<FixtureId, PlaybooksModel> = {
   empty: selectPlaybooks([], NOOP),
   typical: selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
@@ -242,10 +287,13 @@ export const fixtures: Record<FixtureId, PlaybooksModel> = {
   "open-short-traps": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
   "open-short-proof": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
   "open-unbenched": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
+  "open-evidence": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
+  "open-short-evidence": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
   /** What this build actually ships, with its real bench runs: the one fixture that is not invented. */
-  shipped: selectPlaybooks(PLAYBOOKS, NOOP),
-  "shipped-open": selectPlaybooks(PLAYBOOKS, NOOP),
-  "shipped-proof": selectPlaybooks(PLAYBOOKS, NOOP),
+  shipped: SHIPPED,
+  "shipped-open": SHIPPED,
+  "shipped-proof": SHIPPED,
+  ...Object.fromEntries(PLAYBOOKS.map((p) => [`${SHIPPED_PREFIX}${p.id}`, SHIPPED])),
 };
 
 export const fixtureIds: readonly FixtureId[] = Object.keys(fixtures);
@@ -257,12 +305,18 @@ export function initialTurnFor(fixture: FixtureId): number {
 
 /** The fixtures that render a playbook's layer open, and which one. */
 export function initialOpenFor(fixture: FixtureId): string | null {
+  if (fixture.startsWith(SHIPPED_PREFIX)) {
+    const id = fixture.slice(SHIPPED_PREFIX.length);
+    return PLAYBOOKS.some((p) => p.id === id) ? id : null;
+  }
   switch (fixture) {
     case "open":
     case "open-run":
     case "open-turn-2":
     case "open-traps":
+    case "open-evidence":
       return REFUNDS.id;
+    case "open-short-evidence":
     case "open-short":
     case "open-short-traps":
     case "open-short-proof":
@@ -289,6 +343,9 @@ export function initialFacetFor(fixture: FixtureId): FacetId | null {
     case "open-short-proof":
     case "shipped-proof":
       return "result";
+    case "open-evidence":
+    case "open-short-evidence":
+      return "evidence";
     default:
       return null;
   }
