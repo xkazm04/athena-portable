@@ -1,0 +1,112 @@
+{
+  "id": "stormwater-permit-log",
+  "title": "The site's stormwater inspections and corrective actions kept on the permit's schedule",
+  "domain": "Construction",
+  "audience": "work",
+  "promise": "The permit log is brought up to date against the rain gauge, the inspection reports and the dated site photos: the storm inspection the schedule requires is assigned for the day it is due, a corrective action is opened for each finding that needs one, due 7 days from its discovery, and each corrective action the photos show finished is closed with the day it was finished. Nothing is opened for routine maintenance, closed before the fix is done, or assigned for rain that never reached the trigger.",
+  "persona": "The compliance coordinator of a site contractor grading a retail pad under EPA's Construction General Permit",
+  "chore": "Read the site's stormwater plan: the inspection schedule, the working hours, the controls, and the maintenance, corrective action and record rules. Read every storm on the site's rain gauge, every inspection report and corrective action in the permit log, and the dated photos of the controls. Then apply the 2022 Construction General Permit as the plan states it: a storm inspection within 24 hours of 0.25 inches falling within 24 hours, or by the end of the next business day when the window is all weekend; routine maintenance by the next business day and not a corrective action, unless it is the third time at the same place; a corrective action for a replacement, a missing control or a discharge, due 7 calendar days from discovery; a closure dated when the photos show the fix finished. None of the four systems shares data with another.",
+  "command": "I think our stormwater log on Fenwick Crossing has fallen behind. Go through the SWPPP in Docshelf, Rainlog, Permitflow and the Sitegrid photos: assign any storm inspection that's due, open a corrective action for every finding that needs one, with the right due date, and close the ones that are really finished, dated when they were. Leave routine maintenance and anything not actually done alone.",
+  "apps": [
+    {
+      "name": "Docshelf",
+      "role": "the stormwater pollution prevention plan: schedule, working hours, controls, maintenance, corrective actions and records",
+      "api": "Document store, no data feed",
+      "url": ""
+    },
+    {
+      "name": "Rainlog",
+      "role": "every storm on the site's own rain gauge, with when 0.25 inches was reached",
+      "api": "Rain gauge web app, no export to the permit log",
+      "url": ""
+    },
+    {
+      "name": "Permitflow",
+      "role": "the permit's inspection reports, findings and corrective actions, and the assignments, openings and closures",
+      "api": "Permit compliance log only",
+      "url": ""
+    },
+    {
+      "name": "Sitegrid photos",
+      "role": "dated photos of each control: what was fixed and when",
+      "api": "Project platform photos, no link to the permit log",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the stormwater plan's schedule, hours and rules in Docshelf.",
+    "Reads every storm on the site's gauge in Rainlog.",
+    "Reads every inspection report, finding and corrective action in Permitflow.",
+    "Reads the dated photos of the controls in Sitegrid.",
+    "Back in Permitflow, assigns the storm inspection that is due, opens the corrective actions the findings need, and closes the ones the photos show finished."
+  ],
+  "gates": [
+    {
+      "action": "assign_inspection",
+      "label": "Assign a storm inspection",
+      "why": "It sends the qualified inspector out under the permit; an assignment for rain that never triggered one wastes a visit, and a missed one is a permit violation."
+    },
+    {
+      "action": "open_corrective_action",
+      "label": "Open a corrective action",
+      "why": "A signed, certified entry in the permit record with a deadline the operator is then held to."
+    },
+    {
+      "action": "close_corrective_action",
+      "label": "Close a corrective action",
+      "why": "A signed certification that the fix is finished on a stated day; closing one the photos show unfinished is a false certification under the Clean Water Act."
+    }
+  ],
+  "traps": [
+    "A weekend storm already inspected on the Monday.",
+    "Two drizzles that add up to 0.27 inches, 35 hours apart.",
+    "A storm of 0.11 inches.",
+    "Sediment at half an inlet bag, cleaned out the same afternoon.",
+    "A stockpile cover re-secured during the inspection.",
+    "The second sediment removal at the same fence, which is still routine.",
+    "A finding already opened as a corrective action.",
+    "A silt fence whose posts are set and fabric is not.",
+    "A corrective action already closed."
+  ],
+  "memory": [
+    "The schedule, the hours, and what is maintenance and what is a corrective action, carried from the SWPPP.",
+    "Each storm's inches and when 0.25 inches was reached, carried from Rainlog.",
+    "Each finding, each corrective action and its due date, carried from Permitflow.",
+    "What each photo shows finished and when, from Sitegrid."
+  ],
+  "economics": {
+    "value_usd": 5000,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. Keeping a construction site's permit log by hand, against the gauge, the reports and the photos, takes a coordinator about two hours a week, about 50 hours a year on a site of this size, and a stormwater consultant bills about $100 an hour for it; with a missed inspection or a late corrective action avoided, about $5,000 a year. Each act in the bench world is weighted at $250, about two and a half hours of that time, an estimate; none is money recovered. Times a year: fifty, a weekly sweep while the site is open.",
+    "manual_minutes": 120,
+    "times_per_year": 50,
+    "incumbent": "None takes a share: stormwater consultants and inspection services bill by the visit or the hour.",
+    "sources": [
+      {
+        "label": "EPA: 2022 Construction General Permit, Part 4 (inspection frequency: every 14 days and within 24 hours of 0.25 inches) and Part 5 (corrective actions and their deadlines)",
+        "url": "https://www.epa.gov/system/files/documents/2022-01/2022-cgp-final-permit.pdf"
+      },
+      {
+        "label": "EPA: routine maintenance and corrective action determination guidelines for the 2022 CGP",
+        "url": "https://www.epa.gov/system/files/documents/2022-07/Routine-Maintenance-Corrective-Action-Determination-Guidelines.pdf"
+      },
+      {
+        "label": "EPA: 2022 Construction General Permit fact sheet",
+        "url": "https://www.epa.gov/system/files/documents/2022-01/2022-cgp-final-fact-sheet.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Four systems with no shared data; each storm is read against a rolling 24-hour window and the working week, each finding against what counts as maintenance and the third repeat, each closure against a dated photo, and nine look like work to log and are not.",
+    "usefulness_why": "Mostly hours, on a permit whose missed inspections and late corrective actions are Clean Water Act violations."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful coordinator gets most of it; the bar is most of the assignment, openings and closures with the right dates, nothing logged that the rules or the photos do not support, inside an hour."
+  },
+  "caveat": "Tolliver Site Builders, Fenwick Crossing, its permit number and plan, Docshelf, Rainlog, Permitflow, Sitegrid and every person here are invented. The rules are EPA's 2022 Construction General Permit, which applies where EPA is the permitting authority (New Mexico among them), summarized in the world's own words and fixed as of October 2026; a state permit or the site's own plan can differ. This is not legal or environmental compliance advice."
+}

@@ -1,0 +1,382 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "docshelf",
+      "name": "Docshelf",
+      "origin": "https://tolliver.docshelf.example",
+      "path": "/sites/fenwick-crossing/swppp",
+      "view": {
+        "view": "Fenwick Crossing: stormwater pollution prevention plan (SWPPP), current revision",
+        "company": "Tolliver Site Builders",
+        "today": "Friday 9 October 2026, 10:00"
+      },
+      "tools": [
+        {
+          "name": "read_swppp",
+          "kind": "READ",
+          "description": "The site's SWPPP by section: schedule, hours, controls, maintenance, corrective, records. Omit the section for the index.",
+          "params": {
+            "section": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "swppp",
+            "match": {
+              "section": "section"
+            },
+            "default": {
+              "section": "index"
+            }
+          }
+        }
+      ],
+      "aliases": [
+        "Docshelf",
+        "the SWPPP",
+        "the documents"
+      ]
+    },
+    {
+      "app_id": "rainlog",
+      "name": "Rainlog",
+      "origin": "https://app.rainlog.example",
+      "path": "/gauges/fenwick-crossing",
+      "view": {
+        "view": "On-site rain gauge, Fenwick Crossing",
+        "today": "Friday 9 October 2026, 10:00"
+      },
+      "tools": [
+        {
+          "name": "list_rain_events",
+          "kind": "READ",
+          "description": "Every rain event the site gauge recorded since 15 September: event id, start, end, the inches, and when 0.25 inches was reached, if it was.",
+          "params": {},
+          "returns": {
+            "table": "rain"
+          }
+        }
+      ],
+      "aliases": [
+        "Rainlog",
+        "the rain gauge",
+        "the gauge"
+      ]
+    },
+    {
+      "app_id": "permitflow",
+      "name": "Permitflow",
+      "origin": "https://tolliver.permitflow.example",
+      "path": "/permits/NMR1000AB",
+      "view": {
+        "view": "Construction General Permit log: Fenwick Crossing (NMR1000AB)",
+        "operator": "Tolliver Site Builders",
+        "user": "Dana Whitlow, compliance coordinator",
+        "today": "Friday 9 October 2026, 10:00"
+      },
+      "tools": [
+        {
+          "name": "list_inspections",
+          "kind": "READ",
+          "description": "Every inspection report on the permit since September: id, date, what triggered it, the inspector and the findings.",
+          "params": {},
+          "returns": {
+            "table": "inspections"
+          }
+        },
+        {
+          "name": "list_corrective_actions",
+          "kind": "READ",
+          "description": "Every corrective action on the permit: id, the finding, the control, what is needed, when it was discovered, when it is due, and its status.",
+          "params": {},
+          "returns": {
+            "table": "cas"
+          }
+        },
+        {
+          "name": "assign_inspection",
+          "kind": "REACHES_A_PERSON",
+          "description": "Assign the qualified inspector a storm inspection the schedule requires: the rain event id (R-nnnn) and the date it must be done by (YYYY-MM-DD).",
+          "params": {
+            "event": {
+              "type": "string"
+            },
+            "inspect_by": {
+              "type": "string"
+            }
+          },
+          "says": "Storm inspection for {event} assigned, due {inspect_by}."
+        },
+        {
+          "name": "open_corrective_action",
+          "kind": "PERMANENT",
+          "description": "Open a signed corrective action report on the permit for one inspection finding: the finding id (F-nnnn-n), the due date (YYYY-MM-DD) and what is needed.",
+          "params": {
+            "finding": {
+              "type": "string"
+            },
+            "due_date": {
+              "type": "string"
+            },
+            "action": {
+              "type": "string"
+            }
+          },
+          "says": "Corrective action opened for {finding}, due {due_date}."
+        },
+        {
+          "name": "close_corrective_action",
+          "kind": "PERMANENT",
+          "description": "Close an open corrective action with a signed completion: the corrective action id (CA-nn) and the date the fix was completed (YYYY-MM-DD).",
+          "params": {
+            "ca": {
+              "type": "string"
+            },
+            "completed_date": {
+              "type": "string"
+            }
+          },
+          "says": "{ca} closed as completed on {completed_date}."
+        }
+      ],
+      "aliases": [
+        "Permitflow",
+        "the permit log",
+        "the CGP log"
+      ]
+    },
+    {
+      "app_id": "sitegrid",
+      "name": "Sitegrid photos",
+      "origin": "https://app.sitegrid.example",
+      "path": "/tolliver/fenwick-crossing/photos",
+      "view": {
+        "view": "Fenwick Crossing: dated site photos of the stormwater controls",
+        "today": "Friday 9 October 2026, 10:00"
+      },
+      "tools": [
+        {
+          "name": "list_photos",
+          "kind": "READ",
+          "description": "Dated site photos of the stormwater controls since 30 September: photo id, date, control and caption.",
+          "params": {},
+          "returns": {
+            "table": "photos"
+          }
+        }
+      ],
+      "aliases": [
+        "Sitegrid",
+        "Sitegrid photos",
+        "the site photos",
+        "the photos"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "docshelf",
+      "message": "I think the stormwater log on Fenwick Crossing has fallen behind. Start with the SWPPP in Docshelf: the inspection schedule, working hours, maintenance and corrective action rules, and records.",
+      "nudges": 1
+    },
+    {
+      "app": "rainlog",
+      "message": "Now Rainlog: every storm on the site gauge since mid-September, and which ones trigger an inspection.",
+      "nudges": 1
+    },
+    {
+      "app": "permitflow",
+      "message": "This is Permitflow, the permit log. Read every inspection report with its findings, and every corrective action and where it stands.",
+      "nudges": 1
+    },
+    {
+      "app": "sitegrid",
+      "message": "Sitegrid's site photos. What's actually been fixed, and when.",
+      "nudges": 1
+    },
+    {
+      "app": "permitflow",
+      "message": "Back in Permitflow. Assign any storm inspection that's due, open a corrective action for every finding that needs one with the right due date, and close every one that's actually done, dated when it was finished. Then tell me what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "swppp": [
+      {
+        "section": "index",
+        "text": "Today is Friday 9 October 2026, 10:00. Stormwater pollution prevention plan, Fenwick Crossing retail site, Alcaraz, New Mexico (9.2 acres). Covered under EPA's 2022 Construction General Permit, NPDES ID NMR1000AB; Tolliver Site Builders is the operator. Sections: schedule, hours, controls, maintenance, corrective, records."
+      },
+      {
+        "section": "schedule",
+        "text": "Inspection schedule chosen under CGP Part 4.2: once every 14 calendar days, and within 24 hours of a storm event that produces 0.25 inches of rain or more within a 24-hour period, as measured by the site's own rain gauge (Rainlog). Several smaller storms count together only if 0.25 inches or more falls within one 24-hour period; the 24 hours run from the moment the 0.25 inches is reached. One inspection per qualifying storm."
+      },
+      {
+        "section": "hours",
+        "text": "Normal working hours are Monday to Friday, 7:00 to 17:00. When a storm inspection's 24-hour window falls entirely outside working hours, the inspection is done by the end of the next business day; otherwise it is done inside the window. Inspections are done by the qualified inspector, Marco Ibarra, assigned through Permitflow."
+      },
+      {
+        "section": "controls",
+        "text": "SF-1 to SF-4: silt fence on the perimeter (SF-3 runs along the east property line, station 0+00 to 6+00). CI-1: filter bag inlet protection on the Fenwick Road inlet. CE-1: stabilized construction entrance. SB-1: sediment basin with an outlet riser. ST-1 and ST-2: stockpiles, each to be covered and ringed with a perimeter control, as in the site map."
+      },
+      {
+        "section": "maintenance",
+        "text": "Routine maintenance (CGP Part 2.1.4, summarized): remove sediment from a perimeter control or an inlet filter before it reaches half the control's above-ground height, and make minor repairs; start at once and finish by the close of the next business day. It is recorded in the inspection report and is not a corrective action. But when the same maintenance is needed on the same control at the same location three or more times, the condition is handled as a corrective action."
+      },
+      {
+        "section": "corrective",
+        "text": "Corrective action (CGP Part 5, summarized): needed when a control needs a new or replacement control or a significant repair, when a control the plan requires was never installed, when sediment is discharged off the site, or for a repeated maintenance condition. Start at once. Where a new or replacement control or a significant repair is needed, complete it within 7 calendar days from discovery; otherwise by the close of the next business day. A corrective action is opened in Permitflow with its due date even when its report is late, and closed with the day the fix was completed."
+      },
+      {
+        "section": "records",
+        "text": "Inspection reports are entered in Permitflow within 24 hours of the inspection. Corrective action reports are opened within 24 hours of discovery and closed within 24 hours of completion; a closure states the date the work was finished, as shown in the dated site photos. Every entry is signed and certified by the operator."
+      }
+    ],
+    "rain": [
+      {
+        "event": "R-0921",
+        "from": "Mon 21 Sept 13:00",
+        "to": "Mon 21 Sept 19:00",
+        "inches": 0.48,
+        "note": "0.25 in. reached at 15:20"
+      },
+      {
+        "event": "R-0928",
+        "from": "Mon 28 Sept 15:10",
+        "to": "Mon 28 Sept 17:40",
+        "inches": 0.11
+      },
+      {
+        "event": "R-1003",
+        "from": "Sat 3 Oct 02:00",
+        "to": "Sat 3 Oct 09:00",
+        "inches": 0.62,
+        "note": "0.25 in. reached at 04:30"
+      },
+      {
+        "event": "R-1005",
+        "from": "Mon 5 Oct 06:00",
+        "to": "Mon 5 Oct 09:00",
+        "inches": 0.14
+      },
+      {
+        "event": "R-1006",
+        "from": "Tue 6 Oct 20:00",
+        "to": "Tue 6 Oct 23:00",
+        "inches": 0.13
+      },
+      {
+        "event": "R-1008",
+        "from": "Thu 8 Oct 21:00",
+        "to": "Fri 9 Oct 03:00",
+        "inches": 0.34,
+        "note": "0.25 in. reached at 01:00 Fri 9 Oct"
+      }
+    ],
+    "inspections": [
+      {
+        "inspection": "INS-0922",
+        "date": "2026-09-22",
+        "trigger": "Storm R-0921",
+        "inspector": "M. Ibarra",
+        "findings": "F-0922-1: SF-3 at station 4+50, sediment at half the fence height; removed the same day. F-0922-2: CE-1 track-out onto Fenwick Road; swept the same day."
+      },
+      {
+        "inspection": "INS-0929",
+        "date": "2026-09-29",
+        "trigger": "Routine (14-day)",
+        "inspector": "M. Ibarra",
+        "findings": "F-0929-1: SF-3 at station 4+50, sediment at half the fence height again; removed 30 Sept. F-0929-2: CI-1 filter bag torn; replacement needed (opened as CA-14). F-0929-3: SB-1 outlet riser cracked; replacement needed (opened as CA-15). F-0929-4: SF-1 gap at the north swale, fence down for 25 ft (opened as CA-16)."
+      },
+      {
+        "inspection": "INS-1005",
+        "date": "2026-10-05",
+        "trigger": "Storm R-1003 (window entirely on the weekend)",
+        "inspector": "M. Ibarra",
+        "findings": "F-1005-1: SF-2 undermined and knocked down for 40 ft at the low point; sediment carried past the fence onto the neighboring lot. F-1005-2: CI-1 sediment at about half the bag's height; cleaned out that afternoon. F-1005-3: ST-1, the new topsoil stockpile, has no cover and no perimeter control. F-1005-4: SF-3 at station 4+50, sediment at half the fence height a third time; removed, and the upslope swale sends the flow straight at it. F-1005-5: ST-2 cover partly blown back; re-secured during the inspection."
+      }
+    ],
+    "cas": [
+      {
+        "ca": "CA-12",
+        "finding": "F-0915-2",
+        "control": "CE-1",
+        "what": "Entrance stone replaced",
+        "discovered": "2026-09-15",
+        "due": "2026-09-22",
+        "status": "Closed 24 Sept (completed 21 Sept)"
+      },
+      {
+        "ca": "CA-14",
+        "finding": "F-0929-2",
+        "control": "CI-1",
+        "what": "Filter bag torn; replace",
+        "discovered": "2026-09-29",
+        "due": "2026-10-06",
+        "status": "Open"
+      },
+      {
+        "ca": "CA-15",
+        "finding": "F-0929-3",
+        "control": "SB-1",
+        "what": "Outlet riser cracked; replace",
+        "discovered": "2026-09-29",
+        "due": "2026-10-06",
+        "status": "Open"
+      },
+      {
+        "ca": "CA-16",
+        "finding": "F-0929-4",
+        "control": "SF-1",
+        "what": "Fence down 25 ft at the north swale; reinstall",
+        "discovered": "2026-09-29",
+        "due": "2026-10-06",
+        "status": "Open"
+      }
+    ],
+    "photos": [
+      {
+        "photo": "P-0930",
+        "date": "2026-09-30",
+        "control": "SF-3",
+        "caption": "Station 4+50: sediment removed from the fence."
+      },
+      {
+        "photo": "P-1002",
+        "date": "2026-10-02",
+        "control": "CI-1",
+        "caption": "New filter bag installed in the Fenwick Road inlet; the torn bag removed."
+      },
+      {
+        "photo": "P-1005",
+        "date": "2026-10-05",
+        "control": "SF-2",
+        "caption": "SF-2 down at the low point; sediment fan on the neighbor's lot."
+      },
+      {
+        "photo": "P-1006",
+        "date": "2026-10-06",
+        "control": "SF-1",
+        "caption": "North swale: new fence posts set; fabric not yet attached or trenched in."
+      },
+      {
+        "photo": "P-1007",
+        "date": "2026-10-07",
+        "control": "SB-1",
+        "caption": "Outlet riser replaced with a new perforated riser and trash rack; basin draining."
+      },
+      {
+        "photo": "P-1007B",
+        "date": "2026-10-07",
+        "control": "ST-1",
+        "caption": "Topsoil stockpile ST-1, still uncovered."
+      },
+      {
+        "photo": "P-1008",
+        "date": "2026-10-08",
+        "control": "SF-2",
+        "caption": "Crew staging new fence fabric at SF-2; old fence still down."
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "stormwater-permit-log",
+  "captured_at": "2026-10-09T23:13:54Z",
+  "bench_run_at": "2026-10-09T23:10:09Z",
+  "narration": {
+    "text": "The site's stormwater inspections and corrective actions kept on the permit's schedule. This is a chore for the compliance coordinator of a site contractor grading a retail pad under EPA's Construction General Permit. Read the site's stormwater plan: the inspection schedule, the working hours, the controls, and the maintenance, corrective action and record rules. Athena works it across 4 portals: Docshelf, Rainlog, Permitflow and Sitegrid photos. On the bench, she found 6 of 6 eligible items, worth 1,500 dollars of the 1,500 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A weekend storm already inspected on the Monday. Two drizzles that add up to 0.27 inches, 35 hours apart. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 52 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 64.713,
+    "sha256": "41696ac8b92277539161bd20bdd04fa3bf3471ce44cd7e394d135335da33b05d"
+  },
+  "video": {
+    "path": "evidence/stormwater-permit-log/evidence.mp4",
+    "duration_s": 64.72,
+    "bytes": 3097553,
+    "sha256": "b5fb4158cc114f808570854ecaa3d0d12a3431fa4f4d32b5d0cd76a8fb37a9bf"
+  },
+  "thumbnail": {
+    "path": "playbooks/stormwater-permit-log/thumb.jpg",
+    "bytes": 83593,
+    "sha256": "476553a91d2aab70a787a47dfe8fecb64362fab9caa0bb3573ee5f8f7ce57e03"
+  }
+}

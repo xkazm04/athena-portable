@@ -1,0 +1,291 @@
+{
+  "playbook": "stormwater-permit-log",
+  "run_at": "2026-10-09T23:10:09Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 137.5,
+  "turns": 10,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 10,
+  "cost_usd": 1.474,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.3
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 4,
+    "value_total_usd": 1500.0,
+    "value_found_usd": 1500.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "assign_inspection",
+        "key": "R-1003",
+        "why": "Inspected on Monday 5 Oct (INS-1005), the end of the next business day after a weekend window",
+        "filed": false
+      },
+      {
+        "action": "assign_inspection",
+        "key": "R-1006",
+        "why": "0.13 in.; with Monday's 0.14 in. it makes 0.27 in., but 35 hours apart, never 0.25 in. within 24 hours",
+        "filed": false
+      },
+      {
+        "action": "assign_inspection",
+        "key": "R-0928",
+        "why": "0.11 in.: under the 0.25 in. trigger",
+        "filed": false
+      },
+      {
+        "action": "open_corrective_action",
+        "key": "F-1005-2",
+        "why": "Sediment at half the inlet bag, cleaned out that afternoon: routine maintenance, recorded in the report",
+        "filed": false
+      },
+      {
+        "action": "open_corrective_action",
+        "key": "F-1005-5",
+        "why": "A cover re-secured during the inspection: minor routine maintenance, done",
+        "filed": false
+      },
+      {
+        "action": "open_corrective_action",
+        "key": "F-0929-1",
+        "why": "The second sediment removal at SF-3, done 30 Sept: still routine maintenance; it is the third time on 5 Oct that makes it a corrective action",
+        "filed": false
+      },
+      {
+        "action": "open_corrective_action",
+        "key": "F-0929-2",
+        "why": "Already opened as CA-14",
+        "filed": false
+      },
+      {
+        "action": "close_corrective_action",
+        "key": "CA-16",
+        "why": "Photo P-1006 shows SF-1's posts set but the fabric not attached or trenched in: not complete",
+        "filed": false
+      },
+      {
+        "action": "close_corrective_action",
+        "key": "CA-12",
+        "why": "Already closed on 24 Sept",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "assign_inspection",
+      "key": "R-1008",
+      "outcome": "correct",
+      "value_usd": 250.0,
+      "exact": false,
+      "why": "0.34 in., with 0.25 in. reached at 01:00 Friday 9 Oct: the 24 hours run to 01:00 Saturday and take in Friday's working hours, so it is inspected today; weighted at $250, about two and a half hours of a stormwater consultant's time, an estimate"
+    },
+    {
+      "action": "open_corrective_action",
+      "key": "F-1005-1",
+      "outcome": "correct",
+      "value_usd": 250.0,
+      "exact": true,
+      "why": "SF-2 down for 40 ft with sediment carried onto the neighbor's lot: a discharge and a replacement; 7 calendar days from discovery on 5 Oct, due 12 Oct, and the 8 Oct photo shows it still down; weighted at $250, about two and a half hours of a stormwater consultant's time, an estimate"
+    },
+    {
+      "action": "open_corrective_action",
+      "key": "F-1005-3",
+      "outcome": "correct",
+      "value_usd": 250.0,
+      "exact": true,
+      "why": "ST-1 has none of the cover and perimeter control the SWPPP requires: a control never installed, a new control due 7 days from 5 Oct, 12 Oct; weighted at $250, about two and a half hours of a stormwater consultant's time, an estimate"
+    },
+    {
+      "action": "open_corrective_action",
+      "key": "F-1005-4",
+      "outcome": "correct",
+      "value_usd": 250.0,
+      "exact": false,
+      "why": "The same sediment removal at SF-3 station 4+50 a third time (22 Sept, 29 Sept, 5 Oct): a corrective action, with a new control upslope due 12 Oct; weighted at $250, about two and a half hours of a stormwater consultant's time, an estimate"
+    },
+    {
+      "action": "close_corrective_action",
+      "key": "CA-14",
+      "outcome": "correct",
+      "value_usd": 250.0,
+      "exact": true,
+      "why": "Photo P-1002 shows the new CI-1 filter bag installed on 2 Oct; weighted at $250, about two and a half hours of a stormwater consultant's time, an estimate"
+    },
+    {
+      "action": "close_corrective_action",
+      "key": "CA-15",
+      "outcome": "correct",
+      "value_usd": 250.0,
+      "exact": true,
+      "why": "Photo P-1007 shows SB-1's new outlet riser installed on 7 Oct, a day past its due date: closed with the real date; weighted at $250, about two and a half hours of a stormwater consultant's time, an estimate"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Two closures are new this turn: CA-14 and CA-15. The R-1008 inspection and the three new corrective actions are already filed and waiting on you. I won't file them again.\n\nClosures, with dates from the Sitegrid photos:\n- **CA-14 (CI-1 filter bag):** finished 2 Oct. P-1002 shows the new bag in and the torn one removed.\n- **CA-15 (SB-1 outlet riser):** finished 7 Oct. P-1007 shows the new riser and trash rack in, with the basin draining.\n\n\n**Waiting on your answer (4 cards already filed):**\n- Assign the R-1008 inspection, to be done by 10 Oct.\n- Open a corrective action for F-1005-1 (SF-2 down, off-site sediment), due 12 Oct.\n- Open a corrective action for F-1005-3 (ST-1 uncovered, no perimeter control), due 12 Oct.\n- Open a corrective action for F-1005-4 (SF-3 at station 4+50, third time), due 6 Oct.\n\n**Left alone:**\n- **CA-16 (SF-1 north swale):** still open. The latest photo, P-1006 on ",
+  "trace": [
+    {
+      "portal": "Docshelf",
+      "user": "I think the stormwater log on Fenwick Crossing has fallen behind. Start with the SWPPP in Docshelf: the inspection schedule, working hours, maintenance and corrective action rules, and records.",
+      "continued": false,
+      "said": "Starting with the SWPPP sections you named, plus the permit's current state so I can compare them.",
+      "said_chars": 98,
+      "reads": [
+        "read_swppp",
+        "read_swppp",
+        "read_swppp",
+        "read_swppp",
+        "read_swppp"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "The SWPPP rules are read. Next I'll pull the live state from the other three apps, plus the SWPPP controls section.\n\nI've read the SWPPP, but I can't reach the other three apps from this tab. The controls section is still on its way. Nothing from those apps is in memory, so I'm saving the rules I'll apply and then need you to switch tabs.\n\n\nSwitch me to Rainlog first. I'll list the rain events there, work out which storms reached 0.25 in and when, and note each 24-hour window.",
+      "said_chars": 1054,
+      "reads": [
+        "read_swppp"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "The SWPPP controls section has come back, and it finishes what I can read from Docshelf. The controls are:\n\n- **SF-1 to SF-4:** perimeter silt fence. SF-3 runs along the east property line, station 0+00 to 6+00.\n- **CI-1:** filter bag inlet protection on the Fenwick Road inlet.\n- **CE-1:** stabilized construction entrance.\n- **SB-1:** sediment basin with an outlet riser.\n- **ST-1 and ST-2:** stockpiles. Each is to be covered and ringed with a perimeter control, as in the site map.",
+      "said_chars": 875,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Rainlog",
+      "user": "Now Rainlog: every storm on the site gauge since mid-September, and which ones trigger an inspection.",
+      "continued": false,
+      "said": "Reading the Rainlog events now.",
+      "said_chars": 31,
+      "reads": [
+        "list_rain_events"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Rainlog",
+      "user": "",
+      "continued": true,
+      "said": "Three storms on the gauge qualify for an inspection: R-0921, R-1003 and R-1008. I haven't filed any assignments, because I don't yet know which of them Permitflow already has an inspection for.\n\n| Event | 0.25 in reached | 24h window ends | Deadline under the SWPPP |\n|---|---|---|---|\n| R-0921 (0.48 in) | Mon 21 Sept 15:20 | Tue 22 Sept 15:20 | Inside the window, because it includes working hours. Tue 22 Sept.",
+      "said_chars": 1840,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Permitflow",
+      "user": "This is Permitflow, the permit log. Read every inspection report with its findings, and every corrective action and where it stands.",
+      "continued": false,
+      "said": "I'll read the inspection reports and the corrective actions from Permitflow now.",
+      "said_chars": 80,
+      "reads": [
+        "list_inspections",
+        "list_corrective_actions"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Permitflow",
+      "user": "",
+      "continued": true,
+      "said": "Permitflow is read. I need the full maintenance and corrective-action rules, which were cut off in memory, and the dated photos before I file anything.\n\nThose two tools belong to other tabs, so I'll recall what I read there. That means the full maintenance and corrective-action rules from Docshelf.\n\nPermitflow shows one inspection missing, three corrective actions to open, and three open corrective actions I can't close yet.\n\n**Inspection to assign.** R-1008 reached 0.25 in at Fri 9 Oct 01:00.",
+      "said_chars": 2122,
+      "reads": [],
+      "cards": [
+        {
+          "action": "assign_inspection",
+          "key": "R-1008",
+          "outcome": "correct",
+          "value_usd": 250.0
+        },
+        {
+          "action": "open_corrective_action",
+          "key": "F-1005-1",
+          "outcome": "correct",
+          "value_usd": 250.0
+        },
+        {
+          "action": "open_corrective_action",
+          "key": "F-1005-3",
+          "outcome": "correct",
+          "value_usd": 250.0
+        },
+        {
+          "action": "open_corrective_action",
+          "key": "F-1005-4",
+          "outcome": "correct",
+          "value_usd": 250.0
+        }
+      ]
+    },
+    {
+      "portal": "Sitegrid photos",
+      "user": "Sitegrid's site photos. What's actually been fixed, and when.",
+      "continued": false,
+      "said": "I'll read the photos now, and pull the corrective-action list back from memory so I can match each fix to its CA.\n\nThe photo list hasn't come back yet. The page says its answer arrives with my next turn, and I won't call it again or guess at dates.\n\nI can't say yet what's been fixed or when. These are the three corrective actions waiting on the photos:\n- **CA-14:** CI-1, replace the torn filter bag. It was due 6 Oct.\n- **CA-15:** SB-1, replace the cracked outlet riser. It was due 6 Oct.",
+      "said_chars": 1157,
+      "reads": [
+        "list_photos"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Sitegrid photos",
+      "user": "",
+      "continued": true,
+      "said": "Two of the three open corrective actions are finished, and I'm filing closures for them. The third isn't done.\n\n- **CA-14 (CI-1, filter bag):** finished 2 Oct. Photo P-1002 shows the new bag installed and the torn one removed.\n- **CA-15 (SB-1, outlet riser):** finished 7 Oct. Photo P-1007 shows the new perforated riser and trash rack in, with the basin draining.\n\n\n**Staying open:**\n- **CA-16 (SF-1, north swale):** The latest photo, P-1006 on 6 Oct, shows new posts set but the fabric not attached or trenched in.",
+      "said_chars": 2559,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Permitflow",
+      "user": "Back in Permitflow. Assign any storm inspection that's due, open a corrective action for every finding that needs one with the right due date, and close every one that's actually done, dated when it was finished. Then tell me what you left ",
+      "continued": false,
+      "said": "Two closures are new this turn: CA-14 and CA-15. The R-1008 inspection and the three new corrective actions are already filed and waiting on you. I won't file them again.\n\nClosures, with dates from the Sitegrid photos:\n- **CA-14 (CI-1 filter bag):** finished 2 Oct. P-1002 shows the new bag in and the torn one removed.\n- **CA-15 (SB-1 outlet riser):** finished 7 Oct. P-1007 shows the new riser and trash rack in, with the basin draining.",
+      "said_chars": 1996,
+      "reads": [],
+      "cards": [
+        {
+          "action": "close_corrective_action",
+          "key": "CA-14",
+          "outcome": "correct",
+          "value_usd": 250.0
+        },
+        {
+          "action": "close_corrective_action",
+          "key": "CA-15",
+          "outcome": "correct",
+          "value_usd": 250.0
+        }
+      ]
+    }
+  ]
+}
