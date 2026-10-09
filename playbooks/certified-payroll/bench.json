@@ -1,0 +1,395 @@
+{
+  "playbook": "certified-payroll",
+  "run_at": "2026-10-09T22:44:28Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 201.0,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 30,
+  "cost_usd": 1.6961,
+  "your_time_s": 300,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 3.4
+  },
+  "score": {
+    "eligible": 10,
+    "found": 10,
+    "exact": 10,
+    "value_total_usd": 81417.95,
+    "value_found_usd": 81417.95,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_payroll",
+        "key": "2026-08-08",
+        "why": "Accepted on 13 August: a second submission is a duplicate",
+        "filed": false
+      },
+      {
+        "action": "submit_payroll",
+        "key": "2026-08-15",
+        "why": "Submitted 19 August and under review: not submitted again",
+        "filed": false
+      },
+      {
+        "action": "submit_payroll",
+        "key": "2026-09-05",
+        "why": "Nobody worked on Larkin while the deck cured: a payroll would certify hours that were not worked; it takes a no-work statement",
+        "filed": false
+      },
+      {
+        "action": "submit_payroll",
+        "key": "2026-10-10",
+        "why": "The week is still in progress: it closes on Saturday and cannot be certified yet",
+        "filed": false
+      },
+      {
+        "action": "submit_no_work",
+        "key": "2026-09-12",
+        "why": "Ruth Lindqvist worked 6 hours on the Larkin approach slab that Friday: a no-work statement would be false",
+        "filed": false
+      },
+      {
+        "action": "pay_restitution",
+        "key": "E-25",
+        "why": "A registered apprentice, period 1, paid the program's 60% ($18.84) with the full fringe, inside the one-to-one ratio: not underpaid",
+        "filed": false
+      },
+      {
+        "action": "pay_restitution",
+        "key": "E-17",
+        "why": "Paid $39.10 with the fringe in the rate, plus the $6.40 plan: $45.50 against $31.40 + $13.80 = $45.20. The $0.00 cash fringe is not a shortfall",
+        "filed": false
+      },
+      {
+        "action": "pay_restitution",
+        "key": "E-11",
+        "why": "Ran the plate compactor and jackhammer: the determination puts hand-held compactors and jackhammers in the laborer class, so the laborer rate was right",
+        "filed": false
+      },
+      {
+        "action": "pay_restitution",
+        "key": "E-19",
+        "why": "His $19.50 hours were on Sable Ridge, a private job with no wage determination; his Larkin hours were paid the laborer rate",
+        "filed": false
+      }
+    ],
+    "filed_usd": 417.95,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "pay_restitution",
+      "key": "E-21",
+      "outcome": "correct",
+      "value_usd": 246.0,
+      "exact": true,
+      "why": "Ran the excavator 12.0 hours in the week ending 29 August, paid as a laborer: (38.65 + 17.20) - (24.10 + 11.25) = $20.50 an hour x 12 = $246.00"
+    },
+    {
+      "action": "pay_restitution",
+      "key": "E-14",
+      "outcome": "correct",
+      "value_usd": 115.95,
+      "exact": true,
+      "why": "46 hours in the week ending 19 September, all at straight time: the overtime premium on 6 hours is 0.5 x $38.65 x 6 = $115.95"
+    },
+    {
+      "action": "pay_restitution",
+      "key": "E-23",
+      "outcome": "correct",
+      "value_usd": 56.0,
+      "exact": true,
+      "why": "Fringe $8.00 cash + $6.40 plan = $14.40 against $15.10 in the weeks ending 19 and 26 September: $0.70 x 80 hours = $56.00 (corrected from 3 October)"
+    },
+    {
+      "action": "submit_payroll",
+      "key": "2026-08-22",
+      "outcome": "correct",
+      "value_usd": 19200.0,
+      "exact": true,
+      "why": "Five workers on Larkin, 192 hours, every one paid the determination; one of the two weeks holding PE-7's $38,400, so half of it"
+    },
+    {
+      "action": "submit_payroll",
+      "key": "2026-08-29",
+      "outcome": "correct",
+      "value_usd": 19200.0,
+      "exact": true,
+      "why": "Six workers, 208 hours (Kip Delaney's 16 on Larkin, not his 24 on Sable Ridge); submitted with Jonah Pike's restitution for his 12 excavator hours; the other half of PE-7"
+    },
+    {
+      "action": "submit_no_work",
+      "key": "2026-09-05",
+      "outcome": "correct",
+      "value_usd": 10650.0,
+      "exact": true,
+      "why": "The whole crew was on Sable Ridge while the deck pour cured: no hours on Larkin, so a no-work statement; a quarter of PE-8"
+    },
+    {
+      "action": "submit_payroll",
+      "key": "2026-09-12",
+      "outcome": "correct",
+      "value_usd": 10650.0,
+      "exact": true,
+      "why": "Ruth Lindqvist's 6 hours patching the approach slab on Friday make it a work week: one worker, 6 hours; one of four weeks holding PE-8's $42,600"
+    },
+    {
+      "action": "submit_payroll",
+      "key": "2026-09-19",
+      "outcome": "correct",
+      "value_usd": 10650.0,
+      "exact": true,
+      "why": "Six workers, 246 hours, Dale Okafor's 46 among them; submitted with his overtime premium and Marcus Bell's fringe restored; a quarter of PE-8"
+    },
+    {
+      "action": "submit_payroll",
+      "key": "2026-09-26",
+      "outcome": "correct",
+      "value_usd": 10650.0,
+      "exact": true,
+      "why": "Rejected for the carpenter's fringe; submitted again once Marcus Bell's shortfall is restored: six workers (Kip Delaney's Friday among them), 192 hours; a quarter of PE-8"
+    },
+    {
+      "action": "submit_payroll",
+      "key": "2026-10-03",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Paid Wednesday 7 October and due 14 October: five workers, 192 hours. It holds no estimate yet, so it is a deadline, not money"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'll recall the saved Clockyard table first. My notes cut off before the 3 Oct row, and I won't guess its figures.\n\nI'm filing the seven weeks now: six payrolls and one no-work statement. The counts and hours come from the Clockyard table I saved. Each one files a card for you to approve.\n\n\n**What I'm leaving alone, and why:**\n- **8 Aug (accepted) and 15 Aug (under review):** Both are already filed, and a week is submitted once.\n- **10 Oct:** The week is still in progress and can't be certified. Its payday is 14 Oct and it's due 21 Oct.\n- **The three adjustment checks:** I filed them earlier, and they are still waiting for you (E-21 $246.00, E-14 $115.95, E-23 $56.00, $417.95 in total). I haven't acted on them. The rules say to submit the payrolls at the same time and not wait for the checks to clear, but the payrolls should list those adjustments. Please answer the check cards when you ",
+  "prose_audit": {
+    "said_usd": 417.95,
+    "record_usd": 417.95,
+    "agrees": true
+  },
+  "trace": [
+    {
+      "portal": "Wagecheck",
+      "user": "The City is holding our pay estimates on Larkin Street because the certified payrolls are behind. Start here in Wagecheck: read the rules, every week's status, and what's being held and why.",
+      "continued": false,
+      "said": "I'll read the rules index, the week list and the holds together.",
+      "said_chars": 64,
+      "reads": [
+        "read_rules",
+        "list_weeks",
+        "list_holds"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Wagecheck",
+      "user": "",
+      "continued": true,
+      "said": "Eight weeks are outstanding and two estimates are held: PE-7 ($38,400) and PE-8 ($42,600). The rules index only listed topics, so I'll read the topic pages I need now.\n\n**Week status (10 weeks, none submitted twice):**\n- 8 Aug (#1): accepted. 15 Aug (#2): submitted and under review. Neither needs action.\n- Not received and past due: 22 Aug, 29 Aug, 5 Sep, 12 Sep, 19 Sep.\n- 26 Sep (#3): rejected 1 Oct. E-23 Marcus Bell, carpenter, was paid $14.40/hr in fringe against $15.10 on the determination.",
+      "said_chars": 1131,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Wagecheck",
+      "user": "",
+      "continued": true,
+      "said": "I've finished reading Wagecheck. The rules settle how the work goes, but I can't reach the other apps' tools from this tab.\n\n**What the rules settle:**\n- **Coverage:** A payroll lists only hours on Larkin Street. Sable Ridge and yard hours stay off it and aren't paid under the determination.\n- **Which form:** A week where anyone worked gets a payroll. A week where nobody worked gets a no-work statement, never a payroll.",
+      "said_chars": 2719,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "Now Docshelf: the wage determination and anything else that decides what each worker had to be paid.",
+      "continued": false,
+      "said": "I'll list the Docshelf documents first, then open the ones that bear on pay.",
+      "said_chars": 76,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Five documents are filed. I'll open the four that bear on pay: the contract excerpt, the wage determination, the plan contribution schedule and the apprentice registration. I'll skip the Sable Ridge contract for now. Sable Ridge hours aren't covered by this determination.",
+      "said_chars": 272,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Docshelf is read. The determination, the plan schedule and Ortiz's registration give me every rate I need to check pay.\n\n\nDocshelf is done. Rates and fringes per class are in the checkpoint note. The plan's $6.40/hr counts toward each fringe, so the rest must be paid in cash on the check.\n\nOrtiz is a registered apprentice at 60% ($18.84) with full fringe. That only holds within a 1:1 ratio with a journeyman cement mason on site. I'll check that week by week against the timesheets.\n\nSwitch me to Clockyard.",
+      "said_chars": 1050,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Clockyard",
+      "user": "This is Clockyard. Go through the timesheets for every week the City doesn't have yet: who was on Larkin, for how long, doing what.",
+      "continued": false,
+      "said": "I'll read the approved timesheets for each week the City doesn't have: 22 Aug, 29 Aug, 5 Sep, 12 Sep, 19 Sep, the rejected 26 Sep, and 3 Oct. I'm leaving out 8 Aug (accepted) and 15 Aug (under review).",
+      "said_chars": 201,
+      "reads": [
+        "read_timesheets",
+        "read_timesheets",
+        "read_timesheets",
+        "read_timesheets",
+        "read_timesheets",
+        "read_timesheets",
+        "read_timesheets"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Clockyard",
+      "user": "",
+      "continued": true,
+      "said": "Clockyard is read. I'm saving it as a checkpoint, because I can't reach these timesheets from the Crewpay tab.\n\n\n**All seven weeks are read. Six need a payroll and one needs a no-work statement.**",
+      "said_chars": 2123,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Crewpay",
+      "user": "Now Crewpay. Check what we actually paid each of them on Larkin against what the determination required, and issue an adjustment check to anyone we shorted.",
+      "continued": false,
+      "said": "Reading the Crewpay registers for the weeks in question, and recalling the Clockyard hours and rates I saved.\n\nThe Crewpay reads are on the page and their answers arrive next turn. That recall returned the Wagecheck and Docshelf notes, not the Clockyard hours. I'm running a narrower one for the per-worker hours.\n\nThe register answers still haven't arrived, and I won't re-issue those calls. I'm recalling the determination rates now so I can compare as soon as they land.",
+      "said_chars": 2504,
+      "reads": [
+        "list_employees",
+        "read_register",
+        "read_register",
+        "read_register",
+        "read_register",
+        "read_register",
+        "read_register"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Crewpay",
+      "user": "",
+      "continued": true,
+      "said": "Three workers were shorted on Larkin Street, for $417.95 in total. I'm filing one adjustment check for each.\n\n| Worker | Weeks | What was short | Owed |\n|---|---|---|---|\n| E-21 Pike | 29 Aug | 12 hours of the 40 were on the CAT 320 as operator (Tue–Thu pm) but were paid as laborer. That is $14.55 base plus $5.95 cash fringe, or $20.50 an hour. | $246.00 |\n| E-14 Okafor | 19 Sep | He worked 46 hours but all were paid at straight time. The 6 overtime hours are owed the half-time premium: 6 × 0.5 × $38.65.",
+      "said_chars": 1369,
+      "reads": [],
+      "cards": [
+        {
+          "action": "pay_restitution",
+          "key": "E-21",
+          "outcome": "correct",
+          "value_usd": 246.0
+        },
+        {
+          "action": "pay_restitution",
+          "key": "E-14",
+          "outcome": "correct",
+          "value_usd": 115.95
+        },
+        {
+          "action": "pay_restitution",
+          "key": "E-23",
+          "outcome": "correct",
+          "value_usd": 56.0
+        }
+      ]
+    },
+    {
+      "portal": "Wagecheck",
+      "user": "Back in Wagecheck. Submit every week that's due with the right workers and hours, and a no-work statement where nobody was on the job. Then tell me what you left alone and why.",
+      "continued": false,
+      "said": "I'll recall the saved Clockyard table first. My notes cut off before the 3 Oct row, and I won't guess its figures.\n\nI'm filing the seven weeks now: six payrolls and one no-work statement. The counts and hours come from the Clockyard table I saved. Each one files a card for you to approve.\n\n\n**What I'm leaving alone, and why:**\n- **8 Aug (accepted) and 15 Aug (under review):** Both are already filed, and a week is submitted once.\n- **10 Oct:** The week is still in progress and can't be certified.",
+      "said_chars": 1177,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_payroll",
+          "key": "2026-08-22",
+          "outcome": "correct",
+          "value_usd": 19200.0
+        },
+        {
+          "action": "submit_payroll",
+          "key": "2026-08-29",
+          "outcome": "correct",
+          "value_usd": 19200.0
+        },
+        {
+          "action": "submit_no_work",
+          "key": "2026-09-05",
+          "outcome": "correct",
+          "value_usd": 10650.0
+        },
+        {
+          "action": "submit_payroll",
+          "key": "2026-09-12",
+          "outcome": "correct",
+          "value_usd": 10650.0
+        },
+        {
+          "action": "submit_payroll",
+          "key": "2026-09-19",
+          "outcome": "correct",
+          "value_usd": 10650.0
+        },
+        {
+          "action": "submit_payroll",
+          "key": "2026-09-26",
+          "outcome": "correct",
+          "value_usd": 10650.0
+        },
+        {
+          "action": "submit_payroll",
+          "key": "2026-10-03",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    }
+  ],
+  "note": "world fixed: the corrections rule said to issue the adjustment check before certifying, so she held three weeks behind unsigned cards; it now says the payroll goes in with the adjustment listed, and is not held for the check to clear",
+  "history": [
+    {
+      "run_at": "2026-10-09T22:39:35Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 7,
+      "eligible": 10,
+      "value_found_usd": 40917.95,
+      "false_claims": 0
+    }
+  ]
+}

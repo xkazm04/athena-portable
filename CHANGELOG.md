@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `feat(playbooks): weekly certified payroll filed on a prevailing-wage job across four portals, so the held pay estimates are released, benched to exceeds` — ADR 0057 row 12: each missing week's timesheets and registers read against the wage determination, three workers made whole (an excavator's hours paid as a laborer's, overtime at straight time, a carpenter's fringe short across two weeks), six weeks certified with their workers and hours and a no-work statement for the week the deck cured; two weeks already in, a week still open, a payroll for the no-work week, a no-work statement for a six-hour week, a registered apprentice, a mason paid the fringe in the rate, a laborer on the compactor and a private job's rate left alone; two runs, the world fixed once (it told her to restore each underpayment before certifying its week, so she held three weeks behind unsigned cards); run 2: 10 of 10, $81,417.95, every act exact, 9 of 9 traps avoided, 0 false, 3.4 min; filmed. The money is payments released, not recovered.
+
 - `fix(recall): a recall she asks for packs at most two machine-written episodes, as the frame window does` — ref §8, ADR 0058: fleet chatter past `MACHINE_EPISODE_SLOTS` is skipped, packing goes on, and M still counts every match.
 
 - `test(playbooks): the insurer's depreciation holdback re-benched after ADR 0058 and it still exceeds` — ADR 0058 step 2: 4 of 4, $15,190 of $15,190, 8 of 8 traps avoided, 0 false, 2.3 min, $1.86, no follow-ups; the run before was 4.7 min, $3.05, 3 follow-ups; she made no recall call, so the fix was not reached; filmed.

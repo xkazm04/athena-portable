@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "certified-payroll",
+  "captured_at": "2026-10-09T22:48:59Z",
+  "bench_run_at": "2026-10-09T22:44:28Z",
+  "narration": {
+    "text": "Weekly certified payroll filed on a prevailing-wage job, so the held pay estimates are released. This is a chore for the payroll and compliance administrator of a twenty-person site and concrete contractor, prime on a city bridge job paid with federal-aid funds. Athena works it across 4 portals: Wagecheck, Docshelf, Clockyard and Crewpay. On the bench, she found 10 of 10 eligible items, worth 81,417 dollars and 95 cents of the 81,417 dollars and 95 cents there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A week already accepted, and one under review. A week with no work on the bridge, which takes a no-work statement and not a payroll. She took 3 minutes. By hand, the same chore takes 5 hours, so she was about 88 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.431,
+    "sha256": "79d071add566e4fbb6fd4715f51bee41b6e4088634b046596da297f6b44ff8f4"
+  },
+  "video": {
+    "path": "evidence/certified-payroll/evidence.mp4",
+    "duration_s": 62.44,
+    "bytes": 3282280,
+    "sha256": "3903d21b56b6ccb2d695be941849e5798f08aebcc617268c5db590007409c0b2"
+  },
+  "thumbnail": {
+    "path": "playbooks/certified-payroll/thumb.jpg",
+    "bytes": 82007,
+    "sha256": "ceb3baba3dd83836cbdb84a6930c658c542ea70818c702872969a10e7da01f4c"
+  }
+}

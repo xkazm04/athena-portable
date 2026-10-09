@@ -1,0 +1,119 @@
+{
+  "id": "certified-payroll",
+  "title": "Weekly certified payroll filed on a prevailing-wage job, so the held pay estimates are released",
+  "domain": "Construction",
+  "audience": "work",
+  "promise": "Every week the City is missing is worked out from the timesheets and the payroll against the wage determination: anyone paid below the class of work they actually did, short on overtime or short on fringe is made whole first, and then each week is certified with the right workers and hours, or a no-work statement where nobody was on the job. Nothing is certified twice, early or for a week that had no work, and nobody is paid back who was paid right.",
+  "persona": "The payroll and compliance administrator of a twenty-person site and concrete contractor, prime on a city bridge job paid with federal-aid funds",
+  "chore": "Read the City's certified payroll rules, every week's status and the two pay estimates it is holding in its compliance portal; the contract, the wage determination, the fringe plan and the apprentice's registration in the document store; who worked on the bridge each week, for how long and doing what in the timesheets; and what each worker was paid in the payroll system. Then apply the Davis-Bacon rules: the rate of the class of work actually done, the fringe met by plan and cash together, overtime over 40 hours at one and a half times the base, a registered apprentice at the program's rate, only hours on the project. Restore each underpayment with one adjustment check, then certify each week that is due, or file a no-work statement. None of the four systems shares data with another.",
+  "command": "The City of Halvern is holding two of our pay estimates on Larkin Street because our certified payrolls are behind. Go through Wagecheck, Docshelf, Clockyard and Crewpay: pay back anyone we shorted against the wage determination, then submit every week that's due with the right workers and hours, or a no-work statement where nobody was on site. Don't submit anything twice.",
+  "apps": [
+    {
+      "name": "Wagecheck",
+      "role": "the City's certified payroll rules, each week's status, the held pay estimates, and the payroll and no-work submissions",
+      "api": "Agency compliance portal only",
+      "url": ""
+    },
+    {
+      "name": "Docshelf",
+      "role": "the contract's labor standards, the wage determination, the fringe plan, the apprentice's registration and the private job's contract",
+      "api": "Document store, no data feed",
+      "url": ""
+    },
+    {
+      "name": "Clockyard",
+      "role": "each worker's approved hours by job and the foreman's note on the work done, week by week",
+      "api": "Timesheet app, no export to the agency",
+      "url": ""
+    },
+    {
+      "name": "Crewpay",
+      "role": "what each worker was paid each week, class, rate, overtime and fringe, and the adjustment checks",
+      "api": "Payroll system, no agency feed",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules, every week's status and the held estimates in Wagecheck.",
+    "Reads the wage determination, the fringe plan and the apprentice's registration in Docshelf.",
+    "Reads each missing week's timesheets in Clockyard: hours on the bridge, and what the work was.",
+    "Reads each week's register in Crewpay against the determination, and issues an adjustment check to each worker shorted.",
+    "Back in Wagecheck, certifies each week that is due with its workers and hours, and files a no-work statement for the week nobody worked."
+  ],
+  "gates": [
+    {
+      "action": "pay_restitution",
+      "label": "Issue an adjustment check",
+      "why": "Money leaves the company's account; a check to someone who was paid right is money the company does not get back."
+    },
+    {
+      "action": "submit_payroll",
+      "label": "Certify a week's payroll",
+      "why": "Signed under penalty of perjury: a payroll that misstates who worked, for how long or what they were paid is a false statement to a federal-aid agency."
+    },
+    {
+      "action": "submit_no_work",
+      "label": "File a no-work statement",
+      "why": "A signed statement to the City; filed for a week someone worked, it is false."
+    }
+  ],
+  "traps": [
+    "A week already accepted, and one under review.",
+    "A week with no work on the bridge, which takes a no-work statement and not a payroll.",
+    "A week of one worker's six hours, which is not a no-work week.",
+    "This week, still in progress.",
+    "A registered apprentice paid the program's 60%.",
+    "A cement mason with no cash fringe, whose rate already carries it.",
+    "A laborer on the plate compactor and jackhammer, which the determination calls laborer's work.",
+    "A laborer's low rate on the private job, which no determination covers."
+  ],
+  "memory": [
+    "Each week's status, due date and the estimates held, carried from Wagecheck.",
+    "The determination's base and fringe for each class, the plan credit and the apprentice's terms, carried from Docshelf.",
+    "Each worker's hours on the bridge and the work done, week by week, carried from Clockyard.",
+    "Each worker's pay against the determination, and the adjustments issued, from Crewpay."
+  ],
+  "economics": {
+    "value_usd": 40000,
+    "per": "year",
+    "basis": "An estimate, and payments released rather than money recovered. A site and concrete contractor doing about $1.2 million a year of Davis-Bacon work bills it in monthly pay estimates of about $40,000; a missing or rejected weekly payroll lets the agency suspend an estimate until the payrolls are in and the wages restored (29 CFR 5.5 and 5.9). The $40,000 a year is about one estimate a year that falls behind like this. The bench world holds two held estimates, $38,400 and $42,600, split evenly across the weeks each is missing, and $417.95 of restitution owed to three workers. Times a year: six, because the world holds about two months of weeks, and a contractor that falls behind catches up before the estimates it needs.",
+    "manual_minutes": 300,
+    "times_per_year": 6,
+    "incumbent": "None takes a share: certified payroll services charge by the report or by subscription, and in a small contractor the payroll administrator does it.",
+    "sources": [
+      {
+        "label": "29 CFR 5.5: the Davis-Bacon contract clauses (weekly certified payrolls, fringe credit, apprentices, withholding)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/5.5"
+      },
+      {
+        "label": "29 CFR 5.9: suspension of funds while the labor standards are not met",
+        "url": "https://www.law.cornell.edu/cfr/text/29/5.9"
+      },
+      {
+        "label": "U.S. Department of Labor, Form WH-347 and its Statement of Compliance",
+        "url": "https://www.dol.gov/agencies/whd/forms/wh347"
+      },
+      {
+        "label": "40 U.S.C. 3702: Contract Work Hours and Safety Standards Act, overtime at one and a half times the basic rate over 40 hours",
+        "url": "https://www.law.cornell.edu/uscode/text/40/3702"
+      },
+      {
+        "label": "U.S. Department of Labor: Davis-Bacon and Related Acts, prevailing wages on federally funded construction",
+        "url": "https://www.dol.gov/agencies/whd/government-contracts/construction"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four systems with no shared data; each week's workers and hours leave out the private job, each hour is paid by the class of work actually done, the fringe is plan and cash together, overtime is weekly, and eight weeks, workers and rates that look wrong or due are not.",
+    "usefulness_why": "Releases progress payments an agency holds for missing payrolls, makes underpaid workers whole before a false certification, and takes hours of cross-checking a small office rarely has."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful compliance administrator gets most of it; the bar is most of the weeks and the restitution, nothing certified falsely or paid back wrongly, inside an hour."
+  },
+  "caveat": "Ridgeback Site & Concrete, the City of Halvern, its contract and wage determination, Sable Ridge, Wagecheck, Docshelf, Clockyard, Crewpay and every person here are invented. The rules are the Davis-Bacon and Related Acts' contract clauses (29 CFR 5.5) and the Contract Work Hours and Safety Standards Act, fixed in the bench world as of October 2026; a real project's wage determination, its agency's submission rules and an apprenticeship program's own terms decide the figures. This is not legal or payroll advice."
+}

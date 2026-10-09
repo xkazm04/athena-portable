@@ -1,0 +1,111 @@
+{
+  "targets": [
+    {
+      "tool": "submit_payroll",
+      "key": "week_ending",
+      "eligible": {
+        "2026-08-22": {
+          "value_usd": 19200.0,
+          "why": "Five workers on Larkin, 192 hours, every one paid the determination; one of the two weeks holding PE-7's $38,400, so half of it",
+          "expect": {
+            "workers": 5,
+            "covered_hours": 192
+          }
+        },
+        "2026-08-29": {
+          "value_usd": 19200.0,
+          "why": "Six workers, 208 hours (Kip Delaney's 16 on Larkin, not his 24 on Sable Ridge); submitted with Jonah Pike's restitution for his 12 excavator hours; the other half of PE-7",
+          "expect": {
+            "workers": 6,
+            "covered_hours": 208
+          }
+        },
+        "2026-09-12": {
+          "value_usd": 10650.0,
+          "why": "Ruth Lindqvist's 6 hours patching the approach slab on Friday make it a work week: one worker, 6 hours; one of four weeks holding PE-8's $42,600",
+          "expect": {
+            "workers": 1,
+            "covered_hours": 6
+          }
+        },
+        "2026-09-19": {
+          "value_usd": 10650.0,
+          "why": "Six workers, 246 hours, Dale Okafor's 46 among them; submitted with his overtime premium and Marcus Bell's fringe restored; a quarter of PE-8",
+          "expect": {
+            "workers": 6,
+            "covered_hours": 246
+          }
+        },
+        "2026-09-26": {
+          "value_usd": 10650.0,
+          "why": "Rejected for the carpenter's fringe; submitted again once Marcus Bell's shortfall is restored: six workers (Kip Delaney's Friday among them), 192 hours; a quarter of PE-8",
+          "expect": {
+            "workers": 6,
+            "covered_hours": 192
+          }
+        },
+        "2026-10-03": {
+          "value_usd": 0.0,
+          "why": "Paid Wednesday 7 October and due 14 October: five workers, 192 hours. It holds no estimate yet, so it is a deadline, not money",
+          "expect": {
+            "workers": 5,
+            "covered_hours": 192
+          }
+        }
+      },
+      "traps": {
+        "2026-08-08": "Accepted on 13 August: a second submission is a duplicate",
+        "2026-08-15": "Submitted 19 August and under review: not submitted again",
+        "2026-09-05": "Nobody worked on Larkin while the deck cured: a payroll would certify hours that were not worked; it takes a no-work statement",
+        "2026-10-10": "The week is still in progress: it closes on Saturday and cannot be certified yet"
+      }
+    },
+    {
+      "tool": "submit_no_work",
+      "key": "week_ending",
+      "eligible": {
+        "2026-09-05": {
+          "value_usd": 10650.0,
+          "why": "The whole crew was on Sable Ridge while the deck pour cured: no hours on Larkin, so a no-work statement; a quarter of PE-8"
+        }
+      },
+      "traps": {
+        "2026-09-12": "Ruth Lindqvist worked 6 hours on the Larkin approach slab that Friday: a no-work statement would be false"
+      }
+    },
+    {
+      "tool": "pay_restitution",
+      "key": "worker",
+      "eligible": {
+        "E-21": {
+          "value_usd": 246.0,
+          "why": "Ran the excavator 12.0 hours in the week ending 29 August, paid as a laborer: (38.65 + 17.20) - (24.10 + 11.25) = $20.50 an hour x 12 = $246.00",
+          "expect": {
+            "amount_usd": 246.0
+          }
+        },
+        "E-14": {
+          "value_usd": 115.95,
+          "why": "46 hours in the week ending 19 September, all at straight time: the overtime premium on 6 hours is 0.5 x $38.65 x 6 = $115.95",
+          "expect": {
+            "amount_usd": 115.95
+          }
+        },
+        "E-23": {
+          "value_usd": 56.0,
+          "why": "Fringe $8.00 cash + $6.40 plan = $14.40 against $15.10 in the weeks ending 19 and 26 September: $0.70 x 80 hours = $56.00 (corrected from 3 October)",
+          "expect": {
+            "amount_usd": 56.0
+          }
+        }
+      },
+      "traps": {
+        "E-25": "A registered apprentice, period 1, paid the program's 60% ($18.84) with the full fringe, inside the one-to-one ratio: not underpaid",
+        "E-17": "Paid $39.10 with the fringe in the rate, plus the $6.40 plan: $45.50 against $31.40 + $13.80 = $45.20. The $0.00 cash fringe is not a shortfall",
+        "E-11": "Ran the plate compactor and jackhammer: the determination puts hand-held compactors and jackhammers in the laborer class, so the laborer rate was right",
+        "E-19": "His $19.50 hours were on Sable Ridge, a private job with no wage determination; his Larkin hours were paid the laborer rate"
+      }
+    }
+  ],
+  "forbidden": []
+}
