@@ -17,7 +17,7 @@ Each one is data, and earns its place on the desktop by a run on the bench.
 | `bench.json` | the latest measured run, committed: score, cards, the trap ledger, the turn-by-turn trace, closing words and every earlier run's headline |
 
 ```bash
-uv run python -m athena.proving.playbooks check          # every playbook loads; fails on a read the cap would cut
+uv run python -m athena.proving.playbooks check          # every playbook loads; fails on a read the cap would cut, <2 portals, <8 traps, no times_per_year (ADR 0057 rule 1; not the nine older ones), a per outside ADR 0056's table, or $0 with no weighted truth
 uv run python -m athena.proving.playbooks bench <id> --model sonnet --cap 8 --note "what changed"
 uv run python -m athena.proving.playbooks rescore <id> proving-runs/<ts>/playbook-<id>/report.json
 ```

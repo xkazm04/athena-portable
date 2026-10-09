@@ -26,7 +26,9 @@ from pathlib import Path
 from typing import Any
 
 __all__ = [
+    "BEFORE_ADR_0057",
     "KINDS",
+    "PER_TABLE",
     "PLAYBOOKS_DIRNAME",
     "AppSpec",
     "Phase",
@@ -49,6 +51,29 @@ KINDS: dict[str, tuple[bool, str]] = {
     "PERMANENT": (False, "internal"),
     "REACHES_A_PERSON": (False, "external"),
 }
+
+#: The nine playbooks authored before ADR 0057 fixed the floor of 2 portals and 8 traps (rule 1)
+#: and ADR 0056 asked for ``times_per_year``. They are exempt from those three rules only. The set
+#: is closed: a test pins it to exactly these ids, so a new playbook is never added to it.
+BEFORE_ADR_0057: frozenset[str] = frozenset(
+    {
+        "carrier-accessorials",
+        "clinic-denials",
+        "cpg-deductions",
+        "estate-settlement",
+        "fba-reimbursements",
+        "freelancer-receivables",
+        "lien-desk",
+        "ltc-claims",
+        "medical-bills",
+    }
+)
+
+#: ADR 0056 section (a): the values ``economics.per`` may take. Adding one takes an amendment.
+PER_TABLE: tuple[str, ...] = ("year", "quarter", "month", "week", "estate", "episode")
+
+MIN_PORTALS = 2  # ADR 0057 rule 1
+MIN_TRAPS = 8  # ADR 0057 rule 1
 
 _PARAM_TYPES = {"string", "integer", "number", "boolean"}
 
@@ -359,6 +384,7 @@ def load_playbook(root: str | Path) -> Playbook:
     if not targets:
         problems.append("truth.json declares no targets")
     forbidden = tuple(str(t) for t in truth.get("forbidden", []))
+    problems.extend(_authoring_problems(pid or root.name, showcase, apps, targets))
     if problems:
         raise PlaybookError(root.name, problems)
     return Playbook(
@@ -372,6 +398,49 @@ def load_playbook(root: str | Path) -> Playbook:
         targets=tuple(targets),
         forbidden=forbidden,
     )
+
+
+def _authoring_problems(
+    pid: str, showcase: Mapping[str, Any], apps: Sequence[AppSpec], targets: Sequence[Target]
+) -> list[str]:
+    """What ADR 0057 (rule 1) and ADR 0056 (with its 2026-10-09 amendment) ask of a playbook."""
+    found: list[str] = []
+    economics = showcase.get("economics")
+    if not isinstance(economics, Mapping):
+        economics = {}
+    if pid not in BEFORE_ADR_0057:
+        if len(apps) < MIN_PORTALS:
+            found.append(
+                f"{pid}: ADR 0057 rule 1 wants at least {MIN_PORTALS} portals "
+                f"(world.json apps), found {len(apps)}"
+            )
+        traps = sum(len(t.traps) for t in targets)
+        if traps < MIN_TRAPS:
+            found.append(
+                f"{pid}: ADR 0057 rule 1 wants at least {MIN_TRAPS} traps "
+                f"(truth.json, all targets), found {traps}"
+            )
+        times = economics.get("times_per_year")
+        if isinstance(times, bool) or not isinstance(times, int | float) or not times > 0:
+            found.append(
+                f"{pid}: ADR 0056 (c) wants economics.times_per_year, a number above 0, "
+                f"found {times!r}"
+            )
+    per = economics.get("per")
+    if per not in PER_TABLE:
+        found.append(
+            f"{pid}: ADR 0056 (a) wants economics.per in {', '.join(PER_TABLE)}, found {per!r}"
+        )
+    value = economics.get("value_usd")
+    if isinstance(value, int | float) and not isinstance(value, bool) and value == 0:
+        total = sum(float(v.get("value_usd", 0)) for t in targets for v in t.eligible.values())
+        if not total > 0:
+            found.append(
+                f"{pid}: ADR 0056 amendment (2026-10-09) wants a truth total value above 0 when "
+                "economics.value_usd is 0 (weight each item at a per-act price), "
+                "or its bench can only come back short"
+            )
+    return found
 
 
 def load_all(base: str | Path = PLAYBOOKS_DIRNAME) -> list[Playbook]:

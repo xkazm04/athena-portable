@@ -15,6 +15,7 @@ import pytest
 
 from athena.harness.ports import ModelRequest
 from athena.proving.characters.scene import CONTINUE
+from athena.proving.playbooks import spec
 from athena.proving.playbooks.bench import (
     BenchConfig,
     cards_of,
@@ -37,6 +38,12 @@ from .conftest import frame_of, op_line, scripted_model
 REPO = Path(__file__).resolve().parents[2]
 
 
+@pytest.fixture(autouse=True)
+def _late_parcels_is_a_one_portal_world(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The scripted fixture is small on purpose; ADR 0057's floor is tested in its own file."""
+    monkeypatch.setattr(spec, "BEFORE_ADR_0057", spec.BEFORE_ADR_0057 | {"late-parcels"})
+
+
 def _write(root: Path, name: str, value: Any) -> None:
     (root / name).write_text(json.dumps(value), encoding="utf-8")
 
@@ -50,7 +57,7 @@ def make_playbook(tmp_path: Path, **overrides: Any) -> Path:
         "promise": "Refunds for late parcels, filed for signature.",
         "command": "File a refund claim for every late parcel.",
         "persona": "a small online shop",
-        "economics": {"value_usd": 30},
+        "economics": {"value_usd": 30, "per": "year"},
         "edge": {"difficulty": 4, "usefulness": 4},
         "expectation": {"recall": 0.7, "false_claims": 0, "minutes": 10},
     }
