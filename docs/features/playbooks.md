@@ -61,11 +61,14 @@ in the playbooks' histories.
 
 The overview: the edge map, the record (money found, traps walked past, false claims, her time
 against the hours by hand, the model's cost, fixes taught), a grid filtered by home or work and
-ordered by edge, money or hours. A playbook's layer: the story and the command (copy it, or hand it
-to Athena, which drafts it in her composer and makes it her active project), the portals, gates and
-traps; and the proof: the money, the cards, "what she was right to leave alone", **Watch the run**
-(a rail of tab visits, a dot per turn coloured by what it did, play, step and arrow keys, the money
-found so far), the runs over time, what it taught Athena, and the economics against the incumbent.
+ordered by edge, money or hours; a tile is its value and two chips, with no prose. A playbook's
+layer opens on an abstract (ADR 0053): the promise, the proof at a glance, and one line per part
+under *The chore* and *The proof*. Each part opens one level down: the story and the command (copy
+it, or hand it to Athena, which drafts it in her composer and makes it her active project), the
+portals, the method, the gates, what she filed (every card), the traps ("what she was right to
+leave alone"), **Watch the run** (a rail of tab visits, a dot per turn coloured by what it did,
+play, step and arrow keys, the money found so far; her closing words; the runs over time), what it
+taught Athena, and the economics against the incumbent. Back steps one level.
 
 ## Limits
 

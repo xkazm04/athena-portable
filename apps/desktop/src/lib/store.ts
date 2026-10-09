@@ -40,6 +40,8 @@ export const SETTING_KEYS = {
   engine: "engine",
   /** `system` | `light` | `dark`. */
   theme: "theme",
+  /** `comfortable` | `compact`: the reading step on every size under the headings. */
+  typeScale: "type_scale",
   /** The project every turn is filed under, or `null` for none (c25). */
   activeProjectId: "active_project_id",
   /** The brain directory. Empty means "the daemon's own default". */

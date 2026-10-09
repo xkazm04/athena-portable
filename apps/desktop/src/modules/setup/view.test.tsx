@@ -7,10 +7,17 @@ import { expect, test } from "vitest";
 
 import { entry } from "./index";
 
-test("the settings overview is one tile per fact and renders no control", () => {
+test("the settings overview is one card per fact and renders no control", () => {
   const html = renderToStaticMarkup(entry.preview("settings"));
-  expect(html.match(/class="tile /g)?.length).toBe(7);
+  expect(html.match(/class="setup-card /g)?.length).toBe(7);
   expect(html).not.toMatch(/<input|<textarea|role="radiogroup"|role="dialog"/);
+});
+
+test("every card carries a pill, a fact without a standing says what it is set to", () => {
+  const html = renderToStaticMarkup(entry.preview("settings"));
+  expect(html.match(/class="setup-card__pill"><span/g)?.length).toBe(7);
+  // Every drawing is stroked: none fills a shape, so the seven read as one family.
+  expect(html).not.toMatch(/fill="currentColor"/);
 });
 
 test("a fact's layer holds its controls, and the theme layer previews both themes", () => {

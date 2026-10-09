@@ -19,7 +19,6 @@ import type { ReactNode } from "react";
 
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
-import Emblem from "@/components/Emblem";
 import Layer, { LayerColumns } from "@/components/Layer";
 import PageHeader from "@/components/PageHeader";
 import PageSection from "@/components/PageSection";
@@ -27,11 +26,10 @@ import PageShell from "@/components/PageShell";
 import PillGroup from "@/components/PillGroup";
 import ProblemNote from "@/components/ProblemNote";
 import StatusDot from "@/components/StatusDot";
-import Tile from "@/components/Tile";
 import { TextInput } from "@/components/FormField";
 import { engineLabel, probeOf, remedyFor, usable } from "@/lib/engines";
 import { normaliseUrl } from "@/lib/url";
-import { THEME_CHOICES, type ThemeChoice } from "@/stores/settings";
+import { THEME_CHOICES, TYPE_SCALES, type ThemeChoice, type TypeScale } from "@/stores/settings";
 
 import { GLYPHS, HeroIllustration, type GlyphName } from "./glyphs";
 import type { SetupModel } from "./model";
@@ -57,6 +55,11 @@ const THEME_HINTS: Record<ThemeChoice, string> = {
   system: "Follow the operating system, and switch when it does.",
   light: "Always light.",
   dark: "Always dark.",
+};
+
+const TYPE_SCALE_HINTS: Record<TypeScale, string> = {
+  comfortable: "Every size under the headings, two pixels larger.",
+  compact: "The original sizes, for more on one screen.",
 };
 
 export default function SetupView({
@@ -204,10 +207,23 @@ function Settings({ model, initialOpen = null }: { model: SetupModel; initialOpe
   const brain = brainFact(model);
   const mic = micFact(model);
   const voice = voiceFact(model);
-  const tiles: { topic: Topic; label: string; standing: Standing | null; line: string }[] = [
+  const tiles: {
+    topic: Topic;
+    label: string;
+    standing: Standing | null;
+    /** A pill for a fact with no standing to report: what it is set to, not whether it is done. */
+    word?: string;
+    line: string;
+  }[] = [
     { topic: "engine", label: "Engine", standing: engine.standing, line: engineSentence(model) },
     { topic: "page", label: "Page", standing: page.standing, line: pageSentence(model) },
-    { topic: "theme", label: "Theme", standing: null, line: THEME_HINTS[model.theme] },
+    {
+      topic: "theme",
+      label: "Theme",
+      standing: null,
+      word: model.theme,
+      line: `${THEME_HINTS[model.theme]} Text: ${model.typeScale}.`,
+    },
     {
       topic: "brain",
       label: "Brain",
@@ -218,7 +234,13 @@ function Settings({ model, initialOpen = null }: { model: SetupModel; initialOpe
     },
     { topic: "microphone", label: "Microphone", standing: mic.standing, line: micSentence(model) },
     { topic: "voice", label: "Voice", standing: voice.standing, line: voiceSentence(model) },
-    { topic: "data", label: "Data", standing: null, line: "One SQLite file holds this machine's Athena." },
+    {
+      topic: "data",
+      label: "Data",
+      standing: null,
+      word: model.storePath ? "local" : undefined,
+      line: "One SQLite file holds this machine's Athena.",
+    },
   ];
   const current = tiles.find((t) => t.topic === open) ?? null;
   return (
@@ -254,28 +276,30 @@ function Settings({ model, initialOpen = null }: { model: SetupModel; initialOpe
         </div>
       ) : null}
 
-      <div className="setup-tiles">
+      <div className="setup-cards">
         {tiles.map((t) => {
           const Drawing = GLYPHS[t.topic];
           return (
-            <Tile
+            <button
               key={t.topic}
-              emblem={
-                <Emblem
-                  art={<Drawing size={24} />}
-                  done={t.standing ? t.standing === "done" : t.topic !== "data" || Boolean(model.storePath)}
-                  size={64}
-                />
-              }
-              title={t.label}
-              pill={
-                t.standing ? (
+              type="button"
+              className="setup-card focus-ring"
+              data-standing={t.standing ?? "neutral"}
+              onClick={() => setOpen(t.topic)}
+            >
+              <span className="setup-card__art" aria-hidden="true">
+                <Drawing size={132} />
+              </span>
+              <span className="setup-card__pill">
+                {t.standing ? (
                   <Badge tone={STANDING_TONE[t.standing]}>{STANDING_WORD[t.standing]}</Badge>
-                ) : undefined
-              }
-              line={t.line}
-              onOpen={() => setOpen(t.topic)}
-            />
+                ) : t.word ? (
+                  <Badge tone="neutral">{t.word}</Badge>
+                ) : null}
+              </span>
+              <span className="setup-card__title">{t.label}</span>
+              <span className="typo-caption setup-card__line">{t.line}</span>
+            </button>
           );
         })}
       </div>
@@ -343,6 +367,18 @@ function SettingsLayer({ topic, line, model }: { topic: Topic; line: string; mod
                     value: choice,
                     label: choice,
                     hint: THEME_HINTS[choice],
+                  }))}
+                />
+              </PageSection>
+              <PageSection title="Text size">
+                <PillGroup
+                  ariaLabel="Text size"
+                  value={model.typeScale}
+                  onChange={model.actions.setTypeScale}
+                  options={TYPE_SCALES.map((scale) => ({
+                    value: scale,
+                    label: scale,
+                    hint: TYPE_SCALE_HINTS[scale],
                   }))}
                 />
               </PageSection>

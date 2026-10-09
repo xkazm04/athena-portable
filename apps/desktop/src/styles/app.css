@@ -137,6 +137,10 @@
 
   --duration-fast: 150ms;
 
+  /* The reading step (Setup, Theme, "Text size"): added to every size under the heading tiers,
+   * never to a heading. Comfortable is the default; compact is the original ramp. */
+  --type-step: 2px;
+
   /* §3.2. Every gap and pad in the app is one of these three. */
   --density-gap: 16px;
   --density-pad: 16px;
@@ -146,6 +150,10 @@
    * the chrome and its rectangle drift apart; both files carry this sentence. */
   --bar-height: 36px;
   --strip-height: 40px;
+}
+
+[data-type-scale="compact"] {
+  --type-step: 0px;
 }
 
 *,
@@ -164,7 +172,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: calc(14px + var(--type-step));
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -214,38 +222,38 @@ button {
 }
 
 .typo-title {
-  font-size: 0.875rem;
+  font-size: calc(0.875rem + var(--type-step));
   font-weight: 600;
   color: var(--primary);
 }
 
 .typo-body {
-  font-size: 0.875rem;
+  font-size: calc(0.875rem + var(--type-step));
   font-weight: 400;
 }
 
 .typo-caption {
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem + var(--type-step));
   font-weight: 400;
   color: var(--muted-foreground);
 }
 
 .typo-label {
-  font-size: 0.75rem;
+  font-size: calc(0.75rem + var(--type-step));
   font-weight: 600;
   line-height: 1.4;
   white-space: nowrap;
 }
 
 .typo-data {
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem + var(--type-step));
   font-weight: 500;
   font-variant-numeric: tabular-nums lining-nums;
 }
 
 .typo-code {
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem + var(--type-step));
 }
 
 .muted {
@@ -370,7 +378,7 @@ select:focus-visible {
   border-radius: var(--radius-interactive);
   background: var(--recessed);
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem + var(--type-step));
   overflow-x: auto;
 }
 
@@ -387,7 +395,7 @@ select:focus-visible {
 .table th {
   padding: 4px 8px;
   text-align: left;
-  font-size: 0.75rem;
+  font-size: calc(0.75rem + var(--type-step));
   font-weight: 600;
   color: var(--muted-foreground);
   border-bottom: 1px solid var(--border-default);
@@ -470,7 +478,7 @@ select:focus-visible {
 
 .btn--sm {
   padding: 2px 8px;
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem + var(--type-step));
 }
 
 .input {
@@ -762,7 +770,7 @@ select:focus-visible {
 }
 
 .module-bar__word {
-  font-size: 0.875rem;
+  font-size: calc(0.875rem + var(--type-step));
   font-weight: 700;
   letter-spacing: -0.03em;
 }
@@ -779,7 +787,7 @@ select:focus-visible {
   border: none;
   background: transparent;
   color: var(--muted-foreground);
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem + var(--type-step));
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -815,7 +823,7 @@ select:focus-visible {
   border: none;
   background: transparent;
   color: var(--muted-foreground);
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem + var(--type-step));
   white-space: nowrap;
   cursor: pointer;
 }
@@ -1164,7 +1172,7 @@ select:focus-visible {
   background: transparent;
   color: var(--foreground);
   font: inherit;
-  font-size: 12px;
+  font-size: calc(12px + var(--type-step));
   cursor: pointer;
 }
 

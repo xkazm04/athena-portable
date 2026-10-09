@@ -2,8 +2,8 @@
  * What the app is configured to be — the `settings` table (README section 3.5), read once by the
  * app root.
  *
- * Four rows and nothing else: the engine the daemon is started on, the theme, the active project
- * id, and the brain directory. The first build's panel asked for a daemon URL, a token and an API
+ * The engine the daemon is started on, the theme and its text size, the active project id, and
+ * the brain directory. The first build's panel asked for a daemon URL, a token and an API
  * key as well; the shell mints the token and spawns the sidecar itself, so none of those three
  * are settings here and none ever will be.
  *
@@ -44,11 +44,27 @@ export function resolveTheme(choice: ThemeChoice): Theme {
   return choice === "system" ? systemTheme() : choice;
 }
 
+/** Comfortable adds the reading step (`--type-step` in `styles/app.css`); compact removes it. */
+export const TYPE_SCALES = ["comfortable", "compact"] as const;
+
+export type TypeScale = (typeof TYPE_SCALES)[number];
+
+export function isTypeScale(value: unknown): value is TypeScale {
+  return typeof value === "string" && (TYPE_SCALES as readonly string[]).includes(value);
+}
+
+/** The one writer of `data-type-scale`; only `compact` has a rule, comfortable is the sheet's default. */
+export function applyTypeScale(scale: TypeScale): void {
+  if (typeof document === "undefined") return;
+  document.documentElement.setAttribute("data-type-scale", scale);
+}
+
 export interface SettingsState {
   /** True once the store has answered. Before that every value below is a default, not a choice. */
   hydrated: boolean;
   engine: EngineId;
   theme: ThemeChoice;
+  typeScale: TypeScale;
   /** The project every turn is filed under (c25), or null. */
   activeProjectId: string | null;
   /** The brain directory. Empty means the daemon's own default, which is not the same as unset. */
@@ -58,6 +74,7 @@ export interface SettingsState {
   storePath: string | null;
   setEngine: (engine: EngineId) => Promise<void>;
   setTheme: (theme: ThemeChoice) => Promise<void>;
+  setTypeScale: (scale: TypeScale) => Promise<void>;
   setActiveProject: (id: string | null) => Promise<void>;
   setBrainPath: (path: string) => Promise<void>;
   setOnboarded: (onboarded: boolean) => Promise<void>;
@@ -67,6 +84,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   hydrated: false,
   engine: DEFAULT_ENGINE,
   theme: "system",
+  typeScale: "comfortable",
   activeProjectId: null,
   brainPath: "",
   onboarded: false,
@@ -85,6 +103,13 @@ export const useSettings = create<SettingsState>((set, get) => ({
     set({ theme });
     useShell.setState({ theme: resolveTheme(theme) });
     await settingWrite(SETTING_KEYS.theme, theme);
+  },
+
+  // Painted before the write, for the theme's reason: the person is looking at the result.
+  setTypeScale: async (typeScale) => {
+    applyTypeScale(typeScale);
+    set({ typeScale });
+    await settingWrite(SETTING_KEYS.typeScale, typeScale);
   },
 
   setActiveProject: async (id) => {
@@ -121,6 +146,7 @@ export async function startSettings(): Promise<void> {
 
   if (!hasShell()) {
     applyTheme(resolveTheme(useSettings.getState().theme));
+    applyTypeScale(useSettings.getState().typeScale);
     useSettings.setState({ hydrated: true });
     return;
   }
@@ -135,9 +161,10 @@ export async function startSettings(): Promise<void> {
 
 /** Read every row, paint the resolved theme and publish. Startup and `store:changed` share it. */
 export async function readRows(): Promise<void> {
-  const [engine, theme, activeProjectId, brainPath, onboarded, path] = await Promise.all([
+  const [engine, theme, typeScale, activeProjectId, brainPath, onboarded, path] = await Promise.all([
     settingRead<string>(SETTING_KEYS.engine),
     settingRead<string>(SETTING_KEYS.theme),
+    settingRead<string>(SETTING_KEYS.typeScale),
     settingRead<string>(SETTING_KEYS.activeProjectId),
     settingRead<string>(SETTING_KEYS.brainPath),
     settingRead<boolean>(SETTING_KEYS.onboarded),
@@ -147,10 +174,13 @@ export async function readRows(): Promise<void> {
   const choice: ThemeChoice = isThemeChoice(theme) ? theme : "system";
   applyTheme(resolveTheme(choice));
   useShell.setState({ theme: resolveTheme(choice) });
+  const scale: TypeScale = isTypeScale(typeScale) ? typeScale : "comfortable";
+  applyTypeScale(scale);
   useSettings.setState({
     hydrated: true,
     engine: isEngineId(engine) ? engine : DEFAULT_ENGINE,
     theme: choice,
+    typeScale: scale,
     activeProjectId: activeProjectId ?? null,
     brainPath: brainPath ?? "",
     onboarded: onboarded ?? false,

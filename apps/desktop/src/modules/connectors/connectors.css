@@ -79,7 +79,7 @@
   resize: vertical;
   font: inherit;
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: calc(0.8125rem + var(--type-step));
 }
 
 /* -- connecting ------------------------------------------------------------------------------ */
@@ -175,7 +175,7 @@
   padding: 1px 8px;
   border: 1px solid var(--border-default);
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: calc(0.75rem + var(--type-step));
   font-weight: 600;
   color: var(--muted-foreground);
   white-space: nowrap;

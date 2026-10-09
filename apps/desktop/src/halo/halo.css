@@ -263,7 +263,7 @@ html.halo-demo {
 .caption .who {
   display: block;
   margin-bottom: 4px;
-  font-size: 12px;
+  font-size: calc(12px + var(--type-step));
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;

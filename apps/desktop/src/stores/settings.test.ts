@@ -69,7 +69,7 @@ globalThis.window = {
 } as unknown as Window & typeof globalThis;
 
 const { SETTING_KEYS } = await import("@/lib/store");
-const { startSettings, useSettings, resolveTheme } = await import("@/stores/settings");
+const { readRows, startSettings, useSettings, resolveTheme } = await import("@/stores/settings");
 
 beforeEach(() => {
   harness.calls.length = 0;
@@ -79,6 +79,7 @@ test("a value written is the value read back, under the key store.rs describes",
   harness.rows.set("settings/engine", "codex");
   harness.rows.set("settings/theme", "light");
   harness.rows.set("settings/brain_path", "~/athena/brain");
+  harness.rows.set("settings/type_scale", "compact");
 
   await startSettings();
 
@@ -86,6 +87,7 @@ test("a value written is the value read back, under the key store.rs describes",
   expect(state.hydrated).toBe(true);
   expect(state.engine).toBe("codex");
   expect(state.theme).toBe("light");
+  expect(state.typeScale).toBe("compact");
   expect(state.brainPath).toBe("~/athena/brain");
   expect(state.activeProjectId).toBeNull();
   expect(state.storePath).toBe("C:\\fake\\athena.sqlite");
@@ -93,13 +95,24 @@ test("a value written is the value read back, under the key store.rs describes",
   // Every read named its table, and every key is one of the named set rather than a spelling
   // invented at the call site.
   const reads = harness.calls.filter((c) => c.command === "store_get");
-  expect(reads).toHaveLength(5);
+  expect(reads).toHaveLength(6);
   const named: string[] = Object.values(SETTING_KEYS);
   for (const read of reads) {
     expect(read.args.table).toBe("settings");
     expect(named).toContain(read.args.key);
   }
   expect(painted.get("data-theme")).toBe("light");
+  expect(painted.get("data-type-scale")).toBe("compact");
+});
+
+test("the text size is painted before it is stored, and an unknown row reads as comfortable", async () => {
+  await useSettings.getState().setTypeScale("comfortable");
+  expect(painted.get("data-type-scale")).toBe("comfortable");
+  expect(harness.rows.get("settings/type_scale")).toBe("comfortable");
+
+  harness.rows.set("settings/type_scale", "huge");
+  await readRows();
+  expect(useSettings.getState().typeScale).toBe("comfortable");
 });
 
 test("writing the engine sends the value, not a patch object", async () => {

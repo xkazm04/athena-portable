@@ -1,6 +1,6 @@
 /**
- * The Playbooks surface (ADR 0029, ADR 0040): the overview reads, a playbook's layer proves. The
- * replay shows the latest run turn by turn when the bench kept a trace, and says nothing when it
+ * The Playbooks surface (ADR 0029, ADR 0040, ADR 0053): the overview reads, a playbook's layer
+ * opens on an abstract and each part one level down. The replay shows the latest run turn by turn when the bench kept a trace, and says nothing when it
  * did not. Rendered with `renderToStaticMarkup`, no shell, as every module test here.
  */
 import { renderToStaticMarkup } from "react-dom/server";
@@ -8,8 +8,34 @@ import { expect, test } from "vitest";
 
 import { entry } from "./index";
 
-test("a benched playbook with a trace opens on its first turn, with a dot for every turn", () => {
+test("an opened playbook reads as an abstract: the proof at a glance and one row per part", () => {
   const html = renderToStaticMarkup(entry.preview("open"));
+  expect(html).toContain('class="pb-abstract"');
+  expect(html).toContain("The chore");
+  expect(html).toContain("The proof");
+  expect(html).toContain("Watch the run");
+  // The parts wait one level down: no replay, no card list, no trap ledger on the abstract.
+  expect(html).not.toContain("pb-replay");
+  expect(html).not.toContain('class="pb-cards"');
+  expect(html).not.toContain('class="pb-trap"');
+});
+
+test("a part opens in place, with every other part one click away", () => {
+  const html = renderToStaticMarkup(entry.preview("open-short-proof"));
+  expect(html).not.toContain('class="pb-abstract"');
+  expect(html).toContain('aria-label="Parts of this playbook"');
+  expect(html).toContain('aria-current="page"');
+  expect(html).toContain('class="pb-cards"');
+});
+
+test("a tile carries its value and two chips, not the promise", () => {
+  const html = renderToStaticMarkup(entry.preview("typical"));
+  expect(html).not.toContain("tile__line");
+  expect(html).toContain("portals");
+});
+
+test("a benched playbook with a trace opens on its first turn, with a dot for every turn", () => {
+  const html = renderToStaticMarkup(entry.preview("open-run"));
   expect(html).toContain("Watch the run");
   expect(html).toContain("Turn 1 of 4");
   expect(html.match(/class="pb-rail__dot"/g)?.length).toBe(4);
@@ -22,6 +48,7 @@ test("a benched playbook with a trace opens on its first turn, with a dot for ev
 
 test("a run without a trace, or no run at all, shows no replay", () => {
   expect(renderToStaticMarkup(entry.preview("open-short"))).not.toContain("Watch the run");
+  expect(renderToStaticMarkup(entry.preview("open-short-proof"))).not.toContain("Watch the run");
   expect(renderToStaticMarkup(entry.preview("open-unbenched"))).not.toContain("Watch the run");
 });
 
@@ -39,10 +66,10 @@ test("a turn the run loop continued says the page answered, not that the person 
 });
 
 test("the traps she walked past are listed by id, a filed one first, folded past five", () => {
-  const clean = renderToStaticMarkup(entry.preview("open"));
+  const clean = renderToStaticMarkup(entry.preview("open-traps"));
   expect(clean.includes("2 of 2 traps walked past")).toBe(true);
   expect(clean.includes("1Z88B7")).toBe(true);
-  const short = renderToStaticMarkup(entry.preview("open-short"));
+  const short = renderToStaticMarkup(entry.preview("open-short-traps"));
   expect(short.includes("6 of 7 traps walked past")).toBe(true);
   const first = short.indexOf('class="pb-trap"');
   expect(short.slice(first, first + 400).includes("DP-124")).toBe(true);

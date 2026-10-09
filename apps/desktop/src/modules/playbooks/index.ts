@@ -13,7 +13,7 @@ import { PLAYBOOKS } from "@/lib/playbooks";
 import type { ModuleEntry } from "@/modules/types";
 import { useShell } from "@/stores/shell";
 
-import { fixtureIds, fixtures, initialOpenFor, initialTurnFor } from "./fixtures";
+import { fixtureIds, fixtures, initialFacetFor, initialOpenFor, initialTurnFor } from "./fixtures";
 import { selectPlaybooks, type PlaybookActions } from "./model";
 import PlaybooksView from "./view";
 
@@ -50,6 +50,7 @@ export const entry: ModuleEntry = {
     createElement(PlaybooksView, {
       model: fixtures[fixture] ?? fixtures.typical,
       initialOpen: initialOpenFor(fixture),
+      initialFacet: initialFacetFor(fixture),
       initialTurn: initialTurnFor(fixture),
     }),
   Live,

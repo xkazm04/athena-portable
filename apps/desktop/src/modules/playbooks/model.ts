@@ -313,3 +313,132 @@ export function arrange(
         : -r.rank;
   return [...shown].sort((a, b) => key(b) - key(a) || a.rank - b.rank);
 }
+
+// -- the layer's abstract --------------------------------------------------------------------------
+
+/** One part of a playbook the layer can open on its own (ADR 0053): its third level. */
+export type FacetId =
+  | "chore"
+  | "portals"
+  | "method"
+  | "gates"
+  | "result"
+  | "traps"
+  | "run"
+  | "lessons"
+  | "money";
+
+export interface Facet {
+  id: FacetId;
+  /** "chore" is what the playbook asks; "proof" is what the bench showed. */
+  group: "chore" | "proof";
+  title: string;
+  /** One line, the whole of what the abstract says about it. */
+  summary: string;
+  /** A short figure beside the line — "10 portals", "$102,667" — or "". */
+  figure: string;
+}
+
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** The first sentence of a paragraph, for a line that must stay one line. */
+function firstSentence(text: string): string {
+  const m = /^(.+?[.!?])(\s|$)/.exec(text.trim());
+  return m ? m[1] : text.trim();
+}
+
+/**
+ * What the layer's abstract lists, in order: only the parts this playbook has. Pure. A facet's
+ * summary is one line; everything else about it waits behind it, one click down.
+ */
+export function facetsOf(view: PlaybookView): Facet[] {
+  const p = view.playbook;
+  const b = p.bench;
+  const out: Facet[] = [
+    {
+      id: "chore",
+      group: "chore",
+      title: "The chore today",
+      summary: p.persona || firstSentence(p.chore),
+      figure: view.manual,
+    },
+    {
+      id: "portals",
+      group: "chore",
+      title: "Where it happens",
+      summary: p.apps.map((a) => a.name).join(", "),
+      figure: plural(p.apps.length, "portal"),
+    },
+  ];
+  if (p.steps.length || p.memory.length) {
+    out.push({
+      id: "method",
+      group: "chore",
+      title: "How she works it",
+      summary: [
+        p.steps.length ? plural(p.steps.length, "step") : "",
+        p.memory.length ? `${plural(p.memory.length, "thing")} she learns once` : "",
+      ]
+        .filter(Boolean)
+        .join(", "),
+      figure: "",
+    });
+  }
+  if (p.gates.length) {
+    out.push({
+      id: "gates",
+      group: "chore",
+      title: "Where she stops for you",
+      summary: p.gates.map((g) => g.label).join(", "),
+      figure: plural(p.gates.length, "signature"),
+    });
+  }
+  out.push({
+    id: "result",
+    group: "proof",
+    title: "What she filed",
+    summary: b
+      ? `${b.found} of ${b.eligible} claims right, ${b.exact} at the exact amount, ${plural(b.falseClaims, "false claim")}`
+      : view.verdict.sentence,
+    figure: b ? usd(b.valueFoundUsd) : "",
+  });
+  const ledger = b?.trapLedger ?? [];
+  if (p.traps.length || ledger.length) {
+    const avoided = ledger.filter((t) => !t.filed).length;
+    out.push({
+      id: "traps",
+      group: "proof",
+      title: "Traps",
+      summary: ledger.length
+        ? `${avoided} of ${ledger.length} walked past`
+        : `${plural(p.traps.length, "trap")} to watch for`,
+      figure: "",
+    });
+  }
+  if (b?.trace.length) {
+    out.push({
+      id: "run",
+      group: "proof",
+      title: "Watch the run",
+      summary: `${plural(b.trace.length, "turn")} across ${plural(visitsOf(b.trace).length, "tab visit")}`,
+      figure: minutes(b.wallS / 60),
+    });
+  }
+  if (p.lessons.length) {
+    out.push({
+      id: "lessons",
+      group: "proof",
+      title: "What it taught Athena",
+      summary: p.lessons.map((l) => l.title).join("; "),
+      figure: plural(p.lessons.length, "fix", "fixes"),
+    });
+  }
+  out.push({
+    id: "money",
+    group: "proof",
+    title: "Why it is worth it",
+    summary: `${p.edge.difficulty}/5 hard for anyone else, ${p.edge.usefulness}/5 useful to you`,
+    figure: `${view.value} ${view.per}`,
+  });
+  return out;
+}

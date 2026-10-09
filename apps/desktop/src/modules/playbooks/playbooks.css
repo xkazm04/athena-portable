@@ -49,25 +49,25 @@
 
 .pb-map__edge-label {
   fill: var(--accent);
-  font-size: 11px;
+  font-size: calc(11px + var(--type-step));
   font-weight: 700;
   letter-spacing: 0.12em;
 }
 
 .pb-map__edge-note {
   fill: var(--muted-foreground);
-  font-size: 11px;
+  font-size: calc(11px + var(--type-step));
 }
 
 .pb-map__tick {
   fill: var(--muted);
-  font-size: 11px;
+  font-size: calc(11px + var(--type-step));
   font-variant-numeric: tabular-nums;
 }
 
 .pb-map__axis {
   fill: var(--muted-foreground);
-  font-size: 12px;
+  font-size: calc(12px + var(--type-step));
   font-weight: 600;
 }
 
@@ -119,7 +119,7 @@
 
 .pb-map__n {
   fill: var(--background);
-  font-size: 12px;
+  font-size: calc(12px + var(--type-step));
   font-weight: 800;
   pointer-events: none;
 }
@@ -129,7 +129,7 @@
   transition: opacity var(--duration-fast) ease;
   pointer-events: none;
   fill: var(--foreground);
-  font-size: 12px;
+  font-size: calc(12px + var(--type-step));
   font-weight: 600;
   paint-order: stroke;
   stroke: var(--card-bg);
@@ -211,7 +211,7 @@
   padding: 1px 8px;
   border: 1px solid var(--border-default);
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: calc(0.75rem + var(--type-step));
   font-weight: 600;
   color: var(--muted-foreground);
   white-space: nowrap;
@@ -219,12 +219,6 @@
 
 .pb-chip--athena {
   border-color: color-mix(in srgb, var(--primary) 45%, transparent);
-  color: var(--foreground);
-}
-
-.pb-chip--speed {
-  border-color: transparent;
-  background: color-mix(in srgb, var(--status-success) 16%, transparent);
   color: var(--foreground);
 }
 
@@ -246,7 +240,7 @@
   border: 1px solid color-mix(in srgb, var(--role-human) 40%, transparent);
   border-radius: var(--radius-interactive);
   background: color-mix(in srgb, var(--role-human) 6%, var(--recessed));
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem + var(--type-step));
   line-height: 1.55;
 }
 
@@ -341,18 +335,6 @@
 }
 
 /* -- the proof ---------------------------------------------------------------------------------- */
-.pb-proof {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.pb-proof__meter {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
 .pb-proof__big {
   font-size: 2.25rem;
   font-weight: 700;
@@ -519,7 +501,7 @@
   border-radius: 50%;
   background: var(--status-neutral);
   color: var(--background);
-  font-size: 0.75rem;
+  font-size: calc(0.75rem + var(--type-step));
   font-weight: 800;
 }
 
@@ -927,4 +909,227 @@
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 12px;
+}
+
+/* -- the layer's abstract (ADR 0053) -------------------------------------------------------------
+ *
+ * The first view of an opened playbook: the promise and the proof at a glance side by side, then
+ * one row per part in two groups. A row is one line of title and one of summary; the part itself
+ * opens in place.
+ */
+.pb-abstract {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--density-gap) * 1.5);
+}
+
+.pb-abstract__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--density-gap);
+  align-items: start;
+}
+
+.pb-abstract__lede {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pb-abstract__caveat {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.pb-glance {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--density-pad);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  color: var(--foreground);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast),
+    background var(--duration-fast);
+}
+
+.pb-glance:hover {
+  border-color: var(--border-emphasis);
+  background: var(--card-raised);
+}
+
+.pb-glance[data-absent] {
+  cursor: default;
+  gap: 8px;
+}
+
+.pb-glance__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+}
+
+.pb-glance__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pb-glance__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pb-glance__stat .typo-label {
+  color: var(--muted-foreground);
+  white-space: normal;
+}
+
+.pb-glance__stat.is-bad .typo-data {
+  color: var(--status-error);
+}
+
+.pb-facets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--density-gap);
+  align-items: start;
+}
+
+.pb-facets__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pb-facets__title {
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.pb-facets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb-facet {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-interactive);
+  background: var(--recessed);
+  color: var(--foreground);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast),
+    background var(--duration-fast);
+}
+
+.pb-facet:hover {
+  border-color: var(--border-emphasis);
+  background: var(--hover-wash);
+}
+
+.pb-facet__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pb-facet__title {
+  color: var(--foreground);
+}
+
+.pb-facet__summary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pb-facet__figure {
+  flex: none;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.pb-facet__chev {
+  flex: none;
+  color: var(--muted-foreground);
+}
+
+/* -- a part, opened ------------------------------------------------------------------------------ */
+.pb-part {
+  display: flex;
+  flex-direction: column;
+  gap: var(--density-gap);
+  max-width: 920px;
+}
+
+.pb-part__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pb-part__tab {
+  padding: 3px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: calc(0.8125rem + var(--type-step));
+  cursor: pointer;
+}
+
+.pb-part__tab:hover {
+  color: var(--foreground);
+  border-color: var(--border-emphasis);
+}
+
+.pb-part__tab[aria-current="page"] {
+  color: var(--foreground);
+  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.pb-part__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--density-gap);
+}
+
+.pb-reading {
+  max-width: 72ch;
+}
+
+@media (max-width: 900px) {
+  .pb-abstract__top,
+  .pb-facets {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

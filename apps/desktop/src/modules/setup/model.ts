@@ -20,7 +20,7 @@
 import type { DaemonHealth } from "@/lib/daemon";
 import { engineLabel, probeOf, remedyFor, type EngineProbe } from "@/lib/engines";
 import type { MicStanding } from "@/lib/voice";
-import type { ThemeChoice } from "@/stores/settings";
+import type { ThemeChoice, TypeScale } from "@/stores/settings";
 
 export type SetupMode = "onboarding" | "settings";
 
@@ -47,6 +47,7 @@ export interface SetupActions {
   /** Hand the chosen engine to the running daemon: a staged shutdown and a fresh spawn. */
   restart: () => void;
   setTheme: (theme: ThemeChoice) => void;
+  setTypeScale: (scale: TypeScale) => void;
   setBrainPath: (path: string) => void;
   /** Opens a tab. The one act of onboarding that changes the world. */
   openPage: (url: string) => void;
@@ -72,6 +73,7 @@ export interface SetupModel {
   /** A check is in flight: the button reads "Checking...". */
   checking: boolean;
   theme: ThemeChoice;
+  typeScale: TypeScale;
   /** The brain directory. Empty means the daemon's own default, which is a real answer. */
   brainPath: string;
   tabs: readonly SetupTab[];
@@ -101,6 +103,8 @@ export interface SetupSources {
   problem: string | null;
   checking?: boolean;
   theme: ThemeChoice;
+  /** Comfortable where a fixture does not say. */
+  typeScale?: TypeScale;
   brainPath: string;
   /** The raw tab list, as `stores/tabs.ts` holds it. */
   tabs: readonly { id: number; title: string; url: string }[];
@@ -135,6 +139,7 @@ export function selectSetup(source: SetupSources): SetupModel {
     problem: source.problem,
     checking: source.checking ?? false,
     theme: source.theme,
+    typeScale: source.typeScale ?? "comfortable",
     brainPath: source.brainPath,
     tabs: source.tabs.map((t) => ({
       id: t.id,
@@ -187,6 +192,7 @@ export const INERT_ACTIONS: SetupActions = {
   checkEngines: () => {},
   restart: () => {},
   setTheme: () => {},
+  setTypeScale: () => {},
   setBrainPath: () => {},
   openPage: () => {},
   checkMic: () => {},

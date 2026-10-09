@@ -3,20 +3,21 @@
  *
  * Two layers. The overview reads: **the edge**, a map of every playbook between how hard it is
  * for anyone else and how much it is worth to the person, with the corner the cycles push into
- * marked "only Athena"; then one tile per playbook, its value the loudest thing on it and its
- * bench verdict in the corner. The second layer opens one playbook: on the left what it is and
- * how to start it, on the right what the bench proved — the cards the gate filed, scored against
- * the hidden truth, and the money they were worth.
+ * marked "only Athena"; then one tile per playbook: its value the loudest thing on it, its bench
+ * verdict in the corner, two chips and no prose. The second layer opens one playbook on an
+ * abstract (ADR 0053): the promise, the proof in three numbers, and one line for each part of it.
+ * A part opens in place as the third level — the chore, the portals, the cards the gate filed,
+ * the traps, the run — and Back returns to the abstract before it closes the layer.
  *
- * Which layer is open is view-local (ADR 0029, decision 3); the open playbook is looked up from
- * the model on every render.
+ * Which layer and which part are open is view-local (ADR 0029, decision 3); the open playbook is
+ * looked up from the model on every render.
  */
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
 import EmptyState from "@/components/EmptyState";
-import Layer, { LayerColumns } from "@/components/Layer";
+import Layer from "@/components/Layer";
 import PageHeader from "@/components/PageHeader";
 import PageShell from "@/components/PageShell";
 import PageSection from "@/components/PageSection";
@@ -34,7 +35,10 @@ import {
   readsOf,
   turnState,
   visitsOf,
+  facetsOf,
   type AudienceFilter,
+  type Facet,
+  type FacetId,
   type PlaybookView,
   type PlaybooksModel,
   type SortBy,
@@ -43,15 +47,23 @@ import {
 export default function PlaybooksView({
   model,
   initialOpen = null,
+  initialFacet = null,
   initialTurn = 0,
 }: {
   model: PlaybooksModel;
   /** Preview only: open this playbook's layer on first render. */
   initialOpen?: string | null;
+  /** Preview only: open the layer on this part instead of its abstract. */
+  initialFacet?: FacetId | null;
   /** Preview only: the replay's turn on first render, from 0. */
   initialTurn?: number;
 }) {
-  const [open, setOpen] = useState<string | null>(initialOpen);
+  const [open, setOpenState] = useState<string | null>(initialOpen);
+  const [facet, setFacet] = useState<FacetId | null>(initialFacet);
+  const setOpen = (id: string | null) => {
+    setOpenState(id);
+    setFacet(null);
+  };
   const [audience, setAudience] = useState<AudienceFilter>("all");
   const [by, setBy] = useState<SortBy>("edge");
   const grid = arrange(model.items, audience, by);
@@ -130,7 +142,6 @@ export default function PlaybooksView({
                   pill={<Badge tone={v.verdict.tone}>{v.verdict.label}</Badge>}
                   figure={v.value}
                   figureNote={v.per}
-                  line={v.playbook.promise}
                   foot={<TileFoot view={v} />}
                   onOpen={() => setOpen(v.id)}
                 />
@@ -142,9 +153,9 @@ export default function PlaybooksView({
 
       {current ? (
         <Layer
-          eyebrow={current.playbook.domain || "Playbook"}
-          title={current.title}
-          onClose={() => setOpen(null)}
+          eyebrow={facet ? current.title : current.playbook.domain || "Playbook"}
+          title={facet ? (facetsOf(current).find((f) => f.id === facet)?.title ?? current.title) : current.title}
+          onClose={() => (facet ? setFacet(null) : setOpen(null))}
           actions={
             <>
               <Button variant="secondary" onClick={() => model.actions.copy(current.playbook.command)}>
@@ -161,7 +172,17 @@ export default function PlaybooksView({
             </>
           }
         >
-          <PlaybookLayer view={current} model={model} initialTurn={initialTurn} />
+          {facet ? (
+            <FacetLayer
+              view={current}
+              model={model}
+              facet={facet}
+              onFacet={setFacet}
+              initialTurn={initialTurn}
+            />
+          ) : (
+            <Abstract view={current} onFacet={setFacet} />
+          )}
         </Layer>
       ) : null}
     </PageShell>
@@ -177,12 +198,17 @@ const SORT_NOTES: Record<SortBy, string> = {
 const count = (items: readonly PlaybookView[], audience: "home" | "work") =>
   items.filter((v) => v.playbook.audience === audience).length;
 
+/** Two chips: the time it saves, measured where it was benched, and how many portals it spans. */
 function TileFoot({ view }: { view: PlaybookView }) {
+  const by = view.manual.replace(/ by hand$/, "");
+  const run = view.measured.replace(/ with Athena$/, "");
   return (
     <>
-      {view.manual ? <span className="pb-chip">{view.manual}</span> : null}
-      {view.measured ? <span className="pb-chip pb-chip--athena">{view.measured}</span> : null}
-      {view.speed ? <span className="pb-chip pb-chip--speed">{view.speed}</span> : null}
+      {view.manual ? (
+        <span className="pb-chip pb-chip--athena" title={[view.manual, view.measured].filter(Boolean).join(", ")}>
+          {run ? `${by} → ${run}` : view.manual}
+        </span>
+      ) : null}
       <span className="pb-chip">{`${view.playbook.apps.length} portals`}</span>
     </>
   );
@@ -365,90 +391,226 @@ function EdgeNotes({ model }: { model: PlaybooksModel }) {
   );
 }
 
-// -- one playbook --------------------------------------------------------------------------------
+// -- one playbook: the abstract -------------------------------------------------------------------
 
-function PlaybookLayer({
+const GROUPS: { id: Facet["group"]; title: string }[] = [
+  { id: "chore", title: "The chore" },
+  { id: "proof", title: "The proof" },
+];
+
+/**
+ * The layer's first view: the promise, the proof in three numbers, and a line per part. Nothing
+ * here is longer than a sentence; every part opens in place.
+ */
+function Abstract({ view, onFacet }: { view: PlaybookView; onFacet: (f: FacetId) => void }) {
+  const p = view.playbook;
+  const facets = facetsOf(view);
+  return (
+    <div className="pb-abstract">
+      <div className="pb-abstract__top">
+        <div className="pb-abstract__lede">
+          <p className="pb-promise">{p.promise}</p>
+          {p.caveat ? (
+            <p className="pb-abstract__caveat typo-caption" role="note">
+              <StatusDot tone="warning" />
+              {firstSentence(p.caveat)}
+            </p>
+          ) : null}
+        </div>
+        <ProofGlance view={view} onOpen={() => onFacet("result")} />
+      </div>
+      <div className="pb-facets">
+        {GROUPS.map((g) => (
+          <section key={g.id} className="pb-facets__group" aria-label={g.title}>
+            <h3 className="typo-label pb-facets__title">{g.title}</h3>
+            <ul className="pb-facets__list">
+              {facets
+                .filter((f) => f.group === g.id)
+                .map((f) => (
+                  <li key={f.id}>
+                    <FacetRow facet={f} onOpen={() => onFacet(f.id)} />
+                  </li>
+                ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FacetRow({ facet, onOpen }: { facet: Facet; onOpen: () => void }) {
+  return (
+    <button type="button" className="pb-facet focus-ring" onClick={onOpen}>
+      <span className="pb-facet__text">
+        <span className="typo-title pb-facet__title">{facet.title}</span>
+        <span className="typo-caption pb-facet__summary">{facet.summary}</span>
+      </span>
+      {facet.figure ? <span className="typo-data pb-facet__figure">{facet.figure}</span> : null}
+      <svg className="pb-facet__chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+        <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+}
+
+/** The proof at a glance: the money found against what was there, the verdict, three numbers. */
+function ProofGlance({ view, onOpen }: { view: PlaybookView; onOpen: () => void }) {
+  const b = view.playbook.bench;
+  const expect = view.playbook.expectation;
+  if (b === null) {
+    return (
+      <div className="pb-glance" data-absent="1">
+        <span className="pb-glance__head">
+          <span className="typo-label">Bench</span>
+          <Badge tone={view.verdict.tone}>{view.verdict.label}</Badge>
+        </span>
+        <p className="typo-body">{view.verdict.sentence}</p>
+        <p className="typo-caption">
+          {`The bar: ${Math.round(expect.recall * 100)}% of the money, ${expect.falseClaims} false claims, under ${minutes(expect.minutes)}.`}
+        </p>
+      </div>
+    );
+  }
+  const pct = b.valueTotalUsd ? Math.round((b.valueFoundUsd / b.valueTotalUsd) * 100) : 0;
+  return (
+    <button type="button" className="pb-glance focus-ring" onClick={onOpen} aria-label="Open what she filed">
+      <span className="pb-glance__head">
+        <span className="typo-label">{`Bench, ${b.runAt.slice(0, 10)}`}</span>
+        <Badge tone={view.verdict.tone}>{view.verdict.label}</Badge>
+      </span>
+      <span className="pb-proof__big">{usd(b.valueFoundUsd)}</span>
+      <span className="typo-caption">{`of ${usd(b.valueTotalUsd)} there to find`}</span>
+      <span className="pb-proof__bar" style={{ ["--pct" as string]: `${pct}%` }} aria-hidden="true">
+        <span />
+      </span>
+      <span className="pb-glance__stats">
+        <Glance term="Claims right" value={`${b.found} of ${b.eligible}`} />
+        <Glance
+          term="Traps avoided"
+          value={b.trapsTotal ? `${b.trapsTotal - b.trapsFiled} of ${b.trapsTotal}` : "–"}
+          bad={b.trapsFiled > 0}
+        />
+        <Glance
+          term="Her time"
+          value={view.manual ? `${minutes(b.wallS / 60)} vs ${view.manual.replace(/ by hand$/, "")}` : minutes(b.wallS / 60)}
+        />
+      </span>
+    </button>
+  );
+}
+
+function Glance({ term, value, bad = false }: { term: string; value: string; bad?: boolean }) {
+  return (
+    <span className={`pb-glance__stat${bad ? " is-bad" : ""}`}>
+      <span className="typo-label">{term}</span>
+      <span className="typo-data">{value}</span>
+    </span>
+  );
+}
+
+/** The caveat's first sentence carries the warning; the whole of it waits in "The chore today". */
+function firstSentence(text: string): string {
+  const m = /^(.+?[.!?])(\s|$)/.exec(text.trim());
+  return m ? m[1] : text.trim();
+}
+
+// -- one playbook: a part, opened ------------------------------------------------------------------
+
+function FacetLayer({
   view,
   model,
-  initialTurn = 0,
+  facet,
+  onFacet,
+  initialTurn,
 }: {
   view: PlaybookView;
   model: PlaybooksModel;
-  initialTurn?: number;
+  facet: FacetId;
+  onFacet: (f: FacetId) => void;
+  initialTurn: number;
+}) {
+  return (
+    <div className="pb-part">
+      <nav className="pb-part__nav" aria-label="Parts of this playbook">
+        {facetsOf(view).map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            className="pb-part__tab focus-ring"
+            aria-current={f.id === facet ? "page" : undefined}
+            onClick={() => onFacet(f.id)}
+          >
+            {f.title}
+          </button>
+        ))}
+      </nav>
+      <div className="pb-part__body" key={facet}>
+        <FacetBody view={view} model={model} facet={facet} initialTurn={initialTurn} />
+      </div>
+    </div>
+  );
+}
+
+function FacetBody({
+  view,
+  model,
+  facet,
+  initialTurn,
+}: {
+  view: PlaybookView;
+  model: PlaybooksModel;
+  facet: FacetId;
+  initialTurn: number;
 }) {
   const p = view.playbook;
-  return (
-    <LayerColumns
-      left={
+  const b = p.bench;
+  switch (facet) {
+    case "chore":
+      return (
         <>
-          <p className="pb-promise">{p.promise}</p>
-
-          <PageSection title="The chore today">
-            {p.persona ? <p className="typo-label pb-persona">{p.persona}</p> : null}
-            <p className="typo-body">{p.chore}</p>
-          </PageSection>
-
+          {p.persona ? <p className="typo-label pb-persona">{p.persona}</p> : null}
+          <p className="typo-body pb-reading">{p.chore}</p>
           <PageSection title="Tell Athena" note="Handed over, it waits in her composer until you send it.">
             <blockquote className="pb-command">{p.command}</blockquote>
           </PageSection>
-
-          <PageSection title="Where it happens" note={`${p.apps.length} portals, no shared API`}>
-            <ul className="pb-portals">
-              {p.apps.map((a) => (
-                <li key={a.name} className="pb-portal">
-                  <span className="typo-title">{a.name}</span>
-                  <span className="typo-caption">{a.role}</span>
-                  {a.api ? <span className="pb-chip">{a.api}</span> : null}
-                  {a.url ? (
-                    <Button size="sm" variant="ghost" onClick={() => model.actions.open(a.url)}>
-                      Open
-                    </Button>
-                  ) : null}
+          {p.caveat ? (
+            <p className="pb-caveat typo-body" role="note">
+              <StatusDot tone="warning" />
+              {p.caveat}
+            </p>
+          ) : null}
+        </>
+      );
+    case "portals":
+      return (
+        <ul className="pb-portals">
+          {p.apps.map((a) => (
+            <li key={a.name} className="pb-portal">
+              <span className="typo-title">{a.name}</span>
+              <span className="typo-caption">{a.role}</span>
+              {a.api ? <span className="pb-chip">{a.api}</span> : null}
+              {a.url ? (
+                <Button size="sm" variant="ghost" onClick={() => model.actions.open(a.url)}>
+                  Open
+                </Button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      );
+    case "method":
+      return (
+        <>
+          {p.steps.length ? (
+            <ol className="pb-steps">
+              {p.steps.map((s) => (
+                <li key={s} className="typo-body">
+                  {s}
                 </li>
               ))}
-            </ul>
-          </PageSection>
-
-          {p.steps.length ? (
-            <PageSection title="How she works it">
-              <ol className="pb-steps">
-                {p.steps.map((s) => (
-                  <li key={s} className="typo-body">
-                    {s}
-                  </li>
-                ))}
-              </ol>
-            </PageSection>
+            </ol>
           ) : null}
-
-          {p.gates.length ? (
-            <PageSection title="Where she stops for your signature">
-              <ul className="pb-list">
-                {p.gates.map((g) => (
-                  <li key={g.action} className="pb-gate">
-                    <span className="pb-gate__tag typo-label">GATED</span>
-                    <span>
-                      <span className="typo-title">{g.label}</span>
-                      <span className="typo-caption"> — {g.why}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </PageSection>
-          ) : null}
-
-          {p.traps.length ? (
-            <PageSection title="What she must not fall for">
-              <ul className="pb-list pb-list--traps">
-                {p.traps.map((t) => (
-                  <li key={t} className="typo-body">
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </PageSection>
-          ) : null}
-
           {p.memory.length ? (
             <PageSection title="What she learns once">
               <ul className="pb-list pb-list--memory">
@@ -461,26 +623,72 @@ function PlaybookLayer({
             </PageSection>
           ) : null}
         </>
-      }
-      right={
+      );
+    case "gates":
+      return (
+        <ul className="pb-list">
+          {p.gates.map((g) => (
+            <li key={g.action} className="pb-gate">
+              <span className="pb-gate__tag typo-label">GATED</span>
+              <span>
+                <span className="typo-title">{g.label}</span>
+                <span className="typo-caption"> — {g.why}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      );
+    case "result":
+      return <Proof view={view} />;
+    case "traps":
+      return (
         <>
-          {p.caveat ? (
-            <p className="pb-caveat typo-body" role="note">
-              <StatusDot tone="warning" />
-              {p.caveat}
-            </p>
+          {b?.trapLedger.length ? <TrapLedger ledger={b.trapLedger} /> : null}
+          {p.traps.length ? (
+            <PageSection title="What she must not fall for">
+              <ul className="pb-list pb-list--traps">
+                {p.traps.map((t) => (
+                  <li key={t} className="typo-body">
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </PageSection>
           ) : null}
-          <Proof view={view} />
-          {p.bench?.trace.length ? <Replay trace={p.bench.trace} initialTurn={initialTurn} /> : null}
-          {p.lessons.length ? <Lessons playbook={p} /> : null}
+        </>
+      );
+    case "run":
+      return b?.trace.length ? (
+        <>
+          <Replay trace={b.trace} initialTurn={initialTurn} />
+          {b.closingWords ? (
+            <figure className="pb-quote">
+              <blockquote className="typo-body">
+                <Prose text={b.closingWords} />
+              </blockquote>
+              <figcaption className="typo-caption">{`Athena, at the end of the run (${b.engine} ${b.model})`}</figcaption>
+            </figure>
+          ) : null}
+          {b.history.length ? (
+            <PageSection title="Every run">
+              <Runs bench={b} />
+            </PageSection>
+          ) : null}
+        </>
+      ) : null;
+    case "lessons":
+      return <Lessons playbook={p} />;
+    case "money":
+      return (
+        <>
           <Money playbook={p} onOpen={model.actions.open} />
           <EdgeWhy playbook={p} />
         </>
-      }
-    />
-  );
+      );
+  }
 }
 
+/** What she filed, scored: the six numbers, every card, and the audit of her prose. */
 function Proof({ view }: { view: PlaybookView }) {
   const b = view.playbook.bench;
   const expect = view.playbook.expectation;
@@ -494,34 +702,24 @@ function Proof({ view }: { view: PlaybookView }) {
       </SectionCard>
     );
   }
-  const pct = b.valueTotalUsd ? Math.round((b.valueFoundUsd / b.valueTotalUsd) * 100) : 0;
   return (
     <SectionCard
       title="Proof"
       note={`bench, ${b.runAt.slice(0, 10)}`}
       action={<Badge tone={view.verdict.tone}>{view.verdict.label}</Badge>}
     >
-      <div className="pb-proof">
-        <div className="pb-proof__meter" style={{ ["--pct" as string]: `${pct}%` }}>
-          <span className="pb-proof__big">{usd(b.valueFoundUsd)}</span>
-          <span className="typo-caption">{`of ${usd(b.valueTotalUsd)} there to find`}</span>
-          <span className="pb-proof__bar" aria-hidden="true">
-            <span />
-          </span>
-        </div>
-        <dl className="pb-proof__stats">
-          <Stat term="Claims right" value={`${b.found} of ${b.eligible}`} />
-          <Stat
-            term="Traps avoided"
-            value={b.trapsTotal ? `${b.trapsTotal - b.trapsFiled} of ${b.trapsTotal}` : "–"}
-            bad={b.trapsFiled > 0}
-          />
-          <Stat term="False claims" value={String(b.falseClaims)} bad={b.falseClaims > 0} />
-          <Stat term="Athena's time" value={minutes(b.wallS / 60)} />
-          <Stat term="Your time" value={`${b.cards.length} cards, ${minutes(b.yourTimeS / 60)}`} />
-          <Stat term="Model cost" value={b.costUsd === null ? "not reported" : usd(b.costUsd)} />
-        </dl>
-      </div>
+      <dl className="pb-proof__stats">
+        <Stat term="Claims right" value={`${b.found} of ${b.eligible}`} />
+        <Stat
+          term="Traps avoided"
+          value={b.trapsTotal ? `${b.trapsTotal - b.trapsFiled} of ${b.trapsTotal}` : "–"}
+          bad={b.trapsFiled > 0}
+        />
+        <Stat term="False claims" value={String(b.falseClaims)} bad={b.falseClaims > 0} />
+        <Stat term="Athena's time" value={minutes(b.wallS / 60)} />
+        <Stat term="Your time" value={`${b.cards.length} cards, ${minutes(b.yourTimeS / 60)}`} />
+        <Stat term="Model cost" value={b.costUsd === null ? "not reported" : usd(b.costUsd)} />
+      </dl>
       <p className="typo-body">
         {view.verdict.sentence}
         {b.found ? ` ${b.exact} of ${b.found} at the exact amount the rules allow.` : ""}
@@ -535,9 +733,7 @@ function Proof({ view }: { view: PlaybookView }) {
               <StatusDot tone={o.tone} />
               <span className="typo-code">{c.key || c.action}</span>
               <span className="typo-caption">{c.why || o.word}</span>
-              <span className="pb-card__v typo-data">
-                {c.valueUsd ? usd(c.valueUsd) : ""}
-              </span>
+              <span className="pb-card__v typo-data">{c.valueUsd ? usd(c.valueUsd) : ""}</span>
             </li>
           );
         })}
@@ -550,22 +746,12 @@ function Proof({ view }: { view: PlaybookView }) {
           </li>
         ))}
       </ul>
-      {b.trapLedger.length ? <TrapLedger ledger={b.trapLedger} /> : null}
-      {b.closingWords ? (
-        <figure className="pb-quote">
-          <blockquote className="typo-body">
-            <Prose text={b.closingWords} />
-          </blockquote>
-          <figcaption className="typo-caption">{`Athena, at the end of the run (${b.engine} ${b.model})`}</figcaption>
-        </figure>
-      ) : null}
       {b.proseAudit && !b.proseAudit.agrees ? (
         <p className="pb-audit typo-body" role="note">
           <StatusDot tone="warning" />
           {`Her summary says ${usd(b.proseAudit.saidUsd)} in total; the cards she filed add up to ${usd(b.proseAudit.recordUsd)}. The record is what you sign, so the record is what counts.`}
         </p>
       ) : null}
-      {b.history.length ? <Runs bench={b} /> : null}
       <p className="typo-caption">
         Scored from the cards the gate filed, against answers Athena never saw. Nothing was sent:
         every card waited for a signature.

@@ -251,6 +251,17 @@ pub fn serve_args(token_file: &Path, brain: &Path, engine: &str) -> Vec<String> 
     args
 }
 
+/// The origin of the dev server the webview loads, when it is one `UI_ORIGINS` does not already
+/// name. `None` for no dev URL and for the default one, so the common spawn carries no extra flag.
+pub fn dev_origin(dev_url: Option<&tauri::Url>) -> Option<String> {
+    let origin = dev_url?.origin().ascii_serialization();
+    if origin == "null" || UI_ORIGINS.contains(&origin.as_str()) {
+        None
+    } else {
+        Some(origin)
+    }
+}
+
 // ==============================================================================================
 // The token
 // ==============================================================================================
@@ -765,7 +776,16 @@ pub fn start(app: &AppHandle, engine: &str) -> Result<(), String> {
         .map_err(|e| format!("cannot write the daemon token file: {e}"))?;
     let brain = brain_dir(app);
     std::fs::create_dir_all(&brain).map_err(|e| format!("cannot create the brain: {e}"))?;
-    let args = serve_args(&token_file, &brain, engine);
+    let mut args = serve_args(&token_file, &brain, engine);
+    // A dev shell may be served from a port other than 1431 (`tauri dev --config` with another
+    // `devUrl`, so two shells can run side by side). Its webview's origin is then not in
+    // `UI_ORIGINS` and every call the panel makes would be refused by CORS, not by the daemon.
+    if cfg!(debug_assertions) {
+        if let Some(origin) = dev_origin(app.config().build.dev_url.as_ref()) {
+            args.push("--allow-origin".into());
+            args.push(origin);
+        }
+    }
 
     let (source, mut command) = match sidecar_path(app) {
         Some(path) => {
@@ -1115,6 +1135,17 @@ mod tests {
             args.iter().filter(|a| *a == "--allow-origin").count(),
             UI_ORIGINS.len()
         );
+    }
+
+    #[test]
+    fn a_dev_server_on_another_port_is_allowed_and_the_default_adds_nothing() {
+        let url = |s: &str| tauri::Url::parse(s).unwrap();
+        assert_eq!(
+            dev_origin(Some(&url("http://127.0.0.1:1441/"))).as_deref(),
+            Some("http://127.0.0.1:1441")
+        );
+        assert_eq!(dev_origin(Some(&url("http://127.0.0.1:1431"))), None);
+        assert_eq!(dev_origin(None), None);
     }
 
     #[test]

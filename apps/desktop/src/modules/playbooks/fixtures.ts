@@ -9,7 +9,7 @@
 import type { FixtureId } from "@/modules/types";
 import { PLAYBOOKS, parsePlaybook, type Playbook } from "@/lib/playbooks";
 
-import { selectPlaybooks, type PlaybookActions, type PlaybooksModel } from "./model";
+import { selectPlaybooks, type FacetId, type PlaybookActions, type PlaybooksModel } from "./model";
 
 const NOOP: PlaybookActions = { copy: () => {}, open: () => {}, hand: () => {} };
 
@@ -235,12 +235,17 @@ export const fixtures: Record<FixtureId, PlaybooksModel> = {
   heavy: selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS, ...MORE]), NOOP),
   degraded: selectPlaybooks([book({ id: "half-written", title: "A half-written playbook" })], NOOP),
   open: selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
+  "open-run": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
   "open-turn-2": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
+  "open-traps": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
   "open-short": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
+  "open-short-traps": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
+  "open-short-proof": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
   "open-unbenched": selectPlaybooks(sorted([REFUNDS, CHARGEBACKS, FLIGHTS]), NOOP),
   /** What this build actually ships, with its real bench runs: the one fixture that is not invented. */
   shipped: selectPlaybooks(PLAYBOOKS, NOOP),
   "shipped-open": selectPlaybooks(PLAYBOOKS, NOOP),
+  "shipped-proof": selectPlaybooks(PLAYBOOKS, NOOP),
 };
 
 export const fixtureIds: readonly FixtureId[] = Object.keys(fixtures);
@@ -254,14 +259,36 @@ export function initialTurnFor(fixture: FixtureId): number {
 export function initialOpenFor(fixture: FixtureId): string | null {
   switch (fixture) {
     case "open":
+    case "open-run":
     case "open-turn-2":
+    case "open-traps":
       return REFUNDS.id;
     case "open-short":
+    case "open-short-traps":
+    case "open-short-proof":
       return CHARGEBACKS.id;
     case "open-unbenched":
       return FLIGHTS.id;
     case "shipped-open":
+    case "shipped-proof":
       return PLAYBOOKS[0]?.id ?? null;
+    default:
+      return null;
+  }
+}
+
+/** The fixtures that open the layer on one part rather than its abstract (ADR 0053). */
+export function initialFacetFor(fixture: FixtureId): FacetId | null {
+  switch (fixture) {
+    case "open-run":
+    case "open-turn-2":
+      return "run";
+    case "open-traps":
+    case "open-short-traps":
+      return "traps";
+    case "open-short-proof":
+    case "shipped-proof":
+      return "result";
     default:
       return null;
   }

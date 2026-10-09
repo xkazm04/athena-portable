@@ -7,7 +7,7 @@ import { expect, test } from "vitest";
 import type { TraceTurn } from "@/lib/playbooks";
 
 import { fixtures } from "./fixtures";
-import { arrange, foundBy, readsOf, turnState, visitsOf } from "./model";
+import { arrange, facetsOf, foundBy, readsOf, turnState, visitsOf } from "./model";
 
 const turn = (portal: string, over: Partial<TraceTurn> = {}): TraceTurn => ({
   portal,
@@ -87,4 +87,24 @@ test("the totals add the latest runs' traps, false claims, minutes and cost", ()
   expect(t.athenaMinutes).toBeCloseTo((372 + 1640) / 60);
   expect(t.manualMinutes).toBe(180 + 45);
   expect(t.costUsd).toBeCloseTo(0.41 + 1.12);
+});
+
+test("the abstract lists only the parts a playbook has, each in one line, the chore before the proof", () => {
+  for (const view of fixtures.heavy.items) {
+    const facets = facetsOf(view);
+    const groups = facets.map((f) => f.group);
+    expect(groups.indexOf("proof"), view.id).toBeGreaterThan(groups.lastIndexOf("chore"));
+    expect(new Set(facets.map((f) => f.id)).size, view.id).toBe(facets.length);
+    for (const f of facets) expect(f.summary.includes("\n"), `${view.id}/${f.id}`).toBe(false);
+    expect(facets.some((f) => f.id === "run"), view.id).toBe(Boolean(view.playbook.bench?.trace.length));
+    expect(facets.some((f) => f.id === "gates"), view.id).toBe(view.playbook.gates.length > 0);
+  }
+});
+
+test("an unbenched playbook's result line is its verdict sentence, with no figure", () => {
+  const unbenched = fixtures.typical.items.find((v) => v.playbook.bench === null);
+  expect(unbenched).toBeDefined();
+  const result = facetsOf(unbenched!).find((f) => f.id === "result");
+  expect(result?.summary).toBe(unbenched!.verdict.sentence);
+  expect(result?.figure).toBe("");
 });

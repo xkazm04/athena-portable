@@ -274,7 +274,7 @@
 }
 
 .vs-her .typo-body {
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem + var(--type-step));
   line-height: 1.6;
 }
 
@@ -449,7 +449,7 @@
   background: color-mix(in srgb, var(--foreground) 4%, transparent);
   color: var(--muted-foreground);
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: calc(0.6875rem + var(--type-step));
   font-weight: 500;
 }
 

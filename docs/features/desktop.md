@@ -25,9 +25,9 @@ reads, and a layer for every write.
 | Module | What it shows |
 |---|---|
 | **Browser** | the ledger of registered apps (Open, Details); registering and an app's switch or Forget happen in layers |
-| **Playbooks** | the edge map (difficulty × usefulness, an "only Athena" corner), the record across the latest runs, a grid filtered by home or work and ordered by edge, money or hours, and each playbook's layer: story, command, portals, gates, traps, then the proof (money, cards, the traps she walked past, the replay of the run, the runs over time, what it taught Athena, the economics). See [playbooks.md](playbooks.md). |
+| **Playbooks** | the edge map (difficulty × usefulness, an "only Athena" corner), the record across the latest runs, a grid filtered by home or work and ordered by edge, money or hours, and each playbook's layer: an abstract with a line per part, each part one level down (ADR 0053): story, command, portals, gates, traps, then the proof (money, cards, the traps she walked past, the replay of the run, the runs over time, what it taught Athena, the economics). See [playbooks.md](playbooks.md). |
 | **Connectors** | emblem tiles per service and a layer per connector ([connectors.md](connectors.md)) |
-| **Setup** | seven emblem tiles for the machine's facts (engine, brain, voice, theme...) with a layer each; onboarding inline on first run |
+| **Setup** | seven cards for the machine's facts (engine, brain, voice, theme...), each its name large over its drawing faint behind, with a layer each; the theme's layer also sets the text size, comfortable or compact (ADR 0054); onboarding inline on first run |
 | **Voice** | a studio to pick and hear her voice and test the microphone, then the settings (ADR 0028) |
 
 `components/` holds the shared parts (`Tile`, `Layer`, `Emblem`, `PillGroup`, `SectionCard`...);

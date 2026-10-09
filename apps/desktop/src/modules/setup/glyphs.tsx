@@ -78,12 +78,16 @@ export function BrainGlyph({ size }: { size?: number }) {
   );
 }
 
-/** A circle half filled: the theme is one of two paints, or whichever the system asks for. */
+/**
+ * A circle split down the middle, one half hatched: the theme is one of two paints, or whichever
+ * the system asks for. Hatched rather than filled, so it is stroked like every other glyph.
+ */
 export function ThemeGlyph({ size }: { size?: number }) {
   return (
     <Glyph size={size}>
       <circle cx="12" cy="12" r="8.5" />
-      <path d="M12 3.5v17A8.5 8.5 0 0 0 12 3.5z" fill="currentColor" stroke="none" />
+      <path d="M12 3.5v17" />
+      <path d="M12 7.5h5.6M12 12h8.5M12 16.5h5.6" />
     </Glyph>
   );
 }
@@ -96,14 +100,13 @@ export function VoiceGlyph({ size }: { size?: number }) {
   );
 }
 
-/** One file, the SQLite store, with its corner folded. */
+/** A database drum: the SQLite store. Not a sheet, so it never reads as the brain's pages. */
 export function DataGlyph({ size }: { size?: number }) {
   return (
     <Glyph size={size}>
-      <path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
-      <path d="M14 3v5h5" />
-      <ellipse cx="12" cy="13" rx="3.5" ry="1.4" />
-      <path d="M8.5 13v3c0 .8 1.6 1.4 3.5 1.4s3.5-.6 3.5-1.4v-3" />
+      <ellipse cx="12" cy="6" rx="7" ry="2.5" />
+      <path d="M5 6v12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6" />
+      <path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5" />
     </Glyph>
   );
 }

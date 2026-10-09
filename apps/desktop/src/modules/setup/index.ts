@@ -17,7 +17,7 @@ import { checkMicrophone, type MicStanding } from "@/lib/voice";
 import type { ModuleEntry } from "@/modules/types";
 import { useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
-import { useSettings, type ThemeChoice } from "@/stores/settings";
+import { useSettings, type ThemeChoice, type TypeScale } from "@/stores/settings";
 import { useShell } from "@/stores/shell";
 import { useTabs } from "@/stores/tabs";
 import { useVoice } from "@/stores/voice";
@@ -30,6 +30,7 @@ function Live() {
   const hydrated = useSettings((s) => s.hydrated);
   const engine = useSettings((s) => s.engine);
   const theme = useSettings((s) => s.theme);
+  const typeScale = useSettings((s) => s.typeScale);
   const brainPath = useSettings((s) => s.brainPath);
   const onboarded = useSettings((s) => s.onboarded);
   const storePath = useSettings((s) => s.storePath);
@@ -63,6 +64,8 @@ function Live() {
       },
       setTheme: (next: ThemeChoice) =>
         void useSettings.getState().setTheme(next).catch(report("theme")),
+      setTypeScale: (next: TypeScale) =>
+        void useSettings.getState().setTypeScale(next).catch(report("text size")),
       setBrainPath: (path) =>
         void useSettings.getState().setBrainPath(path).catch(report("brain path")),
       openPage: (url) => void useTabs.getState().create(url).catch(report("open")),
@@ -90,6 +93,7 @@ function Live() {
         problem,
         checking,
         theme,
+        typeScale,
         brainPath,
         tabs,
         mic: mic.standing,
@@ -107,6 +111,7 @@ function Live() {
       hydrated,
       engine,
       theme,
+      typeScale,
       brainPath,
       tabs,
       mic,

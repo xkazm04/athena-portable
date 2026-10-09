@@ -135,7 +135,7 @@
   border-radius: 9px;
   background: var(--recessed);
   color: var(--muted-foreground);
-  font-size: 0.9375rem;
+  font-size: calc(0.9375rem + var(--type-step));
   font-weight: 700;
   letter-spacing: 0.02em;
   user-select: none;

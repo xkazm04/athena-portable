@@ -1,0 +1,33 @@
+# SYNTHETIC, for uat/driver (UAT backlog M1). One round per turn, each filing one GATED host.ledgerbox.send_reminder
+# card on cue for a real seeded invoice id. Replayed by tests/e2e/serve_scripted.py via ATHENA_SCRIPTED_TRANSCRIPT
+# in a DEBUG build of the shell; the gate, catalog and policy are the real ones. Decline-only: no second round.
+
+{"type": "system", "subtype": "init", "session_id": "01J9E2ESESSION", "model": "scripted-opus", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "Sending a reminder for inv_0029 needs your approval.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "OP: {\"op\": \"propose_action\", \"action\": \"host.ledgerbox.send_reminder\", \"params\": {\"id\": \"inv_0029\"}, \"rationale\": \"inv_0029 for Kestrel Labs is past due\"}"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1200, "num_turns": 1, "total_cost_usd": 0.0123, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9E2ESESSION"}
+
+{"type": "system", "subtype": "init", "session_id": "01J9E2ESESSION", "model": "scripted-opus", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "Sending a reminder for inv_0058 needs your approval.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "OP: {\"op\": \"propose_action\", \"action\": \"host.ledgerbox.send_reminder\", \"params\": {\"id\": \"inv_0058\"}, \"rationale\": \"inv_0058 for Ironwood Studio is past due\"}"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1200, "num_turns": 1, "total_cost_usd": 0.0123, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9E2ESESSION"}
+
+{"type": "system", "subtype": "init", "session_id": "01J9E2ESESSION", "model": "scripted-opus", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "Sending a reminder for inv_0057 needs your approval.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "OP: {\"op\": \"propose_action\", \"action\": \"host.ledgerbox.send_reminder\", \"params\": {\"id\": \"inv_0057\"}, \"rationale\": \"inv_0057 for Halcyon Works is past due\"}"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1200, "num_turns": 1, "total_cost_usd": 0.0123, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9E2ESESSION"}
+
+{"type": "system", "subtype": "init", "session_id": "01J9E2ESESSION", "model": "scripted-opus", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "Sending a reminder for inv_0105 needs your approval.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "OP: {\"op\": \"propose_action\", \"action\": \"host.ledgerbox.send_reminder\", \"params\": {\"id\": \"inv_0105\"}, \"rationale\": \"inv_0105 for Verdant Supply is past due\"}"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1200, "num_turns": 1, "total_cost_usd": 0.0123, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9E2ESESSION"}
+
+{"type": "system", "subtype": "init", "session_id": "01J9E2ESESSION", "model": "scripted-opus", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "Sending a reminder for inv_0085 needs your approval.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "OP: {\"op\": \"propose_action\", \"action\": \"host.ledgerbox.send_reminder\", \"params\": {\"id\": \"inv_0085\"}, \"rationale\": \"inv_0085 for Tideline Press is past due\"}"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1200, "num_turns": 1, "total_cost_usd": 0.0123, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9E2ESESSION"}
+
+{"type": "system", "subtype": "init", "session_id": "01J9E2ESESSION", "model": "scripted-opus", "tools": [], "cwd": "~"}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "Sending a reminder for inv_0002 needs your approval.\n"}]}}
+{"type": "assistant", "message": {"id": "msg_01", "role": "assistant", "content": [{"type": "text", "text": "OP: {\"op\": \"propose_action\", \"action\": \"host.ledgerbox.send_reminder\", \"params\": {\"id\": \"inv_0002\"}, \"rationale\": \"inv_0002 for Nils Eriksen's client is past due\"}"}]}}
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 1200, "num_turns": 1, "total_cost_usd": 0.0123, "usage": {"input_tokens": 1840, "output_tokens": 96}, "session_id": "01J9E2ESESSION"}
