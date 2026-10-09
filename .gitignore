@@ -51,3 +51,7 @@ Thumbs.db
 
 # Proving Ground runs are evidence to read, not source (README §9)
 proving-runs/
+
+# Playbook evidence media: narration, capture and film (ADR 0055). Only the index and the
+# thumbnail beside each playbook are committed.
+evidence/

@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `feat(playbooks): a benched playbook is filmed — the evidence verb narrates it, speaks it with Kokoro, captures the layer and muxes the film` — ADR 0055; `evidence <id>|--all [--dry] [--verify]`, a deterministic 45–90 s narration from playbook.json and bench.json, the media in a gitignored `evidence/`, `evidence.json` (schema 1) and a thumbnail under 100 KB committed beside the playbook.
+
 - `feat(playbooks): a filmed run shows on its tile and opens as a part of the layer` — ADR 0055; `parseEvidence` reads `evidence.json` and `thumb.jpg` through eager globs into `Playbook.evidence`; the tile carries the still and the length, *The run, filmed* plays the film where the dev server serves `evidence/` (byte ranges) and shows the still elsewhere, with the narration and current or stale against the bench; a `shipped:<id>` fixture per shipped playbook.
 
 ## Playbooks — the edge between difficulty and usefulness (in progress)

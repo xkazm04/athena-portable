@@ -72,8 +72,28 @@ taught Athena, and the economics against the incumbent. Back steps one level.
 
 ## Evidence
 
-A benched playbook can be filmed (ADR 0055); `playbooks/<id>/evidence.json` (schema 1) indexes the film and
-`thumb.jpg` is its still.
+A benched playbook can be filmed (ADR 0055): a narration of its latest run, spoken by the local
+voice over a recording of the Playbooks layer replaying that run.
+
+```bash
+uv run python -m athena.proving.playbooks evidence <id>|--all   # narrate, speak, capture, mux, index
+uv run python -m athena.proving.playbooks evidence --all --dry  # the plan; runs no tool
+uv run python -m athena.proving.playbooks evidence --all --verify  # current, stale or missing
+```
+
+The narration is written from `playbook.json` and `bench.json` alone, with no model: what the chore
+is and for whom, what she found of what there was, the traps she walked past, her minutes against
+the manual ones, and the verdict with its reasons when it is short, in 45 to 90 seconds. Kokoro
+(`af_heart`) speaks it from the engine home Personas shares (Piper only when Kokoro is absent);
+`examples/journey/scripts/capture-playbook.mjs` starts the desktop's Vite on a free port and
+records `preview.html?module=playbooks&fixture=shipped:<id>` walking the abstract, every turn of
+*Watch the run*, then *What she filed*, paced to the narration; ffmpeg (`FFMPEG` or PATH) muxes
+H.264 and AAC and shrinks a still of the result to a JPEG under 100 KB. The film, the WAV and the
+capture stay in the gitignored `evidence/<id>/`; `playbooks/<id>/evidence.json` (schema 1:
+narration text, engine, voice, durations, bytes and sha256, repo-relative paths, and the
+`bench_run_at` it filmed) and `thumb.jpg` are committed. `--verify` calls an index stale when its
+`bench_run_at` is not the bench's `run_at`, and re-hashes whatever media is on this machine. A
+playbook without a bench is refused, and `check` does not fail one that has no evidence yet.
 
 On the desktop the still sits on the playbook's tile with the film's length, and the layer gains
 *The run, filmed*: the film where the dev server serves `evidence/` (with byte ranges, so it

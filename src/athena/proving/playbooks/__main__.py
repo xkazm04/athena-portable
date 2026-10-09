@@ -6,11 +6,18 @@
     uv run python -m athena.proving.playbooks bench <id> [--model sonnet] [--approve none|all]
         [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write]
     uv run python -m athena.proving.playbooks rescore <id> <run>/report.json
+    uv run python -m athena.proving.playbooks evidence <id>|--all [--dry] [--verify]
 
 ``bench`` runs a real Athena on the user's own ``claude`` CLI (no key needed) and writes the full
 report under ``proving-runs/<ts>/playbook-<id>/`` (gitignored) and the summary into the playbook's
 ``bench.json``, which the desktop's Playbooks module shows. Exit 0 when the verdict is ``meets``
 or ``exceeds``, 1 when it is ``short``, 2 when the playbook could not be loaded.
+
+``evidence`` films a benched playbook (ADR 0055, :mod:`.evidence`): the media under the gitignored
+``evidence/<id>/``, the index and thumbnail into ``playbooks/<id>/``. ``--dry`` prints the plan and
+runs no tool; ``--verify`` reports each index as current, stale or missing against its bench.
+Exit 0 when every step ran (or, with ``--verify``, every benched playbook is current), 1 when one
+did not, 2 when a playbook could not be loaded or has no bench to film.
 """
 
 from __future__ import annotations
@@ -28,6 +35,14 @@ from athena.proving.playbooks.bench import (
     run_bench,
     write_bench,
     write_report,
+)
+from athena.proving.playbooks.evidence import (
+    EvidenceError,
+    build_evidence,
+    choose_voice,
+    find_tools,
+    plan,
+    verify,
 )
 from athena.proving.playbooks.page import SimulatedPortals
 from athena.proving.playbooks.spec import PLAYBOOKS_DIRNAME, PlaybookError, load_all, load_playbook
@@ -52,7 +67,58 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("playbook")
     r.add_argument("report", help="the run's report.json")
     r.add_argument("--note", default="", help="why it was rescored, in a sentence")
+    e = verbs.add_parser("evidence", help="narrate and film a benched playbook (ADR 0055)")
+    e.add_argument("playbook", nargs="?", help="one playbook's id; or --all")
+    e.add_argument("--all", action="store_true", help="every benched playbook")
+    e.add_argument("--dry", action="store_true", help="print the plan, run no tool")
+    e.add_argument("--verify", action="store_true", help="current, stale or missing, re-hashed")
     return parser
+
+
+def evidence(args: argparse.Namespace) -> int:
+    if bool(args.playbook) == bool(args.all):
+        print("refused: name one playbook or pass --all", file=sys.stderr)
+        return 2
+    base = Path(args.dir)
+    repo = base.resolve().parent
+    try:
+        books = load_all(base) if args.all else [load_playbook(base / args.playbook)]
+    except PlaybookError as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    if args.verify:
+        standings = verify(books, repo)
+        for s in standings:
+            print(f"{s.playbook}: {s.state}" + "".join(f"\n  {n}" for n in s.notes))
+        current = sum(1 for s in standings if s.state == "current")
+        filmable = sum(1 for s in standings if s.state != "unbenched")
+        print(f"{current} of {filmable} benched playbooks current")
+        return 0 if all(s.ok for s in standings) else 1
+    benched = [b for b in books if (b.root / "bench.json").is_file()]
+    if not args.all and not benched:
+        print(f"refused: {books[0].id} has no bench.json: bench it first", file=sys.stderr)
+        return 2
+    for book in books:
+        if book not in benched:
+            print(f"{book.id}: not benched, no evidence to film")
+    if args.dry:
+        for book in benched:
+            print("\n".join(plan(book, repo)))
+        return 0
+    try:
+        tools = find_tools()
+        voice = choose_voice()
+    except EvidenceError as exc:
+        print(f"missing: {exc}", file=sys.stderr)
+        return 1
+    failed = 0
+    for book in benched:
+        try:
+            build_evidence(book, repo, tools, voice, echo=lambda line: print(line, flush=True))
+        except EvidenceError as exc:
+            failed += 1
+            print(f"{book.id}: failed: {exc}", file=sys.stderr, flush=True)
+    return 1 if failed else 0
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -75,6 +141,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 cut += 1
                 print(f"  cut at {READ_CAP} chars, page it: {line}")
         return 1 if cut else 0
+    if args.verb == "evidence":
+        return evidence(args)
     try:
         book = load_playbook(Path(args.dir) / args.playbook)
     except PlaybookError as exc:
