@@ -1,0 +1,523 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "permitway",
+      "name": "Permitway",
+      "origin": "https://ashford.permitway.example",
+      "path": "/contractor/halberd/inspections",
+      "view": {
+        "view": "City of Ashford: permits and inspections",
+        "contractor": "Halberd Builders LLC",
+        "user": "Priya Venn, project coordinator",
+        "today": "Friday 9 October 2026, 10:40"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Ashford's inspection rules by topic: requests, sequence, reinspection, calendar. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "pw_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_permits",
+          "kind": "READ",
+          "description": "Halberd's open permits in Ashford.",
+          "params": {},
+          "returns": {
+            "table": "pw_permits"
+          }
+        },
+        {
+          "name": "list_inspections",
+          "kind": "READ",
+          "description": "The inspections on one permit, by permit number, with their ids and status.",
+          "params": {
+            "permit": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "pw_insp",
+            "match": {
+              "permit": "permit"
+            },
+            "require": [
+              "permit"
+            ]
+          }
+        },
+        {
+          "name": "request_inspection",
+          "kind": "REACHES_A_PERSON",
+          "description": "Request a City of Ashford inspection: the inspection id (PW-nnn), the date (YYYY-MM-DD) and the site contact who will meet the inspector. It books an inspector's visit.",
+          "params": {
+            "inspection_id": {
+              "type": "string"
+            },
+            "date": {
+              "type": "string"
+            },
+            "contact": {
+              "type": "string"
+            }
+          },
+          "says": "Inspection {inspection_id} requested for {date}."
+        }
+      ],
+      "aliases": [
+        "Permitway",
+        "Ashford's portal",
+        "the Ashford portal",
+        "Ashford"
+      ]
+    },
+    {
+      "app_id": "civicdesk",
+      "name": "Civicdesk",
+      "origin": "https://merrow.civicdesk.example",
+      "path": "/permits/my",
+      "view": {
+        "view": "City of Merrow: my permits",
+        "account": "Halberd Builders LLC",
+        "today": "Friday 9 October 2026, 10:40"
+      },
+      "tools": [
+        {
+          "name": "read_policies",
+          "kind": "READ",
+          "description": "Merrow's inspection policies by topic: scheduling, order, corrections. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "cd_policies",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "my_permits",
+          "kind": "READ",
+          "description": "Halberd's permits in Merrow: permit number and project.",
+          "params": {},
+          "returns": {
+            "table": "cd_permits"
+          }
+        },
+        {
+          "name": "permit_inspections",
+          "kind": "READ",
+          "description": "The inspections on one permit, by permit number (for example 26-BLD-0877), with their numbers and status.",
+          "params": {
+            "permit_no": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "cd_insp",
+            "match": {
+              "permit_no": "permit_no"
+            },
+            "require": [
+              "permit_no"
+            ]
+          }
+        },
+        {
+          "name": "schedule_inspection",
+          "kind": "REACHES_A_PERSON",
+          "description": "Schedule a City of Merrow inspection: the inspection number (CD-nnnn), the requested date (YYYY-MM-DD) and the on-site contact. It certifies the work is ready and books an inspector.",
+          "params": {
+            "inspection": {
+              "type": "string"
+            },
+            "requested_date": {
+              "type": "string"
+            },
+            "onsite_contact": {
+              "type": "string"
+            }
+          },
+          "says": "Inspection {inspection} scheduled for {requested_date}."
+        }
+      ],
+      "aliases": [
+        "Civicdesk",
+        "Merrow's portal",
+        "the Merrow portal",
+        "Merrow"
+      ]
+    },
+    {
+      "app_id": "sitegrid",
+      "name": "Sitegrid",
+      "origin": "https://app.sitegrid.example",
+      "path": "/halberd/field-status",
+      "view": {
+        "view": "Field status: Halberd Builders' open jobs",
+        "today": "Friday 9 October 2026, 10:40"
+      },
+      "tools": [
+        {
+          "name": "read_field_status",
+          "kind": "READ",
+          "description": "The superintendents' latest status entries for every open job: what is complete and ready, what is not, and corrections.",
+          "params": {},
+          "returns": {
+            "table": "status"
+          }
+        }
+      ],
+      "aliases": [
+        "Sitegrid",
+        "the field status",
+        "the project platform"
+      ]
+    },
+    {
+      "app_id": "crewcal",
+      "name": "Crew calendar",
+      "origin": "https://calendar.halberd.example",
+      "path": "/crews/next-week",
+      "view": {
+        "view": "Crew calendar: week of 12 October 2026",
+        "company": "Halberd Builders LLC",
+        "today": "Friday 9 October 2026, 10:40"
+      },
+      "tools": [
+        {
+          "name": "read_week",
+          "kind": "READ",
+          "description": "Next week day by day: who from Halberd is on site in Ashford and in Merrow, and what is booked.",
+          "params": {},
+          "returns": {
+            "table": "calendar"
+          }
+        }
+      ],
+      "aliases": [
+        "Crew calendar",
+        "the crew calendar",
+        "the calendar"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "permitway",
+      "message": "Inspections are slipping on both cities' jobs. Start here in Permitway: Ashford's rules on requests, sequence, re-inspections and its calendar, and every inspection on our permits.",
+      "nudges": 1
+    },
+    {
+      "app": "civicdesk",
+      "message": "Now Civicdesk for Merrow: their policies, and every inspection on each of our permits there.",
+      "nudges": 1
+    },
+    {
+      "app": "sitegrid",
+      "message": "This is Sitegrid. What's actually complete and ready on each job, and where the corrections stand.",
+      "nudges": 1
+    },
+    {
+      "app": "crewcal",
+      "message": "And the crew calendar for next week: who's on site where, and when.",
+      "nudges": 1
+    },
+    {
+      "app": "permitway",
+      "message": "Back in Permitway. Request every Ashford inspection that's ready, on the first day it can actually happen. Leave anything that isn't ready or in sequence.",
+      "nudges": 2
+    },
+    {
+      "app": "civicdesk",
+      "message": "Now Civicdesk. Schedule every Merrow inspection that's ready, on the first day it can happen. Then tell me what you left alone in both cities and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "pw_rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026, 10:40. Permitway, City of Ashford Building Division. Ashford has adopted the International Building Code, chapter 1, section 110 (inspections), with its own amendments. Topics: requests, sequence, reinspection, calendar. One request per inspection."
+      },
+      {
+        "topic": "requests",
+        "text": "Request an inspection when the work is ready for it (IBC 110.5). Requests made before 3:00 pm are scheduled for the next day the City inspects; later requests for the day after. Choose the date: any inspection day on or after the earliest one, when the work is ready and the contractor's site contact is there to meet the inspector. An inspection already scheduled or passed is not requested again."
+      },
+      {
+        "topic": "sequence",
+        "text": "Work is not covered or carried past an inspection point until that inspection is approved (IBC 110.6). The footing inspection comes before concrete is placed and before the foundation inspection. The framing inspection is requested only after the rough plumbing, rough electrical, rough mechanical and gas piping inspections are all approved (IBC 110.3.4). Insulation follows an approved framing inspection and the insulation in place; the final follows every other inspection on the permit."
+      },
+      {
+        "topic": "reinspection",
+        "text": "A failed inspection is requested again on the same inspection id once every correction listed is complete. A re-inspection requested before the corrections are done is charged the re-inspection fee and fails again."
+      },
+      {
+        "topic": "calendar",
+        "text": "Ashford inspects Monday to Friday. City holidays, with no inspections: Monday 12 October 2026 (Indigenous Peoples' Day), Wednesday 11 November, Thursday 26 and Friday 27 November."
+      }
+    ],
+    "pw_permits": [
+      {
+        "permit": "B26-0412",
+        "job": "Linden Court townhomes, building 2",
+        "address": "2 Linden Court, Ashford",
+        "status": "Issued"
+      },
+      {
+        "permit": "B26-0413",
+        "job": "Linden Court townhomes, building 3",
+        "address": "3 Linden Court, Ashford",
+        "status": "Issued"
+      }
+    ],
+    "pw_insp": [
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-101",
+        "type": "Footing",
+        "status": "Passed 20 Aug"
+      },
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-102",
+        "type": "Foundation",
+        "status": "Passed 27 Aug"
+      },
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-201",
+        "type": "Under-slab plumbing",
+        "status": "Passed 3 Sept"
+      },
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-202",
+        "type": "Slab (vapor retarder, reinforcement)",
+        "status": "Passed 8 Sept"
+      },
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-301",
+        "type": "Rough plumbing",
+        "status": "Passed 6 Oct"
+      },
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-302",
+        "type": "Rough electrical",
+        "status": "Failed 7 Oct: nail plates missing at 6 stud penetrations, unit 2B; box fill over the limit at the unit 2A kitchen island"
+      },
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-303",
+        "type": "Rough mechanical",
+        "status": "Not requested"
+      },
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-305",
+        "type": "Gas piping, rough and pressure test",
+        "status": "Scheduled Wed 14 Oct"
+      },
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-304",
+        "type": "Framing",
+        "status": "Not requested"
+      },
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-401",
+        "type": "Insulation",
+        "status": "Not requested"
+      },
+      {
+        "permit": "B26-0412",
+        "inspection_id": "PW-901",
+        "type": "Final",
+        "status": "Not requested"
+      },
+      {
+        "permit": "B26-0413",
+        "inspection_id": "PW-111",
+        "type": "Footing",
+        "status": "Not requested"
+      },
+      {
+        "permit": "B26-0413",
+        "inspection_id": "PW-112",
+        "type": "Foundation",
+        "status": "Not requested"
+      },
+      {
+        "permit": "B26-0413",
+        "inspection_id": "PW-151",
+        "type": "Under-slab plumbing",
+        "status": "Not requested"
+      }
+    ],
+    "cd_policies": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026, 10:40. Civicdesk, City of Merrow Development Services. Merrow has adopted the International Building Code, section 110, and issues separate building, plumbing and electrical permits. Topics: scheduling, order, corrections. Schedule each inspection on its own permit."
+      },
+      {
+        "topic": "scheduling",
+        "text": "Schedule an inspection when the work is complete and ready (IBC 110.5). Requests in by 3:00 pm are inspected the next business day; Merrow inspects Monday to Friday and is open on Monday 12 October. Give a date on or after the earliest one when the work is ready and your on-site contact is there. Each permit's inspections are scheduled on that permit; a trade permit's final does not wait on the building permit's final. Do not schedule an inspection already passed or already scheduled."
+      },
+      {
+        "topic": "order",
+        "text": "Nothing is covered until it is approved (IBC 110.6). On a slab, the slab pre-pour inspection (vapor retarder and reinforcement) is scheduled only after the under-slab plumbing and the under-slab electrical inspections are both approved."
+      },
+      {
+        "topic": "corrections",
+        "text": "A failed inspection is scheduled again only once its corrections are complete; the request certifies that they are. A re-inspection scheduled before then is a false certification and carries the $95 re-inspection fee."
+      }
+    ],
+    "cd_permits": [
+      {
+        "permit_no": "26-BLD-0877",
+        "project": "Merrow Feed & Supply, store addition (building)"
+      },
+      {
+        "permit_no": "26-PLB-0122",
+        "project": "Merrow Feed & Supply, store addition (plumbing)"
+      },
+      {
+        "permit_no": "26-ELE-0311",
+        "project": "Merrow Feed & Supply, store addition (electrical)"
+      },
+      {
+        "permit_no": "26-BLD-0790",
+        "project": "Merrow Feed & Supply, loading canopy (building)"
+      },
+      {
+        "permit_no": "26-ELE-0298",
+        "project": "Merrow Feed & Supply, loading canopy (electrical)"
+      }
+    ],
+    "cd_insp": [
+      {
+        "permit_no": "26-BLD-0877",
+        "inspection": "CD-5511",
+        "type": "Footing",
+        "status": "Passed 22 Sept"
+      },
+      {
+        "permit_no": "26-BLD-0877",
+        "inspection": "CD-5512",
+        "type": "Foundation (stem wall)",
+        "status": "Passed 29 Sept"
+      },
+      {
+        "permit_no": "26-BLD-0877",
+        "inspection": "CD-5522",
+        "type": "Slab pre-pour (vapor retarder, reinforcement)",
+        "status": "Not scheduled"
+      },
+      {
+        "permit_no": "26-PLB-0122",
+        "inspection": "CD-5520",
+        "type": "Under-slab plumbing (drain, waste and vent, with water test)",
+        "status": "Not scheduled"
+      },
+      {
+        "permit_no": "26-ELE-0311",
+        "inspection": "CD-5521",
+        "type": "Under-slab electrical conduit",
+        "status": "Not scheduled"
+      },
+      {
+        "permit_no": "26-BLD-0790",
+        "inspection": "CD-5480",
+        "type": "Building final, canopy",
+        "status": "Failed 2 Oct: guardrail at the dock edge is 39 in.; 42 in. required"
+      },
+      {
+        "permit_no": "26-ELE-0298",
+        "inspection": "CD-5490",
+        "type": "Electrical final, canopy lighting",
+        "status": "Not scheduled"
+      }
+    ],
+    "status": [
+      {
+        "job": "Linden Court building 2",
+        "entry": "Rough electrical corrections done Thu 8 Oct: nail plates installed at all six penetrations in 2B; the 2A island box replaced with a deeper box. Photos attached."
+      },
+      {
+        "job": "Linden Court building 2",
+        "entry": "Rough mechanical complete Thu 8 Oct: ducts, flues and the bath fans in all four units; duct pressure test passed."
+      },
+      {
+        "job": "Linden Court building 2",
+        "entry": "Gas piping pressure test set for the inspection already booked. Insulation subcontractor starts Tue 20 Oct."
+      },
+      {
+        "job": "Linden Court building 3",
+        "entry": "Footing forms and rebar set Thu 8 Oct. Concrete pour booked for Thu 15 Oct, 7:00 am. Under-slab plumbing not started; foundation walls after the footing pour."
+      },
+      {
+        "job": "Merrow Feed & Supply addition",
+        "entry": "Under-slab drain, waste and vent installed; water test filled Fri 9 Oct 7:00 am, holding, left full through Monday. Under-slab conduit installed Thu 8 Oct. Vapor retarder and mesh not yet placed."
+      },
+      {
+        "job": "Merrow Feed & Supply canopy",
+        "entry": "Canopy lighting energized and circuits labeled Wed 7 Oct. Guardrail extension being fabricated; installation scheduled Wed 14 Oct."
+      }
+    ],
+    "calendar": [
+      {
+        "date": "2026-10-12",
+        "day": "Monday",
+        "ashford": "Gwen Ota (Linden Court superintendent) on site",
+        "merrow": "Luis Abara (Merrow lead) on site"
+      },
+      {
+        "date": "2026-10-13",
+        "day": "Tuesday",
+        "ashford": "Gwen Ota off (safety training all day); nobody else from Halberd on the Linden Court site",
+        "merrow": "Luis Abara on site"
+      },
+      {
+        "date": "2026-10-14",
+        "day": "Wednesday",
+        "ashford": "Gwen Ota on site",
+        "merrow": "Luis Abara on site; welder installs the canopy guardrail extension"
+      },
+      {
+        "date": "2026-10-15",
+        "day": "Thursday",
+        "ashford": "Gwen Ota on site; building 3 footing pour 7:00 am",
+        "merrow": "Luis Abara on site"
+      },
+      {
+        "date": "2026-10-16",
+        "day": "Friday",
+        "ashford": "Gwen Ota on site",
+        "merrow": "Luis Abara off"
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "inspection-scheduling",
+  "captured_at": "2026-10-09T23:09:53Z",
+  "bench_run_at": "2026-10-09T23:06:21Z",
+  "narration": {
+    "text": "City inspections booked in sequence on two cities' portals, on the first day each can happen. This is a chore for the project coordinator of a general contractor building townhomes in one city and a store addition and canopy in the next. Athena works it across 4 portals: Permitway, Civicdesk, Sitegrid and Crew calendar. On the bench, she found 6 of 6 eligible items, worth 2,400 dollars of the 2,400 dollars there was to find. All 6 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. Among them: Framing before the rough trades are all approved. Insulation that is not installed. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 36 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 57.234,
+    "sha256": "3fa8ff575ec3194d6d25e172e03fca9432b0e17ff1be32bed3f8169ad92b957c"
+  },
+  "video": {
+    "path": "evidence/inspection-scheduling/evidence.mp4",
+    "duration_s": 57.24,
+    "bytes": 2764276,
+    "sha256": "5974ca13b5fbd53960ecf153dd7cb03737dbe3e9995c2c131e92af47c1b2bb03"
+  },
+  "thumbnail": {
+    "path": "playbooks/inspection-scheduling/thumb.jpg",
+    "bytes": 98839,
+    "sha256": "18004075afb3edbbaa09109ff3d5ac237499deeda4cf15e03ef0a5240354dcbb"
+  }
+}

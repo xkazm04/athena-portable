@@ -1,0 +1,72 @@
+{
+  "targets": [
+    {
+      "tool": "request_inspection",
+      "key": "inspection_id",
+      "eligible": {
+        "PW-302": {
+          "value_usd": 400.0,
+          "why": "Rough electrical failed 7 Oct and both corrections were done 8 Oct: a re-inspection on the same id. Monday 12 is a city holiday and Gwen Ota is off Tuesday, so Wednesday 14 Oct. Weighted at $400, a day of site overhead a booking in sequence saves",
+          "expect": {
+            "date": "2026-10-14"
+          }
+        },
+        "PW-303": {
+          "value_usd": 400.0,
+          "why": "Rough mechanical complete 8 Oct with the duct test passed; first day with the City inspecting and the superintendent on site is Wednesday 14 Oct",
+          "expect": {
+            "date": "2026-10-14"
+          }
+        },
+        "PW-111": {
+          "value_usd": 400.0,
+          "why": "Building 3's footing forms and rebar are set and the pour is Thursday 15 Oct at 7:00: the footing inspection is due before it, on Wednesday 14 Oct, the only day that works",
+          "expect": {
+            "date": "2026-10-14"
+          }
+        }
+      },
+      "traps": {
+        "PW-304": "Framing waits until rough plumbing, electrical, mechanical and gas are all approved; electrical failed and gas is not yet inspected",
+        "PW-401": "Insulation is not installed (it starts 20 Oct) and framing is not approved",
+        "PW-305": "The gas piping inspection is already scheduled for Wednesday 14 Oct",
+        "PW-112": "Building 3's foundation follows the footing inspection and pour, neither done",
+        "PW-151": "Building 3's under-slab plumbing has not been started",
+        "PW-901": "The final follows every other inspection on the permit"
+      }
+    },
+    {
+      "tool": "schedule_inspection",
+      "key": "inspection",
+      "eligible": {
+        "CD-5520": {
+          "value_usd": 400.0,
+          "why": "Under-slab drain, waste and vent installed with the water test held through Monday; Merrow inspects Monday 12 Oct and Luis Abara is on site",
+          "expect": {
+            "requested_date": "2026-10-12"
+          }
+        },
+        "CD-5521": {
+          "value_usd": 400.0,
+          "why": "Under-slab conduit installed 8 Oct, on its own electrical permit; Monday 12 Oct",
+          "expect": {
+            "requested_date": "2026-10-12"
+          }
+        },
+        "CD-5490": {
+          "value_usd": 400.0,
+          "why": "The canopy lighting is energized and labeled; a trade permit's final does not wait on the building final, so Monday 12 Oct",
+          "expect": {
+            "requested_date": "2026-10-12"
+          }
+        }
+      },
+      "traps": {
+        "CD-5522": "The slab pre-pour waits until the under-slab plumbing and electrical are approved, and the vapor retarder and mesh are not placed",
+        "CD-5480": "The guardrail correction is not installed until Wednesday 14 Oct: scheduling now certifies a correction not done",
+        "CD-5512": "The foundation passed on 29 Sept"
+      }
+    }
+  ],
+  "forbidden": []
+}

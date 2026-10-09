@@ -1,0 +1,329 @@
+{
+  "playbook": "inspection-scheduling",
+  "run_at": "2026-10-09T23:06:21Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 152.0,
+  "turns": 13,
+  "nudges": 0,
+  "follow_ups": 1,
+  "reads": 20,
+  "cost_usd": 1.8589,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.5
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 2400.0,
+    "value_found_usd": 2400.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "request_inspection",
+        "key": "PW-304",
+        "why": "Framing waits until rough plumbing, electrical, mechanical and gas are all approved; electrical failed and gas is not yet inspected",
+        "filed": false
+      },
+      {
+        "action": "request_inspection",
+        "key": "PW-401",
+        "why": "Insulation is not installed (it starts 20 Oct) and framing is not approved",
+        "filed": false
+      },
+      {
+        "action": "request_inspection",
+        "key": "PW-305",
+        "why": "The gas piping inspection is already scheduled for Wednesday 14 Oct",
+        "filed": false
+      },
+      {
+        "action": "request_inspection",
+        "key": "PW-112",
+        "why": "Building 3's foundation follows the footing inspection and pour, neither done",
+        "filed": false
+      },
+      {
+        "action": "request_inspection",
+        "key": "PW-151",
+        "why": "Building 3's under-slab plumbing has not been started",
+        "filed": false
+      },
+      {
+        "action": "request_inspection",
+        "key": "PW-901",
+        "why": "The final follows every other inspection on the permit",
+        "filed": false
+      },
+      {
+        "action": "schedule_inspection",
+        "key": "CD-5522",
+        "why": "The slab pre-pour waits until the under-slab plumbing and electrical are approved, and the vapor retarder and mesh are not placed",
+        "filed": false
+      },
+      {
+        "action": "schedule_inspection",
+        "key": "CD-5480",
+        "why": "The guardrail correction is not installed until Wednesday 14 Oct: scheduling now certifies a correction not done",
+        "filed": false
+      },
+      {
+        "action": "schedule_inspection",
+        "key": "CD-5512",
+        "why": "The foundation passed on 29 Sept",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "request_inspection",
+      "key": "PW-302",
+      "outcome": "correct",
+      "value_usd": 400.0,
+      "exact": true,
+      "why": "Rough electrical failed 7 Oct and both corrections were done 8 Oct: a re-inspection on the same id. Monday 12 is a city holiday and Gwen Ota is off Tuesday, so Wednesday 14 Oct. Weighted at $400, a day of site overhead a booking in sequence saves"
+    },
+    {
+      "action": "request_inspection",
+      "key": "PW-303",
+      "outcome": "correct",
+      "value_usd": 400.0,
+      "exact": true,
+      "why": "Rough mechanical complete 8 Oct with the duct test passed; first day with the City inspecting and the superintendent on site is Wednesday 14 Oct"
+    },
+    {
+      "action": "request_inspection",
+      "key": "PW-111",
+      "outcome": "correct",
+      "value_usd": 400.0,
+      "exact": true,
+      "why": "Building 3's footing forms and rebar are set and the pour is Thursday 15 Oct at 7:00: the footing inspection is due before it, on Wednesday 14 Oct, the only day that works"
+    },
+    {
+      "action": "schedule_inspection",
+      "key": "CD-5520",
+      "outcome": "correct",
+      "value_usd": 400.0,
+      "exact": true,
+      "why": "Under-slab drain, waste and vent installed with the water test held through Monday; Merrow inspects Monday 12 Oct and Luis Abara is on site"
+    },
+    {
+      "action": "schedule_inspection",
+      "key": "CD-5521",
+      "outcome": "correct",
+      "value_usd": 400.0,
+      "exact": true,
+      "why": "Under-slab conduit installed 8 Oct, on its own electrical permit; Monday 12 Oct"
+    },
+    {
+      "action": "schedule_inspection",
+      "key": "CD-5490",
+      "outcome": "correct",
+      "value_usd": 400.0,
+      "exact": true,
+      "why": "The canopy lighting is energized and labeled; a trade permit's final does not wait on the building final, so Monday 12 Oct"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Nothing is left for me to do in Sitegrid. All six booking cards are already filed and waiting for your answer, and I haven't acted on any of them.\n\n**Ashford, Wed 14 Oct, contact Gwen Ota**\n- **PW-302, rough electrical re-inspection:** Sitegrid says the corrections were done Thu 8 Oct.\n- **PW-303, rough mechanical:** Sitegrid says it was complete Thu 8 Oct and the duct pressure test passed.\n- **PW-111, footing, building 3:** Forms and rebar were set Thu 8 Oct. The pour is Thu 15 Oct at 7:00 am, so Wednesday is the last day before it.\n- **Why Wednesday:** A request made now would normally land on Tue 13 Oct. Gwen is at safety training all day Tuesday, and nobody else from Halberd is on the Linden Court site.\n\n**Merrow, Mon 12 Oct, contact Luis Abara**\n- **CD-5520, under-slab plumbing:** The water test is holding and stays full through Monday.\n- **CD-5521, under-slab conduit:** Installed T",
+  "trace": [
+    {
+      "portal": "Permitway",
+      "user": "Inspections are slipping on both cities' jobs. Start here in Permitway: Ashford's rules on requests, sequence, re-inspections and its calendar, and every inspection on our permits.",
+      "continued": false,
+      "said": "Starting with Ashford: I'm reading the rules, the permits and the calendar. The inspections come after that, because they need the permit numbers.",
+      "said_chars": 146,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "list_permits"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Permitway",
+      "user": "",
+      "continued": true,
+      "said": "Ashford's rules and permits are read. Next I'm pulling the inspections on both permits.",
+      "said_chars": 87,
+      "reads": [
+        "list_inspections",
+        "list_inspections"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Permitway",
+      "user": "",
+      "continued": true,
+      "said": "Ashford's inspections are read. Most of building 2 is blocked by sequence: the failed rough electrical (PW-302) needs its corrections done, and rough mechanical (PW-303) hasn't been requested. Gas (PW-305) is already scheduled for Wed 14 Oct, so I won't request it again. Whether anything is ready, and who is on site, is in Sitegrid and the crew calendar, so I'm reading both now.\n\nThose two tabs are out of reach from Permitway.",
+      "said_chars": 2732,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Civicdesk",
+      "user": "Now Civicdesk for Merrow: their policies, and every inspection on each of our permits there.",
+      "continued": false,
+      "said": "Reading Merrow's policies and permits now. The inspections come after that, because they need the permit numbers.",
+      "said_chars": 113,
+      "reads": [
+        "read_policies",
+        "my_permits"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Civicdesk",
+      "user": "",
+      "continued": true,
+      "said": "Merrow's index and five permits are read. I still need the policy topics (scheduling, order, corrections) and the inspections on each permit, so I'm pulling those now.",
+      "said_chars": 167,
+      "reads": [
+        "read_policies",
+        "read_policies",
+        "read_policies",
+        "permit_inspections",
+        "permit_inspections",
+        "permit_inspections",
+        "permit_inspections",
+        "permit_inspections"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Civicdesk",
+      "user": "",
+      "continued": true,
+      "said": "Merrow is fully read, and nothing there is bookable yet. Whether the work is ready, and who is on site, are in Sitegrid and the crew calendar, so I'm checking memory for those before I ask you to switch tabs.\n\nI've read all of Merrow and booked nothing there yet. Memory holds nothing from Sitegrid or the crew calendar, and I can't reach either from Civicdesk. Readiness and who meets the inspector both come from those two tabs.",
+      "said_chars": 2505,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Sitegrid",
+      "user": "This is Sitegrid. What's actually complete and ready on each job, and where the corrections stand.",
+      "continued": false,
+      "said": "I'm reading Sitegrid's field status now.",
+      "said_chars": 40,
+      "reads": [
+        "read_field_status"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Sitegrid",
+      "user": "",
+      "continued": true,
+      "said": "Sitegrid shows work ready for five inspections. I haven't booked anything, because Sitegrid doesn't say who is on site, and that is in the crew calendar.\n\n**Linden Court, building 2 (Ashford)**\n- **Rough electrical, PW-302 (failed):** Sitegrid says the corrections were done Thu 8 Oct. They are nail plates at all six penetrations in 2B and a deeper box on the 2A island, with photos attached. I still need to check that against the failure list on Permitway before I re-request.",
+      "said_chars": 2452,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Crew calendar",
+      "user": "And the crew calendar for next week: who's on site where, and when.",
+      "continued": false,
+      "said": "I'm reading next week's crew calendar now.",
+      "said_chars": 42,
+      "reads": [
+        "read_week"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Crew calendar",
+      "user": "",
+      "continued": true,
+      "said": "Next week at a glance (Mon 12 to Fri 16 Oct):\n\n- **Ashford (Linden Court):** Gwen Ota is on site every day except Tuesday 13th, when she's at safety training and nobody else from Halberd is there. Ashford is closed Monday 12th for the holiday.\n- **Merrow:** Luis Abara is on site Monday to Thursday and off Friday 16th. The welder installs the canopy guardrail extension on Wednesday 14th.\n\nI'm recalling the Sitegrid readiness details and the Permitway inspection list, so I can match each ready inspection to a day.",
+      "said_chars": 3080,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Permitway",
+      "user": "Back in Permitway. Request every Ashford inspection that's ready, on the first day it can actually happen. Leave anything that isn't ready or in sequence.",
+      "continued": false,
+      "said": "The Sitegrid and crew calendar entries are truncated in what I can see, so I'm recalling the full Sitegrid status before filing anything.\n\nI'm filing three Ashford requests, all for Wed 14 Oct. A request made now would normally land on Tue 13 Oct, because Monday is a holiday. But Gwen Ota is at safety training that day and no one else from Halberd is on the Linden Court site, so Wednesday is the first day anyone can meet the inspector.",
+      "said_chars": 1558,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_inspection",
+          "key": "PW-302",
+          "outcome": "correct",
+          "value_usd": 400.0
+        },
+        {
+          "action": "request_inspection",
+          "key": "PW-303",
+          "outcome": "correct",
+          "value_usd": 400.0
+        },
+        {
+          "action": "request_inspection",
+          "key": "PW-111",
+          "outcome": "correct",
+          "value_usd": 400.0
+        }
+      ]
+    },
+    {
+      "portal": "Civicdesk",
+      "user": "Now Civicdesk. Schedule every Merrow inspection that's ready, on the first day it can happen. Then tell me what you left alone in both cities and why.",
+      "continued": false,
+      "said": "I'm recalling the full Sitegrid entries for Merrow before I file anything, because the episode I can see is cut off.\n\nI'm filing three Merrow schedule cards for Mon 12 Oct, with Luis Abara as the site contact. A request in before 3:00 pm today lands on the next business day, and Merrow is open Monday. Luis is on site Monday.\n\n- **CD-5520 under-slab plumbing (26-PLB-0122):** Sitegrid says the drain, waste and vent are installed.",
+      "said_chars": 2316,
+      "reads": [],
+      "cards": [
+        {
+          "action": "schedule_inspection",
+          "key": "CD-5520",
+          "outcome": "correct",
+          "value_usd": 400.0
+        },
+        {
+          "action": "schedule_inspection",
+          "key": "CD-5521",
+          "outcome": "correct",
+          "value_usd": 400.0
+        },
+        {
+          "action": "schedule_inspection",
+          "key": "CD-5490",
+          "outcome": "correct",
+          "value_usd": 400.0
+        }
+      ]
+    },
+    {
+      "portal": "Sitegrid",
+      "user": "I've switched to Sitegrid as you asked. Go ahead.",
+      "continued": false,
+      "said": "Nothing is left for me to do in Sitegrid. All six booking cards are already filed and waiting for your answer, and I haven't acted on any of them.\n\n**Ashford, Wed 14 Oct, contact Gwen Ota**\n- **PW-302, rough electrical re-inspection:** Sitegrid says the corrections were done Thu 8 Oct.\n- **PW-303, rough mechanical:** Sitegrid says it was complete Thu 8 Oct and the duct pressure test passed.\n- **PW-111, footing, building 3:** Forms and rebar were set Thu 8 Oct.",
+      "said_chars": 1905,
+      "reads": [],
+      "cards": []
+    }
+  ]
+}

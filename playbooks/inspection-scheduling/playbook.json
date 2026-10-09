@@ -1,0 +1,102 @@
+{
+  "id": "inspection-scheduling",
+  "title": "City inspections booked in sequence on two cities' portals, on the first day each can happen",
+  "domain": "Construction",
+  "audience": "work",
+  "promise": "Every inspection that is ready is booked on its own city's portal for the first day it can actually happen: after a city holiday, on a day someone is on site to meet the inspector, before a pour that would cover it, and only once the corrections are done. Nothing is booked out of sequence, twice, before its work is ready, or as a re-inspection of a correction still being fabricated.",
+  "persona": "The project coordinator of a general contractor building townhomes in one city and a store addition and canopy in the next",
+  "chore": "Read each city's inspection rules and calendar and every inspection on every permit in its own portal; what the superintendents report as complete, ready or corrected in the field status; and who is on site each day next week in the crew calendar. Then apply section 110 of the International Building Code as each city adopts it: request an inspection when the work is ready, never carry work past an inspection point before approval, framing only after every rough trade is approved, a slab pre-pour only after the under-slab trades, a re-inspection only after the corrections. Pick the first day the city inspects, the work is ready and the site contact is there, and book each on the city's own portal. None of the four systems shares data with another.",
+  "command": "Our inspections keep slipping in both cities. Go through Permitway for Ashford, Civicdesk for Merrow, Sitegrid and the crew calendar, and book every inspection that's ready on the first day it can actually happen, with someone there to meet the inspector. Don't book anything out of sequence, before it's ready, or twice.",
+  "apps": [
+    {
+      "name": "Permitway",
+      "role": "Ashford's inspection rules and holidays, every inspection on the townhome permits, and the inspection request",
+      "api": "City permit portal only",
+      "url": ""
+    },
+    {
+      "name": "Civicdesk",
+      "role": "Merrow's inspection policies, every inspection on the store's building and trade permits, and the scheduling",
+      "api": "City permit portal only",
+      "url": ""
+    },
+    {
+      "name": "Sitegrid",
+      "role": "the superintendents' field status: what is complete, ready or corrected on each job",
+      "api": "Project platform, no city feed",
+      "url": ""
+    },
+    {
+      "name": "Crew calendar",
+      "role": "who from the company is on each site, day by day, next week, and what is booked",
+      "api": "Calendar only",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads Ashford's rules, holidays and every inspection on each permit in Permitway.",
+    "Reads Merrow's policies and every inspection on each permit in Civicdesk.",
+    "Reads what is complete, ready and corrected on each job in Sitegrid.",
+    "Reads who is on site each day next week in the crew calendar.",
+    "Back in Permitway, requests each Ashford inspection that is ready, for the first day it can happen.",
+    "In Civicdesk, schedules each Merrow inspection that is ready, for the first day it can happen."
+  ],
+  "gates": [
+    {
+      "action": "request_inspection",
+      "label": "Request an Ashford inspection",
+      "why": "It books a city inspector; one booked out of sequence, before the work is ready or with nobody on site fails and costs a re-inspection fee and a day."
+    },
+    {
+      "action": "schedule_inspection",
+      "label": "Schedule a Merrow inspection",
+      "why": "It certifies to the city that the work is ready; a re-inspection booked before the correction is done is a false certification and a fee."
+    }
+  ],
+  "traps": [
+    "Framing before the rough trades are all approved.",
+    "Insulation that is not installed.",
+    "A gas piping inspection already booked.",
+    "A foundation before its footing is inspected and poured, and under-slab plumbing not started.",
+    "A final before every other inspection.",
+    "A slab pre-pour before the under-slab trades are approved.",
+    "A canopy re-inspection while its guardrail is still being fabricated.",
+    "A foundation that already passed."
+  ],
+  "memory": [
+    "Each city's rules, holiday and sequence, and each inspection's id and status, carried from Permitway and Civicdesk.",
+    "What is complete, ready or corrected on each job, carried from Sitegrid.",
+    "Who is on each site each day, carried from the crew calendar."
+  ],
+  "economics": {
+    "value_usd": 8000,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. A coordinator checking two cities' portals, the field status and the crew calendar every week spends about an hour and a half on it, about 75 hours a year, and a booking that fails for sequence, readiness or nobody on site costs a re-inspection fee and a day of a held crew. The $8,000 a year is those hours at about $50 and a few failed inspections avoided. Each booking in the bench world is weighted at $400, a day of site overhead that a booking in sequence and on time saves, an estimate. Times a year: fifty, a weekly sweep.",
+    "manual_minutes": 90,
+    "times_per_year": 50,
+    "incumbent": "None takes a share: the coordinator or the superintendents do it, and expediters bill by the hour or by the permit.",
+    "sources": [
+      {
+        "label": "International Building Code 2021, section 110: inspections (110.3 required inspections, 110.3.4 framing after rough trades, 110.5 requests, 110.6 approval required)",
+        "url": "https://codes.iccsafe.org/content/IBC2021P1/chapter-1-scope-and-administration"
+      },
+      {
+        "label": "UpCodes: IBC 2021 chapter 1 as one state adopts it, section 110 in full (each jurisdiction adopts the code with its own amendments)",
+        "url": "https://up.codes/viewer/colorado/ibc-2021/chapter/1/scope-and-administration"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Two cities' portals with different words for the same thing, a field status and a calendar that no portal reads; each date turns on a city holiday, a superintendent's day off or a pour, and nine inspections that look bookable are out of sequence, not ready, already booked or already passed.",
+    "usefulness_why": "Mostly hours: a weekly chore across portals, where one wrong booking costs a fee and a crew-day."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful coordinator gets most of it; the bar is most of the ready inspections booked on a day that works, nothing out of sequence, early or twice, inside an hour."
+  },
+  "caveat": "Halberd Builders, Linden Court, Merrow Feed & Supply, the Cities of Ashford and Merrow, Permitway, Civicdesk, Sitegrid and every person here are invented. The rule is section 110 of the International Building Code, which each city adopts with its own amendments, fees and scheduling rules; the bench world fixes them as of October 2026. Real inspection sequences differ by jurisdiction. This is not legal or code advice."
+}

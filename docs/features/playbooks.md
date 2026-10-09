@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The twenty-three playbooks (latest runs, Claude Sonnet)
+## The twenty-four playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -66,9 +66,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | Weekly certified payroll filed on a prevailing-wage job, so the held pay estimates are released | work | 4 | exceeds (run 2 of 2): 10 of 10, $81,417.95 of $81,417.95 released, 9 of 9 traps, 0 false |
 | Every field change priced and noticed inside the contract's claim window | work | 4 | exceeds (run 2 of 2): 6 of 6, $33,254.50 of $33,254.50, 9 of 9 traps, 0 false |
 | The closeout package assembled, so the general contractor releases the retainage | work | 5 | exceeds: 10 of 10, $48,600 of $48,600 released, 10 of 10 traps, 0 false |
+| City inspections booked in sequence on two cities' portals, on the first day each can happen | work | 4 | exceeds: 6 of 6 (a $400 weight a booking, mostly minutes), 9 of 9 traps, 0 false |
 
-Across the latest runs: $897,900 of $907,327 found, 239 of 239 traps walked past, no false claim,
-78 minutes of her time against about 154 hours by hand, $56.25 of model time. 58 runs are recorded
+Across the latest runs: $900,300 of $909,727 found, 248 of 248 traps walked past, no false claim,
+81 minutes of her time against about 156 hours by hand, $58.11 of model time. 59 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module
