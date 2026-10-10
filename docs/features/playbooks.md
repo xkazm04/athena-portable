@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The seventy-nine playbooks (latest runs, Claude Sonnet)
+## The eighty playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -122,9 +122,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A veterinary technician's year of airline credits turned into refunds: flights moved 3 hours 55 minutes and 6 hours 30 minutes, a changed arrival airport, an added stop, a lower fare class and a seat fee, while a change she made, a credit she chose, her own cancellation, a short delay, a connecting airport, an uncovered flight and a refunded and a spent credit are left alone | home | 5 | exceeds: 6 of 6, $832.00 of $832.00 (what she gets back), 9 of 9 traps, 0 false, 1.6 min, $0.91 |
 | A household's recurring charges audited under California's Automatic Renewal Law: a second streaming account on the bank, a trial that became a charge, an add-on raised without notice and an unused storage plan cancelled, with two refunds asked under the services' own terms, while a son's and a partner's weekly use, a service used this week, a one-time purchase and a plan renewed after its reminder are left alone | home | 6 | exceeds: 6 of 6, $613.50 of $613.50 (cancellations weighted at a year of the plan, mostly minutes), 8 of 8 traps, 0 false, 1.4 min, $0.84 |
 | A hygienist's class action claims filed from her own records: an air fryer, bulbs only her card shows, two kettles, earbuds by a sworn claim her card supports, pet food and a topper due tomorrow, while a late claim, an exclusion, a repeat, a purchase before the class period, resale, a Toronto purchase, one she cannot show and a fee scam are left alone | home | 5 | exceeds: 6 of 6, $158.00 of $158.00 (what she gets back), 8 of 8 traps, 0 false, 1.8 min, $1.03 |
+| A tester's unclaimed property claimed free from two states under both her names: a refund under her married name at an old address, two checks and a dividend under her own, a premium refund and a policy a finder wanted a quarter of, while three namesakes, an ex-husband's, a company's, a paid one and her dead mother's are left alone | home | 5 | exceeds: 6 of 6, $1,016.43 of $1,016.43 (what she gets back), 8 of 8 traps, 0 false, 2.4 min, $1.23 |
 
-Across the latest runs: $1,119,127 of $1,128,554 found, 803 of 803 traps walked past, no false claim,
-218 minutes of her time against about 312 hours by hand, $134.77 of model time. 117 runs are recorded
+Across the latest runs: $1,120,143 of $1,129,570 found, 811 of 811 traps walked past, no false claim,
+220 minutes of her time against about 314 hours by hand, $136.0 of model time. 118 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

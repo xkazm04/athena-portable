@@ -284,6 +284,12 @@ names; each playbook carries the new one.
   "Claimsadmin" kept its name: a search found no administrator or business of that name (the search tool is fuzzy, so that
   is "none found", not a proof). The roster lists four portals; "Awardhelm Payout Desk" is added as a fifth, the site a scam
   email names, because the trap is a page the court-approved notice does not name; a search found no business of that name.
+- Row 71, `unclaimed-property-sweep`: "Claimit State" became two portals, "Heldwren Illinois" and "Brackenholt Vermont", because the world
+  applies two states' programs and California's State Controller runs its unclaimed property site as "Claim It" (claimit.ca.gov);
+  "Docshelf (old addresses)" became "Binderwell", the name B6 settled, because DocShelf is a real document management app; and
+  "Mailnest" became "Postwren", because mailnest.io is a real email service. "Lostfunds" kept its name: a search found no finder
+  or site of that name (the search tool is fuzzy, so that is "none found", not a proof). "Heldwren" was found nowhere, and
+  "Brackenholt" only in fiction and as a Christmas tree product, neither in the field.
 
 ### B8: Work, pay and benefits
 

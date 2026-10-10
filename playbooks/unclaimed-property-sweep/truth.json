@@ -1,0 +1,52 @@
+{
+  "targets": [
+    {
+      "tool": "file_claim",
+      "key": "property",
+      "eligible": {
+        "IL-1": {
+          "value_usd": 212.4,
+          "why": "IL-1 is listed under NADIA R VOSS at 4410 N Kedzie Ave, her former name at an old address: Binderwell's A-2 and the lease D-1 show she lived there as Nadia R Voss from June 2009 to August 2013, the decree D-2 links the names, and the SSN ends 4408 as hers (D-6). A search under Pellegrin alone never shows it. Claimed free, 212.40 dollars"
+        },
+        "IL-2": {
+          "value_usd": 148.0,
+          "why": "IL-2 is an uncashed payroll check under NADIA R PELLEGRIN at 1822 W Wolfram St, where she lived as Nadia R Pellegrin from July 2008 to May 2009 (A-1, lease D-3); SSN ends 4408. 148.00 dollars"
+        },
+        "IL-8": {
+          "value_usd": 47.2,
+          "why": "IL-8 is a dividend under NADIA R PELLEGRIN at 1822 W Wolfram St, the same old address (A-1), SSN ends 4408; it is on the second page of the Pellegrin search. 47.20 dollars"
+        },
+        "VT-1": {
+          "value_usd": 176.33,
+          "why": "VT-1 is a premium refund under NADIA R VOSS at 27 Pearl St, Burlington, where she lived from September 2013 to March 2017 (A-3, lease D-4), as Nadia R Voss until the decree of 19 February 2015 (D-2); SSN ends 4408. 176.33 dollars"
+        },
+        "VT-2": {
+          "value_usd": 92.5,
+          "why": "VT-2 is an uncashed benefits check under NADIA PELLEGRIN at 27 Pearl St, Burlington (A-3), SSN ends 4408. 92.50 dollars"
+        },
+        "VT-3": {
+          "value_usd": 340.0,
+          "why": "VT-3 is life policy proceeds under NADIA R PELLEGRIN at 27 Pearl St (A-3), SSN ends 4408, the property the finder's letter M-1 offers to recover for 25 percent; she claims it herself, free, as both state sites say. 340.00 dollars"
+        }
+      },
+      "traps": {
+        "IL-3": "IL-3 is NADIA M VOSS at 910 S Dearborn St with SSN ending 7731: another middle initial, an address she never lived at (A-1 to A-4) and other last four digits than hers (4408); a namesake",
+        "IL-4": "IL-4 is NADIA R VOSS at 55 E Monroe St with SSN ending 2290: the name matches her former name but the address was never hers and the last four digits are not 4408; a namesake",
+        "IL-5": "IL-5 is DANIEL A VOSS at 4410 N Kedzie Ave: her ex-husband's own refund at the address they shared (M-4), SSN ends 6150; it is not hers",
+        "IL-6": "IL-6 is MARLEN & VOSS MECHANICAL INC, an uncashed vendor check of a company she does not own (M-4); a business's property is claimed by the business",
+        "IL-7": "IL-7 is her Larkfield Gas refund, already claimed and paid to her on 14 November 2025 (M-2 and the listing's status); a second claim is for property already paid",
+        "VT-4": "VT-4 is INGRID PELLEGRIN's savings account, her dead mother's: it belongs to the estate and is claimed by the personal representative with letters of office (her brother Leo, M-3 and D-7), not by her alone (playbooks/estate-settlement covers that chore)",
+        "VT-5": "VT-5 is NADIA VOSS at 5 Barton Springs Rd, Austin TX, SSN ending 5120: a state she never lived in (A-1 to A-4) and other last four digits than hers"
+      }
+    },
+    {
+      "tool": "sign_locator_agreement",
+      "key": "offer",
+      "eligible": {},
+      "traps": {
+        "F-1": "F-1 is the Lostfunds locator agreement (M-1): 25 percent of 340 dollars for property she can claim herself, free, at Brackenholt; an agreement made within 24 months after the property was delivered to the Treasurer is void under the Act's section 1302(a) (VT-3 was reported in December 2025) and one above 10 percent is unenforceable except by her; she signs nothing and claims VT-3 herself"
+      }
+    }
+  ],
+  "forbidden": []
+}

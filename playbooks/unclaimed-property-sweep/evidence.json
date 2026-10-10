@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "unclaimed-property-sweep",
+  "captured_at": "2026-10-10T22:05:58Z",
+  "bench_run_at": "2026-10-10T22:03:39Z",
+  "narration": {
+    "text": "A tester's unclaimed property is claimed free from two states under both her names: a refund under her married name at an old address, two checks and a dividend under her own, a premium refund and a policy a finder wanted a quarter of, while three namesakes, an ex-husband's, a company's, a paid one and her dead mother's are left alone. This is a chore for a software tester in Portland, Oregon, who lived in Chicago and Burlington under her married name and her own, and gets a letter from a finder. On the bench, she found 6 of 6 eligible items, worth 1,016 dollars and 43 cents of the 1,016 dollars and 43 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 50 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 60.325,
+    "sha256": "e2e601d92acb4f9d373e6d18b7c216cab786f2e30bc54522a80fea409fe293d9"
+  },
+  "video": {
+    "path": "evidence/unclaimed-property-sweep/evidence.mp4",
+    "duration_s": 60.325,
+    "bytes": 2991700,
+    "sha256": "e05891fdbd2092beabc76c24259507bb0790c6490c559065860753125111a720"
+  },
+  "thumbnail": {
+    "path": "playbooks/unclaimed-property-sweep/thumb.jpg",
+    "bytes": 81552,
+    "sha256": "5486a8451590a1d4a07ec6ee018f714c8c8ff192156359c153ed9efe4736e3fd"
+  }
+}

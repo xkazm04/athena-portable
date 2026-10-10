@@ -1,0 +1,121 @@
+{
+  "id": "unclaimed-property-sweep",
+  "title": "A tester's unclaimed property is claimed free from two states under both her names: a refund under her married name at an old address, two checks and a dividend under her own, a premium refund and a policy a finder wanted a quarter of, while three namesakes, an ex-husband's, a company's, a paid one and her dead mother's are left alone",
+  "domain": "Personal finance",
+  "audience": "home",
+  "promise": "A software tester in Portland finds 13 listings with her names on two state unclaimed property sites, Illinois and Vermont, where she lived before. She claims six, free, for 1,016.43 dollars: a utility refund listed under her married name at an old Chicago address that only her papers show, a payroll check and a dividend under her maiden name at another, a premium refund and an uncashed benefits check in Burlington, and life policy proceeds that a finder's letter offered to recover for 25 percent. She signs nothing for the finder. She leaves alone a namesake with another middle initial, another with other last four digits, a listing in Texas where she never lived, her ex-husband's refund, a company's check, a refund already paid, and her dead mother's savings, which belong to the estate.",
+  "persona": "A software tester in Portland, Oregon, who lived in Chicago and Burlington under her married name and her own, and gets a letter from a finder",
+  "chore": "Read her mail and her papers' address history, and search the Illinois and Vermont unclaimed property sites under every name she has used. Apply the Revised Uniform Unclaimed Property Act (2016) as Illinois and Vermont enacted it, on 9 October 2026: claim each listing that is hers, free, on the Treasurer's form with proof of identity, of the last four digits and of the address, and of the link between names; claim nothing that is a namesake's, an ex-spouse's, a business's, already paid, in a state she never lived in, or a dead person's; and sign no locator agreement that she does not need.",
+  "command": "I'm Nadia Pellegrin. Go through my Postwren mail, my Binderwell papers, the Illinois and Vermont unclaimed property sites, and the finder who wrote me. Search every name I have used, claim what is mine for free with the proof, and tell me what you claimed, what you left alone and why.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "a finder's letter, a payment notice, and notes from her brother and her ex-husband",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "her address history and the documents that prove it",
+      "api": "Documents site, no API",
+      "url": ""
+    },
+    {
+      "name": "Heldwren Illinois",
+      "role": "the Illinois program's rules, its listings and the place to claim",
+      "api": "State unclaimed property site, no API",
+      "url": ""
+    },
+    {
+      "name": "Brackenholt Vermont",
+      "role": "the Vermont program's rules, its listings and the place to claim",
+      "api": "State unclaimed property site, no API",
+      "url": ""
+    },
+    {
+      "name": "Lostfunds",
+      "role": "a finder's offer to recover property for a share",
+      "api": "Finder site, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the four messages in Postwren.",
+    "Reads the four addresses and seven documents in Binderwell.",
+    "Reads Heldwren's rules and searches her names, then claims what is hers.",
+    "Does the same at Brackenholt, and reads the Lostfunds offer."
+  ],
+  "gates": [
+    {
+      "action": "file_claim",
+      "label": "File a claim for unclaimed property",
+      "why": "A claim is verified as complete and accurate and goes to the Treasurer; one for a namesake's, an ex-spouse's, a company's or a dead person's property, or for property already paid, swears to what is not hers."
+    },
+    {
+      "action": "sign_locator_agreement",
+      "label": "Sign a finder's locator agreement",
+      "why": "Signing binds her to pay a share of money she can claim free, and a fee above the state's limit or inside 24 months of the property's delivery is void or unenforceable, but she would have signed and paid in the meantime."
+    }
+  ],
+  "traps": [
+    "Claiming the Illinois listing of Nadia M Voss, a namesake with another middle initial.",
+    "Claiming the Illinois listing of Nadia R Voss at an address she never lived at.",
+    "Claiming her ex-husband's Illinois refund.",
+    "Claiming the Illinois check of a company she does not own.",
+    "Claiming the Illinois refund that was already paid to her.",
+    "Claiming her dead mother's Vermont savings for herself.",
+    "Claiming the Vermont listing at a Texas address.",
+    "Signing the finder's agreement for 25 percent of property she can claim free."
+  ],
+  "memory": [
+    "Every name and address she has used, with the dates and the documents that prove them, from Binderwell.",
+    "Which listing is hers and which is a namesake's, carried to each state's site, and what the finder offered."
+  ],
+  "economics": {
+    "value_usd": 400,
+    "per": "episode",
+    "basis": "An estimate. States hold billions in unclaimed property and a person who has moved and changed her name often has a few hundred dollars under old names that she never searched; the roster's $400 an episode is such a sweep recovered, not a published figure. The money is recovered. The bench world holds six claims worth $1,016.43 (212.40, 148.00, 47.20, 176.33, 92.50 and 340.00), with seven listings and a finder's agreement left alone. Times a year: once, the episode of a sweep (ADR 0056). manual_minutes 120: reading four messages, four addresses and seven documents, searching two sites under two names, setting thirteen listings against her addresses and the last four digits, and filing six verified claims. Rules applied, as they stand on Friday 9 October 2026. The Revised Uniform Unclaimed Property Act (2016), read in the copy of the Uniform Law Commission's text hosted by the Maine Legislature (approved 14 July 2016, dated 5 December 2016): section 903(a) a person claiming to be the owner may claim on the administrator's form, verified as to completeness and accuracy; 903(b) the administrator may waive the form below a bracketed amount; 904(a) the administrator pays if evidence establishes to its satisfaction that the claimant is the owner; 904(b) allow or deny within a bracketed 90 days, with notice; 904(d) no action in that time is a denial; 905(a) pay within a bracketed 30 days; 905(b) to (d) offsets for child support, fines and delinquent taxes; 906 an action after a denial within one year of filing; 1301 an agreement to locate property is enforceable only if in a record that states the property and services, is signed by the apparent owner and states the amount expected before and after the fee; 1302(a) it is void if made from the date the property was paid or delivered to the administrator until 24 months after; 1302(c) one with unconscionable compensation is unenforceable except by the owner; 1302(e) an attorney's agreement is outside the section; 1303 an agent of the owner. THE BRIEF'S UNDERSTANDING, CORRECTED: the uniform text sets no percentage cap (it says unconscionable); the 10 percent cap is in the states' versions. The claim sections set no time limit on the owner's claim and no claimant fee; they limit only an action after a denial (906, one year). The uniform Act has no section on heirs; an heir's or estate's claim is the state's own practice, which the world summarizes. THE STATES THE WORLD APPLIES: Illinois, which enacted the Act as 765 ILCS 1026 with its own numbering (Article 13's finder sections are 15-1301 and 15-1302, and the Illinois Administrative Code's appendix says the law is based on the Act and is not identical); and Vermont, which enacted it in 27 V.S.A. chapter 18 (sections 1601 and 1602 are the finder sections, 24 months and a cap of 10 percent, per the Vermont Treasurer's page on heir finders). Neither state's code could be opened from the bench machine (ilga.gov and legislature.vermont.gov refused the connection; Justia returned 403), so the state texts were read through the search tool's summaries, the Vermont Treasurer's page and 74 Ill. Adm. Code 760.650 (a 10 percent cap and a 24-month wait; a notarized copy of the contract to the administrator); no target rests on a state-specific number. A state that did not enact the Act is left out. Illinois is reported to license finders from 1 January 2026; that was not confirmed in the text. NAUPA (unclaimed.org) says searching is free and points to MissingMoney.com.",
+    "manual_minutes": 120,
+    "times_per_year": 1,
+    "incumbent": "Unclaimed property finders and heir finders take a share of what they recover, and the law may cap it: the states' versions cap an agreement at 10 percent in what was read. A cap is a ceiling in law, not a published price, and no finder's own published price was read for the bench, so none is given and no incumbent_fee_pct is stated (ADR 0064). An owner claims from the state free.",
+    "sources": [
+      {
+        "label": "Revised Uniform Unclaimed Property Act (2016), Uniform Law Commission text as hosted by the Maine Legislature (read 10 October 2026)",
+        "url": "https://legislature.maine.gov/uploads/originals/revised-uniform-unclaimed-property-act.pdf"
+      },
+      {
+        "label": "Illinois Revised Uniform Unclaimed Property Act, 765 ILCS 1026 (official text, Illinois General Assembly; could not be opened from the bench machine)",
+        "url": "https://www.ilga.gov/legislation/ilcs/ilcs3.asp?ActID=3794&ChapterID=62"
+      },
+      {
+        "label": "Vermont unclaimed property, 27 V.S.A. chapter 18 (official text, Vermont Legislature; could not be opened from the bench machine)",
+        "url": "https://legislature.vermont.gov/statutes/fullchapter/27/018"
+      },
+      {
+        "label": "Vermont State Treasurer, Heir Finders and Asset Locators (read 10 October 2026)",
+        "url": "https://www.vermonttreasurer.gov/content/unclaimed-property/heir-finders"
+      },
+      {
+        "label": "74 Illinois Administrative Code 760.650, agreements to locate property (Justia copy, may not be the latest version)",
+        "url": "https://regulations.justia.com/states/illinois/title-74/part-760/subpart-e/section-760-650"
+      },
+      {
+        "label": "NAUPA, the National Association of Unclaimed Property Administrators (read 10 October 2026)",
+        "url": "https://www.unclaimed.org/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Thirteen listings across two states, three of them namesakes that differ by a middle initial, an address or the last four digits, one under her former name at an old address that only her papers show, an ex-husband's and a company's, a refund already paid, a dead mother's that belongs to an estate, and a finder offering a quarter of a sum she can claim free.",
+    "usefulness_why": "Saves an evening of searches under old names and an unneeded fee, and recovers money that sits unclaimed with no deadline; the sum depends on where she has lived and how often she changed her name."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful claimant with her papers and her mail claims the six listings that are hers and none of the seven that are not, and signs nothing for the finder, inside an hour."
+  },
+  "caveat": "Nadia Pellegrin (Nadia R Voss), Daniel Voss, Leo Pellegrin, Ingrid Pellegrin, Postwren, Binderwell, Heldwren Illinois, Brackenholt Vermont, Lostfunds, every holder, listing, namesake, company, amount and date are invented; no real state program, finder, holder or person is named, and the two state portals are invented and summarize their programs. The public rule applied is the Revised Uniform Unclaimed Property Act (2016) in the Uniform Law Commission's text as hosted by the Maine Legislature (dated 5 December 2016), as Illinois (765 ILCS 1026) and Vermont (27 V.S.A. chapter 18) enacted it; neither state's official code could be opened, so their texts were read through summaries, the Vermont Treasurer's page and an Illinois administrative rule, the uniform text sets no percentage cap on a finder's fee (the 10 percent in the world is the states'), and the claim sections set no time limit and no fee. A state that did not enact the Act is not in the world. The 90 and 30 days are the Act's bracketed figures; a state may set others. Whether a person is the owner, what a state asks as proof and what a court or the Treasurer decides govern a real claim. This applies stated rules to stated facts; it is not legal or financial advice."
+}
