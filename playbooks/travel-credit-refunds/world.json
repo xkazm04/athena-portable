@@ -1,0 +1,765 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "postwren",
+      "message": "I'm Lucia Ferreira. This is my mail: notices and offers from two airlines and my travel agency, and a reply I sent. Read every message. Don't do anything yet: I'll send you to my card and then to each place that holds a credit of mine.",
+      "nudges": 1
+    },
+    {
+      "app": "cardhollow",
+      "message": "This is my Cardhollow card. Read its note and my statement, every page. Don't do anything yet.",
+      "nudges": 2
+    },
+    {
+      "app": "aerolark",
+      "message": "This is Aerolark. Read its refund rules, and my credits and fees on every page. Ask for a refund of each item where the rule says one is owed, with the reason. Leave alone what is not owed.",
+      "nudges": 2
+    },
+    {
+      "app": "skylindle",
+      "message": "This is Skylindle, my second airline. Do the same here: read its rules and my credits on every page, and ask for the refunds that are owed.",
+      "nudges": 2
+    },
+    {
+      "app": "tripcairn",
+      "message": "This is Tripcairn, my travel agency. Do the same here. Then tell me, across all three, what you asked to be refunded and why, what you left alone and why, and what I should get back.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/lucia/inbox",
+      "view": {
+        "view": "Postwren: Lucia Ferreira's inbox (invented)",
+        "signed_in": "Lucia Ferreira",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The messages in the inbox: id, from, subject and date.",
+          "params": {},
+          "returns": {
+            "table": "msgs",
+            "fields": [
+              "msg_id",
+              "from",
+              "subject",
+              "date"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id (M-n).",
+          "params": {
+            "msg_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "msgs",
+            "match": {
+              "msg_id": "msg_id"
+            },
+            "require": [
+              "msg_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "cardhollow",
+      "name": "Cardhollow",
+      "origin": "https://card.cardhollow.example",
+      "path": "/lucia/6620",
+      "view": {
+        "view": "Cardhollow: Lucia Ferreira's card ending 6620 (invented)",
+        "signed_in": "Lucia Ferreira",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_card",
+          "kind": "READ",
+          "description": "Cardhollow's note on the statement, by topic: index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "cnote",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_statement",
+          "kind": "READ",
+          "description": "The card's charges and credits: date, merchant, what, amount and note. Five a page; ask for the next with page (1 to 4).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "stmt",
+            "page_size": 5
+          }
+        }
+      ],
+      "aliases": [
+        "Cardhollow",
+        "my card",
+        "the card"
+      ]
+    },
+    {
+      "app_id": "aerolark",
+      "name": "Aerolark",
+      "origin": "https://refunds.aerolark.example",
+      "path": "/lucia/credits",
+      "view": {
+        "view": "Aerolark: Lucia Ferreira's credits and fees (invented)",
+        "signed_in": "Lucia Ferreira",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Aerolark's refund rules by topic: index, change, refund, credit, fees or time.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "aer_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_credits",
+          "kind": "READ",
+          "description": "Lucia's Aerolark credits and fees: item, kind, flight, was, now, changed by, her choice, issued, status, paid and amount. Three a page; ask for the next with page (1 to 3).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "aer",
+            "page_size": 3
+          }
+        },
+        {
+          "name": "request_refund",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask Aerolark for the refund of one item (item) to Lucia's card, with why it is owed (reason). Lucia signs.",
+          "params": {
+            "item": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Refund of {item} requested from Aerolark."
+        }
+      ],
+      "aliases": [
+        "Aerolark",
+        "the first airline",
+        "Aerolark refunds"
+      ]
+    },
+    {
+      "app_id": "skylindle",
+      "name": "Skylindle",
+      "origin": "https://refunds.skylindle.example",
+      "path": "/lucia/credits",
+      "view": {
+        "view": "Skylindle: Lucia Ferreira's credits (invented)",
+        "signed_in": "Lucia Ferreira",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Skylindle's refund rules by topic: index, change, refund, credit, fees, time or covered.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "sky_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_credits",
+          "kind": "READ",
+          "description": "Lucia's Skylindle credits: item, flight, was, now, changed by, her choice, issued, status, paid and amount. Three a page; ask for the next with page (1 to 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "sky",
+            "page_size": 3
+          }
+        },
+        {
+          "name": "request_refund",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask Skylindle for the refund of one item (item) to Lucia's card, with why it is owed (reason). Lucia signs.",
+          "params": {
+            "item": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Refund of {item} requested from Skylindle."
+        }
+      ],
+      "aliases": [
+        "Skylindle",
+        "the second airline",
+        "Skylindle refunds"
+      ]
+    },
+    {
+      "app_id": "tripcairn",
+      "name": "Tripcairn",
+      "origin": "https://trips.tripcairn.example",
+      "path": "/lucia/credits",
+      "view": {
+        "view": "Tripcairn: Lucia Ferreira's bookings and credits (invented)",
+        "signed_in": "Lucia Ferreira",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Tripcairn's refund rules by topic: index or refunds.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "tca_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_credits",
+          "kind": "READ",
+          "description": "Lucia's Tripcairn credits: item, flight, was, now, changed by, her choice, issued, status, paid and amount.",
+          "params": {},
+          "returns": {
+            "table": "tca"
+          }
+        },
+        {
+          "name": "request_refund",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask Tripcairn for the refund of one item (item) to Lucia's card, with why it is owed (reason). Lucia signs.",
+          "params": {
+            "item": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Refund of {item} requested from Tripcairn."
+        }
+      ],
+      "aliases": [
+        "Tripcairn",
+        "the travel agency",
+        "my travel agency"
+      ]
+    }
+  ],
+  "tables": {
+    "msgs": [
+      {
+        "msg_id": "M-1",
+        "from": "Aerolark",
+        "subject": "A change to flight AL 218 on 14 March",
+        "date": "2026-03-06",
+        "text": "Friday 6 March 2026. Flight AL 218, Boston to Chicago on Saturday 14 March, now leaves at 11:05 instead of 07:10 and lands at 13:00. We have put your fare, 142.00 dollars, in your Aerolark account as a travel credit. You do not need to do anything. Lucia Ferreira did not ask for this credit and has not replied."
+      },
+      {
+        "msg_id": "M-2",
+        "from": "Skylindle",
+        "subject": "Your flight SK 804 to Toronto has changed",
+        "date": "2026-05-29",
+        "text": "Friday 29 May 2026. Flight SK 804, Boston to Toronto on Tuesday 2 June, now leaves at 14:45 instead of 08:15 and lands at 16:20 instead of 09:50. Lucia did not accept the new time and did not fly. We have issued a credit of 188.00 dollars in your Skylindle account."
+      },
+      {
+        "msg_id": "M-3",
+        "from": "Skylindle",
+        "subject": "A minor update to flight SK 311",
+        "date": "2026-06-02",
+        "text": "Tuesday 2 June 2026. A minor update to SK 311, Boston to New York on Friday 12 June: it still leaves at 18:00 and lands at 19:25, but it now lands at Newark (EWR) instead of LaGuardia (LGA). Lucia did not accept the change and did not fly. Your fare, 98.00 dollars, is held as a credit in your account."
+      },
+      {
+        "msg_id": "M-4",
+        "from": "Skylindle",
+        "subject": "Your cancelled flight SK 540: refund or credit",
+        "date": "2026-07-09",
+        "text": "Thursday 9 July 2026. We cancelled SK 540, Boston to Chicago on Wednesday 8 July. You may have your 140.00 dollars back to your card, or take it as a Skylindle credit with a 10 percent bonus. Reply to tell us which."
+      },
+      {
+        "msg_id": "M-5",
+        "from": "Lucia Ferreira",
+        "subject": "Re: Your cancelled flight SK 540: refund or credit",
+        "date": "2026-07-30",
+        "text": "Thursday 30 July 2026. To Skylindle: I will take the credit with the 10 percent bonus. Please put 154.00 dollars in my account. (Sent by Lucia from Postwren.)"
+      },
+      {
+        "msg_id": "M-6",
+        "from": "Tripcairn",
+        "subject": "A change to your Orlando trip",
+        "date": "2026-04-20",
+        "text": "Monday 20 April 2026. You booked Aerolark AL 509, Boston to Orlando on Friday 24 April, in the Comfort fare through Tripcairn. Aerolark has moved you to the Basic Economy fare, a lower class of service, with the same flight times. Lucia did not accept it and did not fly. We hold your fare, 156.00 dollars, as a Tripcairn credit."
+      },
+      {
+        "msg_id": "M-7",
+        "from": "Skylindle",
+        "subject": "Your Philadelphia connection has changed",
+        "date": "2026-06-15",
+        "text": "Monday 15 June 2026. Flight SK 233, Boston to Washington on Thursday 25 June, now connects in Charlotte instead of Philadelphia. It leaves at 08:00 and lands at 11:20 instead of 11:05 (15 minutes later). There is still one connection. Your fare, 175.00 dollars, is held as a credit. You have no accessibility needs on file."
+      },
+      {
+        "msg_id": "M-8",
+        "from": "Aerolark",
+        "subject": "Your seat on AL 330",
+        "date": "2026-04-25",
+        "text": "Saturday 25 April 2026. Your flight AL 330, Boston to Denver, was flown with another aircraft, and the extra-legroom seat 14A you paid 38.00 dollars for is not on it. You were given seat 22C. We are sorry. Your fee has not been refunded yet."
+      }
+    ],
+    "cnote": [
+      {
+        "topic": "index",
+        "text": "Cardhollow (invented). Today is Friday 9 October 2026. Lucia Ferreira, card ending 6620. Your statement for the year's flights is in read_statement; it has charges and the one refund this year."
+      }
+    ],
+    "stmt": [
+      {
+        "date": "2026-03-01",
+        "merchant": "Aerolark",
+        "what": "Fare AL 218",
+        "amount": -142.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-04-12",
+        "merchant": "Tripcairn",
+        "what": "Fare AL 509 Comfort",
+        "amount": -156.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-04-13",
+        "merchant": "Aerolark",
+        "what": "Seat 14A fee AL 330",
+        "amount": -38.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-05-03",
+        "merchant": "Aerolark",
+        "what": "Change of AL 140 to 16 May",
+        "amount": -120.0,
+        "note": "charged as a fare difference"
+      },
+      {
+        "date": "2026-05-10",
+        "merchant": "Skylindle",
+        "what": "Fare SK 804",
+        "amount": -188.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-05-14",
+        "merchant": "Skylindle",
+        "what": "Fare SK 311",
+        "amount": -98.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-04-30",
+        "merchant": "Aerolark",
+        "what": "Fare AL 905",
+        "amount": -96.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-05-20",
+        "merchant": "Tripcairn",
+        "what": "Fare AL 12",
+        "amount": -90.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-05-30",
+        "merchant": "Skylindle",
+        "what": "Fare SK 17",
+        "amount": -118.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-06-01",
+        "merchant": "Skylindle",
+        "what": "Fare SK 233",
+        "amount": -175.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-06-02",
+        "merchant": "Aerolark",
+        "what": "Fare AL 702 and seat 9A",
+        "amount": -294.0,
+        "note": "charged, 260.00 fare and 34.00 seat"
+      },
+      {
+        "date": "2026-06-04",
+        "merchant": "Aerolark",
+        "what": "Fare AL 466",
+        "amount": -168.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-06-10",
+        "merchant": "Skylindle",
+        "what": "Fare SK 451",
+        "amount": -210.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-06-20",
+        "merchant": "Skylindle",
+        "what": "Fare SK 540",
+        "amount": -140.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-07-22",
+        "merchant": "Aerolark",
+        "what": "Refund AL 905",
+        "amount": 96.0,
+        "note": "credit"
+      },
+      {
+        "date": "2026-08-05",
+        "merchant": "Tripcairn",
+        "what": "Booking T-88",
+        "amount": 0.0,
+        "note": "paid with the 90.00 credit for AL 12"
+      }
+    ],
+    "aer_rules": [
+      {
+        "topic": "index",
+        "text": "Aerolark refund rules (invented). Today is Friday 9 October 2026. Topics: index, change, refund, credit, fees, time. These are the airline's own summary of the Department of Transportation's refund rule, 14 CFR Part 260. Read your credits with read_credits."
+      },
+      {
+        "topic": "change",
+        "text": "A significant change. A flight is significantly delayed or changed when it leaves or lands 3 hours or more later or earlier than scheduled on a domestic itinerary, or 6 hours or more on an international one; or it leaves from or lands at a different airport; or it has more connection points; or the passenger is downgraded to a lower class of service. A different connecting airport counts only for a passenger with a disability. A smaller time change is not a significant change."
+      },
+      {
+        "topic": "refund",
+        "text": "When a refund is owed. A passenger holding a nonrefundable ticket for a flight the airline cancelled, or significantly delayed or changed, who declines the new flight, the rebooking and any compensation, is owed a full refund of the fare, taxes and fees. The airline should pay it without being asked; where it has left a credit or nothing instead, the passenger asks and the refund is then due within the time below. A refund is not owed for a flight the passenger cancelled or changed herself."
+      },
+      {
+        "topic": "credit",
+        "text": "Credits. An airline may offer a voucher or credit instead of a refund only if it states the passenger's right to a refund, and the passenger affirmatively accepts it. A credit the airline issues on its own, which the passenger has not accepted, leaves the refund owed. A credit the passenger chose, in writing, is a choice, and the refund is not owed. A credit already refunded, or already spent, cannot be refunded again."
+      },
+      {
+        "topic": "fees",
+        "text": "Fees. A fee paid for a service the airline did not provide, through no fault of the passenger, such as a seat the aircraft does not have, is refunded automatically. A fee for a flight the passenger cancelled herself is not."
+      },
+      {
+        "topic": "time",
+        "text": "How and when. A refund goes back in the original form of payment, within 7 business days of the request for a card purchase and within 20 calendar days for other payments. No processing fee may be kept. Ask with request_refund, one item at a time."
+      }
+    ],
+    "sky_rules": [
+      {
+        "topic": "index",
+        "text": "Skylindle refund rules (invented). Today is Friday 9 October 2026. Topics: index, change, refund, credit, fees, time, covered. These are the airline's own summary of the Department of Transportation's refund rule, 14 CFR Part 260. Read your credits with read_credits."
+      },
+      {
+        "topic": "change",
+        "text": "A significant change. A flight is significantly delayed or changed when it leaves or lands 3 hours or more later or earlier than scheduled on a domestic itinerary, or 6 hours or more on an international one; or it leaves from or lands at a different airport; or it has more connection points; or the passenger is downgraded to a lower class of service. A different connecting airport counts only for a passenger with a disability. A smaller time change is not a significant change."
+      },
+      {
+        "topic": "refund",
+        "text": "When a refund is owed. A passenger holding a nonrefundable ticket for a flight the airline cancelled, or significantly delayed or changed, who declines the new flight, the rebooking and any compensation, is owed a full refund of the fare, taxes and fees. The airline should pay it without being asked; where it has left a credit or nothing instead, the passenger asks and the refund is then due within the time below. A refund is not owed for a flight the passenger cancelled or changed herself."
+      },
+      {
+        "topic": "credit",
+        "text": "Credits. An airline may offer a voucher or credit instead of a refund only if it states the passenger's right to a refund, and the passenger affirmatively accepts it. A credit the airline issues on its own, which the passenger has not accepted, leaves the refund owed. A credit the passenger chose, in writing, is a choice, and the refund is not owed. A credit already refunded, or already spent, cannot be refunded again."
+      },
+      {
+        "topic": "fees",
+        "text": "Fees. A fee paid for a service the airline did not provide, through no fault of the passenger, such as a seat the aircraft does not have, is refunded automatically. A fee for a flight the passenger cancelled herself is not."
+      },
+      {
+        "topic": "time",
+        "text": "How and when. A refund goes back in the original form of payment, within 7 business days of the request for a card purchase and within 20 calendar days for other payments. No processing fee may be kept. Ask with request_refund, one item at a time."
+      },
+      {
+        "topic": "covered",
+        "text": "What is covered. The refund rule covers a scheduled flight to, from or within the United States. A flight between two points outside the United States, such as Dublin and Lisbon, is not covered by it, whatever the airline."
+      }
+    ],
+    "tca_rules": [
+      {
+        "topic": "index",
+        "text": "Tripcairn travel agency (invented). Today is Friday 9 October 2026. Tripcairn charged your card for the tickets you bought through it, so it is the merchant of record and refunds what an airline says is owed. Topics: index, refunds. Read your credits with read_credits."
+      },
+      {
+        "topic": "refunds",
+        "text": "Refunds through Tripcairn. For a flight an airline cancelled or significantly changed (3 hours or more on a domestic itinerary, 6 hours or more on an international one, a different airport, more connections or a lower class of service), a passenger who declined it is owed a refund to the card within 7 business days of her request; a credit Tripcairn issued without her choice leaves the refund owed. A credit already spent is not refunded. Ask with request_refund."
+      }
+    ],
+    "aer": [
+      {
+        "item": "C-1",
+        "kind": "credit",
+        "flight": "AL 218 Boston to Chicago, Sat 14 Mar 2026 (domestic)",
+        "was": "leave 07:10, land 09:05",
+        "now": "leave 11:05, land 13:00",
+        "changed_by": "Aerolark, notice Fri 6 Mar",
+        "her_choice": "declined the new time and did not fly; never accepted the credit",
+        "issued": "by Aerolark on 6 Mar, unasked",
+        "status": "unused",
+        "paid": "card ending 6620",
+        "amount": 142.0
+      },
+      {
+        "item": "C-2",
+        "kind": "credit",
+        "flight": "AL 140 Boston to Atlanta, Sun 17 May 2026",
+        "was": "leave Sun 17 May 09:30",
+        "now": "leave Sat 16 May 09:30",
+        "changed_by": "Lucia, online on Sun 3 May",
+        "her_choice": "she asked to fly a day earlier",
+        "issued": "credit of the fare difference when she changed it",
+        "status": "unused",
+        "paid": "card ending 6620",
+        "amount": 120.0
+      },
+      {
+        "item": "C-3",
+        "kind": "credit",
+        "flight": "AL 702 Boston to Seattle, Fri 10 Jul 2026",
+        "was": "as booked",
+        "now": "as booked; not changed by Aerolark",
+        "changed_by": "Lucia cancelled it herself on Mon 22 Jun",
+        "her_choice": "cancelled a nonrefundable fare",
+        "issued": "credit of the fare less a 50.00 fee",
+        "status": "unused",
+        "paid": "card ending 6620",
+        "amount": 210.0
+      },
+      {
+        "item": "C-4",
+        "kind": "credit",
+        "flight": "AL 466 Boston to Philadelphia, Sat 20 Jun 2026 (domestic)",
+        "was": "leave 17:00, land 18:20",
+        "now": "leave 19:10, land 20:30 (2 h 10 min later)",
+        "changed_by": "Aerolark, notice Wed 3 Jun",
+        "her_choice": "cancelled it herself on Thu 4 Jun",
+        "issued": "credit of the nonrefundable fare",
+        "status": "unused",
+        "paid": "card ending 6620",
+        "amount": 168.0
+      },
+      {
+        "item": "C-5",
+        "kind": "credit",
+        "flight": "AL 905 Boston to Miami, Mon 1 Jun 2026",
+        "was": "scheduled Mon 1 Jun",
+        "now": "cancelled by Aerolark",
+        "changed_by": "Aerolark",
+        "her_choice": "did not accept the credit",
+        "issued": "by Aerolark, unasked",
+        "status": "refunded to the card on Wed 22 Jul 2026",
+        "paid": "card ending 6620",
+        "amount": 96.0
+      },
+      {
+        "item": "A-1",
+        "kind": "fee",
+        "flight": "AL 330 Boston to Denver, Sat 25 Apr 2026",
+        "was": "extra-legroom seat 14A",
+        "now": "seat 22C, aircraft changed; seat 14A not on the aircraft",
+        "changed_by": "Aerolark",
+        "her_choice": "asked nothing",
+        "issued": "no refund yet",
+        "status": "not refunded",
+        "paid": "card ending 6620",
+        "amount": 38.0
+      },
+      {
+        "item": "A-2",
+        "kind": "fee",
+        "flight": "AL 702 Boston to Seattle, Fri 10 Jul 2026",
+        "was": "extra-legroom seat 9A",
+        "now": "flight cancelled by Lucia on 22 Jun (see C-3)",
+        "changed_by": "Lucia",
+        "her_choice": "cancelled the flight herself",
+        "issued": "none",
+        "status": "not refunded",
+        "paid": "card ending 6620",
+        "amount": 34.0
+      }
+    ],
+    "sky": [
+      {
+        "item": "C-6",
+        "flight": "SK 804 Boston to Toronto, Tue 2 Jun 2026 (international)",
+        "was": "leave 08:15, land 09:50",
+        "now": "leave 14:45, land 16:20 (6 h 30 min later)",
+        "changed_by": "Skylindle, notice Fri 29 May",
+        "her_choice": "declined and did not fly; never accepted the credit",
+        "issued": "by Skylindle, unasked",
+        "status": "unused",
+        "paid": "card ending 6620",
+        "amount": 188.0
+      },
+      {
+        "item": "C-7",
+        "flight": "SK 311 Boston to New York, Fri 12 Jun 2026 (domestic)",
+        "was": "leave 18:00, land 19:25 at LaGuardia",
+        "now": "leave 18:00, land 19:25 at Newark",
+        "changed_by": "Skylindle, notice Tue 2 Jun",
+        "her_choice": "declined and did not fly; never accepted the credit",
+        "issued": "by Skylindle, unasked",
+        "status": "unused",
+        "paid": "card ending 6620",
+        "amount": 98.0
+      },
+      {
+        "item": "C-8",
+        "flight": "SK 451 Boston to Denver, Sun 2 Aug 2026 (domestic)",
+        "was": "non-stop, leave 09:00, land 11:55",
+        "now": "one stop in Chicago, leave 08:40, land 11:30",
+        "changed_by": "Skylindle, notice Wed 8 Jul",
+        "her_choice": "declined and did not fly; never accepted the credit",
+        "issued": "by Skylindle, unasked",
+        "status": "unused",
+        "paid": "card ending 6620",
+        "amount": 210.0
+      },
+      {
+        "item": "C-9",
+        "flight": "SK 233 Boston to Washington, Thu 25 Jun 2026 (domestic)",
+        "was": "one connection, Philadelphia; leave 08:00, land 11:05",
+        "now": "one connection, Charlotte; leave 08:00, land 11:20",
+        "changed_by": "Skylindle, notice Mon 15 Jun",
+        "her_choice": "did not fly; accessibility needs on file: none",
+        "issued": "by Skylindle, unasked",
+        "status": "unused",
+        "paid": "card ending 6620",
+        "amount": 175.0
+      },
+      {
+        "item": "C-10",
+        "flight": "SK 17 Dublin to Lisbon, Thu 4 Jun 2026 (no US airport)",
+        "was": "as booked",
+        "now": "cancelled by Skylindle",
+        "changed_by": "Skylindle",
+        "her_choice": "did not fly",
+        "issued": "by Skylindle, unasked",
+        "status": "unused",
+        "paid": "card ending 6620",
+        "amount": 118.0
+      },
+      {
+        "item": "C-11",
+        "flight": "SK 540 Boston to Chicago, Wed 8 Jul 2026 (domestic)",
+        "was": "as booked",
+        "now": "cancelled by Skylindle",
+        "changed_by": "Skylindle, notice Thu 9 Jul offered a refund or a credit with a 10 percent bonus",
+        "her_choice": "chose the credit with the bonus, in writing, Thu 30 Jul (M-5)",
+        "issued": "credit of 154.00 on her written choice",
+        "status": "unused",
+        "paid": "card ending 6620",
+        "amount": 154.0
+      }
+    ],
+    "tca": [
+      {
+        "item": "C-12",
+        "flight": "Aerolark AL 509 Boston to Orlando, Fri 24 Apr 2026, bought through Tripcairn (domestic)",
+        "was": "Comfort fare",
+        "now": "Basic Economy fare, same flight times",
+        "changed_by": "Aerolark, notice Mon 20 Apr",
+        "her_choice": "declined and did not fly; never accepted the credit",
+        "issued": "by Tripcairn, unasked",
+        "status": "unused",
+        "paid": "card ending 6620, charged by Tripcairn",
+        "amount": 156.0
+      },
+      {
+        "item": "C-13",
+        "flight": "Aerolark AL 12 Boston to New York, Tue 14 Jul 2026, bought through Tripcairn",
+        "was": "as booked",
+        "now": "cancelled by Aerolark",
+        "changed_by": "Aerolark",
+        "her_choice": "took the credit on Wed 5 Aug and spent it on a new booking",
+        "issued": "by Tripcairn",
+        "status": "used on Wed 5 Aug 2026 for booking T-88",
+        "paid": "card ending 6620, charged by Tripcairn",
+        "amount": 90.0
+      }
+    ]
+  }
+}

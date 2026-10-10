@@ -265,6 +265,13 @@ names; each playbook carries the new one.
   Cardwell Payment Systems is a real card-payment processor; and "Mailnest" became "Postwren", because mailnest.io is a
   real email service. "Aerolark baggage claims" kept its name: a search found no airline or claims site called Aerolark
   (the search tool is fuzzy, so that is "none found", not a proof), and `eu261-flight-compensation` already uses it unchanged.
+- Row 68, `travel-credit-refunds`: "Skyrail" became "Skylindle", because Skyrail is a real tourist attraction and booking name
+  (the Skyrail Rainforest Cableway in Queensland); "Tripfold" became "Tripcairn", the name row 67 settled, because Trip Fold:
+  Travel Planner is a real travel app; and "Cardwell" became "Cardhollow", because Cardwell Payment Systems is a real
+  card-payment processor (row 62 settled the name). The roster's row 68 lists no mail portal; Postwren (for "Mailnest",
+  because mailnest.io is a real email service) is added as the fifth portal, because the airlines' notices and her written
+  choice of a credit are mail. "Aerolark" was kept for the airline: a search found no airline of that name (the search tool is
+  fuzzy, so that is "none found", not a proof), and `eu261-flight-compensation` already uses it unchanged.
 
 ### B8: Work, pay and benefits
 

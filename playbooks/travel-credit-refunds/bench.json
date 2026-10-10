@@ -1,0 +1,326 @@
+{
+  "playbook": "travel-credit-refunds",
+  "run_at": "2026-10-10T20:44:01Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 98.2,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 34,
+  "cost_usd": 0.9085,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.6
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 832.0,
+    "value_found_usd": 832.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "request_refund",
+        "key": "C-2",
+        "why": "C-2 is a credit for a change she made herself, moving AL 140 a day earlier online on 3 May; the airline changed nothing, so no refund is owed",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "C-3",
+        "why": "C-3 is a nonrefundable fare she cancelled herself on 22 June; the credit is what the fare rules gave back, and Aerolark changed nothing",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "A-2",
+        "why": "A-2 is the seat fee for AL 702, the flight she cancelled herself; the service was not provided because of her cancellation, not through no fault of hers",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "C-4",
+        "why": "C-4 is AL 466, moved 2 hours 10 minutes later on a domestic itinerary, below the 3 hour threshold, and she cancelled it herself on 4 June; not a significant change",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "C-5",
+        "why": "C-5 is AL 905, cancelled by Aerolark, whose 96.00 dollar credit was already refunded to her card on 22 July 2026 (the statement credit)",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "C-9",
+        "why": "C-9 is SK 233, whose connection moved from Philadelphia to Charlotte with the landing 15 minutes later and one connection still; a different connecting airport counts only for a passenger with a disability (260.2) and her accessibility needs on file are none",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "C-10",
+        "why": "C-10 is SK 17, Dublin to Lisbon, a flight with no US airport, outside a rule that covers flights to, from or within the United States",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "C-11",
+        "why": "C-11 is SK 540, cancelled by Skylindle, which offered a refund or a credit with a 10 percent bonus; she chose the credit in writing on 30 July (M-5), so the refund is not owed",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "C-13",
+        "why": "C-13 is AL 12, cancelled by Aerolark, whose 90.00 dollar credit was spent on booking T-88 on 5 August; a spent credit cannot be refunded",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "request_refund",
+      "key": "C-1",
+      "outcome": "correct",
+      "value_usd": 142.0,
+      "exact": true,
+      "why": "C-1 is AL 218, which Aerolark moved from 07:10 to 11:05, 3 hours 55 minutes later on a domestic itinerary (3 hours or more is significant, 14 CFR 260.2); she declined it and did not fly, and the credit was issued by Aerolark unasked (M-1), so the fare is owed back to her card under 260.6(a). Weighted at the fare, 142.00 dollars"
+    },
+    {
+      "action": "request_refund",
+      "key": "A-1",
+      "outcome": "correct",
+      "value_usd": 38.0,
+      "exact": true,
+      "why": "A-1 is the 38 dollar extra-legroom seat fee for AL 330, a seat the substituted aircraft does not have (M-8), through no fault of hers; 260.4 refunds an ancillary fee for a service not provided, automatically, and Aerolark has not. Weighted at the fee, 38.00 dollars"
+    },
+    {
+      "action": "request_refund",
+      "key": "C-6",
+      "outcome": "correct",
+      "value_usd": 188.0,
+      "exact": true,
+      "why": "C-6 is SK 804, Boston to Toronto, an international itinerary, moved from 08:15 to 14:45 and 09:50 to 16:20, 6 hours 30 minutes later (6 hours or more is significant on an international itinerary); she declined and did not fly and the credit was Skylindle's, unasked (M-2). Weighted at the fare, 188.00 dollars"
+    },
+    {
+      "action": "request_refund",
+      "key": "C-7",
+      "outcome": "correct",
+      "value_usd": 98.0,
+      "exact": true,
+      "why": "C-7 is SK 311, whose times did not change, but which now lands at Newark instead of LaGuardia: a different destination airport is a significant change by itself (260.2), though the notice (M-3) calls it a minor update; she declined and did not fly. Weighted at the fare, 98.00 dollars"
+    },
+    {
+      "action": "request_refund",
+      "key": "C-8",
+      "outcome": "correct",
+      "value_usd": 210.0,
+      "exact": true,
+      "why": "C-8 is SK 451, which was non-stop and is now one stop in Chicago, with the times 20 minutes and 25 minutes earlier: more connection points than the original itinerary is a significant change (260.2); she declined and did not fly and the credit was unasked. Weighted at the fare, 210.00 dollars"
+    },
+    {
+      "action": "request_refund",
+      "key": "C-12",
+      "outcome": "correct",
+      "value_usd": 156.0,
+      "exact": true,
+      "why": "C-12 is AL 509 bought through Tripcairn, moved by Aerolark from the Comfort fare to Basic Economy with the same times (M-6): a lower class of service is a significant change (260.2); she declined and did not fly, the credit was Tripcairn's, unasked, and Tripcairn charged her card, so it refunds it (260.6, 260.10). Weighted at the fare, 156.00 dollars"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm filing one Tripcairn refund, C-12, and nothing else is owed there.\n\n\n**Tripcairn, left alone:** C-13 (AL 12, 90.00). That credit was spent on booking T-88 on 5 Aug, and the rule says a spent credit isn't refunded.\n\n**Across all three, I've asked for 6 refunds, 832.00 in total. Each one needs your signature on its card.**\n\n| Portal | Item | Why it's owed | Amount |\n|---|---|---|---|\n| Aerolark | C-1, AL 218 | Moved 3 h 55 min later, over the 3-hour domestic limit. You declined it and never accepted the credit. | 142.00 |\n| Aerolark | A-1, seat 14A | Extra-legroom seat that the swapped aircraft doesn't have. | 38.00 |\n| Skylindle | C-6, SK 804 | Moved 6 h 30 min later, over the 6-hour international limit. You never accepted the credit. | 188.00 |\n| Skylindle | C-7, SK 311 | Arrival airport changed from LaGuardia to Newark. | 98.00 |\n| Skylindle | C-8, SK 451 | Gained a stop in Chicago.",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Lucia Ferreira. This is my mail: notices and offers from two airlines and my travel agency, and a reply I sent. Read every message. Don't do anything yet: I'll send you to my card and then to each place that holds a credit of mine.",
+      "continued": false,
+      "said": "I'll list the inbox first, then read each message.",
+      "said_chars": 50,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Eight messages are in the inbox. I'm reading all of them now.",
+      "said_chars": 61,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "I've read all eight messages and haven't filed any request. I'm saving a note now so I still have these details when I'm in the other tabs.\n\n\nI've read the whole inbox. Eight messages cover seven flights and a reply you sent. Each is a candidate until a portal's refund rule and credit status say otherwise.",
+      "said_chars": 1881,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Cardhollow",
+      "user": "This is my Cardhollow card. Read its note and my statement, every page. Don't do anything yet.",
+      "continued": false,
+      "said": "I'll read the card note and all four statement pages.",
+      "said_chars": 53,
+      "reads": [
+        "read_card",
+        "read_statement",
+        "read_statement",
+        "read_statement",
+        "read_statement"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Cardhollow",
+      "user": "",
+      "continued": true,
+      "said": "Cardhollow is read: the note and all 4 statement pages, 16 of 16 entries. I've filed nothing.\n\n- **Already refunded:** AL 905 fare, 96.00, came back to your card on 22 Jul. It is the only refund on the statement.\n- **Spent:** the 90.00 Tripcairn credit for AL 12 paid booking T-88 on 5 Aug.\n- **Your own change:** AL 140 moved to 16 May, charged 120.00 as a fare difference.",
+      "said_chars": 1154,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Aerolark",
+      "user": "This is Aerolark. Read its refund rules, and my credits and fees on every page. Ask for a refund of each item where the rule says one is owed, with the reason. Leave alone what is not owed.",
+      "continued": false,
+      "said": "I'll read Aerolark's rules and all three credit pages.",
+      "said_chars": 54,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_credits",
+        "read_credits",
+        "read_credits"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Aerolark",
+      "user": "",
+      "continued": true,
+      "said": "Two of Aerolark's seven items are owed a refund, and I'm filing both now.\n\n\nLeft alone:\n- **C-2, AL 140 (120.00):** you changed the date yourself.\n- **C-3, AL 702 (210.00):** you cancelled it yourself.\n- **A-2, seat 9A (34.00):** this fee belongs to the flight you cancelled.\n- **C-4, AL 466 (168.00):** the change was only 2 h 10 min, under the 3-hour threshold, and you cancelled it yourself.\n- **C-5, AL 905 (96.00):** already refunded to your card on 22 Jul.",
+      "said_chars": 650,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_refund",
+          "key": "C-1",
+          "outcome": "correct",
+          "value_usd": 142.0
+        },
+        {
+          "action": "request_refund",
+          "key": "A-1",
+          "outcome": "correct",
+          "value_usd": 38.0
+        }
+      ]
+    },
+    {
+      "portal": "Skylindle",
+      "user": "This is Skylindle, my second airline. Do the same here: read its rules and my credits on every page, and ask for the refunds that are owed.",
+      "continued": false,
+      "said": "Reading Skylindle's rules and credits now, all pages.\n\nThose reads went to the page, and the answers arrive with my next turn. I'm not repeating them, so nothing is filed yet. Send me on and I'll go through Skylindle's rules and both credit pages, then file only the refunds owed.",
+      "said_chars": 280,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_credits",
+        "read_credits"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Skylindle",
+      "user": "",
+      "continued": true,
+      "said": "Three of Skylindle's six items are owed a refund, and I'm filing them now.\n\n- **C-6, SK 804 (188.00):** the flight left 6 h 30 min later, which is over the 6-hour limit for an international flight. You declined it and never accepted the credit.\n- **C-7, SK 311 (98.00):** the arrival airport changed from LaGuardia to Newark. You declined it and never accepted the credit.\n- **C-8, SK 451 (210.00):** the non-stop flight gained a stop in Chicago. You declined it and never accepted the credit.",
+      "said_chars": 1068,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_refund",
+          "key": "C-6",
+          "outcome": "correct",
+          "value_usd": 188.0
+        },
+        {
+          "action": "request_refund",
+          "key": "C-7",
+          "outcome": "correct",
+          "value_usd": 98.0
+        },
+        {
+          "action": "request_refund",
+          "key": "C-8",
+          "outcome": "correct",
+          "value_usd": 210.0
+        }
+      ]
+    },
+    {
+      "portal": "Tripcairn",
+      "user": "This is Tripcairn, my travel agency. Do the same here. Then tell me, across all three, what you asked to be refunded and why, what you left alone and why, and what I should get back.",
+      "continued": false,
+      "said": "I'll read Tripcairn's rules and credits now.\n\n\nNothing is filed yet. The answers arrive with my next turn, and I'll file only what the rule says is owed.",
+      "said_chars": 153,
+      "reads": [
+        "read_credits",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Tripcairn",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing one Tripcairn refund, C-12, and nothing else is owed there.\n\n\n**Tripcairn, left alone:** C-13 (AL 12, 90.00). That credit was spent on booking T-88 on 5 Aug, and the rule says a spent credit isn't refunded.\n\n**Across all three, I've asked for 6 refunds, 832.00 in total. Each one needs your signature on its card.**\n\n| Portal | Item | Why it's owed | Amount |\n|---|---|---|---|\n| Aerolark | C-1, AL 218 | Moved 3 h 55 min later, over the 3-hour domestic limit. You declined it and never accepted the credit.",
+      "said_chars": 2110,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_refund",
+          "key": "C-12",
+          "outcome": "correct",
+          "value_usd": 156.0
+        }
+      ]
+    }
+  ]
+}

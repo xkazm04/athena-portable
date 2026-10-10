@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "travel-credit-refunds",
+  "captured_at": "2026-10-10T20:47:40Z",
+  "bench_run_at": "2026-10-10T20:44:01Z",
+  "narration": {
+    "text": "A technician's year of airline credits becomes refunds: flights moved nearly four and six and a half hours, a new arrival airport, an added stop, a lower fare class and a seat fee, while a change she made, a credit she chose, her own cancellation, a short delay, a spent credit and an uncovered flight are left alone, across five portals. This is a chore for a veterinary technician in Boston who holds travel credits from two airlines and a travel agency, most of them issued without her asking. On the bench, she found 6 of 6 eligible items, worth 832 dollars of the 832 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 94 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 58.207,
+    "sha256": "68a20e67a80347cfa1f7767e708c974d3fee2035dc5d9279bbbb77955eccae6e"
+  },
+  "video": {
+    "path": "evidence/travel-credit-refunds/evidence.mp4",
+    "duration_s": 58.207,
+    "bytes": 2789384,
+    "sha256": "5c2e5f1449aed2950acd27ca69fa5c2c812eff429c112c2e0a835873038c8d67"
+  },
+  "thumbnail": {
+    "path": "playbooks/travel-credit-refunds/thumb.jpg",
+    "bytes": 86479,
+    "sha256": "f50d113cfb4ad046495f609a22293aed77312d2f81066c87a020404fdf152f52"
+  }
+}

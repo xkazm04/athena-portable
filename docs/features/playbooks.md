@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The seventy-six playbooks (latest runs, Claude Sonnet)
+## The seventy-seven playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -119,9 +119,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A bookkeeper's repair invoices claimed under a fuel pump recall: the labour and shop fee of one repair and a part she bought herself, with its tax, while a relay fixed before the window opens, a valve, an oil change and a rotation, a warranty repair, a tow, a refunded deposit and her husband's car outside the recall are left alone | home | 4 | exceeds: 4 of 4, $674.02 of $674.02 (what she gets back), 8 of 8 traps, 0 false, 1.6 min, $0.87 |
 | A physical therapist's lease-end statement checked against his lease's wear limits and the inspection: a dent, a tire, a chip, a scuff and a stain inside the limits are disputed, while the mileage, the fee, a long scratch, a worn tire, a cracked lens, a gouged wheel, a seat burn and the wear allowance are left alone | home | 4 | exceeds: 5 of 5, $880.00 of $880.00 (what he gets back), 8 of 8 traps, 0 false, 1.1 min, $0.69 |
 | A landscape architect's delayed bag claimed from the airline in time: a pharmacy, the toiletries line of a grocery receipt, basic clothes, a charger and a shirt for her workshop, and the bag fee, while food, a jacket her card paid, a dress, a new wardrobe, a colleague's purchases, a scarf bought after delivery, roaming and a June claim past its 21 days are left alone | home | 4 | exceeds: 6 of 6, $203.30 of $203.30 (what she gets back), 10 of 10 traps, 0 false, 1.6 min, $0.92 |
+| A veterinary technician's year of airline credits turned into refunds: flights moved 3 hours 55 minutes and 6 hours 30 minutes, a changed arrival airport, an added stop, a lower fare class and a seat fee, while a change she made, a credit she chose, her own cancellation, a short delay, a connecting airport, an uncovered flight and a refunded and a spent credit are left alone | home | 5 | exceeds: 6 of 6, $832.00 of $832.00 (what she gets back), 9 of 9 traps, 0 false, 1.6 min, $0.91 |
 
-Across the latest runs: $1,117,523 of $1,126,950 found, 778 of 778 traps walked past, no false claim,
-213 minutes of her time against about 306 hours by hand, $131.99 of model time. 114 runs are recorded
+Across the latest runs: $1,118,355 of $1,127,782 found, 787 of 787 traps walked past, no false claim,
+215 minutes of her time against about 309 hours by hand, $132.90 of model time. 115 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

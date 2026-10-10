@@ -1,0 +1,109 @@
+{
+  "id": "travel-credit-refunds",
+  "title": "A technician's year of airline credits becomes refunds: flights moved nearly four and six and a half hours, a new arrival airport, an added stop, a lower fare class and a seat fee, while a change she made, a credit she chose, her own cancellation, a short delay, a spent credit and an uncovered flight are left alone, across five portals",
+  "domain": "Air travel",
+  "audience": "home",
+  "promise": "A veterinary technician in Boston holds fifteen airline credits and fees from this year, from two airlines and a travel agency, and the airlines put most of them in her account without her asking. Six are refunds the Department of Transportation's rule owes back to her card: a domestic flight moved 3 hours 55 minutes later, an international one moved 6 hours 30 minutes later, a flight whose times held but which now lands at another airport, a non-stop flight that gained a stop, a fare class lowered, and a seat fee for a seat the aircraft did not have, 832 dollars in all. A change she made herself, a credit she chose in writing, a nonrefundable fare she cancelled, a delay of 2 hours 10 minutes, a connecting airport changed for a passenger with no disability, a flight with no United States airport, a credit already refunded and a credit already spent are left alone.",
+  "persona": "A veterinary technician in Boston who holds travel credits from two airlines and a travel agency, most of them issued without her asking",
+  "chore": "Read her mail, her card statement and the credits and fees at three airlines and an agency, with their rules. Apply 14 CFR Part 260 as it stands on 9 October 2026: ask for the refund of each item where the airline cancelled or significantly changed the flight, she declined it and did not choose the credit, or a fee was paid for a service not provided, and leave alone her own changes, a credit she chose, a change below the threshold, flights outside the rule and credits already refunded or spent.",
+  "command": "I'm Lucia Ferreira. Go through my Postwren mail, my Cardhollow statement, and the credits and fees at Aerolark, Skylindle and Tripcairn. Ask for a refund to my card of each one the refund rule says is owed, with the reason. Leave out the changes I made myself, the credit I chose, what is not a significant change, and what is already refunded or spent.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "the airlines' and the agency's notices and offers, and a reply she sent",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Cardhollow",
+      "role": "the card statement for the year's fares and refunds",
+      "api": "Card portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Aerolark",
+      "role": "the airline's refund rules, her credits and seat fees, and the place to ask for a refund",
+      "api": "Airline refund site, no API",
+      "url": ""
+    },
+    {
+      "name": "Skylindle",
+      "role": "the second airline's refund rules, her credits and the place to ask for a refund",
+      "api": "Airline refund site, no API",
+      "url": ""
+    },
+    {
+      "name": "Tripcairn",
+      "role": "the travel agency that charged her card for two tickets, its credits and the place to ask for a refund",
+      "api": "Travel agency site, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the eight notices and offers in Postwren.",
+    "Reads the card's note and sixteen statement lines in Cardhollow.",
+    "Reads Aerolark's rules, seven credits and fees, and asks for the refunds that are owed.",
+    "Does the same at Skylindle for six credits, and at Tripcairn for two."
+  ],
+  "gates": [
+    {
+      "action": "request_refund",
+      "label": "Ask an airline or agency for a refund",
+      "why": "A signed request that a refund is owed back to her card; one for a change she made herself, a credit she chose, a spent or refunded credit, or a change below the threshold asks for money that is not owed and puts a claim in the record that the airline can answer with her own words."
+    }
+  ],
+  "traps": [
+    "Asking for a refund of a credit for a flight she changed herself.",
+    "Asking for a refund of a nonrefundable fare she cancelled herself.",
+    "Asking for the seat fee of the flight she cancelled herself.",
+    "Asking for a refund of a flight moved 2 hours 10 minutes, below the 3 hour threshold.",
+    "Asking again for a credit already refunded to her card.",
+    "Asking for a refund where the connecting airport changed and she has no disability.",
+    "Asking for a refund of a flight between Dublin and Lisbon, which the rule does not cover.",
+    "Asking for a refund of a credit she chose, in writing, over the refund.",
+    "Asking for a refund of a credit already spent on a new booking."
+  ],
+  "memory": [
+    "The notices' old and new times, the airport and fare changes, and what she answered the airline in writing, from Postwren.",
+    "What each portal says about who changed the flight, her choice and the status of each credit, carried to the last Tripcairn tab to set against the card statement."
+  ],
+  "economics": {
+    "value_usd": 800,
+    "per": "year",
+    "basis": "An estimate. A traveller whose airlines cancel or significantly change flights is owed back the fare of each one she declines, and most airlines issue a credit unasked, so the refund goes unclaimed; the roster's $800 a year is such a year's refunds recovered. The money is recovered, not a price avoided. The bench world holds six refunds worth $832.00 (142.00, 38.00, 188.00, 98.00, 210.00 and 156.00) in $1,997.00 of credits and fees, with nine items worth $1,165.00 left alone (120.00, 210.00, 34.00, 168.00, 96.00, 175.00, 118.00, 154.00 and 90.00). Times a year: once, the year's disruptions (ADR 0056). manual_minutes 150: reading eight notices, a card statement, fifteen credits and fees at three sites and three rule pages, setting each against the change, her choice and the status, and asking for six refunds. Rules applied, as they stand on Friday 9 October 2026, from 14 CFR Part 260 in the eCFR (read 10 October 2026), the DOT's final rule of 26 April 2024 (89 FR 32760, effective 25 June 2024) and its 12 August 2024 conforming rule: 260.2, the definition of a significantly delayed or changed flight (a departure or arrival 3 hours or more earlier or later on a domestic itinerary, 6 hours or more on an international one; a different origin or destination airport; more connection points; a lower class of service; and, for a passenger with a disability only, a different connecting airport or a substitute aircraft lacking an accessibility feature), the definition of a cancelled flight, and of a prompt refund (7 business days for a card purchase and 20 calendar days otherwise, after the earliest request); 260.4 (a prompt, automatic refund of an ancillary fee for a service not provided through no fault of the consumer); 260.6(a) (a nonrefundable ticket for a cancelled or significantly changed flight is refunded in full, fare, taxes and fees, when the passenger declines the flight, the rebooking and any compensation; automatic when no alternative is offered or she rejects it) and (c) (a voucher or credit only as an alternative, with the right to a refund stated and valid five years); 260.7 (a carrier may not treat a consumer as having accepted a credit or voucher without her affirmative acceptance); 260.10 (the refund goes to the original form of payment, with no processing fee); 260.3 (the covered flights are scheduled flights to, from or within the United States) and 260.6(d) and (e) (when a ticket agent is the merchant of record, the carrier tells the agent whether a refund is owed and the agent pays it). THE BRIEF'S PREMISE THAT A CHANGE OF CONNECTING AIRPORT IS A SIGNIFICANT CHANGE IS WRONG for a passenger without a disability: the connecting-airport clause is in 260.2's significant-change definition and in 260.6(b)(2) for an individual with a disability only. The world therefore makes a connecting airport change a trap (the passenger has no accessibility needs on file), and the easy-to-miss target is a changed arrival airport with the times unchanged. Nothing in force is left out of the targets, and nothing not in force is used: the only 2025 and 2026 action found in the Federal Register is DOT's enforcement discretion for a flight that is merely renumbered (90 FR 55999, 5 December 2025, to 30 June 2026; extended by 91 FR 41556, 7 July 2026, to 7 July 2027), and no target or trap in the world rests on a renumbered flight. Secondary sources report that the ancillary fee disclosure rule was vacated by the Fifth Circuit in 2026 and a passenger compensation rulemaking withdrawn; those are different rules, were not read at the source and nothing here rests on them.",
+    "manual_minutes": 150,
+    "times_per_year": 1,
+    "incumbent": "Refund-claim firms and lawyers charge a fee, an hourly rate or an agreed share and no published price for airline refund claims was read for the bench, so none is given and no incumbent_fee_pct is stated. A fee is never converted into a share (ADR 0064). A passenger can ask the airline herself, or complain to the DOT.",
+    "sources": [
+      {
+        "label": "14 CFR Part 260, refunds and other consumer protections for airline passengers (eCFR, read 10 October 2026)",
+        "url": "https://www.ecfr.gov/current/title-14/chapter-II/subchapter-A/part-260"
+      },
+      {
+        "label": "Refunds and Other Consumer Protections, final rule, 89 FR 32760 (26 April 2024, effective 25 June 2024)",
+        "url": "https://www.govinfo.gov/content/pkg/FR-2024-04-26/html/2024-07177.htm"
+      },
+      {
+        "label": "Airline Refunds and Other Consumer Protections, enforcement discretion for renumbered flights, 90 FR 55999 (5 December 2025)",
+        "url": "https://www.govinfo.gov/app/details/FR-2025-12-05/2025-22140"
+      },
+      {
+        "label": "Airline Refunds and Other Consumer Protections, enforcement discretion extended to 7 July 2027, 91 FR 41556 (7 July 2026)",
+        "url": "https://www.govinfo.gov/content/pkg/FR-2026-07-07/html/2026-13675.htm"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Fifteen credits and fees across three sites, each to be set against a threshold that differs for a domestic and an international flight, a changed airport the notice calls minor, an added stop, a lower class, her own changes and cancellation, a credit she chose in writing, a connecting airport that counts only for a passenger with a disability, a flight outside the rule, and credits already refunded or spent.",
+    "usefulness_why": "Saves an afternoon of notices against a card statement and three rule pages, and recovers fares that sit unclaimed as credits; the sum depends on how many flights the airlines disturbed."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful traveller with her notices, her statement and the airlines' rules asks for the six refunds that are owed and none of the nine that are not, inside an hour."
+  },
+  "caveat": "Lucia Ferreira, Aerolark, Skylindle, Tripcairn, Cardhollow and Postwren, every flight number, fare, fee, date, notice and credit are invented; no real airline, travel agency or card issuer is named. The public rule applied is 14 CFR Part 260 as it stands on 9 October 2026, read in the eCFR on 10 October 2026 (260.2, 260.3, 260.4, 260.6, 260.7 and 260.10), from the DOT's final rule of 26 April 2024 (89 FR 32760); the DOT's compliance guidance could not be opened, and the 28 October 2024 compliance date reported for the rule was not read in the rule. The airlines' and the agency's portals are invented and their rule pages are summaries of the rule. DOT's enforcement discretion for renumbered flights (to 7 July 2027) is not used: no item in the world is a renumbered flight. A change of connecting airport counts only for a passenger with a disability. Whether a change is significant, whether a credit was affirmatively accepted and whether a flight is covered decide a real case, and an airline's contract or the DOT may read the facts differently. This applies a stated rule to stated facts; it is not legal or financial advice."
+}
