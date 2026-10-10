@@ -196,6 +196,10 @@ names; each playbook carries the new one.
   seller", because Bazaarly is a real online-shop name; "Brandledger" became "Brandwick registry",
   because BrandLedger is a real app for brand deals and invoices; and "Docshelf" became "Binderwell",
   because DocShelf is a real document management app.
+- Row 57, `trademark-maintenance`: "Markfile" became "Markwick filing desk", because markfile.com is a real
+  site (a travel-marketing consultant's, in another field) and Markfile is a name worth not sharing
+  with a filing product; "Docshelf" became "Binderwell", because DocShelf is a real document
+  management app; and "Mailnest" became "Postwren", because mailnest.io is a real email service.
 
 ### B7: Household money
 

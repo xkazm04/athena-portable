@@ -1,0 +1,107 @@
+{
+  "id": "trademark-maintenance",
+  "title": "An outdoor brand's twelve trademark registrations checked against their windows, four maintained before they lapse, a renewal that deletes discontinued gloves and two in their grace period among them, while a registration not yet open, one accepted, one sold, one lapsed, unsold sleeping bags and discontinued snowshoes are left alone",
+  "domain": "Intellectual property",
+  "audience": "work",
+  "promise": "A small outdoor brand's docket of twelve registrations is read against the windows 15 U.S.C. 1058 and 1059 and 37 CFR 2.160 set, the store's sales and the photographs it has, its papers and its mail. Four are maintained: a section 8 declaration with a real photograph for each of two classes, a section 8 and 9 renewal that deletes the gloves discontinued in 2023, a renewal in its grace period with both surcharges and five days left, and a section 8 in its grace period. A registration whose window has not opened, one already accepted, one the brand sold in 2024, one that lapsed after its grace period, sleeping bags that were never sold and a snowshoe line that ended are left alone.",
+  "persona": "The owner of a small outdoor goods brand in Vermont, who registered her marks one at a time over ten years and has no docket software",
+  "chore": "Read the docket, the filing rules, the store's products and photographs, the brand's papers and its mail. Then apply 15 U.S.C. 1058 and 1059, 37 CFR 2.160, 2.161 and 2.56, and the USPTO fees in 37 CFR 2.6, as they stand on 9 October 2026: file the declaration each registration needs now, with one real specimen for each class and only the goods still sold, and nothing else.",
+  "command": "I'm Marit, Tarnbrook Outfitters. Go through our trademark docket at the Markwick filing desk, our products in Storeline, our papers in Binderwell and my Postwren mail, and file the maintenance each registration needs now, with the specimens and the fees. Leave alone what isn't due or can't be declared.",
+  "apps": [
+    {
+      "name": "Markwick filing desk",
+      "role": "the docket of registrations with their goods and history, the desk's rules, and the declaration form",
+      "api": "Filing portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Storeline",
+      "role": "each product's registration, last sale, sales and the specimen photographs",
+      "api": "Store admin, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the assignment and the memos that end a line or delay a launch",
+      "api": "Document store, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the acceptance notice, the new owner's mail and the photographer's note on the specimens",
+      "api": "Mail",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules and every registration at the Markwick filing desk.",
+    "Reads every product and its specimens in Storeline.",
+    "Reads the assignment and memos in Binderwell.",
+    "Reads the notices in Postwren.",
+    "Back at the filing desk, files the four declarations that are due, with the fees."
+  ],
+  "gates": [
+    {
+      "action": "file_declaration",
+      "label": "File a declaration of use",
+      "why": "A statement to the USPTO, under oath, that the mark is in use on the goods listed; a false one risks the registration, and the fee is not refunded."
+    }
+  ],
+  "traps": [
+    "Filing for a registration whose window has not opened.",
+    "Filing again for one whose declaration was accepted.",
+    "Filing for a registration the brand has assigned to another owner.",
+    "Filing for a registration that lapsed after its grace period.",
+    "Declaring use for goods never sold, with a mock-up as the specimen.",
+    "Declaring use for goods the brand discontinued, instead of deleting them.",
+    "Leaving out the grace-period surcharge."
+  ],
+  "memory": [
+    "Each registration's date, classes, goods, owner and history, and the windows and fees, from the Markwick filing desk.",
+    "Which goods are still sold and the real photographs of them, from Storeline.",
+    "The assignment and the discontinued lines, from Binderwell and Postwren, carried back to the last Markwick tab."
+  ],
+  "economics": {
+    "value_usd": 5000,
+    "per": "year",
+    "basis": "An estimate. A small brand with a dozen registrations has a maintenance date every year or two; a missed window costs a new application and the loss of the registration's date, and a late one a surcharge on every class, so the roster's $5,000 a year is a small brand's yearly cost of lapsed or late filings, and mostly the minutes of keeping a docket by hand. The bench world holds $45,500 of annual sales under the four registrations that need a filing now (18,400, 11,200, 9,600 and 6,300): protection, not money recovered. Times a year: four, a quarterly docket review. manual_minutes 180: reading twelve registrations and the filing rules, working out each window from its date, matching sixteen products to registrations, finding a real specimen for each class, and filling four declarations. Rules applied, as they stand on Friday 9 October 2026: 15 U.S.C. 1058 and 1059 and 37 CFR 2.160 (section 8 between the fifth and sixth year and in the year before each tenth, with a six-month grace period), 37 CFR 2.161 (the declaration: the goods in use, one specimen per class, goods not in use deleted, excusable nonuse only for special circumstances), 37 CFR 2.56 (a computer illustration, digital image or similar mock-up is not a specimen), and the USPTO's electronic fees in 37 CFR 2.6(a), per class: 325 dollars for the section 8, 325 for the renewal, a 100 dollar surcharge for each in the grace period, and 250 dollars to delete goods after a section 8 is submitted and before it is accepted.",
+    "manual_minutes": 180,
+    "times_per_year": 4,
+    "incumbent": "Trademark docketing services and firms charge a flat or per-filing fee, not a share of anything recovered, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "15 U.S.C. 1058, duration of the registration and the section 8 declaration of use (U.S. Code)",
+        "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title15-section1058&num=0&edition=prelim"
+      },
+      {
+        "label": "15 U.S.C. 1059, renewal of registration (U.S. Code)",
+        "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title15-section1059&num=0&edition=prelim"
+      },
+      {
+        "label": "37 CFR 2.160 and 2.161, the section 8 declaration: time, grace period and requirements (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-37/chapter-I/subchapter-B/part-2/subpart-I"
+      },
+      {
+        "label": "37 CFR 2.6(a), the USPTO's trademark fees per class (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-37/chapter-I/subchapter-A/part-2/subpart-A/section-2.6"
+      },
+      {
+        "label": "37 CFR 2.56, specimens (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-37/chapter-I/subchapter-B/part-2/subpart-C/section-2.56"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 3,
+    "difficulty_why": "Twelve registrations, each with its own anniversary: one window open, one just closed with a grace period that ends in five days, one a second grace period, one not yet open, and one that lapsed a year ago. The goods under each registration are in another system, a discontinued good must be deleted and never declared, a render is not a specimen, a registration sold in 2024 is still on the docket, and a combined filing costs a different fee from a single one.",
+    "usefulness_why": "Keeps a few registrations alive that a missed window or a false statement would lose, and saves the grace surcharges, in minutes instead of a day with the statute and the fee table; a quarterly chore, and the money is protection rather than cash."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner with the docket, the rules, the store and the papers files the four declarations that are due, each with the right fee and only the goods still sold, and none of the traps, inside an hour."
+  },
+  "caveat": "Marit Aldous, Tarnbrook Outfitters LLC, Fellmoor Brands Inc., every mark, registration number, product, sale, photograph and date, and the Markwick filing desk, Storeline, Binderwell and Postwren are invented; the desk's page of rules is the world's summary of the public rules, and its docket is not the USPTO's. The public rules applied are 15 U.S.C. 1058 and 1059, 37 CFR 2.160, 2.161, 2.56 and 2.6(a) as in force on 9 October 2026, with the USPTO's electronic fees per class (325 dollars for a section 8 or a renewal, 100 dollars for each in the grace period, 250 dollars to delete goods after a section 8 is submitted); a registration's windows and the grace period are counted from its registration date. The world treats a good the owner stopped selling as deleted rather than as excusable nonuse, following the rule's text that nonuse is excused only by special circumstances, and a real examining attorney decides a real case. This applies stated rules to stated facts; it is not legal advice."
+}

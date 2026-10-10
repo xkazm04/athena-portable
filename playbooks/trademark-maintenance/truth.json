@@ -1,0 +1,52 @@
+{
+  "targets": [
+    {
+      "tool": "file_declaration",
+      "key": "reg_no",
+      "eligible": {
+        "6213401": {
+          "value_usd": 18400.0,
+          "why": "R-1 TARNBROOK, registered 12 November 2020: the section 8 window ran from 12 November 2025 to 12 November 2026 and is open (rules: windows). Backpacks and duffel bags (class 18) and camp mugs (class 21) are all sold this month; specimens SP-01 or SP-03 and SP-04 are real photographs and a live product page, not the SP-02 render. Section 8 only, 2 classes at 325 dollars: 650. Sales under it, 18,400 dollars",
+          "expect": {
+            "fee_usd": 650
+          }
+        },
+        "5100288": {
+          "value_usd": 11200.0,
+          "why": "R-2 TARNBROOK TRAIL, registered 2 December 2016: the ten-year point is 2 December 2026 and the window opened 2 December 2025, so a section 8 and section 9 renewal are filed together, in 2 classes. Gloves were discontinued on 14 February 2023 (D-2, Storeline P-07) and are deleted in the filing, not declared; deleted inside the filing there is no 250 dollar fee. Fees: 2 classes at 325 for section 8 and 325 for renewal, 1,300. Sales under it, 11,200 dollars",
+          "expect": {
+            "fee_usd": 1300,
+            "deleted_goods": "gloves"
+          }
+        },
+        "5011974": {
+          "value_usd": 9600.0,
+          "why": "R-3 TARNBROOK ROCK, registered 14 April 2016: the ten-year point was 14 April 2026, so the deadline has passed and the 6-month grace period runs to 14 October 2026, five days from now. Knit caps are sold this week. Section 8 and section 9 with both grace surcharges for the one class: 325 + 325 + 100 + 100 = 850. Sales under it, 9,600 dollars",
+          "expect": {
+            "fee_usd": 850
+          },
+          "required": true
+        },
+        "6075522": {
+          "value_usd": 6300.0,
+          "why": "R-4 TARNBROOK logo, registered 9 June 2020: the sixth anniversary was 9 June 2026, so the section 8 deadline has passed and the grace period runs to 9 December 2026. Wool socks are sold this month. Section 8 with the grace surcharge for the one class: 325 + 100 = 425. Sales under it, 6,300 dollars",
+          "expect": {
+            "fee_usd": 425
+          }
+        }
+      },
+      "traps": {
+        "6492117": "R-5 CAIRN & CANVAS, registered 18 January 2022: the fifth anniversary is 18 January 2027, so the section 8 window has not opened",
+        "5313090": "R-6 TARNBROOK CAMP, registered 20 October 2017: the ten-year window opens 20 October 2026, eleven days from now, so no filing is due yet",
+        "6154803": "R-7 TARNBROOK KIDS: the section 8 was filed on 14 May 2026 and accepted on 8 July 2026 (docket status, M-1); nothing is due until the ten-year window",
+        "6337716": "R-8 TARNBROOK ALPINE: the window is open, but the sleeping bags have never been sold or shipped (D-4, Storeline P-12), and the only picture is a render, a mock-up that is not a specimen; declaring use would be a false statement",
+        "4691250": "R-9 TARNBROOK TENT, registered 10 March 2015: the ten-year deadline was 10 March 2025 and the grace period ended 10 September 2025 with nothing filed; the registration cannot be revived by a filing",
+        "6361822": "R-10 TARNBROOK SPORTS is owned by Fellmoor Brands Inc. since the assignment recorded on 2 May 2024 (D-1, M-2); only the owner of record may file",
+        "5103377": "R-11 TARNBROOK FELL: the window is open, but the snowshoes were discontinued and last sold on 19 March 2024 (D-3, P-14); there is no good left in use to declare, and stopping a line is not excusable nonuse",
+        "5977040": "R-12 TARNBROOK RIDGE, registered 10 July 2018: the section 8 was accepted on 11 September 2024 and the next filing's window opens 10 July 2027"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

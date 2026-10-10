@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "trademark-maintenance",
+  "captured_at": "2026-10-10T16:34:53Z",
+  "bench_run_at": "2026-10-10T16:25:40Z",
+  "narration": {
+    "text": "An outdoor brand's twelve trademark registrations checked against their windows, four maintained before they lapse, a renewal that deletes discontinued gloves and two in their grace period among them, while a registration not yet open, one accepted, one sold, one lapsed, unsold sleeping bags and discontinued snowshoes are left alone. This is a chore for the owner of a small outdoor goods brand in Vermont, who registered her marks one at a time over ten years and has no docket software. On the bench, she found 4 of 4 eligible items, worth 45,500 dollars of the 45,500 dollars there was to find. All 4 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 3 hours, so she was about 90 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.148,
+    "sha256": "b21f0003e4a48734f94d8b50a2bf2108659534e4b449a41349d3ab18c9cd50e0"
+  },
+  "video": {
+    "path": "evidence/trademark-maintenance/evidence.mp4",
+    "duration_s": 62.16,
+    "bytes": 2974524,
+    "sha256": "3d5f7d25d4729ef53a440a0f4719260dc76f50b6e21d490f0ad78808502dfb9c"
+  },
+  "thumbnail": {
+    "path": "playbooks/trademark-maintenance/thumb.jpg",
+    "bytes": 88158,
+    "sha256": "5c5f428d0a51f55ebef690aa65cfb979e53885637c18d2698eacf1fb23096dd5"
+  }
+}
