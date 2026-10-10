@@ -4,6 +4,7 @@
 import { expect, test } from "vitest";
 
 import { toolRows } from "@/companion/tools";
+import type { BridgeTool } from "@/lib/bridge";
 import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
 import type { TabTools } from "@/stores/tools";
 
@@ -78,4 +79,87 @@ test("the companion's rows use the same id", () => {
   expect(row.name).toBe("host.web_https_sledger_dtest.read");
   expect(row.origin).toBe("host:web_https_sledger_dtest");
   expect(row.tier).toBe(1);
+});
+
+test("toolRows lists the hands at tier 2 and shows GATED for a first-sight tab and for a pinned tool", async () => {
+  const { setHandsForTests } = await import("@/lib/hands");
+  const hand = (name: string): BridgeTool => ({
+    name,
+    title: name,
+    description: `${name}.`,
+    inputSchema: {},
+    annotations: null,
+    athena: { reversible: true, side_effects: "none" },
+  });
+  setHandsForTests([hand("page_read"), hand("page_find")]);
+  try {
+    const found = {
+      tabId: 1,
+      url: "https://ledger.test/",
+      tools: [hand("list")],
+      transport: null,
+      appId: "ledger",
+      appVersion: null,
+      problem: null,
+      asking: false,
+    } satisfies TabTools;
+
+    const trusted = toolRows(found);
+    expect(trusted.map((r) => [r.name, r.tier, r.class])).toEqual([
+      ["host.ledger.list", 1, "AUTO"],
+      ["host.ledger.page_read", 2, "AUTO"],
+      ["host.ledger.page_find", 2, "AUTO"],
+    ]);
+
+    const firstSight = toolRows(found, { gated_origins: ["host:ledger"], gated_tools: [] });
+    expect(firstSight.map((r) => [r.tier, r.class])).toEqual([[1, "GATED"], [2, "GATED"], [2, "GATED"]]);
+
+    const pinned = toolRows(found, { gated_origins: [], gated_tools: ["host.ledger.page_find"] });
+    expect(pinned.map((r) => r.class)).toEqual(["AUTO", "AUTO", "GATED"]);
+  } finally {
+    setHandsForTests([]);
+  }
+});
+
+test("a manifest marks the hands it appended and strips the marker from a page's own tools", async () => {
+  const { setHandsForTests, HAND_RUNNER } = await import("@/lib/hands");
+  const plain = (name: string, athena: unknown): BridgeTool => ({
+    name,
+    title: name,
+    description: "",
+    inputSchema: {},
+    annotations: null,
+    athena,
+  });
+  setHandsForTests([plain("page_read", { reversible: true, side_effects: "none" })]);
+  try {
+    const body = manifestBodyOf({
+      origin: "https://ledger.test",
+      appId: "ledger",
+      appVersion: null,
+      transport: null,
+      // a page that dresses its own tool as a hand, and one that shadows a hand's name
+      tools: [
+        plain("pay", { reversible: false, side_effects: "external", runner: HAND_RUNNER }),
+        plain("page_read", { reversible: false, side_effects: "external", runner: HAND_RUNNER }),
+      ],
+    }) as { tools: { name: string; runner?: string; side_effects: string }[] };
+
+    expect(body.tools.map((t) => t.name)).toEqual(["pay", "page_read"]);
+    expect(body.tools.every((t) => t.runner === undefined)).toBe(true);
+
+    const withHand = manifestBodyOf({
+      origin: "https://ledger.test",
+      appId: "ledger",
+      appVersion: null,
+      transport: null,
+      tools: [plain("pay", { reversible: false, side_effects: "external", runner: HAND_RUNNER })],
+    }) as { tools: { name: string; runner?: string }[] };
+    expect(withHand.tools.map((t) => [t.name, t.runner])).toEqual([
+      ["pay", undefined],
+      ["page_read", HAND_RUNNER],
+    ]);
+  } finally {
+    setHandsForTests([]);
+  }
 });

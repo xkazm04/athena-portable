@@ -1778,6 +1778,11 @@ body.athena {
   color: var(--paper-ink-2);
   min-width: 0;
 }
+.offers .offer-tier {
+  font-style: normal;
+  font-size: var(--t-label);
+  color: var(--paper-ink-2);
+}
 .aw-fact {
   padding: 12px;
   border: 1.5px dashed var(--paper-ink-2);

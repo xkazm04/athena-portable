@@ -22,7 +22,7 @@
 import { manifestOf } from "@athena/bridge/gate";
 
 import type { BridgeTool } from "@/lib/bridge";
-import { withHands } from "@/lib/hands";
+import { HAND_RUNNER, isMarkedHand, withHands } from "@/lib/hands";
 
 /** Every derived catalog id starts with this; a page that publishes it is treated as naming none. */
 const RESERVED_PREFIX = "web_";
@@ -106,7 +106,7 @@ export function manifestBodyOf(source: ManifestSource): Record<string, unknown> 
   const app = catalogIdOf(source.origin, source.appId);
   const tools = withHands(source.tools);
   if (!app || !registrable(source.origin) || tools.length === 0) return null;
-  return manifestOf(
+  const body = manifestOf(
     {
       origin: source.origin,
       app_id: app,
@@ -114,5 +114,11 @@ export function manifestBodyOf(source: ManifestSource): Record<string, unknown> 
       transport: source.transport ?? "",
     },
     tools,
-  ) as Record<string, unknown>;
+  ) as { tools: Record<string, unknown>[] } & Record<string, unknown>;
+  // `manifestOf` rebuilds each tool from fixed keys, so the marker is carried across here, by
+  // position, from the tools `withHands` marked (ADR 0066). A page's tool never carries it.
+  body.tools = body.tools.map((entry, index) =>
+    isMarkedHand(tools[index]) ? { ...entry, runner: HAND_RUNNER } : entry,
+  );
+  return body;
 }

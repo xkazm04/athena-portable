@@ -751,13 +751,14 @@ function Origins({ model }: { model: CompanionModel }) {
       </p>
       <h3 className="lg-h">This page offers</h3>
       {origins.offers.length === 0 ? (
-        <p className="lg-foot">Nothing registered yet. Her generic hands are gated on first sight.</p>
+        <p className="lg-foot">Nothing has been read from this page yet.</p>
       ) : (
         <ul className="offers">
           {origins.offers.map((o) => (
             <li key={o.name}>
               <Chip cls={o.cls} />
               <b>{o.name.split(".").slice(-1)[0]}</b>
+              {o.tier === 2 ? <i className="offer-tier">hand, tier 2</i> : null}
               <span>{o.description || o.name}</span>
             </li>
           ))}

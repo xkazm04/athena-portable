@@ -31,6 +31,7 @@ export const TOOLS: ToolRow[] = [
   { name: "host.ledgerbox.list_overdue", origin: "host:ledgerbox", class: "AUTO", tier: 1, description: "Invoices past their due date." },
   { name: "host.ledgerbox.read_client", origin: "host:ledgerbox", class: "READ", tier: 1, description: "One client and their open invoices." },
   { name: "host.ledgerbox.chase", origin: "host:ledgerbox", class: "GATED", tier: 1, description: "Send a chase for one invoice." },
+  { name: "host.ledgerbox.page_read", origin: "host:ledgerbox", class: "AUTO", tier: 2, description: "Read the page, or the part a ref names." },
   { name: "core.recall", origin: "core", class: "READ", tier: 0, description: "Search memory; the capped answer returns as a system episode." },
 ];
 

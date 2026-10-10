@@ -140,3 +140,53 @@ def test_the_session_is_pinned_to_the_web_origin_the_derived_id_names(live: Live
     assert session is not None
     assert (session.app_id, session.tools) == (DERIVED_ID, 9)
     assert live.daemon.gate.policy.pinned_origins == {DERIVED_ID: PAGE}
+
+
+# -- the tier (ADR 0066) ---------------------------------------------------------------------------
+
+
+def _with_page_tool(marked: bool, *, hands_marked: bool = True) -> dict[str, Any]:
+    body = hands_manifest("ledger")
+    if hands_marked:
+        for tool in body["tools"]:
+            tool["runner"] = "shell"
+    page_tool: dict[str, Any] = {
+        "name": "pay",
+        "description": "Pay.",
+        "input_schema": {"type": "object"},
+        "reversible": False,
+        "side_effects": "external",
+        "transport": "webmcp",
+    }
+    if marked:
+        page_tool["runner"] = "shell"
+    body["tools"] = [page_tool, *body["tools"]]
+    return body
+
+
+def test_the_hands_the_shell_appended_are_tier_2_and_a_pages_own_tool_stays_tier_1(
+    live: Live,
+) -> None:
+    reply = live.request("/manifest", method="POST", json_body=_with_page_tool(False))
+
+    assert reply.status == 200, reply.body
+    tiers = {tool["name"]: tool["tier"] for tool in reply.body["tools"]}
+    assert tiers.pop("host.ledger.pay") == 1
+    assert set(tiers) == {f"host.ledger.{name}" for name, *_ in _HANDS}
+    assert set(tiers.values()) == {2}
+    assert live.daemon.catalog.get("host.ledger.page_click").tier == 2
+
+
+def test_a_manifest_with_no_marker_reports_every_tool_tier_1(live: Live) -> None:
+    reply = live.request("/manifest", method="POST", json_body=hands_manifest())
+
+    assert {tool["tier"] for tool in reply.body["tools"]} == {1}
+
+
+def test_the_marker_changes_the_tier_and_never_the_class(live: Live) -> None:
+    reply = live.request("/manifest", method="POST", json_body=_with_page_tool(True))
+
+    by_name = {tool["name"]: tool for tool in reply.body["tools"]}
+    assert by_name["host.ledger.pay"]["class"] == "GATED"
+    assert by_name["host.ledger.page_click"]["class"] == "GATED"
+    assert by_name["host.ledger.page_read"]["class"] == "AUTO"

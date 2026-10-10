@@ -44,7 +44,7 @@ import { openMicrophone } from "@/lib/voice";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
-import { useRun } from "@/stores/run";
+import { gatedListsOf, useRun } from "@/stores/run";
 import { useSettings } from "@/stores/settings";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
@@ -279,6 +279,8 @@ export default function Live() {
   const voiceAvailable = useVoice((s) => s.available);
   const voicePartial = useVoice((s) => s.partial);
   const records = useOrigins((s) => s.records);
+  const originsLoaded = useOrigins((s) => s.loaded);
+  const originsProblem = useOrigins((s) => s.problem);
   const known = useOrigins((s) => s.known);
   const engine = useSettings((s) => s.engine);
   const onboarded = useSettings((s) => s.onboarded);
@@ -288,7 +290,7 @@ export default function Live() {
 
   const focused = tabs.find((tab) => tab.focused) ?? tabs[0];
   const origin = focused ? originOf(focused.url) : null;
-  const tools = focused ? toolRows(byTab[focused.id]) : [];
+  const tools = focused ? toolRows(byTab[focused.id], gatedListsOf({ records, known, loaded: originsLoaded, problem: originsProblem }, tabs, byTab)) : [];
   const ready = endpoint(daemon) !== null;
 
   // The record: what the daemon says it spent, read when her Record tab is open and again when a

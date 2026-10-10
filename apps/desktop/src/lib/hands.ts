@@ -35,6 +35,33 @@ export interface Taken {
 
 let hands: readonly BridgeTool[] = [];
 
+/**
+ * The marker that makes a tool a hand the shell appended (README 3.4 tier 2, ADR 0066): the value
+ * of `athena.runner` on the tool, and of `runner` on the manifest's tool. `HAND_RUNNER` in
+ * `contracts/manifest.py` spells the same word. Only {@link withHands} puts it on, and it takes
+ * it off every tool a page registered, so a page cannot dress its tool as a hand.
+ */
+export const HAND_RUNNER = "shell";
+
+/** Is this tool one the shell appended? Reads the marker {@link withHands} set. */
+export function isMarkedHand(tool: BridgeTool): boolean {
+  const block = tool.athena;
+  return typeof block === "object" && block !== null && (block as { runner?: unknown }).runner === HAND_RUNNER;
+}
+
+/** The tool as a page may have it: its `athena` block without a `runner`. */
+function unmarked(tool: BridgeTool): BridgeTool {
+  if (typeof tool.athena !== "object" || tool.athena === null || !("runner" in tool.athena)) return tool;
+  const { runner: _runner, ...rest } = tool.athena as Record<string, unknown>;
+  void _runner;
+  return { ...tool, athena: rest };
+}
+
+function marked(tool: BridgeTool): BridgeTool {
+  const block = typeof tool.athena === "object" && tool.athena !== null ? (tool.athena as object) : {};
+  return { ...tool, athena: { ...block, runner: HAND_RUNNER } };
+}
+
 /** The hands, as the shell shaped them like a page's tools. Empty until {@link startHands} ran. */
 export function handTools(): readonly BridgeTool[] {
   return hands;
@@ -99,7 +126,7 @@ export async function startHands(): Promise<void> {
  */
 export function withHands(pageTools: readonly BridgeTool[]): BridgeTool[] {
   const named = new Set(pageTools.map((t) => t.name));
-  return [...pageTools, ...hands.filter((h) => !named.has(h.name))];
+  return [...pageTools.map(unmarked), ...hands.filter((h) => !named.has(h.name)).map(marked)];
 }
 
 /** Is this bare name a hand the page did not register itself? */

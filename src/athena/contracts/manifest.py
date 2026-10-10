@@ -19,6 +19,7 @@ from typing import Any, Literal
 from athena.contracts.registry import ToolClass, ToolOrigin, is_origin, parse_origin
 
 __all__ = [
+    "HAND_RUNNER",
     "HostManifest",
     "HostTool",
     "SideEffects",
@@ -33,6 +34,11 @@ __all__ = [
 SideEffects = Literal["none", "internal", "external"]
 
 SIDE_EFFECTS: tuple[str, ...] = ("none", "internal", "external")
+
+#: The one value of a tool's ``runner`` that means "the shell appended this generic hand" (README
+#: §3.4 tier 2; ADR 0066). The TypeScript spells it once as ``HAND_RUNNER`` in ``lib/hands.ts``.
+#: Only a host manifest's marker is read: a connector is tier 3 whatever it says.
+HAND_RUNNER = "shell"
 
 
 @dataclass(frozen=True)
@@ -61,6 +67,9 @@ class HostTool:
     reversible: bool | None = None
     side_effects: str = "internal"
     transport: str = "webmcp"
+    #: ``HAND_RUNNER`` for a hand the shell appended, ``""`` for everything else. It says which
+    #: tier the tool is reported at and nothing about its class, which only the flags decide.
+    runner: str = ""
 
     def default_class(self) -> ToolClass:
         """``AUTO`` iff reversible and not externally visible; ``GATED`` in every other case."""
@@ -81,6 +90,7 @@ class HostTool:
             reversible=None if raw is None else bool(raw),
             side_effects=str(d.get("side_effects", "internal")),
             transport=str(d.get("transport", "webmcp")),
+            runner=str(d.get("runner", "")),
         )
 
 

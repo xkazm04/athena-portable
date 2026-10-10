@@ -195,6 +195,8 @@ export interface OfferView {
   name: string;
   cls: GateClass;
   description: string;
+  /** 1 the page's own tool, 2 one of the generic hands the shell appends (README 3.4). */
+  tier: number;
 }
 
 /** A decision the user answered in this window, for the Record tab. */
@@ -472,7 +474,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     }),
     origins: {
       host: hostOf(i.origin),
-      offers: i.tools.slice(0, OFFERS_SHOWN).map((t) => ({ name: t.name, cls: t.class, description: t.description })),
+      offers: i.tools.slice(0, OFFERS_SHOWN).map((t) => ({ name: t.name, cls: t.class, description: t.description, tier: t.tier })),
       offersFooter: i.tools.length > OFFERS_SHOWN ? `(showing ${OFFERS_SHOWN} of ${i.tools.length})` : "",
       known: i.known,
     },

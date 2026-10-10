@@ -239,6 +239,9 @@ test("Origins lists what the page offers with the gate's class, and the apps she
   expect(out).toContain("ledgerbox.local");
   expect(out).toContain("calendar.example");
   expect(out).toContain("Enable");
+  // the generic hands are listed beside the page's tools, and said to be hands
+  expect(out).toContain("page_read");
+  expect(out).toContain("hand, tier 2");
 });
 
 test("the paper is keyed so it unrolls again, and orientation mirrors the drawing", () => {

@@ -26,7 +26,7 @@ from typing import Any
 
 from athena.connectors.port import ConnectorPort
 from athena.contracts.harness import PromptBlock
-from athena.contracts.manifest import HostManifest, HostTool
+from athena.contracts.manifest import HAND_RUNNER, HostManifest, HostTool
 from athena.contracts.registry import (
     ExecResult,
     ExecutorFn,
@@ -319,6 +319,9 @@ class Catalog:
                     validator=schema_validator(tool.params_schema),
                     executor=executor_for(tool),
                     cap_chars=READ_CAP if cls is ToolClass.READ else None,
+                    tier_override=2
+                    if manifest.origin_kind == "host" and tool.runner == HAND_RUNNER
+                    else None,
                 )
             except ValueError as exc:
                 raise CatalogError(
