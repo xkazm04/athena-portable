@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "rep-payee-accounting",
+  "captured_at": "2026-10-10T05:08:22Z",
+  "bench_run_at": "2026-10-10T05:04:16Z",
+  "narration": {
+    "text": "A mother's Social Security kept the way a representative payee must: her care paid first, the payee paid back only for what she bought her, the money that left for someone else returned, and the year's report filed to the dollar. This is a chore for an adult daughter who is the representative payee for her mother's Social Security while her mother lives in assisted living. Athena works it across 4 portals: Docshelf, Oakview Care, Ledgerline bank and Benefitline. On the bench, she found 6 of 6 eligible items, worth 315 dollars of the 315 dollars there was to find. All 6 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. She took 3 minutes. By hand, the same chore takes 8 hours, so she was about 150 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 59.181,
+    "sha256": "f595d6264036d7c2d7cde4e4cc588e0c1beb38e7ddaffa5dbdc887ed8661b8af"
+  },
+  "video": {
+    "path": "evidence/rep-payee-accounting/evidence.mp4",
+    "duration_s": 59.2,
+    "bytes": 3137548,
+    "sha256": "4ea6f7bd4cf24255cb17aace9a75816dabc0018575a2561fc396570a05e64b6d"
+  },
+  "thumbnail": {
+    "path": "playbooks/rep-payee-accounting/thumb.jpg",
+    "bytes": 87340,
+    "sha256": "01608f113f38f85e30c955a8420090a0695d9b5a44760086bd429e9de5daa4b7"
+  }
+}

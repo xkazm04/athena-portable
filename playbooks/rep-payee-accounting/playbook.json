@@ -1,0 +1,134 @@
+{
+  "id": "rep-payee-accounting",
+  "title": "A mother's Social Security kept the way a representative payee must: her care paid first, the payee paid back only for what she bought her, the money that left for someone else returned, and the year's report filed to the dollar",
+  "domain": "Family care",
+  "audience": "home",
+  "promise": "A daughter's year as her mother's representative payee is read across the payee accounts, the care home's agreement and invoices, her receipts and the benefits portal. The mother's board and care is paid before it is late, a charge her care level already includes is disputed, the daughter is paid back for the coat and batteries she bought her mother and nothing else, her own phone bill that autopaid from her mother's account is put back, and the annual accounting is filed with the year's benefits, food and housing, other spending and savings to the dollar. An exemption she does not have, a bill already paid, her own guests' meals and groceries, a fee for her time and a receipt already paid back are left alone.",
+  "persona": "An adult daughter who is the representative payee for her mother's Social Security while her mother lives in assisted living",
+  "chore": "Read the appointment letter, her own notes, last year's report and her receipts; the care home's agreement and invoices; a year of the payee account's monthly statements, the savings account and this month's activity; and the payee rules, the benefit payments and the report asked for. Then apply 20 CFR 404.2035, 404.2040, 404.2045 and 404.2065 and Form SSA-623 as they stand: the benefits go to her current maintenance first and the rest is saved in her name, the payee is paid back only for what she actually spent on her mother and never for her time, money used for anyone else goes back, and a payee who is not a parent in the household or a spouse files the year's report. None of the four systems shares data with another.",
+  "command": "I'm Mom's representative payee and Social Security wants this year's report. Go through my folder, Oakview's portal, Mom's payee accounts at Ledgerline and Benefitline. Pay what she owes, dispute what she shouldn't be charged, pay me back only for what I really bought her, put back anything that came out of her account that shouldn't have, and file the report with the right numbers. Don't claim anything for me that isn't hers, and don't tell them I'm exempt unless I am.",
+  "apps": [
+    {
+      "name": "Docshelf",
+      "role": "the payee's folder: her appointment letter, her notes, last year's report and the receipts she wants paid back",
+      "api": "Shared document folder, no API",
+      "url": ""
+    },
+    {
+      "name": "Oakview Care",
+      "role": "the assisted living home: the residency agreement, the care levels and the invoices",
+      "api": "Care home family portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline bank",
+      "role": "the payee checking and savings accounts: a year of monthly statements, the savings balance and interest, and this month's activity",
+      "api": "Online banking",
+      "url": ""
+    },
+    {
+      "name": "Benefitline",
+      "role": "the payee rules, the year's benefit payments, the reports on file and the report requested",
+      "api": "Benefits portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the appointment, her notes, last year's report and the receipts in Docshelf.",
+    "Reads the agreement and invoices at Oakview Care, pays what is due and disputes what is not owed.",
+    "Reads the year's statements, the savings and this month's activity at Ledgerline, pays her back for her mother's things and puts back what left for someone else.",
+    "Reads the rules and payments in Benefitline, and files the year's report to the dollar."
+  ],
+  "gates": [
+    {
+      "action": "submit_accounting_report",
+      "label": "File the representative payee report",
+      "why": "Signed under penalty of perjury to a federal agency: a wrong figure is a false statement about another person's money."
+    },
+    {
+      "action": "claim_exemption",
+      "label": "Claim an exemption from the report",
+      "why": "Signed under penalty of perjury."
+    },
+    {
+      "action": "pay_invoice",
+      "label": "Pay a care home invoice from the beneficiary's account",
+      "why": "Her money leaves her account."
+    },
+    {
+      "action": "dispute_invoice",
+      "label": "Dispute a care home invoice",
+      "why": "It reaches the care home's office and holds the bill."
+    },
+    {
+      "action": "reimburse_payee",
+      "label": "Pay the payee back from the beneficiary's account",
+      "why": "Her money moves to the payee: for anything but what the payee spent on her, it is misuse."
+    },
+    {
+      "action": "repay_payee_account",
+      "label": "Put money back into the beneficiary's account",
+      "why": "The payee's own money moves."
+    }
+  ],
+  "traps": [
+    "Claiming the exemption from the report that a daughter does not have.",
+    "Paying September's board and care a second time.",
+    "Paying for medication management her care level already includes.",
+    "Paying the daughter's own guests' meals from her mother's money.",
+    "Paying the daughter back for her own groceries, or for her time.",
+    "Paying back the eyeglasses a second time."
+  ],
+  "memory": [
+    "Who the payee is to the beneficiary, last year's savings, whose phone Brightcell is and which receipts are whose, carried from Docshelf.",
+    "The care level, what it includes, the rates and the due dates, carried from Oakview Care.",
+    "A year of benefits in, board and care out, other spending and sweeps to savings, the savings balance with its interest, and October's debits, carried from Ledgerline."
+  ],
+  "economics": {
+    "value_usd": 500,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. A family member who is a representative payee keeps a parent's benefits apart, pays the care home, reimburses herself only with receipts and answers Social Security's annual accounting from a year of statements, by hand, with the risk that a payment for herself or a missed report is called misuse. The roster's $500 a year is late fees, overcharges and misdirected payments caught, an estimate; most of the value is the hours, about 8 by hand for the year's report and the month's bills. Times a year: one, since Social Security asks for the report once a year. The bench world holds $315: a $50 late fee avoided by paying October's board and care, a $45 charge disputed, $135 of the payee's spending on her mother paid back and an $85 phone bill put back; the report itself is counted as an item at $0. The rules applied, as they stand on Friday 9 October 2026: 20 CFR 404.2035 (the payee's duties), 404.2040 and 404.2045 (current maintenance first, then saving), 404.2040a (no fee for an individual payee), 404.2065 (the annual accounting, with the four exemptions of the Strengthening Protections for Social Security Beneficiaries Act of 2018, which do not reach an adult child), and Form SSA-623. The beneficiary receives no Supplemental Security Income, so its $2,000 resource limit does not apply. The care home's agreement and prices are invented world documents.",
+    "manual_minutes": 480,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share: a professional fiduciary or bookkeeper charges by the hour, and most family payees do it themselves.",
+    "sources": [
+      {
+        "label": "20 CFR 404.2035: responsibilities of a representative payee",
+        "url": "https://www.ecfr.gov/current/title-20/chapter-III/part-404/subpart-U/section-404.2035"
+      },
+      {
+        "label": "20 CFR 404.2040: use of benefit payments (current maintenance first)",
+        "url": "https://www.ecfr.gov/current/title-20/chapter-III/part-404/subpart-U/section-404.2040"
+      },
+      {
+        "label": "20 CFR 404.2045: conservation and investment of benefit payments",
+        "url": "https://www.ecfr.gov/current/title-20/chapter-III/part-404/subpart-U/section-404.2045"
+      },
+      {
+        "label": "20 CFR 404.2065: accounting reports, and the payees exempt from them",
+        "url": "https://www.ecfr.gov/current/title-20/chapter-III/part-404/subpart-U/section-404.2065"
+      },
+      {
+        "label": "Strengthening Protections for Social Security Beneficiaries Act of 2018, Public Law 115-165, section 102 (exemptions from the annual report)",
+        "url": "https://www.govinfo.gov/content/pkg/PLAW-115publ165/html/PLAW-115publ165.htm"
+      },
+      {
+        "label": "SSA: frequently asked questions for representative payees (reimbursement, fees, accounting)",
+        "url": "https://www.ssa.gov/payee/faqrep.htm"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "The report's four figures come from twelve monthly statements, a savings account and last year's report, with October's spending kept out; whose expense each receipt, invoice and debit is sits in a folder note, a care agreement and a bank memo; and an exemption, a paid bill, a fee for her time and a second reimbursement each look reasonable.",
+    "usefulness_why": "Turns a day of reconciling a year of statements into minutes, and keeps a family payee clear of the payments to herself that Social Security calls misuse; little money, mostly hours."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful payee with the rules in hand gets most of it; the bar is the report filed and most of the month's acts right, nothing paid to the payee that is not her mother's, inside an hour."
+  },
+  "caveat": "Agnes and Carla Holloway, Oakview Care, Corner Pharmacy, Fernway Clothing, Hearwell, Clearview Optical, Stepwell Shoes, Fresh Basket, Brightcell Wireless, Benefitline, Ledgerline and Docshelf are invented, and so are the care agreement, its prices and every figure; no beneficiary here is real. The public rules applied are 20 CFR 404.2035, 404.2040, 404.2040a, 404.2045 and 404.2065, the Strengthening Protections for Social Security Beneficiaries Act of 2018 and Form SSA-623, fixed in the bench world as of 9 October 2026. Social Security's own review of a payee and its current forms decide real cases. This applies stated rules to stated facts; it is not legal, tax or benefits advice."
+}
