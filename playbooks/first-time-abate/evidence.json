@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "first-time-abate",
+  "captured_at": "2026-10-10T17:52:56Z",
+  "bench_run_at": "2026-10-10T17:50:35Z",
+  "narration": {
+    "text": "Twelve IRS notices sorted: first-time abatement requested on four penalties the owner's record qualifies for, one on tax still being paid, while a second quarter, an earlier penalty in a history, accuracy and estimated tax penalties, a second partnership year, an abated penalty and two non-penalty notices are left alone. This is a chore for the owner of a small millwork company in Duluth, Minnesota, who co-owns two partnerships and has a bookkeeper who scanned the IRS letters but never called the number on them. On the bench, she found 4 of 4 eligible items, worth 1,850 dollars and 60 cents of the 1,850 dollars and 60 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 71 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.624,
+    "sha256": "53894bbddbe6315b84611f2abf92e8c6d6a12d6173e89077a6e3d0377ef67b5c"
+  },
+  "video": {
+    "path": "evidence/first-time-abate/evidence.mp4",
+    "duration_s": 63.64,
+    "bytes": 3057982,
+    "sha256": "a14bf0e08e7313b8b5deac08b0dfc30d8f2bce9d61f6520e0e2ed820adf952b3"
+  },
+  "thumbnail": {
+    "path": "playbooks/first-time-abate/thumb.jpg",
+    "bytes": 95316,
+    "sha256": "ff73a9f2166934262809e385f67e0b76292c72dc964b5e701aacc1c05601028d"
+  }
+}

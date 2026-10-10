@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The sixty-seven playbooks (latest runs, Claude Sonnet)
+## The sixty-eight playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -110,9 +110,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A linen brand's suspect listings sorted across two marketplaces: copyright notices on four listings that copy its photographs and trademark complaints on two counterfeit aprons, while an authorised retailer, a reseller of genuine goods with its own photographs, name-only titles, a customer's photograph, a removed listing and one on another marketplace are left alone | work | 4 | exceeds: 6 of 6, $11,030 of $11,030 (each listing's 90-day sales), 14 of 14 traps, 0 false, 1.7 min, $1.35 |
 | An outdoor brand's twelve trademark registrations checked against their windows: four maintained, including a renewal that deletes discontinued gloves and two in their grace period with the surcharge, while a registration not yet in its window, one already accepted, one sold, one lapsed, sleeping bags never sold and a discontinued snowshoe are left alone | work | 4 | exceeds: 4 of 4, $45,500 of $45,500 (sales under each registration), 8 of 8 traps, 0 false, 2.0 min, $1.76 |
 | A songwriter's six songs registered with the collective so that their unmatched mechanical royalties reach her, each at her own share, while a namesake's recording, her cover of another's song, a work already matched, a share a publisher administers, a co-writer's song and money from radio and Germany are left alone | work | 4 | exceeds: 6 of 6, $1,338.95 of $1,338.95 (her own share), 8 of 8 traps, 0 false, 2.1 min, $1.27 |
+| A business owner's twelve IRS notices sorted: first-time abatement requested on four penalties his record qualifies for, one on a tax still being paid, while a second quarter, a history with an earlier penalty, accuracy and estimated tax penalties, a second partnership year, an abated penalty and two notices that are no penalty are left alone | work | 4 | exceeds: 4 of 4, $1,850.60 of $1,850.60 (the penalties waived), 8 of 8 traps, 0 false, 1.7 min, $1.41 |
 
-Across the latest runs: $1,089,558 of $1,098,986 found, 698 of 698 traps walked past, no false claim,
-197 minutes of her time against about 287 hours by hand, $122.31 of model time. 105 runs are recorded
+Across the latest runs: $1,091,409 of $1,100,836 found, 706 of 706 traps walked past, no false claim,
+199 minutes of her time against about 289 hours by hand, $123.72 of model time. 106 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

@@ -1,0 +1,560 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "taxline",
+      "message": "I'm Bram Halvering. First, at Taxline Federal, read the rules, every return account's history and the filing and payment status of each taxpayer. Don't ask for anything yet: I'll send you to my papers, my bank and my mail next.",
+      "nudges": 1
+    },
+    {
+      "app": "binderwell",
+      "message": "These are my papers, the IRS letters I have kept. Read every one.",
+      "nudges": 1
+    },
+    {
+      "app": "ledgerwren",
+      "message": "This is my bank. Read the payments to the IRS, both pages.",
+      "nudges": 1
+    },
+    {
+      "app": "postwren",
+      "message": "This is my mail. Read every message.",
+      "nudges": 1
+    },
+    {
+      "app": "taxline",
+      "message": "Back at Taxline Federal. On each notice where first-time abate applies to the record, ask for it, with the penalty and the amount assessed to date. Leave alone what the relief does not cover, what my record does not qualify for, what has already been dealt with, and what is not a penalty. Then tell me what you asked for and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "taxline",
+      "name": "Taxline Federal",
+      "origin": "https://online.taxline.example",
+      "path": "/halvering/account",
+      "view": {
+        "view": "Taxline Federal: Bram Halvering's tax account (invented)",
+        "signed_in": "Bram Halvering",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_accounts",
+          "kind": "READ",
+          "description": "The four taxpayers' return accounts: id, entity and form.",
+          "params": {},
+          "returns": {
+            "table": "accounts",
+            "fields": [
+              "acct",
+              "entity",
+              "form"
+            ]
+          }
+        },
+        {
+          "name": "read_history",
+          "kind": "READ",
+          "description": "One return account's history by id (A-n): each year's filing and penalties, and the notices that carry them.",
+          "params": {
+            "acct": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "accounts",
+            "match": {
+              "acct": "acct"
+            },
+            "require": [
+              "acct"
+            ]
+          }
+        },
+        {
+          "name": "read_status",
+          "kind": "READ",
+          "description": "One taxpayer's filing and payment status by id (E-1 to E-4): the returns now required, the tax due and any installment agreement.",
+          "params": {
+            "entity_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "status",
+            "match": {
+              "entity_id": "entity_id"
+            },
+            "require": [
+              "entity_id"
+            ]
+          }
+        },
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The account's rules for penalty relief by topic: index, fta, covered, lookback, multiple, accruing or request.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "request_abatement",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask the IRS to waive one penalty, by notice id (notice, N-n), the relief asked for (relief), the penalty (penalty: its name and code), the amount assessed to date in dollars (amount_usd) and how it is asked (method: phone, letter or Form 843). Bram signs it.",
+          "params": {
+            "notice": {
+              "type": "string"
+            },
+            "relief": {
+              "type": "string"
+            },
+            "penalty": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "method": {
+              "type": "string"
+            }
+          },
+          "says": "Request on {notice} sent to the IRS."
+        }
+      ],
+      "aliases": [
+        "Taxline Federal",
+        "Taxline",
+        "my tax account",
+        "the tax account"
+      ]
+    },
+    {
+      "app_id": "binderwell",
+      "name": "Binderwell",
+      "origin": "https://papers.binderwell.example",
+      "path": "/halvering",
+      "view": {
+        "view": "Binderwell: Bram Halvering's papers",
+        "signed_in": "Bram Halvering",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "The IRS notices and letters: document id and title.",
+          "params": {},
+          "returns": {
+            "table": "docs",
+            "fields": [
+              "doc_id",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_document",
+          "kind": "READ",
+          "description": "One notice or letter in full, by id (N-n or D-n).",
+          "params": {
+            "doc_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "docs",
+            "match": {
+              "doc_id": "doc_id"
+            },
+            "require": [
+              "doc_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Binderwell",
+        "my papers",
+        "the notices"
+      ]
+    },
+    {
+      "app_id": "ledgerwren",
+      "name": "Ledgerwren bank",
+      "origin": "https://bank.ledgerwren.example",
+      "path": "/halvering/checking",
+      "view": {
+        "view": "Ledgerwren bank: Halvering checking",
+        "signed_in": "Bram Halvering",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_transactions",
+          "kind": "READ",
+          "description": "Payments to the IRS from the business checking: date, payee, memo and amount. Six a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "bank",
+            "fields": [
+              "date",
+              "payee",
+              "memo",
+              "amount_usd"
+            ],
+            "page_size": 6
+          }
+        }
+      ],
+      "aliases": [
+        "Ledgerwren bank",
+        "Ledgerwren",
+        "my bank",
+        "the bank"
+      ]
+    },
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/bram@halvering.example",
+      "view": {
+        "view": "Postwren: bram@halvering.example",
+        "signed_in": "Bram Halvering",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "Messages: message id (M-n), date, sender and subject.",
+          "params": {},
+          "returns": {
+            "table": "mail",
+            "fields": [
+              "message_id",
+              "date",
+              "from",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id (M-n).",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "mail",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the mail",
+        "my inbox"
+      ]
+    }
+  ],
+  "tables": {
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Taxline Federal, the owner's online tax account. Friday 9 October 2026. Topics: fta, covered, lookback, multiple, accruing, request. First-time abate is the IRS's administrative waiver of certain penalties for a taxpayer with a clean record. From summer 2026 the IRS applies relief automatically to eligible returns for tax year 2025 and later; a penalty on an earlier period is still asked for."
+      },
+      {
+        "topic": "fta",
+        "text": "Friday 9 October 2026. First-time abate (IRM 20.1.1.3.3.2.1) waives a penalty when: the taxpayer filed the same return for the 3 years before the penalized period, unless none was required, and those years carry no unreversed penalty (an estimated tax penalty does not count, and neither does a penalty removed for reasonable cause, but a penalty an earlier first-time abate removed does)."
+      },
+      {
+        "topic": "covered",
+        "text": "Friday 9 October 2026. It covers the failure-to-file penalties (IRC 6651(a)(1), 6698, 6699), the failure-to-pay penalties (6651(a)(2) and (a)(3)) and the failure-to-deposit penalty (6656). It does not cover the accuracy-related penalty (6662) or the estimated tax penalty (6654), and a notice for a tax balance or a changed return is not a penalty."
+      },
+      {
+        "topic": "lookback",
+        "text": "Friday 9 October 2026. The 3 years are counted on the same kind of return as the penalized one: for a Form 941 the 12 quarters before the penalized quarter, for a Form 940, 1040, 1065 or 1120-S the 3 tax years before. A penalty paid and never removed in those years counts against the taxpayer. A penalty removed for reasonable cause does not."
+      },
+      {
+        "topic": "multiple",
+        "text": "Friday 9 October 2026. First-time abate is applied to one period only. When several periods of the same return carry a penalty, it goes to the earliest period that qualifies. The later periods then have an abated penalty in their look-back, and need reasonable cause, a different relief with a different standard, which is not part of this request."
+      },
+      {
+        "topic": "accruing",
+        "text": "Friday 9 October 2026. When the tax is not yet paid in full, the failure-to-pay penalty assessed to date is waived and the IRS goes on computing the penalty on the unpaid tax until it is paid. After the tax is paid in full, the later penalty can be removed under the same waiver."
+      },
+      {
+        "topic": "request",
+        "text": "Friday 9 October 2026. A request is made by phone to the number on the notice, in writing, or on Form 843. It need not name first-time abate or attach papers: the IRS reviews the account. When a penalty qualifies, ask on its notice, giving the penalty and the amount assessed to date."
+      }
+    ],
+    "accounts": [
+      {
+        "acct": "A-1",
+        "entity": "Halvering Millwork Inc.",
+        "form": "1120-S",
+        "history": "2021 to 2023: filed on time, no penalty. 2024: due 17 March 2025, filed 10 April 2025; late-filing penalty 490 dollars (N-1), not removed. 2025: filed 12 March 2026, on time, no penalty."
+      },
+      {
+        "acct": "A-2",
+        "entity": "Halvering Millwork Inc.",
+        "form": "941",
+        "history": "2021 Q1 to 2023 Q4 (12 quarters): filed and deposited on time, no penalty. 2024 Q1: deposits 6 days late, failure-to-deposit penalty 410 dollars (N-2). 2024 Q2: deposits late, failure-to-deposit penalty 520 dollars (N-3). 2024 Q3 to 2025 Q3: no penalty. 2025 Q4: balance due 860 dollars (N-11), paid 6 October 2026."
+      },
+      {
+        "acct": "A-3",
+        "entity": "Halvering Millwork Inc.",
+        "form": "940",
+        "history": "2021: no penalty. 2022: filed late, late-filing penalty 85 dollars assessed 12 June 2023, paid, never removed (D-14). 2023: no penalty. 2024: failure-to-deposit penalty 140 dollars (N-4). 2025: filed on time, no penalty."
+      },
+      {
+        "acct": "A-4",
+        "entity": "Bram Halvering",
+        "form": "1040",
+        "history": "2021: no penalty. 2022: estimated tax penalty 96 dollars (D-15), paid. 2023: no penalty. 2024: filed on extension 14 October 2025; 2,740 dollars of tax unpaid on 15 April 2025, so failure-to-pay penalty 215.60 dollars to date (N-5); accuracy-related penalty 612 dollars (N-6); estimated tax penalty 148 dollars (N-7). 2025: filed 14 April 2026, tax paid with the return; return changed for a math error (N-12)."
+      },
+      {
+        "acct": "A-5",
+        "entity": "Halvering Rentals LLC",
+        "form": "1065",
+        "history": "2021 to 2023: filed on time, no penalty. 2024: due 17 March 2025, filed 14 April 2025; late-filing penalty 735 dollars for 3 partners for 1 month (N-8). 2025: filed 12 March 2026, on time, no penalty."
+      },
+      {
+        "acct": "A-6",
+        "entity": "Cobb Street Partners LLC",
+        "form": "1065",
+        "history": "2021, 2022: no penalty. 2023: filed late, late-filing penalty 735 dollars, removed under first-time abate on 2 February 2026 (N-10). 2024: due 17 March 2025, filed 15 April 2025; late-filing penalty 735 dollars (N-9). 2025: filed 12 March 2026, on time, no penalty."
+      }
+    ],
+    "status": [
+      {
+        "entity_id": "E-1",
+        "entity": "Halvering Millwork Inc.",
+        "status": "Returns now required: 1120-S for 2025 filed 12 March 2026; Form 941 filed for every quarter through 2026 Q2; Form 940 for 2025 filed. Tax due: none; the 2025 Q4 941 balance was paid 6 October 2026. Installment agreements: none."
+      },
+      {
+        "entity_id": "E-2",
+        "entity": "Halvering Rentals LLC",
+        "status": "Returns now required: 1065 for 2025 filed 12 March 2026. Tax due: none. Installment agreements: none."
+      },
+      {
+        "entity_id": "E-3",
+        "entity": "Cobb Street Partners LLC",
+        "status": "Returns now required: 1065 for 2025 filed 12 March 2026. Tax due: none. Installment agreements: none."
+      },
+      {
+        "entity_id": "E-4",
+        "entity": "Bram Halvering",
+        "status": "Returns now required: 1040 for 2025 filed 14 April 2026, tax paid with it. The 2024 balance is on installment agreement IA-7731, accepted 3 November 2025, 350 dollars a month, status current, last payment 4 September 2026."
+      }
+    ],
+    "docs": [
+      {
+        "doc_id": "N-1",
+        "title": "Notice N-1: 1120-S 2024, late-filing penalty",
+        "text": "Notice dated 8 August 2025. To: Halvering Millwork Inc. Form 1120-S, tax year 2024. Penalty for filing the return late, IRC 6699: 490 dollars. To ask us to reconsider, call the number on this notice, write to us or file Form 843."
+      },
+      {
+        "doc_id": "N-2",
+        "title": "Notice N-2: 941 2024 Q1, failure-to-deposit",
+        "text": "Notice dated 2 September 2025. To: Halvering Millwork Inc. Form 941, quarter ending 31 March 2024. Penalty for deposits made late, IRC 6656: 410 dollars. To ask us to reconsider, call the number on this notice, write to us or file Form 843."
+      },
+      {
+        "doc_id": "N-3",
+        "title": "Notice N-3: 941 2024 Q2, failure-to-deposit",
+        "text": "Notice dated 2 December 2025. To: Halvering Millwork Inc. Form 941, quarter ending 30 June 2024. Penalty for deposits made late, IRC 6656: 520 dollars. To ask us to reconsider, call the number on this notice, write to us or file Form 843."
+      },
+      {
+        "doc_id": "N-4",
+        "title": "Notice N-4: 940 2024, failure-to-deposit",
+        "text": "Notice dated 6 October 2025. To: Halvering Millwork Inc. Form 940, tax year 2024. Penalty for a late deposit of federal unemployment tax, IRC 6656: 140 dollars. To ask us to reconsider, call the number on this notice, write to us or file Form 843."
+      },
+      {
+        "doc_id": "N-5",
+        "title": "Notice N-5: 1040 2024, failure-to-pay",
+        "text": "Notice dated 15 September 2026. To: Bram Halvering. Form 1040, tax year 2024. Penalty for paying late, IRC 6651(a)(2): 215.60 dollars to date. The penalty continues to accrue on the unpaid tax until it is paid. To ask us to reconsider, call the number on this notice, write to us or file Form 843."
+      },
+      {
+        "doc_id": "N-6",
+        "title": "Notice N-6: 1040 2024, accuracy-related penalty",
+        "text": "Notice dated 20 January 2026. To: Bram Halvering. Form 1040, tax year 2024. We changed your return for 1099 income you did not report. Accuracy-related penalty, IRC 6662: 612 dollars. To dispute, call the number on this notice or write to us."
+      },
+      {
+        "doc_id": "N-7",
+        "title": "Notice N-7: 1040 2024, estimated tax penalty",
+        "text": "Notice dated 20 January 2026. To: Bram Halvering. Form 1040, tax year 2024. Penalty for underpaying estimated tax, IRC 6654: 148 dollars."
+      },
+      {
+        "doc_id": "N-8",
+        "title": "Notice N-8: 1065 2024, late-filing penalty",
+        "text": "Notice dated 12 August 2025. To: Halvering Rentals LLC. Form 1065, tax year 2024. Penalty for filing the return late, IRC 6698, for 3 partners for 1 month: 735 dollars. To ask us to reconsider, call the number on this notice, write to us or file Form 843."
+      },
+      {
+        "doc_id": "N-9",
+        "title": "Notice N-9: 1065 2024, late-filing penalty",
+        "text": "Notice dated 12 August 2025. To: Cobb Street Partners LLC. Form 1065, tax year 2024. Penalty for filing the return late, IRC 6698, for 3 partners for 1 month: 735 dollars. To ask us to reconsider, call the number on this notice, write to us or file Form 843."
+      },
+      {
+        "doc_id": "N-10",
+        "title": "Notice N-10: 1065 2023, penalty removed",
+        "text": "Notice dated 2 February 2026. To: Cobb Street Partners LLC. Form 1065, tax year 2023. The late-filing penalty of 735 dollars was removed under first-time abate. Amount you owe: 0.00 dollars."
+      },
+      {
+        "doc_id": "N-11",
+        "title": "Notice N-11: 941 2025 Q4, balance due",
+        "text": "Notice dated 15 September 2026. To: Halvering Millwork Inc. Form 941, quarter ending 31 December 2025. Balance due: 860.00 dollars of tax. This is not a penalty. Pay by 15 October 2026 to avoid a penalty and interest."
+      },
+      {
+        "doc_id": "N-12",
+        "title": "Notice N-12: 1040 2025, return changed",
+        "text": "Notice dated 10 June 2026. To: Bram Halvering. Form 1040, tax year 2025. We changed your return to correct a math error on a credit. Your refund is 212 dollars smaller. This is not a penalty."
+      },
+      {
+        "doc_id": "D-13",
+        "title": "Letter D-13: installment agreement IA-7731",
+        "text": "Letter dated 3 November 2025. Installment agreement IA-7731 is accepted for Bram Halvering's tax year 2024 Form 1040 balance: 350 dollars a month on the 4th. The failure-to-pay penalty continues to accrue until the balance is paid in full."
+      },
+      {
+        "doc_id": "D-14",
+        "title": "Letter D-14: 940 for 2022, late-filing penalty",
+        "text": "Notice dated 12 June 2023. To: Halvering Millwork Inc. Form 940, tax year 2022, filed late. Penalty, IRC 6651(a)(1): 85 dollars. Paid 20 June 2023. Nothing was asked for or removed."
+      },
+      {
+        "doc_id": "D-15",
+        "title": "Letter D-15: 1040 for 2022, estimated tax penalty",
+        "text": "Notice dated 3 March 2023. To: Bram Halvering. Form 1040, tax year 2022. Penalty for underpaying estimated tax, IRC 6654: 96 dollars. Paid 20 March 2023."
+      }
+    ],
+    "bank": [
+      {
+        "date": "2026-10-06",
+        "payee": "US Treasury",
+        "memo": "EFTPS payment, Form 941 2025 Q4",
+        "amount_usd": -860.0
+      },
+      {
+        "date": "2026-09-04",
+        "payee": "US Treasury",
+        "memo": "IRS installment IA-7731",
+        "amount_usd": -350.0
+      },
+      {
+        "date": "2026-08-04",
+        "payee": "US Treasury",
+        "memo": "IRS installment IA-7731",
+        "amount_usd": -350.0
+      },
+      {
+        "date": "2026-07-06",
+        "payee": "US Treasury",
+        "memo": "IRS installment IA-7731",
+        "amount_usd": -350.0
+      },
+      {
+        "date": "2026-06-04",
+        "payee": "US Treasury",
+        "memo": "IRS installment IA-7731",
+        "amount_usd": -350.0
+      },
+      {
+        "date": "2026-05-04",
+        "payee": "US Treasury",
+        "memo": "IRS installment IA-7731",
+        "amount_usd": -350.0
+      },
+      {
+        "date": "2026-04-14",
+        "payee": "US Treasury",
+        "memo": "IRS payment with the 2025 Form 1040",
+        "amount_usd": -1420.0
+      },
+      {
+        "date": "2026-04-06",
+        "payee": "US Treasury",
+        "memo": "IRS installment IA-7731",
+        "amount_usd": -350.0
+      },
+      {
+        "date": "2026-03-04",
+        "payee": "US Treasury",
+        "memo": "IRS installment IA-7731",
+        "amount_usd": -350.0
+      },
+      {
+        "date": "2026-02-04",
+        "payee": "US Treasury",
+        "memo": "IRS installment IA-7731",
+        "amount_usd": -350.0
+      },
+      {
+        "date": "2026-01-05",
+        "payee": "US Treasury",
+        "memo": "IRS installment IA-7731",
+        "amount_usd": -350.0
+      },
+      {
+        "date": "2025-12-04",
+        "payee": "US Treasury",
+        "memo": "IRS installment IA-7731",
+        "amount_usd": -350.0
+      }
+    ],
+    "mail": [
+      {
+        "message_id": "M-1",
+        "date": "2026-02-03",
+        "from": "Dara Whitlow, bookkeeper",
+        "subject": "Cobb Street's 2023 penalty",
+        "body": "I called the IRS about Cobb Street's 2023 late-filing penalty and they removed it, the 735 dollars, under first-time abate. The letter is N-10. I did not ask about the 2024 one."
+      },
+      {
+        "message_id": "M-2",
+        "date": "2026-10-07",
+        "from": "Dara Whitlow, bookkeeper",
+        "subject": "941 balance paid",
+        "body": "The 2025 Q4 balance of 860 dollars on the Halvering Millwork 941 went out by EFTPS on 6 October."
+      },
+      {
+        "message_id": "M-3",
+        "date": "2026-09-30",
+        "from": "Dara Whitlow, bookkeeper",
+        "subject": "The IRS pile on your desk",
+        "body": "I have scanned every IRS letter on your desk into Binderwell, notices N-1 to N-12 and three older ones. I have not called the IRS about any of them."
+      },
+      {
+        "message_id": "M-4",
+        "date": "2026-07-15",
+        "from": "Hollis Tran, tax preparer",
+        "subject": "The IRS and penalty relief",
+        "body": "For tax year 2025 returns the IRS now says it will apply penalty relief automatically to those that qualify. For earlier years you still have to ask for it."
+      }
+    ]
+  }
+}

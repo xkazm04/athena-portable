@@ -204,6 +204,9 @@ names; each playbook carries the new one.
   (tunecastmusic.com) is a real music distributor; "Songguild" became "Lyrebank rights desk", because
   Songguild is a short form of the Songwriters Guild of America, a real songwriters' organisation; and
   "Docshelf" became "Binderwell", because DocShelf is a real document management app.
+- Row 59, `first-time-abate`: "Ledgerline" became "Ledgerwren bank", because Ledgerline is the name of several real
+  accounting and invoicing products; "Docshelf" became "Binderwell", because DocShelf is a real document
+  management app; and "Mailnest" became "Postwren", because mailnest.io is a real email service.
 
 ### B7: Household money
 

@@ -1,0 +1,308 @@
+{
+  "playbook": "first-time-abate",
+  "run_at": "2026-10-10T17:50:35Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 103.7,
+  "turns": 12,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 41,
+  "cost_usd": 1.4114,
+  "your_time_s": 120,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.7
+  },
+  "score": {
+    "eligible": 4,
+    "found": 4,
+    "exact": 4,
+    "value_total_usd": 1850.6,
+    "value_found_usd": 1850.6,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "request_abatement",
+        "key": "N-3",
+        "why": "N-3, 941 2024 Q2, failure-to-deposit 520 dollars: first-time abate goes to one period, the earliest, and that is Q1 (N-2); Q2 would have an abated penalty in its look-back and needs reasonable cause, which this request is not",
+        "filed": false
+      },
+      {
+        "action": "request_abatement",
+        "key": "N-4",
+        "why": "N-4, Form 940 2024, failure-to-deposit 140 dollars: the 2022 Form 940 carries a late-filing penalty of 85 dollars, paid and never removed (A-3, D-14), inside the three-year look-back, so the record does not qualify",
+        "filed": false
+      },
+      {
+        "action": "request_abatement",
+        "key": "N-6",
+        "why": "N-6, 1040 2024 accuracy-related penalty 612 dollars (IRC 6662): not a penalty first-time abate covers; it is disputed on the merits",
+        "filed": false
+      },
+      {
+        "action": "request_abatement",
+        "key": "N-7",
+        "why": "N-7, 1040 2024 estimated tax penalty 148 dollars (IRC 6654): not covered by first-time abate",
+        "filed": false
+      },
+      {
+        "action": "request_abatement",
+        "key": "N-9",
+        "why": "N-9, Cobb Street Partners Form 1065 2024, late-filing penalty 735 dollars: first-time abate was used on the 2023 period (N-10, M-1), and a penalty an earlier first-time abate removed sits in the 2024 look-back, so the second period cannot have it",
+        "filed": false
+      },
+      {
+        "action": "request_abatement",
+        "key": "N-10",
+        "why": "N-10, Cobb Street Form 1065 2023: the penalty was already removed on 2 February 2026 under first-time abate and 0.00 dollars is owed; there is nothing to ask for",
+        "filed": false
+      },
+      {
+        "action": "request_abatement",
+        "key": "N-11",
+        "why": "N-11, 941 2025 Q4: a balance of 860 dollars of tax, not a penalty, and already paid by EFTPS on 6 October (bank, M-2)",
+        "filed": false
+      },
+      {
+        "action": "request_abatement",
+        "key": "N-12",
+        "why": "N-12, 1040 2025: a changed return for a math error, a refund 212 dollars smaller; not a penalty",
+        "filed": false
+      }
+    ],
+    "filed_usd": 1850.6,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "request_abatement",
+      "key": "N-1",
+      "outcome": "correct",
+      "value_usd": 490.0,
+      "exact": true,
+      "why": "N-1, Halvering Millwork Form 1120-S 2024, late-filing penalty 490 dollars (IRC 6699, a covered penalty): the 1120-S was filed on time for 2021 to 2023 with no penalty (A-1), the 2025 return is filed, nothing is owed (E-1). Clean three years, first period"
+    },
+    {
+      "action": "request_abatement",
+      "key": "N-2",
+      "outcome": "correct",
+      "value_usd": 410.0,
+      "exact": true,
+      "why": "N-2, Halvering Millwork Form 941 2024 Q1, failure-to-deposit penalty 410 dollars (IRC 6656): the 12 quarters before it are clean (A-2). Q1 is the earliest penalized period, so first-time abate goes to it"
+    },
+    {
+      "action": "request_abatement",
+      "key": "N-5",
+      "outcome": "correct",
+      "value_usd": 215.6,
+      "exact": true,
+      "why": "N-5, Bram's Form 1040 2024, failure-to-pay penalty 215.60 dollars to date (IRC 6651(a)(2)): 2021 and 2023 are clean and 2022 carries only an estimated tax penalty, which does not count (A-4, D-15); the tax is on installment agreement IA-7731 (D-13, E-4, the bank). The penalty keeps accruing until the tax is paid, and the later part is removed after it is paid in full"
+    },
+    {
+      "action": "request_abatement",
+      "key": "N-8",
+      "outcome": "correct",
+      "value_usd": 735.0,
+      "exact": true,
+      "why": "N-8, Halvering Rentals Form 1065 2024, late-filing penalty 735 dollars (IRC 6698): 2021 to 2023 clean (A-5)"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm recalling the Binderwell notice text for N-1, N-2 and N-8 first. The penalty codes and amounts assessed to date have to come from the notices, not from my summary.\n\nI've filed four requests, one per notice, and each waits for your answer. The penalty codes and amounts come from the notices as I read them in Binderwell.\n\n\n**Asked for (4):**\n- **N-1:** Millwork 1120-S 2024, IRC 6699, $490.\n- **N-2:** Millwork 941 2024 Q1, IRC 6656, $410.\n- **N-5:** your 1040 2024 failure-to-pay, IRC 6651(a)(2), $215.60 to date. The tax is still being paid on IA-7731. The waiver covers the amount to date, and the penalty keeps accruing until the tax is paid. Once it is paid in full, the later amount can be removed under the same waiver.\n- **N-8:** Rentals 1065 2024, IRC 6698, $735.\n\n**Left alone (11):**\n- **N-3** (941 2024 Q2, $520): N-2 uses the one waiver on that return, so Q2 would need reasonable ca",
+  "trace": [
+    {
+      "portal": "Taxline Federal",
+      "user": "I'm Bram Halvering. First, at Taxline Federal, read the rules, every return account's history and the filing and payment status of each taxpayer. Don't ask for anything yet: I'll send you to my papers, my bank and my mail next.",
+      "continued": false,
+      "said": "Plan: in Taxline I'll read the rules, list the accounts, then read each account's history and each taxpayer's status. I'll ask for nothing yet.\n\nThe rules and account list don't depend on each other, so I'm reading them first. The history and status reads need the account ids, so they come next.",
+      "said_chars": 296,
+      "reads": [
+        "read_rules",
+        "list_accounts"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Taxline Federal",
+      "user": "",
+      "continued": true,
+      "said": "Six accounts, not four. Next I'm reading the other rule topics, all six histories, and the status of E-1 to E-4. These reads don't depend on each other.",
+      "said_chars": 152,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_history",
+        "read_history",
+        "read_history",
+        "read_history",
+        "read_history",
+        "read_history",
+        "read_status",
+        "read_status",
+        "read_status",
+        "read_status"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Taxline Federal",
+      "user": "",
+      "continued": true,
+      "said": "Taxline is read: the rules, all six histories and all four statuses. Nothing is requested yet.\n\n**What the account shows so far (provisional, pending your papers, bank and mail):**\n\n- **A-1, 1120-S 2024, N-1, $490.** The 2021–2023 returns were on time with no penalty, so it looks eligible.\n- **A-2, 941 2024 Q1, N-2, $410.** The 12 prior quarters are clean, so it looks eligible. 2024 Q2 (N-3, $520) is a later period of the same return.",
+      "said_chars": 2100,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "These are my papers, the IRS letters I have kept. Read every one.",
+      "continued": false,
+      "said": "I'm in Binderwell, so I'll list your papers first and then read each one.",
+      "said_chars": 73,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "The list has 15 papers. Their ids are known and the reads don't depend on each other, so I'm reading all of them now.",
+      "said_chars": 117,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "I've read all 15 papers (15 of 15). Nothing is requested yet.\n\n**What the papers say**\n\n| Doc | Penalty | Amount | Reading so far |\n|---|---|---|---|\n| N-1 | 1120-S 2024, late filing (6699) | $490 | Looks eligible. |\n| N-2 | 941 2024 Q1, failure to deposit (6656) | $410 | Looks eligible. |\n| N-3 | 941 2024 Q2, failure to deposit | $520 | Leave alone. N-2 gets the one waiver, so Q2 would need reasonable cause. |\n| N-4 | 940 2024, failure to deposit | $140 | Leave alone.",
+      "said_chars": 2117,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "This is my bank. Read the payments to the IRS, both pages.",
+      "continued": false,
+      "said": "Reading both pages of the payments now.",
+      "said_chars": 39,
+      "reads": [
+        "list_transactions",
+        "list_transactions"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "",
+      "continued": true,
+      "said": "All 12 IRS payments are read, both pages (12 of 12). Nothing is requested yet.\n\n**What the bank shows**\n- **IA-7731 installments:** $350 on the 4th of each month, from 4 Dec 2025 through 4 Sep 2026. That's 10 payments, and the 4 Apr one posted on the 6th. None are missed, which matches the \"current\" status in Taxline. Taxline shows the last payment as 4 September 2026, and the bank agrees.\n- **2025 Form 1040:** $1,420 paid on 14 Apr 2026, with the return. That matches Taxline's \"tax paid with it\".",
+      "said_chars": 1319,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "This is my mail. Read every message.",
+      "continued": false,
+      "said": "I'm in Postwren, so I'll list your messages first and then read each one.",
+      "said_chars": 73,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "The list has four messages. The reads don't depend on each other, so I'm reading all four now.",
+      "said_chars": 94,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Mail is read (4 of 4). Before I propose anything I need the notice details I read in Binderwell: penalty codes, amounts assessed to date and how each is asked. I'm recalling them.\n\nThe recall returned the Taxline summary but not the notice text. I'm making one narrower recall for the penalty codes on N-5 and N-8.\n\nMail is read, 4 of 4, and nothing in it changes the picture. I'll file the four requests in Taxline, because I can't reach that tool from Postwren.\n\n\n**Nothing in your mail changes the sort.",
+      "said_chars": 2387,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Taxline Federal",
+      "user": "Back at Taxline Federal. On each notice where first-time abate applies to the record, ask for it, with the penalty and the amount assessed to date. Leave alone what the relief does not cover, what my record does not qualify for, what has al",
+      "continued": false,
+      "said": "I'm recalling the Binderwell notice text for N-1, N-2 and N-8 first. The penalty codes and amounts assessed to date have to come from the notices, not from my summary.\n\nI've filed four requests, one per notice, and each waits for your answer. The penalty codes and amounts come from the notices as I read them in Binderwell.\n\n\n**Asked for (4):**\n- **N-1:** Millwork 1120-S 2024, IRC 6699, $490.\n- **N-2:** Millwork 941 2024 Q1, IRC 6656, $410.\n- **N-5:** your 1040 2024 failure-to-pay, IRC 6651(a)(2), $215.60 to date.",
+      "said_chars": 1827,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_abatement",
+          "key": "N-1",
+          "outcome": "correct",
+          "value_usd": 490.0
+        },
+        {
+          "action": "request_abatement",
+          "key": "N-2",
+          "outcome": "correct",
+          "value_usd": 410.0
+        },
+        {
+          "action": "request_abatement",
+          "key": "N-5",
+          "outcome": "correct",
+          "value_usd": 215.6
+        },
+        {
+          "action": "request_abatement",
+          "key": "N-8",
+          "outcome": "correct",
+          "value_usd": 735.0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "id": "first-time-abate",
+  "title": "Twelve IRS notices sorted: first-time abatement requested on four penalties the owner's record qualifies for, one on tax still being paid, while a second quarter, an earlier penalty in a history, accuracy and estimated tax penalties, a second partnership year, an abated penalty and two non-penalty notices are left alone",
+  "domain": "Tax notices",
+  "audience": "work",
+  "promise": "A business owner's pile of twelve IRS notices is read against his three companies' and his own account histories, filing status, installment agreement and bank, and first-time abatement is requested on the four penalties his record qualifies for: a late S corporation return, a first quarter's late deposits, a late-paid personal tax that is still being paid down on an installment agreement, and a late partnership return. A second quarter after the first, a payroll form whose history holds an earlier penalty, an accuracy-related penalty, an estimated tax penalty, a second year of a partnership whose first was waived, a penalty already removed, and a tax balance and a math-error change that are not penalties are left alone.",
+  "persona": "The owner of a small millwork company in Duluth, Minnesota, who co-owns two partnerships and has a bookkeeper who scanned the IRS letters but never called the number on them",
+  "chore": "Read the account histories, the filing and payment status and the rules for penalty relief, the notices and letters, the bank's payments and the bookkeeper's mail. Then apply IRM 20.1.1.3.3.2.1, as it stands on 9 October 2026, to each penalty: a clean three years on the same return, every required return filed, the tax paid or on a current agreement, a covered penalty, and the earliest period only, and ask for relief on those and nothing else.",
+  "command": "I'm Bram Halvering. I have a pile of IRS penalty letters and no idea which I can ask the IRS to waive. Go through my Taxline Federal account, my Binderwell papers, my Ledgerwren bank and my Postwren mail, and ask for first-time abate on every penalty my record qualifies for. Leave alone the rest.",
+  "apps": [
+    {
+      "name": "Taxline Federal",
+      "role": "each return account's three-year history, each taxpayer's filing and payment status, the rules for penalty relief and the request form",
+      "api": "Tax account, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the IRS notices N-1 to N-12 and the older letters on the 2022 penalties and the installment agreement",
+      "api": "Document store, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren bank",
+      "role": "the payments to the IRS: the installments and the 941 balance",
+      "api": "Bank, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the bookkeeper's notes on the partnership's waived 2023 penalty and the 941 balance, and the preparer's note on automatic relief",
+      "api": "Mail",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules, the six return accounts' histories and the four taxpayers' status at Taxline Federal.",
+    "Reads the twelve notices and three letters in Binderwell.",
+    "Reads the payments in Ledgerwren.",
+    "Reads the mail in Postwren.",
+    "Back at Taxline Federal, asks for relief on four notices."
+  ],
+  "gates": [
+    {
+      "action": "request_abatement",
+      "label": "Ask the IRS to waive a penalty",
+      "why": "A signed request to the IRS; it says the taxpayer's record is clean, and a request on a record that is not is a false statement and uses up the one waiver."
+    }
+  ],
+  "traps": [
+    "Asking for the second quarter after the first has the waiver.",
+    "Asking on a return whose three-year history holds an earlier penalty.",
+    "Asking for an accuracy-related penalty.",
+    "Asking for an estimated tax penalty.",
+    "Asking for the second year of a partnership whose first year was waived.",
+    "Asking again for a penalty already removed.",
+    "Treating a tax balance as a penalty.",
+    "Treating a math-error change as a penalty."
+  ],
+  "memory": [
+    "The rules, each return account's history and each taxpayer's filing and payment status, from Taxline Federal.",
+    "Which notices carry a penalty, its amount and its code, from Binderwell.",
+    "That the installment payments are made and the 941 balance is paid, from Ledgerwren, and that one partnership's 2023 penalty was waived, from Postwren, carried back to the last Taxline tab."
+  ],
+  "economics": {
+    "value_usd": 1200,
+    "per": "episode",
+    "basis": "An estimate. A small business with several returns and a bad year can hold a handful of penalties of a few hundred dollars each, and the IRS waives a covered penalty once, for a clean record, if it is asked (IRM 20.1.1.3.3.2.1); the roster's $1,200 an episode is one such year's penalties waived. The bench world holds $1,850.60 across four requests (490, 410, 215.60 and 735), with six other penalties and a balance due, $3,015 in all (520, 140, 612, 148, 735 and 860), a removed penalty and a changed return left alone. Times a year: once, one pile of notices; a clean record that is used is not clean again, and a business gets a pile like this about once. manual_minutes 120: reading six accounts' histories against twelve notices and three letters, the bank and the mail, working out for each its three-year history, its form's earliest period and the taxpayer's compliance, and making four requests. Rules applied, as they stand on Friday 9 October 2026: IRM 20.1.1.3.3.2.1, the section dated 29 March 2023 within IRM 20.1.1 transmitted 25 November 2025 (the criteria, the covered penalties IRC 6651(a)(1) and (a)(2) and (a)(3), 6698, 6699 and 6656, the single period and the earliest-period rule, the failure-to-pay penalty that goes on accruing), the IRS's penalty relief page reviewed 14 July 2026 (request by phone, in writing or on Form 843) and the IRS's announcement of 8 July 2026 of Automatic Exemption from Penalty, which applies to eligible returns for tax year 2025 and later, so every period in the world is 2024 or earlier. The IRS's earlier interim guidance (SBSE-20-0413-0690, 2013) also asked that the taxpayer's current returns be filed and the tax paid or on an agreement; the current IRM text read for this world does not restate that, so no trap rests on it, and the world's taxpayers are current in any case.",
+    "manual_minutes": 120,
+    "times_per_year": 1,
+    "incumbent": "Tax resolution firms and enrolled agents charge a flat fee or an hourly rate to request penalty relief, not a share of the penalty waived, and the IRS takes no fee for a request, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "IRM 20.1.1.3.3.2.1, First Time Abate (IRM 20.1.1, Introduction and Penalty Relief, IRS)",
+        "url": "https://www.irs.gov/irm/part20/irm_20-001-001r"
+      },
+      {
+        "label": "Administrative penalty relief: first-time abate, how to request, penalties covered (IRS, reviewed 14 July 2026)",
+        "url": "https://www.irs.gov/payments/administrative-penalty-relief"
+      },
+      {
+        "label": "IRS simplifies penalty relief, introduces an automatic process for eligible taxpayers (IRS newsroom, 8 July 2026)",
+        "url": "https://www.irs.gov/newsroom/irs-simplifies-penalty-relief-introduces-automatic-process-for-eligible-taxpayers"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Twelve notices over six return accounts of four taxpayers, each judged on its own form's three-year history: a penalty that stays in a history, one that does not, a second period that cannot have the waiver after the first, a waiver already spent on a partnership's earlier year, a tax still being paid on an agreement and a notice that is not a penalty at all.",
+    "usefulness_why": "Gets a few thousand dollars of penalties waived with four phone calls' worth of requests, in minutes instead of an afternoon with the manual; a once-a-year pile, and the waiver is spent when it is used."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner with the histories, the status, the notices, the bank and the mail asks for relief on the four penalties his record qualifies for, and none of the eight that look similar, inside an hour."
+  },
+  "caveat": "Bram Halvering, Halvering Millwork Inc., Halvering Rentals LLC, Cobb Street Partners LLC, Dara Whitlow, Hollis Tran, every notice, account history, amount, payment and date, and Taxline Federal, Binderwell, Ledgerwren bank and Postwren are invented; the account's rules page is the world's summary of the public rules, and its histories are not the IRS's. The public rule applied is IRM 20.1.1.3.3.2.1 (First Time Abate) in IRM 20.1.1 as transmitted 25 November 2025, with the IRS's penalty relief page reviewed 14 July 2026; the IRS announced on 8 July 2026 that relief becomes automatic for eligible returns for tax year 2025 and later, so the world holds only periods through 2024, which are still asked for. The current IRM text does not restate the older interim guidance that a taxpayer be current on filing and payment, so the world builds no trap on it and keeps every taxpayer current; the IRS decides every real request on the account's full record, including reasonable cause, which this world does not apply. This applies stated rules to stated facts; it is not legal or tax advice."
+}

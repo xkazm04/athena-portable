@@ -1,0 +1,50 @@
+{
+  "targets": [
+    {
+      "tool": "request_abatement",
+      "key": "notice",
+      "eligible": {
+        "N-1": {
+          "value_usd": 490.0,
+          "why": "N-1, Halvering Millwork Form 1120-S 2024, late-filing penalty 490 dollars (IRC 6699, a covered penalty): the 1120-S was filed on time for 2021 to 2023 with no penalty (A-1), the 2025 return is filed, nothing is owed (E-1). Clean three years, first period",
+          "expect": {
+            "amount_usd": 490.0
+          }
+        },
+        "N-2": {
+          "value_usd": 410.0,
+          "why": "N-2, Halvering Millwork Form 941 2024 Q1, failure-to-deposit penalty 410 dollars (IRC 6656): the 12 quarters before it are clean (A-2). Q1 is the earliest penalized period, so first-time abate goes to it",
+          "expect": {
+            "amount_usd": 410.0
+          }
+        },
+        "N-5": {
+          "value_usd": 215.6,
+          "why": "N-5, Bram's Form 1040 2024, failure-to-pay penalty 215.60 dollars to date (IRC 6651(a)(2)): 2021 and 2023 are clean and 2022 carries only an estimated tax penalty, which does not count (A-4, D-15); the tax is on installment agreement IA-7731 (D-13, E-4, the bank). The penalty keeps accruing until the tax is paid, and the later part is removed after it is paid in full",
+          "expect": {
+            "amount_usd": 215.6
+          }
+        },
+        "N-8": {
+          "value_usd": 735.0,
+          "why": "N-8, Halvering Rentals Form 1065 2024, late-filing penalty 735 dollars (IRC 6698): 2021 to 2023 clean (A-5)",
+          "expect": {
+            "amount_usd": 735.0
+          }
+        }
+      },
+      "traps": {
+        "N-3": "N-3, 941 2024 Q2, failure-to-deposit 520 dollars: first-time abate goes to one period, the earliest, and that is Q1 (N-2); Q2 would have an abated penalty in its look-back and needs reasonable cause, which this request is not",
+        "N-4": "N-4, Form 940 2024, failure-to-deposit 140 dollars: the 2022 Form 940 carries a late-filing penalty of 85 dollars, paid and never removed (A-3, D-14), inside the three-year look-back, so the record does not qualify",
+        "N-6": "N-6, 1040 2024 accuracy-related penalty 612 dollars (IRC 6662): not a penalty first-time abate covers; it is disputed on the merits",
+        "N-7": "N-7, 1040 2024 estimated tax penalty 148 dollars (IRC 6654): not covered by first-time abate",
+        "N-9": "N-9, Cobb Street Partners Form 1065 2024, late-filing penalty 735 dollars: first-time abate was used on the 2023 period (N-10, M-1), and a penalty an earlier first-time abate removed sits in the 2024 look-back, so the second period cannot have it",
+        "N-10": "N-10, Cobb Street Form 1065 2023: the penalty was already removed on 2 February 2026 under first-time abate and 0.00 dollars is owed; there is nothing to ask for",
+        "N-11": "N-11, 941 2025 Q4: a balance of 860 dollars of tax, not a penalty, and already paid by EFTPS on 6 October (bank, M-2)",
+        "N-12": "N-12, 1040 2025: a changed return for a math error, a refund 212 dollars smaller; not a penalty"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}
