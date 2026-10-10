@@ -374,6 +374,33 @@ def test_a_model_that_never_stops_reading_is_nudged_then_bounded(tmp_path: Path)
     assert report["turns"] == 2 * 9
 
 
+def test_a_run_that_passes_its_cap_stops_before_the_next_turn(tmp_path: Path) -> None:
+    book = load_playbook(make_playbook(tmp_path))
+    report = run_bench(
+        book,
+        BenchConfig(engine="nebius", cap_usd=1.0),
+        world_factory=_factory(
+            scripted_model(lambda r: op_line("host.shipdesk.list_shipments"), cost=0.6)
+        ),
+    )
+    # 0.6 is under the cap, 1.2 is over it: two turns, and the third is never taken.
+    assert report["turns"] == 2
+    assert report["errors"] == ["cap: spent $1.20 of $1.00"]
+
+
+def test_a_model_turn_that_errors_stops_the_run_with_its_reason(tmp_path: Path) -> None:
+    book = load_playbook(make_playbook(tmp_path))
+    report = run_bench(
+        book,
+        BenchConfig(engine="nebius"),
+        world_factory=_factory(scripted_model("never said", error="engine_error")),
+    )
+    assert report["turns"] == 1
+    [line] = report["errors"]
+    assert line.startswith("engine_error: ")
+    assert line == "engine_error: scripted failure"
+
+
 def test_the_summary_is_what_the_desktop_reads(tmp_path: Path) -> None:
     book = load_playbook(make_playbook(tmp_path))
     report = run_bench(
