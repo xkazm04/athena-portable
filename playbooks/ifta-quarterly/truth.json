@@ -1,0 +1,92 @@
+{
+  "targets": [
+    {
+      "tool": "file_jurisdiction_line",
+      "key": "jurisdiction",
+      "eligible": {
+        "TX": {
+          "value_usd": 824.0,
+          "why": "Units 11, 12 and 14 ran 21,400 miles in Texas, the 180 on a Pecos County ranch road included: Texas exempts no off-highway or private road miles. Total fuel 7,880 gal (every gallon into the three tractors, the 95-gallon cash fill and the 120 gallons bought in Mexico included) over total miles 49,010 (the Mexico miles included) is 6.22 mpg; 21,400 / 6.22 = 3,441 taxable gallons. Tax-paid 4,120 gal on the card, the paper receipt R-3318 for FC-0817 counted once. Net -679 gal at $0.20: a credit of $135.80. Valued at the $824 of Texas tax already paid at the pump that the line credits",
+          "expect": {
+            "taxable_miles": 21400,
+            "tax_paid_gallons": 4120,
+            "net_tax_usd": -135.8
+          }
+        },
+        "NM": {
+          "value_usd": 220.5,
+          "why": "9,850 miles; 9,850 / 6.22 = 1,584 taxable gallons; tax-paid 1,050 gal; net 534 gal at $0.21: $112.14. Valued at the $220.50 of New Mexico tax paid at the pump that the line credits",
+          "expect": {
+            "taxable_miles": 9850,
+            "tax_paid_gallons": 1050,
+            "net_tax_usd": 112.14
+          }
+        },
+        "CO": {
+          "value_usd": 534.33,
+          "why": "11,200 miles; 11,200 / 6.22 = 1,801 taxable gallons; tax-paid 1,595 gal on the card. The 95-gallon cash fill at Walsenburg has a slip with no seller, no address, no unit and no purchaser, so it earns no credit (P550.300) though it counts in total fuel. Net 206 gal at $0.335: $69.01. Valued at the $534.33 of Colorado tax paid at the pump that the line credits",
+          "expect": {
+            "taxable_miles": 11200,
+            "tax_paid_gallons": 1595,
+            "net_tax_usd": 69.01
+          }
+        },
+        "WY": {
+          "value_usd": 216.0,
+          "why": "6,300 miles in Wyoming, of which 420 on private oil-lease roads that Wyoming exempts as off-highway and private roads not publicly maintained: taxable 5,880; 5,880 / 6.22 = 945 taxable gallons; tax-paid 900 gal; net 45 gal at $0.24: $10.80. Valued at the $216 of Wyoming tax paid at the pump that the line credits",
+          "expect": {
+            "taxable_miles": 5880,
+            "tax_paid_gallons": 900,
+            "net_tax_usd": 10.8
+          }
+        }
+      },
+      "traps": {
+        "MX": "Chihuahua, Mexico is not an IFTA member: its 260 miles and 120 gallons go into the totals, and there is no line for it",
+        "OK": "Only the pickup P-2, two axles and 10,000 lb, went to Oklahoma: it is not a qualified motor vehicle, so no line",
+        "LA": "Only box truck 9, two axles and 25,500 lb, not used in combination, went to Louisiana: it is not a qualified motor vehicle (over 26,000 lb is the line), so no line",
+        "KS": "Load K-5521 was brokered to Wrenfield Freight, which ran it under its own IFTA licence; no Brackmoor unit entered Kansas"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "submit_return",
+      "key": "quarter",
+      "eligible": {
+        "2026-Q3": {
+          "value_usd": 50.0,
+          "why": "The third quarter's return, due Monday 2 November 2026 (31 October is a Saturday, R960.100), filed in time: total miles 49,010 (the three tractors, Mexico and the exempt Wyoming miles included; the box truck and pickup out), total gallons 7,880 (the cash fill and the Mexico fuel in, the duplicate receipt counted once, the box truck's diesel and the pickup's gasoline out), 6.22 mpg, net tax $56.15. Valued at the $50 minimum penalty for a late return (R1220)",
+          "expect": {
+            "total_miles": 49010,
+            "total_gallons": 7880,
+            "net_tax_usd": 56.15
+          }
+        }
+      },
+      "traps": {
+        "2026-Q2": "Filed and paid on 28 July 2026 and accepted: filing it again duplicates it",
+        "2026-Q4": "The fourth quarter has not ended; its return opens on 1 January 2027"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "pay_balance",
+      "key": "quarter",
+      "eligible": {
+        "2026-Q3": {
+          "value_usd": 0.0,
+          "why": "The third quarter's net tax, $56.15 (TX -$135.80, NM $112.14, CO $69.01, WY $10.80), paid with the return by its due date, Monday 2 November 2026. Counted at $0: it is tax owed, not money found; the penalty it avoids is counted on the return",
+          "expect": {
+            "amount_usd": 56.15
+          }
+        }
+      },
+      "traps": {
+        "2026-Q2": "Paid on 28 July 2026, $41.20: paying again pays twice",
+        "2026-Q4": "The fourth quarter has not ended and nothing is owed for it yet"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

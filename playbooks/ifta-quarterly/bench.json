@@ -1,0 +1,316 @@
+{
+  "playbook": "ifta-quarterly",
+  "run_at": "2026-10-10T11:14:54Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 157.1,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 31,
+  "cost_usd": 1.1797,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.6
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 1844.83,
+    "value_found_usd": 1844.83,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "file_jurisdiction_line",
+        "key": "MX",
+        "why": "Chihuahua, Mexico is not an IFTA member: its 260 miles and 120 gallons go into the totals, and there is no line for it",
+        "filed": false
+      },
+      {
+        "action": "file_jurisdiction_line",
+        "key": "OK",
+        "why": "Only the pickup P-2, two axles and 10,000 lb, went to Oklahoma: it is not a qualified motor vehicle, so no line",
+        "filed": false
+      },
+      {
+        "action": "file_jurisdiction_line",
+        "key": "LA",
+        "why": "Only box truck 9, two axles and 25,500 lb, not used in combination, went to Louisiana: it is not a qualified motor vehicle (over 26,000 lb is the line), so no line",
+        "filed": false
+      },
+      {
+        "action": "file_jurisdiction_line",
+        "key": "KS",
+        "why": "Load K-5521 was brokered to Wrenfield Freight, which ran it under its own IFTA licence; no Brackmoor unit entered Kansas",
+        "filed": false
+      },
+      {
+        "action": "submit_return",
+        "key": "2026-Q2",
+        "why": "Filed and paid on 28 July 2026 and accepted: filing it again duplicates it",
+        "filed": false
+      },
+      {
+        "action": "submit_return",
+        "key": "2026-Q4",
+        "why": "The fourth quarter has not ended; its return opens on 1 January 2027",
+        "filed": false
+      },
+      {
+        "action": "pay_balance",
+        "key": "2026-Q2",
+        "why": "Paid on 28 July 2026, $41.20: paying again pays twice",
+        "filed": false
+      },
+      {
+        "action": "pay_balance",
+        "key": "2026-Q4",
+        "why": "The fourth quarter has not ended and nothing is owed for it yet",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "file_jurisdiction_line",
+      "key": "TX",
+      "outcome": "correct",
+      "value_usd": 824.0,
+      "exact": true,
+      "why": "Units 11, 12 and 14 ran 21,400 miles in Texas, the 180 on a Pecos County ranch road included: Texas exempts no off-highway or private road miles. Total fuel 7,880 gal (every gallon into the three tractors, the 95-gallon cash fill and the 120 gallons bought in Mexico included) over total miles 49,010 (the Mexico miles included) is 6.22 mpg; 21,400 / 6.22 = 3,441 taxable gallons. Tax-paid 4,120 gal on the card, the paper receipt R-3318 for FC-0817 counted once. Net -679 gal at $0.20: a credit of $135.80. Valued at the $824 of Texas tax already paid at the pump that the line credits"
+    },
+    {
+      "action": "file_jurisdiction_line",
+      "key": "NM",
+      "outcome": "correct",
+      "value_usd": 220.5,
+      "exact": true,
+      "why": "9,850 miles; 9,850 / 6.22 = 1,584 taxable gallons; tax-paid 1,050 gal; net 534 gal at $0.21: $112.14. Valued at the $220.50 of New Mexico tax paid at the pump that the line credits"
+    },
+    {
+      "action": "file_jurisdiction_line",
+      "key": "CO",
+      "outcome": "correct",
+      "value_usd": 534.33,
+      "exact": true,
+      "why": "11,200 miles; 11,200 / 6.22 = 1,801 taxable gallons; tax-paid 1,595 gal on the card. The 95-gallon cash fill at Walsenburg has a slip with no seller, no address, no unit and no purchaser, so it earns no credit (P550.300) though it counts in total fuel. Net 206 gal at $0.335: $69.01. Valued at the $534.33 of Colorado tax paid at the pump that the line credits"
+    },
+    {
+      "action": "file_jurisdiction_line",
+      "key": "WY",
+      "outcome": "correct",
+      "value_usd": 216.0,
+      "exact": true,
+      "why": "6,300 miles in Wyoming, of which 420 on private oil-lease roads that Wyoming exempts as off-highway and private roads not publicly maintained: taxable 5,880; 5,880 / 6.22 = 945 taxable gallons; tax-paid 900 gal; net 45 gal at $0.24: $10.80. Valued at the $216 of Wyoming tax paid at the pump that the line credits"
+    },
+    {
+      "action": "submit_return",
+      "key": "2026-Q3",
+      "outcome": "correct",
+      "value_usd": 50.0,
+      "exact": true,
+      "why": "The third quarter's return, due Monday 2 November 2026 (31 October is a Saturday, R960.100), filed in time: total miles 49,010 (the three tractors, Mexico and the exempt Wyoming miles included; the box truck and pickup out), total gallons 7,880 (the cash fill and the Mexico fuel in, the duplicate receipt counted once, the box truck's diesel and the pickup's gasoline out), 6.22 mpg, net tax $56.15. Valued at the $50 minimum penalty for a late return (R1220)"
+    },
+    {
+      "action": "pay_balance",
+      "key": "2026-Q3",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "The third quarter's net tax, $56.15 (TX -$135.80, NM $112.14, CO $69.01, WY $10.80), paid with the return by its due date, Monday 2 November 2026. Counted at $0: it is tax owed, not money found; the penalty it avoids is counted on the return"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Here are the figures. Each of the six items is filed as its own decision card for you to answer.\n\n**Fleet totals (tractors 11, 12 and 14 only)**\n- Total miles are 18,850 + 16,860 + 13,300 = **49,010**. This includes the 260 Mexico miles, because the distance rule counts non-member miles in total distance. It also includes the Wyoming oil-lease miles and the Pecos ranch road.\n- Total gallons are 7,665 + 120 (Chihuahua) + 95 (cash fill) = **7,880**. The fuel rule says every gallon in a qualified vehicle counts, receipted or not, taxed or not, so the Mexico gallons go in. The receipt R-3318 duplicate is counted once.\n- Fleet miles per gallon is 49,010 / 7,880 = **6.22**.\n\n**Jurisdiction lines**\n\n| | Total miles | Taxable miles | Taxable gal | Tax-paid gal | Rate | Tax |\n|---|---|---|---|---|---|---|\n| TX | 21,400 | 21,400 | 3,441 | 4,120 | 0.2000 | −$135.80 |\n| NM | 9,850 | 9,850 | 1,584 | ",
+  "trace": [
+    {
+      "portal": "Odowren ELD",
+      "user": "I'm Rosa, I run the office at Brackmoor Line Haul. It's time for the third-quarter IFTA return. Start in Odowren: read the units and every unit's miles by jurisdiction for July to September.",
+      "continued": false,
+      "said": "Reading the units first, then each unit's miles. I'll need the unit numbers from the list before I can pull distances.",
+      "said_chars": 118,
+      "reads": [
+        "list_units"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Odowren ELD",
+      "user": "",
+      "continued": true,
+      "said": "Five units are tracked: tractors 11, 12 and 14, box truck 9, and pickup P-2. I'm pulling each one's miles by jurisdiction now.",
+      "said_chars": 126,
+      "reads": [
+        "distance_by_unit",
+        "distance_by_unit",
+        "distance_by_unit",
+        "distance_by_unit",
+        "distance_by_unit"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Odowren ELD",
+      "user": "",
+      "continued": true,
+      "said": "Odowren is read. Tractors 11, 12 and 14 look like the only qualified units, and the Tallyquart rules still need to confirm that.\n\n- **Units 11, 12, 14:** each has 3 axles and a combination weight of 80,000 lb, so each meets the qualified-vehicle test.\n- **Unit 9 (box truck):** 2 axles, 25,500 lb, never pulls a trailer. It looks under the threshold, so its Louisiana 620 miles and Texas miles stay off.\n- **Unit P-2 (pickup):** 10,000 lb, 2 axles. Off, including the Oklahoma 400 miles.",
+      "said_chars": 1785,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Pumpline fuel card",
+      "user": "This is our Pumpline fuel card. Read what the records carry and every unit's fuel for the quarter.",
+      "continued": false,
+      "said": "I'll read the Pumpline statement note first, then fuel for all five units.",
+      "said_chars": 74,
+      "reads": [
+        "read_statement_note",
+        "fuel_by_unit",
+        "fuel_by_unit",
+        "fuel_by_unit",
+        "fuel_by_unit",
+        "fuel_by_unit"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Pumpline fuel card",
+      "user": "",
+      "continued": true,
+      "said": "Pumpline is read. The three tractors bought 7,665.0 gal of diesel in the US this quarter, and the card is missing any cash purchases.\n\n**What the records carry:** each record has the date, station name and address, gallons, fuel type, price, total, unit number and purchaser (Brackmoor Line Haul LLC). Pumpline says the listing has every element a tax-paid credit needs. Purchases made without the card are not on it.\n\n**Qualified tractors (11, 12, 14), diesel gallons:**",
+      "said_chars": 2162,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "Binderwell has the drivers' paper receipts, fuel logs, dispatch records and registrations for the quarter. Read them all.",
+      "continued": false,
+      "said": "I'll list the folder first, then read each document.",
+      "said_chars": 52,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Six documents are listed. I'll read all of them now.",
+      "said_chars": 52,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Binderwell is read, and it settles the open items. I'm saving the findings now so they carry to Tallyquart.\n\n\nBinderwell is read, and these are the findings. There were six documents.\n\n- **FC-0817 is a duplicate.** Receipt R-3318 (B-1) is the printed receipt for Pumpline's FC-0817, the 180.5 gal fill by unit 12 in El Paso. It is counted once, inside unit 12's Texas 1,360 gal.\n- **The cash fill counts but isn't credited.** Slip R-3402 (B-2) is 95 gal of diesel for $361.00, paid cash.",
+      "said_chars": 2029,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Tallyquart IFTA filing",
+      "user": "Tallyquart is where we file the return with Texas. Read the rules, the rates and our returns, then file the third quarter: every jurisdiction line we owe, the return totals, and pay the balance. Don't put anything on the return that doesn't",
+      "continued": false,
+      "said": "I'll start by reading the rules, the rates and your returns, and recalling what I saved from the other tabs.\n\nThe recall results are in. The answers from the rules, rates and returns reads come with my next turn, so I'm not re-calling them. I'm holding off on filing or paying anything until I've read them.",
+      "said_chars": 307,
+      "reads": [
+        "read_rules",
+        "read_rates",
+        "list_returns"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Tallyquart IFTA filing",
+      "user": "",
+      "continued": true,
+      "said": "I've got the rates and the return list. Q3 is open and due Monday 2 November 2026. I still need the rule topics before I work out any figures.",
+      "said_chars": 142,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Tallyquart IFTA filing",
+      "user": "",
+      "continued": true,
+      "said": "Here are the figures. Each of the six items is filed as its own decision card for you to answer.\n\n**Fleet totals (tractors 11, 12 and 14 only)**\n- Total miles are 18,850 + 16,860 + 13,300 = **49,010**. This includes the 260 Mexico miles, because the distance rule counts non-member miles in total distance. It also includes the Wyoming oil-lease miles and the Pecos ranch road.\n- Total gallons are 7,665 + 120 (Chihuahua) + 95 (cash fill) = **7,880**.",
+      "said_chars": 2262,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_jurisdiction_line",
+          "key": "TX",
+          "outcome": "correct",
+          "value_usd": 824.0
+        },
+        {
+          "action": "file_jurisdiction_line",
+          "key": "NM",
+          "outcome": "correct",
+          "value_usd": 220.5
+        },
+        {
+          "action": "file_jurisdiction_line",
+          "key": "CO",
+          "outcome": "correct",
+          "value_usd": 534.33
+        },
+        {
+          "action": "file_jurisdiction_line",
+          "key": "WY",
+          "outcome": "correct",
+          "value_usd": 216.0
+        },
+        {
+          "action": "submit_return",
+          "key": "2026-Q3",
+          "outcome": "correct",
+          "value_usd": 50.0
+        },
+        {
+          "action": "pay_balance",
+          "key": "2026-Q3",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    }
+  ]
+}

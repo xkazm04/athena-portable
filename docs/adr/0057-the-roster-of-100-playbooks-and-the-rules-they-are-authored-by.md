@@ -142,6 +142,9 @@ names; each playbook carries the new one.
   Factora is a real e-invoicing and supplier-finance software name; "Portline" became "Quayloft ISF
   desk", because Portline is a real Lisbon shipping line; and "Mailnest" became "Postwren", because
   mailnest.io is a real email service.
+- Row 48, `ifta-quarterly`: "Roadlog ELD" became "Odowren ELD", because VDO RoadLog is a real ELD;
+  "Fueltax Online" became "Tallyquart IFTA filing", because FuelTaxOnline is a real IFTA reporting
+  product; and "Docshelf" became "Binderwell", because DocShelf is a real document management app.
 
 ### B6: Small-business money, food, and selling online
 

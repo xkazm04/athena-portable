@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The fifty-six playbooks (latest runs, Claude Sonnet)
+## The fifty-seven playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -99,9 +99,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A kitchenware importer's misclassified entries corrected before liquidation or protested within 180 days after it, while the platters its own ruling classifies and entries out of time or too early are left alone | work | 4 | exceeds: 4 of 4, $10,998 of $10,998, 14 of 14 traps, 0 false |
 | A sensor maker's export orders screened before they ship: near-matches cleared and released, listed, denied, unverified, owner-blocked and red-flagged buyers held | work | 4 | exceeds: 10 of 10 (a $1 count weight an act, mostly minutes), 10 of 10 traps, 0 false |
 | A garden importer's Importer Security Filings made before each cargo is loaded, a factory named late and a new warehouse updated before arrival, while the air, bulk, carrier-filed and rolled cargo are left alone | work | 4 | exceeds: 5 of 5, $25,000 of $25,000 (a $5,000 weight an act, protection, mostly minutes), 9 of 9 traps, 0 false |
+| A small Texas carrier's third-quarter IFTA return built from the ELD's miles and the fuel card, with exempt Wyoming lease-road miles, a cash fill and a duplicate receipt handled, and Mexico, two light vehicles and a brokered load left off | work | 4 | exceeds: 6 of 6, $1,844.83 of $1,844.83, 8 of 8 traps, 0 false |
 
-Across the latest runs: $1,014,948 of $1,024,375 found, 593 of 593 traps walked past, no false claim,
-170 minutes of her time against about 259 hours by hand, $105.33 of model time. 93 runs are recorded
+Across the latest runs: $1,016,793 of $1,026,220 found, 601 of 601 traps walked past, no false claim,
+173 minutes of her time against about 263 hours by hand, $106.51 of model time. 94 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "ifta-quarterly",
+  "captured_at": "2026-10-10T11:18:36Z",
+  "bench_run_at": "2026-10-10T11:14:54Z",
+  "narration": {
+    "text": "A small Texas carrier's third-quarter fuel tax return built from the ELD's miles and the fuel card: four jurisdiction lines with Wyoming's oil-lease road miles taken out, a cash fill counted but not credited and a receipt counted once, the totals filed and fifty-six dollars and fifteen cents paid, while Mexico, the pickup's Oklahoma run, the box truck's Louisiana delivery and a brokered Kansas load are left off. This is a chore for the office manager of a small El Paso carrier with three tractors, a box truck and a pickup, who files the quarterly fuel tax return herself. On the bench, she found 6 of 6 eligible items, worth 1,844 dollars and 83 cents of the 1,844 dollars and 83 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 3 minutes. By hand, the same chore takes 4 hours, so she was about 92 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 67.022,
+    "sha256": "85943d60e24945380f06bf4554730642b63c959d21faa35ec9097e4471d9ab58"
+  },
+  "video": {
+    "path": "evidence/ifta-quarterly/evidence.mp4",
+    "duration_s": 67.04,
+    "bytes": 3263407,
+    "sha256": "3dce5eb855d3fb539c152db228cec9b3f3dd07e85444b06af97ffa565633db5d"
+  },
+  "thumbnail": {
+    "path": "playbooks/ifta-quarterly/thumb.jpg",
+    "bytes": 87222,
+    "sha256": "75ecc75146b6609673a961d3bd3c77649448b38a4cd838721cb1f4eb91a8e5aa"
+  }
+}

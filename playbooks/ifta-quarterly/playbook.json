@@ -1,0 +1,128 @@
+{
+  "id": "ifta-quarterly",
+  "title": "A small Texas carrier's third-quarter fuel tax return built from the ELD's miles and the fuel card: four jurisdiction lines with Wyoming's oil-lease road miles taken out, a cash fill counted but not credited and a receipt counted once, the totals filed and fifty-six dollars and fifteen cents paid, while Mexico, the pickup's Oklahoma run, the box truck's Louisiana delivery and a brokered Kansas load are left off",
+  "domain": "Trucking",
+  "audience": "work",
+  "promise": "A small carrier's quarter is read across its ELD's miles by unit and jurisdiction, its fuel card, its folder of paper receipts, fuel logs and dispatch records, and the base jurisdiction's IFTA portal, and its third-quarter return is filed the way the IFTA Articles and Procedures Manual require: every gallon into its tractors in the total, the cash fill with no valid receipt included but not credited and the paper copy of a card purchase counted once, Wyoming's private oil-lease road miles out of taxable miles, Mexico's miles and fuel in the totals but on no line, four jurisdiction lines at the quarter's published rates, the totals, and the fifty-six dollars and fifteen cents paid before Monday 2 November. The pickup and the box truck, which are not qualified motor vehicles, and the Kansas load another carrier ran, are left off.",
+  "persona": "The office manager of a small El Paso carrier with three tractors, a box truck and a pickup, who files the quarterly fuel tax return herself",
+  "chore": "Read each unit's type, axles and weight and its miles by jurisdiction, with the miles off public roads, in the ELD; each unit's fuel card purchases by jurisdiction; the paper receipts, the cash slip, the drivers' fuel logs, the dispatch record of a brokered load, the registrations and the last return in the folder; and the rules, the rate matrix and the returns in the IFTA portal. Then apply the IFTA Articles of Agreement and Procedures Manual (January 2026): the qualified motor vehicle (R245) and no credit for other vehicles' fuel (P550.210); total distance (R266) and every gallon placed in qualified vehicles (R820 and its 2020 Board interpretation); the receipt a tax-paid credit needs (P550.300); each jurisdiction's own distance exemptions (R830), Wyoming's off-highway and private roads among them; the non-member jurisdictions; the due date moved to the next business day when it falls on a weekend (R960.100); and IFTA, Inc.'s third-quarter 2026 rates. The miles are in one system, the fuel in two, and the reasons in a folder.",
+  "command": "I'm Rosa, the office manager at Brackmoor Line Haul. Go through Odowren, our Pumpline fuel card, the Binderwell folder and Tallyquart, and file our third-quarter 2026 IFTA return: every jurisdiction line we owe at the right figures, the totals, and pay the balance. Only our qualified trucks go on it, and nothing that doesn't belong there.",
+  "apps": [
+    {
+      "name": "Odowren ELD",
+      "role": "the fleet's ELD and GPS: each unit's type, axles and weight, and its miles by jurisdiction for the quarter, with the miles off public roads marked",
+      "api": "ELD, no IFTA integration",
+      "url": ""
+    },
+    {
+      "name": "Pumpline fuel card",
+      "role": "the fuel card account: each unit's purchases by jurisdiction for the quarter, with what each transaction record carries",
+      "api": "Card portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the quarter's IFTA folder: a paper receipt for a card purchase, a cash slip with nothing on it, a driver's fuel log, the dispatch record of a brokered load, two registrations and the last return",
+      "api": "Shared files",
+      "url": ""
+    },
+    {
+      "name": "Tallyquart IFTA filing",
+      "role": "the base jurisdiction's IFTA filing: the rules as Texas applies them, the third-quarter rate matrix, the returns filed, and the forms for a jurisdiction line, the totals and the payment",
+      "api": "Tax portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads every unit and its miles by jurisdiction in Odowren.",
+    "Reads every unit's fuel card purchases in Pumpline.",
+    "Reads the receipts, the cash slip, the fuel log, the dispatch record, the registrations and the last return in Binderwell.",
+    "Reads the rules, the rates and the returns in Tallyquart, files the four jurisdiction lines and the totals, and pays the balance."
+  ],
+  "gates": [
+    {
+      "action": "file_jurisdiction_line",
+      "label": "Transmit a jurisdiction's line of the return",
+      "why": "A tax return line to the base jurisdiction, signed for the licensee."
+    },
+    {
+      "action": "submit_return",
+      "label": "Transmit the return's totals",
+      "why": "The return itself, signed for the licensee under penalty of perjury."
+    },
+    {
+      "action": "pay_balance",
+      "label": "Pay the quarter's balance",
+      "why": "Money leaves the carrier's account."
+    }
+  ],
+  "traps": [
+    "A line for Mexico, which is not an IFTA member.",
+    "A line for Oklahoma, where only the pickup went, or Louisiana, where only the box truck went: neither is a qualified motor vehicle.",
+    "A line for Kansas, where a load was brokered to another carrier's truck.",
+    "Crediting the cash fill whose slip shows no seller, unit or purchaser, or leaving its gallons out of the total.",
+    "Crediting a purchase twice from its card record and its paper receipt.",
+    "Taxing Wyoming's private oil-lease road miles, or exempting the Texas ranch road miles Texas taxes.",
+    "Filing or paying the second quarter again, or the fourth quarter before it ends."
+  ],
+  "memory": [
+    "Which units are qualified motor vehicles, and each one's miles by jurisdiction with the off-road miles, carried from Odowren.",
+    "Each unit's fuel by jurisdiction, with the purchase that also has a paper receipt, carried from Pumpline.",
+    "The cash fill, the duplicate receipt, the brokered Kansas load and the two light vehicles, carried from Binderwell into the Tallyquart tab."
+  ],
+  "economics": {
+    "value_usd": 1200,
+    "per": "quarter",
+    "basis": "An estimate. A carrier licensed under IFTA files a return every quarter that nets the fuel tax owed in each member jurisdiction it drove in against the tax it paid at the pump there; tax-paid credits are only allowed for qualified vehicles' fuel with valid receipts, and a late return costs $50 or 10% of the tax, whichever is greater (R1220). The roster's $1,200 a quarter is the credits and the penalty a small fleet's return gets right, an estimate. The bench world holds $1,844.83: each jurisdiction line valued at the tax already paid at the pump that it credits (Texas $824.00, New Mexico $220.50, Colorado $534.33, Wyoming $216.00), the return at the $50 late penalty it avoids, and the payment of the $56.15 net tax counted at $0. Times a year: four, one return a quarter. manual_minutes 240: summing five units' miles and fuel by jurisdiction, sorting out two light vehicles, a cash fill, a duplicate receipt, off-road miles and a brokered load, and keying six cards; vendors estimate four to ten hours a quarter for one truck by hand, with no independent figure. The rules applied, as they stand on Friday 9 October 2026 (the IFTA Articles of Agreement revised 11 March 2026 and the Procedures Manual of January 2026, read from iftach.org's own files as archived; iftach.org refused direct connections on 10 October 2026): R245, R266, R224, R810, R820 and its 2020 Consensus Board Interpretation, R830, R930.100, R960.100, R1220 and R1230; P540, P550.200, .210, .220 and .300, and P720.350 and .500. The rates are IFTA, Inc.'s matrix for the third quarter of 2026 (its CSV, archived 29 September 2026): special diesel Texas $0.2000, New Mexico $0.2100, Colorado $0.3350, Wyoming $0.2400; none changed during the quarter. The distance exemptions are IFTA, Inc.'s 2026 database: Wyoming exempts off-highway and private roads; Texas, New Mexico and Colorado exempt no off-highway distance. Rounding taxes to the cent is the invented portal's convention.",
+    "manual_minutes": 240,
+    "times_per_year": 4,
+    "incumbent": "IFTA filing services charge a flat fee, from about $25 a quarter for software to $95 a truck a quarter for a full service (Ace Licensing's published price); no share of any refund, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "IFTA Articles of Agreement, revised 11 March 2026 (R245, R266, R820, R830, R960.100, R1220)",
+        "url": "https://www.iftach.org/manuals/2026/AA/Articles%20of%20Agreement%20-%2003-11-2026.pdf"
+      },
+      {
+        "label": "IFTA Procedures Manual, January 2026 (P540 distance records, P550 fuel records, P720 the return)",
+        "url": "https://www.iftach.org/manuals/2026/PM/Procedures%20Manual%20-%2001-05-26.pdf"
+      },
+      {
+        "label": "IFTA, Inc. tax rate matrix, 3rd quarter 2026",
+        "url": "https://www.iftach.org/taxmatrix4/Taxmatrix.php?QY=3Q2026"
+      },
+      {
+        "label": "IFTA, Inc. tax rate matrix, 3rd quarter 2026, CSV",
+        "url": "https://www.iftach.org/taxmatrix/charts/3Q2026.csv"
+      },
+      {
+        "label": "IFTA, Inc. distance exemption database, Wyoming, 2026 (off-highway and private roads exempt)",
+        "url": "https://www.iftach.org/exempt/view/distance_details.php?dj=Wyoming&y=2026"
+      },
+      {
+        "label": "IFTA, Inc. distance exemption database, Texas, 2026 (only trip permit miles exempt)",
+        "url": "https://www.iftach.org/exempt/view/distance_details.php?dj=Texas&y=2026"
+      },
+      {
+        "label": "Texas Comptroller, IFTA quarterly return: non-IFTA miles reported apart",
+        "url": "https://comptroller.texas.gov/help/ifta/return.php"
+      },
+      {
+        "label": "Ace Licensing, IFTA fuel tax report, one truck one quarter, $95",
+        "url": "https://www.fmcsaprocessagents.com/product-p/37.htm"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "The return is arithmetic over judgements: which vehicles qualify, which miles each jurisdiction taxes, which gallons count in the total and which earn a credit. Each of those is decided in a different system, and one wrong call moves the fleet's miles per gallon and with it every line. A cash fill must be counted but not credited, a receipt counted once, Mexico in the totals but on no line, and three jurisdictions that look like lines are not.",
+    "usefulness_why": "Gets a quarter's return right and on time for a small fleet, keeping its tax-paid credits and avoiding the late penalty, in minutes rather than an afternoon of spreadsheets; a few hundred to a couple of thousand dollars of credits a quarter, but mostly hours."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful office manager with the miles, the fuel and the rules in hand gets most of it: the bar is the four jurisdiction lines and the totals filed and the balance paid, and no line for Mexico, the light vehicles or the brokered load and nothing filed or paid twice, inside an hour."
+  },
+  "caveat": "Rosa Alcantar, Brackmoor Line Haul LLC, its units, drivers and loads, Wrenfield Freight, Franklin Mountain Truck Stop, Odowren, Pumpline, Binderwell and Tallyquart are invented, and so are every mile, gallon, receipt and figure; no carrier or filing here is real, and Tallyquart stands in for Texas's own IFTA filing. The public rules applied are the IFTA Articles of Agreement (revised 11 March 2026) and Procedures Manual (January 2026), IFTA, Inc.'s tax rate matrix for the third quarter of 2026 and its 2026 distance exemption database, as they stand on 9 October 2026; iftach.org's files were read from their archived copies because the site refused direct connections, and the caveat says so. Rounding the tax to the cent is the invented portal's convention. The base jurisdiction decides a real return and any audit, under its own law and each member jurisdiction's exemptions. This applies stated rules to stated facts; it is not tax, legal or regulatory-compliance advice."
+}

@@ -1,0 +1,522 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "odowren",
+      "name": "Odowren ELD",
+      "origin": "https://fleet.odowren.example",
+      "path": "/brackmoor/ifta",
+      "view": {
+        "view": "Odowren: Brackmoor Line Haul's fleet, with GPS distance by jurisdiction for the third quarter of 2026 (1 July to 30 September)",
+        "signed_in": "Rosa Alcantar, office manager",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_units",
+          "kind": "READ",
+          "description": "Every unit Odowren tracks: unit number, type, axles, gross vehicle weight and registered weight.",
+          "params": {},
+          "returns": {
+            "table": "units"
+          }
+        },
+        {
+          "name": "distance_by_unit",
+          "kind": "READ",
+          "description": "One unit's miles by jurisdiction for 1 July to 30 September 2026, by unit number (unit), from its GPS records (a fix every 10 minutes with the engine on), with any miles off public roads marked.",
+          "params": {
+            "unit": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "distance",
+            "match": {
+              "unit": "unit"
+            },
+            "require": [
+              "unit"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Odowren ELD",
+        "Odowren",
+        "the ELD"
+      ]
+    },
+    {
+      "app_id": "pumpline",
+      "name": "Pumpline fuel card",
+      "origin": "https://accounts.pumpline.example",
+      "path": "/brackmoor/transactions",
+      "view": {
+        "view": "Pumpline: Brackmoor Line Haul's fuel card account, transactions for 1 July to 30 September 2026",
+        "signed_in": "Rosa Alcantar",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_statement_note",
+          "kind": "READ",
+          "description": "What each Pumpline transaction record carries.",
+          "params": {},
+          "returns": {
+            "table": "card_note"
+          }
+        },
+        {
+          "name": "fuel_by_unit",
+          "kind": "READ",
+          "description": "One unit's fuel card purchases for the quarter by jurisdiction, by unit number (unit): gallons, fuel type and the number of transactions, with any transaction the account flags.",
+          "params": {
+            "unit": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "fuel",
+            "match": {
+              "unit": "unit"
+            },
+            "require": [
+              "unit"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Pumpline fuel card",
+        "Pumpline",
+        "the fuel card"
+      ]
+    },
+    {
+      "app_id": "binderwell",
+      "name": "Binderwell",
+      "origin": "https://files.binderwell.example",
+      "path": "/brackmoor/ifta-2026-q3",
+      "view": {
+        "view": "Binderwell: Brackmoor Line Haul's IFTA folder for the third quarter of 2026 (paper receipts, drivers' fuel logs, dispatch records, registrations, the last return)",
+        "signed_in": "Rosa Alcantar",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "Every document in the folder: document id (B-n), kind and title.",
+          "params": {},
+          "returns": {
+            "table": "documents",
+            "fields": [
+              "doc_id",
+              "kind",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_document",
+          "kind": "READ",
+          "description": "One document in full, by document id (B-n).",
+          "params": {
+            "doc_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "documents",
+            "match": {
+              "doc_id": "doc_id"
+            },
+            "require": [
+              "doc_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Binderwell",
+        "the folder",
+        "the IFTA folder"
+      ]
+    },
+    {
+      "app_id": "tallyquart",
+      "name": "Tallyquart IFTA filing",
+      "origin": "https://ifta.tallyquart.example",
+      "path": "/licensees/brackmoor-line-haul",
+      "view": {
+        "view": "Tallyquart: the IFTA return of Brackmoor Line Haul LLC (IFTA licence TX-4471902, base jurisdiction Texas), quarterly returns, rates and the rules as the base jurisdiction applies them",
+        "signed_in": "Rosa Alcantar, for Brackmoor Line Haul LLC",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The IFTA rules as Tallyquart states them, by topic: due, qmv, distance, fuel, receipts, exemptions, nonmember, filing, penalty. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_rates",
+          "kind": "READ",
+          "description": "IFTA, Inc.'s tax rate matrix for the third quarter of 2026, special diesel, US dollars a gallon, for the jurisdictions Brackmoor's units usually run.",
+          "params": {},
+          "returns": {
+            "table": "rates"
+          }
+        },
+        {
+          "name": "list_returns",
+          "kind": "READ",
+          "description": "Brackmoor's quarterly returns: quarter, status, when filed and paid.",
+          "params": {},
+          "returns": {
+            "table": "returns"
+          }
+        },
+        {
+          "name": "file_jurisdiction_line",
+          "kind": "REACHES_A_PERSON",
+          "description": "Transmit one jurisdiction's line of a quarter's return to the base jurisdiction, by its two-letter IFTA code (jurisdiction, e.g. TX), with the quarter (written like 2026-Q3), total miles there (total_miles), taxable miles (taxable_miles), taxable gallons (taxable_gallons), tax-paid gallons (tax_paid_gallons) and the line's tax in dollars, negative for a credit (net_tax_usd). Rosa signs it for the licensee; each line is transmitted on its own.",
+          "params": {
+            "jurisdiction": {
+              "type": "string"
+            },
+            "quarter": {
+              "type": "string"
+            },
+            "total_miles": {
+              "type": "number"
+            },
+            "taxable_miles": {
+              "type": "number"
+            },
+            "taxable_gallons": {
+              "type": "number"
+            },
+            "tax_paid_gallons": {
+              "type": "number"
+            },
+            "net_tax_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Line for {jurisdiction} ({quarter}) transmitted to the base jurisdiction."
+        },
+        {
+          "name": "submit_return",
+          "kind": "REACHES_A_PERSON",
+          "description": "Transmit a quarter's return totals to the base jurisdiction, by quarter (written like 2026-Q3): total miles of the fleet's qualified motor vehicles (total_miles), total gallons (total_gallons), the fleet's miles per gallon (fleet_mpg) and the net tax in dollars (net_tax_usd). Rosa signs it for the licensee, under penalty of perjury.",
+          "params": {
+            "quarter": {
+              "type": "string"
+            },
+            "total_miles": {
+              "type": "number"
+            },
+            "total_gallons": {
+              "type": "number"
+            },
+            "fleet_mpg": {
+              "type": "number"
+            },
+            "net_tax_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Return totals for {quarter} transmitted to the base jurisdiction."
+        },
+        {
+          "name": "pay_balance",
+          "kind": "REACHES_A_PERSON",
+          "description": "Pay the base jurisdiction a quarter's balance by ACH from Brackmoor's account, by quarter (written like 2026-Q3), in dollars (amount_usd). Rosa signs it; the money leaves the account.",
+          "params": {
+            "quarter": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Payment for {quarter} sent to the base jurisdiction."
+        }
+      ],
+      "aliases": [
+        "Tallyquart IFTA filing",
+        "Tallyquart",
+        "the IFTA portal"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "odowren",
+      "message": "I'm Rosa, I run the office at Brackmoor Line Haul. It's time for the third-quarter IFTA return. Start in Odowren: read the units and every unit's miles by jurisdiction for July to September.",
+      "nudges": 1
+    },
+    {
+      "app": "pumpline",
+      "message": "This is our Pumpline fuel card. Read what the records carry and every unit's fuel for the quarter.",
+      "nudges": 1
+    },
+    {
+      "app": "binderwell",
+      "message": "Binderwell has the drivers' paper receipts, fuel logs, dispatch records and registrations for the quarter. Read them all.",
+      "nudges": 1
+    },
+    {
+      "app": "tallyquart",
+      "message": "Tallyquart is where we file the return with Texas. Read the rules, the rates and our returns, then file the third quarter: every jurisdiction line we owe, the return totals, and pay the balance. Don't put anything on the return that doesn't belong there. Then tell me what you filed, what we owe, when it's due, and what you left off and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "units": [
+      {
+        "unit": "11",
+        "type": "2023 tractor",
+        "axles": "3",
+        "weight": "gross vehicle weight 33,000 lb; registered gross weight 80,000 lb (in combination)"
+      },
+      {
+        "unit": "12",
+        "type": "2022 tractor",
+        "axles": "3",
+        "weight": "gross vehicle weight 33,000 lb; registered gross weight 80,000 lb (in combination)"
+      },
+      {
+        "unit": "14",
+        "type": "2024 tractor",
+        "axles": "3",
+        "weight": "gross vehicle weight 33,000 lb; registered gross weight 80,000 lb (in combination)"
+      },
+      {
+        "unit": "9",
+        "type": "2019 box truck, local deliveries",
+        "axles": "2",
+        "weight": "gross vehicle weight 25,500 lb; registered weight 25,500 lb; never pulls a trailer"
+      },
+      {
+        "unit": "P-2",
+        "type": "2021 pickup, parts runs",
+        "axles": "2",
+        "weight": "gross vehicle weight 10,000 lb; never pulls a trailer"
+      }
+    ],
+    "distance": [
+      {
+        "unit": "11",
+        "quarter": "1 Jul to 30 Sep 2026",
+        "miles": "Texas 8,200; New Mexico 3,900; Colorado 4,300; Wyoming 2,450, of which 160 off public roads (private oil-lease roads at the Sand Draw field, not built or maintained with public funds). Total 18,850."
+      },
+      {
+        "unit": "12",
+        "quarter": "1 Jul to 30 Sep 2026",
+        "miles": "Texas 6,900, of which 180 on a private ranch road in Pecos County; New Mexico 3,350; Colorado 4,100; Wyoming 2,250, of which 140 off public roads (private oil-lease roads at the Sand Draw field); Chihuahua, Mexico 260 (runs to Ciudad Juarez). Total 16,860."
+      },
+      {
+        "unit": "14",
+        "quarter": "1 Jul to 30 Sep 2026",
+        "miles": "Texas 6,300; New Mexico 2,600; Colorado 2,800; Wyoming 1,600, of which 120 off public roads (private oil-lease roads at the Sand Draw field). Total 13,300."
+      },
+      {
+        "unit": "9",
+        "quarter": "1 Jul to 30 Sep 2026",
+        "miles": "Texas 4,800; Louisiana 620 (a delivery to Shreveport, 14 to 16 Aug). Total 5,420."
+      },
+      {
+        "unit": "P-2",
+        "quarter": "1 Jul to 30 Sep 2026",
+        "miles": "Texas 2,700; Oklahoma 400 (a parts run to Oklahoma City, 3 Sep). Total 3,100."
+      }
+    ],
+    "card_note": [
+      {
+        "note": "Today is Friday 9 October 2026. Each Pumpline transaction record gives the date, the station's name and address, the gallons, the fuel type, the price per gallon and the total, the unit number keyed at the pump, and the purchaser, Brackmoor Line Haul LLC. Pumpline's transaction listing is a third-party listing with every element a tax-paid credit needs. Purchases made without the card are not here."
+      }
+    ],
+    "fuel": [
+      {
+        "unit": "11",
+        "purchases": "Diesel: Texas 1,480.0 gal (9 transactions); New Mexico 380.0 gal (3); Colorado 600.0 gal (4); Wyoming 330.0 gal (2). Total 2,790.0 gal."
+      },
+      {
+        "unit": "12",
+        "purchases": "Diesel: Texas 1,360.0 gal (8 transactions, among them FC-0817, El Paso, 17 Aug 06:42, 180.5 gal); New Mexico 360.0 gal (3); Colorado 515.0 gal (4); Wyoming 300.0 gal (2); Chihuahua, Mexico 120.0 gal (1, a station in Ciudad Juarez, 21 Aug). Total 2,655.0 gal."
+      },
+      {
+        "unit": "14",
+        "purchases": "Diesel: Texas 1,280.0 gal (8 transactions); New Mexico 310.0 gal (2); Colorado 480.0 gal (3); Wyoming 270.0 gal (2). Total 2,340.0 gal."
+      },
+      {
+        "unit": "9",
+        "purchases": "Diesel: Texas 640.0 gal (11 transactions); Louisiana 110.0 gal (1). Total 750.0 gal."
+      },
+      {
+        "unit": "P-2",
+        "purchases": "Gasoline: Texas 210.0 gal (12 transactions); Oklahoma 50.0 gal (2). Total 260.0 gal."
+      }
+    ],
+    "documents": [
+      {
+        "doc_id": "B-1",
+        "kind": "receipt",
+        "title": "Paper receipt R-3318, unit 12, El Paso, 17 August 2026",
+        "text": "Scanned by the driver of unit 12. Station: Franklin Mountain Truck Stop, 9800 Gateway Blvd North, El Paso, TX. Thursday 17 August 2026, 06:42. Unit 12. Diesel 180.5 gal at $3.659, $660.45. Paid with Pumpline card ending 0912. Purchaser: Brackmoor Line Haul LLC. This is the printed receipt for the same card purchase as Pumpline transaction FC-0817."
+      },
+      {
+        "doc_id": "B-2",
+        "kind": "receipt",
+        "title": "Cash slip R-3402, 2 September 2026",
+        "text": "A handwritten slip: '9/2/26, diesel 95 gal, $361.00, paid cash'. No station name or address, no unit number, no purchaser. The card reader at the pump was down."
+      },
+      {
+        "doc_id": "B-3",
+        "kind": "fuel log",
+        "title": "Driver's fuel log, unit 14, September 2026",
+        "text": "Unit 14, driver D. Okonkwo. 2 Sep: 95 gal diesel into unit 14 at a station in Walsenburg, Colorado, paid cash because the card reader was down (slip R-3402). Every other fill in September on the Pumpline card."
+      },
+      {
+        "doc_id": "B-4",
+        "kind": "dispatch",
+        "title": "Dispatch record, load K-5521, Amarillo to Wichita, 22 to 23 September 2026",
+        "text": "Load K-5521, Amarillo, TX to Wichita, KS. Brackmoor had no tractor free and brokered the load to Wrenfield Freight LLC, which ran it with its own truck, under its own authority and IFTA licence. No Brackmoor unit entered Kansas in the quarter."
+      },
+      {
+        "doc_id": "B-5",
+        "kind": "registration",
+        "title": "Registrations, units 9 and P-2",
+        "text": "Unit 9: 2019 box truck, two axles, gross vehicle weight rating and registered weight 25,500 lb, Texas plates; it is not used in combination. Unit P-2: 2021 pickup, two axles, gross vehicle weight rating 10,000 lb, Texas plates; it is not used in combination."
+      },
+      {
+        "doc_id": "B-6",
+        "kind": "return",
+        "title": "Second-quarter 2026 return, as filed",
+        "text": "IFTA return, 2026-Q2 (April to June), Brackmoor Line Haul LLC, licence TX-4471902. Filed Tuesday 28 July 2026, net tax $41.20, paid the same day by ACH. Accepted by the base jurisdiction."
+      }
+    ],
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. The return for the third quarter of 2026 (1 July to 30 September) is open for filing. Rules as the base jurisdiction, Texas, applies the IFTA Articles of Agreement and Procedures Manual (January 2026 editions). Topics: due, qmv, distance, fuel, receipts, exemptions, nonmember, filing, penalty."
+      },
+      {
+        "topic": "due",
+        "text": "Articles R960.100: the return and full payment are due on the last day of the month following the close of the quarter; if that day falls on a Saturday, Sunday or legal holiday, the next business day is the due date. For the third quarter of 2026, 31 October 2026 is a Saturday, so the return and payment are due Monday 2 November 2026. Articles R930.100: a return is required even if no operations were conducted."
+      },
+      {
+        "topic": "qmv",
+        "text": "Articles R245: a qualified motor vehicle has two axles and a gross vehicle weight or registered gross vehicle weight over 26,000 pounds; or three or more axles regardless of weight; or is used in combination when the combination's weight is over 26,000 pounds. R810: tax reporting under the Agreement is for qualified motor vehicles only. Procedures Manual P550.210: no tax-paid credit for fuel placed into a vehicle other than a qualified motor vehicle. A vehicle that is not qualified is left off the return: its miles, its fuel and the jurisdictions only it entered."
+      },
+      {
+        "topic": "distance",
+        "text": "Articles R266: total distance is all miles traveled in the quarter by every qualified vehicle in the fleet, whether the miles are taxable or not in a jurisdiction, and including miles in non-member jurisdictions. R224: a jurisdiction's taxable distance leaves out miles it exempts. Procedures Manual P540: GPS records with a fix every 10 minutes while the engine is on are distance records. Columns are rounded to the nearest whole unit (P720.500)."
+      },
+      {
+        "topic": "fuel",
+        "text": "Articles R820 and its Consensus Board Interpretation (2020): all fuel placed in the fuel tanks of qualified vehicles, whether receipted or not and whether taxed or not, must be reported to calculate the miles per gallon. Total gallons are every gallon placed in the fleet's qualified vehicles in the quarter, wherever it was bought. Fleet miles per gallon is total miles divided by total gallons, to two decimal places (P720.350). A line's taxable gallons are its taxable miles divided by the fleet's miles per gallon, to the nearest whole gallon; its net taxable gallons are taxable gallons less tax-paid gallons; its tax is net taxable gallons times the rate, to the cent."
+      },
+      {
+        "topic": "receipts",
+        "text": "Procedures Manual P550.220 and P550.300: tax-paid credit only for a retail purchase with a receipt, invoice or transaction listing from the seller or a third party that shows the date, the seller's name and address, the quantity, the fuel type, the price per gallon or total, the qualified vehicle it went into, and the purchaser. P550.200: an altered, erased or illegible record is not accepted unless shown to be valid. A purchase is credited once, however many records of it there are. Fuel without a valid receipt still counts in total gallons; it earns no credit."
+      },
+      {
+        "topic": "exemptions",
+        "text": "Articles R830: a jurisdiction may exempt any use of fuel within it, and the licensee follows each jurisdiction's own definition. IFTA, Inc.'s distance exemption database for 2026: Wyoming exempts miles on off-highway and private roads not built or maintained by state or public funds; Texas exempts only miles on a fuel trip permit, and not off-highway or private road miles; New Mexico and Colorado exempt no distance. Exempt miles are in total miles and out of taxable miles."
+      },
+      {
+        "topic": "nonmember",
+        "text": "IFTA's members are the 48 contiguous United States and the 10 Canadian provinces. Alaska, Hawaii, the District of Columbia, the Yukon, Northwest Territories and Nunavut, and Mexico's states are not members. Miles in a non-member jurisdiction count in total miles and on no jurisdiction line; fuel bought there counts in total gallons and earns no credit. There is no line for a non-member jurisdiction."
+      },
+      {
+        "topic": "filing",
+        "text": "Tallyquart transmits each jurisdiction line and the return totals separately, in any order, and assembles the return from what is transmitted: there is no need to wait for one card to be signed before filing the next. A line is needed for each member jurisdiction a qualified vehicle traveled in. A payment for the quarter can be made at any time from 1 October and is applied to that quarter's return."
+      },
+      {
+        "topic": "penalty",
+        "text": "Articles R1220.100: a penalty of $50 or 10 percent of delinquent taxes, whichever is greater, for failing to file, filing late or underpaying. R1230: interest at two percentage points above the federal underpayment rate, accruing monthly, a full month for any part of a month."
+      }
+    ],
+    "rates": [
+      {
+        "note": "IFTA, Inc. tax rate matrix, 3rd quarter 2026, special diesel, US dollars a gallon. None of these changed during the quarter."
+      },
+      {
+        "jurisdiction": "TX Texas",
+        "rate": "0.2000"
+      },
+      {
+        "jurisdiction": "NM New Mexico",
+        "rate": "0.2100"
+      },
+      {
+        "jurisdiction": "CO Colorado",
+        "rate": "0.3350"
+      },
+      {
+        "jurisdiction": "WY Wyoming",
+        "rate": "0.2400"
+      },
+      {
+        "jurisdiction": "OK Oklahoma",
+        "rate": "0.1900"
+      },
+      {
+        "jurisdiction": "KS Kansas",
+        "rate": "0.2600"
+      },
+      {
+        "jurisdiction": "LA Louisiana",
+        "rate": "0.2000"
+      },
+      {
+        "jurisdiction": "AZ Arizona",
+        "rate": "0.2600"
+      },
+      {
+        "jurisdiction": "NE Nebraska",
+        "rate": "0.3180"
+      },
+      {
+        "jurisdiction": "UT Utah",
+        "rate": "0.3790"
+      }
+    ],
+    "returns": [
+      {
+        "quarter": "2026-Q3 (1 Jul to 30 Sep)",
+        "status": "Open, nothing filed yet; due Monday 2 November 2026"
+      },
+      {
+        "quarter": "2026-Q2 (1 Apr to 30 Jun)",
+        "status": "Filed Tuesday 28 July 2026, net tax $41.20, paid 28 July by ACH; accepted"
+      },
+      {
+        "quarter": "2026-Q1 (1 Jan to 31 Mar)",
+        "status": "Filed Friday 24 April 2026, net tax $63.75, paid 24 April; accepted"
+      },
+      {
+        "quarter": "2026-Q4 (1 Oct to 31 Dec)",
+        "status": "Not open: the quarter has not ended; filing opens 1 January 2027"
+      }
+    ]
+  }
+}
