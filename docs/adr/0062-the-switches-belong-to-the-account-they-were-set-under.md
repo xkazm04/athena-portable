@@ -39,7 +39,7 @@ integration bot's `name` (`identity_field` stays `name`): two workspaces with an
 same name look like one account, so a connect to the other workspace keeps the switches. The
 allow-list there is page ids, which do not exist in the other workspace, so it admits nothing
 there; the writes switch stays on. The bot's own id would tell workspaces apart, but changing the
-probe is a scope decision left to the operator (raised with this change), not made here.
+probe is a scope decision, not made here (it was not raised at the time; see the amendment below).
 
 ## Consequences
 
@@ -57,8 +57,11 @@ Reconnecting as the same account is unchanged. The record gains one field, with 
 
 ## Amended 2026-10-10: Notion is keyed on the bot's id
 
-The operator decided what the section above left open. The comparison is made on a key, not on the
-name a person reads.
+*Corrected 2026-10-10:* this section first said the operator decided it; he did not.
+
+The App Master decided what the section above left open, headless on 2026-10-10 while the operator
+was away. It was not put to him then, and it stands until he rules on it.
+The comparison is made on a key, not on the name a person reads.
 
 - The probe spec gains an optional `key_field`. Notion's is `id`, the top-level id of
   `GET /v1/users/me`; Gmail names none, so its identity (`emailAddress`) is its own key.
