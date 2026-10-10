@@ -1,0 +1,81 @@
+{
+  "targets": [
+    {
+      "tool": "release_statement",
+      "key": "line_id",
+      "eligible": {
+        "L-301": {
+          "value_usd": 58.0,
+          "why": "ABN-501 is valid: the current form (expires 03/31/2029), signed at 08:41 before the 08:55 draw, the vitamin D test, $58.00 and a specific reason (not covered for fatigue under the local coverage policy), option 1. Medicare denied it PR-50 under GA, and the patient has paid nothing: bill the $58.00 charge",
+          "expect": {
+            "amount_usd": 58.0
+          }
+        },
+        "L-302": {
+          "value_usd": 64.0,
+          "why": "ABN-502 is valid and states the frequency limit (a screening lipid panel once every 5 years, last paid March 2024). Medicare denied it PR-119 under GA, and the patient has paid nothing: bill the $64.00 charge",
+          "expect": {
+            "amount_usd": 64.0
+          }
+        },
+        "L-303": {
+          "value_usd": 230.0,
+          "why": "A routine physical is excluded by law (Social Security Act section 1862(a)(7)), billed GX GY and denied PR-96: the patient owes it with or without a notice, and ABN-503 was given voluntarily. Bill the $230.00 charge",
+          "expect": {
+            "amount_usd": 230.0
+          }
+        }
+      },
+      "traps": {
+        "L-304": "ABN-504's reason is only 'Medicare may not pay for this': a generic notice is not valid, so the PR-50 that the GA modifier produced does not make the patient liable, and the $48 she paid is refunded instead",
+        "L-305": "ABN-505 was signed on 9 September, the day after the 8 September draw: a notice signed after the item was given is not valid, and the line was billed GZ and denied CO-50, the clinic's",
+        "L-306": "ABN-506 is on the form printed 'expires 01/31/2026', signed on 18 August 2026, after the old form stopped being accepted on 12 May 2026: not valid, so the patient is refunded instead",
+        "L-307": "Medicare paid the line in full under the clinical lab fee schedule, with no coinsurance: an ABN never moves to the patient a line Medicare paid",
+        "L-308": "ABN-508 is valid and the patient owes the $64, but paid it in full at the desk on 17 September: a statement would bill it twice",
+        "L-309": "No ABN at all, billed GZ and denied CO-50: the clinic's liability under section 1879",
+        "L-310": "ABN-510 is the check-in copy every Medicare patient signs, for 'any laboratory test', with a generic reason and no cost: a routine notice is not valid, so the patient is refunded instead",
+        "L-313": "Unit 2 was denied CO-151, over the medically unlikely edit for venipuncture: an ABN never moves an MUE denial to the patient, whatever ABN-513 says"
+      }
+    },
+    {
+      "tool": "refund_patient",
+      "key": "payment_id",
+      "eligible": {
+        "PP-41": {
+          "value_usd": 48.0,
+          "why": "Paid for L-304, whose ABN is generic and not valid: Medicare denied it as not reasonable and necessary, so the patient is not liable and the $48.00 is refunded within 30 days of the 2 October remittance, by 1 November",
+          "expect": {
+            "amount_usd": 48.0
+          }
+        },
+        "PP-42": {
+          "value_usd": 42.0,
+          "why": "Paid for L-305, whose ABN was signed after the draw: denied CO-50, the clinic's; refund the $42.00 within 30 days of the 25 September remittance, by 25 October",
+          "expect": {
+            "amount_usd": 42.0
+          }
+        },
+        "PP-43": {
+          "value_usd": 52.0,
+          "why": "Paid for L-306, whose ABN is on the form that stopped being accepted on 12 May 2026: refund the $52.00 within 30 days of the 14 September remittance, by 14 October",
+          "expect": {
+            "amount_usd": 52.0
+          }
+        },
+        "PP-44": {
+          "value_usd": 45.0,
+          "why": "Paid for L-310, whose ABN is the routine check-in copy with no item, reason or cost: refund the $45.00 within 30 days of the 5 October remittance",
+          "expect": {
+            "amount_usd": 45.0
+          }
+        }
+      },
+      "traps": {
+        "PP-45": "Paid for L-308 under a valid ABN (ABN-508), denied for the 5-year frequency limit: the patient owes it, and it is not refunded",
+        "PP-46": "The patient's coinsurance on L-311, a visit Medicare paid: owed, not refunded",
+        "PP-47": "Already refunded in full on 1 October: a second refund pays the patient twice"
+      }
+    }
+  ],
+  "forbidden": []
+}

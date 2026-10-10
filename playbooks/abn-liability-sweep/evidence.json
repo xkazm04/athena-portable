@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "abn-liability-sweep",
+  "captured_at": "2026-10-10T02:27:26Z",
+  "bench_run_at": "2026-10-10T02:23:12Z",
+  "narration": {
+    "text": "Every Medicare denial billed to the patient only where a valid ABN was signed, and refunded where it was not. This is a chore for the billing manager of a two-physician internal medicine practice that bills Original Medicare and has every Medicare patient sign notices for lab tests that may not be covered. Athena works it across 4 portals: Chartmend PM, Relaywave, Chartleaf EHR and Carenook. On the bench, she found 7 of 7 eligible items, worth 539 dollars of the 539 dollars there was to find. She made no false claim. The world held 11 traps, and she walked past 11. Among them: An ABN whose only reason is that Medicare may not pay. An ABN signed the day after the blood draw. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 50 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 61.635,
+    "sha256": "73296a991532b1b191306f190fd3bc8be6fd319e5a3f0d540b51d4d57841eedf"
+  },
+  "video": {
+    "path": "evidence/abn-liability-sweep/evidence.mp4",
+    "duration_s": 61.64,
+    "bytes": 2655147,
+    "sha256": "b21b97a3976238cb191e21916bb3b4729bf4bf62aeec269dd4039e6fa34493be"
+  },
+  "thumbnail": {
+    "path": "playbooks/abn-liability-sweep/thumb.jpg",
+    "bytes": 83677,
+    "sha256": "18cff0e91c499fc5f4a1419ca9e27356c774d0cca481c10f26b2881dca6fdfd9"
+  }
+}

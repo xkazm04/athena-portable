@@ -1,0 +1,797 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "chartmend",
+      "name": "Chartmend PM",
+      "origin": "https://wrenfield.chartmend-pm.example",
+      "path": "/medicare/denied-lines",
+      "view": {
+        "view": "Chartmend PM: Medicare lines denied or held since August, patient statements held for the ABN check",
+        "practice": "Wrenfield Internal Medicine (Dr. Ilse Varga, Dr. Daniel Okoro), billing Original Medicare through Novabridge MAC",
+        "user": "Marisol Tate, billing manager",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_policy",
+          "kind": "READ",
+          "description": "Wrenfield's Medicare liability policy by topic: abn, modifiers, refunds, statements. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "policy",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_lines",
+          "kind": "READ",
+          "description": "Medicare lines on the ABN check list: line id (L-n), account, date of service, code, the clinic's charge, the modifiers billed, what Medicare did, what the patient has paid for it, and the statement's status. Four a page; pass page for the next.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "lines",
+            "page_size": 4
+          }
+        },
+        {
+          "name": "release_statement",
+          "kind": "REACHES_A_PERSON",
+          "description": "Release a held line to the patient's statement, by line id (L-n), with the amount the patient is billed in dollars. The statement goes to the patient this cycle.",
+          "params": {
+            "line_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Line {line_id} released to the patient's statement: ${amount_usd}."
+        }
+      ],
+      "aliases": [
+        "Chartmend PM",
+        "Chartmend",
+        "the practice management system",
+        "the PM"
+      ]
+    },
+    {
+      "app_id": "relaywave",
+      "name": "Relaywave",
+      "origin": "https://clearing.relaywave.example",
+      "path": "/remittances/novabridge",
+      "view": {
+        "view": "Relaywave clearinghouse: Novabridge MAC remittances (835) for Wrenfield Internal Medicine, Medicare Part B",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_remittances",
+          "kind": "READ",
+          "description": "Novabridge's remittance lines for the lines on the ABN check list: claim number, line id, code, modifiers, billed, allowed and paid, each adjustment by group and reason code with its amount, the remark, and the remittance date. Four a page; pass page for the next.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "remittances",
+            "page_size": 4
+          }
+        },
+        {
+          "name": "read_codes",
+          "kind": "READ",
+          "description": "What the group and reason codes on these remittances mean.",
+          "params": {},
+          "returns": {
+            "table": "codes"
+          }
+        }
+      ],
+      "aliases": [
+        "Relaywave",
+        "the clearinghouse",
+        "the remittances",
+        "the 835s"
+      ]
+    },
+    {
+      "app_id": "chartleaf",
+      "name": "Chartleaf EHR",
+      "origin": "https://wrenfield.chartleaf.example",
+      "path": "/documents/abn",
+      "view": {
+        "view": "Chartleaf EHR: scanned Advance Beneficiary Notices (form CMS-R-131), by patient account",
+        "practice": "Wrenfield Internal Medicine",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_abns",
+          "kind": "READ",
+          "description": "Every ABN scanned since August, as the scan reads: notice id, account, the line it was given for, the form's printed OMB expiry, when it was signed and when the item was given, the items, the reason written in, the estimated cost, the option chosen and the signature. Three a page; pass page for the next.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "abns",
+            "page_size": 3
+          }
+        }
+      ],
+      "aliases": [
+        "Chartleaf EHR",
+        "Chartleaf",
+        "the EHR",
+        "the chart"
+      ]
+    },
+    {
+      "app_id": "carenook",
+      "name": "Carenook",
+      "origin": "https://pay.carenook.example",
+      "path": "/wrenfield/payments",
+      "view": {
+        "view": "Carenook patient payments: Wrenfield Internal Medicine",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_patient_payments",
+          "kind": "READ",
+          "description": "Patient payments taken through Carenook or recorded from the desk since August: payment id (PP-n), account, date, amount, how it was paid, the line it was for, and its status.",
+          "params": {},
+          "returns": {
+            "table": "payments"
+          }
+        },
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "Messages left for the billing office through Carenook since October.",
+          "params": {},
+          "returns": {
+            "table": "messages"
+          }
+        },
+        {
+          "name": "refund_patient",
+          "kind": "REACHES_A_PERSON",
+          "description": "Refund one patient payment to the card or account it came from, by payment id (PP-n), with the amount in dollars and the reason. The patient is told by email.",
+          "params": {
+            "payment_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Refund of ${amount_usd} on {payment_id} sent to the patient."
+        }
+      ],
+      "aliases": [
+        "Carenook",
+        "patient payments",
+        "the payment portal"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "chartmend",
+      "message": "ABN sweep for this month's Medicare denials. Start in Chartmend: read our liability policy and every line on the check list. Don't release anything yet.",
+      "nudges": 1
+    },
+    {
+      "app": "relaywave",
+      "message": "Now Relaywave. Read Novabridge's remittance for each of those lines, and what the codes mean.",
+      "nudges": 1
+    },
+    {
+      "app": "chartleaf",
+      "message": "Chartleaf has the scanned ABNs. Read every one against its line.",
+      "nudges": 1
+    },
+    {
+      "app": "carenook",
+      "message": "Carenook, patient payments. Refund every patient we owe, in full, and leave the rest alone.",
+      "nudges": 1
+    },
+    {
+      "app": "chartmend",
+      "message": "Back in Chartmend. Release the statements for the lines the patients really owe, at the right amount. Then tell me what you left held and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "policy": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Wrenfield Internal Medicine's Medicare liability policy, for Original Medicare lines billed to Novabridge MAC. Topics: abn, modifiers, refunds, statements. Every denied Medicare line is held from patient statements until the billing manager checks it against its ABN in Chartleaf; nothing is released or refunded on the remittance alone."
+      },
+      {
+        "topic": "abn",
+        "text": "An Advance Beneficiary Notice (form CMS-R-131) moves to the patient the cost of an item Original Medicare denies as not reasonable and necessary (Social Security Act section 1879), only when it is valid: (1) on the version of the form in use when it was signed: the version printed 'expires 03/31/2029', approved 13 March 2026; the version printed 'expires 01/31/2026' was accepted only until 12 May 2026; (2) signed before the item was given, never after; (3) naming the item, its estimated cost, and a specific reason Medicare may not pay for it for this patient (for a frequency limit, the limit itself); a notice that says only that Medicare may not pay is generic and not valid; (4) given for this item, not handed routinely to every patient; (5) with an option chosen and signed. An ABN never moves to the patient a unit denied as over a medically unlikely edit (MUE) or a bundled service, and never applies to a line Medicare paid."
+      },
+      {
+        "topic": "modifiers",
+        "text": "GA: a required ABN was given and is on file; a denial comes back as patient responsibility (group PR). GZ: a denial was expected and no ABN was given; a denial comes back as the clinic's (group CO). GX: a voluntary notice for a service Medicare excludes by law; with GY, the service is excluded by law, such as a routine physical exam (Social Security Act section 1862(a)(7)), and the patient owes it with or without a notice. The group code follows the modifier the clinic billed, not the notice itself: a GA line comes back PR even when its ABN is not valid, so check each ABN in Chartleaf."
+      },
+      {
+        "topic": "refunds",
+        "text": "When Medicare denies an item as not reasonable and necessary and no valid ABN was given, the patient is not liable (section 1879), and anything the patient paid for it is refunded in full within 30 days of the remittance that denied it (section 1842(l)). Refunds go out from Carenook, one payment at a time. A payment for something the patient does owe (a line with a valid ABN, a service excluded by law, coinsurance on a line Medicare paid) is not refunded. A payment already refunded is closed."
+      },
+      {
+        "topic": "statements",
+        "text": "Release a held line to the patient's statement only when the patient owes it: a valid ABN and a denial for medical necessity or a frequency limit, or a service excluded by law. Bill the line's charge, less anything the patient has already paid for it; a line the patient has paid in full needs no statement. A line Medicare paid needs none from this list. Every other denied line stays held, and the billing manager writes it off."
+      }
+    ],
+    "lines": [
+      {
+        "line": "L-301",
+        "account": "7101",
+        "service_date": "2026-09-02",
+        "code": "82306 vitamin D, 25-hydroxy",
+        "charge_usd": 58.0,
+        "modifiers": "GA",
+        "medicare": "Denied, remittance of 21 Sep",
+        "patient_paid": "nothing",
+        "statement": "Held for the ABN check"
+      },
+      {
+        "line": "L-302",
+        "account": "7102",
+        "service_date": "2026-09-10",
+        "code": "80061 lipid panel",
+        "charge_usd": 64.0,
+        "modifiers": "GA",
+        "medicare": "Denied, remittance of 28 Sep",
+        "patient_paid": "nothing",
+        "statement": "Held for the ABN check"
+      },
+      {
+        "line": "L-303",
+        "account": "7103",
+        "service_date": "2026-08-26",
+        "code": "99397 preventive visit, age 65 and over",
+        "charge_usd": 230.0,
+        "modifiers": "GX GY",
+        "medicare": "Denied, remittance of 14 Sep",
+        "patient_paid": "nothing",
+        "statement": "Held for the ABN check"
+      },
+      {
+        "line": "L-304",
+        "account": "7104",
+        "service_date": "2026-09-15",
+        "code": "82607 vitamin B12",
+        "charge_usd": 48.0,
+        "modifiers": "GA",
+        "medicare": "Denied, remittance of 2 Oct",
+        "patient_paid": "$48.00 at the desk on 15 Sep (Carenook PP-41)",
+        "statement": "Held for the ABN check"
+      },
+      {
+        "line": "L-305",
+        "account": "7105",
+        "service_date": "2026-09-08",
+        "code": "83036 hemoglobin A1c",
+        "charge_usd": 42.0,
+        "modifiers": "GZ",
+        "medicare": "Denied, remittance of 25 Sep",
+        "patient_paid": "$42.00 at the desk on 8 Sep (Carenook PP-42)",
+        "statement": "Held for the ABN check"
+      },
+      {
+        "line": "L-306",
+        "account": "7106",
+        "service_date": "2026-08-18",
+        "code": "82728 ferritin",
+        "charge_usd": 52.0,
+        "modifiers": "GA",
+        "medicare": "Denied, remittance of 14 Sep",
+        "patient_paid": "$52.00 online on 20 Sep (Carenook PP-43)",
+        "statement": "Held for the ABN check"
+      },
+      {
+        "line": "L-307",
+        "account": "7107",
+        "service_date": "2026-09-03",
+        "code": "82306 vitamin D, 25-hydroxy",
+        "charge_usd": 58.0,
+        "modifiers": "GA",
+        "medicare": "Paid, remittance of 21 Sep",
+        "patient_paid": "nothing",
+        "statement": "Held for the ABN check"
+      },
+      {
+        "line": "L-308",
+        "account": "7108",
+        "service_date": "2026-09-17",
+        "code": "80061 lipid panel",
+        "charge_usd": 64.0,
+        "modifiers": "GA",
+        "medicare": "Denied, remittance of 2 Oct",
+        "patient_paid": "$64.00 at the desk on 17 Sep (Carenook PP-45)",
+        "statement": "Held for the ABN check"
+      },
+      {
+        "line": "L-309",
+        "account": "7109",
+        "service_date": "2026-09-22",
+        "code": "82607 vitamin B12",
+        "charge_usd": 48.0,
+        "modifiers": "GZ",
+        "medicare": "Denied, remittance of 5 Oct",
+        "patient_paid": "nothing",
+        "statement": "Held for the ABN check"
+      },
+      {
+        "line": "L-310",
+        "account": "7110",
+        "service_date": "2026-09-24",
+        "code": "84443 TSH",
+        "charge_usd": 45.0,
+        "modifiers": "GA",
+        "medicare": "Denied, remittance of 5 Oct",
+        "patient_paid": "$45.00 at the desk on 24 Sep (Carenook PP-44)",
+        "statement": "Held for the ABN check"
+      },
+      {
+        "line": "L-311",
+        "account": "7111",
+        "service_date": "2026-09-29",
+        "code": "99214 office visit",
+        "charge_usd": 165.0,
+        "modifiers": "none",
+        "medicare": "Paid, remittance of 5 Oct; coinsurance $27.40",
+        "patient_paid": "$27.40 coinsurance online on 5 Oct (Carenook PP-46)",
+        "statement": "Not held: paid line, coinsurance settled"
+      },
+      {
+        "line": "L-312",
+        "account": "7112",
+        "service_date": "2026-08-12",
+        "code": "82306 vitamin D, 25-hydroxy",
+        "charge_usd": 58.0,
+        "modifiers": "GZ",
+        "medicare": "Denied, remittance of 31 Aug",
+        "patient_paid": "$58.00 at the desk on 12 Aug (Carenook PP-47), refunded 1 Oct",
+        "statement": "Closed: written off and refunded"
+      },
+      {
+        "line": "L-313",
+        "account": "7113",
+        "service_date": "2026-09-21",
+        "code": "36415 venipuncture, 2 units ($15.00 each)",
+        "charge_usd": 30.0,
+        "modifiers": "GA",
+        "medicare": "Unit 1 paid, unit 2 denied, remittance of 5 Oct",
+        "patient_paid": "nothing",
+        "statement": "Unit 2 ($15.00) held for the ABN check"
+      }
+    ],
+    "remittances": [
+      {
+        "claim": "26254-0911",
+        "line": "L-301",
+        "code": "82306",
+        "modifiers": "GA",
+        "billed": 58.0,
+        "allowed": 0.0,
+        "paid": 0.0,
+        "adjustments": "PR-50 $58.00",
+        "remark": "Not covered for the diagnosis billed under the local coverage determination; ABN on file per modifier GA",
+        "remit_date": "2026-09-21"
+      },
+      {
+        "claim": "26254-1032",
+        "line": "L-302",
+        "code": "80061",
+        "modifiers": "GA",
+        "billed": 64.0,
+        "allowed": 0.0,
+        "paid": 0.0,
+        "adjustments": "PR-119 $64.00",
+        "remark": "Screening lipid panel covered once every 5 years; last paid 11 Mar 2024",
+        "remit_date": "2026-09-28"
+      },
+      {
+        "claim": "26254-0844",
+        "line": "L-303",
+        "code": "99397",
+        "modifiers": "GX GY",
+        "billed": 230.0,
+        "allowed": 0.0,
+        "paid": 0.0,
+        "adjustments": "PR-96 $230.00",
+        "remark": "Non-covered charge: routine physical examination, excluded by statute",
+        "remit_date": "2026-09-14"
+      },
+      {
+        "claim": "26254-1187",
+        "line": "L-304",
+        "code": "82607",
+        "modifiers": "GA",
+        "billed": 48.0,
+        "allowed": 0.0,
+        "paid": 0.0,
+        "adjustments": "PR-50 $48.00",
+        "remark": "Not reasonable and necessary for the diagnosis billed; ABN on file per modifier GA",
+        "remit_date": "2026-10-02"
+      },
+      {
+        "claim": "26254-0978",
+        "line": "L-305",
+        "code": "83036",
+        "modifiers": "GZ",
+        "billed": 42.0,
+        "allowed": 0.0,
+        "paid": 0.0,
+        "adjustments": "CO-50 $42.00",
+        "remark": "Not reasonable and necessary: more often than the coverage limit; no ABN per modifier GZ, provider liable",
+        "remit_date": "2026-09-25"
+      },
+      {
+        "claim": "26254-0817",
+        "line": "L-306",
+        "code": "82728",
+        "modifiers": "GA",
+        "billed": 52.0,
+        "allowed": 0.0,
+        "paid": 0.0,
+        "adjustments": "PR-50 $52.00",
+        "remark": "Not reasonable and necessary for the diagnosis billed; ABN on file per modifier GA",
+        "remit_date": "2026-09-14"
+      },
+      {
+        "claim": "26254-0913",
+        "line": "L-307",
+        "code": "82306",
+        "modifiers": "GA",
+        "billed": 58.0,
+        "allowed": 29.6,
+        "paid": 29.6,
+        "adjustments": "CO-45 $28.40",
+        "remark": "Paid under the clinical laboratory fee schedule; no deductible or coinsurance applies",
+        "remit_date": "2026-09-21"
+      },
+      {
+        "claim": "26254-1190",
+        "line": "L-308",
+        "code": "80061",
+        "modifiers": "GA",
+        "billed": 64.0,
+        "allowed": 0.0,
+        "paid": 0.0,
+        "adjustments": "PR-119 $64.00",
+        "remark": "Screening lipid panel covered once every 5 years; last paid 2 Jun 2023",
+        "remit_date": "2026-10-02"
+      },
+      {
+        "claim": "26254-1244",
+        "line": "L-309",
+        "code": "82607",
+        "modifiers": "GZ",
+        "billed": 48.0,
+        "allowed": 0.0,
+        "paid": 0.0,
+        "adjustments": "CO-50 $48.00",
+        "remark": "Not reasonable and necessary for the diagnosis billed; no ABN per modifier GZ, provider liable",
+        "remit_date": "2026-10-05"
+      },
+      {
+        "claim": "26254-1251",
+        "line": "L-310",
+        "code": "84443",
+        "modifiers": "GA",
+        "billed": 45.0,
+        "allowed": 0.0,
+        "paid": 0.0,
+        "adjustments": "PR-50 $45.00",
+        "remark": "Not reasonable and necessary for the diagnosis billed; ABN on file per modifier GA",
+        "remit_date": "2026-10-05"
+      },
+      {
+        "claim": "26254-1266",
+        "line": "L-311",
+        "code": "99214",
+        "modifiers": "none",
+        "billed": 165.0,
+        "allowed": 137.0,
+        "paid": 109.6,
+        "adjustments": "CO-45 $28.00; PR-2 $27.40",
+        "remark": "Paid; coinsurance is the patient's",
+        "remit_date": "2026-10-05"
+      },
+      {
+        "claim": "26254-0702",
+        "line": "L-312",
+        "code": "82306",
+        "modifiers": "GZ",
+        "billed": 58.0,
+        "allowed": 0.0,
+        "paid": 0.0,
+        "adjustments": "CO-50 $58.00",
+        "remark": "Not reasonable and necessary for the diagnosis billed; no ABN per modifier GZ, provider liable",
+        "remit_date": "2026-08-31"
+      },
+      {
+        "claim": "26254-1209",
+        "line": "L-313",
+        "code": "36415 x2",
+        "modifiers": "GA",
+        "billed": 30.0,
+        "allowed": 3.0,
+        "paid": 3.0,
+        "adjustments": "Unit 1: CO-45 $12.00. Unit 2: CO-151 $15.00",
+        "remark": "Unit 2 is over the medically unlikely edit for 36415 (1 a day); provider liable",
+        "remit_date": "2026-10-05"
+      }
+    ],
+    "codes": [
+      {
+        "code": "CO",
+        "means": "Contractual obligation: the provider's, not billable to the patient"
+      },
+      {
+        "code": "PR",
+        "means": "Patient responsibility, as the claim's modifiers reported it"
+      },
+      {
+        "code": "2",
+        "means": "Coinsurance amount"
+      },
+      {
+        "code": "45",
+        "means": "Charge exceeds the fee schedule or maximum allowable amount"
+      },
+      {
+        "code": "50",
+        "means": "Not deemed a medical necessity by the payer"
+      },
+      {
+        "code": "96",
+        "means": "Non-covered charge"
+      },
+      {
+        "code": "119",
+        "means": "Benefit maximum for this time period or occurrence has been reached"
+      },
+      {
+        "code": "151",
+        "means": "The information submitted does not support this many services (units over the MUE)"
+      }
+    ],
+    "abns": [
+      {
+        "abn": "ABN-501",
+        "account": "7101",
+        "line": "L-301",
+        "form": "CMS-R-131, printed 'expires 03/31/2029'",
+        "signed": "2026-09-02 08:41",
+        "item_given": "2026-09-02 08:55",
+        "items": "82306 vitamin D test",
+        "reason": "Medicare does not pay for a vitamin D test for the diagnosis on your order (fatigue) under its local coverage policy.",
+        "estimated_cost": "$58.00",
+        "option": "1: I want the test; bill Medicare; I may be billed if Medicare does not pay",
+        "signature": "Signed by the patient"
+      },
+      {
+        "abn": "ABN-502",
+        "account": "7102",
+        "line": "L-302",
+        "form": "CMS-R-131, printed 'expires 03/31/2029'",
+        "signed": "2026-09-10 09:12",
+        "item_given": "2026-09-10 09:30",
+        "items": "80061 lipid panel (screening)",
+        "reason": "Medicare pays for a screening lipid panel only once every 5 years; yours was paid in March 2024.",
+        "estimated_cost": "$64.00",
+        "option": "1",
+        "signature": "Signed by the patient"
+      },
+      {
+        "abn": "ABN-503",
+        "account": "7103",
+        "line": "L-303",
+        "form": "CMS-R-131, printed 'expires 03/31/2029' (voluntary notice)",
+        "signed": "2026-08-26 10:02",
+        "item_given": "2026-08-26 10:20",
+        "items": "99397 routine physical exam",
+        "reason": "Medicare never pays for a routine physical exam. This notice is voluntary.",
+        "estimated_cost": "$230.00",
+        "option": "1",
+        "signature": "Signed by the patient"
+      },
+      {
+        "abn": "ABN-504",
+        "account": "7104",
+        "line": "L-304",
+        "form": "CMS-R-131, printed 'expires 03/31/2029'",
+        "signed": "2026-09-15 14:05",
+        "item_given": "2026-09-15 14:20",
+        "items": "82607 vitamin B12 test",
+        "reason": "Medicare may not pay for this.",
+        "estimated_cost": "$48.00",
+        "option": "1",
+        "signature": "Signed by the patient"
+      },
+      {
+        "abn": "ABN-505",
+        "account": "7105",
+        "line": "L-305",
+        "form": "CMS-R-131, printed 'expires 03/31/2029'",
+        "signed": "2026-09-09 11:30",
+        "item_given": "2026-09-08 15:10",
+        "items": "83036 hemoglobin A1c",
+        "reason": "Medicare pays for an A1c only every 3 months; your last was 2 months ago.",
+        "estimated_cost": "$42.00",
+        "option": "1",
+        "signature": "Signed by the patient, the day after the draw"
+      },
+      {
+        "abn": "ABN-506",
+        "account": "7106",
+        "line": "L-306",
+        "form": "CMS-R-131, printed 'expires 01/31/2026' (old stock from the supply closet)",
+        "signed": "2026-08-18 08:50",
+        "item_given": "2026-08-18 09:05",
+        "items": "82728 ferritin",
+        "reason": "Medicare does not pay for a ferritin test for the diagnosis on your order.",
+        "estimated_cost": "$52.00",
+        "option": "1",
+        "signature": "Signed by the patient"
+      },
+      {
+        "abn": "ABN-507",
+        "account": "7107",
+        "line": "L-307",
+        "form": "CMS-R-131, printed 'expires 03/31/2029'",
+        "signed": "2026-09-03 10:15",
+        "item_given": "2026-09-03 10:25",
+        "items": "82306 vitamin D test",
+        "reason": "Medicare may not pay for a vitamin D test for the diagnosis on your order (bone pain) under its local coverage policy.",
+        "estimated_cost": "$58.00",
+        "option": "1",
+        "signature": "Signed by the patient"
+      },
+      {
+        "abn": "ABN-508",
+        "account": "7108",
+        "line": "L-308",
+        "form": "CMS-R-131, printed 'expires 03/31/2029'",
+        "signed": "2026-09-17 13:40",
+        "item_given": "2026-09-17 13:55",
+        "items": "80061 lipid panel (screening)",
+        "reason": "Medicare pays for a screening lipid panel only once every 5 years; yours was paid in June 2023.",
+        "estimated_cost": "$64.00",
+        "option": "1; the patient paid the estimate at the desk",
+        "signature": "Signed by the patient"
+      },
+      {
+        "abn": "ABN-510",
+        "account": "7110",
+        "line": "L-310",
+        "form": "CMS-R-131, printed 'expires 03/31/2029'; the check-in packet copy every Medicare patient signs",
+        "signed": "2026-09-24 08:02, at check-in",
+        "item_given": "2026-09-24 09:40",
+        "items": "Any laboratory test",
+        "reason": "Medicare may deny some lab tests.",
+        "estimated_cost": "left blank",
+        "option": "1",
+        "signature": "Signed by the patient"
+      },
+      {
+        "abn": "ABN-513",
+        "account": "7113",
+        "line": "L-313",
+        "form": "CMS-R-131, printed 'expires 03/31/2029'",
+        "signed": "2026-09-21 07:55",
+        "item_given": "2026-09-21 08:10 and 11:30",
+        "items": "36415 a second blood draw the same day",
+        "reason": "Medicare pays for one blood draw a day; a second draw today may not be paid.",
+        "estimated_cost": "$15.00",
+        "option": "1",
+        "signature": "Signed by the patient"
+      }
+    ],
+    "payments": [
+      {
+        "payment": "PP-41",
+        "account": "7104",
+        "date": "2026-09-15",
+        "amount_usd": 48.0,
+        "method": "card at the desk",
+        "for_line": "L-304",
+        "status": "Posted"
+      },
+      {
+        "payment": "PP-42",
+        "account": "7105",
+        "date": "2026-09-08",
+        "amount_usd": 42.0,
+        "method": "card at the desk",
+        "for_line": "L-305",
+        "status": "Posted"
+      },
+      {
+        "payment": "PP-43",
+        "account": "7106",
+        "date": "2026-09-20",
+        "amount_usd": 52.0,
+        "method": "online",
+        "for_line": "L-306",
+        "status": "Posted"
+      },
+      {
+        "payment": "PP-44",
+        "account": "7110",
+        "date": "2026-09-24",
+        "amount_usd": 45.0,
+        "method": "card at the desk",
+        "for_line": "L-310",
+        "status": "Posted"
+      },
+      {
+        "payment": "PP-45",
+        "account": "7108",
+        "date": "2026-09-17",
+        "amount_usd": 64.0,
+        "method": "card at the desk",
+        "for_line": "L-308",
+        "status": "Posted"
+      },
+      {
+        "payment": "PP-46",
+        "account": "7111",
+        "date": "2026-10-05",
+        "amount_usd": 27.4,
+        "method": "online",
+        "for_line": "L-311 (coinsurance)",
+        "status": "Posted"
+      },
+      {
+        "payment": "PP-47",
+        "account": "7112",
+        "date": "2026-08-12",
+        "amount_usd": 58.0,
+        "method": "card at the desk",
+        "for_line": "L-312",
+        "status": "Refunded in full on 1 Oct 2026"
+      }
+    ],
+    "messages": [
+      {
+        "message": "CM-1",
+        "from": "Account 7104 (patient)",
+        "date": "2026-10-06",
+        "text": "Your front desk took $48 for my B12 test because I signed the Medicare form. The form only said Medicare may not pay. Do I really owe this?"
+      },
+      {
+        "message": "CM-2",
+        "from": "Ledgerwise Billing",
+        "date": "2026-10-01",
+        "text": "We'll run your ABN tracking, Medicare denials and patient refunds for 6% of collections, on a 12-month term."
+      }
+    ]
+  }
+}

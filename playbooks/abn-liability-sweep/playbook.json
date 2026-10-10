@@ -1,0 +1,120 @@
+{
+  "id": "abn-liability-sweep",
+  "title": "Every Medicare denial billed to the patient only where a valid ABN was signed, and refunded where it was not",
+  "domain": "Clinics",
+  "audience": "work",
+  "promise": "Each Medicare line denied this month is read against its remittance and the ABN scanned in the chart. A patient is billed only where a valid notice was signed before the item, on the current form, with a specific reason, or where the service is excluded by law. A patient who paid for a line with a generic, late, outdated or routine notice is refunded in full. No one is billed for a line Medicare paid, a unit over a medically unlikely edit, a line with no notice, or a line already paid, and no payment the patient owes or that was already refunded goes back.",
+  "persona": "The billing manager of a two-physician internal medicine practice that bills Original Medicare and has every Medicare patient sign notices for lab tests that may not be covered",
+  "chore": "Read every denied Medicare line on the practice management system's check list, with what the patient has paid; Novabridge's remittance for each line, with its group and reason codes; and every scanned Advance Beneficiary Notice in the chart, as the scan reads: the form's printed expiry, when it was signed against when the item was given, the reason written in and the cost. Then apply Social Security Act section 1879 and CMS's ABN instructions as they stand: a notice moves a medical-necessity or frequency denial to the patient only when it is valid; GA, GZ and GX say what the clinic reported, not whether the notice holds; an MUE denial or a paid line is never the patient's; and a patient who paid for a line with no valid notice is refunded. None of the four systems shares data with another.",
+  "command": "Do this month's ABN sweep on our Medicare denials. Go through Chartmend, the Novabridge remittances in Relaywave, the ABNs in Chartleaf and the payments in Carenook: bill the patients who signed a valid ABN, refund the ones who paid where we had no valid ABN, and don't bill anyone we can't.",
+  "apps": [
+    {
+      "name": "Chartmend PM",
+      "role": "every denied Medicare line with its modifiers and what the patient paid, the liability policy, and the held statements",
+      "api": "Practice management, vendor-specific",
+      "url": ""
+    },
+    {
+      "name": "Relaywave",
+      "role": "Novabridge's 835 remittances: each line's group and reason codes and the remark that says why",
+      "api": "Clearinghouse batch files, not answers",
+      "url": ""
+    },
+    {
+      "name": "Chartleaf EHR",
+      "role": "the scanned ABNs: form version, signing time, items, reason, cost and option",
+      "api": "Scanned documents, no data",
+      "url": ""
+    },
+    {
+      "name": "Carenook",
+      "role": "patient payments taken at the desk and online, the refunds, and patients' messages",
+      "api": "Patient payments portal, no API for a small practice",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the liability policy and every line on the check list in Chartmend PM.",
+    "Reads each line's remittance codes and remark in Relaywave.",
+    "Reads every scanned ABN in Chartleaf EHR against its line.",
+    "Refunds in Carenook each patient who paid for a line with no valid ABN.",
+    "Back in Chartmend PM, releases to the statement each line the patient owes, at its amount."
+  ],
+  "gates": [
+    {
+      "action": "release_statement",
+      "label": "Bill a patient for a denied line",
+      "why": "The statement reaches a Medicare patient: billing a line with no valid ABN collects money the law says the clinic must bear, and must later refund."
+    },
+    {
+      "action": "refund_patient",
+      "label": "Refund a patient payment",
+      "why": "Money leaves the practice's account: refunding a payment the patient owes, or one already refunded, cannot be called back."
+    }
+  ],
+  "traps": [
+    "An ABN whose only reason is that Medicare may not pay.",
+    "An ABN signed the day after the blood draw.",
+    "An ABN signed in August 2026 on the form that stopped being accepted in May.",
+    "The routine check-in ABN every Medicare patient signs, for any lab test.",
+    "A second blood draw denied as over the medically unlikely edit, with an ABN for it.",
+    "A test Medicare paid, with an ABN on file.",
+    "A line with no ABN at all, billed GZ.",
+    "A valid ABN whose patient already paid in full at the desk, and that payment itself.",
+    "Coinsurance on a visit Medicare paid, and a payment already refunded."
+  ],
+  "memory": [
+    "Each line's account, date, code, charge, modifiers and what the patient paid, and the policy's rules, carried from Chartmend PM.",
+    "Each line's group and reason code, remark and remittance date, carried from Relaywave.",
+    "Each ABN's form expiry, signing time against the item's time, reason, cost and option, carried from Chartleaf EHR.",
+    "Each payment's line and whether it was already refunded, from Carenook."
+  ],
+  "economics": {
+    "value_usd": 1800,
+    "per": "month",
+    "basis": "An estimate. A practice that has Medicare patients sign ABNs for lab tests and screening loses twice when nobody checks them against the denials: it writes off charges a valid notice made the patient's, and it keeps payments for lines whose notice was generic, late, routine or on an outdated form, which the law says must be refunded and which an audit or a complaint turns into a larger problem. For a two-physician internal medicine practice with several hundred Medicare visits a month, the roster's $1,800 a month is the denied charges billed rightly or refunded rightly in a month, an estimate. The bench world holds $539: $352 billed rightly on three lines (two valid notices and a routine physical excluded by law) and $187 refunded on four payments. The rules as they stand on the world's date, Friday 9 October 2026: Social Security Act section 1879 (limitation on liability) and section 1842(l) (a physician refunds what a patient paid for a line denied as not reasonable and necessary without a valid notice, timely meaning within 30 days of the remittance); CMS's ABN instructions and MLN booklet MLN006266 (May 2025) for GA, GZ, GX and GY, the routine-notice prohibition, a specific reason, a notice signed before the item, and no ABN for an MUE denial or a paid line; and form CMS-R-131 in its version approved 13 March 2026, printed 'expires 03/31/2029', with the version printed 'expires 01/31/2026' accepted only until 12 May 2026. Times a year: twelve, a month-end sweep.",
+    "manual_minutes": 150,
+    "times_per_year": 12,
+    "incumbent": "Outsourced medical billing services take a share of collections for Medicare billing, denials and refunds; the world's own offer is 6%, and the figure used is 6%, an estimate.",
+    "incumbent_fee_pct": 6,
+    "sources": [
+      {
+        "label": "Social Security Act section 1879: limitation on liability of a beneficiary where Medicare claims are disallowed",
+        "url": "https://www.ssa.gov/OP_Home/ssact/title18/1879.htm"
+      },
+      {
+        "label": "Social Security Act section 1842(l): a physician's refund of amounts collected for services denied as not reasonable and necessary without advance notice",
+        "url": "https://www.ssa.gov/OP_Home/ssact/title18/1842.htm"
+      },
+      {
+        "label": "Social Security Act section 1862(a)(7): routine physical checkups excluded from coverage",
+        "url": "https://www.ssa.gov/OP_Home/ssact/title18/1862.htm"
+      },
+      {
+        "label": "CMS MLN006266, Medicare Advance Written Notices of Non-coverage (May 2025): routine notices, reasons, timing, refunds within 30 days, modifiers GA, GX, GY and GZ, no ABN for an MUE or a paid service",
+        "url": "https://www.cms.gov/files/document/mln006266-medicare-advance-written-notices-non-coverage.pdf"
+      },
+      {
+        "label": "CMS: FFS ABN, form CMS-R-131 and its instructions; Medicare Claims Processing Manual, chapter 30, section 50",
+        "url": "https://www.cms.gov/medicare/forms-notices/beneficiary-notices-initiative/ffs-abn"
+      },
+      {
+        "label": "BMD: CMS requires providers to use the updated ABN form by 12 May 2026 (OMB approval of 13 March 2026, expiring 31 March 2029)",
+        "url": "https://www.bmdllc.com/resources/blog/cms-requires-providers-to-use-an-updated-advance-beneficiary-notice-abn-form-by-may-12-2026/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four systems with no shared data: the remittance says PR for every GA line, so a defect shows only in the scanned notice, as a reason that names nothing, a signing time after the draw, an expiry printed on the form, or a check-in packet; an MUE denial and a paid line look billable because a notice is on file; and a valid notice is wrong to bill once the patient has paid at the desk.",
+    "usefulness_why": "Collects what valid notices make the patient's and refunds what the law says the clinic must bear, every month, without paying a billing service a share of collections; each refund also closes a complaint before it reaches Medicare."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful billing manager gets most of it; the bar is most of the owed lines billed and the owed refunds sent at their amounts, no patient billed on a notice that does not hold, no refund of what the patient owes, inside an hour."
+  },
+  "caveat": "Wrenfield Internal Medicine, Novabridge MAC, Ledgerwise Billing, Chartmend PM, Relaywave, Chartleaf, Carenook and every clinician and patient account here are invented; no line is any real patient's. The public rules applied are Social Security Act sections 1879, 1842(l) and 1862(a)(7) and CMS's ABN instructions for form CMS-R-131, fixed in the bench world as of 9 October 2026, when the version approved on 13 March 2026 (expiring 31 March 2029) is the only one accepted. The clinic's liability policy and its statement and refund practice are invented world documents. The Medicare contractor's review, the full ABN instructions and the clinical record decide real cases. This applies stated rules to stated facts; it is not legal, coding or billing-compliance advice, and real patient data needs a model path covered by a business associate agreement."
+}
