@@ -272,7 +272,7 @@ def test_the_transport_follows_no_redirect_so_the_credential_stays_on_the_pinned
     for thread in threads:
         thread.start()
     try:
-        status, _ = UrllibTransport()(
+        status, _, _ = UrllibTransport()(
             "GET",
             f"http://127.0.0.1:{first.server_port}/",
             {"Authorization": "Bearer secret"},

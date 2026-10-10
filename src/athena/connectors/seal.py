@@ -10,19 +10,23 @@ Two seals, chosen once at start:
 - :class:`DpapiSeal` on Windows: ``CryptProtectData`` through ``ctypes``, bound to the user's
   logon, no extra dependency. The ciphertext is kept as one file per name under the vault
   directory; another user or another machine cannot open it.
-- :class:`FileSeal` elsewhere: the value in a file with mode ``0600``, and the record says
-  ``sealed: false`` so a surface can show that the protection is the file system's and not a
-  keystore's. A machine that wants a keystore installs the ``keyring`` extra, which
+- :class:`FileSeal` elsewhere: the value in a file born with mode ``0600`` — written to a
+  sibling created ``O_EXCL`` with that mode, flushed and renamed over — so it is never readable by
+  anyone else, not even for a moment. It is not encrypted, and the record's ``seal: "file"`` lets a
+  surface say so. A machine that wants a keystore installs the ``keyring`` extra, which
   :func:`select_seal` prefers when it is importable.
 
 Names are opaque handles the vault mints (``<connector>.<kind>``); nothing here reads a value it
-was not asked to.
+was not asked to. A seal that cannot do its work raises :class:`SealUnavailable`, never an
+untyped error, and the vault turns that into a sentence.
 """
 
 from __future__ import annotations
 
 import ctypes
 import os
+import secrets
+import stat
 import sys
 from contextlib import suppress
 from pathlib import Path
@@ -66,9 +70,39 @@ class FileSeal:
 
     def seal(self, name: str, value: str) -> None:
         path = _path_for(self.root, name)
-        path.write_bytes(self._encode(value))
-        with suppress(OSError):
-            path.chmod(0o600)
+        try:
+            data = self._encode(value)
+        except ValueError as exc:  # DPAPI's refusal
+            raise SealUnavailable(str(exc)) from None
+        tmp = path.with_name(f"{path.name}.{secrets.token_hex(6)}.tmp")
+        try:
+            fd = os.open(
+                tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0), 0o600
+            )
+        except OSError as exc:
+            raise SealUnavailable(
+                f"the sealed file could not be created ({type(exc).__name__})"
+            ) from None
+        try:
+            with os.fdopen(fd, "wb") as handle:
+                if os.name == "posix":
+                    mode = stat.S_IMODE(os.fstat(handle.fileno()).st_mode)
+                    if mode & 0o077:
+                        raise SealUnavailable(f"the sealed file was created with mode {mode:o}")
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(tmp, path)
+        except OSError as exc:
+            with suppress(OSError):
+                tmp.unlink()
+            raise SealUnavailable(
+                f"the sealed file could not be written ({type(exc).__name__})"
+            ) from None
+        except SealUnavailable:
+            with suppress(OSError):
+                tmp.unlink()
+            raise
 
     def unseal(self, name: str) -> str | None:
         path = _path_for(self.root, name)
@@ -142,10 +176,20 @@ class KeyringSeal:
         self.service = service
 
     def seal(self, name: str, value: str) -> None:
-        self._keyring.set_password(self.service, name, value)
+        try:
+            self._keyring.set_password(self.service, name, value)
+        except Exception as exc:  # a backend error is the backend's own type; never let it out
+            raise SealUnavailable(
+                f"the keystore refused the value ({type(exc).__name__})"
+            ) from None
 
     def unseal(self, name: str) -> str | None:
-        found = self._keyring.get_password(self.service, name)
+        try:
+            found = self._keyring.get_password(self.service, name)
+        except Exception as exc:
+            raise SealUnavailable(
+                f"the keystore could not be read ({type(exc).__name__})"
+            ) from None
         return str(found) if found is not None else None
 
     def destroy(self, name: str) -> None:

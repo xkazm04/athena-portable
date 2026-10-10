@@ -19,6 +19,27 @@ the browser, reached through one vault (ADR 0021).
   credential never rides to a host the pin did not name. A token or OAuth grant is
   probed before it is sealed (keyring, DPAPI or an owner-only file, `seal.py`), under
   `ATHENA_HOME/connectors/`, never inside a brain.
+- **A sealed file is born owner-only.** The file rung writes each value to a sibling created
+  exclusively with mode `0600`, flushes it and renames it over the old one, so the value is never
+  readable by anyone else, even for a moment; on POSIX a file that comes out looser is refused, not
+  kept. A keystore or DPAPI failure comes back as the vault's own error, never an untyped one.
+- **A refresh is classified before it costs a grant.** Only a terminal answer from the token
+  endpoint (a 4xx naming `invalid_grant`, `invalid_client` or `unauthorized_client`, or a 400 or 401
+  with no readable error) marks the connection `needs_reauth`. A 429, a 5xx, a 3xx, a timeout, a
+  2xx without a token or an expiry that is not a number leaves it connected, and the model is told
+  the status. A refresh that rotates the refresh token is sealed; one that does not keeps the old.
+- **The refresh runs off the lock, once.** The token POST is made with the vault's lock released,
+  so the vault keeps answering while it is out; concurrent calls with a stale token wait for the
+  one refresh instead of each sending their own; and a disconnect or reconnect made meanwhile is
+  never undone by it.
+- **A rate limit is not a lost grant.** A 429 from any connector, or a Google 403 whose body names
+  `rateLimitExceeded`, `userRateLimitExceeded`, `quotaExceeded`, `dailyLimitExceeded` or
+  `RESOURCE_EXHAUSTED`, keeps the connection and tells the model it was rate limited, with the
+  provider's `Retry-After` seconds when it sent them (at most a day). Nothing retries. A 401, or any
+  other 403, on an OAuth call still marks `needs_reauth`.
+- **The OAuth client pair is sealed only by a flow that worked.** It rides on the consent flow and
+  is sealed with the grant after the exchange is admitted; a flow that fails, is cancelled or runs
+  out leaves the sealed pair and a live grant as they were.
 - **The records file is swapped in, never rewritten.** `connections.json` is written whole to a
   sibling file, flushed to disk and renamed over the old one, so a crash leaves the previous file.
   A file that cannot be read (an I/O error, invalid JSON, a top level that is not an object) is

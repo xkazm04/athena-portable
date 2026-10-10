@@ -11,6 +11,14 @@ with a timeout and a response cap, sanitises the provider's error text through o
 :meth:`_admit`: the probe first, the seal second. A credential the provider refused leaves
 nothing sealed.
 
+**A refresh is classified, never assumed.** Only a terminal answer from the token endpoint — a
+4xx naming ``invalid_grant``, ``invalid_client`` or ``unauthorized_client``, or a 400 or 401 with
+no readable error — marks a grant ``needs_reauth``. A 429, a 5xx, a 3xx, a timeout or a 2xx
+without a token is transient: the grant stays connected and the caller gets
+:class:`RefreshFailed` or :class:`RateLimited` with the status in its sentence. The token POST
+runs with the vault's lock released, behind one guard per connector, and commits only if the
+connection is still the one it started from.
+
 **The record is one JSON file, the secrets are sealed beside it.** ``ATHENA_HOME/connectors/
 connections.json`` holds what a surface may see — status, identity, the writes switch, the
 allow-list, the last probe — and never a value. A brain copied elsewhere carries none of this.
@@ -51,6 +59,8 @@ __all__ = [
     "HostRefused",
     "NeedsReauth",
     "NotConnected",
+    "RateLimited",
+    "RefreshFailed",
     "Transport",
     "UrllibTransport",
     "Vault",
@@ -65,6 +75,14 @@ MAX_RESPONSE_BYTES = 1_048_576
 REFRESH_FLOOR_S = 300.0
 #: Health is three-valued, rendered with its age, probed on events and never on render.
 HEALTH: tuple[str, ...] = ("healthy", "broken", "unknown")
+#: A ``Retry-After`` the model is told is an integer of seconds, at most a day.
+RETRY_AFTER_CAP_S = 86_400
+#: The token endpoint's errors that mean the grant itself is gone (RFC 6749 §5.2).
+TERMINAL_GRANT_ERRORS = frozenset({"invalid_grant", "invalid_client", "unauthorized_client"})
+#: The reasons Google gives on a 403 that is a rate or a quota, not a lost grant.
+QUOTA_REASONS = frozenset(
+    {"rateLimitExceeded", "userRateLimitExceeded", "quotaExceeded", "dailyLimitExceeded"}
+)
 RECORDS_FILENAME = "connections.json"
 UNREADABLE_INFIX = ".unreadable-"
 
@@ -87,10 +105,68 @@ class NeedsReauth(VaultError):
     """The grant is gone. A caller cannot widen its own grant; the person reconnects."""
 
 
+class RefreshFailed(VaultError):
+    """The grant could not be refreshed this time; it stays connected. The sentence names why."""
+
+
+class RateLimited(VaultError):
+    """The provider is rate limiting the calls. The grant stays connected and nothing retries."""
+
+    def __init__(self, message: str, *, status: int, retry_after: int | None = None) -> None:
+        super().__init__(message)
+        self.status = status
+        self.retry_after = retry_after
+
+
 class Transport(Protocol):
+    """``(status, body)``, or ``(status, body, headers)`` when the transport has the headers."""
+
     def __call__(
         self, method: str, url: str, headers: Mapping[str, str], body: bytes | None, timeout: float
-    ) -> tuple[int, bytes]: ...
+    ) -> tuple[int, bytes] | tuple[int, bytes, Mapping[str, str]]: ...
+
+
+def retry_after_of(headers: Mapping[str, str]) -> int | None:
+    """A ``Retry-After`` of whole seconds, capped; ``None`` when absent or given as a date."""
+    value = headers.get("retry-after", "").strip()
+    if not value.isascii() or not value.isdigit():
+        return None
+    return min(int(value), RETRY_AFTER_CAP_S)
+
+
+def is_quota_refusal(body: Any) -> bool:
+    """A Google error body that names a rate or a quota reason rather than a lost grant."""
+    error = body.get("error") if isinstance(body, Mapping) else None
+    if not isinstance(error, Mapping):
+        return False
+    if error.get("status") == "RESOURCE_EXHAUSTED":
+        return True
+    items = error.get("errors")
+    return isinstance(items, list) and any(
+        isinstance(item, Mapping) and item.get("reason") in QUOTA_REASONS for item in items
+    )
+
+
+def refresh_is_terminal(status: int, body: Any) -> bool:
+    """Whether a token endpoint's refusal means the grant is gone (and not just this attempt)."""
+    if not 400 <= status < 500 or status == 429:
+        return False
+    error = body.get("error") if isinstance(body, Mapping) else None
+    if isinstance(error, str) and error.strip():
+        return error.strip() in TERMINAL_GRANT_ERRORS
+    return status in (400, 401)
+
+
+def _expires_in(grant: Mapping[str, Any], label: str, error: type[VaultError]) -> int:
+    raw = grant.get("expires_in")
+    if raw is None or raw == "" or raw == 0:
+        return 3600
+    if isinstance(raw, bool):
+        raise error(f"{label} answered an expiry that is not a number of seconds")
+    try:
+        return max(0, int(raw))
+    except (TypeError, ValueError, OverflowError):
+        raise error(f"{label} answered an expiry that is not a number of seconds") from None
 
 
 def _now() -> datetime:
@@ -117,13 +193,15 @@ class UrllibTransport:
 
     def __call__(
         self, method: str, url: str, headers: Mapping[str, str], body: bytes | None, timeout: float
-    ) -> tuple[int, bytes]:
+    ) -> tuple[int, bytes, Mapping[str, str]]:
         request = urllib.request.Request(url, data=body, method=method, headers=dict(headers))
         try:
             with _OPENER.open(request, timeout=timeout) as reply:
-                return int(reply.status), reply.read(MAX_RESPONSE_BYTES + 1)
+                answer = reply.read(MAX_RESPONSE_BYTES + 1)
+                return int(reply.status), answer, dict(reply.headers.items())
         except urllib.error.HTTPError as exc:
-            return int(exc.code), exc.read(MAX_RESPONSE_BYTES + 1)
+            answer = exc.read(MAX_RESPONSE_BYTES + 1)
+            return int(exc.code), answer, dict(exc.headers.items()) if exc.headers else {}
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             raise VaultError(f"the provider could not be reached: {type(exc).__name__}") from None
 
@@ -187,6 +265,11 @@ class Vault:
             self._seal = None
         self._open_browser = open_browser or (lambda url: webbrowser.open(url))
         self._lock = threading.RLock()
+        #: One refresh at a time per connector; a caller with a stale token waits for it.
+        self._refresh_guards: dict[str, threading.Lock] = {}
+        #: Bumped by every connect and disconnect, so a refresh or a call that began under one
+        #: grant never commits onto the next.
+        self._generations: dict[str, int] = {}
         self._records: dict[str, ConnectionRecord] = {}
         #: Plain words when the records file could not be read; empty otherwise.
         self.records_notice = ""
@@ -332,16 +415,36 @@ class Vault:
         return self._seal
 
     def _put(self, connector_id: str, kind: str, value: str) -> None:
-        self._seal_or_refuse().seal(f"{connector_id}.{kind}", value)
+        try:
+            self._seal_or_refuse().seal(f"{connector_id}.{kind}", value)
+        except SealUnavailable as exc:
+            raise VaultError(f"the credential could not be stored: {exc}") from None
 
     def _get(self, connector_id: str, kind: str) -> str | None:
-        return None if self._seal is None else self._seal.unseal(f"{connector_id}.{kind}")
+        if self._seal is None:
+            return None
+        try:
+            return self._seal.unseal(f"{connector_id}.{kind}")
+        except SealUnavailable as exc:
+            raise VaultError(f"the credential could not be read: {exc}") from None
 
     def _drop(self, connector_id: str) -> None:
         if self._seal is None:
             return
         for kind in ("token", "refresh", "client_id", "client_secret"):
             self._seal.destroy(f"{connector_id}.{kind}")
+
+    def _generation(self, connector_id: str) -> int:
+        with self._lock:
+            return self._generations.get(connector_id, 0)
+
+    def _next_generation(self, connector_id: str) -> None:
+        with self._lock:
+            self._generations[connector_id] = self._generations.get(connector_id, 0) + 1
+
+    def _refresh_guard(self, connector_id: str) -> threading.Lock:
+        with self._lock:
+            return self._refresh_guards.setdefault(connector_id, threading.Lock())
 
     # -- the outbound door ------------------------------------------------------------------------
 
@@ -357,25 +460,36 @@ class Vault:
         url: str,
         headers: Mapping[str, str],
         body: bytes | None,
-    ) -> tuple[int, bytes]:
+    ) -> tuple[int, bytes, dict[str, str]]:
+        """One call on the wire: status, body, and the reply's headers with lower-cased names."""
         self._check_host(spec, url)
-        status, raw = self.transport(method, url, headers, body, REQUEST_TIMEOUT_S)
+        status, raw, *rest = self.transport(method, url, headers, body, REQUEST_TIMEOUT_S)
         if len(raw) > MAX_RESPONSE_BYTES:
             raise VaultError(f"{spec.label} answered more than {MAX_RESPONSE_BYTES} bytes")
-        return status, raw
+        replied = {str(k).lower(): str(v) for k, v in rest[0].items()} if rest else {}
+        return status, raw, replied
+
+    @staticmethod
+    def _rate_limited(spec: ConnectorSpec, status: int, headers: Mapping[str, str]) -> RateLimited:
+        wait = retry_after_of(headers)
+        when = f"it asked for {wait} s before the next try" if wait is not None else "try later"
+        return RateLimited(
+            f"{spec.label} rate limited the request (it answered {status}); the connection is "
+            f"kept and nothing was retried, {when}",
+            status=status,
+            retry_after=wait,
+        )
 
     def request(
         self, connector_id: str, method: str, url: str, json_body: Any = None
     ) -> tuple[int, Any]:
-        """One brokered call. The credential is attached here and nowhere else."""
+        """One brokered call. The credential is attached here and nowhere else.
+
+        A 429 — or, on OAuth, a 403 whose body names a rate or quota reason — is
+        :class:`RateLimited` and the grant stays connected. A 401, or any other 403, on an OAuth
+        call marks the grant ``needs_reauth``: a refusal it cannot place fails closed."""
         spec = self.spec(connector_id)
-        with self._lock:
-            if not self.is_live(connector_id):
-                rec = self.record(connector_id)
-                if rec.status == "needs_reauth":
-                    raise NeedsReauth(f"{spec.label} needs to be reconnected in Connectors")
-                raise NotConnected(f"{spec.label} is not connected, or is switched off")
-            token = self._fresh_token(spec)
+        token, generation = self._fresh_token(spec)
         headers: dict[str, str] = {"Accept": "application/json", **spec.auth.extra_headers}
         name, value = spec.auth.credential_header(token)
         headers[name] = value
@@ -383,15 +497,26 @@ class Vault:
         if json_body is not None:
             body = json.dumps(json_body).encode("utf-8")
             headers["Content-Type"] = "application/json"
-        status, raw = self._raw(spec, method, url, headers, body)
+        status, raw, replied = self._raw(spec, method, url, headers, body)
+        decoded = self._decode(raw, token)
+        oauth = spec.auth.type == "oauth"
         with self._lock:
             rec = self.record(connector_id)
             rec.last_used_at = _iso(_now())
-            if status in (401, 403) and spec.auth.type == "oauth":
+            if status == 429 or (oauth and status == 403 and is_quota_refusal(decoded)):
+                raise self._rate_limited(spec, status, replied)
+            if oauth and status in (401, 403):
+                if self._generation(connector_id) != generation:
+                    raise NotConnected(
+                        f"{spec.label} was disconnected or reconnected while the call was out; "
+                        "nothing was marked"
+                    )
                 rec.status = "needs_reauth"
                 self._changed(connector_id)
-                raise NeedsReauth(f"{spec.label} needs to be reconnected in Connectors")
-        return status, self._decode(raw, token)
+                raise NeedsReauth(
+                    f"{spec.label} needs to be reconnected in Connectors (it answered {status})"
+                )
+        return status, decoded
 
     def _decode(self, raw: bytes, token: str) -> Any:
         text = raw.decode("utf-8", "replace")
@@ -400,48 +525,114 @@ class Vault:
         except json.JSONDecodeError:
             return redact(text, [token])
 
-    def _fresh_token(self, spec: ConnectorSpec) -> str:
-        token = self._get(spec.id, "token")
-        if token is None:
-            raise NotConnected(f"{spec.label} has no sealed credential; reconnect it")
-        rec = self.record(spec.id)
-        if spec.auth.type == "oauth" and rec.expires_at:
-            expires = datetime.fromisoformat(rec.expires_at)
-            if (expires - _now()).total_seconds() < REFRESH_FLOOR_S:
-                token = self._refresh(spec, rec)
-        return token
+    def _live_token(self, spec: ConnectorSpec) -> tuple[str, int, bool]:
+        """Under the lock: the sealed token, the grant's generation, and whether it is stale."""
+        with self._lock:
+            if not self.is_live(spec.id):
+                if self.record(spec.id).status == "needs_reauth":
+                    raise NeedsReauth(f"{spec.label} needs to be reconnected in Connectors")
+                raise NotConnected(f"{spec.label} is not connected, or is switched off")
+            token = self._get(spec.id, "token")
+            if token is None:
+                raise NotConnected(f"{spec.label} has no sealed credential; reconnect it")
+            rec = self.record(spec.id)
+            stale = False
+            if spec.auth.type == "oauth" and rec.expires_at:
+                expires = datetime.fromisoformat(rec.expires_at)
+                stale = (expires - _now()).total_seconds() < REFRESH_FLOOR_S
+            return token, self._generation(spec.id), stale
 
-    def _refresh(self, spec: ConnectorSpec, rec: ConnectionRecord) -> str:
-        refresh = self._get(spec.id, "refresh")
-        client_id = self._get(spec.id, "client_id") or ""
-        client_secret = self._get(spec.id, "client_secret") or ""
-        if not refresh:
-            rec.status = "needs_reauth"
-            self._changed(spec.id)
-            raise NeedsReauth(f"{spec.label} needs to be reconnected in Connectors")
+    def _fresh_token(self, spec: ConnectorSpec) -> tuple[str, int]:
+        """A token good for the next call, and the generation of the grant it belongs to. A stale
+        grant is refreshed by one caller; the others wait on the connector's guard and re-read."""
+        token, generation, stale = self._live_token(spec)
+        if not stale:
+            return token, generation
+        with self._refresh_guard(spec.id):
+            token, generation, stale = self._live_token(spec)
+            if not stale:
+                return token, generation  # another caller refreshed it while this one waited
+            return self._refresh(spec, generation), generation
+
+    def _refresh(self, spec: ConnectorSpec, generation: int) -> str:
+        """Called holding the connector's refresh guard, not the vault's lock. Reads under the
+        lock, posts with it released, and commits under it only onto the same ``generation``."""
+        with self._lock:
+            refresh = self._get(spec.id, "refresh")
+            client_id = self._get(spec.id, "client_id") or ""
+            client_secret = self._get(spec.id, "client_secret") or ""
+            if not refresh:
+                self._mark_reauth(spec, generation)
+                raise NeedsReauth(
+                    f"{spec.label} needs to be reconnected in Connectors (no refresh token is kept)"
+                )
         form = {
             "grant_type": "refresh_token",
             "refresh_token": refresh,
             "client_id": client_id,
             "client_secret": client_secret,
         }
-        status, raw = self._raw(
-            spec,
-            "POST",
-            spec.auth.token_url,
-            {"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"},
-            urllib.parse.urlencode(form).encode("ascii"),
-        )
+        try:
+            status, raw, replied = self._raw(
+                spec,
+                "POST",
+                spec.auth.token_url,
+                {"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"},
+                urllib.parse.urlencode(form).encode("ascii"),
+            )
+        except HostRefused:
+            raise
+        except VaultError as exc:
+            raise RefreshFailed(
+                f"{spec.label} could not refresh its grant ({exc}); the connection is kept"
+            ) from None
         grant = self._decode(raw, refresh)
-        if status >= 300 or not isinstance(grant, Mapping) or not grant.get("access_token"):
-            rec.status = "needs_reauth"
-            self._changed(spec.id)
-            raise NeedsReauth(f"{spec.label} needs to be reconnected in Connectors")
+        if refresh_is_terminal(status, grant):
+            error = grant.get("error") if isinstance(grant, Mapping) else None
+            named = f" {error.strip()}" if isinstance(error, str) and error.strip() else ""
+            with self._lock:
+                self._still(spec, generation)
+                self._mark_reauth(spec, generation)
+            raise NeedsReauth(
+                f"{spec.label} needs to be reconnected in Connectors (the token endpoint "
+                f"answered {status}{named})"
+            )
+        if status == 429:
+            raise self._rate_limited(spec, status, replied)
+        if not 200 <= status < 300 or not isinstance(grant, Mapping):
+            raise RefreshFailed(
+                f"{spec.label} could not refresh its grant (the token endpoint answered "
+                f"{status}); the connection is kept"
+            )
+        if not grant.get("access_token"):
+            raise RefreshFailed(
+                f"{spec.label} could not refresh its grant (the token endpoint answered "
+                f"{status} without an access token); the connection is kept"
+            )
+        seconds = _expires_in(grant, spec.label, RefreshFailed)
         token = str(grant["access_token"])
-        self._put(spec.id, "token", token)
-        rec.expires_at = _iso(_now() + timedelta(seconds=int(grant.get("expires_in", 3600))))
-        self._save()
+        rotated = grant.get("refresh_token")
+        with self._lock:
+            self._still(spec, generation)
+            self._put(spec.id, "token", token)
+            if isinstance(rotated, str) and rotated.strip():
+                self._put(spec.id, "refresh", rotated.strip())
+            self.record(spec.id).expires_at = _iso(_now() + timedelta(seconds=seconds))
+            self._save()
         return token
+
+    def _still(self, spec: ConnectorSpec, generation: int) -> None:
+        """Refuse to commit a refresh onto a grant that is no longer the one it began under."""
+        if self._generation(spec.id) != generation or not self.is_live(spec.id):
+            raise NotConnected(
+                f"{spec.label} was disconnected or reconnected while its grant was refreshed; "
+                "nothing from the refresh was kept"
+            )
+
+    def _mark_reauth(self, spec: ConnectorSpec, generation: int) -> None:
+        if self._generation(spec.id) == generation:
+            self.record(spec.id).status = "needs_reauth"
+            self._changed(spec.id)
 
     # -- admission --------------------------------------------------------------------------------
 
@@ -450,7 +641,7 @@ class Vault:
         headers: dict[str, str] = {"Accept": "application/json", **spec.auth.extra_headers}
         name, value = spec.auth.credential_header(token)
         headers[name] = value
-        status, raw = self._raw(spec, spec.probe.method, spec.probe.url, headers, None)
+        status, raw, _ = self._raw(spec, spec.probe.method, spec.probe.url, headers, None)
         body = self._decode(raw, token)
         if status >= 300:
             raise VaultError(f"{spec.label} refused the credential with {status}")
@@ -458,14 +649,26 @@ class Vault:
         return str(identity) if identity else ""
 
     def _admit(
-        self, spec: ConnectorSpec, token: str, *, refresh: str = "", expires_in: int | None = None
+        self,
+        spec: ConnectorSpec,
+        token: str,
+        *,
+        refresh: str = "",
+        expires_in: int | None = None,
+        client: tuple[str, str] | None = None,
     ) -> str:
+        """Probe, then seal: the token, the refresh token and the OAuth client pair are all put
+        together, after the provider accepted the grant, so a refused one leaves the last intact."""
         identity = self._probe_with(spec, token)
         self._seal_or_refuse()
         with self._lock:
+            self._next_generation(spec.id)
             self._put(spec.id, "token", token)
             if refresh:
                 self._put(spec.id, "refresh", refresh)
+            if client is not None:
+                self._put(spec.id, "client_id", client[0])
+                self._put(spec.id, "client_secret", client[1])
             rec = self.record(spec.id)
             reset = self._reset_foreign_switches(rec, identity)
             rec.status = "connected"
@@ -508,21 +711,29 @@ class Vault:
     def connect_oauth(
         self, connector_id: str, *, client_id: str, client_secret: str, open_browser: bool = True
     ) -> OAuthFlow:
-        """Start the consent flow. The flow's ``authorize_url`` is what the browser opens."""
+        """Start the consent flow. The flow's ``authorize_url`` is what the browser opens.
+
+        The client pair rides on the flow and is sealed only once the exchange has been admitted:
+        a flow that fails, is cancelled or runs out leaves the sealed pair and a live grant as
+        they were."""
         spec = self.spec(connector_id)
         if spec.auth.type != "oauth":
             raise VaultError(f"{spec.label} connects with a pasted token, not OAuth")
         if not client_id.strip():
             raise VaultError("a client id is required")
         self._seal_or_refuse()
-        self._put(connector_id, "client_id", client_id.strip())
-        self._put(connector_id, "client_secret", client_secret.strip())
 
         def on_code(flow: OAuthFlow, code: str) -> str:
             return self._exchange(spec, flow, code)
 
         flow = self.flows.add(
-            OAuthFlow(connector_id, spec.auth, client_id=client_id.strip(), on_code=on_code)
+            OAuthFlow(
+                connector_id,
+                spec.auth,
+                client_id=client_id.strip(),
+                client_secret=client_secret.strip(),
+                on_code=on_code,
+            )
         )
         if open_browser:
             self._open_browser(flow.authorize_url)
@@ -533,12 +744,12 @@ class Vault:
             "grant_type": "authorization_code",
             "code": code,
             "client_id": flow.client_id,
-            "client_secret": self._get(spec.id, "client_secret") or "",
+            "client_secret": flow.client_secret,
             "redirect_uri": flow.redirect_uri,
         }
         if flow.verifier:
             form["code_verifier"] = flow.verifier
-        status, raw = self._raw(
+        status, raw, _ = self._raw(
             spec,
             "POST",
             spec.auth.token_url,
@@ -552,7 +763,8 @@ class Vault:
             spec,
             str(grant["access_token"]),
             refresh=str(grant.get("refresh_token", "") or ""),
-            expires_in=int(grant.get("expires_in", 3600) or 3600),
+            expires_in=_expires_in(grant, spec.label, VaultError),
+            client=(flow.client_id, flow.client_secret),
         )
 
     def probe(self, connector_id: str) -> ConnectionRecord:
@@ -596,6 +808,7 @@ class Vault:
                     urllib.parse.urlencode({"token": token}).encode("ascii"),
                 )
         with self._lock:
+            self._next_generation(connector_id)
             self._drop(connector_id)
             rec = self.record(connector_id)
             rec.status = "disconnected"

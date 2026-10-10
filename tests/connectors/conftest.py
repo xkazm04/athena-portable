@@ -20,7 +20,8 @@ from athena.connectors.seal import FileSeal
 from athena.connectors.spec import ConnectorSpec, load_builtin
 from athena.connectors.vault import Vault
 
-Answer = tuple[int, Any]
+#: ``(status, body)``, or ``(status, body, headers)`` for an answer that carries headers.
+Answer = tuple[int, Any] | tuple[int, Any, Mapping[str, str]]
 Script = Callable[[str, str, Mapping[str, str], bytes | None], Answer]
 
 
@@ -49,14 +50,15 @@ class FakeProvider:
 
     def __call__(
         self, method: str, url: str, headers: Mapping[str, str], body: bytes | None, timeout: float
-    ) -> tuple[int, bytes]:
+    ) -> tuple[int, bytes] | tuple[int, bytes, Mapping[str, str]]:
         self.seen.append(Seen(method, url, dict(headers), body))
+        replied: list[Mapping[str, str]] = []
         if self.script is None:
             status, answer = 200, {"name": "Test User", "emailAddress": "me@example.test"}
         else:
-            status, answer = self.script(method, url, headers, body)
+            status, answer, *replied = self.script(method, url, headers, body)
         raw = answer if isinstance(answer, bytes) else json.dumps(answer).encode("utf-8")
-        return status, raw
+        return (status, raw, replied[0]) if replied else (status, raw)
 
     def auth_headers(self) -> list[str]:
         return [s.headers.get("Authorization", "") for s in self.seen]

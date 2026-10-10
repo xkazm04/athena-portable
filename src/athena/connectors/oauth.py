@@ -87,12 +87,15 @@ class OAuthFlow:
         *,
         client_id: str,
         on_code: Callable[[OAuthFlow, str], str],
+        client_secret: str = "",
         ttl_s: float = FLOW_TTL_S,
     ) -> None:
         self.id = f"flow_{secrets.token_hex(6)}"
         self.connector_id = connector_id
         self.auth = auth
         self.client_id = client_id
+        #: Held here until the vault admits the exchange, then sealed; never in :meth:`view`.
+        self.client_secret = client_secret
         self.verifier, challenge = new_pkce() if auth.pkce else ("", None)
         self._key = secrets.token_bytes(32)
         self.state = sign_state(secrets.token_urlsafe(12), self._key)
