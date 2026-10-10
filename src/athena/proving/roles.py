@@ -225,6 +225,16 @@ The seam the tests replace: nothing under ``tests/`` spawns ``claude``.
 """
 
 
+def claude_env(environ: Mapping[str, str]) -> dict[str, str]:
+    """``environ`` without ``ANTHROPIC_API_KEY``, for a ``claude -p`` child.
+
+    The operator's rule: model runs go only through the ``claude`` CLI on the subscription, never
+    a paid API. With the key in its environment the CLI bills the key instead of the subscription,
+    so a control role never inherits it. Everything else (``PATH`` included) is kept.
+    """
+    return {k: v for k, v in environ.items() if k != "ANTHROPIC_API_KEY"}
+
+
 def subprocess_runner(
     argv: Sequence[str], stdin: str, timeout: float, cwd: str | None
 ) -> ProcessResult:  # pragma: no cover - real I/O
@@ -235,6 +245,7 @@ def subprocess_runner(
             capture_output=True,
             timeout=timeout,
             cwd=cwd,
+            env=claude_env(os.environ),
             check=False,
         )
     except subprocess.TimeoutExpired:

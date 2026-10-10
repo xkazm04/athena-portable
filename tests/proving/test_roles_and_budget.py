@@ -21,6 +21,7 @@ from athena.proving.roles import (
     NebiusRole,
     ProcessResult,
     RoleCaller,
+    claude_env,
     extract_json,
     load_env_file,
 )
@@ -191,3 +192,12 @@ def test_the_env_file_sets_names_never_returns_values_and_never_overrides(tmp_pa
     assert names == ["NEBIUS_API_KEY"]
     assert environ == {"OTHER": "kept", "NEBIUS_API_KEY": "abc123"}
     assert load_env_file(tmp_path / "missing", environ) == []
+
+
+def test_the_claude_child_never_inherits_the_paid_api_key() -> None:
+    environ = {"ANTHROPIC_API_KEY": "sk-ant-secret", "PATH": "/bin", "HOME": "/home/a"}
+    env = claude_env(environ)
+    assert "ANTHROPIC_API_KEY" not in env
+    assert env == {"PATH": "/bin", "HOME": "/home/a"}
+    assert "ANTHROPIC_API_KEY" in environ  # the caller's own environment is untouched
+    assert claude_env({"PATH": "/bin"}) == {"PATH": "/bin"}
