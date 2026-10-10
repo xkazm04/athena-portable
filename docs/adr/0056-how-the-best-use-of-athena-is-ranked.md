@@ -278,3 +278,9 @@ gives the ranking a number to add.
 **What this does not change.** The table of nine above, the clamp's bounds, the weights of the
 three axes and the exclusions in (b) stand. Nothing already ranked moves: none of the nine has a
 non-positive input.
+
+## Amendment, 2026-10-10: a flat fee is not a share
+
+`incumbent_fee_pct` is a contingency share only; a flat fee is never converted into it. The ruling,
+and how row 37 (`household-employer-tax`, the one converted flat fee) is read, are in
+[0064](0064-a-flat-incumbent-fee-is-not-a-share.md). The table of nine and every score stand.
