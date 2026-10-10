@@ -15,7 +15,8 @@ the browser, reached through one vault (ADR 0021).
   several, to none, or that carries CR or LF is refused by name, and the headers are built only from
   the addresses the check allowed (ADR 0061).
 - **The vault brokers every call.** An executor asks the vault to call the service and never holds
-  a token. Calls have a host allow-list, a timeout, a cap and redaction. A token or OAuth grant is
+  a token. Calls have a host allow-list, a timeout, a cap and redaction, and follow no redirect: a 3xx is returned as a failure, so the
+  credential never rides to a host the pin did not name. A token or OAuth grant is
   probed before it is sealed (keyring, DPAPI or an owner-only file, `seal.py`), under
   `ATHENA_HOME/connectors/`, never inside a brain.
 - **OAuth** with PKCE over a one-shot loopback listener (`oauth.py`).

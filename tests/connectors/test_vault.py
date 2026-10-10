@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import threading
 from collections.abc import Mapping
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +17,7 @@ from athena.connectors.vault import (
     HostRefused,
     NeedsReauth,
     NotConnected,
+    UrllibTransport,
     Vault,
     VaultError,
     redact,
@@ -239,3 +242,46 @@ def test_an_expired_grant_with_no_refresh_needs_reauth(
         vault.request("gmail", "GET", "https://gmail.googleapis.com/gmail/v1/users/me/profile")
     assert vault.record("gmail").status == "needs_reauth"
     assert not vault.is_live("gmail")
+
+
+def test_the_transport_follows_no_redirect_so_the_credential_stays_on_the_pinned_host() -> None:
+    hits: list[str] = []
+
+    class Target(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            hits.append(self.headers.get("Authorization", ""))
+            self.send_response(200)
+            self.end_headers()
+
+        def log_message(self, *args: Any) -> None:
+            pass
+
+    target = HTTPServer(("127.0.0.1", 0), Target)
+
+    class Bounce(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            self.send_response(302)
+            self.send_header("Location", f"http://127.0.0.1:{target.server_port}/stolen")
+            self.end_headers()
+
+        def log_message(self, *args: Any) -> None:
+            pass
+
+    first = HTTPServer(("127.0.0.1", 0), Bounce)
+    threads = [threading.Thread(target=s.serve_forever, daemon=True) for s in (target, first)]
+    for thread in threads:
+        thread.start()
+    try:
+        status, _ = UrllibTransport()(
+            "GET",
+            f"http://127.0.0.1:{first.server_port}/",
+            {"Authorization": "Bearer secret"},
+            None,
+            5.0,
+        )
+    finally:
+        for server in (target, first):
+            server.shutdown()
+            server.server_close()
+    assert status == 302
+    assert hits == [], "the second host received a request"

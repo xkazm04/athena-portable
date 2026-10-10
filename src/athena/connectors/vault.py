@@ -95,15 +95,26 @@ def _iso(when: datetime | None) -> str:
     return when.isoformat() if when is not None else ""
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """A 3xx is the answer. The host pin holds for the first URL only, so none is followed."""
+
+    def redirect_request(self, *args: Any, **kwargs: Any) -> None:
+        return None
+
+
+_OPENER = urllib.request.build_opener(_NoRedirect)
+
+
 class UrllibTransport:
-    """The real thing. A non-2xx answer is returned, not raised; the caller reads the status."""
+    """The real thing. A non-2xx answer is returned, not raised; the caller reads the status.
+    No redirect is followed, so the credential never rides to a host the pin did not name."""
 
     def __call__(
         self, method: str, url: str, headers: Mapping[str, str], body: bytes | None, timeout: float
     ) -> tuple[int, bytes]:
         request = urllib.request.Request(url, data=body, method=method, headers=dict(headers))
         try:
-            with urllib.request.urlopen(request, timeout=timeout) as reply:
+            with _OPENER.open(request, timeout=timeout) as reply:
                 return int(reply.status), reply.read(MAX_RESPONSE_BYTES + 1)
         except urllib.error.HTTPError as exc:
             return int(exc.code), exc.read(MAX_RESPONSE_BYTES + 1)
