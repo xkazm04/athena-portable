@@ -6,6 +6,7 @@ Lifecycle, and there is no other edge::
     pending --resolve(another offered token)---> declined
     pending --expire_due(now >= expires_at)----> expired   (reason "expired")
     approved --consume (the gate lets it through)--> approved, consumed_at set   (once, ever)
+    approved, unspent --decline_approved(another offered token)--> declined   (ADR 0060)
 
 Four rules hold the module together.
 
@@ -173,6 +174,7 @@ class ApprovalGrant:
     capture_id: str | None = None
     choice: str | None = None
     consumed_at: str | None = None
+    expires_at: str = ""
 
     @property
     def approved(self) -> bool:
@@ -469,6 +471,32 @@ class Approvals:
             )
             return cursor.rowcount == 1
 
+    def decline_approved(
+        self,
+        approval_id: str,
+        choice: str,
+        *,
+        now: datetime | None = None,
+    ) -> bool:
+        """Close an approved, unspent row the replay refused (ADR 0060). ``True`` if this write did.
+
+        An approval the gate refused before it could consume (the card's app was switched off) is
+        still ``approved`` and unspent, and the user may change their mind. One conditional
+        ``UPDATE`` moves it to ``declined``; a spent row, a pending row, an unknown id and a token
+        the card never offered, or the approve token itself, change nothing and answer ``False``.
+        """
+        row = self.get(approval_id)
+        if row is None or choice == APPROVE_TOKEN or choice not in row.options:
+            return False
+        with self.brain.write_txn() as con:
+            cursor = con.execute(
+                """UPDATE companion_approval
+                   SET status = 'declined', choice = ?, resolved_at = ?
+                   WHERE id = ? AND status = 'approved' AND consumed_at IS NULL""",
+                (choice, _iso(now or _now()), approval_id),
+            )
+            return cursor.rowcount == 1
+
     # -- reading -------------------------------------------------------------------------------
 
     def get(self, approval_id: str) -> ApprovalRow | None:
@@ -498,6 +526,7 @@ class Approvals:
             capture_id=row.capture_id,
             choice=row.choice,
             consumed_at=row.consumed_at,
+            expires_at=row.expires_at,
         )
 
     def pending(self, limit: int = 20, *, now: datetime | None = None) -> PendingPage:

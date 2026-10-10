@@ -34,6 +34,7 @@ from __future__ import annotations
 import json
 from collections.abc import AsyncIterator, Mapping, Sequence
 from dataclasses import dataclass, replace
+from datetime import UTC, datetime
 from typing import Any, ClassVar
 
 from athena.contracts import ids
@@ -47,6 +48,7 @@ from athena.contracts.channel import (
     now_iso,
 )
 from athena.contracts.registry import ExecResult, Lane, ToolEntry, TurnContext
+from athena.core.approvals import APPROVE_TOKEN
 from athena.harness.hooks import Cancel
 from athena.lane.ports import (
     ApprovalsPort,
@@ -270,7 +272,11 @@ class BrowserLane:
         try:
             self.approvals.resolve(approval_id, choice)
         except ValueError as exc:
-            return self._refused(approval_id, choice, self._why(approval_id), str(exc), ctx)
+            reason = self._reopened(approval_id, choice)
+            if reason is not None:
+                return self._refused(
+                    approval_id, choice, reason or self._why(approval_id), str(exc), ctx
+                )
         try:
             grant = self.approvals.describe(approval_id)
         except ValueError as exc:
@@ -440,6 +446,28 @@ class BrowserLane:
             reason=reason,
             detail=detail,
         )
+
+    def _reopened(self, approval_id: str, choice: str) -> str | None:
+        """Can an approved card the replay refused be answered again (ADR 0060)?
+
+        ``None`` means yes: the caller carries on into the replay (an approve) or the decline
+        branch (a decline just closed the row). Otherwise the refusal reason, ``""`` when the
+        ordinary :meth:`_why` should name it. Only an approved, unspent row is ever reopened;
+        policy still runs first in the replay and ``consume`` still decides single use.
+        """
+        try:
+            grant = self.approvals.describe(approval_id)
+        except ValueError:
+            return ""
+        if not grant.approved or grant.consumed:
+            return ""
+        if choice != APPROVE_TOKEN:
+            return None if self.approvals.decline_approved(approval_id, choice) else ""
+        try:
+            lapsed = datetime.fromisoformat(grant.expires_at) <= datetime.now(UTC)
+        except ValueError:
+            lapsed = True  # a row whose expiry cannot be read is not replayed
+        return "expired" if lapsed else None
 
     def _why(self, approval_id: str) -> str:
         """Why a resolve was refused, read back from the row if it is still there.

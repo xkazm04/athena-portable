@@ -5,7 +5,7 @@ import { expect, test } from "vitest";
 
 import { ApiError } from "@/lib/api";
 
-import { plainFailure, plainReason, reasonOf, refusalSentence } from "./plain";
+import { plainFailure, plainReason, reasonOf, refusalSentence, switchedOffSentence } from "./plain";
 
 const REASONS = [
   "user_denied",
@@ -45,6 +45,11 @@ test("a refused answer is one sentence that says what to do", () => {
     "That answer was refused: this decision belongs to a different app than the one in front of you. Focus the app this decision is about and try again.",
   );
   expect(plainReason("anything else")).toBe("Athena could not carry it out");
+});
+
+test("the switched-off sentence says to switch the app back on and uses no forbidden word", () => {
+  expect(switchedOffSentence()).not.toMatch(JARGON);
+  expect(switchedOffSentence()).toContain("Switch it back on");
 });
 
 test("an engine failure says what to do, and the detail stays out of the sentence", () => {

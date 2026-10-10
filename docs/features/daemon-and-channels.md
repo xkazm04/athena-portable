@@ -13,7 +13,7 @@ test: a long `/run` never stalls a read.
 |---|---|
 | `POST /manifest` | merges one page's capability manifest, whole or not at all |
 | `POST /run` | one turn, streamed as Server-Sent Events (ADR 0012); may carry `active_project` and switched-off origins |
-| `POST /decisions/<id>` / `GET /decisions` | the person's answer (the gate replays and returns `execute`; the body carries the switched-off origins, so the replay re-checks the switch) / the pending inbox |
+| `POST /decisions/<id>` / `GET /decisions` | the person's answer (the gate replays and returns `execute`; the body carries the switched-off origins, so the replay re-checks the switch; a card refused at its replay can be approved again or declined, ADR 0060) / the pending inbox |
 | `GET /ledger`, `/ledger/rollup` | model invocations and spend, bounded |
 | `GET /engines`, `/health` | what can run here; engine, brain, sessions, tool count, inbox |
 | `/voice`, `/voice/config`, `/voice/preview`, `/voice/transcribe`, `/voice/install` | the voice socket and studio |

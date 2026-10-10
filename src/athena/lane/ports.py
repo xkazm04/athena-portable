@@ -95,12 +95,18 @@ class GrantPort(Protocol):
     @property
     def approved(self) -> bool: ...
 
+    @property
+    def consumed(self) -> bool: ...
+
+    @property
+    def expires_at(self) -> str: ...
+
     def matches(self, action: str, params: Mapping[str, Any]) -> bool: ...
 
 
 @runtime_checkable
 class ApprovalsPort(Protocol):
-    """``athena.core.approvals.Approvals``, narrowed to the two calls answering a card makes.
+    """``athena.core.approvals.Approvals``, narrowed to the calls answering a card makes.
 
     Filing a card is not here: the gate files it during the turn, and a lane that could also
     create approvals would be a second way for something to reach the user's inbox.
@@ -108,6 +114,10 @@ class ApprovalsPort(Protocol):
 
     def resolve(self, approval_id: str, choice: str) -> Any:
         """Record the user's answer, or raise ``ValueError`` for a token the row never offered."""
+        ...
+
+    def decline_approved(self, approval_id: str, choice: str) -> bool:
+        """Close an approved, unspent row as declined; ``False`` if nothing closed (ADR 0060)."""
         ...
 
     def describe(self, approval_id: str) -> GrantPort:

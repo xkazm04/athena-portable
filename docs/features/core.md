@@ -46,7 +46,8 @@ about is a name that exists.
 insertion order. An approval is proven for this action with these parameters when the gate
 replays, and it is spent when the gate lets the action through, so a replay is refused
 `approval_spent` whoever asks (ADR 0038). A model cannot answer its own card: the only path to a
-resolved approval is `POST /decisions/<id>`.
+resolved approval is `POST /decisions/<id>`. An approved row the replay refused before it was spent
+can be approved again or closed with `decline_approved` (ADR 0060).
 
 ## Ledger
 

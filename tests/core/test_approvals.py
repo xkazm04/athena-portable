@@ -369,3 +369,27 @@ def test_a_reconcile_keeps_a_spent_approval_spent(tmp_path: Path) -> None:
 
         assert approvals.describe(row.id).consumed
         assert approvals.consume(row.id) is False
+
+
+def test_decline_approved_closes_an_unspent_approval_and_only_that(approvals: Approvals) -> None:
+    """ADR 0060: one conditional update, from approved and unspent to declined."""
+    row = _create(approvals)
+    assert approvals.decline_approved(row.id, "decline") is False, "a pending row is not closed"
+    approvals.resolve(row.id, "approve", now=T0)
+    assert approvals.decline_approved(row.id, "approve") is False
+    assert approvals.decline_approved(row.id, "sure") is False, "a token the card never offered"
+    assert approvals.decline_approved(row.id, "decline") is True
+    closed = approvals.get(row.id)
+    assert closed is not None and (closed.status, closed.choice) == ("declined", "decline")
+    assert approvals.consume(row.id, now=T0) is False, "a closed row can never be spent"
+
+
+def test_decline_approved_leaves_a_spent_approval_alone(approvals: Approvals) -> None:
+    row = _create(approvals)
+    approvals.resolve(row.id, "approve", now=T0)
+    assert approvals.consume(row.id, now=T0) is True
+
+    assert approvals.decline_approved(row.id, "decline") is False
+    spent = approvals.get(row.id)
+    assert spent is not None and spent.status == "approved"
+    assert approvals.decline_approved("apr_nope", "decline") is False

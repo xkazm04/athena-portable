@@ -537,6 +537,24 @@ describe("answering a card", () => {
     expect(daemon.count("/decisions")).toBe(1);
   });
 
+  it("tells a switched-off card to be switched back on, not to be focused", async () => {
+    const daemon = fakeDaemon({
+      resolutions: {
+        apr_0000000000a1: () => Promise.resolve(jsonResponse({ reason: "foreign_origin", detail: "" }, 403)),
+      },
+      pending: [{ id: "apr_0000000000a1", action: "host.ledgerbox.chase", params: {} }],
+    });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({ ...deps, disabledOrigins: () => ["host:ledgerbox"] });
+    useRun.setState({ cards: [CARD as never] });
+
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    expect(useRun.getState().refusals.apr_0000000000a1).toBe(
+      "Athena was told not to act on that app. Switch it back on, then approve again.",
+    );
+  });
+
   it("can be tried again after a refusal, and the refusal goes once it is accepted", async () => {
     let refuse = true;
     const daemon = fakeDaemon({

@@ -27,7 +27,7 @@ import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
 import { bridgeCall } from "@/lib/bridge";
 import type { Args, Wire } from "@/lib/ipc";
 import { manifestBodyOf } from "@/lib/manifest";
-import { reasonOf, refusalSentence } from "@/companion/plain";
+import { reasonOf, refusalSentence, switchedOffSentence } from "@/companion/plain";
 import { isTerminal, type ChannelEvent, type DecisionRequested, type TurnSummary } from "@/lib/events";
 import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
 import { storeList, storeSet, type ActivityRow, type OriginRow } from "@/lib/store";
@@ -645,7 +645,9 @@ export const useRun = create<RunState>((set, get) => {
       // The card stays. A refusal says so in plain words, under the buttons, and the daemon is asked
       // again what it holds, because a refused answer leaves the decision pending there.
       const refuse = async (reason: string) => {
-        const sentence = refusalSentence(reason);
+        // A card for an app the user switched off cannot be helped by focusing it.
+        const off = reason === "foreign_origin" && card !== undefined && (deps.disabledOrigins?.() ?? []).includes(card.origin);
+        const sentence = off ? switchedOffSentence() : refusalSentence(reason);
         set((s) => ({
           answering: without(s.answering, id),
           refusals: { ...s.refusals, [id]: sentence },

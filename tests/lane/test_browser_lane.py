@@ -15,7 +15,9 @@ Everything runs on a scripted transport: recorded CLI stdout, no binary, no logi
 from __future__ import annotations
 
 import asyncio
+import threading
 from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -371,6 +373,84 @@ def test_a_card_answered_twice_is_refused_the_second_time(tmp_path: Path) -> Non
     assert again.approved is False
     assert again.reason == "pending_approval"
     assert again.execute is None
+
+
+def _card_refused_while_its_app_is_off(tmp_path: Path) -> tuple[Harnessed, str]:
+    built = build_lane([claude_round(op("host.invoices.pay", invoice="INV-118"))], tmp_path)
+    drain(built.lane, built)
+    card = built.approvals.only
+    off = built.lane.answer_decision(
+        card.id, "approve", built.ctx(disabled_origins=frozenset({ORIGIN}))
+    )
+    assert off.reason == "foreign_origin" and off.execute is None
+    assert card.status == "approved" and not card.consumed
+    return built, card.id
+
+
+def test_a_card_refused_at_its_replay_is_approved_again_once_its_app_is_on(tmp_path: Path) -> None:
+    built, card_id = _card_refused_while_its_app_is_off(tmp_path)
+
+    again = built.lane.answer_decision(card_id, "approve", built.ctx())
+
+    assert again.approved is True
+    assert again.execute is not None
+    assert built.approvals.rows[card_id].consumed is True
+
+
+def test_a_third_approve_runs_nothing_twice(tmp_path: Path) -> None:
+    built, card_id = _card_refused_while_its_app_is_off(tmp_path)
+    assert built.lane.answer_decision(card_id, "approve", built.ctx()).execute is not None
+
+    third = built.lane.answer_decision(card_id, "approve", built.ctx())
+
+    assert third.approved is False
+    assert third.execute is None
+
+
+def test_a_decline_after_the_refused_approve_closes_the_card(tmp_path: Path) -> None:
+    built, card_id = _card_refused_while_its_app_is_off(tmp_path)
+
+    declined = built.lane.answer_decision(card_id, "decline", built.ctx())
+
+    assert (declined.approved, declined.reason) == (False, "user_denied")
+    assert declined.execute is None
+    assert built.approvals.rows[card_id].status == "declined"
+    assert any("the user declined host.invoices.pay" in b for b in built.brain.bodies("system"))
+    assert built.ledger.error_rows[-1].error_reason == "user_denied"
+    later = built.lane.answer_decision(card_id, "approve", built.ctx())
+    assert later.approved is False
+    assert later.execute is None
+
+
+def test_an_approved_unspent_card_past_its_expiry_is_refused_expired(tmp_path: Path) -> None:
+    built, card_id = _card_refused_while_its_app_is_off(tmp_path)
+    built.approvals.rows[card_id].expires_at = "2000-01-01T00:00:00+00:00"
+
+    late = built.lane.answer_decision(card_id, "approve", built.ctx())
+
+    assert (late.approved, late.reason) == (False, "expired")
+    assert late.execute is None
+    assert built.approvals.rows[card_id].consumed is False
+
+
+def test_two_approve_again_answers_racing_run_the_action_once(tmp_path: Path) -> None:
+    built, card_id = _card_refused_while_its_app_is_off(tmp_path)
+    lock = threading.Lock()
+    real = built.approvals.consume
+
+    def atomic(approval_id: str) -> bool:
+        with lock:
+            return real(approval_id)
+
+    built.approvals.consume = atomic  # type: ignore[method-assign]
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(
+            pool.map(
+                lambda _: built.lane.answer_decision(card_id, "approve", built.ctx()), range(2)
+            )
+        )
+
+    assert sorted(r.execute is not None for r in results) == [False, True]
 
 
 def test_an_answer_the_card_never_offered_is_refused(tmp_path: Path) -> None:

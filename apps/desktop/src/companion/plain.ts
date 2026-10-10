@@ -44,6 +44,11 @@ export function refusalSentence(reason: string): string {
   return `That answer was refused: ${plainReason(reason)}. Focus the app this decision is about and try again.`;
 }
 
+/** The sentence for a card whose app the user switched off: focusing the app cannot help, switching it back on can. */
+export function switchedOffSentence(): string {
+  return "Athena was told not to act on that app. Switch it back on, then approve again.";
+}
+
 /** The reason code an error from the daemon client carries, or a stand-in for one that never arrived. */
 export function reasonOf(error: unknown): string {
   if (typeof error === "object" && error !== null && "reason" in error) {

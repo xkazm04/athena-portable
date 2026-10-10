@@ -399,7 +399,9 @@ def test_a_gate_that_never_spends_an_approval_is_caught() -> None:
     result = _probe(_spend_always_succeeds)
     assert result.verdict == VIOLATED
     assert result.checks["reuse_refused"] is False and result.gate_reuse == "allowed"
-    assert result.checks["replay_refused"] is True  # the table still refuses a second answer
+    # An unspent approved row is answerable again (ADR 0060), so with a gate that never spends it
+    # the second answer replays too: single use is the gate's alone, and both checks see the bug.
+    assert result.checks["replay_refused"] is False
     assert any("second time under the same approval" in v for v in result.violations)
 
 
