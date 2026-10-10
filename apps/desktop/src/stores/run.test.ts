@@ -853,7 +853,28 @@ describe("disabled origins", () => {
     };
     const tabs = [tab(1, "https://ledgerbox.local/invoices"), tab(2, "https://inbox.local/")];
     const byTab = { 1: found(1, "ledgerbox"), 2: found(2, "inbox") };
-    expect(disabledOriginsOf(records, tabs, byTab)).toEqual(["host:ledgerbox"]);
+    // The origin's derived id goes too (ADR 0065): a switched-off web origin is off whatever the
+    // page on it calls itself, and a page that later names no app is still off.
+    expect(disabledOriginsOf(records, tabs, byTab)).toEqual([
+      "host:ledgerbox",
+      "host:web_https_sledgerbox_dlocal",
+    ]);
+  });
+
+  it("switches off a web origin's derived id, and a null-app tab on it, with no tab open", () => {
+    const records = { "https://closed.local": row("https://closed.local", false) };
+    expect(disabledOriginsOf(records, [], {})).toEqual(["host:web_https_sclosed_dlocal"]);
+    expect(disabledOriginsOf(records, [tab(1, "https://closed.local/")], { 1: found(1, null) })).toEqual([
+      "host:web_https_sclosed_dlocal",
+    ]);
+  });
+
+  it("treats a published app in the reserved form as having published none", () => {
+    const records = { "https://closed.local": row("https://closed.local", false) };
+    const claimed = { 1: found(1, "web_https_sother_dlocal") };
+    expect(disabledOriginsOf(records, [tab(1, "https://closed.local/")], claimed)).toEqual([
+      "host:web_https_sclosed_dlocal",
+    ]);
   });
 
   it("does not guess an app id for an origin it cannot name, and keeps a catalog-form key as it is", () => {
@@ -861,7 +882,7 @@ describe("disabled origins", () => {
       "https://closed.local": row("https://closed.local", false),
       "host:other": row("host:other", false),
     };
-    expect(disabledOriginsOf(records, [], {})).toEqual(["host:other"]);
+    expect(disabledOriginsOf(records, [], {})).toEqual(["host:other", "host:web_https_sclosed_dlocal"]);
   });
 
   it("rides every request of a turn, so the daemon's gate can refuse the call", async () => {
@@ -931,7 +952,8 @@ describe("what the gate tightens", () => {
     ]);
 
     expect(gatedListsOf(origins, tabs, byTab)).toEqual({
-      gated_origins: ["host:ledgerbox"],
+      // tab 4 published no app: it is catalogued under its web origin and is first sight too.
+      gated_origins: ["host:ledgerbox", "host:web_https_sunnamed_dlocal"],
       gated_tools: ["host.inbox.archive", "host.inbox.send"],
     });
   });
@@ -944,13 +966,39 @@ describe("what the gate tightens", () => {
     expect(gatedListsOf(origins, [tabs[0]], byTab).gated_tools).toEqual(["host.ledgerbox.pay"]);
   });
 
-  it("reads a catalog-form row as it is, with or without a tab open on it", () => {
+  it("sends a catalog-form row's pins as they are, with or without a tab open on it", () => {
     const origins = table([row("host:ledgerbox", true, { pay: "GATED" }), row("host:crm", true, { merge: "GATED" })]);
 
-    expect(gatedListsOf(origins, [tabs[0]], byTab)).toEqual({
-      gated_origins: [],
-      gated_tools: ["host.crm.merge", "host.ledgerbox.pay"],
-    });
+    expect(gatedListsOf(origins, [], {}).gated_tools).toEqual(["host.crm.merge", "host.ledgerbox.pay"]);
+  });
+
+  it("does not let a page inherit a catalog-form row by claiming its slug (robustness-3)", () => {
+    // An enabled host:ledger row, and only a tab at an unregistered origin claiming app ledger.
+    const origins = table([row("host:ledger", true, { pay: "GATED" })]);
+    const evil = [tab(1, "https://evil.test/")];
+
+    const lists = gatedListsOf(origins, evil, { 1: found(1, "ledger") });
+
+    expect(lists.gated_origins).toEqual(["host:ledger"]);
+  });
+
+  it("applies a catalog-form row to the tab whose derived id it names, and to a web origin with its own row", () => {
+    const derived = "host:web_https_sevil_dtest";
+    const own = table([row(derived, true)]);
+    expect(gatedListsOf(own, [tab(1, "https://evil.test/")], { 1: found(1, null) }).gated_origins).toEqual([]);
+
+    const byOrigin = table([row("https://evil.test", true)]);
+    expect(gatedListsOf(byOrigin, [tab(1, "https://evil.test/")], { 1: found(1, "ledger") }).gated_origins).toEqual(
+      [],
+    );
+  });
+
+  it("gates a tab that published no app under its derived id, and a reserved claim as none (robustness-1)", () => {
+    const origins = table([]);
+    const tabsOne = [tab(1, "https://unnamed.local/")];
+    const expected = { gated_origins: ["host:web_https_sunnamed_dlocal"], gated_tools: [] };
+    expect(gatedListsOf(origins, tabsOne, { 1: found(1, null) })).toEqual(expected);
+    expect(gatedListsOf(origins, tabsOne, { 1: found(1, "web_https_sledger_dtest") })).toEqual(expected);
   });
 
   it("counts a record the table does not list as no row, so a forgotten origin is a first sight again", () => {
@@ -963,7 +1011,7 @@ describe("what the gate tightens", () => {
     const origins = table([row("https://inbox.local", true, { send: "GATED" })], { loaded: false });
 
     expect(gatedListsOf(origins, tabs, byTab)).toEqual({
-      gated_origins: ["host:calendar", "host:inbox", "host:ledgerbox"],
+      gated_origins: ["host:calendar", "host:inbox", "host:ledgerbox", "host:web_https_sunnamed_dlocal"],
       gated_tools: [],
     });
   });
@@ -975,6 +1023,7 @@ describe("what the gate tightens", () => {
       "host:calendar",
       "host:inbox",
       "host:ledgerbox",
+      "host:web_https_sunnamed_dlocal",
     ]);
   });
 

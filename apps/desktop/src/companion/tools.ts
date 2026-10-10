@@ -10,15 +10,17 @@
  * ever tightens: anything a page did not flag is `GATED`.
  */
 import type { ToolRow } from "@/lib/api";
+import { catalogIdOf } from "@/lib/manifest";
 import type { TabTools } from "@/stores/tools";
 // @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover these two.
 import { classify, flagsOf } from "@athena/bridge/gate";
 
 export function toolRows(found: TabTools | undefined): ToolRow[] {
   if (!found?.tools) return [];
+  const app = catalogIdOf(originOf(found.url) ?? "", found.appId);
   return found.tools.map((tool) => ({
-    name: found.appId ? `host.${found.appId}.${tool.name}` : tool.name,
-    origin: found.appId ? `host:${found.appId}` : "",
+    name: app ? `host.${app}.${tool.name}` : tool.name,
+    origin: app ? `host:${app}` : "",
     class: classify(flagsOf(tool)) as ToolRow["class"],
     tier: 1,
     description: tool.description ?? "",

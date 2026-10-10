@@ -23,11 +23,63 @@ import { manifestOf } from "@athena/bridge/gate";
 
 import type { BridgeTool } from "@/lib/bridge";
 
+/** Every derived catalog id starts with this; a page that publishes it is treated as naming none. */
+const RESERVED_PREFIX = "web_";
+
+/** Characters that pass through a derived id unchanged. Everything else is escaped, so it is injective. */
+const PLAIN = /[a-z0-9-]/;
+
+function escapeHost(host: string): string {
+  let out = "";
+  for (const ch of host) {
+    if (PLAIN.test(ch)) out += ch;
+    else if (ch === ".") out += "_d";
+    else if (ch === "_") out += "_u";
+    else if (ch === ":") out += "_c";
+    else out += `_x${ch.codePointAt(0)?.toString(16)}_`;
+  }
+  return out;
+}
+
+/**
+ * The catalog id a web origin gets when its page names no app (ADR 0065): the scheme, the host and
+ * the port, spelled as a slug that `validate()` accepts. `https://ledger.test` is
+ * `web_https_sledger_dtest`; `http://localhost:3000` is `web_http_slocalhost_c3000`.
+ *
+ * Injective: `_` only ever begins an escape, so two origins never share an id. `null` for an
+ * address that is not a web origin.
+ */
+export function derivedIdOf(origin: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(origin);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+  return `${RESERVED_PREFIX}${url.protocol.slice(0, -1)}_s${escapeHost(url.host)}`;
+}
+
+/** Is this slug in the form only the shell mints? A page cannot claim it. */
+export function isReservedId(app: string): boolean {
+  return app.startsWith(RESERVED_PREFIX);
+}
+
+/**
+ * The one catalog id for a tab: the `athena:app` the page published, or the id derived from its
+ * web origin. A published slug in the reserved form counts as none. `null` when the tab has
+ * neither (an address that is not a web origin).
+ */
+export function catalogIdOf(origin: string, published: string | null): string | null {
+  if (published && !isReservedId(published)) return published;
+  return derivedIdOf(origin);
+}
+
 /** What the tools store knows about one page, which is what a manifest is built from. */
 export interface ManifestSource {
   /** The web origin the browser observed — the session key the daemon files this under. */
   origin: string;
-  /** The `athena:app` slug the page published. Without one there is nothing to namespace. */
+  /** The `athena:app` slug the page published, if any; `catalogIdOf` decides what is used. */
   appId: string | null;
   appVersion: string | null;
   /** `webmcp-native` or `webmcp-polyfill`, reported as `transport_detected`. */
@@ -35,20 +87,26 @@ export interface ManifestSource {
   tools: readonly BridgeTool[];
 }
 
+/** The daemon refuses any other `page_origin` (`HostManifest.validate`), so none is offered. */
+function registrable(origin: string): boolean {
+  return origin.startsWith("https://") || origin.startsWith("http://localhost");
+}
+
 /**
  * The body of `POST /manifest`, or `null` when this page cannot be registered.
  *
- * Three ways there is nothing to publish, and all three are facts rather than failures: the page
- * published no `athena:app` id (so its tools have no namespace), it registered no tools at all
- * (the generic hands reach it instead — tier 2, which this shell does not yet publish either),
- * or the browser gave us no origin to key a session by.
+ * Two ways there is nothing to publish, and both are facts rather than failures: the page
+ * registered no tools at all (the generic hands reach it instead — tier 2, which this shell does
+ * not yet publish either), or the browser gave us no origin the daemon would take. A page that
+ * published no `athena:app` is catalogued under its web origin (`catalogIdOf`).
  */
 export function manifestBodyOf(source: ManifestSource): Record<string, unknown> | null {
-  if (!source.appId || !source.origin || source.tools.length === 0) return null;
+  const app = catalogIdOf(source.origin, source.appId);
+  if (!app || !registrable(source.origin) || source.tools.length === 0) return null;
   return manifestOf(
     {
       origin: source.origin,
-      app_id: source.appId,
+      app_id: app,
       app_version: source.appVersion,
       transport: source.transport ?? "",
     },

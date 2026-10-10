@@ -33,7 +33,7 @@ import { VoiceSetupApi, availabilityOf, refusalText } from "@/lib/voice-setup";
 import { bridgeCall } from "@/lib/bridge";
 import type { ChannelEvent, DecisionRequested, ToolCall } from "@/lib/events";
 import type { Args } from "@/lib/ipc";
-import { manifestBodyOf } from "@/lib/manifest";
+import { catalogIdOf, manifestBodyOf } from "@/lib/manifest";
 import {
   Player,
   VoiceSocket,
@@ -152,7 +152,8 @@ const LIVE: VoiceDeps = {
     const tab = tabs.find((t) => t.focused) ?? tabs[0];
     if (!tab) return null;
     const { byTab } = useTools.getState();
-    return { tabId: tab.id, origin: originOf(tab.url), appId: byTab[tab.id]?.appId ?? null };
+    const origin = originOf(tab.url);
+    return { tabId: tab.id, origin, appId: catalogIdOf(origin, byTab[tab.id]?.appId ?? null) };
   },
   hostState: () => {
     const { tabs } = useTabs.getState();

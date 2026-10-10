@@ -26,7 +26,7 @@ import { create } from "zustand";
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
 import { bridgeCall } from "@/lib/bridge";
 import type { Args, Wire } from "@/lib/ipc";
-import { manifestBodyOf } from "@/lib/manifest";
+import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
 import { reasonOf, refusalSentence, switchedOffSentence } from "@/companion/plain";
 import { isTerminal, type ChannelEvent, type DecisionRequested, type TurnSummary } from "@/lib/events";
 import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
@@ -218,7 +218,8 @@ const LIVE: RunDeps = {
     const tab = focusedTab();
     if (!tab) return null;
     const { byTab } = useTools.getState();
-    return { tabId: tab.id, origin: originOf(tab.url), appId: byTab[tab.id]?.appId ?? null };
+    const origin = originOf(tab.url);
+    return { tabId: tab.id, origin, appId: catalogIdOf(origin, byTab[tab.id]?.appId ?? null) };
   },
   hostState: () => {
     const { tabs } = useTabs.getState();
@@ -285,9 +286,13 @@ export function disabledOriginsOf(
       out.add(key);
       continue;
     }
+    // The derived id needs no tab: it is spelled from the origin alone (ADR 0065).
+    const derived = derivedIdOf(key);
+    if (derived) out.add(`host:${derived}`);
     for (const tab of tabs) {
-      const app = byTab[tab.id]?.appId;
-      if (app && originOf(tab.url) === key) out.add(`host:${app}`);
+      const origin = originOf(tab.url);
+      const app = catalogIdOf(origin, byTab[tab.id]?.appId ?? null);
+      if (app && origin === key) out.add(`host:${app}`);
     }
   }
   return [...out].sort();
@@ -335,9 +340,13 @@ export function gatedListsOf(
   };
 
   for (const tab of tabs) {
-    const app = byTab[tab.id]?.appId;
+    const origin = originOf(tab.url);
+    const app = catalogIdOf(origin, byTab[tab.id]?.appId ?? null);
     if (!app) continue;
-    const rows = [rowOf(originOf(tab.url)), rowOf(`host:${app}`)].filter(
+    // A catalog-form row applies to a tab only when the app is the tab's own derived id: a page
+    // that claims a slug inherits nothing from that slug's row (ADR 0065, robustness-3). The web
+    // origin's own row always applies.
+    const rows = [rowOf(origin), app === derivedIdOf(origin) ? rowOf(`host:${app}`) : undefined].filter(
       (row): row is OriginRow => row !== undefined,
     );
     if (rows.length === 0) firstSight.add(`host:${app}`);
