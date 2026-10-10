@@ -112,23 +112,30 @@ class RoundHarness:
         ctx: TurnContext,
         user_message: str,
     ) -> AsyncIterator[ChannelEvent]:
-        turn_id = ctx.turn_id or ids.mint("turn")
+        # Defined before anything that can raise: every exit below writes a row from these.
+        turn_id = ctx.turn_id or ""
         started = time.monotonic()
         result = TurnResult(turn_id=turn_id, engine=self.name, model=self.model, rounds=0)
-        result.block_hashes = TruncationHook.block_hashes([*static_blocks, *frame])
-        self.truncation.before_prompt([*static_blocks, *frame], turn_id)
-
-        entries = {entry.name: entry for entry in tools}
-        self._told: set[tuple[str, str]] = set()
-        static_text = _joined(static_blocks)
-        self._turn_started(conversation_id, static_text)
-        history = [_opening_message(frame, user_message)]
         replies: list[str] = []
         texts: list[str] = []
         tts: str | None = None
         failure: Failure | None = None
 
         try:
+            # The setup is inside the guarded region: a raise here is a turn with a row and an
+            # error, not a turn with neither (README §2, AGENTS.md "Ledger everything").
+            if not turn_id:
+                turn_id = ids.mint("turn")
+                result.turn_id = turn_id
+            result.block_hashes = TruncationHook.block_hashes([*static_blocks, *frame])
+            self.truncation.before_prompt([*static_blocks, *frame], turn_id)
+
+            entries = {entry.name: entry for entry in tools}
+            self._told: set[tuple[str, str]] = set()
+            static_text = _joined(static_blocks)
+            self._turn_started(conversation_id, static_text)
+            history = [_opening_message(frame, user_message)]
+
             for _round in range(1, self.max_rounds + 1):
                 result.rounds = _round
                 round_text, round_failure = await self._round(
@@ -197,7 +204,14 @@ class RoundHarness:
             yield TurnError(reason=result.error_reason or "unknown", detail=failure[1])
             return
 
-        self._finish(result, conversation_id, ctx)
+        unwritten = self._finish(result, conversation_id, ctx)
+        if unwritten is not None:
+            # A turn with no row is not reported as a success (AGENTS.md "Ledger everything").
+            yield TurnError(
+                reason="unknown",
+                detail=f"The turn ran, but its ledger row could not be written ({unwritten}).",
+            )
+            return
         yield TurnSummary(
             model=result.model,
             engine=result.engine,
@@ -336,15 +350,30 @@ class RoundHarness:
         self._finish(result, conversation_id, ctx)
         return result.error_reason or "unknown"
 
-    def _finish(self, result: TurnResult, conversation_id: str, ctx: TurnContext) -> None:
+    def _finish(self, result: TurnResult, conversation_id: str, ctx: TurnContext) -> str | None:
+        """The one guarded row write every exit uses.
+
+        A failed write is tried once more (``LedgerHook`` keeps it retryable and a raise in
+        ``Ledger.record`` rolls its single INSERT back, so no row is doubled). If it fails again
+        the ledger's exception does not leave the turn: the caller gets the exception's type name
+        (never its message) and ends the turn with its own terminal event.
+        """
         self._last = result
-        self.ledger.after_turn(
-            result,
-            conversation=conversation_id,
-            origin=f"host:{ctx.app_id}" if ctx.app_id else "core",
-            surface=ctx.surface,
-            trigger=ctx.trigger,
-        )
+        failed: str | None = None
+        for _attempt in range(2):
+            try:
+                self.ledger.after_turn(
+                    result,
+                    conversation=conversation_id,
+                    origin=f"host:{ctx.app_id}" if ctx.app_id else "core",
+                    surface=ctx.surface,
+                    trigger=ctx.trigger,
+                )
+            except Exception as exc:
+                failed = type(exc).__name__
+            else:
+                return None
+        return failed
 
 
 # --- messages ------------------------------------------------------------------------------------

@@ -6,7 +6,7 @@ gate.
 ## Engines
 
 Engines are configuration, not code paths (ADR 0007). All three share one round loop
-(`harness/rounds.py`): up to eight provider rounds make one turn and one ledger row. The row is written on every exit, a raise and a closed stream included.
+(`harness/rounds.py`): up to eight provider rounds make one turn and one ledger row. The row is written on every exit, a raise and a closed stream included. A ledger write that fails is retried once, and the turn still ends with `turn.error`.
 
 | Engine | How it runs | Use |
 |---|---|---|
