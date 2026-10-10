@@ -7,6 +7,8 @@ than dropped, so the model can see there was something it did not get.
 
 from __future__ import annotations
 
+import re
+import urllib.parse
 from collections.abc import Callable, Mapping
 from typing import Any
 
@@ -30,8 +32,20 @@ _PREFIX = {
 }
 
 
+_ID = re.compile(r"[0-9a-f]{32}")
+
+
 def normalize_id(value: str) -> str:
-    return value.strip().lower().replace("-", "")
+    """A Notion id as 32 lower-case hex characters, hyphens dropped. Anything else is refused, so
+    an id can never carry a path segment, a query or a fragment into a URL."""
+    bare = value.strip().lower().replace("-", "")
+    if not _ID.fullmatch(bare):
+        raise ValueError("a Notion id is 32 hexadecimal characters, with or without hyphens")
+    return bare
+
+
+def _q(page_id: str) -> str:
+    return urllib.parse.quote(page_id, safe="")
 
 
 def rich_text(node: Any) -> str:
@@ -114,11 +128,11 @@ def execute(request: Request, tool: str, params: Mapping[str, Any]) -> tuple[boo
         return True, render_search(body) or "Nothing matched."
     if tool == "read_page":
         page_id = normalize_id(str(params["page_id"]))
-        status, page = request("GET", f"{API}/pages/{page_id}", None)
+        status, page = request("GET", f"{API}/pages/{_q(page_id)}", None)
         if status >= 300:
             return False, f"Notion answered {status} to the page read"
         status, blocks = request(
-            "GET", f"{API}/blocks/{page_id}/children?page_size={CHILDREN_PAGE}", None
+            "GET", f"{API}/blocks/{_q(page_id)}/children?page_size={CHILDREN_PAGE}", None
         )
         if status >= 300:
             return False, f"Notion answered {status} to the block read"
@@ -127,7 +141,7 @@ def execute(request: Request, tool: str, params: Mapping[str, Any]) -> tuple[boo
         page_id = normalize_id(str(params["page_id"]))
         status, _ = request(
             "PATCH",
-            f"{API}/blocks/{page_id}/children",
+            f"{API}/blocks/{_q(page_id)}/children",
             {"children": paragraphs(str(params["text"]))},
         )
         if status >= 300:

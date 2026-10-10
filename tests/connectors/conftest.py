@@ -54,7 +54,14 @@ class FakeProvider:
         self.seen.append(Seen(method, url, dict(headers), body))
         replied: list[Mapping[str, str]] = []
         if self.script is None:
-            status, answer = 200, {"name": "Test User", "emailAddress": "me@example.test"}
+            status, answer = (
+                200,
+                {
+                    "id": "0123456789abcdef0123456789abcdef",
+                    "name": "Test User",
+                    "emailAddress": "me@example.test",
+                },
+            )
         else:
             status, answer, *replied = self.script(method, url, headers, body)
         raw = answer if isinstance(answer, bytes) else json.dumps(answer).encode("utf-8")

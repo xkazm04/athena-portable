@@ -101,11 +101,16 @@ class AuthSpec:
 
 @dataclass(frozen=True)
 class ProbeSpec:
-    """The one request that admits a credential: it must answer 2xx, and names the identity."""
+    """The one request that admits a credential: it must answer 2xx, and names the identity.
+
+    ``identity_field`` is what a person reads. ``key_field`` is what the switches are compared on
+    (ADR 0062): the provider's stable account id, when the display name cannot tell two accounts
+    apart. Empty, the identity is its own key."""
 
     method: str
     url: str
     identity_field: str = ""
+    key_field: str = ""
 
 
 @dataclass(frozen=True)
@@ -194,6 +199,7 @@ def parse_spec(data: Mapping[str, Any]) -> ConnectorSpec:
         method=_str(raw_probe, "method", where).upper(),
         url=_str(raw_probe, "url", where),
         identity_field=_str(raw_probe, "identity_field", where, required=False),
+        key_field=_str(raw_probe, "key_field", where, required=False),
     )
 
     hosts = _str_list(data, "api_hosts", where)

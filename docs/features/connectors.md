@@ -52,6 +52,17 @@ the browser, reached through one vault (ADR 0021).
   note, not an error, until the next probe replaces it.
 - **The switches wait for a connection.** The writes switch and the allow-list editor are disabled
   while the connector is not connected, with the reason beside them.
+- **A search that lost reads says so.** `search_mail` names how many of the messages it found it
+  could show and the status that failed the rest, as `(showing 2 of 4; 2 reads failed, answered 429,
+  500)`. When every read failed it says the reads failed, with the status, and never "No messages
+  matched."
+- **A Notion id is 32 hex characters or nothing.** The tools drop hyphens, lower-case the id and
+  refuse anything else (a path segment, a query, a fragment, a short id) before a request is made;
+  an accepted id is quoted into the URL whole. The allow-list comparison is unchanged.
+- **Notion's switches follow the bot's id, not its name.** Two workspaces with a bot of the same
+  name are two accounts: connecting to the other one turns writes off and empties the page list,
+  and says why. A record that knew the account only by name resets once on its next connect.
+  Gmail stays keyed on the address (ADR 0062, amended).
 - **The records file is swapped in, never rewritten.** `connections.json` is written whole to a
   sibling file, flushed to disk and renamed over the old one, so a crash leaves the previous file.
   A file that cannot be read (an I/O error, invalid JSON, a top level that is not an object) is

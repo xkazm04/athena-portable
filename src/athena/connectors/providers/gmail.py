@@ -123,6 +123,10 @@ def build_send_body(
     return {"raw": raw}
 
 
+def _statuses(failed: Sequence[int]) -> str:
+    return ", ".join(str(code) for code in sorted(set(failed)))
+
+
 def execute(request: Request, tool: str, params: Mapping[str, Any]) -> tuple[bool, str]:
     """Run one tool. ``(ok, text)``: a read's text, a write's sentence, or a refusal's reason."""
     if tool == "search_mail":
@@ -132,15 +136,32 @@ def execute(request: Request, tool: str, params: Mapping[str, Any]) -> tuple[boo
         )
         if status >= 300:
             return False, f"Gmail answered {status} to the search"
+        ids = parse_message_ids(body)[:limit]
         rows = []
-        for message_id in parse_message_ids(body)[:limit]:
+        failed: list[int] = []
+        for message_id in ids:
             headers = "".join(f"&metadataHeaders={h}" for h in WANTED_HEADERS)
             status, detail = request(
                 "GET", f"{API}/messages/{_q(message_id)}?format=metadata{headers}", None
             )
             if status < 300:
                 rows.append(parse_metadata(detail))
-        return True, render_results(rows) if rows else "No messages matched."
+            else:
+                failed.append(status)
+        if not ids:
+            return True, "No messages matched."
+        if not rows:
+            return False, (
+                f"Gmail found {len(ids)} messages but all {len(ids)} reads failed "
+                f"(answered {_statuses(failed)})"
+            )
+        text = render_results(rows)
+        if failed:
+            text += (
+                f"\n(showing {len(rows)} of {len(ids)}; {len(failed)} reads failed, "
+                f"answered {_statuses(failed)})"
+            )
+        return True, text
     if tool == "read_mail":
         status, body = request(
             "GET", f"{API}/messages/{_q(str(params['message_id']))}?format=full", None

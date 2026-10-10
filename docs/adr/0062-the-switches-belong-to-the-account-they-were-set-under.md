@@ -54,3 +54,23 @@ Reconnecting as the same account is unchanged. The record gains one field, with 
 - **Ask the person at connect.** The OAuth flow completes in a browser callback with no one to
   ask; refusing the switches is the safe default and the person can set them again.
 - **Keep them when no identity is known.** Open by default; the gate is the policy.
+
+## Amended 2026-10-10: Notion is keyed on the bot's id
+
+The operator decided what the section above left open. The comparison is made on a key, not on the
+name a person reads.
+
+- The probe spec gains an optional `key_field`. Notion's is `id`, the top-level id of
+  `GET /v1/users/me`; Gmail names none, so its identity (`emailAddress`) is its own key.
+- The record carries `account` (the key as probed) and `switches_account` (the key the switches
+  were set under) beside `identity` and `switches_identity`, which stay for display. Notion's
+  display is the bot's `name`, with `bot.workspace_name` in brackets when the probe has one;
+  neither is ever compared.
+- It fails closed. A probe that names no key resets the switches, with the reason in the health
+  detail. A Notion record whose stored switches identity is only a name (written before this
+  amendment) has no `switches_account`, so it resets once on its next connect, and the health
+  detail says it was known only by its name. A switch set after that carries the id.
+- Gmail's records are unchanged: a record with a `switches_identity` and no `switches_account` is
+  compared on the identity, so an upgrade does not reset a Gmail setup.
+- Two workspaces with a bot of the same name are now two accounts; the writes switch no longer
+  survives a move between them.

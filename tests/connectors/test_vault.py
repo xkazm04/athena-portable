@@ -372,7 +372,7 @@ def _accounts(tmp_path: Path, specs: dict[str, ConnectorSpec], names: list[str])
     ) -> tuple[int, Any]:
         who = names[min(asked["n"], len(names) - 1)]
         asked["n"] += 1
-        return 200, {"name": who}
+        return 200, ({"name": who, "id": f"id-{who}"} if who else {"name": who})
 
     return Vault(
         tmp_path / "connectors",
@@ -434,7 +434,7 @@ def test_switches_set_before_any_connect_have_no_identity_and_are_reset(
     assert "without a known account" in record.health_detail
 
 
-def test_a_legacy_record_is_reset_on_connect_but_adopted_when_loaded_live(
+def test_a_legacy_record_is_adopted_when_loaded_live_and_reset_on_connect(
     tmp_path: Path, specs: dict[str, ConnectorSpec]
 ) -> None:
     root = tmp_path / "connectors"
@@ -450,7 +450,8 @@ def test_a_legacy_record_is_reset_on_connect_but_adopted_when_loaded_live(
     live = _accounts(tmp_path, specs, ["A"])
     assert live.record("notion").switches_identity == "A"
     assert live.record("notion").writes_enabled is True
-    assert live.connect_token("notion", TOKEN).allowlist == ["page1"], "the same account"
+    # Notion is keyed on the bot's id (ADR 0062, amended): a name-only record resets once.
+    assert live.connect_token("notion", TOKEN).allowlist == []
     (root / "connections.json").write_text(json.dumps({"notion": gone}), encoding="utf-8")
     off = _accounts(tmp_path, specs, ["A"])
     assert off.record("notion").switches_identity == ""

@@ -225,6 +225,10 @@ class ConnectionRecord:
     last_used_at: str = ""
     #: The identity the writes switch and the allow-list were set under (ADR 0062).
     switches_identity: str = ""
+    #: The provider's stable account key (a Notion bot's user id; for Gmail, the address itself),
+    #: and the key the switches were set under. The key decides; the identity is for display.
+    account: str = ""
+    switches_account: str = ""
 
     def view(self) -> dict[str, Any]:
         return asdict(self)
@@ -308,6 +312,8 @@ class Vault:
                 if rec.status == "connected" and rec.identity and not rec.switches_identity:
                     # A record from before the identity was kept, live at load: adopt it (ADR 0062).
                     rec.switches_identity = rec.identity
+                if rec.status == "connected" and rec.account and not rec.switches_account:
+                    rec.switches_account = rec.account
                 self._records[cid] = rec
         self._note_earlier_copies()
 
@@ -636,8 +642,9 @@ class Vault:
 
     # -- admission --------------------------------------------------------------------------------
 
-    def _probe_with(self, spec: ConnectorSpec, token: str) -> str:
-        """Ask the provider whether it accepts ``token``. Returns the identity; raises otherwise."""
+    def _probe_with(self, spec: ConnectorSpec, token: str) -> tuple[str, str]:
+        """Ask the provider whether it accepts ``token``. Returns the identity to show and the
+        account key to compare (empty when the provider named none); raises otherwise."""
         headers: dict[str, str] = {"Accept": "application/json", **spec.auth.extra_headers}
         name, value = spec.auth.credential_header(token)
         headers[name] = value
@@ -645,8 +652,19 @@ class Vault:
         body = self._decode(raw, token)
         if status >= 300:
             raise VaultError(f"{spec.label} refused the credential with {status}")
-        identity = body.get(spec.probe.identity_field) if isinstance(body, Mapping) else None
-        return str(identity) if identity else ""
+        if not isinstance(body, Mapping):
+            return "", ""
+        named = body.get(spec.probe.identity_field)
+        identity = str(named) if named else ""
+        if not spec.probe.key_field:
+            return identity, identity
+        key = body.get(spec.probe.key_field)
+        account = key.strip() if isinstance(key, str) else ""
+        bot = body.get("bot")
+        workspace = bot.get("workspace_name") if isinstance(bot, Mapping) else None
+        if identity and isinstance(workspace, str) and workspace.strip():
+            identity = f"{identity} ({workspace.strip()})"
+        return identity, account
 
     def _admit(
         self,
@@ -659,7 +677,7 @@ class Vault:
     ) -> str:
         """Probe, then seal: the token, the refresh token and the OAuth client pair are all put
         together, after the provider accepted the grant, so a refused one leaves the last intact."""
-        identity = self._probe_with(spec, token)
+        identity, account = self._probe_with(spec, token)
         self._seal_or_refuse()
         with self._lock:
             self._next_generation(spec.id)
@@ -670,9 +688,10 @@ class Vault:
                 self._put(spec.id, "client_id", client[0])
                 self._put(spec.id, "client_secret", client[1])
             rec = self.record(spec.id)
-            reset = self._reset_foreign_switches(rec, identity)
+            reset = self._reset_foreign_switches(spec, rec, identity, account)
             rec.status = "connected"
             rec.identity = identity
+            rec.account = account
             rec.connected_at = _iso(_now())
             rec.health, rec.health_at, rec.health_detail = "healthy", rec.connected_at, reset
             rec.seal = self._seal.kind if self._seal is not None else ""
@@ -681,19 +700,39 @@ class Vault:
         return identity
 
     @staticmethod
-    def _reset_foreign_switches(rec: ConnectionRecord, identity: str) -> str:
+    def _reset_foreign_switches(
+        spec: ConnectorSpec, rec: ConnectionRecord, identity: str, account: str
+    ) -> str:
         """The switches belong to the account they were set under (ADR 0062). Turn writes off and
-        empty the allow-list unless this connect is that very account; say so in plain words."""
+        empty the allow-list unless this connect is that very account; say so in plain words.
+
+        The account is compared by its key, the display identity never. A connector that names a
+        key field (Notion's bot user id) is compared on it; a record that holds only a display
+        name for it resets once, on this connect."""
+        keyed = bool(spec.probe.key_field)
+        was = rec.switches_identity
+        before = rec.switches_account or ("" if keyed else was)
         if not (rec.writes_enabled or rec.allowlist):
             return ""
-        before = rec.switches_identity
-        if identity and before == identity:
+        if account and before == account:
+            rec.switches_identity, rec.switches_account = identity, account
             return ""
         rec.writes_enabled = False
         rec.allowlist = []
-        rec.switches_identity = identity
+        rec.switches_identity, rec.switches_account = identity, account
         who = identity or "an account the provider did not name"
-        why = f"were set under {before}" if before else "were set without a known account"
+        if not account:
+            why = (
+                f"were set under {was or 'no known account'}, and the provider named no account "
+                "id this time, so the account could not be confirmed"
+            )
+        elif keyed and was and not before:
+            why = (
+                f"were set under {was}, an account known only by its name, which cannot tell two "
+                "workspaces apart; they are reset once and kept by account id from now on"
+            )
+        else:
+            why = f"were set under {was}" if was else "were set without a known account"
         return (
             f"Connected as {who}. The writes switch and the recipient list {why}, "
             "so writes are off and the list was emptied."
@@ -777,11 +816,13 @@ class Vault:
             self._save()
             return rec
         try:
-            identity = self._probe_with(spec, token)
+            identity, account = self._probe_with(spec, token)
             with self._lock:
                 rec.health, rec.health_detail = "healthy", ""
                 if identity:
                     rec.identity = identity
+                if account:
+                    rec.account = account
                 if rec.status == "needs_reauth":
                     rec.status = "connected"
         except VaultError as exc:
@@ -813,6 +854,7 @@ class Vault:
             rec = self.record(connector_id)
             rec.status = "disconnected"
             rec.identity = ""
+            rec.account = ""
             rec.connected_at = ""
             rec.expires_at = ""
             rec.health, rec.health_at, rec.health_detail = "unknown", _iso(_now()), "disconnected"
@@ -835,6 +877,7 @@ class Vault:
         connection leaves the stored identity as it was, so the next connect compares against it."""
         if rec.status in ("connected", "needs_reauth"):
             rec.switches_identity = rec.identity
+            rec.switches_account = rec.account
 
     def set_writes(self, connector_id: str, enabled: bool) -> ConnectionRecord:
         spec = self.spec(connector_id)
