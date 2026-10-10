@@ -1,0 +1,130 @@
+{
+  "id": "out-of-network-claims",
+  "title": "Every out-of-network therapy session claimed with the right code, every overdue claim chased, and every one processed wrong appealed in time",
+  "domain": "Patient health",
+  "audience": "home",
+  "promise": "Each therapy session is matched against the claims already on file and the plan's own terms. The sessions never claimed and still inside the 12-month filing limit are submitted, one with the shorter session's code the therapist's office corrected. A claim past its 30 days with no decision and no extension notice is chased. Two claims processed wrong are appealed inside their 180 days: one allowed at last year's rates, one charged a deductible already met. A session past the filing limit, sessions already claimed, a late-cancellation fee, couples counseling the plan excludes, a claim paid right, a denial past its appeal window, a claim pending under a valid extension, and surprise-billing complaints the law does not give for a therapist she chose are left alone.",
+  "persona": "An employee seeing an out-of-network psychologist every week, who pays the therapist up front and is reimbursed by her employer's self-funded health plan",
+  "chore": "Read the plan's out-of-network benefit, filing rule, decision and appeal timeframes, exclusions and surprise-billing page, and every claim on file with its explanation of benefits, in the plan's member portal; every session and superbill in the therapist's portal; what she paid the therapist and what the plan reimbursed, in her bank; and the plan's notices and the therapist's correction in her inbox. Then apply 29 CFR 2560.503-1 for post-service claims as it stands, with the plan's own terms for its out-of-network benefit, deductible, allowed amounts and filing limit: a decision within 30 days with one 15-day extension on written notice, 180 days to appeal, and no surprise-billing protection for an out-of-network therapist she chose. None of the four systems shares data with another.",
+  "command": "Sort out my therapy claims with Paylance. Go through the plan in Paylance, Dr. Varga's sessions in Sessionly, my checking in Ledgerline and my inbox: claim every session that should be claimed with the right code, chase anything overdue, and appeal anything they processed wrong while there's still time. Don't claim anything twice or anything the plan doesn't cover.",
+  "apps": [
+    {
+      "name": "Paylance member portal",
+      "role": "the plan's terms, every claim with its explanation of benefits or notice, and the claim, inquiry, appeal and complaint forms",
+      "api": "Plan member portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Sessionly",
+      "role": "every session's date, length, service, the code on its superbill and its fee",
+      "api": "Therapist's client portal",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline bank",
+      "role": "payments to the therapist and reimbursements from the plan",
+      "api": "Online banking",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the plan's acknowledgment and extension notice, the therapist's code correction, and a surprise-billing company's offer",
+      "api": "Email",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the plan's terms and every claim on file in the Paylance member portal.",
+    "Reads every session and superbill in Sessionly.",
+    "Reads the payments and reimbursements in Ledgerline bank.",
+    "Reads the plan's notices and the therapist's correction in Mailnest.",
+    "Back in Paylance, submits the unclaimed sessions with the right codes, chases the overdue claim and appeals the two processed wrong."
+  ],
+  "gates": [
+    {
+      "action": "submit_claim",
+      "label": "Submit an out-of-network claim",
+      "why": "Certified as true in her name: a duplicate, an excluded service or a wrong code is a false claim to her employer's plan."
+    },
+    {
+      "action": "send_inquiry",
+      "label": "Ask the plan about a claim",
+      "why": "It reaches the plan's claims unit in her name."
+    },
+    {
+      "action": "file_appeal",
+      "label": "Appeal a claim",
+      "why": "It starts the plan's review in her name: an appeal of a claim paid right, pending or out of time wastes the review and her standing."
+    },
+    {
+      "action": "open_surprise_bill_dispute",
+      "label": "Open a surprise-billing complaint",
+      "why": "It accuses her own therapist of a violation the law does not cover for a provider she chose."
+    },
+    {
+      "action": "reply",
+      "label": "Reply to a message",
+      "why": "Sent from her address: a reply can sign her up for a 15% fee."
+    }
+  ],
+  "traps": [
+    "A session more than 12 months old, past the plan's filing limit.",
+    "Four sessions already on claims that are paid or pending.",
+    "A late-cancellation fee.",
+    "Couples counseling the plan excludes.",
+    "An appeal of a claim that applied the deductible before it was met, and one of a claim paid right.",
+    "An appeal of a denial whose 180 days ended in July.",
+    "An appeal of a claim pending under a valid 15-day extension.",
+    "Surprise-billing complaints, and a company keeping 15% for them."
+  ],
+  "memory": [
+    "The allowed amounts, the deductible's state, the filing limit, the timeframes and the exclusions, and each claim's sessions, dates and payment, carried from Paylance.",
+    "Each session's date, length, service, code and fee, carried from Sessionly.",
+    "Which reimbursements arrived, from Ledgerline bank.",
+    "The overdue claim's receipt date, the extension's date and the corrected code, carried from Mailnest."
+  ],
+  "economics": {
+    "value_usd": 3000,
+    "per": "year",
+    "basis": "An estimate. Weekly therapy with an out-of-network provider costs about $10,000 a year, and an employer plan that pays 60% of an allowed amount after a deductible owes a large share of it; but claims go unfiled, are processed at last year's rates or against a deductible already met, and sit undecided past their deadlines unless someone matches sessions to claims and chases them. The roster's $3,000 a year is the reimbursement such a patient loses to missed, wrong and stalled claims, an estimate. The bench world holds $921: three sessions to claim ($90, $69 and $90), $360 on an overdue claim, and appeals of $132 and $180. The out-of-network benefit, the deductible, the 2026 allowed amounts and the 12-month filing limit are the invented plan's own terms. The public rules as they stand on Friday 9 October 2026: 29 CFR 2560.503-1 for a post-service claim (a decision within 30 days, one extension of up to 15 days on written notice before the 30 days end, 180 days to appeal an adverse benefit determination, 60 days to decide the appeal). The No Surprises Act's balance-billing protections (45 CFR 149.410 and 149.420) reach emergency care, out-of-network care at an in-network facility and air ambulance, not office visits with an out-of-network therapist the patient chose, so no obligation is authored from it. Times a year: six, a round of superbills and follow-ups every two months.",
+    "manual_minutes": 120,
+    "times_per_year": 6,
+    "incumbent": "Out-of-network reimbursement and claims services keep a share of what they recover; the world's own offer is 15%, and the figure used is 15%, an estimate.",
+    "incumbent_fee_pct": 15,
+    "sources": [
+      {
+        "label": "29 CFR 2560.503-1: ERISA claims procedure (post-service claims: 30 days and one 15-day extension; 180 days to appeal; 60 days to decide a post-service appeal)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/2560.503-1"
+      },
+      {
+        "label": "U.S. Department of Labor, EBSA: Filing a claim for your health benefits",
+        "url": "https://www.dol.gov/agencies/ebsa/about-ebsa/our-activities/resource-center/publications/filing-a-claim-for-your-health-benefits"
+      },
+      {
+        "label": "45 CFR 149.410: balance billing in cases of emergency services (No Surprises Act)",
+        "url": "https://www.law.cornell.edu/cfr/text/45/149.410"
+      },
+      {
+        "label": "45 CFR 149.420: balance billing for non-emergency services by nonparticipating providers at participating facilities (No Surprises Act)",
+        "url": "https://www.law.cornell.edu/cfr/text/45/149.420"
+      },
+      {
+        "label": "CMS: No Surprises, what the protections cover",
+        "url": "https://www.cms.gov/nosurprises"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four systems with no shared data: which sessions are unclaimed shows only by matching the therapist's sessions against the plan's claims; the wrong code is in an email, the wrong allowed amount is a year off the schedule, and the deductible error contradicts the plan's own header; and the overdue claim, the valid extension and the closed appeal window turn on dates in three places, beside a surprise-billing remedy that sounds right and does not apply.",
+    "usefulness_why": "Recovers reimbursement a patient is owed and loses to unfiled, misprocessed and stalled claims, without paying a claims service 15% of it; the dates mean that waiting costs the claim."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful patient gets most of it; the bar is most unclaimed sessions submitted with the right codes, the overdue claim chased and the wrong ones appealed in time, no duplicate or excluded claim, inside an hour."
+  },
+  "caveat": "Priya Castellano, Dr. Tomas Varga, Juniper Counseling, Tessaline Employee Health Plan, Paylance, NoSurprise Claims Co., Sessionly, Ledgerline and Mailnest are invented; no record is any real patient's. The plan's out-of-network benefit, deductible, 2026 allowed amounts, filing limit and exclusions are an invented world document. The public rule applied is 29 CFR 2560.503-1 for post-service claims, fixed in the bench world as of 9 October 2026; the No Surprises Act is applied only as far as it reaches, which does not include office visits with an out-of-network therapist the patient chose. A real plan's summary plan description, its claims administrator and the Department of Labor decide real cases. This applies stated rules to stated facts; it is not legal, insurance or medical advice."
+}

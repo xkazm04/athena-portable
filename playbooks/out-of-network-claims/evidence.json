@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "out-of-network-claims",
+  "captured_at": "2026-10-10T03:15:32Z",
+  "bench_run_at": "2026-10-10T03:12:42Z",
+  "narration": {
+    "text": "Every out-of-network therapy session claimed with the right code, every overdue claim chased, and every one processed wrong appealed in time. This is a chore for an employee seeing an out-of-network psychologist every week, who pays the therapist up front and is reimbursed by her employer's self-funded health plan. Athena works it across 4 portals: Paylance member portal, Sessionly, Ledgerline bank and Mailnest. On the bench, she found 6 of 6 eligible items, worth 921 dollars of the 921 dollars there was to find. She made no false claim. The world held 14 traps, and she walked past 14. Among them: A session more than 12 months old, past the plan's filing limit. Four sessions already on claims that are paid or pending. She took 4 minutes. By hand, the same chore takes 2 hours, so she was about 32 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Priya Castellano, Dr. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.605,
+    "sha256": "ef167f26f55aae07daac7fb227cc76fa017d4423456099625e72e9b18079a424"
+  },
+  "video": {
+    "path": "evidence/out-of-network-claims/evidence.mp4",
+    "duration_s": 63.64,
+    "bytes": 3157962,
+    "sha256": "4613211b26809fd9a9395d1ca2f7352b51b750fe0bb8d0476b7012e6806b7106"
+  },
+  "thumbnail": {
+    "path": "playbooks/out-of-network-claims/thumb.jpg",
+    "bytes": 83191,
+    "sha256": "0505dc516ae9caa4b29fdec3370c34598bcc661b4b3b7729bd035ca616d8ec34"
+  }
+}
