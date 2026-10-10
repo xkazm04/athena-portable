@@ -1,0 +1,99 @@
+{
+  "targets": [
+    {
+      "tool": "request_certificate",
+      "key": "order_id",
+      "eligible": {
+        "O-3101": {
+          "value_usd": 300.0,
+          "why": "Brightway Gifts claimed resale on a 4000 dollar order to Ohio on 14 August (56 days ago) and no certificate is on file or in the mail. The 90 days run to 12 November 2026; 4000 x 7.5% = 300",
+          "expect": {
+            "amount_usd": 300
+          }
+        },
+        "O-3104": {
+          "value_usd": 360.0,
+          "why": "Ferrin & Daughters' certificate C-204 has a blank identification number and blank issuing state, so it is not fully completed. The sale was 30 July; the 90 days end 28 October 2026. 6000 x 6% = 360",
+          "expect": {
+            "amount_usd": 360
+          }
+        },
+        "O-3107": {
+          "value_usd": 300.0,
+          "why": "Lakeshore Pantry's certificate C-207 claims exemption in Ohio but the 5000 dollar order ships to Michigan, and the certificate must claim the state the sale is sourced to. The 90 days run to 19 November 2026. 5000 x 6% = 300",
+          "expect": {
+            "amount_usd": 300
+          }
+        },
+        "O-3110": {
+          "value_usd": 440.0,
+          "why": "Harbor Hardware's blanket certificate C-210 dates from 2024 and its last sale before this order was 18 September 2024, 24 months before 22 September 2026: more than twelve months, so the recurring relationship lapsed and a new certificate is needed. 8000 x 5.5% = 440",
+          "expect": {
+            "amount_usd": 440
+          }
+        },
+        "O-3134": {
+          "value_usd": 150.0,
+          "why": "Quillon Supply's certificate C-234 is a paper scan with no signature, and a paper certificate needs one. The sale was 8 September; the 90 days end 7 December 2026. 2000 x 7.5% = 150",
+          "expect": {
+            "amount_usd": 150
+          }
+        },
+        "O-2906": {
+          "value_usd": 750.0,
+          "why": "Cedar & Pine Mercantile claimed resale on a 10000 dollar February sale and there is no certificate. Ohio's request for substantiation lists it, so there are 120 days from 21 September 2026, to 19 January 2027, to obtain one in good faith. 10000 x 7.5% = 750",
+          "expect": {
+            "amount_usd": 750
+          }
+        }
+      },
+      "traps": {
+        "O-3113": "Texas is not a member of the Agreement; Prairie Dog's own Texas resale certificate C-213 governs the Texas delivery, so the Agreement's form and its 90 days are not the test",
+        "O-3116": "Northfield Garden Shop's electronic certificate C-216 is fully completed and arrived three days after the sale",
+        "O-3119": "Tax was charged on this order and no exemption was claimed, so no certificate is needed",
+        "O-3122": "Stonebridge's blanket certificate dates from 2023 but its last sale before this order was 11 March 2026, within twelve months; the recurring relationship holds, and a state may not ask for a renewal",
+        "O-3128": "Eastgate's certificate C-228 is electronic and complete; an electronic form needs no signature",
+        "O-3149": "Foxglove Studio's complete, signed certificate is already in the mail (M-2), only not yet filed in the CRM, and arrived inside 90 days"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "substantiate_exemption",
+      "key": "order_id",
+      "eligible": {
+        "O-2901": {
+          "value_usd": 900.0,
+          "why": "Maple Row Grocers' fully completed certificate C-101 came two days after the 14 January sale; it supports a listed sale. 12000 x 7.5% = 900",
+          "expect": {
+            "amount_usd": 900,
+            "certificate_id": "C-101"
+          }
+        },
+        "O-2904": {
+          "value_usd": 450.0,
+          "why": "Tern Outfitters' electronic certificate C-104 is fully completed and came 76 days after the sale, inside 90; it supports a listed sale. 6000 x 7.5% = 450",
+          "expect": {
+            "amount_usd": 450,
+            "certificate_id": "C-104"
+          }
+        },
+        "O-2908": {
+          "value_usd": 600.0,
+          "why": "Glenn Floral's complete signed certificate C-108 came on 10 July, 127 days after the sale but before the state asked, and a fully completed certificate received late is accepted subject to good faith (resale to a florist-retailer). 8000 x 7.5% = 600",
+          "expect": {
+            "amount_usd": 600,
+            "certificate_id": "C-108"
+          }
+        }
+      },
+      "traps": {
+        "O-2915": "Tax was charged on this March order, and it is not on the state's list; there is nothing to substantiate",
+        "O-2917": "Bellwether's December 2025 sale is outside the request's January to March 2026 period and is not listed",
+        "O-2929": "Kestrel Home's sale shipped to Kentucky, and Ohio's request does not list it",
+        "O-2906": "No certificate exists for it; the answer to the state waits for the buyer's certificate, which is what the request to the buyer is for"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

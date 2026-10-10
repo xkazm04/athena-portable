@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "sales-tax-exemption-certs",
+  "captured_at": "2026-10-10T15:00:47Z",
+  "bench_run_at": "2026-10-10T14:58:47Z",
+  "narration": {
+    "text": "A candle maker's wholesale resale certificates checked before the state audits them: six buyers asked for a fully completed certificate, an unsigned paper one, a blank identification number, a wrong state, a lapsed buyer and a sale with none among them, and the state's request answered with the three certificates that support it, while a Texas sale, certificates already complete, a taxed sale and a buyer still inside twelve months are left alone. This is a chore for the owner of a small wholesale candle company in Ohio, who sells to retailers in four states and has just had a sales tax substantiation request. On the bench, she found 9 of 9 eligible items, worth 4,250 dollars of the 4,250 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 68 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 65.257,
+    "sha256": "fcba6dd4fdcd595f8ab0c9c7efcb878d58094c95a7f2537d08fbc3f0fdfdd44b"
+  },
+  "video": {
+    "path": "evidence/sales-tax-exemption-certs/evidence.mp4",
+    "duration_s": 65.28,
+    "bytes": 3385874,
+    "sha256": "bb9a025de7ebf670e98313e448906847bc56122cab44e1a1ec52701ac05b1ade"
+  },
+  "thumbnail": {
+    "path": "playbooks/sales-tax-exemption-certs/thumb.jpg",
+    "bytes": 83172,
+    "sha256": "6dafed1406b36ac78edfd8753c1c8bff6e14cd2ac95becf0168d3a6b6c271031"
+  }
+}

@@ -176,6 +176,12 @@ names; each playbook carries the new one.
 | 60 | `organic-annual-update` | Food & beverage | work | Assemble the certifier's annual update: plan changes, supplier certificates, import certificates | Certifield Organic, Organicheck, Ledgerline ERP, Docshelf | USDA National Organic Program, 7 CFR 205.406 (annual update); the Strengthening Organic Enforcement rule (import certificates) | $2,000 / year, mostly minutes | X J: a supplier whose certificate lapsed |
 | 61 | `food-recall-trace` | Food & beverage | work | When a supplier recalls an ingredient, trace its lots to finished goods and customers, and no further | Ledgerline ERP, Mailnest (the notice), Freshroute, Pantrylink, Docshelf (lot records) | FDA Food Traceability Rule, FSMA §204 and 21 CFR Part 1 Subpart S | $20,000 / episode | X J: unaffected lots are traps, and so is a missed one |
 
+*Note, 2026-10-10:* these portal names were changed before a first bench, because the roster's name
+belongs to a real business (rule 4: every portal is invented). The rows above keep the roster's
+names; each playbook carries the new one.
+- Row 52, `sales-tax-exemption-certs`: "Clientry CRM" became "Clientwren CRM", because Clientry is a real CRM
+  (useclientry.com); and "Mailnest" became "Postwren", because mailnest.io is a real email service.
+
 ### B7: Household money
 
 | # | id | Domain | Aud. | Chore | Portals | Rests on | Value / per | Why only Athena |

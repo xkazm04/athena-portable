@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The sixty playbooks (latest runs, Claude Sonnet)
+## The sixty-one playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -103,9 +103,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A small carrier's driver qualification files kept current: a full Clearinghouse query inside its 24 hours, an overdue annual query, three driving records ordered for the right reason and states, and a review signed, while the driver with no CDL, the driver who left and this year's work are left alone | work | 4 | exceeds: 6 of 6 (a $90 weight an act, mostly minutes), 9 of 9 traps, 0 false |
 | An owner-operator's escrow got back after the lease ended: three deductions the lease does not allow disputed, a quarter's interest claimed at the Treasury bill rate and the balance demanded, while the charges the lease names are left alone | work | 4 | exceeds: 5 of 5, $1,538.77 of $1,538.77, 9 of 9 traps, 0 false |
 | A heavy hauler's oversize permits bought across Oklahoma, Arkansas and Tennessee, with each state's escorts, curfews and a failed bridge kept, while divisible tanks, a load legal in Arkansas and a state the load never enters are left alone | work | 5 | exceeds: 5 of 5 (a $72.50 or $82.50 weight a permit, mostly minutes), 8 of 8 traps, 0 false |
+| A candle maker's wholesale resale certificates checked before the state audits them: six requests for a fully completed certificate, and the state's request answered with the three certificates that support it, while a Texas sale, complete certificates, a taxed sale and a buyer still inside twelve months are left alone | work | 4 | exceeds (run 2 of 2, after a world fix): 9 of 9, $4,250 of $4,250, 10 of 10 traps, 0 false, 2.2 min, $1.51; was short, 4 of 9, the order list could not be paged |
 
-Across the latest runs: $1,019,264 of $1,028,692 found, 627 of 627 traps walked past, no false claim,
-182 minutes of her time against about 269 hours by hand, $110.96 of model time. 97 runs are recorded
+Across the latest runs: $1,023,514 of $1,032,942 found, 637 of 637 traps walked past, no false claim,
+185 minutes of her time against about 272 hours by hand, $112.47 of model time. 99 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

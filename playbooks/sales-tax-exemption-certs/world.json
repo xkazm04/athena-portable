@@ -1,0 +1,756 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "storeline",
+      "message": "I'm Dana, Alderkeep Candle Works. We sell candles wholesale, and Ohio has asked us to substantiate some exempt sales, so I want every resale certificate in order. Start in Storeline: read the cert desk notes and go through every wholesale order. Note which ones claim an exemption and what certificate each points to.",
+      "nudges": 1
+    },
+    {
+      "app": "postwren",
+      "message": "This is my mail. Read what buyers and the state have sent, so we know what is already in our hands that the CRM may not show. Note any certificate a buyer has sent.",
+      "nudges": 1
+    },
+    {
+      "app": "clientwren",
+      "message": "This is our CRM, where the certificates are kept. Read every certificate against its order, and against the mail you just read. Where an order has no fully completed certificate, request one from the buyer for the tax at stake. Leave alone every order whose certificate is complete or that needs none.",
+      "nudges": 1
+    },
+    {
+      "app": "taxline",
+      "message": "This is our Ohio sales tax account. Read the request for substantiation and the guide, then answer each listed sale that we can support with a fully completed certificate. Then tell me what you requested, what you answered, how much tax that protects, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "storeline",
+      "name": "Storeline admin",
+      "origin": "https://admin.storeline.example",
+      "path": "/alderkeep-candle-works",
+      "view": {
+        "view": "Storeline admin: Alderkeep Candle Works, wholesale orders and the cert desk notes",
+        "signed_in": "Dana Whitcomb",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_orders",
+          "kind": "READ",
+          "description": "Every wholesale order: order id, date, buyer, ship-to state, total, tax charged, whether an exemption was claimed and the certificate it points to. Six orders a page; ask for the next with page (1 to 3).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "orders",
+            "page_size": 6
+          }
+        },
+        {
+          "name": "list_notes",
+          "kind": "READ",
+          "description": "The cert desk notes: note id and title.",
+          "params": {},
+          "returns": {
+            "table": "notes",
+            "fields": [
+              "note_id",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_note",
+          "kind": "READ",
+          "description": "One cert desk note in full, by note id (N-n).",
+          "params": {
+            "note_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "notes",
+            "match": {
+              "note_id": "note_id"
+            },
+            "require": [
+              "note_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Storeline admin",
+        "Storeline",
+        "the shop admin",
+        "my orders"
+      ]
+    },
+    {
+      "app_id": "clientwren",
+      "name": "Clientwren CRM",
+      "origin": "https://crm.clientwren.example",
+      "path": "/alderkeep/certificates",
+      "view": {
+        "view": "Clientwren: Alderkeep Candle Works' buyers and their exemption certificates",
+        "signed_in": "Dana Whitcomb",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_certificates",
+          "kind": "READ",
+          "description": "Every certificate on file: certificate id, buyer, form and the date received.",
+          "params": {},
+          "returns": {
+            "table": "certs",
+            "fields": [
+              "cert_id",
+              "buyer",
+              "form",
+              "received"
+            ]
+          }
+        },
+        {
+          "name": "read_certificate",
+          "kind": "READ",
+          "description": "One certificate in full, by certificate id (C-n): every field as the buyer filled it, and the buyer's last sale before the order.",
+          "params": {
+            "cert_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "certs",
+            "match": {
+              "cert_id": "cert_id"
+            },
+            "require": [
+              "cert_id"
+            ]
+          }
+        },
+        {
+          "name": "request_certificate",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask a buyer to send a fully completed certificate for one order, by order id (order_id), naming what is missing or wrong (missing), with the sales tax at stake in dollars (amount_usd). Dana signs it; it goes to the buyer.",
+          "params": {
+            "order_id": {
+              "type": "string"
+            },
+            "missing": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Request for a certificate on {order_id} sent to the buyer."
+        }
+      ],
+      "aliases": [
+        "Clientwren CRM",
+        "Clientwren",
+        "the CRM",
+        "our CRM"
+      ]
+    },
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/dana@alderkeepcandles.example",
+      "view": {
+        "view": "Postwren: dana@alderkeepcandles.example",
+        "signed_in": "Dana Whitcomb",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "Messages: message id (M-n), date, sender and subject.",
+          "params": {},
+          "returns": {
+            "table": "messages",
+            "fields": [
+              "message_id",
+              "date",
+              "from",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id (M-n).",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "messages",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the inbox",
+        "email"
+      ]
+    },
+    {
+      "app_id": "taxline",
+      "name": "Taxline State",
+      "origin": "https://revenue.taxline-state.example",
+      "path": "/ohio/alderkeep-candle-works",
+      "view": {
+        "view": "Taxline State: Alderkeep Candle Works' Ohio sales tax account (invented portal)",
+        "signed_in": "Dana Whitcomb",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_notice",
+          "kind": "READ",
+          "description": "The state's request for substantiation: what it asks and by when.",
+          "params": {},
+          "returns": {
+            "table": "notice"
+          }
+        },
+        {
+          "name": "list_notice_sales",
+          "kind": "READ",
+          "description": "The sales the request lists: order id, sale date and the exempt amount.",
+          "params": {},
+          "returns": {
+            "table": "notice_orders"
+          }
+        },
+        {
+          "name": "list_rules",
+          "kind": "READ",
+          "description": "The seller's guide: rule id and title.",
+          "params": {},
+          "returns": {
+            "table": "rules",
+            "fields": [
+              "rule_id",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_rule",
+          "kind": "READ",
+          "description": "One rule of the guide in full, by rule id (R-n).",
+          "params": {
+            "rule_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "rule_id": "rule_id"
+            },
+            "require": [
+              "rule_id"
+            ]
+          }
+        },
+        {
+          "name": "substantiate_exemption",
+          "kind": "REACHES_A_PERSON",
+          "description": "Answer the state's request for one listed sale, by order id (order_id), with the certificate that supports it (certificate_id) and the tax at stake in dollars (amount_usd). Dana signs it; it goes to the Ohio department.",
+          "params": {
+            "order_id": {
+              "type": "string"
+            },
+            "certificate_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Substantiation of {order_id} sent to the state with {certificate_id}."
+        }
+      ],
+      "aliases": [
+        "Taxline State",
+        "Taxline",
+        "the state portal",
+        "our Ohio account"
+      ]
+    }
+  ],
+  "tables": {
+    "orders": [
+      {
+        "order_id": "O-2901",
+        "date": "2026-01-14",
+        "buyer": "Maple Row Grocers",
+        "ship_to": "OH",
+        "total_usd": 12000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-101"
+      },
+      {
+        "order_id": "O-2904",
+        "date": "2026-02-03",
+        "buyer": "Tern Outfitters",
+        "ship_to": "OH",
+        "total_usd": 6000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-104"
+      },
+      {
+        "order_id": "O-2906",
+        "date": "2026-02-17",
+        "buyer": "Cedar & Pine Mercantile",
+        "ship_to": "OH",
+        "total_usd": 10000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "none"
+      },
+      {
+        "order_id": "O-2908",
+        "date": "2026-03-05",
+        "buyer": "Glenn Floral Co",
+        "ship_to": "OH",
+        "total_usd": 8000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-108"
+      },
+      {
+        "order_id": "O-2915",
+        "date": "2026-03-12",
+        "buyer": "Wick & Willow Retail",
+        "ship_to": "OH",
+        "total_usd": 5000,
+        "tax_charged_usd": 375,
+        "exemption_claimed": "none",
+        "certificate_id": "none"
+      },
+      {
+        "order_id": "O-2917",
+        "date": "2025-12-18",
+        "buyer": "Bellwether Mercantile",
+        "ship_to": "OH",
+        "total_usd": 7000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-117"
+      },
+      {
+        "order_id": "O-2929",
+        "date": "2026-02-24",
+        "buyer": "Kestrel Home",
+        "ship_to": "KY",
+        "total_usd": 9000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-129"
+      },
+      {
+        "order_id": "O-3101",
+        "date": "2026-08-14",
+        "buyer": "Brightway Gifts",
+        "ship_to": "OH",
+        "total_usd": 4000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "none"
+      },
+      {
+        "order_id": "O-3104",
+        "date": "2026-07-30",
+        "buyer": "Ferrin & Daughters",
+        "ship_to": "KY",
+        "total_usd": 6000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-204"
+      },
+      {
+        "order_id": "O-3107",
+        "date": "2026-08-21",
+        "buyer": "Lakeshore Pantry",
+        "ship_to": "MI",
+        "total_usd": 5000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-207"
+      },
+      {
+        "order_id": "O-3110",
+        "date": "2026-09-22",
+        "buyer": "Harbor Hardware",
+        "ship_to": "WI",
+        "total_usd": 8000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-210"
+      },
+      {
+        "order_id": "O-3113",
+        "date": "2026-09-15",
+        "buyer": "Prairie Dog Mercantile",
+        "ship_to": "TX",
+        "total_usd": 6000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-213"
+      },
+      {
+        "order_id": "O-3116",
+        "date": "2026-09-10",
+        "buyer": "Northfield Garden Shop",
+        "ship_to": "OH",
+        "total_usd": 3000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-216"
+      },
+      {
+        "order_id": "O-3119",
+        "date": "2026-09-18",
+        "buyer": "Sable Lane Boutique",
+        "ship_to": "OH",
+        "total_usd": 2000,
+        "tax_charged_usd": 150,
+        "exemption_claimed": "none",
+        "certificate_id": "none"
+      },
+      {
+        "order_id": "O-3122",
+        "date": "2026-09-30",
+        "buyer": "Stonebridge Mercantile",
+        "ship_to": "OH",
+        "total_usd": 4000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-122"
+      },
+      {
+        "order_id": "O-3128",
+        "date": "2026-09-25",
+        "buyer": "Eastgate Provisions",
+        "ship_to": "OH",
+        "total_usd": 5000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-228"
+      },
+      {
+        "order_id": "O-3134",
+        "date": "2026-09-08",
+        "buyer": "Quillon Supply",
+        "ship_to": "OH",
+        "total_usd": 2000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "C-234"
+      },
+      {
+        "order_id": "O-3149",
+        "date": "2026-09-28",
+        "buyer": "Foxglove Studio",
+        "ship_to": "OH",
+        "total_usd": 3000,
+        "tax_charged_usd": 0,
+        "exemption_claimed": "resale",
+        "certificate_id": "none"
+      }
+    ],
+    "notes": [
+      {
+        "note_id": "N-1",
+        "title": "How exposure is worked out",
+        "text": "Tax exposure on an exempt order = its total times the combined rate of the state it ships to. The rates this shop uses (invented for this world): Ohio 7.5%, Kentucky 6%, Michigan 6%, Wisconsin 5.5%, Texas 8.25%. Example: a 4000 dollar order to Ohio is 300 dollars of tax at stake. Today is Friday 9 October 2026."
+      },
+      {
+        "note_id": "N-2",
+        "title": "How the cert desk works",
+        "text": "Alderkeep sells candles wholesale. A buyer who claims resale owes a certificate for that order. Certificates are kept in Clientwren, the CRM, and requested there: one request to the buyer, per order, naming what is missing. Mail from buyers arrives in Postwren and is not filed into Clientwren until someone does it. A state's request for substantiation is answered in Taxline State, one order at a time, with the certificate that supports it. Today is Friday 9 October 2026."
+      },
+      {
+        "note_id": "N-3",
+        "title": "Out-of-state buyers",
+        "text": "Ohio, Kentucky, Michigan and Wisconsin are member states of the Streamlined Sales and Use Tax Agreement, so the Agreement's uniform certificate (Form F0003) works for them. Texas is not a member. A Texas delivery is governed by Texas's own resale certificate rules, so a Texas buyer gives Texas's own form, and the Agreement's 90 days do not apply to it."
+      }
+    ],
+    "certs": [
+      {
+        "cert_id": "C-101",
+        "buyer": "Maple Row Grocers",
+        "form": "paper",
+        "kind": "blanket",
+        "received": "2026-01-16",
+        "state_claimed": "OH",
+        "id_number": "OH-31-4410",
+        "id_issued_by": "OH",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "signed",
+        "last_sale_before_the_order": "2025-11-20"
+      },
+      {
+        "cert_id": "C-104",
+        "buyer": "Tern Outfitters",
+        "form": "electronic",
+        "kind": "blanket",
+        "received": "2026-04-20",
+        "state_claimed": "OH",
+        "id_number": "OH-31-5120",
+        "id_issued_by": "OH",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "(electronic form, none needed)",
+        "last_sale_before_the_order": "2025-10-02"
+      },
+      {
+        "cert_id": "C-108",
+        "buyer": "Glenn Floral Co",
+        "form": "paper",
+        "kind": "blanket",
+        "received": "2026-07-10",
+        "state_claimed": "OH",
+        "id_number": "OH-31-6034",
+        "id_issued_by": "OH",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "signed",
+        "last_sale_before_the_order": "2025-09-12"
+      },
+      {
+        "cert_id": "C-117",
+        "buyer": "Bellwether Mercantile",
+        "form": "paper",
+        "kind": "blanket",
+        "received": "2025-12-20",
+        "state_claimed": "OH",
+        "id_number": "OH-31-7781",
+        "id_issued_by": "OH",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "signed",
+        "last_sale_before_the_order": "2025-06-14"
+      },
+      {
+        "cert_id": "C-129",
+        "buyer": "Kestrel Home",
+        "form": "paper",
+        "kind": "blanket",
+        "received": "2026-02-26",
+        "state_claimed": "KY",
+        "id_number": "KY-60-2291",
+        "id_issued_by": "KY",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "signed",
+        "last_sale_before_the_order": "2025-11-03"
+      },
+      {
+        "cert_id": "C-204",
+        "buyer": "Ferrin & Daughters",
+        "form": "electronic",
+        "kind": "blanket",
+        "received": "2026-08-05",
+        "state_claimed": "KY",
+        "id_number": "(blank)",
+        "id_issued_by": "(blank)",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "(electronic form, none needed)",
+        "last_sale_before_the_order": "2026-04-16"
+      },
+      {
+        "cert_id": "C-207",
+        "buyer": "Lakeshore Pantry",
+        "form": "electronic",
+        "kind": "blanket",
+        "received": "2026-08-25",
+        "state_claimed": "OH",
+        "id_number": "OH-31-8802",
+        "id_issued_by": "OH",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "(electronic form, none needed)",
+        "last_sale_before_the_order": "2026-05-29",
+        "note": "The order ships to Michigan."
+      },
+      {
+        "cert_id": "C-210",
+        "buyer": "Harbor Hardware",
+        "form": "paper",
+        "kind": "blanket",
+        "received": "2024-06-03",
+        "state_claimed": "WI",
+        "id_number": "WI-1140-77",
+        "id_issued_by": "WI",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "signed",
+        "last_sale_before_the_order": "2024-09-18"
+      },
+      {
+        "cert_id": "C-213",
+        "buyer": "Prairie Dog Mercantile",
+        "form": "paper",
+        "kind": "Texas Sales and Use Tax Resale Certificate",
+        "received": "2026-09-16",
+        "state_claimed": "TX",
+        "id_number": "TX-3204418",
+        "id_issued_by": "TX",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "signed",
+        "last_sale_before_the_order": "2026-03-02",
+        "note": "Texas's own form, not the Agreement's."
+      },
+      {
+        "cert_id": "C-216",
+        "buyer": "Northfield Garden Shop",
+        "form": "electronic",
+        "kind": "blanket",
+        "received": "2026-09-13",
+        "state_claimed": "OH",
+        "id_number": "OH-31-9015",
+        "id_issued_by": "OH",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "(electronic form, none needed)",
+        "last_sale_before_the_order": "2026-04-21"
+      },
+      {
+        "cert_id": "C-122",
+        "buyer": "Stonebridge Mercantile",
+        "form": "paper",
+        "kind": "blanket",
+        "received": "2023-11-02",
+        "state_claimed": "OH",
+        "id_number": "OH-31-2260",
+        "id_issued_by": "OH",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "signed",
+        "last_sale_before_the_order": "2026-03-11"
+      },
+      {
+        "cert_id": "C-228",
+        "buyer": "Eastgate Provisions",
+        "form": "electronic",
+        "kind": "blanket",
+        "received": "2026-09-26",
+        "state_claimed": "OH",
+        "id_number": "OH-31-9470",
+        "id_issued_by": "OH",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "(electronic form, none needed)",
+        "last_sale_before_the_order": "2026-06-08"
+      },
+      {
+        "cert_id": "C-234",
+        "buyer": "Quillon Supply",
+        "form": "paper (scan)",
+        "kind": "blanket",
+        "received": "2026-09-12",
+        "state_claimed": "OH",
+        "id_number": "OH-31-3318",
+        "id_issued_by": "OH",
+        "business_type": "retail",
+        "reason": "resale",
+        "signature": "(blank)",
+        "last_sale_before_the_order": "2026-05-11"
+      }
+    ],
+    "messages": [
+      {
+        "message_id": "M-1",
+        "date": "2026-09-21",
+        "from": "Taxline State notices",
+        "subject": "Request for substantiation SR-2026-0914",
+        "body": "Your Ohio sales tax account has a request for substantiation. Open Taxline State, 'Request for substantiation'. The answer date is 19 January 2027."
+      },
+      {
+        "message_id": "M-2",
+        "date": "2026-10-02",
+        "from": "Foxglove Studio (Ines Varga)",
+        "subject": "Our resale certificate, order O-3149",
+        "body": "Hi Dana. Here is our certificate for the 28 September order. Streamlined Sales Tax Certificate of Exemption, completed on paper and signed by Ines Varga, owner. Purchaser: Foxglove Studio, 41 Mill Street, Zanesville, Ohio. State claiming exemption: OH. Blanket. ID number OH-31-9921, issued by OH. Type of business: retail. Reason for exemption: resale. Signed 2 October 2026."
+      },
+      {
+        "message_id": "M-3",
+        "date": "2026-09-26",
+        "from": "Eastgate Provisions (Luis Moreno)",
+        "subject": "Certificate through your online form",
+        "body": "Dana, I filled in your online certificate form for the 25 September order. Name, address, ID number OH-31-9470 (OH), type of business retail, reason resale, state OH. It has no signature line, which I take it is fine. Thanks, Luis."
+      }
+    ],
+    "rules": [
+      {
+        "rule_id": "R-1",
+        "title": "A fully completed certificate",
+        "text": "Taxline State's guide for sellers, Friday 9 October 2026, paraphrasing the Streamlined Sales and Use Tax Agreement. A seller is relieved of the tax if it obtains a fully completed certificate. Fully completed means every field is filled: the purchaser's name and address, type of business, reason for exemption, identification number and the state that issued it, and the state under whose law the exemption is claimed. A signature is needed only on a paper certificate (a fax is paper). An electronic form needs none. The certificate must claim the exemption in the state the sale is sourced to."
+      },
+      {
+        "rule_id": "R-2",
+        "title": "The time to get one",
+        "text": "Friday 9 October 2026. A seller obtains the certificate at the sale or within 90 days after the date of sale. Past 90 days, if a member state asks the seller to substantiate the exemption, the seller has 120 days from the state's request to obtain a fully completed certificate in good faith (an exemption that was available on the sale date, could apply to the item and fits the buyer's business), or to show by other means that the sale was not taxable. A fully completed certificate received after 90 days but before any request is accepted subject to the same good faith test."
+      },
+      {
+        "rule_id": "R-3",
+        "title": "Relief that is lost; blanket certificates",
+        "text": "Friday 9 October 2026. The relief does not reach a seller that fraudulently fails to collect tax, that solicits a buyer to claim an exemption unlawfully, or that accepts an entity-based exemption on goods the buyer picks up at the seller's own location in a state that does not allow it. A blanket certificate stays in force while the buyer buys again: a state may not ask the seller to renew it or update it while no more than twelve months pass between sales. No certificate expires on a date. If more than twelve months pass between sales, the state may ask for a new one."
+      }
+    ],
+    "notice": [
+      {
+        "notice_id": "SR-2026-0914",
+        "text": "Friday 9 October 2026. Ohio's request for substantiation, dated Monday 21 September 2026, to Alderkeep Candle Works: show the exemption for each Ohio sale in the notice list, which are the sales reported as exempt for January to March 2026. Under the Agreement the seller has 120 days from that date, to Tuesday 19 January 2027, to obtain a fully completed certificate in good faith or other proof. Answer each sale with the certificate that supports it."
+      }
+    ],
+    "notice_orders": [
+      {
+        "order_id": "O-2901",
+        "sale_date": "2026-01-14",
+        "exempt_amount_usd": 12000
+      },
+      {
+        "order_id": "O-2904",
+        "sale_date": "2026-02-03",
+        "exempt_amount_usd": 6000
+      },
+      {
+        "order_id": "O-2906",
+        "sale_date": "2026-02-17",
+        "exempt_amount_usd": 10000
+      },
+      {
+        "order_id": "O-2908",
+        "sale_date": "2026-03-05",
+        "exempt_amount_usd": 8000
+      }
+    ]
+  }
+}

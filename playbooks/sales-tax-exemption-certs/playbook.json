@@ -1,0 +1,108 @@
+{
+  "id": "sales-tax-exemption-certs",
+  "title": "A candle maker's wholesale resale certificates checked before the state audits them: six buyers asked for a fully completed certificate, an unsigned paper one, a blank identification number, a wrong state, a lapsed buyer and a sale with none among them, and the state's request answered with the three certificates that support it, while a Texas sale, certificates already complete, a taxed sale and a buyer still inside twelve months are left alone",
+  "domain": "Sales tax",
+  "audience": "work",
+  "promise": "A small wholesaler's orders are read against the certificates in its CRM, the mail and the state's own request for substantiation. Six buyers are asked, in writing, for a certificate that is missing, unsigned on paper, blank in its identification number, claiming the wrong state, lapsed after more than twelve months or never sent. The state's request for substantiation is answered for the three listed sales a complete certificate supports, one of them received late. A Texas delivery under Texas's own form, certificates already complete, an electronic one with no signature line, a certificate already in the mail, a taxed sale and a buyer still inside twelve months of its last order are left alone.",
+  "persona": "The owner of a small wholesale candle company in Ohio, who sells to retailers in four states and has just had a sales tax substantiation request",
+  "chore": "Read the wholesale orders and the cert desk notes in the store admin; every certificate in the CRM, field by field, against its order; the mail for certificates not yet filed; and the state's request for substantiation and its guide in the tax portal. Then apply the Streamlined Sales and Use Tax Agreement's Section 317 and Rule 317.1 (a fully completed certificate, a signature only on paper, 90 days after the sale, 120 days after a state's request, blanket certificates through a recurring relationship of twelve months) as they stand on 9 October 2026: request what is missing, and answer the state with what is complete.",
+  "command": "I'm Dana, Alderkeep Candle Works. Ohio has asked us to substantiate some exempt sales and I want every resale certificate in order. Go through Storeline, Clientwren, Postwren and our Taxline State account: ask buyers for certificates that are missing or not fully completed, answer the state with the ones that are good, and don't bother anyone whose certificate is fine.",
+  "apps": [
+    {
+      "name": "Storeline admin",
+      "role": "the wholesale orders: buyer, ship-to state, total, tax charged, the exemption claimed and the certificate the order points to; and the cert desk notes",
+      "api": "Store admin, no API",
+      "url": ""
+    },
+    {
+      "name": "Clientwren CRM",
+      "role": "every certificate on file, field by field, and the buyer's last sale; and the form to ask a buyer for a new one",
+      "api": "CRM, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the mail: the state's notice and the certificates buyers sent that the CRM does not yet show",
+      "api": "Mail",
+      "url": ""
+    },
+    {
+      "name": "Taxline State",
+      "role": "the state's request for substantiation, the sales it lists, the seller's guide and the form to answer a listed sale",
+      "api": "State portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the orders and the cert desk notes in Storeline.",
+    "Reads the mail in Postwren for certificates not yet filed.",
+    "Reads every certificate in Clientwren against its order and requests a fully completed one where it is missing, incomplete, unsigned on paper, for the wrong state or lapsed.",
+    "Reads the state's request and guide in Taxline State and answers each listed sale a complete certificate supports."
+  ],
+  "gates": [
+    {
+      "action": "request_certificate",
+      "label": "Ask a buyer for a fully completed certificate",
+      "why": "A written request to a customer on the seller's behalf, signed by the owner; it goes to the buyer."
+    },
+    {
+      "action": "substantiate_exemption",
+      "label": "Answer the state's request for one sale",
+      "why": "A statement to a state tax department that a sale was exempt, signed by the owner."
+    }
+  ],
+  "traps": [
+    "Asking Prairie Dog Mercantile for the Agreement's form on a Texas delivery, when Texas's own resale certificate governs.",
+    "Asking for a certificate already fully completed and inside its ninety days.",
+    "Asking for a certificate on a sale on which tax was charged.",
+    "Asking a buyer for a renewal when its last sale was within twelve months.",
+    "Asking for a signature on a complete electronic certificate.",
+    "Asking for a certificate that is already in the mail.",
+    "Answering the state for a sale it did not list, a taxed sale, or a sale to a Kentucky buyer.",
+    "Answering the state for a sale that has no certificate yet."
+  ],
+  "memory": [
+    "Which orders claim an exemption, where they ship and the tax at stake, from Storeline.",
+    "What each certificate lacks, and which buyers' relationships lapsed, from Clientwren into the state tab.",
+    "Which certificate is already in the mail, carried from Postwren to Clientwren, and the state's list and 19 January 2027 date, carried to the last tab."
+  ],
+  "economics": {
+    "value_usd": 15000,
+    "per": "year",
+    "basis": "An estimate. A wholesaler whose buyers claim resale usually has some exempt sales with no usable certificate, and an audit assesses the tax on them against the seller (Streamlined Sales and Use Tax Agreement, Section 317: the seller is relieved only if it holds a fully completed certificate, or gets one within the periods the Agreement gives). A small wholesaler with a few thousand dollars of tax at risk on a quarter's exempt sales, and a few such exposures a year, is the roster's $15,000 a year of tax kept from an assessment. The bench world holds $4,250: six requests (300, 360, 300, 440, 150 and 750) and three answers to the state (900, 450 and 600). Times a year: four, a quarterly review of the certificates behind the quarter's exempt sales. manual_minutes 150: reading eighteen orders against thirteen certificates field by field and the mail, working the 90 and 120 days and twelve months, writing six requests and three answers. Rules applied as they stand on Friday 9 October 2026: the Agreement as amended through 16 May 2024 (Section 317 A to G; Rule 317.1 A.1, A.10 and B.8), the Certificate of Exemption instructions, and the Governing Board's list of states (23 full members and Tennessee as an associate member, page updated 26 September 2025). The twelve-month recurring relationship is Section 317.F; no certificate expires on a date.",
+    "manual_minutes": 150,
+    "times_per_year": 4,
+    "incumbent": "Certificate-management services charge a subscription, not a share of the tax they protect, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "Streamlined Sales and Use Tax Agreement, as amended through 16 May 2024: Section 317 (administration of exemptions: 90 days, 120 days, recurring business relationship)",
+        "url": "https://www.streamlinedsalestax.org/docs/default-source/agreement/ssuta/ssuta-as-amended-through-05-16-24-with-hyperlinks-and-compiler-notes-at-end-markup-final-8-23-24.pdf"
+      },
+      {
+        "label": "Streamlined Sales Tax Governing Board: Rule 317.1, simplified administration process (fully completed certificate, signature only on paper)",
+        "url": "https://www.streamlinedsalestax.org/docs/default-source/comm-slac-documents/slac-2023/sl23006-rule-317-1-simplified-administration-process.pdf"
+      },
+      {
+        "label": "Streamlined Sales Tax: Certificate of Exemption and its instructions (blanket certificates)",
+        "url": "https://www.streamlinedsalestax.org/docs/default-source/forms/exemption-certificate-instructions.pdf"
+      },
+      {
+        "label": "Streamlined Sales Tax Governing Board: member states",
+        "url": "https://www.streamlinedsalestax.org/about-us/state-information"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Each certificate has to be read field by field against its own order: a blank number, a wrong state, an unsigned paper form and a lapsed relationship look alike, and the complete electronic one with no signature line, the Texas form, the one in the mail and the buyer still inside twelve months look like defects and are not. Three clocks (90 days, 120 days, twelve months) run on three different dates.",
+    "usefulness_why": "Keeps a few thousand dollars of tax off an audit assessment by chasing the right buyers in time, in minutes instead of an afternoon of reading certificates; a quarterly review, not a daily chore."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful bookkeeper with the Agreement's rules and the certificates in hand gets most of it: the six requests for the right reasons and the three answers the complete certificates support, with nothing asked of a buyer whose certificate is fine and nothing sent to the state it did not ask, inside an hour."
+  },
+  "caveat": "Dana Whitcomb, Alderkeep Candle Works, every buyer, Ines Varga and Luis Moreno, every certificate, order, total and date, and Storeline, Clientwren, Postwren and Taxline State are invented; Taxline State is not any state's real portal and the Ohio notice, guide and tax rates are invented. The public rule applied is the Streamlined Sales and Use Tax Agreement as amended through 16 May 2024 (Section 317 and Rule 317.1) and the Certificate of Exemption instructions, as they stand on 9 October 2026; Ohio, Kentucky, Michigan and Wisconsin are full members on the Governing Board's list (updated 26 September 2025), and Texas is not a member. Each real state decides its own exemptions, may allow a seller longer than 90 or 120 days, and may take a certificate for its own reasons, so a real audit turns on that state's rules and its auditors. This applies stated rules to stated facts; it is not legal, tax or compliance advice."
+}
