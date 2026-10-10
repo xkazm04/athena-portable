@@ -1,0 +1,117 @@
+{
+  "id": "escrow-analysis-check",
+  "title": "The escrow analysis checked against the real tax and insurance bills, and the surplus claimed",
+  "domain": "Mortgage",
+  "audience": "home",
+  "promise": "Each line of the servicer's annual escrow analysis is checked against the tax collector's bills and the insurer's premiums: a stale tax figure, last year's premium and a cushion over the one-sixth limit are disputed with the amount each should be, the late penalty the servicer charged to escrow is disputed, the surplus the analysis kept is claimed within its 30 days, and a premium paid twice is refunded to the card that paid it second. Lines that are right are left alone, and no audit or tax-relief service is answered.",
+  "persona": "A homeowner whose mortgage payment just went up after the servicer's annual escrow analysis, though the tax bill went down and the insurance got cheaper",
+  "chore": "Read the servicer's escrow rules, the analysis line by line and what the escrow actually paid last year; the tax collector's bills and the payments it received, with their dates; the insurer's policies, premiums and payments; and the servicer's, insurer's and others' mail. Then apply RESPA section 10 and Regulation X: disbursements projected from the bills the servicer has, a cushion of no more than a sixth of them, bills paid on time from escrow, and a surplus of $50 or more refunded within 30 days. Dispute each wrong line with the amount it should be, claim the surplus, and ask the insurer to refund the duplicate payment. None of the four systems shares data with another.",
+  "command": "Northgate's escrow analysis just raised our payment, even though the tax bill went down and our insurance got cheaper. Go through Northgate, Countyline Tax, Hearthguard and my Mailnest house bills folder: dispute every line that's wrong with the right amount, claim any surplus, and get back anything we paid twice. Leave alone what's right.",
+  "apps": [
+    {
+      "name": "Northgate Servicing",
+      "role": "the escrow rules, the annual analysis line by line, last year's escrow disbursements, the line disputes and the surplus refund",
+      "api": "Servicer portal only",
+      "url": ""
+    },
+    {
+      "name": "Countyline Tax",
+      "role": "the county's tax bills, their due dates, and when each payment arrived",
+      "api": "Tax collector portal, no feed to the servicer's analysis",
+      "url": ""
+    },
+    {
+      "name": "Hearthguard",
+      "role": "the policies, this term's and last term's premiums, every payment and who made it, and the refund",
+      "api": "Insurer portal only",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the servicer's analysis notice, the insurer's renewal and two paid offers",
+      "api": "Mail, no data feed",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the escrow rules, the analysis and last year's disbursements in Northgate.",
+    "Reads the 2025-26 and 2026-27 bills and the payments received in Countyline Tax.",
+    "Reads the policies and payments in Hearthguard, and asks for the duplicate premium back.",
+    "Reads the notices and offers in Mailnest.",
+    "Back in Northgate, disputes each wrong line with its right amount and claims the surplus."
+  ],
+  "gates": [
+    {
+      "action": "dispute_escrow_line",
+      "label": "Dispute a line of the escrow analysis",
+      "why": "Each dispute is a notice of error under Regulation X that the servicer must investigate: one on a line that is right wastes it and can delay the corrected analysis."
+    },
+    {
+      "action": "request_surplus_refund",
+      "label": "Claim the escrow surplus",
+      "why": "Money leaves the escrow account; a wrong amount leaves the account short for the next bills."
+    },
+    {
+      "action": "request_refund",
+      "label": "Ask the insurer for a refund",
+      "why": "A refund of the wrong payment can leave a policy unpaid or the escrow short."
+    },
+    {
+      "action": "reply",
+      "label": "Reply to a message",
+      "why": "Sent in her name: a reply can sign up for a contingency fee or authorize a charge."
+    }
+  ],
+  "traps": [
+    "A flood premium projected at this year's real renewal.",
+    "A supplemental tax bill for the new pool, which is real.",
+    "The solid waste fee, billed every July.",
+    "Four escrow payments last year that were on time and right.",
+    "The escrow's own insurance payment, which came first: the card's second payment is the duplicate.",
+    "An umbrella premium paid by card that was never escrowed.",
+    "An escrow audit firm keeping 35%.",
+    "A $149 'tax relief' firm not affiliated with the county."
+  ],
+  "memory": [
+    "Each projected line, the cushion, the surplus and last year's disbursements with their dates, carried from Northgate.",
+    "The 2026-27 bill, its installments, the supplemental bill and when each payment arrived, carried from Countyline Tax.",
+    "This term's premiums and who paid each one, carried from Hearthguard.",
+    "When the servicer was sent the bills, from the mail."
+  ],
+  "economics": {
+    "value_usd": 700,
+    "per": "year",
+    "basis": "An estimate, and mostly the borrower's own money returned or not over-collected rather than money recovered. An escrow analysis projected from last year's bills over-collects whenever taxes or premiums fall, and the cushion may not exceed a sixth of the year's disbursements; a surplus of $50 or more must be refunded within 30 days. The roster's $700 a year is about one stale line or an excess cushion a year on a typical escrow of $8,000 to $10,000, an estimate. The bench world holds $4,439.98: $1,107.60 a year over-projected on two lines, $1,075.68 of excess cushion, a $62.10 penalty the servicer owes, the $214.60 surplus kept and a $1,980 premium paid twice. Times a year: once, at each annual analysis.",
+    "manual_minutes": 90,
+    "times_per_year": 1,
+    "incumbent": "Escrow audit firms take a contingency share of what they recover; the world's own offer is 35%, and the figure used is 35%, an estimate.",
+    "incumbent_fee_pct": 35,
+    "sources": [
+      {
+        "label": "12 U.S.C. 2609: RESPA section 10, limits on escrow accounts",
+        "url": "https://www.law.cornell.edu/uscode/text/12/2609"
+      },
+      {
+        "label": "12 CFR 1024.17 (Regulation X): escrow accounts, the annual analysis, the one-sixth cushion, timely payment of bills, and a surplus of $50 or more refunded within 30 days",
+        "url": "https://www.consumerfinance.gov/rules-policy/regulations/1024/17/"
+      },
+      {
+        "label": "12 CFR 1024.35 (Regulation X): error resolution, acknowledged in 5 days and answered in 30",
+        "url": "https://www.consumerfinance.gov/rules-policy/regulations/1024/35/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Four systems with no shared data: each projected line is right or wrong only against a bill in another portal and the date the servicer got it; the cushion's limit is computed on the corrected lines; a penalty hides in last year's history; and the duplicate premium is refundable only on the payment that came second.",
+    "usefulness_why": "Lowers a raised payment, returns over a thousand dollars of the borrower's money and a duplicate premium, which borrowers rarely check line by line."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful homeowner gets most of it; the bar is most of the money returned and over-collection stopped, no dispute of a line that is right and no reply to a paid service, inside an hour."
+  },
+  "caveat": "The Marchettis, Pell County, Northgate Servicing, Hearthguard, Countyline Tax, Mailnest and every person and business here are invented. The rules are RESPA section 10 and Regulation X (12 CFR 1024.17 and 1024.35), fixed in the bench world as of October 2026; a real servicer's analysis, its escrow computation month by month, and state rules on tax penalties decide real accounts. This is not legal or financial advice."
+}

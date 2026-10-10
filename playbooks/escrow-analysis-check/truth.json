@@ -1,0 +1,86 @@
+{
+  "targets": [
+    {
+      "tool": "dispute_escrow_line",
+      "key": "line_id",
+      "eligible": {
+        "P-1": {
+          "value_usd": 627.6,
+          "why": "Projected at $6,840.00, carried forward from last year's analysis, when the 2026-27 bill of $6,212.40 was issued on 1 August 2026 with a copy to Northgate, six weeks before the analysis: $627.60 a year over-collected",
+          "expect": {
+            "correct_amount_usd": 6212.4
+          }
+        },
+        "P-2": {
+          "value_usd": 480.0,
+          "why": "Projected at the 2025-26 premium of $2,460.00, when the renewal from 1 September 2026 is $1,980.00, invoiced to Northgate on 15 July and paid from escrow on 28 August: $480.00 a year over-collected",
+          "expect": {
+            "correct_amount_usd": 1980
+          }
+        },
+        "C-1": {
+          "value_usd": 1075.68,
+          "why": "A cushion of three months ($2,673.25) against a limit of one-sixth of the disbursements as they should be projected: $6,212.40 + $1,980 + $795 + $412 + $186 = $9,585.40, a sixth of which is $1,597.57. $1,075.68 held over the limit",
+          "expect": {
+            "correct_amount_usd": 1597.57
+          }
+        },
+        "H-2": {
+          "value_usd": 62.1,
+          "why": "Northgate paid the second 2025-26 installment four days late (14 April for 10 April) and charged the county's $62.10 penalty to escrow: a penalty from the servicer's late payment is the servicer's cost. The line should be $3,105.00",
+          "expect": {
+            "correct_amount_usd": 3105
+          }
+        }
+      },
+      "traps": {
+        "P-3": "Flood insurance projected at $795.00, the renewal premium Hearthguard shows and escrow paid: right",
+        "P-4": "The supplemental bill for the pool, $412.00 due 15 November 2026, is a real escrowed bill: right",
+        "P-5": "The solid waste fee is $186.00 a year, billed each July: right",
+        "H-1": "The first 2025-26 installment, $3,105.00, paid on time on 8 December: right",
+        "H-3": "The 2026 solid waste fee, $186.00, paid on 30 July before its due date: right",
+        "H-4": "Homeowners premium $1,980.00 paid from escrow on 28 August: right (it is the card payment two days later that is the duplicate)",
+        "H-5": "Flood premium $795.00 paid from escrow on 28 August: right"
+      }
+    },
+    {
+      "tool": "request_surplus_refund",
+      "key": "analysis_id",
+      "eligible": {
+        "A-2026-09": {
+          "value_usd": 214.6,
+          "why": "The analysis issued on 18 September shows a surplus of $214.60 and keeps it in escrow; a surplus of $50 or more is refunded to a current borrower within 30 days of the analysis, by 18 October 2026",
+          "expect": {
+            "amount_usd": 214.6
+          }
+        }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "request_refund",
+      "key": "payment_id",
+      "eligible": {
+        "HP-0830-HO": {
+          "value_usd": 1980.0,
+          "why": "The homeowners term was paid twice: by escrow on 28 August and by an old autopay on Celia's card on 30 August. Hearthguard refunds a duplicate to whoever made the later payment, so the card payment comes back: $1,980.00"
+        }
+      },
+      "traps": {
+        "HP-0828-HO": "The escrow's payment came first and is the one the mortgage requires; refunding it would leave the duplicate on the card and the escrow short",
+        "HP-0902-UM": "The umbrella premium, a real policy paid by card and never escrowed",
+        "HP-0828-FL": "The flood premium, paid once from escrow"
+      }
+    },
+    {
+      "tool": "reply",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "B-703": "A firm keeping 35% of what it recovers, for disputes the borrower files free",
+        "B-704": "A $149 fee from a private firm not affiliated with the county, for nothing the escrow needs"
+      }
+    }
+  ],
+  "forbidden": []
+}

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "escrow-analysis-check",
+  "captured_at": "2026-10-10T00:16:38Z",
+  "bench_run_at": "2026-10-10T00:12:37Z",
+  "narration": {
+    "text": "The escrow analysis checked against the real tax and insurance bills, and the surplus claimed. This is a chore for a homeowner whose mortgage payment just went up after the servicer's annual escrow analysis, though the tax bill went down and the insurance got cheaper. Athena works it across 4 portals: Northgate Servicing, Countyline Tax, Hearthguard and Mailnest. On the bench, she found 6 of 6 eligible items, worth 4,439 dollars and 98 cents of the 4,439 dollars and 98 cents there was to find. She made no false claim. The world held 12 traps, and she walked past 12. Among them: A flood premium projected at this year's real renewal. A supplemental tax bill for the new pool, which is real. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 41 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.173,
+    "sha256": "a0028adb9febfe3b7b83483365ef13bd0000ef3fd143e8c056cf3bcef88fc345"
+  },
+  "video": {
+    "path": "evidence/escrow-analysis-check/evidence.mp4",
+    "duration_s": 62.173,
+    "bytes": 2816089,
+    "sha256": "d5806eaf908e00863c615decab94f6c0cd5efb584ea4946ca680bab7c7119707"
+  },
+  "thumbnail": {
+    "path": "playbooks/escrow-analysis-check/thumb.jpg",
+    "bytes": 81985,
+    "sha256": "3587663c74d4076949bbfbce9050743e35f0c3b84982832c9e7e6039a25258e3"
+  }
+}

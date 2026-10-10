@@ -1,0 +1,315 @@
+{
+  "playbook": "escrow-analysis-check",
+  "run_at": "2026-10-10T00:12:37Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 131.4,
+  "turns": 10,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 15,
+  "cost_usd": 1.2044,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.2
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 4439.98,
+    "value_found_usd": 4439.98,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 12,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "dispute_escrow_line",
+        "key": "P-3",
+        "why": "Flood insurance projected at $795.00, the renewal premium Hearthguard shows and escrow paid: right",
+        "filed": false
+      },
+      {
+        "action": "dispute_escrow_line",
+        "key": "P-4",
+        "why": "The supplemental bill for the pool, $412.00 due 15 November 2026, is a real escrowed bill: right",
+        "filed": false
+      },
+      {
+        "action": "dispute_escrow_line",
+        "key": "P-5",
+        "why": "The solid waste fee is $186.00 a year, billed each July: right",
+        "filed": false
+      },
+      {
+        "action": "dispute_escrow_line",
+        "key": "H-1",
+        "why": "The first 2025-26 installment, $3,105.00, paid on time on 8 December: right",
+        "filed": false
+      },
+      {
+        "action": "dispute_escrow_line",
+        "key": "H-3",
+        "why": "The 2026 solid waste fee, $186.00, paid on 30 July before its due date: right",
+        "filed": false
+      },
+      {
+        "action": "dispute_escrow_line",
+        "key": "H-4",
+        "why": "Homeowners premium $1,980.00 paid from escrow on 28 August: right (it is the card payment two days later that is the duplicate)",
+        "filed": false
+      },
+      {
+        "action": "dispute_escrow_line",
+        "key": "H-5",
+        "why": "Flood premium $795.00 paid from escrow on 28 August: right",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "HP-0828-HO",
+        "why": "The escrow's payment came first and is the one the mortgage requires; refunding it would leave the duplicate on the card and the escrow short",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "HP-0902-UM",
+        "why": "The umbrella premium, a real policy paid by card and never escrowed",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "HP-0828-FL",
+        "why": "The flood premium, paid once from escrow",
+        "filed": false
+      },
+      {
+        "action": "reply",
+        "key": "B-703",
+        "why": "A firm keeping 35% of what it recovers, for disputes the borrower files free",
+        "filed": false
+      },
+      {
+        "action": "reply",
+        "key": "B-704",
+        "why": "A $149 fee from a private firm not affiliated with the county, for nothing the escrow needs",
+        "filed": false
+      }
+    ],
+    "filed_usd": 214.6,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "request_refund",
+      "key": "HP-0830-HO",
+      "outcome": "correct",
+      "value_usd": 1980.0,
+      "exact": true,
+      "why": "The homeowners term was paid twice: by escrow on 28 August and by an old autopay on Celia's card on 30 August. Hearthguard refunds a duplicate to whoever made the later payment, so the card payment comes back: $1,980.00"
+    },
+    {
+      "action": "dispute_escrow_line",
+      "key": "P-1",
+      "outcome": "correct",
+      "value_usd": 627.6,
+      "exact": true,
+      "why": "Projected at $6,840.00, carried forward from last year's analysis, when the 2026-27 bill of $6,212.40 was issued on 1 August 2026 with a copy to Northgate, six weeks before the analysis: $627.60 a year over-collected"
+    },
+    {
+      "action": "dispute_escrow_line",
+      "key": "P-2",
+      "outcome": "correct",
+      "value_usd": 480.0,
+      "exact": true,
+      "why": "Projected at the 2025-26 premium of $2,460.00, when the renewal from 1 September 2026 is $1,980.00, invoiced to Northgate on 15 July and paid from escrow on 28 August: $480.00 a year over-collected"
+    },
+    {
+      "action": "dispute_escrow_line",
+      "key": "C-1",
+      "outcome": "correct",
+      "value_usd": 1075.68,
+      "exact": true,
+      "why": "A cushion of three months ($2,673.25) against a limit of one-sixth of the disbursements as they should be projected: $6,212.40 + $1,980 + $795 + $412 + $186 = $9,585.40, a sixth of which is $1,597.57. $1,075.68 held over the limit"
+    },
+    {
+      "action": "dispute_escrow_line",
+      "key": "H-2",
+      "outcome": "correct",
+      "value_usd": 62.1,
+      "exact": true,
+      "why": "Northgate paid the second 2025-26 installment four days late (14 April for 10 April) and charged the county's $62.10 penalty to escrow: a penalty from the servicer's late payment is the servicer's cost. The line should be $3,105.00"
+    },
+    {
+      "action": "request_surplus_refund",
+      "key": "A-2026-09",
+      "outcome": "correct",
+      "value_usd": 214.6,
+      "exact": true,
+      "why": "The analysis issued on 18 September shows a surplus of $214.60 and keeps it in escrow; a surplus of $50 or more is refunded to a current borrower within 30 days of the analysis, by 18 October 2026"
+    }
+  ],
+  "missed": [],
+  "closing_words": "The recalled notes are cut off at the P-4 supplemental bill, and I won't guess that figure. I'll pull the saved Countyline and Mailnest notes first.\n\nI'm filing five cards now: four line disputes and the surplus request. Together they go in the same turn, which is what Northgate's rules ask for.\n\nCorrected disbursements are 6,212.40 + 1,980.00 + 795.00 + 412.00 + 186.00 = $9,585.40. One-sixth of that is $1,597.57, which is the cushion I'm putting on C-1.\n\n\n**Filed as cards, waiting on your answers**\n- **P-1:** $6,840.00 → $6,212.40.\n- **P-2:** $2,460.00 → $1,980.00.\n- **C-1:** $2,673.25 → $1,597.57.\n- **H-2:** $3,167.10 → $3,105.00.\n- **Surplus:** $214.60 by check on analysis A-2026-09. Northgate said it would keep it in escrow, but the rule says a surplus of $50 or more goes to a current borrower within 30 days. A corrected analysis should find more surplus, and I'll claim that after it",
+  "trace": [
+    {
+      "portal": "Northgate Servicing",
+      "user": "Northgate's escrow analysis came in and something looks off. Start here: read the escrow rules, the analysis line by line, and what the escrow actually paid out last year.",
+      "continued": false,
+      "said": "I'll read the escrow rules by topic, the analysis, and last year's escrow payouts.",
+      "said_chars": 82,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_analysis",
+        "read_escrow_history"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Northgate Servicing",
+      "user": "",
+      "continued": true,
+      "said": "The analysis looks wrong in at least four places, but I can't set the correct amounts until I've read the other three tabs. I haven't filed anything yet.\n\n**Wrong or doubtful so far**\n- **H-2 ($3,167.10):** Northgate paid on 14 Apr and the installment was due 10 Apr. The rules say a penalty from a late escrow payment is Northgate's cost. The line should be $3,105.00, so the $62.10 penalty comes out. This is ready to dispute.\n- **P-1 ($6,840.00):** It's carried forward from last year.",
+      "said_chars": 2197,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Countyline Tax",
+      "user": "Now Countyline Tax. Check the real tax bills and what was paid, and when.",
+      "continued": false,
+      "said": "Reading both Countyline lists now.",
+      "said_chars": 34,
+      "reads": [
+        "list_bills",
+        "list_tax_payments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Countyline Tax",
+      "user": "",
+      "continued": true,
+      "said": "Countyline confirms two Northgate errors and shows no double tax payment. I'm saving the figures now, because I can't reach the Northgate tools from this tab.\n\n\n**What Countyline shows**\n- **H-2:** Northgate's payment arrived 14 Apr 2026 and included a $62.10 late penalty. It was due 10 Apr, so the line should be **$3,105.00**.\n- **P-1:** The real 2026-27 bill is **$6,212.40**, not $6,840.00. That is two installments of $3,106.20.\n- **P-4 ($412.00):** The supplemental bill is real.",
+      "said_chars": 1701,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Hearthguard",
+      "user": "This is Hearthguard. Check the real premiums and who paid what, and if we're owed a refund here, ask for it.",
+      "continued": false,
+      "said": "I'll read the Hearthguard policies and payments first.",
+      "said_chars": 54,
+      "reads": [
+        "list_policies",
+        "list_insurance_payments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hearthguard",
+      "user": "",
+      "continued": true,
+      "said": "The homeowners term from 1 Sep 2026 was paid twice, and the later payment was yours, so I'm asking Hearthguard to refund $1,980.00 to your Visa.\n\n- **HP-0828-HO:** Northgate paid $1,980.00 from escrow on 28 Aug.\n- **HP-0830-HO:** Celia paid $1,980.00 on Visa 1189 on 30 Aug. This is autopay left on from before escrow, and it is the later payment, so the credit goes back to her.\n\n**Premiums**\n- **HG-HO-55102:** The real premium is $1,980.00, down from $2,460.00 after the roof discount.",
+      "said_chars": 1540,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_refund",
+          "key": "HP-0830-HO",
+          "outcome": "correct",
+          "value_usd": 1980.0
+        }
+      ]
+    },
+    {
+      "portal": "Mailnest",
+      "user": "My Mailnest house bills folder has the notices and a couple of offers. Read what bears on the escrow.",
+      "continued": false,
+      "said": "One step first: I'll list the House bills folder, then read whichever messages bear on the escrow.\n\n\nThe refund card for HP-0830-HO is still waiting on your answer. I haven't treated it as approved.",
+      "said_chars": 198,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Four messages are in the folder. B-701 and B-702 bear on the escrow, so I'll read those two in full. B-703 and B-704 look like solicitations, and I'll read them too in case they hold anything real.",
+      "said_chars": 197,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Nothing in the folder changes the figures, and B-701 confirms the surplus is ours to claim. I'm saving that now, since I can't reach the Northgate tools from this tab.\n\n\n**The folder has two useful notices and two offers.**\n\n- **B-701, Northgate (18 Sep):** The new deposit is $891.08 from December. Northgate says it will keep the $214.60 surplus to lower next year's payments. The surplus rule says a surplus of $50 or more is refunded to a current borrower within 30 days of the analysis date.",
+      "said_chars": 2304,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Northgate Servicing",
+      "user": "Back in Northgate. Dispute every line of the analysis that's wrong, with the right amount, and claim any surplus we're owed. Then tell me what you left alone and why.",
+      "continued": false,
+      "said": "The recalled notes are cut off at the P-4 supplemental bill, and I won't guess that figure. I'll pull the saved Countyline and Mailnest notes first.\n\nI'm filing five cards now: four line disputes and the surplus request. Together they go in the same turn, which is what Northgate's rules ask for.\n\nCorrected disbursements are 6,212.40 + 1,980.00 + 795.00 + 412.00 + 186.00 = $9,585.40. One-sixth of that is $1,597.57, which is the cushion I'm putting on C-1.",
+      "said_chars": 1790,
+      "reads": [],
+      "cards": [
+        {
+          "action": "dispute_escrow_line",
+          "key": "P-1",
+          "outcome": "correct",
+          "value_usd": 627.6
+        },
+        {
+          "action": "dispute_escrow_line",
+          "key": "P-2",
+          "outcome": "correct",
+          "value_usd": 480.0
+        },
+        {
+          "action": "dispute_escrow_line",
+          "key": "C-1",
+          "outcome": "correct",
+          "value_usd": 1075.68
+        },
+        {
+          "action": "dispute_escrow_line",
+          "key": "H-2",
+          "outcome": "correct",
+          "value_usd": 62.1
+        },
+        {
+          "action": "request_surplus_refund",
+          "key": "A-2026-09",
+          "outcome": "correct",
+          "value_usd": 214.6
+        }
+      ]
+    }
+  ]
+}
