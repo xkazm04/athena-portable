@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The forty-seven playbooks (latest runs, Claude Sonnet)
+## The forty-eight playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -90,9 +90,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | Part B taken up through the special period the month a job ends, with no lifetime penalty, and a spouse on retiree coverage told why she must wait | home | 4 | exceeds: 2 of 2, $487 of $487, 8 of 8 traps, 0 false |
 | A father's caregivers kept on the right side of the household employer rules: a contractor made an employee, his I-9 signed on time, a W-2 number put right, and the state's third-quarter report filed and paid on the wages it covers | home | 4 | exceeds: 6 of 6, $818.17 of $818.17 (mostly minutes), 16 of 16 traps, 0 false |
 | A mother's required minimum distributions taken at two custodians, each from the account it must come from, and the year she missed from an inherited IRA corrected with the waiver asked for | home | 4 | exceeds: 5 of 5, $2,900 of $2,900, 9 of 9 traps, 0 false |
+| A mother living on her Social Security applied for the Medicare Savings Program her income really fits, with only the savings the rules count, and getting Extra Help with it | home | 4 | exceeds: 4 of 4, $3,797.20 of $3,797.20, 10 of 10 traps, 0 false |
 
-Across the latest runs: $952,238 of $961,665 found, 491 of 491 traps walked past, no false claim,
-145 minutes of her time against about 226 hours by hand, $89.34 of model time. 84 runs are recorded
+Across the latest runs: $956,035 of $965,463 found, 501 of 501 traps walked past, no false claim,
+147 minutes of her time against about 229 hours by hand, $90.19 of model time. 85 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

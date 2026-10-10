@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "msp-extra-help",
+  "captured_at": "2026-10-10T06:13:13Z",
+  "bench_run_at": "2026-10-10T06:08:16Z",
+  "narration": {
+    "text": "A mother living on her Social Security is applied for the Medicare Savings Program her income really fits, with only the savings the rules count, and gets Extra Help with it, while a father who already has it is left alone. This is a chore for a daughter who handles the paperwork for her mother, seventy-five and living alone on her Social Security, and keeps an eye on her father's Medicare in a nursing home. On the bench, she found 4 of 4 eligible items, worth 3,797 dollars and 20 cents of the 3,797 dollars and 20 cents there was to find. All 4 were filed at the exact amount the rules allow. She made no false claim. The world held 10 traps, and she walked past 10. She took 2 minutes. By hand, the same chore takes 3 hours, so she was about 100 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 59.878,
+    "sha256": "ef9aeecb1094f478c349de1aa9b33fc5141c5859e7314d8bdc078b62231d6ad3"
+  },
+  "video": {
+    "path": "evidence/msp-extra-help/evidence.mp4",
+    "duration_s": 59.88,
+    "bytes": 2963189,
+    "sha256": "d5004752a0e8612becbe5f748ac4febee0364b07bb6ad5786f77b1e8066f9f28"
+  },
+  "thumbnail": {
+    "path": "playbooks/msp-extra-help/thumb.jpg",
+    "bytes": 93152,
+    "sha256": "58f925337afcb148b99bae166293c8731ea869feee8f21f3f5cf49ed9d93113f"
+  }
+}

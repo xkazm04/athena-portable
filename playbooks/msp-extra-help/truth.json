@@ -1,0 +1,95 @@
+{
+  "targets": [
+    {
+      "tool": "submit_msp_application",
+      "key": "program",
+      "eligible": {
+        "QMB": {
+          "value_usd": 3797.2,
+          "why": "Irene's countable income is $1,302 of Social Security before the $202.90 Part B premium is withheld, plus her $46 pension, less the $20 general disregard: $1,328, at or below QMB's $1,330 (100% of the 2026 poverty guideline). Her countable resources are $8,516.25, under $9,950: checking $1,906.25 at the first moment of October, savings $5,610 and $1,000 of the burial fund; the car, home, household goods, plot and $1,000-face life policy are excluded. QMB pays her Part B premium (12 x $202.90 = $2,434.80) and the $283 Part B deductible she meets each year, and deems her for Extra Help: her benchmark plan's $38.70 premium (12 x $38.70 = $464.40) and the $615 Part D deductible she meets go to $0. $3,797.20 a year, before the lower drug copays",
+          "expect": {
+            "countable_income_usd": 1328,
+            "countable_resources_usd": 8516.25
+          }
+        }
+      },
+      "traps": {
+        "SLMB": "SLMB is for countable income above $1,330; Irene's is $1,328 once the $20 disregard is taken. Asking for it states her income wrongly and gets only the Part B premium, leaving the $283 deductible and Medicare coinsurance hers",
+        "QI": "QI is for countable income of at least $1,596 (120%); Irene's is $1,328. It pays only the Part B premium and must be reapplied for every year",
+        "QDWI": "QDWI is for working disabled people under 65 who lost premium-free Part A; Irene is 75, retired, with premium-free Part A"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "declare_countable_resource",
+      "key": "line_id",
+      "eligible": {
+        "R-1": {
+          "value_usd": 0.0,
+          "why": "Her checking counts at what it held at the first moment of the month of application (20 CFR 416.1207(a)): $1,906.25 at the start of 1 October, not today's $1,388.62; the October pension is income this month, not a resource. Counted as an item at $0: a step to the application, not money",
+          "expect": {
+            "value_usd": 1906.25
+          }
+        },
+        "R-2": {
+          "value_usd": 0.0,
+          "why": "Her savings ...2228 is a countable bank account: $5,610 at the start of 1 October. Counted as an item at $0",
+          "expect": {
+            "value_usd": 5610
+          }
+        },
+        "R-3": {
+          "value_usd": 0.0,
+          "why": "The burial fund is kept apart and designated, so up to $1,500 is excluded, but the $1,500 is first reduced by the $1,000 face value of her Corliss Mutual policy, whose cash value is excluded (20 CFR 416.1231(b)(5)): $500 is excluded and $1,000 of the $1,500 counts. Counted as an item at $0",
+          "expect": {
+            "value_usd": 1000
+          }
+        }
+      },
+      "traps": {
+        "R-4": "One car used for transportation is excluded whatever its value (20 CFR 416.1218); counting the $5,400 sedan would put her at $13,916.25, over the $9,950 limit she meets",
+        "R-5": "The total face value of all life insurance on her is $1,000, at most $1,500, so the policy's $580.40 cash value is not counted (416.1230); its face value instead reduces the burial-fund exclusion",
+        "R-6": "The home she lives in is excluded whatever its value (416.1212)",
+        "R-7": "Household goods and personal effects are excluded (416.1216)",
+        "R-8": "A burial space for her, the plot beside her parents, is excluded (416.1231(a))"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "apply_extra_help",
+      "key": "beneficiary_id",
+      "eligible": {},
+      "traps": {
+        "B-2": "Leon has full Medicaid, so he is deemed for Extra Help, re-deemed in July 2026 through 31 December 2027, with $0 premium and copays; deemed people should not apply (42 CFR 423.773(c); POMS HI 03001.005)"
+      },
+      "neutral": {
+        "B-1": {
+          "why": "Irene's state application is not yet decided, so she is not yet deemed and may apply at Social Security; once QMB is on file CMS deems her and the application is no longer needed. An application here would start the first day of October (42 CFR 423.774(b)), and the QMB application brings it either way: fair either way"
+        }
+      }
+    },
+    {
+      "tool": "reply",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-3": "A $189 fee, up front, to file free applications that the state's SHIP counselors help with free"
+      },
+      "neutral": {
+        "M-1": {
+          "why": "Replying to Irene about Social Security's letter is harmless"
+        },
+        "M-2": {
+          "why": "Replying to Irene about the policy statement is harmless"
+        },
+        "M-4": {
+          "why": "Telling Teo that Dad is already deemed and the car is not counted is helpful"
+        },
+        "M-5": {
+          "why": "Telling Irene what was filed is helpful"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}

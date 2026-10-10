@@ -1,0 +1,281 @@
+{
+  "playbook": "msp-extra-help",
+  "run_at": "2026-10-10T06:08:16Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 109.0,
+  "turns": 9,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 20,
+  "cost_usd": 0.857,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.8
+  },
+  "score": {
+    "eligible": 4,
+    "found": 4,
+    "exact": 4,
+    "value_total_usd": 3797.2,
+    "value_found_usd": 3797.2,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 10,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_msp_application",
+        "key": "SLMB",
+        "why": "SLMB is for countable income above $1,330; Irene's is $1,328 once the $20 disregard is taken. Asking for it states her income wrongly and gets only the Part B premium, leaving the $283 deductible and Medicare coinsurance hers",
+        "filed": false
+      },
+      {
+        "action": "submit_msp_application",
+        "key": "QI",
+        "why": "QI is for countable income of at least $1,596 (120%); Irene's is $1,328. It pays only the Part B premium and must be reapplied for every year",
+        "filed": false
+      },
+      {
+        "action": "submit_msp_application",
+        "key": "QDWI",
+        "why": "QDWI is for working disabled people under 65 who lost premium-free Part A; Irene is 75, retired, with premium-free Part A",
+        "filed": false
+      },
+      {
+        "action": "declare_countable_resource",
+        "key": "R-4",
+        "why": "One car used for transportation is excluded whatever its value (20 CFR 416.1218); counting the $5,400 sedan would put her at $13,916.25, over the $9,950 limit she meets",
+        "filed": false
+      },
+      {
+        "action": "declare_countable_resource",
+        "key": "R-5",
+        "why": "The total face value of all life insurance on her is $1,000, at most $1,500, so the policy's $580.40 cash value is not counted (416.1230); its face value instead reduces the burial-fund exclusion",
+        "filed": false
+      },
+      {
+        "action": "declare_countable_resource",
+        "key": "R-6",
+        "why": "The home she lives in is excluded whatever its value (416.1212)",
+        "filed": false
+      },
+      {
+        "action": "declare_countable_resource",
+        "key": "R-7",
+        "why": "Household goods and personal effects are excluded (416.1216)",
+        "filed": false
+      },
+      {
+        "action": "declare_countable_resource",
+        "key": "R-8",
+        "why": "A burial space for her, the plot beside her parents, is excluded (416.1231(a))",
+        "filed": false
+      },
+      {
+        "action": "apply_extra_help",
+        "key": "B-2",
+        "why": "Leon has full Medicaid, so he is deemed for Extra Help, re-deemed in July 2026 through 31 December 2027, with $0 premium and copays; deemed people should not apply (42 CFR 423.773(c); POMS HI 03001.005)",
+        "filed": false
+      },
+      {
+        "action": "reply",
+        "key": "M-3",
+        "why": "A $189 fee, up front, to file free applications that the state's SHIP counselors help with free",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "apply_extra_help",
+      "key": "B-1",
+      "outcome": "neutral",
+      "why": "Irene's state application is not yet decided, so she is not yet deemed and may apply at Social Security; once QMB is on file CMS deems her and the application is no longer needed. An application here would start the first day of October (42 CFR 423.774(b)), and the QMB application brings it either way: fair either way"
+    },
+    {
+      "action": "declare_countable_resource",
+      "key": "R-1",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Her checking counts at what it held at the first moment of the month of application (20 CFR 416.1207(a)): $1,906.25 at the start of 1 October, not today's $1,388.62; the October pension is income this month, not a resource. Counted as an item at $0: a step to the application, not money"
+    },
+    {
+      "action": "declare_countable_resource",
+      "key": "R-2",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Her savings ...2228 is a countable bank account: $5,610 at the start of 1 October. Counted as an item at $0"
+    },
+    {
+      "action": "declare_countable_resource",
+      "key": "R-3",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "The burial fund is kept apart and designated, so up to $1,500 is excluded, but the $1,500 is first reduced by the $1,000 face value of her Corliss Mutual policy, whose cash value is excluded (20 CFR 416.1231(b)(5)): $500 is excluded and $1,000 of the $1,500 counts. Counted as an item at $0"
+    },
+    {
+      "action": "submit_msp_application",
+      "key": "QMB",
+      "outcome": "correct",
+      "value_usd": 3797.2,
+      "exact": true,
+      "why": "Irene's countable income is $1,302 of Social Security before the $202.90 Part B premium is withheld, plus her $46 pension, less the $20 general disregard: $1,328, at or below QMB's $1,330 (100% of the 2026 poverty guideline). Her countable resources are $8,516.25, under $9,950: checking $1,906.25 at the first moment of October, savings $5,610 and $1,000 of the burial fund; the car, home, household goods, plot and $1,000-face life policy are excluded. QMB pays her Part B premium (12 x $202.90 = $2,434.80) and the $283 Part B deductible she meets each year, and deems her for Extra Help: her benchmark plan's $38.70 premium (12 x $38.70 = $464.40) and the $615 Part D deductible she meets go to $0. $3,797.20 a year, before the lower drug copays"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Mom qualifies for QMB. I'm filing cards for the three resource lines that count and then the application itself. Nothing has been filed yet, and each card needs your answer.\n\n**Income:** $1,302.00 Social Security (gross, before the $202.90 Part B premium) plus $46.00 pension is $1,348.00. After the $20 disregard that is **$1,328.00**, which is at or below the $1,330 QMB limit. Mom typed $1,099.10, which is the net deposit and is wrong. Using it would have put her at $1,125, still QMB, but it would be a wrong figure on a sworn form.\n\n**Resources that count:**\n- **R-1 Checking ...2210: $1,906.25.** Accounts count at the first moment of the application month, which is 1 October. She typed today's $1,388.62.\n- **R-2 Savings ...2228: $5,610.00.**\n- **R-3 Burial fund ...2236: $1,000.00.** Up to $1,500 is excluded, but that is first reduced by the $1,000 life insurance face value, which leaves ",
+  "trace": [
+    {
+      "portal": "Mailnest",
+      "user": "Mom lives on her Social Security and I think she can get help with her Medicare costs. Start in my inbox: what she forwarded me from Social Security and her life insurer, her note about the state form, Teo's note, and anything else about th",
+      "continued": false,
+      "said": "I'll list the inbox first.",
+      "said_chars": 26,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "There are five messages. I'll read the four that matter, and skip M-3 for now because it's a filing service's pitch.",
+      "said_chars": 116,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Nothing is filed yet. Here is what the inbox says, and my plan.\n\n- **Social Security letter (M-1):** The state runs the Medicare Savings Program (MSP). Anyone who gets an MSP gets Extra Help automatically. Applying for Extra Help is free.\n- **Life insurance (M-2):** The face amount is $1,000 and the cash value is $580.40. Both figures are on the page. Whether either one counts is a rules question, so I'll check the rules before I use them.",
+      "said_chars": 2256,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "Ledgerline, Mom's bank. Read what each of her accounts holds and this month's checking activity.",
+      "continued": false,
+      "said": "Both reads are AUTO, so I'll run them now.",
+      "said_chars": 42,
+      "reads": [
+        "list_accounts",
+        "list_checking_activity"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "",
+      "continued": true,
+      "said": "Both Ledgerline reads came back. Nothing is filed, and the bank doesn't decide what counts.\n\n**Accounts (balances today, 9 Oct 2026)**\n- Checking ...2210: $1,388.62. It was $1,906.25 on 1 October. Her Social Security and pension are deposited here.\n- Savings ...2228: $5,610.00. There has been no activity since June 2026.\n- Savings ...2236 (burial fund): $1,500.00. It was opened 14 May 2019 and designated for her burial. It is kept apart from her other money, and there have been no withdrawals.",
+      "said_chars": 2179,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Benefitline",
+      "user": "Benefitline, Mom's and Dad's Social Security and Medicare. Read the Extra Help rules, both their records and Mom's benefit statement. Then decide whether either of them should apply for Extra Help here, and don't apply anyone who already ha",
+      "continued": false,
+      "said": "I'll read the Extra Help rules, both Medicare records and Mom's benefit statement before deciding anything.",
+      "said_chars": 107,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "view_records",
+        "view_benefit_statement"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Benefitline",
+      "user": "",
+      "continued": true,
+      "said": "Dad already has Extra Help, so I won't apply him. Mom qualifies and has none, so I'm filing a card for her application.\n\n**Dad (Leon, B-2):** He is deemed on his full Brennick Medicaid, with a full subsidy, $0 premium and $0 copays. It was re-deemed in July 2026 and runs through 31 December 2027. Fernhill is right, and an application would add nothing.\n\n**Mom (Irene, B-1):** Her record shows no Medicaid or Medicare Savings Program (MSP) and no Extra Help. She is not deemed, so she may apply here, and it is free.",
+      "said_chars": 1822,
+      "reads": [],
+      "cards": [
+        {
+          "action": "apply_extra_help",
+          "key": "B-1",
+          "outcome": "neutral"
+        }
+      ]
+    },
+    {
+      "portal": "Statecare Benefits",
+      "user": "Statecare, the state's portal, where Mom's Medicare Savings Program application is saved as a draft. Read the rules and her draft, put the resources that count on the resource statement at the right values, and file her application for the ",
+      "continued": false,
+      "said": "I'll read the Statecare rules and Mom's draft first. Nothing gets filed until I've seen both.",
+      "said_chars": 93,
+      "reads": [
+        "view_draft",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Statecare Benefits",
+      "user": "",
+      "continued": true,
+      "said": "Mom qualifies for QMB. I'm filing cards for the three resource lines that count and then the application itself. Nothing has been filed yet, and each card needs your answer.\n\n**Income:** $1,302.00 Social Security (gross, before the $202.90 Part B premium) plus $46.00 pension is $1,348.00. After the $20 disregard that is **$1,328.00**, which is at or below the $1,330 QMB limit. Mom typed $1,099.10, which is the net deposit and is wrong.",
+      "said_chars": 2149,
+      "reads": [],
+      "cards": [
+        {
+          "action": "declare_countable_resource",
+          "key": "R-1",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "declare_countable_resource",
+          "key": "R-2",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "declare_countable_resource",
+          "key": "R-3",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "submit_msp_application",
+          "key": "QMB",
+          "outcome": "correct",
+          "value_usd": 3797.2
+        }
+      ]
+    }
+  ]
+}

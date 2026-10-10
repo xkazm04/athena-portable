@@ -1,0 +1,185 @@
+{
+  "id": "msp-extra-help",
+  "title": "A mother living on her Social Security is applied for the Medicare Savings Program her income really fits, with only the savings the rules count, and gets Extra Help with it, while a father who already has it is left alone",
+  "domain": "Family care",
+  "audience": "home",
+  "promise": "A mother's Social Security statement, pension, bank accounts, life insurance and the draft she started on the state's portal are read against the state's and Social Security's rules. Her countable income, gross Social Security before the Part B premium plus her pension less the twenty-dollar disregard, comes in under the QMB line; her bank accounts are counted at what they held on the first of the month, and her burial fund only above an exclusion her small life policy reduces. Her application goes in for QMB with those figures, which pays her Part B premium and deductible and brings Extra Help automatically. The car, the home, the furniture, the plot and the life policy are left off the resource statement, SLMB, QI and QDWI are not asked for, her father, already deemed through his Medicaid, is not applied for Extra Help, and a service charging a fee to file free forms is not hired.",
+  "persona": "A daughter who handles the paperwork for her mother, seventy-five and living alone on her Social Security, and keeps an eye on her father's Medicare in a nursing home",
+  "chore": "Read what her mother forwarded from Social Security and her life insurer, her mother's note about the state form, a brother's note and a filing service's offer in the inbox; her mother's bank accounts and this month's activity; the Extra Help rules, both parents' Medicare records and her mother's benefit statement at Social Security; and the state's Medicare Savings Program rules and her mother's saved draft. Then apply section 1905(p) of the Social Security Act with SSI's rules for income and resources (20 CFR 416.1123, 416.1124, 416.1207, 416.1212, 416.1216, 416.1218, 416.1230 and 416.1231) and section 1860D-14 with 42 CFR 423.773 and 423.774 as they stand: countable income is gross income less $20, bank accounts count at the first moment of the month, one car, the home, household goods, burial spaces and small life insurance are excluded, the burial-fund exclusion is reduced by that insurance's face value, and a Medicare Savings Program brings Extra Help without an application. None of the four systems shares data with another.",
+  "command": "Mom lives on her Social Security and I think she can get help with her Medicare costs. Go through my inbox, her Ledgerline accounts, Benefitline and Statecare, apply her for the Medicare Savings Program she really qualifies for with the right figures, and get her Extra Help. Count only what the rules count. Don't apply anyone for something they already have, and don't pay anyone to file.",
+  "apps": [
+    {
+      "name": "Mailnest",
+      "role": "the daughter's inbox: Social Security's letter and the life insurer's statement her mother forwarded, her mother's note about the state form, her brother's note and a filing service's offer",
+      "api": "Webmail",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline bank",
+      "role": "the mother's checking, savings and burial fund: the balance at the start of the month, today's, and this month's activity",
+      "api": "Online banking",
+      "url": ""
+    },
+    {
+      "name": "Benefitline",
+      "role": "Social Security and Medicare: the Extra Help rules, both parents' Medicare records, the mother's benefit statement, and the Extra Help application",
+      "api": "Benefits portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Statecare Benefits",
+      "role": "the state Medicaid agency's portal: the Medicare Savings Program rules, the mother's saved draft, the resource statement and the application",
+      "api": "State benefits portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads Social Security's letter, the policy statement, her mother's and brother's notes and the filing offer in Mailnest.",
+    "Reads each account's balance at the start of October and today, and the month's activity, at Ledgerline.",
+    "Reads the Extra Help rules, both Medicare records and the benefit statement in Benefitline, and applies no one who is already deemed.",
+    "Reads the state's rules and the draft in Statecare, puts the countable resources on the statement at their values and files the application for QMB with the right figures."
+  ],
+  "gates": [
+    {
+      "action": "submit_msp_application",
+      "label": "Submit a Medicare Savings Program application",
+      "why": "Signed under penalty of perjury to the state: the program asked for and the income and resources stated decide what she gets."
+    },
+    {
+      "action": "declare_countable_resource",
+      "label": "Enter a resource on the signed resource statement",
+      "why": "It becomes part of her case: an excluded asset counted can put her over the limit."
+    },
+    {
+      "action": "apply_extra_help",
+      "label": "File an Extra Help application with Social Security",
+      "why": "A signed federal application in a parent's name."
+    },
+    {
+      "action": "reply",
+      "label": "Reply to an email",
+      "why": "It speaks for her, and a reply can hire someone."
+    }
+  ],
+  "traps": [
+    "Counting the car she drives, which would put her over the limit.",
+    "Counting the home, the furniture or the cemetery plot beside her parents.",
+    "Counting the cash value of a one-thousand-dollar life policy.",
+    "Asking for SLMB because her gross income looks above the line before the twenty-dollar disregard.",
+    "Asking for QI or QDWI, which her income and age do not fit.",
+    "An Extra Help application for a father already deemed through his Medicaid.",
+    "A one-hundred-and-eighty-nine-dollar fee to file free applications."
+  ],
+  "memory": [
+    "The life policy's face and cash value, that it is her only policy, the burial fund and plot as her mother describes them, and her brother's questions, carried from Mailnest.",
+    "Each account's balance at the start of 1 October and today, the burial fund's designation, and the pension and Social Security deposits, carried from Ledgerline.",
+    "Her gross Social Security and the Part B premium withheld, her drug plan's premium and deductibles, her father's deemed Extra Help, and that a Medicare Savings Program brings Extra Help, carried from Benefitline."
+  ],
+  "economics": {
+    "value_usd": 2500,
+    "per": "year",
+    "basis": "An estimate. Many people who qualify for a Medicare Savings Program never enroll, often because they believe the car, the house or a small policy puts them over the asset limit, or because the income lines are compared with the wrong figure. The roster's $2,500 a year is the Part B premium and the Part D costs that a Medicare Savings Program and the Extra Help it brings take off a low-income beneficiary, an estimate. Times a year: one, since the application is made once and then renewed once a year. The bench world holds $3,797.20 a year: QMB pays the 2026 Part B premium (12 x $202.90 = $2,434.80) and the $283 Part B deductible she meets, and the Extra Help it brings takes her benchmark plan's $38.70 premium (12 x $38.70 = $464.40) and the $615 Part D deductible to $0; the lower drug copays are not counted. The three countable resource lines are counted as items at $0. The rules applied, as they stand on Friday 9 October 2026: section 1905(p) of the Social Security Act (QMB at 100% of the poverty line, with income under section 1612 and resources under section 1613, the SSI rules) and the SLMB and QI groups of section 1902(a)(10)(E); CMS's 2026 figures (the dual eligibility chart revised 11 February 2026: $1,350, $1,616 and $1,816 a month for one person with the $20 disregard included; the 9 December 2025 bulletin: resources $9,950 single and $14,910 married); the 2026 HHS poverty guideline ($15,960 for one person); 20 CFR 416.1123(b)(2), 416.1124(c)(12), 416.1207, 416.1212, 416.1216, 416.1218, 416.1230 and 416.1231; section 1860D-14 and 42 CFR 423.773 (150% of the poverty line; deemed eligibility for QMB, SLMB, QI, full Medicaid and SSI) and 423.774(b) (an application is effective the first of its month); CMS's 2026 LIS memo ($16,590 and $18,090 with burial; $0 deductible, $5.10 and $12.65 copays); SSA's POMS HI 03001.005 and HI 03030.025; the 2026 Part B premium and deductible and the 2026 Part D deductible. The invented state uses the federal floor; real states may raise the income limits or drop the asset test, and some cover the months before QMB starts with retroactive SLMB, which the world does not author.",
+    "manual_minutes": 180,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share: the applications are free, and State Health Insurance Assistance Program counselors help free. The world's filing service charges a flat $189; no figure is used.",
+    "sources": [
+      {
+        "label": "Social Security Act section 1905(p), 42 U.S.C. 1396d(p): qualified Medicare beneficiaries (income to 100% of the poverty line; SSI income and resource rules)",
+        "url": "https://www.law.cornell.edu/uscode/text/42/1396d"
+      },
+      {
+        "label": "Medicare.gov: Medicare Savings Programs, the 2026 income and resource limits",
+        "url": "https://www.medicare.gov/basics/costs/help/medicare-savings-programs"
+      },
+      {
+        "label": "CMS: Dual Eligibility Categories, revised 11 February 2026 (QMB, SLMB and QI by percent of the poverty level; limits include the $20 disregard)",
+        "url": "https://www.cms.gov/files/document/dual-eligible-categories.pdf-0"
+      },
+      {
+        "label": "CMS CMCS Informational Bulletin, 9 December 2025: 2026 MSP resource standards ($9,950 and $14,910)",
+        "url": "https://www.medicaid.gov/federal-policy-guidance/downloads/cib12092025.pdf"
+      },
+      {
+        "label": "HHS ASPE: 2026 poverty guidelines ($15,960 for one person)",
+        "url": "https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines"
+      },
+      {
+        "label": "20 CFR 416.1124: the $20 general exclusion of unearned income",
+        "url": "https://www.law.cornell.edu/cfr/text/20/416.1124"
+      },
+      {
+        "label": "20 CFR 416.1123: amounts withheld to pay Medicare premiums are unearned income",
+        "url": "https://www.law.cornell.edu/cfr/text/20/416.1123"
+      },
+      {
+        "label": "20 CFR 416.1207: resources as of the first moment of the month; income in the month is not a resource",
+        "url": "https://www.law.cornell.edu/cfr/text/20/416.1207"
+      },
+      {
+        "label": "20 CFR 416.1212: the home excluded regardless of value",
+        "url": "https://www.law.cornell.edu/cfr/text/20/416.1212"
+      },
+      {
+        "label": "20 CFR 416.1216: household goods and personal effects",
+        "url": "https://www.law.cornell.edu/cfr/text/20/416.1216"
+      },
+      {
+        "label": "20 CFR 416.1218: one automobile excluded regardless of value",
+        "url": "https://www.law.cornell.edu/cfr/text/20/416.1218"
+      },
+      {
+        "label": "20 CFR 416.1230: life insurance with total face value of $1,500 or less",
+        "url": "https://www.law.cornell.edu/cfr/text/20/416.1230"
+      },
+      {
+        "label": "20 CFR 416.1231: burial spaces, and the $1,500 burial funds exclusion reduced by excluded life insurance",
+        "url": "https://www.law.cornell.edu/cfr/text/20/416.1231"
+      },
+      {
+        "label": "Social Security Act section 1860D-14, 42 U.S.C. 1395w-114: the Part D low-income subsidy (150% of the poverty line; resources; life insurance excluded)",
+        "url": "https://www.law.cornell.edu/uscode/text/42/1395w-114"
+      },
+      {
+        "label": "42 CFR 423.773: subsidy eligibility, and QMB, SLMB, QI, full Medicaid and SSI treated as full subsidy eligible without applying",
+        "url": "https://www.law.cornell.edu/cfr/text/42/423.773"
+      },
+      {
+        "label": "42 CFR 423.774: applications with SSA or the State, effective the first day of the month of application",
+        "url": "https://www.law.cornell.edu/cfr/text/42/423.774"
+      },
+      {
+        "label": "CMS: CY 2026 resource and cost-sharing limits for the low-income subsidy, 31 October 2025",
+        "url": "https://www.cms.gov/files/document/cy2026-lis-resource-limits-memo.pdf"
+      },
+      {
+        "label": "SSA POMS HI 03030.025: Extra Help resource limits, with and without burial funds",
+        "url": "https://secure.ssa.gov/poms.nsf/lnx/0603030025"
+      },
+      {
+        "label": "SSA POMS HI 03001.005: deemed beneficiaries should not apply for Extra Help; data sent to the State to start an MSP application",
+        "url": "https://secure.ssa.gov/poms.nsf/lnx/0603001005"
+      },
+      {
+        "label": "CMS: 2026 Medicare Parts A and B premiums and deductibles ($202.90; $283)",
+        "url": "https://www.cms.gov/newsroom/fact-sheets/2026-medicare-parts-b-premiums-deductibles"
+      },
+      {
+        "label": "CMS: Final CY 2026 Part D Redesign Program Instructions ($615 deductible; $2,100 out-of-pocket threshold)",
+        "url": "https://www.cms.gov/newsroom/fact-sheets/final-cy-2026-part-d-redesign-program-instructions"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "The income test turns on the gross benefit before a withheld premium and a $20 disregard that decides QMB against SLMB by two dollars; the resources are split across a bank, an insurer's statement and a mother's draft that lists everything she owns; the burial-fund exclusion is cut by a small life policy most readers would simply exclude; and Extra Help is already deemed for one parent and comes without an application for the other.",
+    "usefulness_why": "Puts about $3,800 a year back in a low-income parent's budget for one correct application, where counting the car would have made her look ineligible and she would likely never have applied."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful helper with the rules in hand gets it; the bar is the QMB application filed with the countable figures and the countable lines on the statement, nothing excluded counted and no one applied for what they have, inside an hour."
+  },
+  "caveat": "Irene Castell, Leon, Mara and Teo Petrakis, the State of Brennick and its Department of Health Services, Ashby Falls and its school district, Fernhill Nursing Center, Corliss Mutual Life, Arbor Rx Value, Corvane, Linden Rise, Fairway Auto Insurance, Pantry Lane Market, Hollow Creek Pharmacy, Ashby Falls Power, Medicost Filing Partners, Statecare Benefits, Benefitline, Ledgerline and Mailnest are invented, and so is every figure; no beneficiary here is real. The public rules applied are sections 1905(p) and 1860D-14 of the Social Security Act, SSI's income and resource rules in 20 CFR Part 416, 42 CFR 423.773 and 423.774 and SSA's POMS, fixed in the bench world as of 9 October 2026 with 2026's figures: the $15,960 poverty guideline, the $1,350, $1,616 and $1,816 income limits with the $20 disregard, the $9,950 resource limit, the $202.90 Part B premium and $283 deductible, and the $615 Part D deductible. The invented state applies the federal floor; a real state may raise the income limits, drop the asset test, or cover earlier months with retroactive SLMB, and the state Medicaid agency's and Social Security's own decisions decide real cases. This applies stated rules to stated facts; it is not legal, insurance or benefits advice."
+}
