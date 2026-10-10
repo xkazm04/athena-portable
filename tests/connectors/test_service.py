@@ -3,10 +3,16 @@ and the catalog classing a connector's tools as it classes a page's (connectors/
 
 from __future__ import annotations
 
+import base64
 from collections.abc import Mapping
+from email import message_from_bytes
+from email.utils import getaddresses
 from pathlib import Path
 from typing import Any
 
+import pytest
+
+from athena.connectors.providers import gmail
 from athena.connectors.service import READ_CAP, Service, check_egress, services_for
 from athena.connectors.spec import ConnectorSpec
 from athena.connectors.vault import Vault
@@ -140,3 +146,55 @@ def test_a_grant_that_is_gone_says_reconnect(
 def test_an_unknown_tool_is_unknown_ref(notion: Vault) -> None:
     result = Service(notion.specs["notion"], notion).call("delete_everything", {})
     assert not result.ok and result.error == "unknown_ref"
+
+
+def _egress(
+    specs: dict[str, ConnectorSpec], params: dict[str, Any], allow: list[str]
+) -> str | None:
+    gmail = specs["gmail"]
+    send = gmail.tool("send_mail")
+    assert send is not None
+    return check_egress(gmail, send, {"subject": "s", "body": "b", **params}, allow)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "evil@x.com, <ok@me.com>",
+        "ok@me.com; evil@x.com",
+        "ok@me.com, ok@me.com",
+        "ok@me.com\r\nBcc: evil@x.com",
+        "ok@me.com\nevil@x.com",
+        "not an address",
+        "",
+    ],
+)
+def test_a_recipient_item_that_is_not_one_address_is_refused_by_name(
+    specs: dict[str, ConnectorSpec], value: str
+) -> None:
+    reason = _egress(specs, {"to": [value]}, ["ok@me.com", "evil@x.com"])
+    assert reason is not None and repr(value) in reason and "one address per item" in reason
+    assert _egress(specs, {"to": ["ok@me.com"], "cc": [value]}, ["ok@me.com", "evil@x.com"])
+
+
+def test_a_display_name_stays_legal_even_with_a_comma_in_it(
+    specs: dict[str, ConnectorSpec],
+) -> None:
+    assert _egress(specs, {"to": ["Ok <ok@me.com>"]}, ["ok@me.com"]) is None
+    assert _egress(specs, {"to": ['"Doe, Jane" <jane@x.com>']}, ["jane@x.com"]) is None
+    assert _egress(specs, {"to": ['"Doe, Jane" <jane@x.com>']}, ["ok@me.com"]) is not None
+
+
+def test_the_headers_hold_exactly_the_addresses_that_were_allowed() -> None:
+    body = gmail.build_send_body(
+        to=["Ok <ok@me.com>", '"Doe, Jane" <jane@x.com>'],
+        cc=["Bo <bo@x.com>"],
+        subject="s",
+        body="b",
+    )
+    raw = base64.urlsafe_b64decode(body["raw"] + "==")
+    message = message_from_bytes(raw)
+    assert [a for _, a in getaddresses([message["To"]])] == ["ok@me.com", "jane@x.com"]
+    assert [a for _, a in getaddresses([message["Cc"]])] == ["bo@x.com"]
+    with pytest.raises(ValueError, match="exactly one address"):
+        gmail.build_send_body(to=["evil@x.com, <ok@me.com>"], subject="s", body="b")

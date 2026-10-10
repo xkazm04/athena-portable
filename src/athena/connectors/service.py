@@ -25,6 +25,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
+from athena.connectors.addresses import one_address, refusal_reason
 from athena.connectors.providers import gmail, notion
 from athena.connectors.spec import ConnectorSpec, ToolSpec
 from athena.connectors.vault import NeedsReauth, Vault, VaultError
@@ -62,9 +63,7 @@ def _normal(value: str, kind: str) -> str:
     text = value.strip().lower()
     if kind == "resources":
         return text.replace("-", "")
-    if "<" in text and text.endswith(">"):  # "Name <a@b>" is the address inside
-        text = text[text.rindex("<") + 1 : -1]
-    return text
+    return one_address(text) or text  # "Name <a@b>" is the address inside
 
 
 def check_egress(
@@ -78,6 +77,8 @@ def check_egress(
         noun = "recipients" if spec.egress == "recipients" else "pages"
         return f"{spec.label} has no allowed {noun}; add some in Connectors before a write"
     for value in _values(params, tool.egress_params):
+        if spec.egress == "recipients" and one_address(value) is None:
+            return refusal_reason(value)
         if _normal(value, spec.egress) not in allowed:
             return f"{value!r} is not on {spec.label}'s allow-list"
     return None

@@ -11,7 +11,9 @@ the browser, reached through one vault (ADR 0021).
 - **It enters the catalog like a page.** A connector presents a manifest of the same shape, with
   origin `connector:<id>`, and gets the same class decision. Reads are `READ`; writes are `GATED`
   and sit behind a per-connector switch that is off by default plus an egress allow-list checked
-  from the arguments.
+  from the arguments. One item of `to` or `cc` is exactly one address: a value that parses to
+  several, to none, or that carries CR or LF is refused by name, and the headers are built only from
+  the addresses the check allowed (ADR 0061).
 - **The vault brokers every call.** An executor asks the vault to call the service and never holds
   a token. Calls have a host allow-list, a timeout, a cap and redaction. A token or OAuth grant is
   probed before it is sealed (keyring, DPAPI or an owner-only file, `seal.py`), under

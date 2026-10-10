@@ -14,6 +14,8 @@ from email.message import EmailMessage
 from typing import Any
 from urllib.parse import quote
 
+from athena.connectors.addresses import one_address
+
 __all__ = ["API", "Request", "execute", "extract_text", "parse_metadata", "render_results"]
 
 API = "https://gmail.googleapis.com/gmail/v1/users/me"
@@ -96,13 +98,21 @@ def render_results(rows: Sequence[Mapping[str, str]]) -> str:
     )
 
 
+def _checked(value: str) -> str:
+    """The bare address the egress gate allowed; a value that is not one address is a bug."""
+    address = one_address(value)
+    if address is None:
+        raise ValueError(f"{value!r} is not exactly one address")
+    return address
+
+
 def build_send_body(
     *, to: Sequence[str], subject: str, body: str, cc: Sequence[str] = ()
 ) -> dict[str, str]:
     message = EmailMessage()
-    message["To"] = ", ".join(to)
+    message["To"] = ", ".join(_checked(a) for a in to)
     if cc:
-        message["Cc"] = ", ".join(cc)
+        message["Cc"] = ", ".join(_checked(a) for a in cc)
     message["Subject"] = subject
     message.set_content(body)
     raw = base64.urlsafe_b64encode(message.as_bytes()).decode("ascii").rstrip("=")
@@ -149,5 +159,8 @@ def execute(request: Request, tool: str, params: Mapping[str, Any]) -> tuple[boo
         if status >= 300:
             return False, f"Gmail answered {status} to the send"
         sent_id = body.get("id", "") if isinstance(body, Mapping) else ""
-        return True, f"sent to {', '.join(str(a) for a in params['to'])} (message {sent_id})"
+        return (
+            True,
+            f"sent to {', '.join(_checked(str(a)) for a in params['to'])} (message {sent_id})",
+        )
     return False, f"gmail has no tool {tool!r}"
