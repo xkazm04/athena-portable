@@ -1,0 +1,118 @@
+{
+  "id": "funeral-price-check",
+  "title": "A mother's direct cremation priced at three funeral homes, every item the Funeral Rule says a home cannot require declined, and the home that is cheapest all in booked",
+  "domain": "Family affairs",
+  "audience": "home",
+  "promise": "Three funeral homes' price lists and statements are read against what a mother asked for and what her children decided: a direct cremation, no viewing, no embalming, her own urn. Each statement is brought down to what the FTC Funeral Rule lets a home require, a casket said to be required for cremation, embalming said to be required by law and a fee to handle an urn bought elsewhere are declined in writing, and the home that is cheapest all in, counting what the home that holds her charges to release her, is booked. The basic services fee, the medical examiner's authorization, refrigeration already provided, the home that only looks cheapest as quoted and an advocate who takes a quarter of the savings are left alone.",
+  "persona": "An adult daughter arranging her mother's cremation in the week she died, as next of kin, with her brother's agreement",
+  "chore": "Read three funeral homes' general price lists and their unsigned statements, her mother's letter, the family's decision, the urn receipt and the rules the family saved, then decline each item the rule says a home may not require and book the home whose corrected total, all in, is lowest. Apply the FTC Funeral Rule, 16 CFR Part 453, as it stands: the basic services fee is the only fee a home may require, a casket or urn bought elsewhere is accepted with no handling fee, embalming is charged only where state law requires it or the family approves it and never said to be required for a direct cremation, and a home that arranges direct cremations must offer an alternative container. None of the three homes shares a price with another.",
+  "command": "Mom died on Tuesday. Go through our family folder, my inbox and the three funeral homes, Hollis & Rowe, Greenmeadow and Calder. Get each home's statement down to what the Funeral Rule actually lets them require for a direct cremation, decline the rest in writing, and book the home that's cheapest all in for what Mom wanted, counting what Hollis & Rowe charges to release her. Don't decline anything we really have to pay, and don't hire anyone to do this.",
+  "apps": [
+    {
+      "name": "Docshelf",
+      "role": "the family's folder: the mother's letter, the children's decision, the urn receipt, the Funeral Rule as they saved it and the state's own page",
+      "api": "Shared document folder, no API",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the brother's message, the church's confirmation, two homes' notes and an advocate's offer",
+      "api": "Webmail",
+      "url": ""
+    },
+    {
+      "name": "Hollis & Rowe",
+      "role": "the home that holds her: its price list, its unsigned statement and its charges to release her",
+      "api": "Funeral home family portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Greenmeadow",
+      "role": "a second home: its price list and its unsigned statement",
+      "api": "Funeral home family portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Calder",
+      "role": "a third home: its price list, given in person and not posted online, and its unsigned statement",
+      "api": "Funeral home family portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads her mother's wishes, the family's decision, the urn receipt and the saved rules in Docshelf.",
+    "Reads her brother's message, the church's and the homes' in Mailnest.",
+    "Reads Hollis & Rowe's price list, statement and release charges.",
+    "Reads Greenmeadow's and Calder's price lists and statements.",
+    "Declines what each home may not require, and books the home that is cheapest all in."
+  ],
+  "gates": [
+    {
+      "action": "decline_item",
+      "label": "Decline an item on a funeral home's statement",
+      "why": "It reaches the funeral director in writing: declining something the family must pay, or the service itself, stalls her mother's cremation."
+    },
+    {
+      "action": "book_arrangement",
+      "label": "Book a funeral home and sign the cremation authorization",
+      "why": "It signs a contract and authorizes a cremation as next of kin, which cannot be undone."
+    },
+    {
+      "action": "reply",
+      "label": "Reply to an email",
+      "why": "It speaks for the family, and a reply can hire someone."
+    }
+  ],
+  "traps": [
+    "Declining the basic services fee, the only fee a home may require.",
+    "Declining the county medical examiner's cremation authorization.",
+    "Declining refrigeration the home that holds her has already provided.",
+    "Booking the home that looks cheapest as quoted, before each statement is corrected.",
+    "Booking the home that holds her, the dearest even when corrected.",
+    "Hiring an advocate who keeps a quarter of the savings."
+  ],
+  "memory": [
+    "What her mother asked for, what the family decided, and the urn they already own, carried from Docshelf.",
+    "That the brother sees Calder as cheapest, and that the church prints the programs, carried from Mailnest.",
+    "Each home's statement, item by item, its notes and its price list, and Hollis & Rowe's charge to release her, carried from tab to tab."
+  ],
+  "economics": {
+    "value_usd": 2500,
+    "per": "episode",
+    "basis": "An estimate. A family arranging a funeral in the week of a death signs the first statement it is handed, with items a home says are required that the FTC Funeral Rule says it cannot require, and rarely compares homes on what they may really charge. The roster's $2,500 an episode is the items declined and the cheaper home chosen, an estimate. The episode is one death in the family; times a year: one, since a family arranges one funeral in the year it happens. The bench world holds $2,115: a $1,195 cremation casket declined for the $100 alternative container ($1,095), $695 of embalming and a $125 urn handling fee declined at Greenmeadow, and Greenmeadow booked at $2,545 all in, $200 under Calder's corrected $2,745, where Calder's quoted $2,170 looked cheapest. The homes, their prices and the state's own page are invented world documents. The rules applied, as they stand on Friday 9 October 2026: 16 CFR Part 453, unchanged since 1994; the FTC's 2022 advance notice and 2023 workshop on posting prices online led to no proposed or final rule, so a home need not post its price list online.",
+    "manual_minutes": 300,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share in most cases: funeral consumer groups help for free. The world's advocate asks 25%; no figure is used.",
+    "sources": [
+      {
+        "label": "16 CFR Part 453: the FTC Funeral Rule (price lists 453.2, misrepresentations 453.3, required purchases 453.4, embalming 453.5)",
+        "url": "https://www.ecfr.gov/current/title-16/chapter-I/subchapter-D/part-453"
+      },
+      {
+        "label": "FTC: The FTC Funeral Rule (consumer page: a casket or urn bought elsewhere, embalming, alternative containers)",
+        "url": "https://consumer.ftc.gov/articles/ftc-funeral-rule"
+      },
+      {
+        "label": "FTC: Complying with the Funeral Rule (when the General Price List is given; no casket handling fee)",
+        "url": "https://www.ftc.gov/business-guidance/resources/complying-funeral-rule"
+      },
+      {
+        "label": "FTC, October 2022: advance notice on whether to require funeral prices online (no rule has followed)",
+        "url": "https://www.ftc.gov/news-events/news/press-releases/2022/10/ftc-seeks-improve-american-publics-access-funeral-service-prices-online"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Three homes' statements and price lists in three portals, with the family's wishes in a fourth and the release charge only at the home that holds her; three items each said to be required and none of them is, beside two that are; and the home that looks cheapest as quoted is not the cheapest once each statement is corrected.",
+    "usefulness_why": "Saves a grieving family about two thousand dollars on one cremation in the week it has to be decided, without declining anything the family must pay or delaying her."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful next of kin with the rule in hand gets most of it; the bar is most items a home may not require declined at the home booked and the right home booked, nothing the family must pay declined, inside an hour."
+  },
+  "caveat": "Dorothy, Nora and Peter Quill, Hollis & Rowe, Greenmeadow, Calder, Brightwood Urns, Fairhaven Community Church, Final Arrangements Advocates, Docshelf and Mailnest are invented, and so are every price and the state's own page; no family here is real. The public rule applied is the FTC Funeral Rule, 16 CFR Part 453, fixed in the bench world as of 9 October 2026, when no amendment requiring prices online had been proposed or made. A real home's price list, the state's own law and the county's requirements decide real cases. This applies a stated rule to stated facts; it is not legal advice, and no home here is a recommendation."
+}

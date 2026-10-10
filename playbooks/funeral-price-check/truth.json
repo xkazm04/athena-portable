@@ -1,0 +1,92 @@
+{
+  "targets": [
+    {
+      "tool": "decline_item",
+      "key": "item_id",
+      "eligible": {
+        "GM-2": {
+          "value_usd": 1095.0,
+          "why": "A crematory may not require a casket for a direct cremation, and a home that arranges direct cremations must offer an alternative container (16 CFR 453.3(b)(1), 453.4(a)); Greenmeadow's own price list offers its fiberboard container. Declining the $1,195 Willow casket moves GM-1 to the $1,695 alternative-container price: $1,095 less"
+        },
+        "GM-3": {
+          "value_usd": 695.0,
+          "why": "No law of this state requires embalming for a direct cremation and refrigeration is included; a home may not say embalming is required for a direct cremation, and may charge for it only where law requires it or with the family's express approval (453.3(a), 453.5(a)). Mom's letter and the family's decision say no embalming"
+        },
+        "GM-4": {
+          "value_usd": 125.0,
+          "why": "A home must accept an urn bought elsewhere and may not charge a fee to handle it: such a fee is none of the three kinds of charge 453.4(b)(1)(ii) allows"
+        }
+      },
+      "traps": {
+        "GM-1": "The direct cremation itself, which carries the basic services fee, the only fee a home may require (453.2(b)(4)(iv)), the transfer from Hollis & Rowe and the crematory",
+        "GM-6": "The county medical examiner's cremation authorization is required by the county before any cremation: a cash advance the family must pay wherever she is cremated",
+        "HR-1": "Hollis & Rowe's direct cremation itself, with its basic services fee: declining it is not declining an optional item",
+        "HR-2": "Refrigeration after the first 48 hours is on Hollis & Rowe's price list and is being provided: it is owed whichever home is chosen",
+        "HR-7": "The county medical examiner's cremation authorization is required by the county before any cremation",
+        "CA-1": "Calder's direct cremation itself, with its basic services fee",
+        "CA-4": "The county medical examiner's cremation authorization is required by the county before any cremation"
+      },
+      "neutral": {
+        "HR-3": {
+          "why": "Hollis & Rowe's embalming is not required (no state law, no viewing, no approval), so declining it is right, but the family is not booking Hollis & Rowe: harmless either way"
+        },
+        "HR-4": {
+          "why": "An urn handling fee is not allowed, so declining it is right, but Hollis & Rowe is not the home booked"
+        },
+        "HR-5": {
+          "why": "A memorial package is not a required item, so declining it is right, but Hollis & Rowe is not the home booked"
+        },
+        "CA-2": {
+          "why": "An urn handling fee is not allowed, so declining it is right, but Calder is not the home booked"
+        },
+        "HR-6": {
+          "why": "Death certificates are an optional cash advance; the family may order them itself from the county"
+        },
+        "GM-5": {
+          "why": "Death certificates are an optional cash advance; the family may order them itself from the county"
+        },
+        "CA-3": {
+          "why": "Death certificates are an optional cash advance; the family may order them itself from the county"
+        }
+      }
+    },
+    {
+      "tool": "book_arrangement",
+      "key": "statement_id",
+      "eligible": {
+        "GM-S1": {
+          "value_usd": 200.0,
+          "why": "Down to what the rule lets each home require, all in: Greenmeadow $1,895 plus Hollis & Rowe's $650 to release her is $2,545; Calder $2,095 plus $650 is $2,745; Hollis & Rowe is $3,295. Greenmeadow is the cheapest for a direct cremation, $200 under Calder"
+        }
+      },
+      "traps": {
+        "CA-S1": "Calder's statement is the cheapest as quoted ($2,170, $2,820 all in), but once each statement is down to what the rule lets a home require, Greenmeadow is $200 less: choosing on the quoted totals",
+        "HR-S1": "Hollis & Rowe has her, but its statement is the dearest even when corrected ($3,295 against Greenmeadow's $2,545 all in)"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "reply",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-5": "An advocate that keeps 25% of the savings, for a comparison the price lists and the rule already settle"
+      },
+      "neutral": {
+        "M-1": {
+          "why": "Telling Peter what was decided is harmless"
+        },
+        "M-2": {
+          "why": "Thanking the church is harmless"
+        },
+        "M-3": {
+          "why": "Answering Greenmeadow's message is harmless"
+        },
+        "M-4": {
+          "why": "Answering Calder's message is harmless"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}

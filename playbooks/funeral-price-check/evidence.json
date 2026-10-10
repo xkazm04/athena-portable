@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "funeral-price-check",
+  "captured_at": "2026-10-10T04:54:59Z",
+  "bench_run_at": "2026-10-10T04:51:25Z",
+  "narration": {
+    "text": "A mother's direct cremation priced at three funeral homes, every item the Funeral Rule says a home cannot require declined, and the home that is cheapest all in booked. This is a chore for an adult daughter arranging her mother's cremation in the week she died, as next of kin, with her brother's agreement. Athena works it across 5 portals: Docshelf, Mailnest, Hollis & Rowe, Greenmeadow and Calder. On the bench, she found 4 of 4 eligible items, worth 2,115 dollars of the 2,115 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. Among them: Declining the basic services fee, the only fee a home may require. Declining the county medical examiner's cremation authorization. She took 3 minutes. By hand, the same chore takes 5 hours, so she was about 111 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.875,
+    "sha256": "c40fc1ec3fa284b2731c84aa00cf9d6389c5b1f35de9f21cb2ec107cf238b8e3"
+  },
+  "video": {
+    "path": "evidence/funeral-price-check/evidence.mp4",
+    "duration_s": 62.88,
+    "bytes": 2844677,
+    "sha256": "5d1db926f50eb44f213995fe5baa2f02be16a2040232f9b4ca52511f6383d1ce"
+  },
+  "thumbnail": {
+    "path": "playbooks/funeral-price-check/thumb.jpg",
+    "bytes": 85684,
+    "sha256": "76b1d4fb3196d745f72c41196c4468efefadabb2cf0922173ef046abc46c569b"
+  }
+}
