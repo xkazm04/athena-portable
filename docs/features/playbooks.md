@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The seventy-three playbooks (latest runs, Claude Sonnet)
+## The seventy-four playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -116,9 +116,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A retiree's bank account checked under Regulation E: four unauthorised transfers reported at their capped liability and a late claim chased for its credit, while a payment she sent a scammer herself, her son's fuel, a refunded and a pending charge, a subscription, a credit card charge and two claims not yet late are left alone | home | 4 | exceeds: 5 of 5, $1,312.00 of $1,312.00 (what she gets back), 12 of 12 traps, 0 false, 2.6 min, $1.11 |
 | A nurse's three credit reports disputed with her proof: a late payment she made on time, an old collection and a bankruptcy past their limits, a paid collection and an account that is not hers, while an accurate late payment, a collection still in time, authorised inquiries and entries already fixed or being answered are left alone | home | 5 | exceeds: 8 of 8, $1,000 of $1,000 (125 dollars an act, mostly minutes), 8 of 8 traps, 0 false, 2.0 min, $1.03 |
 | A teacher's security deposit statement checked against her lease and photos: six deductions contested for wear, a condition there at move-in, a clean oven, a rekey and a wall hole billed twice, while rent and water she owes, real damage, cleaning back to move-in level and an open estimate are left alone | home | 4 | exceeds: 6 of 6, $1,445.00 of $1,445.00 (what she gets back), 8 of 8 traps, 0 false, 2.2 min, $1.27 |
+| A bookkeeper's repair invoices claimed under a fuel pump recall: the labour and shop fee of one repair and a part she bought herself, with its tax, while a relay fixed before the window opens, a valve, an oil change and a rotation, a warranty repair, a tow, a refunded deposit and her husband's car outside the recall are left alone | home | 4 | exceeds: 4 of 4, $674.02 of $674.02 (what she gets back), 8 of 8 traps, 0 false, 1.6 min, $0.87 |
 
-Across the latest runs: $1,115,766 of $1,125,193 found, 752 of 752 traps walked past, no false claim,
-209 minutes of her time against about 302 hours by hand, $129.52 of model time. 111 runs are recorded
+Across the latest runs: $1,116,440 of $1,125,867 found, 760 of 760 traps walked past, no false claim,
+211 minutes of her time against about 303 hours by hand, $130.39 of model time. 112 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

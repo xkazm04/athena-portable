@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "vehicle-recall-reimbursement",
+  "captured_at": "2026-10-10T19:46:06Z",
+  "bench_run_at": "2026-10-10T19:42:49Z",
+  "narration": {
+    "text": "A bookkeeper's repair invoices are claimed under a fuel pump recall: the labour and shop fee of one repair and a part she bought herself, with its tax, while a relay fixed before the window opens, a valve, an oil change and a rotation, a warranty repair, a tow, a refunded deposit and her husband's car outside the recall are left alone. This is a chore for a bookkeeper in Boise, Idaho, with a recall letter for her car and a drawer of repair invoices and receipts. On the bench, she found 4 of 4 eligible items, worth 674 dollars and 2 cents of the 674 dollars and 2 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 75 minutes, so she was about 47 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 59.568,
+    "sha256": "eb817883ca81c8ffea88f4b84ab89eef85089a78e49ebe02a9d90acaa832daf6"
+  },
+  "video": {
+    "path": "evidence/vehicle-recall-reimbursement/evidence.mp4",
+    "duration_s": 59.6,
+    "bytes": 2721565,
+    "sha256": "21a258eec0e9c5e9083b95ec8952e383883f8eb79a7490f139ec9e9903519980"
+  },
+  "thumbnail": {
+    "path": "playbooks/vehicle-recall-reimbursement/thumb.jpg",
+    "bytes": 93172,
+    "sha256": "fe2153ededb167075632a59d55cb7f92c6b6aacd028214375092de900e372016"
+  }
+}

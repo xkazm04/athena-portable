@@ -1,0 +1,38 @@
+{
+  "targets": [
+    {
+      "tool": "claim_reimbursement",
+      "key": "line",
+      "eligible": {
+        "G-4471-L1": {
+          "value_usd": 288.0,
+          "why": "G-4471-L1 is the shop's labour on 12 November 2025 to replace the fuel pump module on the recalled VIN (M-1: R-2614 applies; population: 2022 Kestrel), inside the plan's period of 20 July 2025 to 15 September 2026, a replacement of the recall's own type, paid by her (288.00). The part came separately (P-1)"
+        },
+        "G-4471-L2": {
+          "value_usd": 14.5,
+          "why": "G-4471-L2 is the shop fee and waste disposal on the same fuel pump job, an associated cost the amount rule says may not be limited, paid by her (14.50)"
+        },
+        "P-1": {
+          "value_usd": 344.0,
+          "why": "P-1 is the fuel pump module she bought separately from Boltbarn Parts on 9 November 2025 (M-2), installed in G-4471-L1, inside the period, paid by her (344.00), below Torvane's list price of 420.00; easy to miss because it is not on the shop's invoice"
+        },
+        "P-2": {
+          "value_usd": 27.52,
+          "why": "P-2 is the sales tax on that part (M-2), a tax the amount rule says may not be limited, paid by her (27.52)"
+        }
+      },
+      "traps": {
+        "G-3920-L1": "G-3920-L1 is a fuel pump relay replaced on 30 May 2025, before the period opens on 20 July 2025; outside the window, so the plan does not cover it",
+        "G-4471-L3": "G-4471-L3 replaces the tank vent valve on the same invoice, a different component that did not address the fuel pump module defect",
+        "G-4471-L4": "G-4471-L4 is an oil and filter change, maintenance and not a remedy of the recalled defect",
+        "G-4471-L5": "G-4471-L5 is a tire rotation, maintenance and not a remedy of the recalled defect",
+        "G-4802-L1": "G-4802-L1 is the fuel pump module replaced again on 10 February 2026 under Boltbarn's parts warranty (M-4); she paid 0.00, so she bore no cost to reimburse",
+        "G-4802-L2": "G-4802-L2 is the tow of 10 February 2026, paid in full by her roadside cover (M-5) and not a remedy of the defect; she paid 0.00",
+        "G-5230-L1": "G-5230-L1 is a fuel pump module on her husband's 2020 Kestrel, VIN 9TVKE20A1LB118902; its tenth character is L (2020) and Recallmoor says no recall matches it, so it is outside the recall population",
+        "P-3": "P-3 is a 40.00 dollar core deposit on the part, refunded on 24 November 2025 (M-3); she bore no cost"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

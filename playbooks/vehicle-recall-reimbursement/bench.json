@@ -1,0 +1,261 @@
+{
+  "playbook": "vehicle-recall-reimbursement",
+  "run_at": "2026-10-10T19:42:49Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 93.2,
+  "turns": 9,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 24,
+  "cost_usd": 0.8671,
+  "your_time_s": 120,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.6
+  },
+  "score": {
+    "eligible": 4,
+    "found": 4,
+    "exact": 4,
+    "value_total_usd": 674.02,
+    "value_found_usd": 674.02,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "claim_reimbursement",
+        "key": "G-3920-L1",
+        "why": "G-3920-L1 is a fuel pump relay replaced on 30 May 2025, before the period opens on 20 July 2025; outside the window, so the plan does not cover it",
+        "filed": false
+      },
+      {
+        "action": "claim_reimbursement",
+        "key": "G-4471-L3",
+        "why": "G-4471-L3 replaces the tank vent valve on the same invoice, a different component that did not address the fuel pump module defect",
+        "filed": false
+      },
+      {
+        "action": "claim_reimbursement",
+        "key": "G-4471-L4",
+        "why": "G-4471-L4 is an oil and filter change, maintenance and not a remedy of the recalled defect",
+        "filed": false
+      },
+      {
+        "action": "claim_reimbursement",
+        "key": "G-4471-L5",
+        "why": "G-4471-L5 is a tire rotation, maintenance and not a remedy of the recalled defect",
+        "filed": false
+      },
+      {
+        "action": "claim_reimbursement",
+        "key": "G-4802-L1",
+        "why": "G-4802-L1 is the fuel pump module replaced again on 10 February 2026 under Boltbarn's parts warranty (M-4); she paid 0.00, so she bore no cost to reimburse",
+        "filed": false
+      },
+      {
+        "action": "claim_reimbursement",
+        "key": "G-4802-L2",
+        "why": "G-4802-L2 is the tow of 10 February 2026, paid in full by her roadside cover (M-5) and not a remedy of the defect; she paid 0.00",
+        "filed": false
+      },
+      {
+        "action": "claim_reimbursement",
+        "key": "G-5230-L1",
+        "why": "G-5230-L1 is a fuel pump module on her husband's 2020 Kestrel, VIN 9TVKE20A1LB118902; its tenth character is L (2020) and Recallmoor says no recall matches it, so it is outside the recall population",
+        "filed": false
+      },
+      {
+        "action": "claim_reimbursement",
+        "key": "P-3",
+        "why": "P-3 is a 40.00 dollar core deposit on the part, refunded on 24 November 2025 (M-3); she bore no cost",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "claim_reimbursement",
+      "key": "G-4471-L1",
+      "outcome": "correct",
+      "value_usd": 288.0,
+      "exact": true,
+      "why": "G-4471-L1 is the shop's labour on 12 November 2025 to replace the fuel pump module on the recalled VIN (M-1: R-2614 applies; population: 2022 Kestrel), inside the plan's period of 20 July 2025 to 15 September 2026, a replacement of the recall's own type, paid by her (288.00). The part came separately (P-1)"
+    },
+    {
+      "action": "claim_reimbursement",
+      "key": "G-4471-L2",
+      "outcome": "correct",
+      "value_usd": 14.5,
+      "exact": true,
+      "why": "G-4471-L2 is the shop fee and waste disposal on the same fuel pump job, an associated cost the amount rule says may not be limited, paid by her (14.50)"
+    },
+    {
+      "action": "claim_reimbursement",
+      "key": "P-1",
+      "outcome": "correct",
+      "value_usd": 344.0,
+      "exact": true,
+      "why": "P-1 is the fuel pump module she bought separately from Boltbarn Parts on 9 November 2025 (M-2), installed in G-4471-L1, inside the period, paid by her (344.00), below Torvane's list price of 420.00; easy to miss because it is not on the shop's invoice"
+    },
+    {
+      "action": "claim_reimbursement",
+      "key": "P-2",
+      "outcome": "correct",
+      "value_usd": 27.52,
+      "exact": true,
+      "why": "P-2 is the sales tax on that part (M-2), a tax the amount rule says may not be limited, paid by her (27.52)"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Nothing in the plan excludes the four items you expected to be claimable, so I'm filing them. Tamsin signs each one.\n\n\n**Four claims are filed for Tamsin to sign, all on VIN 9TVKE22A4NB204417: $288.00 + $14.50 + $344.00 + $27.52 = $674.02.**\n\n- **G-4471-L1:** labour, $288.00.\n- **G-4471-L2:** shop fee and waste disposal, $14.50.\n- **P-1:** the pump module you bought, $344.00. That is under Torvane's $420.00 list price, so you get what you paid.\n- **P-2:** tax on the pump module, $27.52.\n\n**Left out, and why:**\n- **G-3920-L1, relay, $168.40:** it was done 30 May 2025, before the period opens on 20 July 2025. It is also a different part.\n- **G-4471-L3, tank vent valve, $215.00:** the plan covers the fuel pump module, not other parts.\n- **G-4471-L4, oil change, $79.95, and G-4471-L5, tire rotation, $29.00:** the plan excludes maintenance.\n- **G-4802-L1, second pump replacement, $402.00:** B",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Tamsin Okafor. This is my mail: the recall letter, the receipts for a part I bought, and what my warranty and my roadside cover paid. Read every message. Don't do anything yet: I'll send you to the recall site, my repair shop and the ca",
+      "continued": false,
+      "said": "I'll start by listing the inbox, then read each message.",
+      "said_chars": 56,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Next I'll read all five messages.",
+      "said_chars": 33,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "I've read all five messages. Nothing has been claimed.\n\n- **M-1, recall letter (28 Aug 2026):** Your 2022 Kestrel, VIN 9TVKE22A4NB204417, is in recall R-2614 (fuel pump module). Repairs you paid for between 20 July 2025 and 15 September 2026 can be claimed under Torvane's plan.\n- **M-2, Boltbarn order (9 Nov 2025):** The pump module (P-1) was $344.00 and sales tax (P-2) was $27.52. The core deposit (P-3) was $40.00, for a total of $411.52.",
+      "said_chars": 1277,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Recallmoor",
+      "user": "This is Recallmoor. Read the recall and which vehicles are in it, and check the VINs of both my cars: my Kestrel, 9TVKE22A4NB204417, and my husband's Kestrel, 9TVKE20A1LB118902.",
+      "continued": false,
+      "said": "I'll read the recall and check both VINs.",
+      "said_chars": 41,
+      "reads": [
+        "read_recall",
+        "read_recall",
+        "lookup_vin",
+        "lookup_vin"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Recallmoor",
+      "user": "",
+      "continued": true,
+      "said": "Your Kestrel is in the recall and your husband's is not. Nothing has been claimed.\n\n- **Your Kestrel, 9TVKE22A4NB204417 (2022):** Recall R-2614 applies. The remedy has not been done yet.\n- **Your husband's Kestrel, 9TVKE20A1LB118902 (2020):** No recall matches this VIN. The recall covers only model years 2022 and 2023, and the tenth character of his VIN is L, which means 2020. Leave this car out of the claim.\n- **The recall:** The fuel pump module can fail and the engine can stall without warning.",
+      "said_chars": 996,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Garrowby Service",
+      "user": "This is Garrowby Service, my repair shop. Read every line of my invoices and my husband's, on every page.",
+      "continued": false,
+      "said": "I'll read both pages of invoice lines now.",
+      "said_chars": 42,
+      "reads": [
+        "list_invoice_lines",
+        "list_invoice_lines"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Garrowby Service",
+      "user": "",
+      "continued": true,
+      "said": "I've read all 9 invoice lines on both pages (showing 9 of 9). Two lines on one invoice look claimable, and nothing has been claimed yet.\n\n**Likely claimable (your Kestrel, VIN …204417, invoice G-4471, 12 Nov 2025):**\n- G-4471-L1: labour to replace the fuel pump module (you supplied the part), 2.4 h, $288.00, paid by you.\n- G-4471-L2: shop fee and waste disposal on the fuel pump job, $14.50, paid by you.",
+      "said_chars": 1580,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Torvane Owners",
+      "user": "This is Torvane Owners. Read the reimbursement plan, every topic. Then claim every line of my invoices and my parts receipt that the plan covers, with the VIN and why, and leave out what it does not cover. Then tell me what you claimed and ",
+      "continued": false,
+      "said": "I'll read every topic of the plan first, and re-read the invoice lines so I have the exact figures.\n\n\nI haven't claimed anything yet. Once the plan topics and invoice lines come back, I'll file the claims.\n\nThe Garrowby tools can't be called from this tab, so I'll recall the invoice lines from memory. The plan answers arrive next turn.\n\n\nNothing is claimed yet. I'm waiting on the plan topics before filing anything.\n\nMy last recall line was malformed, so I'm sending it again in the right form.",
+      "said_chars": 998,
+      "reads": [
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Torvane Owners",
+      "user": "",
+      "continued": true,
+      "said": "Nothing in the plan excludes the four items you expected to be claimable, so I'm filing them. Tamsin signs each one.\n\n\n**Four claims are filed for Tamsin to sign, all on VIN 9TVKE22A4NB204417: $288.00 + $14.50 + $344.00 + $27.52 = $674.02.**\n\n- **G-4471-L1:** labour, $288.00.\n- **G-4471-L2:** shop fee and waste disposal, $14.50.\n- **P-1:** the pump module you bought, $344.00. That is under Torvane's $420.00 list price, so you get what you paid.\n- **P-2:** tax on the pump module, $27.52.",
+      "said_chars": 1553,
+      "reads": [],
+      "cards": [
+        {
+          "action": "claim_reimbursement",
+          "key": "G-4471-L1",
+          "outcome": "correct",
+          "value_usd": 288.0
+        },
+        {
+          "action": "claim_reimbursement",
+          "key": "G-4471-L2",
+          "outcome": "correct",
+          "value_usd": 14.5
+        },
+        {
+          "action": "claim_reimbursement",
+          "key": "P-1",
+          "outcome": "correct",
+          "value_usd": 344.0
+        },
+        {
+          "action": "claim_reimbursement",
+          "key": "P-2",
+          "outcome": "correct",
+          "value_usd": 27.52
+        }
+      ]
+    }
+  ]
+}

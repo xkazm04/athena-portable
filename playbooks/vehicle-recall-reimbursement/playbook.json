@@ -1,0 +1,101 @@
+{
+  "id": "vehicle-recall-reimbursement",
+  "title": "A bookkeeper's repair invoices are claimed under a fuel pump recall: the labour and shop fee of one repair and a part she bought herself, with its tax, while a relay fixed before the window opens, a valve, an oil change and a rotation, a warranty repair, a tow, a refunded deposit and her husband's car outside the recall are left alone",
+  "domain": "Vehicles",
+  "audience": "home",
+  "promise": "A bookkeeper in Boise has a recall letter for her 2022 Kestrel's fuel pump and a drawer of repair paper. Four items are claimed from the carmaker's reimbursement plan: the shop's labour and its shop fee for replacing the fuel pump module in November 2025, and the module she bought separately and its sales tax. Left out are a fuel pump relay she had fixed in May 2025, before the plan's window opens in July, a different valve, an oil change and a tire rotation on the same invoice, a second pump replacement her parts warranty covered, a tow her roadside cover paid, a core deposit refunded, and her husband's older Kestrel, whose VIN is not in the recall.",
+  "persona": "A bookkeeper in Boise, Idaho, with a recall letter for her car and a drawer of repair invoices and receipts",
+  "chore": "Read her mail, the recall and its population, the VINs of both household cars, nine invoice lines and the carmaker's plan. Apply 49 CFR 573.13 as it stands on 9 October 2026: claim each line that is the recall's own repair, for a vehicle in the recall, inside the plan's period from 20 July 2025 to 15 September 2026 and paid by her, and leave out the rest.",
+  "command": "I'm Tamsin Okafor. Go through my Postwren mail, the recall at Recallmoor, my invoices at Garrowby Service and the plan at Torvane Owners. Claim back what the plan covers for my Kestrel's fuel pump, from the invoices and from the part I bought myself. Leave out what is maintenance or another part, what is outside the dates, what someone else paid and any car not in the recall.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "the recall letter, the parts receipt and what her warranty and roadside cover paid",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Recallmoor",
+      "role": "the recall, which vehicles are in it, and the lookup of a VIN",
+      "api": "Recall lookup site, no API",
+      "url": ""
+    },
+    {
+      "name": "Garrowby Service",
+      "role": "the lines of the family's repair invoices, with what the customer paid",
+      "api": "Shop portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Torvane Owners",
+      "role": "the carmaker's reimbursement plan and the place to claim",
+      "api": "Owner site, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the recall letter and her receipts in Postwren.",
+    "Reads the recall and looks up both VINs in Recallmoor.",
+    "Reads nine invoice lines in Garrowby Service.",
+    "Reads the plan in Torvane Owners and claims four lines."
+  ],
+  "gates": [
+    {
+      "action": "claim_reimbursement",
+      "label": "Claim a recall reimbursement",
+      "why": "A signed claim to the carmaker that she paid for a repair of the recall's defect; one for a line she did not pay, or for a car not in the recall, is a false claim that the plan lets the carmaker refuse and that 573.13(l) leaves outside its protection."
+    }
+  ],
+  "traps": [
+    "Claiming a repair made before the plan's window opened.",
+    "Claiming a different component on the same invoice.",
+    "Claiming oil change or tire rotation on the invoice.",
+    "Claiming a repair her parts warranty covered, for which she paid nothing.",
+    "Claiming a tow her roadside cover paid.",
+    "Claiming a core deposit that was refunded.",
+    "Claiming her husband's repair on a car not in the recall."
+  ],
+  "memory": [
+    "What each letter and receipt says was paid, refunded or covered, from Postwren.",
+    "Which VIN is in the recall, from Recallmoor, and the date and what each invoice line is, from Garrowby Service, carried to the Torvane Owners tab with the plan's window."
+  ],
+  "economics": {
+    "value_usd": 700,
+    "per": "episode",
+    "basis": "An estimate. Before a recall is announced, an owner who has the defect fixed pays for it, and the manufacturer must offer to reimburse that repair if it is the recall's own and falls in the plan's window; a household with one such repair gets back a few hundred dollars, and the roster's $700 an episode is one such claim. The bench world holds four claimable lines worth $674.02 (288.00 labour, 14.50 shop fee, 344.00 part and 27.52 tax) and eight lines left alone worth $1,686.35 billed (she paid $1,044.35 of it); the money is recovered, not a price avoided. Times a year: once, the episode in the year it happens (ADR 0056). manual_minutes 75: reading five letters, a recall and its population, two VINs, nine invoice lines and a six-topic plan, working out for each line whether its vehicle is in the recall, its date is in the window, it is the recall's own repair and she paid for it, and entering four claims. Rules applied, as they stand on Friday 9 October 2026 (eCFR title 49, current as of 7 October 2026; 49 U.S.C. 30120 in the Legal Information Institute's copy): 49 CFR 573.13(c) (the plan's period: its beginning date no later than one year before the manufacturer's notification to NHTSA under 573.6 when no Engineering Analysis was opened, or the date the analysis was opened if that is earlier; its ending date no earlier than 10 calendar days after the last owner letter was mailed), (d) (the conditions a plan may set and no others: a warranty exclusion, the same type of remedy, a repair that addressed the defect and was reasonably necessary, and adequate documentation, at most the claimant, the vehicle and its VIN, the recall number, the owner at the time of the repair, and a receipt showing the repair and the total paid; for a part replaced, the part's receipt), (e)(1) (not less than the lesser of the amount paid or the cost of parts at list price plus labour at local rates, fees and taxes, with associated costs not limited), (g) (60 days to act, and a written reason for a denial), (i) (the plan is public on request), (j) (disputes are between claimant and manufacturer) and (n) (not for a vehicle first bought more than 10 years before notice), with 49 U.S.C. 30120(d) (a remedy program includes a plan to reimburse an owner who incurred the cost of the remedy within a reasonable time in advance of the notification) and 49 CFR 577.5 (the owner letter, with any provisions related to reimbursement, goes to NHTSA before it is mailed). NHTSA's owner guide to defects and recalls agrees on the start, the end and the documents. The VIN decides whether a vehicle is in the recall, by the population the manufacturer reports. The brief put the start of the window at one year before the defect determination; 573.13(c)(1) puts it one year before the manufacturer's notification to NHTSA (or at the analysis's opening, if earlier). It listed a claim deadline among the conditions a plan may set; (d) names no claim deadline, so the world's plan sets none, and only the repair's period is a date. Whether the owner letter itself describes the plan is a matter for 49 CFR Part 577; the world's letter does, and no target rests on it.",
+    "manual_minutes": 75,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share of a recall reimbursement: the claim is made to the manufacturer, which takes no fee, and the dealer's recall repair is free. Independent repair shops and car-care sites do not publish a price for this work, so none is given and no incumbent_fee_pct is stated (ADR 0064).",
+    "sources": [
+      {
+        "label": "49 CFR 573.13, reimbursement for pre-notification remedies (eCFR, current to 7 October 2026)",
+        "url": "https://www.ecfr.gov/current/title-49/part-573/section-573.13"
+      },
+      {
+        "label": "49 U.S.C. 30120, remedies for defects and noncompliance, subsection (d) (Legal Information Institute)",
+        "url": "https://www.law.cornell.edu/uscode/text/49/30120"
+      },
+      {
+        "label": "49 CFR 577.5, notification of defect or noncompliance (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-49/part-577/section-577.5"
+      },
+      {
+        "label": "Motor Vehicle Safety Defects and Recalls: what every vehicle owner should know (NHTSA, DOT HS 808 795)",
+        "url": "https://www.nhtsa.gov/sites/nhtsa.gov/files/documents/mvdefectsandrecalls_808795.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 3,
+    "usefulness": 3,
+    "difficulty_why": "Nine lines across two cars and a mailed parts receipt, a window that opens on a date nobody printed on the invoice, a part bought apart from its labour, and four lines that look like part of the repair but are maintenance, another component, covered by a warranty or paid by an insurer.",
+    "usefulness_why": "Saves an evening of reading invoices against a plan for a few hundred dollars once a household has a recall, and the claim is easy to leave undone; the sum depends on the repairs paid."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner with the recall, the VINs, the invoices and the plan claims the four covered lines and none of the eight others, inside an hour."
+  },
+  "caveat": "Tamsin Okafor, her husband Dele, Torvane Motors, its Kestrel and recall R-2614 with its VIN range, Garrowby Service, Boltbarn Parts, Pinegate Insurance, every VIN, invoice, receipt, amount and date, and Recallmoor, Torvane Owners and Postwren are invented; no real carmaker, dealer, repair shop, insurer or recall is named. The public rule applied is 49 CFR 573.13 (the manufacturer's plan to reimburse the cost of a remedy paid before the owner letter: its period from one year before the manufacturer's notification to NHTSA to at least 10 days after the last owner letter, the only conditions a plan may set, and the amount) with 49 U.S.C. 30120(d), as in the eCFR current to 7 October 2026 and the Legal Information Institute's copy of the Code, with NHTSA's owner guide. The plan, the recall and the population in the world are invented, as are the dates the manufacturer reported and mailed; a real plan is filed with NHTSA and is the manufacturer's own, within the rule. 573.13 sets no claim deadline, and the world's plan sets none. What decides a real claim is the manufacturer's plan and its decision within 60 days; NHTSA does not decide disputes over eligibility or amount (573.13(j)). This applies stated rules to stated facts; it is not legal or financial advice."
+}

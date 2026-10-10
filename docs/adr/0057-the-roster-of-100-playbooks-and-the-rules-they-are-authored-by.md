@@ -250,6 +250,11 @@ names; each playbook carries the new one.
   real apps, among them a screenshot shelf and a retail shelf-imaging product; "Courtfile" became "Gavelmoor claims",
   because CourtFiling.net is a real court e-filing service whose name it nearly repeats; and "Mailnest" became
   "Postwren", because mailnest.io is a real email service. Row 66 uses Lenswick for Snapshelf.
+- Row 65, `vehicle-recall-reimbursement`: "Recallcheck" became "Recallmoor", because Recall Check is the name
+  of several real vehicle recall lookup services; "Autopoint Service" became "Garrowby Service", because AutoPoint is a
+  real dealership software company; "Motorvia Owners" became "Torvane Owners", because Motorvia is a real vehicle
+  transport and storage company; and "Mailnest" became "Postwren", because mailnest.io is a real email service. Row 66
+  uses Torvane for Motorvia.
 
 ### B8: Work, pay and benefits
 
