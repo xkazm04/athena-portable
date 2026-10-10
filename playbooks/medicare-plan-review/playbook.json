@@ -1,0 +1,120 @@
+{
+  "id": "medicare-plan-review",
+  "title": "Two parents' drug plans tested in open enrollment on what they really take at the pharmacy they really use, and each moved to the plan that costs them least for the year, not the lowest premium",
+  "domain": "Family care",
+  "audience": "home",
+  "promise": "Each parent's real medication list in the doctor's portal and their real pharmacy at the drugstore that delivers to them are read against their current plan's changes for next year and four plans' premiums, deductibles, formularies, prior authorization rules and networks. Each parent is enrolled in the plan that costs them least for the year, premium and drugs together, where that is not the plan they have. The lowest-premium plan whose network leaves out their pharmacy, the plan finder's estimate on a stale drug list, a plan that suits one parent but drops the other's inhaler, a dearer plan chosen only to avoid a prior authorization the doctor will send, cancelling the old plan early and moving their prescriptions are left alone.",
+  "persona": "An adult daughter who handles both parents' Medicare drug plans as their authorized representative during open enrollment",
+  "chore": "Read each parent's current medications and the doctor's notes, their prescriptions and delivery at the pharmacy, the current plan's annual notice of change, and four 2027 plans' terms, formularies and networks with the plan finder's estimates. Then, inside the annual election period of 42 CFR 423.38(b), enroll each parent in the plan whose premium and drug costs at their real pharmacy are lowest for 2027, knowing each plan's formulary, tiers, prior authorization and step rules, network, preferred pharmacies, premium and deductible are its own, and that enrolling in a new plan ends the old one when it starts. None of the four systems shares data with another.",
+  "command": "It's open enrollment. Go through Dr. Osei's portal, Corner Pharmacy, Rxmeadow and PlanCompass, and put Mom and Dad each in the 2027 drug plan that really costs them least for the year on what they actually take, at the pharmacy they actually use. Don't go by the premium or the plan finder's guess, don't cancel anything that will leave them without coverage, and don't move their prescriptions.",
+  "apps": [
+    {
+      "name": "Carenook",
+      "role": "the doctor's portal: each parent's current and stopped medications, and her notes",
+      "api": "Patient portal, proxy access",
+      "url": ""
+    },
+    {
+      "name": "Corner Pharmacy",
+      "role": "each parent's active prescriptions, fills and home delivery",
+      "api": "Pharmacy patient profile",
+      "url": ""
+    },
+    {
+      "name": "Rxmeadow",
+      "role": "their current drug plan: the 2027 annual notice of change and the members",
+      "api": "Plan member portal, no API",
+      "url": ""
+    },
+    {
+      "name": "PlanCompass",
+      "role": "the 2027 plans' terms, formularies, networks and estimates, the enrollment quotes and the enrollment itself",
+      "api": "Plan finder and enrollment, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads each parent's real medications and the doctor's notes in Carenook.",
+    "Reads their prescriptions and delivery at Corner Pharmacy.",
+    "Reads Rxmeadow's changes for 2027.",
+    "Prices each 2027 plan on their real drugs at Corner Pharmacy in PlanCompass, and enrolls each parent in the cheapest for the year."
+  ],
+  "gates": [
+    {
+      "action": "enroll",
+      "label": "Enroll a parent in a 2027 drug plan",
+      "why": "It binds the parent to a plan for the whole of 2027: the wrong one costs them all year."
+    },
+    {
+      "action": "disenroll",
+      "label": "Disenroll a parent from their current plan",
+      "why": "It ends their drug coverage at the end of the month."
+    },
+    {
+      "action": "transfer_prescriptions",
+      "label": "Move a parent's prescriptions to another pharmacy",
+      "why": "It reaches the pharmacy and changes how their medicines reach them."
+    },
+    {
+      "action": "message_doctor",
+      "label": "Message the doctor",
+      "why": "It reaches the doctor's office."
+    }
+  ],
+  "traps": [
+    "The plan with the lowest premium, whose network leaves out the pharmacy that delivers to them.",
+    "The plan finder's estimate on a drug list nine months out of date.",
+    "The plan that suits one parent and leaves the other's inhaler off its formulary.",
+    "A dearer plan chosen only to avoid a prior authorization the doctor will send.",
+    "Cancelling the current plan early, leaving December without coverage.",
+    "Moving their prescriptions away from the pharmacy that delivers."
+  ],
+  "memory": [
+    "Each parent's real drugs, the drug stopped and the one just started, and the doctor's word on prior authorization, carried from Carenook.",
+    "That the only pharmacy they use is Corner Pharmacy, by home delivery, carried from the pharmacy.",
+    "What changes in their current plan for 2027, carried from Rxmeadow."
+  ],
+  "economics": {
+    "value_usd": 1200,
+    "per": "year",
+    "basis": "An estimate. Most people with Medicare stay in their drug plan each year without testing it against their real drugs and pharmacy, and those who look tend to choose by premium or by a plan finder's estimate on an old drug list. For two parents on several drugs, the roster's $1,200 a year is the premium and drug costs saved by the right plan, an estimate. Times a year: one, since the annual election period comes once a year. The bench world holds $1,516 for 2027: $1,188 for the mother in Northstar against staying, and $328 for the father in Keystone. Each plan's formulary, tiers, rules, network, premium and deductible are an invented world document. The rules applied, as they stand on Monday 2 November 2026, inside the period: 42 CFR 423.38(b) (the annual election period, 15 October to 7 December) and 423.40 (a plan chosen in it starts on 1 January), 423.32(e) (enrolling in a new plan ends the old), 423.120(b)(3) (a transition supply in a new plan's first 90 days) and 423.124 (out-of-network fills only in limited cases); for 2027, a deductible of at most $700 and an out-of-pocket threshold of $2,400 (CMS's CY 2027 Rate Announcement, 6 April 2026). No parent's covered costs reach the threshold.",
+    "manual_minutes": 180,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share from the family: State Health Insurance Assistance Program counselors are free, and brokers are paid by the plans.",
+    "sources": [
+      {
+        "label": "42 CFR 423.38: enrollment periods, including the annual coordinated election period of 15 October to 7 December",
+        "url": "https://www.law.cornell.edu/cfr/text/42/423.38"
+      },
+      {
+        "label": "42 CFR 423.40: effective dates (a change in the annual period starts on 1 January)",
+        "url": "https://www.law.cornell.edu/cfr/text/42/423.40"
+      },
+      {
+        "label": "42 CFR 423.32: enrollment, and how a PDP enrollment ends when another begins",
+        "url": "https://www.law.cornell.edu/cfr/text/42/423.32"
+      },
+      {
+        "label": "42 CFR 423.120: access to covered drugs (formularies, utilization management, the transition process)",
+        "url": "https://www.law.cornell.edu/cfr/text/42/423.120"
+      },
+      {
+        "label": "CMS: Announcement of CY 2027 Medicare Advantage capitation rates and Part C and Part D payment policies (the $700 deductible and $2,400 out-of-pocket threshold)",
+        "url": "https://www.cms.gov/files/document/2027-announcement.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "The drugs that matter are in the doctor's chart, not the plan finder's saved list; the pharmacy that matters is the one that delivers, which one plan leaves out; four plans price seven drugs differently, one with a prior authorization the doctor's note settles; and the right plan differs for each parent.",
+    "usefulness_why": "Saves two retirees about fifteen hundred dollars in a year with two enrollments, and keeps the cheapest-looking plan from costing one of them thousands."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful daughter with the plans in hand gets both right; the bar is each parent in the plan that costs least for the year, no plan chosen on the premium or a stale estimate, nothing cancelled or moved, inside an hour."
+  },
+  "caveat": "Rosa, Henrik and Maya Lindqvist, Dr. Amara Osei, Birchway Family Medicine, Corner Pharmacy, ValueMart, Harbor Drug, Rxmeadow, Brightpath, Northstar, Keystone, PlanCompass, Carenook and every drug named are invented; no record is any real patient's. Each plan's formulary, tiers, prior authorization and step rules, network, preferred pharmacies, premium and deductible are the invented plan's own. The public rules applied are 42 CFR 423.38(b), 423.40, 423.32(e), 423.120 and 423.124, with CMS's 2027 deductible limit of $700 and out-of-pocket threshold of $2,400, fixed in the bench world as of Monday 2 November 2026, inside the annual election period. The plans' own 2027 documents, Medicare's Plan Finder and the prescriber decide real cases. This applies stated rules to stated facts; it is not insurance, medical or legal advice, and no plan here is a recommendation."
+}

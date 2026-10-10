@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The forty-three playbooks (latest runs, Claude Sonnet)
+## The forty-four playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -86,9 +86,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A mother's direct cremation priced at three funeral homes, every item the Funeral Rule says a home cannot require declined, and the home that is cheapest all in booked | home | 5 | exceeds: 4 of 4, $2,115 of $2,115, 10 of 10 traps, 0 false |
 | A veteran father's burial allowance claimed two days before its two years run out, with the plot allowance and the government marker his cemetery allows | home | 4 | exceeds: 3 of 3, $3,196 of $3,196, 11 of 11 traps, 0 false |
 | A mother's Social Security kept the way a representative payee must, and the year's report filed to the dollar | home | 4 | exceeds: 6 of 6, $315 of $315 (mostly minutes), 9 of 9 traps, 0 false |
+| Two parents' drug plans tested in open enrollment on what they really take at the pharmacy they really use, and each moved to the plan that costs them least for the year | home | 4 | exceeds: 2 of 2, $1,516 of $1,516, 8 of 8 traps, 0 false |
 
-Across the latest runs: $946,517 of $955,944 found, 450 of 450 traps walked past, no false claim,
-133 minutes of her time against about 214 hours by hand, $84.74 of model time. 80 runs are recorded
+Across the latest runs: $948,033 of $957,460 found, 458 of 458 traps walked past, no false claim,
+136 minutes of her time against about 217 hours by hand, $85.82 of model time. 81 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

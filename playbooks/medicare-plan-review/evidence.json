@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "medicare-plan-review",
+  "captured_at": "2026-10-10T05:12:01Z",
+  "bench_run_at": "2026-10-10T05:08:16Z",
+  "narration": {
+    "text": "Two parents' drug plans tested in open enrollment on what they really take at the pharmacy they really use, and each moved to the plan that costs them least for the year, not the lowest premium. This is a chore for an adult daughter who handles both parents' Medicare drug plans as their authorized representative during open enrollment. Athena works it across 4 portals: Carenook, Corner Pharmacy, Rxmeadow and PlanCompass. On the bench, she found 2 of 2 eligible items, worth 1,516 dollars of the 1,516 dollars there was to find. All 2 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 3 hours, so she was about 78 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Rosa, Henrik and Maya Lindqvist, Dr. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 61.703,
+    "sha256": "a1c95e63bc0a40b67c25d6283b77504766eef5feedc1ca19e9aa3e6ecc06cfb3"
+  },
+  "video": {
+    "path": "evidence/medicare-plan-review/evidence.mp4",
+    "duration_s": 61.72,
+    "bytes": 2770852,
+    "sha256": "3563cd66fa6afddaa2fab612b5b7c8488a436b8920ca80436452efa06698ad63"
+  },
+  "thumbnail": {
+    "path": "playbooks/medicare-plan-review/thumb.jpg",
+    "bytes": 84789,
+    "sha256": "a5a1cba2c6f986359e386f8b7484c3aee85c3b69f5383034d35fc5bf5f7bdc81"
+  }
+}
