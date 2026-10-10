@@ -47,6 +47,7 @@ from athena.harness.tokenfactory import (
     TokenFactoryModel,
     urllib_post,
 )
+from athena.harness.transports import child_env
 from athena.proving.budget import CLAUDE, NEMOTRON, Budget, BudgetExhausted
 from athena.proving.runlog import RunLog
 
@@ -230,9 +231,10 @@ def claude_env(environ: Mapping[str, str]) -> dict[str, str]:
 
     The operator's rule: model runs go only through the ``claude`` CLI on the subscription, never
     a paid API. With the key in its environment the CLI bills the key instead of the subscription,
-    so a control role never inherits it. Everything else (``PATH`` included) is kept.
+    so a control role never inherits it. Everything else (``PATH`` included) is kept. The rule
+    lives in :func:`~athena.harness.transports.child_env`.
     """
-    return {k: v for k, v in environ.items() if k != "ANTHROPIC_API_KEY"}
+    return child_env(environ)
 
 
 def subprocess_runner(

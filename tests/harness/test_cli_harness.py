@@ -33,7 +33,12 @@ from athena.contracts.harness import Harness, PromptBlock, TurnResult
 from athena.contracts.registry import ExecResult, Lane, ToolClass, TurnContext
 from athena.harness.cli_harness import CLAUDE, CLAUDE_EXTRA_ARGS, CODEX, CliHarness
 from athena.harness.hooks import GateHook, LedgerHook, TruncationHook
-from athena.harness.transports import ScriptedTransport, TransportError, rounds_from_transcript
+from athena.harness.transports import (
+    ScriptedTransport,
+    TransportError,
+    child_env,
+    rounds_from_transcript,
+)
 
 from .conftest import CONVERSATION, FakeApprovals, FakeCatalog, FakeLedger, make_ctx, make_entry
 
@@ -471,3 +476,14 @@ def test_the_first_event_of_a_turn_is_what_the_user_reads(
     events = _drain(harness, [])
     assert isinstance(events[0], TextDelta)
     assert events[0].text == "Here is what I found."
+
+
+def test_a_spawned_cli_never_inherits_the_api_key() -> None:
+    base = {"PATH": "/bin", "ANTHROPIC_API_KEY": "sk-base"}
+    extra = {"ANTHROPIC_API_KEY": "sk-request", "MINE": "1"}
+    env = child_env(base, extra)
+    assert "ANTHROPIC_API_KEY" not in env
+    assert env == {"PATH": "/bin", "MINE": "1"}
+    assert "ANTHROPIC_API_KEY" not in child_env(base)
+    assert base == {"PATH": "/bin", "ANTHROPIC_API_KEY": "sk-base"}  # inputs not mutated
+    assert extra == {"ANTHROPIC_API_KEY": "sk-request", "MINE": "1"}

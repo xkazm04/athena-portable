@@ -15,7 +15,7 @@ from __future__ import annotations
 import asyncio
 import os
 import shutil
-from collections.abc import AsyncIterator, Iterable, Sequence
+from collections.abc import AsyncIterator, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, runtime_checkable
@@ -26,6 +26,7 @@ __all__ = [
     "SubprocessTransport",
     "Transport",
     "TransportError",
+    "child_env",
     "rounds_from_transcript",
 ]
 
@@ -33,6 +34,23 @@ __all__ = [
 #: character is ``#`` is a note to the reader. Both are stripped before the harness sees anything,
 #: so a fixture can say where it came from without becoming an event.
 COMMENT = "#"
+
+
+#: Set, the ``claude`` CLI bills this key instead of the subscription (ADR 0007).
+API_KEY_ENV = "ANTHROPIC_API_KEY"
+
+
+def child_env(base: Mapping[str, str], extra: Mapping[str, str] | None = None) -> dict[str, str]:
+    """The environment for a spawned engine CLI: ``base`` then ``extra``, without the API key.
+
+    The operator's rule (README §3.1, ADR 0007): model runs go only through the engine CLI on the
+    subscription, never a paid API. A key in either mapping would move billing off the
+    subscription and contradict what the engine probe reported, so neither is allowed through.
+    Everything else (``PATH`` included) is kept. Pure: neither input is mutated.
+    """
+    merged = {**base, **(extra or {})}
+    merged.pop(API_KEY_ENV, None)
+    return merged
 
 
 class TransportError(OSError):
@@ -90,7 +108,7 @@ class SubprocessTransport:
                 self.resolve(),
                 *request.argv,
                 cwd=request.cwd,
-                env={**os.environ, **request.env},
+                env=child_env(os.environ, request.env),
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,

@@ -87,3 +87,8 @@ survivable rather than broken.
 
 Extended by [0031](0031-a-token-factory-modelfn-is-a-third-engine-behind-the-same-gate.md): an engine
 may be a `ModelFn` as well as a dialect, and the round loop is `RoundHarness`, which both share.
+
+Note, 2026-10-10: a spawned engine CLI never inherits `ANTHROPIC_API_KEY`. `child_env` in
+`harness/transports.py` drops it from both the inherited environment and the request's own, so a key
+in the environment cannot silently move billing off the subscription (robustness-4: f653d1c closed
+the proving role runner, and the commit that added `child_env` closed the product transport).
