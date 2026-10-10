@@ -25,6 +25,13 @@ the browser, reached through one vault (ADR 0021).
   never taken for "nothing connected" and never lost: its bytes are copied aside as
   `connections.json.unreadable-<UTC stamp>`, and `GET /connectors` and `Vault.views()` carry a
   `records_notice` in plain words until the person looks.
+- **The switches belong to the account they were set under.** A disconnect keeps the writes
+  switch and the allow-list (ADR 0021), and the record keeps the identity they were set under. A
+  connect as another account, or one whose probe names none, turns writes off and empties the list
+  before the record goes live, and its health detail says so; the same account keeps them. A record
+  from before this, live at load, adopts its identity; any other switch with no identity is reset on
+  the next connect. Notion's identity is the integration's name, which cannot tell two workspaces
+  with a same-named integration apart (ADR 0062).
 - **A provider's refusal never ends the turn.** A mail subject with a line break is refused as
   `validator_failed` before any request, and a `ValueError` a provider raises comes back as a
   failure from `Service.call`.

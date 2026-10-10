@@ -358,3 +358,111 @@ def test_a_crash_during_the_write_leaves_the_previous_file(
         notion.set_writes("notion", True)
     assert path.read_bytes() == before
     assert list(path.parent.glob("*.tmp")) == [], "no temp file is left behind"
+
+
+# -- the switches belong to the account (ADR 0062) ------------------------------------------------
+
+
+def _accounts(tmp_path: Path, specs: dict[str, ConnectorSpec], names: list[str]) -> Vault:
+    """A vault whose probe answers with the next name in ``names`` each time it is asked."""
+    asked = {"n": 0}
+
+    def script(
+        method: str, url: str, headers: Mapping[str, str], body: bytes | None
+    ) -> tuple[int, Any]:
+        who = names[min(asked["n"], len(names) - 1)]
+        asked["n"] += 1
+        return 200, {"name": who}
+
+    return Vault(
+        tmp_path / "connectors",
+        specs=specs,
+        transport=FakeProvider(script=script),
+        seal=FileSeal(tmp_path / "connectors" / "sealed"),
+    )
+
+
+def test_a_connect_as_a_different_account_turns_writes_off_and_empties_the_list(
+    tmp_path: Path, specs: dict[str, ConnectorSpec]
+) -> None:
+    vault = _accounts(tmp_path, specs, ["A", "B"])
+    vault.connect_token("notion", TOKEN)
+    vault.set_writes("notion", True)
+    vault.set_allowlist("notion", ["page1"])
+    vault.disconnect("notion")
+    assert vault.record("notion").writes_enabled, "ADR 0021: the disconnect keeps them"
+    record = vault.connect_token("notion", TOKEN)
+    assert record.identity == "B"
+    assert record.writes_enabled is False and record.allowlist == []
+    assert "Connected as B" in record.health_detail and "set under A" in record.health_detail
+    assert "writes are off" in record.health_detail and "emptied" in record.health_detail
+
+
+def test_a_reconnect_as_the_same_account_keeps_the_switches(
+    tmp_path: Path, specs: dict[str, ConnectorSpec]
+) -> None:
+    vault = _accounts(tmp_path, specs, ["A"])
+    vault.connect_token("notion", TOKEN)
+    vault.set_writes("notion", True)
+    vault.set_allowlist("notion", ["page1"])
+    vault.disconnect("notion")
+    record = vault.connect_token("notion", TOKEN)
+    assert record.writes_enabled is True and record.allowlist == ["page1"]
+    assert record.health_detail == ""
+
+
+def test_the_identity_is_kept_across_a_restart_and_a_disconnect(
+    tmp_path: Path, specs: dict[str, ConnectorSpec]
+) -> None:
+    vault = _accounts(tmp_path, specs, ["A", "B"])
+    vault.connect_token("notion", TOKEN)
+    vault.set_allowlist("notion", ["page1"])
+    vault.disconnect("notion")
+    again = _accounts(tmp_path, specs, ["B"])
+    assert again.record("notion").switches_identity == "A"
+    assert again.connect_token("notion", TOKEN).allowlist == []
+
+
+def test_switches_set_before_any_connect_have_no_identity_and_are_reset(
+    tmp_path: Path, specs: dict[str, ConnectorSpec]
+) -> None:
+    vault = _accounts(tmp_path, specs, ["A"])
+    vault.set_writes("notion", True)
+    vault.set_allowlist("notion", ["page1"])
+    record = vault.connect_token("notion", TOKEN)
+    assert record.writes_enabled is False and record.allowlist == []
+    assert "without a known account" in record.health_detail
+
+
+def test_a_legacy_record_is_reset_on_connect_but_adopted_when_loaded_live(
+    tmp_path: Path, specs: dict[str, ConnectorSpec]
+) -> None:
+    root = tmp_path / "connectors"
+    root.mkdir()
+    legacy = {
+        "status": "connected",
+        "identity": "A",
+        "writes_enabled": True,
+        "allowlist": ["page1"],
+    }
+    gone = {**legacy, "status": "disconnected", "identity": ""}
+    (root / "connections.json").write_text(json.dumps({"notion": legacy}), encoding="utf-8")
+    live = _accounts(tmp_path, specs, ["A"])
+    assert live.record("notion").switches_identity == "A"
+    assert live.record("notion").writes_enabled is True
+    assert live.connect_token("notion", TOKEN).allowlist == ["page1"], "the same account"
+    (root / "connections.json").write_text(json.dumps({"notion": gone}), encoding="utf-8")
+    off = _accounts(tmp_path, specs, ["A"])
+    assert off.record("notion").switches_identity == ""
+    assert off.connect_token("notion", TOKEN).writes_enabled is False
+
+
+def test_a_probe_that_names_no_account_never_matches(
+    tmp_path: Path, specs: dict[str, ConnectorSpec]
+) -> None:
+    vault = _accounts(tmp_path, specs, ["A", ""])
+    vault.connect_token("notion", TOKEN)
+    vault.set_writes("notion", True)
+    vault.disconnect("notion")
+    record = vault.connect_token("notion", TOKEN)
+    assert record.writes_enabled is False and "did not name" in record.health_detail

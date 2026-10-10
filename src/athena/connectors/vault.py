@@ -145,6 +145,8 @@ class ConnectionRecord:
     seal: str = ""
     expires_at: str = ""
     last_used_at: str = ""
+    #: The identity the writes switch and the allow-list were set under (ADR 0062).
+    switches_identity: str = ""
 
     def view(self) -> dict[str, Any]:
         return asdict(self)
@@ -220,6 +222,9 @@ class Vault:
                 rec = ConnectionRecord(
                     **{k: v for k, v in item.items() if k in names and k != "id"}, id=cid
                 )
+                if rec.status == "connected" and rec.identity and not rec.switches_identity:
+                    # A record from before the identity was kept, live at load: adopt it (ADR 0062).
+                    rec.switches_identity = rec.identity
                 self._records[cid] = rec
         self._note_earlier_copies()
 
@@ -462,14 +467,34 @@ class Vault:
             if refresh:
                 self._put(spec.id, "refresh", refresh)
             rec = self.record(spec.id)
+            reset = self._reset_foreign_switches(rec, identity)
             rec.status = "connected"
             rec.identity = identity
             rec.connected_at = _iso(_now())
-            rec.health, rec.health_at, rec.health_detail = "healthy", rec.connected_at, ""
+            rec.health, rec.health_at, rec.health_detail = "healthy", rec.connected_at, reset
             rec.seal = self._seal.kind if self._seal is not None else ""
             rec.expires_at = _iso(_now() + timedelta(seconds=expires_in)) if expires_in else ""
             self._changed(spec.id)
         return identity
+
+    @staticmethod
+    def _reset_foreign_switches(rec: ConnectionRecord, identity: str) -> str:
+        """The switches belong to the account they were set under (ADR 0062). Turn writes off and
+        empty the allow-list unless this connect is that very account; say so in plain words."""
+        if not (rec.writes_enabled or rec.allowlist):
+            return ""
+        before = rec.switches_identity
+        if identity and before == identity:
+            return ""
+        rec.writes_enabled = False
+        rec.allowlist = []
+        rec.switches_identity = identity
+        who = identity or "an account the provider did not name"
+        why = f"were set under {before}" if before else "were set without a known account"
+        return (
+            f"Connected as {who}. The writes switch and the recipient list {why}, "
+            "so writes are off and the list was emptied."
+        )
 
     def connect_token(self, connector_id: str, token: str) -> ConnectionRecord:
         spec = self.spec(connector_id)
@@ -591,6 +616,13 @@ class Vault:
             self._changed(connector_id)
         return rec
 
+    @staticmethod
+    def _remember_identity(rec: ConnectionRecord) -> None:
+        """A switch set while a grant exists is set under that grant's identity. One set with no
+        connection leaves the stored identity as it was, so the next connect compares against it."""
+        if rec.status in ("connected", "needs_reauth"):
+            rec.switches_identity = rec.identity
+
     def set_writes(self, connector_id: str, enabled: bool) -> ConnectionRecord:
         spec = self.spec(connector_id)
         if spec.egress == "none":
@@ -598,6 +630,7 @@ class Vault:
         with self._lock:
             rec = self.record(connector_id)
             rec.writes_enabled = enabled
+            self._remember_identity(rec)
             self._changed(connector_id)
         return rec
 
@@ -609,6 +642,7 @@ class Vault:
         with self._lock:
             rec = self.record(connector_id)
             rec.allowlist = cleaned
+            self._remember_identity(rec)
             self._changed(connector_id)
         return rec
 
