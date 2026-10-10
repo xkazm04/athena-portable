@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The thirty-eight playbooks (latest runs, Claude Sonnet)
+## The thirty-nine playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -81,9 +81,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | Every Medicare denial billed to the patient only where a valid ABN was signed, and refunded where it was not | work | 4 | exceeds: 7 of 7, $539 of $539, 11 of 11 traps, 0 false |
 | A nonprofit hospital's charity care applied for on every account that qualifies, with the household's income as its own policy counts it | home | 4 | exceeds: 4 of 4, $7,560 of $7,560, 9 of 9 traps, 0 false |
 | A parent's drug plan asked for every formulary and tier exception his history supports, with the prescriber's statement, and none it does not | home | 3 | exceeds: 3 of 3, $799 of $799, 15 of 15 traps, 0 false |
+| Every record a second opinion needs requested from five providers, at the fee the rule allows, and the late one chased | home | 5 | exceeds: 7 of 7 (a $40 weight an act, mostly minutes), 8 of 8 traps, 0 false |
 
-Across the latest runs: $935,628 of $949,055 found, 398 of 398 traps walked past, no false claim,
-118 minutes of her time against about 187 hours by hand, $77.20 of model time. 74 runs are recorded
+Across the latest runs: $935,970 of $949,397 found, 406 of 406 traps walked past, no false claim,
+121 minutes of her time against about 195 hours by hand, $78.17 of model time. 75 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module
