@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "section8-landlord",
+  "captured_at": "2026-10-10T00:22:18Z",
+  "bench_run_at": "2026-10-10T00:19:13Z",
+  "narration": {
+    "text": "Voucher payments kept coming: inspections cured, tenant damage reported, rent increases asked for on time. This is a chore for the managing member of a small LLC that owns five apartments on two lots, four of them leased to families with Housing Choice Vouchers. Athena works it across 4 portals: Landlord Link, Rentroll, Repairly and Ledgerline. On the bench, she found 9 of 9 eligible items, worth 4,970 dollars of the 4,970 dollars there was to find. She made no false claim. The world held 13 traps, and she walked past 13. Among them: Work orders for a fan and a range already replaced, and for a unit that passed. Certifying a GFCI, a latch or a smoke alarm that is not fixed yet. She took 3 minutes. By hand, the same chore takes 2 hours, so she was about 35 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.653,
+    "sha256": "634cdb8c7225ba2be71ad514609ef9a3ceb53ff3e991ad33419952d2fde174dc"
+  },
+  "video": {
+    "path": "evidence/section8-landlord/evidence.mp4",
+    "duration_s": 62.653,
+    "bytes": 3438852,
+    "sha256": "f2fc768d16bb9467e5de4148fac237bf6eec73e842d85c5cf3837add9dc4e4e4"
+  },
+  "thumbnail": {
+    "path": "playbooks/section8-landlord/thumb.jpg",
+    "bytes": 77594,
+    "sha256": "bc155f9588bd85c5471053b2c9a7591e0334ce0e4369359dc9a02a96f8f1b54d"
+  }
+}

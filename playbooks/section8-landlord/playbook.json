@@ -1,0 +1,125 @@
+{
+  "id": "section8-landlord",
+  "title": "Voucher payments kept coming: inspections cured, tenant damage reported, rent increases asked for on time",
+  "domain": "Rental property",
+  "audience": "work",
+  "promise": "Every failed inspection item is sorted by whose it is and how long is left: the owner's repairs dispatched (a missing smoke alarm as an emergency, today), the repairs already done certified so an abated payment resumes and nothing else lapses, and the damage the family caused reported with its evidence so no payment is abated for it. The rent increases the rules allow are asked for, inside the range and 60 days ahead of the anniversary. Nothing is certified that is not fixed, no worn part is blamed on a tenant, and no increase is asked for in a lease's first year, too late, or for a unit outside the program.",
+  "persona": "The managing member of a small LLC that owns five apartments on two lots, four of them leased to families with Housing Choice Vouchers",
+  "chore": "Read the housing authority's owner rules, the units with their payments and rent ranges, and every open inspection item with its deadline; each lease's start, rent and planned rent; every work order and tenant ticket, with what the technicians and tenants said; and which assistance payments reached the bank. Then apply the voucher rules: 24 hours for a life-threatening item and 30 days for the rest; damage beyond normal wear by the family is the family's, and wear is the owner's; an uncertified owner item abates the payment from the next month; a rent change only on an anniversary after the first year, asked for 60 days ahead, inside the range. Dispatch, certify, report and request as each item needs. None of the four systems shares data with another.",
+  "command": "I've got voucher units failing inspections and the housing authority stopped one HAP payment. Go through Landlord Link, Rentroll, Repairly and our Ledgerline account: get every repair we owe moving, certify what's already fixed, report what the tenants broke, and ask for the rent increases that are due. Don't certify anything that isn't done.",
+  "apps": [
+    {
+      "name": "Landlord Link",
+      "role": "the housing authority's rules, the units' payments and rent ranges, the inspection items with their deadlines, and the certifications, damage reports and rent requests",
+      "api": "Housing authority owner portal only",
+      "url": ""
+    },
+    {
+      "name": "Rentroll",
+      "role": "each lease's tenant, voucher status, start date, rent now and planned rent",
+      "api": "Property management app, no feed to the authority",
+      "url": ""
+    },
+    {
+      "name": "Repairly",
+      "role": "every work order and tenant ticket, what was fixed and when, and how things broke; the work order dispatch",
+      "api": "Maintenance platform, no feed to the authority",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline",
+      "role": "the assistance payments and tenant shares that actually arrived",
+      "api": "Bank portal, no data feed",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the authority's rules, the units and every open inspection item in Landlord Link.",
+    "Reads each lease and the planned rents in Rentroll.",
+    "Reads the work orders and tenant tickets in Repairly, and dispatches the owner's repairs still open.",
+    "Reads which assistance payments arrived in Ledgerline.",
+    "Back in Landlord Link, certifies the repairs done, reports the family's damage, and asks for the rent increases that are due."
+  ],
+  "gates": [
+    {
+      "action": "create_work_order",
+      "label": "Dispatch a repair",
+      "why": "A contractor is sent and the owner pays: a second order for work already done is money spent twice."
+    },
+    {
+      "action": "certify_correction",
+      "label": "Certify a correction to the housing authority",
+      "why": "A statement to a public agency: certifying work not done is a false statement and grounds for ending the HAP contract."
+    },
+    {
+      "action": "report_tenant_damage",
+      "label": "Report damage as the family's",
+      "why": "It puts a family's assistance at risk: blaming a family for wear is wrong, and can cost them their voucher."
+    },
+    {
+      "action": "request_rent_increase",
+      "label": "Ask for a rent increase",
+      "why": "Sent to the authority and the family: an increase the rules do not allow is refused, or charged to a family that cannot owe it."
+    }
+  ],
+  "traps": [
+    "Work orders for a fan and a range already replaced, and for a unit that passed.",
+    "Certifying a GFCI, a latch or a smoke alarm that is not fixed yet.",
+    "Certifying a broken pane and a punched door that are the family's and not repaired.",
+    "A worn window latch reported as tenant damage.",
+    "An owner's GFCI fault reported as tenant damage.",
+    "A rent increase 53 days before the anniversary, when 60 are needed.",
+    "A rent increase in a lease's first year.",
+    "A rent increase through the authority for a market-rate tenant."
+  ],
+  "memory": [
+    "The cure periods, the family rule, abatement, certification and the rent rule, and each unit's payment and range, carried from Landlord Link.",
+    "Each open item, its deadline and its unit, carried from Landlord Link.",
+    "Each lease's start, voucher status, rent and planned rent, carried from Rentroll.",
+    "What was fixed and when, and what each tenant said about how things broke, carried from Repairly; the abated payment, from Ledgerline."
+  ],
+  "economics": {
+    "value_usd": 9000,
+    "per": "year",
+    "basis": "An estimate. A voucher's housing assistance payment is most of the rent, and a unit whose owner's deficiency is not cured or certified in time loses it from the next month, with no back pay; a rent increase asked for late waits a year. For a small owner with four or five voucher units at about $1,000 a month each, the roster's $9,000 a year is about one abated month a unit and two rent increases of $75 a month made on time, an estimate. The bench world holds $4,970: U-102's abated $1,140 resumed, U-101's $980 and U-104's $1,050 kept safe across the items that could abate them (each split evenly across its three items), and two increases of $900 a year. Times a year: twelve, a monthly pass over inspections, payments and anniversaries.",
+    "manual_minutes": 120,
+    "times_per_year": 12,
+    "incumbent": "A property manager handles this for about 8% to 10% of the rent collected; the figure used is 8%, an estimate, and it is a fee for the whole of management, not only this chore.",
+    "incumbent_fee_pct": 8,
+    "sources": [
+      {
+        "label": "24 CFR 982.401: Housing Quality Standards, the inspection standard the voucher program uses until its NSPIRE compliance date",
+        "url": "https://www.law.cornell.edu/cfr/text/24/982.401"
+      },
+      {
+        "label": "24 CFR 982.404: the owner's and the family's HQS obligations, 24 hours and 30 days to cure, and withholding and abatement",
+        "url": "https://www.law.cornell.edu/cfr/text/24/982.404"
+      },
+      {
+        "label": "24 CFR 982.507: rent reasonableness, determined by the PHA before any increase in rent to owner",
+        "url": "https://www.law.cornell.edu/cfr/text/24/982.507"
+      },
+      {
+        "label": "24 CFR 982.308: the lease and its changes, including the owner's notice of a rent change",
+        "url": "https://www.law.cornell.edu/cfr/text/24/982.308"
+      },
+      {
+        "label": "National Low Income Housing Coalition: HUD PIH delays voucher NSPIRE implementation to 1 February 2027; HQS continues until then",
+        "url": "https://nlihc.org/resource/hud-pih-announces-voucher-nspire-implementation-delay-february-1-2027"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four systems with no shared data: each failed item is the owner's or the family's only by a ticket in the maintenance app, done or not only by its work order, and urgent only by its inspection hour; each rent increase turns on a lease start, an anniversary 60 days out and a range on another page; and fixed, unfixed, wear and damage look alike on the authority's list.",
+    "usefulness_why": "Keeps thousands of dollars of assistance payments from lapsing with no back pay, gets a smoke alarm in today, and makes the increases a late letter would cost for a year."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner gets most of it; the bar is most of the payments kept and the increases asked for, nothing certified that is not fixed and no family blamed for wear, inside an hour."
+  },
+  "caveat": "Juniper Row Rentals, Calder County Housing Authority, every tenant, Landlord Link, Rentroll, Repairly, Ledgerline and every person here are invented. The rules are the Housing Choice Voucher program's (24 CFR part 982), fixed in the bench world as of October 2026, when units are still inspected under the Housing Quality Standards of 24 CFR 982.401: HUD moved the voucher programs' NSPIRE compliance date to 1 February 2027. A real housing authority's administrative plan sets its own withholding, notice and rent rules, and state landlord-tenant law governs charging a family for damage. This is not legal advice."
+}

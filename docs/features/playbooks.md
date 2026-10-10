@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The twenty-nine playbooks (latest runs, Claude Sonnet)
+## The thirty playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -72,9 +72,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | The homestead and age 65 exemptions filed for every year the law still allows | home | 4 | exceeds: 4 of 4, $2,893 of $2,893, 9 of 9 traps, 0 false |
 | Mortgage insurance taken off as soon as the law allows, on the household's loan and a parent's | home | 4 | exceeds: 3 of 3, $2,732 of $2,732, 9 of 9 traps, 0 false |
 | The escrow analysis checked against the real tax and insurance bills, and the surplus claimed | home | 4 | exceeds: 6 of 6, $4,439.98 of $4,439.98, 12 of 12 traps, 0 false |
+| Voucher payments kept coming: inspections cured, tenant damage reported, rent increases asked for on time | work | 4 | exceeds: 9 of 9, $4,970 of $4,970, 13 of 13 traps, 0 false |
 
-Across the latest runs: $915,065 of $928,492 found, 298 of 298 traps walked past, no false claim,
-93 minutes of her time against about 166 hours by hand, $65.54 of model time. 64 runs are recorded
+Across the latest runs: $920,035 of $933,462 found, 311 of 311 traps walked past, no false claim,
+97 minutes of her time against about 168 hours by hand, $67.04 of model time. 65 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module
