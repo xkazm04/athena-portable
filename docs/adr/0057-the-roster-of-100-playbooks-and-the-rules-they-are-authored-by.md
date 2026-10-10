@@ -133,6 +133,12 @@ authored against their rules as they stand on that date.
 | 50 | `lease-operator-escrow` | Trucking | work | Get an owner-operator's escrow back, with interest, after the lease ends | Haulledger settlements, Ledgerline bank, Docshelf (the lease), Mailnest | Truth-in-Leasing, 49 CFR 376.12(k) (escrow accounting and interest; returned within 45 days) | $2,500 / episode | X J: which deductions the lease allows |
 | 51 | `oversize-permits` | Trucking | work | Route an oversize load and buy its permit in each jurisdiction on the way | Oversize Online, Wideload Desk, Statepermit, Routeplan, dispatch inbox | Each jurisdiction's oversize and overweight permit rules within 23 CFR Part 658 | $1,500 / year, mostly minutes | P J: each portal's own form; bridge and curfew restrictions |
 
+*Note, 2026-10-10:* these portal names were changed before a first bench, because the roster's name
+belongs to a real business (rule 4: every portal is invented). The rows above keep the roster's
+names; each playbook carries the new one.
+- Row 46, `denied-party-screening`: "Orderloft storefront" became "Orderwick storefront", because
+  orderloft.com is a real ordering site (a6abe56).
+
 ### B6: Small-business money, food, and selling online
 
 | # | id | Domain | Aud. | Chore | Portals | Rests on | Value / per | Why only Athena |
