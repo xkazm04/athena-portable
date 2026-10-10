@@ -19,6 +19,9 @@ the browser, reached through one vault (ADR 0021).
   credential never rides to a host the pin did not name. A token or OAuth grant is
   probed before it is sealed (keyring, DPAPI or an owner-only file, `seal.py`), under
   `ATHENA_HOME/connectors/`, never inside a brain.
+- **A provider's refusal never ends the turn.** A mail subject with a line break is refused as
+  `validator_failed` before any request, and a `ValueError` a provider raises comes back as a
+  failure from `Service.call`.
 - **OAuth** with PKCE over a one-shot loopback listener (`oauth.py`).
 - **Health is three-valued** (healthy, broken, unknown), shown with its age, probed on events and
   never on render. Structural policy checks liveness on every call.

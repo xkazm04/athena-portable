@@ -98,6 +98,10 @@ def render_results(rows: Sequence[Mapping[str, str]]) -> str:
     )
 
 
+class SubjectRefused(ValueError):
+    """A subject the message cannot carry. Raised before any request is made."""
+
+
 def _checked(value: str) -> str:
     """The bare address the egress gate allowed; a value that is not one address is a bug."""
     address = one_address(value)
@@ -149,9 +153,12 @@ def execute(request: Request, tool: str, params: Mapping[str, Any]) -> tuple[boo
             f"subject: {meta.get('subject', '')}\n\n{extract_text(body)}"
         )
     if tool == "send_mail":
+        subject = str(params["subject"])
+        if "\r" in subject or "\n" in subject:
+            raise SubjectRefused("a subject is one line; remove the line breaks from it")
         payload = build_send_body(
             to=[str(a) for a in params["to"]],
-            subject=str(params["subject"]),
+            subject=subject,
             body=str(params["body"]),
             cc=[str(a) for a in params.get("cc", [])],
         )

@@ -198,3 +198,31 @@ def test_the_headers_hold_exactly_the_addresses_that_were_allowed() -> None:
     assert [a for _, a in getaddresses([message["Cc"]])] == ["bo@x.com"]
     with pytest.raises(ValueError, match="exactly one address"):
         gmail.build_send_body(to=["evil@x.com, <ok@me.com>"], subject="s", body="b")
+
+
+def _gmail_ready(vault: Vault) -> Service:
+    vault._admit(vault.specs["gmail"], "ya29.access", refresh="", expires_in=3600)
+    vault.set_writes("gmail", True)
+    vault.set_allowlist("gmail", ["ok@me.com"])
+    return Service(vault.specs["gmail"], vault)
+
+
+def test_a_subject_with_a_line_break_is_refused_before_any_request(
+    vault: Vault, provider: FakeProvider
+) -> None:
+    service = _gmail_ready(vault)
+    before = len(provider.seen)
+    for subject in ("hi\nBcc: evil@x.com", "hi\r\nthere"):
+        result = service.call("send_mail", {"to": ["ok@me.com"], "subject": subject, "body": "b"})
+        assert not result.ok and result.error == "validator_failed"
+        assert "one line" in result.output
+    assert len(provider.seen) == before, "nothing left"
+
+
+def test_a_valueerror_from_a_provider_is_a_failure_not_an_escape(vault: Vault) -> None:
+    def boom(request: Any, tool: str, params: Mapping[str, Any]) -> tuple[bool, str]:
+        raise ValueError("bad header")
+
+    vault._admit(vault.specs["gmail"], "ya29.access", refresh="", expires_in=3600)
+    result = Service(vault.specs["gmail"], vault, provider=boom).call("search_mail", {"query": "x"})
+    assert not result.ok and result.error == "engine_error" and "bad header" in result.output

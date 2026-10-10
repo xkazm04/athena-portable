@@ -137,6 +137,14 @@ class Service:
             return ExecResult.failure("validator_failed", str(exc), tier=CONNECTOR_TIER)
         except VaultError as exc:
             return ExecResult.failure("engine_error", str(exc), tier=CONNECTOR_TIER)
+        except gmail.SubjectRefused as exc:
+            return ExecResult.failure("validator_failed", str(exc), tier=CONNECTOR_TIER)
+        except ValueError as exc:  # a provider's own refusal never ends the turn
+            return ExecResult.failure(
+                "engine_error",
+                f"{self.spec.label} could not build the request: {exc}",
+                tier=CONNECTOR_TIER,
+            )
         if not ok:
             return ExecResult.failure("engine_error", text, tier=CONNECTOR_TIER)
         if is_write(tool.tool):
