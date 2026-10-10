@@ -1,0 +1,121 @@
+{
+  "id": "hospital-financial-assistance",
+  "title": "A nonprofit hospital's charity care applied for on every account that qualifies, with the household's income as its own policy counts it",
+  "domain": "Patient health",
+  "audience": "home",
+  "promise": "The hospital's published financial assistance policy is read for who is in the household, what counts as income, its income table and its windows. Three months of pay stubs and bank deposits are added up the policy's way: gross wages, unemployment and child support in; a tax refund, a gift, a transfer from savings, an expense reimbursement, a teenager's wages and a live-in grandmother's Social Security out. Every account still inside its 240 days is applied for with the household size and income that put the family under the free-care line, and the collection agency is told before it reports the stay to the credit bureaus. A decided account, a cosmetic surgery, an independent physicians' group, a closed account, a 30% advocate and a look-alike payment demand are left alone, and nothing is paid while the applications are pending.",
+  "persona": "A working parent in a household of four, with a live-in mother who files her own taxes, facing a year of bills from the local nonprofit hospital after an appendectomy, a child's emergency visit and a spouse's MRI",
+  "chore": "Read the hospital's financial assistance policy and every account under the guarantor in its billing portal; the hospital's letter, the tax preparer's summary of last year's return and the collection agency's notice in the inbox; three months of everyone's pay stubs in payroll; and the non-payroll deposits into joint checking. Then apply IRC section 501(r) and 26 CFR 1.501(r)-1 to -6 as the hospital's policy carries them out: a household and an income as the policy defines them, an application on each covered account inside the 240 days after its first post-discharge statement, and extraordinary collection actions suspended once a complete application is in. None of the four systems shares data with another.",
+  "command": "Apply for Saint Ardent's financial assistance on every account that qualifies. Go through their billing portal, my inbox, everyone's pay stubs in Payroll Harbor and our joint checking in Ledgerline, and work out our household income the way their policy counts it. Don't pay anything while we're applying, and deal with the collector.",
+  "apps": [
+    {
+      "name": "Saint Ardent billing",
+      "role": "the financial assistance policy, every guarantor account with its first statement date and status, and the application",
+      "api": "Hospital patient billing portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the hospital's letter, the tax preparer's summary of the dependents on last year's return, the collection agency's notice, an advocate's offer and a look-alike demand",
+      "api": "Email",
+      "url": ""
+    },
+    {
+      "name": "Payroll Harbor",
+      "role": "every household member's pay stubs: gross, net and notes",
+      "api": "Employee self-service, no export the hospital reads",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline bank",
+      "role": "the joint account's deposits other than payroll: benefits, child support, a refund, a gift, a transfer and a relative's Social Security",
+      "api": "Online banking, statements as PDF",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads every topic of the financial assistance policy and every account in Saint Ardent billing.",
+    "Reads the hospital's letter, the tax preparer's summary and the collector's notice in Mailnest.",
+    "Adds up the gross pay that counts from Payroll Harbor, three full months.",
+    "Sorts the non-payroll deposits in Ledgerline into what the policy counts and what it does not.",
+    "Back in Saint Ardent billing, applies on every covered account inside its window, with the household size and income.",
+    "Back in Mailnest, tells the collection agency that an application is pending."
+  ],
+  "gates": [
+    {
+      "action": "submit_fap_application",
+      "label": "Apply for financial assistance on an account",
+      "why": "Signed as true in the household's name: a wrong income or household size is a false statement, and the decision rests on it."
+    },
+    {
+      "action": "pay_balance",
+      "label": "Pay toward a hospital balance",
+      "why": "Money leaves the household's card: paying a bill that free care would write off is money the family needed."
+    },
+    {
+      "action": "reply",
+      "label": "Reply to a message",
+      "why": "Sent from the guarantor's address: a reply can hand a card number to a scammer or sign up for a 30% fee."
+    }
+  ],
+  "traps": [
+    "An account whose assistance was already approved.",
+    "An elective cosmetic surgery the policy does not cover.",
+    "An independent emergency physicians' group billed through the same portal.",
+    "An account paid in full last year.",
+    "Paying any of the three eligible balances while the applications are pending.",
+    "An advocate taking 30% of the savings.",
+    "A look-alike final notice asking for a card number.",
+    "A tax refund, a gift, a transfer from savings, a mileage reimbursement, a teenager's wages and a grandmother's Social Security, none of which the policy counts."
+  ],
+  "memory": [
+    "The household and income definitions, the income table, the 240 days and the collections rule, and each account's first statement date and status, carried from Saint Ardent billing.",
+    "The dependents on the 2025 return, and the collector's 23 October date, carried from Mailnest.",
+    "Each member's gross pay for July to September, carried from Payroll Harbor.",
+    "Which deposits count and which do not, carried from Ledgerline bank."
+  ],
+  "economics": {
+    "value_usd": 6000,
+    "per": "episode",
+    "basis": "An estimate. A nonprofit hospital must publish a financial assistance policy and take applications for 240 days after the first post-discharge statement, but most patients who qualify never apply, because the policy, the bills, the pay stubs and the bank statements sit in four places and the income has to be counted the policy's way. For a household with a hospital stay and two smaller visits in a year, the roster's $6,000 an episode is the balances free or discounted care writes off, an estimate. The episode is one bad health year with hospital bills; times a year: one, since a household applies once on the accounts open in their windows. The bench world holds $7,560 across three accounts written off as free care: $4,820, $1,260 and $1,480, and the collector told before it reports the stay to the credit bureaus, counted as an item at $0. The policy (its household and income definitions and its 2026 income table) is an invented world document; the public rules applied, as they stand on Friday 9 October 2026, are IRC section 501(r) and 26 CFR 1.501(r)-1 (the application period ends no earlier than 240 days after the first post-discharge billing statement), 1.501(r)-4 (a widely publicized written policy) and 1.501(r)-6 (no extraordinary collection action before 120 days, 30 days' written notice, and actions suspended once an application is submitted in the application period).",
+    "manual_minutes": 240,
+    "times_per_year": 1,
+    "incumbent": "Patient advocates and bill negotiators take a share of what they save; the world's own offer is 30%, and the figure used is 30%, an estimate.",
+    "incumbent_fee_pct": 30,
+    "sources": [
+      {
+        "label": "26 U.S.C. 501(r): additional requirements for charitable hospital organizations (financial assistance policy, limitation on charges, billing and collection)",
+        "url": "https://www.law.cornell.edu/uscode/text/26/501"
+      },
+      {
+        "label": "26 CFR 1.501(r)-1: definitions, including the application period (240 days after the first post-discharge billing statement) and extraordinary collection actions",
+        "url": "https://www.law.cornell.edu/cfr/text/26/1.501(r)-1"
+      },
+      {
+        "label": "26 CFR 1.501(r)-4: the financial assistance policy, its eligibility criteria and the providers it covers",
+        "url": "https://www.law.cornell.edu/cfr/text/26/1.501(r)-4"
+      },
+      {
+        "label": "26 CFR 1.501(r)-6: billing and collection, the 120-day and 30-day notice periods, and suspending extraordinary collection actions once an application is submitted",
+        "url": "https://www.law.cornell.edu/cfr/text/26/1.501(r)-6"
+      },
+      {
+        "label": "IRS: Billing and collections, section 501(r)(6)",
+        "url": "https://www.irs.gov/charities-non-profits/billing-and-collections-section-501r6"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 5,
+    "difficulty_why": "Four systems with no shared data: the income is the policy's own definition, so the gross pay comes from stubs rather than deposits, a teenager's wages and a grandmother's Social Security sit in the same household and the same account yet do not count, and a refund, a gift and a transfer look like income; the household size comes from a tax return described in an email; and each account's window runs from its own first statement, beside accounts that look open and are not covered.",
+    "usefulness_why": "Writes off thousands of dollars of hospital debt a family qualifies for and rarely claims, keeps a stay off the credit report, and does it without paying an advocate 30% of the result."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful guarantor gets most of it; the bar is most covered accounts applied for with the household and income the policy defines, no application on an account that is not open, nothing paid while pending, inside an hour."
+  },
+  "caveat": "Saint Ardent Medical Center, Ardent Physician Partners, Brightwell Recovery, BillBack Advocates, Hollins Tax Service, Tidewell Foods, Corran Logistics, Halvard Freight, Pinecone Cinema, Payroll Harbor, Ledgerline, Mailnest and the Pell household are invented; no account is any real patient's. The hospital's financial assistance policy, with its definitions of household and household income and its 2026 income table, is an invented world document. The public rules applied are IRC section 501(r) and 26 CFR 1.501(r)-1 to -6, fixed in the bench world as of 9 October 2026. A real hospital's own published policy, its financial counselors and state charity-care law decide real cases. This applies a stated policy to stated facts; it is not legal, tax or financial advice."
+}
