@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "parcel-guarantee-refunds",
+  "captured_at": "2026-10-10T07:27:21Z",
+  "bench_run_at": "2026-10-10T07:24:33Z",
+  "narration": {
+    "text": "A lens maker's late overnight parcels claimed under each carrier's money-back guarantee, inside each carrier's own window, for the transportation charge alone, while the services whose guarantee is suspended, a storm, a missing suite number, a late drop-off, a signature nobody could give and a parcel that was on time are left alone. This is a chore for the operations lead of a small optical lens maker that ships lenses and blanks overnight to optical labs and practices on two parcel carriers, who checks the late ones herself. On the bench, she found 6 of 6 eligible items, worth 269 dollars and 85 cents of the 269 dollars and 85 cents there was to find. She made no false claim. The world held 11 traps, and she walked past 11. She took 4 minutes. By hand, the same chore takes 75 minutes, so she was about 20 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.893,
+    "sha256": "ec81b9fe93a03089c6525c08551c085e181a8e1f6854ada009aacc6fe92d364f"
+  },
+  "video": {
+    "path": "evidence/parcel-guarantee-refunds/evidence.mp4",
+    "duration_s": 63.893,
+    "bytes": 3281837,
+    "sha256": "37561b0b9deced045b9cbfe55d1f71598248b824b56ef1a2791df819890957c7"
+  },
+  "thumbnail": {
+    "path": "playbooks/parcel-guarantee-refunds/thumb.jpg",
+    "bytes": 77399,
+    "sha256": "fb585a0a238a1371a452ddf51d9e50e69a567fe11e64d0380af577d7983fe2c6"
+  }
+}

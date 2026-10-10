@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The fifty-two playbooks (latest runs, Claude Sonnet)
+## The fifty-three playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -95,9 +95,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A married name carried through Social Security, the licence, the passport, the bank and payroll in the order each office needs, on the free passport form | home | 5 | exceeds: 6 of 6 (a $6.66 weight an act, mostly minutes), 9 of 9 traps, 0 false |
 | A lighting maker's freight claims filed with the carriers that moved the goods, inside nine months, with concealed damage proved and a released value claimed at its limit | work | 5 | exceeds: 5 of 5, $6,920 of $6,920, 17 of 17 traps, 0 false |
 | An importer's ocean demurrage and detention invoices held to the federal billing rule, with late and incomplete invoices, closed and refused days and the contract's free time disputed | work | 5 | exceeds: 6 of 6, $5,475 of $5,475, 10 of 10 traps, 0 false |
+| A lens maker's late overnight parcels claimed under each carrier's money-back guarantee, inside each carrier's own window, with suspended services and excepted delays left alone | work | 4 | exceeds: 6 of 6, $269.85 of $269.85, 11 of 11 traps, 0 false |
 
-Across the latest runs: $978,670 of $988,098 found, 549 of 549 traps walked past, no false claim,
-158 minutes of her time against about 250 hours by hand, $95.99 of model time. 89 runs are recorded
+Across the latest runs: $978,940 of $988,367 found, 560 of 560 traps walked past, no false claim,
+162 minutes of her time against about 251 hours by hand, $99.39 of model time. 90 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

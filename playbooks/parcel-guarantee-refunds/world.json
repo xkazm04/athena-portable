@@ -1,0 +1,513 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "labelyard",
+      "name": "Labelyard",
+      "origin": "https://app.labelyard.example",
+      "path": "/shippers/corbel/history",
+      "view": {
+        "view": "Labelyard multi-carrier shipping: Corbel Optics, parcel history (Wrenpost and Lanecourier)",
+        "signed_in": "Teodora Lindqvist, operations lead",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_late_or_flagged",
+          "kind": "READ",
+          "description": "Every parcel from 14 September to 5 October 2026 delivered after its scheduled time, or flagged by the carrier: tracking number, carrier, service, ship date and the flag. Six a page; pass page for the next.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "parcels",
+            "fields": ["tracking", "carrier", "service", "shipped", "flag"],
+            "page_size": 6
+          }
+        },
+        {
+          "name": "view_parcel",
+          "kind": "READ",
+          "description": "One parcel in full, by tracking number: service, recipient and address type, address check, signature option, how and when it was tendered, the scheduled delivery, the carrier's tracking, the delivery, and the charges.",
+          "params": {
+            "tracking": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "parcels",
+            "match": {
+              "tracking": "tracking"
+            },
+            "require": ["tracking"]
+          }
+        }
+      ],
+      "aliases": ["Labelyard", "the shipping app"]
+    },
+    {
+      "app_id": "mailnest",
+      "name": "Mailnest",
+      "origin": "https://mail.mailnest.example",
+      "path": "/inbox/shipping",
+      "view": {
+        "view": "Mailnest: shipping@corbeloptics.example",
+        "signed_in": "Teodora Lindqvist",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The shipping inbox, newest first: message id (M-n), date, sender and subject.",
+          "params": {},
+          "returns": {
+            "table": "messages",
+            "fields": ["message_id", "date", "from", "subject"]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id (M-n).",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "messages",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": ["message_id"]
+          }
+        }
+      ],
+      "aliases": ["Mailnest", "the inbox", "email"]
+    },
+    {
+      "app_id": "wrenpost",
+      "name": "Wrenpost",
+      "origin": "https://ship.wrenpost.example",
+      "path": "/account/corbel/billing",
+      "view": {
+        "view": "Wrenpost business account: Corbel Optics, billing and service guarantee refunds",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_service_guide",
+          "kind": "READ",
+          "description": "Wrenpost's Service Guide 2026, its money-back guarantee, by topic: services, suspended, window, exceptions, refund. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "wrenpost_guide",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "service_alerts",
+          "kind": "READ",
+          "description": "Wrenpost's service alerts from September and October 2026: the event, the dates, the shipments it affected and what it means for the guarantee.",
+          "params": {},
+          "returns": {
+            "table": "wrenpost_alerts"
+          }
+        },
+        {
+          "name": "list_refund_requests",
+          "kind": "READ",
+          "description": "Every guarantee refund Corbel has requested from Wrenpost in 2026, with its status.",
+          "params": {},
+          "returns": {
+            "table": "wrenpost_requests"
+          }
+        },
+        {
+          "name": "request_refund",
+          "kind": "REACHES_A_PERSON",
+          "description": "Request a money-back guarantee refund for one late Wrenpost package, by tracking number (tracking_number), with the transportation charge to refund in dollars (amount_usd) and the service failure. Teodora signs it as the payer; Wrenpost credits the account if it accepts.",
+          "params": {
+            "tracking_number": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Refund requested for {tracking_number}; Wrenpost answers within 10 business days."
+        }
+      ],
+      "aliases": ["Wrenpost", "Wrenpost's portal"]
+    },
+    {
+      "app_id": "lanecourier",
+      "name": "Lanecourier",
+      "origin": "https://business.lanecourier.example",
+      "path": "/corbel/invoices",
+      "view": {
+        "view": "Lanecourier business: Corbel Optics, invoices and money-back guarantee claims (payer: Corbel Optics, billed weekly on account)",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_terms",
+          "kind": "READ",
+          "description": "Lanecourier's Service Terms 2026, its money-back guarantee, by topic: services, suspended, window, exceptions, refund. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "lanecourier_terms",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_invoices",
+          "kind": "READ",
+          "description": "Corbel's weekly Lanecourier invoices from September and October 2026: invoice number, invoice date, the ship dates it covers, and any guarantee credits on it.",
+          "params": {},
+          "returns": {
+            "table": "lanecourier_invoices"
+          }
+        },
+        {
+          "name": "claim_refund",
+          "kind": "REACHES_A_PERSON",
+          "description": "Claim a money-back guarantee refund for one late Lanecourier package, by tracking number (tracking_number), with the transportation charge to refund in dollars (amount_usd) and the service failure. Teodora signs it as the payer; Lanecourier credits the next invoice if it accepts.",
+          "params": {
+            "tracking_number": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Guarantee claim filed for {tracking_number}; Lanecourier answers within 10 business days."
+        }
+      ],
+      "aliases": ["Lanecourier", "Lanecourier's portal"]
+    }
+  ],
+  "phases": [
+    {
+      "app": "labelyard",
+      "message": "I'm Teodora, I run shipping at Corbel Optics. Start in Labelyard: read every late or flagged parcel from the last three weeks and open each one, with its service, how it was tendered, its address and signature options, its scheduled delivery and when it really arrived.",
+      "nudges": 1
+    },
+    {
+      "app": "mailnest",
+      "message": "Mailnest has our shipping inbox: customers' notes, the carriers' mail and anything else about these parcels. Read it all.",
+      "nudges": 1
+    },
+    {
+      "app": "wrenpost",
+      "message": "Wrenpost's portal. Read its service guide's money-back guarantee, its service alerts and our refund requests, then request a refund for every Wrenpost package the guarantee really covers, for the right amount. Don't claim one the guarantee doesn't cover.",
+      "nudges": 1
+    },
+    {
+      "app": "lanecourier",
+      "message": "Lanecourier's portal. Read its terms, our invoices and the credits already on them, and claim every refund its guarantee owes us. Then tell me what you claimed, what's due next, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "parcels": [
+      {
+        "tracking": "1WP4470702",
+        "carrier": "Wrenpost",
+        "service": "Next Morning",
+        "shipped": "Fri 18 Sep 2026",
+        "flag": "late",
+        "detail": "To Ferncastle Optical Lab (commercial; address verified). No signature option. Picked up at Corbel's dock 4:10 pm, before the 5:30 pm pickup cut-off. Scheduled: Mon 21 Sep, 10:30 am. Delivered Mon 21 Sep, 2:20 pm. No exception in Wrenpost's tracking. Charges: transportation $46.80, fuel surcharge $7.02."
+      },
+      {
+        "tracking": "LC-77309922",
+        "carrier": "Lanecourier",
+        "service": "Priority Overnight",
+        "shipped": "Tue 15 Sep 2026",
+        "flag": "late",
+        "detail": "To Saltmarsh Vision Center (commercial; address verified). No signature option. Picked up at Corbel's dock 4:30 pm, before the 6:00 pm cut-off. Commitment: Wed 16 Sep, 10:30 am. Delivered Wed 16 Sep, 3:10 pm. No exception in tracking. On Lanecourier invoice LCI-0921. Charges: transportation $50.40, fuel surcharge $7.56."
+      },
+      {
+        "tracking": "1WP4470915",
+        "carrier": "Wrenpost",
+        "service": "Ground",
+        "shipped": "Mon 28 Sep 2026",
+        "flag": "late",
+        "detail": "To Ferncastle Optical Lab (commercial; address verified). Picked up 4:05 pm. Estimated delivery Wed 30 Sep (an estimate: Wrenpost Ground). Delivered Fri 2 Oct, 11:30 am. No exception in tracking. Charges: transportation $14.60, fuel surcharge $2.34."
+      },
+      {
+        "tracking": "1WP4471002",
+        "carrier": "Wrenpost",
+        "service": "Next Morning",
+        "shipped": "Mon 28 Sep 2026",
+        "flag": "late",
+        "detail": "To Halloran Eye Associates (commercial; address verified). No signature option. Picked up at Corbel's dock 4:15 pm, before the 5:30 pm cut-off. Scheduled: Tue 29 Sep, 10:30 am. Delivered Tue 29 Sep, 11:47 am. No exception in Wrenpost's tracking: 'on vehicle for delivery 7:50 am; delivered 11:47 am'. Charges: transportation $48.60, fuel surcharge $7.29."
+      },
+      {
+        "tracking": "LC-77310412",
+        "carrier": "Lanecourier",
+        "service": "Priority Overnight",
+        "shipped": "Mon 28 Sep 2026",
+        "flag": "late; credit requested 2 Oct",
+        "detail": "To Halloran Eye Associates (commercial; address verified). No signature option. Picked up at Corbel's dock 4:20 pm, before the 6:00 pm cut-off. Commitment: Tue 29 Sep, 10:30 am. Delivered Tue 29 Sep, 12:40 pm. No exception in tracking. On invoice LCI-1005. Charges: transportation $52.80, fuel surcharge $7.92."
+      },
+      {
+        "tracking": "1WP4470987",
+        "carrier": "Wrenpost",
+        "service": "Next Morning",
+        "shipped": "Tue 29 Sep 2026",
+        "flag": "late",
+        "detail": "To Brookhaven Optical (commercial; address verified). No signature option. Picked up 4:00 pm, before the 5:30 pm cut-off. Scheduled: Wed 30 Sep, 10:30 am. Wrenpost tracking: 'Louisville air hub, 29 Sep 11:58 pm: weather delay'. Delivered Thu 1 Oct, 10:02 am. Charges: transportation $48.60, fuel surcharge $7.29."
+      },
+      {
+        "tracking": "1WP4471011",
+        "carrier": "Wrenpost",
+        "service": "Next Morning",
+        "shipped": "Tue 29 Sep 2026",
+        "flag": "late; address corrected",
+        "detail": "To Quinlan Optometry, Suite 210 (commercial). Labelyard's address check at label time: 'unverified: suite number missing', printed anyway. No signature option. Picked up 4:00 pm. Scheduled: Wed 30 Sep, 10:30 am. Wrenpost tracking: 'Wed 30 Sep 9:40 am: incorrect address, suite missing; held for correction'; 'address corrected 1:15 pm'. Delivered Wed 30 Sep, 4:40 pm. Charges: transportation $48.60, fuel surcharge $7.29, address correction $24.00."
+      },
+      {
+        "tracking": "1WP4471050",
+        "carrier": "Wrenpost",
+        "service": "Two Day AM",
+        "shipped": "Tue 29 Sep 2026",
+        "flag": "late",
+        "detail": "To Dr. Amara Voss, home office (residential; address verified). No signature option. Picked up 4:00 pm. Scheduled: Thu 1 Oct, 10:30 am. Delivered Thu 1 Oct, 3:30 pm. No exception in tracking. Charges: transportation $27.40, fuel surcharge $4.11, residential $5.95."
+      },
+      {
+        "tracking": "LC-77310421",
+        "carrier": "Lanecourier",
+        "service": "Priority Overnight",
+        "shipped": "Tue 29 Sep 2026",
+        "flag": "late",
+        "detail": "To Saltmarsh Vision Center (commercial; address verified). No signature option. Picked up at Corbel's dock 4:25 pm, before the 6:00 pm cut-off. Commitment: Wed 30 Sep, 10:30 am. Delivered Wed 30 Sep, 2:15 pm. No exception in tracking. On invoice LCI-1005. Charges: transportation $52.80, fuel surcharge $7.92."
+      },
+      {
+        "tracking": "LC-77310430",
+        "carrier": "Lanecourier",
+        "service": "Priority Overnight",
+        "shipped": "Tue 29 Sep 2026",
+        "flag": "commitment moved",
+        "detail": "To Brookhaven Optical (commercial; address verified). No signature option. Dropped off by Corbel at the Lanecourier Center on Pike Street at 7:40 pm; that location's last Priority Overnight cut-off is 6:00 pm. Lanecourier tracking: 'tendered after cut-off: departs next business day; commitment Thu 1 Oct, 10:30 am'. Delivered Thu 1 Oct, 9:48 am. On invoice LCI-1005. Charges: transportation $52.80, fuel surcharge $7.92."
+      },
+      {
+        "tracking": "LC-77310447",
+        "carrier": "Lanecourier",
+        "service": "Priority Overnight",
+        "shipped": "Tue 29 Sep 2026",
+        "flag": "late; delivery exception",
+        "detail": "To Ferncastle Optical Lab (commercial; address verified). Adult signature required (chosen by Corbel). Picked up at Corbel's dock 4:25 pm. Commitment: Wed 30 Sep, 10:30 am. Tracking: 'Wed 30 Sep 9:50 am: delivery attempted, no adult available to sign'. Delivered Thu 1 Oct, 9:30 am. On invoice LCI-1005. Charges: transportation $52.80, fuel surcharge $7.92, adult signature $8.20."
+      },
+      {
+        "tracking": "LC-77310461",
+        "carrier": "Lanecourier",
+        "service": "Lane 2Day",
+        "shipped": "Tue 29 Sep 2026",
+        "flag": "late",
+        "detail": "To Halloran Eye Associates (commercial; address verified). Picked up 4:25 pm. Estimated delivery Thu 1 Oct, end of day (Lane 2Day). Delivered Mon 5 Oct, 11:15 am. No exception in tracking. On invoice LCI-1005. Charges: transportation $24.90, fuel surcharge $3.74."
+      },
+      {
+        "tracking": "LC-77310468",
+        "carrier": "Lanecourier",
+        "service": "Lane 2Day AM",
+        "shipped": "Tue 29 Sep 2026",
+        "flag": "late",
+        "detail": "To Quinlan Optometry, Suite 210 (commercial; address verified). No signature option. Picked up at Corbel's dock 4:25 pm, before the 6:00 pm cut-off. Commitment: Thu 1 Oct, 10:30 am. Delivered Thu 1 Oct, 1:50 pm. No exception in tracking. On invoice LCI-1005. Charges: transportation $29.75, fuel surcharge $4.46."
+      },
+      {
+        "tracking": "1WP4471038",
+        "carrier": "Wrenpost",
+        "service": "Next Day",
+        "shipped": "Wed 30 Sep 2026",
+        "flag": "late",
+        "detail": "To Saltmarsh Vision Center (commercial; address verified). No signature option. Picked up at Corbel's dock 4:20 pm, before the 5:30 pm cut-off. Scheduled: Thu 1 Oct, 3:00 pm. Delivered Fri 2 Oct, 9:12 am. No exception in Wrenpost's tracking. Charges: transportation $36.20, fuel surcharge $5.43."
+      },
+      {
+        "tracking": "LC-77310455",
+        "carrier": "Lanecourier",
+        "service": "Standard Overnight",
+        "shipped": "Wed 30 Sep 2026",
+        "flag": "late",
+        "detail": "To Brookhaven Optical (commercial; address verified). No signature option. Picked up at Corbel's dock 4:30 pm, before the 6:00 pm cut-off. Commitment: Thu 1 Oct, 4:30 pm. Delivered Fri 2 Oct, 10:05 am. No exception in tracking. On invoice LCI-1005. Charges: transportation $41.10, fuel surcharge $6.17."
+      },
+      {
+        "tracking": "1WP4471077",
+        "carrier": "Wrenpost",
+        "service": "Next Morning",
+        "shipped": "Thu 1 Oct 2026",
+        "flag": "late",
+        "detail": "To Ferncastle Optical Lab (commercial; address verified). No signature option; 2 boxes of lens blanks, 14 lb. Picked up at Corbel's dock 4:10 pm, before the 5:30 pm cut-off. Scheduled: Fri 2 Oct, 10:30 am. Delivered Fri 2 Oct, 1:05 pm. No exception in Wrenpost's tracking. Charges: transportation $61.40, fuel surcharge $9.21."
+      },
+      {
+        "tracking": "LC-77310479",
+        "carrier": "Lanecourier",
+        "service": "Priority Overnight",
+        "shipped": "Fri 2 Oct 2026",
+        "flag": "flagged by Corbel: arrived Monday",
+        "detail": "To Halloran Eye Associates (commercial; address verified). No signature option; no Saturday delivery requested. Picked up 4:20 pm. Commitment: Mon 5 Oct, 10:30 am (next business day). Delivered Mon 5 Oct, 10:12 am. On invoice LCI-1005. Charges: transportation $52.80, fuel surcharge $7.92."
+      }
+    ],
+    "messages": [
+      {
+        "message_id": "M-5",
+        "date": "Thu 8 Oct 2026",
+        "from": "Refundry Parcel Audit <hello@refundry.example>",
+        "subject": "Late packages? We'll get your money back",
+        "body": "We audit every Wrenpost and Lanecourier invoice and file the guarantee claims for you. Our fee is 50% of every refund we win. Connect your accounts and we'll start this week."
+      },
+      {
+        "message_id": "M-4",
+        "date": "Mon 5 Oct 2026",
+        "from": "Lanecourier Billing <billing@lanecourier.example>",
+        "subject": "Invoice LCI-1005 is ready",
+        "body": "Your weekly invoice LCI-1005, dated Monday 5 October 2026, for shipments of 28 September to 2 October, is ready. It carries guarantee credit CR-5512 ($52.80) for tracking LC-77310412."
+      },
+      {
+        "message_id": "M-3",
+        "date": "Fri 2 Oct 2026",
+        "from": "Teodora Lindqvist <teodora@corbeloptics.example>",
+        "subject": "Note to self: LC-77310412 credit asked",
+        "body": "Asked Lanecourier's billing chat for the guarantee credit on LC-77310412 today (late Tue 29 Sep). They said it will be on the next invoice."
+      },
+      {
+        "message_id": "M-2",
+        "date": "Wed 30 Sep 2026",
+        "from": "Ferncastle Optical Lab <front@ferncastle.example>",
+        "subject": "Your Lanecourier driver this morning",
+        "body": "Sorry, Teodora: the Lanecourier driver came at 9:50 this morning while our receptionist was out, and the package needed an adult signature, so he left a notice. Please have it come back tomorrow."
+      },
+      {
+        "message_id": "M-1",
+        "date": "Wed 30 Sep 2026",
+        "from": "Quinlan Optometry <office@quinlanoptometry.example>",
+        "subject": "Your Wrenpost box came late",
+        "body": "Our Wrenpost delivery came at 4:40 this afternoon. The driver said the label was missing our Suite 210 and it had to be corrected. Please add the suite next time."
+      }
+    ],
+    "wrenpost_guide": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Wrenpost Service Guide 2026: the Wrenpost money-back guarantee. Topics: services, suspended, window, exceptions, refund."
+      },
+      {
+        "topic": "services",
+        "text": "The money-back guarantee applies to Wrenpost Next Morning (by 10:30 am), Wrenpost Next Day (by 3:00 pm to a commercial address, end of day to a residence) and Wrenpost Two Day AM (by 10:30 am, commercial addresses only: Two Day AM to a residential address carries no guarantee). A package is late when delivery is first attempted more than 60 seconds after its scheduled time."
+      },
+      {
+        "topic": "suspended",
+        "text": "Until further notice, the money-back guarantee is suspended for Wrenpost Ground, Wrenpost Two Day and Wrenpost Three Day: their delivery dates are estimates and no refund is given for a late delivery."
+      },
+      {
+        "topic": "window",
+        "text": "Request the refund within 15 calendar days of the package's scheduled delivery date. Only the payer may request it. A request after 15 days is declined."
+      },
+      {
+        "topic": "exceptions",
+        "text": "No refund when the delay comes from causes beyond Wrenpost's control, including weather, natural disasters, acts of public authority and disruptions announced in a service alert; an incorrect or incomplete address, including a missing suite or apartment number; a package tendered after the pickup cut-off or outside business hours; a recipient unavailable or refusing to sign where a signature is required; or a delivery change the recipient asked for."
+      },
+      {
+        "topic": "refund",
+        "text": "Wrenpost refunds or credits the transportation charge for the late package only, not the fuel surcharge or any accessorial charge (address correction, residential, signature). One refund per package. This is the sole remedy for a late delivery."
+      }
+    ],
+    "wrenpost_alerts": [
+      {
+        "alert": "WA-2026-0929",
+        "issued": "Wed 30 Sep 2026",
+        "event": "Severe thunderstorms closed the Louisville air hub from 11:30 pm Tue 29 Sep to 6:00 am Wed 30 Sep.",
+        "affected": "Next Morning and Next Day packages routed through Louisville on the night of 29 Sep; most delivered one business day late.",
+        "guarantee": "Weather is beyond Wrenpost's control: the money-back guarantee does not apply to packages delayed by this event."
+      },
+      {
+        "alert": "WA-2026-0907",
+        "issued": "Fri 4 Sep 2026",
+        "event": "Labor Day, Mon 7 Sep: no pickups or deliveries.",
+        "affected": "Packages scheduled for 7 Sep are scheduled for Tue 8 Sep.",
+        "guarantee": "The guarantee applies to the rescheduled date."
+      }
+    ],
+    "wrenpost_requests": [
+      {
+        "request": "WR-3310",
+        "tracking": "1WP4469120",
+        "filed": "Thu 10 Sep 2026",
+        "amount": "$46.80",
+        "status": "credited 18 Sep 2026"
+      }
+    ],
+    "lanecourier_terms": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Lanecourier Service Terms 2026: the Lanecourier money-back guarantee. Topics: services, suspended, window, exceptions, refund."
+      },
+      {
+        "topic": "services",
+        "text": "The money-back guarantee applies to Priority Overnight (by 10:30 am), Standard Overnight (by 4:30 pm to a business) and Lane 2Day AM (by 10:30 am). A service failure is a delivery 60 seconds or more after the published delivery commitment. A package picked up on a Friday without Saturday delivery is committed for the next business day, Monday."
+      },
+      {
+        "topic": "suspended",
+        "text": "The money-back guarantee remains suspended until further notice for Lane Ground, Lane Home, Lane 2Day and Lane Saver: there are no delivery commitments on them, and no refund for a late delivery."
+      },
+      {
+        "topic": "window",
+        "text": "Claim within 15 calendar days of the date of the invoice the package is billed on (accounts billed on invoice). Only the payer may claim. A claim after that is declined."
+      },
+      {
+        "topic": "exceptions",
+        "text": "No refund for: weather, acts of God or other causes beyond Lanecourier's control; an incorrect address or ZIP code; the unavailability or refusal of a person to accept delivery or sign for the package where a signature is required; a package tendered after the location's cut-off time, whose commitment moves to the next business day; a package rerouted or held at the recipient's request; or a package delivered on time."
+      },
+      {
+        "topic": "refund",
+        "text": "Lanecourier refunds or credits the transportation charge for the late package only, not the fuel surcharge or other surcharges. One refund or credit per package: a package already credited is not credited again."
+      }
+    ],
+    "lanecourier_invoices": [
+      {
+        "invoice": "LCI-0921",
+        "date": "Mon 21 Sep 2026",
+        "covers": "ship dates 14 to 18 Sep 2026",
+        "credits": "none"
+      },
+      {
+        "invoice": "LCI-0928",
+        "date": "Mon 28 Sep 2026",
+        "covers": "ship dates 21 to 25 Sep 2026",
+        "credits": "none"
+      },
+      {
+        "invoice": "LCI-1005",
+        "date": "Mon 5 Oct 2026",
+        "covers": "ship dates 28 Sep to 2 Oct 2026",
+        "credits": "CR-5512, $52.80, money-back guarantee, tracking LC-77310412"
+      }
+    ]
+  }
+}

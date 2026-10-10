@@ -1,0 +1,371 @@
+{
+  "playbook": "parcel-guarantee-refunds",
+  "run_at": "2026-10-10T07:24:33Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 222.2,
+  "turns": 14,
+  "nudges": 0,
+  "follow_ups": 3,
+  "reads": 39,
+  "cost_usd": 3.3978,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 3.7
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 269.85,
+    "value_found_usd": 269.85,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 11,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "request_refund",
+        "key": "1WP4470915",
+        "why": "Wrenpost Ground: its guarantee is suspended until further notice and its date is only an estimate, so a late Ground delivery earns no refund",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "1WP4470987",
+        "why": "Delayed by the thunderstorms that closed Wrenpost's Louisville hub on the night of 29 September (service alert WA-2026-0929; its tracking shows the weather delay): weather is beyond the carrier's control and excepted",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "1WP4471011",
+        "why": "Late because the label left out Suite 210: Labelyard flagged the address as unverified and Corbel printed it anyway, Wrenpost held it for correction and charged for it. An incomplete address is the shipper's, and excepted",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "1WP4470702",
+        "why": "Late on Monday 21 September, but Wrenpost's window is 15 calendar days from the scheduled delivery date: it closed on 6 October",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "1WP4471050",
+        "why": "Two Day AM to a residential address: Wrenpost's guarantee on Two Day AM covers commercial addresses only",
+        "filed": false
+      },
+      {
+        "action": "claim_refund",
+        "key": "LC-77310430",
+        "why": "Dropped at the Pike Street Lanecourier Center at 7:40 pm, after its 6:00 pm cut-off: the commitment moved to Thursday 1 October at 10:30 am, and it was delivered at 9:48 am, on time",
+        "filed": false
+      },
+      {
+        "action": "claim_refund",
+        "key": "LC-77310447",
+        "why": "Corbel chose adult signature, and no adult was available to sign at Ferncastle at 9:50 am, before the commitment; the recipient's unavailability to sign is excepted",
+        "filed": false
+      },
+      {
+        "action": "claim_refund",
+        "key": "LC-77310461",
+        "why": "Lane 2Day: its guarantee is suspended, with no delivery commitment, so a late delivery earns no refund",
+        "filed": false
+      },
+      {
+        "action": "claim_refund",
+        "key": "LC-77309922",
+        "why": "Late on 16 September, but billed on invoice LCI-0921 of Monday 21 September: Lanecourier's window of 15 calendar days from the invoice date closed on 6 October",
+        "filed": false
+      },
+      {
+        "action": "claim_refund",
+        "key": "LC-77310479",
+        "why": "Picked up on a Friday with no Saturday delivery, so committed for Monday 5 October at 10:30 am, and delivered at 10:12 am: on time",
+        "filed": false
+      },
+      {
+        "action": "claim_refund",
+        "key": "LC-77310412",
+        "why": "Already credited: CR-5512, $52.80, is on invoice LCI-1005. One credit per package",
+        "filed": false
+      }
+    ],
+    "filed_usd": 269.85,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "request_refund",
+      "key": "1WP4471002",
+      "outcome": "correct",
+      "value_usd": 48.6,
+      "exact": true,
+      "why": "Next Morning, guaranteed by 10:30 am on Tuesday 29 September 2026, delivered at 11:47 am with no exception: a service failure. Within 15 days of the scheduled date (to 14 October). The transportation charge, $48.60, not the fuel surcharge"
+    },
+    {
+      "action": "request_refund",
+      "key": "1WP4471038",
+      "outcome": "correct",
+      "value_usd": 36.2,
+      "exact": true,
+      "why": "Next Day to a commercial address, guaranteed by 3:00 pm on Thursday 1 October, delivered the next morning with no exception. Within 15 days (to 16 October). $36.20"
+    },
+    {
+      "action": "request_refund",
+      "key": "1WP4471077",
+      "outcome": "correct",
+      "value_usd": 61.4,
+      "exact": true,
+      "why": "Next Morning, guaranteed by 10:30 am on Friday 2 October, delivered at 1:05 pm with no exception; it shipped on 1 October, after the storm. Within 15 days (to 17 October). $61.40"
+    },
+    {
+      "action": "claim_refund",
+      "key": "LC-77310421",
+      "outcome": "correct",
+      "value_usd": 52.8,
+      "exact": true,
+      "why": "Priority Overnight, committed for 10:30 am on Wednesday 30 September, delivered at 2:15 pm with no exception, tendered before the cut-off. Billed on invoice LCI-1005 of Monday 5 October: within 15 days of it (to 20 October). $52.80"
+    },
+    {
+      "action": "claim_refund",
+      "key": "LC-77310468",
+      "outcome": "correct",
+      "value_usd": 29.75,
+      "exact": true,
+      "why": "Lane 2Day AM, committed for 10:30 am on Thursday 1 October, delivered at 1:50 pm with no exception. Unlike Lane 2Day, 2Day AM keeps its guarantee. On LCI-1005, within 15 days. $29.75"
+    },
+    {
+      "action": "claim_refund",
+      "key": "LC-77310455",
+      "outcome": "correct",
+      "value_usd": 41.1,
+      "exact": true,
+      "why": "Standard Overnight to a business, committed for 4:30 pm on Thursday 1 October, delivered the next morning with no exception. On LCI-1005, within 15 days. $41.10"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm checking whether I already recorded the invoice dates from the Lanecourier tab.\n\nI've now settled both open items, and neither one needs a new claim. The six cards waiting on you are the complete set.\n\n- **LC-77309922 ($50.40):** I'm not claiming it. It was billed on invoice LCI-0921, dated 21 Sep, and Lanecourier's window is 15 days from the invoice date. That window closed on 6 Oct.\n- **LC-77310412 ($52.80):** There is nothing to claim. Invoice LCI-1005 already carries credit CR-5512 for exactly $52.80 on this tracking number, so you've been paid. A second claim would be a double claim.\n- **Lanecourier deadline:** The three Lanecourier cards are billed on LCI-1005, dated 5 Oct, so they have until 20 Oct. The invoice's own date confirms what I'd only inferred from the email.\n\n**Open cards**\n\n| Carrier | Parcel | Amount | Deadline |\n|---|---|---|---|\n| Wrenpost | 1WP4471002 | $48.60 ",
+  "trace": [
+    {
+      "portal": "Labelyard",
+      "user": "I'm Teodora, I run shipping at Corbel Optics. Start in Labelyard: read every late or flagged parcel from the last three weeks and open each one, with its service, how it was tendered, its address and signature options, its scheduled deliver",
+      "continued": false,
+      "said": "I'll start by listing the late or flagged parcels, page 1.",
+      "said_chars": 58,
+      "reads": [
+        "list_late_or_flagged"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Labelyard",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 has 6 of 17 parcels. I'll open all six and fetch pages 2 and 3 in the same step.",
+      "said_chars": 87,
+      "reads": [
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "list_late_or_flagged",
+        "list_late_or_flagged"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Labelyard",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 is open. I still need to open the 11 parcels on pages 2 and 3, so I'm doing that now.",
+      "said_chars": 92,
+      "reads": [
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel",
+        "view_parcel"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Labelyard",
+      "user": "",
+      "continued": true,
+      "said": "I've opened all 17 late or flagged parcels in Labelyard, and none of them has a claim filed yet. I haven't read either carrier's guarantee terms, so the notes below are what Labelyard shows, not eligibility decisions.\n\n| Tracking | Service | Due → delivered | Transportation | What stands out |\n|---|---|---|---|---|\n| 1WP4470702 | Wrenpost Next Morning (shipped 18 Sep) | Mon 21 Sep 10:30 am → 2:20 pm | $46.80 | Clean. It's the oldest, so check the window.",
+      "said_chars": 3970,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "Mailnest has our shipping inbox: customers' notes, the carriers' mail and anything else about these parcels. Read it all.",
+      "continued": false,
+      "said": "I'll list the inbox first.",
+      "said_chars": 26,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Five messages are in the inbox. I'll read all of them.",
+      "said_chars": 54,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "All five messages are read. Only M-3 and M-4 affect a claim. M-1 and M-2 match the Labelyard exceptions, and M-5 is a sales pitch.\n\n- **M-1 (Quinlan Optometry):** The Wrenpost box 1WP4471011 arrived late because the label had no Suite 210. That's Corbel's address error, so the guarantee won't cover it. I'm leaving it alone.\n- **M-2 (Ferncastle Optical Lab):** The Lanecourier driver for LC-77310447 came at 9:50 am, and no adult was there to sign. Corbel chose the adult-signature option, so I'm not claiming it.",
+      "said_chars": 1732,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Wrenpost",
+      "user": "Wrenpost's portal. Read its service guide's money-back guarantee, its service alerts and our refund requests, then request a refund for every Wrenpost package the guarantee really covers, for the right amount. Don't claim one the guarantee ",
+      "continued": false,
+      "said": "I'll read Wrenpost's guarantee terms, service alerts and our existing refund requests first.",
+      "said_chars": 92,
+      "reads": [
+        "read_service_guide",
+        "read_service_guide",
+        "read_service_guide",
+        "read_service_guide",
+        "read_service_guide",
+        "service_alerts",
+        "list_refund_requests"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Wrenpost",
+      "user": "",
+      "continued": true,
+      "said": "Before filing anything I need the exact Labelyard figures, which are cut off in what I can see, so I'm recalling them.\n\nThree Wrenpost parcels are covered, so I'm filing a refund request for each. Each is for the transportation charge only, with no fuel surcharge.\n\n\nI've filed three cards for your answer: 1WP4471002 for $48.60, 1WP4471038 for $36.20 and 1WP4471077 for $61.40. That's $146.20 in total. I read the fuel surcharges as excluded.",
+      "said_chars": 1332,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_refund",
+          "key": "1WP4471002",
+          "outcome": "correct",
+          "value_usd": 48.6
+        },
+        {
+          "action": "request_refund",
+          "key": "1WP4471038",
+          "outcome": "correct",
+          "value_usd": 36.2
+        },
+        {
+          "action": "request_refund",
+          "key": "1WP4471077",
+          "outcome": "correct",
+          "value_usd": 61.4
+        }
+      ]
+    },
+    {
+      "portal": "Lanecourier",
+      "user": "Lanecourier's portal. Read its terms, our invoices and the credits already on them, and claim every refund its guarantee owes us. Then tell me what you claimed, what's due next, and what you left alone and why.",
+      "continued": false,
+      "said": "I'll read Lanecourier's terms and invoices first. I'll also recall the Lanecourier parcels from Labelyard.\n\nI've read the Lanecourier terms and invoices, and the answers come back with my next turn. I'm not filing any claims until I have them.\n\nFrom memory, the Lanecourier parcels to check are these:\n- **LC-77309922:** due 16 Sep, so the window may have closed.\n- **LC-77310412:** CR-5512 already credits it.\n- **LC-77310421:** late on 30 Sep, $52.80.\n- **LC-77310468:** Two Day AM, $29.75.",
+      "said_chars": 785,
+      "reads": [
+        "read_terms",
+        "read_terms",
+        "read_terms",
+        "read_terms",
+        "read_terms",
+        "list_invoices"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Lanecourier",
+      "user": "",
+      "continued": true,
+      "said": "I've got the terms and invoices. Before I file anything, I'm checking the address type on the two parcels where it could matter. Standard Overnight is only guaranteed to a business, and I can't open Labelyard from this tab.\n\nI'm filing three Lanecourier claims. Each is for the transportation charge only, and all three are on LCI-1005 (5 Oct), so the window runs to 20 Oct.",
+      "said_chars": 2041,
+      "reads": [],
+      "cards": [
+        {
+          "action": "claim_refund",
+          "key": "LC-77310421",
+          "outcome": "correct",
+          "value_usd": 52.8
+        },
+        {
+          "action": "claim_refund",
+          "key": "LC-77310468",
+          "outcome": "correct",
+          "value_usd": 29.75
+        },
+        {
+          "action": "claim_refund",
+          "key": "LC-77310455",
+          "outcome": "correct",
+          "value_usd": 41.1
+        }
+      ]
+    },
+    {
+      "portal": "Labelyard",
+      "user": "I've switched to Labelyard as you asked. Go ahead.",
+      "continued": false,
+      "said": "Six refund cards are waiting for your answer. Before I say anything about the parcels without a card, I'm checking what I recorded about the carriers' windows and suspended services.\n\nThe recall confirms the suspended services: Wrenpost Ground, Two Day and Three Day, and Lanecourier Lane 2Day. It didn't return the claim windows, so I'm searching for those specifically.\n\nThe six cards waiting on you cover every claim I can support.",
+      "said_chars": 2322,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Lanecourier",
+      "user": "I've switched to Lanecourier as you asked. Go ahead.",
+      "continued": false,
+      "said": "The Lanecourier work is already done, and I'm not filing anything new. The three claims are waiting as cards for your answer.\n\n- **LC-77310421:** $52.80 (apr_a36521383d84)\n- **LC-77310468:** $29.75 (apr_ae7b5fc69c27)\n- **LC-77310455:** $41.10 (apr_3200c883553e)\n\nThat's $123.65 in transportation charge only. They run only after you answer them, and all three are on LCI-1005, so they must be filed by **Tue 20 Oct**.",
+      "said_chars": 1193,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Labelyard",
+      "user": "I've switched to Labelyard as you asked. Go ahead.",
+      "continued": false,
+      "said": "I'm checking whether I already recorded the invoice dates from the Lanecourier tab.\n\nI've now settled both open items, and neither one needs a new claim. The six cards waiting on you are the complete set.\n\n- **LC-77309922 ($50.40):** I'm not claiming it. It was billed on invoice LCI-0921, dated 21 Sep, and Lanecourier's window is 15 days from the invoice date. That window closed on 6 Oct.\n- **LC-77310412 ($52.80):** There is nothing to claim.",
+      "said_chars": 1487,
+      "reads": [],
+      "cards": []
+    }
+  ]
+}

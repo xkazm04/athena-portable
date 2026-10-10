@@ -1,0 +1,118 @@
+{
+  "id": "parcel-guarantee-refunds",
+  "title": "A lens maker's late overnight parcels claimed under each carrier's money-back guarantee, inside each carrier's own window, for the transportation charge alone, while the services whose guarantee is suspended, a storm, a missing suite number, a late drop-off, a signature nobody could give and a parcel that was on time are left alone",
+  "domain": "Logistics",
+  "audience": "work",
+  "promise": "An optical lens maker's late and flagged parcels are read across its multi-carrier shipping app, its inbox and two parcel carriers' portals, and every package whose carrier's money-back guarantee really applies is claimed in that carrier's own portal, inside that carrier's own window, for the transportation charge alone: three overnight and next-day parcels with one carrier, and an overnight, a standard overnight and a two-day morning parcel with the other. Ground and two-day parcels whose guarantee is suspended, a parcel delayed by a storm the carrier announced, one late because its label left out the suite, one dropped off after the cut-off, one that needed an adult signature nobody could give, one that came on Monday as committed, one already credited and two whose windows have closed are left alone.",
+  "persona": "The operations lead of a small optical lens maker that ships lenses and blanks overnight to optical labs and practices on two parcel carriers, who checks the late ones herself",
+  "chore": "Read each late or flagged parcel in the shipping app, with its service, address type and check, signature option, how and when it was tendered, the scheduled delivery, the carrier's tracking and the charges; the customers' notes and the carriers' mail in the inbox; and each carrier's money-back guarantee, its service alerts, its invoices and the refunds already requested or credited in its own portal. Then apply each carrier's own published guarantee, modelled on the real carriers' 2026 service guides: which services carry it and which are suspended, the 60-second tolerance, the claim window (15 days from the scheduled delivery date at one carrier, 15 days from the invoice date at the other), the exceptions (weather and other causes beyond the carrier's control, an incorrect or incomplete address, a late tender, a recipient unavailable to sign, residential deliveries on one service) and the refund of the transportation charge only. Neither carrier's portal knows what the shipping app recorded about the address, the tender or the signature.",
+  "command": "I'm Teodora, I run shipping at Corbel Optics. Go through Labelyard, our Mailnest inbox, and the Wrenpost and Lanecourier portals, and claim every late-delivery refund their money-back guarantees really owe us, each for the right amount and before its window closes. Don't claim a parcel the guarantee doesn't cover, and don't claim anything twice.",
+  "apps": [
+    {
+      "name": "Labelyard",
+      "role": "the multi-carrier shipping app: every late or flagged parcel, its service, recipient and address check, signature option, tender, scheduled delivery, tracking and charges",
+      "api": "Shipping software, no claims integration",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the shipping inbox: customers' notes about late and failed deliveries, a carrier's invoice notice, her own note of a credit asked, and an audit service's offer",
+      "api": "Email",
+      "url": ""
+    },
+    {
+      "name": "Wrenpost",
+      "role": "a parcel carrier's business portal: its service guide's money-back guarantee, its service alerts, the refunds requested, and the refund request",
+      "api": "Carrier portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Lanecourier",
+      "role": "a second parcel carrier's business portal: its service terms' money-back guarantee, the weekly invoices and the credits on them, and the guarantee claim",
+      "api": "Carrier portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads every late or flagged parcel in Labelyard, with how it was tendered, addressed and signed for.",
+    "Reads the customers' notes and the carriers' mail in Mailnest.",
+    "Reads Wrenpost's guarantee, its service alerts and the refunds already asked, and requests the three refunds it owes.",
+    "Reads Lanecourier's terms and invoices with their credits, and claims the three refunds it owes."
+  ],
+  "gates": [
+    {
+      "action": "request_refund",
+      "label": "Request a Wrenpost money-back guarantee refund",
+      "why": "Signed to the carrier as the payer's claim of a service failure."
+    },
+    {
+      "action": "claim_refund",
+      "label": "Claim a Lanecourier money-back guarantee refund",
+      "why": "Signed to the carrier as the payer's claim of a service failure."
+    }
+  ],
+  "traps": [
+    "A refund for a late Wrenpost Ground or Lane 2Day parcel, whose guarantee is suspended.",
+    "A refund for an overnight parcel delayed by the thunderstorms the carrier's service alert announced.",
+    "A refund for a parcel late because its label left out the suite number.",
+    "A refund for a parcel dropped off after the cut-off, which was on time for its moved commitment.",
+    "A refund for a parcel that needed an adult signature when nobody could sign.",
+    "A refund for a two-day morning parcel to a residence, which that guarantee does not cover.",
+    "A refund for a Friday parcel delivered on Monday morning as committed, or one already credited.",
+    "A refund whose window closed on 6 October.",
+    "An audit service keeping fifty percent of every refund."
+  ],
+  "memory": [
+    "Each late parcel's service, scheduled and actual delivery, transportation charge, and whether its address, tender or signature caused the delay, carried from Labelyard.",
+    "That a customer's suite was missing, that nobody could sign at Ferncastle, and that one Lanecourier credit was already asked and given, carried from Mailnest.",
+    "Wrenpost's window from the scheduled date and its storm alert, carried from Wrenpost into the Lanecourier tab, where the window runs from the invoice date."
+  ],
+  "economics": {
+    "value_usd": 4000,
+    "per": "year",
+    "basis": "An estimate. A small shipper sending a few dozen time-definite parcels a day sees a few late each week; each carrier's money-back guarantee refunds the transportation charge only on request, only on the services where it is not suspended, only inside its window and only where no exception applies, and most shippers never ask. The roster's $4,000 a year is refunds recovered, an estimate. The bench world holds $269.85, one week's late parcels: three Wrenpost refunds ($48.60, $36.20 and $61.40) and three Lanecourier refunds ($52.80, $41.10 and $29.75), each the transportation charge without the fuel surcharge. Times a year: fifty-two, since the late parcels are checked every week, inside the shorter window. The terms are the invented carriers' own, modelled on the real carriers' published guarantees as they stand on Friday 9 October 2026: the UPS Tariff/Terms and Conditions of Service effective 17 April 2026, section 54, and its service guarantee page (guaranteed: Next Day Air Early, Next Day Air, Next Day Air Saver to end of day, 2nd Day Air A.M. except to residences; suspended for all other services; notice within 15 calendar days of the scheduled delivery; transportation charges only, not fuel; exceptions for causes beyond its control including weather, an undeliverable or incomplete address, tender outside business hours and the refusal or unavailability of a person to accept delivery), the FedEx Service Guide effective 5 January 2026 and updated 11 September 2026 (guaranteed from 12 February 2026: First, Priority and Standard Overnight and 2Day A.M.; suspended for Ground, Home Delivery, 2Day and Express Saver; claims within 15 calendar days of the invoice date for account payers; one refund per package; delivery 60 seconds or more after the commitment; exceptions for weather, an incorrect address and the unavailability of a person to sign), and USPS's Priority Mail Express refund rule in DMM 604.9.5.",
+    "manual_minutes": 75,
+    "times_per_year": 52,
+    "incumbent": "Parcel audit services file late-delivery refunds on contingency: RefundPros publishes a 25% commission on the FedEx refunds it recovers, late deliveries included, and says most providers charge 40% to 50%. The figure used is the published 25%. The world's own offer, an invented service at 50%, is a trap, not the source.",
+    "incumbent_fee_pct": 25,
+    "sources": [
+      {
+        "label": "UPS Tariff/Terms and Conditions of Service (US), effective 17 April 2026, section 54: the UPS Service Guarantee, its services, 15-day notice, exclusions and causes beyond UPS's control",
+        "url": "https://assets.ups.com/adobe/assets/urn:aaid:aem:c6bf8a2f-018f-4aa0-838b-ffc1a75eb1d9/original/as/terms-carriage-us-en.pdf"
+      },
+      {
+        "label": "UPS Service Guarantee status: covered services, and the guarantee suspended for all others until further notice",
+        "url": "https://www.ups.com/us/en/support/shipping-support/legal-terms-conditions/ups-service-guarantee"
+      },
+      {
+        "label": "FedEx Service Guide 2026 (effective 5 January 2026, updated 11 September 2026), money-back guarantee policy: services, 15-day window from the invoice date, one refund per package, exceptions",
+        "url": "https://www.fedex.com/content/dam/fedex/us-united-states/services/Service_Guide_2026.pdf"
+      },
+      {
+        "label": "FedEx money-back guarantee status: reinstated for listed U.S. express services, suspended for all other services until further notice",
+        "url": "https://www.fedex.com/en-us/service-guide/money-back-guarantee.html"
+      },
+      {
+        "label": "USPS Domestic Mail Manual 604.9.5: Priority Mail Express postage refunds, the claim window and the cases where no refund is given",
+        "url": "https://pe.usps.com/text/dmm300/604.htm"
+      },
+      {
+        "label": "RefundPros, FedEx refund services: a 25% commission on refunds recovered, late deliveries among them (the incumbent's share)",
+        "url": "https://refundpros.com/fedex-refund-services/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Whether a late parcel is owed a refund is split between the shipping app's record of the address check, the tender time and the signature option, the customers' notes, and each carrier's own guarantee, alerts and invoices; two carriers count their windows from different dates, a two-day service keeps its guarantee only in its morning form and only to businesses, and nine late-looking parcels are each excepted for a different reason.",
+    "usefulness_why": "Recovers the shipping charges a time-definite shipper pays for overnight service it did not get, every week, without claiming what the carriers' terms exclude; small sums a parcel, a few thousand dollars a year, and the hours to check them."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful shipping lead with both carriers' guarantees in hand gets most of it; the bar is the late guaranteed parcels claimed inside each window for their transportation charge, and nothing suspended, excepted, on time, already credited or out of time claimed, inside an hour."
+  },
+  "caveat": "Teodora Lindqvist, Corbel Optics, Ferncastle Optical Lab, Halloran Eye Associates, Saltmarsh Vision Center, Brookhaven Optical, Quinlan Optometry, Dr. Amara Voss, Refundry Parcel Audit, Wrenpost, Lanecourier, Labelyard and Mailnest are invented, and so are every parcel, charge, alert and invoice; no carrier here is real. Each carrier's money-back guarantee, its guaranteed and suspended services, its claim window and exceptions and its refund of the transportation charge are the invented carriers' own terms, stated on their portals and modelled on the UPS and FedEx service guarantees and USPS's Priority Mail Express refund as published for 2026 and read on 9 October 2026, the date the bench world fixes. Real carriers suspend and reinstate their guarantees without notice, so a real shipper's carrier's current service guide and its contract, which may waive the guarantee, decide real claims. This applies stated terms to stated facts; it is not legal advice."
+}

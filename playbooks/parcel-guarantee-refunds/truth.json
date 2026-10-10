@@ -1,0 +1,76 @@
+{
+  "targets": [
+    {
+      "tool": "request_refund",
+      "key": "tracking_number",
+      "eligible": {
+        "1WP4471002": {
+          "value_usd": 48.6,
+          "why": "Next Morning, guaranteed by 10:30 am on Tuesday 29 September 2026, delivered at 11:47 am with no exception: a service failure. Within 15 days of the scheduled date (to 14 October). The transportation charge, $48.60, not the fuel surcharge",
+          "expect": {
+            "amount_usd": 48.6
+          }
+        },
+        "1WP4471038": {
+          "value_usd": 36.2,
+          "why": "Next Day to a commercial address, guaranteed by 3:00 pm on Thursday 1 October, delivered the next morning with no exception. Within 15 days (to 16 October). $36.20",
+          "expect": {
+            "amount_usd": 36.2
+          }
+        },
+        "1WP4471077": {
+          "value_usd": 61.4,
+          "why": "Next Morning, guaranteed by 10:30 am on Friday 2 October, delivered at 1:05 pm with no exception; it shipped on 1 October, after the storm. Within 15 days (to 17 October). $61.40",
+          "expect": {
+            "amount_usd": 61.4
+          }
+        }
+      },
+      "traps": {
+        "1WP4470915": "Wrenpost Ground: its guarantee is suspended until further notice and its date is only an estimate, so a late Ground delivery earns no refund",
+        "1WP4470987": "Delayed by the thunderstorms that closed Wrenpost's Louisville hub on the night of 29 September (service alert WA-2026-0929; its tracking shows the weather delay): weather is beyond the carrier's control and excepted",
+        "1WP4471011": "Late because the label left out Suite 210: Labelyard flagged the address as unverified and Corbel printed it anyway, Wrenpost held it for correction and charged for it. An incomplete address is the shipper's, and excepted",
+        "1WP4470702": "Late on Monday 21 September, but Wrenpost's window is 15 calendar days from the scheduled delivery date: it closed on 6 October",
+        "1WP4471050": "Two Day AM to a residential address: Wrenpost's guarantee on Two Day AM covers commercial addresses only"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "claim_refund",
+      "key": "tracking_number",
+      "eligible": {
+        "LC-77310421": {
+          "value_usd": 52.8,
+          "why": "Priority Overnight, committed for 10:30 am on Wednesday 30 September, delivered at 2:15 pm with no exception, tendered before the cut-off. Billed on invoice LCI-1005 of Monday 5 October: within 15 days of it (to 20 October). $52.80",
+          "expect": {
+            "amount_usd": 52.8
+          }
+        },
+        "LC-77310455": {
+          "value_usd": 41.1,
+          "why": "Standard Overnight to a business, committed for 4:30 pm on Thursday 1 October, delivered the next morning with no exception. On LCI-1005, within 15 days. $41.10",
+          "expect": {
+            "amount_usd": 41.1
+          }
+        },
+        "LC-77310468": {
+          "value_usd": 29.75,
+          "why": "Lane 2Day AM, committed for 10:30 am on Thursday 1 October, delivered at 1:50 pm with no exception. Unlike Lane 2Day, 2Day AM keeps its guarantee. On LCI-1005, within 15 days. $29.75",
+          "expect": {
+            "amount_usd": 29.75
+          }
+        }
+      },
+      "traps": {
+        "LC-77310430": "Dropped at the Pike Street Lanecourier Center at 7:40 pm, after its 6:00 pm cut-off: the commitment moved to Thursday 1 October at 10:30 am, and it was delivered at 9:48 am, on time",
+        "LC-77310447": "Corbel chose adult signature, and no adult was available to sign at Ferncastle at 9:50 am, before the commitment; the recipient's unavailability to sign is excepted",
+        "LC-77310461": "Lane 2Day: its guarantee is suspended, with no delivery commitment, so a late delivery earns no refund",
+        "LC-77309922": "Late on 16 September, but billed on invoice LCI-0921 of Monday 21 September: Lanecourier's window of 15 calendar days from the invoice date closed on 6 October",
+        "LC-77310479": "Picked up on a Friday with no Saturday delivery, so committed for Monday 5 October at 10:30 am, and delivered at 10:12 am: on time",
+        "LC-77310412": "Already credited: CR-5512, $52.80, is on invoice LCI-1005. One credit per package"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}
