@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "tenant-deposit-return",
+  "captured_at": "2026-10-10T19:41:06Z",
+  "bench_run_at": "2026-10-10T19:38:29Z",
+  "narration": {
+    "text": "A teacher's deposit statement is checked against her lease and photos: six deductions contested for wear, a condition there at move-in, a rekey, a clean oven and a wall hole billed twice, while rent and water she owes, real damage, cleaning back to move-in level and an open estimate are left alone, across four portals. This is a chore for a teacher in Oakland, California, whose landlord's manager has sent an itemised deposit statement that she thinks takes too much. On the bench, she found 6 of 6 eligible items, worth 1,445 dollars of the 1,445 dollars there was to find. All 6 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 55 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.184,
+    "sha256": "af64485eec205dfa6b7e263e951a23d937a1542164700c8f3801250426bea391"
+  },
+  "video": {
+    "path": "evidence/tenant-deposit-return/evidence.mp4",
+    "duration_s": 62.2,
+    "bytes": 2972005,
+    "sha256": "3c510d0802af07d7a9496302a2834ef08b863527a9c2a7f39da3573f38415c80"
+  },
+  "thumbnail": {
+    "path": "playbooks/tenant-deposit-return/thumb.jpg",
+    "bytes": 88474,
+    "sha256": "b30fc12d337a6a7aa4b2ada3cbe6bc274be58d2536bffaf39bf1be3127464da1"
+  }
+}

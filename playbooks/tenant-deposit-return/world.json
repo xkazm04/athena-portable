@@ -1,0 +1,627 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "postwren",
+      "message": "I'm Noor Haddad. This is my mail from Corbel Property Management, my landlord's manager. Read every message. Don't do anything yet: I'll send you to my tenant portal, my photos and the small claims site, and then back to the portal.",
+      "nudges": 1
+    },
+    {
+      "app": "latchwick",
+      "message": "This is my tenant portal, Latchwick. Read my lease, my payments, the summary of my deposit statement and every line of it. Don't contest anything yet: I'll show you my photos next.",
+      "nudges": 2
+    },
+    {
+      "app": "lenswick",
+      "message": "These are my photos and the landlord's, at Lenswick. Read every page: the move-in photos, the move-out photos and the ones after the repairs.",
+      "nudges": 2
+    },
+    {
+      "app": "gavelmoor",
+      "message": "This is the small claims site, Gavelmoor. Read what it says about a deposit, the limit and what to do first. Then go back to Latchwick.",
+      "nudges": 1
+    },
+    {
+      "app": "latchwick",
+      "message": "Back in Latchwick. Contest each deduction that the law does not allow, with my proof from my mail, my lease and the photos, and say why. Leave alone what is accurate and allowed, and the estimate that is still open. Then tell me what you contested and what you left alone, and what I should get back.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/noor/inbox",
+      "view": {
+        "view": "Postwren: Noor Haddad's inbox (invented)",
+        "signed_in": "Noor Haddad",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The messages in the inbox: id, from, subject and date.",
+          "params": {},
+          "returns": {
+            "table": "msgs",
+            "fields": [
+              "msg_id",
+              "from",
+              "subject",
+              "date"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id (M-n).",
+          "params": {
+            "msg_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "msgs",
+            "match": {
+              "msg_id": "msg_id"
+            },
+            "require": [
+              "msg_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "latchwick",
+      "name": "Latchwick tenant portal",
+      "origin": "https://tenant.latchwick.example",
+      "path": "/noor/unit-3b",
+      "view": {
+        "view": "Latchwick: Noor Haddad's tenancy, Unit 3B (invented)",
+        "signed_in": "Noor Haddad",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_lease",
+          "kind": "READ",
+          "description": "The lease for Unit 3B by topic: index, utilities, cleaning, deposit or keys.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "lease",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_ledger",
+          "kind": "READ",
+          "description": "Noor's account: the deposit, the rent paid, and the bills not yet paid.",
+          "params": {},
+          "returns": {
+            "table": "ledger"
+          }
+        },
+        {
+          "name": "read_statement_summary",
+          "kind": "READ",
+          "description": "The summary of the landlord's itemised deposit statement: dates, the deposit, the total deducted and the sum returned.",
+          "params": {},
+          "returns": {
+            "table": "head"
+          }
+        },
+        {
+          "name": "read_statement",
+          "kind": "READ",
+          "description": "The statement's lines: line, item, amount and basis. Five a page; ask for the next with page (1 to 3).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "stmt",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "dispute_deduction",
+          "kind": "REACHES_A_PERSON",
+          "description": "Contest one deduction of the statement, by line (line), with why it is not allowed (reason) and Noor's proof (proof). Noor signs.",
+          "params": {
+            "line": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "proof": {
+              "type": "string"
+            }
+          },
+          "says": "Contest of {line} sent to Corbel Property Management."
+        }
+      ],
+      "aliases": [
+        "Latchwick",
+        "Latchwick tenant portal",
+        "my tenant portal",
+        "the portal"
+      ]
+    },
+    {
+      "app_id": "lenswick",
+      "name": "Lenswick photos",
+      "origin": "https://photos.lenswick.example",
+      "path": "/noor/unit-3b",
+      "view": {
+        "view": "Lenswick photos: Unit 3B, move-in, move-out and repairs (invented)",
+        "signed_in": "Noor Haddad",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_photos",
+          "kind": "READ",
+          "description": "The photos of Unit 3B: photo, set, who took it, date, room and what it shows. Five a page; ask for the next with page (1 to 4).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "phot",
+            "page_size": 5
+          }
+        }
+      ],
+      "aliases": [
+        "Lenswick photos",
+        "Lenswick",
+        "my photos"
+      ]
+    },
+    {
+      "app_id": "gavelmoor",
+      "name": "Gavelmoor claims",
+      "origin": "https://claims.gavelmoor.example",
+      "path": "/small-claims",
+      "view": {
+        "view": "Gavelmoor claims: small claims, security deposits (invented)",
+        "signed_in": "Noor Haddad",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Gavelmoor's pages on a security deposit in small claims, by topic: index, deductions, statement, deposit, limit or letter.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "gav",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        }
+      ],
+      "aliases": [
+        "Gavelmoor claims",
+        "Gavelmoor",
+        "the small claims site"
+      ]
+    }
+  ],
+  "tables": {
+    "msgs": [
+      {
+        "msg_id": "M-1",
+        "from": "Corbel Property Management",
+        "subject": "Welcome to Thistledown Flats",
+        "date": "2025-09-15",
+        "text": "Monday 15 September 2025. Welcome, Noor. You have moved into Unit 3B. Your lease starts today and runs to 14 September 2026. Your deposit of 3,000 dollars is held for you. We photographed every room today with you, and the photos and the move-in condition report, which we both signed, are in Lenswick photos and Latchwick."
+      },
+      {
+        "msg_id": "M-2",
+        "from": "Corbel Property Management",
+        "subject": "Your lease end and your inspection",
+        "date": "2026-08-10",
+        "text": "Monday 10 August 2026. We have your notice: your lease ends on 14 September 2026. You may ask us for an initial inspection, up to two weeks before you leave, to see what we would take from your deposit and to fix it first. Reply to ask. We will give you 48 hours' written notice."
+      },
+      {
+        "msg_id": "M-3",
+        "from": "Corbel Property Management",
+        "subject": "Your initial inspection",
+        "date": "2026-09-04",
+        "text": "Friday 4 September 2026. Your initial inspection was today. Your things were already out: every room was visible. We found three things we would charge for: grease inside the oven, a hole about 8 centimetres wide in the bedroom wall near the closet, and a wine stain on the living room carpet. You may fix them before you leave. Nothing else was found."
+      },
+      {
+        "msg_id": "M-4",
+        "from": "Corbel Property Management",
+        "subject": "Keeping the unit until Friday",
+        "date": "2026-09-14",
+        "text": "Monday 14 September 2026. Yes, you may keep the unit until Friday 18 September 2026 to finish moving. The extra days are charged at the lease's daily rate, one thirtieth of the monthly rent."
+      },
+      {
+        "msg_id": "M-5",
+        "from": "Corbel Property Management",
+        "subject": "Keys received",
+        "date": "2026-09-18",
+        "text": "Friday 18 September 2026. We received the keys today: 2 of 2 front door keys and the mailbox key. You have moved out. We will use your forwarding address, 48 Quillon Way, Apartment 2, Oakland, as you gave it."
+      },
+      {
+        "msg_id": "M-6",
+        "from": "Corbel Property Management",
+        "subject": "Your deposit statement",
+        "date": "2026-10-08",
+        "text": "Thursday 8 October 2026. Your itemised statement of your security deposit is in Latchwick, and a copy was mailed to you first class today. Our photos of the unit, taken on 19 September and on 28 September after the repairs, are in Lenswick photos. If you disagree with a deduction, contest it in Latchwick."
+      }
+    ],
+    "lease": [
+      {
+        "topic": "index",
+        "text": "Latchwick lease for Unit 3B, 212 Larkin Row, Oakland, signed by Noor Haddad and Thistledown Flats LLC, managed by Corbel Property Management. Today is Friday 9 October 2026. Term: 15 September 2025 to 14 September 2026. Rent 3,000 dollars a month, due on the 15th for the month to the 14th; part months are charged on 30 days. Deposit 3,000 dollars, paid 14 September 2025. Topics: index, utilities, cleaning, deposit, keys."
+      },
+      {
+        "topic": "utilities",
+        "text": "Section 9. The tenant pays water and sewer, billed to the tenant from the unit's own meter, and electricity and internet to the providers. The landlord pays trash. The final water bill is charged to the tenant to the day of move-out."
+      },
+      {
+        "topic": "cleaning",
+        "text": "Section 11. The tenant leaves the unit as clean as at move-in, as shown in the signed move-in photos and condition report, apart from ordinary wear and tear. The landlord may clean and repair what is not so and charge the reasonable cost to the deposit, as the law allows."
+      },
+      {
+        "topic": "deposit",
+        "text": "Section 12. The deposit is held for the tenant. Within 21 calendar days after the tenant moves out, the landlord returns what is left with an itemised statement and, for repairs and cleanings over 125 dollars together, the bills or receipts and the photographs, as the law requires. The tenant may contest a deduction in Latchwick."
+      },
+      {
+        "topic": "keys",
+        "text": "Section 14. The tenant returns every key at move-out. The tenant may not copy keys."
+      }
+    ],
+    "ledger": [
+      {
+        "date": "2025-09-14",
+        "entry": "Security deposit received",
+        "amount": 3000.0,
+        "paid": "yes"
+      },
+      {
+        "date": "2025-09-15 to 2026-08-15",
+        "entry": "Rent, 12 payments of 3,000.00, each on the 15th, paying rent through 14 September 2026",
+        "amount": 36000.0,
+        "paid": "yes"
+      },
+      {
+        "date": "2026-08-15",
+        "entry": "Water and sewer bills to 14 August 2026",
+        "amount": 0.0,
+        "paid": "all paid"
+      },
+      {
+        "date": "2026-09-18",
+        "entry": "Rent 15 to 18 September 2026, 4 days (M-4)",
+        "amount": 400.0,
+        "paid": "no"
+      },
+      {
+        "date": "2026-09-18",
+        "entry": "Final water and sewer bill 15 August to 18 September 2026",
+        "amount": 54.2,
+        "paid": "no"
+      }
+    ],
+    "head": [
+      {
+        "statement": "Corbel Property Management, itemised statement of the security deposit, Unit 3B",
+        "dated": "Thursday 8 October 2026",
+        "moved_out": "Friday 18 September 2026",
+        "deposit_held": 3000.0,
+        "deductions_total": 2573.7,
+        "returned_with_statement": 426.3,
+        "sent": "Latchwick and first-class mail to 48 Quillon Way, Apartment 2",
+        "photos": "move-in, move-out and after-repair photos are in Lenswick photos"
+      }
+    ],
+    "stmt": [
+      {
+        "line": "S-1",
+        "item": "Unpaid rent 15 to 18 September, 4 days at 100.00",
+        "amount": 400.0,
+        "basis": "Lease: rent due the 15th, part months on 30 days; ledger"
+      },
+      {
+        "line": "S-2",
+        "item": "Water and sewer 15 August to 18 September",
+        "amount": 54.2,
+        "basis": "Lease section 9; final meter bill"
+      },
+      {
+        "line": "S-3",
+        "item": "Carpet cleaning, living room",
+        "amount": 160.0,
+        "basis": "Invoice CC-3381, Brightfern Carpet"
+      },
+      {
+        "line": "S-4",
+        "item": "Patch and paint bedroom wall hole",
+        "amount": 120.0,
+        "basis": "Invoice INV-2214, Pell Repairs"
+      },
+      {
+        "line": "S-5",
+        "item": "Repaint all rooms",
+        "amount": 620.0,
+        "basis": "Invoice INV-2219, Pell Repairs"
+      },
+      {
+        "line": "S-6",
+        "item": "Replace bedroom carpet",
+        "amount": 420.0,
+        "basis": "Invoice INV-2230, Brightfern Carpet"
+      },
+      {
+        "line": "S-7",
+        "item": "Bedroom wall hole repair, labour",
+        "amount": 120.0,
+        "basis": "Invoice INV-2214, Pell Repairs"
+      },
+      {
+        "line": "S-8",
+        "item": "Oven cleaning, staff 2.0 h at 35.00",
+        "amount": 70.0,
+        "basis": "Corbel staff time sheet, described"
+      },
+      {
+        "line": "S-9",
+        "item": "Replace bedroom blind",
+        "amount": 95.0,
+        "basis": "Invoice INV-2241, Pell Repairs"
+      },
+      {
+        "line": "S-10",
+        "item": "Replace bathroom vanity top, good-faith estimate",
+        "amount": 240.0,
+        "basis": "Estimate; Redfern Stone Supply, 14 Mill Street, backordered to 30 October 2026; documents to follow within 14 days of the work"
+      },
+      {
+        "line": "S-11",
+        "item": "Touch-up paint and supplies",
+        "amount": 38.0,
+        "basis": "Vendor price list, Pell Repairs"
+      },
+      {
+        "line": "S-12",
+        "item": "Rekey front door lock",
+        "amount": 120.0,
+        "basis": "Invoice LK-0907, Harbin Locksmith"
+      },
+      {
+        "line": "S-13",
+        "item": "Bathroom cleaning, staff 1.5 h at 35.00",
+        "amount": 52.5,
+        "basis": "Corbel staff time sheet, described"
+      },
+      {
+        "line": "S-14",
+        "item": "Replace two window screens",
+        "amount": 64.0,
+        "basis": "Invoice SC-5510, Pell Repairs"
+      }
+    ],
+    "phot": [
+      {
+        "photo": "MI-1",
+        "set": "move-in",
+        "taken_by": "Corbel",
+        "date": "2025-09-15",
+        "room": "Living room",
+        "shows": "Carpet clean, no stains or marks."
+      },
+      {
+        "photo": "MI-2",
+        "set": "move-in",
+        "taken_by": "Corbel",
+        "date": "2025-09-15",
+        "room": "All rooms",
+        "shows": "Walls freshly painted, one small scuff by the entry door."
+      },
+      {
+        "photo": "MI-3",
+        "set": "move-in",
+        "taken_by": "Corbel",
+        "date": "2025-09-15",
+        "room": "Bedroom",
+        "shows": "Carpet worn in a lane from the door to the window, and a pale stain about 15 cm wide by the window."
+      },
+      {
+        "photo": "MI-4",
+        "set": "move-in",
+        "taken_by": "Corbel",
+        "date": "2025-09-15",
+        "room": "Bedroom",
+        "shows": "Blind with three bent slats."
+      },
+      {
+        "photo": "MI-5",
+        "set": "move-in",
+        "taken_by": "Corbel",
+        "date": "2025-09-15",
+        "room": "Kitchen",
+        "shows": "Oven inside clean."
+      },
+      {
+        "photo": "MI-6",
+        "set": "move-in",
+        "taken_by": "Corbel",
+        "date": "2025-09-15",
+        "room": "Bathroom",
+        "shows": "Tub, caulk and tiles clean. Vanity top whole."
+      },
+      {
+        "photo": "MI-7",
+        "set": "move-in",
+        "taken_by": "Corbel",
+        "date": "2025-09-15",
+        "room": "Bedroom, living room",
+        "shows": "Both window screens in place."
+      },
+      {
+        "photo": "MO-1",
+        "set": "move-out",
+        "taken_by": "Corbel",
+        "date": "2026-09-19",
+        "room": "Living room",
+        "shows": "Red wine stain on the carpet, about 30 cm wide."
+      },
+      {
+        "photo": "MO-2",
+        "set": "move-out",
+        "taken_by": "Corbel",
+        "date": "2026-09-19",
+        "room": "Bedroom",
+        "shows": "Hole in the wall near the closet, about 8 cm wide."
+      },
+      {
+        "photo": "MO-3",
+        "set": "move-out",
+        "taken_by": "Corbel",
+        "date": "2026-09-19",
+        "room": "All rooms",
+        "shows": "Walls with light scuffs and slight fading by the windows. Paint intact, no marks or holes elsewhere."
+      },
+      {
+        "photo": "MO-4",
+        "set": "move-out",
+        "taken_by": "Corbel",
+        "date": "2026-09-19",
+        "room": "Bedroom",
+        "shows": "Carpet with the same worn lane and the same stain by the window as in MI-3. No new damage."
+      },
+      {
+        "photo": "MO-5",
+        "set": "move-out",
+        "taken_by": "Corbel",
+        "date": "2026-09-19",
+        "room": "Bedroom",
+        "shows": "Blind with the same three bent slats as in MI-4."
+      },
+      {
+        "photo": "MO-6",
+        "set": "move-out",
+        "taken_by": "Corbel",
+        "date": "2026-09-19",
+        "room": "Kitchen",
+        "shows": "Oven inside clean."
+      },
+      {
+        "photo": "MO-7",
+        "set": "move-out",
+        "taken_by": "Corbel",
+        "date": "2026-09-19",
+        "room": "Bathroom",
+        "shows": "Mildew along the tub caulk and a film of soap on the tiles."
+      },
+      {
+        "photo": "MO-8",
+        "set": "move-out",
+        "taken_by": "Corbel",
+        "date": "2026-09-19",
+        "room": "Bathroom",
+        "shows": "Vanity top cracked, about 12 cm."
+      },
+      {
+        "photo": "MO-9",
+        "set": "move-out",
+        "taken_by": "Corbel",
+        "date": "2026-09-19",
+        "room": "Bedroom, living room",
+        "shows": "Both window screens missing."
+      },
+      {
+        "photo": "AR-1",
+        "set": "after repair",
+        "taken_by": "Corbel",
+        "date": "2026-09-28",
+        "room": "Bedroom",
+        "shows": "Wall patched and painted."
+      },
+      {
+        "photo": "AR-2",
+        "set": "after cleaning",
+        "taken_by": "Corbel",
+        "date": "2026-09-28",
+        "room": "Living room",
+        "shows": "Carpet cleaned, stain gone."
+      },
+      {
+        "photo": "NH-1",
+        "set": "move-out",
+        "taken_by": "Noor",
+        "date": "2026-09-18",
+        "room": "Kitchen",
+        "shows": "Oven inside clean after she cleaned it on 8 September."
+      },
+      {
+        "photo": "NH-2",
+        "set": "move-out",
+        "taken_by": "Noor",
+        "date": "2026-09-18",
+        "room": "All rooms",
+        "shows": "Rooms empty and swept; walls as in MO-3."
+      }
+    ],
+    "gav": [
+      {
+        "topic": "index",
+        "text": "Gavelmoor claims, small claims filing (invented). Today is Friday 9 October 2026. Topics: index, deductions, statement, deposit, limit, letter. A tenant who disagrees with deductions from a security deposit may sue the landlord in small claims."
+      },
+      {
+        "topic": "deductions",
+        "text": "A landlord may keep part of a security deposit only for: rent the tenant owes; repair of damage beyond ordinary wear and tear caused by the tenant or the tenant's guests; cleaning, but only to make the unit as clean as it was when the tenant moved in; and restoring furniture or personal items that the rental agreement included. A landlord may not claim for damage or a defect that was there before the tenancy, for ordinary wear and tear, or for the effects of wear that built up over time."
+      },
+      {
+        "topic": "statement",
+        "text": "Within 21 calendar days after the tenant moves out, the landlord returns the deposit, or what is left, with an itemised statement of each deduction. For repairs and cleaning together over 125 dollars, the statement comes with the bills or receipts, a description of the hours and the rate for the landlord's own work, and the photographs. If work cannot be finished or the bills are not in hand in 21 days, the landlord may deduct a good-faith estimate, with the vendor's name and address, and send the bills within 14 days of finishing. A vendor's price list may document an item the landlord buys regularly."
+      },
+      {
+        "topic": "deposit",
+        "text": "A tenant may sue for the amount wrongly kept. If the landlord kept the deposit or part of it in bad faith, the court may add damages of up to twice the deposit, and the landlord has the burden of proving that the amounts claimed are reasonable. A good-faith mistake is not bad faith. The court decides each case."
+      },
+      {
+        "topic": "limit",
+        "text": "The small claims limit for an individual is 12,500 dollars. The form is SC-100, Plaintiff's Claim, filed in the county where the landlord is or where the unit is. The filing fee depends on the amount claimed and is waived for some people."
+      },
+      {
+        "topic": "letter",
+        "text": "Before you sue, the court's self-help advice is to write the landlord a letter asking for the money back and to keep a copy, and to bring your photos and bills to the hearing. A written contest of each deduction, with your proof, is such a letter."
+      }
+    ]
+  }
+}

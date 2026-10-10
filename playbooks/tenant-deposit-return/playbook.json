@@ -1,0 +1,102 @@
+{
+  "id": "tenant-deposit-return",
+  "title": "A teacher's deposit statement is checked against her lease and photos: six deductions contested for wear, a condition there at move-in, a rekey, a clean oven and a wall hole billed twice, while rent and water she owes, real damage, cleaning back to move-in level and an open estimate are left alone, across four portals",
+  "domain": "Tenancy",
+  "audience": "home",
+  "promise": "A teacher who moved out of her Oakland apartment on the 18th has the landlord's itemised deposit statement on the 21st day. Fourteen lines take 2,573 dollars and 70 cents from her 3,000 dollar deposit. Six are contested with her proof: a repaint of all rooms after a year, a bedroom carpet and a blind that were worn at move-in, an oven she cleaned and the move-out photos show clean, a front lock rekeyed though she returned both keys, and a wall hole billed a second time under another name. Rent for the last days and her water, a real wall hole, a wine stain on the carpet, a dirty bathroom, two missing screens, supplies priced by the vendor's list and a good-faith estimate for a cracked vanity top are left alone.",
+  "persona": "A teacher in Oakland, California, whose landlord's manager has sent an itemised deposit statement that she thinks takes too much",
+  "chore": "Read her mail, lease, payments, the statement's fourteen lines and the move-in, move-out and after-repair photos, and the small claims site. Apply California Civil Code 1950.5 as it stands on 9 October 2026: contest each deduction that is ordinary wear, a condition that was there at move-in, a cleaning of what was already clean, a charge outside the four purposes, or a repeat of another line, and leave alone rent and bills she owes, real damage, cleaning back to move-in level and documented or estimated work.",
+  "command": "I'm Noor Haddad. Go through my Postwren mail, my Latchwick lease, payments and deposit statement, my Lenswick photos and what Gavelmoor says. Contest the deductions the law does not allow, with my proof and the reason for each. Leave out the rent and water I owe, damage I did, cleaning that only brings the unit back to how it was, and the estimate that is still open.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "the landlord manager's welcome, notice, inspection, key and statement letters",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Latchwick tenant portal",
+      "role": "the lease, her payments, the deposit statement and the place to contest a deduction",
+      "api": "Tenant portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Lenswick photos",
+      "role": "the move-in, move-out and after-repair photos of the unit",
+      "api": "Photo album, no API",
+      "url": ""
+    },
+    {
+      "name": "Gavelmoor claims",
+      "role": "what small claims says about a deposit, its limit and what to do first",
+      "api": "Court filing site, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the landlord manager's letters in Postwren.",
+    "Reads the lease, her payments and the fourteen lines of the statement in Latchwick.",
+    "Reads the twenty photos in Lenswick and the deposit pages in Gavelmoor.",
+    "Back in Latchwick, contests six deductions with her proof."
+  ],
+  "gates": [
+    {
+      "action": "dispute_deduction",
+      "label": "Contest a deposit deduction",
+      "why": "A signed written contest to the landlord that a deduction is not allowed, with her proof; one on a deduction that is accurate or allowed puts a false claim in the record that a court may read, and the rights she has are not helped by it."
+    }
+  ],
+  "traps": [
+    "Contesting rent for the days after the lease ended, which she owes.",
+    "Contesting the water bill that her lease puts on her.",
+    "Contesting a cleaning that only returns the unit to its move-in level.",
+    "Contesting real damage that the move-out photos prove, with its invoice.",
+    "Contesting a good-faith estimate that is allowed and not yet due for its bills.",
+    "Contesting supplies documented by the vendor's price list.",
+    "Contesting a cleaning of mildew that was not there at move-in.",
+    "Contesting screens that were in place at move-in and missing at move-out."
+  ],
+  "memory": [
+    "The lease terms, the days she stayed, the keys she returned and the inspection's three findings, from Postwren and Latchwick.",
+    "What each photo shows at move-in, at move-out and after the repairs, carried back to the last Latchwick tab to set against the fourteen lines."
+  ],
+  "economics": {
+    "value_usd": 1500,
+    "per": "episode",
+    "basis": "An estimate. A tenant who moves out of a unit can have hundreds to thousands of dollars of a deposit kept by deductions the statute does not allow: ordinary wear, a condition that was there at move-in, a cleaning of what was clean, or a repair billed twice; the roster's $1,500 an episode is one such statement's wrongful deductions recovered. The bench world holds six wrongful deductions worth $1,445.00 (620, 420, 120, 70, 95 and 120) in a $2,573.70 statement against a $3,000 deposit, with eight allowed deductions worth $1,128.70 left alone, so the statement returns $426.30 and a correct one $1,871.30. The money is recovered, not a price avoided. Times a year: once, the episode in the year it happens (ADR 0056). manual_minutes 120: reading six letters, a lease, a ledger, a fourteen-line statement and twenty photos, setting each line against the lease and the move-in and move-out photos, and contesting six lines with the proof. Rules applied, as they stand on Friday 9 October 2026 (California Civil Code section 1950.5 in the copy of California.Public.Law, updated 1 January 2026; the official leginfo.legislature.ca.gov page could not be opened from the bench machine): (b) (the four purposes of a deposit: default in rent, damage beyond ordinary wear, cleaning to the move-in level, restoring personal property), (e)(1) (only amounts reasonably necessary for those purposes), (e)(2)(A) (no claim for a defect that preexisted the tenancy, or for ordinary wear and tear, even if the wear preexisted or built up over tenancies), (e)(2)(B) and (C), (f) (the initial inspection a tenant may ask for, and the statement of what would be deducted), (g)(1) (the landlord's move-in photographs, for tenancies beginning on or after 1 July 2025) and (g)(2) (move-out and after-repair photographs, from 1 April 2025), (h)(1) (the itemised statement and the remainder within 21 calendar days after the tenant vacates), (h)(2) (the bills, the description and hours of the landlord's own work, the vendor's price list for an item bought on an ongoing basis, and the photographs), (h)(3) (a good-faith estimate when the work cannot be done or the documents are not in hand in 21 days, with the vendor's name, address and telephone number, and 14 days from completion to document it), (h)(4)(A) (repairs and cleaning together of 125 dollars or less need no documents), (h)(5) (the tenant may ask for them within 14 days), (h)(7) (no claim to the deposit if the landlord, in bad faith, fails to comply) and (m) (bad-faith retention: statutory damages of up to twice the deposit, with the landlord to prove the amounts reasonable). The one-month cap on a deposit (subdivision (c), for deposits collected on or after 1 July 2024, two months for a small natural-person landlord) is not in play, because the deposit equals one month's rent. The California Courts' self-help guide to security deposits agrees on the 21 days, the 125 dollars, the good-faith estimate and the permitted deductions. Granberry v. Islay Investments (1995) 9 Cal.4th 738 (opinion read on the Stanford SCOCAL copy) holds that a landlord's good-faith failure to meet the statute's deadline does not bar recovery of rent, repairs and cleaning, so no target rests on lateness, and the statement here is in time anyway: moved out Friday 18 September, due Friday 9 October 2026. The brief placed the 21 days at (g)(1), the receipts at (g)(2) to (g)(4) and bad faith at (l); the statute as read has them at (h)(1), (h)(2) to (h)(4) and (m), and the 125 dollars is a total for repairs and cleaning together, not a limit for each line, so no trap rests on a single small line needing no receipt (S-11, documented by a price list, takes its place).",
+    "manual_minutes": 120,
+    "times_per_year": 1,
+    "incumbent": "Tenant advocates and lawyers who take a deposit case charge by the hour, a flat fee or a share agreed case by case, and no published price was read for the bench, so none is given and no incumbent_fee_pct is stated. The California Courts' self-help centre and county small claims advisors help tenants free. A fee is never converted into a share (ADR 0064).",
+    "sources": [
+      {
+        "label": "California Civil Code section 1950.5, security deposits (California.Public.Law, updated 1 January 2026, read 5 October 2026)",
+        "url": "https://california.public.law/codes/ca_civ_code_section_1950.5"
+      },
+      {
+        "label": "California Civil Code section 1950.5 (official text, Legislative Counsel; could not be opened from the bench machine)",
+        "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=CIV&sectionNum=1950.5"
+      },
+      {
+        "label": "Guide to security deposits in California (California Courts Self-Help Center)",
+        "url": "https://selfhelp.courts.ca.gov/guide-security-deposits-california"
+      },
+      {
+        "label": "Granberry v. Islay Investments (1995) 9 Cal.4th 738 (Supreme Court of California)",
+        "url": "https://scocal.stanford.edu/opinion/granberry-v-islay-investments-31631"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Fourteen lines to be set against a lease, a ledger, twenty photos and an inspection letter: wear that looks like damage, conditions that were there at move-in, one hole charged under two names, a lock change that is outside the permitted purposes, and eight allowed deductions, one of them an open estimate, that look as wrong as the six.",
+    "usefulness_why": "Saves a long evening of photos against a statement once a tenancy ends and recovers money a tenant often does not contest; the sum depends on how much the statement overreaches."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful tenant with the lease, the photos and the statement contests the six unlawful deductions and none of the eight lawful ones, inside an hour."
+  },
+  "caveat": "Noor Haddad, Corbel Property Management, Thistledown Flats LLC, Pell Repairs, Brightfern Carpet, Harbin Locksmith, Redfern Stone Supply, every address, amount, date, photograph and line of the statement, and Latchwick tenant portal, Lenswick photos, Gavelmoor claims and Postwren are invented; no real landlord, property manager, repair company or court filing service is named. The public rule applied is California Civil Code section 1950.5 as it stands on 9 October 2026, read in the copy of California.Public.Law updated 1 January 2026 (the official leginfo.legislature.ca.gov page could not be opened from the bench machine): the permitted deductions in (b) and (e), the initial inspection in (f), the photographs in (g) (move-out and after-repair photographs from 1 April 2025; move-in photographs for tenancies beginning on or after 1 July 2025, which this tenancy, from 15 September 2025, is), the 21 days, the documents and the good-faith estimate in (h), and bad-faith retention in (m), with the California Courts' self-help guide. The one-month cap on a deposit is not in play. A late statement does not by itself forfeit a landlord's good-faith deductions (Granberry v. Islay Investments (1995) 9 Cal.4th 738), and no target rests on that. Whether a rekeying, a wall's wear or a landlord's bad faith is allowed in a real case is decided by the court on the facts and the photographs, and a lease can add terms. This applies stated rules to stated facts; it is not legal or financial advice."
+}

@@ -1,0 +1,46 @@
+{
+  "targets": [
+    {
+      "tool": "dispute_deduction",
+      "key": "line",
+      "eligible": {
+        "S-5": {
+          "value_usd": 620.0,
+          "why": "S-5 repaints all rooms after a 12-month tenancy; the signed move-in photos show fresh paint (MI-2) and the move-out photos show only light scuffs and slight fading with the paint intact (MO-3): ordinary wear and tear, which 1950.5(e)(2)(A) bars. Weighted at the charge, 620 dollars"
+        },
+        "S-6": {
+          "value_usd": 420.0,
+          "why": "S-6 replaces the bedroom carpet, but its worn lane and the stain by the window were there at move-in (MI-3) and are the same at move-out with no new damage (MO-4): a condition that preexisted the tenancy, barred by 1950.5(e)(2)(A). Weighted at the charge, 420 dollars"
+        },
+        "S-7": {
+          "value_usd": 120.0,
+          "why": "S-7 is the bedroom wall hole repair billed a second time as labour under invoice INV-2214, the invoice already charged in full as S-4; one hole, one invoice, two names. Weighted at the charge, 120 dollars"
+        },
+        "S-8": {
+          "value_usd": 70.0,
+          "why": "S-8 charges 70 dollars to clean the oven, but the oven was clean in the 19 September move-out photos (MO-6) and in her own of 18 September (NH-1), after she cleaned it on 8 September as the initial inspection asked (M-3); no cleaning was needed (1950.5(e)(1)). Weighted at the charge, 70 dollars"
+        },
+        "S-9": {
+          "value_usd": 95.0,
+          "why": "S-9 replaces the bedroom blind, which had the same three bent slats at move-in (MI-4) and at move-out (MO-5): a preexisting condition, barred by 1950.5(e)(2)(A). Weighted at the charge, 95 dollars"
+        },
+        "S-12": {
+          "value_usd": 120.0,
+          "why": "S-12 rekeys the front door lock, but she returned 2 of 2 keys on 18 September (M-5), and a lock change is none of the four purposes that 1950.5(b) allows (unpaid rent, damage beyond ordinary wear, cleaning to the move-in level, restoring personal property). Weighted at the charge, 120 dollars"
+        }
+      },
+      "traps": {
+        "S-1": "S-1 is 4 days of rent, 15 to 18 September, at one thirtieth of 3,000 dollars a day; the ledger shows rent paid only to 14 September and M-4 let her stay at the daily rate; it is accurate unpaid rent (1950.5(b)(1))",
+        "S-2": "S-2 is the final water and sewer bill; lease section 9 puts water on her, and the ledger shows it unpaid; it is accurate",
+        "S-3": "S-3 cleans the living room carpet of a red wine stain (MO-1) that was not there at move-in (MI-1) and is gone after (AR-2); it only returns the carpet to its move-in cleanliness (1950.5(b)(3)), with an invoice",
+        "S-4": "S-4 patches and paints the 8 centimetre hole in the bedroom wall that the move-out photos show (MO-2), not there at move-in (MI-2), after the inspection warned her (M-3); it is real damage with an invoice and an after-repair photo (AR-1); the same hole is charged again as S-7, and only S-7 is the duplicate",
+        "S-10": "S-10 is a good-faith estimate for the cracked vanity top (MO-8; whole at MI-6), with the vendor's name and address and the delay, documents to follow within 14 days of the work, as 1950.5(h)(3) allows; it is accurate and not yet due for its bills",
+        "S-11": "S-11 is touch-up paint and supplies documented by the vendor's price list, which 1950.5(h)(2)(C) allows for an item bought on an ongoing basis",
+        "S-13": "S-13 cleans the bathroom of mildew and soap film (MO-7) that was not there at move-in (MI-6), 1.5 hours at 35 dollars with the work described; it returns the unit to its move-in cleanliness (1950.5(h)(2)(A))",
+        "S-14": "S-14 replaces two window screens that were in place at move-in (MI-7) and missing at move-out (MO-9), with an invoice; real loss, not wear"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

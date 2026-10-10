@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The seventy-two playbooks (latest runs, Claude Sonnet)
+## The seventy-three playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -115,9 +115,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A snack maker's recall of a supplier's almond butter traced: three lots held and five customers told, one for a batch reworked into another product, while the lots either side of the range, batches made from them, a customer given only other batches, an order not yet shipped and the distributor's own customers are left alone | work | 5 | exceeds: 8 of 8, $20,000 of $20,000 (an eighth of the roster's value an act), 10 of 10 traps, 0 false, 1.6 min, $1.18 |
 | A retiree's bank account checked under Regulation E: four unauthorised transfers reported at their capped liability and a late claim chased for its credit, while a payment she sent a scammer herself, her son's fuel, a refunded and a pending charge, a subscription, a credit card charge and two claims not yet late are left alone | home | 4 | exceeds: 5 of 5, $1,312.00 of $1,312.00 (what she gets back), 12 of 12 traps, 0 false, 2.6 min, $1.11 |
 | A nurse's three credit reports disputed with her proof: a late payment she made on time, an old collection and a bankruptcy past their limits, a paid collection and an account that is not hers, while an accurate late payment, a collection still in time, authorised inquiries and entries already fixed or being answered are left alone | home | 5 | exceeds: 8 of 8, $1,000 of $1,000 (125 dollars an act, mostly minutes), 8 of 8 traps, 0 false, 2.0 min, $1.03 |
+| A teacher's security deposit statement checked against her lease and photos: six deductions contested for wear, a condition there at move-in, a clean oven, a rekey and a wall hole billed twice, while rent and water she owes, real damage, cleaning back to move-in level and an open estimate are left alone | home | 4 | exceeds: 6 of 6, $1,445.00 of $1,445.00 (what she gets back), 8 of 8 traps, 0 false, 2.2 min, $1.27 |
 
-Across the latest runs: $1,114,321 of $1,123,748 found, 744 of 744 traps walked past, no false claim,
-207 minutes of her time against about 300 hours by hand, $128.25 of model time. 110 runs are recorded
+Across the latest runs: $1,115,766 of $1,125,193 found, 752 of 752 traps walked past, no false claim,
+209 minutes of her time against about 302 hours by hand, $129.52 of model time. 111 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

@@ -244,6 +244,12 @@ names; each playbook carries the new one.
   "Scorewell" became "Kessingham Reports", because Scorewell, Inc. is a real credit-advisory company; "Ledgerline bank"
   became "Ledgerwren bank", because Ledgerline is the name of several real accounting and invoicing products; and
   "Mailnest" became "Postwren", because mailnest.io is a real email service.
+- Row 64, `tenant-deposit-return`: "Rentroll tenant portal" became "Latchwick tenant portal", because RentRoll
+  (rentroll.app) is a real property-management product (`section8-landlord` is a landlord's chore and keeps its
+  own "Rentroll" unchanged); "Snapshelf photos" became "Lenswick photos", because SnapShelf is the name of several
+  real apps, among them a screenshot shelf and a retail shelf-imaging product; "Courtfile" became "Gavelmoor claims",
+  because CourtFiling.net is a real court e-filing service whose name it nearly repeats; and "Mailnest" became
+  "Postwren", because mailnest.io is a real email service. Row 66 uses Lenswick for Snapshelf.
 
 ### B8: Work, pay and benefits
 

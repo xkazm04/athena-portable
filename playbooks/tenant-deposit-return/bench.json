@@ -1,0 +1,301 @@
+{
+  "playbook": "tenant-deposit-return",
+  "run_at": "2026-10-10T19:38:29Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 134.0,
+  "turns": 10,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 27,
+  "cost_usd": 1.2738,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.2
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 1445.0,
+    "value_found_usd": 1445.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "dispute_deduction",
+        "key": "S-1",
+        "why": "S-1 is 4 days of rent, 15 to 18 September, at one thirtieth of 3,000 dollars a day; the ledger shows rent paid only to 14 September and M-4 let her stay at the daily rate; it is accurate unpaid rent (1950.5(b)(1))",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "S-2",
+        "why": "S-2 is the final water and sewer bill; lease section 9 puts water on her, and the ledger shows it unpaid; it is accurate",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "S-3",
+        "why": "S-3 cleans the living room carpet of a red wine stain (MO-1) that was not there at move-in (MI-1) and is gone after (AR-2); it only returns the carpet to its move-in cleanliness (1950.5(b)(3)), with an invoice",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "S-4",
+        "why": "S-4 patches and paints the 8 centimetre hole in the bedroom wall that the move-out photos show (MO-2), not there at move-in (MI-2), after the inspection warned her (M-3); it is real damage with an invoice and an after-repair photo (AR-1); the same hole is charged again as S-7, and only S-7 is the duplicate",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "S-10",
+        "why": "S-10 is a good-faith estimate for the cracked vanity top (MO-8; whole at MI-6), with the vendor's name and address and the delay, documents to follow within 14 days of the work, as 1950.5(h)(3) allows; it is accurate and not yet due for its bills",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "S-11",
+        "why": "S-11 is touch-up paint and supplies documented by the vendor's price list, which 1950.5(h)(2)(C) allows for an item bought on an ongoing basis",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "S-13",
+        "why": "S-13 cleans the bathroom of mildew and soap film (MO-7) that was not there at move-in (MI-6), 1.5 hours at 35 dollars with the work described; it returns the unit to its move-in cleanliness (1950.5(h)(2)(A))",
+        "filed": false
+      },
+      {
+        "action": "dispute_deduction",
+        "key": "S-14",
+        "why": "S-14 replaces two window screens that were in place at move-in (MI-7) and missing at move-out (MO-9), with an invoice; real loss, not wear",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "dispute_deduction",
+      "key": "S-5",
+      "outcome": "correct",
+      "value_usd": 620.0,
+      "exact": true,
+      "why": "S-5 repaints all rooms after a 12-month tenancy; the signed move-in photos show fresh paint (MI-2) and the move-out photos show only light scuffs and slight fading with the paint intact (MO-3): ordinary wear and tear, which 1950.5(e)(2)(A) bars. Weighted at the charge, 620 dollars"
+    },
+    {
+      "action": "dispute_deduction",
+      "key": "S-6",
+      "outcome": "correct",
+      "value_usd": 420.0,
+      "exact": true,
+      "why": "S-6 replaces the bedroom carpet, but its worn lane and the stain by the window were there at move-in (MI-3) and are the same at move-out with no new damage (MO-4): a condition that preexisted the tenancy, barred by 1950.5(e)(2)(A). Weighted at the charge, 420 dollars"
+    },
+    {
+      "action": "dispute_deduction",
+      "key": "S-9",
+      "outcome": "correct",
+      "value_usd": 95.0,
+      "exact": true,
+      "why": "S-9 replaces the bedroom blind, which had the same three bent slats at move-in (MI-4) and at move-out (MO-5): a preexisting condition, barred by 1950.5(e)(2)(A). Weighted at the charge, 95 dollars"
+    },
+    {
+      "action": "dispute_deduction",
+      "key": "S-8",
+      "outcome": "correct",
+      "value_usd": 70.0,
+      "exact": true,
+      "why": "S-8 charges 70 dollars to clean the oven, but the oven was clean in the 19 September move-out photos (MO-6) and in her own of 18 September (NH-1), after she cleaned it on 8 September as the initial inspection asked (M-3); no cleaning was needed (1950.5(e)(1)). Weighted at the charge, 70 dollars"
+    },
+    {
+      "action": "dispute_deduction",
+      "key": "S-12",
+      "outcome": "correct",
+      "value_usd": 120.0,
+      "exact": true,
+      "why": "S-12 rekeys the front door lock, but she returned 2 of 2 keys on 18 September (M-5), and a lock change is none of the four purposes that 1950.5(b) allows (unpaid rent, damage beyond ordinary wear, cleaning to the move-in level, restoring personal property). Weighted at the charge, 120 dollars"
+    },
+    {
+      "action": "dispute_deduction",
+      "key": "S-7",
+      "outcome": "correct",
+      "value_usd": 120.0,
+      "exact": true,
+      "why": "S-7 is the bedroom wall hole repair billed a second time as labour under invoice INV-2214, the invoice already charged in full as S-4; one hole, one invoice, two names. Weighted at the charge, 120 dollars"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'll pull the photo proof map back from memory first, so each contest cites the right photo IDs.\n\nI'm filing six contests, one per line, which comes to $1,445.00. They're decision cards, and Noor signs each one before it goes in.\n\n\n**Contested (6 lines, $1,445.00):**\n- **S-5, $620:** repaint, ordinary wear.\n- **S-6, $420:** bedroom carpet, same wear at move-in and move-out.\n- **S-9, $95:** blind, the same bent slats at move-in.\n- **S-8, $70:** oven, clean in Corbel's own photo.\n- **S-12, $120:** rekey, all keys returned.\n- **S-7, $120:** wall hole billed twice.\n\n**Left alone (8 lines, $1,128.70):**\n- **S-1 and S-2, $454.20:** rent and water you owe.\n- **S-3, $160:** wine-stain carpet cleaning, which was your damage.\n- **S-4, $120:** the one real wall repair.\n- **S-13, $52.50:** bathroom cleaning back to move-in level.\n- **S-14, $64:** both screens, which were missing at move-out.\n- **S-1",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Noor Haddad. This is my mail from Corbel Property Management, my landlord's manager. Read every message. Don't do anything yet: I'll send you to my tenant portal, my photos and the small claims site, and then back to the portal.",
+      "continued": false,
+      "said": "I'll list the inbox first, then read each message.",
+      "said_chars": 50,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Six messages. Reading all of them now.",
+      "said_chars": 38,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "I've read all six messages and done nothing else. I'm writing a checkpoint now so the key facts carry over to the other tabs.\n\n\n**Summary of the mail:**\n- **Deposit and lease:** The deposit is $3,000. The lease ran 15 Sep 2025 to 14 Sep 2026, and Corbel and Noor signed a move-in condition report.\n- **Inspection (4 Sep):** Corbel named only three problems: oven grease, an 8 cm bedroom wall hole and a wine stain on the carpet.",
+      "said_chars": 1512,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Latchwick tenant portal",
+      "user": "This is my tenant portal, Latchwick. Read my lease, my payments, the summary of my deposit statement and every line of it. Don't contest anything yet: I'll show you my photos next.",
+      "continued": false,
+      "said": "I'll read the lease, ledger, statement summary and all three statement pages now, and contest nothing.",
+      "said_chars": 102,
+      "reads": [
+        "read_lease",
+        "read_lease",
+        "read_lease",
+        "read_lease",
+        "read_lease",
+        "read_ledger",
+        "read_statement_summary",
+        "read_statement",
+        "read_statement",
+        "read_statement"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Latchwick tenant portal",
+      "user": "",
+      "continued": true,
+      "said": "I've read the lease, the ledger, the statement summary and all 14 statement lines (showing 14 of 14), and I've contested nothing.\n\n**Totals:** The deposit is $3,000. Corbel deducted $2,573.70 and returned $426.30. The 14 lines add up to that total. The statement is dated 8 Oct, 20 days after the 18 Sep move-out. The lease allows 21 days.\n\n**You owe these, so I'll leave them alone:**\n- **S-1:** rent for 15–18 Sep, $400 (4 days at $100). It matches the ledger and M-4.\n- **S-2:** water and sewer, $54.20.",
+      "said_chars": 2274,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Lenswick photos",
+      "user": "These are my photos and the landlord's, at Lenswick. Read every page: the move-in photos, the move-out photos and the ones after the repairs.",
+      "continued": false,
+      "said": "I'll read all four pages of the Lenswick photo list now and contest nothing.",
+      "said_chars": 76,
+      "reads": [
+        "list_photos",
+        "list_photos",
+        "list_photos",
+        "list_photos"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Lenswick photos",
+      "user": "",
+      "continued": true,
+      "said": "I've read all 20 photos (showing 20 of 20) and contested nothing. I'm saving a checkpoint, because Latchwick is the only place a contest can be filed.\n\n\n**What the photos show**\n- **Oven (S-8, $70):** MI-5, MO-6 and your NH-1 all show it clean. Corbel's own move-out photo contradicts the charge.\n- **Bedroom carpet (S-6, $420):** MI-3 and MO-4 show the same worn lane and the same stain, with no new damage. That is wear and a move-in condition.",
+      "said_chars": 1801,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Gavelmoor claims",
+      "user": "This is the small claims site, Gavelmoor. Read what it says about a deposit, the limit and what to do first. Then go back to Latchwick.",
+      "continued": false,
+      "said": "I'll read Gavelmoor's pages on the deposit, the limit and what to do first. I'm also reading its pages on deductions, statements and the letter, since they bear on what you contest. I won't contest anything yet.",
+      "said_chars": 211,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Gavelmoor claims",
+      "user": "",
+      "continued": true,
+      "said": "Gavelmoor says a landlord may keep deposit money only for rent owed, damage beyond ordinary wear, and cleaning back to move-in level. It doesn't allow charges for wear, for conditions that were there at move-in, or for effects of wear that built up over time. I've contested nothing.\n\n- **Deposit:** You can sue for the amount wrongly kept. If the landlord kept money in bad faith, the court may add damages of up to twice the deposit.",
+      "said_chars": 1986,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Latchwick tenant portal",
+      "user": "Back in Latchwick. Contest each deduction that the law does not allow, with my proof from my mail, my lease and the photos, and say why. Leave alone what is accurate and allowed, and the estimate that is still open. Then tell me what you co",
+      "continued": false,
+      "said": "I'll pull the photo proof map back from memory first, so each contest cites the right photo IDs.\n\nI'm filing six contests, one per line, which comes to $1,445.00. They're decision cards, and Noor signs each one before it goes in.\n\n\n**Contested (6 lines, $1,445.00):**\n- **S-5, $620:** repaint, ordinary wear.\n- **S-6, $420:** bedroom carpet, same wear at move-in and move-out.\n- **S-9, $95:** blind, the same bent slats at move-in.\n- **S-8, $70:** oven, clean in Corbel's own photo.",
+      "said_chars": 1541,
+      "reads": [],
+      "cards": [
+        {
+          "action": "dispute_deduction",
+          "key": "S-5",
+          "outcome": "correct",
+          "value_usd": 620.0
+        },
+        {
+          "action": "dispute_deduction",
+          "key": "S-6",
+          "outcome": "correct",
+          "value_usd": 420.0
+        },
+        {
+          "action": "dispute_deduction",
+          "key": "S-9",
+          "outcome": "correct",
+          "value_usd": 95.0
+        },
+        {
+          "action": "dispute_deduction",
+          "key": "S-8",
+          "outcome": "correct",
+          "value_usd": 70.0
+        },
+        {
+          "action": "dispute_deduction",
+          "key": "S-12",
+          "outcome": "correct",
+          "value_usd": 120.0
+        },
+        {
+          "action": "dispute_deduction",
+          "key": "S-7",
+          "outcome": "correct",
+          "value_usd": 120.0
+        }
+      ]
+    }
+  ]
+}
