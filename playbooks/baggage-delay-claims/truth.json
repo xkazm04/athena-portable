@@ -1,0 +1,55 @@
+{
+  "targets": [
+    {
+      "tool": "claim_expense",
+      "key": "line",
+      "eligible": {
+        "E-1": {
+          "value_usd": 18.5,
+          "why": "E-1 is a pharmacy receipt for contact lens solution, a toothbrush and a hairbrush, bought Sat 26 Sep 10:15, after the bag failed to arrive (report LIS-55302, 09:20) and before it was delivered (Wed 30 Sep 17:30): a reasonable essential (expenses page). Weighted at the amount, 18.50 dollars"
+        },
+        "E-3": {
+          "value_usd": 9.8,
+          "why": "E-3 is the toiletries line (toothpaste, deodorant, a razor) of receipt R-2, whose other line E-2 is food she would have bought anyway; the toiletries were needed because the bag was missing, bought Sat 26 Sep before delivery. Weighted at the amount, 9.80 dollars"
+        },
+        "E-4": {
+          "value_usd": 64.0,
+          "why": "E-4 is basic clothing for the days without the bag (two T-shirts, trousers, five pairs of underwear and socks), bought Sat 26 Sep 15:05 before delivery; basic clothing is paid (expenses page), and the card benefit paid only the Atlantico Outdoor receipt. Weighted at the amount, 64.00 dollars"
+        },
+        "E-5": {
+          "value_usd": 21.0,
+          "why": "E-5 is a phone charger and plug adapter, the charger being in the missing bag, bought Sat 26 Sep 15:40 before delivery; a charger is named on the expenses page. Weighted at the amount, 21.00 dollars"
+        },
+        "E-6": {
+          "value_usd": 45.0,
+          "why": "E-6 is one shirt for Monday 28 September's workshop, which Imani speaks at (Tripcairn T-1); what a work engagement needs is paid, and it was bought Sun 27 Sep before delivery and was not paid by the card (BD-7731 paid only the Atlantico Outdoor receipt). Weighted at the amount, 45.00 dollars"
+        }
+      },
+      "traps": {
+        "E-2": "E-2 is bread, cheese, fruit and water on the same Mercado Alma receipt as E-3; food is what she would have bought anyway, not paid",
+        "E-7": "E-7 is the Atlantico Outdoor rain jacket, 59.00 dollars on Sun 27 Sep, which Cardhollow's benefit BD-7731 already paid on 5 October (the card statement credit and M-4); it is not to be claimed again",
+        "E-8": "E-8 is a silk dress for 340.00 dollars from a boutique, a luxury purchase beyond an interim need",
+        "E-9": "E-9 is four shirts, two blazers and two pairs of trousers for 412.00 dollars, a new wardrobe, not an interim essential",
+        "E-10": "E-10 is a shirt and a razor Tomas Brandt bought with her card at Loja Baixa; his own bag arrived with the flight (bag B-3, M-3), so it is not a cost of her delayed bag",
+        "E-11": "E-11 is a wool scarf bought Wed 30 Sep 19:40, two hours after the bag was delivered to her hotel at 17:30",
+        "E-12": "E-12 is a roaming data pack, a cost the missing bag did not cause",
+        "E-13": "E-13 is a June pharmacy receipt (report POR-30871); that bag was delivered Tue 16 Jun and the 21 days for a written complaint ended Tue 7 Jul 2026 (M-5), so no claim lies"
+      }
+    },
+    {
+      "tool": "request_bag_fee_refund",
+      "key": "bag",
+      "eligible": {
+        "B-1": {
+          "value_usd": 45.0,
+          "why": "B-1 is her 45 dollar checked bag fee for AL 41: the bag was delivered 4 days and 9 hours after she could leave the plane, past 15 hours for an international flight of 12 hours or less (14 CFR 260.5), she filed report LIS-55302, and M-6 says the fee has not been refunded. Weighted at the fee, 45.00 dollars"
+        }
+      },
+      "traps": {
+        "B-2": "B-2 is the June bag's fee, already refunded to her card on 22 June 2026 (M-5 and the statement credit)",
+        "B-3": "B-3 is Tomas Brandt's bag, which arrived with the flight, and his own fee on his own card"
+      }
+    }
+  ],
+  "forbidden": []
+}

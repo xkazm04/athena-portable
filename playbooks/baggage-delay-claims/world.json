@@ -1,0 +1,650 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "postwren",
+      "message": "I'm Imani Boateng. This is my mail: my airline's letters, my card's and a message from my colleague Tomas. Read every message. Don't do anything yet: I'll send you to my card, my trips and the airline's claims site.",
+      "nudges": 1
+    },
+    {
+      "app": "cardhollow",
+      "message": "This is my Cardhollow card. Read the baggage benefit and my statement, every page. Don't do anything yet.",
+      "nudges": 2
+    },
+    {
+      "app": "tripcairn",
+      "message": "This is Tripcairn, my trips. Read my trips and their flights. Then go to the airline's claims site.",
+      "nudges": 1
+    },
+    {
+      "app": "aerolark",
+      "message": "This is Aerolark baggage claims. Read its rules, my report, my claim file on every page and my bags. Then put the right receipt lines in my written complaint, each with a reason, and ask for the bag fee refund where it is owed. Leave out what the airline's rules do not pay. Then tell me what you claimed and what you left out, and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/imani/inbox",
+      "view": {
+        "view": "Postwren: Imani Boateng's inbox (invented)",
+        "signed_in": "Imani Boateng",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The messages in the inbox: id, from, subject and date.",
+          "params": {},
+          "returns": {
+            "table": "msgs",
+            "fields": [
+              "msg_id",
+              "from",
+              "subject",
+              "date"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id (M-n).",
+          "params": {
+            "msg_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "msgs",
+            "match": {
+              "msg_id": "msg_id"
+            },
+            "require": [
+              "msg_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "cardhollow",
+      "name": "Cardhollow",
+      "origin": "https://card.cardhollow.example",
+      "path": "/imani/4417",
+      "view": {
+        "view": "Cardhollow: Imani Boateng's card ending 4417 (invented)",
+        "signed_in": "Imani Boateng",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_benefits",
+          "kind": "READ",
+          "description": "Cardhollow's card benefits by topic: index or baggage.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "benefit",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_statement",
+          "kind": "READ",
+          "description": "The card's charges and credits: date, merchant, what, amount and note. Five a page; ask for the next with page (1 to 3).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "stmt",
+            "page_size": 5
+          }
+        }
+      ],
+      "aliases": [
+        "Cardhollow",
+        "my card",
+        "the card"
+      ]
+    },
+    {
+      "app_id": "tripcairn",
+      "name": "Tripcairn",
+      "origin": "https://trips.tripcairn.example",
+      "path": "/imani/trips",
+      "view": {
+        "view": "Tripcairn: Imani Boateng's trips (invented)",
+        "signed_in": "Imani Boateng",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_trips",
+          "kind": "READ",
+          "description": "Imani's trips: trip, dates, route, carrier, travellers, hotel and purpose.",
+          "params": {},
+          "returns": {
+            "table": "trips"
+          }
+        },
+        {
+          "name": "read_legs",
+          "kind": "READ",
+          "description": "The flights of each trip: trip, leg, from, to, flight hours and note.",
+          "params": {},
+          "returns": {
+            "table": "legs"
+          }
+        }
+      ],
+      "aliases": [
+        "Tripcairn",
+        "my trips",
+        "the trip site"
+      ]
+    },
+    {
+      "app_id": "aerolark",
+      "name": "Aerolark baggage claims",
+      "origin": "https://claims.aerolark.example",
+      "path": "/imani/LIS-55302",
+      "view": {
+        "view": "Aerolark baggage claims: Imani Boateng, report LIS-55302 (invented)",
+        "signed_in": "Imani Boateng",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Aerolark's rules on a delayed bag, by topic: index, carriage, complaint, expenses, limit or bagfee.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_report",
+          "kind": "READ",
+          "description": "The baggage report for the Lisbon trip: flight, filing, delivery, delay, complaint deadline and limit.",
+          "params": {},
+          "returns": {
+            "table": "report"
+          }
+        },
+        {
+          "name": "read_claim_file",
+          "kind": "READ",
+          "description": "The receipt lines in Imani's claim file: line, receipt, bought, merchant, items, amount and who paid. Five a page; ask for the next with page (1 to 3).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "clm",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "read_bags",
+          "kind": "READ",
+          "description": "The checked bags and their fees: bag, passenger, trip, fee, paid and status.",
+          "params": {},
+          "returns": {
+            "table": "bags"
+          }
+        },
+        {
+          "name": "claim_expense",
+          "kind": "REACHES_A_PERSON",
+          "description": "Put one receipt line (line) in the written complaint to Aerolark, with why it was a reasonable cost while the bag was missing (reason). Imani signs.",
+          "params": {
+            "line": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Line {line} added to the written complaint to Aerolark."
+        },
+        {
+          "name": "request_bag_fee_refund",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask Aerolark to refund the checked bag fee of one bag (bag), with why it is owed (reason). Imani signs.",
+          "params": {
+            "bag": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Refund of the bag fee of {bag} requested from Aerolark."
+        }
+      ],
+      "aliases": [
+        "Aerolark baggage claims",
+        "Aerolark",
+        "the airline's claims site",
+        "the claims site"
+      ]
+    }
+  ],
+  "tables": {
+    "msgs": [
+      {
+        "msg_id": "M-1",
+        "from": "Aerolark baggage services",
+        "subject": "Your baggage report LIS-55302",
+        "date": "2026-09-26",
+        "text": "Saturday 26 September 2026. Flight AL 41, Boston to Lisbon, arrived at 07:55. Your checked bag (1 of 1, tag AL 604418) did not arrive with you. We have your report LIS-55302, filed at the airport at 09:20. We will deliver the bag to your hotel when it is found. Keep your receipts for the things you must buy until it comes."
+      },
+      {
+        "msg_id": "M-2",
+        "from": "Aerolark baggage services",
+        "subject": "Your bag has been delivered",
+        "date": "2026-09-30",
+        "text": "Wednesday 30 September 2026. Your bag, tag AL 604418, was delivered to the Hotel Praca Velha reception at 17:30 today and signed for by the hotel. Report LIS-55302 is now closed for the search. A written complaint about a delay must reach Aerolark within 21 days of the day the bag was placed at your disposal. Your claim file is in Aerolark baggage claims."
+      },
+      {
+        "msg_id": "M-3",
+        "from": "Tomas Brandt",
+        "subject": "Your card at Loja Baixa",
+        "date": "2026-09-26",
+        "text": "Saturday 26 September 2026. Sorry, I used your Cardhollow card at Loja Baixa at 15:55 for a shirt and a razor, because I left my wallet at the hotel. My own bag came on the flight, as you know. I will pay you back this week."
+      },
+      {
+        "msg_id": "M-4",
+        "from": "Cardhollow benefits",
+        "subject": "Your baggage delay benefit has been paid",
+        "date": "2026-10-05",
+        "text": "Monday 5 October 2026. Your benefit claim BD-7731 is paid: 59.00 dollars, credited to your card, for the receipt you sent from Atlantico Outdoor dated 27 September. The benefit pays up to 100 dollars a trip. Items it pays are not to be claimed again from the airline."
+      },
+      {
+        "msg_id": "M-5",
+        "from": "Aerolark baggage services",
+        "subject": "Your June baggage report POR-30871",
+        "date": "2026-07-08",
+        "text": "Wednesday 8 July 2026. Your bag on flight AL 33, Boston to Porto on 12 June, was delivered on Tuesday 16 June 2026. The 21 days for a written complaint ended on Tuesday 7 July 2026, and no complaint reached us, so we have closed report POR-30871. Your checked bag fee was refunded to your card on 22 June."
+      },
+      {
+        "msg_id": "M-6",
+        "from": "Aerolark baggage services",
+        "subject": "A reminder about your claim",
+        "date": "2026-10-01",
+        "text": "Thursday 1 October 2026. Report LIS-55302: your written complaint for the delayed bag is due within 21 days of delivery on 30 September, which is Wednesday 21 October 2026. File it in Aerolark baggage claims with your receipts. We have not yet refunded your checked bag fee for this trip."
+      }
+    ],
+    "benefit": [
+      {
+        "topic": "index",
+        "text": "Cardhollow card benefits (invented). Today is Friday 9 October 2026. Imani Boateng, card ending 4417. Topics: index, baggage. Your statement is in read_statement."
+      },
+      {
+        "topic": "baggage",
+        "text": "Baggage delay benefit. When a checked bag is delayed more than 6 hours, the card pays up to 100 dollars a trip for essential purchases made before the bag arrives, on the receipts you send. Items it pays are not to be claimed again from the airline or anyone else: the card takes over your claim for them. Claim BD-7731 paid 59.00 dollars on 5 October 2026 for the Atlantico Outdoor receipt of 27 September. It paid nothing else for the trip."
+      }
+    ],
+    "stmt": [
+      {
+        "date": "2026-09-25",
+        "merchant": "Aerolark",
+        "what": "Checked bag fee, AL 41",
+        "amount": -45.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-09-26",
+        "merchant": "Farmacia Rossio",
+        "what": "Pharmacy",
+        "amount": -18.5,
+        "note": "charged"
+      },
+      {
+        "date": "2026-09-26",
+        "merchant": "Mercado Alma",
+        "what": "Supermarket",
+        "amount": -21.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-09-26",
+        "merchant": "Loja Baixa",
+        "what": "Clothing, 15:05",
+        "amount": -64.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-09-26",
+        "merchant": "Eletro Chiado",
+        "what": "Electronics",
+        "amount": -21.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-09-26",
+        "merchant": "Loja Baixa",
+        "what": "Clothing, 15:55",
+        "amount": -24.6,
+        "note": "charged; Tomas Brandt's, see his message"
+      },
+      {
+        "date": "2026-09-27",
+        "merchant": "Camisaria Norte",
+        "what": "Shirts",
+        "amount": -45.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-09-27",
+        "merchant": "Atlantico Outdoor",
+        "what": "Outdoor clothing",
+        "amount": -59.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-09-28",
+        "merchant": "Maison Aurelie",
+        "what": "Boutique",
+        "amount": -340.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-09-29",
+        "merchant": "Armazens Lusa",
+        "what": "Department store",
+        "amount": -412.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-09-30",
+        "merchant": "Lenco e La",
+        "what": "Accessories",
+        "amount": -34.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-10-05",
+        "merchant": "Cardhollow benefits",
+        "what": "Baggage delay benefit BD-7731",
+        "amount": 59.0,
+        "note": "credit for the Atlantico Outdoor receipt of 27 Sep"
+      },
+      {
+        "date": "2026-06-12",
+        "merchant": "Aerolark",
+        "what": "Checked bag fee, AL 33",
+        "amount": -45.0,
+        "note": "charged"
+      },
+      {
+        "date": "2026-06-22",
+        "merchant": "Aerolark",
+        "what": "Checked bag fee refund, AL 33",
+        "amount": 45.0,
+        "note": "credit"
+      }
+    ],
+    "trips": [
+      {
+        "trip": "T-1",
+        "dates": "Fri 25 Sep to Sun 4 Oct 2026",
+        "route": "Boston to Lisbon, AL 41 out (Fri 25 Sep 18:40, arrives Sat 26 Sep 07:55), AL 42 back (Sun 4 Oct)",
+        "carrier": "Aerolark",
+        "travellers": "Imani Boateng and Tomas Brandt, separate tickets, one bag each",
+        "hotel": "Hotel Praca Velha, Lisbon",
+        "purpose": "Landscape architecture conference; Imani speaks at a workshop on Monday 28 Sep"
+      },
+      {
+        "trip": "T-2",
+        "dates": "Fri 12 Jun to Sat 20 Jun 2026",
+        "route": "Boston to Porto, AL 33 out (arrives Sat 13 Jun), AL 34 back",
+        "carrier": "Aerolark",
+        "travellers": "Imani Boateng",
+        "hotel": "Casa do Rio, Porto",
+        "purpose": "Site visit"
+      }
+    ],
+    "legs": [
+      {
+        "trip": "T-1",
+        "leg": "AL 41",
+        "from": "Boston",
+        "to": "Lisbon",
+        "flight_hours": "6 h 55 min",
+        "note": "International; the bag was checked here"
+      },
+      {
+        "trip": "T-1",
+        "leg": "AL 42",
+        "from": "Lisbon",
+        "to": "Boston",
+        "flight_hours": "7 h 30 min",
+        "note": "International"
+      },
+      {
+        "trip": "T-2",
+        "leg": "AL 33",
+        "from": "Boston",
+        "to": "Porto",
+        "flight_hours": "6 h 40 min",
+        "note": "International; bag delivered Tue 16 Jun"
+      }
+    ],
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Aerolark baggage claims (invented). Today is Friday 9 October 2026. Topics: index, carriage, complaint, expenses, limit, bagfee. This site gives the airline's rules for a delayed bag on an international flight. Read the claim file with read_claim_file."
+      },
+      {
+        "topic": "carriage",
+        "text": "Carriage. The rules of the Montreal Convention apply when the ticket's departure and destination are in two countries that are parties to it, as the United States and Portugal are. A flight entirely inside one country is not under it, and a claim for a domestic delay follows the airline's own conditions. Flights AL 41 and AL 42 are international."
+      },
+      {
+        "topic": "complaint",
+        "text": "The written complaint. For a delayed bag the complaint must be in writing and reach Aerolark within 21 days from the day the bag was placed at the passenger's disposal. If none is made in time, no claim can be brought, except for fraud by the airline. The day counts from delivery, not from arrival. File each expense line with claim_expense."
+      },
+      {
+        "topic": "expenses",
+        "text": "What Aerolark pays. Reasonable cost of the essentials a passenger had to buy while the bag was missing, from arrival to delivery: toiletries, medicines, basic clothing, a charger, and what a work engagement needs. Not paid: things the passenger would have bought anyway, such as food; luxury goods or a new wardrobe; anything bought after the bag was delivered; an item another source has paid, such as a card's baggage benefit; purchases for another traveller whose own bag arrived; costs not caused by the bag; and a trip whose 21 days have ended."
+      },
+      {
+        "topic": "limit",
+        "text": "The limit. Liability for baggage, for loss, damage or delay together, is 1,519 Special Drawing Rights for each passenger, as revised by ICAO from 28 December 2024 (1,288 from 28 December 2019). It is about 2,000 dollars. Aerolark is not liable for a delay if it shows it took all measures that could reasonably be required, or that taking them was impossible."
+      },
+      {
+        "topic": "bagfee",
+        "text": "The checked bag fee. Under the Department of Transportation's refund rule, 14 CFR 260.5, a bag not delivered within 15 hours on an international flight of 12 hours or less (12 hours on a domestic flight, 30 on a longer international one) earns a refund of the fee, if the passenger filed a baggage report. It is paid in 7 business days to a card. Request it with request_bag_fee_refund, one bag at a time. A fee already refunded, and a bag that arrived on time, are not refunded again."
+      }
+    ],
+    "report": [
+      {
+        "report": "LIS-55302",
+        "flight": "AL 41, Boston to Lisbon, Fri 25 Sep 2026, arrived Sat 26 Sep 2026 at 07:55",
+        "filed": "Sat 26 Sep 2026 09:20 at Lisbon airport",
+        "bag": "1 of 1, tag AL 604418",
+        "delivered": "Wed 30 Sep 2026 17:30, to the Hotel Praca Velha reception",
+        "delay": "4 days and 9 hours 35 minutes after she could leave the plane",
+        "complaint_due": "Wed 21 Oct 2026 (21 days from 30 Sep)",
+        "limit": "1,519 SDR for the bag, per passenger"
+      }
+    ],
+    "clm": [
+      {
+        "line": "E-1",
+        "receipt": "R-1",
+        "bought": "Sat 26 Sep 10:15",
+        "merchant": "Farmacia Rossio",
+        "items": "contact lens solution, toothbrush, hairbrush",
+        "amount": 18.5,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-2",
+        "receipt": "R-2",
+        "bought": "Sat 26 Sep 12:40",
+        "merchant": "Mercado Alma",
+        "items": "bread, cheese, fruit and water",
+        "amount": 11.2,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-3",
+        "receipt": "R-2",
+        "bought": "Sat 26 Sep 12:40",
+        "merchant": "Mercado Alma",
+        "items": "toothpaste, deodorant and a razor",
+        "amount": 9.8,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-4",
+        "receipt": "R-3",
+        "bought": "Sat 26 Sep 15:05",
+        "merchant": "Loja Baixa",
+        "items": "two T-shirts, trousers and five pairs of underwear and socks",
+        "amount": 64.0,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-5",
+        "receipt": "R-4",
+        "bought": "Sat 26 Sep 15:40",
+        "merchant": "Eletro Chiado",
+        "items": "phone charger and plug adapter",
+        "amount": 21.0,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-6",
+        "receipt": "R-5",
+        "bought": "Sun 27 Sep 11:30",
+        "merchant": "Camisaria Norte",
+        "items": "one shirt for Monday's workshop",
+        "amount": 45.0,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-7",
+        "receipt": "R-6",
+        "bought": "Sun 27 Sep 16:20",
+        "merchant": "Atlantico Outdoor",
+        "items": "rain jacket",
+        "amount": 59.0,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-8",
+        "receipt": "R-7",
+        "bought": "Mon 28 Sep 18:00",
+        "merchant": "Maison Aurelie",
+        "items": "silk dress",
+        "amount": 340.0,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-9",
+        "receipt": "R-8",
+        "bought": "Tue 29 Sep 14:10",
+        "merchant": "Armazens Lusa",
+        "items": "four shirts, two blazers and two pairs of trousers",
+        "amount": 412.0,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-10",
+        "receipt": "R-9",
+        "bought": "Sat 26 Sep 15:55",
+        "merchant": "Loja Baixa",
+        "items": "a shirt and a razor",
+        "amount": 24.6,
+        "paid_by": "Tomas Brandt, on Imani's card"
+      },
+      {
+        "line": "E-11",
+        "receipt": "R-10",
+        "bought": "Wed 30 Sep 19:40",
+        "merchant": "Lenco e La",
+        "items": "wool scarf",
+        "amount": 34.0,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-12",
+        "receipt": "R-11",
+        "bought": "Mon 28 Sep 09:10",
+        "merchant": "Telecom Lisboa",
+        "items": "data roaming pack",
+        "amount": 15.0,
+        "paid_by": "Imani Boateng"
+      },
+      {
+        "line": "E-13",
+        "receipt": "R-12",
+        "bought": "Sat 13 Jun 11:20",
+        "merchant": "Farmacia Ribeira",
+        "items": "toothpaste, shampoo and lens solution (June trip, report POR-30871)",
+        "amount": 16.4,
+        "paid_by": "Imani Boateng"
+      }
+    ],
+    "bags": [
+      {
+        "bag": "B-1",
+        "passenger": "Imani Boateng",
+        "trip": "AL 41 / AL 42, 25 Sep to 4 Oct 2026",
+        "fee": 45.0,
+        "paid": "Fri 25 Sep, card ending 4417",
+        "status": "Delayed: arrived Sat 26 Sep 07:55 without the bag, delivered Wed 30 Sep 17:30. Report LIS-55302 filed. Fee not yet refunded."
+      },
+      {
+        "bag": "B-2",
+        "passenger": "Imani Boateng",
+        "trip": "AL 33 / AL 34, 12 to 20 Jun 2026",
+        "fee": 45.0,
+        "paid": "Fri 12 Jun, card ending 4417",
+        "status": "Delayed and delivered Tue 16 Jun. Fee refunded to the card on 22 Jun 2026."
+      },
+      {
+        "bag": "B-3",
+        "passenger": "Tomas Brandt",
+        "trip": "AL 41 / AL 42, 25 Sep to 4 Oct 2026",
+        "fee": 45.0,
+        "paid": "Fri 25 Sep, his own card",
+        "status": "Arrived with the flight on Sat 26 Sep. No delay."
+      }
+    ]
+  }
+}

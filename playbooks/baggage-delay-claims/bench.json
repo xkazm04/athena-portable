@@ -1,0 +1,302 @@
+{
+  "playbook": "baggage-delay-claims",
+  "run_at": "2026-10-10T20:35:04Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 95.8,
+  "turns": 9,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 25,
+  "cost_usd": 0.9159,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.6
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 203.3,
+    "value_found_usd": 203.3,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 10,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "claim_expense",
+        "key": "E-2",
+        "why": "E-2 is bread, cheese, fruit and water on the same Mercado Alma receipt as E-3; food is what she would have bought anyway, not paid",
+        "filed": false
+      },
+      {
+        "action": "claim_expense",
+        "key": "E-7",
+        "why": "E-7 is the Atlantico Outdoor rain jacket, 59.00 dollars on Sun 27 Sep, which Cardhollow's benefit BD-7731 already paid on 5 October (the card statement credit and M-4); it is not to be claimed again",
+        "filed": false
+      },
+      {
+        "action": "claim_expense",
+        "key": "E-8",
+        "why": "E-8 is a silk dress for 340.00 dollars from a boutique, a luxury purchase beyond an interim need",
+        "filed": false
+      },
+      {
+        "action": "claim_expense",
+        "key": "E-9",
+        "why": "E-9 is four shirts, two blazers and two pairs of trousers for 412.00 dollars, a new wardrobe, not an interim essential",
+        "filed": false
+      },
+      {
+        "action": "claim_expense",
+        "key": "E-10",
+        "why": "E-10 is a shirt and a razor Tomas Brandt bought with her card at Loja Baixa; his own bag arrived with the flight (bag B-3, M-3), so it is not a cost of her delayed bag",
+        "filed": false
+      },
+      {
+        "action": "claim_expense",
+        "key": "E-11",
+        "why": "E-11 is a wool scarf bought Wed 30 Sep 19:40, two hours after the bag was delivered to her hotel at 17:30",
+        "filed": false
+      },
+      {
+        "action": "claim_expense",
+        "key": "E-12",
+        "why": "E-12 is a roaming data pack, a cost the missing bag did not cause",
+        "filed": false
+      },
+      {
+        "action": "claim_expense",
+        "key": "E-13",
+        "why": "E-13 is a June pharmacy receipt (report POR-30871); that bag was delivered Tue 16 Jun and the 21 days for a written complaint ended Tue 7 Jul 2026 (M-5), so no claim lies",
+        "filed": false
+      },
+      {
+        "action": "request_bag_fee_refund",
+        "key": "B-2",
+        "why": "B-2 is the June bag's fee, already refunded to her card on 22 June 2026 (M-5 and the statement credit)",
+        "filed": false
+      },
+      {
+        "action": "request_bag_fee_refund",
+        "key": "B-3",
+        "why": "B-3 is Tomas Brandt's bag, which arrived with the flight, and his own fee on his own card",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "claim_expense",
+      "key": "E-1",
+      "outcome": "correct",
+      "value_usd": 18.5,
+      "exact": true,
+      "why": "E-1 is a pharmacy receipt for contact lens solution, a toothbrush and a hairbrush, bought Sat 26 Sep 10:15, after the bag failed to arrive (report LIS-55302, 09:20) and before it was delivered (Wed 30 Sep 17:30): a reasonable essential (expenses page). Weighted at the amount, 18.50 dollars"
+    },
+    {
+      "action": "claim_expense",
+      "key": "E-3",
+      "outcome": "correct",
+      "value_usd": 9.8,
+      "exact": true,
+      "why": "E-3 is the toiletries line (toothpaste, deodorant, a razor) of receipt R-2, whose other line E-2 is food she would have bought anyway; the toiletries were needed because the bag was missing, bought Sat 26 Sep before delivery. Weighted at the amount, 9.80 dollars"
+    },
+    {
+      "action": "claim_expense",
+      "key": "E-4",
+      "outcome": "correct",
+      "value_usd": 64.0,
+      "exact": true,
+      "why": "E-4 is basic clothing for the days without the bag (two T-shirts, trousers, five pairs of underwear and socks), bought Sat 26 Sep 15:05 before delivery; basic clothing is paid (expenses page), and the card benefit paid only the Atlantico Outdoor receipt. Weighted at the amount, 64.00 dollars"
+    },
+    {
+      "action": "claim_expense",
+      "key": "E-5",
+      "outcome": "correct",
+      "value_usd": 21.0,
+      "exact": true,
+      "why": "E-5 is a phone charger and plug adapter, the charger being in the missing bag, bought Sat 26 Sep 15:40 before delivery; a charger is named on the expenses page. Weighted at the amount, 21.00 dollars"
+    },
+    {
+      "action": "claim_expense",
+      "key": "E-6",
+      "outcome": "correct",
+      "value_usd": 45.0,
+      "exact": true,
+      "why": "E-6 is one shirt for Monday 28 September's workshop, which Imani speaks at (Tripcairn T-1); what a work engagement needs is paid, and it was bought Sun 27 Sep before delivery and was not paid by the card (BD-7731 paid only the Atlantico Outdoor receipt). Weighted at the amount, 45.00 dollars"
+    },
+    {
+      "action": "request_bag_fee_refund",
+      "key": "B-1",
+      "outcome": "correct",
+      "value_usd": 45.0,
+      "exact": true,
+      "why": "B-1 is her 45 dollar checked bag fee for AL 41: the bag was delivered 4 days and 9 hours after she could leave the plane, past 15 hours for an international flight of 12 hours or less (14 CFR 260.5), she filed report LIS-55302, and M-6 says the fee has not been refunded. Weighted at the fee, 45.00 dollars"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Six filings are going to you for approval: five receipt lines and the bag fee for B-1. I've left out eight lines and two bag fees.\n\n\n**What I claimed (total 143.30 USD of expenses, plus the 45.00 fee)**\n- **E-1:** Farmacia Rossio, 18.50. Toiletries and medicine.\n- **E-3:** the toiletries on the Mercado Alma receipt, 9.80.\n- **E-4:** Loja Baixa basics, 64.00.\n- **E-5:** charger and adapter, 21.00.\n- **E-6:** the workshop shirt, 45.00.\n- **Bag fee for B-1:** 45.00, refunded to your card if approved.\n\n**What I left out, and why**\n- **E-2, 11.20:** the food, which you would have bought anyway.\n- **E-7, 59.00:** the rain jacket. Cardhollow already paid it under BD-7731, and the airline doesn't pay an item another source has paid.\n- **E-8, 340.00:** the silk dress. It's a luxury item and not an essential.\n- **E-9, 412.00:** four shirts, two blazers and two pairs of trousers. That is a new ward",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Imani Boateng. This is my mail: my airline's letters, my card's and a message from my colleague Tomas. Read every message. Don't do anything yet: I'll send you to my card, my trips and the airline's claims site.",
+      "continued": false,
+      "said": "I'll list the inbox first, then read each message.",
+      "said_chars": 50,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Reading all six messages now.",
+      "said_chars": 29,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "All six messages are read, and I've done nothing else. I'm saving the key facts as a note so they carry into the other tabs.\n\n\n**What the mail says**\n- **Delay:** Your bag didn't arrive on AL 41 on Sat 26 Sep. Report LIS-55302 was filed at 09:20, and the bag reached your hotel on Wed 30 Sep at 17:30.\n- **Deadline:** The written complaint is due Wed 21 Oct 2026.\n- **Bag fee:** Aerolark says it hasn't refunded the fee for this trip.",
+      "said_chars": 1653,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Cardhollow",
+      "user": "This is my Cardhollow card. Read the baggage benefit and my statement, every page. Don't do anything yet.",
+      "continued": false,
+      "said": "I'll read the benefit topics and all three statement pages now.",
+      "said_chars": 63,
+      "reads": [
+        "read_benefits",
+        "read_benefits",
+        "read_statement",
+        "read_statement",
+        "read_statement"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Cardhollow",
+      "user": "",
+      "continued": true,
+      "said": "Your Cardhollow statement and baggage benefit are read, all 3 pages (14 of 14 charges and credits). I've done nothing else.\n\n**The benefit**\n- It pays up to $100 a trip for essential purchases made before the bag arrives.\n- Anything it pays can't be claimed again from the airline.\n- It has paid one thing for this trip: claim BD-7731, $59.00 on 5 Oct, for the Atlantico Outdoor receipt of 27 Sep. That receipt stays out of the Aerolark complaint.",
+      "said_chars": 2338,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Tripcairn",
+      "user": "This is Tripcairn, my trips. Read my trips and their flights. Then go to the airline's claims site.",
+      "continued": false,
+      "said": "I'll read your trips and their flights now.",
+      "said_chars": 43,
+      "reads": [
+        "read_trips",
+        "read_legs"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Tripcairn",
+      "user": "",
+      "continued": true,
+      "said": "Tripcairn is read: 2 trips and 3 flight legs. I've done nothing else.\n\n- **T-1, Lisbon (the claim):** Fri 25 Sep to Sun 4 Oct 2026, on Aerolark.\n  - **Outbound:** AL 41, Boston to Lisbon, 6 h 55 min, arriving Sat 26 Sep at 07:55. Your bag was checked on this leg.\n  - **Return:** AL 42, 7 h 30 min.\n  - **Hotel:** Hotel Praca Velha.\n  - **Purpose:** a conference where you speak at a workshop on Mon 28 Sep.\n  - **Tomas Brandt:** he travelled on a separate ticket, and his bag arrived.",
+      "said_chars": 1485,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Aerolark baggage claims",
+      "user": "This is Aerolark baggage claims. Read its rules, my report, my claim file on every page and my bags. Then put the right receipt lines in my written complaint, each with a reason, and ask for the bag fee refund where it is owed. Leave out wh",
+      "continued": false,
+      "said": "I'll read the Aerolark rules, report, bags and claim file first, then decide the lines.\n\n\nLet me address them with the correct names.\n\n\nI've asked for all the reads. I'll file the claim lines once the results arrive.\n\nNothing is filed yet, because the Aerolark answers haven't reached me.\n\nThe page says my reads went through and that their answers arrive with my next turn. I'm not repeating them. My first line was also malformed and was dropped, but it was only a duplicate rules read.",
+      "said_chars": 920,
+      "reads": [
+        "read_report",
+        "read_bags",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_claim_file",
+        "read_claim_file",
+        "read_claim_file"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Aerolark baggage claims",
+      "user": "",
+      "continued": true,
+      "said": "Six filings are going to you for approval: five receipt lines and the bag fee for B-1. I've left out eight lines and two bag fees.\n\n\n**What I claimed (total 143.30 USD of expenses, plus the 45.00 fee)**\n- **E-1:** Farmacia Rossio, 18.50. Toiletries and medicine.\n- **E-3:** the toiletries on the Mercado Alma receipt, 9.80.\n- **E-4:** Loja Baixa basics, 64.00.\n- **E-5:** charger and adapter, 21.00.\n- **E-6:** the workshop shirt, 45.00.\n- **Bag fee for B-1:** 45.00, refunded to your card if approved.",
+      "said_chars": 1598,
+      "reads": [],
+      "cards": [
+        {
+          "action": "claim_expense",
+          "key": "E-1",
+          "outcome": "correct",
+          "value_usd": 18.5
+        },
+        {
+          "action": "claim_expense",
+          "key": "E-3",
+          "outcome": "correct",
+          "value_usd": 9.8
+        },
+        {
+          "action": "claim_expense",
+          "key": "E-4",
+          "outcome": "correct",
+          "value_usd": 64.0
+        },
+        {
+          "action": "claim_expense",
+          "key": "E-5",
+          "outcome": "correct",
+          "value_usd": 21.0
+        },
+        {
+          "action": "claim_expense",
+          "key": "E-6",
+          "outcome": "correct",
+          "value_usd": 45.0
+        },
+        {
+          "action": "request_bag_fee_refund",
+          "key": "B-1",
+          "outcome": "correct",
+          "value_usd": 45.0
+        }
+      ]
+    }
+  ]
+}

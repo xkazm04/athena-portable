@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "baggage-delay-claims",
+  "captured_at": "2026-10-10T20:37:58Z",
+  "bench_run_at": "2026-10-10T20:35:04Z",
+  "narration": {
+    "text": "A landscape architect's delayed bag is claimed: a pharmacy, toiletries on a grocery receipt, basics, a charger and a shirt, and the bag fee refunded, while food, a jacket her card paid, a dress, a new wardrobe, a companion's buys, a scarf bought after delivery, roaming and a June claim past its 21 days are left alone, across four portals. This is a chore for a landscape architect in Boston whose checked bag on an international flight to Lisbon came four days late, with a written complaint due 21 days after delivery. On the bench, she found 6 of 6 eligible items, worth 203 dollars and 30 cents of the 203 dollars and 30 cents there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 62 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.705,
+    "sha256": "53af06f8cf00bf35efdc0c090043c64f218c4e87249e920f10faef89805ad6ad"
+  },
+  "video": {
+    "path": "evidence/baggage-delay-claims/evidence.mp4",
+    "duration_s": 62.72,
+    "bytes": 2986086,
+    "sha256": "68110b218abedefb953243d3e4599fbd1692a20d46e6bfbb43d5c49a3706e6af"
+  },
+  "thumbnail": {
+    "path": "playbooks/baggage-delay-claims/thumb.jpg",
+    "bytes": 88672,
+    "sha256": "c492834ecf2f2dd544e9ea9c9e1c169206595a37bcf7a373cecbbcecc5bb8028"
+  }
+}

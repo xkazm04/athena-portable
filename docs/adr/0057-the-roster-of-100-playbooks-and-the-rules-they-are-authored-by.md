@@ -260,6 +260,11 @@ names; each playbook carries the new one.
   Checkpoint Auto is a real vehicle-management company; "Snapshelf photos" became "Lenswick photos", because SnapShelf
   is the name of several real apps (row 64 settled Lenswick); and "Mailnest" became "Postwren", because mailnest.io is a
   real email service.
+- Row 67, `baggage-delay-claims`: "Tripfold" became "Tripcairn", because Trip Fold: Travel Planner is a real travel app
+  (and Tripfold is a real corporate travel template); "Cardwell" became "Cardhollow", the name row 62 settled, because
+  Cardwell Payment Systems is a real card-payment processor; and "Mailnest" became "Postwren", because mailnest.io is a
+  real email service. "Aerolark baggage claims" kept its name: a search found no airline or claims site called Aerolark
+  (the search tool is fuzzy, so that is "none found", not a proof), and `eu261-flight-compensation` already uses it unchanged.
 
 ### B8: Work, pay and benefits
 

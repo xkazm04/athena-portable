@@ -1,0 +1,113 @@
+{
+  "id": "baggage-delay-claims",
+  "title": "A landscape architect's delayed bag is claimed: a pharmacy, toiletries on a grocery receipt, basics, a charger and a shirt, and the bag fee refunded, while food, a jacket her card paid, a dress, a new wardrobe, a companion's buys, a scarf bought after delivery, roaming and a June claim past its 21 days are left alone, across four portals",
+  "domain": "Air travel",
+  "audience": "home",
+  "promise": "A landscape architect flew from Boston to Lisbon on the Friday evening and her checked bag arrived four days later, on the Wednesday at 17:30. She spent 1,070 dollars and 50 cents in the days between on 13 receipt lines. Five are for what she needed until it came: a pharmacy, the toiletries line of a grocery receipt, basic clothes, a charger and adapter, and a shirt for the workshop she gave; with them goes the 45 dollar bag fee the rule refunds for a bag more than 15 hours late. The food on the grocery receipt, a rain jacket her card's baggage benefit has paid, a silk dress, a whole new wardrobe, her colleague's purchases, a scarf bought two hours after delivery, a roaming pack and a June receipt past its 21 days are left alone.",
+  "persona": "A landscape architect in Boston whose checked bag on an international flight to Lisbon came four days late, with a written complaint due 21 days after delivery",
+  "chore": "Read her mail, her card's benefit and statement, her trips, the airline's baggage report, rules and claim file, and the three bag fees. Apply the Montreal Convention's Articles 19, 22(2) and 31(2) to (4) and 14 CFR 260.5 as they stand on 9 October 2026: put in the written complaint, inside the 21 days, each receipt line that was a reasonable interim cost of the missing bag, ask for the bag fee where it is owed, and leave out food, luxuries, items another source paid, a companion's buys, anything bought after delivery and a trip whose 21 days are over.",
+  "command": "I'm Imani Boateng. Go through my Postwren mail, my Cardhollow card, my Tripcairn trips and what Aerolark says about my delayed bag. Put in my written complaint the receipt lines that were reasonable until my bag came, each with the reason, and ask for my bag fee where it is owed. Leave out what the airline's rules do not pay, and tell me what you left out and why.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "the airline's letters, the card's letter and a colleague's message",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Cardhollow",
+      "role": "the card's baggage delay benefit and its statement",
+      "api": "Card portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Tripcairn",
+      "role": "her trips and their flights",
+      "api": "Trip site, no API",
+      "url": ""
+    },
+    {
+      "name": "Aerolark baggage claims",
+      "role": "the airline's rules, the baggage report, the receipt lines of her claim file, the bag fees and the place to file the complaint",
+      "api": "Airline claims site, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the six letters and messages in Postwren.",
+    "Reads the card's baggage benefit and its fourteen statement lines in Cardhollow.",
+    "Reads her two trips and their flights in Tripcairn.",
+    "Reads Aerolark's rules, the report, thirteen receipt lines and three bags, then files the written complaint's lines and the bag fee request."
+  ],
+  "gates": [
+    {
+      "action": "claim_expense",
+      "label": "Put an expense in the written complaint",
+      "why": "A signed written complaint to the airline that a receipt line was a reasonable cost of the delay; one for food she would have bought anyway, for an item her card already paid or for a purchase after delivery puts a claim in a signed letter that the airline can read as a false one, and the 21-day complaint is hard to redo."
+    },
+    {
+      "action": "request_bag_fee_refund",
+      "label": "Ask for a checked bag fee refund",
+      "why": "A signed request to the airline that a bag fee is owed back; one for a bag that arrived on time, or a fee already refunded, asks for money that is not owed."
+    }
+  ],
+  "traps": [
+    "Claiming the bread, cheese, fruit and water on the grocery receipt.",
+    "Claiming the rain jacket that her card's baggage benefit already paid.",
+    "Claiming a silk dress from a boutique.",
+    "Claiming four shirts, two blazers and two pairs of trousers, a new wardrobe.",
+    "Claiming the shirt and razor her colleague bought on her card, whose own bag arrived.",
+    "Claiming a scarf bought two hours after the bag was delivered.",
+    "Claiming a roaming data pack that the bag did not cause.",
+    "Claiming a June receipt whose 21 days for a written complaint ended on 7 July.",
+    "Asking again for the June bag fee that was refunded on 22 June.",
+    "Asking for the fee of her colleague's bag, which arrived with the flight."
+  ],
+  "memory": [
+    "The delivery time of Wednesday 30 September at 17:30, the 21-day deadline of Wednesday 21 October and the report number, from Postwren and Aerolark.",
+    "What the card's benefit paid and what the colleague bought, carried to the last Aerolark tab to set against the thirteen receipt lines."
+  ],
+  "economics": {
+    "value_usd": 500,
+    "per": "episode",
+    "basis": "An estimate. A traveller whose checked bag comes days late spends tens to hundreds of dollars on what she needs and can recover the reasonable part from the airline if she complains in writing inside 21 days of delivery; the roster's $500 an episode is such a claim recovered. The money is recovered, not a price avoided. The bench world holds five reasonable receipt lines worth $158.30 (18.50, 9.80, 64.00, 21.00 and 45.00) and a $45.00 checked bag fee, $203.30 in all, against $912.20 of lines left alone, the 13 lines of the claim file being $1,070.50 together. Times a year: once, the episode in the year it happens (ADR 0056). manual_minutes 100: reading six letters, a card benefit and fourteen statement lines, two trips, the rules and thirteen receipt lines, setting each against delivery time, the card's payment and the airline's rules, and filing the lines. Rules applied, as they stand on Friday 9 October 2026. Montreal Convention 1999, Article 1(2) (international carriage between two States Parties; a flight inside one State is not under it), Article 19 (the carrier is liable for damage caused by delay in the carriage of baggage unless it proves that it took all measures that could reasonably be required, or that they were impossible), Article 22(2) (the limit for baggage, destruction, loss, damage or delay, for each passenger: 1,131 SDR in the copy of the text read, as revised to 1,288 SDR from 28 December 2019 and to 1,519 SDR from 28 December 2024 by ICAO under Article 24, announced on 18 October 2024; 1,519 SDR is in force on the world's date, about 2,000 dollars, far above the claim), and Article 31(2) to (4) (for delay, a written complaint within 21 days from the date the baggage was placed at the passenger's disposal; with no complaint in time no action lies, except for the carrier's fraud). 14 CFR 260.5 (a covered carrier that is the merchant of record must refund the checked bag fee for a significantly delayed bag; (a) delay is counted from the passenger's deplaning at the final destination to delivery; 12 hours on a domestic flight, 15 hours on an international flight with a non-stop segment of 12 hours or less, and 30 hours on a longer one; (b) the passenger must have filed a mishandled baggage report; (d) the refund is automatic once the delay, the report and any notice between carriers are in place; (e) at least the fee paid) as in the eCFR (read 10 October 2026) from the DOT's final rule of 26 April 2024 (89 FR 32760, effective 25 June 2024); the DOT's small-entity guidance, which could not be opened from the bench machine, was reported to put the compliance date at 28 October 2024. Nothing read in the Federal Register for 2025 or 2026 stays or delays 260.5: the only pause found is DOT's enforcement discretion for flights that are merely renumbered (90 FR 55999, 5 December 2025, extended by 91 FR 41556, 7 July 2026, to 7 July 2027), which does not touch a delayed bag, so the bag fee refund is in force for this trip and is a target. The brief's understanding of the figures was right: 1,288 SDR from 28 December 2019 and 1,519 SDR from 28 December 2024, and 12, 15 and 30 hours.",
+    "manual_minutes": 100,
+    "times_per_year": 1,
+    "incumbent": "Claims firms and lawyers for airline delays charge a fee, an hourly rate or an agreed share, and no published price for a delayed-baggage claim was read for the bench, so none is given and no incumbent_fee_pct is stated. A fee is never converted into a share (ADR 0064). A traveller can file the written complaint herself, and the card's own benefit pays up to its limit.",
+    "sources": [
+      {
+        "label": "Montreal Convention 1999, Articles 1, 19, 22 and 31 (text as amended in 2009, Fog.it reproduction, read 10 October 2026; ICAO's depositary text could not be read as text)",
+        "url": "https://www.fog.it/convenzioni/inglese/montreal-1999-2010.htm"
+      },
+      {
+        "label": "Montreal Convention 1999, full text (IATA copy of the ICAO text)",
+        "url": "https://www.iata.org/contentassets/fb1137ff561a4819a2d38f3db7308758/mc99-full-text.pdf"
+      },
+      {
+        "label": "ICAO news, 18 October 2024: international air travel liability limits set to increase on 28 December 2024 (baggage 1,288 to 1,519 SDR)",
+        "url": "https://www.icao.int/news/international-air-travel-liability-limits-set-increase-enhancing-customer-compensation-0"
+      },
+      {
+        "label": "14 CFR 260.5, refunding fees for significantly delayed or lost bags (eCFR, read 10 October 2026)",
+        "url": "https://www.ecfr.gov/current/title-14/chapter-II/subchapter-A/part-260/section-260.5"
+      },
+      {
+        "label": "Refunds and Other Consumer Protections, final rule, 89 FR 32760 (26 April 2024)",
+        "url": "https://www.govinfo.gov/content/pkg/FR-2024-04-26/html/2024-07177.htm"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Thirteen receipt lines to be set against a delivery time, a card benefit that paid one of them, a colleague's purchase on her card, a grocery receipt that mixes food with toiletries, a trip whose 21 days are over and a bag fee that is owed for one bag and not for two others: the line between a reasonable interim cost and a luxury is a judgment.",
+    "usefulness_why": "Saves an evening of receipts against a card benefit, a delivery note and the airline's rules, and keeps a signed complaint inside its 21 days; the sum is small and depends on how long the bag was late."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful traveller with her receipts, her card's letter and the delivery note claims the six reasonable items and none of the ten that are not, inside an hour."
+  },
+  "caveat": "Imani Boateng, Tomas Brandt, Aerolark and its flights AL 33, AL 34, AL 41 and AL 42, Cardhollow, Tripcairn, Postwren, Hotel Praca Velha, every shop, receipt, amount, date and report number are invented; no real airline, card issuer, travel site or shop is named. The public rules applied are the Montreal Convention 1999 (Articles 1(2), 19, 22(2) and 31(2) to (4), in the copy of the text amended in 2009 on the Fog.it site, with the limit revised by ICAO to 1,288 SDR from 28 December 2019 and to 1,519 SDR from 28 December 2024) and 14 CFR 260.5 as in the eCFR on 10 October 2026, from the DOT rule of 26 April 2024 (89 FR 32760); the DOT's compliance guidance and the official ICAO text could not be opened, and the 28 October 2024 compliance date is reported, not read. The airline's portal is invented and its rules page is a summary of those rules. A purely domestic flight is not under the Convention. Whether an expense was reasonable, whether a carrier took all reasonable measures, and a card's own terms decide a real case, and a court or the carrier's conditions may differ. This applies stated rules to stated facts; it is not legal or financial advice."
+}
