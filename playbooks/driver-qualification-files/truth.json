@@ -1,0 +1,84 @@
+{
+  "targets": [
+    {
+      "tool": "run_query",
+      "key": "driver_id",
+      "eligible": {
+        "D-103": {
+          "value_usd": 90.0,
+          "required": true,
+          "why": "Her annual limited query at 3:10 p.m. on Thursday 8 October showed that information exists, so a full query is owed within 24 hours, by 3:10 p.m. today, and she gave her electronic consent in the Clearinghouse at 5:30 p.m. yesterday (382.701(b)(3), 382.703(b)). Without it she may not drive her 4:00 p.m. load",
+          "expect": {
+            "query_type": "full"
+          }
+        },
+        "D-101": {
+          "value_usd": 90.0,
+          "why": "Her last annual query was a limited query on Monday 15 September 2025; at least once per year means one is overdue since 15 September 2026 (382.701(b)(1)). Her general consent of 15 September 2025 covers limited queries for her employment (b)(2)",
+          "expect": {
+            "query_type": "limited"
+          }
+        }
+      },
+      "traps": {
+        "D-104": "Dev holds no CDL and drives a 22,000 lb box truck: Part 382 applies only to drivers who must hold a CDL (382.103), so no query is owed or allowed under it",
+        "D-105": "Queried on 2 February 2026, inside her year; the next is due by 2 February 2027",
+        "D-106": "Frank left on 18 September 2026: the annual query is for employees subject to testing, and his consent ended with his employment"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "order_mvr",
+      "key": "driver_id",
+      "eligible": {
+        "D-102": {
+          "value_usd": 90.0,
+          "why": "His annual record was obtained on Thursday 2 October 2025, so the next was due by 2 October 2026 and is overdue (391.25(a)). It must cover the preceding 12 months from each state that licensed him: Oklahoma until 20 January 2026, then Texas",
+          "expect": {
+            "states": "Oklahoma"
+          }
+        },
+        "D-104": {
+          "value_usd": 90.0,
+          "why": "Part 391 applies to him without a CDL: he drives a 22,000 lb truck across state lines. His annual record was obtained on Monday 29 September 2025, so the next was due by 29 September 2026 and is overdue (391.25(a)); Texas is his only licensing state",
+          "expect": {
+            "states": "Texas"
+          }
+        },
+        "D-107": {
+          "value_usd": 90.0,
+          "why": "Her medical certification on the CDLIS record runs out on Wednesday 14 October; she was re-examined on 6 October, and since the National Registry II rule the carrier verifies a CDL holder's medical status on a CDLIS record from the licensing state and files it (391.23(m)(2), 391.51(b)(6)(ii)). The paper copy she handed in serves only under the CVSA exemption, which ends on Sunday 11 October, before her Monday load",
+          "expect": {
+            "purpose": "medical"
+          }
+        }
+      },
+      "traps": {
+        "D-105": "Her annual record was obtained on 15 March 2026: the next is not due until 15 March 2027",
+        "D-106": "Frank left on 18 September 2026: the annual inquiry is for drivers the carrier employs",
+        "D-108": "This year's record was obtained on 1 October 2026 and is filed; ordering another buys a duplicate. What is due is the review"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "sign_annual_review",
+      "key": "driver_id",
+      "eligible": {
+        "D-108": {
+          "value_usd": 90.0,
+          "why": "His last review was on Thursday 25 September 2025, so one is overdue (391.25(b)), and this year's record, obtained 1 October 2026, is in his file: one speeding conviction 6 to 10 mph over in his own car, considered, which is not a disqualifying offense under 391.15. He meets the minimum requirements",
+          "expect": {
+            "meets_requirements": true
+          }
+        }
+      },
+      "traps": {
+        "D-102": "His review is not due until 20 October 2026, and the record to review is the one his overdue annual inquiry will obtain; signing now would sign a year-old Oklahoma record again",
+        "D-105": "Reviewed on 20 March 2026, inside her year",
+        "D-106": "Frank left on 18 September 2026: no review is owed for a driver who is not employed"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

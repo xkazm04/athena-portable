@@ -1,0 +1,283 @@
+{
+  "playbook": "driver-qualification-files",
+  "run_at": "2026-10-10T11:26:16Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 134.8,
+  "turns": 8,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 20,
+  "cost_usd": 1.1407,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.2
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 540.0,
+    "value_found_usd": 540.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "run_query",
+        "key": "D-104",
+        "why": "Dev holds no CDL and drives a 22,000 lb box truck: Part 382 applies only to drivers who must hold a CDL (382.103), so no query is owed or allowed under it",
+        "filed": false
+      },
+      {
+        "action": "run_query",
+        "key": "D-105",
+        "why": "Queried on 2 February 2026, inside her year; the next is due by 2 February 2027",
+        "filed": false
+      },
+      {
+        "action": "run_query",
+        "key": "D-106",
+        "why": "Frank left on 18 September 2026: the annual query is for employees subject to testing, and his consent ended with his employment",
+        "filed": false
+      },
+      {
+        "action": "order_mvr",
+        "key": "D-105",
+        "why": "Her annual record was obtained on 15 March 2026: the next is not due until 15 March 2027",
+        "filed": false
+      },
+      {
+        "action": "order_mvr",
+        "key": "D-106",
+        "why": "Frank left on 18 September 2026: the annual inquiry is for drivers the carrier employs",
+        "filed": false
+      },
+      {
+        "action": "order_mvr",
+        "key": "D-108",
+        "why": "This year's record was obtained on 1 October 2026 and is filed; ordering another buys a duplicate. What is due is the review",
+        "filed": false
+      },
+      {
+        "action": "sign_annual_review",
+        "key": "D-102",
+        "why": "His review is not due until 20 October 2026, and the record to review is the one his overdue annual inquiry will obtain; signing now would sign a year-old Oklahoma record again",
+        "filed": false
+      },
+      {
+        "action": "sign_annual_review",
+        "key": "D-105",
+        "why": "Reviewed on 20 March 2026, inside her year",
+        "filed": false
+      },
+      {
+        "action": "sign_annual_review",
+        "key": "D-106",
+        "why": "Frank left on 18 September 2026: no review is owed for a driver who is not employed",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "sign_annual_review",
+      "key": "D-108",
+      "outcome": "correct",
+      "value_usd": 90.0,
+      "exact": true,
+      "why": "His last review was on Thursday 25 September 2025, so one is overdue (391.25(b)), and this year's record, obtained 1 October 2026, is in his file: one speeding conviction 6 to 10 mph over in his own car, considered, which is not a disqualifying offense under 391.15. He meets the minimum requirements"
+    },
+    {
+      "action": "order_mvr",
+      "key": "D-102",
+      "outcome": "correct",
+      "value_usd": 90.0,
+      "exact": true,
+      "why": "His annual record was obtained on Thursday 2 October 2025, so the next was due by 2 October 2026 and is overdue (391.25(a)). It must cover the preceding 12 months from each state that licensed him: Oklahoma until 20 January 2026, then Texas"
+    },
+    {
+      "action": "order_mvr",
+      "key": "D-104",
+      "outcome": "correct",
+      "value_usd": 90.0,
+      "exact": true,
+      "why": "Part 391 applies to him without a CDL: he drives a 22,000 lb truck across state lines. His annual record was obtained on Monday 29 September 2025, so the next was due by 29 September 2026 and is overdue (391.25(a)); Texas is his only licensing state"
+    },
+    {
+      "action": "order_mvr",
+      "key": "D-107",
+      "outcome": "correct",
+      "value_usd": 90.0,
+      "exact": true,
+      "why": "Her medical certification on the CDLIS record runs out on Wednesday 14 October; she was re-examined on 6 October, and since the National Registry II rule the carrier verifies a CDL holder's medical status on a CDLIS record from the licensing state and files it (391.23(m)(2), 391.51(b)(6)(ii)). The paper copy she handed in serves only under the CVSA exemption, which ends on Sunday 11 October, before her Monday load"
+    },
+    {
+      "action": "run_query",
+      "key": "D-103",
+      "outcome": "correct",
+      "value_usd": 90.0,
+      "exact": true,
+      "why": "Her annual limited query at 3:10 p.m. on Thursday 8 October showed that information exists, so a full query is owed within 24 hours, by 3:10 p.m. today, and she gave her electronic consent in the Clearinghouse at 5:30 p.m. yesterday (382.701(b)(3), 382.703(b)). Without it she may not drive her 4:00 p.m. load"
+    },
+    {
+      "action": "run_query",
+      "key": "D-101",
+      "outcome": "correct",
+      "value_usd": 90.0,
+      "exact": true,
+      "why": "Her last annual query was a limited query on Monday 15 September 2025; at least once per year means one is overdue since 15 September 2026 (382.701(b)(1)). Her general consent of 15 September 2025 covers limited queries for her employment (b)(2)"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Two queries are due, and I'm filing a card for each. Carla needs a full query before 3:10 p.m. today. Ana's annual limited query is overdue.\n\n**Carla Dunmore (D-103): full query, due by 3:10 p.m. CDT today**\n- Her limited query on Thursday 8 October at 3:10 p.m. showed that information exists. The rule gives 24 hours for the full query, so the deadline is Friday 9 October at 3:10 p.m.\n- She gave electronic consent to a full query in the Clearinghouse on 8 October at 5:30 p.m., so the full query can be run. It will be shown to her, and it uses one query from the plan ($1.25).\n- Her annual query is already done by that limited query, so I'm not filing a second limited one.\n- She departs Dallas–Shreveport at 4:00 p.m. today, after the deadline. The full query result decides whether she may drive.\n\n\n**Ana Ruiz (D-101): limited query**\n- Her last annual query was a limited one on 15 September",
+  "trace": [
+    {
+      "portal": "Logmarrow ELD",
+      "user": "I'm Marisa, safety and compliance at Pell Ridge Transport. Start in Logmarrow: read who our drivers are, what they drive and who's dispatched today.",
+      "continued": false,
+      "said": "Reading Logmarrow's driver list now.",
+      "said_chars": 36,
+      "reads": [
+        "list_drivers"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Logmarrow ELD",
+      "user": "",
+      "continued": true,
+      "said": "Logmarrow lists eight drivers: seven active and one who has left (showing 8 of 8).\n\n| ID | Driver | Licence | Unit | Today |\n|---|---|---|---|---|\n| D-101 | Ana Ruiz | CDL A, TX | tractor 21 | Dallas–Tulsa, departs 1:00 p.m. |\n| D-102 | Ben Laramie | CDL A, TX (Oklahoma until Jan 2026) | tractor 23 | home time |\n| D-103 | Carla Dunmore | CDL A, TX | tractor 24 | Dallas–Shreveport, departs 4:00 p.m. |\n| D-104 | Dev Halvorsen | Class C, no CDL | box truck 9, 22,000 lb GVWR | Dallas–Albuquerque, departs 9:00 a.m.",
+      "said_chars": 2787,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Crewmarrow HR",
+      "user": "Crewmarrow has the driver qualification files and the rules we work to. Read the rules and every driver's file, and sign any annual review that's due and ready to sign.",
+      "continued": false,
+      "said": "I'll read the rules and all eight driver files now. Then I'll work out which annual reviews are due and ready to sign.",
+      "said_chars": 118,
+      "reads": [
+        "read_dq_rules",
+        "read_dq_rules",
+        "read_dq_rules",
+        "read_dq_rules",
+        "read_dq_rules",
+        "read_dq_rules",
+        "view_dq_file",
+        "view_dq_file",
+        "view_dq_file",
+        "view_dq_file",
+        "view_dq_file",
+        "view_dq_file",
+        "view_dq_file",
+        "view_dq_file"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Crewmarrow HR",
+      "user": "",
+      "continued": true,
+      "said": "Hank Silva (D-108) is the only driver with an annual review that's due and ready to sign, so I'm filing a signing card for him. Nobody else has a review I can sign today.\n\n**Hank Silva, D-108**\n- His last review was signed 25 September 2025, so this year's is overdue.\n- The Texas CDLIS record was obtained 1 October 2026 and is filed.\n- It shows one conviction: speeding 6 to 10 mph over, in his own car, on 3 June 2026.\n- It shows no CMV violation, no suspension and no disqualifying offense.",
+      "said_chars": 1965,
+      "reads": [],
+      "cards": [
+        {
+          "action": "sign_annual_review",
+          "key": "D-108",
+          "outcome": "correct",
+          "value_usd": 90.0
+        }
+      ]
+    },
+    {
+      "portal": "Screenmoor MVR",
+      "user": "Screenmoor is where we order motor vehicle records. Read what we've got, and order every record a driver's file needs now, from the right states and for the right reason.",
+      "continued": false,
+      "said": "I'll start with what Screenmoor holds, then re-read the files and rules that decide which records are due.\n\nThe Crewmarrow tools can't be called from this tab, so I'm recalling what I read there. The Screenmoor list is still on its way.\n\nI haven't filed any orders yet. Screenmoor's list of records hasn't come back, and I won't order without seeing what it holds.\n\nThe page took my `list_mvrs` call and said the answer arrives with my next turn. It isn't in what I received. I was told not to repeat the call.",
+      "said_chars": 1848,
+      "reads": [
+        "list_mvrs"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Screenmoor MVR",
+      "user": "",
+      "continued": true,
+      "said": "Three orders are due, and I'm filing a card for each. Nothing else in Screenmoor's list needs ordering.\n\n\n**What the orders are for**\n- **Ben Laramie (D-102):** Texas and Oklahoma, for the annual inquiry. Screenmoor holds only his Oklahoma record from 2 October 2025, which is over 12 months old. Once both records are in, his annual review can be signed in Crewmarrow.\n- **Dev Halvorsen (D-104):** Texas, for the annual inquiry. His last record is 29 September 2025 and is overdue.",
+      "said_chars": 1736,
+      "reads": [],
+      "cards": [
+        {
+          "action": "order_mvr",
+          "key": "D-102",
+          "outcome": "correct",
+          "value_usd": 90.0
+        },
+        {
+          "action": "order_mvr",
+          "key": "D-104",
+          "outcome": "correct",
+          "value_usd": 90.0
+        },
+        {
+          "action": "order_mvr",
+          "key": "D-107",
+          "outcome": "correct",
+          "value_usd": 90.0
+        }
+      ]
+    },
+    {
+      "portal": "Specimoor Clearinghouse desk",
+      "user": "Specimoor is our Clearinghouse desk. Read the queries and the consents, and run every query that's due, of the right kind. Don't run anything the rules don't call for. Then tell me what you did for each driver, what's due next and what you ",
+      "continued": false,
+      "said": "I'll read the Clearinghouse queries and consents first, and I'll recall what the other tabs showed about each driver.\n\n\nI haven't run any query yet. The query and consent lists will come back on my next turn. I won't pick a query type for any driver until I've seen them.\n\nThe query and consent lists haven't come back yet, so I haven't run any query. I'm recalling the Clearinghouse rule text from the Crewmarrow tab, because it sets which query type each driver needs.\n\n\nI haven't run anything for any driver.",
+      "said_chars": 2939,
+      "reads": [
+        "list_queries",
+        "list_consents",
+        "list_queries",
+        "list_consents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Specimoor Clearinghouse desk",
+      "user": "",
+      "continued": true,
+      "said": "Two queries are due, and I'm filing a card for each. Carla needs a full query before 3:10 p.m. today. Ana's annual limited query is overdue.\n\n**Carla Dunmore (D-103): full query, due by 3:10 p.m. CDT today**\n- Her limited query on Thursday 8 October at 3:10 p.m. showed that information exists. The rule gives 24 hours for the full query, so the deadline is Friday 9 October at 3:10 p.m.\n- She gave electronic consent to a full query in the Clearinghouse on 8 October at 5:30 p.m., so the full query can be run.",
+      "said_chars": 2378,
+      "reads": [],
+      "cards": [
+        {
+          "action": "run_query",
+          "key": "D-103",
+          "outcome": "correct",
+          "value_usd": 90.0
+        },
+        {
+          "action": "run_query",
+          "key": "D-101",
+          "outcome": "correct",
+          "value_usd": 90.0
+        }
+      ]
+    }
+  ]
+}

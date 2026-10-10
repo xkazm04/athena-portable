@@ -145,6 +145,11 @@ names; each playbook carries the new one.
 - Row 48, `ifta-quarterly`: "Roadlog ELD" became "Odowren ELD", because VDO RoadLog is a real ELD;
   "Fueltax Online" became "Tallyquart IFTA filing", because FuelTaxOnline is a real IFTA reporting
   product; and "Docshelf" became "Binderwell", because DocShelf is a real document management app.
+- Row 49, `driver-qualification-files`: "Roadlog ELD" became "Logmarrow ELD", because VDO RoadLog is
+  a real ELD; "Drivecheck" became "Screenmoor MVR", because DriveCheck is a real inspection app and
+  DriverCheck a real drug-testing administrator; "Testline" became "Specimoor Clearinghouse desk",
+  because TestLine is a real maker of diagnostic tests; and "Staffnest" became "Crewmarrow HR",
+  because StaffNest is a real HR service.
 
 ### B6: Small-business money, food, and selling online
 

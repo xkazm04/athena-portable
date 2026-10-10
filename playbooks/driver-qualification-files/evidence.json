@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "driver-qualification-files",
+  "captured_at": "2026-10-10T11:29:13Z",
+  "bench_run_at": "2026-10-10T11:26:16Z",
+  "narration": {
+    "text": "A small carrier's driver qualification files kept current on four clocks: a full Clearinghouse query run before its twenty-four hours run out, an overdue annual query, two overdue driving records from the right states, one record ordered for a new medical status before the paper exemption ends, and an annual review signed, while a driver with no CDL is kept out of the Clearinghouse, a driver who left is left alone and nothing done this year is done twice. This is a chore for the safety and compliance manager of a small trucking company with eight drivers, who keeps the driver qualification files herself. On the bench, she found 6 of 6 eligible items, worth 540 dollars of the 540 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 41 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.586,
+    "sha256": "f97a212fdc115c1816349fdb781c4e6ae60869990818aa5d77011e5c3c76255c"
+  },
+  "video": {
+    "path": "evidence/driver-qualification-files/evidence.mp4",
+    "duration_s": 63.6,
+    "bytes": 3158307,
+    "sha256": "bd524053e6f3eaf7d06c6331f53a41858683e537058b741f86d2be3dfca5cb84"
+  },
+  "thumbnail": {
+    "path": "playbooks/driver-qualification-files/thumb.jpg",
+    "bytes": 84751,
+    "sha256": "16393c952bab1acb3d381f6f9c3a3bb3c2e1dabdcb3906ad34351c9e98bbb3b3"
+  }
+}

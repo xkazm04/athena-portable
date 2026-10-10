@@ -1,0 +1,131 @@
+{
+  "id": "driver-qualification-files",
+  "title": "A small carrier's driver qualification files kept current on four clocks: a full Clearinghouse query run before its twenty-four hours run out, an overdue annual query, two overdue driving records from the right states, one record ordered for a new medical status before the paper exemption ends, and an annual review signed, while a driver with no CDL is kept out of the Clearinghouse, a driver who left is left alone and nothing done this year is done twice",
+  "domain": "Trucking",
+  "audience": "work",
+  "promise": "A small carrier's eight drivers are read across its ELD, its qualification files, its driving record orders and its Clearinghouse desk, and every clock that has run out is reset the way Parts 391 and 382 require: a full Clearinghouse query for a driver whose limited query found something, inside the twenty-four hours, before her afternoon load; an annual query a month overdue; annual driving records for two drivers, one of them from the two states that licensed him, and one without a CDL; a driving record for a driver re-examined last week, because her medical status now reaches the carrier only on the state's record and the paper exemption ends on Sunday; and an annual review signed on a record received last week. The driver with no CDL is kept out of the Clearinghouse, the driver who left in September is owed nothing, and every query, record and review done this year is left alone.",
+  "persona": "The safety and compliance manager of a small trucking company with eight drivers, who keeps the driver qualification files herself",
+  "chore": "Read each driver's licence, unit, status and dispatch in the ELD; each qualification file's dates, licensing states and medical record, and the rules, in HR; every driving record obtained and its content in the record ordering portal; and every Clearinghouse query and consent on the Clearinghouse desk. Then apply 49 CFR 391.51 (the file and how long), 391.25 (the annual inquiry from each licensing state and the annual review; 391.27 reserved since 2022), 391.45 and 391.23(m) with the National Registry II rule (a CDL holder's medical status on the CDLIS record since 23 June 2025, and the CVSA exemption that lets paper serve until 11 October 2026), and 382.103, 382.701 and 382.703 (the annual query, the limited query on general consent, and the full query within 24 hours when the limited one finds something), as they stand on 9 October 2026. Four clocks per driver, in four systems.",
+  "command": "I'm Marisa, safety and compliance at Pell Ridge Transport. Go through Logmarrow, the Crewmarrow files, Screenmoor and our Specimoor Clearinghouse desk, and bring every driver's qualification file up to date: every query, driving record and annual review that's due, done the right way. Don't do anything for a driver the rule doesn't cover or that's already done.",
+  "apps": [
+    {
+      "name": "Logmarrow ELD",
+      "role": "the fleet's ELD: each driver's licence, unit, status and today's dispatch",
+      "api": "ELD, no HR integration",
+      "url": ""
+    },
+    {
+      "name": "Crewmarrow HR",
+      "role": "the driver qualification files, with each driver's dates, licensing states and medical record, the rules as the carrier applies them, and the annual review form",
+      "api": "HR system, no API",
+      "url": ""
+    },
+    {
+      "name": "Screenmoor MVR",
+      "role": "the motor vehicle record ordering portal: every record obtained and what it shows, and the order form",
+      "api": "Vendor portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Specimoor Clearinghouse desk",
+      "role": "the employer's Clearinghouse desk: every query and its result, each driver's consents, and the query form",
+      "api": "Clearinghouse account, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads every driver in Logmarrow: licence, unit, status and dispatch.",
+    "Reads the rules and every qualification file in Crewmarrow, and signs the one annual review that is due on a record in hand.",
+    "Reads every driving record in Screenmoor and orders the three that are owed.",
+    "Reads every query and consent in Specimoor and runs the full query and the overdue annual query."
+  ],
+  "gates": [
+    {
+      "action": "run_query",
+      "label": "Run a Clearinghouse query",
+      "why": "A query recorded on the driver's Clearinghouse record, paid for, and shown to the driver when it is full."
+    },
+    {
+      "action": "order_mvr",
+      "label": "Order a motor vehicle record",
+      "why": "A request to a state's licensing authority, paid for."
+    },
+    {
+      "action": "sign_annual_review",
+      "label": "Sign a driver's annual review",
+      "why": "A signed record in the driver's qualification file that cannot be withdrawn."
+    }
+  ],
+  "traps": [
+    "A Clearinghouse query on the driver with no CDL, who is outside Part 382.",
+    "A query, record or review for the driver who left in September.",
+    "A query, record or review done inside its twelve months.",
+    "A second record for the driver whose annual record arrived last week, instead of his review.",
+    "Signing a review on last year's record for a driver whose new record is not yet in.",
+    "Relying on the paper medical copy after the exemption ends, or ordering the annual record from one state when he was licensed in two."
+  ],
+  "memory": [
+    "Each driver's licence, CDL or not, status and dispatch, carried from Logmarrow.",
+    "Each file's last inquiry and review, licensing states and medical record, and the rules, carried from Crewmarrow.",
+    "Which records are in and what they show, carried from Screenmoor into the Specimoor tab."
+  ],
+  "economics": {
+    "value_usd": 3000,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. A carrier keeps a qualification file for every driver and resets four clocks on each: the annual driving record from every state that licensed the driver, the annual review, the medical certification (since 23 June 2025 a CDL holder's reaches the carrier on the state's CDLIS record), and the annual Clearinghouse query, with a full query within 24 hours when a limited one finds something. A recordkeeping violation can cost up to $1,584 a day, to $15,846 (49 CFR Part 386, Appendix B, as adjusted for 2025), and a driver without a current file or query cannot lawfully drive. The roster's $3,000 a year is about what a compliance service charges to keep eight drivers' files ($30 a driver a month, DotFleet Compliance's published price). Each truth item is weighted at $90, a quarter of that service's $360 a driver a year for the four annual tasks, a price avoided, not money recovered; the bench world holds six acts, $540. Times a year: 12, a monthly pass over the files. manual_minutes 90: reading eight files against four systems and the rules, and placing six orders, queries and reviews. The rules applied, as they stand on Friday 9 October 2026 (eCFR title 49 through its versioner API, up to date as of 7 October 2026; federalregister.gov): 391.15, 391.23(m)(1) and (2), 391.25(a), (b) and (c)(2), 391.27 [Reserved] (removed by the Record of Violations rule, 87 FR 13192, 9 March 2022), 391.45(b), 391.51(b), (c) and (d); 382.103, 382.701(b)(1) to (3) and 382.703; the National Registry II rule (80 FR 22790, 2015), required from 23 June 2025, and FMCSA's notice of 8 October 2026 (91 FR 64454): Alaska alone has not implemented it, and the CVSA exemption (91 FR 19255, 14 April 2026), which lets a paper certificate serve for up to 60 days, expires on 11 October 2026. The brief's premise that 391.27's annual list of violations still exists was checked and is wrong: 391.27 is reserved, and the world says so.",
+    "manual_minutes": 90,
+    "times_per_year": 12,
+    "incumbent": "Compliance services keep driver qualification files for a flat fee a driver a month, $5 for software to $30 for a managed service (DotFleet Compliance); no share of anything, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "49 CFR 391.51: the driver qualification file, what it holds and for how long",
+        "url": "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-391/subpart-F/section-391.51"
+      },
+      {
+        "label": "49 CFR 391.25: the annual inquiry and review of driving record",
+        "url": "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-391/subpart-C/section-391.25"
+      },
+      {
+        "label": "FMCSA, Record of Violations final rule, 87 FR 13192 (9 March 2022): 391.27 removed",
+        "url": "https://www.federalregister.gov/documents/2022/03/09/2022-04930/record-of-violations"
+      },
+      {
+        "label": "49 CFR 391.45: persons who must be medically examined and certified (every 24 months)",
+        "url": "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-391/subpart-E/section-391.45"
+      },
+      {
+        "label": "FMCSA, Qualification of drivers; CVSA application for exemption, 91 FR 64454 (8 October 2026): National Registry II compliance from 23 June 2025, Alaska alone not implemented, paper reliance ends 12 October 2026",
+        "url": "https://www.federalregister.gov/documents/2026/10/08/2026-20649/qualification-of-drivers-commercial-vehicle-safety-alliance-application-for-exemption"
+      },
+      {
+        "label": "49 CFR 382.701: Drug and Alcohol Clearinghouse queries (annual query, limited query, full query within 24 hours)",
+        "url": "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-382/subpart-G/section-382.701"
+      },
+      {
+        "label": "49 CFR 382.103: Part 382 applies to drivers subject to the CDL requirements",
+        "url": "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-382/subpart-A/section-382.103"
+      },
+      {
+        "label": "49 CFR Part 386, Appendix B: civil penalties (recordkeeping up to $1,584 a day, $15,846)",
+        "url": "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-386/appendix-Appendix%20B%20to%20Part%20386"
+      },
+      {
+        "label": "DotFleet Compliance: driver qualification file management, $30 a driver a month",
+        "url": "https://www.dotfleetcompliance.com/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Eight drivers times four clocks, each kept in a different system and each with its own trigger: a 24-hour clock started by yesterday afternoon's query, annual dates that fall either side of today, a record that must cover two states, a medical rule that changed in 2025 and a paper exemption that ends this Sunday. A driver with no CDL is in Part 391 but out of Part 382, and a driver who left still has a file but is owed nothing.",
+    "usefulness_why": "Keeps every driver lawfully on the road and the files ready for an audit, in minutes a month rather than an afternoon; mostly minutes and protection, with a driver kept off a load if one clock is missed."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful safety manager with the files, the records and the rules in hand gets most of it: the bar is the full query run inside its 24 hours, the overdue annual query, the three records ordered for the right reason and states, and the review signed, with nothing done for the driver without a CDL in the Clearinghouse, the driver who left, or anything done this year, inside an hour."
+  },
+  "caveat": "Marisa Kell, Pell Ridge Transport and its drivers, units and loads, Logmarrow, Crewmarrow, Screenmoor and the Specimoor Clearinghouse desk are invented, and so are every date, record and result; no carrier, driver or record here is real, and Specimoor stands in for FMCSA's own Drug and Alcohol Clearinghouse. The public rules applied are 49 CFR Parts 391 and 382 (391.15, 391.23(m), 391.25, 391.45, 391.51; 382.103, 382.701, 382.703), the National Registry II rule as implemented from 23 June 2025, and the CVSA exemption ending 11 October 2026 (91 FR 19255; 91 FR 64454), as they stand on 9 October 2026; 391.27 is reserved, not applied. FMCSA, the states and an auditor decide real cases, on a carrier's real files. This applies stated rules to stated facts; it is not legal or regulatory-compliance advice."
+}

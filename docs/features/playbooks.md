@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The fifty-seven playbooks (latest runs, Claude Sonnet)
+## The fifty-eight playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -100,9 +100,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A sensor maker's export orders screened before they ship: near-matches cleared and released, listed, denied, unverified, owner-blocked and red-flagged buyers held | work | 4 | exceeds: 10 of 10 (a $1 count weight an act, mostly minutes), 10 of 10 traps, 0 false |
 | A garden importer's Importer Security Filings made before each cargo is loaded, a factory named late and a new warehouse updated before arrival, while the air, bulk, carrier-filed and rolled cargo are left alone | work | 4 | exceeds: 5 of 5, $25,000 of $25,000 (a $5,000 weight an act, protection, mostly minutes), 9 of 9 traps, 0 false |
 | A small Texas carrier's third-quarter IFTA return built from the ELD's miles and the fuel card, with exempt Wyoming lease-road miles, a cash fill and a duplicate receipt handled, and Mexico, two light vehicles and a brokered load left off | work | 4 | exceeds: 6 of 6, $1,844.83 of $1,844.83, 8 of 8 traps, 0 false |
+| A small carrier's driver qualification files kept current: a full Clearinghouse query inside its 24 hours, an overdue annual query, three driving records ordered for the right reason and states, and a review signed, while the driver with no CDL, the driver who left and this year's work are left alone | work | 4 | exceeds: 6 of 6 (a $90 weight an act, mostly minutes), 9 of 9 traps, 0 false |
 
-Across the latest runs: $1,016,793 of $1,026,220 found, 601 of 601 traps walked past, no false claim,
-173 minutes of her time against about 263 hours by hand, $106.51 of model time. 94 runs are recorded
+Across the latest runs: $1,017,333 of $1,026,760 found, 610 of 610 traps walked past, no false claim,
+175 minutes of her time against about 265 hours by hand, $107.65 of model time. 95 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module
