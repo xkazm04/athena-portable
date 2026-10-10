@@ -1,0 +1,332 @@
+{
+  "playbook": "organic-annual-update",
+  "run_at": "2026-10-10T18:00:49Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 99.2,
+  "turns": 10,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 30,
+  "cost_usd": 1.2123,
+  "your_time_s": 240,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.7
+  },
+  "score": {
+    "eligible": 8,
+    "found": 8,
+    "exact": 8,
+    "value_total_usd": 600.0,
+    "value_found_usd": 600.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "report_plan_change",
+        "key": "C-4",
+        "why": "C-4 the second drying line was reported on 15 April 2026 and accepted on 29 April 2026 (Certifield's accepted changes); it is already in the plan and is not reported again",
+        "filed": false
+      },
+      {
+        "action": "report_plan_change",
+        "key": "C-5",
+        "why": "C-5 the pouch filler order was cancelled on 12 May 2026 and the machine was never delivered or installed (D-9); nothing changed",
+        "filed": false
+      },
+      {
+        "action": "report_supplier_lapse",
+        "key": "S-1",
+        "why": "S-1 Verdane Oats Cooperative: its paper certificate ran out on 30 April 2025 (D-2) but the registry shows it certified and renewed to 30 April 2027 (O-1); the status is read in the registry, so nothing lapsed",
+        "filed": false
+      },
+      {
+        "action": "report_supplier_lapse",
+        "key": "S-4",
+        "why": "S-4 Pellwick Pantry Supply has no registry listing because it is exempt under 7 CFR 205.101(e), selling only sealed sacks packed by the certified Ridgeback Seed Co. (D-5, O-10); an exempt supplier is not a lapsed certificate",
+        "filed": false
+      },
+      {
+        "action": "report_supplier_lapse",
+        "key": "S-5",
+        "why": "S-5 Tamarind Coast Cashews expired on 31 December 2025 (O-4), but its cashews go only into the non-organic Harvest Trail Mix (D-14, D-15), which is outside the plan",
+        "filed": false
+      },
+      {
+        "action": "log_import_certificate",
+        "key": "R-07",
+        "why": "R-07 organic vanilla from Madagascar: the bill of lading and the receipt say 260 kg but certificate NOP-IC-26-007415 covers 200 kg (D-13), so its data do not match the shipment and it is not logged as compliant",
+        "filed": false
+      },
+      {
+        "action": "log_import_certificate",
+        "key": "R-01",
+        "why": "R-01 organic oats from Verdane, bought in the United States: a domestic purchase needs no NOP Import Certificate",
+        "filed": false
+      },
+      {
+        "action": "log_import_certificate",
+        "key": "R-08",
+        "why": "R-08 cashews from Vietnam: an import of a non-organic product for the Harvest Trail Mix (D-14), which needs no NOP Import Certificate",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "report_plan_change",
+      "key": "C-1",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "C-1 dried cranberries from the new supplier Kestrel, an ingredient the November 2025 plan lacks (D-1, D-6); first delivered 12 August 2026 (R-10), so the change is made. Weighted 75 dollars, an hour of a certifier's administrative time"
+    },
+    {
+      "action": "report_plan_change",
+      "key": "C-2",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "C-2 the second warehouse, Dock B, in use for organic ingredients since 1 July 2026 (D-7); the plan names only Dock A (D-1), so the change is made. Weighted 75 dollars, an hour of a certifier's administrative time"
+    },
+    {
+      "action": "report_plan_change",
+      "key": "C-3",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "C-3 a second oat roaster, to be installed on 9 March 2027 (D-8); the update also lists the additions planned for the coming year (205.406(a)), so it is reported as planned. Weighted 75 dollars, an hour of a certifier's administrative time"
+    },
+    {
+      "action": "report_supplier_lapse",
+      "key": "S-2",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "S-2 Honeyfield Apiary supplies organic honey; its paper certificate runs to 30 June 2026 (D-3) but the registry shows it suspended on 12 June 2026 (O-2). Weighted 75 dollars, an hour of a certifier's administrative time"
+    },
+    {
+      "action": "report_supplier_lapse",
+      "key": "S-3",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "S-3 Sunmere Almond Growers supplies organic almonds; the registry shows the certification expired on 31 March 2026 and was not renewed (O-3, D-4). Weighted 75 dollars, an hour of a certifier's administrative time"
+    },
+    {
+      "action": "log_import_certificate",
+      "key": "R-04",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "R-04 organic coconut oil from the Philippines, 4,200 kg; certificate NOP-IC-26-004172 in the registry covers 4,200 kg (D-10). Weighted 75 dollars, an hour of a certifier's administrative time"
+    },
+    {
+      "action": "log_import_certificate",
+      "key": "R-05",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "R-05 organic cinnamon from Sri Lanka, 600 kg; certificate NOP-IC-26-005031 covers 600 kg (D-11). Weighted 75 dollars, an hour of a certifier's administrative time"
+    },
+    {
+      "action": "log_import_certificate",
+      "key": "R-06",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "R-06 organic cacao nibs from Ecuador, 2,400 kg; certificate NOP-IC-26-006288 covers 2,400 kg (D-12). Weighted 75 dollars, an hour of a certifier's administrative time"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Some of my notes were cut off, so I'm recalling the exact import and supplier details before I file anything.\n\nI'm filing eight cards for the update. Greta signs it afterwards.\n\n\nNothing is in the update yet. I've filed eight cards, and each one goes in once you approve it.\n\n**Filed for your approval**\n- **Plan changes:**\n  - C-1: organic cranberries from the new supplier Kestrel Dried Fruit (made, 1 June 2026).\n  - C-2: the second warehouse, Dock B (made, 1 July 2026).\n  - C-3: the second oat roaster (planned, 9 March 2027).\n- **Suppliers no longer certified:**\n  - Honeyfield Apiary (S-2) is Suspended.\n  - Sunmere Almond Growers (S-3) is Expired, valid through 31 March 2026.\n  - Each card also takes the supplier off the approved list.\n- **Import certificates that match:**\n  - R-04 coconut oil, NOP-IC-26-004172, 4,200 kg.\n  - R-05 cinnamon, NOP-IC-26-005031, 600 kg.\n  - R-06 cacao nibs, ",
+  "trace": [
+    {
+      "portal": "Certifield Organic",
+      "user": "I'm Greta Valdivia, Marrowby Mills. First, at Certifield Organic, read the rules for our annual update and the changes already accepted this year. Don't put anything in the update yet: I'll send you to our papers, our purchasing system and ",
+      "continued": false,
+      "said": "I'll read the portal's rules by topic and the list of accepted changes. I'm not putting anything in the update.",
+      "said_chars": 111,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "list_accepted_changes"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Certifield Organic",
+      "user": "",
+      "continued": true,
+      "said": "I've read the rules and the accepted changes, and I haven't put anything in the update.\n\n**What the rules say**\n- **Update (due 30 November 2026):** It covers changes made to the plan since last year, additions and deletions planned for the coming year, and changes to the operation's information. A change that was reported and accepted during the year is already in the plan, so it isn't reported again.\n- **Plan:** A new ingredient, supplier, site or machine counts as a change.",
+      "said_chars": 1585,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "These are our papers: last year's plan, our suppliers' certificates, our change memos and our import files. Read all of them.",
+      "continued": false,
+      "said": "I'll list the Binderwell papers first, then read each one.",
+      "said_chars": 58,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Fifteen papers are listed, so I'm reading all of them now.",
+      "said_chars": 58,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "I've read all 15 papers. The checkpoint below records what they say, so it carries to the other tabs.\n\n\nI've read everything in Binderwell, and I haven't filed anything in the update.\n\n**Plan changes (the memos)**\n- **C-1, cranberries from Kestrel Dried Fruit (new supplier):** made on 1 June 2026 and not in the plan, so it goes in.\n- **C-2, second warehouse (Dock B):** made on 1 July 2026 and not in the plan, so it goes in.\n- **C-3, second oat roaster:** planned for 9 March 2027, so it goes in as planned.",
+      "said_chars": 1856,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren ERP",
+      "user": "This is our purchasing system. Read every supplier and every receipt this year, on both pages of each.",
+      "continued": false,
+      "said": "Reading all four pages now: suppliers 1–2 and receipts 1–2.",
+      "said_chars": 59,
+      "reads": [
+        "list_suppliers",
+        "list_suppliers",
+        "list_receipts",
+        "list_receipts"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren ERP",
+      "user": "",
+      "continued": true,
+      "said": "I've read all 10 suppliers and all 10 receipts (both pages of each). I haven't filed anything in the update.\n\n**Suppliers (ERP)**\n- Domestic suppliers of organic ingredients: Verdane Oats (S-1), Honeyfield Apiary (S-2), Sunmere Almond (S-3), Pellwick (S-4) and Kestrel Dried Fruit (S-10).\n- Imported organic suppliers: Lowmoor Coconut Oil (S-6), Ceylonwell Spice (S-7), Cacaoreef Traders (S-8) and Vallambra Vanilla (S-9).\n- Tamarind Coast Cashews (S-5) supplies the non-organic Harvest Trail Mix only.",
+      "said_chars": 1904,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Organicheck",
+      "user": "This is the organic registry. Look up every supplier of ours there, on both pages, and read every import certificate.",
+      "continued": false,
+      "said": "Reading the registry now: all operations on both pages, and the import certificates.\n\nThe registry answers aren't back yet. The three reads went to the page, and the results come with my next turn. I won't call them again.\n\nOne earlier line was dropped. The page-1 request I wrote before this turn ran together with the sentence after it, so it wasn't valid JSON. The re-sent calls did go through.\n\nI haven't filed anything in the update. Once the results arrive, I'll check each supplier's status in the registry.",
+      "said_chars": 592,
+      "reads": [
+        "search_operations",
+        "search_operations",
+        "list_import_certificates"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Organicheck",
+      "user": "",
+      "continued": true,
+      "said": "I've read all 10 registry operations and all 4 import certificates, and I haven't filed anything yet. Two suppliers are no longer certified, and three of the four import certificates match their shipments.\n\n**Suppliers (registry status, not paper certificates)**\n- **Report and take off the approved list:**\n  - Honeyfield Apiary (S-2) is Suspended.\n  - Sunmere Almond Growers (S-3) is Expired, with a valid-through date of 31 March 2026.",
+      "said_chars": 2319,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Certifield Organic",
+      "user": "Back at Certifield Organic. Put into the annual update what it needs: each change to our plan, made or planned, each supplier of organic ingredients that is no longer certified, and the certificate number of each import that matches its shi",
+      "continued": false,
+      "said": "Some of my notes were cut off, so I'm recalling the exact import and supplier details before I file anything.\n\nI'm filing eight cards for the update. Greta signs it afterwards.\n\n\nNothing is in the update yet. I've filed eight cards, and each one goes in once you approve it.\n\n**Filed for your approval**\n- **Plan changes:**\n  - C-1: organic cranberries from the new supplier Kestrel Dried Fruit (made, 1 June 2026).\n  - C-2: the second warehouse, Dock B (made, 1 July 2026).",
+      "said_chars": 1776,
+      "reads": [],
+      "cards": [
+        {
+          "action": "report_plan_change",
+          "key": "C-1",
+          "outcome": "correct",
+          "value_usd": 75.0
+        },
+        {
+          "action": "report_plan_change",
+          "key": "C-2",
+          "outcome": "correct",
+          "value_usd": 75.0
+        },
+        {
+          "action": "report_plan_change",
+          "key": "C-3",
+          "outcome": "correct",
+          "value_usd": 75.0
+        },
+        {
+          "action": "report_supplier_lapse",
+          "key": "S-2",
+          "outcome": "correct",
+          "value_usd": 75.0
+        },
+        {
+          "action": "report_supplier_lapse",
+          "key": "S-3",
+          "outcome": "correct",
+          "value_usd": 75.0
+        },
+        {
+          "action": "log_import_certificate",
+          "key": "R-04",
+          "outcome": "correct",
+          "value_usd": 75.0
+        },
+        {
+          "action": "log_import_certificate",
+          "key": "R-05",
+          "outcome": "correct",
+          "value_usd": 75.0
+        },
+        {
+          "action": "log_import_certificate",
+          "key": "R-06",
+          "outcome": "correct",
+          "value_usd": 75.0
+        }
+      ]
+    }
+  ]
+}

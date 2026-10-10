@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "organic-annual-update",
+  "captured_at": "2026-10-10T18:02:56Z",
+  "bench_run_at": "2026-10-10T18:00:49Z",
+  "narration": {
+    "text": "An organic granola maker's annual update assembled: three plan changes, two suppliers no longer certified and three import certificates reported, while an old paper certificate, an exempt distributor, a lapsed grower of a non-organic mix, a change already accepted or never made, and imports that mismatch or need none are left alone. This is a chore for the owner of a small organic granola company in Eau Claire, Wisconsin, with one warehouse, a certifier's update due next month and a supplier folder full of paper certificates. On the bench, she found 8 of 8 eligible items, worth 600 dollars of the 600 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 4 hours, so she was about 141 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 60.89,
+    "sha256": "f499b6a902e59a675097369e4b72a848c47d03691654edf4ea72aeb36f6b6448"
+  },
+  "video": {
+    "path": "evidence/organic-annual-update/evidence.mp4",
+    "duration_s": 60.92,
+    "bytes": 3103890,
+    "sha256": "8c7e6dfdc7c0074f728c586e61fd12ec63691546e751ccc16f4f176035c8802c"
+  },
+  "thumbnail": {
+    "path": "playbooks/organic-annual-update/thumb.jpg",
+    "bytes": 79942,
+    "sha256": "0cccb440557b9c98a1cff5613cfed0eaf13cacdd4f5a1d79d3fc3112e2a5a15c"
+  }
+}

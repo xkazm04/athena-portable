@@ -1,0 +1,690 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "certifield",
+      "message": "I'm Greta Valdivia, Marrowby Mills. First, at Certifield Organic, read the rules for our annual update and the changes already accepted this year. Don't put anything in the update yet: I'll send you to our papers, our purchasing system and the registry next.",
+      "nudges": 1
+    },
+    {
+      "app": "binderwell",
+      "message": "These are our papers: last year's plan, our suppliers' certificates, our change memos and our import files. Read all of them.",
+      "nudges": 1
+    },
+    {
+      "app": "erp",
+      "message": "This is our purchasing system. Read every supplier and every receipt this year, on both pages of each.",
+      "nudges": 1
+    },
+    {
+      "app": "organicheck",
+      "message": "This is the organic registry. Look up every supplier of ours there, on both pages, and read every import certificate.",
+      "nudges": 1
+    },
+    {
+      "app": "certifield",
+      "message": "Back at Certifield Organic. Put into the annual update what it needs: each change to our plan, made or planned, each supplier of organic ingredients that is no longer certified, and the certificate number of each import that matches its shipment. Leave out what is not a change, what is outside our plan, what needs no certificate, and anything already accepted. Then tell me what you put in, and what you left out and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "certifield",
+      "name": "Certifield Organic",
+      "origin": "https://portal.certifield.example",
+      "path": "/marrowby-mills/annual-update",
+      "view": {
+        "view": "Certifield Organic: Marrowby Mills' annual update (invented)",
+        "signed_in": "Greta Valdivia",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The portal's rules for the annual update by topic: index, update, plan, suppliers, imports or exempt.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_accepted_changes",
+          "kind": "READ",
+          "description": "The changes to the plan that were reported this year and accepted by the certifier.",
+          "params": {},
+          "returns": {
+            "table": "accepted"
+          }
+        },
+        {
+          "name": "report_plan_change",
+          "kind": "REACHES_A_PERSON",
+          "description": "Put one change to the organic system plan in the annual update, by change id (change, C-n), whether it was made or is planned for the coming year (timing: made or planned) and a short summary (summary). Greta signs the update.",
+          "params": {
+            "change": {
+              "type": "string"
+            },
+            "timing": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "says": "Change {change} put in the annual update."
+        },
+        {
+          "name": "report_supplier_lapse",
+          "kind": "REACHES_A_PERSON",
+          "description": "Report in the annual update a supplier that is no longer certified and take it off the approved list, by supplier id (supplier, S-n), its registry status (status) and a short summary (summary). Greta signs the update.",
+          "params": {
+            "supplier": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "says": "Supplier {supplier} reported in the annual update."
+        },
+        {
+          "name": "log_import_certificate",
+          "kind": "REACHES_A_PERSON",
+          "description": "Log in the annual update the NOP Import Certificate of one organic import, by receipt id (shipment, R-nn) and the certificate number (cert_no). Greta signs the update.",
+          "params": {
+            "shipment": {
+              "type": "string"
+            },
+            "cert_no": {
+              "type": "string"
+            }
+          },
+          "says": "Import certificate for {shipment} logged in the annual update."
+        }
+      ],
+      "aliases": [
+        "Certifield Organic",
+        "Certifield",
+        "the certifier",
+        "the certifier's portal"
+      ]
+    },
+    {
+      "app_id": "binderwell",
+      "name": "Binderwell",
+      "origin": "https://papers.binderwell.example",
+      "path": "/marrowby-mills",
+      "view": {
+        "view": "Binderwell: Marrowby Mills' papers",
+        "signed_in": "Greta Valdivia",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "Marrowby Mills' papers: document id and title.",
+          "params": {},
+          "returns": {
+            "table": "docs",
+            "fields": [
+              "doc_id",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_document",
+          "kind": "READ",
+          "description": "One document in full, by id (D-n).",
+          "params": {
+            "doc_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "docs",
+            "match": {
+              "doc_id": "doc_id"
+            },
+            "require": [
+              "doc_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Binderwell",
+        "our papers",
+        "the papers"
+      ]
+    },
+    {
+      "app_id": "erp",
+      "name": "Ledgerwren ERP",
+      "origin": "https://erp.ledgerwren.example",
+      "path": "/marrowby-mills/purchasing",
+      "view": {
+        "view": "Ledgerwren ERP: Marrowby Mills' purchasing",
+        "signed_in": "Greta Valdivia",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_suppliers",
+          "kind": "READ",
+          "description": "Every supplier: id, name, what it supplies, its country and the product it goes into. Five a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "suppliers",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "list_receipts",
+          "kind": "READ",
+          "description": "Every receipt this year: id, date, supplier, item, kilograms, country of origin, product and whether it is organic. Five a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "receipts",
+            "page_size": 5
+          }
+        }
+      ],
+      "aliases": [
+        "Ledgerwren ERP",
+        "Ledgerwren",
+        "the ERP",
+        "our purchasing system"
+      ]
+    },
+    {
+      "app_id": "organicheck",
+      "name": "Organicheck",
+      "origin": "https://registry.organicheck.example",
+      "path": "/operations",
+      "view": {
+        "view": "Organicheck: the organic registry (invented)",
+        "signed_in": "Greta Valdivia",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "search_operations",
+          "kind": "READ",
+          "description": "Look operations up by name: id, name, status and valid-through date. Six a page; ask for the next with page (1 or 2). Leave the name out for all of them.",
+          "params": {
+            "name": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "ops",
+            "fields": [
+              "op_id",
+              "name",
+              "status",
+              "valid_through"
+            ],
+            "page_size": 6,
+            "match": {
+              "name": "name"
+            },
+            "mode": "contains"
+          }
+        },
+        {
+          "name": "read_operation",
+          "kind": "READ",
+          "description": "One operation in full, by id (O-n).",
+          "params": {
+            "op_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "ops",
+            "match": {
+              "op_id": "op_id"
+            },
+            "require": [
+              "op_id"
+            ]
+          }
+        },
+        {
+          "name": "list_import_certificates",
+          "kind": "READ",
+          "description": "The NOP Import Certificates issued to Marrowby Mills: number, exporter, product, kilograms and status.",
+          "params": {},
+          "returns": {
+            "table": "ics"
+          }
+        }
+      ],
+      "aliases": [
+        "Organicheck",
+        "the registry",
+        "the organic registry"
+      ]
+    }
+  ],
+  "tables": {
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Certifield Organic, the certifier's client portal. Friday 9 October 2026. Topics: update, plan, suppliers, imports, exempt. Marrowby Mills' annual update is due 30 November 2026."
+      },
+      {
+        "topic": "update",
+        "text": "Friday 9 October 2026. The annual update (7 CFR 205.406(a)) gives: a summary of the changes made to the organic system plan since last year's, with documents; the additions and deletions planned for the coming year; changes to the operation's information; and what else the certifier needs. A change reported during the year and accepted is already in the plan and is not reported again."
+      },
+      {
+        "topic": "plan",
+        "text": "Friday 9 October 2026. The plan (205.201(a)) lists inputs and practices, and describes how the operation verifies its suppliers and the organic status of what it receives, to prevent fraud. A new ingredient, supplier, site or machine is a change to it. A purchase that was cancelled and a machine never installed are not changes."
+      },
+      {
+        "topic": "suppliers",
+        "text": "Friday 9 October 2026. A supplier's organic status is read in the Organic Integrity Database, here the registry Organicheck, and not from its paper certificate, which can be older or newer than the status. Certified means current. Suspended, revoked, surrendered or expired means not certified. A supplier of organic ingredients that is no longer certified is reported in the update and taken off the approved list. A supplier of only a non-organic product is outside the plan."
+      },
+      {
+        "topic": "imports",
+        "text": "Friday 9 October 2026. Each organic import needs an NOP Import Certificate issued in the Organic Integrity Database (205.273), and the importer verifies that its data match the shipment: the product and the quantity. Log the certificate number of each import that matches. A shipment that does not match is not logged as compliant. A domestic purchase, or an import of a non-organic product, needs no certificate."
+      },
+      {
+        "topic": "exempt",
+        "text": "Friday 9 October 2026. Some operations need no certification (205.101): for example, one that only receives, stores and prepares for shipment sealed, tamper-evident packages. Such a supplier has no certificate in the registry. It is not a lapsed one: its source and its records are verified instead."
+      }
+    ],
+    "accepted": [
+      {
+        "change_id": "C-4",
+        "reported": "2026-04-15",
+        "accepted": "2026-04-29",
+        "summary": "A second drying line for the granola, reported on 15 April 2026 and accepted by the certifier on 29 April 2026."
+      }
+    ],
+    "docs": [
+      {
+        "doc_id": "D-1",
+        "title": "Organic system plan, accepted 14 November 2025",
+        "text": "Plan accepted 14 November 2025 for Marrowby Mills LLC, product Organic Granola. Approved organic suppliers: Verdane Oats Cooperative, Honeyfield Apiary, Sunmere Almond Growers, Pellwick Pantry Supply, Lowmoor Coconut Oil, Ceylonwell Spice, Cacaoreef Traders, Vallambra Vanilla. Premises: one warehouse, Dock A. Equipment: one oat roaster, one drying line. Suppliers are verified on receipt of their paper certificates."
+      },
+      {
+        "doc_id": "D-2",
+        "title": "Certificate: Verdane Oats Cooperative",
+        "text": "Paper certificate of organic operation, Verdane Oats Cooperative, issued 30 April 2024, valid to 30 April 2025. The cooperative has sent no newer paper copy."
+      },
+      {
+        "doc_id": "D-3",
+        "title": "Certificate: Honeyfield Apiary",
+        "text": "Paper certificate of organic operation, Honeyfield Apiary, issued 30 June 2025, valid to 30 June 2026."
+      },
+      {
+        "doc_id": "D-4",
+        "title": "Certificate: Sunmere Almond Growers",
+        "text": "Paper certificate of organic operation, Sunmere Almond Growers, issued 1 April 2025, valid to 31 March 2026."
+      },
+      {
+        "doc_id": "D-5",
+        "title": "Statement: Pellwick Pantry Supply",
+        "text": "Statement from Pellwick Pantry Supply, 3 February 2026. Pellwick only buys, stores and ships sunflower seeds in sealed, tamper-evident 25 kg sacks packed and labelled organic by Ridgeback Seed Co.; it opens none and is exempt from certification under 7 CFR 205.101(e). It keeps records of every sack."
+      },
+      {
+        "doc_id": "D-6",
+        "title": "Memo C-1: dried cranberries added",
+        "text": "Memo C-1, 1 June 2026, Greta Valdivia. Organic dried cranberries are now an ingredient in the Organic Granola, from Kestrel Dried Fruit, a new supplier. The first delivery came on 12 August 2026. This is not in the plan accepted in November 2025."
+      },
+      {
+        "doc_id": "D-7",
+        "title": "Memo C-2: second warehouse",
+        "text": "Memo C-2, 1 July 2026, Greta Valdivia. Marrowby Mills leased a second warehouse, Dock B, and has stored organic ingredients there since 1 July 2026. The plan names only Dock A."
+      },
+      {
+        "doc_id": "D-8",
+        "title": "Memo C-3: second oat roaster, planned",
+        "text": "Memo C-3, 22 September 2026, Greta Valdivia. A second oat roaster is to be installed on 9 March 2027. It is ordered and paid for; it is not yet installed."
+      },
+      {
+        "doc_id": "D-9",
+        "title": "Memo C-5: pouch filler order cancelled",
+        "text": "Memo C-5, 12 May 2026, Greta Valdivia. The order for a new pouch filler was cancelled on 12 May 2026. It was never delivered or installed."
+      },
+      {
+        "doc_id": "D-10",
+        "title": "Import file R-04: coconut oil",
+        "text": "Import file for receipt R-04. Lowmoor Coconut Oil Ltd, 4,200 kg organic coconut oil, Philippines, arrived 19 February 2026. NOP Import Certificate NOP-IC-26-004172."
+      },
+      {
+        "doc_id": "D-11",
+        "title": "Import file R-05: cinnamon",
+        "text": "Import file for receipt R-05. Ceylonwell Spice, 600 kg organic cinnamon, Sri Lanka, arrived 2 April 2026. NOP Import Certificate NOP-IC-26-005031."
+      },
+      {
+        "doc_id": "D-12",
+        "title": "Import file R-06: cacao nibs",
+        "text": "Import file for receipt R-06. Cacaoreef Traders, 2,400 kg organic cacao nibs, Ecuador, arrived 18 May 2026. NOP Import Certificate NOP-IC-26-006288."
+      },
+      {
+        "doc_id": "D-13",
+        "title": "Import file R-07: vanilla",
+        "text": "Import file for receipt R-07. Vallambra Vanilla, 260 kg organic vanilla, Madagascar, arrived 24 June 2026 (bill of lading: 260 kg). NOP Import Certificate NOP-IC-26-007415."
+      },
+      {
+        "doc_id": "D-14",
+        "title": "Import file R-08: cashews",
+        "text": "Import file for receipt R-08. Tamarind Coast Cashews, 1,500 kg cashews, Vietnam, arrived 30 March 2026, bought for Harvest Trail Mix. Not sold or labelled organic."
+      },
+      {
+        "doc_id": "D-15",
+        "title": "Product list",
+        "text": "Marrowby Mills products: Organic Granola (certified organic) and Harvest Trail Mix (not organic; no organic claim on the label)."
+      }
+    ],
+    "suppliers": [
+      {
+        "sup_id": "S-1",
+        "name": "Verdane Oats Cooperative",
+        "supplies": "rolled oats",
+        "origin": "United States",
+        "used_in": "Organic Granola"
+      },
+      {
+        "sup_id": "S-2",
+        "name": "Honeyfield Apiary",
+        "supplies": "honey",
+        "origin": "United States",
+        "used_in": "Organic Granola"
+      },
+      {
+        "sup_id": "S-3",
+        "name": "Sunmere Almond Growers",
+        "supplies": "almonds",
+        "origin": "United States",
+        "used_in": "Organic Granola"
+      },
+      {
+        "sup_id": "S-4",
+        "name": "Pellwick Pantry Supply",
+        "supplies": "sunflower seeds in sealed 25 kg sacks",
+        "origin": "United States",
+        "used_in": "Organic Granola"
+      },
+      {
+        "sup_id": "S-5",
+        "name": "Tamarind Coast Cashews",
+        "supplies": "cashews",
+        "origin": "Vietnam",
+        "used_in": "Harvest Trail Mix only (not organic)"
+      },
+      {
+        "sup_id": "S-6",
+        "name": "Lowmoor Coconut Oil Ltd",
+        "supplies": "coconut oil",
+        "origin": "Philippines",
+        "used_in": "Organic Granola"
+      },
+      {
+        "sup_id": "S-7",
+        "name": "Ceylonwell Spice",
+        "supplies": "cinnamon",
+        "origin": "Sri Lanka",
+        "used_in": "Organic Granola"
+      },
+      {
+        "sup_id": "S-8",
+        "name": "Cacaoreef Traders",
+        "supplies": "cacao nibs",
+        "origin": "Ecuador",
+        "used_in": "Organic Granola"
+      },
+      {
+        "sup_id": "S-9",
+        "name": "Vallambra Vanilla",
+        "supplies": "vanilla",
+        "origin": "Madagascar",
+        "used_in": "Organic Granola"
+      },
+      {
+        "sup_id": "S-10",
+        "name": "Kestrel Dried Fruit",
+        "supplies": "dried cranberries",
+        "origin": "United States",
+        "used_in": "Organic Granola"
+      }
+    ],
+    "receipts": [
+      {
+        "rec_id": "R-01",
+        "date": "2026-01-14",
+        "supplier": "Verdane Oats Cooperative",
+        "item": "rolled oats",
+        "kg": 12000,
+        "origin": "United States",
+        "product": "Organic Granola",
+        "organic": "organic"
+      },
+      {
+        "rec_id": "R-02",
+        "date": "2026-02-03",
+        "supplier": "Sunmere Almond Growers",
+        "item": "almonds",
+        "kg": 3000,
+        "origin": "United States",
+        "product": "Organic Granola",
+        "organic": "organic"
+      },
+      {
+        "rec_id": "R-03",
+        "date": "2026-03-09",
+        "supplier": "Honeyfield Apiary",
+        "item": "honey",
+        "kg": 1800,
+        "origin": "United States",
+        "product": "Organic Granola",
+        "organic": "organic"
+      },
+      {
+        "rec_id": "R-04",
+        "date": "2026-02-19",
+        "supplier": "Lowmoor Coconut Oil Ltd",
+        "item": "coconut oil",
+        "kg": 4200,
+        "origin": "Philippines",
+        "product": "Organic Granola",
+        "organic": "organic"
+      },
+      {
+        "rec_id": "R-05",
+        "date": "2026-04-02",
+        "supplier": "Ceylonwell Spice",
+        "item": "cinnamon",
+        "kg": 600,
+        "origin": "Sri Lanka",
+        "product": "Organic Granola",
+        "organic": "organic"
+      },
+      {
+        "rec_id": "R-06",
+        "date": "2026-05-18",
+        "supplier": "Cacaoreef Traders",
+        "item": "cacao nibs",
+        "kg": 2400,
+        "origin": "Ecuador",
+        "product": "Organic Granola",
+        "organic": "organic"
+      },
+      {
+        "rec_id": "R-07",
+        "date": "2026-06-24",
+        "supplier": "Vallambra Vanilla",
+        "item": "vanilla",
+        "kg": 260,
+        "origin": "Madagascar",
+        "product": "Organic Granola",
+        "organic": "organic"
+      },
+      {
+        "rec_id": "R-08",
+        "date": "2026-03-30",
+        "supplier": "Tamarind Coast Cashews",
+        "item": "cashews",
+        "kg": 1500,
+        "origin": "Vietnam",
+        "product": "Harvest Trail Mix",
+        "organic": "conventional"
+      },
+      {
+        "rec_id": "R-09",
+        "date": "2026-07-08",
+        "supplier": "Pellwick Pantry Supply",
+        "item": "sunflower seeds",
+        "kg": 2000,
+        "origin": "United States",
+        "product": "Organic Granola",
+        "organic": "organic"
+      },
+      {
+        "rec_id": "R-10",
+        "date": "2026-08-12",
+        "supplier": "Kestrel Dried Fruit",
+        "item": "dried cranberries",
+        "kg": 1200,
+        "origin": "United States",
+        "product": "Organic Granola",
+        "organic": "organic"
+      }
+    ],
+    "ops": [
+      {
+        "op_id": "O-1",
+        "name": "Verdane Oats Cooperative",
+        "status": "Certified",
+        "valid_through": "2027-04-30",
+        "note": "Crops: oats. Certificate renewed 30 April 2026."
+      },
+      {
+        "op_id": "O-2",
+        "name": "Honeyfield Apiary",
+        "status": "Suspended",
+        "valid_through": "",
+        "note": "Honey. Certification suspended by its certifier on 12 June 2026."
+      },
+      {
+        "op_id": "O-3",
+        "name": "Sunmere Almond Growers",
+        "status": "Expired",
+        "valid_through": "2026-03-31",
+        "note": "Almonds. Certification expired 31 March 2026 and was not renewed."
+      },
+      {
+        "op_id": "O-4",
+        "name": "Tamarind Coast Cashews",
+        "status": "Expired",
+        "valid_through": "2025-12-31",
+        "note": "Cashews. Certification expired 31 December 2025."
+      },
+      {
+        "op_id": "O-5",
+        "name": "Lowmoor Coconut Oil Ltd",
+        "status": "Certified",
+        "valid_through": "2027-02-28",
+        "note": "Coconut oil, the Philippines."
+      },
+      {
+        "op_id": "O-6",
+        "name": "Ceylonwell Spice",
+        "status": "Certified",
+        "valid_through": "2027-01-31",
+        "note": "Cinnamon, Sri Lanka."
+      },
+      {
+        "op_id": "O-7",
+        "name": "Cacaoreef Traders",
+        "status": "Certified",
+        "valid_through": "2027-03-31",
+        "note": "Cacao, Ecuador."
+      },
+      {
+        "op_id": "O-8",
+        "name": "Vallambra Vanilla",
+        "status": "Certified",
+        "valid_through": "2026-12-31",
+        "note": "Vanilla, Madagascar."
+      },
+      {
+        "op_id": "O-9",
+        "name": "Kestrel Dried Fruit",
+        "status": "Certified",
+        "valid_through": "2027-05-31",
+        "note": "Dried fruit."
+      },
+      {
+        "op_id": "O-10",
+        "name": "Ridgeback Seed Co.",
+        "status": "Certified",
+        "valid_through": "2027-02-15",
+        "note": "Sunflower seeds, packed in sealed sacks."
+      }
+    ],
+    "ics": [
+      {
+        "cert_no": "NOP-IC-26-004172",
+        "exporter": "Lowmoor Coconut Oil Ltd",
+        "product": "coconut oil",
+        "qty_kg": 4200,
+        "importer": "Marrowby Mills LLC",
+        "status": "Valid"
+      },
+      {
+        "cert_no": "NOP-IC-26-005031",
+        "exporter": "Ceylonwell Spice",
+        "product": "cinnamon",
+        "qty_kg": 600,
+        "importer": "Marrowby Mills LLC",
+        "status": "Valid"
+      },
+      {
+        "cert_no": "NOP-IC-26-006288",
+        "exporter": "Cacaoreef Traders",
+        "product": "cacao nibs",
+        "qty_kg": 2400,
+        "importer": "Marrowby Mills LLC",
+        "status": "Valid"
+      },
+      {
+        "cert_no": "NOP-IC-26-007415",
+        "exporter": "Vallambra Vanilla",
+        "product": "vanilla",
+        "qty_kg": 200,
+        "importer": "Marrowby Mills LLC",
+        "status": "Valid"
+      }
+    ]
+  }
+}

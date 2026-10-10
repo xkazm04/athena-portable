@@ -1,0 +1,122 @@
+{
+  "id": "organic-annual-update",
+  "title": "An organic granola maker's annual update assembled: three plan changes, two suppliers no longer certified and three import certificates reported, while an old paper certificate, an exempt distributor, a lapsed grower of a non-organic mix, a change already accepted or never made, and imports that mismatch or need none are left alone",
+  "domain": "Food & beverage",
+  "audience": "work",
+  "promise": "A small organic granola maker's annual update for its certifier is assembled from last year's plan, the suppliers' papers, the change memos, the purchasing system and the registry. Three changes to the plan are reported, two made and one planned for next year; two suppliers whose certification has lapsed, read in the registry and not from the paper certificate, are reported; and the certificate numbers of three imports that match their shipments are logged. A supplier with an old paper certificate that the registry shows current, an exempt distributor, a lapsed grower whose cashews go only into a non-organic mix, a change already accepted, an order that was cancelled, an import whose certificate covers less than arrived, a domestic purchase and a non-organic import are left alone.",
+  "persona": "The owner of a small organic granola company in Eau Claire, Wisconsin, with one warehouse, a certifier's update due next month and a supplier folder full of paper certificates",
+  "chore": "Read the certifier's rules and the changes it has accepted, the plan, the supplier certificates, the change memos and the import files, the purchasing system's suppliers and receipts, and the registry's status and import certificates. Then apply 7 CFR 205.406(a), 205.201(a), 205.273 and 205.101 as they stand on 9 October 2026: report each change made or planned, each supplier of organic ingredients no longer certified, and each matching import's certificate, and nothing else.",
+  "command": "I'm Greta Valdivia, Marrowby Mills. Our organic certifier wants the annual update by 30 November. Go through Certifield Organic, our Binderwell papers, our Ledgerwren ERP and the Organicheck registry, and put in the update what it needs: our plan changes, any supplier that is no longer certified, and the certificates of our imports. Leave out what doesn't belong.",
+  "apps": [
+    {
+      "name": "Certifield Organic",
+      "role": "the certifier's rules for the update, the changes already accepted and the update's forms",
+      "api": "Certifier portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "last year's plan, the suppliers' paper certificates, the change memos and the import files",
+      "api": "Document store, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren ERP",
+      "role": "the suppliers and this year's receipts, with country of origin and the product each goes into",
+      "api": "ERP, no API",
+      "url": ""
+    },
+    {
+      "name": "Organicheck",
+      "role": "each operation's certification status and the NOP Import Certificates issued to Marrowby Mills",
+      "api": "Registry, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the update rules and the accepted changes at Certifield Organic.",
+    "Reads the plan, certificates, memos and import files in Binderwell.",
+    "Reads the suppliers and receipts in Ledgerwren ERP.",
+    "Reads every supplier's status and the import certificates in Organicheck.",
+    "Back at Certifield Organic, reports three changes, two lapsed suppliers and three import certificates."
+  ],
+  "gates": [
+    {
+      "action": "report_plan_change",
+      "label": "Report a change to the organic system plan",
+      "why": "A signed statement to the certifier of what changed in the operation, or will; a change left out or one invented misleads the certifier's review."
+    },
+    {
+      "action": "report_supplier_lapse",
+      "label": "Report a supplier that is no longer certified",
+      "why": "A signed report to the certifier that an organic ingredient's supplier has lost its certification, and a decision to stop treating it as approved."
+    },
+    {
+      "action": "log_import_certificate",
+      "label": "Log an import's NOP Import Certificate",
+      "why": "A signed statement that the organic import was verified against its certificate; a mismatch logged as compliant is a false statement."
+    }
+  ],
+  "traps": [
+    "Reporting a supplier lapsed because its paper certificate is old, when the registry shows it certified.",
+    "Reporting an exempt distributor as a lapsed certificate.",
+    "Reporting a lapsed supplier whose ingredient goes only into a non-organic product.",
+    "Reporting a change the certifier has already accepted.",
+    "Reporting a change that never happened.",
+    "Logging an import whose certificate covers less than arrived.",
+    "Logging a certificate for a domestic purchase.",
+    "Logging a certificate for a non-organic import."
+  ],
+  "memory": [
+    "The update's contents, the accepted change and the rules on status, imports and exemptions, from Certifield Organic.",
+    "The plan, the memos, the paper certificates and the import files, from Binderwell.",
+    "Each supplier, receipt, origin and product, from Ledgerwren ERP, and each status and certificate, from Organicheck, carried back to the last Certifield tab."
+  ],
+  "economics": {
+    "value_usd": 2000,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. A small organic handler's annual update takes a day or two of reading a supplier folder, a plan and a year of receipts against a registry, and an update that misses a change, keeps a lapsed supplier on the approved list or logs an import that does not match draws a certifier's questions, a noncompliance notice under 7 CFR 205.662 and its administrative hours; the roster's $2,000 a year is that yearly cost, mostly the owner's minutes. Each truth item is weighted at $75, an hour of a certifier's administrative time at one published certifier's hourly rate (Pennsylvania Certified Organic's 2021 fee sheet; the current sheet was not read), a price avoided and not money recovered; the bench world holds eight acts, $600. Times a year: once, the annual update. manual_minutes 240: reading fifteen papers, ten suppliers and ten receipts against ten registry entries and four import certificates, and entering eight items. Rules applied, as they stand on Friday 9 October 2026 (eCFR title 7, current): 7 CFR 205.406(a) (the annual update: a summary of changes with documents, the additions and deletions planned for the coming year, changes to the operation's information), 205.201(a)(3) (the plan describes the monitoring to verify suppliers in the supply chain and the organic status of what is received, to prevent fraud; as amended by the Strengthening Organic Enforcement rule, Federal Register, 19 January 2023, compliance from 19 March 2024), 205.273 (each organic import is accompanied by accurate NOP Import Certificate data generated by the Organic Integrity Database; AMS says importers verify that the certificate data reflect the shipment, the types and quantities) and 205.101 (the exemptions that remain: (a) to (d), and (e) and (f) for sealed, tamper-evident or retail-labelled packages, and (g) customs brokers). The certifier's due date of 30 November, its treatment of a change already accepted and the logging of certificate numbers in the update are the invented certifier's own.",
+    "manual_minutes": 240,
+    "times_per_year": 1,
+    "incumbent": "Certifiers and organic consultants charge flat or hourly fees for help with an update, not a share of anything, so no incumbent_fee_pct is given; the hourly price used for the weight is one certifier's published administrative rate.",
+    "sources": [
+      {
+        "label": "7 CFR 205.406, continuation of certification: the annual update (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-7/subtitle-B/chapter-I/subchapter-M/part-205/subpart-E/section-205.406"
+      },
+      {
+        "label": "7 CFR 205.201, the organic production and handling system plan (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-7/subtitle-B/chapter-I/subchapter-M/part-205/subpart-C/section-205.201"
+      },
+      {
+        "label": "7 CFR 205.273, imports to the United States: NOP Import Certificates (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-7/subtitle-B/chapter-I/subchapter-M/part-205/subpart-C/section-205.273"
+      },
+      {
+        "label": "7 CFR 205.101, exemptions from certification (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-7/subtitle-B/chapter-I/subchapter-M/part-205/subpart-B/section-205.101"
+      },
+      {
+        "label": "USDA AMS, Strengthening Organic Enforcement: the final rule, its FAQ and electronic organic import certificates",
+        "url": "https://www.ams.usda.gov/rules-regulations/strengthening-organic-enforcement"
+      },
+      {
+        "label": "Pennsylvania Certified Organic's fee sheet, 2021: $75 an hour for administrative time",
+        "url": "https://paorganic.org/wp-content/uploads/2021/03/Info-PCO-Certification-Fees-2021-1.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Ten suppliers whose status sits in a registry and not in the paper certificates, one of which has an old paper copy and is current, one exempt, and one lapsed for a product outside the plan; four imports whose certificate quantity must match the shipment; and changes spread over memos, a certifier's accepted list and a cancelled order.",
+    "usefulness_why": "Saves the day or two of an annual update and keeps a lapsed supplier or a mismatched import out of the certifier's review; a once-a-year chore, and the money is mostly minutes."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner with the plan, the papers, the purchasing records and the registry puts the eight items in the update and none of the eight traps, inside an hour."
+  },
+  "caveat": "Greta Valdivia, Marrowby Mills LLC, every supplier (Verdane, Honeyfield, Sunmere, Pellwick, Tamarind Coast, Lowmoor, Ceylonwell, Cacaoreef, Vallambra, Kestrel and Ridgeback), every receipt, certificate number, memo and date, and Certifield Organic, Organicheck, Ledgerwren ERP and Binderwell are invented; Organicheck stands in for USDA's Organic Integrity Database, and its entries are not real operations'. The public rules applied are 7 CFR 205.406(a), 205.201(a)(3), 205.273 and 205.101 as in force on 9 October 2026 after the Strengthening Organic Enforcement rule, and AMS's statement that an importer verifies that certificate data reflect the shipment. The certifier's due date, its handling of a change it already accepted and its way of logging certificate numbers are the invented certifier's own. What a real certifier requires in an annual update, and what a real certificate or exemption covers, is decided by that certifier and the National Organic Program. This applies stated rules to stated facts; it is not legal or compliance advice."
+}

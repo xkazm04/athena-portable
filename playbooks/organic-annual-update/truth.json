@@ -1,0 +1,96 @@
+{
+  "targets": [
+    {
+      "tool": "report_plan_change",
+      "key": "change",
+      "eligible": {
+        "C-1": {
+          "value_usd": 75.0,
+          "why": "C-1 dried cranberries from the new supplier Kestrel, an ingredient the November 2025 plan lacks (D-1, D-6); first delivered 12 August 2026 (R-10), so the change is made. Weighted 75 dollars, an hour of a certifier's administrative time",
+          "expect": {
+            "timing": "made"
+          }
+        },
+        "C-2": {
+          "value_usd": 75.0,
+          "why": "C-2 the second warehouse, Dock B, in use for organic ingredients since 1 July 2026 (D-7); the plan names only Dock A (D-1), so the change is made. Weighted 75 dollars, an hour of a certifier's administrative time",
+          "expect": {
+            "timing": "made"
+          }
+        },
+        "C-3": {
+          "value_usd": 75.0,
+          "why": "C-3 a second oat roaster, to be installed on 9 March 2027 (D-8); the update also lists the additions planned for the coming year (205.406(a)), so it is reported as planned. Weighted 75 dollars, an hour of a certifier's administrative time",
+          "expect": {
+            "timing": "planned"
+          }
+        }
+      },
+      "traps": {
+        "C-4": "C-4 the second drying line was reported on 15 April 2026 and accepted on 29 April 2026 (Certifield's accepted changes); it is already in the plan and is not reported again",
+        "C-5": "C-5 the pouch filler order was cancelled on 12 May 2026 and the machine was never delivered or installed (D-9); nothing changed"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "report_supplier_lapse",
+      "key": "supplier",
+      "eligible": {
+        "S-2": {
+          "value_usd": 75.0,
+          "why": "S-2 Honeyfield Apiary supplies organic honey; its paper certificate runs to 30 June 2026 (D-3) but the registry shows it suspended on 12 June 2026 (O-2). Weighted 75 dollars, an hour of a certifier's administrative time",
+          "expect": {
+            "status": "suspended"
+          }
+        },
+        "S-3": {
+          "value_usd": 75.0,
+          "why": "S-3 Sunmere Almond Growers supplies organic almonds; the registry shows the certification expired on 31 March 2026 and was not renewed (O-3, D-4). Weighted 75 dollars, an hour of a certifier's administrative time",
+          "expect": {
+            "status": "expired"
+          }
+        }
+      },
+      "traps": {
+        "S-1": "S-1 Verdane Oats Cooperative: its paper certificate ran out on 30 April 2025 (D-2) but the registry shows it certified and renewed to 30 April 2027 (O-1); the status is read in the registry, so nothing lapsed",
+        "S-4": "S-4 Pellwick Pantry Supply has no registry listing because it is exempt under 7 CFR 205.101(e), selling only sealed sacks packed by the certified Ridgeback Seed Co. (D-5, O-10); an exempt supplier is not a lapsed certificate",
+        "S-5": "S-5 Tamarind Coast Cashews expired on 31 December 2025 (O-4), but its cashews go only into the non-organic Harvest Trail Mix (D-14, D-15), which is outside the plan"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "log_import_certificate",
+      "key": "shipment",
+      "eligible": {
+        "R-04": {
+          "value_usd": 75.0,
+          "why": "R-04 organic coconut oil from the Philippines, 4,200 kg; certificate NOP-IC-26-004172 in the registry covers 4,200 kg (D-10). Weighted 75 dollars, an hour of a certifier's administrative time",
+          "expect": {
+            "cert_no": "NOP-IC-26-004172"
+          }
+        },
+        "R-05": {
+          "value_usd": 75.0,
+          "why": "R-05 organic cinnamon from Sri Lanka, 600 kg; certificate NOP-IC-26-005031 covers 600 kg (D-11). Weighted 75 dollars, an hour of a certifier's administrative time",
+          "expect": {
+            "cert_no": "NOP-IC-26-005031"
+          }
+        },
+        "R-06": {
+          "value_usd": 75.0,
+          "why": "R-06 organic cacao nibs from Ecuador, 2,400 kg; certificate NOP-IC-26-006288 covers 2,400 kg (D-12). Weighted 75 dollars, an hour of a certifier's administrative time",
+          "expect": {
+            "cert_no": "NOP-IC-26-006288"
+          }
+        }
+      },
+      "traps": {
+        "R-07": "R-07 organic vanilla from Madagascar: the bill of lading and the receipt say 260 kg but certificate NOP-IC-26-007415 covers 200 kg (D-13), so its data do not match the shipment and it is not logged as compliant",
+        "R-01": "R-01 organic oats from Verdane, bought in the United States: a domestic purchase needs no NOP Import Certificate",
+        "R-08": "R-08 cashews from Vietnam: an import of a non-organic product for the Harvest Trail Mix (D-14), which needs no NOP Import Certificate"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

@@ -207,6 +207,9 @@ names; each playbook carries the new one.
 - Row 59, `first-time-abate`: "Ledgerline" became "Ledgerwren bank", because Ledgerline is the name of several real
   accounting and invoicing products; "Docshelf" became "Binderwell", because DocShelf is a real document
   management app; and "Mailnest" became "Postwren", because mailnest.io is a real email service.
+- Row 60, `organic-annual-update`: "Ledgerline ERP" became "Ledgerwren ERP", because Ledgerline is the name of
+  several real accounting and invoicing products; and "Docshelf" became "Binderwell", because DocShelf is a
+  real document management app.
 
 ### B7: Household money
 
