@@ -138,6 +138,10 @@ belongs to a real business (rule 4: every portal is invented). The rows above ke
 names; each playbook carries the new one.
 - Row 46, `denied-party-screening`: "Orderloft storefront" became "Orderwick storefront", because
   orderloft.com is a real ordering site (a6abe56).
+- Row 47, `isf-filings`: "Factora supplier portal" became "Sourcewick supplier portal", because
+  Factora is a real e-invoicing and supplier-finance software name; "Portline" became "Quayloft ISF
+  desk", because Portline is a real Lisbon shipping line; and "Mailnest" became "Postwren", because
+  mailnest.io is a real email service.
 
 ### B6: Small-business money, food, and selling online
 

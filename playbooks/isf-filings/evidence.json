@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "isf-filings",
+  "captured_at": "2026-10-10T10:53:15Z",
+  "bench_run_at": "2026-10-10T10:48:28Z",
+  "narration": {
+    "text": "A garden importer's Importer Security Filings made before each cargo is loaded: two due today, one of them on a sailing the carrier moved five days earlier, one due on Sunday, a factory named late and a new warehouse updated before arrival, while the air samples, the bulk pebbles, the Canadian container the carrier files and a rolled sailing are left alone. This is a chore for the import coordinator of a home and garden importer that brings in a few containers a week from Asia and files its own Importer Security Filings. On the bench, she found 5 of 5 eligible items, worth 25,000 dollars of the 25,000 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 3 minutes. By hand, the same chore takes 2 hours, so she was about 35 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 59.744,
+    "sha256": "cba880b5bd9ff90fa1a1e1c166c961be9a5e6e62f73dd96cd74054a3b4f60fc4"
+  },
+  "video": {
+    "path": "evidence/isf-filings/evidence.mp4",
+    "duration_s": 59.76,
+    "bytes": 3084240,
+    "sha256": "3f8b1cb7808d394b1e17057a1407ae47b50cba061a25277c08a801bf81a0a3ed"
+  },
+  "thumbnail": {
+    "path": "playbooks/isf-filings/thumb.jpg",
+    "bytes": 91580,
+    "sha256": "5f18064b3b755a433e724b1bb011c843abe2747f00165deaa4663a72ab46ce52"
+  }
+}

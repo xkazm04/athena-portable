@@ -1,0 +1,574 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "sourcewick",
+      "name": "Sourcewick supplier portal",
+      "origin": "https://suppliers.sourcewick.example",
+      "path": "/larchwick/orders",
+      "view": {
+        "view": "Sourcewick: Larchwick Home & Garden's open purchase orders, with each supplier's commercial invoice and packing list",
+        "signed_in": "Ines Calloway, import coordinator",
+        "today": "Friday 9 October 2026, 9:00 a.m. in Chicago (CDT, UTC-5), which is 14:00 UTC"
+      },
+      "tools": [
+        {
+          "name": "list_orders",
+          "kind": "READ",
+          "description": "Every open purchase order: PO number, the forwarder's bill of lading (or air waybill) it ships under, the product and the seller.",
+          "params": {},
+          "returns": {
+            "table": "orders",
+            "fields": [
+              "po",
+              "bill",
+              "product",
+              "seller"
+            ]
+          }
+        },
+        {
+          "name": "view_order",
+          "kind": "READ",
+          "description": "One purchase order in full, by PO number (po): seller, manufacturer and factory, country of origin, the HTSUS number on the commercial invoice, where and by whom the container was stuffed, and the ship-to on the order.",
+          "params": {
+            "po": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "orders",
+            "match": {
+              "po": "po"
+            },
+            "require": [
+              "po"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Sourcewick supplier portal",
+        "Sourcewick",
+        "the supplier portal"
+      ]
+    },
+    {
+      "app_id": "forwarden",
+      "name": "Forwarden",
+      "origin": "https://bookings.forwarden.example",
+      "path": "/clients/larchwick/bookings",
+      "view": {
+        "view": "Forwarden: Larchwick Home & Garden's bookings with its freight forwarder (house bills of lading, vessels, loading and arrival times)",
+        "signed_in": "Ines Calloway (client access)",
+        "today": "Friday 9 October 2026, 9:00 a.m. in Chicago (CDT, UTC-5), which is 14:00 UTC",
+        "times": "Every time is given in the port's own time zone, in UTC and in Chicago time."
+      },
+      "tools": [
+        {
+          "name": "list_bookings",
+          "kind": "READ",
+          "description": "Every booking, six to a page: bill of lading (or air waybill), how it moves, the goods, where it loads and its status. Pass page for the next page.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "bookings",
+            "fields": [
+              "bill",
+              "mode",
+              "goods",
+              "status"
+            ],
+            "page_size": 6
+          }
+        },
+        {
+          "name": "view_booking",
+          "kind": "READ",
+          "description": "One booking in full, by bill of lading or air waybill number (bill): the vessel or flight, when the cargo is laden at the foreign port, when it arrives in the United States, and the forwarder's notes.",
+          "params": {
+            "bill": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "bookings",
+            "match": {
+              "bill": "bill"
+            },
+            "require": [
+              "bill"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Forwarden",
+        "the forwarder",
+        "the forwarder's portal"
+      ]
+    },
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/imports@larchwick.example",
+      "view": {
+        "view": "Postwren: imports@larchwick.example, this week's messages",
+        "signed_in": "Ines Calloway",
+        "today": "Friday 9 October 2026, 9:00 a.m. in Chicago (CDT, UTC-5), which is 14:00 UTC"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "This week's messages: message id (M-n), date, sender and subject.",
+          "params": {},
+          "returns": {
+            "table": "messages",
+            "fields": [
+              "message_id",
+              "date",
+              "from",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id (M-n).",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "messages",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "the inbox",
+        "the import inbox",
+        "mail"
+      ]
+    },
+    {
+      "app_id": "quayloft",
+      "name": "Quayloft ISF desk",
+      "origin": "https://isf.quayloft.example",
+      "path": "/filers/larchwick-home-garden",
+      "view": {
+        "view": "Quayloft ISF desk: Larchwick Home & Garden Inc.'s Importer Security Filings, transmitted to CBP under Larchwick's continuous basic importation bond",
+        "signed_in": "Ines Calloway, for Larchwick Home & Garden Inc. (ISF Importer and importer of record)",
+        "today": "Friday 9 October 2026, 9:00 a.m. in Chicago (CDT, UTC-5), which is 14:00 UTC"
+      },
+      "tools": [
+        {
+          "name": "read_isf_rules",
+          "kind": "READ",
+          "description": "CBP's Importer Security Filing rules as Quayloft states them, by topic: who_files, elements, timing, updates, exemptions, frob_ie_te, damages. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "isf_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_filings",
+          "kind": "READ",
+          "description": "Every ISF Larchwick has transmitted for cargo not yet arrived, and the ones that arrived this month: bill of lading, when it was filed, and its status with CBP.",
+          "params": {},
+          "returns": {
+            "table": "filings",
+            "fields": [
+              "bill",
+              "filed",
+              "status"
+            ]
+          }
+        },
+        {
+          "name": "view_filing",
+          "kind": "READ",
+          "description": "One filing in full, by bill of lading (bill): every element as transmitted.",
+          "params": {
+            "bill": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "filings",
+            "match": {
+              "bill": "bill"
+            },
+            "require": [
+              "bill"
+            ]
+          }
+        },
+        {
+          "name": "file_isf",
+          "kind": "REACHES_A_PERSON",
+          "description": "Transmit a new Importer Security Filing to CBP for one ocean bill of lading (bill_of_lading). Quayloft adds the buyer, the importer of record number and the consignee number from Larchwick's profile. Give the seller, the manufacturer (or supplier), the country of origin as the country's name in English, the HTSUS number at six digits as on the commercial invoice (hts), the ship to party, the container stuffing location and the consolidator (stuffer), each as a name and address. Ines signs it for Larchwick as ISF Importer; it goes to CBP at once.",
+          "params": {
+            "bill_of_lading": {
+              "type": "string"
+            },
+            "seller": {
+              "type": "string"
+            },
+            "manufacturer": {
+              "type": "string"
+            },
+            "country_of_origin": {
+              "type": "string"
+            },
+            "hts": {
+              "type": "string"
+            },
+            "ship_to": {
+              "type": "string"
+            },
+            "stuffing_location": {
+              "type": "string"
+            },
+            "consolidator": {
+              "type": "string"
+            }
+          },
+          "says": "Importer Security Filing for {bill_of_lading} transmitted to CBP and accepted."
+        },
+        {
+          "name": "update_isf",
+          "kind": "REACHES_A_PERSON",
+          "description": "Transmit an update to an ISF already on file with CBP, by bill of lading (bill_of_lading). Give only the elements that change (manufacturer, country_of_origin, hts, ship_to, stuffing_location, consolidator), each as a name and address, and the reason. Ines signs it for Larchwick; it goes to CBP at once.",
+          "params": {
+            "bill_of_lading": {
+              "type": "string"
+            },
+            "manufacturer": {
+              "type": "string"
+            },
+            "country_of_origin": {
+              "type": "string"
+            },
+            "hts": {
+              "type": "string"
+            },
+            "ship_to": {
+              "type": "string"
+            },
+            "stuffing_location": {
+              "type": "string"
+            },
+            "consolidator": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Update to the Importer Security Filing for {bill_of_lading} transmitted to CBP and accepted."
+        }
+      ],
+      "aliases": [
+        "Quayloft ISF desk",
+        "Quayloft",
+        "the ISF desk"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "sourcewick",
+      "message": "I'm Ines, the import coordinator at Larchwick Home & Garden. Start in Sourcewick: read every open purchase order, and open each one for who sold it, who made it and where, the tariff number on the invoice, where the container was stuffed and where it ships to.",
+      "nudges": 1
+    },
+    {
+      "app": "forwarden",
+      "message": "Forwarden is our freight forwarder. Read every booking, and open each one for how it moves, the vessel, when it's loaded and when it arrives, and their notes.",
+      "nudges": 1
+    },
+    {
+      "app": "postwren",
+      "message": "Postwren is our import inbox. Read this week's messages.",
+      "nudges": 1
+    },
+    {
+      "app": "quayloft",
+      "message": "Quayloft is where we file our Importer Security Filings with CBP. Read its rules and the filings we already have, then file every ISF we owe that isn't filed yet and update every filing that needs it before the cargo arrives, each with the right parties. Don't file anything the rule doesn't require from us, and don't file anything twice. Then tell me what you filed, by when each one was due, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "orders": [
+      {
+        "po": "PO-7731",
+        "bill": "FWDN-26-41871",
+        "product": "Glazed stoneware planters, 3 sizes",
+        "seller": "Fenlow Trading Ltd. (Hong Kong)",
+        "detail": "Seller: Fenlow Trading Ltd., Unit 1207, 88 Hoi Bun Road, Kwun Tong, Kowloon, Hong Kong (a trading company; it does not make the goods). Manufacturer: Kilnmere Ceramics Co., Ltd., 88 Kilnworks Road, Yuyao, Zhejiang, China, which made and glazed the planters. Country of origin: China. HTSUS on the commercial invoice: 6914.90 (other ceramic articles). Container: one 40-foot high cube, stuffed at Kilnmere's factory yard, 88 Kilnworks Road, Yuyao, by Kilnmere Ceramics Co., Ltd. Ship to on the order: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433."
+      },
+      {
+        "po": "PO-7742",
+        "bill": "FWDN-26-41893",
+        "product": "Rattan storage baskets, nesting sets",
+        "seller": "Ricewood Rattan Co., Ltd. (Vietnam)",
+        "detail": "Seller and manufacturer: Ricewood Rattan Co., Ltd., Lot C4, Tan Uyen Industrial Park, Binh Duong, Vietnam, which wove the baskets. Country of origin: Vietnam. HTSUS on the commercial invoice: 4602.12 (basketwork of rattan). Less than a container load (6 cubic meters), delivered to the forwarder's station and stuffed there into a consolidated container: stuffing location and consolidator Forwarden Vietnam Co., Ltd., container freight station, Cat Lai Port, Thu Duc City, Ho Chi Minh City, Vietnam. Ship to on the order: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433."
+      },
+      {
+        "po": "PO-7750",
+        "bill": "FWDN-26-41902",
+        "product": "Outdoor seat cushions, weatherproof",
+        "seller": "Fenlow Trading Ltd. (Hong Kong)",
+        "detail": "Seller: Fenlow Trading Ltd., Unit 1207, 88 Hoi Bun Road, Kwun Tong, Kowloon, Hong Kong (a trading company; it does not make the goods). Manufacturer: Brightloom Textiles Co., Ltd., Street 598, Russey Keo, Phnom Penh, Cambodia, which cut and sewed the cushions from its own fabric. Country of origin: Cambodia. The container is trucked from Phnom Penh to Cai Mep, Vietnam, for loading. HTSUS on the commercial invoice: 9404.90 (cushions). Container: one 40-foot, stuffed at Brightloom's factory, Street 598, Russey Keo, Phnom Penh, by Brightloom Textiles Co., Ltd. Ship to on the order: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433."
+      },
+      {
+        "po": "PO-7716",
+        "bill": "FWDN-26-41655",
+        "product": "Glazed stoneware planters, 3 sizes",
+        "seller": "Fenlow Trading Ltd. (Hong Kong)",
+        "detail": "Seller: Fenlow Trading Ltd., Unit 1207, 88 Hoi Bun Road, Kwun Tong, Kowloon, Hong Kong. Manufacturer: Kilnmere Ceramics Co., Ltd., 88 Kilnworks Road, Yuyao, Zhejiang, China; Fenlow named the factory on Thu 8 Oct 2026, after the ISF was filed (at booking it had not said which factory made this lot). Country of origin: China. HTSUS on the commercial invoice: 6914.90. Container: one 40-foot, stuffed at Kilnmere's factory yard, 88 Kilnworks Road, Yuyao, by Kilnmere Ceramics Co., Ltd. Ship to on the order: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433."
+      },
+      {
+        "po": "PO-7705",
+        "bill": "FWDN-26-41610",
+        "product": "Rattan storage baskets, nesting sets",
+        "seller": "Ricewood Rattan Co., Ltd. (Vietnam)",
+        "detail": "Seller and manufacturer: Ricewood Rattan Co., Ltd., Lot C4, Tan Uyen Industrial Park, Binh Duong, Vietnam. Country of origin: Vietnam. HTSUS on the commercial invoice: 4602.12. Container: one 20-foot, stuffed at Ricewood's factory, Lot C4, Tan Uyen Industrial Park, Binh Duong, by Ricewood Rattan Co., Ltd. Ship to on the order (placed 14 Aug 2026): Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433."
+      },
+      {
+        "po": "PO-7722",
+        "bill": "FWDN-26-41744",
+        "product": "Cast iron umbrella bases",
+        "seller": "Ironvale Castings Co., Ltd. (China)",
+        "detail": "Seller and manufacturer: Ironvale Castings Co., Ltd., 16 Foundry Lane, Jiading District, Shanghai, China. Country of origin: China. HTSUS on the commercial invoice: 7325.10 (cast articles of non-malleable cast iron). Container: one 20-foot, stuffed at Ironvale's foundry, 16 Foundry Lane, Jiading, Shanghai, by Ironvale Castings Co., Ltd. Ship to on the order: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433."
+      },
+      {
+        "po": "PO-7709",
+        "bill": "FWDN-26-41588",
+        "product": "Glazed stoneware planters, 3 sizes",
+        "seller": "Fenlow Trading Ltd. (Hong Kong)",
+        "detail": "Seller: Fenlow Trading Ltd., Unit 1207, 88 Hoi Bun Road, Kwun Tong, Kowloon, Hong Kong. Manufacturer: Kilnmere Ceramics Co., Ltd., 88 Kilnworks Road, Yuyao, Zhejiang, China. Country of origin: China. HTSUS on the commercial invoice: 6914.90. Container: one 40-foot, stuffed at Kilnmere's factory yard, Yuyao, by Kilnmere Ceramics Co., Ltd. Ship to on the order: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433."
+      },
+      {
+        "po": "PO-7735",
+        "bill": "FWDN-26-41880",
+        "product": "Glazed stoneware planters, for Canada",
+        "seller": "Fenlow Trading Ltd. (Hong Kong)",
+        "detail": "Ordered by Larchwick Home & Garden Canada Ltd., Larchwick's Canadian company, for its own warehouse: 7100 Beedie Way, Delta, BC, Canada. The goods are not imported into the United States. Seller: Fenlow Trading Ltd., Unit 1207, 88 Hoi Bun Road, Kwun Tong, Kowloon, Hong Kong. Manufacturer: Kilnmere Ceramics Co., Ltd., 88 Kilnworks Road, Yuyao, Zhejiang, China. Country of origin: China. HTSUS on the commercial invoice: 6914.90."
+      },
+      {
+        "po": "PO-7748",
+        "bill": "TSB-2610-007",
+        "product": "White river pebbles, 2,400 metric tons",
+        "seller": "Pebblemoor Aggregates (Indonesia)",
+        "detail": "Seller and producer: Pebblemoor Aggregates, Jalan Tanjung Perak 41, Surabaya, Indonesia. Country of origin: Indonesia. HTSUS on the commercial invoice: 2517.10 (pebbles and gravel). Shipped loose in the holds of a bulk carrier, not in containers, bags or any packing, for bagging at Larchwick's plant: Larchwick Home & Garden Inc., 9100 Bay Area Boulevard, Pasadena, TX 77507."
+      },
+      {
+        "po": "PO-7739",
+        "bill": "AWB 784-55210936",
+        "product": "Sample planters, new glaze colours (3 cartons)",
+        "seller": "Fenlow Trading Ltd. (Hong Kong)",
+        "detail": "Seller: Fenlow Trading Ltd., Unit 1207, 88 Hoi Bun Road, Kwun Tong, Kowloon, Hong Kong. Manufacturer: Kilnmere Ceramics Co., Ltd., 88 Kilnworks Road, Yuyao, Zhejiang, China. Country of origin: China. HTSUS on the commercial invoice: 6914.90. Flown by air freight under the air waybill, not by sea. Ship to: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433."
+      }
+    ],
+    "bookings": [
+      {
+        "bill": "FWDN-26-41871",
+        "mode": "Ocean, full container (40-foot high cube)",
+        "goods": "Planters, PO-7731",
+        "status": "Booked, loads Sun 11 Oct",
+        "detail": "Vessel Tessaline Corvina, voyage 642E (Tessaline Lines). Port of loading: Ningbo, China. Cargo laden aboard the vessel: Sun 11 Oct 2026 03:00 China Standard Time (UTC+8), which is Sat 10 Oct 19:00 UTC and Sat 10 Oct 2:00 p.m. in Chicago. Arrives at the first US port, Long Beach, CA: Mon 26 Oct 2026 06:00 PDT (UTC-7), 13:00 UTC. No ISF on file yet for this bill, as far as Forwarden can see."
+      },
+      {
+        "bill": "FWDN-26-41893",
+        "mode": "Ocean, less than container load (consolidated)",
+        "goods": "Rattan baskets, PO-7742",
+        "status": "Booked, loads Mon 12 Oct",
+        "detail": "Consolidated by Forwarden Vietnam at its Cat Lai station into container TSLU 4418203. Vessel Tessaline Marlowe, voyage 214N. Port of loading: Cat Lai, Ho Chi Minh City, Vietnam. Cargo laden aboard the vessel: Mon 12 Oct 2026 16:00 Indochina Time (UTC+7), which is Mon 12 Oct 09:00 UTC and Mon 12 Oct 4:00 a.m. in Chicago. Arrives at Long Beach, CA: Fri 30 Oct 2026 08:00 PDT (UTC-7), 15:00 UTC."
+      },
+      {
+        "bill": "FWDN-26-41902",
+        "mode": "Ocean, full container (40-foot)",
+        "goods": "Cushions, PO-7750",
+        "status": "Booked, loads Sat 10 Oct (advanced)",
+        "detail": "Vessel Tessaline Kestrel, voyage 318E. Port of loading: Cai Mep, Vietnam (the container is trucked in from Phnom Penh). Tessaline advanced the sailing on Thu 8 Oct: the cargo was to be laden Thu 15 Oct and is now laden aboard the vessel Sat 10 Oct 2026 23:00 Indochina Time (UTC+7), which is Sat 10 Oct 16:00 UTC and Sat 10 Oct 11:00 a.m. in Chicago. Arrives at Long Beach, CA: Mon 26 Oct 2026 14:00 PDT (UTC-7), 21:00 UTC."
+      },
+      {
+        "bill": "FWDN-26-41655",
+        "mode": "Ocean, full container (40-foot)",
+        "goods": "Planters, PO-7716",
+        "status": "On the water",
+        "detail": "Vessel Tessaline Avocet, voyage 076E. Laden at Ningbo, China: Mon 5 Oct 2026 18:00 China Standard Time (UTC+8), 10:00 UTC. Arrives at Long Beach, CA: Mon 19 Oct 2026 06:00 PDT (UTC-7), 13:00 UTC."
+      },
+      {
+        "bill": "FWDN-26-41610",
+        "mode": "Ocean, full container (20-foot)",
+        "goods": "Rattan baskets, PO-7705",
+        "status": "On the water",
+        "detail": "Vessel Tessaline Marlowe, voyage 212N. Laden at Cat Lai, Ho Chi Minh City: Sat 3 Oct 2026 10:00 Indochina Time (UTC+7), 03:00 UTC. Arrives at Long Beach, CA: Thu 15 Oct 2026 14:00 PDT (UTC-7), 21:00 UTC. Inland delivery after release: the Memphis distribution center, on Larchwick's instruction of Thu 8 Oct (it was Joliet)."
+      },
+      {
+        "bill": "FWDN-26-41744",
+        "mode": "Ocean, full container (20-foot)",
+        "goods": "Umbrella bases, PO-7722",
+        "status": "Rolled to the next vessel, loads Wed 14 Oct",
+        "detail": "Rolled on Wed 7 Oct: the container missed Tessaline Kittiwake, voyage 640E, which loaded Wed 7 Oct, and is now booked on Tessaline Avocet, voyage 078E. Port of loading: Shanghai, China. Cargo laden aboard the vessel: Wed 14 Oct 2026 20:00 China Standard Time (UTC+8), 12:00 UTC. Arrives at Long Beach, CA: Wed 28 Oct 2026 07:00 PDT (UTC-7), 14:00 UTC. The house and master bills of lading are unchanged, and so is everything on them but the vessel and the dates."
+      },
+      {
+        "bill": "FWDN-26-41588",
+        "mode": "Ocean, full container (40-foot)",
+        "goods": "Planters, PO-7709",
+        "status": "On the water",
+        "detail": "Vessel Tessaline Corvina, voyage 640E. Laden at Ningbo, China: Thu 1 Oct 2026 16:00 China Standard Time (UTC+8), 08:00 UTC. Arrives at Long Beach, CA: Wed 14 Oct 2026 07:00 PDT (UTC-7), 14:00 UTC."
+      },
+      {
+        "bill": "FWDN-26-41880",
+        "mode": "Ocean, full container (40-foot)",
+        "goods": "Planters for Larchwick Canada, PO-7735",
+        "status": "Booked, loads Mon 12 Oct",
+        "detail": "For Larchwick Home & Garden Canada Ltd., Delta, BC. Vessel Tessaline Pacific Lark, voyage 077E. Laden at Ningbo: Mon 12 Oct 2026 08:00 China Standard Time (UTC+8), Mon 12 Oct 00:00 UTC. Calls at Seattle, WA on Thu 22 Oct, where the container stays on board, and discharges at Vancouver, BC on Fri 23 Oct: freight remaining on board (FROB) at the US port. Tessaline Lines, the ocean carrier, files the ISF for FROB cargo on its sailings."
+      },
+      {
+        "bill": "TSB-2610-007",
+        "mode": "Ocean, bulk carrier (loose in the holds)",
+        "goods": "River pebbles, PO-7748",
+        "status": "Loading from Tue 13 Oct",
+        "detail": "Bulk carrier Merbau Star (Tessaline Bulk). 2,400 metric tons of white river pebbles, stowed loose in holds 2 and 3, not in containers, bags or any packing. Laden at Surabaya (Tanjung Perak), Indonesia: Tue 13 Oct 2026 08:00 Western Indonesia Time (UTC+7), Tue 13 Oct 01:00 UTC. Arrives at Houston, TX: Mon 16 Nov 2026."
+      },
+      {
+        "bill": "AWB 784-55210936",
+        "mode": "Air freight",
+        "goods": "Sample planters, PO-7739",
+        "status": "Arrived Thu 8 Oct",
+        "detail": "Flown Shanghai Pudong (PVG) to Chicago O'Hare (ORD) on Wed 7 Oct 2026, arrived Thu 8 Oct. Three cartons. Not an ocean shipment."
+      }
+    ],
+    "messages": [
+      {
+        "message_id": "M-1",
+        "date": "Thu 8 Oct 2026",
+        "from": "Forwarden Vietnam <ops.vn@forwarden.example>",
+        "subject": "FWDN-26-41902: sailing advanced to Saturday",
+        "body": "Tessaline has advanced the Cai Mep sailing for your cushions, FWDN-26-41902. The container now loads on Tessaline Kestrel 318E on Saturday 10 October at 23:00 local time (Indochina Time, UTC+7), not Thursday 15 October. Everything else on the booking and the bill stays the same. Please make sure your customs filings keep up."
+      },
+      {
+        "message_id": "M-2",
+        "date": "Wed 7 Oct 2026",
+        "from": "Forwarden Shanghai <ops.sha@forwarden.example>",
+        "subject": "FWDN-26-41744 rolled to Tessaline Avocet 078E",
+        "body": "Your umbrella bases, FWDN-26-41744, missed the cut-off for Tessaline Kittiwake 640E and are rolled to Tessaline Avocet 078E, loading Wednesday 14 October 20:00 Shanghai time. The house bill and the master bill keep their numbers, and the shipper, consignee, goods and delivery are unchanged."
+      },
+      {
+        "message_id": "M-3",
+        "date": "Thu 8 Oct 2026",
+        "from": "Wen Okada, Fenlow Trading <wen.okada@fenlow.example>",
+        "subject": "PO-7716 (FWDN-26-41655): factory and stuffing",
+        "body": "Ines, as promised: the planters on PO-7716, now sailing on FWDN-26-41655, were made by Kilnmere Ceramics Co., Ltd., 88 Kilnworks Road, Yuyao, Zhejiang, China, and Kilnmere stuffed and sealed the container at its own factory yard at that address. Sorry we could not name the factory before the booking."
+      },
+      {
+        "message_id": "M-4",
+        "date": "Thu 8 Oct 2026",
+        "from": "Dev Ranganathan, Larchwick logistics <dev.r@larchwick.example>",
+        "subject": "FWDN-26-41610 goes to Memphis, not Joliet",
+        "body": "Joliet is full until November. I've told Forwarden that the 20-foot of rattan baskets on FWDN-26-41610 is to be delivered after customs release to the Memphis DC: Larchwick Home & Garden Inc., Memphis distribution center, 4180 Shelby Drive, Memphis, TN 38118. Can you make sure the customs side matches?"
+      },
+      {
+        "message_id": "M-5",
+        "date": "Tue 6 Oct 2026",
+        "from": "Wen Okada, Fenlow Trading <wen.okada@fenlow.example>",
+        "subject": "New glaze samples by air",
+        "body": "Three cartons of sample planters in the new glaze colours fly from Pudong tomorrow on air waybill 784-55210936, PO-7739. They should reach O'Hare on Thursday."
+      },
+      {
+        "message_id": "M-6",
+        "date": "Mon 5 Oct 2026",
+        "from": "Larchwick Canada <orders@larchwick-canada.example>",
+        "subject": "PO-7735 for Delta",
+        "body": "Our planters on PO-7735 (FWDN-26-41880) sail on Tessaline Pacific Lark from Ningbo. Tessaline tells us the ship calls at Seattle first and the container stays on board there for Vancouver. Nothing is being entered in the US; we clear it in Canada."
+      }
+    ],
+    "isf_rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026, 9:00 a.m. in Chicago (CDT, UTC-5), which is 14:00 UTC. CBP's Importer Security Filing rules, 19 CFR Part 149 and 19 CFR 113.62(j), as they stand on that date. Topics: who_files, elements, timing, updates, exemptions, frob_ie_te, damages."
+      },
+      {
+        "topic": "who_files",
+        "text": "19 CFR 149.1(a) and 149.2(a): the ISF Importer is the party causing goods to arrive within the limits of a port in the United States by vessel. For goods to be entered or delivered to a foreign trade zone, it is the goods' owner, purchaser, consignee or agent such as a licensed customs broker. For immediate exportation (IE) and transportation and exportation (T&E) in-bond shipments it may be the party filing the in-bond documentation. For freight remaining on board (FROB), the ISF Importer is the carrier or the non-vessel operating common carrier. Larchwick Home & Garden Inc. is the ISF Importer for the goods it imports for entry, and files through Quayloft under its continuous basic importation bond."
+      },
+      {
+        "topic": "elements",
+        "text": "19 CFR 149.3(a): for goods to be entered, ten elements, for each good at the six-digit HTSUS number at the house bill of lading level: (1) seller; (2) buyer; (3) importer of record number; (4) consignee number; (5) manufacturer (or supplier): the entity that last manufactures, assembles, produces or grows the commodity, or the party supplying the finished goods in the country from which the goods are leaving; (6) ship to party: the first deliver-to party scheduled to physically receive the goods after release from customs custody; (7) country of origin: the country of manufacture, production or growth; (8) commodity HTSUS number, at least six digits; (9) container stuffing location; (10) consolidator (stuffer): the party who stuffed the container. Manufacturer, country of origin and HTSUS number are linked line by line. Quayloft adds (2), (3) and (4) from Larchwick's profile."
+      },
+      {
+        "topic": "timing",
+        "text": "19 CFR 149.2(b): elements (1) to (8) no later than 24 hours before the cargo is laden aboard the vessel at the foreign port. Elements (9) and (10), the container stuffing location and the consolidator, as early as possible and in no event later than 24 hours before arrival in a United States port. CBP's ISF FAQ: an ISF is late if filed less than 24 hours before lading. The 24 hours run back from the moment of lading, wherever the filer sits: Forwarden gives each lading in the port's time, in UTC and in Chicago time, so compare in one of them. Quayloft transmits the moment Ines signs."
+      },
+      {
+        "topic": "updates",
+        "text": "19 CFR 149.2(d): the filer must update the ISF if, after it is submitted and before the goods enter the limits of a US port, any of the information submitted changes or more accurate information becomes available. 149.2(f): for the manufacturer, ship to party, country of origin and HTSUS number, an initial response may be based on the best available data (a flexible response), and must be updated as soon as more accurate information is available and in no event less than 24 hours before arrival at a US port. CBP's ISF FAQ: cargo rolled to another vessel needs no amendment if the bill of lading does not change. The duty ends when the goods arrive at the first US port."
+      },
+      {
+        "topic": "exemptions",
+        "text": "19 CFR 149.2(a): the ISF is for cargo arriving by vessel. CBP's ISF FAQ: ISFs are only required for goods scheduled to arrive in the United States by vessel; air, truck and rail cargo need none. 149.4(a): bulk cargo exempt from the 24-hour cargo declaration of 19 CFR 4.7(b)(2) is also exempt from the ISF. 149.1(c): bulk cargo is homogeneous cargo stowed loose in the hold and not enclosed in any container such as a box, bale, bag or cask. 149.4(b): break bulk cargo is exempt only from the timing, and is filed 24 hours before arrival. Less-than-container-load cargo is not exempt."
+      },
+      {
+        "topic": "frob_ie_te",
+        "text": "19 CFR 149.3(b): for FROB, IE and T&E cargo, five elements: booking party, foreign port of unlading, place of delivery, ship to party and commodity HTSUS number. 149.2(b)(4): for FROB, before lading at the foreign port, by the carrier or NVOCC as ISF Importer. 149.2(b)(5): for IE and T&E, no later than 24 hours before lading, by the party filing the in-bond documentation."
+      },
+      {
+        "topic": "damages",
+        "text": "19 CFR 113.62(j): under the basic importation bond the principal agrees to comply with all ISF requirements of Part 149, and on a default the principal and surety agree to pay liquidated damages of $5,000 for each violation. CBP's mitigation guidelines treat a late ISF, an inaccurate ISF, an inaccurate update and a failure to withdraw each as a $5,000 violation; a first violation may be cancelled on payment of $1,000 to $2,000, later ones no less than $2,500. Cargo with no ISF may also be held."
+      }
+    ],
+    "filings": [
+      {
+        "bill": "FWDN-26-41655",
+        "filed": "Fri 2 Oct 2026 10:12 CDT",
+        "status": "Accepted; manufacturer given as a flexible response, stuffing location and consolidator not yet given",
+        "elements": "Seller: Fenlow Trading Ltd., Unit 1207, 88 Hoi Bun Road, Kwun Tong, Kowloon, Hong Kong. Manufacturer: flexible response on the best available data, 'Fenlow Trading Ltd., Hong Kong (factory to be confirmed)'. Country of origin: China. HTSUS: 6914.90. Ship to: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433. Container stuffing location: not yet given. Consolidator: not yet given."
+      },
+      {
+        "bill": "FWDN-26-41610",
+        "filed": "Thu 1 Oct 2026 15:40 CDT",
+        "status": "Accepted, all ten elements; matched to the bill of lading",
+        "elements": "Seller: Ricewood Rattan Co., Ltd., Lot C4, Tan Uyen Industrial Park, Binh Duong, Vietnam. Manufacturer: Ricewood Rattan Co., Ltd., Lot C4, Tan Uyen Industrial Park, Binh Duong, Vietnam. Country of origin: Vietnam. HTSUS: 4602.12. Ship to: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433. Container stuffing location and consolidator: Ricewood Rattan Co., Ltd., Lot C4, Tan Uyen Industrial Park, Binh Duong, Vietnam."
+      },
+      {
+        "bill": "FWDN-26-41744",
+        "filed": "Mon 5 Oct 2026 11:05 CDT",
+        "status": "Accepted, all ten elements; matched to the bill of lading",
+        "elements": "Seller: Ironvale Castings Co., Ltd., 16 Foundry Lane, Jiading District, Shanghai, China. Manufacturer: Ironvale Castings Co., Ltd., 16 Foundry Lane, Jiading District, Shanghai, China. Country of origin: China. HTSUS: 7325.10. Ship to: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433. Container stuffing location and consolidator: Ironvale Castings Co., Ltd., 16 Foundry Lane, Jiading, Shanghai, China."
+      },
+      {
+        "bill": "FWDN-26-41588",
+        "filed": "Mon 28 Sep 2026 09:30 CDT",
+        "status": "Accepted, all ten elements; matched to the bill of lading",
+        "elements": "Seller: Fenlow Trading Ltd., Unit 1207, 88 Hoi Bun Road, Kwun Tong, Kowloon, Hong Kong. Manufacturer: Kilnmere Ceramics Co., Ltd., 88 Kilnworks Road, Yuyao, Zhejiang, China. Country of origin: China. HTSUS: 6914.90. Ship to: Larchwick Home & Garden Inc., Joliet distribution center, 2600 Laraway Road, Joliet, IL 60433. Container stuffing location and consolidator: Kilnmere Ceramics Co., Ltd., 88 Kilnworks Road, Yuyao, Zhejiang, China."
+      }
+    ]
+  }
+}

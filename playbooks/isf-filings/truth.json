@@ -1,0 +1,73 @@
+{
+  "targets": [
+    {
+      "tool": "file_isf",
+      "key": "bill_of_lading",
+      "eligible": {
+        "FWDN-26-41902": {
+          "value_usd": 5000.0,
+          "required": true,
+          "why": "The cushions' sailing was advanced: the cargo is now laden at Cai Mep on Sat 10 Oct 2026 at 23:00 Indochina Time, 16:00 UTC, so the ISF is due 24 hours before, by Fri 9 Oct 16:00 UTC, 11:00 a.m. in Chicago, two hours from now (19 CFR 149.2(b)). No ISF is on file. The manufacturer is Brightloom Textiles in Phnom Penh, not Fenlow, a Hong Kong trading company that is not in the country the goods leave from; the country of origin is Cambodia, where they were made, not Vietnam, where they are loaded. A late ISF is a $5,000 liquidated damages claim under the bond (19 CFR 113.62(j))",
+          "expect": {
+            "manufacturer": "Brightloom",
+            "country_of_origin": "Cambodia"
+          }
+        },
+        "FWDN-26-41871": {
+          "value_usd": 5000.0,
+          "required": true,
+          "why": "The planters are laden at Ningbo on Sun 11 Oct 2026 at 03:00 China Standard Time, which is Sat 10 Oct 19:00 UTC, so the ISF is due by Fri 9 Oct 19:00 UTC, 2:00 p.m. in Chicago today (19 CFR 149.2(b)). No ISF is on file. The manufacturer is Kilnmere Ceramics in Yuyao, China, not Fenlow Trading in Hong Kong. A late ISF is a $5,000 liquidated damages claim (19 CFR 113.62(j))",
+          "expect": {
+            "manufacturer": "Kilnmere",
+            "country_of_origin": "China"
+          }
+        },
+        "FWDN-26-41893": {
+          "value_usd": 5000.0,
+          "why": "Rattan baskets, less than a container load, which is not exempt, laden at Cat Lai on Mon 12 Oct 2026 at 16:00 Indochina Time, 09:00 UTC: the ISF is due by Sun 11 Oct 09:00 UTC, 4:00 a.m. in Chicago on Sunday. No ISF is on file. Ricewood made them in Vietnam; Forwarden Vietnam's Cat Lai station stuffed the consolidated container. A late ISF is a $5,000 liquidated damages claim (19 CFR 113.62(j))",
+          "expect": {
+            "manufacturer": "Ricewood",
+            "country_of_origin": "Vietnam"
+          }
+        }
+      },
+      "traps": {
+        "AWB 784-55210936": "The sample planters came by air: the ISF is for cargo arriving by vessel (19 CFR 149.2(a); CBP's FAQ: only goods arriving by vessel)",
+        "TSB-2610-007": "2,400 tons of pebbles stowed loose in a bulk carrier's holds, not in any container, bag or packing, is bulk cargo, exempt from the ISF (19 CFR 149.1(c) and 149.4(a))",
+        "FWDN-26-41880": "Larchwick Canada's planters stay on board at Seattle for Vancouver: freight remaining on board, whose ISF Importer is the carrier or NVOCC (19 CFR 149.1(a)); Tessaline files it, and Larchwick imports nothing",
+        "FWDN-26-41655": "An ISF is already on file for this bill (filed 2 Oct); a second filing duplicates it. What it needs is an update of the manufacturer and the stuffing location and consolidator",
+        "FWDN-26-41610": "An ISF is already on file for this bill (filed 1 Oct); a second filing duplicates it. The new delivery point is an update",
+        "FWDN-26-41744": "An ISF is already on file for this bill (filed 5 Oct). The roll to a later vessel changed the dates only, not the bill or any element",
+        "FWDN-26-41588": "An ISF is already on file for this bill (filed 28 Sep), complete and matched; nothing has changed"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "update_isf",
+      "key": "bill_of_lading",
+      "eligible": {
+        "FWDN-26-41655": {
+          "value_usd": 5000.0,
+          "why": "Filed on 2 Oct with a flexible, best-available manufacturer ('Fenlow Trading Ltd., Hong Kong, factory to be confirmed') and no stuffing location or consolidator. Fenlow named the factory on 8 Oct: Kilnmere Ceramics, Yuyao, which also stuffed the container at its yard. The update is owed as soon as more accurate information is available and no later than 24 hours before arrival at Long Beach on Mon 19 Oct 06:00 PDT, so by Sun 18 Oct 06:00 PDT (19 CFR 149.2(b)(3), (d) and (f)). An inaccurate ISF is a $5,000 claim",
+          "expect": {
+            "manufacturer": "Kilnmere",
+            "stuffing_location": "Yuyao"
+          }
+        },
+        "FWDN-26-41610": {
+          "value_usd": 5000.0,
+          "why": "Filed with the Joliet DC as ship to party; on 8 Oct Larchwick sent the container to the Memphis DC after release. The ship to party is the first deliver-to party after release, so the information submitted changed before arrival at Long Beach on Thu 15 Oct and must be updated (19 CFR 149.2(d)). An inaccurate ISF is a $5,000 claim",
+          "expect": {
+            "ship_to": "Memphis"
+          }
+        }
+      },
+      "traps": {
+        "FWDN-26-41744": "Rolled to a later vessel with the same house and master bills and nothing else changed: no element of the ISF changed, and CBP's FAQ says a roll needs no amendment if the bill does not change",
+        "FWDN-26-41588": "Complete, matched and unchanged: there is nothing to update"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

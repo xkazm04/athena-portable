@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The fifty-five playbooks (latest runs, Claude Sonnet)
+## The fifty-six playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -98,9 +98,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A lens maker's late overnight parcels claimed under each carrier's money-back guarantee, inside each carrier's own window, with suspended services and excepted delays left alone | work | 4 | exceeds: 6 of 6, $269.85 of $269.85, 11 of 11 traps, 0 false |
 | A kitchenware importer's misclassified entries corrected before liquidation or protested within 180 days after it, while the platters its own ruling classifies and entries out of time or too early are left alone | work | 4 | exceeds: 4 of 4, $10,998 of $10,998, 14 of 14 traps, 0 false |
 | A sensor maker's export orders screened before they ship: near-matches cleared and released, listed, denied, unverified, owner-blocked and red-flagged buyers held | work | 4 | exceeds: 10 of 10 (a $1 count weight an act, mostly minutes), 10 of 10 traps, 0 false |
+| A garden importer's Importer Security Filings made before each cargo is loaded, a factory named late and a new warehouse updated before arrival, while the air, bulk, carrier-filed and rolled cargo are left alone | work | 4 | exceeds: 5 of 5, $25,000 of $25,000 (a $5,000 weight an act, protection, mostly minutes), 9 of 9 traps, 0 false |
 
-Across the latest runs: $989,948 of $999,375 found, 584 of 584 traps walked past, no false claim,
-167 minutes of her time against about 257 hours by hand, $102.98 of model time. 92 runs are recorded
+Across the latest runs: $1,014,948 of $1,024,375 found, 593 of 593 traps walked past, no false claim,
+170 minutes of her time against about 259 hours by hand, $105.33 of model time. 93 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

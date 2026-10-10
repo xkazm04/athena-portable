@@ -1,0 +1,115 @@
+{
+  "id": "isf-filings",
+  "title": "A garden importer's Importer Security Filings made before each cargo is loaded: two due today, one of them on a sailing the carrier moved five days earlier, one due on Sunday, a factory named late and a new warehouse updated before arrival, while the air samples, the bulk pebbles, the Canadian container the carrier files and a rolled sailing are left alone",
+  "domain": "Customs & trade",
+  "audience": "work",
+  "promise": "A home and garden importer's open orders are read across its suppliers' portal, its freight forwarder's bookings and its import inbox, and every Importer Security Filing it owes is made before the 24 hours before loading run out, each with the factory that made the goods and the country it made them in, not the Hong Kong trading company that sold them or the port they leave from: two due today, one on a sailing the carrier moved five days earlier, and one due on Sunday. A filing made on a flexible manufacturer is updated with the factory and the stuffing location, and another with the new warehouse, before the cargo arrives. The air samples, the pebbles that come loose in a bulk carrier, the Canadian company's container the carrier files for, a roll to a later vessel and a filing that is complete are left alone.",
+  "persona": "The import coordinator of a home and garden importer that brings in a few containers a week from Asia and files its own Importer Security Filings",
+  "chore": "Read each open purchase order's seller, manufacturer, country of origin, tariff number, stuffing location and ship-to in the suppliers' portal; each booking's mode, vessel, lading and arrival times in the forwarder's portal, in the port's time zone, UTC and Chicago time; the week's messages on sailings moved, a factory named and a warehouse changed; and CBP's rules and the filings already made on the ISF desk. Then apply 19 CFR Part 149 as it stands on 9 October 2026: who files (149.1(a)), the ten elements (149.3(a)) due 24 hours before lading and the stuffing location and consolidator by 24 hours before arrival (149.2(b)), the duty to update before arrival and the flexible manufacturer (149.2(d) and (f)), the five elements the carrier files for FROB cargo (149.3(b)), the exemptions for bulk cargo and for cargo that does not come by vessel (149.2(a), 149.4(a)), and the bond's $5,000 a violation (19 CFR 113.62(j)). The deadline runs on another party's vessel schedule.",
+  "command": "I'm Ines, the import coordinator at Larchwick Home & Garden. Go through Sourcewick, Forwarden, Postwren and the Quayloft ISF desk, and get every Importer Security Filing we owe to CBP in before its 24 hours before loading run out, with the right parties, and update the ones already filed where something changed before the cargo arrives. Don't file for anything the rule doesn't cover or that isn't ours to file, and don't file anything twice.",
+  "apps": [
+    {
+      "name": "Sourcewick supplier portal",
+      "role": "the suppliers' portal: each purchase order with its seller, the factory that made the goods, the country of origin, the tariff number on the invoice, where the container was stuffed and the ship-to",
+      "api": "Supplier portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Forwarden",
+      "role": "the freight forwarder's bookings: how each shipment moves, the vessel, when it is laden and when it arrives, in three time zones, and the notes on an advanced sailing, a roll, freight remaining on board and a bulk carrier",
+      "api": "Forwarder portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the import inbox: a sailing advanced, a roll, a factory named after filing, a new warehouse, the air samples and the Canadian order",
+      "api": "Mail",
+      "url": ""
+    },
+    {
+      "name": "Quayloft ISF desk",
+      "role": "the importer's Importer Security Filing desk: CBP's rules, the filings already made, and the forms to file and update an ISF",
+      "api": "Trade filing portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads every purchase order in Sourcewick: who sold it, who made it and where, the tariff number, the stuffing and the ship-to.",
+    "Reads every booking in Forwarden: mode, vessel, lading and arrival, in the port's time, UTC and Chicago time.",
+    "Reads the week's messages in Postwren: an advanced sailing, a roll, a factory named, a warehouse changed.",
+    "Reads CBP's rules and the filings on the Quayloft ISF desk, files the three ISFs owed and updates the two that changed."
+  ],
+  "gates": [
+    {
+      "action": "file_isf",
+      "label": "Transmit an Importer Security Filing to CBP",
+      "why": "A declaration to CBP under the importer's bond, signed for the ISF Importer; a late or inaccurate one is a $5,000 claim."
+    },
+    {
+      "action": "update_isf",
+      "label": "Transmit an update to an ISF on file",
+      "why": "A changed declaration to CBP under the importer's bond, signed for the ISF Importer."
+    }
+  ],
+  "traps": [
+    "An ISF for the sample planters that came by air, when the rule covers cargo arriving by vessel.",
+    "An ISF for pebbles stowed loose in a bulk carrier's holds, which is exempt.",
+    "An ISF for the Canadian company's container that stays on board at Seattle, which the carrier files as freight remaining on board.",
+    "A second ISF for a bill that already has one, instead of an update.",
+    "An update for a roll to a later vessel, when the bill and every element are unchanged.",
+    "An update for a filing that is complete and unchanged.",
+    "The Hong Kong trading company named as the manufacturer, or Vietnam, the port of loading, as the cushions' country of origin."
+  ],
+  "memory": [
+    "Each order's seller, factory, country of origin, tariff number, stuffing location and ship-to, carried from Sourcewick.",
+    "Each booking's mode and its lading and arrival in UTC, with the advanced sailing, the roll, the FROB note and the bulk carrier, carried from Forwarden.",
+    "The factory named on 8 October and the Memphis warehouse, carried from Postwren into the Quayloft tab."
+  ],
+  "economics": {
+    "value_usd": 10000,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. An importer that files its own Importer Security Filings has to get each one in 24 hours before its cargo is laden at a foreign port, on a vessel schedule another party sets and moves, with data from suppliers and a forwarder, and to update it before arrival when something changes. Each late or inaccurate ISF is a $5,000 liquidated damages claim under the importer's basic importation bond (19 CFR 113.62(j)); CBP's mitigation guidelines cancel a first violation on payment of $1,000 to $2,000 and later ones for no less than $2,500. The roster's $10,000 a year is two violations a year avoided at $5,000 each, before mitigation, an estimate for an importer filing a few ISFs a week. Each truth item is weighted at that $5,000, protection, not money recovered; the bench world holds five acts, $25,000. Times a year: 52, one pass a week over the week's bookings; this world holds one week. manual_minutes 120: reading ten orders and bookings across three systems, converting each lading time, and keying five filings and updates. The rules applied, as they stand on Friday 9 October 2026 (eCFR title 19, current to 7 October 2026; cbp.gov): 19 CFR 149.1(a) and (c), 149.2(a), (b), (d) and (f), 149.3(a) and (b), and 149.4(a) and (b); 19 CFR 113.62(j); CBP's ISF FAQ 2.0 (May 2023: an ISF is late if filed less than 24 hours before lading; no ISF for goods not arriving by vessel; a roll needs no amendment if the bill of lading does not change); CBP's ISF mitigation guidelines. The proposed Electronic Bond Transmission rule (Federal Register document 2026-02961, 13 February 2026) would change the bond's transmission but is not final, so the world does not apply it.",
+    "manual_minutes": 120,
+    "times_per_year": 52,
+    "incumbent": "Customs brokers file ISFs for a flat fee per filing, about $25 to $85 (Clearit USA publishes $50 for an on-time ISF and $100 for a late one); no share of anything recovered, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "19 CFR Part 149: Importer Security Filing (149.1 who files and bulk cargo; 149.2 timing, updates and flexible elements; 149.3 the ten and the five elements; 149.4 bulk and break bulk)",
+        "url": "https://www.ecfr.gov/current/title-19/chapter-I/part-149"
+      },
+      {
+        "label": "19 CFR 113.62(j): the basic importation bond's ISF condition, liquidated damages of $5,000 for each violation",
+        "url": "https://www.ecfr.gov/current/title-19/chapter-I/part-113/subpart-G/section-113.62"
+      },
+      {
+        "label": "CBP, Importer Security Filing 10+2 Frequently Asked Questions 2.0 (May 2023): late if filed less than 24 hours before lading; vessel cargo only; rolled cargo; updates until arrival",
+        "url": "https://www.cbp.gov/sites/default/files/assets/documents/2023-May/ISF%20FAQ%202.0%20(508).pdf"
+      },
+      {
+        "label": "CBP, Mitigation Guidelines for Importer Security Filing liquidated damages ($5,000 a violation; first violation cancelled on payment of $1,000 to $2,000)",
+        "url": "https://www.cbp.gov/sites/default/files/assets/documents/2020-Feb/Mitigation-Guidelines-10+2-2018.pdf"
+      },
+      {
+        "label": "CBP, CBP enters next phase of Importer Security Filing (liquidated damages from 9 July 2013)",
+        "url": "https://www.cbp.gov/newsroom/national-media-release/cbp-enters-next-phase-importer-security-filing"
+      },
+      {
+        "label": "Clearit USA, pricing: on-time ISF filing $50, late ISF filing $100",
+        "url": "https://clearit.com/usa/pricing/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Each deadline runs back 24 hours from a lading time in another country's time zone, on a vessel schedule the carrier moves, and the data for one filing sits in three systems: the factory and the country of origin with the supplier, the times with the forwarder, and the changes in the inbox. The trading company that sells the goods is not their manufacturer, the port they leave from is not their origin, and four shipments look like they need a filing but are by air, in bulk, the carrier's to file or already filed.",
+    "usefulness_why": "Keeps a few containers a week moving without a $5,000 claim on the bond for each late or wrong filing, and spares the coordinator an hour or two of time-zone arithmetic and re-keying every week; mostly minutes and protection rather than money recovered."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful import coordinator with the orders, the bookings and the rules in hand gets most of it: the bar is both filings due today in, the Sunday one filed, the flexible filing and the new warehouse updated, with the factory and the country of origin right, and nothing filed for the air, bulk, FROB or rolled cargo or filed twice, inside an hour."
+  },
+  "caveat": "Ines Calloway, Larchwick Home & Garden Inc. and its Canadian company, Fenlow Trading, Kilnmere Ceramics, Ricewood Rattan, Brightloom Textiles, Ironvale Castings, Pebblemoor Aggregates, Tessaline Lines and its vessels, Forwarden, Sourcewick, Postwren and the Quayloft ISF desk are invented, and so are every order, bill, time and address; no importer, supplier, carrier or filing here is real, and Quayloft stands in for the CBP-approved electronic systems (ABI or ACE) a real filing goes through. The public rules applied are 19 CFR Part 149 and 19 CFR 113.62(j), with CBP's ISF FAQ 2.0 (May 2023) and its mitigation guidelines, as they stand on 9 October 2026; the proposed Electronic Bond Transmission rule of February 2026 is not final and is not applied. The world states every lading and arrival in the port's time zone, UTC and Chicago time; the rule names no time zone, and CBP measures lateness from the moment of lading. CBP decides real filings, violations and mitigation, and the carrier's own records decide lading. This applies stated rules to stated facts; it is not customs, legal or regulatory-compliance advice."
+}
