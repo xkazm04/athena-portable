@@ -40,6 +40,18 @@ the browser, reached through one vault (ADR 0021).
 - **The OAuth client pair is sealed only by a flow that worked.** It rides on the consent flow and
   is sealed with the grant after the exchange is admitted; a flow that fails, is cancelled or runs
   out leaves the sealed pair and a live grant as they were.
+- **Each seal says what it protects against.** The Connectors module words the keystore as a
+  keystore, Windows DPAPI as encrypted with the Windows sign-in and readable by any program running
+  as that user, and the owner-only file as not encrypted; the copy around it says only "stored on
+  this machine", which is true of every rung.
+- **An unreadable connections file is a banner, not a quiet empty list.** While the vault carries a
+  `records_notice` the module shows it verbatim at the top, with no way to dismiss it, and no tile
+  reads "connected" until it goes.
+- **A connect's own word stays on the layer.** What the daemon said at connect (for instance that
+  writes were turned off because the account changed) shows on that connector's layer as a plain
+  note, not an error, until the next probe replaces it.
+- **The switches wait for a connection.** The writes switch and the allow-list editor are disabled
+  while the connector is not connected, with the reason beside them.
 - **The records file is swapped in, never rewritten.** `connections.json` is written whole to a
   sibling file, flushed to disk and renamed over the old one, so a crash leaves the previous file.
   A file that cannot be read (an I/O error, invalid JSON, a top level that is not an object) is

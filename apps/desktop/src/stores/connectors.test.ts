@@ -36,6 +36,7 @@ function row(id: string, over: Partial<ConnectorView> = {}): ConnectorView {
     live: false,
     seal_available: true,
     flow: null,
+    records_notice: "",
     ...over,
   };
 }
@@ -212,6 +213,104 @@ describe("the consent flow", () => {
     expect(state.items[0].connection.identity).toBe("me@example.test");
     expect(state.busy).toEqual({});
     expect(JSON.stringify(state)).not.toContain("sec\"");
+  });
+});
+
+const NOTICE =
+  "The connections file could not be read (JSONDecodeError), so no connection is shown. Its bytes are kept as connections.json.unreadable-20261010T120000000000Z. Connect again to start a fresh file.";
+
+describe("the records notice", () => {
+  it("is carried verbatim from GET /connectors, and is empty when the list has none", async () => {
+    let notice = NOTICE;
+    const daemon = fakeDaemon(() => ({
+      ok: true,
+      connectors: [row("gmail", { records_notice: notice })],
+      records_notice: notice,
+      showing: 1,
+      total: 1,
+      footer: "",
+    }));
+    wire(daemon);
+    await useConnectors.getState().load();
+    expect(useConnectors.getState().recordsNotice).toBe(NOTICE);
+    notice = "";
+    await useConnectors.getState().load();
+    expect(useConnectors.getState().recordsNotice).toBe("");
+  });
+
+  it("is empty when an older daemon's list does not carry one", async () => {
+    const daemon = fakeDaemon(() => ({ ok: true, connectors: [row("gmail")], showing: 1, total: 1, footer: "" }));
+    wire(daemon);
+    useConnectors.setState({ recordsNotice: NOTICE });
+    await useConnectors.getState().load();
+    expect(useConnectors.getState().recordsNotice).toBe("");
+  });
+
+  it("follows the notice a reply's connector view carries", async () => {
+    const daemon = fakeDaemon((path) => {
+      if (path === "/connectors") {
+        return { ok: true, connectors: [row("notion", { records_notice: NOTICE })], records_notice: NOTICE, showing: 1, total: 1, footer: "" };
+      }
+      return { ok: true, connector: row("notion", { records_notice: "" }) };
+    });
+    wire(daemon);
+    await useConnectors.getState().load();
+    expect(useConnectors.getState().recordsNotice).toBe(NOTICE);
+    await useConnectors.getState().probe("notion");
+    expect(useConnectors.getState().recordsNotice).toBe("");
+  });
+});
+
+describe("a connect's own word", () => {
+  const DETAIL =
+    "Connected as B. The writes switch and the recipient list were set under A, so writes are off and the list was emptied.";
+
+  it("lands on the item from the connect reply, and a later probe's record replaces it", async () => {
+    let probed = false;
+    const daemon = fakeDaemon((path) => {
+      if (path === "/connectors") return { ok: true, connectors: [row("notion")], showing: 1, total: 1, footer: "" };
+      const connection = {
+        ...row("notion").connection,
+        status: "connected" as const,
+        identity: "B",
+        health: "healthy" as const,
+        health_detail: path.endsWith("/probe") ? "" : DETAIL,
+      };
+      if (path.endsWith("/probe")) probed = true;
+      return { ok: true, connector: row("notion", { live: true, connection }) };
+    });
+    wire(daemon);
+    await useConnectors.getState().load();
+    await useConnectors.getState().connect("notion", { token: "ntn_b" });
+    expect(useConnectors.getState().items[0].connection.health_detail).toBe(DETAIL);
+    expect(useConnectors.getState().errors).toEqual({});
+    await useConnectors.getState().probe("notion");
+    expect(probed).toBe(true);
+    expect(useConnectors.getState().items[0].connection.health_detail).toBe("");
+  });
+
+  it("lands on the item from the flow's done state after an oauth connect", async () => {
+    const flow = (phase: "awaiting_consent" | "done") => ({
+      id: "flow_2",
+      connector: "gmail",
+      phase,
+      detail: phase,
+      authorize_url: "",
+    });
+    const daemon = fakeDaemon((path) => {
+      if (path === "/connectors") return { ok: true, connectors: [row("gmail")], showing: 1, total: 1, footer: "" };
+      if (path === "/connectors/gmail/connect") {
+        return { ok: true, flow: flow("awaiting_consent"), connector: row("gmail", { flow: flow("awaiting_consent") }) };
+      }
+      const connection = { ...row("gmail").connection, status: "connected" as const, identity: "B", health_detail: DETAIL };
+      return { ok: true, flow: flow("done"), connector: row("gmail", { flow: flow("done"), live: true, connection }) };
+    });
+    wire(daemon);
+    await useConnectors.getState().load();
+    await useConnectors.getState().connect("gmail", { client_id: "cid", client_secret: "sec" });
+    const item = useConnectors.getState().items[0];
+    expect(item.connection.status).toBe("connected");
+    expect(item.connection.health_detail).toBe(DETAIL);
   });
 });
 

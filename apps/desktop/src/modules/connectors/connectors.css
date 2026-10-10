@@ -203,3 +203,20 @@
   margin: 0;
   padding-left: 1.25rem;
 }
+
+/* -- the records notice: a banner above everything, never dismissed ------------------------------ */
+.connectors__notice-text {
+  overflow-wrap: anywhere;
+}
+
+/* A connect's own word on the layer (e.g. writes turned off for another account): information. */
+.connector__note {
+  padding: 6px 10px;
+  border-left: 2px solid var(--border-default);
+  overflow-wrap: anywhere;
+}
+
+/* Why the switches cannot be changed while nothing is connected, said beside them. */
+.connector__disabled-reason {
+  margin: 0;
+}

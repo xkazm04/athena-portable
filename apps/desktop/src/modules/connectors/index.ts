@@ -29,6 +29,7 @@ function Live() {
   const items = useConnectors((s) => s.items);
   const loaded = useConnectors((s) => s.loaded);
   const problem = useConnectors((s) => s.problem);
+  const recordsNotice = useConnectors((s) => s.recordsNotice);
   const busy = useConnectors((s) => s.busy);
   const errors = useConnectors((s) => s.errors);
   const daemon = useDaemon();
@@ -39,7 +40,7 @@ function Live() {
   }, [ready]);
 
   return createElement(ConnectorsView, {
-    model: selectConnectors(items, loaded, problem, ready, busy, errors, ACTIONS),
+    model: selectConnectors(items, loaded, problem, ready, busy, errors, ACTIONS, undefined, recordsNotice),
   });
 }
 

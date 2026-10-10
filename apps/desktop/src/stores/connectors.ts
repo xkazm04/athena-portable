@@ -10,6 +10,10 @@
  * while another is still editable. A refusal lands on the row it was about (`errors`), in the
  * daemon's own words, which never carry a value (the daemon redacts before it answers).
  *
+ * `recordsNotice` is the vault's word that its connections file could not be read, verbatim. It
+ * comes with the list and with every row a reply carries (each view repeats it), so a connect
+ * that answers with a notice raises the banner and one that answers without it lowers it.
+ *
  * The OAuth flow is polled from here (`pollFlow`) every 1.5 s while the consent page is open;
  * the module's `index.ts` starts a `load` when it mounts and when the daemon becomes ready, so a
  * surface that is not on screen costs nothing.
@@ -56,6 +60,8 @@ export interface ConnectorsState {
   loaded: boolean;
   /** Why the list could not be read, and whether the daemon is the one saying so. */
   problem: ConnectorProblem | null;
+  /** The vault's `records_notice`, verbatim: "" unless its connections file could not be read. */
+  recordsNotice: string;
   /** What is in flight per connector: "connecting", "disconnecting", "probing", "saving". */
   busy: Readonly<Record<string, string>>;
   /** The last refusal per connector, in the daemon's words. Cleared by the next act. */
@@ -73,6 +79,7 @@ const EMPTY = {
   items: [] as readonly ConnectorView[],
   loaded: false,
   problem: null as ConnectorProblem | null,
+  recordsNotice: "",
   busy: {} as Record<string, string>,
   errors: {} as Record<string, string>,
 };
@@ -103,11 +110,14 @@ function problemOf(error: unknown): ConnectorProblem {
 }
 
 export const useConnectors = create<ConnectorsState>((set, get) => {
+  // The reply's view replaces the item whole — its `connection.health_detail` included, which
+  // is how a connect's own word reaches the layer — and its notice is the vault's current one.
   const replace = (row: ConnectorView) =>
     set((s) => ({
       items: s.items.some((c) => c.id === row.id)
         ? s.items.map((c) => (c.id === row.id ? row : c))
         : [...s.items, row],
+      recordsNotice: typeof row.records_notice === "string" ? row.records_notice : s.recordsNotice,
     }));
 
   const mark = (id: string, what: string | null) =>
@@ -164,7 +174,12 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
       }
       try {
         const page = await api.connectors();
-        set({ items: page.connectors, loaded: true, problem: null });
+        set({
+          items: page.connectors,
+          loaded: true,
+          problem: null,
+          recordsNotice: typeof page.records_notice === "string" ? page.records_notice : "",
+        });
       } catch (error) {
         // Verbatim: an unreadable list must not render as an empty one.
         set({ loaded: true, problem: problemOf(error) });

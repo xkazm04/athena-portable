@@ -8,7 +8,16 @@ import type { ConnectorView } from "@/lib/api";
 
 import { whenAgo } from "@/lib/time";
 
-import { INERT_ACTIONS, ageOf, isWrite, paragraphsOf, selectConnectors, standingOf } from "./model";
+import {
+  INERT_ACTIONS,
+  ageOf,
+  isWrite,
+  paragraphsOf,
+  sealSentence,
+  selectConnectors,
+  standingOf,
+  type ConnectorRow,
+} from "./model";
 
 const NOW = Date.parse("2026-09-12T12:00:00Z");
 
@@ -45,6 +54,7 @@ function view(over: Partial<ConnectorView> = {}, conn: Partial<ConnectorView["co
     live: true,
     seal_available: true,
     flow: null,
+    records_notice: "",
     ...over,
   };
 }
@@ -78,7 +88,7 @@ test("the seal is a sentence only while something is sealed, and busy and errors
     INERT_ACTIONS,
     NOW,
   ).rows;
-  expect(rows[0].seal).toBe("sealed by Windows DPAPI");
+  expect(rows[0].seal).toBe(sealSentence("dpapi"));
   expect(rows[0].error).toBe("Notion refused the credential with 401");
   expect(rows[1].seal).toBe("");
   expect(rows[1].busy).toBe("connecting");
@@ -114,4 +124,105 @@ test("a zone-less stamp written 20 s ago reads 'just now' in any time zone (UAT 
     if (before === undefined) delete process.env.TZ;
     else process.env.TZ = before;
   }
+});
+
+// -- the seal says what it guards against (item 10) -------------------------------------------------
+
+test("each seal rung says what protects the credential, and only the keystore and DPAPI claim more than a file", () => {
+  const keyring = sealSentence("keyring");
+  const dpapi = sealSentence("dpapi");
+  const file = sealSentence("file");
+  expect(keyring).toContain("operating system's keystore");
+  expect(keyring).toMatch(/must ask the keystore/);
+  expect(keyring).not.toMatch(/encrypt/i);
+  expect(dpapi).toContain("Windows DPAPI");
+  expect(dpapi).toContain("encrypted");
+  expect(dpapi).toContain("your Windows sign-in");
+  expect(dpapi).toContain("readable by any program running as you");
+  expect(file).toContain("a file only your user account may open");
+  expect(file).toContain("it is not encrypted");
+  expect(sealSentence("")).toBe("");
+  for (const sentence of [keyring, dpapi, file]) expect(sentence).not.toMatch(/\bsealed\b/i);
+});
+
+// -- the records notice (item 11) --------------------------------------------------------------------
+
+const NOTICE =
+  "The connections file could not be read (JSONDecodeError), so no connection is shown. Its bytes are kept as connections.json.unreadable-20261010T120000000000Z. Connect again to start a fresh file.";
+
+function rowsUnder(notice: string, views: ConnectorView[]): readonly ConnectorRow[] {
+  return selectConnectors(views, true, null, true, {}, {}, INERT_ACTIONS, NOW, notice).rows;
+}
+
+test("while the records notice stands, no row the record calls connected reads connected", () => {
+  const views = [
+    view(),
+    view({ id: "off" }, { enabled: false }),
+    view({ id: "broken" }, { health: "broken", health_detail: "401" }),
+  ];
+  const model = selectConnectors(views, true, null, true, {}, {}, INERT_ACTIONS, NOW, NOTICE);
+  expect(model.recordsNotice).toBe(NOTICE);
+  for (const row of model.rows) {
+    expect(row.standing, row.id).toBe("unconfirmed");
+    expect(row.word, row.id).toBe("unconfirmed");
+    expect(row.tone, row.id).toBe("warning");
+    expect(row.sentence, row.id).toContain("the notice above");
+    expect(row.sentence, row.id).not.toMatch(/^Connected/);
+    // The record's own fact is kept, so the layer can still offer Disconnect.
+    expect(row.connected, row.id).toBe(true);
+  }
+  expect(model.rows[0].sentence).toBe(
+    "The record says connected as Test User, but that cannot be confirmed while the notice above stands.",
+  );
+});
+
+test("while the records notice stands, a not-connected row says why rather than that nothing is stored", () => {
+  const [row] = rowsUnder(NOTICE, [view({}, { status: "disconnected", seal: "" })]);
+  expect(row.standing).toBe("not-connected");
+  expect(row.sentence).toBe(
+    "Shown as not connected because the connections file could not be read; see the notice above.",
+  );
+  expect(row.sentence).not.toContain("Nothing is");
+  // Without the notice it is a plain fact, and says nothing of sealing.
+  const [plain] = rowsUnder("", [view({}, { status: "disconnected", seal: "" })]);
+  expect(plain.sentence).toBe("Nothing is stored for Notion.");
+  expect(plain.tone).toBe("neutral");
+});
+
+test("with no notice the rows read exactly as the record says", () => {
+  const [row] = rowsUnder("", [view()]);
+  expect(row.standing).toBe("connected");
+  expect(row.word).toBe("connected");
+});
+
+// -- a connect's own word on the layer (item 12) -----------------------------------------------------
+
+test("the health detail is a note while connected and not broken, and never otherwise", () => {
+  const detail =
+    "Connected as B. The writes switch and the recipient list were set under A, so writes are off and the list was emptied.";
+  const [connected, broken, gone, probed] = rowsUnder("", [
+    view({}, { health_detail: detail, health: "unknown" }),
+    view({ id: "b" }, { health_detail: "401", health: "broken" }),
+    view({ id: "c" }, { status: "disconnected", health_detail: detail }),
+    view({ id: "d" }, { health_detail: "", health: "healthy" }),
+  ]);
+  expect(connected.healthNote).toBe(detail);
+  // The connected sentence is not the detail: the note is separate, and not an error.
+  expect(connected.tone).toBe("success");
+  expect(broken.healthNote).toBe("");
+  expect(gone.healthNote).toBe("");
+  expect(probed.healthNote).toBe("");
+});
+
+// -- the switches wait for a connection (item 13) ----------------------------------------------------
+
+test("the switches carry a plain reason while not connected, and none once connected", () => {
+  const [connected, gone, reauth] = rowsUnder("", [
+    view(),
+    view({ id: "gmail", label: "Gmail" }, { status: "disconnected" }),
+    view({ id: "x", label: "Gmail" }, { status: "needs_reauth" }),
+  ]);
+  expect(connected.disabledReason).toBe("");
+  expect(gone.disabledReason).toBe("Connect Gmail first; the switches apply to the account you connect.");
+  expect(reauth.disabledReason).toBe("Connect Gmail first; the switches apply to the account you connect.");
 });

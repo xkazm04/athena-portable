@@ -10,6 +10,11 @@
  * Nothing here is stored and nothing is guessed: the standing word, the seal sentence and the age
  * of the last probe come from the daemon's record through the selector, and a refusal is shown in
  * the daemon's own words. A credential is typed here and sent once; it is never echoed back.
+ *
+ * Copy that speaks of where a credential rests says "stored on this machine", which is true of
+ * every rung; only the seal sentence names a rung, and only it may say "encrypted" — the
+ * owner-only file is not. While the vault's records notice stands it is a banner at the top, in
+ * its own words, with no way to dismiss it: the rows beneath read unconfirmed until it goes.
  */
 import { useState } from "react";
 
@@ -50,12 +55,18 @@ export default function ConnectorsView({
         caption="Mail and notes Athena may use from any page, each behind its own switch."
         meta={
           model.ready && model.loaded && !model.problem ? (
-            <Badge tone={connected ? "success" : "neutral"}>
-              {`${connected} of ${model.rows.length} connected`}
-            </Badge>
+            model.recordsNotice ? (
+              <Badge tone="warning">connections unconfirmed</Badge>
+            ) : (
+              <Badge tone={connected ? "success" : "neutral"}>
+                {`${connected} of ${model.rows.length} connected`}
+              </Badge>
+            )
           ) : null
         }
       />
+
+      {model.recordsNotice ? <RecordsNotice notice={model.recordsNotice} /> : null}
 
       {!model.ready ? (
         <ProblemNote
@@ -109,6 +120,27 @@ export default function ConnectorsView({
   );
 }
 
+/**
+ * The vault's records notice, verbatim, for as long as the vault carries it. No close control on
+ * purpose: it goes when the daemon stops saying it, never because it was waved away.
+ */
+function RecordsNotice({ notice }: { notice: string }) {
+  return (
+    <div className="problem-note problem-note--warning connectors__notice" role="alert">
+      <span className="problem-note__mark typo-heading" aria-hidden="true">
+        !
+      </span>
+      <div className="problem-note__body">
+        <p className="typo-body connectors__notice-text">{notice}</p>
+        <p className="typo-caption">
+          Until this notice goes, no connector here is shown as connected: what the records say cannot be
+          confirmed.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function TileFoot({ row }: { row: ConnectorRow }) {
   return (
     <>
@@ -145,7 +177,8 @@ function GuideParagraph({ text }: { text: string }) {
 /** What is set on the left, what it yields and how to connect on the right (ADR 0029). */
 function ConnectorLayer({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) {
   const { actions } = model;
-  const on = row.standing === "connected" || row.standing === "off" || row.standing === "broken";
+  // Connected on the record (on, off or broken alike), even while a records notice stands.
+  const on = row.connected;
   return (
     <LayerColumns
       left={
@@ -158,7 +191,12 @@ function ConnectorLayer({ row, model }: { row: ConnectorRow; model: ConnectorsMo
               {row.seal ? <p className="typo-caption">The credential is {row.seal}.</p> : null}
               {!row.sealAvailable ? (
                 <p className="typo-caption">
-                  Nothing on this machine can seal a credential, so nothing will be stored.
+                  This machine has no safe place to keep a credential, so nothing will be stored.
+                </p>
+              ) : null}
+              {row.healthNote ? (
+                <p className="typo-caption connector__note" role="note">
+                  {row.healthNote}
                 </p>
               ) : null}
             </div>
@@ -194,14 +232,21 @@ function ConnectorLayer({ row, model }: { row: ConnectorRow; model: ConnectorsMo
               </div>
             </PageSection>
           ) : (
-            <PageSection title="Connect" note="Probed before it is sealed.">
-              <ConnectForm row={row} model={model} />
-              {row.standing === "needs-reauth" ? (
-                <div className="connector__foot">
-                  <Disconnect row={row} onDisconnect={() => actions.disconnect(row.id)} />
-                </div>
+            <>
+              <PageSection title="Connect" note="Probed before it is stored on this machine.">
+                <ConnectForm row={row} model={model} />
+                {row.standing === "needs-reauth" ? (
+                  <div className="connector__foot">
+                    <Disconnect row={row} onDisconnect={() => actions.disconnect(row.id)} />
+                  </div>
+                ) : null}
+              </PageSection>
+              {row.egress ? (
+                <PageSection title="Decisions" note="The gate reads these on every call.">
+                  <Decisions row={row} model={model} />
+                </PageSection>
               ) : null}
-            </PageSection>
+            </>
           )}
         </>
       }
@@ -269,8 +314,11 @@ function Decisions({ row, model }: { row: ConnectorRow; model: ConnectorsModel }
   const { actions } = model;
   if (!row.egress) return null;
   const noun = row.egress === "recipients" ? "recipients" : "page ids";
+  // Not connected: shown as they stand, but not changeable, and the reason is said beside them.
+  const locked = Boolean(row.disabledReason);
   return (
     <div className="connector__decisions">
+      {locked ? <p className="typo-caption connector__disabled-reason">{row.disabledReason}</p> : null}
       <div className="connector__decision">
         <div className="stack" style={{ gap: 2 }}>
           <span className="typo-title">Writes</span>
@@ -284,7 +332,7 @@ function Decisions({ row, model }: { row: ConnectorRow; model: ConnectorsModel }
           ariaLabel={`${row.label} writes`}
           value={row.writesEnabled ? "on" : "off"}
           onChange={(next) => actions.setWrites(row.id, next === "on")}
-          disabled={Boolean(row.busy)}
+          disabled={Boolean(row.busy) || locked}
           options={[
             { value: "off", label: "off", hint: "Reads only." },
             { value: "on", label: "on", hint: "Writes run after your approval, to the list below." },
@@ -311,7 +359,8 @@ function Allowlist({
 }) {
   const stored = row.allowlist.join("\n");
   const [draft, setDraft] = useState<string | null>(null);
-  const value = draft ?? stored;
+  const locked = Boolean(row.disabledReason);
+  const value = locked ? stored : (draft ?? stored);
   const dirty = draft !== null && draft.trim() !== stored.trim();
   const entries = value
     .split(/[\n,]/)
@@ -333,6 +382,8 @@ function Allowlist({
           aria-label={`Allowed ${noun}`}
           value={value}
           spellCheck={false}
+          disabled={locked}
+          title={locked ? row.disabledReason : undefined}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Escape") setDraft(null);
@@ -342,7 +393,9 @@ function Allowlist({
           <Button
             size="sm"
             variant={dirty ? "primary" : "secondary"}
-            disabledReason={dirty ? undefined : "Nothing has been typed that is not stored."}
+            disabledReason={
+              locked ? row.disabledReason : dirty ? undefined : "Nothing has been typed that is not stored."
+            }
             onClick={() => {
               onSave(entries);
               setDraft(null);
@@ -350,7 +403,7 @@ function Allowlist({
           >
             Save the list
           </Button>
-          {dirty ? (
+          {dirty && !locked ? (
             <Button size="sm" variant="ghost" onClick={() => setDraft(null)}>
               Discard
             </Button>
@@ -383,7 +436,7 @@ function ConnectForm({ row, model }: { row: ConnectorRow; model: ConnectorsModel
         <div className="connector__fields">
           <FormField
             label="Integration token"
-            hint="Pasted once, probed against the service, then sealed. It is never shown again."
+            hint="Pasted once, probed against the service, then stored on this machine. It is never shown again."
           >
             {(input) => (
               <TextInput
@@ -451,7 +504,7 @@ function ConnectForm({ row, model }: { row: ConnectorRow; model: ConnectorsModel
             />
           )}
         </FormField>
-        <FormField label="Client secret" hint="Sealed with the grant; never shown again.">
+        <FormField label="Client secret" hint="Kept on this machine with the grant; never shown again.">
           {(input) => (
             <TextInput
               {...input}
@@ -503,7 +556,7 @@ function Disconnect({ row, onDisconnect }: { row: ConnectorRow; onDisconnect: ()
   }
   return (
     <span className="row">
-      <span className="typo-caption">Disconnect? The sealed credential is destroyed.</span>
+      <span className="typo-caption">Disconnect? The stored credential is destroyed.</span>
       <Button
         size="sm"
         variant="primary"

@@ -10,12 +10,17 @@
  * The class of a tool is not decided here. A write is what the spec's own flags make a write
  * (`reversible === false`, or `side_effects === "external"`), which is exactly the derivation the
  * catalog makes; the view shows the word GATED on those and nothing on the reads.
+ *
+ * While the vault carries a `records_notice` (its connections file could not be read), no row may
+ * read as connected: what the records say cannot be confirmed, so a row the record calls
+ * connected reads "unconfirmed" and points at the notice, and a row it calls not connected says
+ * why it is shown so instead of asserting that nothing is stored.
  */
 import type { ConnectorToolView, ConnectorView, FlowView } from "@/lib/api";
 import type { Tone } from "@/components/StatusDot";
 import { parseStamp } from "@/lib/time";
 
-export type Standing = "not-connected" | "connected" | "needs-reauth" | "off" | "broken";
+export type Standing = "not-connected" | "connected" | "needs-reauth" | "off" | "broken" | "unconfirmed";
 
 export interface ConnectorActions {
   connect: (id: string, body: Record<string, unknown>) => void;
@@ -38,10 +43,20 @@ export interface ConnectorRow {
   /** One sentence: who it is connected as, or why it is not. */
   sentence: string;
   tone: Tone;
-  /** How the credential rests, or "" when nothing is sealed. */
+  /** How the credential rests and what that guards against, or "" when nothing is stored. */
   seal: string;
   /** Whether anything can be sealed on this machine at all. */
   sealAvailable: boolean;
+  /** The record's own fact, unaffected by a records notice: the daemon has it as connected. */
+  connected: boolean;
+  /**
+   * The connector's health detail while it is connected and not broken, else "" — after a
+   * connect, the daemon's word on it (e.g. that writes were turned off for another account). A
+   * later probe overwrites it on the record. Information, never an error.
+   */
+  healthNote: string;
+  /** Why the writes switch and the allow-list cannot be changed now, or "" when they can. */
+  disabledReason: string;
   reads: readonly ConnectorToolView[];
   writes: readonly ConnectorToolView[];
   /** What the allow-list is a list of, or null when the connector has no writes. */
@@ -64,6 +79,8 @@ export interface ConnectorsModel {
   loaded: boolean;
   /** Why the list could not be read, or null. */
   problem: ConnectorProblem | null;
+  /** The vault's notice that its connections file could not be read, verbatim, or "". */
+  recordsNotice: string;
   actions: ConnectorActions;
 }
 
@@ -86,14 +103,19 @@ export function ageOf(iso: string, now: number = Date.now()): string {
   return `${Math.round(h / 24)} d ago`;
 }
 
+/**
+ * How the credential rests, and what that does and does not protect against — completing "The
+ * credential is …". Each rung says its own limit: only the keystore and DPAPI encrypt, and the
+ * file rung is said plainly not to.
+ */
 export function sealSentence(seal: ConnectorView["connection"]["seal"]): string {
   switch (seal) {
     case "keyring":
-      return "sealed by the OS keystore";
+      return "kept in the operating system's keystore rather than in a file of Athena's; another program must ask the keystore for it, and the operating system decides whether to hand it over";
     case "dpapi":
-      return "sealed by Windows DPAPI";
+      return "encrypted by Windows DPAPI with your Windows sign-in, and readable by any program running as you; another Windows user or another machine cannot read it";
     case "file":
-      return "kept in an owner-only file";
+      return "kept in a file only your user account may open; it is not encrypted, so any program running as you can read it";
     default:
       return "";
   }
@@ -102,8 +124,29 @@ export function sealSentence(seal: ConnectorView["connection"]["seal"]): string 
 export function standingOf(
   view: ConnectorView,
   now: number = Date.now(),
+  recordsNotice: string = "",
 ): { standing: Standing; word: string; sentence: string; tone: Tone } {
   const c = view.connection;
+  if (recordsNotice) {
+    // The records could not be read: a row the record calls connected (on, off or broken alike)
+    // cannot be confirmed, and one it calls not connected is shown so for that reason, not as fact.
+    if (c.status === "connected") {
+      return {
+        standing: "unconfirmed",
+        word: "unconfirmed",
+        sentence: `The record says connected${c.identity ? ` as ${c.identity}` : ""}, but that cannot be confirmed while the notice above stands.`,
+        tone: "warning",
+      };
+    }
+    if (c.status !== "needs_reauth") {
+      return {
+        standing: "not-connected",
+        word: "not connected",
+        sentence: "Shown as not connected because the connections file could not be read; see the notice above.",
+        tone: "warning",
+      };
+    }
+  }
   if (c.status === "needs_reauth") {
     return {
       standing: "needs-reauth",
@@ -116,7 +159,7 @@ export function standingOf(
     return {
       standing: "not-connected",
       word: "not connected",
-      sentence: `Nothing is sealed for ${view.label}.`,
+      sentence: `Nothing is stored for ${view.label}.`,
       tone: "neutral",
     };
   }
@@ -150,9 +193,11 @@ export function rowOf(
   busy: Readonly<Record<string, string>>,
   errors: Readonly<Record<string, string>>,
   now: number = Date.now(),
+  recordsNotice: string = "",
 ): ConnectorRow {
-  const { standing, word, sentence, tone } = standingOf(view, now);
+  const { standing, word, sentence, tone } = standingOf(view, now, recordsNotice);
   const c = view.connection;
+  const connected = c.status === "connected";
   return {
     id: view.id,
     label: view.label,
@@ -165,6 +210,11 @@ export function rowOf(
     tone,
     seal: c.status === "connected" || c.status === "needs_reauth" ? sealSentence(c.seal) : "",
     sealAvailable: view.seal_available,
+    connected,
+    healthNote: connected && c.health !== "broken" ? c.health_detail : "",
+    disabledReason: connected
+      ? ""
+      : `Connect ${view.label} first; the switches apply to the account you connect.`,
     reads: view.tools.filter((t) => !isWrite(t)),
     writes: view.tools.filter(isWrite),
     egress: view.egress === "none" ? null : view.egress,
@@ -204,12 +254,14 @@ export function selectConnectors(
   errors: Readonly<Record<string, string>>,
   actions: ConnectorActions,
   now: number = Date.now(),
+  recordsNotice: string = "",
 ): ConnectorsModel {
   return {
-    rows: items.map((view) => rowOf(view, busy, errors, now)),
+    rows: items.map((view) => rowOf(view, busy, errors, now, recordsNotice)),
     ready: daemonReady,
     loaded,
     problem,
+    recordsNotice,
     actions,
   };
 }

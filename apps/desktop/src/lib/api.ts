@@ -113,6 +113,12 @@ export interface ConnectionView {
   seal: "keyring" | "dpapi" | "file" | "";
   expires_at: string;
   last_used_at: string;
+  /** The identity the writes switch and the allow-list were set under (ADR 0062). Not read here. */
+  switches_identity?: string;
+  /** The provider's stable account key, when it names one. Not read here. */
+  account?: string;
+  /** The account key the switches were set under. Not read here. */
+  switches_account?: string;
 }
 
 /** `OAuthFlow.view()`: where a consent flow stands. */
@@ -145,11 +151,15 @@ export interface ConnectorView {
   live: boolean;
   seal_available: boolean;
   flow: FlowView | null;
+  /** The vault's `records_notice`: plain words when the connections file could not be read, else "". */
+  records_notice: string;
 }
 
 export interface ConnectorPage {
   ok: boolean;
   connectors: ConnectorView[];
+  /** Plain words when the connections file could not be read, else "". Shown verbatim. */
+  records_notice: string;
   showing: number;
   total: number;
   footer: string;
