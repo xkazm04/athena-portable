@@ -1,0 +1,673 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "binderwell",
+      "message": "I'm Hollis, Fennhollow Home. I resell other makers' goods on two marketplaces, and both will hide EU listings that miss the product-safety information from 1 November. Start in Binderwell: read the rules and my shop note, then every test report and product file.",
+      "nudges": 1
+    },
+    {
+      "app": "postwren",
+      "message": "This is my mail. Read what the marketplaces and the makers have sent. The makers outside the EU named their Union operators here.",
+      "nudges": 1
+    },
+    {
+      "app": "stallwick",
+      "message": "This is my Stallwick seller account. Read every listing, and bring each listing offered in the EU up to Article 19 with what the folder and the mail say. Leave alone every listing that is complete, out of scope or not offered to EU buyers.",
+      "nudges": 1
+    },
+    {
+      "app": "hawkerbrook",
+      "message": "This is my Hawkerbrook seller account. Do the same here with its own form. Then tell me what you fixed, what it protects in sales, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "binderwell",
+      "name": "Binderwell",
+      "origin": "https://files.binderwell.example",
+      "path": "/fennhollow-home/products",
+      "view": {
+        "view": "Binderwell: Fennhollow Home's product folder (the Regulation in short, test reports and product files)",
+        "signed_in": "Hollis Reeve",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "Every document in the folder: document id, kind and title.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "docs",
+            "fields": [
+              "doc_id",
+              "kind",
+              "title"
+            ],
+            "page_size": 10
+          }
+        },
+        {
+          "name": "read_document",
+          "kind": "READ",
+          "description": "One document in full, by document id (P-n for the rules and shop note, T-nn for a product).",
+          "params": {
+            "doc_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "docs",
+            "match": {
+              "doc_id": "doc_id"
+            },
+            "require": [
+              "doc_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Binderwell",
+        "the folder",
+        "my files",
+        "the product folder"
+      ]
+    },
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/hollis@fennhollow.example",
+      "view": {
+        "view": "Postwren: hollis@fennhollow.example",
+        "signed_in": "Hollis Reeve",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "Messages: message id (M-n), date, sender and subject.",
+          "params": {},
+          "returns": {
+            "table": "messages",
+            "fields": [
+              "message_id",
+              "date",
+              "from",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id (M-n).",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "messages",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the inbox",
+        "email"
+      ]
+    },
+    {
+      "app_id": "stallwick",
+      "name": "Stallwick seller",
+      "origin": "https://seller.stallwick.example",
+      "path": "/fennhollow-home",
+      "view": {
+        "view": "Stallwick seller: Fennhollow Home's listings and their GPSR information",
+        "signed_in": "Hollis Reeve",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_listings",
+          "kind": "READ",
+          "description": "Every listing: id, product, where it is offered and its EU sales in the last 90 days.",
+          "params": {},
+          "returns": {
+            "table": "stall",
+            "fields": [
+              "listing_id",
+              "product",
+              "offered_to",
+              "eu_sales_90d_usd"
+            ]
+          }
+        },
+        {
+          "name": "read_listing",
+          "kind": "READ",
+          "description": "One listing in full, by listing id (S-nnn): what it shows now.",
+          "params": {
+            "listing_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "stall",
+            "match": {
+              "listing_id": "listing_id"
+            },
+            "require": [
+              "listing_id"
+            ]
+          }
+        },
+        {
+          "name": "update_gpsr_info",
+          "kind": "REACHES_A_PERSON",
+          "description": "Publish the GPSR information on one Stallwick listing, by listing id (listing_id): the manufacturer's postal and email address (manufacturer_contact), the Union responsible person (responsible_person), the product identifier (identifier), any warning (warning), and the listing's EU sales in the last 90 days in dollars (amount_usd). It goes live to buyers. Hollis signs it.",
+          "params": {
+            "listing_id": {
+              "type": "string"
+            },
+            "manufacturer_contact": {
+              "type": "string"
+            },
+            "responsible_person": {
+              "type": "string"
+            },
+            "identifier": {
+              "type": "string"
+            },
+            "warning": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "GPSR information on {listing_id} published."
+        }
+      ],
+      "aliases": [
+        "Stallwick seller",
+        "Stallwick",
+        "the first marketplace",
+        "my Stallwick account"
+      ]
+    },
+    {
+      "app_id": "hawkerbrook",
+      "name": "Hawkerbrook seller",
+      "origin": "https://sell.hawkerbrook.example",
+      "path": "/fennhollow-home",
+      "view": {
+        "view": "Hawkerbrook seller: Fennhollow Home's listings and compliance forms",
+        "signed_in": "Hollis Reeve",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_listings",
+          "kind": "READ",
+          "description": "Every listing: id, product, where it is offered and its EU sales in the last 90 days.",
+          "params": {},
+          "returns": {
+            "table": "hawk",
+            "fields": [
+              "listing_id",
+              "product",
+              "offered_to",
+              "eu_sales_90d_usd"
+            ]
+          }
+        },
+        {
+          "name": "read_listing",
+          "kind": "READ",
+          "description": "One listing in full, by listing id (H-nnn): what it shows now.",
+          "params": {
+            "listing_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "hawk",
+            "match": {
+              "listing_id": "listing_id"
+            },
+            "require": [
+              "listing_id"
+            ]
+          }
+        },
+        {
+          "name": "submit_compliance_form",
+          "kind": "REACHES_A_PERSON",
+          "description": "Submit Hawkerbrook's product compliance form for one listing, by listing id (listing_id): the maker's contact (maker_contact), the EU representative (eu_representative), the model or batch (model_or_batch), the safety text (safety_text), and the listing's EU sales in the last 90 days in dollars (amount_usd). It goes live to buyers. Hollis signs it.",
+          "params": {
+            "listing_id": {
+              "type": "string"
+            },
+            "maker_contact": {
+              "type": "string"
+            },
+            "eu_representative": {
+              "type": "string"
+            },
+            "model_or_batch": {
+              "type": "string"
+            },
+            "safety_text": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Compliance form for {listing_id} submitted."
+        }
+      ],
+      "aliases": [
+        "Hawkerbrook seller",
+        "Hawkerbrook",
+        "the second marketplace",
+        "my Hawkerbrook account"
+      ]
+    }
+  ],
+  "tables": {
+    "docs": [
+      {
+        "doc_id": "P-1",
+        "kind": "rule",
+        "title": "Article 19: what an online offer must show",
+        "text": "Friday 9 October 2026. Regulation (EU) 2023/988, the General Product Safety Regulation, has applied since 13 December 2024 (Article 52). Article 19: where products are made available online, the offer shall clearly and visibly show at least: (a) the manufacturer's name, registered trade name or trade mark and the postal and electronic address at which they can be contacted; (b) where the manufacturer is not established in the Union, the name, postal and electronic address of the responsible person; (c) information identifying the product: a picture, its type and any other product identifier such as a batch or model number; (d) any warning or safety information to be affixed to the product or packaging or included in an accompanying document, in a language easily understood by consumers as the Member State determines."
+      },
+      {
+        "doc_id": "P-2",
+        "kind": "rule",
+        "title": "Who the responsible person is",
+        "text": "Friday 9 October 2026. Article 16: a product shall not be placed on the Union market unless an economic operator established in the Union is responsible for the tasks in Article 4(3) of Regulation (EU) 2019/1020. That is the manufacturer itself when it is established in the Union, so no separate responsible person is needed for such a product; otherwise it is an authorised representative, importer or other operator the manufacturer names in the Union. Article 16(3): its name, trade name or trade mark and postal and electronic address go on the product, packaging, parcel or an accompanying document, and Article 19(b) puts the same on the offer."
+      },
+      {
+        "doc_id": "P-3",
+        "kind": "rule",
+        "title": "What is outside the Regulation, and when it applies",
+        "text": "Friday 9 October 2026. Article 2(2): the Regulation does not apply to medicinal products, food, feed, living plants and animals and products of plants and animals relating directly to their future reproduction, animal by-products, plant protection products, equipment on which consumers ride that a service provider operates, certain aircraft, and antiques. Article 4: an offer made online is made available on the market in the Union if it is targeted at consumers in the Union, that is, the operator directs its activities, by any means, to one or more Member States. A warning under Article 19(d) is shown only if one is to be affixed or supplied; where a product can be used safely and as intended without instructions or warnings, none is needed (Articles 8 and 9)."
+      },
+      {
+        "doc_id": "P-4",
+        "kind": "shop note",
+        "title": "How Fennhollow works",
+        "text": "Friday 9 October 2026. Fennhollow Home resells other makers' goods on Stallwick and Hawkerbrook, two marketplaces with different forms. Each listing shows the sales to EU buyers in the last 90 days, in dollars; the value of fixing a listing is that figure, since the marketplaces hide a non-compliant EU listing from 1 November 2026 (see the mail). The test reports and product files are in this folder, one per product. The 1925 candlestick is treated as an antique. The responsible persons the makers named are in the mail."
+      },
+      {
+        "doc_id": "T-01",
+        "kind": "test report",
+        "title": "Beechwood cutting board BB-30",
+        "text": "Maker: Brandvik Holzwaren GmbH, Hauptstrasse 12, 93047 Regensburg, Germany, info@brandvik.example. Established in the Union. Batch BB-30. Tested: no warning or instruction is needed; the board can be used safely as intended."
+      },
+      {
+        "doc_id": "T-02",
+        "kind": "test report",
+        "title": "USB-C desk lamp LM-220",
+        "text": "Maker: Lumenvale Co. Ltd, Building 4, Longhua, Shenzhen, China, sales@lumenvale.example. Not established in the Union; its Union operator is named in the mail. Model LM-220, batch 2025-11. Warning in the manual and on the base: 'Do not cover the lamp while it is lit.'"
+      },
+      {
+        "doc_id": "T-03",
+        "kind": "test report",
+        "title": "Aroma diffuser AD-22",
+        "text": "Maker: Mistwell Diffusers Co., 22 Tianhe Road, Guangzhou, China, hello@mistwell.example. Not established in the Union; its Union operator is named in the mail. Model AD-22. Warning on the base: 'Use only water in the tank.'"
+      },
+      {
+        "doc_id": "T-04",
+        "kind": "product file",
+        "title": "Wildflower honey, 250 g",
+        "text": "A food product: honey in a jar from Bee Meadow Apiary, Wicklow. Food labelling file only; no product safety test report."
+      },
+      {
+        "doc_id": "T-05",
+        "kind": "product file",
+        "title": "Brass candlestick, about 1925",
+        "text": "Estate purchase, hallmarked 1925, no maker's mark. An antique; sold as found."
+      },
+      {
+        "doc_id": "T-06",
+        "kind": "test report",
+        "title": "Stoneware mug SM-12",
+        "text": "Maker: Cerâmica Soalheira Lda, Rua do Forno 8, 3800-123 Aveiro, Portugal, info@soalheira.example. Established in the Union. Batch SM-12. No warning is needed."
+      },
+      {
+        "doc_id": "T-07",
+        "kind": "product file",
+        "title": "Linen apron LA-4",
+        "text": "Offered to UK and US buyers only; the shop does not ship it to the EU."
+      },
+      {
+        "doc_id": "T-08",
+        "kind": "test report",
+        "title": "Aluminium travel kettle KT-15",
+        "text": "Maker: Kesselmoor Ltd, 18 Organize Sanayi, 34000 Istanbul, Turkey, export@kesselmoor.example. Not established in the Union; its Union operator is named in the mail. Model KT-15. Warning on the base and in the manual: 'Do not immerse the base in water.'"
+      },
+      {
+        "doc_id": "T-09",
+        "kind": "test report",
+        "title": "Cast iron trivet IW-9",
+        "text": "Maker: Ironvale Works Pvt Ltd, Plot 14, Pune 411019, India, sales@ironvale.example. Not established in the Union; responsible person Ironvale Europe GmbH, Alsterufer 3, 20354 Hamburg, Germany, eu@ironvale.example. No warning is needed."
+      },
+      {
+        "doc_id": "T-10",
+        "kind": "test report",
+        "title": "Portable power bank PB-10",
+        "text": "Maker: Voltarra Ltd, Unit 7, Bao'an, Shenzhen, China, sales@voltarra.example. Not established in the Union; its Union operator is named in the mail. Model PB-10, batch 26-031. Warning on the case: 'Do not short-circuit or open the case.'"
+      },
+      {
+        "doc_id": "T-11",
+        "kind": "test report",
+        "title": "Garden pruning shears PS-8",
+        "text": "Maker: Atelier Verdane SAS, 3 rue des Tilleuls, 21000 Dijon, France, contact@verdane.example. Established in the Union. Model PS-8, batch 26-114. No warning is needed."
+      },
+      {
+        "doc_id": "T-12",
+        "kind": "test report",
+        "title": "Wool throw blanket WT-6",
+        "text": "Maker: Lã da Serrinha Lda, Rua da Serra 21, 6200-100 Covilhã, Portugal, geral@serrinha.example. Established in the Union. Batch WT-6. The throw can be used safely as intended without instructions or warnings; none is affixed or supplied."
+      },
+      {
+        "doc_id": "T-13",
+        "kind": "test report",
+        "title": "Oak serving tray OT-3",
+        "text": "Maker: Puuseppä Koivuranta Oy, Satamakatu 9, 90100 Oulu, Finland, tilaus@koivuranta.example. Established in the Union. Batch OT-3. No warning is needed."
+      },
+      {
+        "doc_id": "T-14",
+        "kind": "product file",
+        "title": "Hand-knit mittens HK-2",
+        "text": "Offered to US buyers only; the shop does not ship them to the EU."
+      },
+      {
+        "doc_id": "T-15",
+        "kind": "product file",
+        "title": "Heirloom tomato seed packets SP-8",
+        "text": "Packets of tomato seed for sowing, from Bee Meadow Seeds. Seed is a plant product relating directly to future reproduction."
+      }
+    ],
+    "messages": [
+      {
+        "message_id": "M-1",
+        "date": "2026-09-30",
+        "from": "Stallwick seller notices",
+        "subject": "EU listings must show GPSR information",
+        "body": "From 1 November 2026 Stallwick hides from EU buyers any listing offered in the EU that does not show the information Article 19 of Regulation (EU) 2023/988 asks for. Edit a listing under 'GPSR information'."
+      },
+      {
+        "message_id": "M-2",
+        "date": "2026-10-01",
+        "from": "Hawkerbrook seller desk",
+        "subject": "Product compliance form",
+        "body": "From 1 November 2026 Hawkerbrook hides EU listings whose compliance form is incomplete. Use 'Submit compliance form' on each listing offered in the EU."
+      },
+      {
+        "message_id": "M-3",
+        "date": "2026-08-12",
+        "from": "Lumenvale Co. (export desk)",
+        "subject": "Our Union operator",
+        "body": "Our authorised representative in the Union is Lumenvale Europe B.V., Kade 9, 3011 Rotterdam, Netherlands, eu@lumenvale.example."
+      },
+      {
+        "message_id": "M-4",
+        "date": "2026-08-20",
+        "from": "Kesselmoor Ltd",
+        "subject": "Union operator for KT-15",
+        "body": "Our Union operator is Kesselmoor Europe SARL, 14 rue Mercière, 69002 Lyon, France, eu@kesselmoor.example."
+      },
+      {
+        "message_id": "M-5",
+        "date": "2026-07-30",
+        "from": "Voltarra Ltd",
+        "subject": "Union operator for PB-10",
+        "body": "Our responsible person in the Union is Voltarra GmbH, Leopoldstrasse 40, 80802 München, Germany, eu@voltarra.example."
+      },
+      {
+        "message_id": "M-6",
+        "date": "2026-09-02",
+        "from": "Mistwell Diffusers Co.",
+        "subject": "Union operator for AD-22",
+        "body": "Our authorised representative is Mistwell Europe Sp. z o.o., ul. Złota 5, 00-019 Warszawa, Poland, eu@mistwell.example."
+      }
+    ],
+    "stall": [
+      {
+        "listing_id": "S-101",
+        "product": "Beechwood cutting board",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "cutting board",
+        "identifier": "BB-30",
+        "manufacturer_shown": "Brandvik Holzwaren GmbH",
+        "manufacturer_postal_address": "(blank)",
+        "manufacturer_email": "(blank)",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 900
+      },
+      {
+        "listing_id": "S-102",
+        "product": "USB-C desk lamp",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "desk lamp",
+        "identifier": "(blank)",
+        "manufacturer_shown": "Lumenvale Co. Ltd",
+        "manufacturer_postal_address": "(blank)",
+        "manufacturer_email": "(blank)",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 1450
+      },
+      {
+        "listing_id": "S-104",
+        "product": "Wildflower honey, 250 g jar",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "honey",
+        "identifier": "H-250",
+        "manufacturer_shown": "Bee Meadow Apiary",
+        "manufacturer_postal_address": "(blank)",
+        "manufacturer_email": "(blank)",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 600
+      },
+      {
+        "listing_id": "S-105",
+        "product": "Brass candlestick, about 1925",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "candlestick",
+        "identifier": "one of a kind",
+        "manufacturer_shown": "(blank)",
+        "manufacturer_postal_address": "(blank)",
+        "manufacturer_email": "(blank)",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 480
+      },
+      {
+        "listing_id": "S-106",
+        "product": "Stoneware mug",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "mug",
+        "identifier": "SM-12",
+        "manufacturer_shown": "Cerâmica Soalheira Lda",
+        "manufacturer_postal_address": "Rua do Forno 8, 3800-123 Aveiro, Portugal",
+        "manufacturer_email": "info@soalheira.example",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 700
+      },
+      {
+        "listing_id": "S-107",
+        "product": "Linen apron",
+        "offered_to": "UK, US",
+        "picture": "yes",
+        "product_type": "apron",
+        "identifier": "LA-4",
+        "manufacturer_shown": "(blank)",
+        "manufacturer_postal_address": "(blank)",
+        "manufacturer_email": "(blank)",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 0,
+        "note": "Stallwick shows no EU market for this listing."
+      },
+      {
+        "listing_id": "S-109",
+        "product": "Aluminium travel kettle",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "kettle",
+        "identifier": "KT-15",
+        "manufacturer_shown": "Kesselmoor Ltd",
+        "manufacturer_postal_address": "(blank)",
+        "manufacturer_email": "(blank)",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 1200
+      },
+      {
+        "listing_id": "S-110",
+        "product": "Cast iron trivet",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "trivet",
+        "identifier": "IW-9",
+        "manufacturer_shown": "Ironvale Works Pvt Ltd",
+        "manufacturer_postal_address": "Plot 14, Pune 411019, India",
+        "manufacturer_email": "sales@ironvale.example",
+        "responsible_person_shown": "Ironvale Europe GmbH, Alsterufer 3, 20354 Hamburg, Germany, eu@ironvale.example",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 550
+      }
+    ],
+    "hawk": [
+      {
+        "listing_id": "H-201",
+        "product": "Portable power bank 10,000 mAh",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "power bank",
+        "identifier": "PB-10 batch 26-031",
+        "manufacturer_shown": "Voltarra Ltd",
+        "manufacturer_postal_address": "Unit 7, Bao'an, Shenzhen, China",
+        "manufacturer_email": "sales@voltarra.example",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "Do not short-circuit or open the case.",
+        "eu_sales_90d_usd": 2100
+      },
+      {
+        "listing_id": "H-202",
+        "product": "Garden pruning shears",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "shears",
+        "identifier": "(blank)",
+        "manufacturer_shown": "Atelier Verdane SAS",
+        "manufacturer_postal_address": "3 rue des Tilleuls, 21000 Dijon, France",
+        "manufacturer_email": "contact@verdane.example",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(none)",
+        "eu_sales_90d_usd": 650
+      },
+      {
+        "listing_id": "H-203",
+        "product": "Aroma diffuser",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "diffuser",
+        "identifier": "AD-22",
+        "manufacturer_shown": "Mistwell Diffusers Co.",
+        "manufacturer_postal_address": "(blank)",
+        "manufacturer_email": "(blank)",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "Use only water in the tank.",
+        "eu_sales_90d_usd": 800
+      },
+      {
+        "listing_id": "H-204",
+        "product": "Wool throw blanket",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "throw",
+        "identifier": "WT-6",
+        "manufacturer_shown": "Lã da Serrinha Lda",
+        "manufacturer_postal_address": "Rua da Serra 21, 6200-100 Covilhã, Portugal",
+        "manufacturer_email": "geral@serrinha.example",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 420
+      },
+      {
+        "listing_id": "H-205",
+        "product": "Oak serving tray",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "tray",
+        "identifier": "OT-3",
+        "manufacturer_shown": "Puuseppä Koivuranta Oy",
+        "manufacturer_postal_address": "Satamakatu 9, 90100 Oulu, Finland",
+        "manufacturer_email": "tilaus@koivuranta.example",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 380
+      },
+      {
+        "listing_id": "H-206",
+        "product": "Hand-knit mittens",
+        "offered_to": "US",
+        "picture": "yes",
+        "product_type": "mittens",
+        "identifier": "HK-2",
+        "manufacturer_shown": "(blank)",
+        "manufacturer_postal_address": "(blank)",
+        "manufacturer_email": "(blank)",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 0,
+        "note": "Hawkerbrook shows no EU market for this listing."
+      },
+      {
+        "listing_id": "H-207",
+        "product": "Heirloom tomato seed packets",
+        "offered_to": "EU, UK",
+        "picture": "yes",
+        "product_type": "seed packets",
+        "identifier": "SP-8",
+        "manufacturer_shown": "Bee Meadow Seeds",
+        "manufacturer_postal_address": "(blank)",
+        "manufacturer_email": "(blank)",
+        "responsible_person_shown": "(blank)",
+        "warning_shown": "(blank)",
+        "eu_sales_90d_usd": 310
+      }
+    ]
+  }
+}

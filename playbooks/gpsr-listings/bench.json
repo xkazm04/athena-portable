@@ -1,0 +1,354 @@
+{
+  "playbook": "gpsr-listings",
+  "run_at": "2026-10-10T15:07:49Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 134.1,
+  "turns": 13,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 41,
+  "cost_usd": 2.0283,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.2
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 7100.0,
+    "value_found_usd": 7100.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "update_gpsr_info",
+        "key": "S-104",
+        "why": "Honey is food, which Article 2(2)(b) leaves outside the Regulation",
+        "filed": false
+      },
+      {
+        "action": "update_gpsr_info",
+        "key": "S-105",
+        "why": "A brass candlestick from about 1925 is an antique, which Article 2(2)(i) leaves outside the Regulation",
+        "filed": false
+      },
+      {
+        "action": "update_gpsr_info",
+        "key": "S-106",
+        "why": "The mug's maker is established in Portugal and the listing already shows its name, postal and email address, the batch and a picture; no warning is needed",
+        "filed": false
+      },
+      {
+        "action": "update_gpsr_info",
+        "key": "S-107",
+        "why": "The apron is offered to UK and US buyers only, so the offer is not targeted at consumers in the Union (Article 4)",
+        "filed": false
+      },
+      {
+        "action": "update_gpsr_info",
+        "key": "S-110",
+        "why": "The trivet's listing already shows its maker's name and address and the Union responsible person Ironvale Europe GmbH; nothing is missing and no warning is needed",
+        "filed": false
+      },
+      {
+        "action": "submit_compliance_form",
+        "key": "H-204",
+        "why": "The throw is complete and its maker is established in Portugal; the report says it can be used safely without warnings, so none may be added",
+        "filed": false
+      },
+      {
+        "action": "submit_compliance_form",
+        "key": "H-205",
+        "why": "The tray's maker is established in Finland with its name and address shown; it is its own responsible person and none is needed",
+        "filed": false
+      },
+      {
+        "action": "submit_compliance_form",
+        "key": "H-206",
+        "why": "The mittens are offered to US buyers only, so the offer is not targeted at consumers in the Union (Article 4)",
+        "filed": false
+      },
+      {
+        "action": "submit_compliance_form",
+        "key": "H-207",
+        "why": "Seed packets are plant products relating directly to future reproduction, which Article 2(2)(d) leaves outside the Regulation",
+        "filed": false
+      }
+    ],
+    "filed_usd": 7100.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "update_gpsr_info",
+      "key": "S-101",
+      "outcome": "correct",
+      "value_usd": 900.0,
+      "exact": true,
+      "why": "The board's maker, Brandvik Holzwaren GmbH, is established in Germany (T-01), so it needs no separate responsible person, but the listing shows no postal or email address for it (Article 19(a)); the folder has both. No warning is needed. 90-day EU sales 900"
+    },
+    {
+      "action": "update_gpsr_info",
+      "key": "S-102",
+      "outcome": "correct",
+      "value_usd": 1450.0,
+      "exact": true,
+      "why": "The lamp's maker is in China (T-02); the listing shows no address, no Union responsible person (Lumenvale Europe B.V., Rotterdam, M-3), no model and no warning ('Do not cover the lamp while it is lit'). 90-day EU sales 1450"
+    },
+    {
+      "action": "update_gpsr_info",
+      "key": "S-109",
+      "outcome": "correct",
+      "value_usd": 1200.0,
+      "exact": true,
+      "why": "The kettle's maker is in Turkey (T-08); the listing lacks its address, the Union operator (Kesselmoor Europe SARL, Lyon, M-4), the model KT-15 is shown but the warning 'Do not immerse the base in water' is not. 90-day EU sales 1200"
+    },
+    {
+      "action": "submit_compliance_form",
+      "key": "H-201",
+      "outcome": "correct",
+      "value_usd": 2100.0,
+      "exact": true,
+      "why": "The power bank's maker, Voltarra Ltd, is in China and the listing has its address, model and warning, but no Union responsible person: Voltarra GmbH, Munich (M-5), Article 19(b). 90-day EU sales 2100"
+    },
+    {
+      "action": "submit_compliance_form",
+      "key": "H-202",
+      "outcome": "correct",
+      "value_usd": 650.0,
+      "exact": true,
+      "why": "The shears' maker Atelier Verdane SAS is established in France with address and email shown and needs no responsible person, but the listing has no model or batch (Article 19(c)); the report gives PS-8, batch 26-114. No warning is needed. 90-day EU sales 650"
+    },
+    {
+      "action": "submit_compliance_form",
+      "key": "H-203",
+      "outcome": "correct",
+      "value_usd": 800.0,
+      "exact": true,
+      "why": "The diffuser's maker is in China (T-03); the listing has no address and no Union responsible person (Mistwell Europe Sp. z o.o., Warsaw, M-6); the model AD-22 and the warning 'Use only water in the tank' are shown. 90-day EU sales 800"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Three of the five in-scope listings are missing something, so I'm filing three compliance-form cards. H-204 and H-205 are already complete.\n\n- **H-201 (power bank):** it has no Union responsible person. The maker's address, the model and batch, and the warning are already shown.\n- **H-202 (shears):** it has no model or batch. The maker is in France, so no responsible person is needed, and the shears carry no warning.\n- **H-203 (diffuser):** it has no maker address and no responsible person. The model and warning are already shown.\n\n\n**Summary so far**\n\nI've only filed cards. Nothing has changed on either marketplace until you answer them.\n\n**Hawkerbrook: filed, waiting on you** (EU sales, last 90 days)\n\n| Listing | What's missing | Sales protected |\n|---|---|---|\n| H-201 power bank | Union responsible person (Voltarra GmbH, Munich) | $2,100 |\n| H-202 shears | Model PS-8 and batch 26-114 ",
+  "trace": [
+    {
+      "portal": "Binderwell",
+      "user": "I'm Hollis, Fennhollow Home. I resell other makers' goods on two marketplaces, and both will hide EU listings that miss the product-safety information from 1 November. Start in Binderwell: read the rules and my shop note, then every test re",
+      "continued": false,
+      "said": "I'll start by listing the Binderwell folder.",
+      "said_chars": 44,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of 2 shows 10 of 19 documents. I'll read the four rule and shop-note documents, the six product files on this page, and page 2 of the list.",
+      "said_chars": 146,
+      "reads": [
+        "list_documents",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Binderwell is mostly read. I still need the last four documents, T-16 to T-19, which weren't on either list page I saw. The page 2 list showed 9 rows, so I'll list it again to get their ids.I was wrong a moment ago, and that Read call was a mistake. The two list pages add up to 19 (10 + 9), so nothing is missing. T-07 to T-15 are listed but I haven't read them yet. I'll read them now.",
+      "said_chars": 387,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Binderwell is done: all 19 documents are read. Next is the mail, where the Union responsible persons should be named. I'll list the messages.\n\nHere is what the folder says about each product:",
+      "said_chars": 2706,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "This is my mail. Read what the marketplaces and the makers have sent. The makers outside the EU named their Union operators here.",
+      "continued": false,
+      "said": "I address host operations with an `\n\nMy last `",
+      "said_chars": 46,
+      "reads": [
+        "list_messages",
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Six messages came back. M-3 to M-6 should name the Union operators, and M-1 and M-2 are the marketplace notices. I'm reading all six now.",
+      "said_chars": 137,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "The mail names all four Union operators, and neither marketplace notice adds anything beyond the 1 November deadline. I'm saving them in a checkpoint so they carry over to the marketplace tabs.\n\n\nThe mail is done. The only thing left is the marketplace listings, and I can't reach those from this tab.\n\n**Plan:**\n1. Stallwick: list the listings and read each one. Where something Article 19 asks for is missing, I'll file a GPSR card for that listing.\n2. Hawkerbrook: do the same with its compliance form.\n3.",
+      "said_chars": 1075,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Stallwick seller",
+      "user": "This is my Stallwick seller account. Read every listing, and bring each listing offered in the EU up to Article 19 with what the folder and the mail say. Leave alone every listing that is complete, out of scope or not offered to EU buyers.",
+      "continued": false,
+      "said": "Starting with the Stallwick listings.\n\nThe Stallwick listing list is still on its way, so I'm waiting for it before I read any listing. Recall returned only part of the folder (8 of 41 episodes). It gave me the four Union operators, the throw (T-12), and the rules. I'll re-read the other product files when I need them.",
+      "said_chars": 320,
+      "reads": [
+        "list_listings"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Stallwick seller",
+      "user": "",
+      "continued": true,
+      "said": "The Stallwick list shows 8 listings. I'm reading the five EU listings that are in scope: S-101, S-102, S-106, S-109 and S-110. I'm leaving the honey (food), the candlestick (antique) and the apron (not offered in the EU) alone.",
+      "said_chars": 227,
+      "reads": [
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Stallwick seller",
+      "user": "",
+      "continued": true,
+      "said": "Three of the five listings need fixes now. I'm filing those cards and checking my memory for the trivet's warning.\n\n- **S-101 (cutting board):** it needs the maker's postal and email address. The maker is in Germany, so no responsible person is needed.\n- **S-102 (lamp):** it needs the model, the maker's address, the responsible person and the warning.\n- **S-109 (kettle):** it needs the maker's address, the responsible person and the warning.\n- **S-106 (mug):** it is already complete, so I'm leaving it alone.",
+      "said_chars": 1917,
+      "reads": [],
+      "cards": [
+        {
+          "action": "update_gpsr_info",
+          "key": "S-101",
+          "outcome": "correct",
+          "value_usd": 900.0
+        },
+        {
+          "action": "update_gpsr_info",
+          "key": "S-102",
+          "outcome": "correct",
+          "value_usd": 1450.0
+        },
+        {
+          "action": "update_gpsr_info",
+          "key": "S-109",
+          "outcome": "correct",
+          "value_usd": 1200.0
+        }
+      ]
+    },
+    {
+      "portal": "Hawkerbrook seller",
+      "user": "This is my Hawkerbrook seller account. Do the same here with its own form. Then tell me what you fixed, what it protects in sales, and what you left alone and why.",
+      "continued": false,
+      "said": "I'll start by listing the Hawkerbrook listings and recalling the folder and mail facts I saved.\n\nThe Hawkerbrook listing list arrives next turn. Meanwhile I'll recall the responsible persons I saved from the mail.\n\nI have the folder facts and all four responsible persons from the mail: lamp, kettle, power bank and diffuser. I'm still waiting for the Hawkerbrook listing list. It hasn't come back yet, and I won't file any compliance form until I've read each listing.",
+      "said_chars": 577,
+      "reads": [
+        "list_listings"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hawkerbrook seller",
+      "user": "",
+      "continued": true,
+      "said": "Hawkerbrook has 7 listings. Five are offered in the EU and in scope: H-201, H-202, H-203, H-204 and H-205. I'm reading those now. I'm leaving H-206 (mittens, US only) and H-207 (tomato seeds, outside the Regulation) alone.",
+      "said_chars": 222,
+      "reads": [
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hawkerbrook seller",
+      "user": "",
+      "continued": true,
+      "said": "Three of the five in-scope listings are missing something, so I'm filing three compliance-form cards. H-204 and H-205 are already complete.\n\n- **H-201 (power bank):** it has no Union responsible person. The maker's address, the model and batch, and the warning are already shown.\n- **H-202 (shears):** it has no model or batch. The maker is in France, so no responsible person is needed, and the shears carry no warning.\n- **H-203 (diffuser):** it has no maker address and no responsible person.",
+      "said_chars": 1861,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_compliance_form",
+          "key": "H-201",
+          "outcome": "correct",
+          "value_usd": 2100.0
+        },
+        {
+          "action": "submit_compliance_form",
+          "key": "H-202",
+          "outcome": "correct",
+          "value_usd": 650.0
+        },
+        {
+          "action": "submit_compliance_form",
+          "key": "H-203",
+          "outcome": "correct",
+          "value_usd": 800.0
+        }
+      ]
+    }
+  ]
+}

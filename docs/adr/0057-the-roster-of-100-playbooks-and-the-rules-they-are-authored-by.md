@@ -181,6 +181,11 @@ belongs to a real business (rule 4: every portal is invented). The rows above ke
 names; each playbook carries the new one.
 - Row 52, `sales-tax-exemption-certs`: "Clientry CRM" became "Clientwren CRM", because Clientry is a real CRM
   (useclientry.com); and "Mailnest" became "Postwren", because mailnest.io is a real email service.
+- Row 53, `gpsr-listings`: "Marketora seller" became "Stallwick seller", because Marketora is the name of
+  several real businesses (a marketing agency, a product-review site); "Bazaarly seller" became
+  "Hawkerbrook seller", because Bazaarly is a real online-shop name; "Docshelf" became "Binderwell",
+  because DocShelf is a real document management app; and "Mailnest" became "Postwren", because
+  mailnest.io is a real email service.
 
 ### B7: Household money
 

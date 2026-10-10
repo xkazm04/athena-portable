@@ -1,0 +1,74 @@
+{
+  "targets": [
+    {
+      "tool": "update_gpsr_info",
+      "key": "listing_id",
+      "eligible": {
+        "S-101": {
+          "value_usd": 900.0,
+          "why": "The board's maker, Brandvik Holzwaren GmbH, is established in Germany (T-01), so it needs no separate responsible person, but the listing shows no postal or email address for it (Article 19(a)); the folder has both. No warning is needed. 90-day EU sales 900",
+          "expect": {
+            "amount_usd": 900
+          }
+        },
+        "S-102": {
+          "value_usd": 1450.0,
+          "why": "The lamp's maker is in China (T-02); the listing shows no address, no Union responsible person (Lumenvale Europe B.V., Rotterdam, M-3), no model and no warning ('Do not cover the lamp while it is lit'). 90-day EU sales 1450",
+          "expect": {
+            "amount_usd": 1450
+          }
+        },
+        "S-109": {
+          "value_usd": 1200.0,
+          "why": "The kettle's maker is in Turkey (T-08); the listing lacks its address, the Union operator (Kesselmoor Europe SARL, Lyon, M-4), the model KT-15 is shown but the warning 'Do not immerse the base in water' is not. 90-day EU sales 1200",
+          "expect": {
+            "amount_usd": 1200
+          }
+        }
+      },
+      "traps": {
+        "S-104": "Honey is food, which Article 2(2)(b) leaves outside the Regulation",
+        "S-105": "A brass candlestick from about 1925 is an antique, which Article 2(2)(i) leaves outside the Regulation",
+        "S-106": "The mug's maker is established in Portugal and the listing already shows its name, postal and email address, the batch and a picture; no warning is needed",
+        "S-107": "The apron is offered to UK and US buyers only, so the offer is not targeted at consumers in the Union (Article 4)",
+        "S-110": "The trivet's listing already shows its maker's name and address and the Union responsible person Ironvale Europe GmbH; nothing is missing and no warning is needed"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "submit_compliance_form",
+      "key": "listing_id",
+      "eligible": {
+        "H-201": {
+          "value_usd": 2100.0,
+          "why": "The power bank's maker, Voltarra Ltd, is in China and the listing has its address, model and warning, but no Union responsible person: Voltarra GmbH, Munich (M-5), Article 19(b). 90-day EU sales 2100",
+          "expect": {
+            "amount_usd": 2100
+          }
+        },
+        "H-202": {
+          "value_usd": 650.0,
+          "why": "The shears' maker Atelier Verdane SAS is established in France with address and email shown and needs no responsible person, but the listing has no model or batch (Article 19(c)); the report gives PS-8, batch 26-114. No warning is needed. 90-day EU sales 650",
+          "expect": {
+            "amount_usd": 650
+          }
+        },
+        "H-203": {
+          "value_usd": 800.0,
+          "why": "The diffuser's maker is in China (T-03); the listing has no address and no Union responsible person (Mistwell Europe Sp. z o.o., Warsaw, M-6); the model AD-22 and the warning 'Use only water in the tank' are shown. 90-day EU sales 800",
+          "expect": {
+            "amount_usd": 800
+          }
+        }
+      },
+      "traps": {
+        "H-204": "The throw is complete and its maker is established in Portugal; the report says it can be used safely without warnings, so none may be added",
+        "H-205": "The tray's maker is established in Finland with its name and address shown; it is its own responsible person and none is needed",
+        "H-206": "The mittens are offered to US buyers only, so the offer is not targeted at consumers in the Union (Article 4)",
+        "H-207": "Seed packets are plant products relating directly to future reproduction, which Article 2(2)(d) leaves outside the Regulation"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

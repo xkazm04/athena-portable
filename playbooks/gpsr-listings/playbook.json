@@ -1,0 +1,99 @@
+{
+  "id": "gpsr-listings",
+  "title": "A reseller's EU listings brought up to the product-safety rule on two marketplaces before they are hidden: a maker's address added, three Union responsible persons named from the mail, a missing model and the warnings the products carry, while food, an antique, seeds, listings not offered in the EU, listings already complete and a throw that needs no warning are left alone",
+  "domain": "E-commerce",
+  "audience": "work",
+  "promise": "A small reseller's listings on two marketplaces are read against the General Product Safety Regulation's Article 19 and the test reports in its folder. Six listings are brought up to it, each on its own marketplace's form: a German maker's missing address, a lamp, a kettle and a diffuser made outside the Union whose Union operators the makers' mail names, a power bank that lacks a responsible person, and shears with no model number. Food, an antique, seeds, listings not offered to EU buyers, listings already complete, a maker established in the Union that needs no separate responsible person and a throw that needs no warning are left alone.",
+  "persona": "The owner of a small reseller of homeware, who sells other makers' goods to EU buyers on two marketplaces, both of which will hide non-compliant EU listings on 1 November",
+  "chore": "Read the Regulation's Articles 2, 4, 16 and 19 as the folder states them, the test report or product file of every product, and the marketplaces' and makers' mail; then read every listing on both marketplaces and publish the missing information on those offered to EU consumers: the maker's name and postal and electronic address, the Union responsible person where the maker is outside the Union, the model or batch, and any warning the product carries. Apply Regulation (EU) 2023/988 (applying from 13 December 2024) as it stands on 9 October 2026.",
+  "command": "I'm Hollis, Fennhollow Home. Stallwick and Hawkerbrook will hide EU listings that miss the product-safety information on 1 November. Go through Binderwell, my mail, Stallwick and Hawkerbrook, fix every EU listing that is missing something Article 19 asks for, on each marketplace's own form, and leave the rest alone.",
+  "apps": [
+    {
+      "name": "Binderwell",
+      "role": "the product folder: the Regulation in short, my shop note, and each product's test report or file with its maker's details and warnings",
+      "api": "Shared files",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "my mail: the marketplaces' deadline notices and the Union operators the makers named",
+      "api": "Mail",
+      "url": ""
+    },
+    {
+      "name": "Stallwick seller",
+      "role": "my Stallwick listings, what each shows, and the GPSR information form",
+      "api": "Marketplace seller account, no API",
+      "url": ""
+    },
+    {
+      "name": "Hawkerbrook seller",
+      "role": "my Hawkerbrook listings, what each shows, and its own compliance form",
+      "api": "Marketplace seller account, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the Regulation's articles and every test report or product file in Binderwell.",
+    "Reads the marketplaces' notices and the makers' Union operators in Postwren.",
+    "Reads every Stallwick listing and publishes the missing information on three of them.",
+    "Reads every Hawkerbrook listing and submits the compliance form for three of them."
+  ],
+  "gates": [
+    {
+      "action": "update_gpsr_info",
+      "label": "Publish the GPSR information on a Stallwick listing",
+      "why": "A change to a public listing that buyers see, signed by the seller."
+    },
+    {
+      "action": "submit_compliance_form",
+      "label": "Submit a Hawkerbrook compliance form",
+      "why": "A statement to a marketplace and to buyers about a product's safety information, signed by the seller."
+    }
+  ],
+  "traps": [
+    "Fixing a listing for honey, which is food.",
+    "Fixing a listing for a brass candlestick from 1925, an antique.",
+    "Fixing a listing for seed packets, plant products for reproduction.",
+    "Fixing a listing offered to UK and US buyers only.",
+    "Fixing a listing that is already complete.",
+    "Adding a responsible person for a maker established in the EU.",
+    "Adding a warning to a throw that needs none."
+  ],
+  "memory": [
+    "What Article 19 asks, and what is out of scope, from Binderwell.",
+    "Each maker's details, model and warning from Binderwell, and the Union operators from Postwren.",
+    "Which listings are offered to the EU and what each is missing, from each marketplace."
+  ],
+  "economics": {
+    "value_usd": 10000,
+    "per": "year",
+    "basis": "An estimate. A reseller's EU listings that miss the information Article 19 asks for risk being hidden from EU buyers by the marketplace, and the sales on them stop; the roster's $10,000 a year is the EU sales kept on a small reseller's affected listings. The bench world holds $7,100: the last 90 days of EU sales on six listings (900, 1,450, 1,200, 2,100, 650 and 800), which both invented marketplaces hide from 1 November 2026; the marketplaces' rule is the world's own. Times a year: twice, a six-monthly check of the listings against new makers and new products. manual_minutes 150: reading fifteen products' reports and 15 listings on two forms, working out which maker is in the Union, finding the Union operator in the mail, and filling six forms. The rule applied, as it stands on Friday 9 October 2026 (EUR-Lex, the Regulation as published in the Official Journal): Regulation (EU) 2023/988, applying from 13 December 2024 (Article 52); Article 2(2) (food, living plants and animals and reproductive products, antiques are outside), Article 4 (offers targeted at consumers in the Union), Article 16 (the responsible person) and Article 19 (the information an offer shows). The language of the warning is for each Member State to determine (Article 19(d)); this world does not rest on any state's language.",
+    "manual_minutes": 150,
+    "times_per_year": 2,
+    "incumbent": "Product-compliance services charge a subscription or a fee per product, not a share of the sales they keep, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "Regulation (EU) 2023/988 on general product safety (EUR-Lex): Article 19 (distance sales), Article 16 (responsible person), Article 2 (scope), Article 4 (distance sales), Article 52 (application from 13 December 2024)",
+        "url": "https://eur-lex.europa.eu/eli/reg/2023/988/oj/eng"
+      },
+      {
+        "label": "Regulation (EU) 2019/1020 on market surveillance and compliance of products, Article 4 (economic operators responsible for certain products)",
+        "url": "https://eur-lex.europa.eu/eli/reg/2019/1020/oj/eng"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Two marketplaces have two different forms, and each listing has to be tested against its maker's place of establishment, its product's scope and whether it is offered to EU buyers; the responsible persons are in mail, not in the listing. An EU maker needs no separate responsible person, a throw needs no warning, and food, an antique and seeds are out of scope: all look like gaps and none is.",
+    "usefulness_why": "Keeps a few thousand dollars of EU sales on listings a marketplace would hide, in minutes instead of an afternoon across two forms; a periodic check, not a daily chore."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful seller with Article 19 and the folder in hand gets most of it: the six listings fixed with what each is missing on the right marketplace's form, and nothing published for food, the antique, seeds, listings not offered in the EU, complete listings or a warning a product does not need, inside an hour."
+  },
+  "caveat": "Hollis Reeve, Fennhollow Home, every maker (Brandvik Holzwaren GmbH, Lumenvale Co. Ltd and Europe B.V., Kesselmoor Ltd and Europe SARL, Voltarra Ltd and GmbH, Mistwell Diffusers Co. and Europe Sp. z o.o., and the rest), every product, test report, listing, sales figure and date, and Binderwell, Postwren, Stallwick and Hawkerbrook are invented; the marketplaces' 1 November 2026 rule and the sales at stake are the world's own. The public rule applied is Regulation (EU) 2023/988, applying from 13 December 2024, in particular Articles 2, 4, 16 and 19, as it stands on 9 October 2026, with Article 4 of Regulation (EU) 2019/1020; the language a warning must be in is each Member State's to decide and the world rests on none, and what counts as an antique or who is a responsible person in a real case is for the market surveillance authority. This applies stated rules to stated facts; it is not legal, product-compliance or tax advice."
+}

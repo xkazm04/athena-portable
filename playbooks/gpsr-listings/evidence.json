@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "gpsr-listings",
+  "captured_at": "2026-10-10T15:09:48Z",
+  "bench_run_at": "2026-10-10T15:07:49Z",
+  "narration": {
+    "text": "A reseller's EU listings brought up to the product-safety rule on two marketplaces before they are hidden: a maker's address added, three Union responsible persons named from the mail, a missing model and the warnings the products carry, while food, an antique, seeds, listings not offered in the EU, listings already complete and a throw that needs no warning are left alone. This is a chore for the owner of a small reseller of homeware, who sells other makers' goods to EU buyers on two marketplaces, both of which will hide non-compliant EU listings on 1 November. On the bench, she found 6 of 6 eligible items, worth 7,100 dollars of the 7,100 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 68 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.966,
+    "sha256": "c97e0646de82b6439bedd317612253aaa8210442d73cfdc7f748a89bcdda62b7"
+  },
+  "video": {
+    "path": "evidence/gpsr-listings/evidence.mp4",
+    "duration_s": 62.966,
+    "bytes": 3052600,
+    "sha256": "e9e9abed846d6444f6b5a76491b927a0b6a73564d321d163aa00a021104ab977"
+  },
+  "thumbnail": {
+    "path": "playbooks/gpsr-listings/thumb.jpg",
+    "bytes": 83727,
+    "sha256": "ae6642b5b61d962ca7d2ce2b5170f480c708fe6a863c79eef244b6aacb0fab3c"
+  }
+}
