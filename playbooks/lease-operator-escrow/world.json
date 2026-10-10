@@ -1,0 +1,518 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "sheafbox",
+      "name": "Sheafbox",
+      "origin": "https://files.sheafbox.example",
+      "path": "/okafor-trucking/leases",
+      "view": {
+        "view": "Sheafbox: Okafor Trucking LLC's papers (the Vessmoor lease and its schedules, the termination notice, the equipment return receipt, Treasury bill results, the old Brindlecote lease, the federal rule)",
+        "signed_in": "Marcus Okafor",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "Every document in the folder: document id (L-n), kind and title.",
+          "params": {},
+          "returns": {
+            "table": "documents",
+            "fields": [
+              "doc_id",
+              "kind",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_document",
+          "kind": "READ",
+          "description": "One document in full, by document id (L-n).",
+          "params": {
+            "doc_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "documents",
+            "match": {
+              "doc_id": "doc_id"
+            },
+            "require": [
+              "doc_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Sheafbox",
+        "the folder",
+        "my papers",
+        "the lease folder"
+      ]
+    },
+    {
+      "app_id": "settlewick",
+      "name": "Settlewick settlements",
+      "origin": "https://owners.settlewick.example",
+      "path": "/vessmoor/okafor-trucking",
+      "view": {
+        "view": "Settlewick: Vessmoor Transport Inc.'s owner-operator settlements portal, the account of Okafor Trucking LLC (lease VT-OO-2207, ended Friday 21 August 2026)",
+        "signed_in": "Marcus Okafor (lessor)",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_escrow_ledger",
+          "kind": "READ",
+          "description": "Every transaction on Okafor Trucking's escrow fund at Vessmoor: the deposit, each quarter's interest and where it was paid, and the balance.",
+          "params": {},
+          "returns": {
+            "table": "escrow_ledger"
+          }
+        },
+        {
+          "name": "read_final_statement",
+          "kind": "READ",
+          "description": "Vessmoor's final escrow statement for the ended lease: the deductions it takes from the escrow (id D-n, description, amount) and the balance it says it will pay.",
+          "params": {},
+          "returns": {
+            "table": "final_statement"
+          }
+        },
+        {
+          "name": "view_deduction",
+          "kind": "READ",
+          "description": "One deduction in full, by id (D-n): what Vessmoor charges, the lease clause it cites and the documents it attached.",
+          "params": {
+            "deduction_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "deductions",
+            "match": {
+              "deduction_id": "deduction_id"
+            },
+            "require": [
+              "deduction_id"
+            ]
+          }
+        },
+        {
+          "name": "dispute_deduction",
+          "kind": "REACHES_A_PERSON",
+          "description": "Dispute one deduction on the final escrow statement with Vessmoor's settlements team, by id (deduction_id), with the amount disputed in dollars (amount_usd) and the reason. Marcus signs it; Vessmoor must answer it in writing.",
+          "params": {
+            "deduction_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute of {deduction_id} sent to Vessmoor's settlements team."
+        },
+        {
+          "name": "claim_interest",
+          "kind": "REACHES_A_PERSON",
+          "description": "Claim the escrow interest Vessmoor owes for one calendar quarter (quarter, written like 2026-Q1), with the amount in dollars (amount_usd), the annual rate used in percent (rate_pct) and how it was worked out. Marcus signs it; it goes to Vessmoor's settlements team.",
+          "params": {
+            "quarter": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "rate_pct": {
+              "type": "number"
+            },
+            "basis": {
+              "type": "string"
+            }
+          },
+          "says": "Claim for escrow interest for {quarter} sent to Vessmoor's settlements team."
+        }
+      ],
+      "aliases": [
+        "Settlewick settlements",
+        "Settlewick",
+        "the settlements portal",
+        "Vessmoor's portal"
+      ]
+    },
+    {
+      "app_id": "ledgerwren",
+      "name": "Ledgerwren bank",
+      "origin": "https://online.ledgerwren.example",
+      "path": "/business/okafor-trucking",
+      "view": {
+        "view": "Ledgerwren bank: Okafor Trucking LLC, business checking ending 6614",
+        "signed_in": "Marcus Okafor",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_transactions",
+          "kind": "READ",
+          "description": "Deposits from and payments to carriers since 2024, newest first: date, description and amount.",
+          "params": {},
+          "returns": {
+            "table": "transactions"
+          }
+        }
+      ],
+      "aliases": [
+        "Ledgerwren bank",
+        "Ledgerwren",
+        "the bank"
+      ]
+    },
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/marcus@okafortrucking.example",
+      "view": {
+        "view": "Postwren: marcus@okafortrucking.example",
+        "signed_in": "Marcus Okafor",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "Messages about the leases: message id (M-n), date, sender and subject.",
+          "params": {},
+          "returns": {
+            "table": "messages",
+            "fields": [
+              "message_id",
+              "date",
+              "from",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id (M-n).",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "messages",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ]
+          }
+        },
+        {
+          "name": "send_escrow_demand",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send a carrier a written demand to return the escrow fund of an ended lease, by lease id (lease_id), for the escrow balance owed in dollars after only the deductions the lease allows, not counting interest, which is claimed on its own (amount_usd), with the letter's text. Marcus signs it; it goes to the carrier by mail.",
+          "params": {
+            "lease_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "says": "Demand for the escrow of lease {lease_id} sent."
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the inbox",
+        "email"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "sheafbox",
+      "message": "I'm Marcus, Okafor Trucking. My lease with Vessmoor ended in August and I still don't have my escrow. Start in Sheafbox: read the lease and its schedules and everything else in the folder.",
+      "nudges": 1
+    },
+    {
+      "app": "settlewick",
+      "message": "This is Vessmoor's settlements portal. Read my escrow ledger and their final escrow statement, and open every deduction. Dispute every deduction the lease doesn't allow them, and claim any interest they still owe me, at the right amount. Leave alone what the lease lets them take.",
+      "nudges": 1
+    },
+    {
+      "app": "ledgerwren",
+      "message": "This is my bank. Check what's come in from Vessmoor and from my old carrier.",
+      "nudges": 1
+    },
+    {
+      "app": "postwren",
+      "message": "This is my mail. Read what Vessmoor has sent, then send whoever still owes me an escrow a written demand for what they owe, at the right amount. Then tell me what you sent, what I should get back in all, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "documents": [
+      {
+        "doc_id": "L-1",
+        "kind": "lease",
+        "title": "Vessmoor lease VT-OO-2207, sections 1 to 8",
+        "text": "Equipment lease and independent contractor agreement VT-OO-2207 between Vessmoor Transport Inc. (carrier, lessee), Joliet, Illinois, and Okafor Trucking LLC (Marcus Okafor, lessor), for the lessor's 2021 tractor, unit 207, signed Wednesday 1 October 2025. Term: from 1 October 2025 until either party ends it on 30 days' written notice; no fee or penalty for ending it. Compensation: 75% of the line haul revenue of each load, with a copy of the rated freight bill. Payment within 15 days of the delivery documents (49 CFR 376.12(f)). Section 8, chargebacks: the items Vessmoor may pay first and deduct from settlements are listed in Schedule A, each with how it is computed, and Vessmoor gives the lessor a copy of the documents behind each charge (376.12(h)). No other item is charged back. Section 9, the escrow, is in L-2."
+      },
+      {
+        "doc_id": "L-2",
+        "kind": "lease",
+        "title": "Vessmoor lease VT-OO-2207, section 9: the escrow fund",
+        "text": "9.1 Amount: $2,500, paid by the lessor at signing. 9.2 The escrow may be applied only to: (a) fuel card purchases, fuel or otherwise, not recovered from settlements; (b) tolls and scale tickets not recovered from settlements; (c) Vessmoor equipment not returned at the end of the lease, at the replacement cost in Schedule B; (d) the unrecovered cost of the apportioned plate, as Schedule B computes it; (e) Schedule A chargebacks not recovered from the final settlement. 9.3 Every deduction or addition is shown on the settlement sheets, and the lessor may demand an accounting at any time. 9.4 Interest: paid each calendar quarter while Vessmoor holds the fund, including after the lease ends until the fund is returned, credited on the first settlement after the quarter ends, simple interest on the balance for the actual days over 365, at the investment rate of the last 13-week Treasury bill auction held before the first day of the quarter. Vessmoor deducts no advance from the balance. 9.5 Return: within 45 days after the lease ends, less only the items in 9.2, with a final accounting of every deduction."
+      },
+      {
+        "doc_id": "L-3",
+        "kind": "lease schedule",
+        "title": "Schedules A and B to lease VT-OO-2207",
+        "text": "Schedule A, chargebacks: occupational accident insurance, $48 a week, at the insurer's invoice; trailer rental, none (the lessor pulls Vessmoor's trailers at no charge); ELD service, none. Schedule B, equipment and plate: the ELD unit (replacement cost $350 if not returned), the fuel card ($25 if not returned) and the trailer keys (none). The apportioned plate is bought by Vessmoor for the registration year; if the lease ends early, the lessor repays the plate's cost for the whole months left on the registration after the lease ends. The 2026 plate for unit 207 cost $558 and expires 31 December 2026."
+      },
+      {
+        "doc_id": "L-4",
+        "kind": "notice",
+        "title": "Termination notice, Okafor Trucking to Vessmoor, 22 July 2026",
+        "text": "Wednesday 22 July 2026. To Vessmoor Transport Inc., owner-operator services: Okafor Trucking LLC gives 30 days' written notice under section 1 of lease VT-OO-2207. The lease ends at the close of Friday 21 August 2026. Unit 207 will run loads to that date. Marcus Okafor. Vessmoor acknowledged receipt by email the same day."
+      },
+      {
+        "doc_id": "L-5",
+        "kind": "receipt",
+        "title": "Equipment return receipt, Vessmoor Joliet terminal, 21 August 2026",
+        "text": "Vessmoor Transport Inc., Joliet terminal. Friday 21 August 2026, 16:40. Received from Okafor Trucking LLC, unit 207: ELD unit serial VT-ELD-55107 (powered, with its cable); fuel card ending 2207; trailer keys for trailer 5318. Apportioned plate removed and returned. Condition: good. Signed for Vessmoor: R. Delacroix, terminal manager. Signed: Marcus Okafor."
+      },
+      {
+        "doc_id": "L-6",
+        "kind": "reference",
+        "title": "13-week Treasury bill auction results (printout from TreasuryDirect)",
+        "text": "13-week bills, high discount rate and investment rate (the coupon-equivalent yield), by auction date: Mon 29 Sep 2025 (issued 2 Oct 2025): 3.860%, investment rate 3.953%. Mon 29 Dec 2025 (issued 2 Jan 2026): 3.570%, investment rate 3.652%. Mon 30 Mar 2026 (issued 2 Apr 2026): 3.620%, investment rate 3.704%. Mon 29 Jun 2026 (issued 2 Jul 2026): 3.740%, investment rate 3.828%. Mon 28 Sep 2026 (issued 1 Oct 2026): 4.110%, investment rate 4.211%. Mon 5 Oct 2026 (issued 8 Oct 2026): 4.050%, investment rate 4.149%."
+      },
+      {
+        "doc_id": "L-7",
+        "kind": "lease",
+        "title": "Brindlecote Transport lease BT-2023-118 and its final escrow accounting",
+        "text": "Okafor Trucking's earlier lease with Brindlecote Transport LLC, BT-2023-118, from 3 April 2023 to 15 December 2023, with a $1,500 escrow. Final escrow accounting dated Monday 12 February 2024: escrow $1,500.00, no deductions, interest for the fourth quarter of 2023 to the return date $12.40, returned $1,512.40 by ACH on 12 February 2024. Brindlecote owes nothing further."
+      },
+      {
+        "doc_id": "L-8",
+        "kind": "rule",
+        "title": "49 CFR 376.12, the Truth-in-Leasing rule, as it stands on 9 October 2026",
+        "text": "Today is Friday 9 October 2026. 376.12(k): if escrow is required, the lease specifies its amount, the specific items it can be applied to, an accounting of every transaction, the lessor's right to demand an accounting at any time, interest paid at least quarterly while the carrier controls the fund at a rate set on the date the interest period begins and at least equal to the average yield or equivalent coupon issue yield on 13-week Treasury bills in the weekly auction, and the conditions for its return: at return the carrier may deduct monies for obligations previously specified in the lease, gives a final accounting, and in no event returns the fund later than 45 days from the date of termination. 376.12(h): the lease specifies every chargeback item and how it is computed, and the lessor gets the documents to check each charge. A lessor may sue a carrier that breaks these rules (49 U.S.C. 14704(a)(2))."
+      }
+    ],
+    "escrow_ledger": [
+      {
+        "date": "Wed 1 Oct 2025",
+        "entry": "Escrow deposit, paid by the lessor at signing",
+        "amount": "$2,500.00",
+        "balance": "$2,500.00"
+      },
+      {
+        "date": "Fri 9 Jan 2026",
+        "entry": "Interest, 2025-Q4 (92 days at 3.953%), paid on settlement 2026-01",
+        "amount": "$24.91 paid to the lessor",
+        "balance": "$2,500.00"
+      },
+      {
+        "date": "Fri 10 Apr 2026",
+        "entry": "Interest, 2026-Q1 (90 days at 3.652%), paid on settlement 2026-14",
+        "amount": "$22.51 paid to the lessor",
+        "balance": "$2,500.00"
+      },
+      {
+        "date": "Fri 10 Jul 2026",
+        "entry": "Interest, 2026-Q2 (91 days at 3.704%), paid on settlement 2026-27",
+        "amount": "$23.09 paid to the lessor",
+        "balance": "$2,500.00"
+      },
+      {
+        "date": "Fri 28 Aug 2026",
+        "entry": "Final settlement 2026-34 (last loads to 21 Aug); no escrow transaction; Marcus took no advances during the lease",
+        "amount": "$0.00",
+        "balance": "$2,500.00"
+      },
+      {
+        "date": "Fri 9 Oct 2026",
+        "entry": "No interest posted for 2026-Q3 (1 Jul to 30 Sep); the fund is still held",
+        "amount": "",
+        "balance": "$2,500.00"
+      }
+    ],
+    "final_statement": [
+      {
+        "line": "Statement",
+        "text": "Final escrow statement, lease VT-OO-2207, posted Wednesday 7 October 2026. Escrow held: $2,500.00."
+      },
+      {
+        "line": "D-1",
+        "text": "Fuel card, fuel 19 to 21 Aug after the final settlement's cut-off: $412.60"
+      },
+      {
+        "line": "D-2",
+        "text": "Tolls, 17 to 21 Aug: $38.75"
+      },
+      {
+        "line": "D-3",
+        "text": "ELD unit not returned: $350.00"
+      },
+      {
+        "line": "D-4",
+        "text": "Trailer washout fee: $95.00"
+      },
+      {
+        "line": "D-5",
+        "text": "Early termination fee: $500.00"
+      },
+      {
+        "line": "D-6",
+        "text": "Occupational accident insurance, week of 17 Aug, not recovered on the final settlement: $48.00"
+      },
+      {
+        "line": "D-7",
+        "text": "Apportioned plate, unrecovered cost: $186.00"
+      },
+      {
+        "line": "D-8",
+        "text": "Fuel card, two steer tires at Junction Tire, 18 Aug: $300.00"
+      },
+      {
+        "line": "Balance",
+        "text": "Deductions $1,930.35. Balance to the lessor: $569.65, by check with a coming settlement run."
+      }
+    ],
+    "deductions": [
+      {
+        "deduction_id": "D-1",
+        "charge": "$412.60, fuel bought on fuel card ending 2207 on 19, 20 and 21 Aug, after the final settlement's cut-off of 18 Aug",
+        "clause": "Lease 9.2(a)",
+        "documents": "Fuel card transaction report: three fuel purchases, card 2207, unit 207, $412.60."
+      },
+      {
+        "deduction_id": "D-2",
+        "charge": "$38.75, tolls on unit 207's transponder, 17 to 21 Aug",
+        "clause": "Lease 9.2(b)",
+        "documents": "Toll authority statement for the transponder on unit 207, five tolls, $38.75."
+      },
+      {
+        "deduction_id": "D-3",
+        "charge": "$350.00, ELD unit serial VT-ELD-55107 not returned",
+        "clause": "Lease 9.2(c) and Schedule B",
+        "documents": "None attached. Note: 'equipment log shows ELD outstanding'."
+      },
+      {
+        "deduction_id": "D-4",
+        "charge": "$95.00, washout of trailer 5318 after the last load",
+        "clause": "Vessmoor terminal policy TP-12 (trailers returned unwashed)",
+        "documents": "Terminal work order for a washout of trailer 5318, $95."
+      },
+      {
+        "deduction_id": "D-5",
+        "charge": "$500.00, early termination fee for leaving within the first year",
+        "clause": "Vessmoor owner-operator handbook, page 14",
+        "documents": "Handbook page 14: 'owner-operators who leave within 12 months forfeit $500 of escrow'."
+      },
+      {
+        "deduction_id": "D-6",
+        "charge": "$48.00, occupational accident insurance for the week of 17 Aug, not taken on the final settlement",
+        "clause": "Lease 9.2(e) and Schedule A",
+        "documents": "Insurer's invoice for unit 207, week of 17 Aug 2026, $48."
+      },
+      {
+        "deduction_id": "D-7",
+        "charge": "$186.00, the 2026 apportioned plate's cost for September to December, 4 months of 12 of $558",
+        "clause": "Lease 9.2(d) and Schedule B",
+        "documents": "Plate invoice for unit 207, 2026 registration year, $558; Schedule B computation."
+      },
+      {
+        "deduction_id": "D-8",
+        "charge": "$300.00, two steer tires bought on fuel card ending 2207 at Junction Tire on 18 Aug, not recovered from settlements",
+        "clause": "Lease 9.2(a)",
+        "documents": "Fuel card transaction and Junction Tire invoice, unit 207, signed by Marcus Okafor."
+      }
+    ],
+    "transactions": [
+      {
+        "date": "Fri 28 Aug 2026",
+        "description": "Vessmoor Transport Inc., settlement 2026-34 (final loads)",
+        "amount": "+$3,882.15"
+      },
+      {
+        "date": "Fri 10 Jul 2026",
+        "description": "Vessmoor Transport Inc., settlement 2026-27 (includes escrow interest $23.09)",
+        "amount": "+$4,105.70"
+      },
+      {
+        "date": "Fri 10 Apr 2026",
+        "description": "Vessmoor Transport Inc., settlement 2026-14 (includes escrow interest $22.51)",
+        "amount": "+$3,960.44"
+      },
+      {
+        "date": "Fri 9 Jan 2026",
+        "description": "Vessmoor Transport Inc., settlement 2026-01 (includes escrow interest $24.91)",
+        "amount": "+$3,512.80"
+      },
+      {
+        "date": "Wed 1 Oct 2025",
+        "description": "To Vessmoor Transport Inc., escrow deposit, lease VT-OO-2207",
+        "amount": "-$2,500.00"
+      },
+      {
+        "date": "Mon 12 Feb 2024",
+        "description": "Brindlecote Transport LLC, escrow return, lease BT-2023-118",
+        "amount": "+$1,512.40"
+      },
+      {
+        "date": "Note",
+        "description": "No deposit from Vessmoor since 28 August 2026, and no escrow check deposited.",
+        "amount": ""
+      }
+    ],
+    "messages": [
+      {
+        "message_id": "M-1",
+        "date": "Wed 7 Oct 2026",
+        "from": "Vessmoor settlements <settlements@vessmoor.example>",
+        "subject": "Your final escrow statement",
+        "body": "Hello Marcus, your final escrow statement for lease VT-OO-2207 is posted in Settlewick. After the deductions shown there, a check for $569.65 will go out with a coming settlement run. Disputes go through Settlewick. Escrow interest for the third quarter will be reviewed with the final accounting. Vessmoor owner-operator services."
+      },
+      {
+        "message_id": "M-2",
+        "date": "Fri 2 Oct 2026",
+        "from": "Vessmoor settlements <settlements@vessmoor.example>",
+        "subject": "Re: escrow for VT-OO-2207",
+        "body": "Hi Marcus, escrow returns are processed in batches. Yours is in the queue and you will see a statement soon. Thanks for your patience."
+      },
+      {
+        "message_id": "M-3",
+        "date": "Mon 31 Aug 2026",
+        "from": "Marcus Okafor <marcus@okafortrucking.example>",
+        "subject": "Escrow for VT-OO-2207",
+        "body": "To Vessmoor settlements: my lease ended on 21 August and I returned the ELD, fuel card, keys and plate at Joliet that afternoon, receipt signed by R. Delacroix. Please send my escrow and the final accounting. Marcus."
+      },
+      {
+        "message_id": "M-4",
+        "date": "Mon 12 Feb 2024",
+        "from": "Brindlecote Transport <payables@brindlecote.example>",
+        "subject": "Escrow returned, lease BT-2023-118",
+        "body": "Marcus, your escrow of $1,500 and interest of $12.40 went out today by ACH, $1,512.40 in all. The final accounting is attached. Thanks for running with us."
+      }
+    ]
+  }
+}

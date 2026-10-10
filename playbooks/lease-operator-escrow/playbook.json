@@ -1,0 +1,119 @@
+{
+  "id": "lease-operator-escrow",
+  "title": "An owner-operator's escrow got back from the carrier he leased to, four days after its forty-five days ran out: an ELD charged though it was returned, a washout fee and a fee for leaving that the lease never names disputed, the third quarter's interest claimed at the Treasury bill rate, and the balance demanded, while the fuel, tolls, insurance, plate and tires the lease lets it keep are left alone",
+  "domain": "Trucking",
+  "audience": "work",
+  "promise": "An owner-operator's ended lease is read across his papers, the carrier's settlements portal, his bank and his mail, and his escrow is got back the way the Truth-in-Leasing rule allows: three deductions disputed, an ELD unit the carrier's own terminal signed for, a trailer washout fee and a five hundred dollar fee for leaving that the lease never names; the third quarter's interest claimed at the investment rate of the 13-week bill auction before the quarter began; and a written demand for the balance after only the deductions the lease allows, four days after its forty-five days ran out. The fuel, tolls, insurance, plate and tires the lease names and documents, the quarters already paid, and the old carrier that returned its escrow years ago are left alone.",
+  "persona": "An owner-operator with one tractor, who ran under a carrier's authority on a lease for eleven months and keeps his own papers",
+  "chore": "Read the lease's compensation, chargeback and escrow sections and its schedules, the termination notice, the equipment return receipt, the Treasury bill results and an old carrier's final accounting in the papers; the escrow ledger, the final statement and every deduction's clause and documents in the carrier's settlements portal; the bank's deposits; and the carrier's mail. Then apply 49 CFR 376.12(k) (the escrow's items, accounting, quarterly interest at least at the 13-week Treasury bill rate, and its return less only the items the lease names, within 45 days of termination, with a final accounting) and 376.12(h) (chargebacks the lease names, with the documents behind each), as they stand on 9 October 2026. The carrier holds the ledger, the lessor holds the receipts, and the bank holds what actually came back.",
+  "command": "I'm Marcus, Okafor Trucking. My lease with Vessmoor ended in August and they still haven't returned my escrow. Go through Sheafbox, Vessmoor's Settlewick portal, my Ledgerwren bank and my Postwren mail, dispute every deduction the lease doesn't allow, claim any interest they owe me, and demand the escrow back at the right amount. Don't fight the charges the lease lets them take.",
+  "apps": [
+    {
+      "name": "Sheafbox",
+      "role": "the owner-operator's papers: the lease and its escrow section, the chargeback and equipment schedules, the termination notice, the equipment return receipt, the 13-week Treasury bill results, the old carrier's lease and the federal rule",
+      "api": "Shared files",
+      "url": ""
+    },
+    {
+      "name": "Settlewick settlements",
+      "role": "the carrier's owner-operator settlements portal: the escrow ledger with each quarter's interest, the final escrow statement, every deduction with its clause and documents, and the forms to dispute one and claim interest",
+      "api": "Carrier portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren bank",
+      "role": "the owner-operator's business checking: the settlements, the escrow deposit, and what each carrier has paid back",
+      "api": "Bank, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "his mail: the carrier's notes on the statement and the queue, his own request, the old carrier's return; and the written demand",
+      "api": "Mail",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the lease, its schedules, the notice, the return receipt, the Treasury results and the old lease in Sheafbox.",
+    "Reads the escrow ledger, the final statement and every deduction in Settlewick; disputes the three the lease does not allow and claims the third quarter's interest.",
+    "Reads the deposits in Ledgerwren: no escrow back from Vessmoor, the old carrier's returned in 2024.",
+    "Reads the carrier's mail in Postwren and sends the written demand for the balance."
+  ],
+  "gates": [
+    {
+      "action": "dispute_deduction",
+      "label": "Dispute a deduction from the escrow",
+      "why": "A written dispute to the carrier, signed by the lessor; it puts the charge in question."
+    },
+    {
+      "action": "claim_interest",
+      "label": "Claim a quarter's escrow interest",
+      "why": "A written claim to the carrier for money owed, signed by the lessor."
+    },
+    {
+      "action": "send_escrow_demand",
+      "label": "Send a written demand for the escrow",
+      "why": "A demand letter to a carrier, signed by the lessor; it is the step before a suit under 49 U.S.C. 14704."
+    }
+  ],
+  "traps": [
+    "Disputing the fuel, tolls or tires bought in the last week, which the lease names and the carrier documents.",
+    "Disputing the last week's insurance chargeback, which the lease's schedule names.",
+    "Disputing the plate's cost for the months left, which the schedule computes, though the plate itself was returned.",
+    "Claiming interest for a quarter already paid at the right rate.",
+    "Demanding an escrow from the old carrier, which returned it with interest in 2024.",
+    "Demanding only the balance the carrier's statement admits, or the whole $2,500."
+  ],
+  "memory": [
+    "The lease's escrow items, the interest rule and the 45 days, the schedules and the return receipt, carried from Sheafbox.",
+    "Which deductions the lease allows and their total, and the quarter left unpaid, carried from Settlewick into the Postwren tab.",
+    "That no escrow has reached the bank from Vessmoor, and that Brindlecote's came back in 2024, carried from Ledgerwren."
+  ],
+  "economics": {
+    "value_usd": 2500,
+    "per": "episode",
+    "basis": "An estimate. An owner-operator leased to a carrier usually has an escrow held from his settlements or paid at signing, often $1,000 to $2,500, and when the lease ends the carrier may keep only what the lease names, must pay interest on it at least quarterly at the 13-week Treasury bill rate, and must return it within 45 days with a final accounting (49 CFR 376.12(k)). Escrows are held back late, cut by charges the lease never names, and returned without interest; the roster's $2,500 an episode is one lease's escrow got back in full. The bench world holds $1,538.77: three deductions disputed ($350 for an ELD returned, $95 for a washout fee and $500 for a fee for leaving that the lease does not name), the third quarter's interest ($24.12) and the $569.65 the carrier's own statement admits but has not paid by its 45 days; the demand is for $1,514.65, the escrow less only the five deductions the lease allows. Times a year: once, one lease ending; an owner-operator changes carriers every year or two, and each move ends a lease. manual_minutes 150: reading the lease and schedules against eight deductions and their documents, working out the interest, and writing three disputes, a claim and a demand. The rule applied, as it stands on Friday 9 October 2026 (eCFR title 49, current to 7 October 2026; no change to 376.12 since 2018, and no Federal Register document since 2023 amends Part 376): 49 CFR 376.12(k)(1) to (6), 376.12(h), (f) and (g). The 13-week bill auction results are Treasury's own (fiscaldata.treasury.gov): 29 September 2025, 3.953%; 29 December 2025, 3.652%; 30 March 2026, 3.704%; 29 June 2026, 3.828%; 28 September 2026, 4.211% (investment rates). The lease's choice of the last auction before the quarter begins, and of actual days over 365, is the invented lease's reading of the rule's 'established on the date the interest period begins'.",
+    "manual_minutes": 150,
+    "times_per_year": 1,
+    "incumbent": "No service was found that recovers an owner-operator's escrow for a share of it; OOIDA reviews leases for members, and lawyers bill by the hour, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "49 CFR 376.12: lease requirements ((k) escrow funds, (h) chargebacks, (f) payment, (g) the rated freight bill)",
+        "url": "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-376/subpart-B/section-376.12"
+      },
+      {
+        "label": "Treasury, Fiscal Data: Treasury securities auctions data, 13-week bill investment rates",
+        "url": "https://fiscaldata.treasury.gov/datasets/treasury-securities-auctions-data/treasury-securities-auctions-data"
+      },
+      {
+        "label": "TreasuryDirect: auction announcements, data and results",
+        "url": "https://www.treasurydirect.gov/auctions/announcements-data-results/"
+      },
+      {
+        "label": "OOIDA v. Arctic Express, 159 F. Supp. 2d 1067 (S.D. Ohio 2001): a non-refundable escrow is a termination penalty the rule does not allow",
+        "url": "https://law.justia.com/cases/federal/district-courts/FSupp2/159/1067/2384261/"
+      },
+      {
+        "label": "OOIDA v. Mayflower Transit, 227 F. Supp. 2d 1014 (S.D. Ind. 2002): deductions at return limited to obligations the lease specifies",
+        "url": "https://law.justia.com/cases/federal/district-courts/FSupp2/227/1014/2529970/"
+      },
+      {
+        "label": "49 U.S.C. 14704: the lessor's right to sue a carrier that breaks the leasing rules",
+        "url": "https://www.law.cornell.edu/uscode/text/49/14704"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Every deduction has to be held to the lease's own list, its schedules and the documents behind it, and to a receipt only the lessor has; five of the eight are allowed and look alike to the three that are not. The interest needs the right auction for the right quarter, an investment rate rather than a discount rate, and the days in the quarter, and the balance due is the escrow less only the allowed deductions, neither the carrier's figure nor the whole fund.",
+    "usefulness_why": "Gets back a thousand dollars or more that a small operator is owed when he changes carriers, with the record a suit would need, in minutes rather than an afternoon of reading a lease against a statement; an episode, not a recurring income."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner-operator with his lease, his receipt and the Treasury results in hand gets most of it: the bar is the three deductions disputed, the third quarter's interest claimed and the balance demanded at the right amount, and nothing the lease allows disputed, no paid quarter claimed and nothing asked of the old carrier, inside an hour."
+  },
+  "caveat": "Marcus Okafor, Okafor Trucking LLC, Vessmoor Transport Inc., Brindlecote Transport LLC, R. Delacroix, Junction Tire, Settlewick, Sheafbox, Ledgerwren bank and Postwren are invented, and so are the lease, its terms and schedules, every charge, receipt, deposit and date; no carrier or owner-operator here is real. The public rule applied is 49 CFR 376.12, (k) and (h) above all, as it stands on 9 October 2026, with the real 13-week Treasury bill auction results Treasury publishes for the quarters in the world; the lease's own choices (which auction sets a quarter's rate, actual days over 365, a final accounting with the return) are the invented lease's and are stated in it. The rule leaves the escrow's items to each lease, so a real escrow turns on its own lease, and a court decides a real dispute under 49 U.S.C. 14704. This applies stated rules to stated facts; it is not legal, tax or regulatory-compliance advice."
+}

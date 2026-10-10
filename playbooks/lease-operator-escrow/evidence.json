@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "lease-operator-escrow",
+  "captured_at": "2026-10-10T11:37:25Z",
+  "bench_run_at": "2026-10-10T11:33:42Z",
+  "narration": {
+    "text": "An owner-operator's escrow got back from the carrier he leased to, four days after its forty-five days ran out: an ELD charged though it was returned, a washout fee and a fee for leaving that the lease never names disputed, the third quarter's interest claimed at the Treasury bill rate, and the balance demanded, while the fuel, tolls, insurance, plate and tires the lease lets it keep are left alone. This is a chore for an owner-operator with one tractor, who ran under a carrier's authority on a lease for eleven months and keeps his own papers. On the bench, she found 5 of 5 eligible items, worth 1,538 dollars and 77 cents of the 1,538 dollars and 77 cents there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 48 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 64.328,
+    "sha256": "3d3725d8956af4ef18de8c4154a0ae4728441c77e3c900199d48f2950ec09c2f"
+  },
+  "video": {
+    "path": "evidence/lease-operator-escrow/evidence.mp4",
+    "duration_s": 64.36,
+    "bytes": 3186573,
+    "sha256": "723333464a23cc6380db26b54cabf60ff5194e440d7677ca017cfda5d5dc5153"
+  },
+  "thumbnail": {
+    "path": "playbooks/lease-operator-escrow/thumb.jpg",
+    "bytes": 83365,
+    "sha256": "e7e785c360a83e2598df3f4d43963595d4948db751b0f46adef8f2c98ffad418"
+  }
+}

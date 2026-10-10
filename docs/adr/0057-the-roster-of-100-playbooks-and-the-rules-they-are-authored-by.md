@@ -150,6 +150,11 @@ names; each playbook carries the new one.
   DriverCheck a real drug-testing administrator; "Testline" became "Specimoor Clearinghouse desk",
   because TestLine is a real maker of diagnostic tests; and "Staffnest" became "Crewmarrow HR",
   because StaffNest is a real HR service.
+- Row 50, `lease-operator-escrow`: "Haulledger settlements" became "Settlewick settlements", because
+  HaulLedger is a real IFTA trip-log app for owner-operators; "Ledgerline bank" became "Ledgerwren
+  bank", because Ledgerline is the name of several real accounting and invoicing products;
+  "Docshelf" became "Sheafbox", because DocShelf is a real document management app; and "Mailnest"
+  became "Postwren", because mailnest.io is a real email service.
 
 ### B6: Small-business money, food, and selling online
 

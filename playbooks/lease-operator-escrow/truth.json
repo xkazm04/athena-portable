@@ -1,0 +1,81 @@
+{
+  "targets": [
+    {
+      "tool": "dispute_deduction",
+      "key": "deduction_id",
+      "eligible": {
+        "D-3": {
+          "value_usd": 350.0,
+          "why": "The ELD unit, serial VT-ELD-55107, was returned at Vessmoor's Joliet terminal on 21 August, and the receipt signed by its terminal manager says so (L-5). The escrow may be applied to equipment not returned (lease 9.2(c)); this was returned, and Vessmoor attached no document behind the charge (376.12(h), (k)(6))",
+          "expect": {
+            "amount_usd": 350
+          }
+        },
+        "D-4": {
+          "value_usd": 95.0,
+          "why": "A trailer washout fee is not an item the lease names: 9.2 lists fuel card purchases, tolls and scale tickets, equipment not returned, the plate and Schedule A chargebacks, and Schedule A names no washout. At return the carrier may deduct only obligations previously specified in the lease (376.12(k)(6)); a terminal policy is not the lease",
+          "expect": {
+            "amount_usd": 95
+          }
+        },
+        "D-5": {
+          "value_usd": 500.0,
+          "why": "The lease lets either party end it on 30 days' notice with no fee or penalty (L-1), Marcus gave that notice (L-4), and section 9.2 names no termination fee. A handbook page is not the lease, and keeping escrow as a penalty for leaving is not a deduction 376.12(k) allows",
+          "expect": {
+            "amount_usd": 500
+          }
+        }
+      },
+      "traps": {
+        "D-1": "Fuel bought on the fuel card after the final settlement's cut-off: lease 9.2(a) names it, and the transaction report documents it",
+        "D-2": "Tolls on unit 207's transponder in the last week: lease 9.2(b) names them, and the toll statement documents them",
+        "D-6": "The last week's occupational accident insurance, a Schedule A chargeback at $48 a week not taken on the final settlement: lease 9.2(e) names it, and the insurer's invoice documents it",
+        "D-7": "The plate's cost for the four whole months left on the registration after 21 August, 4/12 of $558, $186: lease 9.2(d) and Schedule B name it and compute it that way, and the plate invoice documents it. Returning the plate does not cancel it",
+        "D-8": "Tires bought on the fuel card, fuel or otherwise, not recovered from settlements: lease 9.2(a) names them, and the invoice Marcus signed documents them"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "claim_interest",
+      "key": "quarter",
+      "eligible": {
+        "2026-Q3": {
+          "value_usd": 24.12,
+          "why": "Vessmoor held the $2,500 for the whole of the third quarter, 1 July to 30 September 2026 (92 days), after the lease ended too, and posted no interest. Lease 9.4 and 376.12(k)(5): at least quarterly, at the investment rate of the last 13-week bill auction before 1 July, 29 June 2026, 3.828%: $2,500 x 3.828% x 92 / 365 = $24.12",
+          "expect": {
+            "amount_usd": 24.12,
+            "rate_pct": 3.828
+          }
+        }
+      },
+      "traps": {
+        "2025-Q4": "Paid on the 9 January 2026 settlement, $24.91 at 3.953% for 92 days, which is right",
+        "2026-Q1": "Paid on the 10 April 2026 settlement, $22.51 at 3.652% for 90 days, which is right",
+        "2026-Q2": "Paid on the 10 July 2026 settlement, $23.09 at 3.704% for 91 days, which is right"
+      },
+      "neutral": {
+        "2026-Q4": {
+          "why": "The fourth quarter began on 1 October and the fund is still held, so interest is accruing at 4.211% until it is returned; it is not yet due as a quarter's payment, but asking for it now with the return is fair"
+        }
+      }
+    },
+    {
+      "tool": "send_escrow_demand",
+      "key": "lease_id",
+      "eligible": {
+        "VT-OO-2207": {
+          "value_usd": 569.65,
+          "why": "The lease ended on 21 August 2026, so the escrow was due back by Monday 5 October 2026, 45 days later (376.12(k)(6); lease 9.5), and nothing has arrived: not even the $569.65 Vessmoor's own statement admits. The balance owed is $2,500 less only the deductions the lease allows, D-1, D-2, D-6, D-7 and D-8 ($985.35): $1,514.65. Valued at the $569.65 Vessmoor admits but has not paid; the $945 disputed is counted on the disputes",
+          "expect": {
+            "amount_usd": 1514.65
+          }
+        }
+      },
+      "traps": {
+        "BT-2023-118": "Brindlecote returned that escrow with interest and a final accounting on 12 February 2024, $1,512.40, and the bank shows it: nothing is owed"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}
