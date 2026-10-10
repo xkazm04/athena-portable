@@ -92,6 +92,7 @@ export default function PlaybooksView({
           ) : null
         }
       />
+      {totals.count ? <p className="pb-simulated typo-caption">{SIMULATED_LINE}</p> : null}
 
       {model.items.length === 0 ? (
         <EmptyState
@@ -144,7 +145,7 @@ export default function PlaybooksView({
                   title={v.title}
                   pill={<Badge tone={v.verdict.tone}>{v.verdict.label}</Badge>}
                   figure={v.value}
-                  figureNote={v.per}
+                  figureNote={`${v.per}, author's estimate`}
                   foot={<TileFoot view={v} />}
                   onOpen={() => setOpen(v.id)}
                 />
@@ -192,6 +193,9 @@ export default function PlaybooksView({
   );
 }
 
+/** Said once under the header and again on every bench glance: the portals were invented. */
+const SIMULATED_LINE = "Measured once on an invented portal world, not on your accounts.";
+
 const SORT_NOTES: Record<SortBy, string> = {
   edge: "Hardest for anyone else and most useful first.",
   money: "Most money a year first.",
@@ -216,10 +220,20 @@ function TileFoot({ view }: { view: PlaybookView }) {
       ) : null}
       {view.manual ? (
         <span className="pb-chip pb-chip--athena" title={[view.manual, view.measured].filter(Boolean).join(", ")}>
-          {run ? `${by} → ${run}` : view.manual}
+          {run ? (
+            <>
+              <span className="pb-est">{`${by} by hand, author's estimate`}</span>
+              {` → ${run} on the bench`}
+            </>
+          ) : (
+            <span className="pb-est">{`${view.manual}, author's estimate`}</span>
+          )}
         </span>
       ) : null}
       <span className="pb-chip">{`${view.playbook.apps.length} portals`}</span>
+      {view.playbook.caveat ? (
+        <span className="pb-tile-caveat typo-caption">{firstSentence(view.playbook.caveat)}</span>
+      ) : null}
     </>
   );
 }
@@ -352,10 +366,10 @@ function EdgeNotes({ model }: { model: PlaybooksModel }) {
       </p>
       <dl className="pb-stats">
         <div>
-          <dt className="typo-label">Money the bench found</dt>
+          <dt className="typo-label">Money found on the bench</dt>
           <dd className="pb-stats__n">{totals.availableUsd ? usd(totals.foundUsd) : "–"}</dd>
           <dd className="typo-caption">
-            {totals.availableUsd ? `of ${usd(totals.availableUsd)} there to find` : "nothing benched yet"}
+            {totals.availableUsd ? `of ${usd(totals.availableUsd)} planted in its world, on the bench` : "nothing benched yet"}
           </dd>
         </div>
         <div>
@@ -371,11 +385,11 @@ function EdgeNotes({ model }: { model: PlaybooksModel }) {
           <dt className="typo-label">Her time</dt>
           <dd className="pb-stats__n">{totals.athenaMinutes ? minutes(totals.athenaMinutes) : "–"}</dd>
           <dd className="typo-caption">
-            {totals.manualMinutes ? `against ${minutes(totals.manualMinutes)} by hand` : ""}
+            {totals.manualMinutes ? `on the bench, against ${minutes(totals.manualMinutes)} by hand (author's estimate)` : ""}
           </dd>
         </div>
         <div>
-          <dt className="typo-label">Beat their bar</dt>
+          <dt className="typo-label">Beat their bar on the bench</dt>
           <dd className="pb-stats__n">{`${totals.exceeds} of ${totals.benched || 0}`}</dd>
           <dd className="typo-caption">
             {totals.costUsd ? `${usd(totals.costUsd)} of model time in all` : ""}
@@ -490,7 +504,8 @@ function ProofGlance({ view, onOpen }: { view: PlaybookView; onOpen: () => void 
         <Badge tone={view.verdict.tone}>{view.verdict.label}</Badge>
       </span>
       <span className="pb-proof__big">{usd(b.valueFoundUsd)}</span>
-      <span className="typo-caption">{`of ${usd(b.valueTotalUsd)} there to find`}</span>
+      <span className="typo-caption">{`of ${usd(b.valueTotalUsd)} planted in its world`}</span>
+      <span className="pb-simulated typo-caption">{SIMULATED_LINE}</span>
       <span className="pb-proof__bar" style={{ ["--pct" as string]: `${pct}%` }} aria-hidden="true">
         <span />
       </span>
@@ -503,7 +518,11 @@ function ProofGlance({ view, onOpen }: { view: PlaybookView; onOpen: () => void 
         />
         <Glance
           term="Her time"
-          value={view.manual ? `${minutes(b.wallS / 60)} vs ${view.manual.replace(/ by hand$/, "")}` : minutes(b.wallS / 60)}
+          value={
+            view.manual
+              ? `${minutes(b.wallS / 60)} on the bench vs ${view.manual.replace(/ by hand$/, "")} by hand (author's estimate)`
+              : `${minutes(b.wallS / 60)} on the bench`
+          }
         />
       </span>
     </button>

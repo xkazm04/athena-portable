@@ -127,3 +127,36 @@ test("each shipped playbook's fixture opens its own layer", () => {
   expect(html).toContain('class="pb-abstract"');
   expect(html).toContain("The subcontractor&#x27;s lien desk");
 });
+
+test("the overview says once, under the badge, that the world was invented", () => {
+  const html = renderToStaticMarkup(entry.preview("typical"));
+  expect(html).toContain("Measured once on an invented portal world, not on your accounts.");
+  expect(html.indexOf("Measured once")).toBeGreaterThan(html.indexOf("benched"));
+});
+
+test("the bench glance of an opened playbook repeats the standing line", () => {
+  const html = renderToStaticMarkup(entry.preview("open"));
+  expect(html).toContain("Measured once on an invented portal world, not on your accounts.");
+  expect(html).toContain("planted in its world");
+  expect(html).not.toContain("there to find");
+});
+
+test("every measured number says it was measured on the bench", () => {
+  const html = renderToStaticMarkup(entry.preview("typical"));
+  expect(html).toContain("on the bench");
+  expect(html).toContain("Money found on the bench");
+  expect(html).not.toContain("there to find");
+});
+
+test("the value and the hand minutes are marked as the author's estimate", () => {
+  const html = renderToStaticMarkup(entry.preview("typical"));
+  expect(html).toContain("a year, author&#x27;s estimate");
+  expect(html).toContain("by hand, author&#x27;s estimate");
+  expect(html).toContain("by hand (author&#x27;s estimate)");
+});
+
+test("a tile carries the first sentence of its caveat", () => {
+  const html = renderToStaticMarkup(entry.preview("typical"));
+  expect(html).toContain("The carrier, the store and every parcel here are invented.");
+  expect(html).not.toContain("is not legal advice");
+});

@@ -1193,3 +1193,21 @@
   background: var(--recessed);
   line-height: 1.6;
 }
+
+/* The standing disclosure and the marks that tell an estimate from a measurement. */
+.pb-simulated {
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+.pb-est {
+  font-style: italic;
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+.pb-tile-caveat {
+  flex-basis: 100%;
+  text-align: left;
+  color: var(--muted-foreground);
+}

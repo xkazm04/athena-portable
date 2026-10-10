@@ -140,3 +140,7 @@ the rules, not that a given site registers these tools; on a real site she reach
 through the generic hands. Rules are fixed in each world from public sources and are not legal or
 tax advice. The bench answers no card, so actions that depend on a signed card (a payment after an
 allowance) are sometimes held, correctly, and scored as missed.
+
+## What the panel says about its numbers
+
+Under the header badge a standing line reads "Measured once on an invented portal world, not on your accounts." and repeats on an opened playbook's bench glance. Every measured figure says it was measured "on the bench"; the tile's value and the minutes by hand are the author's estimate and are labelled so, and each tile carries the first sentence of its playbook's caveat.

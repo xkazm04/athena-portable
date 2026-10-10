@@ -63,6 +63,8 @@ const REFUNDS = book(
     promise:
       "Every late parcel's refund found across the carrier's invoices and your orders, filed for your signature.",
     persona: "A store shipping 900 parcels a month",
+    caveat:
+      "The carrier, the store and every parcel here are invented. This reads the public guarantee rules and is not legal advice.",
     chore:
       "Open the carrier's billing centre, export the invoice, compare each delivery against its guarantee, check the exceptions, then file one claim at a time within 15 days.",
     command:

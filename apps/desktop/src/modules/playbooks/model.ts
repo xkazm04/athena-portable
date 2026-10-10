@@ -5,7 +5,9 @@
  * do: it spans portals nobody integrates, and it ends in something irreversible that wants a
  * signature. This surface shows each one where it sits between difficulty (for anyone else) and
  * usefulness (to the person), what it is worth, and — the part that earns the place on the map —
- * what the bench measured when a real Athena ran it on the real gate.
+ * what the bench measured when a real Athena ran it on the real gate, against portals that were
+ * invented for the bench: the numbers are measured on that invented world, never on the person's
+ * accounts. The value and the hand minutes are the playbook author's estimates, and say so.
  *
  * Every number here is derived from the shipped `playbook.json` and `bench.json` at render. A
  * playbook with no bench run says so and claims nothing measured: "not benched" is a fact, and a
