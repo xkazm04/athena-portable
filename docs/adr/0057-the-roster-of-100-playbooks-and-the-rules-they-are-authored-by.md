@@ -186,6 +186,8 @@ names; each playbook carries the new one.
   "Hawkerbrook seller", because Bazaarly is a real online-shop name; "Docshelf" became "Binderwell",
   because DocShelf is a real document management app; and "Mailnest" became "Postwren", because
   mailnest.io is a real email service.
+- Row 54, `chargeback-representment`: "Shipdesk" became "Parcelwick", because ShipDesk is a real shipping
+  software company; and "Mailnest" became "Postwren", because mailnest.io is a real email service.
 
 ### B7: Household money
 

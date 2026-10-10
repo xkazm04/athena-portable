@@ -1,0 +1,100 @@
+{
+  "id": "chargeback-representment",
+  "title": "A woodworker's ten open card disputes answered with the evidence each reason code needs, five contested and won on delivery, Compelling Evidence 3.0, a matching listing, a credit already issued and a registered device, and two accepted because the board never shipped and the refund was never paid, while disputes that cannot be won and one past its processor's date are left alone",
+  "domain": "Payments",
+  "audience": "work",
+  "promise": "A small online shop's open card disputes are read against the networks' rules and the shop's own records. Five are answered with the evidence their reason codes need: proof of delivery to the full address, two earlier undisputed orders that match on device, IP and delivery address, a listing that matched the shelf that was sent, the credit the shop already issued, and a registered device with other undisputed purchases. Two are accepted, because the goods never shipped and a promised refund was never issued. A fraud dispute with only one qualifying earlier order, another matching on IP alone, and one past the processor's date are left alone, and nothing already credited is accepted twice.",
+  "persona": "The owner of a small online woodworking shop in Idaho, who takes card payments through a processor and has ten disputes open",
+  "chore": "Read every open dispute and the processor's guide to the networks' rules; the shop's orders and the earlier orders on the same cards; the carrier's delivery record; and the customers' mail. Then apply the Visa Core Rules and Visa Product and Service Rules (18 April 2026 edition: reason codes 13.1, 13.3, 13.6 and 10.4, with Compelling Evidence 3.0) and the Mastercard Chargeback Guide (13 May 2025 edition: 4837) as they stand on 9 October 2026: answer the disputes the record can win by the processor's earlier date, and accept those that are right.",
+  "command": "I'm Maya, Lowfield Joinery. We have ten open card disputes in Paycurrent. Go through the disputes and the guide, then our Storeline orders, Parcelwick deliveries and Postwren mail, answer the ones we can win with the evidence each reason code needs, accept the ones we should, and leave alone what can't be won.",
+  "apps": [
+    {
+      "name": "Paycurrent dashboard",
+      "role": "the open disputes with their reason codes and two due dates, the guide to the networks' rules, and the forms to answer or accept one",
+      "api": "Processor dashboard, no API",
+      "url": ""
+    },
+    {
+      "name": "Storeline",
+      "role": "the orders behind the disputes and the earlier orders on the same cards: account, IP, device, delivery address, refunds",
+      "api": "Store admin, no API",
+      "url": ""
+    },
+    {
+      "name": "Parcelwick",
+      "role": "each order's shipment: whether it shipped, was delivered, to what address and who signed",
+      "api": "Shipping account, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the customers' mail about the orders, and the shop's replies",
+      "api": "Mail",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the disputes and the guide in Paycurrent.",
+    "Reads the orders and the earlier orders on the same cards in Storeline.",
+    "Reads each delivery record in Parcelwick.",
+    "Reads the customers' mail in Postwren.",
+    "Back in Paycurrent, answers the five winnable disputes and accepts the two that are right."
+  ],
+  "gates": [
+    {
+      "action": "submit_representment",
+      "label": "Answer a dispute with evidence",
+      "why": "A statement to a card network, through the processor, that a charge was valid, signed by the owner; it can be lost with a fee."
+    },
+    {
+      "action": "accept_dispute",
+      "label": "Accept a dispute",
+      "why": "Gives up the money for good; the owner signs it."
+    }
+  ],
+  "traps": [
+    "Contesting a dispute for an order that never shipped.",
+    "Contesting a 13.6 for a refund the shop promised and never issued.",
+    "Contesting a fraud dispute with only one earlier order in the window.",
+    "Contesting a fraud dispute where only the IP address matches.",
+    "Answering a dispute whose processor date has passed.",
+    "Accepting a dispute whose delivery, evidence, listing or credit wins it.",
+    "Accepting a dispute already refunded, which would refund it twice."
+  ],
+  "memory": [
+    "Each dispute's reason code, amounts and two due dates, and what each rule needs, from Paycurrent.",
+    "Each order's account, IP, device, address and refund, and the earlier orders on the same cards, from Storeline.",
+    "Which orders shipped and where, and what the customers wrote, carried back to the last Paycurrent tab."
+  ],
+  "economics": {
+    "value_usd": 8000,
+    "per": "year",
+    "basis": "An estimate. A small shop with a few hundred orders a month sees a few disputes a month, and a merchant who contests with the right evidence wins back a large share while one who contests blindly loses the sale and a fee (the world's processor charges 25 dollars on a lost contest). The roster's $8,000 a year is a small shop's disputed sales won back and fees avoided. The bench world holds $957: five answers valued at the disputed amounts (184, 312, 96, 75 and 240) and two acceptances valued at the 25 dollar fee each avoids. Times a year: twelve, a monthly dispute review. manual_minutes 150: reading ten disputes and the networks' rules, finding each order, earlier orders, delivery record and message, and writing seven responses. Rules applied, as they stand on Friday 9 October 2026: the Visa Core Rules and Visa Product and Service Rules of 18 April 2026 (dispute conditions 10.4, 13.1, 13.3 and 13.6 and their responses; Compelling Evidence 3.0: two earlier undisputed transactions on the same credential, more than 120 and not more than 365 days before the dispute processing date, matched on device ID or fingerprint or on IP address with one more element; the text changes on 24 October 2026 and is not applied); the acquirer's 30 days to respond; the Mastercard Chargeback Guide, Merchant Edition, of 13 May 2025 (4837 and its 45 days). A 19 May 2026 Mastercard edition exists and could not be read. The processor's earlier date and fee are the invented processor's own.",
+    "manual_minutes": 150,
+    "times_per_year": 12,
+    "incumbent": "Chargeback-management services take a share of the disputes they win, but their published prices were not found for a figure that can be cited, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "Visa Core Rules and Visa Product and Service Rules, 18 April 2026 (public edition): dispute resolution, 10.4, 13.1, 13.3, 13.6, Compelling Evidence 3.0",
+        "url": "https://usa.visa.com/dam/VCOM/download/about-visa/visa-rules-public.pdf"
+      },
+      {
+        "label": "Mastercard Chargeback Guide, Merchant Edition (edition of 13 May 2025 read; 4837 and second presentment in 45 days)",
+        "url": "https://www.mastercard.com/content/dam/mccom/shared/business/support/rules-pdfs/chargeback-guide.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 3,
+    "difficulty_why": "Each reason code needs a different kind of evidence, and the same fraud code is won or lost on counting earlier orders inside a 120 to 365 day window and on which data matches. Ten disputes look alike, and two are valid and must be accepted, one is already refunded, one is past its date, and three could be won only if the record said more than it does.",
+    "usefulness_why": "Wins back a few hundred dollars a month of disputed sales and avoids lost-contest fees, and stops the shop from fighting what it cannot win, in minutes instead of an afternoon of cross-checking four systems; a monthly chore."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful merchant with the networks' rules and the records in hand wins most of it: the winnable disputes answered with the right evidence and the two valid ones accepted, nothing contested that the record cannot win, nothing accepted that it can and nothing refunded twice, inside an hour."
+  },
+  "caveat": "Maya Brandt, Lowfield Joinery, every customer, order, delivery, message, card and amount, and Paycurrent, Storeline, Parcelwick and Postwren are invented; Paycurrent's own deadline five days before the network's, its 25 dollar loss fee and its closing of a case are the invented processor's. The public rules applied are the Visa Core Rules and Visa Product and Service Rules of 18 April 2026 (the Compelling Evidence 3.0 text in force through 23 October 2026) and the Mastercard Chargeback Guide, Merchant Edition, of 13 May 2025; a 19 May 2026 Mastercard edition exists and was not readable, so a real Mastercard dispute should be checked against it. Visa's rules change on 24 October 2026. A real acquirer or processor decides how a real dispute is filed and by when, and the card network decides it. This applies stated rules to stated facts; it is not legal, financial or compliance advice."
+}

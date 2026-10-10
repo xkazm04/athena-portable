@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "chargeback-representment",
+  "captured_at": "2026-10-10T15:18:34Z",
+  "bench_run_at": "2026-10-10T15:16:40Z",
+  "narration": {
+    "text": "A woodworker's ten open card disputes answered with the evidence each reason code needs, five contested and won on delivery, Compelling Evidence 3.0, a matching listing, a credit already issued and a registered device, and two accepted because the board never shipped and the refund was never paid, while disputes that cannot be won and one past its processor's date are left alone. This is a chore for the owner of a small online woodworking shop in Idaho, who takes card payments through a processor and has ten disputes open. On the bench, she found 7 of 7 eligible items, worth 957 dollars of the 957 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 54 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 61.554,
+    "sha256": "6b0a3478b1c243490370d2a258260f5aeefa26c2fd184c594e9d848b0f5356d2"
+  },
+  "video": {
+    "path": "evidence/chargeback-representment/evidence.mp4",
+    "duration_s": 61.56,
+    "bytes": 3306402,
+    "sha256": "1e3f94e7ec993872e4cee7a1a6b21b4dbcb273d474a16afd2c95495cc6775c24"
+  },
+  "thumbnail": {
+    "path": "playbooks/chargeback-representment/thumb.jpg",
+    "bytes": 84761,
+    "sha256": "8c401bbfa057f918c73b50cd2e2da3b751138a9558ba1d867742c0364fbb483d"
+  }
+}

@@ -1,0 +1,819 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "paycurrent",
+      "message": "I'm Maya, Lowfield Joinery. We have ten open card disputes. First, in Paycurrent, read every dispute and the guide to the networks' rules. Don't answer anything yet: I'll send you to the order records next.",
+      "nudges": 1
+    },
+    {
+      "app": "storeline",
+      "message": "This is our shop. Read the orders behind the disputes, and any earlier orders on the same cards, in full.",
+      "nudges": 1
+    },
+    {
+      "app": "parcelwick",
+      "message": "This is our shipping account. Read the delivery record for each disputed order.",
+      "nudges": 1
+    },
+    {
+      "app": "postwren",
+      "message": "This is my mail. Read what customers have told us about these orders.",
+      "nudges": 1
+    },
+    {
+      "app": "paycurrent",
+      "message": "Back in Paycurrent. For each dispute, answer it with the evidence its reason code needs if we can win it, and accept the ones that are right. Leave alone what has no winning answer or is already past our deadline. Then tell me what you answered, what you accepted, how much it recovers, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "paycurrent",
+      "name": "Paycurrent dashboard",
+      "origin": "https://dashboard.paycurrent.example",
+      "path": "/lowfield-joinery/disputes",
+      "view": {
+        "view": "Paycurrent: Lowfield Joinery's card disputes (invented processor)",
+        "signed_in": "Maya Brandt",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_disputes",
+          "kind": "READ",
+          "description": "Every open dispute: case id, network, reason code, order, amount and the two due dates. Five a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "cases",
+            "fields": [
+              "case_id",
+              "network",
+              "reason_code",
+              "order_id",
+              "amount_usd",
+              "dispute_processing_date",
+              "network_due",
+              "paycurrent_due"
+            ],
+            "page_size": 5
+          }
+        },
+        {
+          "name": "read_dispute",
+          "kind": "READ",
+          "description": "One dispute in full, by case id (C-nnn), with the cardholder's claim.",
+          "params": {
+            "case_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "cases",
+            "match": {
+              "case_id": "case_id"
+            },
+            "require": [
+              "case_id"
+            ]
+          }
+        },
+        {
+          "name": "list_guide",
+          "kind": "READ",
+          "description": "The guide to the networks' rules: rule id and title.",
+          "params": {},
+          "returns": {
+            "table": "guide",
+            "fields": [
+              "rule_id",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_guide",
+          "kind": "READ",
+          "description": "One rule of the guide in full, by rule id (G-n).",
+          "params": {
+            "rule_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "guide",
+            "match": {
+              "rule_id": "rule_id"
+            },
+            "require": [
+              "rule_id"
+            ]
+          }
+        },
+        {
+          "name": "submit_representment",
+          "kind": "REACHES_A_PERSON",
+          "description": "Answer one dispute with evidence, by case id (case_id): a summary of the evidence attached (evidence) and the disputed amount in dollars (amount_usd). It goes to the card network through Paycurrent. Maya signs it.",
+          "params": {
+            "case_id": {
+              "type": "string"
+            },
+            "evidence": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Evidence for {case_id} submitted to the network."
+        },
+        {
+          "name": "accept_dispute",
+          "kind": "REACHES_A_PERSON",
+          "description": "Accept one dispute, by case id (case_id), with the amount in dollars the shop gives up (amount_usd) and the reason. The shop does not contest it. Maya signs it.",
+          "params": {
+            "case_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute {case_id} accepted."
+        }
+      ],
+      "aliases": [
+        "Paycurrent dashboard",
+        "Paycurrent",
+        "the disputes dashboard",
+        "the processor"
+      ]
+    },
+    {
+      "app_id": "storeline",
+      "name": "Storeline",
+      "origin": "https://admin.storeline.example",
+      "path": "/lowfield-joinery",
+      "view": {
+        "view": "Storeline: Lowfield Joinery's orders",
+        "signed_in": "Maya Brandt",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_orders",
+          "kind": "READ",
+          "description": "Every order: order id, date, amount and the card's last four digits.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "orders",
+            "fields": [
+              "order_id",
+              "date",
+              "amount_usd",
+              "card_last4"
+            ],
+            "page_size": 9
+          }
+        },
+        {
+          "name": "read_order",
+          "kind": "READ",
+          "description": "One order in full, by order id: account, IP and device, delivery address, items, any refund and notes.",
+          "params": {
+            "order_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "orders",
+            "match": {
+              "order_id": "order_id"
+            },
+            "require": [
+              "order_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Storeline",
+        "the shop",
+        "my orders",
+        "the shop admin"
+      ]
+    },
+    {
+      "app_id": "parcelwick",
+      "name": "Parcelwick",
+      "origin": "https://ship.parcelwick.example",
+      "path": "/lowfield-joinery",
+      "view": {
+        "view": "Parcelwick: Lowfield Joinery's shipments",
+        "signed_in": "Maya Brandt",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_shipments",
+          "kind": "READ",
+          "description": "Every shipment: order id, tracking number and status.",
+          "params": {},
+          "returns": {
+            "table": "ships",
+            "fields": [
+              "order_id",
+              "tracking",
+              "status"
+            ]
+          }
+        },
+        {
+          "name": "read_shipment",
+          "kind": "READ",
+          "description": "One shipment in full, by order id: ship date, status, the address delivered to and who signed.",
+          "params": {
+            "order_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "ships",
+            "match": {
+              "order_id": "order_id"
+            },
+            "require": [
+              "order_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Parcelwick",
+        "the shipping account",
+        "my shipments",
+        "the carrier"
+      ]
+    },
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/maya@lowfieldjoinery.example",
+      "view": {
+        "view": "Postwren: maya@lowfieldjoinery.example",
+        "signed_in": "Maya Brandt",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "Messages: message id (M-n), date, sender and subject.",
+          "params": {},
+          "returns": {
+            "table": "messages",
+            "fields": [
+              "message_id",
+              "date",
+              "from",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id (M-n).",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "messages",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": [
+              "message_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the inbox",
+        "email"
+      ]
+    }
+  ],
+  "tables": {
+    "cases": [
+      {
+        "case_id": "C-701",
+        "network": "Visa",
+        "reason_code": "13.1",
+        "reason": "Merchandise/Services Not Received",
+        "order_id": "5521",
+        "amount_usd": 184,
+        "dispute_processing_date": "2026-09-25",
+        "network_due": "2026-10-25",
+        "paycurrent_due": "2026-10-20",
+        "cardholder_claim": "The bench top never arrived."
+      },
+      {
+        "case_id": "C-702",
+        "network": "Visa",
+        "reason_code": "10.4",
+        "reason": "Other Fraud, Card-Absent Environment",
+        "order_id": "5530",
+        "amount_usd": 312,
+        "dispute_processing_date": "2026-09-28",
+        "network_due": "2026-10-28",
+        "paycurrent_due": "2026-10-23",
+        "cardholder_claim": "I did not make this purchase."
+      },
+      {
+        "case_id": "C-703",
+        "network": "Visa",
+        "reason_code": "13.3",
+        "reason": "Not as Described or Defective",
+        "order_id": "5502",
+        "amount_usd": 96,
+        "dispute_processing_date": "2026-09-30",
+        "network_due": "2026-10-30",
+        "paycurrent_due": "2026-10-25",
+        "cardholder_claim": "The shelf is not as described."
+      },
+      {
+        "case_id": "C-704",
+        "network": "Visa",
+        "reason_code": "13.6",
+        "reason": "Credit Not Processed",
+        "order_id": "5489",
+        "amount_usd": 75,
+        "dispute_processing_date": "2026-10-02",
+        "network_due": "2026-11-01",
+        "paycurrent_due": "2026-10-27",
+        "cardholder_claim": "The shop promised a refund and I never got it."
+      },
+      {
+        "case_id": "C-705",
+        "network": "Mastercard",
+        "reason_code": "4837",
+        "reason": "No Cardholder Authorization",
+        "order_id": "5541",
+        "amount_usd": 240,
+        "dispute_processing_date": "2026-09-14",
+        "network_due": "2026-10-29",
+        "paycurrent_due": "2026-10-24",
+        "cardholder_claim": "I did not authorize this purchase."
+      },
+      {
+        "case_id": "C-706",
+        "network": "Visa",
+        "reason_code": "13.1",
+        "reason": "Merchandise/Services Not Received",
+        "order_id": "5517",
+        "amount_usd": 128,
+        "dispute_processing_date": "2026-09-29",
+        "network_due": "2026-10-29",
+        "paycurrent_due": "2026-10-24",
+        "cardholder_claim": "The cutting board never arrived."
+      },
+      {
+        "case_id": "C-707",
+        "network": "Visa",
+        "reason_code": "13.6",
+        "reason": "Credit Not Processed",
+        "order_id": "5494",
+        "amount_usd": 60,
+        "dispute_processing_date": "2026-10-01",
+        "network_due": "2026-10-31",
+        "paycurrent_due": "2026-10-26",
+        "cardholder_claim": "I returned the brackets and was not refunded."
+      },
+      {
+        "case_id": "C-708",
+        "network": "Visa",
+        "reason_code": "10.4",
+        "reason": "Other Fraud, Card-Absent Environment",
+        "order_id": "5533",
+        "amount_usd": 150,
+        "dispute_processing_date": "2026-09-26",
+        "network_due": "2026-10-26",
+        "paycurrent_due": "2026-10-21",
+        "cardholder_claim": "I did not make this purchase."
+      },
+      {
+        "case_id": "C-709",
+        "network": "Visa",
+        "reason_code": "13.1",
+        "reason": "Merchandise/Services Not Received",
+        "order_id": "5560",
+        "amount_usd": 210,
+        "dispute_processing_date": "2026-09-12",
+        "network_due": "2026-10-12",
+        "paycurrent_due": "2026-10-07",
+        "cardholder_claim": "The desk organiser never came."
+      },
+      {
+        "case_id": "C-710",
+        "network": "Visa",
+        "reason_code": "10.4",
+        "reason": "Other Fraud, Card-Absent Environment",
+        "order_id": "5548",
+        "amount_usd": 175,
+        "dispute_processing_date": "2026-10-01",
+        "network_due": "2026-10-31",
+        "paycurrent_due": "2026-10-26",
+        "cardholder_claim": "I did not make this purchase."
+      }
+    ],
+    "guide": [
+      {
+        "rule_id": "G-1",
+        "title": "Visa 13.1: goods not received",
+        "text": "Paycurrent guide to the Visa Core Rules and Visa Product and Service Rules, edition of 18 April 2026. Friday 9 October 2026. A merchant answers a 13.1 dispute with proof that the goods were delivered: tracking or a delivery record that contains the full delivery address (tracking with a partial address does not count), or a pick-up document the cardholder acknowledged. If the goods were never shipped there is nothing in the rules to answer with, and the merchant accepts the dispute. A dispute may also be answered if the cardholder no longer disputes it or the dispute is invalid."
+      },
+      {
+        "rule_id": "G-2",
+        "title": "Visa 13.3: not as described",
+        "text": "Visa edition of 18 April 2026. Friday 9 October 2026. A merchant answers a 13.3 dispute with evidence that the goods or services matched what was described, or were not damaged or defective, and a rebuttal to the cardholder's claims. The listing as the buyer saw it, the item actually sent and the buyer's own words are the evidence. A cardholder who simply prefers something else has not shown that the goods differ from the description."
+      },
+      {
+        "rule_id": "G-3",
+        "title": "Visa 13.6: credit not processed",
+        "text": "Visa edition of 18 April 2026. Friday 9 October 2026. The issuer must wait 15 days after the credit receipt date. The merchant's answers to a 13.6 dispute are only these: a credit or reversal the merchant issued that the issuer did not address, the dispute is invalid, or the cardholder no longer disputes it. Evidence about the sale does not answer a 13.6. If the shop promised a refund and never issued one there is no answer, and the merchant accepts. If it did issue the credit, the merchant answers with the credit's record, and must not accept, which would pay the cardholder twice."
+      },
+      {
+        "rule_id": "G-4",
+        "title": "Visa 10.4 and Compelling Evidence 3.0",
+        "text": "Visa edition of 18 April 2026, the text in force through 23 October 2026. Friday 9 October 2026. The issuer has 120 days from the processing date to dispute 10.4. The merchant defeats it with Compelling Evidence 3.0: the same payment credential (card number or token) was used in 2 previous transactions that the issuer did not report as fraud, processed more than 120 days and not more than 365 days before the dispute's processing date; a description of what was bought is given for the disputed and both earlier transactions; and the device ID or device fingerprint matches the disputed transaction, or the IP address matches together with at least one more of: the customer account or login ID, or the full delivery address. One qualifying earlier transaction, or IP alone, does not meet it."
+      },
+      {
+        "rule_id": "G-5",
+        "title": "Mastercard 4837",
+        "text": "Mastercard Chargeback Guide, Merchant Edition, 13 May 2025 (the edition read). Friday 9 October 2026. The merchant's answer to a 4837 chargeback is a second presentment within 45 calendar days of the chargeback. Its grounds include a refund already issued, and compelling evidence for e-commerce: other undisputed purchases by the same cardholder before or after the disputed one, and the disputed purchase made from a registered device and IP address. There is no fixed count of earlier purchases in the Guide. A later edition (19 May 2026) exists and was not read."
+      },
+      {
+        "rule_id": "G-6",
+        "title": "Deadlines and fees at Paycurrent",
+        "text": "Friday 9 October 2026. The networks give the acquirer 30 calendar days from the dispute processing date to respond to a Visa 10.x, 12.x or 13.x dispute, and 45 days for a Mastercard second presentment. Paycurrent, the shop's processor, needs the shop's evidence 5 days before the network date, shown as paycurrent_due on each case. After paycurrent_due the case is closed to evidence and decided against the shop. Accepting a dispute costs the disputed amount only. Contesting one and losing it costs the amount plus a 25 dollar fee."
+      }
+    ],
+    "orders": [
+      {
+        "order_id": "5489",
+        "date": "2026-08-10",
+        "amount_usd": 75,
+        "card_last4": "4410",
+        "account": "guest",
+        "ip": "(not kept)",
+        "device_id": "(not kept)",
+        "ship_to": "Tomas Beck, 8 Alder Way, Boise, ID 83702",
+        "items": "Oak coaster set, SKU CS-4",
+        "refund": "R-77, $75 credited to the card on 2026-09-24"
+      },
+      {
+        "order_id": "5494",
+        "date": "2026-08-14",
+        "amount_usd": 60,
+        "card_last4": "7731",
+        "account": "c.reyes",
+        "ip": "(not kept)",
+        "device_id": "(not kept)",
+        "ship_to": "Callum Reyes, 17 Mill Rd, Tulsa, OK 74103",
+        "items": "Shelf bracket set, SKU BR-2",
+        "refund": "none"
+      },
+      {
+        "order_id": "5502",
+        "date": "2026-08-18",
+        "amount_usd": 96,
+        "card_last4": "2208",
+        "account": "p.lindqvist",
+        "ip": "(not kept)",
+        "device_id": "(not kept)",
+        "ship_to": "Petra Lindqvist, 2 Birch St, Madison, WI 53703",
+        "items": "Oak shelf, SKU OAK-30",
+        "refund": "none",
+        "note": "Listing text: 'Oak shelf, 30 cm deep, natural oil finish.' Sent: SKU OAK-30 oak, natural oil, as in the listing photo."
+      },
+      {
+        "order_id": "5517",
+        "date": "2026-08-29",
+        "amount_usd": 128,
+        "card_last4": "9012",
+        "account": "h.nakamura",
+        "ip": "(not kept)",
+        "device_id": "(not kept)",
+        "ship_to": "Hana Nakamura, 55 Pine Ct, Reno, NV 89501",
+        "items": "Walnut cutting board, SKU WB-3",
+        "refund": "none",
+        "note": "Packed on 2026-09-02; the board stayed in the workshop (cracked in finishing, remake not yet made)."
+      },
+      {
+        "order_id": "5521",
+        "date": "2026-08-31",
+        "amount_usd": 184,
+        "card_last4": "3345",
+        "account": "r.okonkwo",
+        "ip": "(not kept)",
+        "device_id": "(not kept)",
+        "ship_to": "Rita Okonkwo, 41 Cedar Row, Albany, NY 12207",
+        "items": "Oak bench top, SKU BT-1",
+        "refund": "none"
+      },
+      {
+        "order_id": "5530",
+        "date": "2026-09-12",
+        "amount_usd": 312,
+        "card_last4": "5560",
+        "account": "j.farrow",
+        "ip": "203.0.113.41",
+        "device_id": "DV-8f3a1c9e72b4d605",
+        "ship_to": "Jamie Farrow, 9 Lantern Ln, Austin, TX 78701",
+        "items": "Walnut console table, SKU CT-2",
+        "refund": "none"
+      },
+      {
+        "order_id": "5533",
+        "date": "2026-09-14",
+        "amount_usd": 150,
+        "card_last4": "6184",
+        "account": "d.osei",
+        "ip": "198.51.100.7",
+        "device_id": "DV-2b7e44a1c09d3f18",
+        "ship_to": "Dan Osei, 30 Quay St, Portland, ME 04101",
+        "items": "Maple stool, SKU ST-5",
+        "refund": "none"
+      },
+      {
+        "order_id": "5541",
+        "date": "2026-08-20",
+        "amount_usd": 240,
+        "card_last4": "8826",
+        "account": "s.vance",
+        "ip": "192.0.2.88",
+        "device_id": "DV-a40d5c17e3b28f96",
+        "ship_to": "Sam Vance, 12 Ridge Dr, Denver, CO 80202",
+        "items": "Pair of oak stools, SKU ST-7",
+        "refund": "none"
+      },
+      {
+        "order_id": "5548",
+        "date": "2026-09-20",
+        "amount_usd": 175,
+        "card_last4": "1197",
+        "account": "guest",
+        "ip": "203.0.113.90",
+        "device_id": "(none)",
+        "ship_to": "Alex Marsh, 66 Fern Ave, Tampa, FL 33602",
+        "items": "Oak mirror frame, SKU MF-1",
+        "refund": "none"
+      },
+      {
+        "order_id": "5560",
+        "date": "2026-08-05",
+        "amount_usd": 210,
+        "card_last4": "4073",
+        "account": "k.dube",
+        "ip": "(not kept)",
+        "device_id": "(not kept)",
+        "ship_to": "Kofi Dube, 4 Harbor Rd, Seattle, WA 98101",
+        "items": "Maple desk organiser, SKU DO-2",
+        "refund": "none"
+      },
+      {
+        "order_id": "5150",
+        "date": "2025-12-04",
+        "amount_usd": 98,
+        "card_last4": "5560",
+        "account": "j.farrow",
+        "ip": "203.0.113.41",
+        "device_id": "DV-8f3a1c9e72b4d605",
+        "ship_to": "Jamie Farrow, 9 Lantern Ln, Austin, TX 78701",
+        "items": "Oak trivet, SKU TV-1",
+        "refund": "none",
+        "note": "Delivered, never disputed."
+      },
+      {
+        "order_id": "5260",
+        "date": "2026-02-11",
+        "amount_usd": 142,
+        "card_last4": "5560",
+        "account": "j.farrow",
+        "ip": "203.0.113.41",
+        "device_id": "DV-8f3a1c9e72b4d605",
+        "ship_to": "Jamie Farrow, 9 Lantern Ln, Austin, TX 78701",
+        "items": "Maple tray, SKU TR-3",
+        "refund": "none",
+        "note": "Delivered, never disputed."
+      },
+      {
+        "order_id": "5290",
+        "date": "2026-03-02",
+        "amount_usd": 110,
+        "card_last4": "6184",
+        "account": "d.osei",
+        "ip": "198.51.100.7",
+        "device_id": "DV-2b7e44a1c09d3f18",
+        "ship_to": "Dan Osei, 30 Quay St, Portland, ME 04101",
+        "items": "Oak wall hooks, SKU WH-2",
+        "refund": "none",
+        "note": "Delivered, never disputed."
+      },
+      {
+        "order_id": "5470",
+        "date": "2026-07-20",
+        "amount_usd": 95,
+        "card_last4": "6184",
+        "account": "d.osei",
+        "ip": "198.51.100.7",
+        "device_id": "DV-2b7e44a1c09d3f18",
+        "ship_to": "Dan Osei, 30 Quay St, Portland, ME 04101",
+        "items": "Maple spoon set, SKU SS-1",
+        "refund": "none",
+        "note": "Delivered, never disputed."
+      },
+      {
+        "order_id": "5170",
+        "date": "2025-11-20",
+        "amount_usd": 88,
+        "card_last4": "1197",
+        "account": "guest",
+        "ip": "203.0.113.90",
+        "device_id": "(none)",
+        "ship_to": "Alex Marsh, 14 Palm Ct, Orlando, FL 32801",
+        "items": "Pine knife block, SKU KB-1",
+        "refund": "none",
+        "note": "Delivered, never disputed. Different delivery address."
+      },
+      {
+        "order_id": "5240",
+        "date": "2026-01-15",
+        "amount_usd": 120,
+        "card_last4": "1197",
+        "account": "guest",
+        "ip": "203.0.113.90",
+        "device_id": "(none)",
+        "ship_to": "A. Marsh, 3 Gulf Blvd, Naples, FL 34102",
+        "items": "Oak bowl, SKU BW-2",
+        "refund": "none",
+        "note": "Delivered, never disputed. Different delivery address."
+      },
+      {
+        "order_id": "5100",
+        "date": "2026-03-18",
+        "amount_usd": 205,
+        "card_last4": "8826",
+        "account": "s.vance",
+        "ip": "192.0.2.88",
+        "device_id": "DV-a40d5c17e3b28f96",
+        "ship_to": "Sam Vance, 12 Ridge Dr, Denver, CO 80202",
+        "items": "Oak stool, SKU ST-7",
+        "refund": "none",
+        "note": "Delivered, never disputed."
+      },
+      {
+        "order_id": "5570",
+        "date": "2026-10-04",
+        "amount_usd": 130,
+        "card_last4": "8826",
+        "account": "s.vance",
+        "ip": "192.0.2.88",
+        "device_id": "DV-a40d5c17e3b28f96",
+        "ship_to": "Sam Vance, 12 Ridge Dr, Denver, CO 80202",
+        "items": "Oak coat rack, SKU CR-2",
+        "refund": "none",
+        "note": "Delivered, never disputed."
+      }
+    ],
+    "ships": [
+      {
+        "order_id": "5489",
+        "tracking": "PW-770145",
+        "shipped": "2026-08-11",
+        "status": "delivered 2026-08-14",
+        "delivered_to": "8 Alder Way, Boise, ID 83702",
+        "signed_by": "(none)"
+      },
+      {
+        "order_id": "5494",
+        "tracking": "PW-770188",
+        "shipped": "2026-08-15",
+        "status": "delivered 2026-08-18; return of the bracket set received at the workshop 2026-08-27",
+        "delivered_to": "17 Mill Rd, Tulsa, OK 74103",
+        "signed_by": "C. Reyes"
+      },
+      {
+        "order_id": "5502",
+        "tracking": "PW-770231",
+        "shipped": "2026-08-19",
+        "status": "delivered 2026-08-22",
+        "delivered_to": "2 Birch St, Madison, WI 53703",
+        "signed_by": "P. Lindqvist"
+      },
+      {
+        "order_id": "5517",
+        "tracking": "PW-770276",
+        "shipped": "(not shipped)",
+        "status": "label created 2026-09-02, never scanned by the carrier",
+        "delivered_to": "(none)",
+        "signed_by": "(none)"
+      },
+      {
+        "order_id": "5521",
+        "tracking": "PW-770290",
+        "shipped": "2026-09-01",
+        "status": "delivered 2026-09-03 12:41",
+        "delivered_to": "41 Cedar Row, Albany, NY 12207 (full address)",
+        "signed_by": "R. Okonkwo"
+      },
+      {
+        "order_id": "5530",
+        "tracking": "PW-770333",
+        "shipped": "2026-09-13",
+        "status": "delivered 2026-09-16",
+        "delivered_to": "9 Lantern Ln, Austin, TX 78701",
+        "signed_by": "(none)"
+      },
+      {
+        "order_id": "5533",
+        "tracking": "PW-770341",
+        "shipped": "2026-09-15",
+        "status": "delivered 2026-09-18",
+        "delivered_to": "30 Quay St, Portland, ME 04101",
+        "signed_by": "(none)"
+      },
+      {
+        "order_id": "5541",
+        "tracking": "PW-770205",
+        "shipped": "2026-08-21",
+        "status": "delivered 2026-08-24",
+        "delivered_to": "12 Ridge Dr, Denver, CO 80202",
+        "signed_by": "(none)"
+      },
+      {
+        "order_id": "5548",
+        "tracking": "PW-770390",
+        "shipped": "2026-09-21",
+        "status": "delivered 2026-09-24",
+        "delivered_to": "66 Fern Ave, Tampa, FL 33602",
+        "signed_by": "(none)"
+      },
+      {
+        "order_id": "5560",
+        "tracking": "PW-770118",
+        "shipped": "2026-08-06",
+        "status": "delivered 2026-08-09",
+        "delivered_to": "Seattle, WA (the carrier shows only the city)",
+        "signed_by": "(none)"
+      }
+    ],
+    "messages": [
+      {
+        "message_id": "M-1",
+        "date": "2026-08-28",
+        "from": "Callum Reyes",
+        "subject": "Return of the bracket set, order 5494",
+        "body": "I sent the bracket set back as agreed. Reply from Maya Brandt on 28 August: 'Received it, thanks Callum. I'll refund the $60 this week.'"
+      },
+      {
+        "message_id": "M-2",
+        "date": "2026-09-03",
+        "from": "Rita Okonkwo",
+        "subject": "Re: your order 5521",
+        "body": "Thanks, the bench top arrived today and it looks great. Rita"
+      },
+      {
+        "message_id": "M-3",
+        "date": "2026-08-25",
+        "from": "Petra Lindqvist",
+        "subject": "The oak shelf, order 5502",
+        "body": "I was hoping for a paler wood and I'd like my money back. The shelf is oak with a natural oil finish, as listed, so I don't think there is a fault; it just isn't the look I pictured."
+      },
+      {
+        "message_id": "M-4",
+        "date": "2026-09-20",
+        "from": "Hana Nakamura",
+        "subject": "Where is my cutting board? Order 5517",
+        "body": "It has been three weeks. Reply from Maya Brandt on 20 September: 'I'm sorry Hana, the board has not shipped yet. I'll remake it.'"
+      }
+    ]
+  }
+}

@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The sixty-two playbooks (latest runs, Claude Sonnet)
+## The sixty-three playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -105,9 +105,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A heavy hauler's oversize permits bought across Oklahoma, Arkansas and Tennessee, with each state's escorts, curfews and a failed bridge kept, while divisible tanks, a load legal in Arkansas and a state the load never enters are left alone | work | 5 | exceeds: 5 of 5 (a $72.50 or $82.50 weight a permit, mostly minutes), 8 of 8 traps, 0 false |
 | A candle maker's wholesale resale certificates checked before the state audits them: six requests for a fully completed certificate, and the state's request answered with the three certificates that support it, while a Texas sale, complete certificates, a taxed sale and a buyer still inside twelve months are left alone | work | 4 | exceeds (run 2 of 2, after a world fix): 9 of 9, $4,250 of $4,250, 10 of 10 traps, 0 false, 2.2 min, $1.51; was short, 4 of 9, the order list could not be paged |
 | A reseller's EU listings brought up to the product-safety rule on two marketplaces: missing addresses, Union responsible persons from the makers' mail, a model number and the warnings products carry, while food, an antique, seeds, listings not offered in the EU, complete listings and a throw that needs no warning are left alone | work | 4 | exceeds: 6 of 6, $7,100 of $7,100, 9 of 9 traps, 0 false |
+| A woodworker's ten open card disputes answered with the evidence each reason code needs, two valid ones accepted, and disputes the record cannot win, one past its processor's date and one already refunded left alone | work | 4 | exceeds: 7 of 7, $957 of $957 (a $25 weight on each acceptance), 9 of 9 traps, 0 false, 2.8 min, $2.12 |
 
-Across the latest runs: $1,030,614 of $1,040,042 found, 646 of 646 traps walked past, no false claim,
-187 minutes of her time against about 274 hours by hand, $114.50 of model time. 100 runs are recorded
+Across the latest runs: $1,031,571 of $1,040,999 found, 655 of 655 traps walked past, no false claim,
+190 minutes of her time against about 277 hours by hand, $116.61 of model time. 101 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module
