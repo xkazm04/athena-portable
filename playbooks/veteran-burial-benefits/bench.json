@@ -1,0 +1,261 @@
+{
+  "playbook": "veteran-burial-benefits",
+  "run_at": "2026-10-10T04:56:26Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 162.5,
+  "turns": 9,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 19,
+  "cost_usd": 1.0148,
+  "your_time_s": 90,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.7
+  },
+  "score": {
+    "eligible": 3,
+    "found": 3,
+    "exact": 3,
+    "value_total_usd": 3196.0,
+    "value_found_usd": 3196.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 11,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "claim_burial_benefit",
+        "key": "B-SC",
+        "why": "His death was not service-connected: the cause was pancreatic cancer, no rated condition, and the presumption for a veteran rated totally disabled does not reach a total rating that rests on individual unemployability (3.1704(b)). Claiming $2,000 would claim a service-connected death the record contradicts",
+        "filed": false
+      },
+      {
+        "action": "claim_burial_benefit",
+        "key": "B-HOSP",
+        "why": "He died at home under a private hospice, not hospitalized by VA or in care it paid for (3.1706): the allowance he is owed is B-NSC",
+        "filed": false
+      },
+      {
+        "action": "order_headstone",
+        "key": "M-1",
+        "why": "Section D allows no upright headstones: the cemetery would not certify placement",
+        "filed": false
+      },
+      {
+        "action": "order_headstone",
+        "key": "M-2",
+        "why": "Section D allows no upright headstones: the cemetery would not certify placement",
+        "filed": false
+      },
+      {
+        "action": "order_headstone",
+        "key": "M-4",
+        "why": "Section D allows only bronze markers, not granite",
+        "filed": false
+      },
+      {
+        "action": "order_headstone",
+        "key": "M-5",
+        "why": "Section D allows only bronze markers, not marble",
+        "filed": false
+      },
+      {
+        "action": "order_headstone",
+        "key": "M-6",
+        "why": "A medallion is for a grave already marked with a privately purchased headstone; his grave has only a temporary marker",
+        "filed": false
+      },
+      {
+        "action": "buy_marker",
+        "key": "WM-1",
+        "why": "VA furnishes the same flat bronze marker at no cost: buying it from the funeral home pays $1,240 for nothing",
+        "filed": false
+      },
+      {
+        "action": "buy_marker",
+        "key": "WM-2",
+        "why": "An upright headstone is not allowed in Section D, and VA would furnish a marker free",
+        "filed": false
+      },
+      {
+        "action": "buy_marker",
+        "key": "WM-3",
+        "why": "A plaque for an existing headstone, and the grave has none",
+        "filed": false
+      },
+      {
+        "action": "pay_bill",
+        "key": "BL-1",
+        "why": "No fee may be charged for preparing or filing an initial VA claim, and only accredited agents may charge at all (38 CFR 14.636(b), (c)): the claim is free to file",
+        "filed": false
+      }
+    ],
+    "filed_usd": 1956.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "claim_burial_benefit",
+      "key": "B-NSC",
+      "outcome": "correct",
+      "value_usd": 978.0,
+      "exact": true,
+      "why": "On the date of death he was receiving VA disability compensation, so the non-service-connected burial allowance is owed (38 CFR 3.1705(b)): the actual cost up to $978 for a death from 1 October 2024 to 30 September 2025, and the funeral cost $9,465. VA must receive it no later than 2 years after his burial on 11 October 2024 (3.1703(a)(1)): by 11 October 2026, two days away"
+    },
+    {
+      "action": "claim_burial_benefit",
+      "key": "B-PLOT",
+      "outcome": "correct",
+      "value_usd": 978.0,
+      "exact": true,
+      "why": "Buried in a private cemetery, not a national one, and eligible for the non-service-connected allowance, so the plot or interment allowance is owed to the person who paid (3.1707(c)): the lesser of $978 and the $2,150 for the lot and interment, with nothing paid by a State, the United States or an employer (3.1711(a)). No time limit"
+    },
+    {
+      "action": "order_headstone",
+      "key": "M-3",
+      "outcome": "correct",
+      "value_usd": 1240.0,
+      "exact": true,
+      "why": "VA furnishes a marker for the unmarked grave of an eligible veteran in a private cemetery at no cost (38 CFR 38.630), and Cedar Hollow's Section D allows only flat bronze markers: the government flat bronze marker, worth the $1,240 Wrenfield charges for the same marker; the $225 setting fee stays the family's"
+    }
+  ],
+  "missed": [],
+  "closing_words": "The burial allowance has to be received by 11 October 2026, which is two days away. I'm filing it first, then the plot allowance. I'm also re-reading the cemetery rules (D-4) for the marker inscription and the cemetery's certification before I claim the marker.\n\n\nTwo benefits are filed as cards for you to answer. I'm leaving these alone:\n- **B-SC (service-connected allowance):** his 100% rate rests on unemployability (TDIU), which the rules say is not presumed service-connected. The cause of death was pancreatic cancer, with no service-connected condition listed.\n- **B-HOSP:** he died at home under a private hospice, not in a VA facility or VA-paid care. Only one of B-NSC and B-HOSP is paid anyway.\n- **B-TRANS:** no page I've read gives an itemized charge for moving the remains to the burial place. The $395 transfer was from his residence, and the $350 hearse line doesn't say where it we",
+  "trace": [
+    {
+      "portal": "Docshelf",
+      "user": "Dad died two years ago and we never claimed anything from the VA for his burial. Start in our family folder: his DD-214, the death certificate, his VA rating letter and the cemetery's rules.",
+      "continued": false,
+      "said": "I act through OP lines, so I'm listing the folder that way first.",
+      "said_chars": 65,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Five documents are in the folder. I'm reading the four you named, plus Ruth's note, since it's recent.",
+      "said_chars": 102,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "The folder has what the claim needs, and the burial allowance deadline is about two days away.\n\n- **Service:** Army, 12 June 1978 to 11 June 1983, honorable discharge (D-1).\n- **Death:** 4 October 2024 at home, under a private Medicare hospice. The cause was pancreatic cancer, and the certificate lists no other contributing conditions (D-2). I'll take that to mean the death was not service-connected, but Vetserve's rules need to confirm it.\n- **Rating:** PTSD at 50% and lumbar spine at 40%, combined 70%.",
+      "said_chars": 1911,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Wrenfield Funeral Home",
+      "user": "Wrenfield did Dad's funeral. Read the final statement and what they sell for the grave.",
+      "continued": false,
+      "said": "Reading the Wrenfield statement and catalog now.",
+      "said_chars": 48,
+      "reads": [
+        "view_statement",
+        "list_memorials"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Wrenfield Funeral Home",
+      "user": "",
+      "continued": true,
+      "said": "Wrenfield's statement totals $9,465.00, paid in full by Daniel on 11 October 2024. Its only grave item is a free temporary marker, and I'm buying nothing from the catalog.\n\n**Statement items (the line items add up to $9,465.00):**\n- Basic services: $2,295\n- Transfer of remains: $395\n- Embalming, preparation, viewing and ceremony: $2,180\n- Hearse: $350\n- Casket: $3,295\n- Grave liner: $950\n- Burial flag: $0. It was obtained on VA Form 27-2008 and given to Daniel at the graveside, so that benefit is already used.",
+      "said_chars": 2408,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "My checking at Ledgerline. See what I paid for Dad's funeral and burial, whether anyone paid me back, and the bills waiting.",
+      "continued": false,
+      "said": "Reading your checking activity and the waiting bills now.",
+      "said_chars": 57,
+      "reads": [
+        "list_activity",
+        "list_bills"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "",
+      "continued": true,
+      "said": "You paid $11,615 toward your father's burial, nobody has paid you back, and two bills are waiting. I'm paying neither of them.\n\n**What you paid (all from your checking)**\n- 9 Oct 2024: Cedar Hollow Cemetery, $2,150.00. That is Lot D-112 at $1,450 and opening and closing of the grave at $700.\n- 11 Oct 2024: Wrenfield Funeral Home, $9,465.00, paid in full.\n\n**Repaid**\n- Nothing. Ledgerline shows no deposit from the VA, the state, his former employer or anyone else toward the funeral, plot or burial.",
+      "said_chars": 1556,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Vetserve",
+      "user": "Now Vetserve. Read the rules and Dad's record, then claim every burial and memorial benefit he's owed, at the right amounts, with any deadline first. Then tell me what you left alone and why.",
+      "continued": false,
+      "said": "I'm reading Vetserve's rules and Dad's record first.\n\n\nI'll file the claims once these come back. Nothing is filed yet.",
+      "said_chars": 119,
+      "reads": [
+        "view_veteran_record",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Vetserve",
+      "user": "",
+      "continued": true,
+      "said": "The burial allowance has to be received by 11 October 2026, which is two days away. I'm filing it first, then the plot allowance. I'm also re-reading the cemetery rules (D-4) for the marker inscription and the cemetery's certification before I claim the marker.\n\n\nTwo benefits are filed as cards for you to answer. I'm leaving these alone:\n- **B-SC (service-connected allowance):** his 100% rate rests on unemployability (TDIU), which the rules say is not presumed service-connected.",
+      "said_chars": 2754,
+      "reads": [],
+      "cards": [
+        {
+          "action": "claim_burial_benefit",
+          "key": "B-NSC",
+          "outcome": "correct",
+          "value_usd": 978.0
+        },
+        {
+          "action": "claim_burial_benefit",
+          "key": "B-PLOT",
+          "outcome": "correct",
+          "value_usd": 978.0
+        },
+        {
+          "action": "order_headstone",
+          "key": "M-3",
+          "outcome": "correct",
+          "value_usd": 1240.0
+        }
+      ]
+    }
+  ]
+}

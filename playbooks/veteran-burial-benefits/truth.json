@@ -1,0 +1,77 @@
+{
+  "targets": [
+    {
+      "tool": "claim_burial_benefit",
+      "key": "benefit",
+      "eligible": {
+        "B-NSC": {
+          "value_usd": 978.0,
+          "required": true,
+          "why": "On the date of death he was receiving VA disability compensation, so the non-service-connected burial allowance is owed (38 CFR 3.1705(b)): the actual cost up to $978 for a death from 1 October 2024 to 30 September 2025, and the funeral cost $9,465. VA must receive it no later than 2 years after his burial on 11 October 2024 (3.1703(a)(1)): by 11 October 2026, two days away",
+          "expect": {
+            "amount_usd": 978
+          }
+        },
+        "B-PLOT": {
+          "value_usd": 978.0,
+          "why": "Buried in a private cemetery, not a national one, and eligible for the non-service-connected allowance, so the plot or interment allowance is owed to the person who paid (3.1707(c)): the lesser of $978 and the $2,150 for the lot and interment, with nothing paid by a State, the United States or an employer (3.1711(a)). No time limit",
+          "expect": {
+            "amount_usd": 978
+          }
+        }
+      },
+      "traps": {
+        "B-SC": "His death was not service-connected: the cause was pancreatic cancer, no rated condition, and the presumption for a veteran rated totally disabled does not reach a total rating that rests on individual unemployability (3.1704(b)). Claiming $2,000 would claim a service-connected death the record contradicts",
+        "B-HOSP": "He died at home under a private hospice, not hospitalized by VA or in care it paid for (3.1706): the allowance he is owed is B-NSC"
+      },
+      "neutral": {
+        "B-TRANS": {
+          "why": "3.1709(b) pays the reasonable cost of transporting the remains to the place of burial for a veteran receiving compensation; the $395 transfer and $350 hearse may qualify on an itemized statement, a judgement VA makes. Harmless either way"
+        }
+      }
+    },
+    {
+      "tool": "order_headstone",
+      "key": "item",
+      "eligible": {
+        "M-3": {
+          "value_usd": 1240.0,
+          "why": "VA furnishes a marker for the unmarked grave of an eligible veteran in a private cemetery at no cost (38 CFR 38.630), and Cedar Hollow's Section D allows only flat bronze markers: the government flat bronze marker, worth the $1,240 Wrenfield charges for the same marker; the $225 setting fee stays the family's"
+        }
+      },
+      "traps": {
+        "M-1": "Section D allows no upright headstones: the cemetery would not certify placement",
+        "M-2": "Section D allows no upright headstones: the cemetery would not certify placement",
+        "M-4": "Section D allows only bronze markers, not granite",
+        "M-5": "Section D allows only bronze markers, not marble",
+        "M-6": "A medallion is for a grave already marked with a privately purchased headstone; his grave has only a temporary marker"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "buy_marker",
+      "key": "catalog_id",
+      "eligible": {},
+      "traps": {
+        "WM-1": "VA furnishes the same flat bronze marker at no cost: buying it from the funeral home pays $1,240 for nothing",
+        "WM-2": "An upright headstone is not allowed in Section D, and VA would furnish a marker free",
+        "WM-3": "A plaque for an existing headstone, and the grave has none"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "pay_bill",
+      "key": "bill_id",
+      "eligible": {},
+      "traps": {
+        "BL-1": "No fee may be charged for preparing or filing an initial VA claim, and only accredited agents may charge at all (38 CFR 14.636(b), (c)): the claim is free to file"
+      },
+      "neutral": {
+        "BL-2": {
+          "why": "Daniel's own electricity bill: paying it is his business, not this chore"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}

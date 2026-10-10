@@ -1,0 +1,124 @@
+{
+  "id": "veteran-burial-benefits",
+  "title": "A veteran father's burial allowance claimed two days before its two years run out, with the plot allowance and the government marker his cemetery allows, and nothing his record does not support",
+  "domain": "Family affairs",
+  "audience": "home",
+  "promise": "A veteran's discharge, his rating, his death certificate and his cemetery's rules are read against what his son paid. The non-service-connected burial allowance he was owed for receiving compensation goes in before its two years from the burial end, at the amount for his date of death; the plot allowance follows; and the free government marker is claimed in the one kind his cemetery section allows. The service-connected allowance his total rating seems to promise but the record does not support, the allowance for a death in VA care, markers the section forbids, a medallion for a grave with no headstone, a marker bought from the funeral home and a claims company's fee are left alone.",
+  "persona": "An adult son who paid for his widowed father's funeral and burial two years ago and has not claimed anything from the VA",
+  "chore": "Read the DD-214, the death certificate, the VA rating decision and the cemetery's rules in the family folder; the funeral home's statement and catalog; the son's payments and the bills waiting at the bank; and the burial rules and the veteran's record on the benefits portal. Then claim each burial and memorial benefit owed under 38 U.S.C. 2303 and 2307 and 38 CFR 3.1700 to 3.1713 and 38.630 as they stand: service-connected or not decides the allowance, a total rating based on individual unemployability does not carry the presumption of a service-connected death, the non-service-connected allowance must reach VA within two years of the burial, the plot allowance and the marker have no time limit, and the amounts are those for the date of death. None of the four systems shares data with another.",
+  "command": "Dad died two years ago and we never claimed anything from the VA for his burial. Go through our family folder, Wrenfield's portal, my Ledgerline account and Vetserve, and claim every burial and memorial benefit he's owed, at the right amounts, anything with a deadline first. Don't claim anything his record doesn't support, don't buy what the VA gives free, and don't pay anyone to file it.",
+  "apps": [
+    {
+      "name": "Docshelf",
+      "role": "the family folder: the DD-214, the death certificate, the 2019 rating decision, the cemetery's rules and the sister's note",
+      "api": "Shared document folder, no API",
+      "url": ""
+    },
+    {
+      "name": "Wrenfield Funeral Home",
+      "role": "the funeral's final statement, paid in full, and the home's catalog of grave markers",
+      "api": "Funeral home family portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline bank",
+      "role": "what the son paid the cemetery and the funeral home, that nobody paid him back, and the bills waiting",
+      "api": "Online banking",
+      "url": ""
+    },
+    {
+      "name": "Vetserve",
+      "role": "the burial and memorial rules, the veteran's record, and the claims for allowances and a marker",
+      "api": "Veterans' benefits portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the discharge, the death certificate, the rating decision and the cemetery's rules in Docshelf.",
+    "Reads the funeral's statement and the marker catalog at Wrenfield.",
+    "Reads what was paid, and by whom, and the bills waiting at Ledgerline.",
+    "Reads the rules and the record in Vetserve, then claims the allowances, the deadline first, and the marker the cemetery allows."
+  ],
+  "gates": [
+    {
+      "action": "claim_burial_benefit",
+      "label": "Claim a burial benefit from the VA",
+      "why": "A signed claim to a federal agency: claiming a benefit the record does not support is a false statement."
+    },
+    {
+      "action": "order_headstone",
+      "label": "Claim a government headstone, marker or medallion",
+      "why": "A signed claim; a marker the cemetery will not accept, or a medallion for a grave with no headstone, wastes the one the grave needs."
+    },
+    {
+      "action": "buy_marker",
+      "label": "Buy a grave marker from the funeral home",
+      "why": "Money leaves the son's card."
+    },
+    {
+      "action": "pay_bill",
+      "label": "Pay a bill",
+      "why": "Money leaves the son's account."
+    }
+  ],
+  "traps": [
+    "A two-thousand-dollar service-connected allowance for a death from an unrelated cancer, with a total rating based on unemployability.",
+    "The allowance for a death in VA care, when he died at home under a private hospice.",
+    "An upright headstone, or a granite or marble marker, in a section that allows only flat bronze.",
+    "A medallion for a grave with no headstone.",
+    "Buying from the funeral home the marker the VA gives free.",
+    "A three-hundred-and-ninety-five-dollar fee to file a claim that is free to file."
+  ],
+  "memory": [
+    "His service, his discharge, his rated conditions and the basis of his total rating, the cause of death, the burial date and the cemetery's section rules, carried from Docshelf.",
+    "What the funeral cost and what the funeral home sells, carried from Wrenfield.",
+    "What the son paid for the lot and the interment, and that no one paid any of it back, carried from Ledgerline."
+  ],
+  "economics": {
+    "value_usd": 2000,
+    "per": "episode",
+    "basis": "An estimate. Most families of veterans who received VA compensation never claim the burial allowance, the plot allowance or the free government marker, and the non-service-connected allowance is lost two years after the burial. The roster's $2,000 an episode is the allowances and the marker a family recovers for one veteran parent, an estimate. The episode is one veteran's death; times a year: one, since a family claims these once for a parent. The bench world holds $3,196: the $978 burial allowance and the $978 plot allowance for a death from 1 October 2024 to 30 September 2025, and a flat bronze marker worth the $1,240 the funeral home charges for it. The rules applied, as they stand on Friday 9 October 2026: 38 U.S.C. 2303 and 2307, 38 CFR 3.1702 to 3.1711 (with 3.1703(a)(1)'s two years from burial for the non-service-connected allowance, and no other time limit), 38 CFR 38.630 (headstones, markers and medallions) and 38 CFR 14.636 (no fee for an initial claim). The amounts are VA's for the veteran's date of death: $978 for a death from 1 October 2024; VA lists $1,002 from 1 October 2025 and $1,032 from 1 October 2026. The cemetery's rules and the funeral home's prices are invented world documents.",
+    "manual_minutes": 240,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share: veterans service organizations file these claims free, and no fee may be charged for an initial claim. The world's claims company bills a flat $395; no figure is used.",
+    "sources": [
+      {
+        "label": "38 U.S.C. 2303: burial and plot allowances (non-service-connected)",
+        "url": "https://www.law.cornell.edu/uscode/text/38/2303"
+      },
+      {
+        "label": "38 U.S.C. 2307: death from a service-connected disability ($2,000)",
+        "url": "https://www.law.cornell.edu/uscode/text/38/2307"
+      },
+      {
+        "label": "38 CFR 3.1700 to 3.1713: burial benefits (claimants 3.1702, time limits 3.1703, service-connected 3.1704, non-service-connected 3.1705, VA hospitalization 3.1706, plot 3.1707, transportation 3.1709)",
+        "url": "https://www.ecfr.gov/current/title-38/chapter-I/part-3/subpart-B"
+      },
+      {
+        "label": "VA: Veterans burial allowance and transportation benefits (the amounts by date of death)",
+        "url": "https://www.va.gov/burials-memorials/veterans-burial-allowance/"
+      },
+      {
+        "label": "38 CFR 38.630: headstones, markers and medallions (VA Forms 40-1330 and 40-1330M)",
+        "url": "https://www.ecfr.gov/current/title-38/chapter-I/part-38/section-38.630"
+      },
+      {
+        "label": "38 CFR 14.636: payment of fees for representation by agents and attorneys",
+        "url": "https://www.law.cornell.edu/cfr/text/38/14.636"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Whether his death was service-connected is decided by the cause on the death certificate and the basis of his rating, which sit in a folder, not on the claim; the deadline runs from the burial date in the funeral home's record; the marker turns on a cemetery's section rules; and a total rating, a death at home under hospice and a funeral home's catalog each invite a claim or a purchase the rules do not support.",
+    "usefulness_why": "Recovers about two thousand dollars and a free marker that most veterans' families never claim, two days before the largest part is lost for good."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful son with the rules in hand gets most of it; the bar is the deadline allowance in time and most of the rest claimed at the right amounts, nothing his record does not support, inside an hour."
+  },
+  "caveat": "Leonard, Daniel, Ruth and Ellen Marsh, Wrenfield Funeral Home, Cedar Hollow Cemetery, Linden Hospice, VetClaim Helpers, Northgate Power, Vetserve, Docshelf and Ledgerline are invented, and so are the cemetery's rules and the funeral home's prices; no veteran here is real. The public rules applied are 38 U.S.C. 2303 and 2307 and 38 CFR 3.1700 to 3.1713, 38.630 and 14.636, fixed in the bench world as of 9 October 2026, with VA's amounts for a death between 1 October 2024 and 30 September 2025 ($978 each), the rates for the veteran's date of death. VA's own decision on the record, the cemetery's rules and VA's current forms decide real cases. This applies stated rules to stated facts; it is not legal or benefits advice."
+}
