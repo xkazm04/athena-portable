@@ -1,0 +1,495 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "postwren",
+      "message": "I'm Dana Whitcombe. This is my mail: the plan's notice and invoices for my children's care. Read every message. Don't do anything yet: I'll send you to my bank, my insurer, my pharmacy and the plan.",
+      "nudges": 1
+    },
+    {
+      "app": "ledgerwren",
+      "message": "This is my bank, Ledgerwren. Read its note and my statement. Don't do anything yet.",
+      "nudges": 1
+    },
+    {
+      "app": "paylance",
+      "message": "This is my health plan's member portal, Paylance. Read my explanations of benefits, every page. Don't do anything yet.",
+      "nudges": 2
+    },
+    {
+      "app": "fennimoor",
+      "message": "This is my pharmacy, Fennimoor. Read my receipts. Don't do anything yet.",
+      "nudges": 1
+    },
+    {
+      "app": "flexwell",
+      "message": "This is Flexwell, my FSA. Read its rules, my claims and my card. Claim every eligible expense with the statement the plan asks for, answer the pending card swipe, and leave out what the plan does not cover. Then tell me what you claimed, what you left out and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/dana/inbox",
+      "view": {
+        "view": "Postwren: Dana Whitcombe's inbox (invented)",
+        "signed_in": "Dana Whitcombe",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The messages in the inbox: id, from, subject and date.",
+          "params": {},
+          "returns": {
+            "table": "msgs",
+            "fields": [
+              "msg_id",
+              "from",
+              "subject",
+              "date"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id (M-n).",
+          "params": {
+            "msg_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "msgs",
+            "match": {
+              "msg_id": "msg_id"
+            },
+            "require": [
+              "msg_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "ledgerwren",
+      "name": "Ledgerwren bank",
+      "origin": "https://bank.ledgerwren.example",
+      "path": "/dana/7740",
+      "view": {
+        "view": "Ledgerwren bank: Dana Whitcombe's checking ending 7740 (invented)",
+        "signed_in": "Dana Whitcombe",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_statement",
+          "kind": "READ",
+          "description": "The account's debits that may matter to the FSA: id, date, payee, what and amount.",
+          "params": {},
+          "returns": {
+            "table": "bank"
+          }
+        }
+      ],
+      "aliases": [
+        "Ledgerwren bank",
+        "my bank",
+        "the bank"
+      ]
+    },
+    {
+      "app_id": "paylance",
+      "name": "Paylance member portal",
+      "origin": "https://members.paylance.example",
+      "path": "/dana/eobs",
+      "view": {
+        "view": "Paylance member portal: Dana Whitcombe's explanations of benefits (invented)",
+        "signed_in": "Dana Whitcombe",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_eobs",
+          "kind": "READ",
+          "description": "Her explanations of benefits: id, date of service, provider, service, billed, plan paid, what she owes and note. Four a page; ask for the next with page (1 to 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "eob",
+            "page_size": 4
+          }
+        }
+      ],
+      "aliases": [
+        "Paylance",
+        "Paylance member portal",
+        "my insurer",
+        "the EOBs"
+      ]
+    },
+    {
+      "app_id": "fennimoor",
+      "name": "Fennimoor Pharmacy",
+      "origin": "https://shop.fennimoor.example",
+      "path": "/dana/receipts",
+      "view": {
+        "view": "Fennimoor Pharmacy: Dana Whitcombe's receipt lines (invented)",
+        "signed_in": "Dana Whitcombe",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_receipts",
+          "kind": "READ",
+          "description": "Her receipt lines: id, date, item, price and how she paid.",
+          "params": {},
+          "returns": {
+            "table": "rx"
+          }
+        }
+      ],
+      "aliases": [
+        "Fennimoor",
+        "Fennimoor Pharmacy",
+        "my pharmacy"
+      ]
+    },
+    {
+      "app_id": "flexwell",
+      "name": "Flexwell",
+      "origin": "https://fsa.flexwell.example",
+      "path": "/dana/account",
+      "view": {
+        "view": "Flexwell: Dana Whitcombe's flexible spending accounts (invented)",
+        "signed_in": "Dana Whitcombe",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_plan",
+          "kind": "READ",
+          "description": "The plan's rules by topic: index, period, eligible, substantiation, limits or deadlines.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "plan",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_claims",
+          "kind": "READ",
+          "description": "Her claims so far: id, submitted, what, amount and status.",
+          "params": {},
+          "returns": {
+            "table": "clm"
+          }
+        },
+        {
+          "name": "read_card",
+          "kind": "READ",
+          "description": "Her FSA debit card's swipes: id, date, merchant, amount and status.",
+          "params": {},
+          "returns": {
+            "table": "cardtx"
+          }
+        },
+        {
+          "name": "submit_claim",
+          "kind": "REACHES_A_PERSON",
+          "description": "Claim one expense from the FSA by its id (expense: the E-, P- or D- id of the explanation of benefits, receipt line or invoice, or the B- id of a bank debit) with the third-party statement that supports it (document). Dana signs.",
+          "params": {
+            "expense": {
+              "type": "string"
+            },
+            "document": {
+              "type": "string"
+            }
+          },
+          "says": "Claim for {expense} submitted to Flexwell."
+        },
+        {
+          "name": "submit_documentation",
+          "kind": "REACHES_A_PERSON",
+          "description": "Answer one pending card swipe by its id (swipe: the CS- id on the card page) with the third-party statement of its date, description and amount (document). Dana signs.",
+          "params": {
+            "swipe": {
+              "type": "string"
+            },
+            "document": {
+              "type": "string"
+            }
+          },
+          "says": "Statement for {swipe} sent to Flexwell."
+        }
+      ],
+      "aliases": [
+        "Flexwell",
+        "my FSA",
+        "the plan"
+      ]
+    }
+  ],
+  "tables": {
+    "msgs": [
+      {
+        "msg_id": "M-1",
+        "from": "Flexwell",
+        "subject": "Run-out ends 31 October; one card swipe is pending",
+        "date": "2026-09-14",
+        "text": "Monday 14 September 2026. Your plan year ended 30 June 2026. The run-out ends 31 October 2026: claims received later are denied. Card swipe CS-1 (18 June 2026, Wrenfield Orthodontics, 86.00 dollars) is pending. Send a third-party statement of its date, description and amount by 14 October 2026 or the 86.00 dollars is repaid. Flexwell."
+      },
+      {
+        "msg_id": "M-2",
+        "from": "Fernwick Day Camp",
+        "subject": "Invoice D-1: day camp, 8 to 12 June",
+        "date": "2026-06-12",
+        "text": "Friday 12 June 2026. Invoice D-1. Fernwick Day Camp, a day camp (no overnight stay): Wren Whitcombe, age 9, 8 to 12 June 2026, five days, 420.00 dollars. Paid in full 12 June. Fernwick Day Camp."
+      },
+      {
+        "msg_id": "M-3",
+        "from": "Tumblewick After-School",
+        "subject": "Invoice D-2: after-school care, April",
+        "date": "2026-04-30",
+        "text": "Thursday 30 April 2026. Invoice D-2. Tumblewick After-School care for Wren Whitcombe, age 9, school days of April 2026, 190.00 dollars. Paid in full 30 April. Tumblewick After-School."
+      },
+      {
+        "msg_id": "M-4",
+        "from": "Tumblewick After-School",
+        "subject": "Invoice D-3: robotics club, March",
+        "date": "2026-03-31",
+        "text": "Tuesday 31 March 2026. Invoice D-3. Tumblewick Robotics Club after school for Milo Whitcombe, age 13 (born 3 February 2013), March 2026, 180.00 dollars. Paid in full 31 March. Tumblewick After-School."
+      },
+      {
+        "msg_id": "M-5",
+        "from": "Loonwater Overnight Camp",
+        "subject": "Invoice D-4: overnight camp, 22 to 28 June",
+        "date": "2026-06-28",
+        "text": "Sunday 28 June 2026. Invoice D-4. Loonwater Overnight Camp, a camp where children sleep over: Wren Whitcombe, age 9, 22 to 28 June 2026, 640.00 dollars. Paid in full. Loonwater Overnight Camp."
+      },
+      {
+        "msg_id": "M-6",
+        "from": "Fernwick Day Camp",
+        "subject": "Invoice D-5: day camp, 6 to 10 July",
+        "date": "2026-05-28",
+        "text": "Thursday 28 May 2026. Invoice D-5. Fernwick Day Camp, a day camp: Wren Whitcombe, age 9, the week of 6 to 10 July 2026, 420.00 dollars. Paid in full 28 May in advance. Fernwick Day Camp."
+      },
+      {
+        "msg_id": "M-7",
+        "from": "Theo Whitcombe",
+        "subject": "Babysitting in May, D-6",
+        "date": "2026-05-31",
+        "text": "Sunday 31 May 2026. Mom, receipt D-6: I watched Wren six evenings in May 2026 so you could work, 240.00 dollars, paid by transfer. I'm 17. Theo."
+      }
+    ],
+    "bank": [
+      {
+        "bid": "B-1",
+        "date": "2026-03-01",
+        "payee": "Granitegate Fitness",
+        "what": "monthly membership",
+        "amount": -39.0
+      },
+      {
+        "bid": "B-2",
+        "date": "2026-03-02",
+        "payee": "Winterlea Dental",
+        "what": "teeth whitening",
+        "amount": -289.0
+      },
+      {
+        "bid": "B-3",
+        "date": "2026-06-01",
+        "payee": "Paylance",
+        "what": "health plan premium, June",
+        "amount": -212.0
+      },
+      {
+        "bid": "B-4",
+        "date": "2026-05-28",
+        "payee": "Fernwick Day Camp",
+        "what": "camp week paid in advance (D-5)",
+        "amount": -420.0
+      }
+    ],
+    "eob": [
+      {
+        "eid": "E-1",
+        "date": "2026-02-11",
+        "provider": "Winterlea Dental",
+        "service": "crown",
+        "billed": 820.0,
+        "plan_paid": 656.0,
+        "you_owe": 164.0,
+        "note": "your share"
+      },
+      {
+        "eid": "E-2",
+        "date": "2026-04-06, 04-13, 04-20",
+        "provider": "Corvane Physical Therapy",
+        "service": "3 visits",
+        "billed": 375.0,
+        "plan_paid": 300.0,
+        "you_owe": 75.0,
+        "note": "your share, 25.00 a visit"
+      },
+      {
+        "eid": "E-3",
+        "date": "2025-08-22",
+        "provider": "Winterlea Dermatology",
+        "service": "office visit",
+        "billed": 140.0,
+        "plan_paid": 80.0,
+        "you_owe": 60.0,
+        "note": "your share"
+      },
+      {
+        "eid": "E-4",
+        "date": "2026-07-14",
+        "provider": "Corvane Family Medicine",
+        "service": "office visit",
+        "billed": 160.0,
+        "plan_paid": 120.0,
+        "you_owe": 40.0,
+        "note": "your share"
+      },
+      {
+        "eid": "E-5",
+        "date": "2026-06-18",
+        "provider": "Wrenfield Orthodontics",
+        "service": "adjustment visit",
+        "billed": 430.0,
+        "plan_paid": 344.0,
+        "you_owe": 86.0,
+        "note": "your share"
+      },
+      {
+        "eid": "E-6",
+        "date": "2026-01-11",
+        "provider": "Corvane Urgent Care",
+        "service": "visit",
+        "billed": 310.0,
+        "plan_paid": 310.0,
+        "you_owe": 0.0,
+        "note": "paid in full by the plan"
+      }
+    ],
+    "rx": [
+      {
+        "lid": "P-1",
+        "date": "2026-04-22",
+        "item": "allergy tablets, no prescription",
+        "price": 18.49,
+        "paid_with": "Ledgerwren debit card"
+      },
+      {
+        "lid": "P-2",
+        "date": "2026-01-31",
+        "item": "menstrual care products",
+        "price": 12.98,
+        "paid_with": "Ledgerwren debit card"
+      },
+      {
+        "lid": "P-3",
+        "date": "2026-03-10",
+        "item": "multivitamins, general health",
+        "price": 24.99,
+        "paid_with": "Ledgerwren debit card"
+      },
+      {
+        "lid": "P-4",
+        "date": "2026-02-14",
+        "item": "cold medicine, no prescription",
+        "price": 11.49,
+        "paid_with": "Flexwell FSA card (CS-2)"
+      },
+      {
+        "lid": "P-5",
+        "date": "2026-01-15",
+        "item": "prescription copay",
+        "price": 30.0,
+        "paid_with": "Ledgerwren debit card"
+      }
+    ],
+    "clm": [
+      {
+        "cid": "C-1",
+        "submitted": "2026-01-22",
+        "what": "Fennimoor prescription copay of 15 January (P-5)",
+        "amount": 30.0,
+        "status": "reimbursed 2026-01-28"
+      },
+      {
+        "cid": "C-2",
+        "submitted": "2026-05-12",
+        "what": "eye exam copay, 2 May",
+        "amount": 45.0,
+        "status": "reimbursed 2026-05-18"
+      }
+    ],
+    "cardtx": [
+      {
+        "sid": "CS-1",
+        "date": "2026-06-18",
+        "merchant": "Wrenfield Orthodontics",
+        "amount": 86.0,
+        "status": "pending: a third-party statement is due by 2026-10-14, or it is repaid"
+      },
+      {
+        "sid": "CS-2",
+        "date": "2026-02-14",
+        "merchant": "Fennimoor Pharmacy",
+        "amount": 11.49,
+        "status": "approved automatically by the item check"
+      }
+    ],
+    "plan": [
+      {
+        "topic": "index",
+        "text": "Flexwell (invented). Today is Friday 9 October 2026. Flexwell is the administrator of Dana Whitcombe's employer's flexible spending accounts. Plan year 1 July 2025 to 30 June 2026; her coverage began 1 September 2025. Topics: period, eligible, substantiation, limits, deadlines. Her claims are in read_claims and her card in read_card."
+      },
+      {
+        "topic": "period",
+        "text": "Flexwell (invented). Today is Friday 9 October 2026. An expense is incurred when the care is given, not when it is billed or paid. It counts only if it is incurred inside the period of coverage: 1 September 2025 to 30 June 2026 for Dana. This plan has no grace period. It carries over up to 660 dollars of unused health FSA money; a plan cannot offer both a grace period and a carryover for the same plan year. Dependent care has no carryover."
+      },
+      {
+        "topic": "eligible",
+        "text": "Flexwell (invented). Today is Friday 9 October 2026. Health FSA: medical care under section 213(d), including over-the-counter drugs without a prescription and menstrual care products; not a cosmetic procedure such as teeth whitening, not a gym membership, not vitamins taken for general health, and not insurance premiums. Dependent care: care of a child under 13 so you can work. A day camp counts and an overnight camp does not. Care paid to your own child under 19, or to a dependent of yours, does not count."
+      },
+      {
+        "topic": "substantiation",
+        "text": "Flexwell (invented). Today is Friday 9 October 2026. Every claim needs a statement from someone other than you or your family, giving the date, a description and the amount; you cannot vouch for your own claim. An insurer's explanation of benefits counts, and only what you owe can be claimed, never the insurer's share. A card swipe that matches a copay or passes the item check is approved automatically. Any other swipe is pending until you send such a statement, and is repaid if you do not."
+      },
+      {
+        "topic": "limits",
+        "text": "Flexwell (invented). Today is Friday 9 October 2026. Health FSA: Dana elected 2,400 dollars; the federal limit for a plan year beginning in 2025 is 3,300 dollars. Dependent care: Dana elected 4,000 dollars; this plan's limit is 5,000 dollars a year. A federal limit of 7,500 dollars applies to taxable years beginning after 31 December 2025, and this plan has not adopted it."
+      },
+      {
+        "topic": "deadlines",
+        "text": "Flexwell (invented). Today is Friday 9 October 2026. The plan year ended 30 June 2026. The run-out is the plan's own: claims for expenses incurred in the plan year must be received by 31 October 2026. Documents for a pending card swipe are due 30 days after the request."
+      }
+    ]
+  }
+}

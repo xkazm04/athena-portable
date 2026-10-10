@@ -1,0 +1,372 @@
+{
+  "playbook": "fsa-claims-substantiation",
+  "run_at": "2026-10-10T22:14:23Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 92.8,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 20,
+  "cost_usd": 0.8089,
+  "your_time_s": 210,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.5
+  },
+  "score": {
+    "eligible": 7,
+    "found": 7,
+    "exact": 7,
+    "value_total_usd": 966.47,
+    "value_found_usd": 966.47,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 15,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_claim",
+        "key": "E-3",
+        "why": "E-3 is a dermatology visit on 22 August 2025, before her coverage began on 1 September 2025; an expense incurred before the period of coverage is not reimbursable (Prop. Reg. 1.125-6(a)(2))",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "E-4",
+        "why": "E-4 is a physician visit on 14 July 2026, after the plan year ended on 30 June 2026; the plan has no grace period, and the run-out only gives time to file expenses from the plan year",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "E-5",
+        "why": "E-5 is the 18 June 2026 orthodontic visit (86.00 owed) that her FSA card already paid as swipe CS-1; it is answered with documentation for CS-1, not claimed again as a new expense, which would pay it twice",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "E-6",
+        "why": "E-6 is an urgent care visit that the plan paid in full; she owes 0.00, and the insurer's share of 310.00 is not claimable",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "P-3",
+        "why": "P-3 is multivitamins for general health, which the plan's eligibility page says are not covered without a medical purpose; none is stated",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "P-4",
+        "why": "P-4 is cold medicine bought with the FSA card on 14 February 2026 (CS-2) and approved automatically by the item check; it is already paid and not claimed again",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "P-5",
+        "why": "P-5 is the prescription copay of 15 January 2026 that she claimed as C-1 and the plan reimbursed on 28 January; claiming it again pays it twice",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "B-1",
+        "why": "B-1 is a gym membership, which is not medical care and is not eligible",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "B-2",
+        "why": "B-2 is teeth whitening at Winterlea Dental, a cosmetic procedure that is not medical care (Publication 502)",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "B-3",
+        "why": "B-3 is a health plan premium; insurance premiums cannot be reimbursed from a health FSA",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "D-3",
+        "why": "D-3 is Milo's robotics club in March 2026; he was born on 3 February 2013 and turned 13 on 3 February 2026, so he was no longer under 13 when the care was given in March (21(b)(1)(A); Publication 503)",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "D-4",
+        "why": "D-4 is Loonwater Overnight Camp, a camp where children sleep over; an overnight camp is not eligible (Publication 503)",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "D-5",
+        "why": "D-5 is Fernwick Day Camp for 6 to 10 July 2026, paid on 28 May; an expense is incurred when the care is given, so it falls after the plan year ended on 30 June and cannot be claimed",
+        "filed": false
+      },
+      {
+        "action": "submit_claim",
+        "key": "D-6",
+        "why": "D-6 is babysitting by her 17-year-old son Theo; care paid to her own child under 19 is not eligible (26 U.S.C. 129(c)(2))",
+        "filed": false
+      },
+      {
+        "action": "submit_documentation",
+        "key": "CS-2",
+        "why": "CS-2 is a card swipe that the item check already approved (cold medicine, 11.49); it needs no statement",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "submit_documentation",
+      "key": "CS-1",
+      "outcome": "correct",
+      "value_usd": 86.0,
+      "exact": true,
+      "why": "CS-1 is an FSA card swipe of 86.00 at Wrenfield Orthodontics on 18 June 2026 that no copay match or item check approved, so it is pending; the Paylance EOB E-5 is the independent third-party statement (date 18 June 2026, orthodontic adjustment visit, 86.00 she owes), and it is due by 14 October 2026, five days from today, within the plan's 30 days. Weighted at 86.00 dollars"
+    },
+    {
+      "action": "submit_claim",
+      "key": "E-1",
+      "outcome": "correct",
+      "value_usd": 164.0,
+      "exact": true,
+      "why": "E-1 is the Winterlea Dental crown of 11 February 2026, inside her coverage (1 September 2025 to 30 June 2026); the EOB is the third-party statement, and only what she owes, 164.00 of 820.00 billed, is claimable (Prop. Reg. 1.125-6(b)(3)(ii)); 656.00 is the plan's share. Weighted at 164.00 dollars"
+    },
+    {
+      "action": "submit_claim",
+      "key": "E-2",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "E-2 is three physical therapy visits (6, 13 and 20 April 2026) in her period of coverage; the EOB shows she owes 75.00 of 375.00. Weighted at 75.00 dollars"
+    },
+    {
+      "action": "submit_claim",
+      "key": "P-1",
+      "outcome": "correct",
+      "value_usd": 18.49,
+      "exact": true,
+      "why": "P-1 is allergy tablets bought without a prescription on 22 April 2026, paid with her bank debit card; over-the-counter drugs are eligible (CARES Act, 2020) and the itemised pharmacy receipt is the statement. Weighted at 18.49 dollars"
+    },
+    {
+      "action": "submit_claim",
+      "key": "P-2",
+      "outcome": "correct",
+      "value_usd": 12.98,
+      "exact": true,
+      "why": "P-2 is menstrual care products bought on 31 January 2026, paid with her bank debit card; eligible since the CARES Act (26 U.S.C. 106(f)), receipt line as the statement. Weighted at 12.98 dollars"
+    },
+    {
+      "action": "submit_claim",
+      "key": "D-1",
+      "outcome": "correct",
+      "value_usd": 420.0,
+      "exact": true,
+      "why": "D-1 is Fernwick Day Camp, a day camp, 8 to 12 June 2026, for Wren, age 9, so a child under 13 (21(b)(1)(A)) in a day camp (Publication 503); care given inside the plan year; the invoice is the provider's statement. Weighted at 420.00 dollars"
+    },
+    {
+      "action": "submit_claim",
+      "key": "D-2",
+      "outcome": "correct",
+      "value_usd": 190.0,
+      "exact": true,
+      "why": "D-2 is Tumblewick after-school care for Wren, age 9, in April 2026, inside the plan year; the invoice is the provider's statement. Weighted at 190.00 dollars"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I need the exact invoice, EOB and receipt details from the earlier tabs before I file anything, so I'm recalling them now.\n\nI'm filing six claims and the answer to the pending swipe. Each one is a card for you to approve, and I haven't filed anything yet.\n\n**Claims, each backed by a third-party statement**\n- **CS-1, Wrenfield Orthodontics, 18 Jun, $86.00:** the swipe is answered with EOB E-5. It matches on date, provider and amount. It is due 14 October, so it comes first.\n- **E-1, crown, 11 Feb 2026, $164.00:** I'm claiming only your share. The plan's $656.00 is not claimable. The EOB is the statement.\n- **E-2, physical therapy, 6, 13 and 20 Apr, $75.00:** this is your share at $25.00 a visit. The EOB is the statement.\n- **P-1, allergy tablets, 22 Apr, $18.49:** the plan covers over-the-counter drugs. The Fennimoor receipt is the statement.\n- **P-2, menstrual care products, 31 Jan, $12.",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Dana Whitcombe. This is my mail: the plan's notice and invoices for my children's care. Read every message. Don't do anything yet: I'll send you to my bank, my insurer, my pharmacy and the plan.",
+      "continued": false,
+      "said": "I'll start by listing the inbox, then read each message.",
+      "said_chars": 56,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Seven messages are in the inbox. I'll read all of them now.",
+      "said_chars": 59,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "I've read all seven messages. Nothing has been claimed or filed.\n\n\n**What the mail shows**\n- **M-1, Flexwell notice:**\n  - The plan year ended 30 June, and the run-out ends 31 October.\n  - Swipe CS-1 (18 June, Wrenfield Orthodontics, $86.00) is pending.\n  - It needs a third-party statement of date, description and amount by **14 October**, or the $86.00 is repaid. That is the nearest deadline.\n- **D-1, Fernwick day camp:** Wren, 8 to 12 June, $420.00. This looks claimable.",
+      "said_chars": 1899,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "This is my bank, Ledgerwren. Read its note and my statement. Don't do anything yet.",
+      "continued": false,
+      "said": "I'll read the Ledgerwren statement now. I won't file anything.",
+      "said_chars": 62,
+      "reads": [
+        "read_statement"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "",
+      "continued": true,
+      "said": "I read the Ledgerwren statement. It has four debits, and I filed nothing. There was no separate note on this page beyond the statement rows.\n\n- **B-1, Granitegate Fitness, $39.00, 1 Mar:** a gym membership. I'm leaving it out, because a gym is general wellness rather than medical care.\n- **B-2, Winterlea Dental, $289.00, 2 Mar:** teeth whitening. I'm leaving it out, because it is cosmetic.\n- **B-3, Paylance, $212.00, 1 Jun:** the June health plan premium. I'm leaving it out, because premiums aren't claimable.",
+      "said_chars": 1181,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Paylance member portal",
+      "user": "This is my health plan's member portal, Paylance. Read my explanations of benefits, every page. Don't do anything yet.",
+      "continued": false,
+      "said": "I'll read both pages of EOBs now. Nothing will be filed.",
+      "said_chars": 56,
+      "reads": [
+        "read_eobs",
+        "read_eobs"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Paylance member portal",
+      "user": "",
+      "continued": true,
+      "said": "I read both pages of your EOBs (6 of 6). Nothing has been filed.\n\n**What the EOBs show**\n- **E-1, Winterlea Dental, crown, 11 Feb 2026:** billed $820.00, plan paid $656.00, you owe **$164.00**. This looks claimable.\n- **E-2, Corvane Physical Therapy, 3 visits (6, 13 and 20 Apr 2026):** billed $375.00, plan paid $300.00, you owe **$75.00** ($25.00 a visit). This looks claimable.\n- **E-3, Winterlea Dermatology, office visit, 22 Aug 2025:** you owe $60.00. The date falls before the plan year that ended 30 June 2026.",
+      "said_chars": 1708,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Fennimoor Pharmacy",
+      "user": "This is my pharmacy, Fennimoor. Read my receipts. Don't do anything yet.",
+      "continued": false,
+      "said": "I'll read your Fennimoor receipts now. I won't file anything.",
+      "said_chars": 61,
+      "reads": [
+        "read_receipts"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Fennimoor Pharmacy",
+      "user": "",
+      "continued": true,
+      "said": "I read all five Fennimoor receipt lines (5 of 5) and filed nothing.\n\n- **P-1, 22 Apr 2026, allergy tablets (no prescription), $18.49, paid by Ledgerwren debit card:** This looks claimable if the plan's eligible list covers non-prescription medicine. I'll check that on Flexwell.\n- **P-2, 31 Jan 2026, menstrual care products, $12.98, Ledgerwren debit card:** This also depends on the plan's eligible list. I'll check it on Flexwell.",
+      "said_chars": 1451,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Flexwell",
+      "user": "This is Flexwell, my FSA. Read its rules, my claims and my card. Claim every eligible expense with the statement the plan asks for, answer the pending card swipe, and leave out what the plan does not cover. Then tell me what you claimed, wh",
+      "continued": false,
+      "said": "I'll read the plan's rules, your claims and your card first. Nothing is filed yet.",
+      "said_chars": 82,
+      "reads": [
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_plan",
+        "read_claims",
+        "read_card"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Flexwell",
+      "user": "",
+      "continued": true,
+      "said": "I need the exact invoice, EOB and receipt details from the earlier tabs before I file anything, so I'm recalling them now.\n\nI'm filing six claims and the answer to the pending swipe. Each one is a card for you to approve, and I haven't filed anything yet.\n\n**Claims, each backed by a third-party statement**\n- **CS-1, Wrenfield Orthodontics, 18 Jun, $86.00:** the swipe is answered with EOB E-5. It matches on date, provider and amount. It is due 14 October, so it comes first.",
+      "said_chars": 2619,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_documentation",
+          "key": "CS-1",
+          "outcome": "correct",
+          "value_usd": 86.0
+        },
+        {
+          "action": "submit_claim",
+          "key": "E-1",
+          "outcome": "correct",
+          "value_usd": 164.0
+        },
+        {
+          "action": "submit_claim",
+          "key": "E-2",
+          "outcome": "correct",
+          "value_usd": 75.0
+        },
+        {
+          "action": "submit_claim",
+          "key": "P-1",
+          "outcome": "correct",
+          "value_usd": 18.49
+        },
+        {
+          "action": "submit_claim",
+          "key": "P-2",
+          "outcome": "correct",
+          "value_usd": 12.98
+        },
+        {
+          "action": "submit_claim",
+          "key": "D-1",
+          "outcome": "correct",
+          "value_usd": 420.0
+        },
+        {
+          "action": "submit_claim",
+          "key": "D-2",
+          "outcome": "correct",
+          "value_usd": 190.0
+        }
+      ]
+    }
+  ],
+  "note": "world.json only: the submit_claim and submit_documentation descriptions now say the expense is named by its id (E-, P-, D- or B-) and the swipe by its CS- id; run 1 chose the right seven expenses but keyed six claims by free text, so six scored unfounded",
+  "history": [
+    {
+      "run_at": "2026-10-10T22:12:04Z",
+      "model": "sonnet",
+      "verdict": "short",
+      "found": 1,
+      "eligible": 7,
+      "value_found_usd": 86.0,
+      "false_claims": 6
+    }
+  ]
+}

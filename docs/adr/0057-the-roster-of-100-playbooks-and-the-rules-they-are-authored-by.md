@@ -306,6 +306,19 @@ names; each playbook carries the new one.
 | 80 | `remote-payroll-registration` | Payroll | work | Register withholding and unemployment accounts in each state where a remote employee works, before the first payroll there | Payroll Harbor, Taxline State, Revenuedesk, Staffnest | Each state's employer registration for withholding and unemployment insurance (UI localization under state law) | $2,000 / year, mostly minutes | P J: where the work is localized |
 | 81 | `adverse-action-notices` | Hiring | work | Send the pre-adverse-action notice, and wait, before rejecting a candidate on a background check | Talentry ATS, Clearcheck, Mailnest | FCRA §604(b)(3) and §615, 15 U.S.C. §1681b(b)(3) and §1681m | $1,500 / year, mostly minutes | X J: the order and the waiting period |
 
+*Note, 2026-10-11:* these portal names were changed before a first bench, because the roster's name
+belongs to a real business (rule 4: every portal is invented). The rows above keep the roster's
+names; each playbook carries the new one.
+- Row 72, `fsa-claims-substantiation`: "Corner Pharmacy" became "Fennimoor Pharmacy", because Corner Pharmacy is the name of several
+  real pharmacies (in Brooklyn, Manhattan, Flushing and Greenfield, Ohio; the benched `part-d-exception`, `rep-payee-accounting` and
+  `medicare-plan-review` keep it unchanged and are not touched); and "Ledgerline bank" became "Ledgerwren bank", because Ledgerline
+  is the name of several real accounting and invoicing products (rows 62, 63 and 69 settled the name). The roster's row 72 lists no
+  mail portal; Postwren (for "Mailnest", because mailnest.io is a real email service) is added as the fifth portal, because the plan's
+  notice and the providers' invoices are mail. "Flexwell" and "Paylance member portal" kept their names: a search found no business
+  called Flexwell (it turned up other FSA administrators with similar names) and none called Paylance as a health plan or member portal
+  (the search tool is fuzzy, so that is "none found", not a proof); the benched `clinic-underpayments` and `out-of-network-claims`
+  use Paylance unchanged and are not touched.
+
 ### B9: Public programmes, schools, farms and nonprofits
 
 | # | id | Domain | Aud. | Chore | Portals | Rests on | Value / per | Why only Athena |

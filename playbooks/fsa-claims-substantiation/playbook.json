@@ -1,0 +1,153 @@
+{
+  "id": "fsa-claims-substantiation",
+  "title": "A planner's flexible spending account is claimed before the run-out ends: a crown's and physical therapy's share on the EOBs, two pharmacy items, a day camp and after-school care, and a card swipe answered with its EOB, while whitening, a gym, vitamins, a premium, an overnight camp, a teen's care and a child of 13 are left out",
+  "domain": "Benefits",
+  "audience": "home",
+  "promise": "A warehouse operations planner in Tulsa has an FSA plan year that ended on 30 June, with its run-out open until 31 October. She claims seven expenses for 966.47 dollars: the 164 dollars she owes on a crown and the 75 dollars on physical therapy, from the EOBs and never the insurer's share, an allergy medicine and menstrual products bought without a prescription, a day camp and after-school care for her 9-year-old, and an 86-dollar card swipe that is pending, which she answers with its EOB before the plan's 14 October deadline. She leaves out teeth whitening, a gym membership, vitamins and a premium, an overnight camp, her 13-year-old's club, her 17-year-old's babysitting, a visit before her coverage began and one after the plan year, a camp week in July she paid for in May, a visit her insurer paid in full, and three items already reimbursed.",
+  "persona": "A warehouse operations planner in Tulsa, Oklahoma, with a health FSA and a dependent care FSA through her employer, three children, an insurer and a pharmacy",
+  "chore": "Read her mail, her bank, her insurer's explanations of benefits and her pharmacy's receipts, and the plan's rules, claims and card at Flexwell. Apply the cafeteria plan rules as they stand on 9 October 2026 (an expense is incurred when the care is given and counts only inside the period of coverage; every claim is substantiated by a third party's statement of date, description and amount, and only her own share of an EOB is claimable; the plan's own run-out is 31 October 2026): claim every eligible expense with the statement the plan asks for, answer the pending card swipe with its EOB before its deadline, and claim nothing that is cosmetic, a premium, vitamins, a gym, an overnight camp, for a child of 13 or older, paid to her own child under 19, outside the period of coverage, or already reimbursed.",
+  "command": "I'm Dana Whitcombe. Go through my Postwren mail, my Ledgerwren bank, my Paylance explanations of benefits, my Fennimoor pharmacy receipts and my Flexwell FSA. Claim every eligible expense before the run-out ends with the statement the plan asks for, answer the pending card swipe, leave out what the plan does not cover, and tell me what you did and why.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "the plan's notice and the providers' invoices for her children's care",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren bank",
+      "role": "the account's debits for a gym, whitening, a premium and a camp week",
+      "api": "Bank portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Paylance member portal",
+      "role": "her explanations of benefits, with what the plan paid and what she owes",
+      "api": "Health plan member portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Fennimoor Pharmacy",
+      "role": "her receipt lines, with how each was paid",
+      "api": "Pharmacy site, no API",
+      "url": ""
+    },
+    {
+      "name": "Flexwell",
+      "role": "the plan's rules, her claims and card, and the place to claim and to answer a swipe",
+      "api": "FSA administrator site, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the seven messages in Postwren and the four debits in Ledgerwren.",
+    "Reads the six explanations of benefits in Paylance.",
+    "Reads the five receipt lines in Fennimoor.",
+    "Reads Flexwell's rules, claims and card, then claims what is eligible and answers the pending swipe."
+  ],
+  "gates": [
+    {
+      "action": "submit_claim",
+      "label": "Claim an expense from the FSA",
+      "why": "A claim is certified to the plan and paid to her; one for an ineligible, out-of-period or already reimbursed expense, or for the insurer's share, is an improper payment that is repaid or offset later and taxable meanwhile."
+    },
+    {
+      "action": "submit_documentation",
+      "label": "Answer a pending card swipe",
+      "why": "A statement sent for a swipe confirms it as medical; the wrong one leaves a swipe unsubstantiated, repaid and offset against her later claims."
+    }
+  ],
+  "traps": [
+    "Claiming teeth whitening, a cosmetic procedure.",
+    "Claiming a gym membership.",
+    "Claiming multivitamins for general health.",
+    "Claiming a health plan premium.",
+    "Claiming a dermatology visit before her coverage began.",
+    "Claiming a visit after the plan year ended.",
+    "Claiming the insurer's share of a visit the plan paid in full.",
+    "Claiming the orthodontic visit again after the card paid it.",
+    "Claiming an overnight camp.",
+    "Claiming care for a child of 13.",
+    "Claiming babysitting paid to her 17-year-old son.",
+    "Claiming a July camp week she paid for in May."
+  ],
+  "memory": [
+    "Which expense was incurred when, what each statement says she owes, and how each was paid, from Postwren, Paylance, Fennimoor and Ledgerwren.",
+    "The plan's period of coverage, run-out and eligibility rules, and the pending swipe with its due date, carried to the claims."
+  ],
+  "economics": {
+    "value_usd": 900,
+    "per": "year",
+    "basis": "An estimate. An employee who elects an FSA and pays out of pocket often leaves eligible expenses unclaimed, or a card swipe unanswered, until the run-out ends and the money is forfeited or repaid; the roster's $900 a year is such a year's claims recovered, not a published figure. The money is recovered. The bench world holds seven claims worth $966.47 (164.00, 75.00, 18.49, 12.98, 420.00, 190.00 and 86.00), with fourteen expenses and a swipe left alone. Times a year: once, the year-end claim (ADR 0056). manual_minutes 120: reading seven messages, four debits, six EOBs, five receipt lines and the plan's rules, setting each expense against the period of coverage, the eligibility rules and what the card already paid, and filing seven. Rules applied, as they stand on Friday 9 October 2026. Proposed Treasury Regulations 1.125-1 and 1.125-6 (72 FR 43938, 6 August 2007, read in the Government Publishing Office PDF; proposed regulations that cafeteria plans may rely on): 1.125-6(a)(2) medical expenses are incurred when the care is provided and not when billed or paid, and only inside the period of coverage; 1.125-6(a)(4) the same for dependent care, with expenses before the employee's enrolment or after the plan year not covered; 1.125-6(b)(2) every claim must be substantiated; 1.125-6(b)(3)(i) by information from a third party independent of the employee and the employee's spouse and dependents, describing the product or service, the date and the amount, and self-substantiation or self-certification does not satisfy it; 1.125-6(b)(3)(ii) an explanation of benefits showing the date of the care and the employee's responsibility (coinsurance and amounts below the deductible) substantiates the claim for that responsibility, so the insurer's share is not claimable; 1.125-6(d) to (f) the debit card rules, with 1.125-6(e)(3)(i) a transaction that is an exact multiple of up to five times a copayment, (e)(4) a recurring expense matching one previously approved, (e)(5) real-time substantiation, (f) an inventory information approval system, and (e)(6) every other swipe is conditional, pending additional independent third-party information of the goods or services, the date and the amount, regardless of the amount; 1.125-6(d)(7) an improper payment is recovered by deactivating the card, demanding repayment, withholding from pay and offsetting against later claims. The proposed 1.125-1(e) grace period is up to the fifteenth day of the third month after the plan year (two months and fifteen days, the figure of IRS Notice 2005-42), and 1.125-5(k)(2) says a health FSA may not reimburse health insurance. The carryover is the amount of Notice 2013-71 and its updates, a plan may not offer both a grace period and a carryover for a health FSA, and a dependent care FSA has no carryover; the notices were read only through summaries. THE LIMITS FOR THE PLAN YEAR IN THE WORLD (1 July 2025 to 30 June 2026): the health FSA salary reduction limit under 26 U.S.C. 125(i) for plan years beginning in 2025 is 3,300 dollars with a carryover of up to 660 dollars (Revenue Procedure 2024-40; Publication 969 for 2025 agrees); 2026 is 3,400 and 680 (Revenue Procedure 2025-32), which does not apply to a plan year that began in 2025. Dependent care: 26 U.S.C. 129(a)(2)(A) as amended by Public Law 119-21 section 70404, 7,500 dollars (3,750 if married filing separately) for taxable years beginning after 31 December 2025, from 5,000 (2,500); the exclusion is measured by the employee's taxable year, so a plan year that spans 1 January 2026 is a transition case no IRS guidance on which was found, and the world avoids it: every dependent care expense is incurred in 2026 and the plan, which has not adopted the higher limit, applies 5,000 dollars. Employers are not required to raise the limit. The qualifying individual is a child under 13 (26 U.S.C. 21(b)(1)(A); Publication 503 (2025): a child who turns 13 counts only for care before the birthday), an overnight camp is not work-related care and a day camp can be (Publication 503), and 129(c) bars care paid to a dependent of the employee or to the employee's child under 19. Health FSA eligibility: medical care under 213(d); over-the-counter drugs without a prescription and menstrual care products since the CARES Act (26 U.S.C. 106(f) for the latter, effective for expenses incurred after 31 December 2019); not teeth whitening, cosmetic surgery, gym dues or vitamins without a diagnosed condition (Publication 502 (2025)). THE PLAN YEAR AND ITS RUN-OUT: 1 July 2025 to 30 June 2026, coverage from 1 September 2025, no grace period, a carryover, and a run-out to 31 October 2026 that is the plan's own and invented; on 9 October 2026 it is open for three weeks.",
+    "manual_minutes": 120,
+    "times_per_year": 1,
+    "incumbent": "FSA administrators bill the employer a flat fee per participant, and no published price was read for the bench, so none is given and no incumbent_fee_pct is stated. A fee is never converted into a share (ADR 0064). An employee claims from the plan herself, free.",
+    "sources": [
+      {
+        "label": "Proposed regulations on cafeteria plans, 26 CFR 1.125-1 to 1.125-7, 72 FR 43938, 6 August 2007 (Government Publishing Office PDF, read 10 October 2026)",
+        "url": "https://www.govinfo.gov/content/pkg/FR-2007-08-06/pdf/E7-14827.pdf"
+      },
+      {
+        "label": "26 U.S.C. 125, cafeteria plans (Cornell Legal Information Institute)",
+        "url": "https://www.law.cornell.edu/uscode/text/26/125"
+      },
+      {
+        "label": "26 U.S.C. 129, dependent care assistance programs, as amended by Public Law 119-21 (Cornell, read 10 October 2026)",
+        "url": "https://www.law.cornell.edu/uscode/text/26/129"
+      },
+      {
+        "label": "26 U.S.C. 213, medical expenses",
+        "url": "https://www.law.cornell.edu/uscode/text/26/213"
+      },
+      {
+        "label": "26 U.S.C. 21(b)(1), qualifying individual under 13",
+        "url": "https://www.law.cornell.edu/uscode/text/26/21"
+      },
+      {
+        "label": "26 U.S.C. 106(f), menstrual care products (Cornell, read 10 October 2026)",
+        "url": "https://www.law.cornell.edu/uscode/text/26/106"
+      },
+      {
+        "label": "IRS Notice 2005-42, the grace period (read through summaries)",
+        "url": "https://www.irs.gov/pub/irs-drop/n-05-42.pdf"
+      },
+      {
+        "label": "IRS Notice 2013-71, the health FSA carryover (read through summaries)",
+        "url": "https://www.irs.gov/pub/irs-drop/n-13-71.pdf"
+      },
+      {
+        "label": "IRS Revenue Procedure 2024-40, 2025 limits (read through summaries and Publication 969 for 2025)",
+        "url": "https://www.irs.gov/pub/irs-drop/rp-24-40.pdf"
+      },
+      {
+        "label": "IRS Revenue Procedure 2025-32, 2026 limits (read through summaries)",
+        "url": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf"
+      },
+      {
+        "label": "IRS Publication 502, Medical and Dental Expenses (2025, read 10 October 2026)",
+        "url": "https://www.irs.gov/publications/p502"
+      },
+      {
+        "label": "IRS Publication 503, Child and Dependent Care Expenses (2025, read 10 October 2026)",
+        "url": "https://www.irs.gov/publications/p503"
+      },
+      {
+        "label": "Public Law 119-21, section 70404 (dependent care assistance, 7,500 dollars)",
+        "url": "https://www.congress.gov/bill/119th-congress/house-bill/1/text"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Twenty-two expenses across a bank, an insurer, a pharmacy and a plan, each to be set against the period of coverage, the plan year's end, the eligibility rules, what the insurer paid, what the FSA card already reimbursed and the age and kind of care, with a pending card swipe that only an EOB can answer before its date.",
+    "usefulness_why": "Saves an evening of statements against a plan's rules and keeps money from being forfeited at the run-out; the sum depends on what she paid out of pocket and how much she elected."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful employee with her statements, her EOBs and the plan's rules claims the seven eligible items and none of the fourteen that are not, inside an hour."
+  },
+  "caveat": "Dana Whitcombe, Wren, Milo and Theo Whitcombe, Flexwell, Paylance member portal, Fennimoor Pharmacy, Ledgerwren bank, Postwren, every provider (Winterlea Dental, Corvane Physical Therapy, Wrenfield Orthodontics, Fernwick Day Camp, Tumblewick After-School, Loonwater Overnight Camp, Granitegate Fitness), every plan term, expense, amount and date are invented; no real plan administrator, insurer, pharmacy, provider or employer is named. The plan year (1 July 2025 to 30 June 2026), her coverage start, the absence of a grace period, the carryover and the run-out to 31 October 2026 are invented, and the run-out is open on the world's date. The public rules applied are the proposed Treasury regulations 1.125-1 and 1.125-6 (72 FR 43938, 2007, in the Government Publishing Office PDF), 26 U.S.C. 125, 129 (as amended by Public Law 119-21), 213, 21(b)(1) and 106(f), and IRS Publications 502 and 503 (2025 editions), as they stand on 9 October 2026; IRS Notices 2005-42 and 2013-71 and Revenue Procedures 2024-40 and 2025-32 were read only through summaries, and the official IRS pages for them were not opened. The dependent care limit moved to 7,500 dollars for taxable years beginning after 31 December 2025 and no IRS guidance on how it applies to a plan year spanning 1 January was found, so the world avoids that case and its plan has not adopted the higher limit. Whether an expense is medical care, whether care is work-related and what a plan's own terms and its administrator allow decide a real claim. This applies stated rules to stated facts; it is not legal, tax or financial advice."
+}

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "fsa-claims-substantiation",
+  "captured_at": "2026-10-10T22:16:30Z",
+  "bench_run_at": "2026-10-10T22:14:23Z",
+  "narration": {
+    "text": "A planner's flexible spending account is claimed before the run-out ends: a crown's and physical therapy's share on the EOBs, two pharmacy items, a day camp and after-school care, and a card swipe answered with its EOB, while whitening, a gym, vitamins, a premium, an overnight camp, a teen's care and a child of 13 are left out. This is a chore for a warehouse operations planner in Tulsa, Oklahoma, with a health FSA and a dependent care FSA through her employer, three children, an insurer and a pharmacy. On the bench, she found 7 of 7 eligible items, worth 966 dollars and 47 cents of the 966 dollars and 47 cents there was to find. She made no false claim. The world held 15 traps, and she walked past 15. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 80 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.768,
+    "sha256": "ead8bc912a39b1cc9e5d117eb50dfebe5885d50600d4ea3e6ae3b607d9774994"
+  },
+  "video": {
+    "path": "evidence/fsa-claims-substantiation/evidence.mp4",
+    "duration_s": 63.768,
+    "bytes": 2960773,
+    "sha256": "e9c05e6f29dfc1c6d2f97fc1f9d81b2c72d0667b11d74c3e470e19d8a80be737"
+  },
+  "thumbnail": {
+    "path": "playbooks/fsa-claims-substantiation/thumb.jpg",
+    "bytes": 86031,
+    "sha256": "7433aaa0a20fc69cbebd902ded7ae07a1ae6fb399868357360b80dd96c1d917a"
+  }
+}
