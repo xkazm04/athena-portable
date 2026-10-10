@@ -1,0 +1,371 @@
+{
+  "playbook": "household-employer-tax",
+  "run_at": "2026-10-10T06:01:21Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 208.1,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 31,
+  "cost_usd": 1.1913,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 3.5
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 818.17,
+    "value_found_usd": 818.17,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 16,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "set_up_as_household_employee",
+        "key": "HW-2",
+        "why": "Felix is Ingrid's son, 19: wages paid to the employer's child under 21 are not Social Security, Medicare or FUTA wages however much is paid (Pub 926), so withholding from him and counting his wages for FUTA and the state taxes money that is exempt; Hearthpay's prompt about the $3,000 threshold does not apply to him",
+        "filed": false
+      },
+      {
+        "action": "set_up_as_household_employee",
+        "key": "HW-4",
+        "why": "Priya is supplied by Fernhollow Home Care, which sets her shifts, supervises her, decides how the care is done and pays her: an agency's worker whom the agency controls is not Ingrid's employee (Pub 926), and Ingrid pays Fernhollow's invoice",
+        "filed": false
+      },
+      {
+        "action": "sign_i9_section2",
+        "key": "HW-4",
+        "why": "Priya is Fernhollow's employee, not Ingrid's: the agency completes the I-9s of its own employees, and Ingrid has examined no document of hers",
+        "filed": false
+      },
+      {
+        "action": "sign_i9_section2",
+        "key": "HW-1",
+        "why": "Marisol's Form I-9 was completed on 2 March 2026; signing a second Section 2 attests to an examination that did not happen today",
+        "filed": false
+      },
+      {
+        "action": "sign_i9_section2",
+        "key": "HW-2",
+        "why": "Felix's Form I-9 was completed on 12 June 2026; signing a second Section 2 attests to an examination that did not happen today",
+        "filed": false
+      },
+      {
+        "action": "file_new_hire_report",
+        "key": "NAIR",
+        "why": "Priya is supplied by Fernhollow, which controls her work and reports her: her wages are not Ingrid's covered wages, and Ostmere says not to report a worker whose wages are not covered",
+        "filed": false
+      },
+      {
+        "action": "file_new_hire_report",
+        "key": "VALE",
+        "why": "Felix's wages, as the employer's child under 21, are not covered in Ostmere, and Ostmere says not to report a worker whose wages are not covered",
+        "filed": false
+      },
+      {
+        "action": "file_new_hire_report",
+        "key": "FERREIRA",
+        "why": "Marisol was reported on 4 March 2026 and has not left and been rehired; Ostmere says not to report her again",
+        "filed": false
+      },
+      {
+        "action": "file_wage_report",
+        "key": "2026-Q2",
+        "why": "The second-quarter report was filed and accepted on 28 July 2026: filing it again reports the same wages twice",
+        "filed": false
+      },
+      {
+        "action": "file_wage_report",
+        "key": "2026-Q4",
+        "why": "The fourth quarter runs to 31 December and its report does not open until 1 January 2027; a report filed now would sign as true and complete wages not yet paid",
+        "filed": false
+      },
+      {
+        "action": "pay_ui_tax",
+        "key": "2026-Q2",
+        "why": "The second quarter's $300.29 was paid on 28 July 2026: paying it again sends the same tax twice",
+        "filed": false
+      },
+      {
+        "action": "pay_ui_tax",
+        "key": "2026-Q4",
+        "why": "Nothing is owed for the fourth quarter until its wages are paid and reported, by Monday 1 February 2027",
+        "filed": false
+      },
+      {
+        "action": "pay_federal_estimate",
+        "key": "ES-3",
+        "why": "The 15 September 2026 estimate, $1,150, was paid on 14 September (IRS confirmation 26C-5518); the bill-pay reminder was simply never dismissed. Paying it again sends $1,150 twice",
+        "filed": false
+      },
+      {
+        "action": "pay_federal_estimate",
+        "key": "ES-2",
+        "why": "The 15 June estimate was paid on 12 June 2026: paying it again sends $1,150 twice",
+        "filed": false
+      },
+      {
+        "action": "pay_federal_estimate",
+        "key": "ES-1",
+        "why": "The 15 April estimate was paid on 14 April 2026: paying it again sends $1,150 twice",
+        "filed": false
+      },
+      {
+        "action": "pay_bill",
+        "key": "BILL-32",
+        "why": "A $195 fee to file and pay a report that is filed and paid free on Taxline State, which endorses no filing service; the tax is not even included",
+        "filed": false
+      }
+    ],
+    "filed_usd": 149.87,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "set_up_as_household_employee",
+      "key": "HW-3",
+      "outcome": "correct",
+      "value_usd": 345.17,
+      "exact": true,
+      "why": "Ingrid sets Tomasz's hours and tasks from her father's care plan, supplies the tools and can end it: she controls what is done and how, so he is her household employee whatever his LLC or his request (Pub 926), and a household employee's wages go on a W-2, not a 1099-NEC. He is expected to be paid $4,512 in 2026, over the $3,000 threshold, so she should withhold his Social Security and Medicare from tonight's first pay; if she does not, she is responsible for his share as well as her own: 7.65% of $4,512, $345.17"
+    },
+    {
+      "action": "sign_i9_section2",
+      "key": "HW-3",
+      "outcome": "correct",
+      "value_usd": 288.0,
+      "exact": true,
+      "why": "Tomasz's first day of work for pay was Tuesday 6 October 2026; the employer signs Section 2 within 3 business days of it (8 CFR 274a.2(b)(1)(ii); USCIS), so by today, Friday 9 October. Ingrid examined his original US passport in person on 6 October and he signed Section 1 that day. A paperwork violation is fined at least $288 a form (8 CFR 274a.10(b)(2))"
+    },
+    {
+      "action": "correct_w2_identity",
+      "key": "HW-1",
+      "outcome": "correct",
+      "value_usd": 60.0,
+      "exact": true,
+      "why": "Marisol's W-2 profile holds a Social Security number ending 4471, typed in by hand, but her Social Security card on file reads ending 4417. Pub 926: keep the name and number exactly as on the card. A W-2 filed with the wrong number is an incorrect information return, $60 a return at the least tier the IRS publishes (for returns due in 2026), and Social Security could not credit her earnings"
+    },
+    {
+      "action": "file_wage_report",
+      "key": "2026-Q3",
+      "outcome": "correct",
+      "value_usd": 75.0,
+      "exact": true,
+      "why": "The third-quarter report is due by Friday 30 October 2026; filed now, the $75 late-report penalty is avoided. Covered wages paid in the quarter are Marisol's $8,418 alone: Felix's $2,592 is the employer's child's and not covered, Priya is Fernhollow's, Tomasz was first paid on 9 October, and Marisol's hours of 28 to 30 September were paid on 2 October, in the fourth quarter. She had $11,592 of covered wages before the quarter (Q1 $2,760, Q2 $8,832), so $4,408 of the $8,418 is under the $16,000 wage base; at 3.4%, the tax is $149.87"
+    },
+    {
+      "action": "pay_ui_tax",
+      "key": "2026-Q3",
+      "outcome": "correct",
+      "value_usd": 25.0,
+      "exact": true,
+      "why": "The third quarter's tax, $149.87 (3.4% of $4,408 of taxable wages), is due by Friday 30 October 2026; paid late it carries 10% of the unpaid tax, at least $25, and interest: $14.99 is under the minimum, so $25 is avoided"
+    },
+    {
+      "action": "file_new_hire_report",
+      "key": "BIELSKI",
+      "outcome": "correct",
+      "value_usd": 25.0,
+      "exact": true,
+      "why": "Tomasz is a new household employee whose wages are covered; Ostmere wants him reported within 20 days of his first day of work for pay, 6 October 2026, so by Monday 26 October. Filed now, the $25 late new-hire penalty is avoided"
+    }
+  ],
+  "missed": [],
+  "closing_words": "The rules settle the Q3 numbers.\n\n**Q3 wages**\n- **Marisol:** $8,418.00 paid in Q3. She was paid $2,760.00 in Q1 and $8,832.00 in Q2, which makes $11,592.00 before Q3. That leaves $4,408.00 under the $16,000 base, so $4,408.00 is taxable.\n- **Tax:** $4,408.00 × 3.4% = $149.872, which rounds to **$149.87**.\n- **Felix:** left out. Ostmere doesn't cover wages paid to your child under 21.\n- **Tomasz:** $0 in Q3, because his first pay is today.\n- **Priya:** left out. Fernhollow controls her work and reports her.\n- **Total covered wages:** $8,418.00.\n\nI'm filing the report and the payment as separate cards. Please approve the report first, then the payment. Filing myself costs nothing, so I'm leaving Pennwick's $195 unpaid.\n\n\n**New-hire report for Tomasz:** I haven't filed it yet. Ostmere wants the first day of work for pay, and I only have 6 October as the day his I-9 Section 1 was signed. I ",
+  "prose_audit": {
+    "said_usd": 8418.0,
+    "record_usd": 149.87,
+    "agrees": false
+  },
+  "trace": [
+    {
+      "portal": "Hourquill",
+      "user": "I employ people to look after Dad at home, and I want this quarter's payroll taxes done right. Start in Hourquill, where everyone's hours are kept: read who works here, my notes on each person, and the hours week by week.",
+      "continued": false,
+      "said": "I'll start by reading who is in Hourquill and the first page of weekly hours.",
+      "said_chars": 77,
+      "reads": [
+        "list_people",
+        "list_weeks"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hourquill",
+      "user": "",
+      "continued": true,
+      "said": "Four people are logged, and I've read page 1 of 3 of the weeks. Next I'll read your notes on each person and the remaining pages.",
+      "said_chars": 129,
+      "reads": [
+        "read_person",
+        "read_person",
+        "read_person",
+        "read_person",
+        "list_weeks",
+        "list_weeks"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hourquill",
+      "user": "",
+      "continued": true,
+      "said": "Hourquill is read. Marisol and Tomasz look like household employees, and Felix and Priya probably should not be in your Ostmere report.\n\n**What the notes and hours show**\n- **Marisol Ferreira (P-1):** She works weekdays from 8:30 to 2:30, 30 h a week at $23/h, and you set her hours and tasks. That makes her your employee. She has been paid every Friday since 2 March, with no pay on 21 Aug (unpaid vacation).",
+      "said_chars": 2431,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Hearthpay",
+      "user": "Hearthpay runs my payroll. Read each worker's set-up and file, the wages paid by quarter and the household employer guide. Fix any set-up that's wrong before tonight's pay run, and sign whatever is due today. Don't set up anyone who isn't m",
+      "continued": false,
+      "said": "I'll start with the worker list, Q3 wages and the guide index, then open each worker's file.",
+      "said_chars": 92,
+      "reads": [
+        "list_workers",
+        "wages_by_quarter",
+        "read_guide"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hearthpay",
+      "user": "",
+      "continued": true,
+      "said": "Next I'll read each worker's file and the guide topics that bear on this.",
+      "said_chars": 73,
+      "reads": [
+        "view_worker",
+        "view_worker",
+        "view_worker",
+        "view_worker",
+        "read_guide",
+        "read_guide",
+        "read_guide",
+        "read_guide",
+        "read_guide"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hearthpay",
+      "user": "",
+      "continued": true,
+      "said": "Three Hearthpay changes are needed before tonight's 6 pm run. I'm filing a decision card for each.\n\n**Tomasz Bielski (HW-3)** is set up as a 1099 contractor, but he's your employee. You set his hours and tasks, he uses your supplies and works only for you, and you can end it at any time. The guide says a request to be paid as a contractor, or an LLC, doesn't change who controls the work. Tonight's $288 would go out with no tax withheld and no W-2.",
+      "said_chars": 1627,
+      "reads": [],
+      "cards": [
+        {
+          "action": "set_up_as_household_employee",
+          "key": "HW-3",
+          "outcome": "correct",
+          "value_usd": 345.17
+        },
+        {
+          "action": "sign_i9_section2",
+          "key": "HW-3",
+          "outcome": "correct",
+          "value_usd": 288.0
+        },
+        {
+          "action": "correct_w2_identity",
+          "key": "HW-1",
+          "outcome": "correct",
+          "value_usd": 60.0
+        }
+      ]
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "Ledgerline is my bank. Read what I've paid the IRS and Ostmere this year and the bills waiting. Don't pay anything twice, and don't pay anyone to file what I can file myself.",
+      "continued": false,
+      "said": "I'll read the tax payments, the bills waiting and the account activity.",
+      "said_chars": 71,
+      "reads": [
+        "list_tax_payments",
+        "list_bills",
+        "list_activity"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "",
+      "continued": true,
+      "said": "Nothing in Ledgerline needs paying today, so I'm filing no card here.\n\n- **IRS estimates:** ES-1, ES-2 and ES-3 are all paid. ES-3 went out on 14 September (confirmation 26C-5518) and shows in the account activity. The bill-pay reminder for voucher 3 ($1,150, due 15 September) is stale, and paying it would pay the same estimate twice. ES-4 isn't due until 15 January 2027 and has no amount yet.\n- **Ostmere:** Q1 ($93.84) and Q2 ($300.29) are paid. Q3 has no payment yet.",
+      "said_chars": 1925,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Taxline State",
+      "user": "Taxline State, Ostmere's employer portal. Read the rules, my account and my filings. File and pay what's due for the third quarter with the right wages, and report any new hire who has to be reported. Then tell me what's already past, what'",
+      "continued": false,
+      "said": "I'll start by reading Ostmere's rules, your account and your filings, and recalling what the other tabs showed.\n\nI've read nothing from Taxline yet. The rules, account and filings answers haven't come back, so I'm not filing or paying anything. A report or payment needs the Q3 covered wages, the rate and wage base, and what the account already lists as reported new hires.\n\nWhat I carry over from the other tabs:\n- **Marisol:** $8,418.00 paid in Q3, and she is your employee.\n- **Felix:** $2,592.00 paid in Q3.",
+      "said_chars": 1274,
+      "reads": [
+        "read_rules",
+        "view_account",
+        "list_filings"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Taxline State",
+      "user": "",
+      "continued": true,
+      "said": "The account and filings are in. Now I'll read the specific Ostmere rules on who is covered, the report, and the new-hire report.\n\n\nSo far from the account and filings:\n- **Past:** Q1 and Q2 are filed and paid ($93.84 and $300.29).\n- **Due next:** Q3 is due Friday 30 October and is not filed. Q4 opens 1 January 2027 and is due 1 February 2027.\n- **Rate:** 3.4% on the first $16,000 of each employee's covered wages.\n- **Already reported:** only Marisol, as a new hire.",
+      "said_chars": 673,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Taxline State",
+      "user": "",
+      "continued": true,
+      "said": "The rules settle the Q3 numbers.\n\n**Q3 wages**\n- **Marisol:** $8,418.00 paid in Q3. She was paid $2,760.00 in Q1 and $8,832.00 in Q2, which makes $11,592.00 before Q3. That leaves $4,408.00 under the $16,000 base, so $4,408.00 is taxable.\n- **Tax:** $4,408.00 × 3.4% = $149.872, which rounds to **$149.87**.\n- **Felix:** left out. Ostmere doesn't cover wages paid to your child under 21.\n- **Tomasz:** $0 in Q3, because his first pay is today.\n- **Priya:** left out. Fernhollow controls her work and reports her.",
+      "said_chars": 2389,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_wage_report",
+          "key": "2026-Q3",
+          "outcome": "correct",
+          "value_usd": 75.0
+        },
+        {
+          "action": "pay_ui_tax",
+          "key": "2026-Q3",
+          "outcome": "correct",
+          "value_usd": 25.0
+        },
+        {
+          "action": "file_new_hire_report",
+          "key": "BIELSKI",
+          "outcome": "correct",
+          "value_usd": 25.0
+        }
+      ]
+    }
+  ]
+}

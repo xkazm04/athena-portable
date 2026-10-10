@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "household-employer-tax",
+  "captured_at": "2026-10-10T06:05:49Z",
+  "bench_run_at": "2026-10-10T06:01:21Z",
+  "narration": {
+    "text": "A father's caregivers kept on the right side of the household employer rules: a new caregiver set up as a contractor made an employee before his first pay, his I-9 signed the day it is due, a W-2 number put right, and the state's third-quarter report filed and paid on the wages it covers, while the agency's aide and an exempt son are left out. This is a chore for an adult daughter whose father, eighty-four, lives with her, and who employs his caregivers at home and runs their payroll herself. On the bench, she found 6 of 6 eligible items, worth 818 dollars and 17 cents of the 818 dollars and 17 cents there was to find. She made no false claim. The world held 16 traps, and she walked past 16. She took 4 minutes. By hand, the same chore takes 3 hours, so she was about 51 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 60.284,
+    "sha256": "f939160a8ee56cc4648ff0594e6eb6a4338dd715daef28a1fee8f4c6c5a4acfe"
+  },
+  "video": {
+    "path": "evidence/household-employer-tax/evidence.mp4",
+    "duration_s": 60.284,
+    "bytes": 3073026,
+    "sha256": "c151b754420d14554ebccf6629043a30be0eface4d667d8a7d79dce3852e5e0a"
+  },
+  "thumbnail": {
+    "path": "playbooks/household-employer-tax/thumb.jpg",
+    "bytes": 80185,
+    "sha256": "655044c3a8a43ebd04a73e82775f4dbc4316c7eefb197d2f2c2d3bf99817e260"
+  }
+}

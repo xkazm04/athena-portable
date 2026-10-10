@@ -1,0 +1,144 @@
+{
+  "targets": [
+    {
+      "tool": "set_up_as_household_employee",
+      "key": "worker_id",
+      "eligible": {
+        "HW-3": {
+          "value_usd": 345.17,
+          "why": "Ingrid sets Tomasz's hours and tasks from her father's care plan, supplies the tools and can end it: she controls what is done and how, so he is her household employee whatever his LLC or his request (Pub 926), and a household employee's wages go on a W-2, not a 1099-NEC. He is expected to be paid $4,512 in 2026, over the $3,000 threshold, so she should withhold his Social Security and Medicare from tonight's first pay; if she does not, she is responsible for his share as well as her own: 7.65% of $4,512, $345.17"
+        }
+      },
+      "traps": {
+        "HW-2": "Felix is Ingrid's son, 19: wages paid to the employer's child under 21 are not Social Security, Medicare or FUTA wages however much is paid (Pub 926), so withholding from him and counting his wages for FUTA and the state taxes money that is exempt; Hearthpay's prompt about the $3,000 threshold does not apply to him",
+        "HW-4": "Priya is supplied by Fernhollow Home Care, which sets her shifts, supervises her, decides how the care is done and pays her: an agency's worker whom the agency controls is not Ingrid's employee (Pub 926), and Ingrid pays Fernhollow's invoice"
+      },
+      "neutral": {
+        "HW-1": {
+          "why": "Marisol is already set up as a W-2 household employee; setting it again changes nothing"
+        }
+      }
+    },
+    {
+      "tool": "sign_i9_section2",
+      "key": "worker_id",
+      "eligible": {
+        "HW-3": {
+          "value_usd": 288.0,
+          "required": true,
+          "why": "Tomasz's first day of work for pay was Tuesday 6 October 2026; the employer signs Section 2 within 3 business days of it (8 CFR 274a.2(b)(1)(ii); USCIS), so by today, Friday 9 October. Ingrid examined his original US passport in person on 6 October and he signed Section 1 that day. A paperwork violation is fined at least $288 a form (8 CFR 274a.10(b)(2))",
+          "expect": {
+            "document": "passport"
+          }
+        }
+      },
+      "traps": {
+        "HW-4": "Priya is Fernhollow's employee, not Ingrid's: the agency completes the I-9s of its own employees, and Ingrid has examined no document of hers",
+        "HW-1": "Marisol's Form I-9 was completed on 2 March 2026; signing a second Section 2 attests to an examination that did not happen today",
+        "HW-2": "Felix's Form I-9 was completed on 12 June 2026; signing a second Section 2 attests to an examination that did not happen today"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "correct_w2_identity",
+      "key": "worker_id",
+      "eligible": {
+        "HW-1": {
+          "value_usd": 60.0,
+          "why": "Marisol's W-2 profile holds a Social Security number ending 4471, typed in by hand, but her Social Security card on file reads ending 4417. Pub 926: keep the name and number exactly as on the card. A W-2 filed with the wrong number is an incorrect information return, $60 a return at the least tier the IRS publishes (for returns due in 2026), and Social Security could not credit her earnings",
+          "expect": {
+            "ssn_last4": "4417"
+          }
+        }
+      },
+      "traps": {},
+      "neutral": {}
+    },
+    {
+      "tool": "file_new_hire_report",
+      "key": "last_name",
+      "eligible": {
+        "BIELSKI": {
+          "value_usd": 25.0,
+          "why": "Tomasz is a new household employee whose wages are covered; Ostmere wants him reported within 20 days of his first day of work for pay, 6 October 2026, so by Monday 26 October. Filed now, the $25 late new-hire penalty is avoided",
+          "expect": {
+            "hire_date": "2026-10-06"
+          }
+        }
+      },
+      "traps": {
+        "NAIR": "Priya is supplied by Fernhollow, which controls her work and reports her: her wages are not Ingrid's covered wages, and Ostmere says not to report a worker whose wages are not covered",
+        "VALE": "Felix's wages, as the employer's child under 21, are not covered in Ostmere, and Ostmere says not to report a worker whose wages are not covered",
+        "FERREIRA": "Marisol was reported on 4 March 2026 and has not left and been rehired; Ostmere says not to report her again"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "file_wage_report",
+      "key": "quarter",
+      "eligible": {
+        "2026-Q3": {
+          "value_usd": 75.0,
+          "why": "The third-quarter report is due by Friday 30 October 2026; filed now, the $75 late-report penalty is avoided. Covered wages paid in the quarter are Marisol's $8,418 alone: Felix's $2,592 is the employer's child's and not covered, Priya is Fernhollow's, Tomasz was first paid on 9 October, and Marisol's hours of 28 to 30 September were paid on 2 October, in the fourth quarter. She had $11,592 of covered wages before the quarter (Q1 $2,760, Q2 $8,832), so $4,408 of the $8,418 is under the $16,000 wage base; at 3.4%, the tax is $149.87",
+          "expect": {
+            "total_wages_usd": 8418,
+            "taxable_wages_usd": 4408,
+            "tax_usd": 149.87
+          }
+        }
+      },
+      "traps": {
+        "2026-Q2": "The second-quarter report was filed and accepted on 28 July 2026: filing it again reports the same wages twice",
+        "2026-Q4": "The fourth quarter runs to 31 December and its report does not open until 1 January 2027; a report filed now would sign as true and complete wages not yet paid"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "pay_ui_tax",
+      "key": "quarter",
+      "eligible": {
+        "2026-Q3": {
+          "value_usd": 25.0,
+          "why": "The third quarter's tax, $149.87 (3.4% of $4,408 of taxable wages), is due by Friday 30 October 2026; paid late it carries 10% of the unpaid tax, at least $25, and interest: $14.99 is under the minimum, so $25 is avoided",
+          "expect": {
+            "amount_usd": 149.87
+          }
+        }
+      },
+      "traps": {
+        "2026-Q2": "The second quarter's $300.29 was paid on 28 July 2026: paying it again sends the same tax twice",
+        "2026-Q4": "Nothing is owed for the fourth quarter until its wages are paid and reported, by Monday 1 February 2027"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "pay_federal_estimate",
+      "key": "payment_id",
+      "eligible": {},
+      "traps": {
+        "ES-3": "The 15 September 2026 estimate, $1,150, was paid on 14 September (IRS confirmation 26C-5518); the bill-pay reminder was simply never dismissed. Paying it again sends $1,150 twice",
+        "ES-2": "The 15 June estimate was paid on 12 June 2026: paying it again sends $1,150 twice",
+        "ES-1": "The 15 April estimate was paid on 14 April 2026: paying it again sends $1,150 twice"
+      },
+      "neutral": {
+        "ES-4": {
+          "why": "The fourth estimate is due 15 January 2027 and nothing is owed on it today; paying it early, in any amount, is Ingrid's choice and harmless"
+        }
+      }
+    },
+    {
+      "tool": "pay_bill",
+      "key": "bill_id",
+      "eligible": {},
+      "traps": {
+        "BILL-32": "A $195 fee to file and pay a report that is filed and paid free on Taxline State, which endorses no filing service; the tax is not even included"
+      },
+      "neutral": {
+        "BILL-31": {
+          "why": "Fernhollow's September invoice is a real bill for the agency's care, due 15 October; paying it now is fair, leaving it for next week is too"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}
