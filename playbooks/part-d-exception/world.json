@@ -1,0 +1,426 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "rxmeadow",
+      "name": "Rxmeadow plan",
+      "origin": "https://members.rxmeadow.example",
+      "path": "/drugs/exceptions",
+      "view": {
+        "view": "Rxmeadow Basic Rx (Medicare Part D prescription drug plan): member drug list, exceptions and coverage rules",
+        "member": "Walter Ferris, 2026 plan year; managed by his daughter Nadia Ferris as his authorized representative",
+        "out_of_pocket_2026": "$620 of the $2,100 annual limit",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Rxmeadow's coverage rules by topic: tiers, exceptions, timeframes, excluded. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_drugs",
+          "kind": "READ",
+          "description": "Walter's prescriptions as the plan sees them: drug id (D-n), drug, tier or status, what he pays a 30-day fill now, any utilization rule, and the formulary alternatives in its class. Four a page; pass page for the next.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "drugs",
+            "page_size": 4
+          }
+        },
+        {
+          "name": "list_exceptions",
+          "kind": "READ",
+          "description": "Exception requests on file for Walter in 2026, with the decision and how long it lasts.",
+          "params": {},
+          "returns": {
+            "table": "exceptions"
+          }
+        },
+        {
+          "name": "submit_exception_request",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask the plan for a coverage exception on one drug, by drug id (D-n): the type (formulary or tiering), whether it is expedited (true or false), and the prescriber's supporting statement it rests on. It goes to the plan's coverage determination unit as a request on Walter's behalf.",
+          "params": {
+            "drug_id": {
+              "type": "string"
+            },
+            "exception_type": {
+              "type": "string"
+            },
+            "expedited": {
+              "type": "boolean"
+            },
+            "statement": {
+              "type": "string"
+            }
+          },
+          "says": "Exception request for {drug_id} sent to Rxmeadow ({exception_type})."
+        }
+      ],
+      "aliases": [
+        "Rxmeadow plan",
+        "Rxmeadow",
+        "the drug plan",
+        "the plan",
+        "Part D plan"
+      ]
+    },
+    {
+      "app_id": "cornerpharmacy",
+      "name": "Corner Pharmacy",
+      "origin": "https://rx.cornerpharmacy.example",
+      "path": "/patient/walter-ferris",
+      "view": {
+        "view": "Corner Pharmacy patient profile: Walter Ferris, prescriptions, recent claims and supply on hand",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_prescriptions",
+          "kind": "READ",
+          "description": "Each prescription on file: drug id, drug, the last fill and how it was paid, the plan's answer to the latest claim, the next fill date and the days of supply left today.",
+          "params": {},
+          "returns": {
+            "table": "rx"
+          }
+        },
+        {
+          "name": "pay_cash_fill",
+          "kind": "REACHES_A_PERSON",
+          "description": "Fill a 30-day supply now at the pharmacy's cash price, outside the plan, by drug id, charged to the card on file.",
+          "params": {
+            "drug_id": {
+              "type": "string"
+            }
+          },
+          "says": "Cash fill of {drug_id} charged to the card on file."
+        }
+      ],
+      "aliases": [
+        "Corner Pharmacy",
+        "the pharmacy"
+      ]
+    },
+    {
+      "app_id": "carenook",
+      "name": "Carenook",
+      "origin": "https://portal.carenook.example",
+      "path": "/lindengrove/walter-ferris",
+      "view": {
+        "view": "Carenook patient portal: Linden Grove Medical (Dr. Hana Petrov), Walter Ferris, with proxy access for Nadia Ferris",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_medication_history",
+          "kind": "READ",
+          "description": "Walter's medication history from his chart: each drug started and stopped, with dates and why it was stopped. Five a page; pass page for the next.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "history",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "Documents Dr. Petrov has posted to the portal: supporting statements for the drug plan and visit notes, with dates.",
+          "params": {},
+          "returns": {
+            "table": "documents"
+          }
+        },
+        {
+          "name": "request_statement",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask Dr. Petrov, through the portal, for a signed supporting statement for a drug plan exception on one drug, by drug id, with a note of what it should say. It reaches the doctor's office.",
+          "params": {
+            "drug_id": {
+              "type": "string"
+            },
+            "note": {
+              "type": "string"
+            }
+          },
+          "says": "Request for a supporting statement on {drug_id} sent to Dr. Petrov."
+        }
+      ],
+      "aliases": [
+        "Carenook",
+        "the patient portal",
+        "Dr. Petrov's portal",
+        "the doctor's portal"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "rxmeadow",
+      "message": "Dad's drug plan is costing him a fortune. Start in Rxmeadow: read their rules on tiers, exceptions, timeframes and what's excluded, his drug list and the exceptions already on file.",
+      "nudges": 1
+    },
+    {
+      "app": "carenook",
+      "message": "This is Dr. Petrov's portal. Read his medication history and her documents. If a drug needs a statement from her that she hasn't posted, ask her for it, but only where his history supports it.",
+      "nudges": 1
+    },
+    {
+      "app": "cornerpharmacy",
+      "message": "Corner Pharmacy. Check what the plan rejected, when each refill is due and how much he has left.",
+      "nudges": 1
+    },
+    {
+      "app": "rxmeadow",
+      "message": "Back in Rxmeadow. Ask for every exception that's ready, the right kind, expedited only where the doctor says so. Then tell me what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Rxmeadow Basic Rx coverage rules for the 2026 plan year, under 42 CFR 423.578 (exceptions), 423.568 and 423.570 (decision timeframes). Topics: tiers, exceptions, timeframes, excluded."
+      },
+      {
+        "topic": "tiers",
+        "text": "Cost-sharing for a 30-day fill: tier 1 preferred generic $2 (generics only), tier 2 generic $10, tier 3 preferred brand $47, tier 4 non-preferred drug $95, tier 5 specialty 25%. A drug not on the formulary is not covered: the member pays the pharmacy's cash price, which does not count toward the $2,100 annual out-of-pocket limit."
+      },
+      {
+        "topic": "exceptions",
+        "text": "Formulary exception: covers a drug not on the formulary, or waives a step therapy or quantity rule, when the prescriber's supporting statement says every formulary alternative for the condition would not be as effective or would cause adverse effects; an approved non-formulary drug costs the tier 4 amount. Tiering exception: a tier 4 drug at the tier 3 amount, when the tier 3 alternatives for the condition have been ineffective or caused adverse effects. No tiering exception is available for a tier 5 specialty drug, or for a brand drug to the tier 1 amount, which applies only to generics (42 CFR 423.578(a)(6)). An approved exception lasts the rest of the plan year while the drug is prescribed; refills need no new request. A request rests on the prescriber's signed statement: attach it, or ask the prescriber for it first."
+      },
+      {
+        "topic": "timeframes",
+        "text": "Rxmeadow decides a standard exception request within 72 hours, and an expedited one within 24 hours, counted from when it receives the prescriber's supporting statement (42 CFR 423.568(b), 423.570(d)). A request is expedited when the prescriber says the standard timeframe may seriously jeopardize the member's life, health or ability to regain maximum function. A request sent without a statement waits until the statement arrives."
+      },
+      {
+        "topic": "excluded",
+        "text": "Medicare Part D does not cover, and no exception can add, drugs the law excludes from Part D, among them drugs used for cosmetic purposes or hair growth, drugs for weight loss, and over-the-counter drugs (Social Security Act section 1860D-2(e)(2))."
+      }
+    ],
+    "drugs": [
+      {
+        "drug": "D-1",
+        "name": "Felotrex 5 mg",
+        "tier_or_status": "Not on the formulary",
+        "pays_now": "$295 cash a fill",
+        "rule": "none",
+        "alternatives": "Avinor (tier 2), Brelada (tier 3)"
+      },
+      {
+        "drug": "D-2",
+        "name": "Ostavia 50 mg",
+        "tier_or_status": "Tier 4",
+        "pays_now": "$95 a fill",
+        "rule": "none",
+        "alternatives": "Calmira (tier 3)"
+      },
+      {
+        "drug": "D-3",
+        "name": "Zentorin 20 mg",
+        "tier_or_status": "Tier 3",
+        "pays_now": "Rejected at the pharmacy: step therapy",
+        "rule": "Step therapy: Pradexil (tier 2) first",
+        "alternatives": "Pradexil (tier 2)"
+      },
+      {
+        "drug": "D-4",
+        "name": "Nuvexa 40 mg",
+        "tier_or_status": "Tier 5 specialty",
+        "pays_now": "25%, $410 a fill",
+        "rule": "none",
+        "alternatives": "none on a lower tier"
+      },
+      {
+        "drug": "D-5",
+        "name": "Coralin 100 mg",
+        "tier_or_status": "Not on the formulary; exception approved",
+        "pays_now": "$95 a fill under the exception",
+        "rule": "none",
+        "alternatives": "Duvane (tier 2)"
+      },
+      {
+        "drug": "D-6",
+        "name": "Haldamine 10 mg",
+        "tier_or_status": "Not on the formulary",
+        "pays_now": "Rejected at the pharmacy; $180 cash a fill",
+        "rule": "none",
+        "alternatives": "Ferrovan (tier 2), Mesdora (tier 3)"
+      },
+      {
+        "drug": "D-7",
+        "name": "Trichaven 2% solution (hair growth)",
+        "tier_or_status": "Excluded from Part D",
+        "pays_now": "$64 cash a fill",
+        "rule": "none",
+        "alternatives": "none"
+      },
+      {
+        "drug": "D-8",
+        "name": "Lorvasta 40 mg (brand)",
+        "tier_or_status": "Tier 3",
+        "pays_now": "$47 a fill",
+        "rule": "none",
+        "alternatives": "Generic statins on tier 1"
+      }
+    ],
+    "exceptions": [
+      {
+        "request": "EX-2026-0315",
+        "drug": "D-5 Coralin 100 mg",
+        "type": "Formulary exception",
+        "decided": "Approved 15 Mar 2026",
+        "lasts": "Through 31 Dec 2026, the end of the plan year, while it is prescribed"
+      }
+    ],
+    "rx": [
+      {
+        "drug": "D-1 Felotrex 5 mg",
+        "last_fill": "6 Oct 2026, 30 days, $295 cash",
+        "latest_claim": "Rejected 6 Oct: 70, product not covered (not on the formulary)",
+        "next_fill": "5 Nov 2026",
+        "days_left": 27
+      },
+      {
+        "drug": "D-2 Ostavia 50 mg",
+        "last_fill": "20 Sep 2026, 30 days, $95 copay",
+        "latest_claim": "Paid by the plan, tier 4",
+        "next_fill": "20 Oct 2026",
+        "days_left": 11
+      },
+      {
+        "drug": "D-3 Zentorin 20 mg",
+        "last_fill": "never filled",
+        "latest_claim": "Rejected 2 Oct: 75, step therapy: Pradexil first",
+        "next_fill": "when covered",
+        "days_left": 0
+      },
+      {
+        "drug": "D-5 Coralin 100 mg",
+        "last_fill": "28 Sep 2026, 30 days, $95 copay",
+        "latest_claim": "Paid by the plan under exception EX-2026-0315",
+        "next_fill": "28 Oct 2026",
+        "days_left": 19
+      },
+      {
+        "drug": "D-6 Haldamine 10 mg",
+        "last_fill": "11 Sep 2026, 30 days, under his former plan's transition supply",
+        "latest_claim": "Rejected 8 Oct: 70, product not covered (not on the formulary)",
+        "next_fill": "11 Oct 2026",
+        "days_left": 2
+      },
+      {
+        "drug": "D-8 Lorvasta 40 mg",
+        "last_fill": "1 Oct 2026, 30 days, $47 copay",
+        "latest_claim": "Paid by the plan, tier 3",
+        "next_fill": "31 Oct 2026",
+        "days_left": 22
+      }
+    ],
+    "history": [
+      {
+        "drug": "Avinor (for blood pressure)",
+        "started": "12 Jan 2026",
+        "stopped": "2 Mar 2026",
+        "why": "Hives within a week; stopped by Dr. Petrov"
+      },
+      {
+        "drug": "Brelada (for blood pressure)",
+        "started": "5 Mar 2026",
+        "stopped": "20 Jun 2026",
+        "why": "Ineffective: readings stayed above target at full dose"
+      },
+      {
+        "drug": "Felotrex (for blood pressure)",
+        "started": "22 Jun 2026",
+        "stopped": "current",
+        "why": "Readings at target"
+      },
+      {
+        "drug": "Calmira (for his overactive bladder)",
+        "started": "3 Feb 2026",
+        "stopped": "8 May 2026",
+        "why": "Ineffective after three months"
+      },
+      {
+        "drug": "Ostavia (for his overactive bladder)",
+        "started": "9 May 2026",
+        "stopped": "current",
+        "why": "Effective"
+      },
+      {
+        "drug": "Ferrovan (for his tremor)",
+        "started": "6 Mar 2026",
+        "stopped": "18 Apr 2026",
+        "why": "Adverse effect: dizziness and a fall on 16 Apr"
+      },
+      {
+        "drug": "Mesdora (for his tremor)",
+        "started": "20 Apr 2026",
+        "stopped": "10 Jul 2026",
+        "why": "Ineffective at the highest dose"
+      },
+      {
+        "drug": "Haldamine (for his tremor)",
+        "started": "11 Jul 2026",
+        "stopped": "current",
+        "why": "Effective; stopping it suddenly risks a rebound of the tremor and falls"
+      },
+      {
+        "drug": "Zentorin (for nerve pain)",
+        "started": "prescribed 1 Oct 2026",
+        "stopped": "not yet started",
+        "why": "Pradexil never tried; no contraindication to it noted"
+      },
+      {
+        "drug": "Coralin",
+        "started": "Mar 2026",
+        "stopped": "current",
+        "why": "Effective"
+      }
+    ],
+    "documents": [
+      {
+        "document": "DOC-11",
+        "date": "2026-10-07",
+        "title": "Supporting statement for a formulary exception: Felotrex 5 mg (D-1)",
+        "text": "Signed, Dr. Hana Petrov. Every formulary alternative for his blood pressure would not be as effective or would cause adverse effects: Avinor caused hives (Jan to Mar 2026) and Brelada was ineffective at full dose (Mar to Jun 2026). The standard timeframe is appropriate."
+      },
+      {
+        "document": "DOC-12",
+        "date": "2026-10-08",
+        "title": "Supporting statement for a formulary exception: Haldamine 10 mg (D-6), expedited",
+        "text": "Signed, Dr. Hana Petrov. Ferrovan caused dizziness and a fall; Mesdora was ineffective. He has two days of tablets left, and applying the standard 72-hour timeframe may seriously jeopardize his health: a sudden stop risks a rebound tremor and falls. Please decide on an expedited basis."
+      },
+      {
+        "document": "DOC-13",
+        "date": "2026-10-01",
+        "title": "Visit note",
+        "text": "Started Zentorin for nerve pain. If the plan requires step therapy, he can try Pradexil first; no contraindication. Ostavia continues to work after Calmira failed; a statement for a tiering exception can be written on request."
+      }
+    ]
+  }
+}

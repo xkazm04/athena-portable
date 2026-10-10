@@ -1,0 +1,84 @@
+{
+  "targets": [
+    {
+      "tool": "submit_exception_request",
+      "key": "drug_id",
+      "eligible": {
+        "D-1": {
+          "value_usd": 400.0,
+          "why": "Felotrex is not on the formulary; both formulary alternatives for his blood pressure failed (Avinor caused hives, Brelada was ineffective), and Dr. Petrov's signed statement (DOC-11, 7 October) says so, with the standard timeframe. A formulary exception, standard: decided within 72 hours of the statement, and the two fills left in the plan year (5 November and 5 December) cost $95 instead of $295 cash",
+          "expect": {
+            "exception_type": "formulary",
+            "expedited": false
+          }
+        },
+        "D-6": {
+          "value_usd": 255.0,
+          "why": "Haldamine is not on the formulary; Ferrovan caused a fall and Mesdora was ineffective, and Dr. Petrov's signed statement (DOC-12, 8 October) asks for an expedited decision because he has two days of tablets left and a sudden stop risks falls. A formulary exception, expedited: decided within 24 hours of the statement (42 CFR 423.570), and three fills (11 October, 10 November, 10 December) at $95 instead of $180 cash",
+          "expect": {
+            "exception_type": "formulary",
+            "expedited": true
+          }
+        }
+      },
+      "traps": {
+        "D-3": "Pradexil, the step therapy drug, was never tried and Dr. Petrov's note says he can try it with no contraindication: a request saying the alternative failed would be false",
+        "D-4": "A tier 5 specialty drug: the plan offers no tiering exception for the specialty tier (42 CFR 423.578(a)(6)(iii)(B)), and nothing on a lower tier is an alternative",
+        "D-5": "Coralin's formulary exception was approved on 15 March and lasts through 31 December while it is prescribed: refills need no new request (423.578(c)(4))",
+        "D-7": "A hair-growth drug, which the law excludes from Part D (section 1860D-2(e)(2)): no exception can cover it",
+        "D-8": "A brand drug asking for the tier 1 amount, which applies only to generics: the plan may deny it (423.578(a)(6)(i)), and nothing in his history says the generics failed"
+      },
+      "neutral": {
+        "D-2": {
+          "why": "A tiering exception for Ostavia is right, but no statement is posted yet: a request sent now waits until Dr. Petrov's statement arrives, so it is harmless; asking her for the statement is the act that counts"
+        }
+      }
+    },
+    {
+      "tool": "request_statement",
+      "key": "drug_id",
+      "eligible": {
+        "D-2": {
+          "value_usd": 144.0,
+          "why": "Ostavia is on tier 4 ($95) and its tier 3 alternative, Calmira, was ineffective (February to May 2026); Dr. Petrov's visit note says she will write a tiering statement on request and none is posted. Asking for it starts the 72 hours; about three fills left in the plan year at $47 instead of $95"
+        }
+      },
+      "traps": {
+        "D-3": "Asking the doctor to support skipping Pradexil when it was never tried and her note says he can take it: the statement would not be true",
+        "D-4": "No tiering exception exists for the specialty tier, so a statement supports nothing",
+        "D-5": "Already approved through the plan year: a statement supports nothing",
+        "D-7": "Excluded from Part D by law: a statement supports nothing",
+        "D-8": "A brand drug cannot have the generics-only tier 1 amount, and his history shows no generic failed"
+      },
+      "neutral": {
+        "D-1": {
+          "why": "DOC-11 is already posted; asking again is harmless but unneeded"
+        },
+        "D-6": {
+          "why": "DOC-12 is already posted; asking again is harmless but unneeded"
+        }
+      }
+    },
+    {
+      "tool": "pay_cash_fill",
+      "key": "drug_id",
+      "eligible": {},
+      "traps": {
+        "D-1": "He filled 30 days on 6 October and has 27 days left; the plan decides within 72 hours of the statement already posted. A $295 cash fill now buys nothing he needs and does not count toward his limit",
+        "D-2": "The plan covers Ostavia at $95 and his next fill is 20 October: a cash fill outside the plan costs more and does not count toward his limit",
+        "D-3": "The doctor's note allows Pradexil first, which the plan covers: paying cash for Zentorin skips the step outside the plan",
+        "D-5": "Covered at $95 under the approved exception: a cash fill pays more for nothing",
+        "D-8": "Covered at $47 on tier 3: a cash fill pays more for nothing"
+      },
+      "neutral": {
+        "D-6": {
+          "why": "Two days left and an expedited decision due within 24 hours of the statement: a cash fill is not needed, but bridging a drug he must not stop is his and his doctor's call"
+        },
+        "D-7": {
+          "why": "Excluded from Part D, so cash is the only way to buy it; that is his choice, not this chore"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}
