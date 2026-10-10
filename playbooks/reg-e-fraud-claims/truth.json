@@ -1,0 +1,67 @@
+{
+  "targets": [
+    {
+      "tool": "report_unauthorized_transfer",
+      "key": "txn",
+      "eligible": {
+        "TX-01": {
+          "value_usd": 186.0,
+          "why": "TX-01 is an ACH debit by Brightwave Telecom she never agreed to (no access device lost); it is on the August statement sent 2 September, so the 60 days run to 1 November and she is liable for nothing; she gets back 186 dollars",
+          "expect": {
+            "liability": 0
+          }
+        },
+        "TX-04": {
+          "value_usd": 412.6,
+          "why": "TX-04 is an online purchase with a copied number, before the card was lost on 28 September (M-1); no access device was lost at the time, it is on the September statement sent 2 October, so she is liable for nothing; she gets back 412.60",
+          "expect": {
+            "liability": 0
+          }
+        },
+        "TX-11": {
+          "value_usd": 350.0,
+          "why": "TX-11 is a 400 dollar ATM withdrawal with the card lost on 28 September; she learned on 29 September and told the bank on 30 September (M-1), inside two business days, so she is liable for 50 and gets back 350",
+          "expect": {
+            "liability": 50
+          }
+        },
+        "TX-12": {
+          "value_usd": 45.0,
+          "why": "TX-12 is a 95 dollar top-up made on a new device with a code read out to a caller (A-3, A-4, A-5, comment 2(m)-3); she learned on Wednesday 7 October (M-2, A-5), and today, Friday 9 October, is the second business day, so she is liable for the lesser of 50 and 95, which is 50, and gets back 45",
+          "expect": {
+            "liability": 50
+          }
+        }
+      },
+      "traps": {
+        "TX-07": "TX-07 is 1,200 dollars she sent herself from her usual phone (A-2) to a scammer; a transfer she starts is authorised, however she was persuaded (rules, authorised)",
+        "TX-08": "TX-08 is 150 dollars of fuel her son Teo bought with the card she let him use (M-4); authorised until she tells the bank otherwise",
+        "TX-09": "TX-09 is 89 dollars she spent herself and returned; the merchant has promised the refund by 14 October (M-3), so there is no error",
+        "TX-10": "TX-10 is a 64.99 dollar purchase already refunded on 3 October (TX-14)",
+        "TX-13": "TX-13 is the 15.99 dollars a month for Tidewatch Plus that she signed up for on 3 January (M-5); she authorised it",
+        "TX-03": "TX-03 is the same subscription, 15.99 dollars on 1 September, which she authorised (M-5)",
+        "TX-05": "TX-05 is already the subject of claim C-1; it is chased, not reported again",
+        "TX-06": "TX-06 is already the subject of claim C-3, which the bank has credited",
+        "TX-15": "TX-15 is already the subject of claim C-2, filed on 7 October",
+        "CC-1": "CC-1 is a credit card charge at Cardhollow; it is not a transfer from her bank account and falls under Regulation Z, not Regulation E"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "request_provisional_credit",
+      "key": "claim",
+      "eligible": {
+        "C-1": {
+          "value_usd": 318.4,
+          "why": "C-1 was filed on 18 September; the bank's 10 business days ended on 2 October with no answer and no provisional credit (claims list), so it is late and she asks for the 318.40 dollar credit"
+        }
+      },
+      "traps": {
+        "C-2": "C-2 was filed on 7 October and the bank has until 22 October; it is not late",
+        "C-3": "C-3 has been credited 129 dollars on 1 October, inside its 10 business days; there is nothing to ask for"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

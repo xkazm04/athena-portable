@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "reg-e-fraud-claims",
+  "captured_at": "2026-10-10T18:45:20Z",
+  "bench_run_at": "2026-10-10T18:43:11Z",
+  "narration": {
+    "text": "A retiree's bank account is checked under Regulation E: four unauthorised transfers reported at their capped liability and a late claim chased for its credit, while a payment she sent a scammer herself, her son's fuel, a refunded and a pending charge, a subscription, a credit card charge and two claims not yet late are left alone. This is a chore for a retired schoolteacher in Roanoke, Virginia, with a checking account, a payment app, a credit card and a small pile of charges she does not recognise. On the bench, she found 5 of 5 eligible items, worth 1,312 dollars of the 1,312 dollars there was to find. She made no false claim. The world held 12 traps, and she walked past 12. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 35 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 60.755,
+    "sha256": "8cc096afd450057976a95a03c830210956308da2b5ea17a3362317f243266585"
+  },
+  "video": {
+    "path": "evidence/reg-e-fraud-claims/evidence.mp4",
+    "duration_s": 60.76,
+    "bytes": 3045287,
+    "sha256": "fcc7e75702260caf33a30b564d849224d50f085caf67964a99de874141f43e9e"
+  },
+  "thumbnail": {
+    "path": "playbooks/reg-e-fraud-claims/thumb.jpg",
+    "bytes": 79483,
+    "sha256": "1b99df3bb5abd74ee68dd7aa2f39908f028d64f806cbe70b35b3a966efa6d47e"
+  }
+}

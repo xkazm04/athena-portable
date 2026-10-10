@@ -1,0 +1,110 @@
+{
+  "id": "reg-e-fraud-claims",
+  "title": "A retiree's bank account is checked under Regulation E: four unauthorised transfers reported at their capped liability and a late claim chased for its credit, while a payment she sent a scammer herself, her son's fuel, a refunded and a pending charge, a subscription, a credit card charge and two claims not yet late are left alone",
+  "domain": "Consumer banking",
+  "audience": "home",
+  "promise": "A retired schoolteacher's checking account, payment app, credit card and mail are read for the charges she did not make. Four unauthorised transfers are reported, each with what she is liable for under Regulation E: an ACH debit and an online purchase with a copied card number, a cash machine withdrawal with a card lost two days before she told the bank, and a payment-app top-up made with a code a caller talked her out of. A claim the bank let run past its ten business days is chased for its provisional credit. A payment she made herself to a scammer, her son's fuel, a refunded and a pending charge, a subscription she signed up for, a credit card charge, and two claims that are not yet late are left alone.",
+  "persona": "A retired schoolteacher in Roanoke, Virginia, with a checking account, a payment app, a credit card and a small pile of charges she does not recognise",
+  "chore": "Read her mail, the bank's rules, its statements, transactions and claims, the payment app's activity and the credit card's charges. Then apply 12 CFR 1005.2(m), 1005.6(b) and 1005.11 and Supplement I as they stand on 9 October 2026: report each transfer she did not authorise with her liability, ask for the provisional credit on the one claim the bank is late on, and nothing else.",
+  "command": "I'm Marisol Teague. Go through my Postwren mail, my Ledgerwren bank account, Sendwren and my Cardhollow card. I don't recognise Brightwave Telecom, Hexa Outfitters, Corvane Utility Pay, Northpoint Warranty, Eldervale Services or Brindle Electronics, or the cash machine on the 28th. Report the transfers from my account that I didn't authorise, with what I owe on each under the rules, and chase the bank on any claim of mine that it's late on. Leave out what I did or allowed myself, what's refunded, and anything that isn't this account.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "the bank's, the payment app's and the merchants' messages, and her son's note",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren bank",
+      "role": "the bank's rules, her statements, transactions and claims, and the error notices and credit requests",
+      "api": "Online banking, no API",
+      "url": ""
+    },
+    {
+      "name": "Sendwren",
+      "role": "the payment app's activity, with the device and time of each",
+      "api": "Payment app, no API",
+      "url": ""
+    },
+    {
+      "name": "Cardhollow",
+      "role": "her credit card's charges",
+      "api": "Card portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the bank's, the app's and the merchants' messages in Postwren.",
+    "Reads the rules, statements, transactions and claims at Ledgerwren bank.",
+    "Reads the activity in Sendwren and the charges in Cardhollow.",
+    "Back at Ledgerwren bank, reports four transfers with her liability and asks for one provisional credit."
+  ],
+  "gates": [
+    {
+      "action": "report_unauthorized_transfer",
+      "label": "Report an unauthorised transfer",
+      "why": "A signed error notice to the bank that a transfer was not hers; one that she made or allowed misstates the facts to the bank, and one she does not report can fall outside the 60 days."
+    },
+    {
+      "action": "request_provisional_credit",
+      "label": "Ask for a provisional credit",
+      "why": "A signed demand that the bank credit the amount while it investigates; made on a claim that is not late, it is wrong."
+    }
+  ],
+  "traps": [
+    "Reporting a payment she started herself, however she was persuaded.",
+    "Reporting a transfer by someone she let use her card.",
+    "Reporting a purchase already refunded or with a refund promised.",
+    "Reporting a subscription she signed up for.",
+    "Reporting a credit card charge as a transfer from the account.",
+    "Reporting a transfer already under a claim.",
+    "Asking for a provisional credit on a claim that is not yet late, or already credited."
+  ],
+  "memory": [
+    "The dates she learned of each loss and told the bank, the refund promised, her son's note and the subscription, from Postwren.",
+    "The bank's rules, the statement dates and the claims' deadlines, from Ledgerwren bank, and the device and time of each app event, from Sendwren, carried back to the last bank tab."
+  ],
+  "economics": {
+    "value_usd": 900,
+    "per": "episode",
+    "basis": "An estimate. A household that finds several unauthorised debits at once, a few hundred dollars each, can recover them in full or for at most $50 each if it reports inside the windows in 12 CFR 1005.6, and an unreported one ages out of the 60 days; the roster's $900 an episode is one such pile recovered. The bench world holds five acts worth $1,312.00: 186.00, 412.60, 350.00 (400 less her $50), 45.00 (95 less her $50) and a 318.40 provisional credit, the money she gets back or has credited, recovered, not a price avoided. Times a year: once, the episode in the year it happens (ADR 0056). manual_minutes 90: reading six messages, five rules, two statements, fifteen transactions, three claims, five app events and three card charges, working out for each transfer whether she authorised it, which window applies and what she owes, and entering five items. Rules applied, as they stand on Friday 9 October 2026 (eCFR title 12, current): 12 CFR 1005.2(m) (a transfer initiated by a person other than the consumer without actual authority and with no benefit to her; not one by a person she gave the device to, unless she has told the bank, as Supplement I, comment 2(m)-2 says), Supplement I, comment 2(m)-3 (a transfer by someone who obtained the access device from her through fraud or robbery is unauthorised), 1005.6(b)(1) ($50, or the transfers before notice if less, when she gives notice within two business days after learning of the loss or theft), 1005.6(b)(2) (up to $500 after that), 1005.6(b)(3) (60 days after a periodic statement is sent; and Supplement I, comment 6(b)(3)-2, the first two limits do not apply to a transfer made with no access device), and 1005.11(b) to (d) (notice within 60 days of the statement that first shows the error; 10 business days to investigate, or 45 days if the amount is provisionally credited within the 10 business days; the written explanation and the documents she may ask for). A credit card charge falls under 12 CFR 1026.12(b), not Regulation E, and is left out.",
+    "manual_minutes": 90,
+    "times_per_year": 1,
+    "incumbent": "Banks take no fee for an error notice, and the fund-recovery services that charge for such work are not used by this household and publish no price the bench could source, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "12 CFR 1005.2, definitions, including (m) unauthorized electronic fund transfer (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1005/subpart-A/section-1005.2"
+      },
+      {
+        "label": "12 CFR 1005.6, liability of consumer for unauthorized transfers (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1005/subpart-A/section-1005.6"
+      },
+      {
+        "label": "12 CFR 1005.11, procedures for resolving errors (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1005/subpart-A/section-1005.11"
+      },
+      {
+        "label": "Supplement I to 12 CFR Part 1005, official interpretations: comments 2(m), 6(b)(1) and 6(b)(3) (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1005/appendix-Supplement%20I%20to%20Part%201005"
+      },
+      {
+        "label": "12 CFR 1026.12(b), liability of cardholder for unauthorized use of a credit card (Regulation Z, eCFR)",
+        "url": "https://www.ecfr.gov/current/title-12/chapter-X/part-1026/subpart-B/section-1026.12"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Twelve debits and credits across a bank, a payment app and a credit card, three different liability answers (nothing, 50 dollars with a lost card, 50 dollars with a code a caller got), a payment that looks like fraud but is hers, and a claim whose ten business days have run out beside two whose have not.",
+    "usefulness_why": "Saves the hours of reading statements and rules a victim of small fraud rarely does, and the 60-day and two-day windows make the timing matter; a once-in-a-while chore with a few hundred dollars at stake."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful account holder with the statements, rules and claims reports the four unauthorised transfers at the right liability and chases the late claim, and none of the ten traps, inside an hour."
+  },
+  "caveat": "Marisol Teague, Teo Teague, every merchant (Brightwave Telecom, Hexa Outfitters, Corvane Utility Pay, Northpoint Warranty, Marlowe Fuel, Pinebrook Home, Dunmere Pharmacy, Tidewatch Plus, Eldervale Services, Brindle Electronics and Cedar Court), every amount, date and claim, and Postwren, Ledgerwren bank, Sendwren and Cardhollow are invented; no real bank, payment app, card issuer or merchant is named. The public rules applied are Regulation E, 12 CFR 1005.2(m) (unauthorized electronic fund transfer), 1005.6(b) (liability by the time of notice and by the 60 days after a periodic statement) and 1005.11 (notice of error, the 10 business days, the 45 days with provisional credit, and the written explanation), with Supplement I comments 2(m)-2 and 2(m)-3, 6(b)(1) and 6(b)(3), as in the eCFR on 9 October 2026; 12 CFR 1026.12(b) (Regulation Z) is named only for the credit card charge. The CFPB's Electronic Fund Transfers FAQs are not relied on, because many CFPB guidance documents were withdrawn in 2025 and their status was not confirmed; the world rests on the regulation and Supplement I alone. Whether a payment app or a given code is an access device, how a bank reads a transfer a customer was deceived into starting, and the bank's own deadlines are for the institution, the CFPB and the courts; the bank's rules here, its treatment of a code read out to a caller and its statement dates are the invented bank's own. This applies stated rules to stated facts; it is not legal or financial advice."
+}

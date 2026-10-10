@@ -1,0 +1,304 @@
+{
+  "playbook": "reg-e-fraud-claims",
+  "run_at": "2026-10-10T18:43:11Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 153.4,
+  "turns": 10,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 20,
+  "cost_usd": 1.1093,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.6
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 1312.0,
+    "value_found_usd": 1312.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 12,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "report_unauthorized_transfer",
+        "key": "TX-07",
+        "why": "TX-07 is 1,200 dollars she sent herself from her usual phone (A-2) to a scammer; a transfer she starts is authorised, however she was persuaded (rules, authorised)",
+        "filed": false
+      },
+      {
+        "action": "report_unauthorized_transfer",
+        "key": "TX-08",
+        "why": "TX-08 is 150 dollars of fuel her son Teo bought with the card she let him use (M-4); authorised until she tells the bank otherwise",
+        "filed": false
+      },
+      {
+        "action": "report_unauthorized_transfer",
+        "key": "TX-09",
+        "why": "TX-09 is 89 dollars she spent herself and returned; the merchant has promised the refund by 14 October (M-3), so there is no error",
+        "filed": false
+      },
+      {
+        "action": "report_unauthorized_transfer",
+        "key": "TX-10",
+        "why": "TX-10 is a 64.99 dollar purchase already refunded on 3 October (TX-14)",
+        "filed": false
+      },
+      {
+        "action": "report_unauthorized_transfer",
+        "key": "TX-13",
+        "why": "TX-13 is the 15.99 dollars a month for Tidewatch Plus that she signed up for on 3 January (M-5); she authorised it",
+        "filed": false
+      },
+      {
+        "action": "report_unauthorized_transfer",
+        "key": "TX-03",
+        "why": "TX-03 is the same subscription, 15.99 dollars on 1 September, which she authorised (M-5)",
+        "filed": false
+      },
+      {
+        "action": "report_unauthorized_transfer",
+        "key": "TX-05",
+        "why": "TX-05 is already the subject of claim C-1; it is chased, not reported again",
+        "filed": false
+      },
+      {
+        "action": "report_unauthorized_transfer",
+        "key": "TX-06",
+        "why": "TX-06 is already the subject of claim C-3, which the bank has credited",
+        "filed": false
+      },
+      {
+        "action": "report_unauthorized_transfer",
+        "key": "TX-15",
+        "why": "TX-15 is already the subject of claim C-2, filed on 7 October",
+        "filed": false
+      },
+      {
+        "action": "report_unauthorized_transfer",
+        "key": "CC-1",
+        "why": "CC-1 is a credit card charge at Cardhollow; it is not a transfer from her bank account and falls under Regulation Z, not Regulation E",
+        "filed": false
+      },
+      {
+        "action": "request_provisional_credit",
+        "key": "C-2",
+        "why": "C-2 was filed on 7 October and the bank has until 22 October; it is not late",
+        "filed": false
+      },
+      {
+        "action": "request_provisional_credit",
+        "key": "C-3",
+        "why": "C-3 has been credited 129 dollars on 1 October, inside its 10 business days; there is nothing to ask for",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "report_unauthorized_transfer",
+      "key": "TX-01",
+      "outcome": "correct",
+      "value_usd": 186.0,
+      "exact": true,
+      "why": "TX-01 is an ACH debit by Brightwave Telecom she never agreed to (no access device lost); it is on the August statement sent 2 September, so the 60 days run to 1 November and she is liable for nothing; she gets back 186 dollars"
+    },
+    {
+      "action": "report_unauthorized_transfer",
+      "key": "TX-04",
+      "outcome": "correct",
+      "value_usd": 412.6,
+      "exact": true,
+      "why": "TX-04 is an online purchase with a copied number, before the card was lost on 28 September (M-1); no access device was lost at the time, it is on the September statement sent 2 October, so she is liable for nothing; she gets back 412.60"
+    },
+    {
+      "action": "report_unauthorized_transfer",
+      "key": "TX-11",
+      "outcome": "correct",
+      "value_usd": 350.0,
+      "exact": true,
+      "why": "TX-11 is a 400 dollar ATM withdrawal with the card lost on 28 September; she learned on 29 September and told the bank on 30 September (M-1), inside two business days, so she is liable for 50 and gets back 350"
+    },
+    {
+      "action": "report_unauthorized_transfer",
+      "key": "TX-12",
+      "outcome": "correct",
+      "value_usd": 45.0,
+      "exact": true,
+      "why": "TX-12 is a 95 dollar top-up made on a new device with a code read out to a caller (A-3, A-4, A-5, comment 2(m)-3); she learned on Wednesday 7 October (M-2, A-5), and today, Friday 9 October, is the second business day, so she is liable for the lesser of 50 and 95, which is 50, and gets back 45"
+    },
+    {
+      "action": "request_provisional_credit",
+      "key": "C-1",
+      "outcome": "correct",
+      "value_usd": 318.4,
+      "exact": true,
+      "why": "C-1 was filed on 18 September; the bank's 10 business days ended on 2 October with no answer and no provisional credit (claims list), so it is late and she asks for the 318.40 dollar credit"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm filing four reports and one provisional-credit request. Each is a card for you to sign.\n\n\n**Reported (4 cards, each waiting for your signature)**\n- **TX-01 Brightwave, $186.00:** you owe $0. No device was lost, and you're inside the 60 days.\n- **TX-04 Hexa, $412.60:** you owe $0. Your card was still with you when it was used online.\n- **TX-11 cash machine, $400.00:** you owe $50. You reported the lost card within two business days.\n- **TX-12 Sendwren to R Valdis, $95.00:** you owe $50. Your code was taken by a fake security caller and you reported within two business days of learning of it. I treated this as a separate event from the lost card, so it has its own $50 cap. That is my reading, and it's the one thing here I'd want you to check. If the bank counts both under one loss, your total would be $50.\n\n**Chasing**\n- **C-1 Corvane, $318.40:** a request for the provisional credit. T",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Marisol Teague. This is my mail. Read every message from the last few weeks. The charges I don't recognise are Brightwave Telecom, Hexa Outfitters, Corvane Utility Pay, Northpoint Warranty, Eldervale Services and Brindle Electronics, an",
+      "continued": false,
+      "said": "I'll start by listing the inbox. Then I'll read each message from the last few weeks.",
+      "said_chars": 85,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Six messages are in the inbox, and M-5 (January) is outside the last few weeks. I'm reading the other five now. I'll also read M-5, because it may explain a subscription charge.",
+      "said_chars": 177,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "I've read all six messages. I'm saving the facts the other tabs will need, because I can't reach this inbox from them.\n\n\nI've read the inbox. Nothing has been filed or changed yet.\n\n- **Card loss:** You found your card missing on Tuesday 29 September and reported it lost on Wednesday 30 September. The bank blocked it at 9:12 that morning. That is within two business days of you finding it missing, which should put your liability at the $50 cap under the rules. I'll confirm that against the bank's rules page.",
+      "said_chars": 1702,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "This is my bank. Read its rules for unauthorised transfers and errors, my statements, my transactions on every page, and my claims. Don't report anything yet.",
+      "continued": false,
+      "said": "I'm reading the bank's rules, statements, all three transaction pages and your claims now. I won't report anything yet.",
+      "said_chars": 119,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "list_statements",
+        "list_transactions",
+        "list_transactions",
+        "list_transactions",
+        "list_claims"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "",
+      "continued": true,
+      "said": "I've read the bank in full and filed nothing. Sendwren and Cardhollow are still to read, and I can only read them from their own tabs.\n\n**What the bank shows (15 transactions, 3 claims)**\n- **TX-01 Brightwave Telecom, $186.00, 19 Aug (ACH):** No claim yet. No card was lost, so the lost-card caps don't apply. The 60 days run from the August statement (sent 2 Sep) to 1 Nov, so I read your liability as $0.\n- **TX-04 Hexa Outfitters, $412.60, 14 Sep (online card):** No claim yet.",
+      "said_chars": 2650,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Sendwren",
+      "user": "This is my payment app. Read its activity.",
+      "continued": false,
+      "said": "I'll read the Sendwren activity now.",
+      "said_chars": 36,
+      "reads": [
+        "list_activity"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Sendwren",
+      "user": "",
+      "continued": true,
+      "said": "The Sendwren activity settles two things. Both change what gets reported.\n\n- **A-2, $1,200 to FRB SAFE ACCOUNT (20 Sep, TX-07):** You sent this yourself from your usual iPhone, so it counts as authorised even though a scammer talked you into it. I'm leaving it out.\n- **A-4, $95 to R VALDIS (30 Sep, 2:14am, TX-12):** An unseen Android device did this. It signed in with the code Sendwren texted to your phone, which you read out on the evening of 29 September to a caller posing as Sendwren security (A-5).",
+      "said_chars": 1290,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Cardhollow",
+      "user": "This is my credit card. Read its charges.",
+      "continued": false,
+      "said": "I'll read the card's charges now.",
+      "said_chars": 33,
+      "reads": [
+        "list_charges"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Cardhollow",
+      "user": "",
+      "continued": true,
+      "said": "The card shows one charge you didn't make: CC-1, Brindle Electronics Online, $275.00 on 25 September. I'm leaving it out of the bank reports. A credit card is a separate account, so this is a billing dispute under Regulation Z. You'd make it to the card company, not to Ledgerwren.\n\n- **CC-2, Harvest Basket Grocery, $62.14 (29 Sep):** You didn't flag it, so I'm treating it as yours.\n- **CC-3, Tideline Bookshop, $18.20 (4 Oct):** You didn't flag it, so I'm treating it as yours.",
+      "said_chars": 1144,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "Back at my bank. Report each transfer from my account that I did not authorise, with what I am liable for under the rules, and where the bank has let a claim of mine run past its time, ask it for the provisional credit. Leave out what I did",
+      "continued": false,
+      "said": "I'm filing four reports and one provisional-credit request. Each is a card for you to sign.\n\n\n**Reported (4 cards, each waiting for your signature)**\n- **TX-01 Brightwave, $186.00:** you owe $0. No device was lost, and you're inside the 60 days.\n- **TX-04 Hexa, $412.60:** you owe $0. Your card was still with you when it was used online.\n- **TX-11 cash machine, $400.00:** you owe $50. You reported the lost card within two business days.\n- **TX-12 Sendwren to R Valdis, $95.00:** you owe $50.",
+      "said_chars": 1613,
+      "reads": [],
+      "cards": [
+        {
+          "action": "report_unauthorized_transfer",
+          "key": "TX-01",
+          "outcome": "correct",
+          "value_usd": 186.0
+        },
+        {
+          "action": "report_unauthorized_transfer",
+          "key": "TX-04",
+          "outcome": "correct",
+          "value_usd": 412.6
+        },
+        {
+          "action": "report_unauthorized_transfer",
+          "key": "TX-11",
+          "outcome": "correct",
+          "value_usd": 350.0
+        },
+        {
+          "action": "report_unauthorized_transfer",
+          "key": "TX-12",
+          "outcome": "correct",
+          "value_usd": 45.0
+        },
+        {
+          "action": "request_provisional_credit",
+          "key": "C-1",
+          "outcome": "correct",
+          "value_usd": 318.4
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,537 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "postwren",
+      "message": "I'm Marisol Teague. This is my mail. Read every message from the last few weeks. The charges I don't recognise are Brightwave Telecom, Hexa Outfitters, Corvane Utility Pay, Northpoint Warranty, Eldervale Services and Brindle Electronics, and the 400 dollars at the cash machine on 28 September. Don't do anything yet: I'll send you to my bank, my payment app and my credit card next.",
+      "nudges": 1
+    },
+    {
+      "app": "bank",
+      "message": "This is my bank. Read its rules for unauthorised transfers and errors, my statements, my transactions on every page, and my claims. Don't report anything yet.",
+      "nudges": 1
+    },
+    {
+      "app": "sendwren",
+      "message": "This is my payment app. Read its activity.",
+      "nudges": 1
+    },
+    {
+      "app": "cardhollow",
+      "message": "This is my credit card. Read its charges.",
+      "nudges": 1
+    },
+    {
+      "app": "bank",
+      "message": "Back at my bank. Report each transfer from my account that I did not authorise, with what I am liable for under the rules, and where the bank has let a claim of mine run past its time, ask it for the provisional credit. Leave out what I did myself or allowed, what has been refunded or is about to be, what is not a transfer from this account, and anything the bank is not yet late on. Then tell me what you reported and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/marisol/inbox",
+      "view": {
+        "view": "Postwren: Marisol Teague's inbox (invented)",
+        "signed_in": "Marisol Teague",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The messages in the inbox: id, from, subject and date.",
+          "params": {},
+          "returns": {
+            "table": "msgs",
+            "fields": [
+              "msg_id",
+              "from",
+              "subject",
+              "date"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id (M-n).",
+          "params": {
+            "msg_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "msgs",
+            "match": {
+              "msg_id": "msg_id"
+            },
+            "require": [
+              "msg_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "bank",
+      "name": "Ledgerwren bank",
+      "origin": "https://online.ledgerwren-bank.example",
+      "path": "/marisol/checking",
+      "view": {
+        "view": "Ledgerwren bank: Marisol Teague's checking account ending 4417 (invented)",
+        "signed_in": "Marisol Teague",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The bank's rules for unauthorised transfers and errors, by topic: index, authorised, liability, errors, cards or statements.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_statements",
+          "kind": "READ",
+          "description": "The statements: month, the day each was sent and the 60th day after it.",
+          "params": {},
+          "returns": {
+            "table": "stmts"
+          }
+        },
+        {
+          "name": "list_transactions",
+          "kind": "READ",
+          "description": "Every transaction from 1 August 2026: id, date, description, amount, how it was made and any claim on it. Five a page; ask for the next with page (1, 2 or 3).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "txns",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "list_claims",
+          "kind": "READ",
+          "description": "The claims already made: claim, day filed, transfer, amount, status, provisional credit, and the last day of the bank's 10 business days and of its 45 days.",
+          "params": {},
+          "returns": {
+            "table": "claims"
+          }
+        },
+        {
+          "name": "report_unauthorized_transfer",
+          "kind": "REACHES_A_PERSON",
+          "description": "Report one transfer from the account as unauthorised, by transaction id (txn, TX-nn), with the most Marisol is liable for under the bank's rules in dollars (liability) and a short summary (summary). Marisol signs.",
+          "params": {
+            "txn": {
+              "type": "string"
+            },
+            "liability": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "says": "Error notice for {txn} sent to the bank."
+        },
+        {
+          "name": "request_provisional_credit",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask the bank for the provisional credit on one claim it has not answered in time, by claim id (claim, C-n) and a short summary (summary). Marisol signs.",
+          "params": {
+            "claim": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "says": "Provisional credit requested on {claim}."
+        }
+      ],
+      "aliases": [
+        "Ledgerwren bank",
+        "my bank",
+        "the bank"
+      ]
+    },
+    {
+      "app_id": "sendwren",
+      "name": "Sendwren",
+      "origin": "https://app.sendwren.example",
+      "path": "/marisol/activity",
+      "view": {
+        "view": "Sendwren: Marisol Teague's payment app activity (invented)",
+        "signed_in": "Marisol Teague",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_activity",
+          "kind": "READ",
+          "description": "The app's activity: id, time, device, what happened and the amount.",
+          "params": {},
+          "returns": {
+            "table": "acts"
+          }
+        }
+      ],
+      "aliases": [
+        "Sendwren",
+        "my payment app",
+        "the payment app"
+      ]
+    },
+    {
+      "app_id": "cardhollow",
+      "name": "Cardhollow",
+      "origin": "https://cards.cardhollow.example",
+      "path": "/marisol/credit-card-7712",
+      "view": {
+        "view": "Cardhollow: Marisol Teague's credit card ending 7712 (invented)",
+        "signed_in": "Marisol Teague",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_charges",
+          "kind": "READ",
+          "description": "The credit card's charges: id, date, merchant and amount.",
+          "params": {},
+          "returns": {
+            "table": "charges"
+          }
+        }
+      ],
+      "aliases": [
+        "Cardhollow",
+        "my credit card",
+        "the credit card"
+      ]
+    }
+  ],
+  "tables": {
+    "msgs": [
+      {
+        "msg_id": "M-1",
+        "from": "Ledgerwren bank",
+        "subject": "Your debit card ending 2290 has been blocked",
+        "date": "2026-09-30",
+        "text": "Wednesday 30 September 2026. We blocked your debit card ending 2290 at 9:12 this morning after your call reporting it lost. You told us you found it missing on Tuesday 29 September. A new card will arrive in 7 to 10 days."
+      },
+      {
+        "msg_id": "M-2",
+        "from": "Sendwren",
+        "subject": "A cash-out from a device we had not seen",
+        "date": "2026-10-07",
+        "text": "Wednesday 7 October 2026. On 30 September at 2:14 in the morning a top-up of 95 dollars from your bank was sent out of your Sendwren account from a device we had not seen. If this was not you, tell your bank."
+      },
+      {
+        "msg_id": "M-3",
+        "from": "Pinebrook Home",
+        "subject": "Your return and refund",
+        "date": "2026-10-05",
+        "text": "Monday 5 October 2026. We have your returned lamp. Your refund of 89 dollars 00 cents for the order of 25 September will go back to your debit card by Wednesday 14 October."
+      },
+      {
+        "msg_id": "M-4",
+        "from": "Teo Teague",
+        "subject": "The fuel",
+        "date": "2026-09-22",
+        "text": "Tuesday 22 September 2026. Mom, I used your debit card for 150 dollars of fuel at Marlowe Fuel this morning, like you said I could while my truck is in the shop. I will pay you back on the first."
+      },
+      {
+        "msg_id": "M-5",
+        "from": "Tidewatch Plus",
+        "subject": "Welcome to Tidewatch Plus",
+        "date": "2026-01-03",
+        "text": "Saturday 3 January 2026. Thanks for signing up. Your plan is 15.99 dollars a month, charged to your debit card ending 2290 on the first of each month until you cancel."
+      },
+      {
+        "msg_id": "M-6",
+        "from": "Ledgerwren bank",
+        "subject": "Your claims C-1, C-2 and C-3",
+        "date": "2026-10-07",
+        "text": "Wednesday 7 October 2026. We have received your notice on claim C-2 and opened an investigation. Your earlier claims C-1 and C-3 remain open. Please keep your statements."
+      }
+    ],
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Ledgerwren bank, the rules for unauthorised transfers and errors on Marisol's checking account. Friday 9 October 2026. Topics: authorised, liability, errors, cards, statements."
+      },
+      {
+        "topic": "authorised",
+        "text": "Friday 9 October 2026. A transfer is unauthorised when someone other than the customer starts it without actual authority and she gets no benefit (12 CFR 1005.2(m)). A transfer she starts herself is authorised, even when a scammer persuaded her to start it. A transfer by a person she gave her card or login to is authorised until she tells the bank that the person may no longer use it. A transfer started by someone who got her card, code or login from her by fraud or robbery is unauthorised (Supplement I, comment 2(m)-3). A transfer the merchant has refunded, or has promised to refund, is not an error in the bank's records."
+      },
+      {
+        "topic": "liability",
+        "text": "Friday 9 October 2026. If a card, PIN, code or login is lost, stolen or taken by fraud, and she tells the bank within two business days after the day she learns of it, she is liable for the lesser of 50 dollars or the unauthorised transfers made before she told us. After that she can be liable for up to 500 dollars. When no access device was lost or stolen (a card number copied while she still has the card, or an ACH debit she never agreed to), those two limits do not apply: she is not liable for the transfer if she reports it within 60 days after the statement that shows it was sent. Business days leave out weekends and federal holidays; Monday 12 October 2026 is a holiday."
+      },
+      {
+        "topic": "errors",
+        "text": "Friday 9 October 2026. She must tell the bank of an error within 60 days after the statement that first shows it was sent (12 CFR 1005.11(b)); a report in this portal is written notice, and an oral notice is confirmed in writing within 10 business days. The bank then has 10 business days to investigate and tell her the result, or up to 45 days if it credits the amount to her account within the 10 business days (1005.11(c)). If it finds no error it explains in writing and she may ask for the documents it used (1005.11(d)). A claim the bank has neither answered nor credited by the end of its 10 business days is late, and she can ask for the provisional credit."
+      },
+      {
+        "topic": "cards",
+        "text": "Friday 9 October 2026. These rules cover transfers from Marisol's checking account: debit card, ATM, ACH and payment-app top-ups. A credit card is a different account at a different company. A charge on it is a billing dispute under Regulation Z (12 CFR 1026.12(b)) and is made to the card company, not as an error here."
+      },
+      {
+        "topic": "statements",
+        "text": "Friday 9 October 2026. A statement is sent on the second of the month after the month it covers. The 60 days for a transfer run from the day the statement showing it was sent. See the statements list for the dates."
+      }
+    ],
+    "stmts": [
+      {
+        "month": "August 2026",
+        "sent": "2026-09-02",
+        "sixtieth_day": "2026-11-01"
+      },
+      {
+        "month": "September 2026",
+        "sent": "2026-10-02",
+        "sixtieth_day": "2026-12-01"
+      }
+    ],
+    "txns": [
+      {
+        "txn": "TX-01",
+        "date": "2026-08-19",
+        "description": "ACH debit BRIGHTWAVE TELECOM",
+        "amount": -186.0,
+        "how": "ACH",
+        "claim": ""
+      },
+      {
+        "txn": "TX-02",
+        "date": "2026-09-01",
+        "description": "ACH debit CEDAR COURT RENT",
+        "amount": -950.0,
+        "how": "ACH",
+        "claim": ""
+      },
+      {
+        "txn": "TX-03",
+        "date": "2026-09-01",
+        "description": "Debit card TIDEWATCH PLUS",
+        "amount": -15.99,
+        "how": "card ending 2290, online",
+        "claim": ""
+      },
+      {
+        "txn": "TX-04",
+        "date": "2026-09-14",
+        "description": "Debit card online HEXA OUTFITTERS",
+        "amount": -412.6,
+        "how": "card ending 2290, online",
+        "claim": ""
+      },
+      {
+        "txn": "TX-05",
+        "date": "2026-09-16",
+        "description": "ACH debit CORVANE UTILITY PAY",
+        "amount": -318.4,
+        "how": "ACH",
+        "claim": "C-1"
+      },
+      {
+        "txn": "TX-06",
+        "date": "2026-09-17",
+        "description": "ACH debit NORTHPOINT WARRANTY",
+        "amount": -129.0,
+        "how": "ACH",
+        "claim": "C-3"
+      },
+      {
+        "txn": "TX-07",
+        "date": "2026-09-20",
+        "description": "SENDWREN SEND to FRB SAFE ACCOUNT",
+        "amount": -1200.0,
+        "how": "payment app",
+        "claim": ""
+      },
+      {
+        "txn": "TX-08",
+        "date": "2026-09-22",
+        "description": "Debit card MARLOWE FUEL",
+        "amount": -150.0,
+        "how": "card ending 2290, at the pump",
+        "claim": ""
+      },
+      {
+        "txn": "TX-09",
+        "date": "2026-09-25",
+        "description": "Debit card PINEBROOK HOME",
+        "amount": -89.0,
+        "how": "card ending 2290, online",
+        "claim": ""
+      },
+      {
+        "txn": "TX-10",
+        "date": "2026-09-26",
+        "description": "Debit card DUNMERE PHARMACY",
+        "amount": -64.99,
+        "how": "card ending 2290, in store",
+        "claim": ""
+      },
+      {
+        "txn": "TX-11",
+        "date": "2026-09-28",
+        "description": "ATM withdrawal 2 ELM ST",
+        "amount": -400.0,
+        "how": "card ending 2290, ATM",
+        "claim": ""
+      },
+      {
+        "txn": "TX-12",
+        "date": "2026-09-30",
+        "description": "SENDWREN TOP-UP",
+        "amount": -95.0,
+        "how": "payment app",
+        "claim": ""
+      },
+      {
+        "txn": "TX-13",
+        "date": "2026-10-01",
+        "description": "Debit card TIDEWATCH PLUS",
+        "amount": -15.99,
+        "how": "card ending 2290, online",
+        "claim": ""
+      },
+      {
+        "txn": "TX-14",
+        "date": "2026-10-03",
+        "description": "Refund DUNMERE PHARMACY",
+        "amount": 64.99,
+        "how": "card refund",
+        "claim": ""
+      },
+      {
+        "txn": "TX-15",
+        "date": "2026-10-05",
+        "description": "ACH debit ELDERVALE SERVICES",
+        "amount": -74.5,
+        "how": "ACH",
+        "claim": "C-2"
+      }
+    ],
+    "claims": [
+      {
+        "claim": "C-1",
+        "filed": "2026-09-18",
+        "transfer": "TX-05",
+        "amount": 318.4,
+        "status": "investigating",
+        "provisional_credit": "none",
+        "ten_business_days_end": "2026-10-02",
+        "forty_five_days_end": "2026-11-02"
+      },
+      {
+        "claim": "C-2",
+        "filed": "2026-10-07",
+        "transfer": "TX-15",
+        "amount": 74.5,
+        "status": "investigating",
+        "provisional_credit": "none",
+        "ten_business_days_end": "2026-10-22",
+        "forty_five_days_end": "2026-11-21"
+      },
+      {
+        "claim": "C-3",
+        "filed": "2026-09-21",
+        "transfer": "TX-06",
+        "amount": 129.0,
+        "status": "investigating",
+        "provisional_credit": "129.00 credited 2026-10-01",
+        "ten_business_days_end": "2026-10-05",
+        "forty_five_days_end": "2026-11-05"
+      }
+    ],
+    "acts": [
+      {
+        "id": "A-1",
+        "time": "2026-09-05 11:02",
+        "device": "Marisol's iPhone (usual)",
+        "event": "Sent to Teo, from the app balance",
+        "amount": 20.0
+      },
+      {
+        "id": "A-2",
+        "time": "2026-09-20 15:40",
+        "device": "Marisol's iPhone (usual)",
+        "event": "Topped up 1200.00 from checking 4417 and sent 1200.00 to FRB SAFE ACCOUNT; memo 'move to a safe account'",
+        "amount": 1200.0
+      },
+      {
+        "id": "A-3",
+        "time": "2026-09-30 02:11",
+        "device": "Android, not seen before",
+        "event": "Signed in with a code sent to her phone",
+        "amount": 0
+      },
+      {
+        "id": "A-4",
+        "time": "2026-09-30 02:14",
+        "device": "Android, not seen before",
+        "event": "Topped up 95.00 from checking 4417 and sent 95.00 to R VALDIS",
+        "amount": 95.0
+      },
+      {
+        "id": "A-5",
+        "time": "2026-10-07 10:20",
+        "device": "Marisol's iPhone (usual)",
+        "event": "Support case opened by Marisol after the security email: on the evening of 29 September a caller who said he was Sendwren security asked her to read out the code sent to her phone, and she did",
+        "amount": 0
+      }
+    ],
+    "charges": [
+      {
+        "charge": "CC-1",
+        "date": "2026-09-25",
+        "merchant": "BRINDLE ELECTRONICS ONLINE",
+        "amount": 275.0,
+        "note": "Credit card ending 7712. Marisol did not make this purchase."
+      },
+      {
+        "charge": "CC-2",
+        "date": "2026-09-29",
+        "merchant": "HARVEST BASKET GROCERY",
+        "amount": 62.14,
+        "note": "Credit card ending 7712."
+      },
+      {
+        "charge": "CC-3",
+        "date": "2026-10-04",
+        "merchant": "TIDELINE BOOKSHOP",
+        "amount": 18.2,
+        "note": "Credit card ending 7712."
+      }
+    ]
+  }
+}

@@ -231,6 +231,15 @@ names; each playbook carries the new one.
 | 70 | `class-action-claims` | Consumer settlements | home | File claims in open settlements the household qualifies for, and only with proof of purchase | Claimsadmin, Cardwell, Storeline orders, Mailnest | Federal Rule of Civil Procedure 23(e) (court-approved settlements) and each settlement's claim form | $200 / year, mostly minutes | X J: the claim is signed under penalty of perjury; no proof means no claim |
 | 71 | `unclaimed-property-sweep` | Personal finance | home | Search every state the household lived in for unclaimed property, and file the claims with proof | Claimit State, Lostfunds, Docshelf (old addresses), Mailnest | State unclaimed-property programmes under the Revised Uniform Unclaimed Property Act (2016) | $400 / episode | P X J: a namesake is a trap |
 
+*Note, 2026-10-10:* these portal names were changed before a first bench, because the roster's name
+belongs to a real business (rule 4: every portal is invented). The rows above keep the roster's
+names; each playbook carries the new one.
+- Row 62, `reg-e-fraud-claims`: "Ledgerline bank" became "Ledgerwren bank", because Ledgerline is the name of several real
+  accounting and invoicing products; "Zipcash" became "Sendwren", because ZIP Cash App is a real payment app (and ZipCash
+  is a real toll-payment service); "Cardwell" became "Cardhollow", because Cardwell Payment Systems is a real card-payment
+  processor; and "Mailnest" became "Postwren", because mailnest.io is a real email service. Rows 67 to 70 use Cardhollow
+  for Cardwell.
+
 ### B8: Work, pay and benefits
 
 | # | id | Domain | Aud. | Chore | Portals | Rests on | Value / per | Why only Athena |
