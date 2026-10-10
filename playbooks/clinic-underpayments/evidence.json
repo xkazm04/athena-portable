@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "clinic-underpayments",
+  "captured_at": "2026-10-10T01:02:45Z",
+  "bench_run_at": "2026-10-10T00:58:27Z",
+  "narration": {
+    "text": "Every line paid short of the payer contract found and disputed, and the bundled lines left alone. This is a chore for the billing manager of a three-clinician orthopedic clinic contracted with two commercial payers, one of which also runs a Medicare Advantage plan. Athena works it across 4 portals: Chartmend PM, Relaywave, Docshelf and Paylance payer hub. On the bench, she found 5 of 5 eligible items, worth 565 dollars of the 565 dollars there was to find. All 5 were filed at the exact amount the rules allow. She made no false claim. The world held 12 traps, and she walked past 12. Among them: A knee chondroplasty bundled into the meniscectomy under an NCCI edit. Ultrasound guidance bundled into the injection it guided. She took 4 minutes. By hand, the same chore takes 3 hours, so she was about 51 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.984,
+    "sha256": "4e55caffd38481622fdf959b6fb16e9d995ccaef00ab933844aa6b6097efdf48"
+  },
+  "video": {
+    "path": "evidence/clinic-underpayments/evidence.mp4",
+    "duration_s": 64.0,
+    "bytes": 2841909,
+    "sha256": "b5e886c43565c226e991f9c2ff9fcc8bed02f3f1c8b74fda1bfb58229dac0669"
+  },
+  "thumbnail": {
+    "path": "playbooks/clinic-underpayments/thumb.jpg",
+    "bytes": 79156,
+    "sha256": "30777fa58a467d175b57ea0d9e02217e93381145c4b82255b8cd8f106689f7b7"
+  }
+}

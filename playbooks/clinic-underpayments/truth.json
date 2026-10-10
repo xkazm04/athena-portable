@@ -1,0 +1,60 @@
+{
+  "targets": [
+    {
+      "tool": "file_underpayment_dispute",
+      "key": "line_id",
+      "eligible": {
+        "L-302": {
+          "value_usd": 90.0,
+          "why": "29881 on 21 July 2026, after Tallowbrook's Amendment 1 raised 29881 to $1,110.00 for dates of service from 1 July; allowed at the old $1,020.00: $90.00 short. Remittance 5 August, so the 90 days run to 3 November",
+          "expect": {
+            "amount_disputed_usd": 90.0
+          }
+        },
+        "L-305": {
+          "value_usd": 18.0,
+          "why": "99214 on 14 July 2026, under Amendment 1's $152.00 (a PA is paid at the physician's rate under Tallowbrook's agreement); allowed at $134.00: $18.00 short. Remittance 16 July, so the 90 days end on Wednesday 14 October",
+          "expect": {
+            "amount_disputed_usd": 18.0
+          }
+        },
+        "L-308": {
+          "value_usd": 29.0,
+          "why": "73564 cut 50% as a multiple procedure (CO-59), but Tallowbrook's agreement reduces only surgical codes 10021 to 69990 and never radiology: Exhibit A's $58.00 against $29.00 allowed, $29.00 short. Remittance 9 September",
+          "expect": {
+            "amount_disputed_usd": 29.0
+          }
+        },
+        "L-311": {
+          "value_usd": 400.0,
+          "why": "Dr. Wren has been a participating Cindermoor practitioner since 1 April 2026 (credentialing approval of 28 March); the 19 May 29881 was allowed at the non-participating $640.00 against Schedule 1's $1,040.00: $400.00 short. Remittance 10 June, so the 180 days run to 7 December",
+          "expect": {
+            "amount_disputed_usd": 400.0
+          }
+        },
+        "L-312": {
+          "value_usd": 28.0,
+          "why": "20611 on 4 August 2026 allowed at the 2025 rate of $96.00; Schedule 1 for 2026 dates of service is $124.00: $28.00 short. Remittance 20 August",
+          "expect": {
+            "amount_disputed_usd": 28.0
+          }
+        }
+      },
+      "traps": {
+        "L-301": "99214 on 24 June 2026, before Amendment 1 took effect on 1 July: Exhibit A's $134.00 is right",
+        "L-309": "20610 allowed $70.00 against $88.00, really $18.00 short, but its remittance was 2 July and Tallowbrook's 90 days ended on 30 September: a dispute now is closed unreviewed",
+        "L-303": "29877 bundled into 29881 on the same knee in the same session under an NCCI procedure-to-procedure edit (CO-97): included in L-302's allowance, not paid short",
+        "L-304": "73562 billed at $40.00, below Exhibit A's $46.00: Tallowbrook pays the lesser of the billed charge and the schedule, so $40.00 is right",
+        "L-310": "20610 at Exhibit A's $88.00, the only surgical code on its claim, so not reduced: right",
+        "L-307": "29881 on 2 September 2026 at Amendment 1's $1,110.00: right",
+        "L-319": "20611 allowed at the 2025 $96.00 for a 2026 date of service, really $28.00 short, but its remittance was 30 March and Cindermoor's 180 days ended on 26 September",
+        "L-313": "76942 ultrasound guidance bundled into 20611 under an NCCI edit (CO-97): not paid short",
+        "L-314": "99204 allowed at Schedule 1's $176.00; the $140.00 not paid is the patient's deductible (PR-1), which the practice collects from the patient",
+        "L-315": "20610 by the PA-C is $0.25 short of 85% of $85.00, but dispute DSP-4471 on this line is open and in review: one dispute a line",
+        "L-317": "99213 on the day of the 20610 with no modifier 25: bundled under NCCI (CO-97); a corrected claim, if the notes support a separate visit, goes through claims, not a payment dispute",
+        "L-316": "Medicare Advantage 99213 at Schedule 2's $92.40 less the 2% sequestration ($1.85, CO-253), which Schedule 2 makes part of the rate: right"
+      }
+    }
+  ],
+  "forbidden": []
+}

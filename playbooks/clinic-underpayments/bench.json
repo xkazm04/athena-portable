@@ -1,0 +1,319 @@
+{
+  "playbook": "clinic-underpayments",
+  "run_at": "2026-10-10T00:58:27Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 212.3,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 23,
+  "cost_usd": 1.8317,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 3.5
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 565.0,
+    "value_found_usd": 565.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 12,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-301",
+        "why": "99214 on 24 June 2026, before Amendment 1 took effect on 1 July: Exhibit A's $134.00 is right",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-309",
+        "why": "20610 allowed $70.00 against $88.00, really $18.00 short, but its remittance was 2 July and Tallowbrook's 90 days ended on 30 September: a dispute now is closed unreviewed",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-303",
+        "why": "29877 bundled into 29881 on the same knee in the same session under an NCCI procedure-to-procedure edit (CO-97): included in L-302's allowance, not paid short",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-304",
+        "why": "73562 billed at $40.00, below Exhibit A's $46.00: Tallowbrook pays the lesser of the billed charge and the schedule, so $40.00 is right",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-310",
+        "why": "20610 at Exhibit A's $88.00, the only surgical code on its claim, so not reduced: right",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-307",
+        "why": "29881 on 2 September 2026 at Amendment 1's $1,110.00: right",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-319",
+        "why": "20611 allowed at the 2025 $96.00 for a 2026 date of service, really $28.00 short, but its remittance was 30 March and Cindermoor's 180 days ended on 26 September",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-313",
+        "why": "76942 ultrasound guidance bundled into 20611 under an NCCI edit (CO-97): not paid short",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-314",
+        "why": "99204 allowed at Schedule 1's $176.00; the $140.00 not paid is the patient's deductible (PR-1), which the practice collects from the patient",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-315",
+        "why": "20610 by the PA-C is $0.25 short of 85% of $85.00, but dispute DSP-4471 on this line is open and in review: one dispute a line",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-317",
+        "why": "99213 on the day of the 20610 with no modifier 25: bundled under NCCI (CO-97); a corrected claim, if the notes support a separate visit, goes through claims, not a payment dispute",
+        "filed": false
+      },
+      {
+        "action": "file_underpayment_dispute",
+        "key": "L-316",
+        "why": "Medicare Advantage 99213 at Schedule 2's $92.40 less the 2% sequestration ($1.85, CO-253), which Schedule 2 makes part of the rate: right",
+        "filed": false
+      }
+    ],
+    "filed_usd": 565.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "file_underpayment_dispute",
+      "key": "L-305",
+      "outcome": "correct",
+      "value_usd": 18.0,
+      "exact": true,
+      "why": "99214 on 14 July 2026, under Amendment 1's $152.00 (a PA is paid at the physician's rate under Tallowbrook's agreement); allowed at $134.00: $18.00 short. Remittance 16 July, so the 90 days end on Wednesday 14 October"
+    },
+    {
+      "action": "file_underpayment_dispute",
+      "key": "L-302",
+      "outcome": "correct",
+      "value_usd": 90.0,
+      "exact": true,
+      "why": "29881 on 21 July 2026, after Tallowbrook's Amendment 1 raised 29881 to $1,110.00 for dates of service from 1 July; allowed at the old $1,020.00: $90.00 short. Remittance 5 August, so the 90 days run to 3 November"
+    },
+    {
+      "action": "file_underpayment_dispute",
+      "key": "L-308",
+      "outcome": "correct",
+      "value_usd": 29.0,
+      "exact": true,
+      "why": "73564 cut 50% as a multiple procedure (CO-59), but Tallowbrook's agreement reduces only surgical codes 10021 to 69990 and never radiology: Exhibit A's $58.00 against $29.00 allowed, $29.00 short. Remittance 9 September"
+    },
+    {
+      "action": "file_underpayment_dispute",
+      "key": "L-311",
+      "outcome": "correct",
+      "value_usd": 400.0,
+      "exact": true,
+      "why": "Dr. Wren has been a participating Cindermoor practitioner since 1 April 2026 (credentialing approval of 28 March); the 19 May 29881 was allowed at the non-participating $640.00 against Schedule 1's $1,040.00: $400.00 short. Remittance 10 June, so the 180 days run to 7 December"
+    },
+    {
+      "action": "file_underpayment_dispute",
+      "key": "L-312",
+      "outcome": "correct",
+      "value_usd": 28.0,
+      "exact": true,
+      "why": "20611 on 4 August 2026 allowed at the 2025 rate of $96.00; Schedule 1 for 2026 dates of service is $124.00: $28.00 short. Remittance 20 August"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I've checked the five lines against both payers' rules. All five are inside their windows, and none is already in dispute. I'm filing one dispute per line.\n\n- **Tallowbrook (90 days):** L-305 closes 14 Oct, L-302 on 3 Nov and L-308 on 8 Dec.\n- **Cindermoor (180 days):** L-311 closes 7 Dec and L-312 on 16 Feb 2027.\n\n\nFive disputes are queued for your approval, and nothing has been filed yet. Together they claim $565.\n\n**Left alone**\n- **L-315 (Cindermoor, $0.25):** already in dispute as DSP-4471, and Cindermoor doesn't accept a second dispute on a line while the first is open. This answers my earlier question. It's covered, so I won't file it again.\n- **L-309 (Tallowbrook, $18 short) and L-319 (Cindermoor, $28 short):** short-paid, but their windows closed on 30 Sep and 26 Sep. The payers would close a late dispute unreviewed.\n- **L-303, L-313 and L-317:** bundled under NCCI edits, which ",
+  "trace": [
+    {
+      "portal": "Chartmend PM",
+      "user": "Month-end check on what Tallowbrook and Cindermoor paid us. Start here in Chartmend: go through every posted line since March.",
+      "continued": false,
+      "said": "I'm starting with the first page of posted lines. I'm also pulling the contract, ERA and dispute lists, because I'll need them to check the lines.\n\nThe Chartmend page 1 request went through, but its answer hasn't arrived yet. The Docshelf, Relaywave and Paylance calls were refused because this session is pinned to Chartmend. I'll come back to those tabs later.\n\nI won't repeat the page 1 call. Once its result arrives, I'll go through the remaining pages in order.",
+      "said_chars": 1251,
+      "reads": [
+        "list_posted_lines"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Chartmend PM",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of 4 is in (5 of 17 lines). I'm requesting pages 2–4 now.",
+      "said_chars": 64,
+      "reads": [
+        "list_posted_lines",
+        "list_posted_lines",
+        "list_posted_lines"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Chartmend PM",
+      "user": "",
+      "continued": true,
+      "said": "All 17 lines are read (5 + 5 + 5 + 2). I can't judge most of them yet, because I need the contract rates first. I'm saving a checkpoint so the line data is in memory when I switch tabs.\n\n\nI've read every posted line, and I haven't filed any disputes. Nothing can be called short or right until I check the lines against the contract rates, which are in Docshelf.\n\n**Looks paid at a flat rate (needs contract confirmation):**\n- 99214 at $134 (L-301, L-305).\n- 73562 at $40 and 73564 at $29 (L-304, L-308).",
+      "said_chars": 2257,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Relaywave",
+      "user": "Now Relaywave. Read the remittances behind those lines, with every adjustment code.",
+      "continued": false,
+      "said": "I'll start by listing the remittances, then read each one.\n\n\nCorrection: that line isn't a valid op. Here is the real call.\n\nMy first line was malformed and got dropped. The `list_eras` call did go through, and the page says its answer will arrive with my next turn. I won't call it again.\n\nWhen the list arrives, I'll read each remittance with `read_era` and record every line's allowed and paid amounts, plus each adjustment's group code and CARC. I'm not filing any disputes at this stage.",
+      "said_chars": 492,
+      "reads": [
+        "list_eras"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Relaywave",
+      "user": "",
+      "continued": true,
+      "said": "Eight remittances are listed. I'm reading all of them now, so every adjustment code comes back in one pass.",
+      "said_chars": 107,
+      "reads": [
+        "read_era",
+        "read_era",
+        "read_era",
+        "read_era",
+        "read_era",
+        "read_era",
+        "read_era",
+        "read_era"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Relaywave",
+      "user": "",
+      "continued": true,
+      "said": "All eight remittances are read. Nothing is filed, and I can't call any line short until I see the contract rates.\n\n\n**What the adjustments show:**\n- **Bundled by NCCI edit (CO-97), so these stay undisputed unless the contract says otherwise:**\n  - L-303 (29877, $1,150) is bundled into L-302.\n  - L-313 (76942, $180) is bundled into L-312.\n  - L-317 (99213, $160) is bundled into L-315. No modifier 25 was billed.\n- **Patient share, not a short-pay:**\n  - L-314 (99204) was allowed at $176 and paid $36.",
+      "said_chars": 1895,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "Docshelf has both payer agreements, their fee schedules and the amendment. Read what we're actually owed.",
+      "continued": false,
+      "said": "I'll list the contracts folder first, then read each document.\n\n\nI can't read the documents until the list returns their ids. I'll read the agreements, fee schedules and amendment next turn, then compare them with the 17 lines already recorded. Nothing is filed yet.",
+      "said_chars": 266,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Reading the six contract documents now. I'm skipping DOC-31, which is a vendor proposal and not a contract.\n\n\nWhen the texts arrive I'll set each line's contracted allowed amount against what was paid. I'll file nothing until those rates are in front of me.",
+      "said_chars": 257,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Contracts are read. I need the full line detail from memory to finish the comparison, so I'm recalling it. I'm also checkpointing the contract terms for when I switch tabs.\n\n\nI haven't filed anything. Once the recall returns, I'll finish the line-by-line comparison and work out which dispute windows are still open. Some windows may already have closed.\n\nWe're owed $693 across 7 short-paid lines. Two more short-paid lines, $46 in all, are past their dispute windows.",
+      "said_chars": 3174,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Paylance payer hub",
+      "user": "Now Paylance. Read each payer's dispute rules and what we already have in dispute, then file a dispute for every line paid short of the contract, with the amount. Tell me what you left alone and why.",
+      "continued": false,
+      "said": "I'll read both payers' dispute rules, the disputes already filed, and my saved analysis. No dispute is filed until those are in.\n\nThe Paylance reads went through, but their answers haven't arrived. I'm not repeating the calls, and I'm not filing anything until I've seen the dispute rules and the disputes already filed.\n\nI have the analysis from memory. Five lines look short-paid, $565 in total:\n- L-305, Tallowbrook: $18 short. Its window closes 14 Oct, which makes it the most urgent.",
+      "said_chars": 1359,
+      "reads": [
+        "list_disputes",
+        "read_payer_policy",
+        "read_payer_policy"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Paylance payer hub",
+      "user": "",
+      "continued": true,
+      "said": "I've checked the five lines against both payers' rules. All five are inside their windows, and none is already in dispute. I'm filing one dispute per line.\n\n- **Tallowbrook (90 days):** L-305 closes 14 Oct, L-302 on 3 Nov and L-308 on 8 Dec.\n- **Cindermoor (180 days):** L-311 closes 7 Dec and L-312 on 16 Feb 2027.\n\n\nFive disputes are queued for your approval, and nothing has been filed yet. Together they claim $565.",
+      "said_chars": 1515,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_underpayment_dispute",
+          "key": "L-305",
+          "outcome": "correct",
+          "value_usd": 18.0
+        },
+        {
+          "action": "file_underpayment_dispute",
+          "key": "L-302",
+          "outcome": "correct",
+          "value_usd": 90.0
+        },
+        {
+          "action": "file_underpayment_dispute",
+          "key": "L-308",
+          "outcome": "correct",
+          "value_usd": 29.0
+        },
+        {
+          "action": "file_underpayment_dispute",
+          "key": "L-311",
+          "outcome": "correct",
+          "value_usd": 400.0
+        },
+        {
+          "action": "file_underpayment_dispute",
+          "key": "L-312",
+          "outcome": "correct",
+          "value_usd": 28.0
+        }
+      ]
+    }
+  ]
+}

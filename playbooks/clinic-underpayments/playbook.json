@@ -1,0 +1,99 @@
+{
+  "id": "clinic-underpayments",
+  "title": "Every line paid short of the payer contract found and disputed, and the bundled lines left alone",
+  "domain": "Clinics",
+  "audience": "work",
+  "promise": "Every remittance line from two commercial payers is checked against the contract's fee schedule in force on its date of service, its payment terms and its amendment. The lines paid short are disputed with the amount short, inside each payer's window: a rate the amendment raised, a surgeon paid as non-participating, an X-ray cut as a multiple procedure, and last year's rate. A line bundled under an NCCI edit, the patient's deductible, a sequestration cut, the lesser-of-billed rule, a line already in dispute and a window already closed are left alone.",
+  "persona": "The billing manager of a three-clinician orthopedic clinic contracted with two commercial payers, one of which also runs a Medicare Advantage plan",
+  "chore": "Read every posted remittance line in the practice management system; the 835 remittances behind them, with each adjustment's group and reason code; both payer agreements, their fee schedules, the amendment and who is participating from when; and each payer's dispute window and the disputes already open. Then compare each line's allowed amount with the rate the contract gives on its date of service, after the contract's own rules: the lesser of billed and schedule, the multiple-procedure reduction for surgical codes only, NCCI bundling, cost-sharing, sequestration on the Medicare Advantage schedule. Dispute each line paid short, one line a dispute, with the contracted amount and the amount short, before its window closes. None of the four systems shares data with another.",
+  "command": "Do the month-end underpayment check for Tallowbrook and Cindermoor. Go through Chartmend, the Relaywave remittances, the contracts in Docshelf and Paylance, and dispute every line they paid short of our contract, with the amount, before the windows close. Don't dispute anything that was paid right.",
+  "apps": [
+    {
+      "name": "Chartmend PM",
+      "role": "every posted remittance line: date of service, clinician, code, billed, allowed, paid, patient share and its remittance",
+      "api": "Practice management, vendor-specific",
+      "url": ""
+    },
+    {
+      "name": "Relaywave",
+      "role": "the 835 remittances: each line's adjustments by group and reason code, and the remarks that say why",
+      "api": "Clearinghouse batch files, not answers",
+      "url": ""
+    },
+    {
+      "name": "Docshelf",
+      "role": "both payer agreements, their fee schedules, the amendment and the participating practitioners",
+      "api": "Contract PDFs, no data",
+      "url": ""
+    },
+    {
+      "name": "Paylance payer hub",
+      "role": "each payer's dispute window and edit policy, the disputes already filed, and the dispute form",
+      "api": "Payer portal, no API for a small practice",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads every posted line in Chartmend PM, four pages of them.",
+    "Reads each remittance's adjustment codes and remarks in Relaywave.",
+    "Reads the agreements, the fee schedules, the amendment and the participation dates in Docshelf.",
+    "Reads each payer's dispute window and edit policy, and the open disputes, in Paylance.",
+    "Disputes each line paid short, with the contracted amount and the amount short."
+  ],
+  "gates": [
+    {
+      "action": "file_underpayment_dispute",
+      "label": "Dispute a line as paid below the contract",
+      "why": "It reaches the payer in the practice's name: a dispute of a line paid right, or of a bundled line, wastes the payer's review and the practice's standing, and a dispute after the window is closed unreviewed."
+    }
+  ],
+  "traps": [
+    "A knee chondroplasty bundled into the meniscectomy under an NCCI edit.",
+    "Ultrasound guidance bundled into the injection it guided.",
+    "A visit on the day of an injection, billed without modifier 25.",
+    "A visit allowed in full, with the patient's deductible not paid.",
+    "An X-ray billed below the schedule and paid at the billed charge.",
+    "A Medicare Advantage visit cut 2% for sequestration, as its schedule says.",
+    "Two lines really paid short whose dispute windows have closed.",
+    "A line already in dispute.",
+    "A visit before the amendment's date, and a surgery after it, both paid right."
+  ],
+  "memory": [
+    "Each line's date of service, clinician, code, allowed amount and remittance date, carried from Chartmend PM.",
+    "Each line's adjustment codes and the remarks that explain them, carried from Relaywave.",
+    "Each payer's rates by date of service, the amendment, the payment rules and the participation dates, carried from Docshelf.",
+    "Each payer's dispute window, and the line already in dispute, from Paylance."
+  ],
+  "economics": {
+    "value_usd": 2500,
+    "per": "month",
+    "basis": "An estimate. A payer that loads a fee schedule late, misses an amendment, applies a reduction the contract does not allow or pays a newly credentialed clinician as out of network underpays a few lines in every hundred, and most practices never compare remittances with their contracts line by line. For an orthopedic group of three clinicians collecting about $150,000 a month from commercial payers, the roster's $2,500 a month is under 2% of collections, an estimate. The bench world holds $565.00 across five lines paid short: $400.00 for a surgeon paid as non-participating after his credentialing, $90.00 and $18.00 on an amendment the payer had not loaded, $29.00 on an X-ray reduced as a multiple procedure and $28.00 on last year's rate. The payer agreements, fee schedules and amendment are invented world documents; the public rule is CMS's NCCI, under which a bundled line is not a line paid short. Times a year: twelve, a month-end reconciliation.",
+    "manual_minutes": 180,
+    "times_per_year": 12,
+    "incumbent": "Contract underpayment recovery firms audit remittances for a contingency share of what they recover; the world's own proposal is 25%, and the figure used is 25%, an estimate.",
+    "incumbent_fee_pct": 25,
+    "sources": [
+      {
+        "label": "CMS: Medicare National Correct Coding Initiative (NCCI) edits, procedure-to-procedure edits and medically unlikely edits",
+        "url": "https://www.cms.gov/medicare/coding-billing/national-correct-coding-initiative-ncci-edits"
+      },
+      {
+        "label": "X12: claim adjustment reason codes (CARC 45 fee schedule, 59 multiple procedure rules, 97 included in another service, 1 deductible, 253 sequestration)",
+        "url": "https://x12.org/codes/claim-adjustment-reason-codes"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four systems with no shared data: a line is short only against the rate in force on its date of service, which an amendment in another folder changed; a non-participating payment is wrong only by a participation date in the agreement; a reduction is wrong only because the contract limits it to surgical codes; and bundled lines, a deductible, sequestration and the lesser-of-billed rule all look short on the remittance.",
+    "usefulness_why": "Recovers money the practice earned and would never see, line by line, on a deadline, without paying a recovery firm a quarter of it."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful biller gets most of it; the bar is most of the short lines disputed with the right amount, no dispute of a line paid right, bundled or out of time, inside an hour."
+  },
+  "caveat": "Ashgrove Orthopedic Clinic, Tallowbrook Health Plan, Cindermoor Health, Recoverline, Chartmend PM, Relaywave, Docshelf, Paylance and every clinician and patient account here are invented; no line is any real patient's. The payer agreements, fee schedules and dispute windows are invented world documents. The public rule applied is CMS's National Correct Coding Initiative, which payers apply under their contracts, fixed in the bench world as of October 2026. Real contracts, the quarter's published edits and the clinical record decide real disputes. This applies stated contract terms to stated facts; it is not legal, coding or billing-compliance advice, and real patient data needs a model path covered by a business associate agreement."
+}
