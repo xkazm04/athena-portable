@@ -1,0 +1,364 @@
+{
+  "playbook": "food-recall-trace",
+  "run_at": "2026-10-10T18:29:47Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 98.9,
+  "turns": 13,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 21,
+  "cost_usd": 1.1768,
+  "your_time_s": 240,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.6
+  },
+  "score": {
+    "eligible": 8,
+    "found": 8,
+    "exact": 8,
+    "value_total_usd": 20000.0,
+    "value_found_usd": 20000.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 10,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "hold_lot",
+        "key": "TB-0830",
+        "why": "TB-0830 is the lot just before the range; Tillbrook says it is not affected (M-2), and none is on hand",
+        "filed": false
+      },
+      {
+        "action": "hold_lot",
+        "key": "TB-0834",
+        "why": "TB-0834 is the lot just after the range and Tillbrook says it is not affected (M-2); the 100 kg on hand are not held",
+        "filed": false
+      },
+      {
+        "action": "hold_lot",
+        "key": "FG-0915",
+        "why": "FG-0915 was made from TB-0830, which is not affected (M-2, ERP); its 18 cases on hand are not held",
+        "filed": false
+      },
+      {
+        "action": "hold_lot",
+        "key": "FG-0921",
+        "why": "FG-0921 is oat granola with no almond butter in it (ERP); its 20 cases on hand are not held",
+        "filed": false
+      },
+      {
+        "action": "hold_lot",
+        "key": "FG-0923",
+        "why": "FG-0923 was made from TB-0834, which is not affected (M-2, ERP); its 90 cases on hand are not held",
+        "filed": false
+      },
+      {
+        "action": "notify_customer",
+        "key": "K-4",
+        "why": "K-4 Ostrander Cafe received only FG-0915 and FG-0921 (SH-301, SH-308), neither made from an affected lot",
+        "filed": false
+      },
+      {
+        "action": "notify_customer",
+        "key": "K-5",
+        "why": "K-5 Quillon Bay Grocers has an order for FG-0919 not yet shipped (O-71); the batch is held, and a customer who has received nothing is told nothing",
+        "filed": false
+      },
+      {
+        "action": "notify_customer",
+        "key": "L-1",
+        "why": "L-1 Gannet Point Foods is Larkmoor's own customer (Drayfold); Larkmoor tells it, and the recall goes no further for Brennick & Daughters (D-3, M-1)",
+        "filed": false
+      },
+      {
+        "action": "notify_customer",
+        "key": "L-2",
+        "why": "L-2 Rowan Hollow Deli is Larkmoor's own customer (Drayfold); Larkmoor tells it (D-3, M-1)",
+        "filed": false
+      },
+      {
+        "action": "notify_customer",
+        "key": "L-3",
+        "why": "L-3 Sedgemoor Market is Larkmoor's own customer (Drayfold); Larkmoor tells it (D-3, M-1)",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "hold_lot",
+      "key": "TB-0832",
+      "outcome": "correct",
+      "value_usd": 2500.0,
+      "exact": true,
+      "why": "TB-0832 is in the recall (M-1) and 55 kg of it are still on hand (ERP), so it is held. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+    },
+    {
+      "action": "hold_lot",
+      "key": "TB-0833",
+      "outcome": "correct",
+      "value_usd": 2500.0,
+      "exact": true,
+      "why": "TB-0833 is in the recall (M-1) and all 100 kg are still on hand (ERP), so it is held. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+    },
+    {
+      "action": "hold_lot",
+      "key": "FG-0919",
+      "outcome": "correct",
+      "value_usd": 2500.0,
+      "exact": true,
+      "why": "FG-0919 was made from the affected TB-0833 (ERP) and 40 cases are still in the warehouse, so the batch on hand is held. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+    },
+    {
+      "action": "notify_customer",
+      "key": "K-1",
+      "outcome": "correct",
+      "value_usd": 2500.0,
+      "exact": true,
+      "why": "K-1 Hollin Ridge Market received 20 cases of FG-0917, made from the affected TB-0831 (SH-303). Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+    },
+    {
+      "action": "notify_customer",
+      "key": "K-2",
+      "outcome": "correct",
+      "value_usd": 2500.0,
+      "exact": true,
+      "why": "K-2 Waverly Pantry Co-op received 24 cases of FG-0918, made from the affected TB-0832 (SH-305); its FG-0915 is not affected, so the notice names FG-0918. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+    },
+    {
+      "action": "notify_customer",
+      "key": "K-3",
+      "outcome": "correct",
+      "value_usd": 2500.0,
+      "exact": true,
+      "why": "K-3 Thornlea Corner Store received 30 cases of FG-0919, made from the affected TB-0833 (SH-306). Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+    },
+    {
+      "action": "notify_customer",
+      "key": "K-6",
+      "outcome": "correct",
+      "value_usd": 2500.0,
+      "exact": true,
+      "why": "K-6 Bellmont Lodge Shop received 12 cases of FG-0922, which took 38 kg of trim from FG-0917 as rework RW-1 (rework log D-2; the ERP shows only RW-1), so it holds the affected almond butter in a second product. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+    },
+    {
+      "action": "notify_customer",
+      "key": "D-1",
+      "outcome": "correct",
+      "value_usd": 2500.0,
+      "exact": true,
+      "why": "D-1 Larkmoor Provisions, the distributor, is a direct customer and received FG-0917 and FG-0919 (SH-304, SH-307); it is told, and tells its own customers. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm filing eight cards: three holds and five customer notices. Nothing runs until you answer each card.\n\n\n**Held, once you sign**\n- TB-0832: 55 kg on hand.\n- TB-0833: 100 kg on hand.\n- FG-0919: 40 cases on hand.\n\n**Notified, once you sign**\n- K-1 Hollin Ridge Market: FG-0917.\n- K-2 Waverly Pantry Co-op: FG-0918.\n- K-3 Thornlea Corner Store: FG-0919.\n- K-6 Bellmont Lodge Shop: FG-0922. This batch is Oat Cluster Granola with rework from FG-0917.\n- D-1 Larkmoor: FG-0917 and FG-0919.\n\n**Left alone**\n- **TB-0831:** 0 kg on hand, so nothing to hold.\n- **FG-0917, FG-0918 and FG-0922:** 0 cases on hand, so nothing to hold.\n- **TB-0830, TB-0834, FG-0915 and FG-0923:** the recall doesn't reach them (M-2). The last two are made from TB-0830 and TB-0834 respectively.\n- **FG-0921:** Oat Cluster Granola with no almond butter in it.\n- **K-4 Ostrander Cafe:** it only got FG-0915 and FG-0921.\n- **K-5 Qui",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Odalys Brennick, Brennick & Daughters. This is my mail. Read every message about the almond butter recall. Don't do anything yet: I'll send you to our papers, our order system and our customers' and distributor's portals next.",
+      "continued": false,
+      "said": "I'll list the inbox first.",
+      "said_chars": 26,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Four messages are in the inbox. I'll read all four, since M-3 may bear on the recall too.",
+      "said_chars": 89,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "I read all four messages. Three of them bear on the recall, and I've done nothing beyond reading.\n\n- **M-1, Tillbrook, 7 Oct:** The recall covers Roasted Almond Butter in 25 kg pails, lots TB-0831, TB-0832 and TB-0833, for possible Salmonella. We should hold those lots. If we made product with them, we should tell our direct customers, naming the lots. A distributor tells its own customers.\n- **M-2, Tillbrook, 8 Oct:** The recall covers those three lots and no others.",
+      "said_chars": 1769,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "These are our papers: our recall procedure, the rework log and the distributor terms. Read all of them.",
+      "continued": false,
+      "said": "I'll list the papers first, then read each one.",
+      "said_chars": 47,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Four papers are listed. You asked me to read all of them, including D-4 (Hold cage B), so I'll read each one.",
+      "said_chars": 109,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "I've read all four papers and done nothing beyond reading.\n\n- **D-1, Recall procedure:**\n  - Find the supplier lots named in the notice, exactly, and no others.\n  - Hold every affected lot on hand, whether ingredient or finished batch.\n  - Trace each lot to every batch it went into, including rework.\n  - Send a notice only to direct customers that received a batch made with an affected lot. Name the batch and the reason. Stock on hand is held, not announced.",
+      "said_chars": 1495,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren ERP",
+      "user": "This is our order system. Read the ingredient lots we received, the batches we made and the shipments, on both pages of each. Don't send or hold anything yet.",
+      "continued": false,
+      "said": "I'll read both pages of lots, batches and shipments, all in one go.",
+      "said_chars": 67,
+      "reads": [
+        "list_lots",
+        "list_lots",
+        "list_batches",
+        "list_batches",
+        "list_shipments",
+        "list_shipments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren ERP",
+      "user": "",
+      "continued": true,
+      "said": "I've read both pages of lots, batches and shipments. I haven't held or sent anything.\n\n**Affected lots (TB-0831, TB-0832, TB-0833 only, per M-1 and M-2)**\n- TB-0831: 0 kg on hand, so there is nothing to hold.\n- TB-0832: 55 kg on hand, so hold it.\n- TB-0833: 100 kg on hand, so hold it.\n- TB-0830 and TB-0834 are not affected. TB-0834 has 100 kg on hand and stays out of the hold.\n\n**Batches made with an affected lot**\n- FG-0917 (TB-0831): 0 cases on hand.\n- FG-0918 (TB-0832): 0 cases on hand.",
+      "said_chars": 2259,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Shelfwick",
+      "user": "This is the portal where our retail customers order. Read our customers and their open orders.",
+      "continued": false,
+      "said": "I'll read the customers and open orders now.",
+      "said_chars": 44,
+      "reads": [
+        "list_customers",
+        "list_open_orders"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Shelfwick",
+      "user": "",
+      "continued": true,
+      "said": "Shelfwick lists six retail customers and two open orders. Both orders are unshipped, so neither needs a notice. I've done nothing beyond reading.\n\n**Customers (showing 6 of 6)**\n- K-1 Hollin Ridge Market, Cloquet (Ines)\n- K-2 Waverly Pantry Co-op, Two Harbors (Marek)\n- K-3 Thornlea Corner Store, Grand Marais (Dell)\n- K-4 Ostrander Cafe, Duluth (Pilar)\n- K-5 Quillon Bay Grocers, Silver Bay (Tobias)\n- K-6 Bellmont Lodge Shop, Tofte (Anneke)",
+      "said_chars": 1675,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Drayfold",
+      "user": "This is our distributor's portal. Read what it received from us and the deliveries it has made on.",
+      "continued": false,
+      "said": "I'll read the Drayfold portal now. This step only reads and changes nothing.",
+      "said_chars": 76,
+      "reads": [
+        "list_received",
+        "list_onward_deliveries",
+        "read_terms"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Drayfold",
+      "user": "",
+      "continued": true,
+      "said": "Drayfold is read. Before I file anything, I need the full batch and shipment rows from the ERP, so I'm pulling them back from memory.\n\nI'm filing eight decision cards for your signature: three holds and five customer notices. Nothing has run yet. Each action waits for your answer.\n\n**Plan**\n- **Holds:** TB-0832 (55 kg on hand), TB-0833 (100 kg on hand) and finished batch FG-0919 (40 cases on hand).\n- **Not held:** TB-0831 has 0 kg on hand. FG-0917, FG-0918 and FG-0922 have 0 cases on hand.",
+      "said_chars": 2870,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren ERP",
+      "user": "Back at our order system. For the recalled almond butter: hold each affected lot we still have on hand, and send the recall notice, naming the affected batch numbers, to each of our own customers that received a product made with an affecte",
+      "continued": false,
+      "said": "I'm filing eight cards: three holds and five customer notices. Nothing runs until you answer each card.\n\n\n**Held, once you sign**\n- TB-0832: 55 kg on hand.\n- TB-0833: 100 kg on hand.\n- FG-0919: 40 cases on hand.\n\n**Notified, once you sign**\n- K-1 Hollin Ridge Market: FG-0917.\n- K-2 Waverly Pantry Co-op: FG-0918.\n- K-3 Thornlea Corner Store: FG-0919.\n- K-6 Bellmont Lodge Shop: FG-0922. This batch is Oat Cluster Granola with rework from FG-0917.\n- D-1 Larkmoor: FG-0917 and FG-0919.",
+      "said_chars": 1139,
+      "reads": [],
+      "cards": [
+        {
+          "action": "hold_lot",
+          "key": "TB-0832",
+          "outcome": "correct",
+          "value_usd": 2500.0
+        },
+        {
+          "action": "hold_lot",
+          "key": "TB-0833",
+          "outcome": "correct",
+          "value_usd": 2500.0
+        },
+        {
+          "action": "hold_lot",
+          "key": "FG-0919",
+          "outcome": "correct",
+          "value_usd": 2500.0
+        },
+        {
+          "action": "notify_customer",
+          "key": "K-1",
+          "outcome": "correct",
+          "value_usd": 2500.0
+        },
+        {
+          "action": "notify_customer",
+          "key": "K-2",
+          "outcome": "correct",
+          "value_usd": 2500.0
+        },
+        {
+          "action": "notify_customer",
+          "key": "K-3",
+          "outcome": "correct",
+          "value_usd": 2500.0
+        },
+        {
+          "action": "notify_customer",
+          "key": "K-6",
+          "outcome": "correct",
+          "value_usd": 2500.0
+        },
+        {
+          "action": "notify_customer",
+          "key": "D-1",
+          "outcome": "correct",
+          "value_usd": 2500.0
+        }
+      ]
+    }
+  ]
+}

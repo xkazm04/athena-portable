@@ -1,0 +1,125 @@
+{
+  "id": "food-recall-trace",
+  "title": "A snack maker's recall of a supplier's almond butter is traced: three lots held and five customers told, one for a batch reworked into another product, while the lots either side of the range, batches made from them, a customer given only other batches, an order not yet shipped and the distributor's own customers are left alone",
+  "domain": "Food & beverage",
+  "audience": "work",
+  "promise": "When a supplier recalls an almond butter, the small snack maker that used it traces the recalled lots through its order system to the batches made from them and to the customers who received those batches. The affected lots still on hand are held, and the five direct customers that received an affected batch are told, among them the distributor, one customer whose batch took affected trim as rework, and not the distributor's own customers. Lots just outside the recalled range, batches made from them, a batch with no almond butter, a customer given only other batches and an order not yet shipped are left alone.",
+  "persona": "The quality lead and owner of a small snack-bar company in Duluth, Minnesota, with a distributor, six retail customers and a supplier's recall notice in her mail",
+  "chore": "Read the supplier's recall notice and its clarification, the firm's recall procedure and rework log, the lots, batches and shipments in the order system, the retail customers and their open orders, and the distributor's received and onward deliveries. Then apply 21 CFR 1.337, 1.345, 7.42 and 7.49 as they stand on 9 October 2026: hold each affected lot on hand, and notify each direct customer that received an affected batch, and no one else.",
+  "command": "I'm Odalys Brennick, Brennick & Daughters. Tillbrook recalled an almond butter. Go through my Postwren mail, our Binderwell papers, our Ledgerwren ERP, Shelfwick and the Drayfold portal, hold what we still have of the affected lots, and tell each of our own customers who got a batch made with them. Leave out the lots and customers the recall doesn't reach.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "the supplier's recall notice and clarification, a customer's order question and the distributor's request",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the firm's recall procedure, the rework log, the distributor terms and the hold procedure",
+      "api": "Document store, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren ERP",
+      "role": "the ingredient lots, the batches made, the shipments, and the holds and recall notices",
+      "api": "ERP, no API",
+      "url": ""
+    },
+    {
+      "name": "Shelfwick",
+      "role": "the retail customers and their open orders",
+      "api": "Customer ordering portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Drayfold",
+      "role": "what the distributor received and the deliveries it made on to its own customers",
+      "api": "Distributor portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the recall notice and the lots it clears in Postwren.",
+    "Reads the procedure, the rework log and the distributor terms in Binderwell.",
+    "Reads the lots, batches and shipments in Ledgerwren ERP.",
+    "Reads the customers and open orders in Shelfwick, and the distributor's deliveries in Drayfold.",
+    "Back in Ledgerwren ERP, holds three lots and notifies five customers."
+  ],
+  "gates": [
+    {
+      "action": "hold_lot",
+      "label": "Put a lot on hold",
+      "why": "A hold stops stock from being used or shipped, and a hold on the wrong lot idles good stock; a lot left unheld can reach a customer."
+    },
+    {
+      "action": "notify_customer",
+      "label": "Send a recall notice to a customer",
+      "why": "A recall notice reaches a customer's buyer and tells them to stop selling a product; one sent to the wrong customer is a false alarm, and one not sent leaves unsafe food on a shelf."
+    }
+  ],
+  "traps": [
+    "Holding a lot just before or after the recalled range.",
+    "Holding a batch made from a lot that is not affected.",
+    "Holding a batch with no almond butter in it.",
+    "Notifying a customer that received only unaffected batches.",
+    "Notifying a customer whose order for an affected batch has not shipped.",
+    "Notifying the distributor's own customers."
+  ],
+  "memory": [
+    "The recalled lots and the lots that are clear, from the supplier's two messages in Postwren.",
+    "The procedure, the rework that put affected trim into a second batch, and the distributor's duty to tell its own customers, from Binderwell.",
+    "Each lot's use, each batch's cases on hand and each shipment, from Ledgerwren ERP, and the open orders and onward deliveries, from Shelfwick and Drayfold, carried back to the last ERP tab."
+  ],
+  "economics": {
+    "value_usd": 20000,
+    "per": "episode",
+    "basis": "An estimate. A small food maker whose supplier recalls an ingredient has to find every affected lot and every customer fast: the stock it holds, the product a customer sells on and the lost trust cost a firm of this size tens of thousands of dollars if a lot is missed or a customer is told late; the roster's $20,000 an episode is that cost, avoided, for one recall, not a published figure. Each of the world's eight acts is weighted at $2,500, an eighth of it, and counts a price avoided and not money recovered; the bench world holds eight acts, $20,000. Times a year: once, the episode in the year it happens (ADR 0056). manual_minutes 180: reading four messages, four papers, seven lots, seven batches, nine shipments, six customers, two open orders and five onward deliveries, tracing three lots through the batches, rework included, and making eight entries. Rules applied, as they stand on Friday 9 October 2026 (eCFR title 21, current): 21 CFR 1.337 (a nontransporter keeps the immediate previous source, the lot or code and the quantity of all food it receives), 1.345 (and the recipient, lot and quantity of what it releases, and the source of each ingredient in every lot of finished product, 1.345(b)), 1.361 (records are made available within 24 hours of FDA's request when it reasonably believes a food is adulterated and a threat of serious adverse health consequences or death), and 21 CFR 7.42(b)(1) (a recall extends to the consumer, retail or wholesale level) and 7.49 (a recalling firm notifies each affected direct account, identifies the product by lot, explains the hazard and says what to do; consignees pass the notice to their own consignees). Part 7 Subpart C is FDA's guidance on recalls, not a duty. The Food Traceability Rule, 21 CFR Part 1 Subpart S, is not binding on this world's date: FDA's compliance date was 20 January 2026, FDA proposed on 7 August 2025 to move it to 20 July 2028, and the November 2025 appropriations act directs FDA not to enforce it before 20 July 2028 (no separate final rule found); the world cites no Subpart S duty.",
+    "manual_minutes": 180,
+    "times_per_year": 1,
+    "incumbent": "Recall-management and traceability software is sold by subscription and consultants charge by the hour, not a share of anything, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "21 CFR 1.337, information nontransporters must establish and maintain on immediate previous sources (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-A/part-1/subpart-J/section-1.337"
+      },
+      {
+        "label": "21 CFR 1.345, information nontransporters must establish and maintain on immediate subsequent recipients (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-A/part-1/subpart-J/section-1.345"
+      },
+      {
+        "label": "21 CFR 1.361, what are the record availability requirements (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-A/part-1/subpart-J/section-1.361"
+      },
+      {
+        "label": "21 CFR 7.42, recall strategy: depth of recall (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-A/part-7/subpart-C/section-7.42"
+      },
+      {
+        "label": "21 CFR 7.49, recall communications (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-A/part-7/subpart-C/section-7.49"
+      },
+      {
+        "label": "FDA, FSMA final rule on requirements for additional traceability records for certain foods (Subpart S; compliance date)",
+        "url": "https://www.fda.gov/food/food-safety-modernization-act-fsma/fsma-final-rule-requirements-additional-traceability-records-certain-foods"
+      },
+      {
+        "label": "Federal Register, Requirements for Additional Traceability Records for Certain Foods: Compliance Date Extension (proposed, 7 August 2025)",
+        "url": "https://www.federalregister.gov/documents/2025/08/07/2025-14967/requirements-for-additional-traceability-records-for-certain-foods-compliance-date-extension"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "A recalled range of three lots with a clear lot on each side, seven batches, nine shipments across six customers and a distributor whose own customers are visible; affected trim reworked into another product shows in the order system only as a rework code; and an affected batch on hand and on an unshipped order.",
+    "usefulness_why": "A rare chore, but a recall that misses a lot or a customer leaves unsafe food on shelves, and one that overreaches idles good stock and alarms customers; the work is hours of tracing under pressure."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful quality lead with the notice, the lots, the batches and the shipments holds the three affected lots and tells the five customers who received them, and none of the ten traps, inside an hour."
+  },
+  "caveat": "Odalys Brennick, Brennick & Daughters, Tillbrook Nut Roasters, Larkmoor Provisions, every customer, batch, lot, case count and date, and Postwren, Binderwell, Ledgerwren ERP, Shelfwick and Drayfold are invented; no real food company, recall service or recall is named. The public rules applied are 21 CFR 1.337 and 1.345 (the records of the immediate previous source and immediate subsequent recipient), 1.361 (records made available within 24 hours) and 21 CFR 7.42 and 7.49 (the depth of a recall and recall communications), as in force on 9 October 2026 (eCFR, current), 7.42 and 7.49 being FDA's guidance for firm-initiated recalls and not a duty. FDA's Food Traceability Rule, 21 CFR Part 1 Subpart S, is not applied as binding: its compliance date was January 20, 2026, and FDA proposed on 7 August 2025 to extend it to 20 July 2028; a November 2025 appropriations act directs FDA not to enforce it before 20 July 2028, and I found no separate final rule, so the lot codes in this world are the firm's own practice. The firm's recall procedure, its holds and its rule that a distributor tells its own customers are the invented firm's own. What decides a real recall is the FDA, the supplier's notice and a food-safety professional. This applies stated rules to stated facts; it is not legal or compliance advice."
+}

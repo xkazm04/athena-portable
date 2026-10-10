@@ -1,0 +1,80 @@
+{
+  "targets": [
+    {
+      "tool": "hold_lot",
+      "key": "lot",
+      "eligible": {
+        "TB-0832": {
+          "value_usd": 2500.0,
+          "why": "TB-0832 is in the recall (M-1) and 55 kg of it are still on hand (ERP), so it is held. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+        },
+        "TB-0833": {
+          "value_usd": 2500.0,
+          "why": "TB-0833 is in the recall (M-1) and all 100 kg are still on hand (ERP), so it is held. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+        },
+        "FG-0919": {
+          "value_usd": 2500.0,
+          "why": "FG-0919 was made from the affected TB-0833 (ERP) and 40 cases are still in the warehouse, so the batch on hand is held. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode"
+        }
+      },
+      "traps": {
+        "TB-0830": "TB-0830 is the lot just before the range; Tillbrook says it is not affected (M-2), and none is on hand",
+        "TB-0834": "TB-0834 is the lot just after the range and Tillbrook says it is not affected (M-2); the 100 kg on hand are not held",
+        "FG-0915": "FG-0915 was made from TB-0830, which is not affected (M-2, ERP); its 18 cases on hand are not held",
+        "FG-0921": "FG-0921 is oat granola with no almond butter in it (ERP); its 20 cases on hand are not held",
+        "FG-0923": "FG-0923 was made from TB-0834, which is not affected (M-2, ERP); its 90 cases on hand are not held"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "notify_customer",
+      "key": "customer",
+      "eligible": {
+        "K-1": {
+          "value_usd": 2500.0,
+          "why": "K-1 Hollin Ridge Market received 20 cases of FG-0917, made from the affected TB-0831 (SH-303). Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode",
+          "expect": {
+            "lots": "FG-0917"
+          }
+        },
+        "K-2": {
+          "value_usd": 2500.0,
+          "why": "K-2 Waverly Pantry Co-op received 24 cases of FG-0918, made from the affected TB-0832 (SH-305); its FG-0915 is not affected, so the notice names FG-0918. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode",
+          "expect": {
+            "lots": "FG-0918"
+          }
+        },
+        "K-3": {
+          "value_usd": 2500.0,
+          "why": "K-3 Thornlea Corner Store received 30 cases of FG-0919, made from the affected TB-0833 (SH-306). Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode",
+          "expect": {
+            "lots": "FG-0919"
+          }
+        },
+        "K-6": {
+          "value_usd": 2500.0,
+          "why": "K-6 Bellmont Lodge Shop received 12 cases of FG-0922, which took 38 kg of trim from FG-0917 as rework RW-1 (rework log D-2; the ERP shows only RW-1), so it holds the affected almond butter in a second product. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode",
+          "expect": {
+            "lots": "FG-0922"
+          }
+        },
+        "D-1": {
+          "value_usd": 2500.0,
+          "why": "D-1 Larkmoor Provisions, the distributor, is a direct customer and received FG-0917 and FG-0919 (SH-304, SH-307); it is told, and tells its own customers. Weighted 2,500 dollars, an eighth of the roster's 20,000 dollars an episode",
+          "expect": {
+            "lots": "FG-0917"
+          }
+        }
+      },
+      "traps": {
+        "K-4": "K-4 Ostrander Cafe received only FG-0915 and FG-0921 (SH-301, SH-308), neither made from an affected lot",
+        "K-5": "K-5 Quillon Bay Grocers has an order for FG-0919 not yet shipped (O-71); the batch is held, and a customer who has received nothing is told nothing",
+        "L-1": "L-1 Gannet Point Foods is Larkmoor's own customer (Drayfold); Larkmoor tells it, and the recall goes no further for Brennick & Daughters (D-3, M-1)",
+        "L-2": "L-2 Rowan Hollow Deli is Larkmoor's own customer (Drayfold); Larkmoor tells it (D-3, M-1)",
+        "L-3": "L-3 Sedgemoor Market is Larkmoor's own customer (Drayfold); Larkmoor tells it (D-3, M-1)"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

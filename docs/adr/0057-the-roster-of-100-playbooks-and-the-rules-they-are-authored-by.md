@@ -210,6 +210,11 @@ names; each playbook carries the new one.
 - Row 60, `organic-annual-update`: "Ledgerline ERP" became "Ledgerwren ERP", because Ledgerline is the name of
   several real accounting and invoicing products; and "Docshelf" became "Binderwell", because DocShelf is a
   real document management app.
+- Row 61, `food-recall-trace`: "Freshroute" became "Drayfold", because FreshRoute is the name of a real cold-chain food
+  distribution service and of a bakery route-distribution app; "Pantrylink" became "Shelfwick", because PantryLink is a
+  real pantry-management app; "Ledgerline ERP" became "Ledgerwren ERP", because Ledgerline is the name of several real
+  accounting and invoicing products; "Docshelf" became "Binderwell", because DocShelf is a real document management
+  app; and "Mailnest" became "Postwren", because mailnest.io is a real email service.
 
 ### B7: Household money
 

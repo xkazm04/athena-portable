@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The sixty-nine playbooks (latest runs, Claude Sonnet)
+## The seventy playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -112,9 +112,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A songwriter's six songs registered with the collective so that their unmatched mechanical royalties reach her, each at her own share, while a namesake's recording, her cover of another's song, a work already matched, a share a publisher administers, a co-writer's song and money from radio and Germany are left alone | work | 4 | exceeds: 6 of 6, $1,338.95 of $1,338.95 (her own share), 8 of 8 traps, 0 false, 2.1 min, $1.27 |
 | A business owner's twelve IRS notices sorted: first-time abatement requested on four penalties his record qualifies for, one on a tax still being paid, while a second quarter, a history with an earlier penalty, accuracy and estimated tax penalties, a second partnership year, an abated penalty and two notices that are no penalty are left alone | work | 4 | exceeds: 4 of 4, $1,850.60 of $1,850.60 (the penalties waived), 8 of 8 traps, 0 false, 1.7 min, $1.41 |
 | An organic granola maker's annual update assembled: three plan changes, two suppliers no longer certified and three import certificates reported, while an old paper certificate, an exempt distributor, a lapsed grower of a non-organic mix, a change already accepted or never made, and imports that mismatch or need none are left alone | work | 4 | exceeds: 8 of 8 (a $75 weight an act, mostly minutes), 8 of 8 traps, 0 false, 1.7 min, $1.21 |
+| A snack maker's recall of a supplier's almond butter traced: three lots held and five customers told, one for a batch reworked into another product, while the lots either side of the range, batches made from them, a customer given only other batches, an order not yet shipped and the distributor's own customers are left alone | work | 5 | exceeds: 8 of 8, $20,000 of $20,000 (an eighth of the roster's value an act), 10 of 10 traps, 0 false, 1.6 min, $1.18 |
 
-Across the latest runs: $1,092,009 of $1,101,436 found, 714 of 714 traps walked past, no false claim,
-201 minutes of her time against about 293 hours by hand, $124.93 of model time. 107 runs are recorded
+Across the latest runs: $1,112,009 of $1,121,436 found, 724 of 724 traps walked past, no false claim,
+202 minutes of her time against about 296 hours by hand, $126.11 of model time. 108 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

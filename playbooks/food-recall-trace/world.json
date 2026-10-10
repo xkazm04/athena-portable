@@ -1,0 +1,667 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "postwren",
+      "message": "I'm Odalys Brennick, Brennick & Daughters. This is my mail. Read every message about the almond butter recall. Don't do anything yet: I'll send you to our papers, our order system and our customers' and distributor's portals next.",
+      "nudges": 1
+    },
+    {
+      "app": "binderwell",
+      "message": "These are our papers: our recall procedure, the rework log and the distributor terms. Read all of them.",
+      "nudges": 1
+    },
+    {
+      "app": "erp",
+      "message": "This is our order system. Read the ingredient lots we received, the batches we made and the shipments, on both pages of each. Don't send or hold anything yet.",
+      "nudges": 1
+    },
+    {
+      "app": "shelfwick",
+      "message": "This is the portal where our retail customers order. Read our customers and their open orders.",
+      "nudges": 1
+    },
+    {
+      "app": "drayfold",
+      "message": "This is our distributor's portal. Read what it received from us and the deliveries it has made on.",
+      "nudges": 1
+    },
+    {
+      "app": "erp",
+      "message": "Back at our order system. For the recalled almond butter: hold each affected lot we still have on hand, and send the recall notice, naming the affected batch numbers, to each of our own customers that received a product made with an affected lot, our distributor included. Leave out lots and customers the recall does not reach, and anyone who is not our own customer. Then tell me what you held, who you notified, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/odalys/inbox",
+      "view": {
+        "view": "Postwren: Odalys Brennick's inbox (invented)",
+        "signed_in": "Odalys Brennick",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The messages in the inbox: id, from, subject and date.",
+          "params": {},
+          "returns": {
+            "table": "msgs",
+            "fields": [
+              "msg_id",
+              "from",
+              "subject",
+              "date"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id (M-n).",
+          "params": {
+            "msg_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "msgs",
+            "match": {
+              "msg_id": "msg_id"
+            },
+            "require": [
+              "msg_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "the mail",
+        "my mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "binderwell",
+      "name": "Binderwell",
+      "origin": "https://papers.binderwell.example",
+      "path": "/brennick-and-daughters",
+      "view": {
+        "view": "Binderwell: Brennick & Daughters' papers",
+        "signed_in": "Odalys Brennick",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "The papers: document id and title.",
+          "params": {},
+          "returns": {
+            "table": "docs",
+            "fields": [
+              "doc_id",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_document",
+          "kind": "READ",
+          "description": "One document in full, by id (D-n).",
+          "params": {
+            "doc_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "docs",
+            "match": {
+              "doc_id": "doc_id"
+            },
+            "require": [
+              "doc_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Binderwell",
+        "our papers",
+        "the papers"
+      ]
+    },
+    {
+      "app_id": "erp",
+      "name": "Ledgerwren ERP",
+      "origin": "https://erp.ledgerwren.example",
+      "path": "/brennick-and-daughters/orders",
+      "view": {
+        "view": "Ledgerwren ERP: Brennick & Daughters' lots and orders",
+        "signed_in": "Odalys Brennick",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_lots",
+          "kind": "READ",
+          "description": "Every ingredient lot received: lot, supplier, ingredient, date, kilograms received and kilograms on hand. Five a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "lots",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "list_batches",
+          "kind": "READ",
+          "description": "Every batch made: batch, product, date, the ingredient lots it used, cases made and cases on hand. Five a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "batches",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "list_shipments",
+          "kind": "READ",
+          "description": "Every shipment: id, date, batch, customer (id and name) and cases. Five a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "ships",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "hold_lot",
+          "kind": "REACHES_A_PERSON",
+          "description": "Put one lot on hold in the order system, so that it is not used or shipped, by lot or batch id (lot, for example TB-0832 or FG-0919) and a short reason (reason). Odalys signs.",
+          "params": {
+            "lot": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Lot {lot} put on hold."
+        },
+        {
+          "name": "notify_customer",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send a recall notice to one customer, by customer id (customer: K-n for a customer of ours, D-1 for Larkmoor Provisions, our distributor), naming the affected batch numbers (lots) and a short summary (summary). Odalys signs.",
+          "params": {
+            "customer": {
+              "type": "string"
+            },
+            "lots": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            }
+          },
+          "says": "Recall notice sent to {customer}."
+        }
+      ],
+      "aliases": [
+        "Ledgerwren ERP",
+        "Ledgerwren",
+        "the ERP",
+        "our order system"
+      ]
+    },
+    {
+      "app_id": "shelfwick",
+      "name": "Shelfwick",
+      "origin": "https://orders.shelfwick.example",
+      "path": "/brennick-and-daughters/customers",
+      "view": {
+        "view": "Shelfwick: Brennick & Daughters' retail customers (invented)",
+        "signed_in": "Odalys Brennick",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_customers",
+          "kind": "READ",
+          "description": "Our retail customers: id, name, town and buyer.",
+          "params": {},
+          "returns": {
+            "table": "custs",
+            "fields": [
+              "cust_id",
+              "name",
+              "town",
+              "buyer"
+            ]
+          }
+        },
+        {
+          "name": "list_open_orders",
+          "kind": "READ",
+          "description": "The orders placed and not yet shipped: order, customer, batch, cases and the day it ships.",
+          "params": {},
+          "returns": {
+            "table": "orders"
+          }
+        }
+      ],
+      "aliases": [
+        "Shelfwick",
+        "our customers' portal",
+        "the retail portal"
+      ]
+    },
+    {
+      "app_id": "drayfold",
+      "name": "Drayfold",
+      "origin": "https://portal.drayfold.example",
+      "path": "/larkmoor/brennick-and-daughters",
+      "view": {
+        "view": "Drayfold: Larkmoor Provisions' portal for Brennick & Daughters (invented)",
+        "signed_in": "Odalys Brennick",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_terms",
+          "kind": "READ",
+          "description": "The distributor's terms by topic: index or recalls.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "terms",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_received",
+          "kind": "READ",
+          "description": "What Larkmoor received from Brennick & Daughters: id, date, batch and cases.",
+          "params": {},
+          "returns": {
+            "table": "recv"
+          }
+        },
+        {
+          "name": "list_onward_deliveries",
+          "kind": "READ",
+          "description": "What Larkmoor has delivered on to its own customers: id, date, batch, its customer and cases.",
+          "params": {},
+          "returns": {
+            "table": "onward"
+          }
+        }
+      ],
+      "aliases": [
+        "Drayfold",
+        "the distributor's portal",
+        "Larkmoor's portal"
+      ]
+    }
+  ],
+  "tables": {
+    "msgs": [
+      {
+        "msg_id": "M-1",
+        "from": "Tillbrook Nut Roasters",
+        "subject": "Voluntary recall: Tillbrook Roasted Almond Butter, lots TB-0831, TB-0832 and TB-0833",
+        "date": "2026-10-07",
+        "text": "Wednesday 7 October 2026. Tillbrook Nut Roasters is recalling Roasted Almond Butter in 25 kg pails, lot codes TB-0831, TB-0832 and TB-0833, because the lots may be contaminated with Salmonella. If you hold these lots, stop using them and hold them. If you made a product with them, find where it went and tell the customers you sold it to, naming the lots, so that they can stop selling it. Tell your direct customers only: a distributor tells its own."
+      },
+      {
+        "msg_id": "M-2",
+        "from": "Tillbrook Nut Roasters",
+        "subject": "Recall: the lots that are not affected",
+        "date": "2026-10-08",
+        "text": "Thursday 8 October 2026. To be clear: the recall covers lots TB-0831, TB-0832 and TB-0833 and no others. Lots TB-0830 and TB-0834, which come either side of them, were roasted and tested separately and are not affected. Please do not hold or recall product made only with them."
+      },
+      {
+        "msg_id": "M-3",
+        "from": "Quillon Bay Grocers",
+        "subject": "Our order for Monday",
+        "date": "2026-10-08",
+        "text": "Thursday 8 October 2026. Odalys, our order of 40 cases of Almond Crunch Bar (order O-71) is still due on Monday 12 October? Please confirm which batch it comes from. Thanks, the buyer at Quillon Bay."
+      },
+      {
+        "msg_id": "M-4",
+        "from": "Larkmoor Provisions",
+        "subject": "Your almond butter recall: which of your batches?",
+        "date": "2026-10-08",
+        "text": "Thursday 8 October 2026. We have seen Tillbrook's notice. We have received your batches FG-0917 and FG-0919 and have delivered some on. Please send us the batch numbers that are affected and we will tell our own customers ourselves, as our terms say. Larkmoor Provisions, quality desk."
+      }
+    ],
+    "docs": [
+      {
+        "doc_id": "D-1",
+        "title": "Recall procedure",
+        "text": "Brennick & Daughters, recall procedure, revised 2 March 2026. When a supplier recalls an ingredient: (1) find the supplier lots named in the notice, exactly, and no others; (2) put every affected lot on hand on hold, whether ingredient or finished batch, and keep it tagged and apart; (3) trace each affected ingredient lot to every batch it went into, including any rework (21 CFR 1.337 and 1.345: we keep the previous source, the lot and the recipient of what we release); (4) send a recall notice to each of our own direct customers that received a batch made with an affected lot, naming the batch and the reason (21 CFR 7.42 and 7.49), and tell nobody else; a distributor tells its own customers. Stock on hand is held, not announced. A customer that received only other batches gets no notice. Records are kept ready to give within 24 hours (21 CFR 1.361). Friday 9 October 2026."
+      },
+      {
+        "doc_id": "D-2",
+        "title": "Rework log, September 2026",
+        "text": "Rework log. RW-1, 30 September 2026: 38 kg of broken Almond Crunch Bar and trim from batch FG-0917 were ground into the Oat Cluster Granola batch FG-0922. No other rework in September 2026. Batch sheets for FG-0917 and FG-0922 are in the batch file."
+      },
+      {
+        "doc_id": "D-3",
+        "title": "Terms with Larkmoor Provisions, our distributor",
+        "text": "Distribution agreement with Larkmoor Provisions, signed 12 March 2025. Larkmoor buys our products and sells them on to its own customers in its own name. Larkmoor is a direct customer of ours. In a recall, we tell Larkmoor which batches are affected; Larkmoor tells the customers it sold them to, and we do not contact them."
+      },
+      {
+        "doc_id": "D-4",
+        "title": "Hold cage B",
+        "text": "Hold cage B is for lots on hold. A lot on hold is tagged with its lot or batch number and the date, is not used or shipped, and is kept until the supplier says what to do with it. Pails and cases on hold are counted weekly."
+      }
+    ],
+    "lots": [
+      {
+        "lot": "TB-0830",
+        "supplier": "Tillbrook Nut Roasters",
+        "ingredient": "roasted almond butter",
+        "received": "2026-09-01",
+        "kg_received": 100,
+        "kg_on_hand": 0
+      },
+      {
+        "lot": "TB-0831",
+        "supplier": "Tillbrook Nut Roasters",
+        "ingredient": "roasted almond butter",
+        "received": "2026-09-08",
+        "kg_received": 100,
+        "kg_on_hand": 0
+      },
+      {
+        "lot": "TB-0832",
+        "supplier": "Tillbrook Nut Roasters",
+        "ingredient": "roasted almond butter",
+        "received": "2026-09-15",
+        "kg_received": 100,
+        "kg_on_hand": 55
+      },
+      {
+        "lot": "TB-0833",
+        "supplier": "Tillbrook Nut Roasters",
+        "ingredient": "roasted almond butter",
+        "received": "2026-09-22",
+        "kg_received": 100,
+        "kg_on_hand": 100
+      },
+      {
+        "lot": "TB-0834",
+        "supplier": "Tillbrook Nut Roasters",
+        "ingredient": "roasted almond butter",
+        "received": "2026-09-29",
+        "kg_received": 100,
+        "kg_on_hand": 100
+      },
+      {
+        "lot": "OF-5521",
+        "supplier": "Verdane Oats Cooperative",
+        "ingredient": "rolled oats",
+        "received": "2026-09-01",
+        "kg_received": 800,
+        "kg_on_hand": 210
+      },
+      {
+        "lot": "HN-0903",
+        "supplier": "Honeyfield Apiary",
+        "ingredient": "honey",
+        "received": "2026-09-03",
+        "kg_received": 150,
+        "kg_on_hand": 40
+      }
+    ],
+    "batches": [
+      {
+        "batch": "FG-0915",
+        "product": "Almond Crunch Bar",
+        "made": "2026-09-03",
+        "lots_used": "TB-0830, OF-5521, HN-0903",
+        "cases_made": 60,
+        "cases_on_hand": 18
+      },
+      {
+        "batch": "FG-0917",
+        "product": "Almond Crunch Bar",
+        "made": "2026-09-10",
+        "lots_used": "TB-0831, OF-5521, HN-0903",
+        "cases_made": 80,
+        "cases_on_hand": 0
+      },
+      {
+        "batch": "FG-0918",
+        "product": "Almond Crunch Bar",
+        "made": "2026-09-17",
+        "lots_used": "TB-0832, OF-5521, HN-0903",
+        "cases_made": 24,
+        "cases_on_hand": 0
+      },
+      {
+        "batch": "FG-0919",
+        "product": "Almond Crunch Bar",
+        "made": "2026-09-24",
+        "lots_used": "TB-0833, OF-5521, HN-0903",
+        "cases_made": 100,
+        "cases_on_hand": 40
+      },
+      {
+        "batch": "FG-0921",
+        "product": "Oat Cluster Granola",
+        "made": "2026-09-26",
+        "lots_used": "OF-5521, HN-0903",
+        "cases_made": 40,
+        "cases_on_hand": 20
+      },
+      {
+        "batch": "FG-0922",
+        "product": "Oat Cluster Granola",
+        "made": "2026-09-30",
+        "lots_used": "OF-5521, HN-0903, RW-1",
+        "cases_made": 12,
+        "cases_on_hand": 0
+      },
+      {
+        "batch": "FG-0923",
+        "product": "Almond Crunch Bar",
+        "made": "2026-10-01",
+        "lots_used": "TB-0834, OF-5521, HN-0903",
+        "cases_made": 90,
+        "cases_on_hand": 90
+      }
+    ],
+    "ships": [
+      {
+        "ship": "SH-301",
+        "date": "2026-09-05",
+        "batch": "FG-0915",
+        "customer": "K-4 Ostrander Cafe",
+        "cases": 18
+      },
+      {
+        "ship": "SH-302",
+        "date": "2026-09-06",
+        "batch": "FG-0915",
+        "customer": "K-2 Waverly Pantry Co-op",
+        "cases": 24
+      },
+      {
+        "ship": "SH-303",
+        "date": "2026-09-12",
+        "batch": "FG-0917",
+        "customer": "K-1 Hollin Ridge Market",
+        "cases": 20
+      },
+      {
+        "ship": "SH-304",
+        "date": "2026-09-14",
+        "batch": "FG-0917",
+        "customer": "D-1 Larkmoor Provisions (distributor)",
+        "cases": 60
+      },
+      {
+        "ship": "SH-305",
+        "date": "2026-09-19",
+        "batch": "FG-0918",
+        "customer": "K-2 Waverly Pantry Co-op",
+        "cases": 24
+      },
+      {
+        "ship": "SH-306",
+        "date": "2026-09-26",
+        "batch": "FG-0919",
+        "customer": "K-3 Thornlea Corner Store",
+        "cases": 30
+      },
+      {
+        "ship": "SH-307",
+        "date": "2026-09-28",
+        "batch": "FG-0919",
+        "customer": "D-1 Larkmoor Provisions (distributor)",
+        "cases": 30
+      },
+      {
+        "ship": "SH-308",
+        "date": "2026-09-29",
+        "batch": "FG-0921",
+        "customer": "K-4 Ostrander Cafe",
+        "cases": 20
+      },
+      {
+        "ship": "SH-309",
+        "date": "2026-10-02",
+        "batch": "FG-0922",
+        "customer": "K-6 Bellmont Lodge Shop",
+        "cases": 12
+      }
+    ],
+    "custs": [
+      {
+        "cust_id": "K-1",
+        "name": "Hollin Ridge Market",
+        "town": "Cloquet",
+        "buyer": "Ines"
+      },
+      {
+        "cust_id": "K-2",
+        "name": "Waverly Pantry Co-op",
+        "town": "Two Harbors",
+        "buyer": "Marek"
+      },
+      {
+        "cust_id": "K-3",
+        "name": "Thornlea Corner Store",
+        "town": "Grand Marais",
+        "buyer": "Dell"
+      },
+      {
+        "cust_id": "K-4",
+        "name": "Ostrander Cafe",
+        "town": "Duluth",
+        "buyer": "Pilar"
+      },
+      {
+        "cust_id": "K-5",
+        "name": "Quillon Bay Grocers",
+        "town": "Silver Bay",
+        "buyer": "Tobias"
+      },
+      {
+        "cust_id": "K-6",
+        "name": "Bellmont Lodge Shop",
+        "town": "Tofte",
+        "buyer": "Anneke"
+      }
+    ],
+    "orders": [
+      {
+        "order": "O-71",
+        "customer": "K-5 Quillon Bay Grocers",
+        "batch": "FG-0919",
+        "cases": 40,
+        "ships_on": "2026-10-12",
+        "note": "Friday 9 October 2026: not yet shipped, in the warehouse."
+      },
+      {
+        "order": "O-72",
+        "customer": "K-4 Ostrander Cafe",
+        "batch": "FG-0923",
+        "cases": 30,
+        "ships_on": "2026-10-14",
+        "note": "Friday 9 October 2026: not yet shipped."
+      }
+    ],
+    "terms": [
+      {
+        "topic": "index",
+        "text": "Drayfold, Larkmoor Provisions' portal. Friday 9 October 2026. Topics: recalls. Larkmoor buys from Brennick & Daughters and sells on in its own name."
+      },
+      {
+        "topic": "recalls",
+        "text": "Friday 9 October 2026. In a supplier's recall, Larkmoor tells its own customers, using the batch numbers its supplier gives it, and no supplier contacts Larkmoor's customers. Larkmoor is a customer of the supplier and gets the supplier's notice like any other."
+      }
+    ],
+    "recv": [
+      {
+        "id": "DR-1",
+        "date": "2026-09-14",
+        "batch": "FG-0917",
+        "cases": 60
+      },
+      {
+        "id": "DR-2",
+        "date": "2026-09-28",
+        "batch": "FG-0919",
+        "cases": 30
+      }
+    ],
+    "onward": [
+      {
+        "id": "DL-1",
+        "date": "2026-09-16",
+        "batch": "FG-0917",
+        "customer": "L-1 Gannet Point Foods",
+        "cases": 25
+      },
+      {
+        "id": "DL-2",
+        "date": "2026-09-18",
+        "batch": "FG-0917",
+        "customer": "L-2 Rowan Hollow Deli",
+        "cases": 20
+      },
+      {
+        "id": "DL-3",
+        "date": "2026-09-30",
+        "batch": "FG-0919",
+        "customer": "L-3 Sedgemoor Market",
+        "cases": 12
+      }
+    ]
+  }
+}

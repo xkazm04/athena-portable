@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "food-recall-trace",
+  "captured_at": "2026-10-10T18:32:00Z",
+  "bench_run_at": "2026-10-10T18:29:47Z",
+  "narration": {
+    "text": "A snack maker's recall of a supplier's almond butter is traced: three lots held and five customers told, one for a batch reworked into another product, while the lots either side of the range, batches made from them, a customer given only other batches, an order not yet shipped and the distributor's own customers are left alone. This is a chore for the quality lead and owner of a small snack-bar company in Duluth, Minnesota, with a distributor, six retail customers and a supplier's recall notice in her mail. On the bench, she found 8 of 8 eligible items, worth 20,000 dollars of the 20,000 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 2 minutes. By hand, the same chore takes 3 hours, so she was about 112 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 58.271,
+    "sha256": "9a8bba15d959690a15f25ac0e34421bbe83ff911d784a5e5eb146f2a2ef20998"
+  },
+  "video": {
+    "path": "evidence/food-recall-trace/evidence.mp4",
+    "duration_s": 58.28,
+    "bytes": 2763179,
+    "sha256": "a3274f259d28b3723a3bdf2d41ceb8e58fca2be98ba5dc46855a75b2db68f1fd"
+  },
+  "thumbnail": {
+    "path": "playbooks/food-recall-trace/thumb.jpg",
+    "bytes": 82056,
+    "sha256": "76e1874d583b932fa0bbf49260e5040bdb895852266bed02c6b062f78aa32905"
+  }
+}
