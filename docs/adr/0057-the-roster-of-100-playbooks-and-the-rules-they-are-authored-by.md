@@ -255,6 +255,11 @@ names; each playbook carries the new one.
   real dealership software company; "Motorvia Owners" became "Torvane Owners", because Motorvia is a real vehicle
   transport and storage company; and "Mailnest" became "Postwren", because mailnest.io is a real email service. Row 66
   uses Torvane for Motorvia.
+- Row 66, `lease-end-wear-charges`: "Motorvia Finance" became "Torvane Finance", because Motorvia is a real vehicle
+  transport and storage company (row 65 settled Torvane); "Checkpoint Inspect" became "Linestone Inspect", because
+  Checkpoint Auto is a real vehicle-management company; "Snapshelf photos" became "Lenswick photos", because SnapShelf
+  is the name of several real apps (row 64 settled Lenswick); and "Mailnest" became "Postwren", because mailnest.io is a
+  real email service.
 
 ### B8: Work, pay and benefits
 

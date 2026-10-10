@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The seventy-four playbooks (latest runs, Claude Sonnet)
+## The seventy-five playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -117,9 +117,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A nurse's three credit reports disputed with her proof: a late payment she made on time, an old collection and a bankruptcy past their limits, a paid collection and an account that is not hers, while an accurate late payment, a collection still in time, authorised inquiries and entries already fixed or being answered are left alone | home | 5 | exceeds: 8 of 8, $1,000 of $1,000 (125 dollars an act, mostly minutes), 8 of 8 traps, 0 false, 2.0 min, $1.03 |
 | A teacher's security deposit statement checked against her lease and photos: six deductions contested for wear, a condition there at move-in, a clean oven, a rekey and a wall hole billed twice, while rent and water she owes, real damage, cleaning back to move-in level and an open estimate are left alone | home | 4 | exceeds: 6 of 6, $1,445.00 of $1,445.00 (what she gets back), 8 of 8 traps, 0 false, 2.2 min, $1.27 |
 | A bookkeeper's repair invoices claimed under a fuel pump recall: the labour and shop fee of one repair and a part she bought herself, with its tax, while a relay fixed before the window opens, a valve, an oil change and a rotation, a warranty repair, a tow, a refunded deposit and her husband's car outside the recall are left alone | home | 4 | exceeds: 4 of 4, $674.02 of $674.02 (what she gets back), 8 of 8 traps, 0 false, 1.6 min, $0.87 |
+| A physical therapist's lease-end statement checked against his lease's wear limits and the inspection: a dent, a tire, a chip, a scuff and a stain inside the limits are disputed, while the mileage, the fee, a long scratch, a worn tire, a cracked lens, a gouged wheel, a seat burn and the wear allowance are left alone | home | 4 | exceeds: 5 of 5, $880.00 of $880.00 (what he gets back), 8 of 8 traps, 0 false, 1.1 min, $0.69 |
 
-Across the latest runs: $1,116,440 of $1,125,867 found, 760 of 760 traps walked past, no false claim,
-211 minutes of her time against about 303 hours by hand, $130.39 of model time. 112 runs are recorded
+Across the latest runs: $1,117,320 of $1,126,747 found, 768 of 768 traps walked past, no false claim,
+212 minutes of her time against about 304 hours by hand, $131.07 of model time. 113 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

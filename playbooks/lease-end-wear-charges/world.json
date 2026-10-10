@@ -1,0 +1,507 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "postwren",
+      "message": "I'm Anselm Rowe. This is my mail about the end of my car lease: the notice, the return receipt, the inspection and the lease-end statement. Read every message. Don't do anything yet: I'll send you to the inspection report, my photos and the lessor's site.",
+      "nudges": 1
+    },
+    {
+      "app": "linestone",
+      "message": "This is Linestone Inspect. Read every item of the inspection report on my returned car, on every page.",
+      "nudges": 2
+    },
+    {
+      "app": "lenswick",
+      "message": "These are the photos I took before I returned the car, at Lenswick. Read every page.",
+      "nudges": 2
+    },
+    {
+      "app": "torvane",
+      "message": "This is Torvane Finance, my lessor. Read my lease, every topic, and the lease-end statement, on every page. Then dispute each charge that the lease's own standards and the inspection do not support, with my proof and the reason. Leave alone the charges that are right. Then tell me what you disputed and what you left alone, and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/anselm/inbox",
+      "view": {
+        "view": "Postwren: Anselm Rowe's inbox (invented)",
+        "signed_in": "Anselm Rowe",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The messages in the inbox: id, from, subject and date.",
+          "params": {},
+          "returns": {
+            "table": "msgs",
+            "fields": [
+              "msg_id",
+              "from",
+              "subject",
+              "date"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id (M-n).",
+          "params": {
+            "msg_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "msgs",
+            "match": {
+              "msg_id": "msg_id"
+            },
+            "require": [
+              "msg_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "linestone",
+      "name": "Linestone Inspect",
+      "origin": "https://reports.linestone-inspect.example",
+      "path": "/anselm-rowe/heron",
+      "view": {
+        "view": "Linestone Inspect: the inspection of Anselm Rowe's returned 2023 Torvane Heron (invented)",
+        "signed_in": "Anselm Rowe",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_inspection",
+          "kind": "READ",
+          "description": "The inspection report: item, what, where and what was found. Five a page; ask for the next with page (1 to 3).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "insp",
+            "page_size": 5
+          }
+        }
+      ],
+      "aliases": [
+        "Linestone Inspect",
+        "Linestone",
+        "the inspection report"
+      ]
+    },
+    {
+      "app_id": "lenswick",
+      "name": "Lenswick photos",
+      "origin": "https://photos.lenswick.example",
+      "path": "/anselm/heron",
+      "view": {
+        "view": "Lenswick photos: Anselm Rowe's photos of his Heron before the return (invented)",
+        "signed_in": "Anselm Rowe",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_photos",
+          "kind": "READ",
+          "description": "Anselm's photos taken before the return: photo, date, where and what it shows. Five a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "phot",
+            "page_size": 5
+          }
+        }
+      ],
+      "aliases": [
+        "Lenswick photos",
+        "Lenswick",
+        "my photos"
+      ]
+    },
+    {
+      "app_id": "torvane",
+      "name": "Torvane Finance",
+      "origin": "https://lease.torvane-finance.example",
+      "path": "/anselm-rowe/lease-end",
+      "view": {
+        "view": "Torvane Finance: Anselm Rowe's lease and lease-end statement (invented)",
+        "signed_in": "Anselm Rowe",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_lease",
+          "kind": "READ",
+          "description": "The lease by topic: index, wear, mileage, fees or dispute.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "lease",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_statement_summary",
+          "kind": "READ",
+          "description": "The summary of the lease-end statement: dates, the total due and the last day to dispute.",
+          "params": {},
+          "returns": {
+            "table": "head"
+          }
+        },
+        {
+          "name": "read_statement",
+          "kind": "READ",
+          "description": "The statement's charges: charge, item, amount and basis. Five a page; ask for the next with page (1 to 3).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "chg",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "contest_charge",
+          "kind": "REACHES_A_PERSON",
+          "description": "Dispute one charge of the lease-end statement, by charge (charge), with why the lease and the inspection do not support it (reason) and Anselm's proof (proof). Anselm signs.",
+          "params": {
+            "charge": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "proof": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute of {charge} sent to Torvane Finance."
+        }
+      ],
+      "aliases": [
+        "Torvane Finance",
+        "the lessor",
+        "my lease"
+      ]
+    }
+  ],
+  "tables": {
+    "msgs": [
+      {
+        "msg_id": "M-1",
+        "from": "Torvane Finance",
+        "subject": "Your lease ends on 30 September",
+        "date": "2026-08-24",
+        "text": "Monday 24 August 2026. Your lease on the 2023 Torvane Heron ends on Wednesday 30 September 2026. Return the car to any Torvane dealer. Linestone Inspect will inspect it, and we charge what the inspection records beyond the wear standard in your lease, at the price list in your lease. Your lease says what happens to charges you disagree with."
+      },
+      {
+        "msg_id": "M-2",
+        "from": "Torvane Finance",
+        "subject": "Return receipt",
+        "date": "2026-09-28",
+        "text": "Monday 28 September 2026. Return receipt. You returned your 2023 Torvane Heron today. Odometer 38,420 miles. Both keys and the owner's manual received. The inspection follows."
+      },
+      {
+        "msg_id": "M-3",
+        "from": "Linestone Inspect",
+        "subject": "Your inspection report is ready",
+        "date": "2026-09-29",
+        "text": "Tuesday 29 September 2026. We inspected your returned 2023 Torvane Heron today for Torvane Finance. Our report, of 14 items with the measurements we took, is in Linestone Inspect. We record what we find; Torvane Finance decides what to charge."
+      },
+      {
+        "msg_id": "M-4",
+        "from": "Torvane Finance",
+        "subject": "Your lease-end statement",
+        "date": "2026-10-06",
+        "text": "Tuesday 6 October 2026. Your lease-end statement is in Torvane Finance. Total due 2,785.00 dollars by 5 November 2026. If you disagree with a charge, send a written dispute with your proof in Torvane Finance within 30 days of this statement, by 5 November 2026."
+      }
+    ],
+    "insp": [
+      {
+        "item": "I-1",
+        "what": "Odometer",
+        "where": "Dashboard",
+        "found": "38,420 miles"
+      },
+      {
+        "item": "I-2",
+        "what": "Dent",
+        "where": "Driver door",
+        "found": "38 mm across, not creased, paint intact"
+      },
+      {
+        "item": "I-3",
+        "what": "Paint chips",
+        "where": "Hood",
+        "found": "Five chips, each 3 mm, not through to metal"
+      },
+      {
+        "item": "I-4",
+        "what": "Scratch",
+        "where": "Rear bumper",
+        "found": "110 mm long, through the paint to the primer"
+      },
+      {
+        "item": "I-5",
+        "what": "Tire",
+        "where": "Rear left",
+        "found": "Tread 5/32 inch"
+      },
+      {
+        "item": "I-6",
+        "what": "Tire",
+        "where": "Front right",
+        "found": "Tread 3/32 inch"
+      },
+      {
+        "item": "I-7",
+        "what": "Windshield chip",
+        "where": "Driver side",
+        "found": "12 mm, no crack"
+      },
+      {
+        "item": "I-8",
+        "what": "Alloy wheel",
+        "where": "Right front",
+        "found": "Scuff 20 mm, no bend or crack"
+      },
+      {
+        "item": "I-9",
+        "what": "Seat stain",
+        "where": "Driver seat",
+        "found": "18 mm, no tear"
+      },
+      {
+        "item": "I-10",
+        "what": "Headlight lens",
+        "where": "Left",
+        "found": "Crack 70 mm"
+      },
+      {
+        "item": "I-11",
+        "what": "Alloy wheel",
+        "where": "Right rear",
+        "found": "Gouge 60 mm"
+      },
+      {
+        "item": "I-12",
+        "what": "Seat burn",
+        "where": "Rear seat",
+        "found": "Burn hole 8 mm"
+      },
+      {
+        "item": "I-13",
+        "what": "Tires",
+        "where": "Front left and rear right",
+        "found": "Tread 6/32 inch and 5/32 inch"
+      },
+      {
+        "item": "I-14",
+        "what": "Keys and manual",
+        "where": "Interior",
+        "found": "Two keys and the owner's manual present"
+      }
+    ],
+    "phot": [
+      {
+        "photo": "PR-1",
+        "date": "2026-09-26",
+        "where": "Driver door",
+        "shows": "Dent with a ruler: 38 mm across."
+      },
+      {
+        "photo": "PR-2",
+        "date": "2026-09-26",
+        "where": "Rear left tire",
+        "shows": "Tread gauge reading 5/32 inch."
+      },
+      {
+        "photo": "PR-3",
+        "date": "2026-09-26",
+        "where": "Windshield",
+        "shows": "Chip beside a coin, about 12 mm, no crack."
+      },
+      {
+        "photo": "PR-4",
+        "date": "2026-09-26",
+        "where": "Right front wheel",
+        "shows": "Scuff with a ruler: 20 mm."
+      },
+      {
+        "photo": "PR-5",
+        "date": "2026-09-26",
+        "where": "Driver seat",
+        "shows": "Stain with a ruler: 18 mm."
+      },
+      {
+        "photo": "PR-6",
+        "date": "2026-09-26",
+        "where": "Rear bumper",
+        "shows": "A long scratch, down to grey primer, about 11 cm."
+      },
+      {
+        "photo": "PR-7",
+        "date": "2026-09-26",
+        "where": "Front right tire",
+        "shows": "Tread gauge reading 3/32 inch."
+      },
+      {
+        "photo": "PR-8",
+        "date": "2026-09-26",
+        "where": "Left headlight",
+        "shows": "A crack in the lens."
+      },
+      {
+        "photo": "PR-9",
+        "date": "2026-09-28",
+        "where": "Dashboard",
+        "shows": "Odometer 38,420 miles at the return."
+      }
+    ],
+    "head": [
+      {
+        "statement": "Torvane Finance lease-end statement, 2023 Torvane Heron",
+        "dated": "Tuesday 6 October 2026",
+        "returned": "Monday 28 September 2026",
+        "total_due": 2785.0,
+        "due_by": "5 November 2026",
+        "dispute_by": "5 November 2026, in writing, with proof"
+      }
+    ],
+    "chg": [
+      {
+        "charge": "C-1",
+        "item": "Excess mileage: 38,420 miles, 36,000 allowed, 2,420 at 0.25",
+        "amount": 605.0,
+        "basis": "Lease section 5; M-2 and I-1"
+      },
+      {
+        "charge": "C-2",
+        "item": "Disposition fee",
+        "amount": 395.0,
+        "basis": "Lease section 6"
+      },
+      {
+        "charge": "C-3",
+        "item": "Dent, driver door",
+        "amount": 285.0,
+        "basis": "Linestone I-2"
+      },
+      {
+        "charge": "C-4",
+        "item": "Scratch, rear bumper",
+        "amount": 320.0,
+        "basis": "Linestone I-4"
+      },
+      {
+        "charge": "C-5",
+        "item": "Tire worn below the limit, rear left",
+        "amount": 210.0,
+        "basis": "Linestone I-5"
+      },
+      {
+        "charge": "C-6",
+        "item": "Tire worn below the limit, front right",
+        "amount": 210.0,
+        "basis": "Linestone I-6"
+      },
+      {
+        "charge": "C-7",
+        "item": "Windshield chip",
+        "amount": 150.0,
+        "basis": "Linestone I-7"
+      },
+      {
+        "charge": "C-8",
+        "item": "Alloy wheel scuff, right front",
+        "amount": 95.0,
+        "basis": "Linestone I-8"
+      },
+      {
+        "charge": "C-9",
+        "item": "Seat stain, driver seat",
+        "amount": 140.0,
+        "basis": "Linestone I-9"
+      },
+      {
+        "charge": "C-10",
+        "item": "Headlight lens crack, left",
+        "amount": 340.0,
+        "basis": "Linestone I-10"
+      },
+      {
+        "charge": "C-11",
+        "item": "Alloy wheel gouge, right rear",
+        "amount": 275.0,
+        "basis": "Linestone I-11"
+      },
+      {
+        "charge": "C-12",
+        "item": "Seat burn, rear seat",
+        "amount": 260.0,
+        "basis": "Linestone I-12"
+      },
+      {
+        "charge": "C-13",
+        "item": "Wear allowance applied (lease section 12)",
+        "amount": -500.0,
+        "basis": "Credit against excess-wear charges"
+      }
+    ],
+    "lease": [
+      {
+        "topic": "index",
+        "text": "Torvane Finance lease, 2023 Torvane Heron, closed-end, 36 months from 1 October 2023 to 30 September 2026, lessee Anselm Rowe. Today is Friday 9 October 2026. Topics: index, wear, mileage, fees, dispute."
+      },
+      {
+        "topic": "wear",
+        "text": "Section 11. Excessive Wear and Use. You may be charged for excessive wear based on our standards for normal use. These are the standards. Dents: up to 50 mm across, not creased or through the paint. Scratches: up to 75 mm long, not through the paint to the primer. Paint chips: up to 6 mm each. Wheels: scuffs up to 25 mm; no bends, cracks or gouges. Tires: tread of at least 4/32 inch on every tire. Glass: chips under 25 mm; no cracks. Interior: stains up to 25 mm; no tears, burns or cuts. Lights and lenses: no cracks or breaks."
+      },
+      {
+        "topic": "mileage",
+        "text": "Section 5. The lease allows 36,000 miles over the term, 12,000 a year. Each mile beyond 36,000 is charged at 0.25 dollars. The odometer reading at the return receipt is used."
+      },
+      {
+        "topic": "fees",
+        "text": "Section 6. A disposition fee of 395.00 dollars is due at the end of the lease unless you buy the car or lease another from us. Section 12. We waive the first 500.00 dollars of excess wear charges. The price list for excess wear charges: dent 285; scratch 320; tire 210 each; windshield chip 150; wheel scuff 95; wheel gouge 275; seat stain 140; seat burn 260; headlight lens 340."
+      },
+      {
+        "topic": "dispute",
+        "text": "Section 14. We charge what the inspection records beyond the standards in section 11. If you disagree with a charge, send a written dispute, charge by charge, with your proof, in Torvane Finance within 30 days of the statement. We review each disputed charge against section 11 and the inspection report and answer in writing. This is a closed-end lease: you owe no difference between a residual value and the car's sale price, and the lease gives no independent appraisal."
+      }
+    ]
+  }
+}

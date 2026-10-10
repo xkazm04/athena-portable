@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "lease-end-wear-charges",
+  "captured_at": "2026-10-10T19:50:36Z",
+  "bench_run_at": "2026-10-10T19:47:29Z",
+  "narration": {
+    "text": "A physical therapist's lease-end statement is checked against his lease's wear limits and the inspection: a dent, a tire, a chip, a scuff and a stain inside the limits are disputed, while the mileage, the disposition fee, a long scratch, a worn tire, a cracked lens, a gouged wheel, a seat burn and the wear allowance are left alone, across four portals. This is a chore for a physical therapist in Tacoma, Washington, who has returned a leased car and received a bill for wear and mileage. On the bench, she found 5 of 5 eligible items, worth 880 dollars of the 880 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 1 minute. By hand, the same chore takes about 2 hours, so she was about 82 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 57.364,
+    "sha256": "d79b2f952fe407cb4b0e264312ddd01aecd1c7918f6cc48b8f2deb169b951887"
+  },
+  "video": {
+    "path": "evidence/lease-end-wear-charges/evidence.mp4",
+    "duration_s": 57.4,
+    "bytes": 2605831,
+    "sha256": "c6970618773d5d634aca7d09888ac5f167d83d9947ddd2d768cf49ad92309ba6"
+  },
+  "thumbnail": {
+    "path": "playbooks/lease-end-wear-charges/thumb.jpg",
+    "bytes": 77780,
+    "sha256": "05973f8e72a2817bb612b129ed742c5978292fa1c5cabdc2f2ed59d7a7dff215"
+  }
+}

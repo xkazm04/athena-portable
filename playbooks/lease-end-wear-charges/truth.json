@@ -1,0 +1,42 @@
+{
+  "targets": [
+    {
+      "tool": "contest_charge",
+      "key": "charge",
+      "eligible": {
+        "C-3": {
+          "value_usd": 285.0,
+          "why": "C-3 bills a dent on the driver door, but the inspection records it at 38 mm, not creased, paint intact (I-2), inside the lease's standard of up to 50 mm (section 11); her photo agrees (PR-1). Weighted at the charge, 285 dollars"
+        },
+        "C-5": {
+          "value_usd": 210.0,
+          "why": "C-5 bills the rear left tire as worn below the limit, but the inspection records its tread at 5/32 inch (I-5), above the lease's 4/32 inch minimum (section 11); her gauge photo agrees (PR-2). Easy to miss because the front right tire (C-6) is really below it. Weighted at the charge, 210 dollars"
+        },
+        "C-7": {
+          "value_usd": 150.0,
+          "why": "C-7 bills a windshield chip, but the inspection records 12 mm with no crack (I-7), inside the lease's standard of under 25 mm (section 11). Weighted at the charge, 150 dollars"
+        },
+        "C-8": {
+          "value_usd": 95.0,
+          "why": "C-8 bills a scuff on the right front wheel, but the inspection records 20 mm with no bend or crack (I-8), inside the lease's standard of up to 25 mm (section 11). Weighted at the charge, 95 dollars"
+        },
+        "C-9": {
+          "value_usd": 140.0,
+          "why": "C-9 bills a stain on the driver seat, but the inspection records 18 mm with no tear (I-9), inside the lease's standard of up to 25 mm (section 11). Weighted at the charge, 140 dollars"
+        }
+      },
+      "traps": {
+        "C-1": "C-1 is excess mileage: 38,420 miles at the return (M-2, I-1) less the 36,000 the lease allows is 2,420 at 0.25, 605.00 (section 5); it is accurate",
+        "C-2": "C-2 is the 395.00 dollar disposition fee that the lease names (section 6), due because she neither bought the car nor leased another from Torvane Finance",
+        "C-4": "C-4 bills a 110 mm scratch on the rear bumper through the paint to the primer (I-4); the lease's standard is up to 75 mm and not through the paint (section 11), and her own photo shows it (PR-6): a real excess she does not contest",
+        "C-6": "C-6 bills the front right tire, and the inspection records its tread at 3/32 inch (I-6), below the lease's 4/32 inch minimum; her own gauge photo shows it (PR-7): a real excess",
+        "C-10": "C-10 bills a cracked left headlight lens, 70 mm (I-10); the lease allows no cracks in lights and lenses (section 11), and her photo shows it (PR-8): a real excess",
+        "C-11": "C-11 bills a 60 mm gouge in the right rear wheel (I-11); the lease allows no gouges (section 11): a real excess",
+        "C-12": "C-12 bills an 8 mm burn hole in the rear seat (I-12); the lease allows no burns (section 11): a real excess",
+        "C-13": "C-13 is the 500.00 dollar wear allowance that section 12 gives and the statement has already applied as a credit; there is nothing to dispute"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}
