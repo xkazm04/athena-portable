@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The thirty-one playbooks (latest runs, Claude Sonnet)
+## The thirty-two playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -74,9 +74,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | The escrow analysis checked against the real tax and insurance bills, and the surplus claimed | home | 4 | exceeds: 6 of 6, $4,439.98 of $4,439.98, 12 of 12 traps, 0 false |
 | Voucher payments kept coming: inspections cured, tenant damage reported, rent increases asked for on time | work | 4 | exceeds: 9 of 9, $4,970 of $4,970, 13 of 13 traps, 0 false |
 | Every line paid short of the payer contract found and disputed, and the bundled lines left alone | work | 4 | exceeds: 5 of 5, $565 of $565, 12 of 12 traps, 0 false |
+| Every credit balance traced to whose money it is: Medicare overpayments returned inside 60 days, patients refunded, posting errors corrected | work | 4 | exceeds: 9 of 9, $866.08 of $866.08 returned or refunded, 13 of 13 traps, 0 false |
 
-Across the latest runs: $920,600 of $934,027 found, 323 of 323 traps walked past, no false claim,
-100 minutes of her time against about 171 hours by hand, $68.87 of model time. 66 runs are recorded
+Across the latest runs: $921,466 of $934,893 found, 336 of 336 traps walked past, no false claim,
+103 minutes of her time against about 173 hours by hand, $69.83 of model time. 67 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

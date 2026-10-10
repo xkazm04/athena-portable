@@ -1,0 +1,97 @@
+{
+  "targets": [
+    {
+      "tool": "submit_overpayment_refund",
+      "key": "item_id",
+      "eligible": {
+        "CB-01": {
+          "value_usd": 112.4,
+          "required": true,
+          "why": "Medicare paid the 2 June visit twice, under two ICNs, and both payments reached the bank. Identified on 14 August, with no related claims to investigate: the 60 days end on Tuesday 13 October 2026",
+          "expect": {
+            "amount_usd": 112.4
+          }
+        },
+        "F-2": {
+          "value_usd": 535.78,
+          "why": "Fourteen 99215 claims the notes support only as 99214, $38.27 each. Identified on 1 July, with a good-faith investigation of related claims that concluded on 28 September inside the 180 days; under 42 CFR 401.305 as amended from 1 January 2025, the 60 days run from 28 September to 27 November 2026",
+          "expect": {
+            "amount_usd": 535.78
+          }
+        },
+        "F-3": {
+          "value_usd": 64.8,
+          "why": "An ECG billed and paid but not performed. Identified on 2 September, with nothing related to investigate: due by 1 November 2026",
+          "expect": {
+            "amount_usd": 64.8
+          }
+        }
+      },
+      "traps": {
+        "CB-03": "Novabridge already recovered the second $71.10 by offset on 22 September (letter OP-5521, closed): a refund now pays it twice. The credit is an offset never posted",
+        "CB-10": "One Medicare payment of $92.20, posted twice from one remittance: the bank shows one deposit, so Medicare was not overpaid",
+        "CB-09": "Medicare paid account 5521's visit once; the payment was posted to account 5512 by a transposed account number. Not an overpayment",
+        "CB-05": "The $40.00 is the patient's estimated coinsurance on a preventive visit, owed back to the patient, not to Medicare",
+        "CB-12": "The $28.10 credit is the patient's coinsurance paid twice over, by the patient and by the Medigap secondary: Medicare paid its share once"
+      }
+    },
+    {
+      "tool": "refund_patient",
+      "key": "item_id",
+      "eligible": {
+        "CB-05": {
+          "value_usd": 40.0,
+          "why": "An annual wellness visit has no coinsurance and no deductible, and Medicare paid it in full: the $40.00 estimate the patient paid at the desk is the patient's",
+          "expect": {
+            "amount_usd": 40.0
+          }
+        },
+        "CB-07": {
+          "value_usd": 85.0,
+          "why": "The $85.00 balance was paid twice, by card on 4 September and by a check that cleared on 10 September: both reached the bank",
+          "expect": {
+            "amount_usd": 85.0
+          }
+        },
+        "CB-12": {
+          "value_usd": 28.1,
+          "why": "The patient paid the $28.10 coinsurance on 12 August and the Medigap supplement paid the same coinsurance on 10 September: the patient's payment comes back",
+          "expect": {
+            "amount_usd": 28.1
+          }
+        }
+      },
+      "traps": {
+        "CB-06": "A deposit for the excision scheduled for 15 October, confirmed by the patient: it is applied when the service is billed, not refunded",
+        "CB-01": "Medicare's duplicate payment is owed to Medicare; the patient's coinsurance was right",
+        "CB-09": "A misposted Medicare payment that belongs to account 5521; no patient paid it",
+        "CB-10": "A Medicare payment posted twice in the books; no patient overpaid",
+        "CB-03": "Medicare's second payment, already recovered by offset; no patient overpaid"
+      }
+    },
+    {
+      "tool": "correct_posting",
+      "key": "item_id",
+      "eligible": {
+        "CB-03": {
+          "value_usd": 0,
+          "why": "Post Novabridge's $71.10 offset of 22 September (letter OP-5521) against account 3307: the credit exists only because the recovery was never posted"
+        },
+        "CB-09": {
+          "value_usd": 0,
+          "why": "Move the $78.40 Medicare payment of 11 August (ICN 2226219030400) from account 5512 to account 5521, whose 28 July visit it paid"
+        },
+        "CB-10": {
+          "value_usd": 0,
+          "why": "Reverse the second posting of the 7 August remittance: the bank shows one $92.20 deposit for account 6120"
+        }
+      },
+      "traps": {
+        "CB-01": "Both Medicare payments reached the bank under two ICNs: a real overpayment to return, not a posting to reverse",
+        "CB-07": "Both the card payment and the check reached the bank, and the check cleared: a real overpayment to refund, not a posting to reverse",
+        "CB-12": "The Medigap payment reached the bank: a real overpayment to refund, not a posting error"
+      }
+    }
+  ],
+  "forbidden": []
+}

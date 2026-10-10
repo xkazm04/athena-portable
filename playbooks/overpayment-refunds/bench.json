@@ -1,0 +1,376 @@
+{
+  "playbook": "overpayment-refunds",
+  "run_at": "2026-10-10T01:04:35Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 175.9,
+  "turns": 10,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 27,
+  "cost_usd": 0.956,
+  "your_time_s": 270,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.9
+  },
+  "score": {
+    "eligible": 9,
+    "found": 9,
+    "exact": 9,
+    "value_total_usd": 866.08,
+    "value_found_usd": 866.08,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 13,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_overpayment_refund",
+        "key": "CB-03",
+        "why": "Novabridge already recovered the second $71.10 by offset on 22 September (letter OP-5521, closed): a refund now pays it twice. The credit is an offset never posted",
+        "filed": false
+      },
+      {
+        "action": "submit_overpayment_refund",
+        "key": "CB-10",
+        "why": "One Medicare payment of $92.20, posted twice from one remittance: the bank shows one deposit, so Medicare was not overpaid",
+        "filed": false
+      },
+      {
+        "action": "submit_overpayment_refund",
+        "key": "CB-09",
+        "why": "Medicare paid account 5521's visit once; the payment was posted to account 5512 by a transposed account number. Not an overpayment",
+        "filed": false
+      },
+      {
+        "action": "submit_overpayment_refund",
+        "key": "CB-05",
+        "why": "The $40.00 is the patient's estimated coinsurance on a preventive visit, owed back to the patient, not to Medicare",
+        "filed": false
+      },
+      {
+        "action": "submit_overpayment_refund",
+        "key": "CB-12",
+        "why": "The $28.10 credit is the patient's coinsurance paid twice over, by the patient and by the Medigap secondary: Medicare paid its share once",
+        "filed": false
+      },
+      {
+        "action": "refund_patient",
+        "key": "CB-06",
+        "why": "A deposit for the excision scheduled for 15 October, confirmed by the patient: it is applied when the service is billed, not refunded",
+        "filed": false
+      },
+      {
+        "action": "refund_patient",
+        "key": "CB-01",
+        "why": "Medicare's duplicate payment is owed to Medicare; the patient's coinsurance was right",
+        "filed": false
+      },
+      {
+        "action": "refund_patient",
+        "key": "CB-09",
+        "why": "A misposted Medicare payment that belongs to account 5521; no patient paid it",
+        "filed": false
+      },
+      {
+        "action": "refund_patient",
+        "key": "CB-10",
+        "why": "A Medicare payment posted twice in the books; no patient overpaid",
+        "filed": false
+      },
+      {
+        "action": "refund_patient",
+        "key": "CB-03",
+        "why": "Medicare's second payment, already recovered by offset; no patient overpaid",
+        "filed": false
+      },
+      {
+        "action": "correct_posting",
+        "key": "CB-01",
+        "why": "Both Medicare payments reached the bank under two ICNs: a real overpayment to return, not a posting to reverse",
+        "filed": false
+      },
+      {
+        "action": "correct_posting",
+        "key": "CB-07",
+        "why": "Both the card payment and the check reached the bank, and the check cleared: a real overpayment to refund, not a posting to reverse",
+        "filed": false
+      },
+      {
+        "action": "correct_posting",
+        "key": "CB-12",
+        "why": "The Medigap payment reached the bank: a real overpayment to refund, not a posting error",
+        "filed": false
+      }
+    ],
+    "filed_usd": 866.08,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "submit_overpayment_refund",
+      "key": "CB-01",
+      "outcome": "correct",
+      "value_usd": 112.4,
+      "exact": true,
+      "why": "Medicare paid the 2 June visit twice, under two ICNs, and both payments reached the bank. Identified on 14 August, with no related claims to investigate: the 60 days end on Tuesday 13 October 2026"
+    },
+    {
+      "action": "submit_overpayment_refund",
+      "key": "F-3",
+      "outcome": "correct",
+      "value_usd": 64.8,
+      "exact": true,
+      "why": "An ECG billed and paid but not performed. Identified on 2 September, with nothing related to investigate: due by 1 November 2026"
+    },
+    {
+      "action": "submit_overpayment_refund",
+      "key": "F-2",
+      "outcome": "correct",
+      "value_usd": 535.78,
+      "exact": true,
+      "why": "Fourteen 99215 claims the notes support only as 99214, $38.27 each. Identified on 1 July, with a good-faith investigation of related claims that concluded on 28 September inside the 180 days; under 42 CFR 401.305 as amended from 1 January 2025, the 60 days run from 28 September to 27 November 2026"
+    },
+    {
+      "action": "refund_patient",
+      "key": "CB-05",
+      "outcome": "correct",
+      "value_usd": 40.0,
+      "exact": true,
+      "why": "An annual wellness visit has no coinsurance and no deductible, and Medicare paid it in full: the $40.00 estimate the patient paid at the desk is the patient's"
+    },
+    {
+      "action": "refund_patient",
+      "key": "CB-07",
+      "outcome": "correct",
+      "value_usd": 85.0,
+      "exact": true,
+      "why": "The $85.00 balance was paid twice, by card on 4 September and by a check that cleared on 10 September: both reached the bank"
+    },
+    {
+      "action": "refund_patient",
+      "key": "CB-12",
+      "outcome": "correct",
+      "value_usd": 28.1,
+      "exact": true,
+      "why": "The patient paid the $28.10 coinsurance on 12 August and the Medigap supplement paid the same coinsurance on 10 September: the patient's payment comes back"
+    },
+    {
+      "action": "correct_posting",
+      "key": "CB-03",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Post Novabridge's $71.10 offset of 22 September (letter OP-5521) against account 3307: the credit exists only because the recovery was never posted"
+    },
+    {
+      "action": "correct_posting",
+      "key": "CB-09",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Move the $78.40 Medicare payment of 11 August (ICN 2226219030400) from account 5512 to account 5521, whose 28 July visit it paid"
+    },
+    {
+      "action": "correct_posting",
+      "key": "CB-10",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "Reverse the second posting of the 7 August remittance: the bank shows one $92.20 deposit for account 6120"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm filing three posting corrections: CB-03, CB-09 and CB-10. None of them is a refund.\n\n\nThree correction cards are waiting for your answer. Each one changes the books and the patient statements that follow from them.\n- **CB-03, acct 3307, $71.10:** record the 22 Sep offset. Medicare already took this money back through demand letter OP-5521.\n- **CB-09, acct 5512, $78.40:** move the payment to acct 5521. Medicare paid it for 5521's 28 Jul visit, so this also closes that open visit.\n- **CB-10, acct 6120, $92.20:** reverse the duplicate posting from the 8 Aug batch re-import. The bank and Medicare each show only one payment.\n\n**What I left alone**\n- **CB-01 ($112.40), F-3 ($64.80) and F-2 ($535.78):** these are real Medicare overpayments. Their refund cards are already waiting for you, and I added nothing. CB-01 is the urgent one, with a deadline of about 13 Oct.\n- **CB-05 ($40.00), CB-07",
+  "trace": [
+    {
+      "portal": "Chartmend PM",
+      "user": "Our credit balance report has gotten long. Start in Chartmend: read our billing policy, every credit with its history, and the compliance log.",
+      "continued": false,
+      "said": "I'll start with the policy, the credit list and the compliance log. Then I'll read each credit's history.",
+      "said_chars": 105,
+      "reads": [
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "list_credit_balances",
+        "list_compliance_findings"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Chartmend PM",
+      "user": "",
+      "continued": true,
+      "said": "Policy, the eight credits and the compliance log are read. Next I'll read the history of each credit.",
+      "said_chars": 101,
+      "reads": [
+        "read_credit",
+        "read_credit",
+        "read_credit",
+        "read_credit",
+        "read_credit",
+        "read_credit",
+        "read_credit",
+        "read_credit"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Chartmend PM",
+      "user": "",
+      "continued": true,
+      "said": "Chartmend is read, and nothing has been filed. Four credits look like Medicare's, two like the patients', two like posting errors, and one isn't a credit. Each of these is still unconfirmed until I see the bank and Medicare side.\n\n**Medicare candidates (Novabridge)**\n- **CB-01, acct 4410, $112.40:** two Medicare payments with different ICNs for one 2 Jun visit. The biller confirmed it on 14 Aug, so a 60-day clock from that date ends about **13 Oct, three days from now**. This is the most urgent item.",
+      "said_chars": 2580,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline",
+      "user": "Now Ledgerline. Check which of those payments really came into the bank, and any offsets.",
+      "continued": false,
+      "said": "I'll read the Ledgerline deposits, starting with the first three pages.",
+      "said_chars": 71,
+      "reads": [
+        "list_deposits",
+        "list_deposits",
+        "list_deposits"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline",
+      "user": "",
+      "continued": true,
+      "said": "All 13 Ledgerline deposits are read, and every credit has now been checked against the bank. Nothing is filed yet.\n\n| Credit | What the bank shows | Reading |\n|---|---|---|\n| CB-01, acct 4410, $112.40 | Two Medicare deposits, 19 Jun and 3 Jul, with different ICNs | Real Medicare overpayment. Still owed. |\n| CB-03, acct 3307, $71.10 | Two deposits (29 May, 12 Jun). On 22 Sep Medicare took $71.10 back as an offset for letter OP-5521, naming account 3307.",
+      "said_chars": 2852,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Novabridge MAC",
+      "user": "This is Novabridge, the Medicare contractor. Read its overpayment rules and our claims and letters, and report and return whatever we owe Medicare, before its deadline.",
+      "continued": false,
+      "said": "I'll read Novabridge's rules, the demand letters and the claims for the Medicare candidates before filing anything.\n\n\nNothing is filed yet. Once these results come back, I'll check each item against the rules and the deadline, then file the refund cards.\n\nThe Novabridge reads (rules, demand letters, and claims for 4410, 3307, 5512, 5521 and 6120) went to the page, but their answers haven't reached me yet. I haven't filed or proposed anything, and I won't re-run the reads.",
+      "said_chars": 1627,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "list_demand_letters",
+        "lookup_claims",
+        "lookup_claims",
+        "lookup_claims",
+        "lookup_claims",
+        "lookup_claims"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Novabridge MAC",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing three Medicare refund cards: CB-01, F-2 and F-3. CB-03 is already closed by offset, so no refund goes for it. CB-09 and CB-10 are posting errors, not Medicare's money.\n\n| Item | Amount | Finding | Deadline |\n|---|---|---|---|\n| CB-01 (acct 4410) | $112.40 | Both Medicare payments stand (ICNs 2226170041100 and 2226184077300). The biller confirmed the duplicate on 14 Aug. | **13 Oct, three days away** |\n| F-3 (acct 6655) | $64.80 | ECG (93000) billed but not performed. Medicare paid on 3 Sep.",
+      "said_chars": 2066,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_overpayment_refund",
+          "key": "CB-01",
+          "outcome": "correct",
+          "value_usd": 112.4
+        },
+        {
+          "action": "submit_overpayment_refund",
+          "key": "F-3",
+          "outcome": "correct",
+          "value_usd": 64.8
+        },
+        {
+          "action": "submit_overpayment_refund",
+          "key": "F-2",
+          "outcome": "correct",
+          "value_usd": 535.78
+        }
+      ]
+    },
+    {
+      "portal": "Carenook",
+      "user": "Carenook, patient payments. Refund the patients we owe.",
+      "continued": false,
+      "said": "One sentence first: I'm reading Carenook's payments and deposit appointments before I file any patient refund, so I can check nothing has already been refunded.",
+      "said_chars": 160,
+      "reads": [
+        "list_patient_payments",
+        "list_appointments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Carenook",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing three patient refund cards: CB-05 for $40.00, CB-07 for $85.00 and CB-12 for $28.10. CB-06 isn't refunded.\n\n| Item | Account | Amount | Why it's the patient's money | Goes to |\n|---|---|---|---|---|\n| CB-05 | 2209 | $40.00 | The patient paid estimated coinsurance at the desk on 19 Aug. Medicare then paid the $175.00 wellness visit (G0439) in full on 4 Sep with no coinsurance.",
+      "said_chars": 1548,
+      "reads": [],
+      "cards": [
+        {
+          "action": "refund_patient",
+          "key": "CB-05",
+          "outcome": "correct",
+          "value_usd": 40.0
+        },
+        {
+          "action": "refund_patient",
+          "key": "CB-07",
+          "outcome": "correct",
+          "value_usd": 85.0
+        },
+        {
+          "action": "refund_patient",
+          "key": "CB-12",
+          "outcome": "correct",
+          "value_usd": 28.1
+        }
+      ]
+    },
+    {
+      "portal": "Chartmend PM",
+      "user": "Back in Chartmend. Fix the postings that made credits that aren't really owed to anyone. Then tell me what you left alone and why.",
+      "continued": false,
+      "said": "I'm filing three posting corrections: CB-03, CB-09 and CB-10. None of them is a refund.\n\n\nThree correction cards are waiting for your answer. Each one changes the books and the patient statements that follow from them.\n- **CB-03, acct 3307, $71.10:** record the 22 Sep offset. Medicare already took this money back through demand letter OP-5521.\n- **CB-09, acct 5512, $78.40:** move the payment to acct 5521. Medicare paid it for 5521's 28 Jul visit, so this also closes that open visit.",
+      "said_chars": 1304,
+      "reads": [],
+      "cards": [
+        {
+          "action": "correct_posting",
+          "key": "CB-03",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "correct_posting",
+          "key": "CB-09",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "correct_posting",
+          "key": "CB-10",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    }
+  ]
+}
