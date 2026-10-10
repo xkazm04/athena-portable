@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "merchant-fee-audit",
+  "captured_at": "2026-10-10T16:10:22Z",
+  "bench_run_at": "2026-10-10T16:07:36Z",
+  "narration": {
+    "text": "A ceramics shop's three card-processing statements checked against its contract and Visa's published rates, five overcharges credited, a markup raised back to the first of the month, a regulated debit billed as exempt, a closed merchant ID, a wrong rate and a fee the contract does not name, while downgrades billed at their own rate, pass-through assessments, the fees the contract names, a credit already paid and a statement past its window are left alone. This is a chore for the owner of a small online ceramics shop in Oregon, who takes Visa payments through a processor on an interchange-plus agreement and has never checked a statement. On the bench, she found 5 of 5 eligible items, worth 118 dollars of the 118 dollars there was to find. She made no false claim. The world held 13 traps, and she walked past 13. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 67 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 64.377,
+    "sha256": "e6aafcc550ebb676f35f172abac7686e18031a9586dc45db76a900a9e0a84d09"
+  },
+  "video": {
+    "path": "evidence/merchant-fee-audit/evidence.mp4",
+    "duration_s": 64.377,
+    "bytes": 2978289,
+    "sha256": "239143d9caaae55693972f0cd10ddb3cd7d45f1d4d47160c44d6f19691445756"
+  },
+  "thumbnail": {
+    "path": "playbooks/merchant-fee-audit/thumb.jpg",
+    "bytes": 78207,
+    "sha256": "497ff920f2da8c1cfeab4f194220da8a227ec48f9772c9a699d8c61ead41dff3"
+  }
+}

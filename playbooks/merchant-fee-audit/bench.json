@@ -1,0 +1,345 @@
+{
+  "playbook": "merchant-fee-audit",
+  "run_at": "2026-10-10T16:07:36Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 106.3,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 43,
+  "cost_usd": 1.3147,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.8
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 118.0,
+    "value_found_usd": 118.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 13,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "request_fee_credit",
+        "key": "L-901",
+        "why": "Traditional Rewards cards are published at 2.04% + $0.10 (G-1) and it was billed at exactly that",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-903",
+        "why": "Signature Preferred is published at 2.50% + $0.10 (G-1) and it was billed at exactly that",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-904",
+        "why": "A downgrade: 12 sales settled 4 days after shipping, so they land in Non-Qualified at its published 3.15% + $0.10 (G-4, K-4). A downgrade billed at the network's own rate is not an overcharge",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-905",
+        "why": "A downgrade: 8 sales had no address verification result, billed at the Non-Qualified published rate (G-4, K-4), not an overcharge",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-907",
+        "why": "Exempt-issuer debit is published at 1.65% + $0.15 (G-2) and it was billed at exactly that; only regulated debit is capped",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-908",
+        "why": "Assessments are passed through at cost (K-1) at Paycurrent's schedule of 0.14% of credit volume (G-3): 16,000 at 0.14% is 22.40, as billed",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-909",
+        "why": "Assessments on debit at 0.13% (G-3): 3,900 at 0.13% is 5.07, as billed",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-911",
+        "why": "The gateway fee for the active merchant ID W-4471 is 15 dollars a month (K-2)",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-913",
+        "why": "The agreement names a 20 dollar chargeback fee for each dispute (K-2): two disputes, 40.00",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-914",
+        "why": "A new fee the agreement lets Paycurrent add on 30 days' notice (K-2, K-3): the 30 July notice (N-1) is 33 days before 1 September",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-801",
+        "why": "The gateway fee for W-4471 is owed (K-2)",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-802",
+        "why": "The chargeback fee was 35 dollars against the agreement's 20, but the 15 dollar overcharge was already credited on 6 October (bank T-03); a second request would be paid twice",
+        "filed": false
+      },
+      {
+        "action": "request_fee_credit",
+        "key": "L-701",
+        "why": "W-9020's gateway fee on the July statement was also not owed, but the statement's claim-by date, 3 October, has passed (K-5, G-5)",
+        "filed": false
+      }
+    ],
+    "filed_usd": 118.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "request_fee_credit",
+      "key": "L-902",
+      "outcome": "correct",
+      "value_usd": 9.0,
+      "exact": true,
+      "why": "Interchange: the line says All Other Products cards, whose published Card Not Present Product 1 rate is 1.89% + $0.10 (G-1), but it was billed at 2.04% + $0.10, the Traditional Rewards rate. 6,000 at 0.15% is 9.00 over"
+    },
+    {
+      "action": "request_fee_credit",
+      "key": "L-906",
+      "outcome": "correct",
+      "value_usd": 34.2,
+      "exact": true,
+      "why": "Regulated debit passes through at the Regulation II ceiling, 0.05% + $0.21 and 1 cent for the fraud-prevention adjustment (G-2), so 1.20 + 13.20 = 14.40 on 2,400 and 60 sales. It was billed at the exempt issuers' 1.65% + $0.15, 48.60: 34.20 over"
+    },
+    {
+      "action": "request_fee_credit",
+      "key": "L-910",
+      "outcome": "correct",
+      "value_usd": 29.85,
+      "exact": true,
+      "why": "The agreement's markup is 0.25% + 10 cents (K-1), and a price change takes effect on the 30th day after notice (K-3). The 2 September notice (N-2) cannot reach back to 1 September, so September stays at 0.25%: 79.25, not 109.10. 29.85 over"
+    },
+    {
+      "action": "request_fee_credit",
+      "key": "L-912",
+      "outcome": "correct",
+      "value_usd": 15.0,
+      "exact": true,
+      "why": "The gateway fee is charged for each active merchant ID (K-2), and W-9020 was closed on 31 December 2025 (K-6). The 15 dollars for W-9020 on the September statement is not owed"
+    },
+    {
+      "action": "request_fee_credit",
+      "key": "L-803",
+      "outcome": "correct",
+      "value_usd": 29.95,
+      "exact": true,
+      "why": "A PCI non-compliance fee is in no clause: the agreement lists the only fees and says there is no fee for failing a PCI questionnaire (K-2). The August statement's claim-by date, 4 November, has not passed. The bank shows no credit for it"
+    }
+  ],
+  "missed": [],
+  "closing_words": "The recalled contract and bank notes are cut short, so I'm pulling the full text before I file anything.\n\nI'm filing five credit requests, which comes to $118.00. The five overcharges are L-902, L-906, L-910, L-912 and L-803.\n\n\nFive cards are waiting for your answer. They add up to **$118.00**.\n\n| Line | Statement | Credit | Why |\n|---|---|---|---|\n| L-902 | Sept | $9.00 | Billed 2.04% + $0.10; Visa's All Other Products rate is 1.89% + $0.10. |\n| L-906 | Sept | $34.20 | A regulated debit was billed at the exempt rate; it should be 0.05% + $0.22. |\n| L-910 | Sept | $29.85 | N-2 was mailed 2 Sep, so under K-3 the 0.40% rate can't start before 2 Oct. September should be $79.25. |\n| L-912 | Sept | $15.00 | Gateway fee on W-9020, which was closed on 31 Dec 2025 (K-6). |\n| L-803 | Aug | $29.95 | PCI non-compliance fee. K-2 says there is no such fee. |\n\nFor L-910 I don't need a before-and-after",
+  "trace": [
+    {
+      "portal": "Paycurrent",
+      "user": "I'm Nora, Wrenfield Ceramics. Our card processor's statements for July, August and September are in Paycurrent. First read the statements, every line, the notices and the guide to the networks' fee schedules. Don't ask for anything yet: I'l",
+      "continued": false,
+      "said": "I'll start by listing the statements, notices and guide, and the first page of lines.",
+      "said_chars": 85,
+      "reads": [
+        "list_statements",
+        "list_lines",
+        "list_notices",
+        "list_guide"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Paycurrent",
+      "user": "",
+      "continued": true,
+      "said": "Pages 2 and 3 of the lines are still to read, and so are the notices and the guide rules.",
+      "said_chars": 89,
+      "reads": [
+        "list_lines",
+        "list_lines",
+        "read_notice",
+        "read_notice",
+        "read_guide",
+        "read_guide",
+        "read_guide",
+        "read_guide",
+        "read_guide"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Paycurrent",
+      "user": "",
+      "continued": true,
+      "said": "I've listed all 18 lines. Each line's volume, rate billed and note only show in the full read, so I'm reading all 18 now.",
+      "said_chars": 121,
+      "reads": [
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line",
+        "read_line"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Paycurrent",
+      "user": "",
+      "continued": true,
+      "said": "All 18 lines, both notices and all five guide rules are read. Nothing is filed yet.\n\n\nI've read everything in Paycurrent. Against the guide, two lines are overbilled on their rate, and one more is likely.\n\n**Overcharged on the rate (the guide's figures)**\n- **L-902 (Sept, $130.90):** All Other Products cards were billed at 2.04% + $0.10. G-1 sets 1.89% + $0.10, which makes $121.90, so the overcharge is **$9.00**.\n- **L-906 (Sept, $48.60):** A regulated debit was billed at the exempt rate of 1.65% + $0.15.",
+      "said_chars": 2438,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "This is where we keep our papers. Read our processing agreement in full, every clause.",
+      "continued": false,
+      "said": "I'll list the agreement's clauses first, then read each one.",
+      "said_chars": 60,
+      "reads": [
+        "list_clauses"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Listing returned six clauses, K-1 to K-6. I'll read all six now.",
+      "said_chars": 64,
+      "reads": [
+        "read_clause",
+        "read_clause",
+        "read_clause",
+        "read_clause",
+        "read_clause",
+        "read_clause"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "All six clauses (K-1 to K-6) are read. Here is what the contract says and what it means for the lines.\n\n**The agreement**\n- **K-1:** Interchange-plus. Interchange and assessments are passed through at cost. Paycurrent's markup is 0.25% + $0.10 per Visa sale.\n- **K-2:** The only other fees are a $15 monthly gateway fee per active merchant ID and a $20 chargeback fee per dispute. A new fee needs a K-3 notice. There is no fee for failing a PCI questionnaire.",
+      "said_chars": 2530,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "This is our bank. Read what Paycurrent has debited, and what it has paid or credited back.",
+      "continued": false,
+      "said": "I'll start by listing every transaction in the bank.",
+      "said_chars": 52,
+      "reads": [
+        "list_transactions"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "",
+      "continued": true,
+      "said": "The bank lists four Paycurrent fee debits and one credit. I'm reading each in full.",
+      "said_chars": 83,
+      "reads": [
+        "read_transaction",
+        "read_transaction",
+        "read_transaction",
+        "read_transaction"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "",
+      "continued": true,
+      "said": "The bank shows Paycurrent debited every fee line I'm checking, and it paid back only one credit. Nothing is filed yet.\n\n**Fee debits (monthly, per statement)**\n- **T-01, 5 Aug, −$15.00 (ST-2607):** This is the July gateway fee for W-9020 (L-701). W-9020 closed on 31 Dec 2025 under K-6, so it was overbilled. I'm leaving it out because ST-2607's claim-by date looks past (I'll confirm it on the Paycurrent statements page).",
+      "said_chars": 1971,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Paycurrent",
+      "user": "Back in Paycurrent. Check each statement line against the agreement and the networks' published rates. Ask for a credit on each line that was billed more than it should have been, and only for the amount of the overcharge, inside Paycurrent",
+      "continued": false,
+      "said": "The recalled contract and bank notes are cut short, so I'm pulling the full text before I file anything.\n\nI'm filing five credit requests, which comes to $118.00. The five overcharges are L-902, L-906, L-910, L-912 and L-803.\n\n\nFive cards are waiting for your answer. They add up to **$118.00**.\n\n| Line | Statement | Credit | Why |\n|---|---|---|---|\n| L-902 | Sept | $9.00 | Billed 2.04% + $0.10; Visa's All Other Products rate is 1.89% + $0.10.",
+      "said_chars": 1977,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_fee_credit",
+          "key": "L-902",
+          "outcome": "correct",
+          "value_usd": 9.0
+        },
+        {
+          "action": "request_fee_credit",
+          "key": "L-906",
+          "outcome": "correct",
+          "value_usd": 34.2
+        },
+        {
+          "action": "request_fee_credit",
+          "key": "L-910",
+          "outcome": "correct",
+          "value_usd": 29.85
+        },
+        {
+          "action": "request_fee_credit",
+          "key": "L-912",
+          "outcome": "correct",
+          "value_usd": 15.0
+        },
+        {
+          "action": "request_fee_credit",
+          "key": "L-803",
+          "outcome": "correct",
+          "value_usd": 29.95
+        }
+      ]
+    }
+  ]
+}

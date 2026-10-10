@@ -188,6 +188,9 @@ names; each playbook carries the new one.
   mailnest.io is a real email service.
 - Row 54, `chargeback-representment`: "Shipdesk" became "Parcelwick", because ShipDesk is a real shipping
   software company; and "Mailnest" became "Postwren", because mailnest.io is a real email service.
+- Row 55, `merchant-fee-audit`: "Docshelf" became "Binderwell", because DocShelf is a real document
+  management app; and "Ledgerline bank" became "Ledgerwren bank", because Ledgerline is the name of
+  several real accounting and invoicing products.
 
 ### B7: Household money
 

@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The sixty-three playbooks (latest runs, Claude Sonnet)
+## The sixty-four playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -106,9 +106,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A candle maker's wholesale resale certificates checked before the state audits them: six requests for a fully completed certificate, and the state's request answered with the three certificates that support it, while a Texas sale, complete certificates, a taxed sale and a buyer still inside twelve months are left alone | work | 4 | exceeds (run 2 of 2, after a world fix): 9 of 9, $4,250 of $4,250, 10 of 10 traps, 0 false, 2.2 min, $1.51; was short, 4 of 9, the order list could not be paged |
 | A reseller's EU listings brought up to the product-safety rule on two marketplaces: missing addresses, Union responsible persons from the makers' mail, a model number and the warnings products carry, while food, an antique, seeds, listings not offered in the EU, complete listings and a throw that needs no warning are left alone | work | 4 | exceeds: 6 of 6, $7,100 of $7,100, 9 of 9 traps, 0 false |
 | A woodworker's ten open card disputes answered with the evidence each reason code needs, two valid ones accepted, and disputes the record cannot win, one past its processor's date and one already refunded left alone | work | 4 | exceeds: 7 of 7, $957 of $957 (a $25 weight on each acceptance), 9 of 9 traps, 0 false, 2.8 min, $2.12 |
+| A ceramics shop's three card-processing statements checked against its contract and Visa's published rates: five overcharges credited, including a regulated debit billed as exempt and a markup raised by a notice that cannot reach back, while downgrades billed at their own rate, pass-through assessments, the fees the contract names, a credit already paid and a statement past its window are left alone | work | 3 | exceeds: 5 of 5, $118 of $118, 13 of 13 traps, 0 false, 1.8 min, $1.31 |
 
-Across the latest runs: $1,031,571 of $1,040,999 found, 655 of 655 traps walked past, no false claim,
-190 minutes of her time against about 277 hours by hand, $116.61 of model time. 101 runs are recorded
+Across the latest runs: $1,031,689 of $1,041,117 found, 668 of 668 traps walked past, no false claim,
+191 minutes of her time against about 279 hours by hand, $117.93 of model time. 102 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

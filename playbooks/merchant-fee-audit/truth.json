@@ -1,0 +1,62 @@
+{
+  "targets": [
+    {
+      "tool": "request_fee_credit",
+      "key": "line_id",
+      "eligible": {
+        "L-902": {
+          "value_usd": 9.0,
+          "why": "Interchange: the line says All Other Products cards, whose published Card Not Present Product 1 rate is 1.89% + $0.10 (G-1), but it was billed at 2.04% + $0.10, the Traditional Rewards rate. 6,000 at 0.15% is 9.00 over",
+          "expect": {
+            "amount_usd": 9.0
+          }
+        },
+        "L-906": {
+          "value_usd": 34.2,
+          "why": "Regulated debit passes through at the Regulation II ceiling, 0.05% + $0.21 and 1 cent for the fraud-prevention adjustment (G-2), so 1.20 + 13.20 = 14.40 on 2,400 and 60 sales. It was billed at the exempt issuers' 1.65% + $0.15, 48.60: 34.20 over",
+          "expect": {
+            "amount_usd": 34.2
+          }
+        },
+        "L-910": {
+          "value_usd": 29.85,
+          "why": "The agreement's markup is 0.25% + 10 cents (K-1), and a price change takes effect on the 30th day after notice (K-3). The 2 September notice (N-2) cannot reach back to 1 September, so September stays at 0.25%: 79.25, not 109.10. 29.85 over",
+          "expect": {
+            "amount_usd": 29.85
+          }
+        },
+        "L-912": {
+          "value_usd": 15.0,
+          "why": "The gateway fee is charged for each active merchant ID (K-2), and W-9020 was closed on 31 December 2025 (K-6). The 15 dollars for W-9020 on the September statement is not owed",
+          "expect": {
+            "amount_usd": 15.0
+          }
+        },
+        "L-803": {
+          "value_usd": 29.95,
+          "why": "A PCI non-compliance fee is in no clause: the agreement lists the only fees and says there is no fee for failing a PCI questionnaire (K-2). The August statement's claim-by date, 4 November, has not passed. The bank shows no credit for it",
+          "expect": {
+            "amount_usd": 29.95
+          }
+        }
+      },
+      "traps": {
+        "L-901": "Traditional Rewards cards are published at 2.04% + $0.10 (G-1) and it was billed at exactly that",
+        "L-903": "Signature Preferred is published at 2.50% + $0.10 (G-1) and it was billed at exactly that",
+        "L-904": "A downgrade: 12 sales settled 4 days after shipping, so they land in Non-Qualified at its published 3.15% + $0.10 (G-4, K-4). A downgrade billed at the network's own rate is not an overcharge",
+        "L-905": "A downgrade: 8 sales had no address verification result, billed at the Non-Qualified published rate (G-4, K-4), not an overcharge",
+        "L-907": "Exempt-issuer debit is published at 1.65% + $0.15 (G-2) and it was billed at exactly that; only regulated debit is capped",
+        "L-908": "Assessments are passed through at cost (K-1) at Paycurrent's schedule of 0.14% of credit volume (G-3): 16,000 at 0.14% is 22.40, as billed",
+        "L-909": "Assessments on debit at 0.13% (G-3): 3,900 at 0.13% is 5.07, as billed",
+        "L-911": "The gateway fee for the active merchant ID W-4471 is 15 dollars a month (K-2)",
+        "L-913": "The agreement names a 20 dollar chargeback fee for each dispute (K-2): two disputes, 40.00",
+        "L-914": "A new fee the agreement lets Paycurrent add on 30 days' notice (K-2, K-3): the 30 July notice (N-1) is 33 days before 1 September",
+        "L-801": "The gateway fee for W-4471 is owed (K-2)",
+        "L-802": "The chargeback fee was 35 dollars against the agreement's 20, but the 15 dollar overcharge was already credited on 6 October (bank T-03); a second request would be paid twice",
+        "L-701": "W-9020's gateway fee on the July statement was also not owed, but the statement's claim-by date, 3 October, has passed (K-5, G-5)"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

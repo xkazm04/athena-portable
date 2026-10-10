@@ -1,0 +1,631 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "paycurrent",
+      "message": "I'm Nora, Wrenfield Ceramics. Our card processor's statements for July, August and September are in Paycurrent. First read the statements, every line, the notices and the guide to the networks' fee schedules. Don't ask for anything yet: I'll send you to the contract and the bank next.",
+      "nudges": 1
+    },
+    {
+      "app": "binderwell",
+      "message": "This is where we keep our papers. Read our processing agreement in full, every clause.",
+      "nudges": 1
+    },
+    {
+      "app": "ledgerwren",
+      "message": "This is our bank. Read what Paycurrent has debited, and what it has paid or credited back.",
+      "nudges": 1
+    },
+    {
+      "app": "paycurrent",
+      "message": "Back in Paycurrent. Check each statement line against the agreement and the networks' published rates. Ask for a credit on each line that was billed more than it should have been, and only for the amount of the overcharge, inside Paycurrent's 60 days. Leave alone a downgrade billed at its own category's rate, anything the agreement allows, and anything already credited. Then tell me what you asked for, how much it recovers, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "paycurrent",
+      "name": "Paycurrent",
+      "origin": "https://merchant.paycurrent.example",
+      "path": "/wrenfield-ceramics/statements",
+      "view": {
+        "view": "Paycurrent: Wrenfield Ceramics' processing statements (invented processor)",
+        "signed_in": "Nora Whitlock",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_statements",
+          "kind": "READ",
+          "description": "Every monthly statement: statement id, month, issue date and the date a claim must reach Paycurrent.",
+          "params": {},
+          "returns": {
+            "table": "statements",
+            "fields": [
+              "statement",
+              "month",
+              "issued",
+              "claim_by",
+              "note"
+            ]
+          }
+        },
+        {
+          "name": "list_lines",
+          "kind": "READ",
+          "description": "The lines of the statements: line id, statement, description and amount. Filter with statement (ST-nnnn). Six a page; ask for the next with page.",
+          "params": {
+            "statement": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "lines",
+            "match": {
+              "statement": "statement"
+            },
+            "fields": [
+              "line_id",
+              "statement",
+              "description",
+              "amount_usd"
+            ],
+            "page_size": 6
+          }
+        },
+        {
+          "name": "read_line",
+          "kind": "READ",
+          "description": "One statement line in full, by line id (L-nnn): the volume, the number of sales, the rate billed and any note.",
+          "params": {
+            "line_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "lines",
+            "match": {
+              "line_id": "line_id"
+            },
+            "require": [
+              "line_id"
+            ]
+          }
+        },
+        {
+          "name": "list_notices",
+          "kind": "READ",
+          "description": "Paycurrent's notices of price changes: id, date and subject.",
+          "params": {},
+          "returns": {
+            "table": "notices",
+            "fields": [
+              "notice_id",
+              "date",
+              "subject"
+            ]
+          }
+        },
+        {
+          "name": "read_notice",
+          "kind": "READ",
+          "description": "One notice in full, by id (N-n).",
+          "params": {
+            "notice_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "notices",
+            "match": {
+              "notice_id": "notice_id"
+            },
+            "require": [
+              "notice_id"
+            ]
+          }
+        },
+        {
+          "name": "list_guide",
+          "kind": "READ",
+          "description": "Paycurrent's guide to the networks' fee schedules: rule id and title.",
+          "params": {},
+          "returns": {
+            "table": "guide",
+            "fields": [
+              "rule_id",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_guide",
+          "kind": "READ",
+          "description": "One rule of the guide in full, by rule id (G-n).",
+          "params": {
+            "rule_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "guide",
+            "match": {
+              "rule_id": "rule_id"
+            },
+            "require": [
+              "rule_id"
+            ]
+          }
+        },
+        {
+          "name": "request_fee_credit",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask Paycurrent to credit a statement line, by line id (line_id), with the amount in dollars to be credited (amount_usd) and the reason. Nora signs it.",
+          "params": {
+            "line_id": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Credit request for {line_id} sent to Paycurrent."
+        }
+      ],
+      "aliases": [
+        "Paycurrent",
+        "the processor",
+        "my statements",
+        "the merchant statements"
+      ]
+    },
+    {
+      "app_id": "binderwell",
+      "name": "Binderwell",
+      "origin": "https://papers.binderwell.example",
+      "path": "/wrenfield-ceramics",
+      "view": {
+        "view": "Binderwell: Wrenfield Ceramics' papers",
+        "signed_in": "Nora Whitlock",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_clauses",
+          "kind": "READ",
+          "description": "The processing agreement's clauses: clause id and title.",
+          "params": {},
+          "returns": {
+            "table": "contract",
+            "fields": [
+              "clause_id",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_clause",
+          "kind": "READ",
+          "description": "One clause of the agreement in full, by clause id (K-n).",
+          "params": {
+            "clause_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "contract",
+            "match": {
+              "clause_id": "clause_id"
+            },
+            "require": [
+              "clause_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Binderwell",
+        "my papers",
+        "the agreement",
+        "the contract"
+      ]
+    },
+    {
+      "app_id": "ledgerwren",
+      "name": "Ledgerwren bank",
+      "origin": "https://bank.ledgerwren.example",
+      "path": "/wrenfield-ceramics",
+      "view": {
+        "view": "Ledgerwren bank: Wrenfield Ceramics' business account",
+        "signed_in": "Nora Whitlock",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_transactions",
+          "kind": "READ",
+          "description": "Every transaction: id, date, memo and amount, newest first.",
+          "params": {},
+          "returns": {
+            "table": "bank",
+            "fields": [
+              "txn_id",
+              "date",
+              "memo",
+              "amount_usd"
+            ]
+          }
+        },
+        {
+          "name": "read_transaction",
+          "kind": "READ",
+          "description": "One transaction in full, by id (T-nn).",
+          "params": {
+            "txn_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "bank",
+            "match": {
+              "txn_id": "txn_id"
+            },
+            "require": [
+              "txn_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Ledgerwren",
+        "the bank",
+        "my bank",
+        "the account"
+      ]
+    }
+  ],
+  "tables": {
+    "statements": [
+      {
+        "statement": "ST-2609",
+        "month": "September 2026",
+        "issued": "2026-10-06",
+        "claim_by": "2026-12-05",
+        "note": "Interchange, assessments and markup are netted from the daily deposits; fees are debited from the bank once a month."
+      },
+      {
+        "statement": "ST-2608",
+        "month": "August 2026",
+        "issued": "2026-09-05",
+        "claim_by": "2026-11-04",
+        "note": "Fee lines shown; interchange for August was checked by Wrenfield and is not in question."
+      },
+      {
+        "statement": "ST-2607",
+        "month": "July 2026",
+        "issued": "2026-08-04",
+        "claim_by": "2026-10-03",
+        "note": "Fee lines shown; interchange for July was checked by Wrenfield and is not in question."
+      }
+    ],
+    "lines": [
+      {
+        "line_id": "L-901",
+        "statement": "ST-2609",
+        "description": "Visa credit, Card Not Present Product 1, Traditional Rewards cards",
+        "volume_usd": 5000,
+        "sales": 70,
+        "billed": "2.04% + $0.10",
+        "amount_usd": 109.0,
+        "note": "Interchange, passed through at the network's rate."
+      },
+      {
+        "line_id": "L-902",
+        "statement": "ST-2609",
+        "description": "Visa credit, Card Not Present Product 1, All Other Products cards",
+        "volume_usd": 6000,
+        "sales": 85,
+        "billed": "2.04% + $0.10",
+        "amount_usd": 130.9,
+        "note": "Interchange, passed through at the network's rate."
+      },
+      {
+        "line_id": "L-903",
+        "statement": "ST-2609",
+        "description": "Visa credit, Card Not Present Product 1, Signature Preferred cards",
+        "volume_usd": 3000,
+        "sales": 30,
+        "billed": "2.50% + $0.10",
+        "amount_usd": 78.0,
+        "note": "Interchange, passed through at the network's rate."
+      },
+      {
+        "line_id": "L-904",
+        "statement": "ST-2609",
+        "description": "Visa credit, Non-Qualified Consumer Credit",
+        "volume_usd": 1200,
+        "sales": 12,
+        "billed": "3.15% + $0.10",
+        "amount_usd": 39.0,
+        "note": "Downgraded: 12 sales settled 4 days after the ship date. Paycurrent's best rate needs settlement within 1 day."
+      },
+      {
+        "line_id": "L-905",
+        "statement": "ST-2609",
+        "description": "Visa credit, Non-Qualified Consumer Credit",
+        "volume_usd": 800,
+        "sales": 8,
+        "billed": "3.15% + $0.10",
+        "amount_usd": 26.0,
+        "note": "Downgraded: 8 sales were sent without an address verification result."
+      },
+      {
+        "line_id": "L-906",
+        "statement": "ST-2609",
+        "description": "Visa debit, regulated issuers (assets of 10 billion dollars or more), Card Not Present",
+        "volume_usd": 2400,
+        "sales": 60,
+        "billed": "1.65% + $0.15",
+        "amount_usd": 48.6,
+        "note": "Interchange, passed through at the network's rate."
+      },
+      {
+        "line_id": "L-907",
+        "statement": "ST-2609",
+        "description": "Visa debit, exempt issuers (under 10 billion dollars), Card Not Present",
+        "volume_usd": 1500,
+        "sales": 30,
+        "billed": "1.65% + $0.15",
+        "amount_usd": 29.25,
+        "note": "Interchange, passed through at the network's rate."
+      },
+      {
+        "line_id": "L-908",
+        "statement": "ST-2609",
+        "description": "Network assessments, Visa credit",
+        "volume_usd": 16000,
+        "sales": 205,
+        "billed": "0.14%",
+        "amount_usd": 22.4,
+        "note": "Passed through at cost."
+      },
+      {
+        "line_id": "L-909",
+        "statement": "ST-2609",
+        "description": "Network assessments, Visa debit",
+        "volume_usd": 3900,
+        "sales": 90,
+        "billed": "0.13%",
+        "amount_usd": 5.07,
+        "note": "Passed through at cost."
+      },
+      {
+        "line_id": "L-910",
+        "statement": "ST-2609",
+        "description": "Paycurrent processing markup, all Visa sales",
+        "volume_usd": 19900,
+        "sales": 295,
+        "billed": "0.40% + $0.10",
+        "amount_usd": 109.1,
+        "note": "Markup per the notice of 2 September 2026."
+      },
+      {
+        "line_id": "L-911",
+        "statement": "ST-2609",
+        "description": "Gateway fee, merchant ID W-4471",
+        "volume_usd": 0,
+        "sales": 0,
+        "billed": "flat",
+        "amount_usd": 15.0,
+        "note": "Monthly."
+      },
+      {
+        "line_id": "L-912",
+        "statement": "ST-2609",
+        "description": "Gateway fee, merchant ID W-9020",
+        "volume_usd": 0,
+        "sales": 0,
+        "billed": "flat",
+        "amount_usd": 15.0,
+        "note": "Monthly."
+      },
+      {
+        "line_id": "L-913",
+        "statement": "ST-2609",
+        "description": "Chargeback fees, 2 disputes",
+        "volume_usd": 0,
+        "sales": 2,
+        "billed": "20.00 each",
+        "amount_usd": 40.0,
+        "note": "Disputes C-1188 and C-1190."
+      },
+      {
+        "line_id": "L-914",
+        "statement": "ST-2609",
+        "description": "Security and compliance fee",
+        "volume_usd": 0,
+        "sales": 0,
+        "billed": "flat",
+        "amount_usd": 6.0,
+        "note": "New from 1 September 2026, per the notice of 30 July 2026."
+      },
+      {
+        "line_id": "L-801",
+        "statement": "ST-2608",
+        "description": "Gateway fee, merchant ID W-4471",
+        "volume_usd": 0,
+        "sales": 0,
+        "billed": "flat",
+        "amount_usd": 15.0,
+        "note": "Monthly."
+      },
+      {
+        "line_id": "L-802",
+        "statement": "ST-2608",
+        "description": "Chargeback fee, 1 dispute",
+        "volume_usd": 0,
+        "sales": 1,
+        "billed": "35.00 each",
+        "amount_usd": 35.0,
+        "note": "Dispute C-1171."
+      },
+      {
+        "line_id": "L-803",
+        "statement": "ST-2608",
+        "description": "PCI non-compliance fee",
+        "volume_usd": 0,
+        "sales": 0,
+        "billed": "flat",
+        "amount_usd": 29.95,
+        "note": "Charged because the annual questionnaire was not marked complete."
+      },
+      {
+        "line_id": "L-701",
+        "statement": "ST-2607",
+        "description": "Gateway fee, merchant ID W-9020",
+        "volume_usd": 0,
+        "sales": 0,
+        "billed": "flat",
+        "amount_usd": 15.0,
+        "note": "Monthly."
+      }
+    ],
+    "notices": [
+      {
+        "notice_id": "N-1",
+        "date": "2026-07-30",
+        "subject": "New security and compliance fee",
+        "body": "Paycurrent will charge a security and compliance fee of 6 dollars a month from 1 September 2026. This notice was mailed to the account address on 30 July 2026, under clause K-3 of your agreement."
+      },
+      {
+        "notice_id": "N-2",
+        "date": "2026-09-02",
+        "subject": "Change to processing markup",
+        "body": "Paycurrent's markup on Visa sales moves from 0.25% plus 10 cents to 0.40% plus 10 cents, applied to sales from 1 September 2026. This notice was mailed to the account address on 2 September 2026."
+      }
+    ],
+    "guide": [
+      {
+        "rule_id": "G-1",
+        "title": "Visa interchange, credit, Card Not Present (18 April 2026)",
+        "text": "Paycurrent's summary of the Visa USA Interchange Reimbursement Fees, Visa Supplemental Requirements, rates effective 18 April 2026. Friday 9 October 2026. Consumer credit, Card Not Present, Product 1: Traditional Rewards 2.04% + $0.10; Signature Preferred 2.50% + $0.10; All Other Products 1.89% + $0.10. A sale that does not qualify is Non-Qualified Consumer Credit: 3.15% + $0.10 for every card product. Interchange is paid to the card issuer and is the same whichever processor bills it."
+      },
+      {
+        "rule_id": "G-2",
+        "title": "Visa interchange, debit, Card Not Present (18 April 2026)",
+        "text": "Visa USA Interchange Reimbursement Fees, 18 April 2026. Friday 9 October 2026. Exempt issuers (assets under 10 billion dollars), CPS/e-Commerce Basic debit: 1.65% + $0.15. Regulated issuers: 0.05% + $0.21, plus $0.01 for an issuer that certifies it meets the fraud-prevention standard; every issuer on this account's sales has certified, so 0.05% + $0.22. That is the Federal Reserve's Regulation II ceiling: 21 cents plus 0.05% of the sale, and a 1 cent fraud-prevention adjustment (12 CFR 235.3(b) and 235.4(a)). Visa's 18 April 2026 schedule is the one in force; the Board's 2023 proposal to lower the ceiling was never adopted."
+      },
+      {
+        "rule_id": "G-3",
+        "title": "Network assessments",
+        "text": "Friday 9 October 2026. The card networks bill Paycurrent assessments on each Visa sale and Paycurrent passes them through at cost. Paycurrent's pass-through schedule for 2026: Visa credit 0.14% of volume; Visa debit 0.13% of volume. These are Paycurrent's own pass-through figures; the networks do not publish assessments in their interchange schedules."
+      },
+      {
+        "rule_id": "G-4",
+        "title": "Downgrades",
+        "text": "Friday 9 October 2026. A sale that misses what its best category needs is downgraded, and the network bills the category it lands in at that category's published rate. For a card-not-present sale Paycurrent's best category needs the sale settled within 1 day of the ship date and an address verification result sent. Paycurrent's statement names the reason for each downgrade. A downgrade billed at the network's own rate is not a billing error."
+      },
+      {
+        "rule_id": "G-5",
+        "title": "Asking for a credit",
+        "text": "Friday 9 October 2026. To ask for a credit on a statement line, use the credit request: the line, the amount to be credited in dollars and the reason. A request must reach Paycurrent within 60 days of the statement's issue date (the claim-by date shown on each statement). Paycurrent will not credit a line it has already credited."
+      }
+    ],
+    "contract": [
+      {
+        "clause_id": "K-1",
+        "title": "Pricing",
+        "text": "Paycurrent Merchant Agreement with Wrenfield Ceramics, signed 3 March 2023. Interchange-plus. Interchange and the card networks' assessments are passed through at cost. Paycurrent's own charge on each Visa sale is a markup of 0.25% of the sale plus 10 cents."
+      },
+      {
+        "clause_id": "K-2",
+        "title": "Fees",
+        "text": "The only other fees are: gateway fee 15 dollars a month for each active merchant ID; chargeback fee 20 dollars for each dispute received; and no other fee unless a notice under K-3 adds one. There is no fee for failing a PCI questionnaire."
+      },
+      {
+        "clause_id": "K-3",
+        "title": "Changes to price",
+        "text": "Paycurrent may change any price in this agreement. A change takes effect on the 30th day after Paycurrent mails written notice to the account address, or on a later date the notice names, and never earlier."
+      },
+      {
+        "clause_id": "K-4",
+        "title": "Downgrades",
+        "text": "A sale that does not qualify for its best category is billed at the category the network assigns, as interchange passed through at cost."
+      },
+      {
+        "clause_id": "K-5",
+        "title": "Errors on a statement",
+        "text": "The merchant must report an error within 60 days of the statement's issue date. Paycurrent credits the merchant for an error it confirms."
+      },
+      {
+        "clause_id": "K-6",
+        "title": "Merchant IDs",
+        "text": "The merchant's active merchant ID is W-4471. Merchant ID W-9020 (the old pop-up stall) was closed by letter dated 12 December 2025, effective 31 December 2025, and is not an active merchant ID."
+      }
+    ],
+    "bank": [
+      {
+        "txn_id": "T-01",
+        "date": "2026-08-05",
+        "memo": "Paycurrent monthly fees, ST-2607",
+        "amount_usd": -15.0,
+        "detail": "Debited for statement ST-2607."
+      },
+      {
+        "txn_id": "T-02",
+        "date": "2026-09-07",
+        "memo": "Paycurrent monthly fees, ST-2608",
+        "amount_usd": -79.95,
+        "detail": "Debited for statement ST-2608 (15.00 + 35.00 + 29.95)."
+      },
+      {
+        "txn_id": "T-03",
+        "date": "2026-10-06",
+        "memo": "Paycurrent credit, correction of a chargeback fee on ST-2608",
+        "amount_usd": 15.0,
+        "detail": "Credit of 15.00 for the chargeback fee on ST-2608 that exceeded the 20 dollars in the agreement."
+      },
+      {
+        "txn_id": "T-04",
+        "date": "2026-10-07",
+        "memo": "Paycurrent monthly fees, ST-2609",
+        "amount_usd": -76.0,
+        "detail": "Debited for statement ST-2609 (15.00 + 15.00 + 40.00 + 6.00)."
+      },
+      {
+        "txn_id": "T-05",
+        "date": "2026-09-30",
+        "memo": "Paycurrent deposit, week ending 30 September",
+        "amount_usd": 4210.55,
+        "detail": "Net of interchange, assessments and markup."
+      },
+      {
+        "txn_id": "T-06",
+        "date": "2026-10-07",
+        "memo": "Paycurrent deposit, week ending 7 October",
+        "amount_usd": 3894.2,
+        "detail": "Net of interchange, assessments and markup."
+      },
+      {
+        "txn_id": "T-07",
+        "date": "2026-10-01",
+        "memo": "Kilnside Clay Supply",
+        "amount_usd": -612.4,
+        "detail": "Clay and glaze."
+      },
+      {
+        "txn_id": "T-08",
+        "date": "2026-10-02",
+        "memo": "Postal and packaging",
+        "amount_usd": -148.1,
+        "detail": "Boxes."
+      }
+    ]
+  }
+}
