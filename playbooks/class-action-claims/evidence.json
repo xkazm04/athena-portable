@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "class-action-claims",
+  "captured_at": "2026-10-10T21:55:15Z",
+  "bench_run_at": "2026-10-10T21:52:57Z",
+  "narration": {
+    "text": "A hygienist's class action claims are filed from her own records: an air fryer, bulbs only her card shows, two kettles, earbuds by a sworn claim her card supports, pet food and a topper due tomorrow, while a late claim, an exclusion, a repeat, resale, a Toronto purchase, one she cannot show and a fee scam are left alone. This is a chore for a dental hygienist in Tucson, Arizona, with a card, an order history and a drawer of small appliances, who gets settlement notices by email. On the bench, she found 6 of 6 eligible items, worth 158 dollars of the 158 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 50 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 59.654,
+    "sha256": "f8a4aff368066a065ff123b2902580fe21bac63a79278c41af6119a5ab4b7f31"
+  },
+  "video": {
+    "path": "evidence/class-action-claims/evidence.mp4",
+    "duration_s": 59.654,
+    "bytes": 2698672,
+    "sha256": "da567f9583a0bc66d7663487ce39f2ff3c35a0f7b0a6604b5722afe7891a289e"
+  },
+  "thumbnail": {
+    "path": "playbooks/class-action-claims/thumb.jpg",
+    "bytes": 77710,
+    "sha256": "7229038fb66788bb9f4585e35e7c77c50367086504e0675f0c98a539e25b7ac0"
+  }
+}

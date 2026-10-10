@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The seventy-eight playbooks (latest runs, Claude Sonnet)
+## The seventy-nine playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -121,9 +121,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A landscape architect's delayed bag claimed from the airline in time: a pharmacy, the toiletries line of a grocery receipt, basic clothes, a charger and a shirt for her workshop, and the bag fee, while food, a jacket her card paid, a dress, a new wardrobe, a colleague's purchases, a scarf bought after delivery, roaming and a June claim past its 21 days are left alone | home | 4 | exceeds: 6 of 6, $203.30 of $203.30 (what she gets back), 10 of 10 traps, 0 false, 1.6 min, $0.92 |
 | A veterinary technician's year of airline credits turned into refunds: flights moved 3 hours 55 minutes and 6 hours 30 minutes, a changed arrival airport, an added stop, a lower fare class and a seat fee, while a change she made, a credit she chose, her own cancellation, a short delay, a connecting airport, an uncovered flight and a refunded and a spent credit are left alone | home | 5 | exceeds: 6 of 6, $832.00 of $832.00 (what she gets back), 9 of 9 traps, 0 false, 1.6 min, $0.91 |
 | A household's recurring charges audited under California's Automatic Renewal Law: a second streaming account on the bank, a trial that became a charge, an add-on raised without notice and an unused storage plan cancelled, with two refunds asked under the services' own terms, while a son's and a partner's weekly use, a service used this week, a one-time purchase and a plan renewed after its reminder are left alone | home | 6 | exceeds: 6 of 6, $613.50 of $613.50 (cancellations weighted at a year of the plan, mostly minutes), 8 of 8 traps, 0 false, 1.4 min, $0.84 |
+| A hygienist's class action claims filed from her own records: an air fryer, bulbs only her card shows, two kettles, earbuds by a sworn claim her card supports, pet food and a topper due tomorrow, while a late claim, an exclusion, a repeat, a purchase before the class period, resale, a Toronto purchase, one she cannot show and a fee scam are left alone | home | 5 | exceeds: 6 of 6, $158.00 of $158.00 (what she gets back), 8 of 8 traps, 0 false, 1.8 min, $1.03 |
 
-Across the latest runs: $1,118,969 of $1,128,396 found, 795 of 795 traps walked past, no false claim,
-216 minutes of her time against about 311 hours by hand, $133.74 of model time. 116 runs are recorded
+Across the latest runs: $1,119,127 of $1,128,554 found, 803 of 803 traps walked past, no false claim,
+218 minutes of her time against about 312 hours by hand, $134.77 of model time. 117 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

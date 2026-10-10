@@ -278,6 +278,12 @@ names; each playbook carries the new one.
   became "Cardhollow", because Cardwell Payment Systems is a real card-payment processor (row 62 settled the name);
   "Ledgerline bank" became "Ledgerwren bank", because Ledgerline is the name of several real accounting and invoicing
   products (rows 62 and 63 settled the name); and "Mailnest" became "Postwren", because mailnest.io is a real email service.
+- Row 70, `class-action-claims`: "Storeline orders" became "Orderbrook", because Storeline is the name of at least two real online retail
+  sites (storeline.us and storeline.biz); "Cardwell" became "Cardhollow", the name row 62 settled, because Cardwell Payment
+  Systems is a real card-payment processor; and "Mailnest" became "Postwren", because mailnest.io is a real email service.
+  "Claimsadmin" kept its name: a search found no administrator or business of that name (the search tool is fuzzy, so that
+  is "none found", not a proof). The roster lists four portals; "Awardhelm Payout Desk" is added as a fifth, the site a scam
+  email names, because the trap is a page the court-approved notice does not name; a search found no business of that name.
 
 ### B8: Work, pay and benefits
 
