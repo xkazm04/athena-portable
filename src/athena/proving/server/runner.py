@@ -45,7 +45,7 @@ from typing import IO, Any, Protocol
 
 from athena.proving.budget import CLAUDE, DEFAULT_CAPS, ENGINES, NEMOTRON
 from athena.proving.report import announce
-from athena.proving.roles import HOSTED_ENV, hosted_flag
+from athena.proving.roles import HOSTED_ENV, claude_env, hosted_flag
 
 __all__ = [
     "CANCELLED",
@@ -536,7 +536,7 @@ class Runner:
                 raise Busy("a run is already in progress; one run at a time")
             caps = self.caps_for_run()
             job = Job(kind, preset, row, caps, self.clock().isoformat(), hosted=self.hosted)
-            env = {k: v for k, v in self.environ.items() if k != TOKEN_ENV}
+            env = {k: v for k, v in claude_env(self.environ).items() if k != TOKEN_ENV}
             if self.hosted:
                 env[HOSTED_ENV] = "1"  # the child decides the same way, whatever is on PATH
             env["PYTHONUNBUFFERED"] = "1"

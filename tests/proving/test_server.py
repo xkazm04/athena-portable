@@ -50,6 +50,7 @@ run.mkdir(parents=True, exist_ok=True)
 print(f"gauntlet run -> {run.as_posix()}", flush=True)
 print("generating: the key is " + os.environ.get("NEBIUS_API_KEY", ""), flush=True)
 print("judge token in child env: " + str("PROVING_JUDGE_TOKEN" in os.environ), flush=True)
+print("api key in child env: " + str("ANTHROPIC_API_KEY" in os.environ), flush=True)
 rows = [
     {"role": "attacker", "engine": "nemotron", "model": "nvidia/x", "cost_usd": 0.01,
      "is_error": False, "excerpt": "model output " + os.environ.get("NEBIUS_API_KEY", "")},
@@ -318,6 +319,31 @@ def test_the_command_carries_the_presets_and_the_servers_caps(make: Any) -> None
     assert argv[argv.index("--claude-cap") + 1] == "10.0000"
     assert "--claude" in argv  # the runner allows the Claude row and the judge asked for it
     assert TOKEN_ENV not in env  # the child never sees the judge token
+
+
+def test_the_child_never_sees_the_anthropic_api_key(
+    tmp_path: Path, script: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    spawn = FakeSpawn(script, "20261007T120000Z", None)
+    runner = Runner(
+        tmp_path / "runs",
+        spawn=spawn,
+        environ={**_environ(), "ANTHROPIC_API_KEY": "sk-ant-test"},
+        clock=lambda: NOW,
+        claude_cli=True,
+    )
+    served = Served(runner)
+    try:
+        assert served.post_run(payload={"kind": "gauntlet", "preset": "small"})[0] == 202
+        _finish(served)
+        _, env = spawn.calls[0]
+        assert "ANTHROPIC_API_KEY" not in env
+        assert TOKEN_ENV not in env
+        _, _, events = served.request("GET", "/runs/20261007T120000Z/events")
+        assert "api key in child env: False" in events
+    finally:
+        served.close()
 
 
 def test_a_no_claude_runner_never_runs_the_claude_row(tmp_path: Path, script: Path) -> None:
