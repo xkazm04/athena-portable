@@ -24,8 +24,8 @@
 import { create } from "zustand";
 
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
-import { bridgeCall } from "@/lib/bridge";
-import type { Args, Wire } from "@/lib/ipc";
+import { callOnPage } from "@/lib/hands";
+import type { Wire } from "@/lib/ipc";
 import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
 import { reasonOf, refusalSentence, switchedOffSentence } from "@/companion/plain";
 import { isTerminal, type ChannelEvent, type DecisionRequested, type TurnSummary } from "@/lib/events";
@@ -121,7 +121,7 @@ export interface RunDeps {
     tabId: number,
     name: string,
     input: Record<string, unknown>,
-  ) => Promise<{ ok: boolean; output: string; error?: string | null }>;
+  ) => Promise<{ ok: boolean; output: string; error?: string | null; tier?: number }>;
   /**
    * The focused page's manifest body, or `null` when there is nothing to register.
    *
@@ -232,23 +232,20 @@ const LIVE: RunDeps = {
       page_title: focused?.title ?? "",
     };
   },
-  call: async (tabId, name, input) => {
-    // The gate already allowed this call, so the parameters are the row's. `Args` is the
-    // IPC's own wire type and the cast is the one place a gate-approved object meets it.
-    const reply = await bridgeCall(tabId, name, input as Args);
-    return reply as { ok: boolean; output: string; error?: string | null };
-  },
+  // A hand the page did not register goes to the shell's `hands_call`; the rest to the page.
+  call: (tabId, name, input) =>
+    callOnPage(tabId, name, input, useTools.getState().byTab[tabId]?.tools ?? []),
   manifest: () => {
     const tab = focusedTab();
     if (!tab) return null;
+    // A tab not yet read, or one that could not be, still has its hands (ADR 0065).
     const found = useTools.getState().byTab[tab.id];
-    if (!found) return null;
     return manifestBodyOf({
       origin: originOf(tab.url),
-      appId: found.appId,
-      appVersion: found.appVersion,
-      transport: found.transport,
-      tools: found.tools,
+      appId: found?.appId ?? null,
+      appVersion: found?.appVersion ?? null,
+      transport: found?.transport ?? null,
+      tools: found?.tools ?? [],
     });
   },
   disabledOrigins: () =>
@@ -504,18 +501,18 @@ export const useRun = create<RunState>((set, get) => {
       return;
     }
     set({ phase: "acting" });
-    let answer: { ok: boolean; output: string; error?: string | null };
+    let answer: { ok: boolean; output: string; error?: string | null; tier?: number };
     try {
       answer = await deps.call(focused.tabId, bareName(row.name), row.params);
     } catch (error) {
       answer = { ok: false, output: "", error: error instanceof Error ? error.message : String(error) };
     }
-    outstanding.push(resultRow(row, answer.ok, answer.output, answer.error ?? null));
+    outstanding.push(resultRow(row, answer.ok, answer.output, answer.error ?? null, answer.tier));
     push({
       id: row.call_id,
       kind: "tool",
       text: `${row.name} → ${answer.ok ? answer.output : (answer.error ?? "failed")}`,
-      tier: row.tier ?? 1,
+      tier: answer.tier ?? row.tier ?? 1,
       ok: answer.ok,
     });
     set({ phase: "running" });
@@ -888,6 +885,7 @@ function resultRow(
   ok: boolean,
   output: string,
   error: string | null,
+  tier?: number,
 ): Record<string, unknown> {
   return {
     call_id: row.call_id,
@@ -895,7 +893,7 @@ function resultRow(
     ok,
     output,
     error,
-    tier: row.tier ?? 1,
+    tier: tier ?? row.tier ?? 1,
     ms: 0,
   };
 }

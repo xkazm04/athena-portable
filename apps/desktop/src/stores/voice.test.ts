@@ -304,6 +304,18 @@ describe("a spoken turn", () => {
     expect(useRun.getState().cards).toEqual([]);
   });
 
+  it("answers the daemon with a hand's result at tier 2", async () => {
+    const { socket } = wire({ call: async () => ({ ok: true, output: "the page", tier: 2 }) });
+    await startVoice();
+    await useVoice.getState().say("read it");
+    await socket.emit(
+      { kind: "tool.call", call_id: "c1", name: "host.ledgerbox.page_read", params: {}, origin: "host:ledgerbox", tier: 1 },
+      finished("Reading."),
+    );
+    const result = socket.frames().find((f) => f.type === "tool_result");
+    expect(result).toMatchObject({ call_id: "c1", ok: true, output: "the page", tier: 2 });
+  });
+
   it("refuses a call for a page that is not the focused one", async () => {
     const { socket, calls } = wire();
     await startVoice();

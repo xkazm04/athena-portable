@@ -217,6 +217,28 @@ describe("the continuation", () => {
     expect(useRun.getState().phase).toBe("idle");
   });
 
+  it("records a hand's result at tier 2, in the transcript and in the carried result", async () => {
+    const daemon = fakeDaemon({
+      runs: [[hostCall("c1", "host.web_https_sledger_dtest.page_read"), finished()], [finished("Read.")]],
+    });
+    const calls: string[] = [];
+    const deps = wire(daemon, fakePage());
+    setRunDeps({
+      ...deps,
+      call: async (_tab, name) => {
+        calls.push(name);
+        return { ok: true, output: "the page", tier: 2 };
+      },
+    });
+
+    await useRun.getState().send("read it");
+
+    expect(calls).toEqual(["page_read"]);
+    expect(useRun.getState().transcript.find((e) => e.kind === "tool")?.tier).toBe(2);
+    const carried = daemon.runs()[1].body!.tool_results as Array<Record<string, unknown>>;
+    expect(carried[0].tier).toBe(2);
+  });
+
   it("carries a page that threw back as a failure rather than as silence", async () => {
     const daemon = fakeDaemon({
       runs: [[hostCall("c1", "host.ledgerbox.chase"), finished()], [finished("I could not.")]],

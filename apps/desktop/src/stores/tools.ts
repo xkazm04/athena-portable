@@ -17,6 +17,7 @@
 import { create } from "zustand";
 
 import { bridgeList, onToolChange, type BridgeTool } from "@/lib/bridge";
+import { startHands } from "@/lib/hands";
 import { hasShell, type Tab } from "@/lib/ipc";
 import { useTabs } from "@/stores/tabs";
 
@@ -132,6 +133,8 @@ let started = false;
 export async function startTools(): Promise<void> {
   if (started || !hasShell()) return;
   started = true;
+  // The hands are static: one fetch, kept where the manifest is built (ADR 0065).
+  await startHands();
   // The page's own notification first: a tab that registers its tools after load — which is every
   // page that waits for a fetch — announces itself this way and nothing else would catch it.
   await onToolChange((tabId) => void useTools.getState().refresh(tabId));

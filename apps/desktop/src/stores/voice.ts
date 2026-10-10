@@ -30,9 +30,8 @@ import { create } from "zustand";
 
 import { DaemonApi, type ExecuteRow } from "@/lib/api";
 import { VoiceSetupApi, availabilityOf, refusalText } from "@/lib/voice-setup";
-import { bridgeCall } from "@/lib/bridge";
+import { callOnPage } from "@/lib/hands";
 import type { ChannelEvent, DecisionRequested, ToolCall } from "@/lib/events";
-import type { Args } from "@/lib/ipc";
 import { catalogIdOf, manifestBodyOf } from "@/lib/manifest";
 import {
   Player,
@@ -75,7 +74,7 @@ export interface VoiceDeps {
     tabId: number,
     name: string,
     input: Record<string, unknown>,
-  ) => Promise<{ ok: boolean; output: string; error?: string | null }>;
+  ) => Promise<{ ok: boolean; output: string; error?: string | null; tier?: number }>;
   /**
    * The focused page's manifest body, or `null` when there is nothing to register.
    *
@@ -167,22 +166,20 @@ const LIVE: VoiceDeps = {
   disabledOrigins: () =>
     disabledOriginsOf(useOrigins.getState().records, useTabs.getState().tabs, useTools.getState().byTab),
   gated: () => gatedListsOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab),
-  call: async (tabId, name, input) => {
-    const reply = await bridgeCall(tabId, name, input as Args);
-    return reply as { ok: boolean; output: string; error?: string | null };
-  },
+  // A hand the page did not register goes to the shell's `hands_call`; the rest to the page.
+  call: (tabId, name, input) =>
+    callOnPage(tabId, name, input, useTools.getState().byTab[tabId]?.tools ?? []),
   manifest: () => {
     const { tabs } = useTabs.getState();
     const tab = tabs.find((t) => t.focused) ?? tabs[0];
     if (!tab) return null;
     const found = useTools.getState().byTab[tab.id];
-    if (!found) return null;
     return manifestBodyOf({
       origin: originOf(tab.url),
-      appId: found.appId,
-      appVersion: found.appVersion,
-      transport: found.transport,
-      tools: found.tools,
+      appId: found?.appId ?? null,
+      appVersion: found?.appVersion ?? null,
+      transport: found?.transport ?? null,
+      tools: found?.tools ?? [],
     });
   },
 };
@@ -286,7 +283,7 @@ export const useVoice = create<VoiceState>((set, get) => {
   async function onPage(call: ToolCall): Promise<void> {
     const focused = deps.focused();
     const row = call as unknown as ExecuteRow;
-    let answer: { ok: boolean; output: string; error?: string | null };
+    let answer: { ok: boolean; output: string; error?: string | null; tier?: number };
     if (!focused) {
       answer = { ok: false, output: "", error: "unknown_ref: no page is open" };
     } else if (
@@ -316,7 +313,7 @@ export const useVoice = create<VoiceState>((set, get) => {
       ok: answer.ok,
       output: answer.output,
       error: answer.error ?? null,
-      tier: row.tier ?? 1,
+      tier: answer.tier ?? row.tier ?? 1,
     });
     if (get().phase === "idle") set({ phase: "thinking" });
   }

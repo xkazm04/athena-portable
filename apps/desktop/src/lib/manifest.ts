@@ -22,6 +22,7 @@
 import { manifestOf } from "@athena/bridge/gate";
 
 import type { BridgeTool } from "@/lib/bridge";
+import { withHands } from "@/lib/hands";
 
 /** Every derived catalog id starts with this; a page that publishes it is treated as naming none. */
 const RESERVED_PREFIX = "web_";
@@ -95,14 +96,16 @@ function registrable(origin: string): boolean {
 /**
  * The body of `POST /manifest`, or `null` when this page cannot be registered.
  *
- * Two ways there is nothing to publish, and both are facts rather than failures: the page
- * registered no tools at all (the generic hands reach it instead — tier 2, which this shell does
- * not yet publish either), or the browser gave us no origin the daemon would take. A page that
- * published no `athena:app` is catalogued under its web origin (`catalogIdOf`).
+ * The page's tools followed by the generic hands (tier 2, `lib/hands.ts`), so a page that
+ * registered nothing, published no `athena:app`, or could not be read still has something to act
+ * with. It is catalogued under its web origin when it named no app (`catalogIdOf`). There is
+ * nothing to publish only when the browser gave us no origin the daemon would take, or when there
+ * are no tools and no hands (outside the shell the hands list is empty).
  */
 export function manifestBodyOf(source: ManifestSource): Record<string, unknown> | null {
   const app = catalogIdOf(source.origin, source.appId);
-  if (!app || !registrable(source.origin) || source.tools.length === 0) return null;
+  const tools = withHands(source.tools);
+  if (!app || !registrable(source.origin) || tools.length === 0) return null;
   return manifestOf(
     {
       origin: source.origin,
@@ -110,6 +113,6 @@ export function manifestBodyOf(source: ManifestSource): Record<string, unknown> 
       app_version: source.appVersion,
       transport: source.transport ?? "",
     },
-    source.tools,
+    tools,
   ) as Record<string, unknown>;
 }
