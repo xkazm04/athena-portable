@@ -310,3 +310,33 @@ def test_verify_catches_a_rescore_that_kept_the_run_at_but_changed_what_is_said(
     assert standing.state == "current"
     assert standing.notes == ("the narration no longer says what the record says: film it again",)
     assert not standing.ok
+
+
+@pytest.mark.parametrize("name", ["bench.json", "evidence.json"])
+@pytest.mark.parametrize("body", ["{not json", "[1, 2]"])
+def test_verify_reports_a_malformed_record_instead_of_raising(
+    tmp_path: Path, name: str, body: str
+) -> None:
+    root = _copy(tmp_path)
+    _index(root, str(_json(root / "bench.json")["run_at"]))
+    (root / name).write_text(body, encoding="utf-8")
+    [standing] = verify([load_playbook(root)], tmp_path)
+    assert (standing.state, standing.ok) == ("unreadable", False)
+    [note] = standing.notes
+    assert note.startswith(f"{name} ")
+
+
+def test_verify_still_reports_the_other_playbooks_and_exits_nonzero(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    other = next(p.name for p in _benched() if p.name != "lien-desk")
+    broken = _copy(tmp_path)
+    good = _copy(tmp_path, other)
+    _index(good, str(_json(good / "bench.json")["run_at"]))
+    _index(broken, str(_json(broken / "bench.json")["run_at"]))
+    (broken / "bench.json").write_text("{not json", encoding="utf-8")
+    standings = verify([load_playbook(broken), load_playbook(good)], tmp_path)
+    assert [s.state for s in standings] == ["unreadable", "current"]
+    assert main(["--dir", str(tmp_path / "playbooks"), "evidence", "--all", "--verify"]) == 1
+    out = capsys.readouterr().out
+    assert "lien-desk: unreadable" in out and f"{other}: " in out

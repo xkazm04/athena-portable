@@ -15,7 +15,8 @@ or ``exceeds``, 1 when it is ``short``, 2 when the playbook could not be loaded.
 
 ``evidence`` films a benched playbook (ADR 0055, :mod:`.evidence`): the media under the gitignored
 ``evidence/<id>/``, the index and thumbnail into ``playbooks/<id>/``. ``--dry`` prints the plan and
-runs no tool; ``--verify`` reports each index as current, stale or missing against its bench.
+runs no tool; ``--verify`` reports each index as current, stale, missing or unreadable (a
+``bench.json`` or ``evidence.json`` that is not a JSON object) against its bench.
 Exit 0 when every step ran (or, with ``--verify``, every benched playbook is current), 1 when one
 did not, 2 when a playbook could not be loaded or has no bench to film.
 """
@@ -71,7 +72,9 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("playbook", nargs="?", help="one playbook's id; or --all")
     e.add_argument("--all", action="store_true", help="every benched playbook")
     e.add_argument("--dry", action="store_true", help="print the plan, run no tool")
-    e.add_argument("--verify", action="store_true", help="current, stale or missing, re-hashed")
+    e.add_argument(
+        "--verify", action="store_true", help="current, stale, missing or unreadable, re-hashed"
+    )
     return parser
 
 

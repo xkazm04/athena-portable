@@ -27,6 +27,10 @@ A rescore keeps ``run_at`` (``bench.write_bench``), and an edit to ``playbook.js
 at all, so either can leave an index "current" whose narration no longer says what the record says.
 :func:`verify` therefore also fills the narration again and compares it with the committed text; a
 difference is reported, and the playbook wants filming again.
+
+A ``bench.json`` or ``evidence.json`` that is not valid JSON, or not an object, makes that playbook
+``unreadable``: a non-current standing whose notes name the file and the problem. The other
+playbooks are still reported.
 """
 
 from __future__ import annotations
@@ -728,13 +732,25 @@ def build_evidence(
 @dataclass(frozen=True)
 class Standing:
     playbook: str
-    #: ``current``, ``stale``, ``missing`` or ``unbenched``.
+    #: ``current``, ``stale``, ``missing``, ``unbenched`` or ``unreadable`` (``bench.json`` or
+    #: ``evidence.json`` is not a JSON object; the notes name the file and the problem).
     state: str
     notes: tuple[str, ...] = ()
 
     @property
     def ok(self) -> bool:
         return self.state in ("current", "unbenched") and not self.notes
+
+
+def _read_object(path: Path) -> tuple[dict[str, Any] | None, str]:
+    """A JSON object from ``path``, else ``None`` and a sentence naming the file and the problem."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:  # JSONDecodeError and UnicodeDecodeError are ValueErrors
+        return None, f"{path.name} cannot be read: {type(exc).__name__}: {exc}"
+    if not isinstance(data, dict):
+        return None, f"{path.name} is not a JSON object (found {type(data).__name__})"
+    return data, ""
 
 
 def verify(books: Iterable[Playbook], repo: Path) -> list[Standing]:
@@ -749,15 +765,20 @@ def verify(books: Iterable[Playbook], repo: Path) -> list[Standing]:
         if not index_path.is_file():
             out.append(Standing(book.id, "missing"))
             continue
-        bench = json.loads(bench_path.read_text(encoding="utf-8"))
-        index = json.loads(index_path.read_text(encoding="utf-8"))
+        bench, bench_fault = _read_object(bench_path)
+        index, index_fault = _read_object(index_path)
+        if bench is None or index is None:
+            faults = tuple(f for f in (bench_fault, index_fault) if f)
+            out.append(Standing(book.id, "unreadable", faults))
+            continue
         state = "current" if index.get("bench_run_at") == bench.get("run_at") else "stale"
         notes: list[str] = []
         narrated = media_paths(repo, book.id).narration
         # The film and its sound stay on the machine that made them; the thumbnail is committed,
         # so only its absence is a fault.
         for part, required in (("narration", False), ("video", False), ("thumbnail", True)):
-            entry = index.get(part) if isinstance(index.get(part), dict) else {}
+            found = index.get(part)
+            entry: dict[str, Any] = found if isinstance(found, dict) else {}
             where = str(entry.get("path", "")) or (
                 _rel(repo, narrated) if part == "narration" else ""
             )
