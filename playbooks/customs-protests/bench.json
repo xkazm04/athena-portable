@@ -1,0 +1,299 @@
+{
+  "playbook": "customs-protests",
+  "run_at": "2026-10-10T07:33:31Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 128.3,
+  "turns": 9,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 19,
+  "cost_usd": 1.5204,
+  "your_time_s": 120,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.1
+  },
+  "score": {
+    "eligible": 4,
+    "found": 4,
+    "exact": 4,
+    "value_total_usd": 10998.0,
+    "value_found_usd": 10998.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 14,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "transmit_psc",
+        "key": "K7Q-0398412-6",
+        "why": "Liquidated on 19 June 2026: a PSC corrects only an unliquidated entry; this one is corrected by protest",
+        "filed": false
+      },
+      {
+        "action": "transmit_psc",
+        "key": "K7Q-0394105-2",
+        "why": "Liquidated on 17 April 2026: past any PSC; it is corrected by protest",
+        "filed": false
+      },
+      {
+        "action": "transmit_psc",
+        "key": "K7Q-0392016-9",
+        "why": "Liquidated on 13 March 2026, and its protest window closed on 9 September: no PSC can reach it",
+        "filed": false
+      },
+      {
+        "action": "transmit_psc",
+        "key": "K7Q-0401733-5",
+        "why": "MP-30 platters, liquidated, and correctly entered under 3924.10.20 as Ashby's ruling NY N998214 says: there is nothing to correct",
+        "filed": false
+      },
+      {
+        "action": "transmit_psc",
+        "key": "K7Q-0403364-7",
+        "why": "MP-30 platters, liquidated, and correctly entered under the ruling's 3924.10.20: there is nothing to correct",
+        "filed": false
+      },
+      {
+        "action": "transmit_psc",
+        "key": "K7Q-0405218-0",
+        "why": "Unliquidated, but entered 8 December 2025: its 300 days ended on 4 October 2026, so no PSC can be filed. It waits for liquidation on 23 October and is then protested",
+        "filed": false
+      },
+      {
+        "action": "transmit_psc",
+        "key": "K7Q-0423105-3",
+        "why": "Entered after the broker's fix, already under the correct 3924.10.40: there is nothing to correct",
+        "filed": false
+      },
+      {
+        "action": "file_protest",
+        "key": "K7Q-0392016-9",
+        "why": "Misclassified, but liquidated on 13 March 2026: the 180 days ended on 9 September 2026, and a protest now is out of time",
+        "filed": false
+      },
+      {
+        "action": "file_protest",
+        "key": "K7Q-0401733-5",
+        "why": "MP-30 platters are serving platters, named in 3924.10.20, and Ashby's own ruling NY N998214 classifies exactly this merchandise there (19 CFR 177.9). The product master's 3924.10.40 is the stale entry, not the liquidation",
+        "filed": false
+      },
+      {
+        "action": "file_protest",
+        "key": "K7Q-0403364-7",
+        "why": "MP-30 platters, liquidated under the ruling's 3924.10.20: correctly classified, nothing to protest",
+        "filed": false
+      },
+      {
+        "action": "file_protest",
+        "key": "K7Q-0405218-0",
+        "why": "Not yet liquidated: a protest is filed after, but not before, liquidation (1514(c)(3)). It liquidates on 23 October 2026; the protest is filed then",
+        "filed": false
+      },
+      {
+        "action": "file_protest",
+        "key": "K7Q-0418830-4",
+        "why": "Not yet liquidated: it is corrected by a PSC, and a protest before liquidation is not accepted",
+        "filed": false
+      },
+      {
+        "action": "file_protest",
+        "key": "K7Q-0421977-1",
+        "why": "Not yet liquidated: it is corrected by a PSC, and a protest before liquidation is not accepted",
+        "filed": false
+      },
+      {
+        "action": "file_protest",
+        "key": "K7Q-0423105-3",
+        "why": "Not yet liquidated, and already entered under the correct 3924.10.40",
+        "filed": false
+      }
+    ],
+    "filed_usd": 10998.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "transmit_psc",
+      "key": "K7Q-0418830-4",
+      "outcome": "correct",
+      "value_usd": 1824.0,
+      "exact": true,
+      "why": "SP-12, three silicone kitchen spatulas, is kitchenware of plastics: heading 3924 names it, so GRI 1 puts it in 3924.10.40 (other, 3.4%), not the residual 3926.90.99 (5.3%) the broker's old database used. Entered Friday 15 May 2026 and unliquidated, scheduled for 26 March 2027: a PSC is open until 11 March 2027 (300 days from entry, earlier than 15 days before liquidation). $96,000 at 5.3% less 3.4%: $1,824"
+    },
+    {
+      "action": "transmit_psc",
+      "key": "K7Q-0421977-1",
+      "outcome": "correct",
+      "value_usd": 2604.0,
+      "exact": true,
+      "why": "BM-40, silicone baking molds that food is baked in and turned out of, is kitchenware but not a plate, bowl, serving dish or platter: 3924.10.40 (3.4%), not 3924.10.20 (6.5%). Entered Thursday 30 July 2026, before the broker's fix on 14 August, unliquidated, scheduled for 11 June 2027: well inside the PSC window. $84,000 at 6.5% less 3.4%: $2,604"
+    },
+    {
+      "action": "file_protest",
+      "key": "K7Q-0394105-2",
+      "outcome": "correct",
+      "value_usd": 2850.0,
+      "exact": true,
+      "why": "SP-12 spatulas entered and liquidated under 3926.90.99 (5.3%) on Friday 17 April 2026; the correct subheading is 3924.10.40 (3.4%). The 180 days after liquidation end on Wednesday 14 October 2026, five days away. $150,000 at 1.9%: $2,850"
+    },
+    {
+      "action": "file_protest",
+      "key": "K7Q-0398412-6",
+      "outcome": "correct",
+      "value_usd": 3720.0,
+      "exact": true,
+      "why": "BM-40 baking molds entered and liquidated under 3924.10.20 (6.5%) on 19 June 2026; the correct subheading is 3924.10.40 (3.4%). Classification and liquidation are protestable (19 U.S.C. 1514(a)(2) and (5)) within 180 days after liquidation, to 16 December 2026. $120,000 at 3.1%: $3,720"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Portline's rules and records confirm the plan. I'm filing two protests.\n\n- **K7Q-0394105-2:** it liquidated on 17 Apr 2026, so the 180 days end Wed 14 Oct 2026, five days from now. The refund is $7,950 − (3.4% × $150,000 = $5,100) = **$2,850**.\n- **K7Q-0398412-6:** it liquidated on 19 Jun 2026, so the window runs to Wed 16 Dec 2026. The refund is $7,800 − (3.4% × $120,000 = $4,080) = **$3,720**.\n\n\n**Filed (two cards, waiting for your answer):** the two protests above, $6,570 in total. The earlier PSC cards for K7Q-0418830-4 ($1,824) and K7Q-0421977-1 ($2,604) are also still waiting on you.\n\n**Due next**\n- **Wed 14 Oct:** the deadline for the K7Q-0394105-2 protest. Please answer that card first.\n- **Fri 23 Oct:** K7Q-0405218-0 (BM-40) is scheduled to liquidate. Its PSC window has closed, and Portline doesn't accept a protest before liquidation. After it liquidates, I'd protest it at 3924.",
+  "prose_audit": {
+    "said_usd": 6570.0,
+    "record_usd": 10998.0,
+    "agrees": false
+  },
+  "trace": [
+    {
+      "portal": "Ledgerline ERP",
+      "user": "I'm Lucia, trade compliance at Ashby Kitchenworks. Start in Ledgerline: read the product master and the duty we paid on every entry since May last year.",
+      "continued": false,
+      "said": "Reading both Ledgerline sources now.",
+      "said_chars": 36,
+      "reads": [
+        "list_products",
+        "duty_ledger"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline ERP",
+      "user": "",
+      "continued": true,
+      "said": "Ledgerline is read: 3 products and 9 entries (showing 3 of 3 and 9 of 9). Nothing is filed yet.\n\n**Product master.** All three SKUs carry 3924.10.40.\n- SP-12 (silicone spatulas) and BM-40 (silicone molds) were set by you on 3 Jan 2025 from the specification.\n- MP-30 (melamine platters) was set by the buyer on 14 Aug 2023 and not reviewed since.",
+      "said_chars": 2116,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "Docshelf has our product specifications, our CBP ruling and the tariff extracts. Read them all, and work out how each product should be classified.",
+      "continued": false,
+      "said": "Reading the Docshelf folder now.",
+      "said_chars": 32,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Six documents are in the folder. I'm reading all of them now.",
+      "said_chars": 61,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Here is how I'd classify each product, from the specifications (D-1 to D-3), the ruling (D-4) and the tariff extract (D-5):\n\n- **SP-12 (silicone spatulas): 3924.10.40, 3.4%.** They are kitchen utensils. Silicone counts as plastic under Chapter 39 note 1, and heading 3924 is more specific than 3926 under GRI 3(a). The entries declared 3926.90.99 at 5.3%, so they are wrong.\n- **BM-40 (silicone baking molds): 3924.10.40, 3.4%.** They are kitchenware but not plates, serving dishes, platters or trays.",
+      "said_chars": 2388,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Forwarden",
+      "user": "Forwarden is our customs broker. Read our entries, how each was classified and liquidated, and the broker's notes. Have Forwarden correct every entry that was misclassified and can still be corrected before liquidation, for the right duty.",
+      "continued": false,
+      "said": "I'll read Forwarden's entries and its notes first, before anything is filed.",
+      "said_chars": 76,
+      "reads": [
+        "list_entries",
+        "read_broker_notes",
+        "read_broker_notes",
+        "read_broker_notes"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Forwarden",
+      "user": "",
+      "continued": true,
+      "said": "Two entries can still be corrected, but I need their entered values before I file anything. I'm reading the duty ledger again to get them.\n\nRecall what I read in Ledgerline.\n\nTwo entries can be corrected before liquidation, and I'm filing a card for each. I checked every unliquidated entry against the PSC test: transmit within 300 days of entry, or up to 15 days before scheduled liquidation, whichever is earlier.\n\n- **K7Q-0418830-4 (SP-12, entered 15 May 2026):** the window is open until 11 Mar 2027.",
+      "said_chars": 1519,
+      "reads": [],
+      "cards": [
+        {
+          "action": "transmit_psc",
+          "key": "K7Q-0418830-4",
+          "outcome": "correct",
+          "value_usd": 1824.0
+        },
+        {
+          "action": "transmit_psc",
+          "key": "K7Q-0421977-1",
+          "outcome": "correct",
+          "value_usd": 2604.0
+        }
+      ]
+    },
+    {
+      "portal": "Portline Entries",
+      "user": "Portline Entries is our trade account with CBP. Read the rules, the liquidations and our protests, and protest every liquidated entry we can still protest that was misclassified, for the right refund. Don't protest anything that was right, ",
+      "continued": false,
+      "said": "I'll read Portline's rules, liquidations and protests, and recall the duty figures from Ledgerline.\n\nThe Portline answers arrive next turn. The Ledgerline duty ledger is another tab's tool, so I'll recall what I read there instead.\n\nI haven't filed anything. The Portline answers (rules, liquidations, protests) didn't come back with this turn. My protest filing would rest on a 180-day window and liquidation dates I haven't read from Portline itself, so I'm holding.",
+      "said_chars": 3198,
+      "reads": [
+        "read_cbp_rules",
+        "read_cbp_rules",
+        "read_cbp_rules",
+        "read_cbp_rules",
+        "list_liquidations",
+        "list_protests"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Portline Entries",
+      "user": "",
+      "continued": true,
+      "said": "Portline's rules and records confirm the plan. I'm filing two protests.\n\n- **K7Q-0394105-2:** it liquidated on 17 Apr 2026, so the 180 days end Wed 14 Oct 2026, five days from now. The refund is $7,950 − (3.4% × $150,000 = $5,100) = **$2,850**.\n- **K7Q-0398412-6:** it liquidated on 19 Jun 2026, so the window runs to Wed 16 Dec 2026. The refund is $7,800 − (3.4% × $120,000 = $4,080) = **$3,720**.\n\n\n**Filed (two cards, waiting for your answer):** the two protests above, $6,570 in total.",
+      "said_chars": 1582,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_protest",
+          "key": "K7Q-0394105-2",
+          "outcome": "correct",
+          "value_usd": 2850.0
+        },
+        {
+          "action": "file_protest",
+          "key": "K7Q-0398412-6",
+          "outcome": "correct",
+          "value_usd": 3720.0
+        }
+      ]
+    }
+  ]
+}

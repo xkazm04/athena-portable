@@ -1,0 +1,354 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "ledgerline",
+      "name": "Ledgerline ERP",
+      "origin": "https://erp.ledgerline.example",
+      "path": "/ashby/trade",
+      "view": {
+        "view": "Ledgerline ERP: Ashby Kitchenworks Inc., product master and import duty ledger",
+        "signed_in": "Lucia Fenwick, trade compliance manager",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_products",
+          "kind": "READ",
+          "description": "The imported products in the product master: SKU, description, the HTS number the master holds, and who set it and when.",
+          "params": {},
+          "returns": {
+            "table": "products"
+          }
+        },
+        {
+          "name": "duty_ledger",
+          "kind": "READ",
+          "description": "Duty paid on each import entry, May 2025 to September 2026: entry number, SKU, entered value, the HTS number declared and the duty deposited.",
+          "params": {},
+          "returns": {
+            "table": "duty_ledger"
+          }
+        }
+      ],
+      "aliases": ["Ledgerline ERP", "Ledgerline", "the ERP"]
+    },
+    {
+      "app_id": "docshelf",
+      "name": "Docshelf",
+      "origin": "https://files.docshelf.example",
+      "path": "/ashby/trade-compliance",
+      "view": {
+        "view": "Docshelf: Ashby Kitchenworks, trade compliance (product specifications, CBP rulings, tariff extracts)",
+        "signed_in": "Lucia Fenwick",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "Every document in the trade compliance folder: document id (D-n), kind and title.",
+          "params": {},
+          "returns": {
+            "table": "documents",
+            "fields": ["doc_id", "kind", "title"]
+          }
+        },
+        {
+          "name": "read_document",
+          "kind": "READ",
+          "description": "One document in full, by document id (D-n).",
+          "params": {
+            "doc_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "documents",
+            "match": {
+              "doc_id": "doc_id"
+            },
+            "require": ["doc_id"]
+          }
+        }
+      ],
+      "aliases": ["Docshelf", "the shared folder", "the files"]
+    },
+    {
+      "app_id": "forwarden",
+      "name": "Forwarden",
+      "origin": "https://portal.forwarden.example",
+      "path": "/clients/ashby/entries",
+      "view": {
+        "view": "Forwarden customs brokerage: Ashby Kitchenworks' entries (Forwarden is the filer of every entry summary)",
+        "signed_in": "Lucia Fenwick (client access)",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_entries",
+          "kind": "READ",
+          "description": "Every entry Forwarden filed for Ashby, May 2025 to September 2026: entry number, entry date, SKU, the HTS number declared, and its liquidation status from CBP (liquidated on a date, or the date it is scheduled to liquidate).",
+          "params": {},
+          "returns": {
+            "table": "entries",
+            "fields": ["entry", "entry_date", "sku", "declared_hts", "liquidation"]
+          }
+        },
+        {
+          "name": "read_broker_notes",
+          "kind": "READ",
+          "description": "Forwarden's notes to Ashby, by topic: classification (what its database held for each SKU, and when it changed), psc (how a post-summary correction works and when it can be filed). Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "broker_notes",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "transmit_psc",
+          "kind": "REACHES_A_PERSON",
+          "description": "Instruct Forwarden to transmit a post-summary correction to CBP for one unliquidated entry, by entry number (entry_number), with the corrected HTS number (hts_code), the duty to be refunded in dollars (amount_usd) and the reason. Forwarden transmits it to CBP that day as the filer, on Lucia's signed instruction.",
+          "params": {
+            "entry_number": {
+              "type": "string"
+            },
+            "hts_code": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Post-summary correction for {entry_number} transmitted to CBP by Forwarden."
+        }
+      ],
+      "aliases": ["Forwarden", "the broker", "the broker's portal"]
+    },
+    {
+      "app_id": "portline",
+      "name": "Portline Entries",
+      "origin": "https://trade.portline.example",
+      "path": "/importer/ashby-kitchenworks",
+      "view": {
+        "view": "Portline Entries: the importer's trade account for Ashby Kitchenworks Inc. (importer of record), entries, liquidations and protests with CBP",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_cbp_rules",
+          "kind": "READ",
+          "description": "CBP's rules as Portline states them, by topic: liquidation, protest, psc, rulings, refunds. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "cbp_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_liquidations",
+          "kind": "READ",
+          "description": "Ashby's entries with their liquidation from CBP's record: entry number, entry date, status, the liquidation date or the scheduled liquidation date, and the HTS number and duty as liquidated or entered.",
+          "params": {},
+          "returns": {
+            "table": "liquidations"
+          }
+        },
+        {
+          "name": "list_protests",
+          "kind": "READ",
+          "description": "Every protest Ashby has filed, with its status.",
+          "params": {},
+          "returns": {
+            "table": "protests"
+          }
+        },
+        {
+          "name": "file_protest",
+          "kind": "REACHES_A_PERSON",
+          "description": "File a protest with CBP (as CBP Form 19 would) against the liquidation of one entry, by entry number (entry_number), with the HTS number claimed (hts_code), the duty refund claimed in dollars (amount_usd) and the grounds. Lucia signs it for the importer of record; it goes to CBP.",
+          "params": {
+            "entry_number": {
+              "type": "string"
+            },
+            "hts_code": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            },
+            "grounds": {
+              "type": "string"
+            }
+          },
+          "says": "Protest against the liquidation of {entry_number} filed with CBP."
+        }
+      ],
+      "aliases": ["Portline Entries", "Portline", "the trade portal"]
+    }
+  ],
+  "phases": [
+    {
+      "app": "ledgerline",
+      "message": "I'm Lucia, trade compliance at Ashby Kitchenworks. Start in Ledgerline: read the product master and the duty we paid on every entry since May last year.",
+      "nudges": 1
+    },
+    {
+      "app": "docshelf",
+      "message": "Docshelf has our product specifications, our CBP ruling and the tariff extracts. Read them all, and work out how each product should be classified.",
+      "nudges": 1
+    },
+    {
+      "app": "forwarden",
+      "message": "Forwarden is our customs broker. Read our entries, how each was classified and liquidated, and the broker's notes. Have Forwarden correct every entry that was misclassified and can still be corrected before liquidation, for the right duty.",
+      "nudges": 1
+    },
+    {
+      "app": "portline",
+      "message": "Portline Entries is our trade account with CBP. Read the rules, the liquidations and our protests, and protest every liquidated entry we can still protest that was misclassified, for the right refund. Don't protest anything that was right, or that can't be protested yet or any more. Then tell me what you filed, what's due next and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "products": [
+      {"sku": "SP-12", "description": "Silicone spatula set, 3 pieces", "master_hts": "3924.10.40", "set": "by Lucia, 3 Jan 2025, from the specification"},
+      {"sku": "BM-40", "description": "Silicone baking molds, muffin and loaf", "master_hts": "3924.10.40", "set": "by Lucia, 3 Jan 2025, from the specification"},
+      {"sku": "MP-30", "description": "Melamine serving platters, set of 2", "master_hts": "3924.10.40", "set": "by the buyer, 14 Aug 2023; not reviewed since"}
+    ],
+    "duty_ledger": [
+      {"entry": "K7Q-0392016-9", "sku": "SP-12", "entered_value": "$110,000", "declared_hts": "3926.90.99 (5.3%)", "duty": "$5,830.00"},
+      {"entry": "K7Q-0394105-2", "sku": "SP-12", "entered_value": "$150,000", "declared_hts": "3926.90.99 (5.3%)", "duty": "$7,950.00"},
+      {"entry": "K7Q-0398412-6", "sku": "BM-40", "entered_value": "$120,000", "declared_hts": "3924.10.20 (6.5%)", "duty": "$7,800.00"},
+      {"entry": "K7Q-0401733-5", "sku": "MP-30", "entered_value": "$70,000", "declared_hts": "3924.10.20 (6.5%)", "duty": "$4,550.00"},
+      {"entry": "K7Q-0403364-7", "sku": "MP-30", "entered_value": "$65,000", "declared_hts": "3924.10.20 (6.5%)", "duty": "$4,225.00"},
+      {"entry": "K7Q-0405218-0", "sku": "BM-40", "entered_value": "$90,000", "declared_hts": "3924.10.20 (6.5%)", "duty": "$5,850.00"},
+      {"entry": "K7Q-0418830-4", "sku": "SP-12", "entered_value": "$96,000", "declared_hts": "3926.90.99 (5.3%)", "duty": "$5,088.00"},
+      {"entry": "K7Q-0421977-1", "sku": "BM-40", "entered_value": "$84,000", "declared_hts": "3924.10.20 (6.5%)", "duty": "$5,460.00"},
+      {"entry": "K7Q-0423105-3", "sku": "BM-40", "entered_value": "$88,000", "declared_hts": "3924.10.40 (3.4%)", "duty": "$2,992.00"}
+    ],
+    "documents": [
+      {
+        "doc_id": "D-1",
+        "kind": "specification",
+        "title": "SP-12 silicone spatula set",
+        "text": "SP-12: three kitchen spatulas (a scraper, a spoon-spatula and a turner), each a food-grade silicone head moulded over a nylon core, for stirring, scraping and turning food while cooking and baking. Made in Thailand. Sold to households."
+      },
+      {
+        "doc_id": "D-2",
+        "kind": "specification",
+        "title": "BM-40 silicone baking molds",
+        "text": "BM-40: a 12-cup muffin mold and a loaf mold of food-grade silicone, oven-safe to 230 C, used to bake batter and dough in a home oven; food is baked in them and turned out, not served in them. Made in Thailand. Sold to households."
+      },
+      {
+        "doc_id": "D-3",
+        "kind": "specification",
+        "title": "MP-30 melamine serving platters",
+        "text": "MP-30: two oval melamine platters, 35 cm and 40 cm, for serving food at the table. Made in Thailand. Sold to households."
+      },
+      {
+        "doc_id": "D-4",
+        "kind": "CBP ruling",
+        "title": "New York ruling NY N998214 to Ashby Kitchenworks, 12 March 2024",
+        "text": "U.S. Customs and Border Protection, New York ruling NY N998214, issued to Ashby Kitchenworks Inc. on 12 March 2024 under 19 CFR Part 177. Merchandise: MP-30, two oval melamine platters for serving food. The applicable subheading is 3924.10.2000, HTSUS, which provides for tableware and kitchenware of plastics: plates, cups, saucers, soup bowls, cereal bowls, sugar bowls, creamers, gravy boats, serving dishes and platters. The rate of duty is 6.5% ad valorem. This ruling is issued under 19 CFR Part 177 and should be attached to the entry documents."
+      },
+      {
+        "doc_id": "D-5",
+        "kind": "tariff extract",
+        "title": "HTSUS 2026, headings 3924 and 3926, and the General Rules of Interpretation",
+        "text": "From the Harmonized Tariff Schedule of the United States (2026), column 1 general rates. 3924: Tableware, kitchenware, other household articles and hygienic or toilet articles, of plastics: 3924.10 Tableware and kitchenware: 3924.10.10 salt, pepper, mustard and ketchup dispensers, 3.4%; 3924.10.20 plates, cups, saucers, soup bowls, cereal bowls, sugar bowls, creamers, gravy boats, serving dishes and platters, 6.5%; 3924.10.30 trays, 5.3%; 3924.10.40 other, 3.4%. 3926: Other articles of plastics: 3926.90.99 other, 5.3%. GRI 1: classification is determined by the terms of the headings and any relative section or chapter notes. GRI 3(a): the heading with the most specific description is preferred. Chapter 39, note 1: 'plastics' means the materials of headings 3901 to 3914, which include the silicones of heading 3910, so articles of silicone are articles of plastics."
+      },
+      {
+        "doc_id": "D-6",
+        "kind": "duty note",
+        "title": "Ashby's note on what the duty figures cover",
+        "text": "Today is Friday 9 October 2026. Every figure in our duty ledger, Forwarden's entries and Portline is the column 1 general duty only. Any additional duty under chapter 99 was declared and deposited separately, is the same under the declared and the correct heading for these goods, and is not part of a correction or a protest here. The merchandise processing fee does not change with the heading. A refund is the duty deposited less the duty at the correct rate, on the same entered value."
+      }
+    ],
+    "entries": [
+      {"entry": "K7Q-0392016-9", "entry_date": "Fri 2 May 2025", "sku": "SP-12", "declared_hts": "3926.90.99", "liquidation": "liquidated Fri 13 Mar 2026, as entered"},
+      {"entry": "K7Q-0394105-2", "entry_date": "Fri 6 Jun 2025", "sku": "SP-12", "declared_hts": "3926.90.99", "liquidation": "liquidated Fri 17 Apr 2026, as entered"},
+      {"entry": "K7Q-0398412-6", "entry_date": "Thu 7 Aug 2025", "sku": "BM-40", "declared_hts": "3924.10.20", "liquidation": "liquidated Fri 19 Jun 2026, as entered"},
+      {"entry": "K7Q-0401733-5", "entry_date": "Fri 10 Oct 2025", "sku": "MP-30", "declared_hts": "3924.10.20", "liquidation": "liquidated Fri 21 Aug 2026, as entered"},
+      {"entry": "K7Q-0403364-7", "entry_date": "Fri 14 Nov 2025", "sku": "MP-30", "declared_hts": "3924.10.20", "liquidation": "liquidated Fri 25 Sep 2026, as entered"},
+      {"entry": "K7Q-0405218-0", "entry_date": "Mon 8 Dec 2025", "sku": "BM-40", "declared_hts": "3924.10.20", "liquidation": "unliquidated; scheduled to liquidate Fri 23 Oct 2026"},
+      {"entry": "K7Q-0418830-4", "entry_date": "Fri 15 May 2026", "sku": "SP-12", "declared_hts": "3926.90.99", "liquidation": "unliquidated; scheduled to liquidate Fri 26 Mar 2027"},
+      {"entry": "K7Q-0421977-1", "entry_date": "Thu 30 Jul 2026", "sku": "BM-40", "declared_hts": "3924.10.20", "liquidation": "unliquidated; scheduled to liquidate Fri 11 Jun 2027"},
+      {"entry": "K7Q-0423105-3", "entry_date": "Thu 3 Sep 2026", "sku": "BM-40", "declared_hts": "3924.10.40", "liquidation": "unliquidated; scheduled to liquidate Fri 16 Jul 2027"}
+    ],
+    "broker_notes": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Forwarden's notes for Ashby Kitchenworks. Topics: classification, psc."
+      },
+      {
+        "topic": "classification",
+        "text": "Our classification database held SP-12 under 3926.90.99 and BM-40 under 3924.10.20 from its set-up in April 2025 until Friday 14 August 2026, when we corrected both to 3924.10.40 to match Ashby's product master. Entries we filed before 14 August used the old numbers; entries filed after it use 3924.10.40. MP-30 has always been entered under 3924.10.20, as Ashby's ruling NY N998214 says, with the ruling attached."
+      },
+      {
+        "topic": "psc",
+        "text": "A post-summary correction (PSC) corrects an entry summary CBP has accepted and that is not yet liquidated. Under CBP's test in force (19 CFR 101.9(b); 91 FR 41053, 6 July 2026), it must be transmitted within 300 days of the date of entry or up to 15 days before the scheduled liquidation date, whichever is earlier. Once an entry is liquidated, it can be corrected only by a protest (or a prior disclosure). An entry past its PSC window but not yet liquidated waits for liquidation, and is then protested. We transmit a PSC the day you instruct it."
+      }
+    ],
+    "cbp_rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. CBP's rules on liquidation, protests, post-summary corrections, rulings and refunds, as they stand on that date. Topics: liquidation, protest, psc, rulings, refunds."
+      },
+      {
+        "topic": "liquidation",
+        "text": "Liquidation is CBP's final computation of the duty on an entry. An entry not liquidated within one year of the date of entry is deemed liquidated at the rate and amount the importer asserted (19 U.S.C. 1504(a); 19 CFR 159.11). In CBP's normal practice an entry that needs no review is scheduled to liquidate about 314 days after entry, on a Friday, and Portline shows the date."
+      },
+      {
+        "topic": "protest",
+        "text": "19 U.S.C. 1514 and 19 CFR Part 174: the classification and rate and amount of duties, and the liquidation of an entry, are final unless protested. The importer of record (or its surety, or its authorized agent) may protest. A protest must be filed within 180 days after, but not before, the date of liquidation (1514(c)(3); 174.12(e)): a protest of an unliquidated entry is not accepted. It states the entry number and date, the liquidation date, the merchandise, and the nature of and reasons for the objection (174.13). CBP decides it within 2 years (174.21)."
+      },
+      {
+        "topic": "psc",
+        "text": "A post-summary correction is filed by the entry's filer, before liquidation only, within 300 days of the date of entry or up to 15 days before the scheduled liquidation date, whichever is earlier (CBP's PSC test under 19 CFR 101.9(b), 91 FR 41053). After that, an unliquidated entry is corrected by protest once it liquidates."
+      },
+      {
+        "topic": "rulings",
+        "text": "19 CFR 177.9: a ruling letter is binding on CBP for the transaction it describes, and a classification ruling applies to merchandise identical to the description in the ruling, until it is modified or revoked. An entry of that merchandise under the ruling's subheading is correctly classified."
+      },
+      {
+        "topic": "refunds",
+        "text": "When a protest is allowed or a PSC is accepted, CBP reliquidates or liquidates the entry at the corrected rate and refunds the excess duty deposited, with interest from the date of deposit (19 U.S.C. 1505(b) and (c))."
+      }
+    ],
+    "liquidations": [
+      {"entry": "K7Q-0392016-9", "entry_date": "Fri 2 May 2025", "status": "liquidated Fri 13 Mar 2026", "as": "3926.90.99, duty $5,830.00"},
+      {"entry": "K7Q-0394105-2", "entry_date": "Fri 6 Jun 2025", "status": "liquidated Fri 17 Apr 2026", "as": "3926.90.99, duty $7,950.00"},
+      {"entry": "K7Q-0398412-6", "entry_date": "Thu 7 Aug 2025", "status": "liquidated Fri 19 Jun 2026", "as": "3924.10.20, duty $7,800.00"},
+      {"entry": "K7Q-0401733-5", "entry_date": "Fri 10 Oct 2025", "status": "liquidated Fri 21 Aug 2026", "as": "3924.10.20, duty $4,550.00"},
+      {"entry": "K7Q-0403364-7", "entry_date": "Fri 14 Nov 2025", "status": "liquidated Fri 25 Sep 2026", "as": "3924.10.20, duty $4,225.00"},
+      {"entry": "K7Q-0405218-0", "entry_date": "Mon 8 Dec 2025", "status": "unliquidated; scheduled Fri 23 Oct 2026", "as": "entered 3924.10.20, duty $5,850.00"},
+      {"entry": "K7Q-0418830-4", "entry_date": "Fri 15 May 2026", "status": "unliquidated; scheduled Fri 26 Mar 2027", "as": "entered 3926.90.99, duty $5,088.00"},
+      {"entry": "K7Q-0421977-1", "entry_date": "Thu 30 Jul 2026", "status": "unliquidated; scheduled Fri 11 Jun 2027", "as": "entered 3924.10.20, duty $5,460.00"},
+      {"entry": "K7Q-0423105-3", "entry_date": "Thu 3 Sep 2026", "status": "unliquidated; scheduled Fri 16 Jul 2027", "as": "entered 3924.10.40, duty $2,992.00"}
+    ],
+    "protests": [
+      {"protest": "none", "status": "Ashby has filed no protest in 2025 or 2026."}
+    ]
+  }
+}

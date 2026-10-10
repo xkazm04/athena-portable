@@ -1,0 +1,70 @@
+{
+  "targets": [
+    {
+      "tool": "transmit_psc",
+      "key": "entry_number",
+      "eligible": {
+        "K7Q-0418830-4": {
+          "value_usd": 1824.0,
+          "why": "SP-12, three silicone kitchen spatulas, is kitchenware of plastics: heading 3924 names it, so GRI 1 puts it in 3924.10.40 (other, 3.4%), not the residual 3926.90.99 (5.3%) the broker's old database used. Entered Friday 15 May 2026 and unliquidated, scheduled for 26 March 2027: a PSC is open until 11 March 2027 (300 days from entry, earlier than 15 days before liquidation). $96,000 at 5.3% less 3.4%: $1,824",
+          "expect": {
+            "hts_code": "3924.10.40",
+            "amount_usd": 1824
+          }
+        },
+        "K7Q-0421977-1": {
+          "value_usd": 2604.0,
+          "why": "BM-40, silicone baking molds that food is baked in and turned out of, is kitchenware but not a plate, bowl, serving dish or platter: 3924.10.40 (3.4%), not 3924.10.20 (6.5%). Entered Thursday 30 July 2026, before the broker's fix on 14 August, unliquidated, scheduled for 11 June 2027: well inside the PSC window. $84,000 at 6.5% less 3.4%: $2,604",
+          "expect": {
+            "hts_code": "3924.10.40",
+            "amount_usd": 2604
+          }
+        }
+      },
+      "traps": {
+        "K7Q-0398412-6": "Liquidated on 19 June 2026: a PSC corrects only an unliquidated entry; this one is corrected by protest",
+        "K7Q-0394105-2": "Liquidated on 17 April 2026: past any PSC; it is corrected by protest",
+        "K7Q-0392016-9": "Liquidated on 13 March 2026, and its protest window closed on 9 September: no PSC can reach it",
+        "K7Q-0401733-5": "MP-30 platters, liquidated, and correctly entered under 3924.10.20 as Ashby's ruling NY N998214 says: there is nothing to correct",
+        "K7Q-0403364-7": "MP-30 platters, liquidated, and correctly entered under the ruling's 3924.10.20: there is nothing to correct",
+        "K7Q-0405218-0": "Unliquidated, but entered 8 December 2025: its 300 days ended on 4 October 2026, so no PSC can be filed. It waits for liquidation on 23 October and is then protested",
+        "K7Q-0423105-3": "Entered after the broker's fix, already under the correct 3924.10.40: there is nothing to correct"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "file_protest",
+      "key": "entry_number",
+      "eligible": {
+        "K7Q-0398412-6": {
+          "value_usd": 3720.0,
+          "why": "BM-40 baking molds entered and liquidated under 3924.10.20 (6.5%) on 19 June 2026; the correct subheading is 3924.10.40 (3.4%). Classification and liquidation are protestable (19 U.S.C. 1514(a)(2) and (5)) within 180 days after liquidation, to 16 December 2026. $120,000 at 3.1%: $3,720",
+          "expect": {
+            "hts_code": "3924.10.40",
+            "amount_usd": 3720
+          }
+        },
+        "K7Q-0394105-2": {
+          "value_usd": 2850.0,
+          "required": true,
+          "why": "SP-12 spatulas entered and liquidated under 3926.90.99 (5.3%) on Friday 17 April 2026; the correct subheading is 3924.10.40 (3.4%). The 180 days after liquidation end on Wednesday 14 October 2026, five days away. $150,000 at 1.9%: $2,850",
+          "expect": {
+            "hts_code": "3924.10.40",
+            "amount_usd": 2850
+          }
+        }
+      },
+      "traps": {
+        "K7Q-0392016-9": "Misclassified, but liquidated on 13 March 2026: the 180 days ended on 9 September 2026, and a protest now is out of time",
+        "K7Q-0401733-5": "MP-30 platters are serving platters, named in 3924.10.20, and Ashby's own ruling NY N998214 classifies exactly this merchandise there (19 CFR 177.9). The product master's 3924.10.40 is the stale entry, not the liquidation",
+        "K7Q-0403364-7": "MP-30 platters, liquidated under the ruling's 3924.10.20: correctly classified, nothing to protest",
+        "K7Q-0405218-0": "Not yet liquidated: a protest is filed after, but not before, liquidation (1514(c)(3)). It liquidates on 23 October 2026; the protest is filed then",
+        "K7Q-0418830-4": "Not yet liquidated: it is corrected by a PSC, and a protest before liquidation is not accepted",
+        "K7Q-0421977-1": "Not yet liquidated: it is corrected by a PSC, and a protest before liquidation is not accepted",
+        "K7Q-0423105-3": "Not yet liquidated, and already entered under the correct 3924.10.40"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

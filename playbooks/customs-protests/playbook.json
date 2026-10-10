@@ -1,0 +1,130 @@
+{
+  "id": "customs-protests",
+  "title": "A kitchenware importer's misclassified entries put right the way each can still be: corrected before liquidation where the window is open, protested within a hundred and eighty days after it, one five days from its deadline, while the platters its own ruling classifies, an entry out of time and one that must wait for liquidation are left alone",
+  "domain": "Customs & trade",
+  "audience": "work",
+  "promise": "A kitchenware importer's entries are read across its ERP's product master and duty ledger, its specifications, CBP ruling and tariff extracts, its customs broker's entries and notes, and its trade account with CBP, and every entry that paid duty under the wrong subheading is put right the way it still can be: two unliquidated entries corrected through the broker with a post-summary correction inside its window, and two liquidated entries protested within the hundred and eighty days, one of them due on Wednesday. Platters its own binding ruling classifies, which the stale product master contradicts, an entry whose protest window closed in September, one past its correction window that must wait for liquidation, and the entries already right are left alone.",
+  "persona": "The trade compliance manager of a small importer of silicone and melamine kitchenware, who reviews the broker's entries against liquidations herself",
+  "chore": "Read the product master's HTS numbers and the duty deposited on each entry in the ERP; the product specifications, the CBP ruling on the platters, the HTSUS extracts and the note on what the duty figures cover in the shared folder; each entry's declared subheading, its liquidation status and the broker's notes on its old classification database and on post-summary corrections in the broker's portal; and CBP's rules, the liquidations and the protests in the importer's trade account. Then classify each product under the HTSUS's General Rules of Interpretation and the ruling (19 CFR 177.9), and apply 19 U.S.C. 1514 and 19 CFR Part 174 (a protest within 180 days after, but not before, liquidation), CBP's post-summary correction test under 19 CFR 101.9(b) (91 FR 41053, 2026: within 300 days of entry or up to 15 days before the scheduled liquidation, whichever is earlier), 19 CFR 159.11 and 19 U.S.C. 1504 (liquidation, deemed after a year; about 314 days in CBP's practice) and 19 U.S.C. 1505 (the refund with interest). The ERP, the broker and CBP each hold a different part of every entry's story.",
+  "command": "I'm Lucia, trade compliance at Ashby Kitchenworks. Go through Ledgerline, our Docshelf folder, Forwarden and Portline Entries, and put right every entry where we paid duty under the wrong tariff number: have Forwarden correct the ones that can still be corrected before liquidation, and protest the liquidated ones we can still protest, each at the right number and the right refund. Don't touch an entry that was classified right, and don't file anything that's too early or too late.",
+  "apps": [
+    {
+      "name": "Ledgerline ERP",
+      "role": "the ERP: the product master's HTS numbers, one of them stale, and the duty ledger with each entry's entered value, declared number and duty",
+      "api": "ERP, no customs integration",
+      "url": ""
+    },
+    {
+      "name": "Docshelf",
+      "role": "the trade compliance folder: product specifications, the CBP ruling on the platters, the HTSUS extracts with the General Rules of Interpretation, and the note on what the duty figures cover",
+      "api": "Shared files",
+      "url": ""
+    },
+    {
+      "name": "Forwarden",
+      "role": "the customs broker's portal: every entry it filed, with its declared number and liquidation status, its notes on its old classification database and on post-summary corrections, and the instruction to transmit one",
+      "api": "Broker portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Portline Entries",
+      "role": "the importer's trade account with CBP: CBP's rules on liquidation, protests, corrections, rulings and refunds, the liquidations, the protests, and the protest form",
+      "api": "Trade portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the product master and the duty ledger in Ledgerline.",
+    "Reads the specifications, the ruling, the tariff extracts and the duty note in Docshelf, and classifies each product.",
+    "Reads the entries and the broker's notes in Forwarden, and has the two open entries corrected before liquidation.",
+    "Reads CBP's rules, the liquidations and the protests in Portline, and protests the two liquidated entries still in time."
+  ],
+  "gates": [
+    {
+      "action": "transmit_psc",
+      "label": "Have the broker transmit a post-summary correction to CBP",
+      "why": "A declaration to CBP of the right classification and duty, signed for the importer of record."
+    },
+    {
+      "action": "file_protest",
+      "label": "File a protest with CBP",
+      "why": "A formal challenge to a liquidation, signed for the importer of record; one protest per entry."
+    }
+  ],
+  "traps": [
+    "Protesting the platters' entries to the product master's lower number, when Ashby's own ruling classifies them under 3924.10.20.",
+    "A protest for spatulas liquidated in March, whose hundred and eighty days ended on 9 September.",
+    "A post-summary correction for an entry already liquidated.",
+    "A post-summary correction for an entry past its three hundred days, which must wait for liquidation on 23 October and then be protested.",
+    "A protest for an entry not yet liquidated.",
+    "Correcting or protesting an entry already under the right number."
+  ],
+  "memory": [
+    "Each entry's entered value, declared number and duty, and that the product master's number for the platters was set by a buyer in 2023 and never reviewed, carried from Ledgerline.",
+    "How each product is classified under the GRIs and the ruling on the platters, and that the figures are the column 1 duty only, carried from Docshelf.",
+    "Each entry's date and liquidation status, and when the broker's database changed, carried from Forwarden into the Portline tab."
+  ],
+  "economics": {
+    "value_usd": 30000,
+    "per": "year",
+    "basis": "An estimate. An importer whose broker keys a product under the wrong subheading pays the higher rate on every entry until someone compares the entries with the product's classification; each entry can still be corrected before liquidation with a post-summary correction, or protested within 180 days after it, and after that the duty is final. The roster's $30,000 a year is duty recovered, an estimate. The bench world holds $10,998, the column 1 duty overpaid: two unliquidated entries corrected by PSC ($1,824 on SP-12 spatulas declared under 3926.90.99, $2,604 on BM-40 baking molds declared under 3924.10.20) and two liquidated entries protested ($3,720 on baking molds, and $2,850 on spatulas due by Wednesday 14 October 2026). Interest under 19 U.S.C. 1505 and any chapter 99 duty are not counted. Times a year: four, a quarterly review of the entries against their liquidations; this world holds the entries of the last eighteen months. The rules applied, as they stand on Friday 9 October 2026 (the eCFR for title 19 current to 7 October 2026, law.cornell.edu, federalregister.gov, cbp.gov, hts.usitc.gov): 19 U.S.C. 1514(a) (the classification and rate and amount of duties, and the liquidation, are final unless protested), (c)(2) (the importer, its surety or its authorized agent may protest) and (c)(3) (within 180 days after but not before the date of liquidation); 19 CFR 174.11, 174.12(e), 174.13 and 174.21; CBP's post-summary correction test under 19 CFR 101.9(b), as republished at 91 FR 41053 (6 July 2026, operational 5 August 2026): within 300 days of the date of entry or up to 15 days before the scheduled liquidation date, whichever is earlier, and only before liquidation, after which a protest or prior disclosure; 19 U.S.C. 1504(a) and 19 CFR 159.11 (deemed liquidation after one year) and CBP's practice of scheduling liquidation about 314 days after entry, on Fridays (81 FR 89375; CBP's 2016 liquidation webinar); 19 U.S.C. 1505(b) and (c) (refunds with interest); the HTSUS (2026) General Rules of Interpretation 1 and 3(a) and subheadings 3924.10.20 (6.5%), 3924.10.40 (3.4%) and 3926.90.99 (5.3%), read on hts.usitc.gov; and 19 CFR 177.9 (a ruling binds CBP for the merchandise it describes). The ruling, NY N998214, is invented, like the importer it was issued to.",
+    "manual_minutes": 300,
+    "times_per_year": 4,
+    "incumbent": "Customs brokers and trade lawyers prepare protests and post-summary corrections for a fee per filing or by the hour; no published contingency share was found, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "19 U.S.C. 1514: protest against decisions of CBP (what is final unless protested, who may file, 180 days after but not before liquidation)",
+        "url": "https://www.law.cornell.edu/uscode/text/19/1514"
+      },
+      {
+        "label": "19 CFR Part 174: protests (174.11 matters protestable, 174.12 who and when, 174.13 contents, 174.21 decision within 2 years)",
+        "url": "https://www.ecfr.gov/current/title-19/chapter-I/part-174"
+      },
+      {
+        "label": "CBP, Modification and clarification of the NCAP test regarding post-summary corrections, 91 FR 41053 (6 July 2026): within 300 days of entry or up to 15 days before scheduled liquidation, whichever is earlier",
+        "url": "https://www.federalregister.gov/documents/2026/07/06/2026-13574/modification-and-clarification-of-the-national-customs-automation-program-test-regarding"
+      },
+      {
+        "label": "CBP, Post Summary Correction: liquidated entries are corrected by prior disclosure or protest",
+        "url": "https://www.cbp.gov/trade/programs-administration/entry-summary/post-summary-correction"
+      },
+      {
+        "label": "19 U.S.C. 1504: limitation on liquidation (deemed liquidated one year from entry); 19 CFR 159.11",
+        "url": "https://www.law.cornell.edu/uscode/text/19/1504"
+      },
+      {
+        "label": "CBP liquidation webinar transcript (2016): entries needing no review set up to liquidate at 314 days",
+        "url": "https://www.cbp.gov/sites/default/files/assets/documents/2016-Aug/Transcript_Liquidation%20Webinar_2989174_8-16-2016_0.pdf"
+      },
+      {
+        "label": "19 U.S.C. 1505: refunds of excess duty deposited, with interest, on liquidation or reliquidation",
+        "url": "https://www.law.cornell.edu/uscode/text/19/1505"
+      },
+      {
+        "label": "HTSUS (2026), General Rules of Interpretation, USITC",
+        "url": "https://hts.usitc.gov/reststop/file?release=currentRelease&filename=General%20Rules%20of%20Interpretation"
+      },
+      {
+        "label": "HTSUS heading 3924 (3924.10.20 at 6.5%, 3924.10.40 at 3.4%) and 3926.90.99 (5.3%), USITC",
+        "url": "https://hts.usitc.gov/search?query=3924.10"
+      },
+      {
+        "label": "19 CFR Part 177: administrative rulings (177.9, the effect of ruling letters)",
+        "url": "https://www.ecfr.gov/current/title-19/chapter-I/part-177"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 4,
+    "difficulty_why": "Each entry's right remedy turns on two things held in different systems: whether its subheading was right, which needs the specification, the tariff's headings and the ruling, against a product master that is itself wrong for one product; and where it stands against three clocks, the 300-day correction window, the scheduled liquidation and the 180 days after it, which only the broker's and CBP's records date. One entry is five days from its deadline, one has just missed its correction window and must wait, and one looks like a refund but the ruling forbids it.",
+    "usefulness_why": "Recovers duty an importer paid under the wrong number, entry by entry, before it becomes final, and keeps it from protesting what its own ruling settles; thousands of dollars a quarter for a small importer, mostly money."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful trade compliance manager with the tariff, the ruling and the entries' dates in hand gets most of it; the bar is the protest due Wednesday filed, the open entries corrected and the other liquidated one protested at 3924.10.40 for the right refunds, and nothing filed against the ruling, out of time or before liquidation, inside an hour."
+  },
+  "caveat": "Lucia Fenwick, Ashby Kitchenworks Inc., its products and specifications, ruling NY N998214, Forwarden, Portline Entries, Ledgerline ERP and Docshelf are invented, and so are every entry, value and date; no importer, broker or ruling here is real. The public rules applied are 19 U.S.C. 1504, 1505 and 1514, 19 CFR Parts 159, 174 and 177, CBP's post-summary correction test under 19 CFR 101.9(b) as republished at 91 FR 41053 (2026), CBP's practice of scheduling liquidation about 314 days after entry, and the HTSUS (2026) General Rules of Interpretation and column 1 general rates for 3924.10.20, 3924.10.40 and 3926.90.99, fixed in the bench world as of 9 October 2026. The world counts the column 1 duty only: any additional duty under chapter 99 is stated in the world as the same under both numbers and is outside its figures, which the bench does not verify. CBP decides a real classification, correction or protest, on the merchandise itself and its own rulings. This applies stated rules to stated facts; it is not customs or legal advice."
+}

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "customs-protests",
+  "captured_at": "2026-10-10T07:35:38Z",
+  "bench_run_at": "2026-10-10T07:33:31Z",
+  "narration": {
+    "text": "A kitchenware importer's misclassified entries put right the way each can still be: corrected before liquidation where the window is open, protested within a hundred and eighty days after it, one five days from its deadline, while the platters its own ruling classifies, an entry out of time and one that must wait for liquidation are left alone. This is a chore for the trade compliance manager of a small importer of silicone and melamine kitchenware, who reviews the broker's entries against liquidations herself. On the bench, she found 4 of 4 eligible items, worth 10,998 dollars of the 10,998 dollars there was to find. She made no false claim. The world held 14 traps, and she walked past 14. She took 2 minutes. By hand, the same chore takes 5 hours, so she was about 143 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 61.435,
+    "sha256": "f87742bd766e93dfb182a504343783a96db52a50b7380a410bde2cb7bd4011a7"
+  },
+  "video": {
+    "path": "evidence/customs-protests/evidence.mp4",
+    "duration_s": 61.44,
+    "bytes": 2981386,
+    "sha256": "04e31bdcfd9fd8954cfb4c1e2be9f650f0d2b8f2dedc18c8daf68f276199c058"
+  },
+  "thumbnail": {
+    "path": "playbooks/customs-protests/thumb.jpg",
+    "bytes": 87586,
+    "sha256": "ebd45fb61ee14887b1c755bc8d76c3c9d7acc126385e93b01cdc5c1980f42313"
+  }
+}
