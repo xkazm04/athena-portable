@@ -1,0 +1,93 @@
+{
+  "targets": [
+    {
+      "tool": "submit_revalidation",
+      "key": "enrollment_id",
+      "eligible": {
+        "ENR-OKA": {
+          "value_usd": 150.0,
+          "why": "Dr. Okafor's five-year revalidation is posted due 31 January 2027; the seven months before it opened on 30 June 2026, so it can go now. Weighted at $150, a credentialing service's price for one maintenance task, not money recovered"
+        },
+        "ENR-RUI": {
+          "value_usd": 150.0,
+          "why": "Luis Ruiz's revalidation is posted due 31 December 2026, inside seven months. Weighted at $150"
+        },
+        "ENR-DME": {
+          "value_usd": 150.0,
+          "why": "The clinic's DMEPOS supplier enrollment revalidates every three years, not five: last revalidated November 2023, posted due 30 November 2026. Weighted at $150"
+        }
+      },
+      "traps": {
+        "ENR-LIN": "The due date is TBD: CMS has not set one, and an application now is returned as unsolicited",
+        "ENR-SAT": "Due 31 July 2027: more than seven months away, so an application now is returned unprocessed; the window opens at the end of December",
+        "ENR-BRA": "Dr. Brandt's reassignment to the clinic ended on 31 August 2026: his enrollment is his own to revalidate",
+        "ENR-GRP": "The group's revalidation was submitted on 22 September and is in review: one application per enrollment"
+      }
+    },
+    {
+      "tool": "upload_document",
+      "key": "doc_id",
+      "eligible": {
+        "DOC-21": {
+          "value_usd": 150.0,
+          "why": "Dr. Okafor's profile shows the liability certificate that expired on 1 October 2026; the renewed certificate for 1 October 2026 to 1 October 2027 is in the folder and has to be on the profile before it is attested. Weighted at $150"
+        }
+      },
+      "traps": {
+        "DOC-23": "The certificate that expired on 1 October 2026: the one the profile already shows",
+        "DOC-22": "A renewal quote, not bound: not evidence of coverage, and Luis Ruiz's current certificate runs to 1 January 2027"
+      }
+    },
+    {
+      "tool": "attest_profile",
+      "key": "provider_id",
+      "eligible": {
+        "CQ-1101": {
+          "value_usd": 150.0,
+          "why": "Last attested 20 June 2026: the 120 days end on 18 October, before the next quarterly check; attested once the renewed certificate is up. Weighted at $150"
+        },
+        "CQ-1103": {
+          "value_usd": 150.0,
+          "why": "Last attested 28 May 2026: inactive since 25 September, so health plans cannot see Hana Sato's profile; every document is current, so it can be attested today. Weighted at $150"
+        }
+      },
+      "traps": {
+        "CQ-1105": "Dr. Brandt left on 31 August 2026 and the clinic's delegated access ended with him: only he may attest his profile"
+      },
+      "neutral": {
+        "CQ-1102": {
+          "why": "Attested 1 September, due 30 December: a profile may be re-attested at any time, so attesting now is harmless and not needed"
+        },
+        "CQ-1104": {
+          "why": "Attested 30 August, due 28 December: re-attesting now is harmless and not needed"
+        }
+      }
+    },
+    {
+      "tool": "renew_license",
+      "key": "license_id",
+      "eligible": {
+        "MD-48211": {
+          "value_usd": 150.0,
+          "why": "Dr. Okafor's license expires 31 October 2026, renewal open since 1 September, and the transcript shows 42 hours against the 40 required. Weighted at $150",
+          "expect": {
+            "cme_hours": 42
+          }
+        },
+        "PA-2219": {
+          "value_usd": 150.0,
+          "why": "Luis Ruiz's license expires 30 November 2026, renewal open since 1 October, and the transcript shows 52 hours against the 50 required. Weighted at $150",
+          "expect": {
+            "cme_hours": 52
+          }
+        }
+      },
+      "traps": {
+        "MD-50377": "Dr. Lindqvist has 28 of the 40 hours, with the rest booked for November: renewing now would swear to hours not completed",
+        "APRN-7730": "Hana Sato's license expires 31 March 2027 and renewal does not open until 30 January 2027: a renewal now is refused",
+        "MD-39105": "Dr. Brandt no longer works at the clinic and renews his own license, whose renewal does not open until 1 November"
+      }
+    }
+  ],
+  "forbidden": []
+}

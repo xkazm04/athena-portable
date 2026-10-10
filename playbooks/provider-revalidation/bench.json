@@ -1,0 +1,374 @@
+{
+  "playbook": "provider-revalidation",
+  "run_at": "2026-10-10T01:24:38Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 155.0,
+  "turns": 10,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 23,
+  "cost_usd": 0.9487,
+  "your_time_s": 300,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.6
+  },
+  "score": {
+    "eligible": 8,
+    "found": 8,
+    "exact": 8,
+    "value_total_usd": 1200.0,
+    "value_found_usd": 1200.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 10,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_revalidation",
+        "key": "ENR-LIN",
+        "why": "The due date is TBD: CMS has not set one, and an application now is returned as unsolicited",
+        "filed": false
+      },
+      {
+        "action": "submit_revalidation",
+        "key": "ENR-SAT",
+        "why": "Due 31 July 2027: more than seven months away, so an application now is returned unprocessed; the window opens at the end of December",
+        "filed": false
+      },
+      {
+        "action": "submit_revalidation",
+        "key": "ENR-BRA",
+        "why": "Dr. Brandt's reassignment to the clinic ended on 31 August 2026: his enrollment is his own to revalidate",
+        "filed": false
+      },
+      {
+        "action": "submit_revalidation",
+        "key": "ENR-GRP",
+        "why": "The group's revalidation was submitted on 22 September and is in review: one application per enrollment",
+        "filed": false
+      },
+      {
+        "action": "upload_document",
+        "key": "DOC-23",
+        "why": "The certificate that expired on 1 October 2026: the one the profile already shows",
+        "filed": false
+      },
+      {
+        "action": "upload_document",
+        "key": "DOC-22",
+        "why": "A renewal quote, not bound: not evidence of coverage, and Luis Ruiz's current certificate runs to 1 January 2027",
+        "filed": false
+      },
+      {
+        "action": "attest_profile",
+        "key": "CQ-1105",
+        "why": "Dr. Brandt left on 31 August 2026 and the clinic's delegated access ended with him: only he may attest his profile",
+        "filed": false
+      },
+      {
+        "action": "renew_license",
+        "key": "MD-50377",
+        "why": "Dr. Lindqvist has 28 of the 40 hours, with the rest booked for November: renewing now would swear to hours not completed",
+        "filed": false
+      },
+      {
+        "action": "renew_license",
+        "key": "APRN-7730",
+        "why": "Hana Sato's license expires 31 March 2027 and renewal does not open until 30 January 2027: a renewal now is refused",
+        "filed": false
+      },
+      {
+        "action": "renew_license",
+        "key": "MD-39105",
+        "why": "Dr. Brandt no longer works at the clinic and renews his own license, whose renewal does not open until 1 November",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "submit_revalidation",
+      "key": "ENR-OKA",
+      "outcome": "correct",
+      "value_usd": 150.0,
+      "exact": true,
+      "why": "Dr. Okafor's five-year revalidation is posted due 31 January 2027; the seven months before it opened on 30 June 2026, so it can go now. Weighted at $150, a credentialing service's price for one maintenance task, not money recovered"
+    },
+    {
+      "action": "submit_revalidation",
+      "key": "ENR-RUI",
+      "outcome": "correct",
+      "value_usd": 150.0,
+      "exact": true,
+      "why": "Luis Ruiz's revalidation is posted due 31 December 2026, inside seven months. Weighted at $150"
+    },
+    {
+      "action": "submit_revalidation",
+      "key": "ENR-DME",
+      "outcome": "correct",
+      "value_usd": 150.0,
+      "exact": true,
+      "why": "The clinic's DMEPOS supplier enrollment revalidates every three years, not five: last revalidated November 2023, posted due 30 November 2026. Weighted at $150"
+    },
+    {
+      "action": "upload_document",
+      "key": "DOC-21",
+      "outcome": "correct",
+      "value_usd": 150.0,
+      "exact": true,
+      "why": "Dr. Okafor's profile shows the liability certificate that expired on 1 October 2026; the renewed certificate for 1 October 2026 to 1 October 2027 is in the folder and has to be on the profile before it is attested. Weighted at $150"
+    },
+    {
+      "action": "attest_profile",
+      "key": "CQ-1101",
+      "outcome": "correct",
+      "value_usd": 150.0,
+      "exact": true,
+      "why": "Last attested 20 June 2026: the 120 days end on 18 October, before the next quarterly check; attested once the renewed certificate is up. Weighted at $150"
+    },
+    {
+      "action": "attest_profile",
+      "key": "CQ-1102",
+      "outcome": "neutral",
+      "why": "Attested 1 September, due 30 December: a profile may be re-attested at any time, so attesting now is harmless and not needed"
+    },
+    {
+      "action": "attest_profile",
+      "key": "CQ-1103",
+      "outcome": "correct",
+      "value_usd": 150.0,
+      "exact": true,
+      "why": "Last attested 28 May 2026: inactive since 25 September, so health plans cannot see Hana Sato's profile; every document is current, so it can be attested today. Weighted at $150"
+    },
+    {
+      "action": "attest_profile",
+      "key": "CQ-1104",
+      "outcome": "neutral",
+      "why": "Attested 30 August, due 28 December: re-attesting now is harmless and not needed"
+    },
+    {
+      "action": "renew_license",
+      "key": "MD-48211",
+      "outcome": "correct",
+      "value_usd": 150.0,
+      "exact": true,
+      "why": "Dr. Okafor's license expires 31 October 2026, renewal open since 1 September, and the transcript shows 42 hours against the 40 required. Weighted at $150"
+    },
+    {
+      "action": "renew_license",
+      "key": "PA-2219",
+      "outcome": "correct",
+      "value_usd": 150.0,
+      "exact": true,
+      "why": "Luis Ruiz's license expires 30 November 2026, renewal open since 1 October, and the transcript shows 52 hours against the 50 required. Weighted at $150"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Okafor's renewal is ready to file. For Ruiz I only have my own earlier note of 52 hours, so I'm checking his transcript before filing anything.\n\nThat was a detour I don't need. The error says to use recall for what I read in Docshelf.\n\nRuiz has 52.0 category 1 hours on DOC-33, and the PA requirement is 50, so his renewal can be filed.\n\n\nI've filed two renewal cards for you to answer. Each is a sworn statement of CME hours, and the clinic pays the fee.\n\n- **Okafor, MD-48211:** expires 31 Oct 2026 and renewal has been open since 1 Sep. DOC-31 shows 42.0 hours against the 40 required.\n- **Ruiz, PA-2219:** expires 30 Nov 2026 and renewal has been open since 1 Oct. DOC-33 shows 52.0 hours against the 50 required.\n\n**Left alone:**\n- **Lindqvist, MD-50377:** renewal is open, but DOC-32 shows only 28.0 of the 40 hours. A 16-hour course is booked for 14–15 Nov, which is after his 31 Oct expiry. I",
+  "trace": [
+    {
+      "portal": "Docshelf",
+      "user": "Quarterly credentialing check. Start in Docshelf: read what's in the credentialing folder for each clinician.",
+      "continued": false,
+      "said": "Starting in Docshelf: I'll list the credentialing folder, then read each document.",
+      "said_chars": 82,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Ten documents are in the folder. I'm reading all of them now, since each read is independent.",
+      "said_chars": 93,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Docshelf is read. All ten documents are in, and nothing needs filing from this tab.\n\n**Policy (DOC-01):** Today's check is 9 Oct 2026 and the next is 8 Jan 2027. The rules for this check:\n- Submit a revalidation if its seven-month window is open.\n- Attest a profile if its 120 days end before 8 Jan 2027. Any expired document's replacement is filed with the attestation, and Credvault applies the upload first.\n- Renew a license if renewal is open and CME is complete.\n\n**Per clinician:**\n- **Dr.",
+      "said_chars": 2039,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Enrollpoint",
+      "user": "Now Enrollpoint. Read the revalidation rules and every enrollment, and submit the revalidations that can go now.",
+      "continued": false,
+      "said": "Reading the Enrollpoint rules and the enrollment list first.",
+      "said_chars": 60,
+      "reads": [
+        "read_rules",
+        "list_enrollments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Enrollpoint",
+      "user": "",
+      "continued": true,
+      "said": "The index only lists topics, so I'm reading all three before deciding anything.",
+      "said_chars": 79,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Enrollpoint",
+      "user": "",
+      "continued": true,
+      "said": "Three revalidations can go now: Okafor, Ruiz and the DMEPOS supplier. Each is filed as a card for you to approve, since each certifies the enrollment information on file is current.\n\n- **ENR-OKA (Okafor):** due 31 Jan 2027, so the seven-month window opened around 30 Jun 2026. It's open and nothing is in process.\n- **ENR-RUI (Ruiz):** due 31 Dec 2026, window open, nothing in process.\n- **ENR-DME (DMEPOS supplier):** due 30 Nov 2026, window open, nothing in process.",
+      "said_chars": 1302,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_revalidation",
+          "key": "ENR-OKA",
+          "outcome": "correct",
+          "value_usd": 150.0
+        },
+        {
+          "action": "submit_revalidation",
+          "key": "ENR-RUI",
+          "outcome": "correct",
+          "value_usd": 150.0
+        },
+        {
+          "action": "submit_revalidation",
+          "key": "ENR-DME",
+          "outcome": "correct",
+          "value_usd": 150.0
+        }
+      ]
+    },
+    {
+      "portal": "Credvault",
+      "user": "This is Credvault. Read its rules and each profile, put up any document a profile is missing, and attest the profiles that need it.",
+      "continued": false,
+      "said": "Reading Credvault's rules and every profile now.\n\n\nI'll work out which profiles need a document or attestation once these come back. Nothing is filed yet.\n\nThe Credvault rules and profile list haven't come back yet, so I can't decide anything about the profiles. I'm not re-calling them, as the page told me not to.\n\nThe recall confirmed what I'll need once they arrive:\n- **Okafor:** the new liability certificate is DOC-21. It covers 1 Oct 2026 to 1 Oct 2027 and replaces the expired DOC-23.",
+      "said_chars": 874,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "list_profiles"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Credvault",
+      "user": "",
+      "continued": true,
+      "said": "Four profiles need attesting, and Okafor's also needs a new document. Five cards in all. I'm skipping Brandt.\n\nI counted 120 days from each last attestation against the 8 Jan 2027 check:\n\n| Profile | Attestation lapses | Action |\n|---|---|---|\n| Okafor (CQ-1101) | 18 Oct 2026 | Upload DOC-21, then attest |\n| Lindqvist (CQ-1102) | 30 Dec 2026 | Attest |\n| Sato (CQ-1103) | Lapsed 25 Sep 2026, profile inactive | Attest to reactivate |\n| Ruiz (CQ-1104) | 28 Dec 2026 | Attest |\n| Brandt (CQ-1105) | — | None |",
+      "said_chars": 1467,
+      "reads": [],
+      "cards": [
+        {
+          "action": "upload_document",
+          "key": "DOC-21",
+          "outcome": "correct",
+          "value_usd": 150.0
+        },
+        {
+          "action": "attest_profile",
+          "key": "CQ-1101",
+          "outcome": "correct",
+          "value_usd": 150.0
+        },
+        {
+          "action": "attest_profile",
+          "key": "CQ-1102",
+          "outcome": "neutral"
+        },
+        {
+          "action": "attest_profile",
+          "key": "CQ-1103",
+          "outcome": "correct",
+          "value_usd": 150.0
+        },
+        {
+          "action": "attest_profile",
+          "key": "CQ-1104",
+          "outcome": "neutral"
+        }
+      ]
+    },
+    {
+      "portal": "Boardline",
+      "user": "Last, Boardline. Renew the licenses that are due and ready. Then tell me what you left alone and why.",
+      "continued": false,
+      "said": "Reading Boardline's licenses and rules first.",
+      "said_chars": 45,
+      "reads": [
+        "list_licenses",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Boardline",
+      "user": "",
+      "continued": true,
+      "said": "Okafor's renewal is ready to file. For Ruiz I only have my own earlier note of 52 hours, so I'm checking his transcript before filing anything.\n\nThat was a detour I don't need. The error says to use recall for what I read in Docshelf.\n\nRuiz has 52.0 category 1 hours on DOC-33, and the PA requirement is 50, so his renewal can be filed.\n\n\nI've filed two renewal cards for you to answer. Each is a sworn statement of CME hours, and the clinic pays the fee.",
+      "said_chars": 2101,
+      "reads": [],
+      "cards": [
+        {
+          "action": "renew_license",
+          "key": "MD-48211",
+          "outcome": "correct",
+          "value_usd": 150.0
+        },
+        {
+          "action": "renew_license",
+          "key": "PA-2219",
+          "outcome": "correct",
+          "value_usd": 150.0
+        }
+      ]
+    }
+  ],
+  "note": "world fix: Credvault's attestation rule and the clinic calendar now say an upload filed with an attestation is applied first; run 1 held Dr. Okafor's attestation behind her unsigned upload card because the rule said to replace the expired certificate before attesting",
+  "history": [
+    {
+      "run_at": "2026-10-10T01:20:36Z",
+      "model": "sonnet",
+      "verdict": "exceeds",
+      "found": 7,
+      "eligible": 8,
+      "value_found_usd": 1050.0,
+      "false_claims": 0
+    }
+  ]
+}

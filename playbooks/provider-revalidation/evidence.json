@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "provider-revalidation",
+  "captured_at": "2026-10-10T01:28:23Z",
+  "bench_run_at": "2026-10-10T01:24:38Z",
+  "narration": {
+    "text": "Every clinician's Medicare revalidation, credentialing attestation and license kept current, on four clocks in four portals. This is a chore for the credentialing coordinator of a family clinic with four clinicians and a DMEPOS supplier enrollment for the braces and crutches it dispenses. Read the credentialing folder: each clinician's liability certificates, CME transcripts and the separation notice of a physician who left. Athena works it across 4 portals: Docshelf, Enrollpoint, Credvault and Boardline. On the bench, she found 8 of 8 eligible items, worth 1,200 dollars of the 1,200 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. Among them: A revalidation whose due date is TBD. A revalidation due in more than seven months. She took 3 minutes. By hand, the same chore takes 2 hours, so she was about 46 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 66.668,
+    "sha256": "d9251710a084904cb38143c761690b817d611be7b32a4865d5d94d9261f8f548"
+  },
+  "video": {
+    "path": "evidence/provider-revalidation/evidence.mp4",
+    "duration_s": 66.68,
+    "bytes": 3216071,
+    "sha256": "f0e7ba6ad400c5d80ac956175e64279ea761f0151080881a6ce2baddc6068324"
+  },
+  "thumbnail": {
+    "path": "playbooks/provider-revalidation/thumb.jpg",
+    "bytes": 84596,
+    "sha256": "b95bb3dcf1dcf7f2915e18d36a839a362735f2c29990dbf623a8725053f1d4c1"
+  }
+}
