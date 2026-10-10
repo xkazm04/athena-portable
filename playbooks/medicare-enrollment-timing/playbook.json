@@ -1,0 +1,133 @@
+{
+  "id": "medicare-enrollment-timing",
+  "title": "Part B taken up through the special period the month a job ends, starting the day the employer coverage stops, with no lifetime penalty, and a spouse on retiree coverage told why she must wait",
+  "domain": "Retirement & Medicare",
+  "audience": "home",
+  "promise": "A retiring worker's employment and health plan record, the insurer's coverage for each of the household and Medicare's rules are read against the advice in his inbox. His employer is asked for the CMS-L564, and his Part B enrollment goes in through the special enrollment period for coverage based on current employment, starting the day after the employer coverage ends, so there is no gap and no penalty month. His wife's retiree coverage opened no such period, so no enrollment is filed for her before the general period in January. COBRA for him or for her, cancelling anyone's coverage early, a form for a son who is not on Medicare and a service charging a fee for free forms are left alone.",
+  "persona": "A worker of 67 retiring at the end of the month who never took Part B, managing Medicare for himself and, with her permission, his wife",
+  "chore": "Read HR's retirement packet, the insurer's COBRA notice, a broker's advice and his wife's question in the inbox; his employment and group health plan record and the documents HR posted; the household's coverage and plan documents at the insurer; and Medicare's Part B rules and both Medicare records. Then apply 42 CFR 406.24 and 407.20 (the special enrollment period for group health plan coverage based on current employment, and its 8 months), 406.24(e) (the start date) and 408.22 and 408.24 (10% for each full 12 months uncovered, the current-employment months excluded) as they stand: COBRA and retiree coverage are not current employment and open no period, and creditable coverage is a Part D term that says nothing about Part B. None of the four systems shares data with another.",
+  "command": "I retire on 30 October and never signed up for Part B. Go through my inbox, Staffnest, Thistlewood and Benefitline, and do what has to happen now so I don't pay a lifetime penalty or go a day without coverage: get any form HR has to fill in and sign me up. Lena wants to sign up with me; only do it if she really can. Don't cancel anyone's coverage, don't take COBRA for anyone who doesn't need it, and don't pay anyone to file forms.",
+  "apps": [
+    {
+      "name": "Mailnest",
+      "role": "HR's retirement packet, the insurer's COBRA notice, a broker's advice, a filing service's offer and his wife's question",
+      "api": "Webmail",
+      "url": ""
+    },
+    {
+      "name": "Staffnest HR",
+      "role": "his employment and group health plan record, the documents HR posted, and the request for Form CMS-L564",
+      "api": "HR self-service portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Thistlewood Health",
+      "role": "the insurer: each member's coverage and why they have it, the plan documents, COBRA elections and cancellations",
+      "api": "Member portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Benefitline",
+      "role": "Medicare's Part B rules, both Medicare records, and the Part B enrollment",
+      "api": "Benefits portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads HR's packet, the COBRA notice, the broker's advice and his wife's question in Mailnest.",
+    "Reads his employment and group plan record and HR's documents in Staffnest.",
+    "Reads each member's coverage and the plan documents at Thistlewood.",
+    "Reads the rules and records in Benefitline, asks HR for the L564 and enrolls him in Part B from the day his coverage ends."
+  ],
+  "gates": [
+    {
+      "action": "submit_part_b_enrollment",
+      "label": "Enroll a person in Medicare Part B",
+      "why": "A signed federal request: the wrong period or a false claim of employer coverage, and the start date sets the premium and the gap."
+    },
+    {
+      "action": "request_l564",
+      "label": "Ask HR to complete Form CMS-L564",
+      "why": "It reaches the employer's HR and asks it to certify coverage."
+    },
+    {
+      "action": "elect_cobra",
+      "label": "Elect COBRA continuation",
+      "why": "It commits to a monthly premium."
+    },
+    {
+      "action": "cancel_coverage",
+      "label": "Cancel a member's coverage",
+      "why": "It ends health coverage, and a retiree plan cannot be rejoined."
+    },
+    {
+      "action": "reply",
+      "label": "Reply to an email",
+      "why": "It speaks for him, and a reply can hire someone."
+    }
+  ],
+  "traps": [
+    "Enrolling his wife in the special period her retiree coverage never opened.",
+    "Taking COBRA for himself, as if it kept his special period open.",
+    "COBRA for his wife, who is not on his employer's plan.",
+    "Cancelling his, his son's or his wife's coverage before the new coverage starts.",
+    "An L564 for a son of twenty-four who is not on Medicare.",
+    "A two-hundred-and-ninety-nine-dollar fee to file free forms."
+  ],
+  "memory": [
+    "The last day of work and the day the group coverage ends, the broker's wrong advice, and his wife's question, carried from Mailnest.",
+    "That his group plan rests on his current employment since 2009, who it covers, and that the L564 is requested in Staffnest, carried from Staffnest HR.",
+    "That his wife's coverage is retiree coverage since February 2025, and what COBRA and the retiree plan pay beside Medicare, carried from Thistlewood."
+  ],
+  "economics": {
+    "value_usd": 1000,
+    "per": "year",
+    "basis": "An estimate. People who work past 65 and then retire often take COBRA and wait to take Part B until it ends, which closes the special enrollment period and brings a late penalty for life and months without Part B; spouses on retiree coverage often believe they have the same period. The roster's $1,000 a year is the penalty and the gap avoided for a household, an estimate. Times a year: one, since this is decided once, the year the job ends. The bench world holds $487 a year: the 20% penalty, $40.58 a month at 2026's $202.90 premium, that waiting for COBRA to run out and enrolling in the January 2029 general period would add for as long as he has Part B. The L564 request is counted as an item at $0. The rules applied, as they stand on Friday 9 October 2026: 42 CFR 406.24 and 407.20 (the special enrollment period, current employment of any size of employer, 8 months), 406.24(e) (the start date), 407.15 (the general enrollment period), 408.22 and 408.24 (the penalty and the months excluded), Forms CMS-40B and CMS-L564, Social Security's rule that COBRA and retiree coverage are not current employment (POMS HI 00805.330), and 42 CFR 423.56 (creditable coverage, a Part D term). The employer's and the insurer's plans are invented world documents.",
+    "manual_minutes": 150,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share: the forms are free, and State Health Insurance Assistance Program counselors help for free. The world's filing service charges a flat $299; no figure is used.",
+    "sources": [
+      {
+        "label": "42 CFR 408.22: the Part B premium increase for late enrollment (10% for each full 12 months)",
+        "url": "https://www.law.cornell.edu/cfr/text/42/408.22"
+      },
+      {
+        "label": "42 CFR 408.24: the months counted for the increase, and the current-employment months excluded",
+        "url": "https://www.law.cornell.edu/cfr/text/42/408.24"
+      },
+      {
+        "label": "42 CFR 406.24: the special enrollment period for group health plan coverage based on current employment (8 months; the start date)",
+        "url": "https://www.law.cornell.edu/cfr/text/42/406.24"
+      },
+      {
+        "label": "42 CFR 407.20: special enrollment periods for Part B",
+        "url": "https://www.law.cornell.edu/cfr/text/42/407.20"
+      },
+      {
+        "label": "SSA POMS HI 00805.330: COBRA is never coverage by reason of current employment status",
+        "url": "https://secure.ssa.gov/apps10/poms.NSF/lnx/0600805330"
+      },
+      {
+        "label": "CMS Form CMS-L564: Request for Employment Information",
+        "url": "https://www.cms.gov/medicare/cms-forms/cms-forms/downloads/cms-l564e.pdf"
+      },
+      {
+        "label": "CMS: 2026 Medicare Parts A and B premiums and deductibles ($202.90 a month)",
+        "url": "https://www.cms.gov/newsroom/fact-sheets/2026-medicare-parts-b-premiums-deductibles"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Whether each person's coverage is current employment is split between HR's record and the insurer's, and the inbox holds a broker's confident wrong advice and a spouse's wrong belief; the start date turns on a rule about the month of enrollment; and COBRA, a creditable coverage notice and a retiree plan all look like the employer coverage that opens the period.",
+    "usefulness_why": "Keeps a lifetime Part B penalty and a coverage gap off a retiring worker for one form request and one enrollment, and keeps a false enrollment off his wife."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful retiree with the rules in hand gets both steps; the bar is the L564 asked for and the enrollment in the special period, nothing filed for his wife, no COBRA or cancellation, inside an hour."
+  },
+  "caveat": "Graham, Lena and Theo Oduya, Halberd Logistics, Harlow Unified School District, Thistlewood Health, Silverline Benefits, Benny Okafor, Medicare Enrollment Assist, Staffnest, Benefitline and Mailnest are invented, and so are the plans and their documents; no beneficiary here is real. The public rules applied are 42 CFR 406.24, 407.15, 407.20, 408.22 and 408.24, Forms CMS-40B and CMS-L564, Social Security's POMS HI 00805.330 and 42 CFR 423.56, fixed in the bench world as of 9 October 2026, with 2026's Part B premium of $202.90. Social Security's own decision on each enrollment and the employer's and insurer's real plan terms decide real cases. This applies stated rules to stated facts; it is not insurance, benefits or legal advice."
+}
