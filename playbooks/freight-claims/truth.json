@@ -1,0 +1,76 @@
+{
+  "targets": [
+    {
+      "tool": "file_claim",
+      "key": "bol_number",
+      "eligible": {
+        "BOL-6101": {
+          "value_usd": 1380.0,
+          "why": "Harrowgate picked up and delivered it, its driver counted 12 cartons, and the delivery receipt notes 2 cartons crushed (Thursday 17 September 2026): good-order tender, damaged arrival and the amount make the prima facie case (Elmore & Stahl). 2 cartons of 4 Arden pendants at $172.50, $690 a carton, all broken: $1,380, full value, within 9 months of delivery. The receipt's notation is not itself a claim (49 CFR 370.3(c))",
+          "expect": {
+            "amount_usd": 1380
+          }
+        },
+        "BOL-6087": {
+          "value_usd": 1170.0,
+          "why": "Concealed damage: the receipt is clean, but a clean receipt is evidence, not a bar. Thistlewood's packing record shows the shade sets packed to spec (double-wall, foam corners) and Harrowgate's driver signed for 10 cartons in apparent good order; Brightwell found the damage two days after delivery, reported it to Harrowgate within its 5 business days, and Harrowgate's own inspector found forklift-tine punctures at fork height. 3 Calla shade sets at $390: $1,170",
+          "expect": {
+            "amount_usd": 1170
+          }
+        },
+        "BOL-6122": {
+          "value_usd": 170.0,
+          "why": "Damage noted at delivery and confirmed by Harrowgate's inspector, but Rosa signed the released-value declaration for Harrowgate's released rate: liability is limited to $2.00 a pound (49 U.S.C. 14706(c)(1)(A); Rules Tariff HGF-100 item 780), and the crate weighed 85 lb. The claim is for $170, not the chandelier's $2,600 invoice price",
+          "expect": {
+            "amount_usd": 170
+          }
+        }
+      },
+      "traps": {
+        "BOL-5950": "Delivered Friday 12 December 2025, one carton short; the shortage was only noted on the receipt, which is not a claim (370.3(c)), and Harrowgate's 9 months after delivery ran out on 12 September 2026. A claim filed now is out of time",
+        "BOL-6064": "The shipper's own act: Thistlewood's packer shipped the sconces below its own spec, in single-wall cartons with no padding, and Harrowgate's inspector found the cartons undamaged outside and the breakage from movement inside. The carrier is not liable for damage the shipper's packing caused",
+        "BOL-5822": "Already claimed: HC-30551 was filed on 2 June 2026 and is under investigation; a second claim for the same bill of lading duplicates it",
+        "BOL-6115": "Sablecroft Transport picked up, carried and delivered this shipment alone; Harrowgate never had it and is not liable for it. The wet cartons are claimed against Sablecroft, by mail",
+        "BOL-6110": "A Larkfield shipment: Harrowgate never had it",
+        "BOL-5871": "A Larkfield shipment: Harrowgate never had it",
+        "BOL-6093": "A Larkfield shipment, and the damage happened at Corlett after delivery",
+        "BOL-6040": "A Larkfield shipment, already claimed with Larkfield"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "submit_claim",
+      "key": "bol_number",
+      "eligible": {
+        "BOL-6110": {
+          "value_usd": 940.0,
+          "why": "Larkfield's driver counted 8 cartons at pickup and delivered 7, the shortage noted on the receipt on Monday 28 September 2026, and Larkfield's own search came back not found: the brass finish carton, $940, at full value",
+          "expect": {
+            "amount_usd": 940
+          }
+        },
+        "BOL-5871": {
+          "value_usd": 3260.0,
+          "required": true,
+          "why": "The whole pallet, picked up Monday 12 January 2026, was never delivered, and Larkfield closed the trace 'unable to locate'. A trace is not a claim (370.3(c)), and Larkfield's terms give 9 months after the bill of lading date for a shipment never delivered: Monday 12 October 2026, three days away. 8 cartons at $407.50: $3,260, with Pellham's statement of non-receipt (370.7(c))",
+          "expect": {
+            "amount_usd": 3260
+          }
+        }
+      },
+      "traps": {
+        "BOL-6093": "Damage after delivery: Corlett signed clean, and its own forklift crushed the cartons that afternoon after Larkfield's driver had left. Larkfield is not liable for it",
+        "BOL-6040": "Already claimed: LC-22019 was filed on 3 September 2026 and acknowledged on 9 September; a second claim duplicates it",
+        "BOL-6115": "Sablecroft Transport moved this shipment alone; Larkfield never had it",
+        "BOL-6101": "A Harrowgate shipment: Larkfield never had it",
+        "BOL-6087": "A Harrowgate shipment: Larkfield never had it",
+        "BOL-6122": "A Harrowgate shipment: Larkfield never had it",
+        "BOL-6064": "A Harrowgate shipment, and the damage came from Thistlewood's own packing",
+        "BOL-5950": "A Harrowgate shipment, and out of time",
+        "BOL-5822": "A Harrowgate shipment, already claimed with Harrowgate"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

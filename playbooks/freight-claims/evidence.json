@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "freight-claims",
+  "captured_at": "2026-10-10T07:13:45Z",
+  "bench_run_at": "2026-10-10T07:09:31Z",
+  "narration": {
+    "text": "A lighting maker's freight claims filed with the carriers that moved the goods, inside nine months: concealed damage behind a clean receipt proved, a released-value crate claimed at its limit, and a pallet lost in January claimed three days before its time runs out, while damage its own packing or its customer caused is left alone. This is a chore for the logistics coordinator of a small light-fixture maker that ships to distributors by LTL, who files the freight claims herself between other work. On the bench, she found 5 of 5 eligible items, worth 6,920 dollars of the 6,920 dollars there was to find. She made no false claim. The world held 17 traps, and she walked past 17. She took 3 minutes. By hand, the same chore takes 4 hours, so she was about 83 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 60.589,
+    "sha256": "7fb853bd8af124bf6f0869b0cd210d002afb5541b40f7a37bbd7c222de4567b4"
+  },
+  "video": {
+    "path": "evidence/freight-claims/evidence.mp4",
+    "duration_s": 60.6,
+    "bytes": 3466904,
+    "sha256": "1b369b42a616f52a57222d489f36aa078d8f89c733aabe49f300498aa7e19058"
+  },
+  "thumbnail": {
+    "path": "playbooks/freight-claims/thumb.jpg",
+    "bytes": 80172,
+    "sha256": "9ad9ee575003eff21df69ff9409c3437e06d2ec876cb5bc69bee8a3be387cb65"
+  }
+}

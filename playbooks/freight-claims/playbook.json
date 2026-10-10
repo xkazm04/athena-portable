@@ -1,0 +1,123 @@
+{
+  "id": "freight-claims",
+  "title": "A lighting maker's freight claims filed with the carriers that moved the goods, inside nine months: concealed damage behind a clean receipt proved, a released-value crate claimed at its limit, and a pallet lost in January claimed three days before its time runs out, while damage its own packing or its customer caused is left alone",
+  "domain": "Logistics",
+  "audience": "work",
+  "promise": "A light-fixture maker's shipments with an exception are read across its transportation management system, its claims inbox, its shared files and two LTL carriers' claims portals, and every loss and damage claim a carrier owes is filed in the carrier's own portal, for the amount it owes, with the proof the federal claim rules ask for: two crushed cartons noted at delivery, concealed damage behind a clean receipt that the carrier's own inspector traced to a forklift, a chandelier shipped at a released rate claimed at two dollars a pound, a short carton, and a pallet lost in January whose nine months end on Monday. A shortage only noted on a receipt ten months ago, damage the maker's own packing caused, damage a customer's forklift did after delivery, a shipment another carrier moved alone and two claims already open are left alone.",
+  "persona": "The logistics coordinator of a small light-fixture maker that ships to distributors by LTL, who files the freight claims herself between other work",
+  "chore": "Read each shipment with an exception in the TMS, with its carrier, bill of lading terms, any released-value declaration and the delivery receipt as signed; the customers' damage reports and the carriers' letters in the claims inbox; and the claims checklist, invoices, packing records, photos and inspection reports in the shared folder. Then apply the Carmack Amendment, 49 U.S.C. 14706 (actual loss; the receiving or delivering carrier is liable; a released value the shipper agreed to limits it; never less than 9 months to file and 2 years to sue), 49 CFR Part 370 (what a claim is and is not; acknowledgment in 30 days; disposition in 120, with status every 60), and the carrier defences in Missouri Pacific R. Co. v. Elmore & Stahl (1964), with each carrier's own bill of lading terms and tariff on its portal. Neither carrier's portal knows what the other carrier, the customers or the packing line recorded.",
+  "command": "I'm Rosa, I handle freight claims at Thistlewood Lighting. Go through Tracklog, the claims inbox in Mailnest, our Docshelf folder, and the Harrowgate Freight and Larkfield LTL claims portals, and file every loss and damage claim a carrier owes us, with the right carrier, for the right amount and with the proof, before any of them runs out of time. Don't claim anything a carrier doesn't owe, and don't file anything twice.",
+  "apps": [
+    {
+      "name": "Tracklog TMS",
+      "role": "the transportation management system: every shipment with an exception, its carrier and PRO, the bill of lading's terms and released-value declaration, the delivery receipt as signed, and the tracking",
+      "api": "TMS, no claims integration",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the claims inbox: customers' damage reports, the carriers' acknowledgments and trace results, and a contingency claims service's offer",
+      "api": "Email",
+      "url": ""
+    },
+    {
+      "name": "Docshelf",
+      "role": "the shared claims folder: Thistlewood's claims checklist, the invoices, the packing and dock records, the customers' photos, the carriers' inspection reports and a statement of non-receipt",
+      "api": "Shared files",
+      "url": ""
+    },
+    {
+      "name": "Harrowgate Freight claims",
+      "role": "an LTL carrier's claims portal: its claim rules from federal law and its own tariff, the claims already filed, and the claim form",
+      "api": "Carrier portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Larkfield LTL claims",
+      "role": "a second LTL carrier's claims centre: its claim rules and bill of lading terms, the claims and traces already open, and the claim form",
+      "api": "Carrier portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads every shipment with an exception in Tracklog, with its bill of lading terms and delivery receipt.",
+    "Reads the customers' damage reports and the carriers' letters in Mailnest.",
+    "Reads the checklist, invoices, packing records, photos and inspection reports in Docshelf.",
+    "Reads Harrowgate's claim rules and open claims, and files the three claims it owes, one of them at its released value.",
+    "Reads Larkfield's rules, claims and traces, and files the shortage and the lost pallet before its nine months end."
+  ],
+  "gates": [
+    {
+      "action": "file_claim",
+      "label": "File a cargo claim with Harrowgate Freight",
+      "why": "Signed to a carrier as the claimant's assertion of its liability, and it starts the carrier's clocks."
+    },
+    {
+      "action": "submit_claim",
+      "label": "Submit a cargo claim to Larkfield LTL",
+      "why": "Signed to a carrier as the claimant's assertion of its liability, and it starts the carrier's clocks."
+    }
+  ],
+  "traps": [
+    "A claim for a shortage delivered in December 2025 that was only noted on the receipt: its nine months ended on 12 September.",
+    "A claim for sconces broken inside undamaged cartons that Thistlewood's own packer shipped below spec.",
+    "A claim for cartons the customer's forklift crushed after the carrier had delivered them clean.",
+    "A claim against Harrowgate or Larkfield for wet cartons Sablecroft Transport carried alone.",
+    "A second claim for a shipment already claimed with Harrowgate in June or with Larkfield in September.",
+    "Claiming the chandelier's two thousand six hundred dollars when the released value limits the carrier to one hundred and seventy.",
+    "A contingency service keeping thirty percent of what the claims recover."
+  ],
+  "memory": [
+    "Which carrier picked up and delivered each shipment, which receipts were clean, the released-value declaration on the chandelier's bill of lading and its 85 lb, and the lost pallet's January bill of lading date, carried from Tracklog.",
+    "When each customer found its damage and what it said about it, that a trace and a shortage search are closed without the freight, and the claims already open, carried from Mailnest.",
+    "Each unit's invoice price, which packing met spec and which did not, and what each carrier's inspector found, carried from Docshelf."
+  ],
+  "economics": {
+    "value_usd": 18000,
+    "per": "year",
+    "basis": "An estimate. A small manufacturer shipping LTL every day has a few loss and damage exceptions a month; a claim is owed only on the right carrier, inside its time, for the actual loss or the released value, with proof of good-order tender, and many are never filed, or filed late, or filed on damage the shipper or the customer caused. The roster's $18,000 a year is claims recovered, an estimate. The bench world holds $6,920: two crushed cartons noted at delivery ($1,380), concealed damage behind a clean receipt that the carrier's inspector traced to forklift tines ($1,170), a chandelier at its released value of $2.00 a pound on 85 lb ($170, not its $2,600), a short carton ($940), and a pallet never delivered whose nine months from its bill of lading date end on Monday 12 October 2026 ($3,260). Times a year: six, since Thistlewood sweeps its exceptions every two months; this world holds the eight weeks since the last sweep and three older items. The rules applied, as they stand on Friday 9 October 2026: 49 U.S.C. 14706 (a) (the receiving and delivering carrier liable for actual loss or injury), (c)(1)(A) (a released value agreed by the shipper's written declaration) and (e)(1) (no period of less than 9 months to file a claim or 2 years to sue from a written disallowance); 49 CFR 370.3 (a claim identifies the shipment, asserts liability and claims a specified amount; a notation on a delivery receipt, a bad order report or an inspection report is not a claim), 370.5 (acknowledgment within 30 days), 370.7 (the bill of lading, the invoice; for a lost shipment, the consignee's statement of non-receipt) and 370.9 (pay, decline or a firm compromise offer within 120 days, then status every 60 days), from the eCFR current to 7 October 2026; and Missouri Pacific R. Co. v. Elmore & Stahl, 377 U.S. 134 (1964) (the shipper's prima facie case and the carrier's five excepted causes, the shipper's own act among them). That a clean delivery receipt does not by itself defeat a concealed-damage claim, while the shipper must still show good-order tender and damage before delivery, rests on the GAO's decision B-185283 (1978) and the Transportation & Logistics Council's guide, not on a federal court holding in those words. Each carrier's claim period, measured from delivery or from the bill of lading date for a shipment never delivered, its five-business-day concealed-damage report and its $2.00 a pound released rate are the invented carriers' own terms, stated on their portals.",
+    "manual_minutes": 240,
+    "times_per_year": 6,
+    "incumbent": "Cargo claim recovery services work on contingency: Recoupex publishes a success fee of 20% to 50% of what it recovers, taken from the compensation. The figure used is the lowest, 20%. The world's own offer, an invented service at 30%, is a trap, not the source.",
+    "incumbent_fee_pct": 20,
+    "sources": [
+      {
+        "label": "49 U.S.C. 14706: liability of carriers under receipts and bills of lading (the Carmack Amendment): actual loss or injury, released value, and no less than 9 months to file and 2 years to sue",
+        "url": "https://www.law.cornell.edu/uscode/text/49/14706"
+      },
+      {
+        "label": "49 CFR Part 370: principles and practices for the investigation and voluntary disposition of loss and damage claims (370.3 filing, 370.5 acknowledgment, 370.7 investigation, 370.9 disposition)",
+        "url": "https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-370"
+      },
+      {
+        "label": "Missouri Pacific R. Co. v. Elmore & Stahl, 377 U.S. 134 (1964): the shipper's prima facie case and the carrier's excepted causes",
+        "url": "https://www.law.cornell.edu/supremecourt/text/377/134"
+      },
+      {
+        "label": "GAO decision B-185283 (1978): a delivery receipt signed without exception does not prevent proof of damage by other means",
+        "url": "https://www.gao.gov/products/b-185283-0"
+      },
+      {
+        "label": "Transportation & Logistics Council, Concealed Damage and Shortage Claims: a clear delivery receipt is not a valid basis for declining a claim; the claimant proves the damage existed before delivery",
+        "url": "https://tlcouncil.org/wp-content/uploads/2022/10/concealed_damage_and_shortage_claims.pdf"
+      },
+      {
+        "label": "Recoupex, cargo claims recovery: a 20% to 50% success fee, deducted from the compensation (the incumbent's share)",
+        "url": "https://www.recoupex.com/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Who owes each claim, and how much, is split between the TMS's carrier and bill of lading terms, the customers' emails, the packing line's records and two carriers' inspectors; a clean receipt hides one good claim and one the shipper's own packing caused, a released-value declaration cuts a claim to a fraction, and a closed trace makes a January loss look handled when its nine months end on Monday.",
+    "usefulness_why": "Recovers the cost of freight lost and broken in transit for a maker whose claims otherwise go unfiled or out of time, and keeps it from claiming what a carrier does not owe; a few thousand dollars every two months, mostly money."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful claims clerk with the carriers' rules and the files in hand gets most of it; the bar is the lost pallet claimed before Monday, the concealed damage claimed with its proof, the chandelier at its released value, each claim with the carrier that moved it, and nothing the shipper's packing or the customer caused, inside an hour."
+  },
+  "caveat": "Rosa Achterberg, Thistlewood Lighting Co., Pellham Home Supply, Brightwell Interiors, Corlett Electric Supply, Harrowgate Freight, Larkfield LTL, Sablecroft Transport, Fallbrook Freight Recovery, Tracklog TMS, Mailnest and Docshelf are invented, and so are every shipment, invoice, inspection and claim; no carrier or shipper here is real. Each carrier's bill of lading terms, its claim periods measured from delivery or from the bill of lading date, Harrowgate's five-business-day concealed-damage report and its released rate of $2.00 a pound are the invented carriers' own, stated on their portals. The public rules applied are 49 U.S.C. 14706, 49 CFR Part 370 and Missouri Pacific R. Co. v. Elmore & Stahl (1964), fixed in the bench world as of 9 October 2026; that a clean receipt does not by itself defeat a concealed-damage claim rests on a GAO decision and a trade council's guide. A real carrier's tariff and bill of lading, the evidence, and the courts decide real claims. This applies stated rules to stated facts; it is not legal advice."
+}
