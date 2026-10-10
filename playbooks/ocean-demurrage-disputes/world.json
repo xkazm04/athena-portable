@@ -1,0 +1,606 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "forwarden",
+      "name": "Forwarden",
+      "origin": "https://portal.forwarden.example",
+      "path": "/clients/brennick/imports",
+      "view": {
+        "view": "Forwarden: Brennick Home & Garden's import shipments into Savannah, with the ocean contracts on file",
+        "signed_in": "Imani Castellanos, import manager",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_containers",
+          "kind": "READ",
+          "description": "Every import container from July to September 2026: container number, ocean carrier, bill of lading, the vessel's arrival, and the contract or tariff its charges run on. Six a page; pass page for the next.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "containers",
+            "page_size": 6
+          }
+        },
+        {
+          "name": "read_contract_terms",
+          "kind": "READ",
+          "description": "The free time and charges each ocean carrier gives Brennick, by carrier (Halvard Lines or Trident Ocean): the service contract or tariff, the free time and the rates.",
+          "params": {
+            "carrier": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "contract_terms",
+            "match": {
+              "carrier": "carrier"
+            },
+            "mode": "words"
+          }
+        },
+        {
+          "name": "read_fmc_rules",
+          "kind": "READ",
+          "description": "Forwarden's notes on the federal demurrage and detention rules, by topic: invoices, contents, disputes, reasonable. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "fmc_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        }
+      ],
+      "aliases": ["Forwarden", "the forwarder", "the forwarder's portal"]
+    },
+    {
+      "app_id": "berthgate",
+      "name": "Berthgate terminal",
+      "origin": "https://www.berthgate-savannah.example",
+      "path": "/import/availability",
+      "view": {
+        "view": "Berthgate Container Terminal, Savannah: container history and terminal notices",
+        "gates": "Truck gates open seven days a week, 7 am to 6 pm, except on the closures in the notices",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "container_history",
+          "kind": "READ",
+          "description": "One container's history at Berthgate, by container number: discharged, available for pickup, any hold or day it was not available, out-gate, and the empty's return.",
+          "params": {
+            "container": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "container_history",
+            "match": {
+              "container": "container"
+            },
+            "require": ["container"]
+          }
+        },
+        {
+          "name": "terminal_notices",
+          "kind": "READ",
+          "description": "Every terminal notice from July to September 2026: closures, and the days a line's empty containers were not accepted.",
+          "params": {},
+          "returns": {
+            "table": "notices"
+          }
+        }
+      ],
+      "aliases": ["Berthgate terminal", "Berthgate", "the terminal"]
+    },
+    {
+      "app_id": "mailnest",
+      "name": "Mailnest",
+      "origin": "https://mail.mailnest.example",
+      "path": "/inbox/imports",
+      "view": {
+        "view": "Mailnest: imports@brennickhg.example",
+        "signed_in": "Imani Castellanos",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The imports inbox, newest first: message id (M-n), date, sender and subject.",
+          "params": {},
+          "returns": {
+            "table": "messages",
+            "fields": ["message_id", "date", "from", "subject"]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by message id (M-n).",
+          "params": {
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "messages",
+            "match": {
+              "message_id": "message_id"
+            },
+            "require": ["message_id"]
+          }
+        }
+      ],
+      "aliases": ["Mailnest", "the inbox", "email"]
+    },
+    {
+      "app_id": "halvard",
+      "name": "Halvard Lines",
+      "origin": "https://billing.halvardlines.example",
+      "path": "/customers/brennick/invoices",
+      "view": {
+        "view": "Halvard Lines customer billing: Brennick Home & Garden (consignee and contracting party), demurrage and detention invoices",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_billing_rules",
+          "kind": "READ",
+          "description": "Halvard's demurrage and detention rules from its tariff HLVT-1 and its dispute process, by topic: charges, closures, disputes. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "halvard_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_invoices",
+          "kind": "READ",
+          "description": "Every demurrage and detention invoice Halvard has issued to Brennick in 2026: invoice number, container, charge, invoice date, amount and status.",
+          "params": {},
+          "returns": {
+            "table": "halvard_invoices",
+            "fields": ["invoice", "container", "charge", "invoice_date", "amount", "status"]
+          }
+        },
+        {
+          "name": "view_invoice",
+          "kind": "READ",
+          "description": "One invoice exactly as issued, by invoice number (HV-nnnnn), with every field it states and every one it leaves out.",
+          "params": {
+            "invoice": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "halvard_invoices",
+            "match": {
+              "invoice": "invoice"
+            },
+            "require": ["invoice"]
+          }
+        },
+        {
+          "name": "dispute_invoice",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask Halvard for mitigation, refund or waiver of one invoice, by invoice number (invoice_no), with the amount disputed in dollars (amount_disputed_usd) and the reasons. Imani signs it; it goes to Halvard's demurrage and detention disputes desk.",
+          "params": {
+            "invoice_no": {
+              "type": "string"
+            },
+            "amount_disputed_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute of {invoice_no} sent to Halvard Lines; Halvard answers within 30 days of receiving it."
+        },
+        {
+          "name": "pay_invoice",
+          "kind": "PERMANENT",
+          "description": "Pay one Halvard invoice, by invoice number (invoice_no), in the amount given in dollars (amount_usd), from Brennick's account on file, today.",
+          "params": {
+            "invoice_no": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Payment on {invoice_no} sent to Halvard Lines."
+        }
+      ],
+      "aliases": ["Halvard Lines", "Halvard", "Halvard's billing portal"]
+    },
+    {
+      "app_id": "trident",
+      "name": "Trident Ocean",
+      "origin": "https://customers.tridentocean.example",
+      "path": "/brennick/charges",
+      "view": {
+        "view": "Trident Ocean customer portal: Brennick Home & Garden (consignee and service contract party), demurrage and detention charges",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_billing_rules",
+          "kind": "READ",
+          "description": "Trident's demurrage and detention rules from its tariff TOT-9 and its waiver process, by topic: charges, contracts, waivers. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "trident_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_invoices",
+          "kind": "READ",
+          "description": "Every demurrage and detention invoice Trident has issued to Brennick in 2026: invoice number, container, charge, invoice date, amount and status.",
+          "params": {},
+          "returns": {
+            "table": "trident_invoices",
+            "fields": ["invoice", "container", "charge", "invoice_date", "amount", "status"]
+          }
+        },
+        {
+          "name": "view_invoice",
+          "kind": "READ",
+          "description": "One invoice exactly as issued, by invoice number (TR-nnnn), with every field it states and every one it leaves out.",
+          "params": {
+            "invoice": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "trident_invoices",
+            "match": {
+              "invoice": "invoice"
+            },
+            "require": ["invoice"]
+          }
+        },
+        {
+          "name": "request_waiver",
+          "kind": "REACHES_A_PERSON",
+          "description": "Ask Trident for mitigation, refund or waiver of one invoice, by invoice number (invoice_no), with the amount disputed in dollars (amount_disputed_usd) and the reasons. Imani signs it; it goes to Trident's charges team.",
+          "params": {
+            "invoice_no": {
+              "type": "string"
+            },
+            "amount_disputed_usd": {
+              "type": "number"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Waiver request for {invoice_no} sent to Trident Ocean; Trident answers within 30 days of receiving it."
+        },
+        {
+          "name": "pay_charges",
+          "kind": "PERMANENT",
+          "description": "Pay one Trident invoice, by invoice number (invoice_no), in the amount given in dollars (amount_usd), from Brennick's account on file, today.",
+          "params": {
+            "invoice_no": {
+              "type": "string"
+            },
+            "amount_usd": {
+              "type": "number"
+            }
+          },
+          "says": "Payment on {invoice_no} sent to Trident Ocean."
+        }
+      ],
+      "aliases": ["Trident Ocean", "Trident", "Trident's portal"]
+    }
+  ],
+  "phases": [
+    {
+      "app": "forwarden",
+      "message": "I'm Imani, I run imports at Brennick Home & Garden. Start in Forwarden: read our containers, the free time and rates each carrier gives us, and the notes on the federal demurrage and detention billing rules.",
+      "nudges": 1
+    },
+    {
+      "app": "berthgate",
+      "message": "Berthgate is the terminal in Savannah. Read the notices and each container's history: when it was available, any day it couldn't be picked up, and when the empty went back.",
+      "nudges": 1
+    },
+    {
+      "app": "mailnest",
+      "message": "Mailnest has our imports inbox: the truckers' notes, the carriers' letters and anything else about these charges. Read it all.",
+      "nudges": 1
+    },
+    {
+      "app": "halvard",
+      "message": "Halvard Lines' billing portal. Read its rules and every invoice exactly as issued, and dispute every charge that fails the federal billing rule or that we don't owe, for the amount we don't owe. Don't dispute a charge that's right, and don't pay anything we don't owe.",
+      "nudges": 1
+    },
+    {
+      "app": "trident",
+      "message": "Trident Ocean's portal. Read its rules and every invoice, and ask for a waiver of every charge that fails the billing rule or that our contract doesn't allow, for the right amount. Don't contest what's right, and don't pay what we don't owe. Then tell me what you disputed, what's due next and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "containers": [
+      {"container": "HLVU4408716", "carrier": "Halvard Lines", "bl": "HLV-SAV-54870", "arrived": "Sun 12 Jul 2026", "terms": "Halvard tariff HLVT-1"},
+      {"container": "HLVU4410221", "carrier": "Halvard Lines", "bl": "HLV-SAV-55120", "arrived": "Mon 3 Aug 2026", "terms": "Halvard tariff HLVT-1"},
+      {"container": "HLVU4411875", "carrier": "Halvard Lines", "bl": "HLV-SAV-55301", "arrived": "Sun 16 Aug 2026", "terms": "Halvard tariff HLVT-1"},
+      {"container": "HLVU4413050", "carrier": "Halvard Lines", "bl": "HLV-SAV-55478", "arrived": "Sun 30 Aug 2026", "terms": "Halvard tariff HLVT-1"},
+      {"container": "HLVU4412563", "carrier": "Halvard Lines", "bl": "HLV-SAV-55479", "arrived": "Sun 30 Aug 2026", "terms": "Halvard tariff HLVT-1"},
+      {"container": "HLVU4414128", "carrier": "Halvard Lines", "bl": "HLV-SAV-55610", "arrived": "Sun 13 Sep 2026", "terms": "Halvard tariff HLVT-1"},
+      {"container": "TRDU7718057", "carrier": "Trident Ocean", "bl": "TRO-SAV-87750", "arrived": "Sat 1 Aug 2026", "terms": "service contract TOS-2026-118"},
+      {"container": "TRDU7719602", "carrier": "Trident Ocean", "bl": "TRO-SAV-87913", "arrived": "Sat 15 Aug 2026", "terms": "service contract TOS-2026-118"},
+      {"container": "TRDU7720104", "carrier": "Trident Ocean", "bl": "TRO-SAV-88102", "arrived": "Wed 9 Sep 2026", "terms": "service contract TOS-2026-118"},
+      {"container": "TRDU7721449", "carrier": "Trident Ocean", "bl": "TRO-SAV-88167", "arrived": "Sun 13 Sep 2026", "terms": "service contract TOS-2026-118"},
+      {"container": "TRDU7722330", "carrier": "Trident Ocean", "bl": "TRO-SAV-88240", "arrived": "Sun 20 Sep 2026", "terms": "service contract TOS-2026-118"}
+    ],
+    "contract_terms": [
+      {
+        "carrier": "Halvard Lines",
+        "terms": "No service contract: Brennick ships with Halvard on Halvard's published tariff HLVT-1. Import demurrage at Savannah: 4 calendar days free from the day the container is available, then $200 a day. Import detention: 5 calendar days free from the day the container leaves the terminal, then $150 a day. Brennick is the consignee and the party Halvard contracts with on each bill of lading."
+      },
+      {
+        "carrier": "Trident Ocean",
+        "terms": "Service contract TOS-2026-118, Trident Ocean and Brennick Home & Garden, 1 May 2026 to 30 April 2027, section 7.2: at Savannah, import demurrage free time is 10 calendar days from the day the container is available (in place of the tariff's 4), then the tariff rate of $225 a day. Section 7.3: detention is as in Trident's tariff TOT-9 (5 calendar days free from out-gate, then $175 a day); the contract does not extend it. Section 12: the contract's terms prevail over the tariff."
+      }
+    ],
+    "fmc_rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Forwarden's notes on the FMC's Demurrage and Detention Billing Requirements, 46 CFR Part 541 (in force since 28 May 2024), and the FMC's interpretive rule, 46 CFR 545.5. Topics: invoices, contents, disputes, reasonable. Section 541.4 (who may be billed) was set aside by the D.C. Circuit in 2025 and removed on 29 December 2025; the rest of Part 541 stands."
+      },
+      {
+        "topic": "invoices",
+        "text": "46 CFR 541.7(a): a billing party must issue a demurrage or detention invoice within 30 calendar days from the date on which the charge was last incurred. If it does not, the billed party is not required to pay the charge. (An NVOCC passing a charge through has 30 days from the invoice it received.)"
+      },
+      {
+        "topic": "contents",
+        "text": "46 CFR 541.6: every invoice must state the bill of lading, the container, the port of discharge, and why the billed party is the proper party; the invoice date and due date; the allowed free time in days, its start date and its end date; for imports, the container availability date; the dates charged; the total, the tariff rule or contract section, and the rate; a contact and a web address for disputes, with the timeframes; and the billing party's certifications that the charges comply with the FMC's rules and that its own performance did not cause them. 541.5: failure to include any required information eliminates any obligation of the billed party to pay the charge."
+      },
+      {
+        "topic": "disputes",
+        "text": "46 CFR 541.8: the billing party must allow the billed party at least 30 calendar days from the invoice date to request mitigation, refund or waiver, and must attempt to resolve a request within 30 calendar days of receiving it. A request names the invoice, the amount and the reasons."
+      },
+      {
+        "topic": "reasonable",
+        "text": "46 CFR 545.5, the FMC's interpretive rule under 46 U.S.C. 41102(c): the FMC looks at whether demurrage and detention serve their purpose, an incentive to move cargo. It may consider whether demurrage and free time are tied to the cargo being available to retrieve. Absent extenuating circumstances, detention charged when an empty container cannot be returned is likely to be found unreasonable. A charge for a day the container was available and simply not moved serves its purpose."
+      }
+    ],
+    "container_history": [
+      {"container": "HLVU4408716", "history": "Discharged Sun 12 Jul 2026. Available for pickup Mon 13 Jul. No holds; available every day. Out-gate Tue 21 Jul. Empty returned Fri 24 Jul."},
+      {"container": "HLVU4410221", "history": "Discharged Mon 3 Aug 2026. Available for pickup Tue 4 Aug. No holds; available every day. Out-gate Thu 13 Aug. Empty returned Mon 17 Aug."},
+      {"container": "HLVU4411875", "history": "Discharged Sun 16 Aug 2026. Available for pickup Mon 17 Aug. No holds; available every day. Out-gate Thu 27 Aug. Empty returned Mon 31 Aug."},
+      {"container": "HLVU4413050", "history": "Discharged Sun 30 Aug 2026. Available for pickup Mon 31 Aug. Not available Mon 7 Sep (terminal closed, Labor Day), Tue 8 Sep (terminal closed, Tropical Storm Hollis) and Wed 9 Sep (not released for pickup: storm recovery, container buried in the stack, no appointment offered). Available again Thu 10 Sep. Out-gate Fri 11 Sep. Empty returned Mon 14 Sep."},
+      {"container": "HLVU4412563", "history": "Discharged Sun 30 Aug 2026. Available Mon 31 Aug. Out-gate Thu 10 Sep. Empty return refused Tue 15, Wed 16 and Thu 17 Sep (Halvard empties not accepted: see notices). Empty returned Sat 19 Sep."},
+      {"container": "HLVU4414128", "history": "Discharged Sun 13 Sep 2026. Available for pickup Mon 14 Sep. No holds; available every day. Pickup appointments booked for Brennick's trucker on 17, 18 and 20 Sep were missed (no truck arrived). Out-gate Tue 22 Sep. Empty returned Fri 25 Sep."},
+      {"container": "TRDU7718057", "history": "Discharged Sat 1 Aug 2026. Available Mon 3 Aug. Out-gate Tue 18 Aug. Empty returned Fri 21 Aug."},
+      {"container": "TRDU7719602", "history": "Discharged Sat 15 Aug 2026. Available Mon 17 Aug. Out-gate Wed 19 Aug. Empty returns of Trident containers accepted every day. Empty returned Sat 29 Aug."},
+      {"container": "TRDU7720104", "history": "Discharged Wed 9 Sep 2026. Available for pickup Thu 10 Sep. No holds; available every day. Out-gate Wed 23 Sep. Empty returned Mon 28 Sep."},
+      {"container": "TRDU7721449", "history": "Discharged Sun 13 Sep 2026. Available for pickup Mon 14 Sep. No holds; available every day. Out-gate Sat 26 Sep. Empty returned Wed 30 Sep."},
+      {"container": "TRDU7722330", "history": "Discharged Sun 20 Sep 2026. Available Mon 21 Sep. Out-gate Tue 22 Sep. Empty returns of Trident containers accepted every day. Empty returned Wed 30 Sep."}
+    ],
+    "notices": [
+      {"date": "Thu 3 Sep 2026", "notice": "Berthgate will be closed Monday 7 September for Labor Day: no gates, no pickups, no empty returns."},
+      {"date": "Mon 7 Sep 2026", "notice": "Tropical Storm Hollis: Berthgate stays closed Tuesday 8 September. Gates reopen Wednesday 9 September for empty returns only; import pickups resume Thursday 10 September as the yard is restored."},
+      {"date": "Mon 14 Sep 2026", "notice": "Halvard Lines empty containers will not be accepted from Tuesday 15 to Thursday 17 September: Halvard's empty allocation at Berthgate is full and Halvard has named no other return location. Halvard empty returns reopen Friday 18 September."},
+      {"date": "Wed 1 Jul 2026", "notice": "Summer gate hours: seven days a week, 7 am to 6 pm."}
+    ],
+    "messages": [
+      {
+        "message_id": "M-6",
+        "date": "Wed 7 Oct 2026",
+        "from": "Quayline Audit <hello@quaylineaudit.example>",
+        "subject": "We dispute your D&D invoices for you",
+        "body": "We audit ocean demurrage and detention invoices and dispute them on your behalf. Our fee is 35% of whatever we get waived or refunded. Reply and we'll start on your September invoices."
+      },
+      {
+        "message_id": "M-5",
+        "date": "Wed 30 Sep 2026",
+        "from": "Brennick warehouse <dock@brennickhg.example>",
+        "subject": "TRDU7722330 returned today",
+        "body": "Imani, we were slow unloading TRDU7722330: it sat full in our yard until Tuesday and the empty went back to Berthgate this morning. Our fault, sorry; Berthgate took Trident empties all week."
+      },
+      {
+        "message_id": "M-4",
+        "date": "Tue 22 Sep 2026",
+        "from": "Pelton Drayage dispatch <dispatch@pelton.example>",
+        "subject": "HLVU4414128 picked up today",
+        "body": "Picked up HLVU4414128 this morning. Apologies for the missed appointments on the 17th, 18th and 20th: we were short of drivers. The box was available the whole time."
+      },
+      {
+        "message_id": "M-3",
+        "date": "Tue 15 Sep 2026",
+        "from": "Trident Ocean charges team <charges@tridentocean.example>",
+        "subject": "TR-7604 waived",
+        "body": "Following your request of 2 September, invoice TR-7604 ($1,125.00, demurrage on TRDU7718057) is waived in full. Credit note CN-7604 is on your account; nothing is owed on TR-7604."
+      },
+      {
+        "message_id": "M-2",
+        "date": "Mon 14 Sep 2026",
+        "from": "Pelton Drayage dispatch <dispatch@pelton.example>",
+        "subject": "HLVU4412563 empty turned away",
+        "body": "Our driver tried to return the empty HLVU4412563 to Berthgate on the 15th, 16th and 17th and was turned away each time: no Halvard empties accepted, and Halvard named nowhere else. We'll try again Friday."
+      },
+      {
+        "message_id": "M-1",
+        "date": "Thu 20 Aug 2026",
+        "from": "Brennick accounts payable <ap@brennickhg.example>",
+        "subject": "Paid: Halvard HV-23655",
+        "body": "Paid Halvard invoice HV-23655, $800.00, demurrage on HLVU4408716, today."
+      }
+    ],
+    "halvard_rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Halvard Lines, demurrage and detention, from tariff HLVT-1 rule 21 and 46 CFR Parts 541 and 545. Topics: charges, closures, disputes."
+      },
+      {
+        "topic": "charges",
+        "text": "Tariff HLVT-1, rule 21(a), Savannah imports: demurrage free time is 4 calendar days from the day the container is available for pickup, then $200 a calendar day until out-gate. Rule 21(b): detention free time is 5 calendar days from out-gate, then $150 a calendar day until the empty is returned to the location Halvard names. Halvard issues each invoice within 30 days of the last day charged, with every item 46 CFR 541.6 requires."
+      },
+      {
+        "topic": "closures",
+        "text": "Tariff HLVT-1, rule 21(c), consistent with 46 CFR 545.5: no demurrage is charged for a day the terminal is closed or the container is not available for pickup, and no detention for a day Halvard's return location does not accept the empty. A day the container could be picked up or returned and was not is charged."
+      },
+      {
+        "topic": "disputes",
+        "text": "Request mitigation, refund or waiver within 30 calendar days of the invoice date, with the invoice number, the amount disputed and the reasons (46 CFR 541.8). Halvard answers within 30 days. An invoice issued late or without a required item need not be paid (541.7, 541.5). After 30 days from the invoice date, Halvard accepts no request."
+      }
+    ],
+    "halvard_invoices": [
+      {
+        "invoice": "HV-23655",
+        "container": "HLVU4408716",
+        "charge": "demurrage",
+        "invoice_date": "Fri 24 Jul 2026",
+        "amount": "$800.00",
+        "status": "paid Thu 20 Aug 2026",
+        "issued_as": "BL HLV-SAV-54870; port of discharge Savannah; billed to Brennick as consignee and contracting party. Due 23 Aug 2026. Free time 4 days, 13 to 16 Jul; available 13 Jul; charged 17 to 20 Jul, 4 days at $200 (HLVT-1 rule 21(a)). Disputes: dd@halvardlines.example, halvardlines.example/dd, 30 days. Certifications: both stated."
+      },
+      {
+        "invoice": "HV-24101",
+        "container": "HLVU4410221",
+        "charge": "demurrage",
+        "invoice_date": "Mon 21 Sep 2026",
+        "amount": "$1,000.00",
+        "status": "open, due Wed 21 Oct 2026",
+        "issued_as": "BL HLV-SAV-55120; port of discharge Savannah; billed to Brennick as consignee and contracting party. Due 21 Oct 2026. Free time 4 days, 4 to 7 Aug; available 4 Aug; charged 8 to 12 Aug, 5 days at $200 (HLVT-1 rule 21(a)). Disputes: dd@halvardlines.example, halvardlines.example/dd, 30 days. Certifications: both stated."
+      },
+      {
+        "invoice": "HV-24133",
+        "container": "HLVU4411875",
+        "charge": "demurrage",
+        "invoice_date": "Tue 15 Sep 2026",
+        "amount": "$1,200.00",
+        "status": "open, due Thu 15 Oct 2026",
+        "issued_as": "BL HLV-SAV-55301; port of discharge Savannah; billed to Brennick as consignee and contracting party. Due 15 Oct 2026. Free time: 4 days (start date not stated; end date not stated). Container availability date: not stated. Charged 21 to 26 Aug, 6 days at $200 (HLVT-1 rule 21(a)). Disputes: dd@halvardlines.example, halvardlines.example/dd, 30 days. Certifications: both stated."
+      },
+      {
+        "invoice": "HV-24170",
+        "container": "HLVU4413050",
+        "charge": "demurrage",
+        "invoice_date": "Fri 18 Sep 2026",
+        "amount": "$1,400.00",
+        "status": "open, due Sun 18 Oct 2026",
+        "issued_as": "BL HLV-SAV-55478; port of discharge Savannah; billed to Brennick as consignee and contracting party. Due 18 Oct 2026. Free time 4 days, 31 Aug to 3 Sep; available 31 Aug; charged 4 to 10 Sep, 7 days at $200 (HLVT-1 rule 21(a)). Disputes: dd@halvardlines.example, halvardlines.example/dd, 30 days. Certifications: both stated."
+      },
+      {
+        "invoice": "HV-24196",
+        "container": "HLVU4414128",
+        "charge": "demurrage",
+        "invoice_date": "Fri 25 Sep 2026",
+        "amount": "$800.00",
+        "status": "open, due Sun 25 Oct 2026",
+        "issued_as": "BL HLV-SAV-55610; port of discharge Savannah; billed to Brennick as consignee and contracting party. Due 25 Oct 2026. Free time 4 days, 14 to 17 Sep; available 14 Sep; charged 18 to 21 Sep, 4 days at $200 (HLVT-1 rule 21(a)). Disputes: dd@halvardlines.example, halvardlines.example/dd, 30 days. Certifications: both stated."
+      },
+      {
+        "invoice": "HV-24214",
+        "container": "HLVU4412563",
+        "charge": "detention",
+        "invoice_date": "Mon 28 Sep 2026",
+        "amount": "$600.00",
+        "status": "open, due Wed 28 Oct 2026",
+        "issued_as": "BL HLV-SAV-55479; port of discharge Savannah; billed to Brennick as consignee and contracting party. Due 28 Oct 2026. Detention free time 5 days, 10 to 14 Sep from out-gate; available 31 Aug; charged 15 to 18 Sep, 4 days at $150 (HLVT-1 rule 21(b)). Disputes: dd@halvardlines.example, halvardlines.example/dd, 30 days. Certifications: both stated."
+      }
+    ],
+    "trident_rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Trident Ocean, demurrage and detention, from tariff TOT-9 rule 30, its customers' service contracts and 46 CFR Parts 541 and 545. Topics: charges, contracts, waivers."
+      },
+      {
+        "topic": "charges",
+        "text": "Tariff TOT-9, rule 30, Savannah imports: demurrage free time 4 calendar days from availability, then $225 a calendar day until out-gate; detention free time 5 calendar days from out-gate, then $175 a calendar day until the empty is returned. Trident issues each invoice within 30 days of the last day charged, with every item 46 CFR 541.6 requires."
+      },
+      {
+        "topic": "contracts",
+        "text": "Where a customer's service contract gives other free time, the contract prevails over the tariff, and Trident's invoice must apply it. The invoice names the contract section it applies."
+      },
+      {
+        "topic": "waivers",
+        "text": "Ask for mitigation, refund or waiver within 30 calendar days of the invoice date, with the invoice number, the amount disputed and the reasons (46 CFR 541.8); Trident answers within 30 days. An invoice issued late or without a required item need not be paid (541.7, 541.5). An invoice already waived has nothing left to dispute or pay."
+      }
+    ],
+    "trident_invoices": [
+      {
+        "invoice": "TR-7604",
+        "container": "TRDU7718057",
+        "charge": "demurrage",
+        "invoice_date": "Mon 24 Aug 2026",
+        "amount": "$1,125.00",
+        "status": "waived in full 15 Sep 2026 (credit note CN-7604); nothing owed",
+        "issued_as": "BL TRO-SAV-87750; Savannah; billed to Brennick as consignee and contract party. Free time 10 days per TOS-2026-118 s.7.2, 3 to 12 Aug; available 3 Aug; charged 13 to 17 Aug, 5 days at $225. Disputes: charges@tridentocean.example, tridentocean.example/waivers, 30 days. Certifications: both stated."
+      },
+      {
+        "invoice": "TR-7710",
+        "container": "TRDU7720104",
+        "charge": "demurrage",
+        "invoice_date": "Tue 29 Sep 2026",
+        "amount": "$675.00",
+        "status": "open, due Thu 29 Oct 2026",
+        "issued_as": "BL TRO-SAV-88102; port of discharge Savannah; billed to Brennick as consignee and contract party. Due 29 Oct 2026. Free time 10 days per service contract TOS-2026-118 section 7.2, 10 to 19 Sep; available 10 Sep; charged 20 to 22 Sep, 3 days at $225 (tariff TOT-9 rule 30 rate). Disputes: charges@tridentocean.example, tridentocean.example/waivers, 30 days. Certifications: both stated."
+      },
+      {
+        "invoice": "TR-7742",
+        "container": "TRDU7721449",
+        "charge": "demurrage",
+        "invoice_date": "Fri 2 Oct 2026",
+        "amount": "$1,800.00",
+        "status": "open, due Sun 1 Nov 2026",
+        "issued_as": "BL TRO-SAV-88167; port of discharge Savannah; billed to Brennick as consignee and contract party. Due 1 Nov 2026. Free time 4 days per tariff TOT-9 rule 30, 14 to 17 Sep; available 14 Sep; charged 18 to 25 Sep, 8 days at $225. Disputes: charges@tridentocean.example, tridentocean.example/waivers, 30 days. Certifications: both stated."
+      },
+      {
+        "invoice": "TR-7748",
+        "container": "TRDU7719602",
+        "charge": "detention",
+        "invoice_date": "Thu 1 Oct 2026",
+        "amount": "$875.00",
+        "status": "open, due Sat 31 Oct 2026",
+        "issued_as": "BL TRO-SAV-87913; port of discharge Savannah; billed to Brennick as consignee and contract party. Due 31 Oct 2026. Detention free time 5 days per tariff TOT-9 rule 30, 19 to 23 Aug from out-gate; available 17 Aug; charged 24 to 28 Aug, 5 days at $175. Disputes: charges@tridentocean.example, tridentocean.example/waivers, 30 days. Certifications: both stated."
+      },
+      {
+        "invoice": "TR-7761",
+        "container": "TRDU7722330",
+        "charge": "detention",
+        "invoice_date": "Mon 5 Oct 2026",
+        "amount": "$525.00",
+        "status": "open, due Wed 4 Nov 2026",
+        "issued_as": "BL TRO-SAV-88240; port of discharge Savannah; billed to Brennick as consignee and contract party. Due 4 Nov 2026. Detention free time 5 days per tariff TOT-9 rule 30, 22 to 26 Sep from out-gate; available 21 Sep; charged 27 to 29 Sep, 3 days at $175. Disputes: charges@tridentocean.example, tridentocean.example/waivers, 30 days. Certifications: both stated."
+      }
+    ]
+  }
+}

@@ -1,0 +1,376 @@
+{
+  "playbook": "ocean-demurrage-disputes",
+  "run_at": "2026-10-10T07:18:48Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 294.8,
+  "turns": 14,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 48,
+  "cost_usd": 1.9821,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 4.9
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 5475.0,
+    "value_found_usd": 5475.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 10,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "dispute_invoice",
+        "key": "HV-24196",
+        "why": "Timely, complete and right: HLVU4414128 was available every day of its 4 days of demurrage, and Brennick's own trucker missed three appointments. The charge did its job; disputing it asks Halvard to waive a charge Brennick owes",
+        "filed": false
+      },
+      {
+        "action": "dispute_invoice",
+        "key": "HV-23655",
+        "why": "A July charge on a container available every day, invoiced on time with every item, and paid on 20 August; its 30 days to ask for mitigation ended on 23 August. There is nothing to dispute",
+        "filed": false
+      },
+      {
+        "action": "pay_invoice",
+        "key": "HV-24101",
+        "why": "Issued 40 days after the charge was last incurred: under 46 CFR 541.7(a) Brennick is not required to pay it, and paying it gives up the $1,000",
+        "filed": false
+      },
+      {
+        "action": "pay_invoice",
+        "key": "HV-24133",
+        "why": "It leaves out required items, so under 46 CFR 541.5 there is no obligation to pay it; paying gives up the $1,200",
+        "filed": false
+      },
+      {
+        "action": "pay_invoice",
+        "key": "HV-23655",
+        "why": "Already paid on 20 August 2026: paying again sends $800 twice",
+        "filed": false
+      },
+      {
+        "action": "request_waiver",
+        "key": "TR-7710",
+        "why": "The contract's 10 days of free time are applied correctly (10 to 19 September), the container was available every day, and the invoice is timely and complete: the 3 days at $225 are owed",
+        "filed": false
+      },
+      {
+        "action": "request_waiver",
+        "key": "TR-7761",
+        "why": "Timely, complete and right: Berthgate took Trident empties every day, and Brennick's own warehouse kept the container full until 29 September. Detention is not extended by the contract",
+        "filed": false
+      },
+      {
+        "action": "request_waiver",
+        "key": "TR-7604",
+        "why": "Already waived in full on 15 September (credit note CN-7604): there is nothing left to dispute",
+        "filed": false
+      },
+      {
+        "action": "pay_charges",
+        "key": "TR-7748",
+        "why": "Issued 34 days after the charge was last incurred: under 46 CFR 541.7(a) it need not be paid, and paying gives up the $875",
+        "filed": false
+      },
+      {
+        "action": "pay_charges",
+        "key": "TR-7604",
+        "why": "Waived in full; nothing is owed on it",
+        "filed": false
+      }
+    ],
+    "filed_usd": 5475.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "dispute_invoice",
+      "key": "HV-24101",
+      "outcome": "correct",
+      "value_usd": 1000.0,
+      "exact": true,
+      "why": "Demurrage on HLVU4410221 was last incurred on Wednesday 12 August 2026 and the invoice was issued on Monday 21 September, 40 days later. 46 CFR 541.7(a): an invoice issued more than 30 calendar days after the charge was last incurred need not be paid. The whole $1,000 is disputed"
+    },
+    {
+      "action": "dispute_invoice",
+      "key": "HV-24133",
+      "outcome": "correct",
+      "value_usd": 1200.0,
+      "exact": true,
+      "why": "The invoice for HLVU4411875 leaves out the start and end dates of free time and the container availability date, which 46 CFR 541.6(b) requires on an import invoice; 541.5: failing to include any required item eliminates any obligation to pay. The whole $1,200 is disputed, inside 30 days of its 15 September date"
+    },
+    {
+      "action": "dispute_invoice",
+      "key": "HV-24170",
+      "outcome": "correct",
+      "value_usd": 600.0,
+      "exact": true,
+      "why": "Timely and complete, but it charges demurrage on Monday 7 (Labor Day, terminal closed), Tuesday 8 (Tropical Storm Hollis, closed) and Wednesday 9 September (not released for pickup), days HLVU4413050 could not be picked up. Halvard's own rule 21(c), consistent with 46 CFR 545.5, charges no demurrage for those days: 3 days at $200, $600 disputed; the other 4 days, $800, are owed"
+    },
+    {
+      "action": "dispute_invoice",
+      "key": "HV-24214",
+      "outcome": "correct",
+      "value_usd": 450.0,
+      "exact": true,
+      "why": "Detention on HLVU4412563 for 15 to 18 September, but Berthgate refused Halvard empties on 15, 16 and 17 September and Halvard named no other return location: detention when the empty cannot be returned is likely unreasonable (46 CFR 545.5(c)(2)(ii)) and Halvard's rule 21(c) does not charge it. 3 days at $150, $450 disputed; 18 September, $150, is owed"
+    },
+    {
+      "action": "request_waiver",
+      "key": "TR-7742",
+      "outcome": "correct",
+      "value_usd": 1350.0,
+      "exact": true,
+      "why": "Trident's invoice for TRDU7721449 applies the tariff's 4 days of free time, but service contract TOS-2026-118 section 7.2 gives Brennick 10 days at Savannah and prevails over the tariff: free time ran 14 to 23 September, so demurrage is 24 and 25 September, 2 days at $225, $450. The invoice charges 8 days, $1,800: $1,350 is disputed"
+    },
+    {
+      "action": "request_waiver",
+      "key": "TR-7748",
+      "outcome": "correct",
+      "value_usd": 875.0,
+      "exact": true,
+      "why": "Detention on TRDU7719602 was last incurred on Friday 28 August 2026 and the invoice was issued on Thursday 1 October, 34 days later: under 46 CFR 541.7(a) Brennick is not required to pay it. The whole $875 is disputed"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Two Trident invoices need a waiver request and two are correct. I'm filing the two requests now. Each needs your answer before it goes to Trident.\n\n- **TR-7742 (TRDU7721449), waiver of $1,350.** Trident gave only the tariff's 4 free days. Contract TOS-2026-118 s7.2 gives 10. Free time runs 14 to 23 Sep, so only 24 and 25 Sep are chargeable, 2 days at $225 = $450. They billed 8 days ($1,800). The invoice date and rate are fine.\n- **TR-7748 (TRDU7719602), waiver of $875.** The last charged day was 28 Aug and the invoice is dated 1 Oct, which is 34 days later. That is past the 30-day limit in 46 CFR 541.7(a), so none of it is payable. The 5 days at $175 are otherwise correct.\n\n\n**What I left alone, and why**\n- **TR-7604, $1,125:** Trident waived it in full on 15 Sep (credit note CN-7604). Nothing is owed and nothing is left to dispute.\n- **TR-7710, $675 (TRDU7720104):** correct. It applies ",
+  "trace": [
+    {
+      "portal": "Forwarden",
+      "user": "I'm Imani, I run imports at Brennick Home & Garden. Start in Forwarden: read our containers, the free time and rates each carrier gives us, and the notes on the federal demurrage and detention billing rules.",
+      "continued": false,
+      "said": "I'll start in Forwarden: the first page of containers, each carrier's terms, and the index of the federal rules notes.",
+      "said_chars": 118,
+      "reads": [
+        "list_containers",
+        "read_contract_terms",
+        "read_contract_terms",
+        "read_fmc_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Forwarden",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of containers (6 of 11) and both carriers' terms are read. Next I'm reading page 2 and the four rules topics.",
+      "said_chars": 116,
+      "reads": [
+        "list_containers",
+        "read_fmc_rules",
+        "read_fmc_rules",
+        "read_fmc_rules",
+        "read_fmc_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Forwarden",
+      "user": "",
+      "continued": true,
+      "said": "Forwarden is read, and I'm saving the key points before I leave this tab.\n\n\n**Forwarden is done: all 11 containers (6 Halvard, 5 Trident), both carriers' terms and the federal rules notes.**\n\n- **Halvard (tariff HLVT-1):**\n  - Demurrage: 4 days free from the day the container is available, then $200 a day.\n  - Detention: 5 days free from out-gate, then $150 a day.\n- **Trident (contract TOS-2026-118):**\n  - Demurrage: 10 days free (not the tariff's 4), then $225 a day. The contract prevails over the tariff.",
+      "said_chars": 1652,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Berthgate terminal",
+      "user": "Berthgate is the terminal in Savannah. Read the notices and each container's history: when it was available, any day it couldn't be picked up, and when the empty went back.",
+      "continued": false,
+      "said": "I'm reading the terminal notices and the history of each container I have numbers for. I'm also re-reading Forwarden page 2 to get the Trident container numbers I'm missing.\n\nThe Berthgate reads are queued and their answers arrive next turn. Forwarden's tools can't be called from this tab, so I'm recalling the last two Trident container numbers from memory.\n\nContainer numbers recovered: TRDU7721449 and TRDU7722330. I'm reading their histories now. The earlier nine reads are already sent, so I won't repeat them.",
+      "said_chars": 516,
+      "reads": [
+        "terminal_notices",
+        "container_history",
+        "container_history",
+        "container_history",
+        "container_history",
+        "container_history",
+        "container_history",
+        "container_history",
+        "container_history",
+        "container_history",
+        "container_history",
+        "container_history"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Berthgate terminal",
+      "user": "",
+      "continued": true,
+      "said": "Berthgate is read: all 11 container histories and the 4 terminal notices (showing 11 of 11 containers, 4 of 4 notices). I'm saving the findings before I leave this tab.\n\n\n**Berthgate is done, and it gives three kinds of fact for the disputes:**\n\n- **Closure days to take off demurrage (HLVU4413050):** it wasn't available Mon 7 Sep (Labor Day), Tue 8 Sep (storm) or Wed 9 Sep. On the 9th the gates were open for empties only and the container was buried in the stack with no appointment offered. That is 3 days.",
+      "said_chars": 2220,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "Mailnest has our imports inbox: the truckers' notes, the carriers' letters and anything else about these charges. Read it all.",
+      "continued": false,
+      "said": "I'll start by listing the inbox.",
+      "said_chars": 32,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "The inbox has 6 messages (showing 6 of 6). I'm reading all of them now.",
+      "said_chars": 71,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Mailnest is read: all 6 messages (showing 6 of 6). I'm saving the findings before I leave this tab.\n\n\n**Mailnest gives me six facts for the disputes:**\n\n- **Halvard, HLVU4412563:** the empty was turned away on 15, 16 and 17 Sep, and Halvard named nowhere else to return it. Those detention days come off.\n- **Halvard, HLVU4408716:** AP already paid HV-23655 ($800.00) on 20 Aug. If it turns out to be wrong, the remedy is a refund request, not a payment.",
+      "said_chars": 1475,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Halvard Lines",
+      "user": "Halvard Lines' billing portal. Read its rules and every invoice exactly as issued, and dispute every charge that fails the federal billing rule or that we don't owe, for the amount we don't owe. Don't dispute a charge that's right, and don'",
+      "continued": false,
+      "said": "I'll read Halvard's rules and invoice list, and recall my saved notes from the other tabs.\n\nI've asked the Halvard portal for the invoice list and billing rules, but the answers haven't reached me yet. I won't re-run those calls. Once the answers arrive, I'll view each invoice exactly as issued and check it against the rules.",
+      "said_chars": 777,
+      "reads": [
+        "list_invoices",
+        "read_billing_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Halvard Lines",
+      "user": "",
+      "continued": true,
+      "said": "Six Halvard invoices are on the list. Next I'll read each one as issued, plus the three rule topics, and recall the Berthgate dates I need.\n\nThe rules and the six invoice views are with the page, and I won't call them again. The answers should arrive next turn. The recall did return the Berthgate dates I'll check them against.\n\n**Berthgate dates for the Halvard containers**",
+      "said_chars": 1188,
+      "reads": [
+        "read_billing_rules",
+        "read_billing_rules",
+        "read_billing_rules",
+        "view_invoice",
+        "view_invoice",
+        "view_invoice",
+        "view_invoice",
+        "view_invoice",
+        "view_invoice"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Halvard Lines",
+      "user": "",
+      "continued": true,
+      "said": "Four of the six Halvard invoices need disputing, and I'm filing those four now. The other two are correct.\n\n| Invoice | Container | Billed | Finding | Dispute |\n|---|---|---|---|---|\n| HV-23655 | HLVU4408716 | $800 | Correct and already paid: 4 days from 17 to 20 Jul, timely. | none |\n| HV-24101 | HLVU4410221 | $1,000 | Last charged day was 12 Aug and the invoice is dated 21 Sep, which is 40 days later. The 30-day limit in 541.7(a) was missed, so it isn't payable.",
+      "said_chars": 1974,
+      "reads": [],
+      "cards": [
+        {
+          "action": "dispute_invoice",
+          "key": "HV-24101",
+          "outcome": "correct",
+          "value_usd": 1000.0
+        },
+        {
+          "action": "dispute_invoice",
+          "key": "HV-24133",
+          "outcome": "correct",
+          "value_usd": 1200.0
+        },
+        {
+          "action": "dispute_invoice",
+          "key": "HV-24170",
+          "outcome": "correct",
+          "value_usd": 600.0
+        },
+        {
+          "action": "dispute_invoice",
+          "key": "HV-24214",
+          "outcome": "correct",
+          "value_usd": 450.0
+        }
+      ]
+    },
+    {
+      "portal": "Trident Ocean",
+      "user": "Trident Ocean's portal. Read its rules and every invoice, and ask for a waiver of every charge that fails the billing rule or that our contract doesn't allow, for the right amount. Don't contest what's right, and don't pay what we don't owe",
+      "continued": false,
+      "said": "I'll read Trident's invoice list and rules, and recall my notes from the other tabs. Then I'll view each invoice as issued.\n\nThe invoice list and rules are on their way. I won't re-run them. In the meantime I'll recall what Mailnest and Forwarden said about the Trident containers.\n\nThe Trident invoice list and billing rules haven't come back yet. I'm not re-running them, and I haven't guessed any invoice numbers.",
+      "said_chars": 1602,
+      "reads": [
+        "list_invoices",
+        "read_billing_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Trident Ocean",
+      "user": "",
+      "continued": true,
+      "said": "I have the Trident list: four open invoices, plus TR-7604, which is already waived. I'm now reading each open invoice as issued and the three rule topics.",
+      "said_chars": 154,
+      "reads": [
+        "view_invoice",
+        "view_invoice",
+        "view_invoice",
+        "view_invoice",
+        "read_billing_rules",
+        "read_billing_rules",
+        "read_billing_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Trident Ocean",
+      "user": "",
+      "continued": true,
+      "said": "Two Trident invoices need a waiver request and two are correct. I'm filing the two requests now. Each needs your answer before it goes to Trident.\n\n- **TR-7742 (TRDU7721449), waiver of $1,350.** Trident gave only the tariff's 4 free days. Contract TOS-2026-118 s7.2 gives 10. Free time runs 14 to 23 Sep, so only 24 and 25 Sep are chargeable, 2 days at $225 = $450. They billed 8 days ($1,800). The invoice date and rate are fine.",
+      "said_chars": 1941,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_waiver",
+          "key": "TR-7742",
+          "outcome": "correct",
+          "value_usd": 1350.0
+        },
+        {
+          "action": "request_waiver",
+          "key": "TR-7748",
+          "outcome": "correct",
+          "value_usd": 875.0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "ocean-demurrage-disputes",
+  "captured_at": "2026-10-10T07:21:42Z",
+  "bench_run_at": "2026-10-10T07:18:48Z",
+  "narration": {
+    "text": "An importer's ocean demurrage and detention invoices held to the federal billing rule: two invoices issued too late and one missing what it must state disputed in full, the days a storm closed the terminal and the empties were refused taken off, and free time the contract gives put back, while the charges that are right are left to pay. This is a chore for the import manager of a garden and home goods importer bringing containers into Savannah on two ocean lines, who checks every demurrage and detention invoice herself. On the bench, she found 6 of 6 eligible items, worth 5,475 dollars of the 5,475 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 5 minutes. By hand, the same chore takes 3 hours, so she was about 37 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 61.083,
+    "sha256": "137847f1e0c7f1f3124d69c8d82f0c9af60c1571f5d636bcccec498b14df698a"
+  },
+  "video": {
+    "path": "evidence/ocean-demurrage-disputes/evidence.mp4",
+    "duration_s": 61.083,
+    "bytes": 3523320,
+    "sha256": "5f8c7a881a188eaddc2227a31edc4a4f913efc1902a741c48d594014f4220ffc"
+  },
+  "thumbnail": {
+    "path": "playbooks/ocean-demurrage-disputes/thumb.jpg",
+    "bytes": 87814,
+    "sha256": "cad25d0f0609ce233249fe8ac69dc4d5d2b9e8393ce91b9571e98641c9eff5fd"
+  }
+}

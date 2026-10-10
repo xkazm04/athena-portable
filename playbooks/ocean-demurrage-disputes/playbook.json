@@ -1,0 +1,128 @@
+{
+  "id": "ocean-demurrage-disputes",
+  "title": "An importer's ocean demurrage and detention invoices held to the federal billing rule: two invoices issued too late and one missing what it must state disputed in full, the days a storm closed the terminal and the empties were refused taken off, and free time the contract gives put back, while the charges that are right are left to pay",
+  "domain": "Logistics",
+  "audience": "work",
+  "promise": "A garden-goods importer's demurrage and detention invoices from two ocean carriers are read against its forwarder's container list and contract terms, the terminal's own record of when each container could be picked up and each empty returned, and its inbox, and every charge the Federal Maritime Commission's billing rule or the carriers' own terms say need not be paid is disputed in the carrier's own portal for exactly that amount: an invoice issued forty days after the charge, another thirty-four days after, one that leaves out its free-time dates and availability date, three days of demurrage when the terminal was closed or the box not released, three days of detention when the line's empties were refused, and six days of free time the service contract gives. A charge that is right because the trucker or the warehouse was late, the contract's longer free time already applied, an invoice already waived and one already paid are left alone, and nothing that need not be paid is paid.",
+  "persona": "The import manager of a garden and home goods importer bringing containers into Savannah on two ocean lines, who checks every demurrage and detention invoice herself",
+  "chore": "Read each container's carrier, bill of lading and terms, both carriers' free time and rates, and the forwarder's notes on the federal rules in the forwarder's portal; each container's availability, holds, out-gate and empty return, and the terminal's closures and refusals, in the terminal's portal; the truckers', warehouse's and carriers' messages in the inbox; and each carrier's rules and every invoice as issued in its own billing portal. Then apply the FMC's Demurrage and Detention Billing Requirements, 46 CFR Part 541 (an invoice within 30 days of the last day charged, 541.7; the items it must state, 541.6; no obligation to pay an invoice that leaves one out, 541.5; at least 30 days to ask for mitigation and 30 days to answer, 541.8), and the FMC's interpretive rule, 46 CFR 545.5, with each carrier's own tariff and the service contract. No carrier's portal shows the terminal's record or the other carrier's contract.",
+  "command": "I'm Imani, I run imports at Brennick Home & Garden. Go through Forwarden, Berthgate, our Mailnest inbox and the Halvard Lines and Trident Ocean portals, and dispute every demurrage and detention charge that breaks the federal billing rule or that we don't owe, each for the right amount. Don't fight charges that are right, and don't pay anything we don't owe.",
+  "apps": [
+    {
+      "name": "Forwarden",
+      "role": "the forwarder's portal: every import container with its carrier, bill of lading and terms, each carrier's free time and rates under the tariff or the service contract, and its notes on the FMC's billing rules",
+      "api": "Forwarder portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Berthgate terminal",
+      "role": "the Savannah terminal's public portal: each container's availability, holds, out-gate and empty return, and the closures and empty refusals",
+      "api": "Terminal portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the imports inbox: the trucker's and the warehouse's notes, a carrier's waiver, the payables team's record of a payment, and an audit service's offer",
+      "api": "Email",
+      "url": ""
+    },
+    {
+      "name": "Halvard Lines",
+      "role": "an ocean carrier's billing portal: its tariff's demurrage and detention rules, every invoice as issued, the dispute form and payment",
+      "api": "Carrier portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Trident Ocean",
+      "role": "a second ocean carrier's portal: its tariff and contract rules, every invoice as issued, the waiver request and payment",
+      "api": "Carrier portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the containers, both carriers' free time and rates, and the notes on 46 CFR Parts 541 and 545 in Forwarden.",
+    "Reads each container's history and the closures and empty refusals at Berthgate.",
+    "Reads the truckers', the warehouse's and the carriers' messages in Mailnest.",
+    "Reads Halvard's rules and invoices, and disputes the late invoice, the incomplete one and the closed and refused days.",
+    "Reads Trident's rules and invoices, and asks for a waiver of the free time its contract gives and of a late invoice."
+  ],
+  "gates": [
+    {
+      "action": "dispute_invoice",
+      "label": "Dispute a Halvard invoice",
+      "why": "Sent to the carrier in Brennick's name; it says what Brennick will and will not pay."
+    },
+    {
+      "action": "pay_invoice",
+      "label": "Pay a Halvard invoice",
+      "why": "Brennick's money leaves its account."
+    },
+    {
+      "action": "request_waiver",
+      "label": "Ask Trident to waive or reduce an invoice",
+      "why": "Sent to the carrier in Brennick's name; it says what Brennick will and will not pay."
+    },
+    {
+      "action": "pay_charges",
+      "label": "Pay a Trident invoice",
+      "why": "Brennick's money leaves its account."
+    }
+  ],
+  "traps": [
+    "Disputing four days of demurrage on a container that was available every day while Brennick's own trucker missed three appointments.",
+    "Disputing Trident's demurrage where the contract's ten days of free time were applied correctly.",
+    "Disputing detention the warehouse caused by keeping a container full, when the terminal took empties every day.",
+    "Disputing an invoice Trident has already waived, or one paid in August whose window has closed.",
+    "Paying an invoice issued more than thirty days after the charge, or one missing what it must state.",
+    "Paying an invoice twice, or paying one already waived.",
+    "An audit service keeping thirty-five percent of what is waived."
+  ],
+  "memory": [
+    "Which line and terms each container runs on, and that Trident's contract gives ten days of demurrage free time but not more detention, carried from Forwarden.",
+    "The days each container could not be picked up, the days Halvard's empties were refused, and each out-gate and return, carried from Berthgate.",
+    "That the trucker and the warehouse were late on two containers, that one Trident invoice is waived and one Halvard invoice paid, carried from Mailnest."
+  ],
+  "economics": {
+    "value_usd": 20000,
+    "per": "year",
+    "basis": "An estimate. An importer bringing a few hundred containers a year through a congested port is billed demurrage and detention on a share of them, often late, without a required item, for days a terminal was closed or an empty refused, or at free time its contract extends; since 28 May 2024 an invoice issued late or missing a required item need not be paid at all. The roster's $20,000 a year is charges waived or not paid, an estimate. The bench world holds $5,475: Halvard's invoice issued 40 days after the charge ($1,000) and the one that leaves out its free-time dates and availability date ($1,200), three days of demurrage when the terminal was closed or the container not released ($600) and three days of detention when Halvard's empties were refused ($450); Trident's invoice that ignores the contract's ten days of free time ($1,350 of $1,800) and its detention invoice issued 34 days after the charge ($875). Times a year: twelve, since the invoices are checked every month; this world holds about a month of each carrier's billing. The rules applied, as they stand on Friday 9 October 2026: the FMC's Demurrage and Detention Billing Requirements, 46 CFR Part 541 (final rule 89 FR 14330, 26 February 2024, effective 28 May 2024): 541.7(a), an invoice within 30 calendar days from the day the charge was last incurred, or the billed party is not required to pay it; 541.6, the items an invoice must state (the bill of lading, the container, the port of discharge, why the billed party is the proper party, the invoice and due dates, the free time in days with its start and end dates, the container availability date for imports, the dates charged, the total, the rule or contract section and the rate, dispute contacts and timeframes, and two certifications); 541.5, failing to include any of them eliminates the obligation to pay; 541.8, at least 30 calendar days from the invoice date to ask for mitigation, refund or waiver, and 30 days to resolve it. Section 541.4, which said who may be billed, was set aside by the D.C. Circuit in World Shipping Council v. FMC (23 September 2025) and removed and reserved by the FMC on 29 December 2025 (90 FR 60579), so this world authors no rule on who may be billed. And the FMC's interpretive rule on demurrage and detention, 46 CFR 545.5 (85 FR 29665, 2020; unchanged): detention charged when empty containers cannot be returned is likely to be found unreasonable absent extenuating circumstances, and the FMC may consider whether demurrage is tied to cargo availability. The free time, rates and day-by-day rules of each tariff, including Halvard's rule that charges no day a container could not be picked up or returned, and the service contract are the invented carriers' own.",
+    "manual_minutes": 180,
+    "times_per_year": 12,
+    "incumbent": "Forwarders and brokers dispute demurrage and detention for their clients when asked; independent invoice audit services exist, but no published contingency share for ocean demurrage and detention disputes was found, so no incumbent_fee_pct is given. The world's own audit offer, an invented service at 35%, is a trap, not a source.",
+    "sources": [
+      {
+        "label": "46 CFR Part 541, Demurrage and Detention Billing Requirements (541.5 failure to include required information, 541.6 invoice contents, 541.7 timing, 541.8 disputes), eCFR",
+        "url": "https://www.ecfr.gov/current/title-46/chapter-IV/subchapter-B/part-541"
+      },
+      {
+        "label": "FMC final rule, Demurrage and Detention Billing Requirements, 89 FR 14330 (26 February 2024), effective 28 May 2024",
+        "url": "https://www.federalregister.gov/documents/2024/02/26/2024-02926/demurrage-and-detention-billing-requirements"
+      },
+      {
+        "label": "FMC, Properly issued invoices provision set aside by court: 46 CFR 541.4 removed and reserved, 90 FR 60579 (29 December 2025)",
+        "url": "https://www.federalregister.gov/documents/2025/12/29/2025-23920/demurrage-and-detention-billing-requirements-properly-issued-invoices-provision-set-aside-by-court"
+      },
+      {
+        "label": "46 CFR 545.5, interpretive rule on demurrage and detention under the Shipping Act, eCFR",
+        "url": "https://www.ecfr.gov/current/title-46/chapter-IV/subchapter-B/part-545/section-545.5"
+      },
+      {
+        "label": "46 U.S.C. 41104(a)(15) and (f): no demurrage or detention invoice without the required information, and no obligation to pay one that lacks it",
+        "url": "https://www.law.cornell.edu/uscode/text/46/41104"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Whether a charge is owed is split between the invoice as issued, the terminal's own record of availability and empty returns, the contract's free time on the forwarder's portal and the inbox; two invoices fail on dates that must be counted, one on items it leaves out, two on days the box could not move, and one on free time the carrier's own invoice misstates, while three look disputable and are right.",
+    "usefulness_why": "Keeps an importer from paying demurrage and detention the federal rule says it need not pay, and from fighting the charges it owes; a few thousand dollars a month at a congested port, mostly money."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful import manager with the FMC's rules, the terminal's record and the contract in hand gets most of it; the bar is the late and incomplete invoices disputed in full, the closed, refused and contract-free days taken off at the right amounts, nothing right disputed and nothing unowed paid, inside an hour."
+  },
+  "caveat": "Imani Castellanos, Brennick Home & Garden, Halvard Lines, Trident Ocean, Berthgate Container Terminal, Forwarden, Pelton Drayage, Quayline Audit, Mailnest and Tropical Storm Hollis are invented, and so are every container, bill of lading, invoice and notice; no carrier, terminal or importer here is real. Each carrier's tariff, free time, rates and day-by-day rules, including Halvard's rule charging no day a container could not be picked up or returned, and Trident's service contract are the invented carriers' own, stated on their portals. The public rules applied are the FMC's Demurrage and Detention Billing Requirements, 46 CFR Part 541 (effective 28 May 2024; section 541.4, on who may be billed, was set aside in 2025 and is not applied), the FMC's interpretive rule at 46 CFR 545.5, and 46 U.S.C. 41104, fixed in the bench world as of 9 October 2026. Each carrier's answer, the FMC, and the facts of a real container decide real charges. This applies stated rules to stated facts; it is not legal advice."
+}
