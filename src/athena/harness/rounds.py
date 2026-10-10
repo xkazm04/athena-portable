@@ -16,6 +16,7 @@ the model in the next turn's frame. One turn is one row whatever happened inside
 
 from __future__ import annotations
 
+import asyncio
 import time
 from collections.abc import AsyncIterator, Mapping, Sequence
 from dataclasses import dataclass
@@ -127,47 +128,62 @@ class RoundHarness:
         tts: str | None = None
         failure: Failure | None = None
 
-        for _round in range(1, self.max_rounds + 1):
-            result.rounds = _round
-            round_text, round_failure = await self._round(
-                conversation_id, static_text, history, replies, result
-            )
-            if round_failure is not None:
-                failure = round_failure
-                break
-            replies.append(round_text)
+        try:
+            for _round in range(1, self.max_rounds + 1):
+                result.rounds = _round
+                round_text, round_failure = await self._round(
+                    conversation_id, static_text, history, replies, result
+                )
+                if round_failure is not None:
+                    failure = round_failure
+                    break
+                replies.append(round_text)
 
-            parsed = parse_turn(round_text)
-            if parsed.text:
-                texts.append(parsed.text)
-                yield TextDelta(text=parsed.text)
-            if tts is None and parsed.tts:
-                tts = parsed.tts
+                parsed = parse_turn(round_text)
+                if parsed.text:
+                    texts.append(parsed.text)
+                    yield TextDelta(text=parsed.text)
+                if tts is None and parsed.tts:
+                    tts = parsed.tts
 
-            # Call ids carry the round: a turn's rounds each number their ops from zero, and a
-            # core result in one round must never be read as the answer to a page call in another.
-            events, feedback = self._dispatch(parsed, entries, ctx, f"{turn_id}_r{_round}", result)
-            for event in events:
-                yield event
-            if feedback:
-                # Told about a refusal, a model takes the silence of its page calls for failure
-                # and sends them again; say they are in flight (ADR 0041).
-                in_flight = _in_flight(events)
-                if in_flight:
-                    feedback.append(
-                        ToolResult(
-                            call_id=f"{turn_id}_r{_round}_in_flight",
-                            name="page",
-                            ok=True,
-                            output=(
-                                f"Your calls to {', '.join(in_flight)} went to the page; their "
-                                "answers come with your next turn. Do not call them again."
-                            ),
+                # Call ids carry the round: a turn's rounds each number their ops from zero, and a
+                # core result in one round must never be read as the answer to a page call in
+                # another.
+                events, feedback = self._dispatch(
+                    parsed, entries, ctx, f"{turn_id}_r{_round}", result
+                )
+                for event in events:
+                    yield event
+                if feedback:
+                    # Told about a refusal, a model takes the silence of its page calls for failure
+                    # and sends them again; say they are in flight (ADR 0041).
+                    in_flight = _in_flight(events)
+                    if in_flight:
+                        feedback.append(
+                            ToolResult(
+                                call_id=f"{turn_id}_r{_round}_in_flight",
+                                name="page",
+                                ok=True,
+                                output=(
+                                    f"Your calls to {', '.join(in_flight)} went to the page; their "
+                                    "answers come with your next turn. Do not call them again."
+                                ),
+                            )
                         )
-                    )
-            if not feedback:
-                break
-            history.append(_results_message(feedback))
+                if not feedback:
+                    break
+                history.append(_results_message(feedback))
+        except (GeneratorExit, asyncio.CancelledError):
+            # The consumer closed the stream or the task was cancelled; a billed call may already
+            # have happened. Write the row and re-raise: an async generator that yields after
+            # GeneratorExit raises RuntimeError, so nothing is yielded here.
+            self._close_row(result, started, "cancelled", conversation_id, ctx)
+            raise
+        except Exception as exc:
+            # The type name only: an exception's message can quote a request body.
+            reason = self._close_row(result, started, "unknown", conversation_id, ctx)
+            yield TurnError(reason=reason, detail=type(exc).__name__)
+            return
 
         result.text = "\n\n".join(texts).strip()
         if failure is None and not result.text and not result.tool_calls:
@@ -304,6 +320,21 @@ class RoundHarness:
         return events
 
     # -- the row ----------------------------------------------------------------------------------
+
+    def _close_row(
+        self,
+        result: TurnResult,
+        started: float,
+        reason: str,
+        conversation_id: str,
+        ctx: TurnContext,
+    ) -> str:
+        """Write the row of a turn that ended by a raise or a closed stream. Returns the reason."""
+        result.duration_ms = int((time.monotonic() - started) * 1000)
+        result.is_error = True
+        result.error_reason = reason
+        self._finish(result, conversation_id, ctx)
+        return result.error_reason or "unknown"
 
     def _finish(self, result: TurnResult, conversation_id: str, ctx: TurnContext) -> None:
         self._last = result

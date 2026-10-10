@@ -304,7 +304,6 @@ class LedgerHook:
             return None
         if result.is_error:
             result.error_reason = normalize_reason(result.error_reason) or "unknown"
-        self._recorded.add(result.turn_id)
         row = self.ledger.record(
             engine=result.engine,
             model=result.model,
@@ -322,6 +321,8 @@ class LedgerHook:
             error_reason=result.error_reason,
             turn_id=result.turn_id,
         )
+        # Marked only once the write returned, so a failed write can be retried.
+        self._recorded.add(result.turn_id)
         return row.row_id
 
     def flag(self, turn_id: str, name: str, detail: str) -> None:

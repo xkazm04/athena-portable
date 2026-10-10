@@ -20,6 +20,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
+#: Reader limit for the child's stdout. asyncio's 64 KiB default raises on one long stream-json
+#: record (a tool result or a full message is a single line); 8 MiB leaves real headroom.
+STREAM_LIMIT = 8 * 1024 * 1024
+
 __all__ = [
     "CliRequest",
     "ScriptedTransport",
@@ -113,6 +117,7 @@ class SubprocessTransport:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 creationflags=creationflags,
+                limit=STREAM_LIMIT,
             )
         except OSError as exc:
             raise TransportError(f"{self.executable}: {exc}") from exc

@@ -21,6 +21,7 @@ nothing that can move between turns is ever composed into the static half.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -268,6 +269,9 @@ class CliHarness(RoundHarness):
                         return "", ("engine_error", "the CLI reported an error and stopped")
         except TimeoutError:
             return "", ("timeout", f"the CLI produced no line for {request.timeout_s}s")
+        except (ValueError, asyncio.LimitOverrunError):
+            # StreamReader.readline raises one of these for a line over the reader limit.
+            return "", ("engine_error", "the CLI wrote a line longer than the reader's line limit")
         except OSError as exc:
             # argv is a list and never a shell string, so the message carries no user text and
             # no secret — and "engine_error" with nothing after it is a bug report nobody can act
