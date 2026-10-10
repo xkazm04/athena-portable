@@ -17,11 +17,16 @@ test("the first run leads with one sentence, an Enter hint and the engine's stan
   expect(html).not.toContain('placeholder="invoicing.example.test"');
 });
 
-test("no fixture claims hands that are not wired, or a switch that is not enforced", () => {
+test("no fixture claims a switch that is not enforced, or that a tool-less page cannot be acted on", () => {
   for (const id of fixtureIds) {
     const html = renderToStaticMarkup(entry.preview(id));
-    expect(html, id).not.toMatch(/hands|switched off|Switch off/i);
+    expect(html, id).not.toMatch(/switched off|Switch off|not act on it yet/i);
   }
+});
+
+test("a page with no tools of its own is reached through the generic hands, gated on first sight (ADR 0065)", () => {
+  const html = renderToStaticMarkup(entry.preview("typical"));
+  expect(html).toContain("Athena reaches it through her generic hands, gated on first sight");
 });
 
 describe("two layers (ADR 0029)", () => {

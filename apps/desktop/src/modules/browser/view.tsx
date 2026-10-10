@@ -479,8 +479,8 @@ function RegisterField({
 /** The same three facts as a sentence, for the one place there is room for one. */
 function describe(tools: BrowserTools | null): string {
   if (!tools || tools.asking) return "Asking the page what it has registered…";
-  if (tools.problem) return `This page could not be read for tools (${tools.problem}). Athena can read it but not act on it yet.`;
-  if (!tools.count) return `This page offers no tools of its own; Athena can read it but not act on it yet.`;
+  if (tools.problem) return `This page could not be read for tools (${tools.problem}). Athena reaches it through her generic hands, gated on first sight.`;
+  if (!tools.count) return `This page offers no tools of its own; Athena reaches it through her generic hands, gated on first sight.`;
   return `${tools.count} tool${tools.count === 1 ? "" : "s"} registered, over ${tools.transport ?? "no transport"}.`;
 }
 
@@ -488,7 +488,7 @@ function describe(tools: BrowserTools | null): string {
  * The focused page's tier-1 surface in one pill, and it is three facts rather than a number.
  * `pending` is nobody has asked yet; `warning` is the relay could not read the page, with the
  * reason verbatim in the title; and a count is a count, where zero is the ordinary answer for
- * every site that never heard of WebMCP — which is the page Athena can read but not act on yet.
+ * every site that never heard of WebMCP — which is a page Athena reaches through her generic hands, gated on first sight.
  */
 function ToolCount({ tools }: { tools: BrowserTools | null }) {
   if (!tools) return null;

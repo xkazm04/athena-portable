@@ -150,7 +150,11 @@ test("an app's standing is a fact about the tabs and the relay, in order of what
     tabId: 1,
     host: "a.test",
   });
-  expect(appOf(row("https://b.test"), tabs, byTab)).toMatchObject({ standing: "readonly", tabId: 2 });
+  expect(appOf(row("https://b.test"), tabs, byTab)).toMatchObject({
+    standing: "readonly",
+    tabId: 2,
+    summary: expect.stringContaining("generic hands, gated on first sight"),
+  });
   expect(appOf(row("https://c.test"), tabs, byTab)).toMatchObject({ standing: "closed", tabId: null, summary: "not opened" });
   // Open, but the relay has not answered: reading, not "no tools".
   expect(appOf(row("https://a.test"), tabs, {})).toMatchObject({ standing: "reading" });

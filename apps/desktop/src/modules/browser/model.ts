@@ -49,7 +49,7 @@ export interface BrowserTools {
  * - `closed`   — registered, no tab open on it.
  * - `reading`  — a tab is open and the relay is still asking the page.
  * - `ready`    — the page answered with at least one tool.
- * - `readonly` — the page offers no tools of its own: Athena can read it but not act on it yet.
+ * - `readonly` — the page offers no tools of its own: Athena reaches it through her generic hands, gated on first sight.
  * - `disabled` — the user told Athena not to act on this app, whatever it offers.
  */
 export type AppStanding = "closed" | "reading" | "ready" | "readonly" | "disabled";
@@ -214,7 +214,7 @@ export function appOf(
   const tools = toolsOf(byTab[tab.id]);
   if (tools.asking) return { ...base, standing: "reading", summary: "reading the page" };
   if (tools.problem || tools.count === 0) {
-    return { ...base, standing: "readonly", summary: "offers no tools of its own; Athena can read it but not act on it yet" };
+    return { ...base, standing: "readonly", summary: "offers no tools of its own; Athena reaches it through her generic hands, gated on first sight" };
   }
   return {
     ...base,
