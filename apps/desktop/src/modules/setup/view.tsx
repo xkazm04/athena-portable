@@ -639,7 +639,8 @@ function OpenPage({ model, compact = false }: { model: SetupModel; compact?: boo
         </ul>
       ) : compact ? null : (
         <p className="typo-caption">
-          Any site. A page that offers no tools of its own can be read by Athena but not acted on yet.
+          Any site. A page that offers no tools of its own is reached through Athena's generic hands, and
+          she asks you first on a page she has not seen before.
         </p>
       )}
     </div>

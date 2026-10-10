@@ -11,8 +11,9 @@
  * from SQLite.
  *
  * **Writes for one origin are queued, and a save names only the fields it owns.** Two writers
- * reach this table at once as soon as c24 exists: the shell's first-sight default writing
- * `GATED` into `overrides` while the user's Disable click writes `enabled`. If both read the
+ * can reach one row at once: a tool pin writing `overrides` while the user's Disable click writes
+ * `enabled`. First sight writes nothing: an origin with no row is gated at the gate, and a row
+ * appears only when the user answers (ADR 0063). If both read the
  * record, both merge locally and both send a whole row, whichever IPC lands second wins all of
  * it — and an origin the user disabled comes back enabled with no error anywhere. So a patch is
  * applied to the record the *previous* save published, not to the one its caller was holding.

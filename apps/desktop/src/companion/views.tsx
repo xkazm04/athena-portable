@@ -767,7 +767,7 @@ function Origins({ model }: { model: CompanionModel }) {
       {origins.offersFooter ? <p className="lg-foot">{origins.offersFooter}</p> : null}
       <h3 className="lg-h">Apps she has seen</h3>
       {origins.known.length === 0 ? (
-        <p className="lg-foot">None yet. A page's tools are off until you say otherwise.</p>
+        <p className="lg-foot">None yet. The first time she sees a page, what she wants to do there waits for your answer.</p>
       ) : (
         <ul className="offers">
           {origins.known.map((k) => (

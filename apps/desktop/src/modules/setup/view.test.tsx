@@ -34,3 +34,9 @@ test("the onboarding letter keeps its controls inline (the first-run exception)"
   expect(html).not.toContain('role="dialog"');
   expect(html).toContain("Start using Athena");
 });
+
+test("opening a page says what a page with no tools of its own gets, not that it cannot be acted on", () => {
+  const html = renderToStaticMarkup(entry.preview("empty"));
+  expect(html).toContain("reached through Athena&#x27;s generic hands");
+  expect(html).not.toContain("not acted on yet");
+});

@@ -303,3 +303,12 @@ test("a card without a capture says no capture was taken, and why when it is kno
   );
   expect(cardView(CARDS[0], "no shell").capture).toEqual({ kind: "none", why: "no shell" });
 });
+
+test("an empty list of apps she has seen says first sight asks, and does not say tools are off", () => {
+  const model = fixtures["ledger origins"]();
+  const out = renderToStaticMarkup(
+    createElement(CompanionView, { model: { ...model, origins: { ...model.origins, known: [] } } }),
+  );
+  expect(out).toContain("waits for your answer");
+  expect(out).not.toContain("tools are off");
+});
