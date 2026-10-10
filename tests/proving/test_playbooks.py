@@ -59,6 +59,7 @@ def make_playbook(tmp_path: Path, **overrides: Any) -> Path:
         "promise": "Refunds for late parcels, filed for signature.",
         "command": "File a refund claim for every late parcel.",
         "persona": "a small online shop",
+        "caveat": "Shipdesk and every parcel here are invented. It is not legal advice.",
         "economics": {"value_usd": 30, "per": "year"},
         "edge": {"difficulty": 4, "usefulness": 4},
         "expectation": {"recall": 0.7, "false_claims": 0, "minutes": 10},

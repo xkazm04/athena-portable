@@ -1,24 +1,24 @@
 {
   "schema": 1,
   "playbook": "medical-bills",
-  "captured_at": "2026-10-09T16:13:27Z",
+  "captured_at": "2026-10-10T04:14:31Z",
   "bench_run_at": "2026-10-07T23:06:25Z",
   "narration": {
     "text": "Medical bills against the EOBs. This is a chore for a family on a PPO with an ER visit, a surgery and some follow-up care this year. Athena works it across 3 portals: Insurer member portal, MyChart and Cedar. On the bench, she found 7 of 8 eligible items, worth 3,423 dollars and 50 cents of the 3,423 dollars and 50 cents there was to find. All 7 were filed at the exact amount the rules allow. She made no false claim. The world held 12 traps, and she walked past 12. Among them: A January bill much higher than last year's identical visit — because the deductible reset. It is right; pay it. A bill sent while the EOB is still pending: neither pay nor dispute it yet. She took 2 minutes. By hand, the same chore takes 8 hours, so she was about 209 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 30 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
     "engine": "kokoro",
     "voice": "af_heart",
     "duration_s": 63.508,
-    "sha256": "92f6a32c19f8c328c56dcae1b881371ef2133f3e6765e27264447e857d402b86"
+    "sha256": "6607dc5ad2ba63f89390c7e00c7c9869128b788413eaf5d7523f7874d1b6c2a1"
   },
   "video": {
     "path": "evidence/medical-bills/evidence.mp4",
     "duration_s": 63.52,
-    "bytes": 2784192,
-    "sha256": "9cf432230998a995d1fe330fe28a0c9eb603c2f5906ff2453e9e2c4cbc7cacb7"
+    "bytes": 2743544,
+    "sha256": "f47aea6f541ee6ddc9365762874c37befae7e7cd0a5cb7c61c9624a37688467a"
   },
   "thumbnail": {
     "path": "playbooks/medical-bills/thumb.jpg",
-    "bytes": 81745,
-    "sha256": "dd1ed7254fe3774744b08f822272df8ef7f1f937f75e7a20c8c59dd9096caaa2"
+    "bytes": 82451,
+    "sha256": "8b2686278a442525ffdecd5b9da56315db17b4f9c8afe494243c2c3211b5fac3"
   }
 }

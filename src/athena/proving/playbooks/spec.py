@@ -426,6 +426,12 @@ def _authoring_problems(
                 f"{pid}: ADR 0056 (c) wants economics.times_per_year, a number above 0, "
                 f"found {times!r}"
             )
+    caveat = showcase.get("caveat")
+    if not isinstance(caveat, str) or not caveat.strip():
+        found.append(
+            f"{pid}: ADR 0057 rule 4 wants a caveat, a non-empty string in playbook.json "
+            "naming what is invented, the public rule and its date, and that it is not advice"
+        )
     per = economics.get("per")
     if per not in PER_TABLE:
         found.append(

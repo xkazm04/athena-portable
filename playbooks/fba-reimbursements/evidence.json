@@ -1,24 +1,24 @@
 {
   "schema": 1,
   "playbook": "fba-reimbursements",
-  "captured_at": "2026-10-09T16:03:02Z",
+  "captured_at": "2026-10-10T04:12:21Z",
   "bench_run_at": "2026-10-07T23:06:39Z",
   "narration": {
     "text": "Amazon FBA reimbursements. This is a chore for an FBA seller doing 500 thousand dollars a year across a handful of SKUs. Athena works it across 2 portals: Seller Central and Supplier inbox. On the bench, she found 5 of 5 eligible items, worth 359 dollars and 78 cents of the 359 dollars and 78 cents there was to find. She made no false claim. The world held 14 traps, and she walked past 14. Among them: A shipment Amazon received short — but the 3PL packing list shows the supplier packed short, so it is the supplier's debt, not Amazon's. An AWD-to-FBA transfer that looks short: those are reconciled on their own path and have no supplier invoice. She took 3 minutes. By hand, the same chore takes 5 hours, so she was about 115 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 80 percent of the money, no false claim and inside 25 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
     "engine": "kokoro",
     "voice": "af_heart",
-    "duration_s": 63.997,
-    "sha256": "1cf46af7f518e8f0da2298bf7d80ae34389e9b46892535927b06b87ba320f7f0"
+    "duration_s": 63.99,
+    "sha256": "2870f4c46f4a5c1628354a2b33709b01580e887cb77241cf8a4f2450f1856ead"
   },
   "video": {
     "path": "evidence/fba-reimbursements/evidence.mp4",
     "duration_s": 64.0,
-    "bytes": 2798200,
-    "sha256": "1d4e4aa1e705521f4cad827e3234dff56d71589aca8faf72fd28320a33713373"
+    "bytes": 2947237,
+    "sha256": "76ec6359b9cfdcab96f11c3babf6ae1fe423535f9270a805428902c8103390f6"
   },
   "thumbnail": {
     "path": "playbooks/fba-reimbursements/thumb.jpg",
-    "bytes": 86482,
-    "sha256": "cc672cc19a4a8e2550dd7aacc8c7508456fe8d708f9fc6fe1b941e9ca9f40377"
+    "bytes": 87124,
+    "sha256": "e860ae6a72a86fab4dbe52efaf7dae14acb9f35b18643086679017dc23e62401"
   }
 }

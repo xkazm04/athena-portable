@@ -212,6 +212,8 @@ authored against their rules as they stand on that date.
    real and named in `economics.sources` with a URL. A playbook never gives legal, tax or medical
    advice. It applies a stated rule to stated facts and says so, and it carries a `caveat`
    wherever real use needs one (rows 35, 36, 38, 40, 44, 45, 59, 62, 74, 81, 84 and 86 among them).
+   *Note, 2026-10-10:* `check` now enforces the caveat for every playbook, including the three written
+   before the roster (`cpg-deductions`, `fba-reimbursements`, `medical-bills`), which now carry one.
 5. **Economics per ADR 0056.** `value_usd` with a `per` from its table, `manual_minutes` for the
    chore the world holds, `economics.times_per_year` on every new playbook with its basis,
    `incumbent_fee_pct` wherever an incumbent takes a share, and `sources`. The roster's value is a

@@ -1,24 +1,24 @@
 {
   "schema": 1,
   "playbook": "cpg-deductions",
-  "captured_at": "2026-10-09T15:58:03Z",
+  "captured_at": "2026-10-10T04:10:24Z",
   "bench_run_at": "2026-10-07T23:28:15Z",
   "narration": {
     "text": "Distributor deductions, disputed. This is a chore for a 4-million-dollar natural-foods snack brand selling through UNFI and KeHE, with a part-time finance person. Each month the distributors pay less than they owe: promotions, shortages, spoils, fees, pricing. Athena works it across 4 portals: myUNFI Dispute Center, KeHE K-Solve, Brand Drive and Warehouse portal. On the bench, she found 7 of 7 eligible items, worth 10,882 dollars of the 10,882 dollars there was to find. All 7 were filed at the exact amount the rules allow. She made no false claim. The world held 10 traps, and she walked past 10. Among them: A promotion deducted at the approved rate, plus KeHE's 8 percent fee — both valid. A shortage the proof of delivery itself notes as short. She took 4 minutes. By hand, the same chore takes 15 hours, so she was about 214 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 35 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
     "engine": "kokoro",
     "voice": "af_heart",
-    "duration_s": 67.32,
-    "sha256": "cc59da6d02a5c298aadf144285e4bb202c933a9c4874e9f099d6aa684596a29e"
+    "duration_s": 67.322,
+    "sha256": "2135b7350170225c1f532dcce126c2cf7317e3478bceefc90ccbaa79f3ea1938"
   },
   "video": {
     "path": "evidence/cpg-deductions/evidence.mp4",
-    "duration_s": 67.32,
-    "bytes": 3319174,
-    "sha256": "9942a9863c08c2915fe9bb48fc330a778a5ee550722f7de9cbf9cbc43040acb1"
+    "duration_s": 67.322,
+    "bytes": 3301617,
+    "sha256": "5576ad358022c3d916301ecf4f3db4638015ad3878c2a227460371675ca21a35"
   },
   "thumbnail": {
     "path": "playbooks/cpg-deductions/thumb.jpg",
-    "bytes": 82055,
-    "sha256": "3df9985544a923cc95a137c588e16b63e3115338a48b119bd179c3329894b153"
+    "bytes": 82688,
+    "sha256": "468514d5e39ff55b8bd5b2b6b668d18305e81d1a4f58e97f6531841b60b82370"
   }
 }

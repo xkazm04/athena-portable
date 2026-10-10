@@ -197,3 +197,35 @@ def test_check_exits_2_and_names_the_rule_for_a_bad_playbook(
     root.rename(base / "late-parcels")
     assert main(["--dir", str(base), "check"]) == 2
     assert "ADR 0057 rule 1" in capsys.readouterr().err
+
+
+def test_a_playbook_without_a_caveat_is_refused(tmp_path: Path) -> None:
+    root = compliant(tmp_path)
+    put(root, "playbook.json", lambda v: v.pop("caveat"))
+    assert "wants a caveat" in problems(root)
+
+
+@pytest.mark.parametrize("caveat", ["", "   ", None, 3, ["x"]])
+def test_an_empty_or_non_string_caveat_is_refused(tmp_path: Path, caveat: Any) -> None:
+    root = compliant(tmp_path)
+    put(root, "playbook.json", lambda v: v.update(caveat=caveat))
+    assert "wants a caveat" in problems(root)
+
+
+def test_a_playbook_of_the_nine_still_needs_a_caveat(tmp_path: Path) -> None:
+    root = compliant(tmp_path)
+    put(root, "playbook.json", lambda v: v.update(id="medical-bills"))
+    put(root, "playbook.json", lambda v: v.pop("caveat"))
+    assert "medical-bills: ADR 0057 rule 4 wants a caveat" in problems(root)
+
+
+def test_check_exits_2_for_a_playbook_without_a_caveat(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = compliant(tmp_path)
+    put(root, "playbook.json", lambda v: v.pop("caveat"))
+    base = tmp_path / "playbooks"
+    base.mkdir()
+    root.rename(base / "late-parcels")
+    assert main(["--dir", str(base), "check"]) == 2
+    assert "wants a caveat" in capsys.readouterr().err

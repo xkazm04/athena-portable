@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `feat(playbooks): check refuses a playbook without a caveat, and the three written before the roster now carry one` — `playbook.json` needs a non-empty string `caveat`, for every playbook; ADR 0057 rule 4 notes it; `cpg-deductions`, `fba-reimbursements` and `medical-bills` name their invented actors, the public rules and their date, and say it is not advice, and are filmed again (their bench is untouched).
+
 - `feat(playbooks): the Playbooks panel says its numbers were measured once on an invented portal world, and marks the author's estimates as estimates` — a standing line under the header badge and on the bench glance, "on the bench" on every measured figure, "planted in its world" for the sum there was to find, "author's estimate" on the tile's value and on the minutes by hand, and the caveat's first sentence on each tile; the full council's must-address on playbook-execution.
 
 - `test(playbooks): every subcontractor's insurance check re-benched after ADR 0059, and it exceeds, 9 of 9 where it was 4 of 9` — ADR 0059's consequences: 9 of 9, $7,200 of $7,200, every card exact, 11 of 11 traps avoided, 0 false, no op dropped, 3.2 min, $1.96; the run before was short, 4 of 9, $3,200, with five deficiency notices dropped for a stray quote after the closing brace; playbook, world and truth unchanged; filmed again.
