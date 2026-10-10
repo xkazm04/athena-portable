@@ -39,6 +39,14 @@ reads, and a layer for every write.
 calls until the turn ends, runs the page's tools, continues with the answers, and is bounded at
 eight continuations. A handed-over playbook rides every turn as the active project (ADR 0044).
 
+**Tiers and the manifest.** Tier 1 is the page's own WebMCP tools, tier 2 the nine generic hands
+(`lib/hands.ts`, run by the shell's `hands_call`). The manifest of every tab with an origin is the
+page's tools followed by the hands, so a page that registered nothing still has hands; a page tool
+named like a hand keeps the page's. `catalogIdOf` (`lib/manifest.ts`) gives a tab its one catalog
+id: the published `athena:app`, or `web_<scheme>_s<host>` derived from the web origin when there is
+none, which a page cannot publish for itself (ADR 0065). Hands are gated on first sight like any
+tool (ADR 0063). A gated hand's card has no screenshot yet.
+
 ## Athena's window, the companion
 
 `src/companion/`: a pure state machine (`machine.ts`) whose form is derived, not stored: `seal`,
