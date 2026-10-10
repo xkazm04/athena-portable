@@ -1,0 +1,334 @@
+{
+  "playbook": "subscription-audit",
+  "run_at": "2026-10-10T20:50:12Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 84.8,
+  "turns": 13,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 29,
+  "cost_usd": 0.8372,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.4
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 613.5,
+    "value_found_usd": 613.5,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "cancel_subscription",
+        "key": "S-1",
+        "why": "S-1 is the Streamquill account on the Cardhollow card that her son Dani watches every week (last used 8 October, M-5); a family member's active use means it is not cancelled",
+        "filed": false
+      },
+      {
+        "action": "cancel_subscription",
+        "key": "S-4",
+        "why": "S-4 is the Pacewick Individual plan that her partner Jo uses three times a week (M-6); not cancelled",
+        "filed": false
+      },
+      {
+        "action": "cancel_subscription",
+        "key": "S-7",
+        "why": "S-7 is the Vaultmoor Photos plan Rosa used on 2 October, within the last month; not cancelled",
+        "filed": false
+      },
+      {
+        "action": "cancel_subscription",
+        "key": "S-8",
+        "why": "S-8 is a Vaultmoor Scanner licence bought once on 3 June for 59.00 dollars; it is not a plan, has no renewal and nothing to cancel, and she used it on 28 September",
+        "filed": false
+      },
+      {
+        "action": "cancel_subscription",
+        "key": "S-9",
+        "why": "S-9 is the Vaultmoor Notes annual plan renewed on 1 March after a proper reminder on 2 February (M-2), and she uses it daily; not cancelled",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "S-6",
+        "why": "S-6: Vaultmoor does not refund an annual plan renewed after its reminder, and the reminder was sent on 20 July; claim nothing, only cancel",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "S-2",
+        "why": "S-2: Streamquill's terms do not refund a monthly plan for a month already billed, and the Automatic Renewal Law gives no refund right; the duplicate is cancelled and nothing is claimed back",
+        "filed": false
+      },
+      {
+        "action": "request_refund",
+        "key": "S-4",
+        "why": "S-4: the August double charge on the Pacewick Individual plan was already refunded to her card on 4 September (M-7 and the statement credit)",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "cancel_subscription",
+      "key": "S-2",
+      "outcome": "correct",
+      "value_usd": 191.88,
+      "exact": true,
+      "why": "S-2 is a second Streamquill Standard account billed 15.99 a month by direct debit from Ledgerwren bank, the same service as S-1 on the Cardhollow card (the three debits on 5 Aug, 5 Sep and 5 Oct), unused since 22 March and not used by Dani, whose account is S-1; the duplicate is cancelled online (17602(d)). Weighted at a year of its price, 191.88 dollars"
+    },
+    {
+      "action": "request_refund",
+      "key": "S-3",
+      "outcome": "correct",
+      "value_usd": 19.98,
+      "exact": true,
+      "why": "S-3: Streamquill's own refund terms refund a trial that converts without the promised reminder for the first 60 days after it converts, if asked; it converted on 12 August, so the 12 August and 12 September charges (19.98) are inside the 60 days until Sunday 11 October. The Automatic Renewal Law gives no refund right of its own (17604 leaves civil remedies; 17603 covers goods); the request rests on the service's terms. Weighted at the two charges, 19.98 dollars"
+    },
+    {
+      "action": "cancel_subscription",
+      "key": "S-3",
+      "outcome": "correct",
+      "value_usd": 119.88,
+      "exact": true,
+      "why": "S-3 is the Streamquill Sports add-on, never opened, whose 60-day free trial ended on 12 August with no reminder (17602(b)(1) asks for one 3 to 21 days before a trial of more than 31 days ends), billed 9.99 a month since; unused, so it is cancelled. Weighted at a year of its price, 119.88 dollars"
+    },
+    {
+      "action": "cancel_subscription",
+      "key": "S-5",
+      "outcome": "correct",
+      "value_usd": 155.88,
+      "exact": true,
+      "why": "S-5 is the Pacewick Coach add-on, last used 14 February, whose price rose from 9.99 to 12.99 on 1 September with no notice (17602(g)(2) asks for one 7 to 30 days before); Jo has never touched it (M-6), so it is cancelled. Weighted at a year of its current price, 155.88 dollars"
+    },
+    {
+      "action": "request_refund",
+      "key": "S-5",
+      "outcome": "correct",
+      "value_usd": 6.0,
+      "exact": true,
+      "why": "S-5: Pacewick's own refund terms refund the increase for any month charged at the higher price without a notice 7 to 30 days before, if asked within 60 days of the charge; the 1 September and 1 October charges were 12.99 against 9.99, so 3.00 each, 6.00. The request rests on the service's terms, not on a statutory refund right. Weighted at the increase, 6.00 dollars"
+    },
+    {
+      "action": "cancel_subscription",
+      "key": "S-6",
+      "outcome": "correct",
+      "value_usd": 119.88,
+      "exact": true,
+      "why": "S-6 is the Vaultmoor Storage annual plan, unused since November 2025, renewed on 14 August after a proper reminder on 20 July (M-1, 25 days before); it is cancelled so it does not renew in 2027, and nothing is claimed back. Weighted at a year of its price, 119.88 dollars"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Only Storage (S-6) is unused here, so I'm filing one cancel card for it and no refund card.\n\n\n**Vaultmoor**\n- **S-6, Storage ($119.88 a year):** I'm proposing a cancel. Nobody has used it since 10 Nov 2025. I'm not asking for a refund. Vaultmoor's terms say an annual plan renewed after its reminder isn't refunded, and the reminder went out 20 Jul, before the 14 Aug renewal. Cancelling only stops the renewal on 14 Aug 2027.\n- **S-7, Photos ($2.99 a month):** I'm leaving it alone. You used it on 2 Oct.\n- **S-8, Scanner licence ($59.00, bought once):** I'm leaving it alone. It's a one-time purchase with nothing to cancel, and you used it on 28 Sep.\n- **S-9, Notes ($47.88 a year):** I'm leaving it alone. You use it daily, and the reminder was sent before the 1 Mar renewal.\n\n**Across all three services**\n\nNothing has been cancelled or refunded yet. Every item below is a card waiting for your ",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Rosa Delgado. This is my mail: reminders and welcomes from three services, and notes from my son and my partner. Read every message. Don't do anything yet: I'll send you to my card, my bank and each service.",
+      "continued": false,
+      "said": "I'll list the inbox first, then read each message.\n\n\nWait — the op format requires `propose_action` for named actions. Listing is AUTO, so I'll address it that way:",
+      "said_chars": 164,
+      "reads": [
+        "list_messages",
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Seven messages are in the inbox. I'll read all of them now.",
+      "said_chars": 59,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "I've read all seven messages and changed nothing. Here is what each one says.\n\n- **M-1, Vaultmoor Storage:** an annual plan at $119.88 that renewed on 14 Aug 2026. The reminder was sent 20 Jul.\n- **M-2, Vaultmoor Notes:** an annual plan at $47.88 that renewed on 1 Mar 2026. The reminder was sent 2 Feb.\n- **M-3, Streamquill Sports trial:** the 60-day free trial began 13 Jun. It became a paid plan at $9.99 a month on 12 Aug.\n- **M-4, Pacewick Coach add-on:** $9.99 a month, billed on the 1st, since 15 Jan.",
+      "said_chars": 1854,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Cardhollow",
+      "user": "This is my Cardhollow card. Read its note and my statement, every page. Don't do anything yet.",
+      "continued": false,
+      "said": "I'll read the card's note and all four statement pages. I won't change anything.",
+      "said_chars": 80,
+      "reads": [
+        "read_card",
+        "read_statement",
+        "read_statement",
+        "read_statement",
+        "read_statement"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Cardhollow",
+      "user": "",
+      "continued": true,
+      "said": "I read the card note and all four statement pages (16 charges) and changed nothing.\n\n**Statement, oldest first:**\n- **1 Mar:** Vaultmoor Notes, annual, $47.88.\n- **3 Jun:** Vaultmoor Scanner licence, $59.00. It is a single charge.\n- **Streamquill Standard plan:** $15.99 monthly on 3 Aug, 3 Sep and 3 Oct.\n- **Streamquill Sports add-on:** $9.99 on 12 Aug, noted \"first charge after the trial\", then $9.99 on 12 Sep. There is no 12 Oct charge on the statement.",
+      "said_chars": 1947,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "This is my bank, Ledgerwren. Read its note and the debits to online services. Don't do anything yet.",
+      "continued": false,
+      "said": "I'll read the bank's note and its debits to online services. I won't change anything.",
+      "said_chars": 85,
+      "reads": [
+        "read_bank",
+        "read_statement"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "",
+      "continued": true,
+      "said": "I read the bank's note and its debits to online services, and I changed nothing.\n\n**What the bank shows:** three direct debits, all to Streamquill. They are the Standard plan at $15.99, on 5 Aug, 5 Sep and 5 Oct 2026. (showing 3 of 3)\n\n**What this means:**\n- The card also pays a Streamquill Standard plan at $15.99 on the 3rd of each month. So Streamquill appears to be billing two accounts, one on the card and one on the bank.\n- Dani says their shows are on the account on your Cardhollow card (M-5).",
+      "said_chars": 1402,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Streamquill",
+      "user": "This is my Streamquill account. Read its terms and my plans. Cancel each plan that nobody in my household uses, and ask for a refund where the service's own terms give one. Leave alone a plan someone uses.",
+      "continued": false,
+      "said": "I'll read your Streamquill plans and its terms first.",
+      "said_chars": 53,
+      "reads": [
+        "read_account",
+        "read_terms",
+        "read_terms",
+        "read_terms",
+        "read_terms"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Streamquill",
+      "user": "",
+      "continued": true,
+      "said": "Here is what I found, and I'm filing three cards for you to answer.\n\n- **S-1, Standard on your card:** I'm leaving it alone. Dani used it 4 evenings this week, and Dani's note asks you not to cancel it.\n- **S-2, Standard on the bank direct debit:** I'm proposing a cancel. It's a second account under an old email, and nobody has used it since 22 Mar 2026. I'm not asking for a refund. Streamquill's terms don't refund a monthly plan for a month already billed.",
+      "said_chars": 1181,
+      "reads": [],
+      "cards": [
+        {
+          "action": "cancel_subscription",
+          "key": "S-2",
+          "outcome": "correct",
+          "value_usd": 191.88
+        },
+        {
+          "action": "request_refund",
+          "key": "S-3",
+          "outcome": "correct",
+          "value_usd": 19.98
+        },
+        {
+          "action": "cancel_subscription",
+          "key": "S-3",
+          "outcome": "correct",
+          "value_usd": 119.88
+        }
+      ]
+    },
+    {
+      "portal": "Pacewick",
+      "user": "This is my Pacewick account. Do the same here: read its terms and my plans, cancel what nobody uses, and ask for a refund where its terms give one.",
+      "continued": false,
+      "said": "I'll read your Pacewick plans and its terms first.\n\nI've asked for your Pacewick plans and terms, but the answers haven't come back yet. I'm not filing any cancel or refund cards until I've read them.\n\nFrom what I recalled from your mail and card:\n- **Individual plan:** Jo Marsh says they train with it three times a week (M-6). I'll leave it alone.\n- **Coach add-on:** Jo says they have never used it. It's billed monthly on the 1st, and the card charged $12.99 on 1 Sep and 1 Oct.",
+      "said_chars": 836,
+      "reads": [
+        "read_account",
+        "read_terms",
+        "read_terms",
+        "read_terms"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Pacewick",
+      "user": "",
+      "continued": true,
+      "said": "Jo uses the Individual plan, so I'm leaving it alone. The Coach add-on is unused, so I'm filing a cancel card and a refund card for it.\n\n- **S-4, Individual plan ($12.99 a month):** Jo used it 3 times this week, and Jo's note (M-6) asks you to keep it. The 12 Aug double charge was already refunded on 4 Sep (M-7), and Pacewick's terms don't refund a charge twice.\n- **S-5, Coach add-on:** Nobody has used it since 14 Feb 2026, and Jo says they never touched it. I'm proposing a cancel.",
+      "said_chars": 827,
+      "reads": [],
+      "cards": [
+        {
+          "action": "cancel_subscription",
+          "key": "S-5",
+          "outcome": "correct",
+          "value_usd": 155.88
+        },
+        {
+          "action": "request_refund",
+          "key": "S-5",
+          "outcome": "correct",
+          "value_usd": 6.0
+        }
+      ]
+    },
+    {
+      "portal": "Vaultmoor",
+      "user": "This is my Vaultmoor account. Do the same here. Then tell me, across all three, what you cancelled, what you asked to have refunded, and what you left alone and why.",
+      "continued": false,
+      "said": "I'll read your Vaultmoor plans and terms first. I won't file any cards until I've read them.",
+      "said_chars": 92,
+      "reads": [
+        "read_account",
+        "read_terms",
+        "read_terms",
+        "read_terms"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Vaultmoor",
+      "user": "",
+      "continued": true,
+      "said": "Only Storage (S-6) is unused here, so I'm filing one cancel card for it and no refund card.\n\n\n**Vaultmoor**\n- **S-6, Storage ($119.88 a year):** I'm proposing a cancel. Nobody has used it since 10 Nov 2025. I'm not asking for a refund. Vaultmoor's terms say an annual plan renewed after its reminder isn't refunded, and the reminder went out 20 Jul, before the 14 Aug renewal. Cancelling only stops the renewal on 14 Aug 2027.\n- **S-7, Photos ($2.99 a month):** I'm leaving it alone. You used it on 2 Oct.",
+      "said_chars": 2226,
+      "reads": [],
+      "cards": [
+        {
+          "action": "cancel_subscription",
+          "key": "S-6",
+          "outcome": "correct",
+          "value_usd": 119.88
+        }
+      ]
+    }
+  ]
+}

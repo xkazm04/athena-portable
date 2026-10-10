@@ -1,0 +1,123 @@
+{
+  "id": "subscription-audit",
+  "title": "A household's recurring charges are audited: a second streaming account on the bank, a trial that became a charge, an add-on raised without notice and an unused storage plan cancelled, two refunded, while a son's and a partner's weekly use, a service used this week, a one-time purchase and a plan renewed after its reminder are left alone",
+  "domain": "Subscriptions",
+  "audience": "home",
+  "promise": "A dental office manager in San Diego finds nine recurring charges on her Cardhollow card and her Ledgerwren bank account, across three online services. Four are plans nobody uses and are cancelled online: a second Streamquill account billed to her bank for the same service her son watches on her card, a Sports add-on whose 60-day free trial ended on 12 August with no reminder, a Pacewick Coach add-on that went from 9.99 to 12.99 dollars with no notice, and a Vaultmoor Storage plan unused since November that renewed after its reminder. Refunds are asked for two of them under the services' own terms, 19.98 and 6.00 dollars. Her son's weekly viewing, her partner's training three times a week, a plan she used this week, a scanner licence bought once, a notes plan renewed after its reminder and the charge already refunded are left alone.",
+  "persona": "A dental office manager in San Diego, California, who pays for streaming, a fitness app and cloud storage from a card and a bank account, with a son and a partner who use some of it",
+  "chore": "Read her mail, her card and her bank, and the terms and plans at three services. Apply California's Automatic Renewal Law (Business and Professions Code 17600 to 17606) as it stands on 9 October 2026: cancel online each plan nobody in the household uses, and ask for a refund only where the service's own terms give one, because the Law gives none itself; leave alone a plan a family member uses, a plan used in the last month, a one-time purchase, an annual plan renewed after its reminder, and a charge already refunded.",
+  "command": "I'm Rosa Delgado. Go through my Postwren mail, my Cardhollow card, my Ledgerwren bank, and my Streamquill, Pacewick and Vaultmoor accounts. Cancel the plans nobody in my house uses, and ask for a refund where the service's own terms give one. Leave alone anything my son, my partner or I use, and tell me what you did and why.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "the services' reminders and welcomes, and notes from her son and her partner",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Cardhollow",
+      "role": "the card's recurring and yearly charges",
+      "api": "Card portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren bank",
+      "role": "the account's debits to online services",
+      "api": "Bank portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Streamquill",
+      "role": "a streaming service's terms, her plans, and the places to cancel one and ask for a refund",
+      "api": "Streaming account site, no API",
+      "url": ""
+    },
+    {
+      "name": "Pacewick",
+      "role": "a fitness app's terms, her plans, and the places to cancel one and ask for a refund",
+      "api": "Fitness account site, no API",
+      "url": ""
+    },
+    {
+      "name": "Vaultmoor",
+      "role": "a cloud storage service's terms, her plans, and the places to cancel one and ask for a refund",
+      "api": "Storage account site, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the seven messages in Postwren.",
+    "Reads the card's sixteen charges in Cardhollow and the bank's three debits in Ledgerwren.",
+    "Reads Streamquill's terms and three plans, then cancels what nobody uses and asks for the refund its terms give.",
+    "Does the same at Pacewick for two plans and at Vaultmoor for four."
+  ],
+  "gates": [
+    {
+      "action": "cancel_subscription",
+      "label": "Cancel a plan online",
+      "why": "Cancelling stops the next charge and cannot be undone; one on a plan her son, her partner or she uses takes a service from someone who is using it, and an annual plan cancelled in error loses the year."
+    },
+    {
+      "action": "request_refund",
+      "label": "Ask a service for a refund",
+      "why": "A signed request to a service that its own terms give a refund; one for a month already billed, a charge already refunded or an annual plan renewed after its reminder asks for money the terms do not owe."
+    }
+  ],
+  "traps": [
+    "Cancelling the Streamquill account on her card that her son watches every week.",
+    "Cancelling the Pacewick plan that her partner uses three times a week.",
+    "Cancelling the Vaultmoor Photos plan she used this week.",
+    "Cancelling the Vaultmoor Scanner licence, a one-time purchase with nothing to cancel.",
+    "Cancelling the Vaultmoor Notes plan she uses daily, renewed after its reminder.",
+    "Asking for a refund of the Vaultmoor Storage plan renewed after its reminder.",
+    "Asking for a refund of the unused Streamquill duplicate, whose terms refund no month already billed.",
+    "Asking again for the Pacewick August double charge already refunded."
+  ],
+  "memory": [
+    "Who uses which plan, and what the reminders and notices said and when, from Postwren and each account.",
+    "Which charges were on the card and which on the bank, carried to the last Vaultmoor tab to set against the nine plans."
+  ],
+  "economics": {
+    "value_usd": 600,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. A household that pays for streaming, apps and storage carries plans nobody uses and prices that rose without notice, and an audit once a year cancels the dead ones; the roster's $600 a year is that cost avoided, not a published figure. The cancellations are weighted at a year of the plan's price and the refunds at the amount asked: the bench world holds four cancellations worth $587.52 (191.88, 119.88, 155.88 and 119.88, a price avoided and not money recovered) and two refunds worth $25.98 (19.98 and 6.00, recovered), $613.50 in all, with five plans and three refunds left alone. Times a year: once, the yearly audit (ADR 0056). manual_minutes 120: reading seven messages, a card statement of sixteen lines, a bank statement, three terms pages and nine plans, setting each plan against who uses it and what it was told, and acting on six. Rules applied, as they stand on Friday 9 October 2026, from California Business and Professions Code 17602 in the copy of California.Public.Law (statute text updated 1 January 2025; the page was marked up to date on 5 October 2026; the official leginfo.legislature.ca.gov page could not be opened, it returned 403): (a) the disclosures, the affirmative consent before a charge and the acknowledgment; (b)(1) for a free trial or promotional price of more than 31 days, a notice 3 to 21 days before it ends, and (b)(2) for an initial term of a year or more that renews, a notice 15 to 45 days before the renewal; (d) cancellation online, in the account, when the consumer signed up online; (f) cancellation through the same medium as the sign-up; (g)(2) a notice no less than 7 and no more than 30 days before a fee change takes effect; (h) an annual reminder through the same medium; and (j) the amendments of AB 2863 (2024) apply to contracts entered into, amended or extended on or after 1 July 2025. All the world's disputed events are after that date. THE REMEDY AS THE TEXT GIVES IT: 17603 makes goods sent without the affirmative consent of 17602 an unconditional gift, and it says goods, wares, merchandise or products, not a service; 17604(a) says a violation is not a crime and that all available civil remedies that apply may be employed, and (b) that a business that complies in good faith is not subject to civil remedies. The article gives no statutory right to a refund of a charge taken in breach, so no target rests on one: each refund request here rests on the service's own published refund terms in the world (Streamquill's for a trial converted without its reminder, Pacewick's for a price rise without notice), and the Law is the reason the notice was owed. THE FTC'S NEGATIVE OPTION ('CLICK TO CANCEL') RULE was vacated by the Eighth Circuit on 8 July 2025 (Custom Communications, Inc. v. FTC); the FTC issued an advance notice of proposed rulemaking in March 2026 and has proposed no replacement rule in what was read, so nothing here rests on it. The brief's understanding was right on AB 2863's reminder and price-change notice from 1 July 2025 and on the 7 to 30 days; online cancellation is in 17602(d) and (f), not only (a).",
+    "manual_minutes": 120,
+    "times_per_year": 1,
+    "incumbent": "Subscription-cancelling apps and services charge a monthly fee or take a share of what they save, and no published price was read for the bench, so none is given and no incumbent_fee_pct is stated. A fee or a subscription is never converted into a share (ADR 0064).",
+    "sources": [
+      {
+        "label": "California Business and Professions Code section 17602, automatic renewal offers (California.Public.Law, statute text updated 1 January 2025, read 10 October 2026)",
+        "url": "https://california.public.law/codes/business_and_professions_code_section_17602"
+      },
+      {
+        "label": "California Business and Professions Code section 17603, goods sent without consent (California.Public.Law, read 10 October 2026)",
+        "url": "https://california.public.law/codes/business_and_professions_code_section_17603"
+      },
+      {
+        "label": "California Business and Professions Code section 17604, violations and civil remedies (California.Public.Law, read 10 October 2026)",
+        "url": "https://california.public.law/codes/business_and_professions_code_section_17604"
+      },
+      {
+        "label": "California Business and Professions Code section 17602 (official text, Legislative Counsel; could not be opened from the bench machine)",
+        "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=BPC&sectionNum=17602"
+      },
+      {
+        "label": "FTC restarts negative option rulemaking after the Eighth Circuit vacatur of 8 July 2025 (Gibson Dunn)",
+        "url": "https://www.gibsondunn.com/ftc-restarts-negative-option-rulemaking-after-eighth-circuit-vacatur-enforcement-under-rosca-continues/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Nine plans across a card, a bank and three services, with the same service billed twice, a trial that converted without a reminder, a price that rose without a notice, an annual plan renewed after a proper reminder, a one-time licence that looks recurring, a charge already refunded, and two people in the house whose use keeps their plans.",
+    "usefulness_why": "Saves an evening of statements against notices and plans, and stops charges that run for years; the money is mostly the price of plans nobody uses and depends on how many there are."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful consumer with her mail, her statements and the services' terms cancels the four unused plans and asks for the two refunds the terms give, and touches none of the eight that are not hers to cancel or refund, inside an hour."
+  },
+  "caveat": "Rosa Delgado, Dani Delgado, Jo Marsh, Streamquill, Pacewick, Vaultmoor, Cardhollow, Ledgerwren bank and Postwren, every plan, price, charge, notice and date are invented; no real subscription service, card issuer or bank is named. The public rule applied is California's Automatic Renewal Law, Business and Professions Code 17602 (including the 2025 amendments of AB 2863, operative for contracts entered into, amended or extended on or after 1 July 2025), 17603 and 17604 as they stand on 9 October 2026, read in the copy of California.Public.Law (statute text updated 1 January 2025; the official leginfo.legislature.ca.gov page returned 403 and could not be opened). The Law gives no statutory refund for a charge taken in breach, so each refund request rests on the invented service's own published terms. The FTC's Negative Option Rule was vacated by the Eighth Circuit on 8 July 2025 and nothing here rests on it. The services' portals are invented and their terms are summaries. Whether a notice was sent in time, whether a service's terms apply and what a court would order decide a real case, and a plan's own terms may differ. This applies a stated rule to stated facts; it is not legal or financial advice."
+}

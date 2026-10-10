@@ -272,6 +272,12 @@ names; each playbook carries the new one.
   because mailnest.io is a real email service) is added as the fifth portal, because the airlines' notices and her written
   choice of a credit are mail. "Aerolark" was kept for the airline: a search found no airline of that name (the search tool is
   fuzzy, so that is "none found", not a proof), and `eu261-flight-compensation` already uses it unchanged.
+- Row 69, `subscription-audit`: "Streamora" became "Streamquill", because Streamora is the name of several real streaming
+  services (an event-streaming platform and an internet TV service); "Fitloop" became "Pacewick", because Fitloop is a real
+  fitness app; "Cloudnest" became "Vaultmoor", because CloudNest is the name of several real cloud storage apps; "Cardwell"
+  became "Cardhollow", because Cardwell Payment Systems is a real card-payment processor (row 62 settled the name);
+  "Ledgerline bank" became "Ledgerwren bank", because Ledgerline is the name of several real accounting and invoicing
+  products (rows 62 and 63 settled the name); and "Mailnest" became "Postwren", because mailnest.io is a real email service.
 
 ### B8: Work, pay and benefits
 

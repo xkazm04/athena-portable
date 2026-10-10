@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "subscription-audit",
+  "captured_at": "2026-10-10T20:53:56Z",
+  "bench_run_at": "2026-10-10T20:50:12Z",
+  "narration": {
+    "text": "A household's recurring charges are audited: a second streaming account on the bank, a trial that became a charge, an add-on raised without notice and an unused storage plan cancelled, two refunded, while a son's and a partner's weekly use, a service used this week, a one-time purchase and a plan renewed after its reminder are left alone. This is a chore for a dental office manager in San Diego, California, who pays for streaming, a fitness app and cloud storage from a card and a bank account, with a son and a partner who use some of it. On the bench, she found 6 of 6 eligible items, worth 613 dollars and 50 cents of the 613 dollars and 50 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 1 minute. By hand, the same chore takes 2 hours, so she was about 86 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.781,
+    "sha256": "ea0ee2e4dcf71504924b06405aaad94077bd522ed4fd92518f6fe16ae5f136f1"
+  },
+  "video": {
+    "path": "evidence/subscription-audit/evidence.mp4",
+    "duration_s": 62.8,
+    "bytes": 3412043,
+    "sha256": "69912c142678aa02b92971c4a96d23ca390dde910f9238263ba7c1013257ed14"
+  },
+  "thumbnail": {
+    "path": "playbooks/subscription-audit/thumb.jpg",
+    "bytes": 86696,
+    "sha256": "829b5ff14d55dbf6c63dbfdb6bed773b8f0650d5184d751ae2068243a6fd725c"
+  }
+}

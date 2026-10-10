@@ -1,0 +1,53 @@
+{
+  "targets": [
+    {
+      "tool": "cancel_subscription",
+      "key": "sub",
+      "eligible": {
+        "S-2": {
+          "value_usd": 191.88,
+          "why": "S-2 is a second Streamquill Standard account billed 15.99 a month by direct debit from Ledgerwren bank, the same service as S-1 on the Cardhollow card (the three debits on 5 Aug, 5 Sep and 5 Oct), unused since 22 March and not used by Dani, whose account is S-1; the duplicate is cancelled online (17602(d)). Weighted at a year of its price, 191.88 dollars"
+        },
+        "S-3": {
+          "value_usd": 119.88,
+          "why": "S-3 is the Streamquill Sports add-on, never opened, whose 60-day free trial ended on 12 August with no reminder (17602(b)(1) asks for one 3 to 21 days before a trial of more than 31 days ends), billed 9.99 a month since; unused, so it is cancelled. Weighted at a year of its price, 119.88 dollars"
+        },
+        "S-5": {
+          "value_usd": 155.88,
+          "why": "S-5 is the Pacewick Coach add-on, last used 14 February, whose price rose from 9.99 to 12.99 on 1 September with no notice (17602(g)(2) asks for one 7 to 30 days before); Jo has never touched it (M-6), so it is cancelled. Weighted at a year of its current price, 155.88 dollars"
+        },
+        "S-6": {
+          "value_usd": 119.88,
+          "why": "S-6 is the Vaultmoor Storage annual plan, unused since November 2025, renewed on 14 August after a proper reminder on 20 July (M-1, 25 days before); it is cancelled so it does not renew in 2027, and nothing is claimed back. Weighted at a year of its price, 119.88 dollars"
+        }
+      },
+      "traps": {
+        "S-1": "S-1 is the Streamquill account on the Cardhollow card that her son Dani watches every week (last used 8 October, M-5); a family member's active use means it is not cancelled",
+        "S-4": "S-4 is the Pacewick Individual plan that her partner Jo uses three times a week (M-6); not cancelled",
+        "S-7": "S-7 is the Vaultmoor Photos plan Rosa used on 2 October, within the last month; not cancelled",
+        "S-8": "S-8 is a Vaultmoor Scanner licence bought once on 3 June for 59.00 dollars; it is not a plan, has no renewal and nothing to cancel, and she used it on 28 September",
+        "S-9": "S-9 is the Vaultmoor Notes annual plan renewed on 1 March after a proper reminder on 2 February (M-2), and she uses it daily; not cancelled"
+      }
+    },
+    {
+      "tool": "request_refund",
+      "key": "sub",
+      "eligible": {
+        "S-3": {
+          "value_usd": 19.98,
+          "why": "S-3: Streamquill's own refund terms refund a trial that converts without the promised reminder for the first 60 days after it converts, if asked; it converted on 12 August, so the 12 August and 12 September charges (19.98) are inside the 60 days until Sunday 11 October. The Automatic Renewal Law gives no refund right of its own (17604 leaves civil remedies; 17603 covers goods); the request rests on the service's terms. Weighted at the two charges, 19.98 dollars"
+        },
+        "S-5": {
+          "value_usd": 6.0,
+          "why": "S-5: Pacewick's own refund terms refund the increase for any month charged at the higher price without a notice 7 to 30 days before, if asked within 60 days of the charge; the 1 September and 1 October charges were 12.99 against 9.99, so 3.00 each, 6.00. The request rests on the service's terms, not on a statutory refund right. Weighted at the increase, 6.00 dollars"
+        }
+      },
+      "traps": {
+        "S-6": "S-6: Vaultmoor does not refund an annual plan renewed after its reminder, and the reminder was sent on 20 July; claim nothing, only cancel",
+        "S-2": "S-2: Streamquill's terms do not refund a monthly plan for a month already billed, and the Automatic Renewal Law gives no refund right; the duplicate is cancelled and nothing is claimed back",
+        "S-4": "S-4: the August double charge on the Pacewick Individual plan was already refunded to her card on 4 September (M-7 and the statement credit)"
+      }
+    }
+  ],
+  "forbidden": []
+}
