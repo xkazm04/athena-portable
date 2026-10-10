@@ -8,7 +8,10 @@ ones ``athena serve`` builds — byte for byte the same code path — and the on
 are:
 
 * the **engine's transport**, which becomes a
-  :class:`~athena.harness.transports.ScriptedTransport` replaying ``--transcript`` (ADR 0007), and
+  :class:`~athena.harness.transports.ScriptedTransport` replaying ``--transcript`` (ADR 0007),
+* the **connector providers**, when ``--fake-providers`` asks: the vault is built by its own
+  constructor with :mod:`fake_providers` as its transport and as the browser at the consent page,
+  so the specs, the host pin and the redirect handling are production code (uat J6), and
 * the **voice backend**, when ``--voice-backend scripted`` asks for the
   :class:`~athena.channels.voice.backends.ScriptedBackend` that hears ``--utterance`` in order
   (ADR 0019).
@@ -21,6 +24,7 @@ Usage, and the contract another suite may depend on::
 
     python tests/e2e/serve_scripted.py --transcript <ndjson> --port 0 --token <token> \
         --brain <dir> [--voice-backend scripted] [--utterance "..."] [--no-connectors]
+        [--fake-providers]
 
 Every other flag of ``athena serve`` is accepted and passed straight through, and the one line on
 stdout is the ready line of :mod:`athena.daemon.ready` — same keys, same order, same moment
@@ -48,7 +52,7 @@ from athena.channels.voice.backends import (  # noqa: E402 - after the path is a
 from athena.daemon import server  # noqa: E402
 from athena.harness.transports import ScriptedTransport  # noqa: E402
 
-__all__ = ["SCRIPTED_BACKEND", "build_parser", "install", "main"]
+__all__ = ["SCRIPTED_BACKEND", "build_parser", "install", "install_fake_providers", "main"]
 
 #: The name ``--voice-backend`` takes for the scripted microphone. It is added to the daemon's own
 #: choices rather than replacing one, so ``auto``, ``openai`` and ``none`` still mean what they
@@ -80,10 +84,39 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="TEXT",
         help="what the scripted voice backend hears, once per utterance, in order; repeatable",
     )
+    parser.add_argument(
+        "--fake-providers",
+        action="store_true",
+        help="build the connector vault over the in-process fake Gmail and Notion",
+    )
     return parser
 
 
-def install(transcript: str | Path, utterances: Sequence[str] = ()) -> None:
+def install_fake_providers() -> None:
+    """Rebind ``server.Vault``, which ``serve`` reads at call time, to a Vault with the fakes.
+
+    The fake is handed in through the constructor's own ``transport`` and ``open_browser``; no
+    host override exists in production code. The seal is a :class:`FileSeal` under
+    ``ATHENA_HOME``, never DPAPI or the keyring.
+    """
+    from fake_providers import FakeProviders, play_consent
+
+    from athena.connectors.seal import FileSeal
+    from athena.connectors.vault import Vault
+    from athena.core.brain.paths import athena_home
+
+    def build(*args: Any, **kwargs: Any) -> Vault:
+        kwargs.setdefault("transport", FakeProviders())
+        kwargs.setdefault("seal", FileSeal(athena_home() / "connectors" / "sealed"))
+        kwargs.setdefault("open_browser", play_consent)
+        return Vault(*args, **kwargs)
+
+    server.Vault = build  # type: ignore[misc,assignment]
+
+
+def install(
+    transcript: str | Path, utterances: Sequence[str] = (), *, fake_providers: bool = False
+) -> None:
     """Substitute the engine's transport and teach ``--voice-backend`` the scripted microphone.
 
     Both substitutions are made by rebinding a name the daemon reads at call time — ``serve``
@@ -104,6 +137,8 @@ def install(transcript: str | Path, utterances: Sequence[str] = ()) -> None:
         return built(**kwargs)
 
     wiring.build_local = build_scripted
+    if fake_providers:
+        install_fake_providers()
 
     chosen = server.backend_from_name
 
@@ -120,7 +155,7 @@ def install(transcript: str | Path, utterances: Sequence[str] = ()) -> None:
 def main(argv: Sequence[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     mine, rest = build_parser().parse_known_args(args)
-    install(mine.transcript, mine.utterance)
+    install(mine.transcript, mine.utterance, fake_providers=mine.fake_providers)
     return server.serve(rest)
 
 

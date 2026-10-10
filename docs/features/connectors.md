@@ -40,6 +40,19 @@ the browser, reached through one vault (ADR 0021).
   never on render. Structural policy checks liveness on every call.
 - **No secret surface.** No tool returns, lists, mints or rotates a credential.
 
+## The journey test
+
+`tests/e2e/test_connectors_journey.py` (uat J6) runs the scripted daemon with `--fake-providers`
+(`tests/e2e/serve_scripted.py`). The vault is the production one, built with `tests/e2e/
+fake_providers.py` as its transport and as the browser at the consent page; the specs and the host
+pin are untouched, and the fake answers the pinned production hosts of `gmail.json` and
+`notion.json`. It walks: paste a client pair and connect; search and read a mail (fenced); turn
+writes on for one recipient; a reply files a card and an approval sends exactly one message to that
+address; a recipient off the list is refused by name; a decline sends nothing and is recorded as
+`user_denied`; a revoked grant shows `needs_reauth`; a Notion page that was never shared is reported
+as unreadable; a connect as a second account turns writes off (ADR 0062). Every test ends by
+asserting each request the vault made was answered by the fake. No real provider is reached.
+
 ## The desktop module
 
 A grid of emblem tiles that reads (connected or not, at a glance) and a layer per connector for

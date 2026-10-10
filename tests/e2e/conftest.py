@@ -454,12 +454,16 @@ class Spawn:
         home: Path | None = None,
         extra: Sequence[str] = (),
         transcript: Path | None = None,
+        fake_providers: bool = False,
     ) -> Daemon:
         """The same daemon with a recorded engine (``tests/e2e/serve_scripted.py``).
 
         ``rounds`` is one list of recorded stdout lines per provider invocation, in the order the
         daemon will be asked for them — across *every* turn of this daemon's life, because a
         transcript is consumed in order and a round the script does not have raises.
+
+        ``fake_providers`` turns the connector vault on over the in-process fake Gmail and Notion
+        of ``fake_providers.py``; nothing then reaches a real host.
         """
         where = home if home is not None else self.home()
         path = transcript if transcript is not None else where / "transcript.ndjson"
@@ -470,10 +474,18 @@ class Spawn:
             str(_SCRIPT),
             "--transcript",
             str(path),
-            *self.flags(where, token=token, voice=voice, connectors=connectors, extra=extra),
+            *self.flags(
+                where,
+                token=token,
+                voice=voice,
+                connectors=connectors or fake_providers,
+                extra=extra,
+            ),
         ]
         for utterance in utterances:
             argv += ["--utterance", utterance]
+        if fake_providers:
+            argv.append("--fake-providers")
         return self._start(argv, where, token=token, transcript=path)
 
     # -- the machinery --------------------------------------------------------------------------
