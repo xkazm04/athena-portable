@@ -68,7 +68,7 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | The closeout package assembled, so the general contractor releases the retainage | work | 5 | exceeds: 10 of 10, $48,600 of $48,600 released, 10 of 10 traps, 0 false |
 | City inspections booked in sequence on two cities' portals, on the first day each can happen | work | 4 | exceeds: 6 of 6 (a $400 weight a booking, mostly minutes), 9 of 9 traps, 0 false |
 | The site's stormwater inspections and corrective actions kept on the permit's schedule | work | 4 | exceeds: 6 of 6, 4 exact (a $250 weight an act, mostly minutes), 9 of 9 traps, 0 false |
-| Every subcontractor's insurance checked on the policy, not the certificate, before it mobilizes | work | 4 | short: 4 of 9 (an $800 weight an act, protection), 11 of 11 traps, 0 false; five notices dropped as invalid JSON |
+| Every subcontractor's insurance checked on the policy, not the certificate, before it mobilizes | work | 4 | exceeds (re-benched after ADR 0059, 2026-10-10): 9 of 9 (an $800 weight an act, protection), 11 of 11 traps, 0 false, 3.2 min, $1.96; was short, 4 of 9, five notices dropped as invalid JSON |
 | The homestead and age 65 exemptions filed for every year the law still allows | home | 4 | exceeds: 4 of 4, $2,893 of $2,893, 9 of 9 traps, 0 false |
 | Mortgage insurance taken off as soon as the law allows, on the household's loan and a parent's | home | 4 | exceeds: 3 of 3, $2,732 of $2,732, 9 of 9 traps, 0 false |
 | The escrow analysis checked against the real tax and insurance bills, and the surplus claimed | home | 4 | exceeds: 6 of 6, $4,439.98 of $4,439.98, 12 of 12 traps, 0 false |
@@ -84,8 +84,8 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | Every record a second opinion needs requested from five providers, at the fee the rule allows, and the late one chased | home | 5 | exceeds: 7 of 7 (a $40 weight an act, mostly minutes), 8 of 8 traps, 0 false |
 | Every out-of-network therapy session claimed with the right code, every overdue claim chased, and every one processed wrong appealed in time | home | 4 | exceeds: 6 of 6, $921 of $921, 14 of 14 traps, 0 false |
 
-Across the latest runs: $936,891 of $950,318 found, 420 of 420 traps walked past, no false claim,
-124 minutes of her time against about 197 hours by hand, $80.46 of model time. 76 runs are recorded
+Across the latest runs: $940,891 of $950,318 found, 420 of 420 traps walked past, no false claim,
+125 minutes of her time against about 197 hours by hand, $80.21 of model time. 77 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

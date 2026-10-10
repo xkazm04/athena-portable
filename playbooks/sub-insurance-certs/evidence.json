@@ -1,24 +1,24 @@
 {
   "schema": 1,
   "playbook": "sub-insurance-certs",
-  "captured_at": "2026-10-09T23:53:32Z",
-  "bench_run_at": "2026-10-09T23:50:31Z",
+  "captured_at": "2026-10-10T03:23:48Z",
+  "bench_run_at": "2026-10-10T03:20:28Z",
   "narration": {
-    "text": "Every subcontractor's insurance checked on the policy, not the certificate, before it mobilizes. This is a chore for the project administrator of a general contractor building a three-storey medical office building, with ten subcontractors mobilizing over six weeks. Athena works it across 4 portals: Sitegrid, Subhub, Coverwell and Mailnest. On the bench, she found 4 of 9 eligible items, worth 3,200 dollars of the 7,200 dollars there was to find. All 4 were filed at the exact amount the rules allow. She made no false claim. The world held 11 traps, and she walked past 11. Among them: A certificate that says 'ongoing and completed operations' on a policy with CG 20 10 only. A certificate that says 'additional insured per written contract' on a policy with no endorsement at all. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 52 times faster. The verdict: short. Found 44% of the value, expected 75%; found 4 of 9 items, expected 75%. Every card she filed waited for a person's signature, and nothing was sent.",
+    "text": "Every subcontractor's insurance checked on the policy, not the certificate, before it mobilizes. This is a chore for the project administrator of a general contractor building a three-storey medical office building, with ten subcontractors mobilizing over six weeks. Athena works it across 4 portals: Sitegrid, Subhub, Coverwell and Mailnest. On the bench, she found 9 of 9 eligible items, worth 7,200 dollars of the 7,200 dollars there was to find. She made no false claim. The world held 11 traps, and she walked past 11. Among them: A certificate that says 'ongoing and completed operations' on a policy with CG 20 10 only. A certificate that says 'additional insured per written contract' on a policy with no endorsement at all. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 47 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
     "engine": "kokoro",
     "voice": "af_heart",
-    "duration_s": 67.057,
-    "sha256": "5a53027640651785c581b6da5e3a7366b2ddcdc04c3ee49f3e41db142bd579f6"
+    "duration_s": 63.999,
+    "sha256": "484f6388bcf0c4899d72adb8fbe19fd39562eea3702c7455dc0cd4b6f9292f54"
   },
   "video": {
     "path": "evidence/sub-insurance-certs/evidence.mp4",
-    "duration_s": 67.057,
-    "bytes": 3194909,
-    "sha256": "65f168e4d65b16c856cd7d7d560a277cfb0c629bc8a3671ee2f677d824141a8e"
+    "duration_s": 64.0,
+    "bytes": 3348005,
+    "sha256": "e8bb76eaad181e364b95ef7bc081568ff857d8d963d4e2b85eebd2728a555230"
   },
   "thumbnail": {
     "path": "playbooks/sub-insurance-certs/thumb.jpg",
-    "bytes": 76548,
-    "sha256": "7c7fe445b1e319c0acb7b5416fc4300a17a0f917aa7afe891b0c2eb6a9fe15c2"
+    "bytes": 85940,
+    "sha256": "f549bab9d7cd19b54f37b9cc67cad88f30b65b3901bbbe908f97fd9f288ff3c7"
   }
 }
