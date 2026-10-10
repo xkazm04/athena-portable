@@ -10,7 +10,7 @@ small window, plus a click-through **halo** on every screen.
 |---|---|
 | `layout.rs` | owns every rectangle; Main sized to the screen |
 | `tabs.rs`, `bridge.rs` | page webviews, `inject.js` as their initialisation script, the relay |
-| `hands.rs`, `hands.js` | nine generic DOM hands (`page_read`, `page_find`, `page_fill`, `page_click`, `page_select`, `page_submit`, `page_scroll`, `page_wait`, `page_screenshot`); a screenshot is captured before every gated proposal (ADR 0025) |
+| `hands.rs`, `hands.js` | nine generic DOM hands (`page_read`, `page_find`, `page_fill`, `page_click`, `page_select`, `page_submit`, `page_scroll`, `page_wait`, `page_screenshot`); a screenshot of the focused tab is captured before each request and filed on a gated card (ADR 0025, ADR 0066) |
 | `daemon.rs` | the daemon as a sidecar with a minted token file, restart on engine change, and exit hygiene (tree kill, a Windows job object, ADR 0015) |
 | `store.rs` | one SQLite store behind four generic commands (ADR 0016): settings, origins, projects, activity, captures with an LRU sweep |
 | `companion.rs`, `halo.rs`, `hotkeys.rs`, `tray.rs`, `capture.rs` | her window, the screen-edge light, the summon chord, the tray, window capture |
@@ -45,7 +45,18 @@ page's tools followed by the hands, so a page that registered nothing still has 
 named like a hand keeps the page's. `catalogIdOf` (`lib/manifest.ts`) gives a tab its one catalog
 id: the published `athena:app`, or `web_<scheme>_s<host>` derived from the web origin when there is
 none, which a page cannot publish for itself (ADR 0065). Hands are gated on first sight like any
-tool (ADR 0063). A gated hand's card has no screenshot yet.
+tool (ADR 0063). The shell appended hands carry `athena.runner: "shell"` (set in `lib/hands.ts`,
+stripped from every page tool), the daemon reports them as tier 2 in its `/manifest` reply, and the
+panel's tool rows list them at tier 2 with the class the gate will apply (`GATED` on a first-sight
+app or a pinned tool).
+
+**Captures.** Before each `/run` request and each voice `start` or `text` frame the shell takes one
+`page_screenshot` of the focused tab (`takeCapture`, `lib/hands.ts`) and sends its id as
+`capture_id`. The daemon files it on a gated card whose origin is the session's own page. A capture
+that fails or takes over eight seconds sends none and never fails the request; the card then says
+"No capture was taken" and why. A card with an id draws the stored capture (`companion/capture.ts`);
+the sketch is for fixtures only (ADR 0066). A request naming more first-sight origins, pins or
+switched-off origins than the daemon's cap is refused, not cut.
 
 ## Athena's window, the companion
 

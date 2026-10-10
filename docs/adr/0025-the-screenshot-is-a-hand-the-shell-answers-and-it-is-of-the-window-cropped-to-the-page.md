@@ -89,3 +89,5 @@ an already-answered card showed.
 What this does *not* do: nothing files a capture automatically yet. A gated proposal carrying a
 `capture_id` is the panel's half, and until that lands `page_screenshot` is a hand a model can call
 and a person can see the result of, rather than something the gate does on its own.
+
+Note, 2026-10-10: the panel's half has landed. The shell takes a capture before each request, the daemon files its id on a gated card for the session's own page, and the card draws it. See ADR 0066.
