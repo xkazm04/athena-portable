@@ -154,3 +154,47 @@ def test_a_page_call_is_never_answered_by_another_rounds_result(live: Live) -> N
     answered = {p["call_id"] for k, p in frames if k == "tool.result"}
     page_calls = [p for k, p in frames if k == "tool.call" and p["name"] == "host.invoices.chase"]
     assert page_calls and page_calls[0]["call_id"] not in answered
+
+
+# -- a card approved after the app was switched off ------------------------------------------------
+
+
+def _filed_card(live: Live) -> str:
+    live.register()
+    live.script(claude_round("Needs approval.\n" + op("host.invoices.pay", invoice="7")))
+    frames = live.run("pay it").frames()
+    return str(next(p["id"] for k, p in frames if k == "decision.requested"))
+
+
+def test_a_card_approved_after_the_app_is_switched_off_is_refused_and_ledgered(
+    live: Live,
+) -> None:
+    """The replay reads the list the shell sent with the answer; the daemon kept none."""
+    approval_id = _filed_card(live)
+    before = len(live.daemon.ledger.recent(10).rows)
+
+    reply = live.request(
+        f"/decisions/{approval_id}",
+        method="POST",
+        json_body={"choice": "approve", "disabled_origins": [f"host:{APP_ID}"]},
+    )
+
+    assert reply.status == 409
+    assert reply.body["reason"] == "foreign_origin"
+    assert not reply.body.get("execute")
+    rows = live.daemon.ledger.recent(10).rows
+    assert len(rows) == before + 1
+    assert rows[0].error_reason == "foreign_origin"
+
+
+def test_the_same_card_approved_with_an_empty_list_executes(live: Live) -> None:
+    approval_id = _filed_card(live)
+
+    reply = live.request(
+        f"/decisions/{approval_id}",
+        method="POST",
+        json_body={"choice": "approve", "disabled_origins": []},
+    )
+
+    assert reply.status == 200
+    assert reply.body["execute"][0]["name"] == "host.invoices.pay"

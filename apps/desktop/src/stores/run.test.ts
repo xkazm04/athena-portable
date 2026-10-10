@@ -449,6 +449,24 @@ const APPROVED = {
 };
 
 describe("answering a card", () => {
+  it("posts the switched-off list with the answer", async () => {
+    const daemon = fakeDaemon({ resolutions: { apr_0000000000a1: APPROVED } });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({ ...deps, disabledOrigins: () => ["host:ledgerbox"] });
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+    const posted = daemon.seen.filter((s) => s.path === "/decisions/apr_0000000000a1");
+    expect(posted[0].body!.disabled_origins).toEqual(["host:ledgerbox"]);
+  });
+
+  it("posts an empty list with the answer when nothing is switched off", async () => {
+    const daemon = fakeDaemon({ resolutions: { apr_0000000000a1: APPROVED } });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({ ...deps, disabledOrigins: () => [] });
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+    const posted = daemon.seen.filter((s) => s.path === "/decisions/apr_0000000000a1");
+    expect(posted[0].body!.disabled_origins).toEqual([]);
+  });
+
   it("keeps the card on screen until the daemon's answer arrives, then drops it once", async () => {
     // The optimistic-loss regression: the card used to be removed before the POST, so a refusal
     // left the daemon holding an approval with nothing on screen.

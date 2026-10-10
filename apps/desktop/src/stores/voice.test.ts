@@ -183,7 +183,7 @@ describe("the key", () => {
   });
 
   it("sends start with the page, streams the microphone, and sends stop on release", async () => {
-    const { socket, mic } = wire();
+    const { socket, mic } = wire({ disabledOrigins: () => ["host:other"] });
     await startVoice();
     expect(useVoice.getState().available).toBe(true);
 
@@ -198,6 +198,7 @@ describe("the key", () => {
       type: "start",
       origin: "https://ledgerbox.local",
       host_state: { page_url: "https://ledgerbox.local/invoices" },
+      disabled_origins: ["host:other"],
     });
     expect(frames[1]).toEqual({ type: "stop" });
     expect(socket.audio()).toEqual([new Uint8Array([5, 0, 6, 0])]);
@@ -216,6 +217,15 @@ describe("the key", () => {
 });
 
 describe("a spoken turn", () => {
+  it("carries the switched-off list on a typed utterance too", async () => {
+    const { socket } = wire({ disabledOrigins: () => ["host:ledgerbox"] });
+    await startVoice();
+    await useVoice.getState().say("hi");
+    expect(socket.frames().find((f) => f.type === "text")).toMatchObject({
+      disabled_origins: ["host:ledgerbox"],
+    });
+  });
+
   it("lands in the panel's transcript as the same turn", async () => {
     const { socket } = wire();
     await startVoice();

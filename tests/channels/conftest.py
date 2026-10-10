@@ -87,15 +87,15 @@ class VoiceClient:
     def stop(self) -> None:
         self.send(type="stop")
 
-    def utter(self, origin: str = PAGE_ORIGIN, chunks: int = 3) -> None:
+    def utter(self, origin: str = PAGE_ORIGIN, chunks: int = 3, **extra: Any) -> None:
         """Key down, some audio, key up. What the backend hears is what the test scripted."""
-        self.start(origin)
+        self.start(origin, **extra)
         self.chunks(chunks)
         self.stop()
 
-    def say(self, text: str, origin: str = PAGE_ORIGIN) -> None:
+    def say(self, text: str, origin: str = PAGE_ORIGIN, **extra: Any) -> None:
         """The typed path: an utterance with no microphone behind it."""
-        self.send(type="text", text=text, origin=origin, host_state={"page_url": origin})
+        self.send(type="text", text=text, origin=origin, host_state={"page_url": origin}, **extra)
 
     def tool_result(self, call: dict[str, Any], ok: bool = True, output: str = "done") -> None:
         self.send(

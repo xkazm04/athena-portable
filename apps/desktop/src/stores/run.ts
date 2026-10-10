@@ -669,7 +669,13 @@ export const useRun = create<RunState>((set, get) => {
       if (body !== null) await api.manifest(body).catch(() => undefined);
       let resolution;
       try {
-        resolution = await api.resolve(id, choice, deps.focused()?.origin);
+        resolution = await api.resolve(
+          id,
+          choice,
+          deps.focused()?.origin,
+          undefined,
+          deps.disabledOrigins?.() ?? [],
+        );
       } catch (error) {
         await refuse(reasonOf(error));
         return;

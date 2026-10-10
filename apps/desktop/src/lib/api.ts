@@ -215,8 +215,20 @@ export class DaemonApi {
   }
 
   /** Answer a card. The choice is the only thing the daemon takes from here. */
-  resolve(id: string, choice: string, origin?: string, answer?: string): Promise<Resolution> {
-    return this.json("POST", `/decisions/${encodeURIComponent(id)}`, { choice, origin, answer });
+  resolve(
+    id: string,
+    choice: string,
+    origin?: string,
+    answer?: string,
+    disabledOrigins: readonly string[] = [],
+  ): Promise<Resolution> {
+    // The shell says the switched-off list on every request; the replay's switch check reads it.
+    return this.json("POST", `/decisions/${encodeURIComponent(id)}`, {
+      choice,
+      origin,
+      answer,
+      disabled_origins: [...disabledOrigins],
+    });
   }
 
   ledger(): Promise<Record<string, unknown>> {

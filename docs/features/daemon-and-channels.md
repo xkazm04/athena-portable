@@ -13,7 +13,7 @@ test: a long `/run` never stalls a read.
 |---|---|
 | `POST /manifest` | merges one page's capability manifest, whole or not at all |
 | `POST /run` | one turn, streamed as Server-Sent Events (ADR 0012); may carry `active_project` and switched-off origins |
-| `POST /decisions/<id>` / `GET /decisions` | the person's answer (the gate replays and returns `execute`) / the pending inbox |
+| `POST /decisions/<id>` / `GET /decisions` | the person's answer (the gate replays and returns `execute`; the body carries the switched-off origins, so the replay re-checks the switch) / the pending inbox |
 | `GET /ledger`, `/ledger/rollup` | model invocations and spend, bounded |
 | `GET /engines`, `/health` | what can run here; engine, brain, sessions, tool count, inbox |
 | `/voice`, `/voice/config`, `/voice/preview`, `/voice/transcribe`, `/voice/install` | the voice socket and studio |
@@ -36,6 +36,10 @@ request and caps each host tool result at 1,600 characters with `(showing N of M
 Kokoro and whisper.cpp by default (ADR 0028), a cloud provider for hearing when the person picks it.
 Spoken commands that answer a card are parsed by `commands.py`, never by a backend. Push-to-talk is
 a held key (ADR 0020).
+
+Every `start` and `text` frame carries `disabled_origins`, as `POST /run` does: a spoken turn honours the
+switch, and a spoken answer is replayed against the list current when the person spoke. The daemon keeps
+none of it.
 
 ## Not done
 

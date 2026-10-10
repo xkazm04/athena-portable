@@ -44,7 +44,8 @@ import {
   type SocketLike,
 } from "@/lib/voice";
 import { endpoint, useDaemon } from "@/stores/daemon";
-import { useRun } from "@/stores/run";
+import { useOrigins } from "@/stores/origins";
+import { disabledOriginsOf, useRun } from "@/stores/run";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
 
@@ -66,6 +67,8 @@ export interface VoiceDeps {
   /** The focused tab, its web origin, and the app id the page declared, if it has yet. */
   focused: () => { tabId: number; origin: string; appId: string | null } | null;
   hostState: () => Record<string, unknown>;
+  /** The catalog origins the user switched off, sent on every frame (the shell says it; the daemon keeps none). */
+  disabledOrigins?: () => string[];
   call: (
     tabId: number,
     name: string,
@@ -158,6 +161,8 @@ const LIVE: VoiceDeps = {
       page_title: focused?.title ?? "",
     };
   },
+  disabledOrigins: () =>
+    disabledOriginsOf(useOrigins.getState().records, useTabs.getState().tabs, useTools.getState().byTab),
   call: async (tabId, name, input) => {
     const reply = await bridgeCall(tabId, name, input as Args);
     return reply as { ok: boolean; output: string; error?: string | null };
@@ -389,7 +394,12 @@ export const useVoice = create<VoiceState>((set, get) => {
       if (!live) return;
       if (state.generation !== null) player?.drop(state.generation);
       set({ phase: "listening", reason: "", partial: "", generation: null, speakingText: "", heard: "" });
-      live.send({ type: "start", origin: focused.origin, host_state: deps.hostState() });
+      live.send({
+        type: "start",
+        origin: focused.origin,
+        host_state: deps.hostState(),
+        disabled_origins: deps.disabledOrigins?.() ?? [],
+      });
       if (deps.openMic === null) {
         fail("this webview offers no microphone");
         return;
@@ -421,7 +431,13 @@ export const useVoice = create<VoiceState>((set, get) => {
       if (!live) return;
       if (get().generation !== null) player?.drop(get().generation as number);
       set({ phase: "thinking", reason: "", generation: null, speakingText: "", heard: "" });
-      live.send({ type: "text", text, origin: focused.origin, host_state: deps.hostState() });
+      live.send({
+        type: "text",
+        text,
+        origin: focused.origin,
+        host_state: deps.hostState(),
+        disabled_origins: deps.disabledOrigins?.() ?? [],
+      });
     },
 
     close() {

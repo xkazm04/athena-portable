@@ -306,6 +306,41 @@ def test_a_spoken_approve_answers_the_card_and_the_page_runs_the_execute(
     assert "paid" in voiced.transport.requests[1].stdin
 
 
+def test_a_spoken_approve_is_replayed_against_the_list_current_when_the_user_spoke(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    """The shell says the switched-off list on every request. A card filed while the app was on,
+    approved by a voice utterance that lists the app, is refused ``foreign_origin`` and the page
+    is never told to run it."""
+    _file_a_card(voiced, client)
+    backend.utterances = ["approve"]
+
+    client.utter(disabled_origins=["host:invoices"])
+    refused = client.until("turn.error")
+    _settle()
+
+    assert refused["reason"] == "foreign_origin"
+    assert "decision.resolved" not in client.kinds()
+    assert "tool.call" not in client.kinds()[client.kinds().index("turn.error") :]
+
+
+def test_a_voice_turn_whose_utterance_lists_the_app_is_refused_that_apps_tools(
+    voiced: Live, client: VoiceClient
+) -> None:
+    voiced.register()
+    voiced.script(
+        claude_round(op("host.invoices.chase", invoice="7")),
+        claude_round("That app is switched off."),
+    )
+
+    client.say("chase invoice 7", disabled_origins=["host:invoices"])
+    refused = client.until("tool.result")
+    client.until("turn.finished")
+
+    assert refused["error"] == "foreign_origin"
+    assert "decision.requested" not in client.kinds()
+
+
 def test_a_spoken_no_declines_it_and_nothing_runs(
     voiced: Live, backend: ScriptedBackend, client: VoiceClient
 ) -> None:

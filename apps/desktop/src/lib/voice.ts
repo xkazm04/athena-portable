@@ -149,9 +149,21 @@ export type SocketFactory = (url: string, protocols: string[]) => SocketLike;
 
 /** What the client sends, as `channels/voice/gateway.py` reads it. */
 export type ClientFrame =
-  | { type: "start"; origin: string; host_state: Record<string, unknown>; project_id?: string }
+  | {
+      type: "start";
+      origin: string;
+      host_state: Record<string, unknown>;
+      disabled_origins: string[];
+      project_id?: string;
+    }
   | { type: "stop" }
-  | { type: "text"; text: string; origin: string; host_state: Record<string, unknown> }
+  | {
+      type: "text";
+      text: string;
+      origin: string;
+      host_state: Record<string, unknown>;
+      disabled_origins: string[];
+    }
   | {
       type: "tool_result";
       call_id: string;

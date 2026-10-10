@@ -68,6 +68,7 @@ from athena.daemon.routes import (
     PENDING_LINES,
     Request,
     decide,
+    disabled_origins_from,
     event_payload,
     turn_context,
     turn_events,
@@ -155,6 +156,7 @@ class _Utterance:
     host_state: dict[str, Any]
     project_id: str
     transcriber: Any
+    disabled_origins: frozenset[str] = frozenset()
     #: Whether this utterance began by talking over a reply. A stop word said that way is still
     #: a stop word, even though playback ended before the key came up.
     interrupted: bool = False
@@ -167,6 +169,9 @@ class _Job:
     host_state: dict[str, Any]
     project_id: str
     interrupted: bool = False
+    #: The apps the user had switched off when they spoke (the shell says the list on every
+    #: request; the daemon keeps none of it).
+    disabled_origins: frozenset[str] = frozenset()
 
 
 @dataclass
@@ -278,6 +283,7 @@ class VoiceSession:
             host_state=fields["host_state"],
             project_id=fields["project_id"],
             transcriber=backend.transcriber(),
+            disabled_origins=fields["disabled_origins"],
             interrupted=interrupted,
         )
 
@@ -298,6 +304,7 @@ class VoiceSession:
                 host_state=current.host_state,
                 project_id=current.project_id,
                 interrupted=current.interrupted,
+                disabled_origins=current.disabled_origins,
             )
         )
 
@@ -326,6 +333,7 @@ class VoiceSession:
             "origin": str(body.get("origin", "")).strip(),
             "host_state": dict(host_state) if isinstance(host_state, Mapping) else {},
             "project_id": str(body.get("project_id", "") or ""),
+            "disabled_origins": disabled_origins_from(body),
         }
 
     # -- sending ---------------------------------------------------------------------------------
@@ -457,7 +465,12 @@ class VoiceSession:
         project = {"id": job.project_id} if job.project_id else None
         for step in range(self.gateway.max_continuations + 1):
             ctx = turn_context(
-                self.daemon, session, job.project_id, surface="voice", trigger="voice"
+                self.daemon,
+                session,
+                job.project_id,
+                surface="voice",
+                trigger="voice",
+                disabled_origins=job.disabled_origins,
             )
             carried, self.outstanding = self.outstanding, []
             proposed: list[ToolCall] = []
@@ -537,7 +550,11 @@ class VoiceSession:
         request = Request(
             method="POST",
             path=f"/decisions/{spoken.approval_id}",
-            body={"choice": spoken.choice, "origin": job.origin},
+            body={
+                "choice": spoken.choice,
+                "origin": job.origin,
+                "disabled_origins": sorted(job.disabled_origins),
+            },
         )
         status, reply = decide(self.daemon, request, spoken.approval_id)
         self.cards = [card for card in self.cards if card.id != spoken.approval_id]
