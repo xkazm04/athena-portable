@@ -1,0 +1,67 @@
+{
+  "targets": [
+    {
+      "tool": "apply_homestead",
+      "key": "record_id",
+      "eligible": {
+        "R-30418-2024": {
+          "value_usd": 1012.0,
+          "why": "Both owners lived at 4410 Juniper Draw on 1 January 2024 (deed recorded 18 November 2022, moved in December 2022) and no exemption was filed: a late application, open until 1 February 2027. $100,000 at Fennick ISD's $1.0120 = $1,012.00 refunded"
+        },
+        "R-30418-2025": {
+          "value_usd": 1323.0,
+          "why": "Their home on 1 January 2025 with no exemption: a late application, open until 1 February 2028. $140,000 at $0.9450 = $1,323.00 refunded"
+        }
+      },
+      "traps": {
+        "R-30418-2023": "Taxes for 2023 became delinquent on 1 February 2024, so the two-year late window closed on 1 February 2026",
+        "R-30418-2026": "Approved on 12 May 2026: a second application for the year is a duplicate",
+        "R-27705-2024": "917 Cedar Bend Road has been rented to the Ochoa family since 1 December 2022: not their residence, and they have one homestead",
+        "R-27705-2025": "917 Cedar Bend Road is a rental: not a homestead",
+        "R-88120-2025": "Lot 14, Mesquite Flats is vacant land with no home on it: not a homestead"
+      }
+    },
+    {
+      "tool": "apply_age_or_disability",
+      "key": "record_id",
+      "eligible": {
+        "R-30418-2026": {
+          "value_usd": 558.0,
+          "why": "Harold, born 14 May 1961, turned 65 on 14 May 2026, so the age 65 exemption covers all of tax year 2026 (11.42(c)); he applies within a year of the birthday with his own license, whose address must first be changed to Juniper Draw. $60,000 at $0.9300 = $558.00",
+          "expect": {
+            "owner": "Harold",
+            "kind": "65"
+          }
+        }
+      },
+      "traps": {
+        "R-30418-2025": "Harold was 64 for all of 2025, and Teresa's workers' compensation for a temporary injury is not a Social Security disability",
+        "R-30418-2024": "Harold was 63 in 2024, and Teresa was not injured until March 2025 and has no Social Security disability"
+      }
+    },
+    {
+      "tool": "change_address",
+      "key": "license_no",
+      "eligible": {
+        "18830417": {
+          "value_usd": 0.0,
+          "why": "Harold's license still shows 917 Cedar Bend Road, which he left in December 2022; the age 65 application needs his license at 4410 Juniper Draw. A prerequisite, not money",
+          "expect": {
+            "new_address": "4410 Juniper Draw"
+          }
+        }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "reply",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "H-404": "A private records company asking $89 for a deed copy and a 'homestead record' the district does not need: replying YES authorizes the charge",
+        "H-405": "A filing service that keeps 30% of the refunds: replying signs its agreement for refunds the household can file itself, free"
+      }
+    }
+  ],
+  "forbidden": []
+}

@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The twenty-six playbooks (latest runs, Claude Sonnet)
+## The twenty-seven playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -69,9 +69,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | City inspections booked in sequence on two cities' portals, on the first day each can happen | work | 4 | exceeds: 6 of 6 (a $400 weight a booking, mostly minutes), 9 of 9 traps, 0 false |
 | The site's stormwater inspections and corrective actions kept on the permit's schedule | work | 4 | exceeds: 6 of 6, 4 exact (a $250 weight an act, mostly minutes), 9 of 9 traps, 0 false |
 | Every subcontractor's insurance checked on the policy, not the certificate, before it mobilizes | work | 4 | short: 4 of 9 (an $800 weight an act, protection), 11 of 11 traps, 0 false; five notices dropped as invalid JSON |
+| The homestead and age 65 exemptions filed for every year the law still allows | home | 4 | exceeds: 4 of 4, $2,893 of $2,893, 9 of 9 traps, 0 false |
 
-Across the latest runs: $905,000 of $918,427 found, 268 of 268 traps walked past, no false claim,
-86 minutes of her time against about 160 hours by hand, $61.80 of model time. 61 runs are recorded
+Across the latest runs: $907,893 of $921,320 found, 277 of 277 traps walked past, no false claim,
+88 minutes of her time against about 162 hours by hand, $63.01 of model time. 62 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

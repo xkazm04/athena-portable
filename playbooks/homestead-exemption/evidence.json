@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "homestead-exemption",
+  "captured_at": "2026-10-09T23:59:45Z",
+  "bench_run_at": "2026-10-09T23:56:12Z",
+  "narration": {
+    "text": "The homestead and age 65 exemptions filed for every year the law still allows. This is a chore for a Texas homeowner in her sixties, who with her husband bought their home in late 2022, rents out their old house and only filed for a homestead exemption this spring. Athena works it across 4 portals: Countyline Appraisal, Deedvault, IDway and Mailnest. On the bench, she found 4 of 4 eligible items, worth 2,893 dollars of the 2,893 dollars there was to find. All 4 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. Among them: Tax year 2023, whose two-year late window closed on 1 February 2026. Tax year 2026, already approved in May. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 52 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 66.382,
+    "sha256": "b8fe3498f755a091dded512dff65c09e58ef09a8c4e12f1493fe32030640b8c5"
+  },
+  "video": {
+    "path": "evidence/homestead-exemption/evidence.mp4",
+    "duration_s": 66.4,
+    "bytes": 3137218,
+    "sha256": "c448297e0f3c6c4bb48913c7ffa674f378f76140943bea619a17b331686bb67b"
+  },
+  "thumbnail": {
+    "path": "playbooks/homestead-exemption/thumb.jpg",
+    "bytes": 94584,
+    "sha256": "129369e1b510e9a33b9aa343d2bac2678eb7929e728191e237efb2f882c3cc61"
+  }
+}

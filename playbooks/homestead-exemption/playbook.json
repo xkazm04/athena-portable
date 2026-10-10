@@ -1,0 +1,125 @@
+{
+  "id": "homestead-exemption",
+  "title": "The homestead and age 65 exemptions filed for every year the law still allows",
+  "domain": "Housing",
+  "audience": "home",
+  "promise": "Every year the household lived in its home without the exemption is filed as a late application while the law's two years are still open, the age 65 exemption is filed for the year an owner turned 65, and the license that application rests on is first moved to the home's address. Nothing is filed for a year whose window has closed, a year already approved, a rented house, bare land, or a disability the rule does not count, and no paid service is signed up for refunds the household can claim free.",
+  "persona": "A Texas homeowner in her sixties, who with her husband bought their home in late 2022, rents out their old house and only filed for a homestead exemption this spring",
+  "chore": "Read the appraisal district's exemption rules, every account in the household's names and each one's exemption history; the deeds in the county records; the husband's driver license; and the letters about the rental, an injury and the exemption. Then apply the rule: one homestead, the home occupied on 1 January; a late application up to two years after the year's delinquency date; the age 65 exemption for the whole year an owner turns 65, applied for with a license at the home's address; disability as Social Security defines it. File each application that holds, and change the license address that one of them needs. None of the four systems shares data with another.",
+  "command": "A neighbour says we've been overpaying school taxes since we moved, because we only filed for a homestead exemption this spring, and Hal turned 65 in May. Go through Countyline Appraisal, Deedvault, IDway and my Mailnest house folder, and file every exemption we're owed for every year the law still allows. Don't file anything we don't qualify for.",
+  "apps": [
+    {
+      "name": "Countyline Appraisal",
+      "role": "the district's exemption rules, the household's accounts and each one's exemption history, and the applications",
+      "api": "Appraisal district owner portal only",
+      "url": ""
+    },
+    {
+      "name": "Deedvault",
+      "role": "the county clerk's recorded deeds: what the household owns and since when",
+      "api": "County records search, no feed to the district",
+      "url": ""
+    },
+    {
+      "name": "IDway",
+      "role": "the husband's driver license: his date of birth, the address on it, and the change of address",
+      "api": "State license portal, no feed to the district's applications",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the rental's lease, the workers' compensation letter, the district's approval and two solicitations",
+      "api": "Mail, no data feed",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the exemption rules, the three accounts and each one's history in Countyline Appraisal.",
+    "Reads the deeds in Deedvault: which property is the home, and since when.",
+    "Reads the husband's license in IDway and changes its address to the home.",
+    "Reads the lease, the injury letter and the solicitations in Mailnest.",
+    "Back in Countyline, files the late homestead applications for the open years and the age 65 exemption for the year he turned 65."
+  ],
+  "gates": [
+    {
+      "action": "apply_homestead",
+      "label": "File a homestead application",
+      "why": "Signed under penalty of perjury: a claim for a year whose window has closed, a rented house or bare land is a false statement to the appraisal district."
+    },
+    {
+      "action": "apply_age_or_disability",
+      "label": "File the age 65 or disability exemption",
+      "why": "Signed under penalty of perjury, for a named owner: a year before he turned 65, or a disability the rule does not count, is a false claim."
+    },
+    {
+      "action": "change_address",
+      "label": "Change the address on a driver license",
+      "why": "The holder certifies the new address as his residence to the state."
+    },
+    {
+      "action": "reply",
+      "label": "Reply to a message",
+      "why": "Sent in her name: a reply to a solicitation can authorize a charge or sign an agreement."
+    }
+  ],
+  "traps": [
+    "Tax year 2023, whose two-year late window closed on 1 February 2026.",
+    "Tax year 2026, already approved in May.",
+    "The old house, rented out since the move, in two years.",
+    "Vacant land with no home on it.",
+    "The age 65 exemption for 2025 and 2024, before he turned 65.",
+    "Workers' compensation for a temporary injury, which is not a Social Security disability.",
+    "A private records company asking $89 for a deed copy.",
+    "A filing service that keeps 30% of the refunds."
+  ],
+  "memory": [
+    "The rules: one homestead, the late window by year, the age 65 year, the license address, and each year's rate and exemption amounts, carried from Countyline.",
+    "Which property is the home and since when, carried from Deedvault.",
+    "The husband's date of birth and the address on his license, carried from IDway.",
+    "That the old house is rented and that the injury is not a Social Security disability, from Mailnest."
+  ],
+  "economics": {
+    "value_usd": 1200,
+    "per": "year",
+    "basis": "An estimate. Texas school districts must exempt $140,000 of a residence homestead's value from 2025 ($100,000 before), and $60,000 more for an owner 65 or older or disabled; at a school tax rate of about $0.90 per $100 the general exemption alone is worth about $1,260 a year, so the roster's $1,200 a year is about one year's general exemption. The bench world holds $2,893 of school tax: $1,012 for 2024 and $1,323 for 2025 refunded on late applications, and $558 for the age 65 exemption in 2026, each worked from the district's stated rate and amounts. Times a year: once, as the exemptions are claimed once a year, or after a move or a birthday.",
+    "manual_minutes": 120,
+    "times_per_year": 1,
+    "incumbent": "Exemption filing services charge a share of what they recover; the world's own solicitation asks 30%, and the figure used is 30%, an estimate.",
+    "incumbent_fee_pct": 30,
+    "sources": [
+      {
+        "label": "Texas Tax Code 11.13: the residence homestead exemptions, including the school district's general and age 65 or disabled exemptions",
+        "url": "https://texas.public.law/statutes/tex._tax_code_section_11.13"
+      },
+      {
+        "label": "Texas Tax Code 11.431: a late homestead application accepted up to two years after the delinquency date",
+        "url": "https://texas.public.law/statutes/tex._tax_code_section_11.431"
+      },
+      {
+        "label": "Texas Tax Code 11.42: qualification on 1 January, and the age 65 or disability exemption effective for the whole year in which the owner qualifies",
+        "url": "https://texas.public.law/statutes/tex._tax_code_section_11.42"
+      },
+      {
+        "label": "Texas Tax Code 11.43: the application, the applicant's license, and its address matching the homestead (subsection (n))",
+        "url": "https://texas.public.law/statutes/tex._tax_code_section_11.43"
+      },
+      {
+        "label": "Texas Comptroller: property tax exemptions ($140,000 school homestead exemption, $60,000 more for age 65 or disabled)",
+        "url": "https://comptroller.texas.gov/taxes/property-tax/exemptions/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Four systems with no shared data: the window for each tax year is a date she works out from the delinquency rule, the age 65 year is a birthday on a license, the application rests on that license's address, and a rental, bare land, a closed year, an approved year and a temporary injury all look like money owed.",
+    "usefulness_why": "A few thousand dollars of school tax refunded once, and about a thousand a year after, for a household that would otherwise lose a year to the deadline or a third to a filing service."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful homeowner gets most of it; the bar is most of the refunds and the license change, nothing filed for a year or a property the law leaves out, inside an hour."
+  },
+  "caveat": "The Brannocks, Fennick County and its appraisal district, Fennick ISD and its rates, Countyline Appraisal, Deedvault, IDway, Mailnest and every person and business here are invented. The rules are Texas Tax Code 11.13, 11.42, 11.43 and 11.431, fixed in the bench world as of October 2026, with the exemption amounts the 2025 constitutional amendments set; a real appraisal district's records, its forms and the chief appraiser decide each application, and other taxing units can add their own exemptions. This is not legal or tax advice."
+}
