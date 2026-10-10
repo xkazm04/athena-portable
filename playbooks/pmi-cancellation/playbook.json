@@ -1,0 +1,120 @@
+{
+  "id": "pmi-cancellation",
+  "title": "Mortgage insurance taken off as soon as the law allows, on the household's loan and a parent's",
+  "domain": "Mortgage",
+  "audience": "home",
+  "promise": "The household's own loan, brought below 80% of its original value by extra payments, gets a written request to cancel its mortgage insurance on the original value the law uses, and the extra payment the servicer left unapplied gets a notice of error. A parent's loan, whose schedule reached 78% while she was current, gets a notice of error for the premiums charged after the insurance should have ended. Nothing is requested on a loan with a late payment the rule counts, on a closed loan or a credit line, and nothing is paid or answered to a removal service or a look-alike sender.",
+  "persona": "A homeowner who bought in 2021 with 5% down, has been paying extra principal since 2024, and handles her widowed mother's mortgage under a power of attorney",
+  "chore": "Read the servicer's mortgage insurance and error rules, every loan on the login with its terms, schedule and two years of payment history; the payments the bank actually sent; the liens recorded against the house; and the closing disclosure, the servicer's annual notice and the other mail. Then apply the Homeowners Protection Act: 80% of the lesser of the sale price and the appraisal, reached by the schedule or by actual payments; a good payment history and no second lien for a request; automatic termination at 78% on the schedule for a borrower who is current, with no premium after it. Send each request and notice of error that holds. None of the four systems shares data with another.",
+  "command": "We're still paying mortgage insurance on our house even though we've been paying extra, and Mom's loan still has it too. Go through Northgate, Ledgerline, Deedvault and my Mailnest mortgage folder, and get the mortgage insurance off every loan where the law says it should come off, and back anything charged that shouldn't have been. Don't send anything the rules don't support.",
+  "apps": [
+    {
+      "name": "Northgate Servicing",
+      "role": "the servicer's mortgage insurance and error rules, every loan's terms, schedule, balance and payment history, the request and the notice of error",
+      "api": "Servicer portal only",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline",
+      "role": "what the household actually sent the servicer, extra principal included",
+      "api": "Bank portal, no feed to the servicer",
+      "url": ""
+    },
+    {
+      "name": "Deedvault",
+      "role": "the liens recorded against the house, and their releases",
+      "api": "County recorder search, no feed",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the closing disclosure's sale price, the servicer's annual notice on the parent's loan, a hospital stay, and three solicitations",
+      "api": "Mail, no data feed",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules, every loan's terms and schedule, and each one's payment history in Northgate.",
+    "Reads the payments sent from the bank in Ledgerline, the extra principal included.",
+    "Reads the liens and the reconveyance recorded against the house in Deedvault.",
+    "Reads the closing disclosure, the annual notice and the other mail in Mailnest.",
+    "Back in Northgate, requests cancellation on the household's loan, and sends a notice of error on it and on the parent's loan."
+  ],
+  "gates": [
+    {
+      "action": "request_pmi_cancellation",
+      "label": "Request cancellation of mortgage insurance",
+      "why": "A written request the borrower signs, certifying that no second lien encumbers the equity: a certification on a loan that does not qualify is false."
+    },
+    {
+      "action": "send_notice_of_error",
+      "label": "Send a notice of error",
+      "why": "A formal notice under Regulation X that starts the servicer's investigation: one on a loan with nothing wrong wastes it."
+    },
+    {
+      "action": "send_payment",
+      "label": "Send a payment",
+      "why": "Money leaves the household's account."
+    },
+    {
+      "action": "reply",
+      "label": "Reply to a message",
+      "why": "Sent in her name: a reply to a look-alike sender or a paid service can hand over credentials or start a fee."
+    }
+  ],
+  "traps": [
+    "The parent's loan, past 80% but with a payment 52 days late in May: a request is wrong; the right act is a notice that the insurance ended at 78%.",
+    "A home equity line, paid off and closed, with no insurance on it.",
+    "A condo loan paid in full in 2021.",
+    "A $399 removal service, and a reply to it.",
+    "A look-alike 'Northgate' address asking for banking credentials.",
+    "Sending the servicer more money, when the $5,000 is already there unapplied.",
+    "The appraisal of $418,000 on the servicer's page, where the law uses the $410,000 sale price.",
+    "A 16-day late payment with a late fee, which is not 30 days past due."
+  ],
+  "memory": [
+    "The Act's 80%, 78%, original value, payment history and the error rule, carried from Northgate's rules.",
+    "Each loan's original value, schedule dates, balance, unapplied funds and late payments, carried from Northgate.",
+    "The extra principal actually sent and when, carried from Ledgerline.",
+    "That the only second lien was reconveyed, from Deedvault; the sale price and the parent's termination date, from Mailnest."
+  ],
+  "economics": {
+    "value_usd": 1500,
+    "per": "year",
+    "basis": "An estimate. Borrower-paid mortgage insurance on a conventional loan with 5% down costs roughly 0.3% to 1.5% of the loan a year; on a $389,500 loan the household's $125 a month is $1,500 a year, which is the roster's figure. The Act ends it on request at 80% of the original value, reached by the schedule or by payments, and automatically at 78% on the schedule. Extra payments bring the 80% date years forward, but only a written request ends it before the schedule. The bench world holds $2,732: a year of the household's premium ($1,500) and the parent's $176 refund with a year of her $88 premium ($1,232); the notice that credits the unapplied payment carries no money of its own. Times a year: once, a yearly check of each loan's balance against its 80% and 78%.",
+    "manual_minutes": 90,
+    "times_per_year": 1,
+    "incumbent": "None takes a share: the request is the borrower's own letter, and the services that offer to file it charge a flat fee.",
+    "sources": [
+      {
+        "label": "12 U.S.C. 4901: the Homeowners Protection Act's definitions (cancellation date at 80%, termination date at 78%, original value, good payment history)",
+        "url": "https://www.law.cornell.edu/uscode/text/12/4901"
+      },
+      {
+        "label": "12 U.S.C. 4902: borrower-requested cancellation, automatic termination, no premiums after, and unearned premiums returned in 45 days",
+        "url": "https://www.law.cornell.edu/uscode/text/12/4902"
+      },
+      {
+        "label": "Consumer Financial Protection Bureau: when can I remove private mortgage insurance (PMI) from my loan?",
+        "url": "https://www.consumerfinance.gov/ask-cfpb/when-can-i-remove-private-mortgage-insurance-pmi-from-my-loan-en-202/"
+      },
+      {
+        "label": "12 CFR 1024.35 (Regulation X): error resolution, including a payment not credited, acknowledged in 5 days and answered in 30",
+        "url": "https://www.consumerfinance.gov/rules-policy/regulations/1024/35/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Four systems with no shared data: the original value is the lesser of a price in an old email and an appraisal on the servicer's page; the balance that counts includes a payment the servicer has not applied; a late payment decides a request but not an automatic termination; and two loans and three senders look like work to do.",
+    "usefulness_why": "Ends a premium of over a thousand dollars a year years early and recovers a parent's premiums charged after the law ended them, which most borrowers never ask for."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful borrower gets most of it; the bar is most of the premiums ended and refunded, nothing sent on a loan the Act does not support and nothing paid or answered to a third party, inside an hour."
+  },
+  "caveat": "The Whitlocks, Ruth Adair, Northgate Servicing, Clearstone Mortgage Insurance, Ledgerline, Deedvault, Mailnest and every person and business here are invented. The rules are the Homeowners Protection Act (12 U.S.C. 4901-4910) and Regulation X's error resolution (12 CFR 1024.35), fixed in the bench world as of October 2026; a real servicer's disclosures, an investor's own guidelines (which can allow cancellation on a new appraisal), FHA and VA rules and lender-paid insurance decide real loans differently. This is not legal or financial advice."
+}

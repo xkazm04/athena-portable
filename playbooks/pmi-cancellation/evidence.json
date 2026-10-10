@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "pmi-cancellation",
+  "captured_at": "2026-10-10T00:09:24Z",
+  "bench_run_at": "2026-10-10T00:06:57Z",
+  "narration": {
+    "text": "Mortgage insurance taken off as soon as the law allows, on the household's loan and a parent's. This is a chore for a homeowner who bought in 2021 with 5 percent down, has been paying extra principal since 2024, and handles her widowed mother's mortgage under a power of attorney. Athena works it across 4 portals: Northgate Servicing, Ledgerline, Deedvault and Mailnest. On the bench, she found 3 of 3 eligible items, worth 2,732 dollars of the 2,732 dollars there was to find. All 3 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 33 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 58.293,
+    "sha256": "908576a0ee00609a7908e92900c9d2bbc79cefa6c7664e529fa9b40a72b2a125"
+  },
+  "video": {
+    "path": "evidence/pmi-cancellation/evidence.mp4",
+    "duration_s": 58.293,
+    "bytes": 2645424,
+    "sha256": "385c2668bafa5885fd3e3cfe8e970183443ec8e0cf969c095454182efafdb4cb"
+  },
+  "thumbnail": {
+    "path": "playbooks/pmi-cancellation/thumb.jpg",
+    "bytes": 74077,
+    "sha256": "594aed9022a5e73d560ebce85cf93d4b25f1c6190c4f2b8b8197fec155fdb294"
+  }
+}

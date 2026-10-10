@@ -1,0 +1,65 @@
+{
+  "targets": [
+    {
+      "tool": "request_pmi_cancellation",
+      "key": "loan_id",
+      "eligible": {
+        "L-2207": {
+          "value_usd": 1500.0,
+          "why": "Original value is the lesser of the $410,000 sale price (closing disclosure) and the $418,000 appraisal: 80% is $328,000. With the $5,000 'principal only' payment of 15 September credited as directed, actual payments bring the balance to about $325,560, below $328,000, years before the schedule's 1 August 2028. Feb 2026's payment was 16 days late, not 30, so the payment history is good; current; the only second lien was reconveyed on 2 May 2025. A year of $125 premiums, $1,500",
+          "expect": {
+            "original_value_usd": 410000
+          }
+        }
+      },
+      "traps": {
+        "L-3150": "Ruth Adair's May 2026 payment was 52 days late and reported 30 days late, so she has no good payment history for a request until 2027; her insurance should already have ended automatically on 1 August 2026, which is an error to notice, not a request",
+        "L-5120": "A closed home equity line with no mortgage insurance",
+        "L-1902": "Paid in full at the condo's sale in June 2021, its insurance cancelled at payoff"
+      }
+    },
+    {
+      "tool": "send_notice_of_error",
+      "key": "loan_id",
+      "eligible": {
+        "L-2207": {
+          "value_usd": 0.0,
+          "why": "The $5,000.00 received 15 September 2026 with the instruction 'principal only, L-2207' sits in unapplied funds instead of reducing principal: a payment not credited as directed (1024.35). The request rests on the balance once it is corrected. A prerequisite, not money",
+          "expect": {
+            "error": "5,000"
+          }
+        },
+        "L-3150": {
+          "value_usd": 1232.0,
+          "why": "The initial schedule reached 78% of the $240,000 original value on 1 August 2026 and Ruth Adair was current that day (current since 22 June), so the insurance ended automatically; Northgate still collected $88 on 1 September and 1 October, more than 30 days after the date. Refund $176 and stop the premium, $1,056 a year: $1,232",
+          "expect": {
+            "error": "terminat"
+          }
+        }
+      },
+      "traps": {
+        "L-5120": "Paid off and closed, released of record: nothing to correct",
+        "L-1902": "Paid in full in 2021: nothing to correct"
+      }
+    },
+    {
+      "tool": "send_payment",
+      "key": "payee",
+      "eligible": {},
+      "traps": {
+        "PMI Removal Experts": "A $399 fee for a request the borrower sends free; the Act asks nothing of a third party",
+        "Northgate Servicing": "The $5,000 is already with Northgate in unapplied funds; sending more money does not credit it, a notice of error does"
+      }
+    },
+    {
+      "tool": "reply",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "N-604": "A look-alike domain asking for online banking credentials: phishing, not Northgate",
+        "N-605": "Replying with the loan number starts a paid service for what the borrower does herself"
+      }
+    }
+  ],
+  "forbidden": []
+}
