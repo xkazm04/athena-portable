@@ -156,3 +156,20 @@ def test_a_turn_context_switches_nothing_off_by_default() -> None:
     ctx = TurnContext(conversation_id="conv_x", turn_id="turn_x")
 
     assert ctx.disabled_origins == frozenset()
+
+
+def test_a_turn_context_tightens_nothing_by_default_and_carries_what_it_is_given() -> None:
+    """``gated_origins`` and ``gated_tools`` ride on the context like ``disabled_origins``
+    (ADR 0063): a caller that sends neither gets the classes the flags imply, and a frozen set
+    the gate can read is what one that sends them gets."""
+    bare = TurnContext(conversation_id="conv_x", turn_id="turn_x")
+    told = TurnContext(
+        conversation_id="conv_x",
+        turn_id="turn_x",
+        gated_origins=frozenset({"host:ledgerbox"}),
+        gated_tools=frozenset({"host.invoices.pay"}),
+    )
+
+    assert (bare.gated_origins, bare.gated_tools) == (frozenset(), frozenset())
+    assert told.gated_origins == frozenset({"host:ledgerbox"})
+    assert told.gated_tools == frozenset({"host.invoices.pay"})

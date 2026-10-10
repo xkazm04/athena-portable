@@ -70,6 +70,8 @@ from athena.daemon.routes import (
     decide,
     disabled_origins_from,
     event_payload,
+    gated_origins_from,
+    gated_tools_from,
     turn_context,
     turn_events,
 )
@@ -157,6 +159,8 @@ class _Utterance:
     project_id: str
     transcriber: Any
     disabled_origins: frozenset[str] = frozenset()
+    gated_origins: frozenset[str] = frozenset()
+    gated_tools: frozenset[str] = frozenset()
     #: Whether this utterance began by talking over a reply. A stop word said that way is still
     #: a stop word, even though playback ended before the key came up.
     interrupted: bool = False
@@ -172,6 +176,9 @@ class _Job:
     #: The apps the user had switched off when they spoke (the shell says the list on every
     #: request; the daemon keeps none of it).
     disabled_origins: frozenset[str] = frozenset()
+    #: The apps seen for the first time and the tools pinned ``GATED`` when they spoke (ADR 0063).
+    gated_origins: frozenset[str] = frozenset()
+    gated_tools: frozenset[str] = frozenset()
 
 
 @dataclass
@@ -284,6 +291,8 @@ class VoiceSession:
             project_id=fields["project_id"],
             transcriber=backend.transcriber(),
             disabled_origins=fields["disabled_origins"],
+            gated_origins=fields["gated_origins"],
+            gated_tools=fields["gated_tools"],
             interrupted=interrupted,
         )
 
@@ -305,6 +314,8 @@ class VoiceSession:
                 project_id=current.project_id,
                 interrupted=current.interrupted,
                 disabled_origins=current.disabled_origins,
+                gated_origins=current.gated_origins,
+                gated_tools=current.gated_tools,
             )
         )
 
@@ -334,6 +345,8 @@ class VoiceSession:
             "host_state": dict(host_state) if isinstance(host_state, Mapping) else {},
             "project_id": str(body.get("project_id", "") or ""),
             "disabled_origins": disabled_origins_from(body),
+            "gated_origins": gated_origins_from(body),
+            "gated_tools": gated_tools_from(body),
         }
 
     # -- sending ---------------------------------------------------------------------------------
@@ -471,6 +484,8 @@ class VoiceSession:
                 surface="voice",
                 trigger="voice",
                 disabled_origins=job.disabled_origins,
+                gated_origins=job.gated_origins,
+                gated_tools=job.gated_tools,
             )
             carried, self.outstanding = self.outstanding, []
             proposed: list[ToolCall] = []

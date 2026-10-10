@@ -1,10 +1,14 @@
 /**
  * Per-origin trust — the `origins` table (README section 3.3), as the panel holds it.
  *
- * A page's tools are off until the user says otherwise, and *which* tools and at what class is
- * data the user can see and change: `enabled` is the standing permission and `overrides` is the
- * per-tool class map the gate reads. Nothing here decides a class; the gate does (README
- * invariant 3). This store only carries the user's answer to and from SQLite.
+ * An origin is in one of three states (ADR 0063). **No row** is first sight: every tool of that
+ * app files a card, whatever its flags say. **A row with `enabled: true`** is one the user
+ * registered or trusted: its classes are the ones its manifest's flags imply, tightened by the
+ * `GATED` pins in `overrides`. **A row with `enabled: false`** is switched off and its tools are
+ * refused. `stores/run.ts` turns the table into the lists every request carries to the gate; a
+ * pin of `AUTO` or `READ` is never sent, because a pin only tightens. Nothing here decides a
+ * class; the gate does (README invariant 3). This store only carries the user's answer to and
+ * from SQLite.
  *
  * **Writes for one origin are queued, and a save names only the fields it owns.** Two writers
  * reach this table at once as soon as c24 exists: the shell's first-sight default writing

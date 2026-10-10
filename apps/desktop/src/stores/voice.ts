@@ -45,7 +45,7 @@ import {
 } from "@/lib/voice";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useOrigins } from "@/stores/origins";
-import { disabledOriginsOf, useRun } from "@/stores/run";
+import { NOTHING_GATED, disabledOriginsOf, gatedListsOf, useRun, type GatedLists } from "@/stores/run";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
 
@@ -69,6 +69,8 @@ export interface VoiceDeps {
   hostState: () => Record<string, unknown>;
   /** The catalog origins the user switched off, sent on every frame (the shell says it; the daemon keeps none). */
   disabledOrigins?: () => string[];
+  /** The first-sight apps and the `GATED` pins, sent on every turn frame the same way (ADR 0063). */
+  gated?: () => GatedLists;
   call: (
     tabId: number,
     name: string,
@@ -163,6 +165,7 @@ const LIVE: VoiceDeps = {
   },
   disabledOrigins: () =>
     disabledOriginsOf(useOrigins.getState().records, useTabs.getState().tabs, useTools.getState().byTab),
+  gated: () => gatedListsOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab),
   call: async (tabId, name, input) => {
     const reply = await bridgeCall(tabId, name, input as Args);
     return reply as { ok: boolean; output: string; error?: string | null };
@@ -399,6 +402,7 @@ export const useVoice = create<VoiceState>((set, get) => {
         origin: focused.origin,
         host_state: deps.hostState(),
         disabled_origins: deps.disabledOrigins?.() ?? [],
+        ...(deps.gated?.() ?? NOTHING_GATED),
       });
       if (deps.openMic === null) {
         fail("this webview offers no microphone");
@@ -437,6 +441,7 @@ export const useVoice = create<VoiceState>((set, get) => {
         origin: focused.origin,
         host_state: deps.hostState(),
         disabled_origins: deps.disabledOrigins?.() ?? [],
+        ...(deps.gated?.() ?? NOTHING_GATED),
       });
     },
 

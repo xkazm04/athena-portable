@@ -20,6 +20,7 @@ import {
   RECONCILE_MS,
   cardFromRow,
   disabledOriginsOf,
+  gatedListsOf,
   mergeCards,
   resetRunForTests,
   setRunDeps,
@@ -879,6 +880,128 @@ describe("disabled origins", () => {
     setRunDeps({ ...deps, disabledOrigins: () => [] });
     await useRun.getState().send("hello");
     expect(daemon.runs()[0].body!.disabled_origins).toEqual([]);
+  });
+});
+
+// -- first sight and the user's pins (README section 3.3, ADR 0063) -------------------------------
+
+describe("what the gate tightens", () => {
+  const row = (origin: string, enabled: boolean, overrides: OriginRow["overrides"] = {}): OriginRow => ({
+    origin,
+    enabled,
+    overrides,
+    first_seen: "",
+    last_seen: "",
+  });
+  const tab = (id: number, url: string) =>
+    ({ id, label: `page-${id}`, url, title: "", loading: false, focused: id === 1 }) as never;
+  const found = (tabId: number, appId: string | null) => ({
+    tabId,
+    url: "",
+    tools: [],
+    transport: null,
+    appId,
+    appVersion: null,
+    problem: null,
+    asking: false,
+  });
+  const table = (rows: OriginRow[], extra: { loaded?: boolean; problem?: string | null } = {}) => ({
+    records: Object.fromEntries(rows.map((r) => [r.origin, r])),
+    known: rows.map((r) => r.origin),
+    loaded: extra.loaded ?? true,
+    problem: extra.problem ?? null,
+  });
+  const tabs = [
+    tab(1, "https://ledgerbox.local/invoices"),
+    tab(2, "https://inbox.local/"),
+    tab(3, "https://calendar.local/"),
+    tab(4, "https://unnamed.local/"),
+  ];
+  const byTab = {
+    1: found(1, "ledgerbox"),
+    2: found(2, "inbox"),
+    3: found(3, "calendar"),
+    4: found(4, null),
+  };
+
+  it("names an app with no row as first sight, an enabled one's GATED pins, and a switched-off one in neither", () => {
+    const origins = table([
+      row("https://inbox.local", true, { send: "GATED", archive: "GATED" }),
+      row("https://calendar.local", false, { invite: "GATED" }),
+    ]);
+
+    expect(gatedListsOf(origins, tabs, byTab)).toEqual({
+      gated_origins: ["host:ledgerbox"],
+      gated_tools: ["host.inbox.archive", "host.inbox.send"],
+    });
+  });
+
+  it("never sends an AUTO or READ pin: a pin only tightens", () => {
+    const origins = table([
+      row("https://ledgerbox.local", true, { delete_invoice: "AUTO", read: "READ", pay: "GATED" }),
+    ]);
+
+    expect(gatedListsOf(origins, [tabs[0]], byTab).gated_tools).toEqual(["host.ledgerbox.pay"]);
+  });
+
+  it("reads a catalog-form row as it is, with or without a tab open on it", () => {
+    const origins = table([row("host:ledgerbox", true, { pay: "GATED" }), row("host:crm", true, { merge: "GATED" })]);
+
+    expect(gatedListsOf(origins, [tabs[0]], byTab)).toEqual({
+      gated_origins: [],
+      gated_tools: ["host.crm.merge", "host.ledgerbox.pay"],
+    });
+  });
+
+  it("counts a record the table does not list as no row, so a forgotten origin is a first sight again", () => {
+    const origins = { ...table([]), records: { "https://ledgerbox.local": row("https://ledgerbox.local", true) } };
+
+    expect(gatedListsOf(origins, [tabs[0]], byTab).gated_origins).toEqual(["host:ledgerbox"]);
+  });
+
+  it("fails closed on a table that has not loaded: every open tab's app is a first sight", () => {
+    const origins = table([row("https://inbox.local", true, { send: "GATED" })], { loaded: false });
+
+    expect(gatedListsOf(origins, tabs, byTab)).toEqual({
+      gated_origins: ["host:calendar", "host:inbox", "host:ledgerbox"],
+      gated_tools: [],
+    });
+  });
+
+  it("fails closed on a table that could not be read", () => {
+    const origins = table([row("https://inbox.local", true)], { problem: "database is locked" });
+
+    expect(gatedListsOf(origins, tabs, byTab).gated_origins).toEqual([
+      "host:calendar",
+      "host:inbox",
+      "host:ledgerbox",
+    ]);
+  });
+
+  it("rides every request of a turn, beside the switched-off list", async () => {
+    const daemon = fakeDaemon({
+      runs: [[hostCall("c1", "host.ledgerbox.read"), finished()], [finished()]],
+    });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({
+      ...deps,
+      gated: () => ({ gated_origins: ["host:inbox"], gated_tools: ["host.ledgerbox.pay"] }),
+    });
+
+    await useRun.getState().send("hello");
+
+    expect(daemon.runs()).toHaveLength(2);
+    for (const run of daemon.runs()) {
+      expect(run.body!.gated_origins).toEqual(["host:inbox"]);
+      expect(run.body!.gated_tools).toEqual(["host.ledgerbox.pay"]);
+    }
+  });
+
+  it("sends both lists empty, not absent, when nothing is wired to tighten", async () => {
+    const daemon = fakeDaemon({ runs: [[finished()]] });
+    wire(daemon, fakePage());
+    await useRun.getState().send("hello");
+    expect(daemon.runs()[0].body).toMatchObject({ gated_origins: [], gated_tools: [] });
   });
 });
 

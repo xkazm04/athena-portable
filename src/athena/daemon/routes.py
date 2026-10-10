@@ -141,6 +141,10 @@ NO_PAGE_SENTENCE = "Open the app this is about and focus its tab, then try again
 #: Most origins one request may switch off; anything past it is ignored and the gate stays shut.
 MAX_DISABLED_ORIGINS = 256
 
+#: Most first-sight origins or pinned tools one request may name (ADR 0063). Far past any real
+#: table: the shell names one origin per open tab and one name per pin.
+MAX_GATED_NAMES = 4096
+
 #: How long ``GET /engines`` trusts its last probe, and what ``?fresh=1`` skips.
 ENGINES_TTL_S = 10.0
 
@@ -483,6 +487,8 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
         project_id,
         surface=str(body.get("surface") or "panel"),
         disabled_origins=disabled_origins_from(body),
+        gated_origins=gated_origins_from(body),
+        gated_tools=gated_tools_from(body),
     )
     raw_results = body.get("tool_results")
     results = tool_results_from(
@@ -511,14 +517,35 @@ def disabled_origins_from(body: Mapping[str, Any]) -> frozenset[str]:
     nothing extra is refused -- because a malformed field must not switch an app *on*; the shell
     is the one that decides, and it sends well-formed JSON.
     """
-    raw = body.get("disabled_origins")
+    return _names_from(body, "disabled_origins", MAX_DISABLED_ORIGINS)
+
+
+def gated_origins_from(body: Mapping[str, Any]) -> frozenset[str]:
+    """``gated_origins`` off a request body: the apps this turn sees for the first time (ADR 0063).
+
+    The host origins (``host:<app_id>``) of open tabs the user's origins table has no row for.
+    Every tool of one is ``GATED`` at the gate, whatever its flags say. The shell says the list on
+    every request and the daemon keeps none of it. Read the way ``disabled_origins`` is: a value
+    that is not a list of strings tightens nothing, which is what a caller that sends no list
+    gets -- the classes the manifest's flags imply.
+    """
+    return _names_from(body, "gated_origins", MAX_GATED_NAMES)
+
+
+def gated_tools_from(body: Mapping[str, Any]) -> frozenset[str]:
+    """``gated_tools`` off a request body: the registry names the user pinned ``GATED`` (ADR 0063).
+
+    ``host.<app_id>.<tool>`` on an origin the user trusts. Read as :func:`gated_origins_from` is.
+    """
+    return _names_from(body, "gated_tools", MAX_GATED_NAMES)
+
+
+def _names_from(body: Mapping[str, Any], key: str, cap: int) -> frozenset[str]:
+    """The non-empty strings of ``body[key]``, stripped and capped; anything else is empty."""
+    raw = body.get(key)
     if not isinstance(raw, list):
         return frozenset()
-    return frozenset(
-        item.strip()
-        for item in raw[:MAX_DISABLED_ORIGINS]
-        if isinstance(item, str) and item.strip()
-    )
+    return frozenset(item.strip() for item in raw[:cap] if isinstance(item, str) and item.strip())
 
 
 def turn_context(
@@ -529,6 +556,8 @@ def turn_context(
     surface: str = "panel",
     trigger: str = "cli",
     disabled_origins: frozenset[str] = frozenset(),
+    gated_origins: frozenset[str] = frozenset(),
+    gated_tools: frozenset[str] = frozenset(),
 ) -> TurnContext:
     """The context one turn runs under, and the session refreshed for it.
 
@@ -548,6 +577,8 @@ def turn_context(
         page_origin=session.origin,
         project_id=project_id or None,
         disabled_origins=disabled_origins,
+        gated_origins=gated_origins,
+        gated_tools=gated_tools,
     )
     daemon.sessions.touch(session.origin, session.app_id, tools=session.tools)
     return ctx

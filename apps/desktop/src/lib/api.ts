@@ -175,6 +175,13 @@ export interface TurnBody {
    * on any of them for this run (UAT backlog B2).
    */
   disabled_origins?: string[];
+  /**
+   * Catalog origins (`host:<app_id>`) of open tabs the user never registered: every tool of one is
+   * `GATED` at the daemon's gate, whatever its flags say (ADR 0063).
+   */
+  gated_origins?: string[];
+  /** Registry names (`host.<app_id>.<tool>`) the user pinned `GATED`. A pin only tightens. */
+  gated_tools?: string[];
 }
 
 /** A refusal the daemon named. `reason` is a member of the one closed vocabulary. */

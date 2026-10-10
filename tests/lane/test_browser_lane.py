@@ -193,6 +193,24 @@ def test_an_allowed_auto_host_tool_is_a_tool_call_and_nothing_executes(tmp_path:
     assert len(built.transport.requests) == 1, "an unexecuted call buys no second round"
 
 
+def test_an_auto_host_tool_on_a_first_sight_app_is_a_card_not_a_call(tmp_path: Path) -> None:
+    """ADR 0063: the lane hands the turn's context to the gate as it came, so the surface's
+    first-sight list reaches the gate and ``chase`` files a card instead of running on the page."""
+    built = build_lane(
+        [claude_round(f"Drafting.\n{op('host.invoices.chase', invoice='INV-118')}")], tmp_path
+    )
+
+    async def run() -> list[ChannelEvent]:
+        ctx = built.ctx(gated_origins=frozenset({ORIGIN}))
+        return [event async for event in built.lane.run("Chase it", ctx)]
+
+    events = asyncio.run(run())
+
+    assert of(events, DecisionRequested)[0].action == "host.invoices.chase"
+    assert of(events, ToolResult)[0].error == "pending_approval"
+    assert len(built.approvals.rows) == 1
+
+
 def test_a_gated_proposal_never_reaches_its_executor(tmp_path: Path) -> None:
     built = build_lane([claude_round(op("core.write_fact", **FACT))], tmp_path)
 

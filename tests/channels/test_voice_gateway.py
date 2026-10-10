@@ -341,6 +341,49 @@ def test_a_voice_turn_whose_utterance_lists_the_app_is_refused_that_apps_tools(
     assert "decision.requested" not in client.kinds()
 
 
+def test_a_spoken_turn_carries_first_sight_from_the_key_down_to_the_gate(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    """ADR 0063: the start frame's ``gated_origins`` rides the utterance to its turn, so the
+    page's ``AUTO`` tool on an app the user never registered files a card instead of running."""
+    voiced.register()
+    voiced.script(claude_round(op("host.invoices.chase", invoice="7")))
+    backend.utterances = ["chase invoice 7"]
+
+    client.utter(gated_origins=["host:invoices"])
+    card = client.until("decision.requested")
+    refused = client.until("tool.result")
+    client.until("turn.finished")
+
+    assert card["action"] == "host.invoices.chase"
+    assert refused["error"] == "pending_approval"
+    assert voiced.daemon.approvals.pending(10).total == 1
+
+
+def test_a_typed_voice_turn_carries_the_users_pins_to_the_gate(
+    voiced: Live, client: VoiceClient
+) -> None:
+    voiced.register()
+    voiced.script(
+        claude_round(op("host.invoices.chase", invoice="7")),
+        claude_round(op("host.invoices.chase", invoice="8")),
+        claude_round("The chase for invoice 8 is drafted."),
+    )
+
+    client.say("chase invoice 7", gated_tools=["host.invoices.chase"])
+    refused = client.until("tool.result")
+    client.until("turn.finished")
+    assert refused["error"] == "pending_approval"
+    assert "decision.requested" in client.kinds()
+
+    # The next utterance names no pin, and its call is the page's to run: nothing was kept.
+    client.say("chase invoice 8")
+    call = client.until("tool.call", params={"invoice": "8"})
+    assert voiced.daemon.approvals.pending(10).total == 1
+    client.tool_result(call, output="drafted")
+    client.until("turn.finished", text="The chase for invoice 8 is drafted.")
+
+
 def test_a_spoken_no_declines_it_and_nothing_runs(
     voiced: Live, backend: ScriptedBackend, client: VoiceClient
 ) -> None:

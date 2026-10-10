@@ -114,7 +114,7 @@ class GateHook:
                 )
             )
 
-        if self.catalog.classify(entry.name) is not ToolClass.GATED:
+        if self.catalog.classify(entry.name) is not ToolClass.GATED and not _tightened(entry, ctx):
             return GateOutcome(Proceed(dict(params)))
 
         card = self.approvals.create(
@@ -243,6 +243,20 @@ _STATUS_REASONS: Mapping[str, str] = {
     "declined": "user_denied",
     "expired": "expired",
 }
+
+
+def _tightened(entry: ToolEntry, ctx: TurnContext) -> bool:
+    """Whether the user's origins table makes this host tool ``GATED`` for this turn (ADR 0063).
+
+    A page's flags are its own claim, so they are believed only once the user has trusted the
+    origin: on first sight every host tool files a card, and a tool the user pinned ``GATED``
+    files one whatever its flags say. Both lists ride on the context and can only tighten. Core
+    and connector entries are not the page's to describe, so they are untouched.
+    """
+    origin = entry.parsed_origin
+    if origin.kind != "host":
+        return False
+    return str(origin) in ctx.gated_origins or entry.name in ctx.gated_tools
 
 
 def _announced(result: ExecResult) -> ExecResult:

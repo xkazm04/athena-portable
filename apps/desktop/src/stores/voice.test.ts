@@ -183,7 +183,10 @@ describe("the key", () => {
   });
 
   it("sends start with the page, streams the microphone, and sends stop on release", async () => {
-    const { socket, mic } = wire({ disabledOrigins: () => ["host:other"] });
+    const { socket, mic } = wire({
+      disabledOrigins: () => ["host:other"],
+      gated: () => ({ gated_origins: ["host:ledgerbox"], gated_tools: ["host.inbox.send"] }),
+    });
     await startVoice();
     expect(useVoice.getState().available).toBe(true);
 
@@ -199,6 +202,8 @@ describe("the key", () => {
       origin: "https://ledgerbox.local",
       host_state: { page_url: "https://ledgerbox.local/invoices" },
       disabled_origins: ["host:other"],
+      gated_origins: ["host:ledgerbox"],
+      gated_tools: ["host.inbox.send"],
     });
     expect(frames[1]).toEqual({ type: "stop" });
     expect(socket.audio()).toEqual([new Uint8Array([5, 0, 6, 0])]);
@@ -223,6 +228,28 @@ describe("a spoken turn", () => {
     await useVoice.getState().say("hi");
     expect(socket.frames().find((f) => f.type === "text")).toMatchObject({
       disabled_origins: ["host:ledgerbox"],
+    });
+  });
+
+  it("carries the first-sight apps and the GATED pins on a typed utterance too (ADR 0063)", async () => {
+    const { socket } = wire({
+      gated: () => ({ gated_origins: ["host:ledgerbox"], gated_tools: ["host.inbox.send"] }),
+    });
+    await startVoice();
+    await useVoice.getState().say("hi");
+    expect(socket.frames().find((f) => f.type === "text")).toMatchObject({
+      gated_origins: ["host:ledgerbox"],
+      gated_tools: ["host.inbox.send"],
+    });
+  });
+
+  it("sends both lists empty, not absent, when nothing is wired to tighten", async () => {
+    const { socket } = wire();
+    await startVoice();
+    await useVoice.getState().say("hi");
+    expect(socket.frames().find((f) => f.type === "text")).toMatchObject({
+      gated_origins: [],
+      gated_tools: [],
     });
   });
 

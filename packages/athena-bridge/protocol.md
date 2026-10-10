@@ -74,7 +74,9 @@ The page's identity, from the `athena:app` meta tags it publishes about itself:
 
 A page can say what it likes here, so none of it is trusted: `app_id` names the tools and the
 flags below are read as a *claim*. A page's meta tag never opens a permission — that decision
-belongs to a record the user controls.
+belongs to the user's origins table (ADR 0063). An origin with no row there is a first sight: the
+surface names its app in `gated_origins` on every turn, and the daemon's gate files a card for
+each of its tools whatever the claim says. Registering the origin is what makes the claim count.
 
 ### `tools`
 
@@ -83,6 +85,9 @@ an unchanged registry produces an unchanged manifest. `annotations` are the stan
 (`readOnlyHint`, `consequentialHint`). `athena` is the non-standard README §3.3 block —
 `{ reversible, side_effects }` — which the polyfill carries through and a native implementation
 drops; when it is absent the surface falls back to the annotations, and unknown is `GATED`.
+The class the flags imply is the class only on an origin the user registered, and even there a
+tool the user pinned `GATED` is sent in `gated_tools` and files a card. On first sight every tool
+is `GATED`. A pin never loosens a class, so an `AUTO` or `READ` pin is never sent (ADR 0063).
 
 ## Replies and events (page → surface, `dir: "to-ext"`)
 

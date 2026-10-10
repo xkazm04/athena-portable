@@ -205,6 +205,13 @@ class TurnContext:
     #: rides on the context, not on the shared policy, so two concurrent turns never see each
     #: other's list (ADR 0011); the gate refuses a call on a listed origin with ``foreign_origin``.
     disabled_origins: frozenset[str] = frozenset()
+    #: Host origins (``host:<app_id>``) the surface sees for the first time this turn: no row in
+    #: the user's origins table. Every tool of a listed origin is ``GATED`` at the gate, whatever
+    #: its manifest's flags imply (README §3.3; ADR 0063). It only tightens.
+    gated_origins: frozenset[str] = frozenset()
+    #: Host registry names (``host.<app_id>.<tool>``) the user pinned ``GATED`` on a trusted
+    #: origin. The gate files a card for them whatever their flags imply. A pin never loosens.
+    gated_tools: frozenset[str] = frozenset()
     extra: dict[str, Any] = field(default_factory=dict)
 
 

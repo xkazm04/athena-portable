@@ -32,7 +32,7 @@ import { isTerminal, type ChannelEvent, type DecisionRequested, type TurnSummary
 import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
 import { storeList, storeSet, type ActivityRow, type OriginRow } from "@/lib/store";
 import { endpoint, useDaemon } from "@/stores/daemon";
-import { useOrigins } from "@/stores/origins";
+import { useOrigins, type OriginsState } from "@/stores/origins";
 import { useTabs } from "@/stores/tabs";
 import { useTools, type TabTools } from "@/stores/tools";
 
@@ -135,6 +135,12 @@ export interface RunDeps {
    * gate refuses a call on them (UAT backlog B2). Optional so a test about something else may omit it.
    */
   disabledOrigins?: () => string[];
+  /**
+   * What the gate tightens this turn (ADR 0063): the apps of open tabs the user never registered,
+   * and the tools the user pinned `GATED`. Sent with every `POST /run`. Optional so a test about
+   * something else may omit it; the shell always wires it.
+   */
+  gated?: () => GatedLists;
   /** Keep one answered decision on this computer (the `activity` table). */
   record?: (row: ActivityWrite) => Promise<void>;
   /** Read back what earlier windows kept. */
@@ -246,6 +252,7 @@ const LIVE: RunDeps = {
   },
   disabledOrigins: () =>
     disabledOriginsOf(useOrigins.getState().records, useTabs.getState().tabs, useTools.getState().byTab),
+  gated: () => gatedListsOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab),
   record: async (row) => {
     if (hasShell()) await storeSet("activity", "", row as unknown as Wire);
   },
@@ -284,6 +291,64 @@ export function disabledOriginsOf(
     }
   }
   return [...out].sort();
+}
+
+/** What the gate tightens for one turn, in the request body's own words (ADR 0063). */
+export interface GatedLists {
+  /** Catalog origins (`host:<app_id>`) of open tabs the origins table has no row for. */
+  gated_origins: string[];
+  /** Registry names (`host.<app_id>.<tool>`) the user pinned `GATED` on an enabled row. */
+  gated_tools: string[];
+}
+
+export const NOTHING_GATED: GatedLists = { gated_origins: [], gated_tools: [] };
+
+/**
+ * The first-sight apps and the user's `GATED` pins, for the daemon's gate (README section 3.3,
+ * ADR 0063).
+ *
+ * An origin has three states in the table. A row with `enabled: true` is one the user registered
+ * or trusted: its classes come from its manifest's flags, tightened by its `GATED` pins. A row
+ * with `enabled: false` is switched off, and {@link disabledOriginsOf} says so. No row is first
+ * sight: every tool of that app files a card, whatever its flags say. Web origins meet catalog
+ * origins in the open tabs by the same rule `disabledOriginsOf` uses, and a key already in
+ * catalog form is read as it is.
+ *
+ * Fails closed: a table that has not loaded, or could not be read, counts every open tab's app as
+ * first sight. A pin of `AUTO` or `READ` is never sent, because a pin only tightens.
+ */
+export function gatedListsOf(
+  origins: Pick<OriginsState, "records" | "known" | "loaded" | "problem">,
+  tabs: readonly Tab[],
+  byTab: Readonly<Record<number, TabTools>>,
+): GatedLists {
+  const firstSight = new Set<string>();
+  const pinned = new Set<string>();
+  const trusted = !origins.loaded || origins.problem !== null ? null : origins;
+  const rowOf = (key: string): OriginRow | undefined =>
+    trusted !== null && trusted.known.includes(key) ? trusted.records[key] : undefined;
+  const pin = (app: string, row: OriginRow) => {
+    if (!row.enabled) return;
+    for (const [tool, cls] of Object.entries(row.overrides ?? {})) {
+      if (cls === "GATED") pinned.add(`host.${app}.${tool}`);
+    }
+  };
+
+  for (const tab of tabs) {
+    const app = byTab[tab.id]?.appId;
+    if (!app) continue;
+    const rows = [rowOf(originOf(tab.url)), rowOf(`host:${app}`)].filter(
+      (row): row is OriginRow => row !== undefined,
+    );
+    if (rows.length === 0) firstSight.add(`host:${app}`);
+    for (const row of rows) pin(app, row);
+  }
+  // A row kept in catalog form names its app without a tab, so its pins can be sent as they are.
+  for (const key of trusted?.known ?? []) {
+    const row = rowOf(key);
+    if (key.startsWith("host:") && row) pin(key.slice("host:".length), row);
+  }
+  return { gated_origins: [...firstSight].sort(), gated_tools: [...pinned].sort() };
 }
 
 /** `2026-10-01 10:08:07`, UTC, the way the store writes a stamp. */
@@ -528,6 +593,7 @@ export const useRun = create<RunState>((set, get) => {
         host_state: deps.hostState(),
         tool_results: carried,
         disabled_origins: deps.disabledOrigins?.() ?? [],
+        ...(deps.gated?.() ?? NOTHING_GATED),
         ...activeProject(get().project),
       })) {
         await apply(event);
