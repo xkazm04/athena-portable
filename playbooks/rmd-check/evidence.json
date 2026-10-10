@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "rmd-check",
+  "captured_at": "2026-10-10T06:10:01Z",
+  "bench_run_at": "2026-10-10T06:06:10Z",
+  "narration": {
+    "text": "A mother's required minimum distributions taken at two custodians, each from the account it must come from, the year she missed from the IRA she inherited corrected with the waiver asked for, and nothing taken that she does not owe. This is a chore for a daughter who holds her mother's power of attorney and keeps her mother's retirement accounts and tax filings in order. Athena works it across 4 portals: Mailnest, Pinebrook Investments, Harborline IRA and Docshelf. On the bench, she found 5 of 5 eligible items, worth 2,900 dollars of the 2,900 dollars there was to find. All 5 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. She took 4 minutes. By hand, the same chore takes 3 hours, so she was about 42 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 60.796,
+    "sha256": "73ce76b6977ff10b0fdd2a246c5d102c856f6a3f7ebc511610ed9c58c1429f3a"
+  },
+  "video": {
+    "path": "evidence/rmd-check/evidence.mp4",
+    "duration_s": 60.8,
+    "bytes": 3432985,
+    "sha256": "0606c7faf7898cb0ce5694be705af1c2b559a72a68e24856a98fda83ff6b7dc6"
+  },
+  "thumbnail": {
+    "path": "playbooks/rmd-check/thumb.jpg",
+    "bytes": 96435,
+    "sha256": "8febb93561d2883280a20d84167548335e1ea9b0ad69a12817471a1af887bd0e"
+  }
+}

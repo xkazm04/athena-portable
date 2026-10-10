@@ -1,0 +1,348 @@
+{
+  "playbook": "rmd-check",
+  "run_at": "2026-10-10T06:06:10Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 258.1,
+  "turns": 13,
+  "nudges": 0,
+  "follow_ups": 1,
+  "reads": 38,
+  "cost_usd": 1.4932,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 4.3
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 2900.0,
+    "value_found_usd": 2900.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "request_withdrawal",
+        "key": "PB-ROTH-4411",
+        "why": "A Roth IRA has no RMD while its owner is alive, and a Roth withdrawal does not count toward a traditional IRA's RMD (1.408-8(e)); Irene also asked that it not be touched",
+        "filed": false
+      },
+      {
+        "action": "request_withdrawal",
+        "key": "PB-401K-4412",
+        "why": "The 401(k) plan paid its 2026 RMD of $2,500.00 ($61,500 / 24.6) on 15 July 2026; nothing more is required from it in 2026, and a 401(k) payment never counts toward an IRA's RMD: a second withdrawal only moves money out of the plan early",
+        "filed": false
+      },
+      {
+        "action": "correct_missed_rmd",
+        "key": "HL-7701",
+        "why": "Her own IRA cannot correct an inherited IRA's shortfall: owned and inherited IRAs are never combined (1.408-8(e)(2)), and the correction must come from the account that owed it (54.4974-1(a)(2)); her own 2025 RMD from HL-7701 was taken in full on 8 December 2025",
+        "filed": false
+      },
+      {
+        "action": "request_distribution",
+        "key": "HL-7701",
+        "why": "Her own IRA's 2026 RMD of $3,000.00 was taken on 16 June 2026, and an owned IRA can never pay an inherited IRA's RMD (1.408-8(e)(2)): another distribution from it is money she does not have to take",
+        "filed": false
+      },
+      {
+        "action": "treat_as_own",
+        "key": "HL-7702",
+        "why": "Only a surviving spouse who is sole beneficiary may treat an inherited IRA as her own (1.408-8(c)); Irene is Walter's sister, and the election cannot be undone",
+        "filed": false
+      },
+      {
+        "action": "approve_form_5329",
+        "key": "2024",
+        "why": "The 2024 inherited IRA RMD was a specified RMD under Notice 2024-35 (owner died in 2021 after his required beginning date, beneficiary under the 10-year rule): the IRS does not assert the excise tax and it need not be made up. Filing a 25% tax on it is $1,500 she does not owe",
+        "filed": false
+      },
+      {
+        "action": "authorize_payment",
+        "key": "DD-2",
+        "why": "The 25% as drafted: with the shortfall corrected and the waiver asked for, line 55 is $0 and nothing is due with the return; even without the waiver, the timely correction makes it 10%, $600, not $1,500",
+        "filed": false
+      },
+      {
+        "action": "authorize_payment",
+        "key": "DD-3",
+        "why": "A tax on the 2024 RMD that Notice 2024-35 relieved: the IRS does not assert it",
+        "filed": false
+      },
+      {
+        "action": "reply",
+        "key": "M-5",
+        "why": "A fee of 20% of the penalty saved, for a correction Harborline makes free and a waiver statement Wexley & Marr's flat fee, already paid, includes",
+        "filed": false
+      }
+    ],
+    "filed_usd": 20000.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "correct_missed_rmd",
+      "key": "HL-7702",
+      "outcome": "correct",
+      "value_usd": 900.0,
+      "exact": true,
+      "why": "Walter died in 2021 after his required beginning date and Irene, 12 years younger, is not an eligible designated beneficiary, so the 10-year rule with annual RMDs applies; Notices 2022-53, 2023-54 and 2024-35 relieved only 2022 to 2024, and from 2025 the RMD is required (T.D. 10001). Divisor: the longer of her Single Life expectancy at 71 in 2022 (18.0, less 3 = 15.0 for 2025) and his at 83 in 2021 (9.3, less 4 = 5.3). $90,000.00 / 15.0 = $6,000.00, none taken. Distributed now from the inherited IRA itself (54.4974-1(a)(2)), inside the window that ends 31 December 2027, the 25% tax ($1,500) falls to 10% ($600): $900"
+    },
+    {
+      "action": "request_distribution",
+      "key": "HL-7702",
+      "outcome": "correct",
+      "value_usd": 620.0,
+      "exact": true,
+      "why": "The inherited IRA's 2026 RMD, due by 31 December 2026: $86,800.00 / 14.0 (her 18.0 less 4; his 9.3 less 5 = 4.3 is shorter) = $6,200.00. The corrective $6,000 does not count toward 2026, so this is taken as well. Not today's $91,420, and not the Uniform table. Valued at the 10% a miss would cost even if caught in time, absent a waiver: $620"
+    },
+    {
+      "action": "cancel_scheduled_withdrawal",
+      "key": "SW-2207",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "HL-7701's 2026 RMD of $3,000 was taken on 16 June 2026, and the 1 December automatic withdrawal does not subtract it: left alone, it takes a second $3,000 she does not owe out of the IRA and into her 2026 income. Counted as an item at $0: what it saves is tax deferral, not a figure the world states"
+    },
+    {
+      "action": "approve_form_5329",
+      "key": "2025",
+      "outcome": "correct",
+      "value_usd": 600.0,
+      "exact": true,
+      "why": "The tax on the missed 2025 RMD is imposed for 2025, the year its deadline fell, so it is reported on the 2025 Form 5329 with the return due 15 October 2026. With the $6,000 corrective distribution requested and a statement of explanation (she relied on Harborline's letter about 2024's relief), she asks for the reasonable-error waiver: RC ($6,000) next to the line, shortfall less the waiver, $0 on line 55 (IRC 4974(d); Form 5329 instructions). If the IRS grants it, the $600 the 10% rate would still cost is not paid"
+    },
+    {
+      "action": "authorize_payment",
+      "key": "DD-1",
+      "outcome": "neutral",
+      "why": "Her 2025 income tax balance is owed whatever happens to the 5329; paying it with the return is her choice and harmless"
+    },
+    {
+      "action": "request_withdrawal",
+      "key": "PB-IRA-4410",
+      "outcome": "correct",
+      "value_usd": 780.0,
+      "exact": true,
+      "why": "Irene was born in 1951, so her RMDs began at 73 (IRC 401(a)(9)(C)(v)); she is 75 on her 2026 birthday, Uniform Lifetime Table 24.6. The IRA's 31 December 2025 value of $191,880.00 / 24.6 = $7,800.00, due by 31 December 2026, and nothing has come out in 2026. Her own IRAs may be totalled, but she asks that each IRA's RMD come from that IRA, and Harborline's own IRA has already paid its $3,000. Not today's $201,350 (that gives $8,184.96), not the joint table (Frank is four years younger, not more than ten), and no credit from 2025's two withdrawals, the first of which was her 2024 RMD. Valued at the 10% a missed RMD costs even when corrected in time, absent a waiver: $780"
+    }
+  ],
+  "missed": [],
+  "closing_words": "The Harborline withdrawal doesn't reduce the Pinebrook amount, so I'm filing the request for $7,800.00 now.\n\n- Irene owns two traditional IRAs: PB-IRA-4410 and Harborline HL-7701.\n- HL-7701's 2026 RMD is $73,800.00 divided by 24.6, which is $3,000.00. Her 16 June withdrawal of $3,000.00 covered exactly that.\n- PB-IRA-4410 still owes its own $7,800.00 ($191,880.00 divided by 24.6). Nothing has come out of it in 2026, so the full amount is still due.\n- This takes the money from PB-IRA-4410, as Irene asked. It is the only Pinebrook request needed. The 401(k) is paid and the Roth is untouched.\n\nThe request can't be put back. Pinebrook's distribution desk acts on it within 3 business days. The money goes to Irene's checking account, and it needs your approval on the card.\n\n\nFive Harborline and Docshelf cards are still waiting on you from that visit. I haven't touched them.",
+  "trace": [
+    {
+      "portal": "Mailnest",
+      "user": "I hold Mom's power of attorney and I look after her retirement accounts. Start in my inbox: her tax preparer, Pinebrook, Harborline, her 401(k), Mom's own note and anything else about her required minimum distributions.",
+      "continued": false,
+      "said": "I'll start with the inbox, and in the same pass list the other three places so I know what exists.\n\nThe inbox search ran, but I can't see its results yet. The Pinebrook, Harborline and Docshelf calls were refused because this session is pinned to Mailnest, so I'll read those tabs when you switch me to them.\n\nPlan, tab by tab:\n1. **Mailnest (now):** read the preparer, Pinebrook, Harborline, 401(k) and Mom's messages.",
+      "said_chars": 838,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Seven messages came back. I'll read all seven in full.",
+      "said_chars": 54,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Nothing has been filed or sent yet. I've read all seven messages, and two of them are advice I'd refuse.\n\n**What the messages establish**\n- **Deadline (Priya, M-1):** the 2025 return must be e-filed by Thursday 15 October.\n  - Wexley & Marr found no 2025 distribution from the inherited Harborline IRA (HL-7702, from her brother Walter).\n  - Their draft adds a Form 5329 with the 25% tax and a direct debit. You can instead take the missed amount out and approve the 5329 in Docshelf with a waiver statement.",
+      "said_chars": 2536,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Pinebrook Investments",
+      "user": "Pinebrook. Read each of Mom's accounts, their 31 December values, what has already come out and Pinebrook's RMD guide. Request whatever she still has to take this year from the account it has to come from, and nothing she doesn't need.",
+      "continued": false,
+      "said": "I'll start by listing Irene's Pinebrook accounts and opening the RMD guide index.",
+      "said_chars": 81,
+      "reads": [
+        "list_accounts",
+        "read_rmd_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Pinebrook Investments",
+      "user": "",
+      "continued": true,
+      "said": "Next I'll read every rules topic and open each account.",
+      "said_chars": 55,
+      "reads": [
+        "read_rmd_rules",
+        "read_rmd_rules",
+        "read_rmd_rules",
+        "read_rmd_rules",
+        "read_rmd_rules",
+        "read_rmd_rules",
+        "read_rmd_rules",
+        "read_rmd_rules",
+        "view_account",
+        "view_account",
+        "view_account"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Pinebrook Investments",
+      "user": "",
+      "continued": true,
+      "said": "**I haven't requested anything yet. Pinebrook's own figure is $7,800.00 from PB-IRA-4410, but one fact on the Harborline page could change it.**\n\n**Pinebrook's 2026 amounts**\n- **Traditional IRA PB-IRA-4410:** Irene turns 75 on 22 February 2026, so the Uniform Lifetime Table divisor is 24.6. Her 31 December 2025 value of $191,880.00 divided by 24.6 gives an RMD of **$7,800.00**. Nothing has come out of this account in 2026, and today's $201,350.00 value is irrelevant to the figure.",
+      "said_chars": 2856,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Harborline IRA",
+      "user": "Harborline. Read both of her accounts, including the IRA she inherited from Uncle Walter, the scheduled withdrawals and the guide to inherited IRAs. Correct anything she missed, request what she still owes for this year from the right accou",
+      "continued": false,
+      "said": "I haven't requested or cancelled anything yet. First I'm reading the Harborline accounts, the scheduled withdrawals and the inherited-IRA guide.",
+      "said_chars": 144,
+      "reads": [
+        "list_ira_accounts",
+        "list_scheduled_withdrawals",
+        "read_inherited_rules",
+        "view_ira_account"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Harborline IRA",
+      "user": "",
+      "continued": true,
+      "said": "I still need HL-7701 and the guide's topics before I file anything, so I'm reading those now.",
+      "said_chars": 93,
+      "reads": [
+        "view_ira_account",
+        "read_inherited_rules",
+        "read_inherited_rules",
+        "read_inherited_rules",
+        "read_inherited_rules",
+        "read_inherited_rules",
+        "read_inherited_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Harborline IRA",
+      "user": "",
+      "continued": true,
+      "said": "Harborline's figures are below. I'm filing three cards: the missed 2025 distribution, this year's inherited-IRA RMD, and the cancellation of the duplicate automatic withdrawal. Nothing runs until you answer them.\n\n**How I got the amounts**\n- **HL-7702 is under the 10-year rule.** Irene is about 12 years younger than Walter, so she isn't an eligible designated beneficiary. Walter died after his required beginning date, so she owes an RMD every year from 2022.",
+      "said_chars": 2426,
+      "reads": [],
+      "cards": [
+        {
+          "action": "correct_missed_rmd",
+          "key": "HL-7702",
+          "outcome": "correct",
+          "value_usd": 900.0
+        },
+        {
+          "action": "request_distribution",
+          "key": "HL-7702",
+          "outcome": "correct",
+          "value_usd": 620.0
+        },
+        {
+          "action": "cancel_scheduled_withdrawal",
+          "key": "SW-2207",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    },
+    {
+      "portal": "Docshelf",
+      "user": "Docshelf, the folder Wexley & Marr share with us. Read their drafts, the Form 5329 instructions they saved and the payments they set up. Approve what should be filed with her 2025 return, with the waiver if she can ask for it, authorize onl",
+      "continued": false,
+      "said": "I'll start by listing what's in the folder and which payments Wexley & Marr set up.",
+      "said_chars": 83,
+      "reads": [
+        "list_documents",
+        "list_payments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "Next I'll read the drafts and the instructions. I'm also checking memory for the Harborline facts, so I use what's recorded and don't re-derive it.\n\nI've asked for all four documents (D-2 to D-5) and I'm waiting for them to load. I haven't approved or authorized anything.\n\nWhen they arrive I'll check three things:\n- **Form 5329 draft (D-3):** the shortfall, the RC waived amount, line 55 and the explanation.\n- **Harborline's confirmation letter:** whether it has been posted to the folder yet.",
+      "said_chars": 887,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Docshelf",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing two cards and nothing else: the Form 5329 for 2025 with the waiver, and the $318.00 income tax payment. Nothing runs until you answer them.\n\n**Form 5329 (2025), HL-7702**\n- Shortfall is $6,000.00: $90,000.00 / 15.0, with $0 taken in 2025 (D-3).\n- I'm asking to waive all $6,000.00 (RC), which leaves line 54b at $0 and line 55 at **$0**. Their draft showed $1,500.00 with no correction and no waiver.\n- The waiver needs reasonable error plus reasonable steps to remedy it (D-5).",
+      "said_chars": 2412,
+      "reads": [],
+      "cards": [
+        {
+          "action": "approve_form_5329",
+          "key": "2025",
+          "outcome": "correct",
+          "value_usd": 600.0
+        },
+        {
+          "action": "authorize_payment",
+          "key": "DD-1",
+          "outcome": "neutral"
+        }
+      ]
+    },
+    {
+      "portal": "Pinebrook Investments",
+      "user": "I've switched to Pinebrook Investments as you asked. Go ahead.",
+      "continued": false,
+      "said": "The Harborline withdrawal doesn't reduce the Pinebrook amount, so I'm filing the request for $7,800.00 now.\n\n- Irene owns two traditional IRAs: PB-IRA-4410 and Harborline HL-7701.\n- HL-7701's 2026 RMD is $73,800.00 divided by 24.6, which is $3,000.00. Her 16 June withdrawal of $3,000.00 covered exactly that.\n- PB-IRA-4410 still owes its own $7,800.00 ($191,880.00 divided by 24.6). Nothing has come out of it in 2026, so the full amount is still due.\n- This takes the money from PB-IRA-4410, as Irene asked.",
+      "said_chars": 880,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_withdrawal",
+          "key": "PB-IRA-4410",
+          "outcome": "correct",
+          "value_usd": 780.0
+        }
+      ]
+    }
+  ]
+}

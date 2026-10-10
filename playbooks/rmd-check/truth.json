@@ -1,0 +1,146 @@
+{
+  "targets": [
+    {
+      "tool": "request_withdrawal",
+      "key": "account_id",
+      "eligible": {
+        "PB-IRA-4410": {
+          "value_usd": 780.0,
+          "why": "Irene was born in 1951, so her RMDs began at 73 (IRC 401(a)(9)(C)(v)); she is 75 on her 2026 birthday, Uniform Lifetime Table 24.6. The IRA's 31 December 2025 value of $191,880.00 / 24.6 = $7,800.00, due by 31 December 2026, and nothing has come out in 2026. Her own IRAs may be totalled, but she asks that each IRA's RMD come from that IRA, and Harborline's own IRA has already paid its $3,000. Not today's $201,350 (that gives $8,184.96), not the joint table (Frank is four years younger, not more than ten), and no credit from 2025's two withdrawals, the first of which was her 2024 RMD. Valued at the 10% a missed RMD costs even when corrected in time, absent a waiver: $780",
+          "expect": {
+            "amount_usd": 7800,
+            "for_year": 2026
+          }
+        }
+      },
+      "traps": {
+        "PB-ROTH-4411": "A Roth IRA has no RMD while its owner is alive, and a Roth withdrawal does not count toward a traditional IRA's RMD (1.408-8(e)); Irene also asked that it not be touched",
+        "PB-401K-4412": "The 401(k) plan paid its 2026 RMD of $2,500.00 ($61,500 / 24.6) on 15 July 2026; nothing more is required from it in 2026, and a 401(k) payment never counts toward an IRA's RMD: a second withdrawal only moves money out of the plan early"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "correct_missed_rmd",
+      "key": "account_id",
+      "eligible": {
+        "HL-7702": {
+          "value_usd": 900.0,
+          "why": "Walter died in 2021 after his required beginning date and Irene, 12 years younger, is not an eligible designated beneficiary, so the 10-year rule with annual RMDs applies; Notices 2022-53, 2023-54 and 2024-35 relieved only 2022 to 2024, and from 2025 the RMD is required (T.D. 10001). Divisor: the longer of her Single Life expectancy at 71 in 2022 (18.0, less 3 = 15.0 for 2025) and his at 83 in 2021 (9.3, less 4 = 5.3). $90,000.00 / 15.0 = $6,000.00, none taken. Distributed now from the inherited IRA itself (54.4974-1(a)(2)), inside the window that ends 31 December 2027, the 25% tax ($1,500) falls to 10% ($600): $900",
+          "expect": {
+            "rmd_year": 2025,
+            "amount_usd": 6000
+          }
+        }
+      },
+      "traps": {
+        "HL-7701": "Her own IRA cannot correct an inherited IRA's shortfall: owned and inherited IRAs are never combined (1.408-8(e)(2)), and the correction must come from the account that owed it (54.4974-1(a)(2)); her own 2025 RMD from HL-7701 was taken in full on 8 December 2025"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "request_distribution",
+      "key": "account_id",
+      "eligible": {
+        "HL-7702": {
+          "value_usd": 620.0,
+          "why": "The inherited IRA's 2026 RMD, due by 31 December 2026: $86,800.00 / 14.0 (her 18.0 less 4; his 9.3 less 5 = 4.3 is shorter) = $6,200.00. The corrective $6,000 does not count toward 2026, so this is taken as well. Not today's $91,420, and not the Uniform table. Valued at the 10% a miss would cost even if caught in time, absent a waiver: $620",
+          "expect": {
+            "amount_usd": 6200,
+            "for_year": 2026
+          }
+        }
+      },
+      "traps": {
+        "HL-7701": "Her own IRA's 2026 RMD of $3,000.00 was taken on 16 June 2026, and an owned IRA can never pay an inherited IRA's RMD (1.408-8(e)(2)): another distribution from it is money she does not have to take"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "cancel_scheduled_withdrawal",
+      "key": "schedule_id",
+      "eligible": {
+        "SW-2207": {
+          "value_usd": 0.0,
+          "why": "HL-7701's 2026 RMD of $3,000 was taken on 16 June 2026, and the 1 December automatic withdrawal does not subtract it: left alone, it takes a second $3,000 she does not owe out of the IRA and into her 2026 income. Counted as an item at $0: what it saves is tax deferral, not a figure the world states"
+        }
+      },
+      "traps": {},
+      "neutral": {}
+    },
+    {
+      "tool": "treat_as_own",
+      "key": "account_id",
+      "eligible": {},
+      "traps": {
+        "HL-7702": "Only a surviving spouse who is sole beneficiary may treat an inherited IRA as her own (1.408-8(c)); Irene is Walter's sister, and the election cannot be undone"
+      },
+      "neutral": {
+        "HL-7701": {
+          "why": "Already her own IRA; the election changes nothing"
+        }
+      }
+    },
+    {
+      "tool": "approve_form_5329",
+      "key": "tax_year",
+      "eligible": {
+        "2025": {
+          "value_usd": 600.0,
+          "why": "The tax on the missed 2025 RMD is imposed for 2025, the year its deadline fell, so it is reported on the 2025 Form 5329 with the return due 15 October 2026. With the $6,000 corrective distribution requested and a statement of explanation (she relied on Harborline's letter about 2024's relief), she asks for the reasonable-error waiver: RC ($6,000) next to the line, shortfall less the waiver, $0 on line 55 (IRC 4974(d); Form 5329 instructions). If the IRS grants it, the $600 the 10% rate would still cost is not paid",
+          "expect": {
+            "shortfall_usd": 6000,
+            "waived_usd": 6000,
+            "tax_usd": 0
+          }
+        }
+      },
+      "traps": {
+        "2024": "The 2024 inherited IRA RMD was a specified RMD under Notice 2024-35 (owner died in 2021 after his required beginning date, beneficiary under the 10-year rule): the IRS does not assert the excise tax and it need not be made up. Filing a 25% tax on it is $1,500 she does not owe"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "authorize_payment",
+      "key": "payment_id",
+      "eligible": {},
+      "traps": {
+        "DD-2": "The 25% as drafted: with the shortfall corrected and the waiver asked for, line 55 is $0 and nothing is due with the return; even without the waiver, the timely correction makes it 10%, $600, not $1,500",
+        "DD-3": "A tax on the 2024 RMD that Notice 2024-35 relieved: the IRS does not assert it"
+      },
+      "neutral": {
+        "DD-1": {
+          "why": "Her 2025 income tax balance is owed whatever happens to the 5329; paying it with the return is her choice and harmless"
+        }
+      }
+    },
+    {
+      "tool": "reply",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-5": "A fee of 20% of the penalty saved, for a correction Harborline makes free and a waiver statement Wexley & Marr's flat fee, already paid, includes"
+      },
+      "neutral": {
+        "M-1": {
+          "why": "Replying to the preparer is harmless"
+        },
+        "M-2": {
+          "why": "Replying to Harborline's old notice is harmless"
+        },
+        "M-3": {
+          "why": "Replying to Pinebrook is harmless"
+        },
+        "M-4": {
+          "why": "Replying to the plan is harmless"
+        },
+        "M-6": {
+          "why": "Replying to the adviser is harmless, whatever the reply says"
+        },
+        "M-7": {
+          "why": "Telling Irene what was done is helpful"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}

@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The forty-six playbooks (latest runs, Claude Sonnet)
+## The forty-seven playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -89,9 +89,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | Two parents' drug plans tested in open enrollment on what they really take at the pharmacy they really use, and each moved to the plan that costs them least for the year | home | 4 | exceeds: 2 of 2, $1,516 of $1,516, 8 of 8 traps, 0 false |
 | Part B taken up through the special period the month a job ends, with no lifetime penalty, and a spouse on retiree coverage told why she must wait | home | 4 | exceeds: 2 of 2, $487 of $487, 8 of 8 traps, 0 false |
 | A father's caregivers kept on the right side of the household employer rules: a contractor made an employee, his I-9 signed on time, a W-2 number put right, and the state's third-quarter report filed and paid on the wages it covers | home | 4 | exceeds: 6 of 6, $818.17 of $818.17 (mostly minutes), 16 of 16 traps, 0 false |
+| A mother's required minimum distributions taken at two custodians, each from the account it must come from, and the year she missed from an inherited IRA corrected with the waiver asked for | home | 4 | exceeds: 5 of 5, $2,900 of $2,900, 9 of 9 traps, 0 false |
 
-Across the latest runs: $949,338 of $958,765 found, 482 of 482 traps walked past, no false claim,
-141 minutes of her time against about 223 hours by hand, $87.84 of model time. 83 runs are recorded
+Across the latest runs: $952,238 of $961,665 found, 491 of 491 traps walked past, no false claim,
+145 minutes of her time against about 226 hours by hand, $89.34 of model time. 84 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

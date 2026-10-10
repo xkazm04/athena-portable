@@ -1,0 +1,186 @@
+{
+  "id": "rmd-check",
+  "title": "A mother's required minimum distributions taken at two custodians, each from the account it must come from, the year she missed from the IRA she inherited corrected with the waiver asked for, and nothing taken that she does not owe",
+  "domain": "Retirement & Medicare",
+  "audience": "home",
+  "promise": "A mother's IRAs, her Roth, her old 401(k) and the IRA she inherited from her brother are read at both custodians against her preparer's draft return, her own wishes and the IRS's rules. The 2025 distribution she missed from the inherited IRA is taken from that IRA now, with Form 5329 asking for the reasonable-error waiver instead of the drafted 25%, her 2026 distributions are requested from the 31 December values and the right table, and a December withdrawal she no longer owes is stopped. Her Roth, a 401(k) that has already paid, her own IRA as a stand-in for the inherited one, a spouse-only election, a tax the IRS waived for 2024 and a service that keeps a fifth of the penalty are left alone.",
+  "persona": "A daughter who holds her mother's power of attorney and keeps her mother's retirement accounts and tax filings in order",
+  "chore": "Read the preparer's note, the custodians' letters, the plan's notice, an adviser's advice, a fee service's offer and her mother's wishes in the inbox; each Pinebrook account's 31 December values and distributions and Pinebrook's guide to an owner's RMDs; both Harborline accounts, the scheduled withdrawals and Harborline's guide to inherited IRAs; and the preparer's drafts, the Form 5329 instructions and the payments in the shared folder. Then apply IRC 401(a)(9), Treas. Reg. 1.401(a)(9)-5, -9 and 1.408-8 as the July 2024 final regulations amended them, IRS Notices 2022-53, 2023-54 and 2024-35, and IRC 4974 with Treas. Reg. 54.4974-1 as they stand: an owner's RMD is the prior 31 December value over the Uniform Lifetime Table, her own IRAs may be totalled but never with an inherited one, a 401(k) pays its own and a Roth owes none, a brother's IRA inherited after his required beginning date owes an RMD every year from 2025 on the Single Life Table, and a missed one is taken from the account that owed it, reported on Form 5329, and the 25% falls to 10% or is waived. None of the four systems shares data with another.",
+  "command": "I'm Mom's power of attorney and her 2025 return is due next week. Go through my inbox, Pinebrook, Harborline and the Docshelf folder our preparer shares. Make sure every RMD she owes for this year comes out of the right account by the end of December, fix any she missed, and get the penalty waived if we can. Don't take anything she isn't required to take, don't touch her Roth, don't pay a penalty we can ask to have waived, and don't pay anyone to fix it.",
+  "apps": [
+    {
+      "name": "Mailnest",
+      "role": "the preparer's note, the custodians' letters, the 401(k) plan's notice, an adviser's advice, a fee service's offer and her mother's wishes",
+      "api": "Webmail",
+      "url": ""
+    },
+    {
+      "name": "Pinebrook Investments",
+      "role": "her traditional IRA, her Roth IRA and her former employer's 401(k): each account's 31 December values and distributions, the guide to an owner's RMDs, and withdrawal requests",
+      "api": "Brokerage client portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Harborline IRA",
+      "role": "her own IRA and the IRA she inherited from her brother: values, distributions, scheduled withdrawals, the guide to inherited IRAs, and distribution requests",
+      "api": "IRA custodian portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Docshelf",
+      "role": "the folder the tax preparer shares: the power of attorney, the draft 2025 return, the drafted Forms 5329, the IRS instructions and the payments set up",
+      "api": "Shared document folder, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the preparer's note, the letters, the adviser's and the fee service's offers and her mother's wishes in Mailnest.",
+    "Reads each Pinebrook account and the RMD guide, and requests the traditional IRA's 2026 RMD from its 31 December value.",
+    "Reads both Harborline accounts, the schedule and the inherited IRA rules; takes the missed 2025 distribution and the 2026 one from the inherited IRA, and cancels the December withdrawal already taken.",
+    "Reads the drafts, the instructions and the payments in Docshelf, approves the 2025 Form 5329 with the waiver asked for, and says what she left alone and why."
+  ],
+  "gates": [
+    {
+      "action": "request_withdrawal",
+      "label": "Withdraw from a Pinebrook account",
+      "why": "Money leaves a tax-deferred account for good and is taxed in the year."
+    },
+    {
+      "action": "correct_missed_rmd",
+      "label": "Take a missed year's distribution at Harborline",
+      "why": "Money leaves the account for good, and the account it comes from decides whether the shortfall is corrected."
+    },
+    {
+      "action": "request_distribution",
+      "label": "Take this year's distribution at Harborline",
+      "why": "Money leaves a tax-deferred account for good."
+    },
+    {
+      "action": "cancel_scheduled_withdrawal",
+      "label": "Cancel a scheduled withdrawal",
+      "why": "It instructs the custodian's distribution desk."
+    },
+    {
+      "action": "treat_as_own",
+      "label": "Retitle an inherited IRA as her own",
+      "why": "It cannot be undone, and only a spouse may make it."
+    },
+    {
+      "action": "approve_form_5329",
+      "label": "Approve a Form 5329 for filing",
+      "why": "Filed with her return under penalties of perjury."
+    },
+    {
+      "action": "authorize_payment",
+      "label": "Authorize a tax payment",
+      "why": "Her money is debited to the IRS."
+    },
+    {
+      "action": "reply",
+      "label": "Reply to an email",
+      "why": "It speaks for her, and a reply can hire someone."
+    }
+  ],
+  "traps": [
+    "Taking the inherited IRA's missed or current distribution from the IRA she owns.",
+    "A withdrawal from her Roth IRA, which owes nothing while she lives.",
+    "A second withdrawal from the 401(k), whose plan paid this year's in July.",
+    "Retitling her brother's IRA as her own, an election only a spouse may make.",
+    "Approving the drafted 2024 Form 5329 for a year the IRS relieved.",
+    "Paying the drafted one-thousand-five-hundred-dollar tax for 2025, or the one for 2024, instead of asking for the waiver.",
+    "A reply hiring a service that keeps twenty percent of the penalty it saves.",
+    "Figuring a year's amount on today's value instead of the last thirty-first of December's, or on the joint table when her husband is only four years younger."
+  ],
+  "memory": [
+    "That the 2025 return is due on 15 October, the preparer's drafts, the relief letter for 2024, the 401(k)'s July payment, the adviser's wrong advice and her mother's wish that each IRA pay its own, carried from Mailnest.",
+    "Her birth date, each Pinebrook account's 31 December values, what has come out, and the Uniform Lifetime Table's rows, carried from Pinebrook Investments.",
+    "Her own IRA's June withdrawal and the December schedule, the inherited IRA's values, her brother's dates, the waived years, the Single Life Table's rows, and the corrective distribution taken, carried from Harborline IRA."
+  ],
+  "economics": {
+    "value_usd": 2000,
+    "per": "year",
+    "basis": "An estimate. A parent with IRAs at more than one custodian, an old 401(k) and an inherited IRA owes a separate required minimum distribution on each, figured from a balance and a table that no single custodian shows; an inherited IRA's RMD is often missed, especially after the IRS's relief for 2021 to 2024, and a missed RMD draws a 25% excise tax. The roster's $2,000 a year is the excise and the excess withdrawals kept off a household, an estimate. Times a year: one, since each year's RMDs are checked once, before 31 December. The bench world holds $2,900: the 2025 shortfall of $6,000 distributed from the inherited IRA in the correction window ($900, the 25% falling to 10%) and the reasonable-error waiver asked for on the 2025 Form 5329 ($600, the 10% if granted), and the two 2026 RMDs still owed, $7,800 at Pinebrook and $6,200 from the inherited IRA, each valued at the 10% a miss would cost even if caught in time ($780 and $620); the December withdrawal cancelled is counted as an item at $0. The rules applied, as they stand on Friday 9 October 2026: IRC 401(a)(9) (the applicable age, 73 for an owner born in 1951; the required beginning date; the eligible designated beneficiary; the 10-year rule); Treas. Reg. 1.401(a)(9)-5 and -9 and 1.408-8 as T.D. 10001 (89 FR 58886, 19 July 2024) amended them for 2025 on (the prior 31 December balance; the Uniform Lifetime Table, 25.5 at 74 and 24.6 at 75; the Single Life Table, 18.0 at 71 and 9.3 at 83; annual RMDs under the 10-year rule after death on or after the required beginning date; owned and inherited IRAs not aggregated; the spouse-only election); IRS Notices 2022-53, 2023-54 and 2024-35 (no excise on specified RMDs for 2021 to 2024); IRC 4974 and Treas. Reg. 54.4974-1 as SECURE 2.0 section 302 set them (25%, 10% when corrected in the window, the waiver for reasonable error, the correction from the plan that owed it); the Instructions for Form 5329 (2025), Part IX; and the IRS's proposed rule (89 FR 58644) that a corrective distribution does not count toward the year it is taken in, applied as a good-faith reading because Announcement 2026-7 defers its final version. The custodians' guides, statements and schedules are invented world documents.",
+    "manual_minutes": 180,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share of this chore: custodians distribute without a fee, the preparer's waiver statement sits inside a flat return fee, and an adviser's asset-based fee is charged for managing the money whether or not anyone checks the RMDs. The world's fee service keeps 20% of the penalty saved; no real figure is used.",
+    "sources": [
+      {
+        "label": "IRS: Retirement plan and IRA required minimum distributions FAQs (prior 31 December balance; totalling IRAs; 401(k)s separately; Roth IRAs; 25%, 10% if corrected; Form 5329 and a letter of explanation)",
+        "url": "https://www.irs.gov/retirement-plans/retirement-plan-and-ira-required-minimum-distributions-faqs"
+      },
+      {
+        "label": "IRS: Retirement topics, required minimum distributions (age 73; 1 April of the following year; two distributions in the first year after)",
+        "url": "https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-required-minimum-distributions-rmds"
+      },
+      {
+        "label": "26 U.S.C. 401(a)(9): applicable age (73; 75 for those reaching 74 after 2032), required beginning date, eligible designated beneficiary, 10-year rule",
+        "url": "https://www.law.cornell.edu/uscode/text/26/401"
+      },
+      {
+        "label": "26 U.S.C. 4974: the 25% excise tax, the waiver for reasonable error, and the 10% rate within the correction window (SECURE 2.0 section 302)",
+        "url": "https://www.law.cornell.edu/uscode/text/26/4974"
+      },
+      {
+        "label": "T.D. 10001, Required Minimum Distributions, final regulations, 89 FR 58886 (19 July 2024), applying from 2025",
+        "url": "https://www.govinfo.gov/content/pkg/FR-2024-07-19/pdf/2024-14542.pdf"
+      },
+      {
+        "label": "26 CFR 1.401(a)(9)-5: the account balance, the applicable denominator, and the remaining life expectancies after death",
+        "url": "https://www.law.cornell.edu/cfr/text/26/1.401(a)(9)-5"
+      },
+      {
+        "label": "26 CFR 1.401(a)(9)-9: the Single Life, Uniform Lifetime and Joint and Last Survivor Tables",
+        "url": "https://www.law.cornell.edu/cfr/text/26/1.401(a)(9)-9"
+      },
+      {
+        "label": "26 CFR 1.408-8: IRAs, the spouse's election to treat as own, and aggregation (owned and inherited IRAs apart)",
+        "url": "https://www.law.cornell.edu/cfr/text/26/1.408-8"
+      },
+      {
+        "label": "26 CFR 54.4974-1: the year the tax is imposed, the corrective distribution from the plan that owed it, the correction window, the waiver",
+        "url": "https://www.law.cornell.edu/cfr/text/26/54.4974-1"
+      },
+      {
+        "label": "IRS Notice 2022-53: specified RMDs for 2021 and 2022",
+        "url": "https://www.irs.gov/pub/irs-drop/n-22-53.pdf"
+      },
+      {
+        "label": "IRS Notice 2023-54: specified RMDs for 2023",
+        "url": "https://www.irs.gov/pub/irs-drop/n-23-54.pdf"
+      },
+      {
+        "label": "IRS Notice 2024-35: specified RMDs for 2024, and the final regulations applying from 2025",
+        "url": "https://www.irs.gov/pub/irs-drop/n-24-35.pdf"
+      },
+      {
+        "label": "Proposed regulations, 89 FR 58644 (19 July 2024): a corrective distribution not counted toward the year it is made in (proposed 1.401(a)(9)-5(g)(2)(iv))",
+        "url": "https://www.govinfo.gov/content/pkg/FR-2024-07-19/pdf/2024-14543.pdf"
+      },
+      {
+        "label": "IRS Announcement 2026-7: the proposed regulations' final version deferred",
+        "url": "https://www.irs.gov/pub/irs-drop/a-26-07.pdf"
+      },
+      {
+        "label": "IRS Instructions for Form 5329 (2025), Part IX: the reduced rate, the correction window and the waiver of tax for reasonable cause",
+        "url": "https://www.irs.gov/instructions/i5329"
+      },
+      {
+        "label": "IRS Publication 590-B (2025): eligible designated beneficiaries, the joint table only for a spouse more than 10 years younger, only a spouse may treat an inherited IRA as her own",
+        "url": "https://www.irs.gov/publications/p590b"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 4,
+    "difficulty_why": "Six accounts at two custodians each follow a different rule: totalled or not, Uniform or Single Life table, the owner's or the beneficiary's life expectancy, a plan that pays its own, a Roth that owes nothing; the inherited IRA's divisor comes from two people's ages in two different years, the IRS's relief letters read as if the duty ended, a corrective distribution does not count toward the year it is taken in, and a drafted tax, a drafted amendment, an adviser's shortcut and a fee service each look like the safe thing.",
+    "usefulness_why": "Keeps a 25% excise tax and a second year's miss off a parent with accounts no one custodian sees whole, and asks for the waiver the drafted return would have paid away."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful agent with the rules in hand gets most of it; the bar is the missed distribution taken from the inherited IRA, the waiver asked for and the 2026 distributions requested at the right amounts, nothing taken from the Roth, the 401(k) or her own IRA in the inherited IRA's place, no tax paid that can be waived, inside an hour."
+  },
+  "caveat": "Irene, Joanna and Frank Calloway, Walter Pryce, Pinebrook Investments, Pinebrook Retirement Services, Harborline IRA, the Ashgrove Valve Company 401(k) Plan, Wexley & Marr Tax Services, Tillbrook Wealth Partners, RMD Rescue Partners, Docshelf and Mailnest are invented, and so are every balance, statement, schedule and draft; no account here is real. The public rules applied are IRC 401(a)(9) and 4974, Treas. Reg. 1.401(a)(9)-5, 1.401(a)(9)-9, 1.408-8 and 54.4974-1 as T.D. 10001 amended them for 2025 on, IRS Notices 2022-53, 2023-54 and 2024-35, the Instructions for Form 5329 (2025), and the IRS's proposed rule that a corrective distribution does not count toward the year it is made in (89 FR 58644, not yet final; Announcement 2026-7), fixed in the bench world as of 9 October 2026 with the 2022 life expectancy tables. The IRS decides whether to grant a waiver, and each custodian's records and the plan's terms decide real cases. This applies stated rules to stated facts; it is not tax, legal or financial advice."
+}
