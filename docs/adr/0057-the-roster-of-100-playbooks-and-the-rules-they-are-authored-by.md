@@ -93,6 +93,16 @@ joins), and *J* judgement (the rule leaves traps that look eligible).
 | 30 | `medical-records-gather` | Patient health | home | Request and assemble records from every provider before a second opinion, at the fee the rule allows | Carenook, Clinora, Patientry, Faxline, Mailnest | HIPAA right of access, 45 CFR 164.524 (30 days; a reasonable, cost-based fee) | $150 / episode, mostly minutes (about 8 h) | P J: three portals; an excessive fee is a trap |
 | 31 | `out-of-network-claims` | Patient health | home | Submit superbills for out-of-network therapy and chase each one to payment | Paylance member portal, Sessionly, Ledgerline bank, Mailnest | ERISA claims procedure, 29 CFR 2560.503-1 (decision within 30 days); the plan's out-of-network benefit | $3,000 / year | X J: the deductible's state and the codes |
 
+*Note, 2026-10-10.* Row 26's "Why only Athena" cell reads "co-provider items belong on the
+estimate". Its playbook does not author that as an obligation. HHS's enforcement discretion on
+co-provider and co-facility items in a convening provider's estimate for uninsured and self-pay
+individuals (FAQ Part 3, 2 December 2022, pending further rulemaking) still stands on the world's
+date, 9 October 2026, so row 26's trap was authored as a co-provider's bill counted against the
+clinic's estimate instead (8e2b997). The row stands as written; only its trap follows the rule in
+force. Under rule 9, a row that a batch cannot author honestly is struck by its own amendment,
+with the reason, and is never replaced. No row of B3 was struck: rows 27 to 31 were each
+authored against their rules as they stand on that date.
+
 ### B4: Family affairs and care
 
 | # | id | Domain | Aud. | Chore | Portals | Rests on | Value / per | Why only Athena |
