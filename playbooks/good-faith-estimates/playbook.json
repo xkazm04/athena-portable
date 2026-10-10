@@ -1,0 +1,113 @@
+{
+  "id": "good-faith-estimates",
+  "title": "Every uninsured and self-pay patient's good faith estimate sent on time, and every bill 400 dollars over its estimate caught before it goes out",
+  "domain": "Clinics",
+  "audience": "work",
+  "promise": "Each self-pay appointment and request gets its good faith estimate by the business day the rule sets, with the clinic's own items at its own prices, and a new estimate goes out when a clinician adds a service before the visit. Each statement waiting to go out is compared with the last estimate given before its service, and the ones $400 or more over it are held. The dispute resolution entity gets the estimate and the bill inside its 10 business days, and the disputed bill stays out of collections. No estimate is reissued after a visit to match a bill, none goes for a cancelled visit, and no statement is held for a co-provider's charges, a revised estimate or a bill under $400 over.",
+  "persona": "The billing lead of a two-physician family practice that sees uninsured and self-pay patients every week",
+  "chore": "Read the clinic's self-pay policy, its price list, the estimates already given, the statements waiting to go out and the collections queue in the practice management system; every self-pay appointment and estimate request in scheduling, with when it was booked or asked for and what changed; and the billing inbox's requests and notices. Then apply 45 CFR 149.610 and 149.620 as they stand: an estimate within 1 or 3 business days of scheduling or a request, and a new one by the business day before the service when it changes; the convening provider's own items, as HHS still does not enforce the inclusion of co-providers' items; a bill at least $400 over the estimate for that provider open to dispute; the estimate and the bill to the dispute resolution entity within 10 business days, and no collections while it is pending. None of the three systems shares data with another.",
+  "command": "Run today's self-pay desk. Go through Chartmend, Chartleaf scheduling and the billing inbox in Mailnest: send every good faith estimate that's due with the right total, hold any statement that's $400 or more over its estimate, and answer the dispute notice. Don't send anyone to collections who's disputing a bill.",
+  "apps": [
+    {
+      "name": "Chartmend PM",
+      "role": "the self-pay policy, the price list, the estimates given, the statements awaiting release, the collections queue; estimates issued and statements held",
+      "api": "Practice management, vendor-specific",
+      "url": ""
+    },
+    {
+      "name": "Chartleaf scheduling",
+      "role": "every self-pay appointment and estimate request: coverage, when booked, the service date, the services and what changed",
+      "api": "Scheduling, no feed to the PM's estimates",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "a patient's request for an estimate, the dispute resolution entity's notice, the front desk's question and a vendor's offer",
+      "api": "Mail, no data feed",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the policy, prices, estimates, statements and collections queue in Chartmend PM, and holds the statements $400 or more over their estimates.",
+    "Reads every self-pay appointment and request in Chartleaf scheduling.",
+    "Reads the billing inbox in Mailnest and answers the dispute resolution entity.",
+    "Back in Chartmend PM, issues every estimate that is due and leaves the disputed bill out of collections."
+  ],
+  "gates": [
+    {
+      "action": "issue_estimate",
+      "label": "Issue a good faith estimate",
+      "why": "It goes to the patient in writing and becomes what a later bill is measured against: a wrong total, or an estimate issued after the visit, misleads the patient about their rights."
+    },
+    {
+      "action": "hold_statement",
+      "label": "Hold a statement for review",
+      "why": "It keeps a bill from the patient this cycle: holding one that is right delays the clinic's money for nothing."
+    },
+    {
+      "action": "send_to_collections",
+      "label": "Refer a statement to collections",
+      "why": "It reaches a collection agency and the patient's credit: a disputed bill may not be moved to collection."
+    },
+    {
+      "action": "reply",
+      "label": "Reply to a message",
+      "why": "Sent from the billing desk: a reply can sign the clinic up for a vendor's fee."
+    }
+  ],
+  "traps": [
+    "A new estimate at the billed amount, after the visit, so the bill matches it.",
+    "An estimate for a visit the patient cancelled.",
+    "A statement $375 over its estimate, under the $400.",
+    "A statement whose only excess over $400 is the pathology lab's own bill.",
+    "A statement $445 over an estimate that was replaced the day before the service.",
+    "An insured patient's coinsurance statement.",
+    "A disputed bill in the collections queue.",
+    "A vendor taking 3% of self-pay revenue."
+  ],
+  "memory": [
+    "The estimate timing, the co-provider rule, the $400 comparison and the dispute duties, and each estimate given, carried from Chartmend PM.",
+    "Each appointment's coverage, booking date, service date, services and changes, carried from Chartleaf scheduling.",
+    "The patient's request, the dispute notice's date and the front desk's question, carried from Mailnest."
+  ],
+  "economics": {
+    "value_usd": 1200,
+    "per": "year",
+    "basis": "An estimate, and mostly minutes. A late or missing good faith estimate leaves the clinic out of compliance with 45 CFR 149.610, and a bill $400 or more over the estimate can be taken to patient-provider dispute resolution, which the clinic usually loses unless the extra was unforeseen and necessary; a desk that checks both before anything goes out avoids both. For a two-physician practice with a few self-pay patients a week, the roster's $1,200 a year is about a dispute and a handful of late estimates avoided, an estimate. The bench world weights each of its eight acts at $50, an estimate of a billing service's price for one estimate or review, so it holds $400 of protection, not money recovered; most of the value is the billing lead's time, which manual_minutes carries. The rules as they stand on the world's date: 45 CFR 149.610 (estimates within 1 or 3 business days of scheduling or a request; a new one by the business day before the service) and 149.620 (dispute at $400 over, per provider or facility, within 120 days; no collections while pending; the estimate and the bill to the entity within 10 business days). HHS's enforcement discretion on co-provider and co-facility items, announced in FAQ Part 3 of 2 December 2022 pending further rulemaking, still stands, so the convening provider's estimate lists its own items. Times a year: fifty-two, a weekly pass of this size; the daily checks between are short.",
+    "manual_minutes": 75,
+    "times_per_year": 52,
+    "incumbent": "Outsourced estimate and dispute services take a share of self-pay revenue; the world's own offer is 3%, and the figure used is 3%, an estimate.",
+    "incumbent_fee_pct": 3,
+    "sources": [
+      {
+        "label": "45 CFR 149.610: good faith estimates for uninsured or self-pay individuals, their timing and content",
+        "url": "https://www.law.cornell.edu/cfr/text/45/149.610"
+      },
+      {
+        "label": "45 CFR 149.620: patient-provider dispute resolution: at least $400 over the estimate, per provider or facility; 120 days; no collections while pending; 10 business days for the provider's submission",
+        "url": "https://www.law.cornell.edu/cfr/text/45/149.620"
+      },
+      {
+        "label": "CMS, FAQs about Consolidated Appropriations Act, 2021 implementation, good faith estimates for uninsured or self-pay individuals, Part 3 (2 December 2022): enforcement discretion on co-provider and co-facility information extended pending future rulemaking",
+        "url": "https://www.cms.gov/files/document/good-faith-estimate-uninsured-self-pay-part-3.pdf"
+      },
+      {
+        "label": "Epstein Becker Green: HHS extends the enforcement moratorium on co-provider and co-facility good faith estimates",
+        "url": "https://www.ebglaw.com/insights/publications/no-surprises-act-hhs-extends-enforcement-moratorium-on-co-provider-co-facility-good-faith-estimates"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 3,
+    "usefulness": 3,
+    "difficulty_why": "Three systems with no shared data: an estimate's deadline turns on how many business days lie between booking and service, and on whether an insured patient will file a claim; a bill is over or not only against the last estimate given before the service, for that provider alone; and the dispute that keeps a bill out of collections is in the mail, not in the queue.",
+    "usefulness_why": "Keeps a small practice inside a federal rule it handles by hand and out of disputes it would lose, and keeps a disputing patient's bill away from collections; the money is protection, not recovery."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful billing lead gets most of it; the bar is most estimates out on time with the right totals and the over-estimate bills held, no estimate reissued after a visit, no disputed bill sent to collections, inside an hour."
+  },
+  "caveat": "Thornbury Family Medicine, Kestrel Path Lab, Northwind Dispute Resolution, GFE Guard, Chartmend PM, Chartleaf, Mailnest and every patient account here are invented; no account is any real patient's. The rules are 45 CFR 149.610 and 149.620 as they stand on the world's date, 9 October 2026, with HHS's enforcement discretion on co-provider and co-facility items in the convening provider's estimate, extended in December 2022 pending further rulemaking, still in place; the roster's 'co-provider items belong on the estimate' is therefore not authored as an obligation, and the trap is a co-provider's bill counted against the clinic's estimate instead. Holding a statement for review is the clinic's own policy, not a federal duty. A rule that ends the discretion, state law and the clinic's own counsel decide real cases. This applies stated rules to stated facts; it is not legal or billing-compliance advice."
+}

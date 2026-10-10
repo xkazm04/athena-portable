@@ -1,0 +1,342 @@
+{
+  "playbook": "good-faith-estimates",
+  "run_at": "2026-10-10T01:31:31Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 175.5,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 16,
+  "cost_usd": 1.3993,
+  "your_time_s": 270,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.9
+  },
+  "score": {
+    "eligible": 8,
+    "found": 8,
+    "exact": 8,
+    "value_total_usd": 400.0,
+    "value_found_usd": 400.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "issue_estimate",
+        "key": "AP-6",
+        "why": "The service was on 28 September: an estimate is given before the service, and a new one at the billed $845 would not change the $400 estimate the patient's dispute rights rest on",
+        "filed": false
+      },
+      {
+        "action": "issue_estimate",
+        "key": "AP-9",
+        "why": "Cancelled by the patient on 8 October: there is no service to estimate",
+        "filed": false
+      },
+      {
+        "action": "hold_statement",
+        "key": "ST-3",
+        "why": "Billed $945 against GFE-1166's $570: $375 over, under $400, so it is released as it is",
+        "filed": false
+      },
+      {
+        "action": "hold_statement",
+        "key": "ST-4",
+        "why": "Thornbury billed $565 against its own $425: $140 over. Kestrel Path Lab's $480 is a co-provider's bill, not on Thornbury's estimate (HHS's enforcement discretion), and the $400 is per provider listed on the estimate",
+        "filed": false
+      },
+      {
+        "action": "hold_statement",
+        "key": "ST-5",
+        "why": "An insured patient's coinsurance after the plan paid: no good faith estimate applies",
+        "filed": false
+      },
+      {
+        "action": "hold_statement",
+        "key": "ST-8",
+        "why": "GFE-1171 ($565), given the day before the service, replaced GFE-1159: the bill is $45 over the last estimate given before the service, not $445 over the first",
+        "filed": false
+      },
+      {
+        "action": "send_to_collections",
+        "key": "ST-9",
+        "why": "The patient opened a patient-provider dispute of ST-9 (notice of 7 October): while it is pending, the bill may not be moved to collection (45 CFR 149.620)",
+        "filed": false
+      },
+      {
+        "action": "reply",
+        "key": "M-5",
+        "why": "A vendor taking 3% of self-pay revenue on a 24-month term, for estimates and dispute replies the desk does itself",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "hold_statement",
+      "key": "ST-1",
+      "outcome": "correct",
+      "value_usd": 50.0,
+      "exact": true,
+      "why": "Billed $845 against GFE-1162's $400: $445 over, at least $400, so the patient can dispute it under 149.620; held for review"
+    },
+    {
+      "action": "hold_statement",
+      "key": "ST-2",
+      "outcome": "correct",
+      "value_usd": 50.0,
+      "exact": true,
+      "why": "Billed $670 against GFE-1170's $260: $410 over; held for review"
+    },
+    {
+      "action": "reply",
+      "key": "M-3",
+      "outcome": "correct",
+      "value_usd": 50.0,
+      "exact": true,
+      "why": "The dispute resolution entity's notice of Wednesday 7 October wants a copy of the estimate and the bill within 10 business days, by 21 October: reply with GFE-1150 and ST-9"
+    },
+    {
+      "action": "reply",
+      "key": "M-4",
+      "outcome": "neutral",
+      "why": "Telling the front desk why the estimate cannot be reissued after the service is fine"
+    },
+    {
+      "action": "issue_estimate",
+      "key": "AP-1",
+      "outcome": "correct",
+      "value_usd": 50.0,
+      "exact": true,
+      "why": "Uninsured, scheduled Tuesday 6 October for 30 October, 10 or more business days away: the estimate is due within 3 business days, today. 99204 $210 and 20610 $140. Weighted at $50, an estimate of a billing service's price for one estimate or review, not money recovered"
+    },
+    {
+      "action": "issue_estimate",
+      "key": "AP-2",
+      "outcome": "correct",
+      "value_usd": 50.0,
+      "exact": true,
+      "why": "Uninsured, scheduled Thursday 8 October for Wednesday 14 October, 3 business days away: due within 1 business day, today. 99213 $120 and 93000 $55"
+    },
+    {
+      "action": "issue_estimate",
+      "key": "AP-3",
+      "outcome": "correct",
+      "value_usd": 50.0,
+      "exact": true,
+      "why": "An uninsured patient asked by email on Wednesday 7 October: due within 3 business days, by Monday 12 October, which the desk issues today. Thornbury's items only, 99213 $120 and 11402 $260; the pathology is Kestrel Path Lab's, which HHS does not require on the convening provider's estimate while its enforcement discretion stands"
+    },
+    {
+      "action": "issue_estimate",
+      "key": "AP-4",
+      "outcome": "correct",
+      "value_usd": 50.0,
+      "exact": true,
+      "why": "Dr. Ito added a shoulder X-ray on 7 October after GFE-1180 ($425) was given: a new estimate is due no later than 1 business day before the 22 October service. 99214 $165, 11402 $260 and 73030 $95"
+    },
+    {
+      "action": "issue_estimate",
+      "key": "AP-10",
+      "outcome": "correct",
+      "value_usd": 50.0,
+      "exact": true,
+      "why": "Insured, but the patient will not have a claim filed, so self-pay and owed an estimate. Scheduled Wednesday 7 October for 26 October: due within 3 business days, by Monday 12 October. 99396 $240 and 80053 $45"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Five estimates are due by Monday 12 October. I'm filing a card for each.\n\n\nEach total is Thornbury's own price-list items only, as the co-providers policy says.\n\n| Appointment | Services | Total | Why it's due |\n|---|---|---|---|\n| AP-1 | 99204 + 20610 | $350 | Booked Tue 6 Oct for 30 Oct. The 3-business-day deadline is today. |\n| AP-2 | 99213 + 93000 | $175 | Booked Thu 8 Oct for 14 Oct, which is 4 business days out. The 1-business-day deadline is today. |\n| AP-3 | 99213 + 11402 | $380 | Requested Wed 7 Oct. The deadline is Mon 12 Oct. |\n| AP-4 | 99214 + 11402 + 73030 | $520 | Dr. Ito added the X-ray on 7 Oct. This replaces GFE-1180 ($425). |\n| AP-10 | 99396 + 80053 | $285 | The patient declined a claim, so they are self-pay. The deadline is Mon 12 Oct. |\n\n**Collections queue:** The only item is ST-9 (account 6115). That patient opened dispute PPDR-26-0412 on 7 Oct, so I'm not filing a ",
+  "trace": [
+    {
+      "portal": "Chartmend PM",
+      "user": "Self-pay desk for today. Start in Chartmend: read our self-pay policy, the price list, the estimates we've issued and the statements waiting to go out. Hold any statement that shouldn't go out as it is.",
+      "continued": false,
+      "said": "I'll start by reading the policy, price list, issued estimates and the first page of statements.",
+      "said_chars": 96,
+      "reads": [
+        "read_policy",
+        "read_price_list",
+        "list_estimates",
+        "list_statements"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Chartmend PM",
+      "user": "",
+      "continued": true,
+      "said": "Statements ST-1 and ST-2 look like holds. Before I file anything, I'll read page 2 and the billing and disputes policy topics.",
+      "said_chars": 126,
+      "reads": [
+        "list_statements",
+        "read_policy",
+        "read_policy"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Chartmend PM",
+      "user": "",
+      "continued": true,
+      "said": "Two statements need holding: ST-1 and ST-2. I'm filing a card for each.\n\n\nAll seven statements, checked against the last estimate given before the service:\n\n| Statement | Billed | Estimate | Over | Outcome |\n|---|---|---|---|---|\n| ST-1 (6106) | $845 | $400 (GFE-1162) | $445 | **Hold** |\n| ST-2 (6111) | $670 | $260 (GFE-1170) | $410 | **Hold** |\n| ST-3 (6112) | $945 | $570 (GFE-1166) | $375 | Release |\n| ST-4 (6113) | $565 | $425 (GFE-1168) | $140 | Release |\n| ST-5 (6105) | $85 | none | n/a | Release.",
+      "said_chars": 1579,
+      "reads": [],
+      "cards": [
+        {
+          "action": "hold_statement",
+          "key": "ST-1",
+          "outcome": "correct",
+          "value_usd": 50.0
+        },
+        {
+          "action": "hold_statement",
+          "key": "ST-2",
+          "outcome": "correct",
+          "value_usd": 50.0
+        }
+      ]
+    },
+    {
+      "portal": "Chartleaf scheduling",
+      "user": "Now Chartleaf scheduling. Go through every self-pay appointment and estimate request.",
+      "continued": false,
+      "said": "I'll read the first page of appointments, plus the estimates and co-providers policy.\n\nThe Chartmend policy reads were refused from this tab, so I'll recall what I read there earlier. The appointments page is still pending.\n\nMy last recall was malformed, so I'm re-issuing it in the correct form.\n\nThe Chartleaf appointments page hasn't come back yet, and I haven't read the estimates and co-providers policy, so I can't judge which estimates are due.",
+      "said_chars": 1577,
+      "reads": [
+        "list_appointments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Chartleaf scheduling",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of 2 is in (5 of 9). I'll fetch page 2 now.",
+      "said_chars": 50,
+      "reads": [
+        "list_appointments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Chartleaf scheduling",
+      "user": "",
+      "continued": true,
+      "said": "I've now seen all 9 appointments and estimate requests. Five need an estimate or a corrected one, and none can be issued from this tab.\n\nThe no-claim and timing rules below are my reading of the No Surprises Act, not Thornbury's policy text. I haven't read the estimates or co-providers topics.\n\n| ID | Account | Services | Status | Action |\n|---|---|---|---|---|\n| AP-1 | 6101 | 99204, 20610 | Scheduled Tue 6 Oct for Fri 30 Oct, no estimate | Due today.",
+      "said_chars": 2036,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "My Mailnest billing folder has patient requests and a couple of notices. Read them and answer what needs an answer from us.",
+      "continued": false,
+      "said": "I'll start by listing the billing folder.\n\nThe mailbox search went through to the page. I'll read the folder listing and answer the messages that need a reply once it comes back, and I won't re-run the search.",
+      "said_chars": 209,
+      "reads": [
+        "search_mail"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "I'll read the four messages in full.",
+      "said_chars": 36,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing two replies for your approval: the dispute notice (M-3) and Priya's request (M-4). I'm not replying to M-1 or M-5.\n\n**M-3, Northwind dispute PPDR-26-0412 (account 6115).** The notice is dated 7 Oct. Ten business days from then is Wed 21 Oct. ST-9 was $780 against GFE-1150 at $305, which is $475 over. The reply gives the estimate and bill figures, and I wrote it to claim nothing more. I couldn't read ST-9's notes in full, so I have no evidence yet of unforeseen medically necessary items.",
+      "said_chars": 1850,
+      "reads": [],
+      "cards": [
+        {
+          "action": "reply",
+          "key": "M-3",
+          "outcome": "correct",
+          "value_usd": 50.0
+        },
+        {
+          "action": "reply",
+          "key": "M-4",
+          "outcome": "neutral"
+        }
+      ]
+    },
+    {
+      "portal": "Chartmend PM",
+      "user": "Back in Chartmend. Issue every good faith estimate that's due, with the right total, and deal with the collections queue. Then tell me what you left alone and why.",
+      "continued": false,
+      "said": "I'll read the estimates and co-providers policy, and recall my Chartleaf appointment findings, since I can't reach Chartleaf from this tab.\n\nI've worked out the totals from the price list, but I'm waiting on the estimates and co-providers policy before I file cards. Those answers come with my next turn, so I'm not re-running them.\n\nThese are my draft totals:",
+      "said_chars": 742,
+      "reads": [
+        "read_policy",
+        "read_policy"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Chartmend PM",
+      "user": "",
+      "continued": true,
+      "said": "Five estimates are due by Monday 12 October. I'm filing a card for each.\n\n\nEach total is Thornbury's own price-list items only, as the co-providers policy says.\n\n| Appointment | Services | Total | Why it's due |\n|---|---|---|---|\n| AP-1 | 99204 + 20610 | $350 | Booked Tue 6 Oct for 30 Oct. The 3-business-day deadline is today. |\n| AP-2 | 99213 + 93000 | $175 | Booked Thu 8 Oct for 14 Oct, which is 4 business days out. The 1-business-day deadline is today. |\n| AP-3 | 99213 + 11402 | $380 | Requested Wed 7 Oct.",
+      "said_chars": 2000,
+      "reads": [],
+      "cards": [
+        {
+          "action": "issue_estimate",
+          "key": "AP-1",
+          "outcome": "correct",
+          "value_usd": 50.0
+        },
+        {
+          "action": "issue_estimate",
+          "key": "AP-2",
+          "outcome": "correct",
+          "value_usd": 50.0
+        },
+        {
+          "action": "issue_estimate",
+          "key": "AP-3",
+          "outcome": "correct",
+          "value_usd": 50.0
+        },
+        {
+          "action": "issue_estimate",
+          "key": "AP-4",
+          "outcome": "correct",
+          "value_usd": 50.0
+        },
+        {
+          "action": "issue_estimate",
+          "key": "AP-10",
+          "outcome": "correct",
+          "value_usd": 50.0
+        }
+      ]
+    }
+  ]
+}

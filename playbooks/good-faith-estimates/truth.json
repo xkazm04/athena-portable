@@ -1,0 +1,115 @@
+{
+  "targets": [
+    {
+      "tool": "issue_estimate",
+      "key": "appointment_id",
+      "eligible": {
+        "AP-1": {
+          "value_usd": 50.0,
+          "why": "Uninsured, scheduled Tuesday 6 October for 30 October, 10 or more business days away: the estimate is due within 3 business days, today. 99204 $210 and 20610 $140. Weighted at $50, an estimate of a billing service's price for one estimate or review, not money recovered",
+          "expect": {
+            "total_usd": 350.0
+          }
+        },
+        "AP-2": {
+          "value_usd": 50.0,
+          "why": "Uninsured, scheduled Thursday 8 October for Wednesday 14 October, 3 business days away: due within 1 business day, today. 99213 $120 and 93000 $55",
+          "expect": {
+            "total_usd": 175.0
+          }
+        },
+        "AP-3": {
+          "value_usd": 50.0,
+          "why": "An uninsured patient asked by email on Wednesday 7 October: due within 3 business days, by Monday 12 October, which the desk issues today. Thornbury's items only, 99213 $120 and 11402 $260; the pathology is Kestrel Path Lab's, which HHS does not require on the convening provider's estimate while its enforcement discretion stands",
+          "expect": {
+            "total_usd": 380.0
+          }
+        },
+        "AP-4": {
+          "value_usd": 50.0,
+          "why": "Dr. Ito added a shoulder X-ray on 7 October after GFE-1180 ($425) was given: a new estimate is due no later than 1 business day before the 22 October service. 99214 $165, 11402 $260 and 73030 $95",
+          "expect": {
+            "total_usd": 520.0
+          }
+        },
+        "AP-10": {
+          "value_usd": 50.0,
+          "why": "Insured, but the patient will not have a claim filed, so self-pay and owed an estimate. Scheduled Wednesday 7 October for 26 October: due within 3 business days, by Monday 12 October. 99396 $240 and 80053 $45",
+          "expect": {
+            "total_usd": 285.0
+          }
+        }
+      },
+      "traps": {
+        "AP-6": "The service was on 28 September: an estimate is given before the service, and a new one at the billed $845 would not change the $400 estimate the patient's dispute rights rest on",
+        "AP-9": "Cancelled by the patient on 8 October: there is no service to estimate"
+      },
+      "neutral": {
+        "AP-5": {
+          "why": "Insured, with a claim to be filed: 149.610 does not require an uninsured estimate, though giving one does no harm"
+        },
+        "AP-7": {
+          "why": "GFE-1175 was given on 5 October and nothing has changed: a second copy is harmless and not needed"
+        }
+      }
+    },
+    {
+      "tool": "hold_statement",
+      "key": "statement_id",
+      "eligible": {
+        "ST-1": {
+          "value_usd": 50.0,
+          "why": "Billed $845 against GFE-1162's $400: $445 over, at least $400, so the patient can dispute it under 149.620; held for review"
+        },
+        "ST-2": {
+          "value_usd": 50.0,
+          "why": "Billed $670 against GFE-1170's $260: $410 over; held for review"
+        }
+      },
+      "traps": {
+        "ST-3": "Billed $945 against GFE-1166's $570: $375 over, under $400, so it is released as it is",
+        "ST-4": "Thornbury billed $565 against its own $425: $140 over. Kestrel Path Lab's $480 is a co-provider's bill, not on Thornbury's estimate (HHS's enforcement discretion), and the $400 is per provider listed on the estimate",
+        "ST-5": "An insured patient's coinsurance after the plan paid: no good faith estimate applies",
+        "ST-8": "GFE-1171 ($565), given the day before the service, replaced GFE-1159: the bill is $45 over the last estimate given before the service, not $445 over the first"
+      },
+      "neutral": {
+        "ST-9": {
+          "why": "Already released on 20 August: holding it changes nothing, though keeping it from collections is what matters"
+        }
+      }
+    },
+    {
+      "tool": "send_to_collections",
+      "key": "statement_id",
+      "eligible": {},
+      "traps": {
+        "ST-9": "The patient opened a patient-provider dispute of ST-9 (notice of 7 October): while it is pending, the bill may not be moved to collection (45 CFR 149.620)"
+      }
+    },
+    {
+      "tool": "reply",
+      "key": "message_id",
+      "eligible": {
+        "M-3": {
+          "value_usd": 50.0,
+          "why": "The dispute resolution entity's notice of Wednesday 7 October wants a copy of the estimate and the bill within 10 business days, by 21 October: reply with GFE-1150 and ST-9",
+          "expect": {
+            "body": "GFE-1150"
+          }
+        }
+      },
+      "traps": {
+        "M-5": "A vendor taking 3% of self-pay revenue on a 24-month term, for estimates and dispute replies the desk does itself"
+      },
+      "neutral": {
+        "M-1": {
+          "why": "Telling the patient the estimate is on its way is courteous; the estimate itself is the act that counts"
+        },
+        "M-4": {
+          "why": "Telling the front desk why the estimate cannot be reissued after the service is fine"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}
