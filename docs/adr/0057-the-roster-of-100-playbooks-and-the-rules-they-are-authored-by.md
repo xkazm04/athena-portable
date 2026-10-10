@@ -200,6 +200,10 @@ names; each playbook carries the new one.
   site (a travel-marketing consultant's, in another field) and Markfile is a name worth not sharing
   with a filing product; "Docshelf" became "Binderwell", because DocShelf is a real document
   management app; and "Mailnest" became "Postwren", because mailnest.io is a real email service.
+- Row 58, `mlc-unmatched-royalties`: "Tunecast distributor" became "Releasewick distributor", because TuneCastMusic
+  (tunecastmusic.com) is a real music distributor; "Songguild" became "Lyrebank rights desk", because
+  Songguild is a short form of the Songwriters Guild of America, a real songwriters' organisation; and
+  "Docshelf" became "Binderwell", because DocShelf is a real document management app.
 
 ### B7: Household money
 

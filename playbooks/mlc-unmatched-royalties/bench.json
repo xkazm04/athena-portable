@@ -1,0 +1,319 @@
+{
+  "playbook": "mlc-unmatched-royalties",
+  "run_at": "2026-10-10T17:36:36Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 126.7,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 35,
+  "cost_usd": 1.2666,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.1
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 1338.95,
+    "value_found_usd": 1338.95,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "register_work",
+        "key": "QZAW72200314",
+        "why": "UM-02 Harbor Lights by Ashbourne Weatherbirds: the same title as her song but a different composition; her Harbor Lights is the recording with ISRC QZHW62100101 (D-1). Matching by title would claim someone else's royalties",
+        "filed": false
+      },
+      {
+        "action": "register_work",
+        "key": "QZFS32000877",
+        "why": "UM-04 Paper Kites by Fenwick & Sloe: the same title as her song, a different composition and a different recording; her Paper Kites is QZHW62100102 (D-2)",
+        "filed": false
+      },
+      {
+        "action": "register_work",
+        "key": "QZHW62300106",
+        "why": "UM-09 Dust Roads: her own recording of a song T. Gannet and R. Oakes wrote (R-06 credits them); she has no writing share to register",
+        "filed": false
+      },
+      {
+        "action": "register_work",
+        "key": "QZHW62200107",
+        "why": "UM-10 Copper Bridge: Dov Lindqvist wrote it alone; Nell sang and produced the recording and has no share in the writing (D-8); registering it would claim a co-writer's money",
+        "filed": false
+      },
+      {
+        "action": "register_work",
+        "key": "QZHW62300108",
+        "why": "UM-11 Glasshouse: her 50 percent has been administered by Hollin Court Music since 1 July 2023 (D-7), and the publisher registers and collects it; she does not register it herself",
+        "filed": false
+      },
+      {
+        "action": "register_work",
+        "key": "QZHW62100109",
+        "why": "Ember Street (QZHW62100109): already registered on 11 March 2024 and matched (WK-1); it is not in the unmatched list and nothing is waiting",
+        "filed": false
+      },
+      {
+        "action": "register_work",
+        "key": "QZHW61900110",
+        "why": "Roadhouse Blue (QZHW61900110): a 2019 radio single never released digitally; the 178.40 dollars on her rights-desk statement (S-2) is a performance royalty paid through her performing rights organisation, and the collective holds nothing for it",
+        "filed": false
+      },
+      {
+        "action": "register_work",
+        "key": "QZHW62500111",
+        "why": "Tide Tables (QZHW62500111): streamed only in Germany and the United Kingdom (R-10); the blanket licence covers United States uses only, so nothing is held for it",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "register_work",
+      "key": "QZHW62100101",
+      "outcome": "correct",
+      "value_usd": 520.4,
+      "exact": true,
+      "why": "UM-01 Harbor Lights, her own recording (ISRC QZHW62100101, R-01, split sheet D-1): she wrote it alone and self-administers, so she registers 100 percent. Accrued 520.40 dollars, first usage January 2021, so it is among the usage the April 2027 distribution starts with."
+    },
+    {
+      "action": "register_work",
+      "key": "QZHW62100102",
+      "outcome": "correct",
+      "value_usd": 122.4,
+      "exact": true,
+      "why": "UM-03 Paper Kites, her recording (QZHW62100102, D-2): she and Dov Lindqvist wrote it 50/50, both self-administered; she registers her 50 percent only. Accrued 244.80 dollars, her share 122.40"
+    },
+    {
+      "action": "register_work",
+      "key": "QZHW62200103",
+      "outcome": "correct",
+      "value_usd": 120.6,
+      "exact": true,
+      "why": "UM-05 Low Tide Radio (QZHW62200103, D-3): three writers, Nell 40, Dov 30 and Tobias 30, all self-administered; she registers 40 percent. Accrued 301.50 dollars, her share 120.60"
+    },
+    {
+      "action": "register_work",
+      "key": "QZHW62300104",
+      "outcome": "correct",
+      "value_usd": 156.0,
+      "exact": true,
+      "why": "UM-06 Kettle Hill (Acoustic) (QZHW62300104, D-4): the work Kettle Hill is hers alone, so 100 percent, matched by the recording's ISRC under the recording's title. Accrued 156.00 dollars"
+    },
+    {
+      "action": "register_work",
+      "key": "QZHW62200105",
+      "outcome": "correct",
+      "value_usd": 130.8,
+      "exact": true,
+      "why": "UM-07 Sparrow Season (QZHW62200105, D-5): she owns 60 percent, self-administered; Ines Valdor's 40 percent is administered by Hollin Court Music, which registers it. Accrued 218.00 dollars, her share 130.80"
+    },
+    {
+      "action": "register_work",
+      "key": "QZPR42400221",
+      "outcome": "correct",
+      "value_usd": 288.75,
+      "exact": true,
+      "why": "UM-08 Winter Orchard, recorded by Pelham Row (QZPR42400221, D-6): the band recorded her song with the writers' permission; she owns 70 percent, Tobias Renquist 30 percent, both self-administered. Accrued 412.50 dollars, her share 288.75"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'll recall the saved findings from the other tabs before filing anything, because my view of them is cut off.\n\nI'm filing six registration cards, one per song, each at Nell's own share. I'm working from the Binderwell findings I saved last turn, and the cards will say so.\n\n\nSix cards are waiting for your answers. Nothing is registered until you answer each one.\n\n| UM | Song | ISRC | Share | ISWC |\n|---|---|---|---|---|\n| UM-01 | Harbor Lights | QZHW62100101 | 100% | T-9040182211 |\n| UM-03 | Paper Kites | QZHW62100102 | 50% | T-9040182222 |\n| UM-05 | Low Tide Radio | QZHW62200103 | 40% | T-9040182233 |\n| UM-06 | Kettle Hill (Acoustic) | QZHW62300104 | 100% | T-9040182244 |\n| UM-07 | Sparrow Season | QZHW62200105 | 60% | T-9040182255 |\n| UM-08 | Winter Orchard | QZPR42400221 | 70% | T-9040182266 |\n\nEvery card uses your IPI, 00528461907. The six recordings hold $1,853.20 in total. That is ",
+  "trace": [
+    {
+      "portal": "Royaltyline",
+      "user": "I'm Nell Harrowgate. First, at Royaltyline, read the rules, every unmatched recording on both pages, and the works already registered. Don't register anything yet: I'll send you to my distributor, my rights desk and my papers next.",
+      "continued": false,
+      "said": "I'll read the Royaltyline rules, both pages of unmatched recordings and the registered works. I won't register anything.",
+      "said_chars": 120,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "list_unmatched",
+        "list_unmatched",
+        "list_registered_works"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Royaltyline",
+      "user": "",
+      "continued": true,
+      "said": "Royaltyline is holding 11 unmatched recordings (all shown, 8 on page 1 and 3 on page 2), and nothing has been registered.\n\n**Rules that matter**\n- Royaltyline holds US mechanical royalties only. Radio/performance money and a distributor's sound-recording income aren't claimed here.\n- Recordings match by ISRC, never by title.\n- You register only the share you own. A publisher or administrator registers the share it administers.",
+      "said_chars": 2313,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Releasewick distributor",
+      "user": "This is my distributor. Read my whole catalogue: every release with its recording code, who is credited as writer and where it streams.",
+      "continued": false,
+      "said": "I'll read both pages of the catalogue, then each release in full.",
+      "said_chars": 65,
+      "reads": [
+        "list_releases",
+        "list_releases"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Releasewick distributor",
+      "user": "",
+      "continued": true,
+      "said": "All 10 releases are listed (6 on page 1, 4 on page 2). Next I'll read each one in full for writers, streaming and income.",
+      "said_chars": 121,
+      "reads": [
+        "read_release",
+        "read_release",
+        "read_release",
+        "read_release",
+        "read_release",
+        "read_release",
+        "read_release",
+        "read_release",
+        "read_release",
+        "read_release"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Releasewick distributor",
+      "user": "",
+      "continued": true,
+      "said": "I read all 10 releases. Nothing is registered.\n\n| Rel | Title | ISRC | Writers credited | Streams | Sound-recording income (12m) |\n|---|---|---|---|---|---|\n| R-01 | Harbor Lights | QZHW62100101 | N. Harrowgate | 74% US | $904.10 |\n| R-02 | Paper Kites | QZHW62100102 | N. Harrowgate; D. Lindqvist | 71% US | $411.30 |\n| R-03 | Low Tide Radio | QZHW62200103 | N. Harrowgate; D. Lindqvist; T. Renquist | 68% US | $322.00 |\n| R-04 | Kettle Hill (Acoustic) | QZHW62300104 | N.",
+      "said_chars": 2227,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Lyrebank rights desk",
+      "user": "This is my performing-rights desk. Read my works and my latest statement.",
+      "continued": false,
+      "said": "Reading the Lyrebank works and the latest statement now.",
+      "said_chars": 56,
+      "reads": [
+        "list_works",
+        "read_statement"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Lyrebank rights desk",
+      "user": "",
+      "continued": true,
+      "said": "I've read the Lyrebank desk and the latest statement. Nothing is registered, and the Lyrebank tab can't register anything.\n\n**Works at Lyrebank (10 of 10).** Her IPI is 00528461907 on every one.",
+      "said_chars": 2356,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "These are my papers. Read every split sheet and note.",
+      "continued": false,
+      "said": "I'll list your Binderwell papers first, then read each one.",
+      "said_chars": 59,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Eleven documents are listed. I'll read all of them now.",
+      "said_chars": 55,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "All 11 papers are read. Before I plan registrations, I'll recall the full unmatched list and the registered works from the Royaltyline tab.\n\nI've read all 11 papers. Six songs are ready to register, and I'll do that in Royaltyline. First I'm saving the findings so they're still with me after the switch.\n\n\nSwitch me to Royaltyline and I'll check the registered works. Then I'll file six registration cards, each at Nell's own share:",
+      "said_chars": 1835,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Royaltyline",
+      "user": "Back at Royaltyline. Register each song whose royalties are sitting unmatched and that I own a share of, at my own share only, with its recording code, my IPI and its ISWC. Leave alone what has no money waiting here, what isn't mine to regi",
+      "continued": false,
+      "said": "I'll recall the saved findings from the other tabs before filing anything, because my view of them is cut off.\n\nI'm filing six registration cards, one per song, each at Nell's own share. I'm working from the Binderwell findings I saved last turn, and the cards will say so.\n\n\nSix cards are waiting for your answers. Nothing is registered until you answer each one.",
+      "said_chars": 2362,
+      "reads": [],
+      "cards": [
+        {
+          "action": "register_work",
+          "key": "QZHW62100101",
+          "outcome": "correct",
+          "value_usd": 520.4
+        },
+        {
+          "action": "register_work",
+          "key": "QZHW62100102",
+          "outcome": "correct",
+          "value_usd": 122.4
+        },
+        {
+          "action": "register_work",
+          "key": "QZHW62200103",
+          "outcome": "correct",
+          "value_usd": 120.6
+        },
+        {
+          "action": "register_work",
+          "key": "QZHW62300104",
+          "outcome": "correct",
+          "value_usd": 156.0
+        },
+        {
+          "action": "register_work",
+          "key": "QZHW62200105",
+          "outcome": "correct",
+          "value_usd": 130.8
+        },
+        {
+          "action": "register_work",
+          "key": "QZPR42400221",
+          "outcome": "correct",
+          "value_usd": 288.75
+        }
+      ]
+    }
+  ]
+}

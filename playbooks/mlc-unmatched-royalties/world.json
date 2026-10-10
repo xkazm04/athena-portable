@@ -1,0 +1,731 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "royaltyline",
+      "message": "I'm Nell Harrowgate. First, at Royaltyline, read the rules, every unmatched recording on both pages, and the works already registered. Don't register anything yet: I'll send you to my distributor, my rights desk and my papers next.",
+      "nudges": 1
+    },
+    {
+      "app": "releasewick",
+      "message": "This is my distributor. Read my whole catalogue: every release with its recording code, who is credited as writer and where it streams.",
+      "nudges": 1
+    },
+    {
+      "app": "lyrebank",
+      "message": "This is my performing-rights desk. Read my works and my latest statement.",
+      "nudges": 1
+    },
+    {
+      "app": "binderwell",
+      "message": "These are my papers. Read every split sheet and note.",
+      "nudges": 1
+    },
+    {
+      "app": "royaltyline",
+      "message": "Back at Royaltyline. Register each song whose royalties are sitting unmatched and that I own a share of, at my own share only, with its recording code, my IPI and its ISWC. Leave alone what has no money waiting here, what isn't mine to register, and what is already done. Then tell me what you registered, the shares, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "royaltyline",
+      "name": "Royaltyline",
+      "origin": "https://hub.royaltyline.example",
+      "path": "/nell-harrowgate/unmatched",
+      "view": {
+        "view": "Royaltyline: Nell Harrowgate's member hub (invented)",
+        "signed_in": "Nell Harrowgate",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_unmatched",
+          "kind": "READ",
+          "description": "Every unmatched recording the collective holds royalties for: id, title, artist, ISRC, accrued dollars and first usage month. Eight a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "unmatched",
+            "fields": [
+              "um_id",
+              "title",
+              "artist",
+              "isrc",
+              "accrued_usd",
+              "first_usage"
+            ],
+            "page_size": 8
+          }
+        },
+        {
+          "name": "read_unmatched",
+          "kind": "READ",
+          "description": "One unmatched recording in full, by id (UM-nn).",
+          "params": {
+            "um_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "unmatched",
+            "match": {
+              "um_id": "um_id"
+            },
+            "require": [
+              "um_id"
+            ]
+          }
+        },
+        {
+          "name": "list_registered_works",
+          "kind": "READ",
+          "description": "The works already registered under this membership: id, title, writers and shares, ISRC and status.",
+          "params": {},
+          "returns": {
+            "table": "registered"
+          }
+        },
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The hub's rules by topic: index, scope, holding, registration, shares or administered.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "register_work",
+          "kind": "REACHES_A_PERSON",
+          "description": "Register one musical work with the collective, by the ISRC of its recording in the unmatched list (isrc), the work's title (title), the writer (writer), her IPI (writer_ipi), the share of the work she owns and registers, in percent (share_pct), and the work's ISWC (iswc). Nell signs the registration.",
+          "params": {
+            "isrc": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "writer": {
+              "type": "string"
+            },
+            "writer_ipi": {
+              "type": "string"
+            },
+            "share_pct": {
+              "type": "number"
+            },
+            "iswc": {
+              "type": "string"
+            }
+          },
+          "says": "Registration for {isrc} sent to Royaltyline."
+        }
+      ],
+      "aliases": [
+        "Royaltyline",
+        "the collective",
+        "the hub",
+        "the member hub"
+      ]
+    },
+    {
+      "app_id": "releasewick",
+      "name": "Releasewick distributor",
+      "origin": "https://dist.releasewick.example",
+      "path": "/nell-harrowgate/catalogue",
+      "view": {
+        "view": "Releasewick: Nell Harrowgate's catalogue (invented)",
+        "signed_in": "Nell Harrowgate",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_releases",
+          "kind": "READ",
+          "description": "Every release: id, title, artist, ISRC and release date. Six a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "releases",
+            "fields": [
+              "rel_id",
+              "title",
+              "artist",
+              "isrc",
+              "released"
+            ],
+            "page_size": 6
+          }
+        },
+        {
+          "name": "read_release",
+          "kind": "READ",
+          "description": "One release in full, by id (R-nn): the writers credited, where it streams and its sound-recording income.",
+          "params": {
+            "rel_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "releases",
+            "match": {
+              "rel_id": "rel_id"
+            },
+            "require": [
+              "rel_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Releasewick",
+        "my distributor",
+        "the distributor",
+        "my catalogue"
+      ]
+    },
+    {
+      "app_id": "lyrebank",
+      "name": "Lyrebank rights desk",
+      "origin": "https://desk.lyrebank.example",
+      "path": "/nell-harrowgate/works",
+      "view": {
+        "view": "Lyrebank: Nell Harrowgate's performing-rights desk (invented)",
+        "signed_in": "Nell Harrowgate",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_works",
+          "kind": "READ",
+          "description": "The works Nell has registered for performance royalties: id, title, ISWC, her share and her IPI.",
+          "params": {},
+          "returns": {
+            "table": "pwork"
+          }
+        },
+        {
+          "name": "read_statement",
+          "kind": "READ",
+          "description": "The latest performance-royalty statement, line by line: title, source and amount paid.",
+          "params": {},
+          "returns": {
+            "table": "stmts"
+          }
+        }
+      ],
+      "aliases": [
+        "Lyrebank",
+        "my rights desk",
+        "the rights desk",
+        "my performing-rights desk"
+      ]
+    },
+    {
+      "app_id": "binderwell",
+      "name": "Binderwell",
+      "origin": "https://papers.binderwell.example",
+      "path": "/nell-harrowgate",
+      "view": {
+        "view": "Binderwell: Nell Harrowgate's papers",
+        "signed_in": "Nell Harrowgate",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_documents",
+          "kind": "READ",
+          "description": "Nell's papers: document id and title.",
+          "params": {},
+          "returns": {
+            "table": "docs",
+            "fields": [
+              "doc_id",
+              "title"
+            ]
+          }
+        },
+        {
+          "name": "read_document",
+          "kind": "READ",
+          "description": "One document in full, by id (D-n).",
+          "params": {
+            "doc_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "docs",
+            "match": {
+              "doc_id": "doc_id"
+            },
+            "require": [
+              "doc_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Binderwell",
+        "my papers",
+        "the split sheets"
+      ]
+    }
+  ],
+  "tables": {
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Royaltyline, the collective's member hub. Friday 9 October 2026. Topics: scope, holding, registration, shares, administered. Royaltyline holds the mechanical royalties that digital services owe for recordings it cannot yet match to a work, and pays them out once the work is registered and matched."
+      },
+      {
+        "topic": "scope",
+        "text": "Friday 9 October 2026. The blanket licence (17 U.S.C. 115(d)) covers mechanical royalties for digital uses in the United States only: streams and downloads here. Performance royalties are paid through a performing rights organisation, and the money earned by a sound recording through its distributor. Neither is claimed from Royaltyline, and Royaltyline holds nothing for either."
+      },
+      {
+        "topic": "holding",
+        "text": "Friday 9 October 2026. Unmatched accrued royalties are held for at least 3 years (115(d)(3)(H)) and then distributed by market share to publishers and self-administered writers (115(d)(3)(J)). Royaltyline's first distribution is in April 2027 and starts with the usage of January 2021. What is still unmatched then is shared out by market share, not paid to the writers of those songs."
+      },
+      {
+        "topic": "registration",
+        "text": "Friday 9 October 2026. A work registration carries the title, each writer with his or her share, and where known the writer's IPI, the work's ISWC and the recordings, by ISRC, that belong to it. Only the title and one writer are required; the recording is what matches an unmatched royalty. Register a song whose recording is in the unmatched list."
+      },
+      {
+        "topic": "shares",
+        "text": "Friday 9 October 2026. The shares of a work add up to 100 percent. A writer registers only the share she owns, not a co-writer's share and not the whole work. Each co-writer, or the publisher or administrator who represents him or her, registers that writer's own share."
+      },
+      {
+        "topic": "administered",
+        "text": "Friday 9 October 2026. A share that a publisher or administrator administers is registered by that publisher or administrator, who collects it. A self-administered writer registers her own share herself, as her own publisher. A recording is matched by its ISRC and never by its title: two different songs can share a title."
+      }
+    ],
+    "unmatched": [
+      {
+        "um_id": "UM-01",
+        "title": "Harbor Lights",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62100101",
+        "accrued_usd": 520.4,
+        "first_usage": "2021-01",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      },
+      {
+        "um_id": "UM-02",
+        "title": "Harbor Lights",
+        "artist": "Ashbourne Weatherbirds",
+        "isrc": "QZAW72200314",
+        "accrued_usd": 96.3,
+        "first_usage": "2022-05",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      },
+      {
+        "um_id": "UM-03",
+        "title": "Paper Kites",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62100102",
+        "accrued_usd": 244.8,
+        "first_usage": "2021-03",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      },
+      {
+        "um_id": "UM-04",
+        "title": "Paper Kites",
+        "artist": "Fenwick & Sloe",
+        "isrc": "QZFS32000877",
+        "accrued_usd": 71.1,
+        "first_usage": "2021-01",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      },
+      {
+        "um_id": "UM-05",
+        "title": "Low Tide Radio",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62200103",
+        "accrued_usd": 301.5,
+        "first_usage": "2022-02",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      },
+      {
+        "um_id": "UM-06",
+        "title": "Kettle Hill (Acoustic)",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62300104",
+        "accrued_usd": 156.0,
+        "first_usage": "2023-05",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      },
+      {
+        "um_id": "UM-07",
+        "title": "Sparrow Season",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62200105",
+        "accrued_usd": 218.0,
+        "first_usage": "2022-09",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      },
+      {
+        "um_id": "UM-08",
+        "title": "Winter Orchard",
+        "artist": "Pelham Row",
+        "isrc": "QZPR42400221",
+        "accrued_usd": 412.5,
+        "first_usage": "2024-01",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      },
+      {
+        "um_id": "UM-09",
+        "title": "Dust Roads",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62300106",
+        "accrued_usd": 64.8,
+        "first_usage": "2023-10",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      },
+      {
+        "um_id": "UM-10",
+        "title": "Copper Bridge",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62200107",
+        "accrued_usd": 140.0,
+        "first_usage": "2022-06",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      },
+      {
+        "um_id": "UM-11",
+        "title": "Glasshouse",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62300108",
+        "accrued_usd": 202.0,
+        "first_usage": "2023-02",
+        "last_usage": "2026-08",
+        "status": "Unmatched"
+      }
+    ],
+    "registered": [
+      {
+        "work_id": "WK-1",
+        "title": "Ember Street",
+        "writers": "Nell Harrowgate 100% (self-administered)",
+        "isrc": "QZHW62100109",
+        "registered": "2024-03-11",
+        "status": "Matched"
+      },
+      {
+        "work_id": "WK-2",
+        "title": "Slow Dawn",
+        "writers": "Dov Lindqvist 100% (self-administered)",
+        "isrc": "QZDL42200412",
+        "registered": "2022-11-02",
+        "status": "Matched"
+      }
+    ],
+    "releases": [
+      {
+        "rel_id": "R-01",
+        "title": "Harbor Lights",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62100101",
+        "released": "2021-01-15",
+        "writers_credited": "N. Harrowgate",
+        "where_streamed": "74% of streams in the United States",
+        "sound_recording_usd_12m": 904.1
+      },
+      {
+        "rel_id": "R-02",
+        "title": "Paper Kites",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62100102",
+        "released": "2021-03-05",
+        "writers_credited": "N. Harrowgate; D. Lindqvist",
+        "where_streamed": "71% of streams in the United States",
+        "sound_recording_usd_12m": 411.3
+      },
+      {
+        "rel_id": "R-03",
+        "title": "Low Tide Radio",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62200103",
+        "released": "2022-02-11",
+        "writers_credited": "N. Harrowgate; D. Lindqvist; T. Renquist",
+        "where_streamed": "68% of streams in the United States",
+        "sound_recording_usd_12m": 322.0
+      },
+      {
+        "rel_id": "R-04",
+        "title": "Kettle Hill (Acoustic)",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62300104",
+        "released": "2023-05-19",
+        "writers_credited": "N. Harrowgate",
+        "where_streamed": "80% of streams in the United States",
+        "sound_recording_usd_12m": 188.55
+      },
+      {
+        "rel_id": "R-05",
+        "title": "Sparrow Season",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62200105",
+        "released": "2022-09-02",
+        "writers_credited": "N. Harrowgate; I. Valdor",
+        "where_streamed": "77% of streams in the United States",
+        "sound_recording_usd_12m": 255.9
+      },
+      {
+        "rel_id": "R-06",
+        "title": "Dust Roads",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62300106",
+        "released": "2023-10-06",
+        "writers_credited": "T. Gannet; R. Oakes",
+        "where_streamed": "69% of streams in the United States",
+        "sound_recording_usd_12m": 140.25
+      },
+      {
+        "rel_id": "R-07",
+        "title": "Copper Bridge",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62200107",
+        "released": "2022-06-17",
+        "writers_credited": "D. Lindqvist",
+        "where_streamed": "72% of streams in the United States",
+        "sound_recording_usd_12m": 233.4
+      },
+      {
+        "rel_id": "R-08",
+        "title": "Glasshouse",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62300108",
+        "released": "2023-02-24",
+        "writers_credited": "N. Harrowgate; D. Lindqvist",
+        "where_streamed": "75% of streams in the United States",
+        "sound_recording_usd_12m": 301.8
+      },
+      {
+        "rel_id": "R-09",
+        "title": "Ember Street",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62100109",
+        "released": "2021-09-10",
+        "writers_credited": "N. Harrowgate",
+        "where_streamed": "73% of streams in the United States",
+        "sound_recording_usd_12m": 288.0
+      },
+      {
+        "rel_id": "R-10",
+        "title": "Tide Tables",
+        "artist": "Nell Harrowgate",
+        "isrc": "QZHW62500111",
+        "released": "2025-04-18",
+        "writers_credited": "N. Harrowgate",
+        "where_streamed": "streams only in Germany (61%) and the United Kingdom (39%)",
+        "sound_recording_usd_12m": 96.4
+      }
+    ],
+    "pwork": [
+      {
+        "work_id": "W-1",
+        "title": "Harbor Lights",
+        "iswc": "T-9040182211",
+        "her_share_pct": 100,
+        "writer_ipi": "00528461907"
+      },
+      {
+        "work_id": "W-2",
+        "title": "Paper Kites",
+        "iswc": "T-9040182222",
+        "her_share_pct": 50,
+        "writer_ipi": "00528461907"
+      },
+      {
+        "work_id": "W-3",
+        "title": "Low Tide Radio",
+        "iswc": "T-9040182233",
+        "her_share_pct": 40,
+        "writer_ipi": "00528461907"
+      },
+      {
+        "work_id": "W-4",
+        "title": "Kettle Hill",
+        "iswc": "T-9040182244",
+        "her_share_pct": 100,
+        "writer_ipi": "00528461907"
+      },
+      {
+        "work_id": "W-5",
+        "title": "Sparrow Season",
+        "iswc": "T-9040182255",
+        "her_share_pct": 60,
+        "writer_ipi": "00528461907"
+      },
+      {
+        "work_id": "W-6",
+        "title": "Winter Orchard",
+        "iswc": "T-9040182266",
+        "her_share_pct": 70,
+        "writer_ipi": "00528461907"
+      },
+      {
+        "work_id": "W-7",
+        "title": "Glasshouse",
+        "iswc": "T-9040182277",
+        "her_share_pct": 50,
+        "writer_ipi": "00528461907"
+      },
+      {
+        "work_id": "W-8",
+        "title": "Ember Street",
+        "iswc": "T-9040182299",
+        "her_share_pct": 100,
+        "writer_ipi": "00528461907"
+      },
+      {
+        "work_id": "W-9",
+        "title": "Roadhouse Blue",
+        "iswc": "T-9040182288",
+        "her_share_pct": 100,
+        "writer_ipi": "00528461907"
+      },
+      {
+        "work_id": "W-10",
+        "title": "Tide Tables",
+        "iswc": "T-9040182300",
+        "her_share_pct": 100,
+        "writer_ipi": "00528461907"
+      }
+    ],
+    "stmts": [
+      {
+        "line_id": "S-1",
+        "period": "2026-Q2",
+        "title": "Harbor Lights",
+        "source": "US streaming performance",
+        "amount_usd": 61.2,
+        "status": "Paid to Nell"
+      },
+      {
+        "line_id": "S-2",
+        "period": "2026-Q2",
+        "title": "Roadhouse Blue",
+        "source": "US radio",
+        "amount_usd": 178.4,
+        "status": "Paid to Nell"
+      },
+      {
+        "line_id": "S-3",
+        "period": "2026-Q2",
+        "title": "Ember Street",
+        "source": "US radio",
+        "amount_usd": 44.1,
+        "status": "Paid to Nell"
+      },
+      {
+        "line_id": "S-4",
+        "period": "2026-Q2",
+        "title": "Low Tide Radio",
+        "source": "US live venues",
+        "amount_usd": 23.5,
+        "status": "Paid to Nell"
+      },
+      {
+        "line_id": "S-5",
+        "period": "2026-Q2",
+        "title": "Tide Tables",
+        "source": "German radio, through the German society",
+        "amount_usd": 52.3,
+        "status": "Paid to Nell"
+      },
+      {
+        "line_id": "S-6",
+        "period": "2026-Q2",
+        "title": "Paper Kites",
+        "source": "US streaming performance",
+        "amount_usd": 38.8,
+        "status": "Paid to Nell"
+      }
+    ],
+    "docs": [
+      {
+        "doc_id": "D-1",
+        "title": "Split sheet: Harbor Lights",
+        "text": "Split sheet signed 3 March 2020. Work: Harbor Lights. Writer: Nell Harrowgate (IPI 00528461907), 100 percent, self-administered. ISWC T-9040182211. Recording: Nell Harrowgate, ISRC QZHW62100101."
+      },
+      {
+        "doc_id": "D-2",
+        "title": "Split sheet: Paper Kites",
+        "text": "Split sheet signed 14 June 2020. Work: Paper Kites. Writers: Nell Harrowgate (IPI 00528461907) 50 percent and Dov Lindqvist (IPI 00611730458) 50 percent, both self-administered. ISWC T-9040182222. Recording: Nell Harrowgate, ISRC QZHW62100102."
+      },
+      {
+        "doc_id": "D-3",
+        "title": "Split sheet: Low Tide Radio",
+        "text": "Split sheet signed 2 April 2021. Work: Low Tide Radio. Writers: Nell Harrowgate (IPI 00528461907) 40 percent, Dov Lindqvist 30 percent and Tobias Renquist (IPI 00574410823) 30 percent, all self-administered. ISWC T-9040182233. Recording: Nell Harrowgate, ISRC QZHW62200103."
+      },
+      {
+        "doc_id": "D-4",
+        "title": "Split sheet: Kettle Hill",
+        "text": "Split sheet signed 19 August 2022. Work: Kettle Hill. Writer: Nell Harrowgate (IPI 00528461907), 100 percent, self-administered. ISWC T-9040182244. Recording released: Kettle Hill (Acoustic), Nell Harrowgate, ISRC QZHW62300104."
+      },
+      {
+        "doc_id": "D-5",
+        "title": "Split sheet: Sparrow Season",
+        "text": "Split sheet signed 30 November 2021. Work: Sparrow Season. Writers: Nell Harrowgate (IPI 00528461907) 60 percent, self-administered, and Ines Valdor (IPI 00549027716) 40 percent, administered by Hollin Court Music since 1 February 2022. ISWC T-9040182255. Recording: Nell Harrowgate, ISRC QZHW62200105."
+      },
+      {
+        "doc_id": "D-6",
+        "title": "Split sheet: Winter Orchard",
+        "text": "Split sheet signed 12 September 2023. Work: Winter Orchard. Writers: Nell Harrowgate (IPI 00528461907) 70 percent and Tobias Renquist 30 percent, both self-administered. ISWC T-9040182266. Recorded and released by the band Pelham Row, with the writers' permission, on their EP Quarry Lights, ISRC QZPR42400221."
+      },
+      {
+        "doc_id": "D-7",
+        "title": "Split sheet: Glasshouse",
+        "text": "Split sheet signed 5 May 2022. Work: Glasshouse. Writers: Nell Harrowgate 50 percent and Dov Lindqvist 50 percent. Addendum, 1 July 2023: Nell's 50 percent is administered by Hollin Court Music, which registers and collects it; Dov's is self-administered. ISWC T-9040182277. Recording: Nell Harrowgate, ISRC QZHW62300108."
+      },
+      {
+        "doc_id": "D-8",
+        "title": "Credits: Copper Bridge",
+        "text": "Credits note, 10 January 2022. Work: Copper Bridge. Writer: Dov Lindqvist, 100 percent. Nell Harrowgate sang and produced the recording, ISRC QZHW62200107; she has no share in the writing."
+      },
+      {
+        "doc_id": "D-9",
+        "title": "Split sheet: Ember Street",
+        "text": "Split sheet signed 2 September 2020. Work: Ember Street. Writer: Nell Harrowgate (IPI 00528461907), 100 percent, self-administered. ISWC T-9040182299. Recording: Nell Harrowgate, ISRC QZHW62100109."
+      },
+      {
+        "doc_id": "D-10",
+        "title": "Split sheet: Roadhouse Blue",
+        "text": "Split sheet signed 11 April 2019. Work: Roadhouse Blue. Writer: Nell Harrowgate (IPI 00528461907), 100 percent, self-administered. ISWC T-9040182288. Released in 2019 as a radio single only, ISRC QZHW61900110; it was never released digitally."
+      },
+      {
+        "doc_id": "D-11",
+        "title": "Split sheet: Tide Tables",
+        "text": "Split sheet signed 8 October 2024. Work: Tide Tables. Writer: Nell Harrowgate (IPI 00528461907), 100 percent, self-administered. ISWC T-9040182300. Recording: Nell Harrowgate, ISRC QZHW62500111."
+      }
+    ]
+  }
+}

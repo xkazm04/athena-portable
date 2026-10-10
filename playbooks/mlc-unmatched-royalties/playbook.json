@@ -1,0 +1,104 @@
+{
+  "id": "mlc-unmatched-royalties",
+  "title": "A songwriter's six songs registered with the collective so that their unmatched mechanical royalties reach her, each at her own share, while a namesake's recording, her cover of another's song, a work already matched, a share a publisher administers, a co-writer's song and money from radio and Germany are left alone",
+  "domain": "Music & creative",
+  "audience": "work",
+  "promise": "A songwriter's catalogue is read across the collective's list of unmatched recordings, her distributor, her performing-rights desk and her split sheets, and six songs are registered so that the royalties held for them can be matched and paid: each at the share she owns, with its recording code, her writer number and its work number. A recording with the same title as hers but another composition, her own recording of a song others wrote, a work already registered and matched, a share her publisher administers, her co-writer's song, a radio performance royalty and a song streamed only in Germany and the United Kingdom are left alone.",
+  "persona": "A singer-songwriter in Asheville, North Carolina, who releases her own records, writes with two co-writers and has never looked at what the collective is holding for her",
+  "chore": "Read the collective's unmatched list and rules, the distributor's catalogue, the performing-rights desk's works and statement, and the split sheets. Then apply 17 U.S.C. 115(d) as it stands on 9 October 2026: register each work whose recording is in the unmatched list, at the share the writer owns, matched by the recording's ISRC and never by its title, and nothing the collective does not hold.",
+  "command": "I'm Nell Harrowgate. Royaltyline says it is holding royalties it can't match to my songs. Go through Royaltyline, my Releasewick catalogue, my Lyrebank rights desk and my Binderwell split sheets, and register the songs that are mine and waiting there, at my own share. Leave alone what isn't mine or isn't there.",
+  "apps": [
+    {
+      "name": "Royaltyline",
+      "role": "the unmatched recordings with their accrued royalties, the works already registered, the hub's rules and the registration form",
+      "api": "Member hub, no API",
+      "url": ""
+    },
+    {
+      "name": "Releasewick distributor",
+      "role": "each release with its recording code, the writers credited, where it streams and its sound-recording income",
+      "api": "Distributor dashboard, no API",
+      "url": ""
+    },
+    {
+      "name": "Lyrebank rights desk",
+      "role": "the works registered for performance royalties with their work numbers and shares, and the latest performance statement",
+      "api": "Rights desk, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the split sheets and credits notes: each work's writers, shares, publisher or administrator, and recordings",
+      "api": "Document store, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules, the unmatched recordings and the registered works at Royaltyline.",
+    "Reads every release and its recording code at Releasewick.",
+    "Reads the works and the statement at Lyrebank.",
+    "Reads the split sheets in Binderwell.",
+    "Back at Royaltyline, registers the six works at her own shares."
+  ],
+  "gates": [
+    {
+      "action": "register_work",
+      "label": "Register a work with the collective",
+      "why": "A signed registration that tells the collective who owns a share of a song; a wrong share or a song that is not hers is a false claim on money other writers are owed."
+    }
+  ],
+  "traps": [
+    "Matching an unmatched recording by its title when it is another composition.",
+    "Registering her own recording of a song someone else wrote.",
+    "Registering a work that is already registered and matched.",
+    "Registering a share a publisher administers.",
+    "Registering a co-writer's song, or a co-writer's share.",
+    "Chasing a performance royalty through the collective.",
+    "Registering a song streamed only outside the United States."
+  ],
+  "memory": [
+    "Which recordings are unmatched, with their codes and accrued money, from Royaltyline.",
+    "Which recordings are hers, who is credited as writer and where each streams, from Releasewick.",
+    "Each work's writers, shares and administrator, and her writer number, from Lyrebank and Binderwell, carried back to the last Royaltyline tab."
+  ],
+  "economics": {
+    "value_usd": 1500,
+    "per": "year",
+    "basis": "An estimate. An independent songwriter with a few years of streaming has royalties held as unmatched whenever a recording reaches a digital service before its song is registered with the collective, which holds them for at least three years and then distributes what is still unmatched by market share to publishers and self-administered writers (17 U.S.C. 115(d)(3)(H) and (J)); the roster's $1,500 a year is a small catalogue's yearly share of that. The bench world holds $1,338.95 of her own share across six works (520.40, 122.40, 120.60, 156.00, 130.80 and 288.75), out of $2,427.40 accrued in the unmatched list, and the rest is other writers', publishers' or no one's to claim. Times a year: twice, a review of the unmatched list after each half-year's releases. manual_minutes 150: reading eleven unmatched recordings against ten releases, ten works and eleven split sheets, matching by code and not by title, working out each share, and filling six registrations. Rules applied, as they stand on Friday 9 October 2026: 17 U.S.C. 115(d)(1) (the blanket licence, digital uses in the United States), 115(d)(3)(E) (the musical works database: title, owner and ownership percentage), 115(d)(3)(H) and (J) (held at least three years, then distributed by market share), and the collective's own published help (a work registration needs only a title and one writer; shares total 100 percent; publishers and administrators register the shares they administer, self-administered writers their own). The collective announced on 30 September 2026 that its first market-share distribution is in April 2027 and starts with the usage of January 2021; the world states this on its rules page. The collective charges nothing to join or to register a work, and takes no commission on royalties.",
+    "manual_minutes": 150,
+    "times_per_year": 2,
+    "incumbent": "A publishing administrator that registers a songwriter's works with the collective takes a share of what it collects: one published price is 20 percent of non-performance (worldwide mechanical) royalties, with a one-time fee of $100 a writer. Registering directly with the collective is free and takes no commission, but the writer matches recordings to songs by hand.",
+    "incumbent_fee_pct": 20,
+    "sources": [
+      {
+        "label": "17 U.S.C. 115(d), the blanket licence, the musical works database, and the holding and distribution of unclaimed accrued royalties (Cornell LII)",
+        "url": "https://www.law.cornell.edu/uscode/text/17/115"
+      },
+      {
+        "label": "The MLC, 30 September 2026: first market-share distribution in April 2027, starting with January 2021 usage",
+        "url": "https://www.themlc.com/news/the-mlc-holds-annual-membership-meeting-highlights-more-than-4.2-billion-in-total-royalties-distributed-and-announces-date-of-first-monthly-market-share-distribution"
+      },
+      {
+        "label": "The MLC Help Center: how to register works (title and one writer required; shares total 100 percent; publishers and self-administered writers register their own)",
+        "url": "https://help.themlc.com/en/support/how-to-register-works-in-the-mlc-portal"
+      },
+      {
+        "label": "A publishing administrator's published price: $100 a writer and 20 percent of non-performance royalties (Songtrust help center)",
+        "url": "https://help.songtrust.com/knowledge/how-much-does-songtrust-cost"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Eleven unmatched recordings, two of them sharing a title with her songs, and the match is by a recording code that sits in three other places. Each work has its own split: a co-writer's share is not hers, a publisher administers one share, one song is her cover of another's, and money that looks unclaimed is a radio royalty or streams from abroad that the collective never holds.",
+    "usefulness_why": "Gets a few hundred dollars of her own share out of a three-year hold before the first market-share distribution shares the oldest of it out to publishers; a twice-a-year chore for a small catalogue, and the money is modest."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful songwriter with the unmatched list, the catalogue, the rights desk and the split sheets registers the six songs at her own shares, matched by code, and none of the eight traps, inside an hour."
+  },
+  "caveat": "Nell Harrowgate, Dov Lindqvist, Tobias Renquist, Ines Valdor, Hollin Court Music, Pelham Row, Ashbourne Weatherbirds, Fenwick & Sloe, every song, recording code, writer number, work number, split sheet, statement and dollar amount, and Royaltyline, Releasewick, Lyrebank and Binderwell are invented; Royaltyline's rules page is the world's summary of the public rules, and its list is not any real collective's. The public rules applied are 17 U.S.C. 115(d) as in force on 9 October 2026 (the blanket licence for digital uses in the United States; unclaimed accrued royalties held at least three years, then distributed by market share) and the collective's published registration help; the April 2027 date is the collective's announcement of 30 September 2026. Performance royalties and sound-recording money are not the collective's and the world does not claim them from it. What a real work registration needs, and how real matching works, is decided by the collective's own current rules and its staff. This applies stated rules to stated facts; it is not legal advice."
+}

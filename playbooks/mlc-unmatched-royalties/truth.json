@@ -1,0 +1,64 @@
+{
+  "targets": [
+    {
+      "tool": "register_work",
+      "key": "isrc",
+      "eligible": {
+        "QZHW62100101": {
+          "value_usd": 520.4,
+          "why": "UM-01 Harbor Lights, her own recording (ISRC QZHW62100101, R-01, split sheet D-1): she wrote it alone and self-administers, so she registers 100 percent. Accrued 520.40 dollars, first usage January 2021, so it is among the usage the April 2027 distribution starts with.",
+          "expect": {
+            "share_pct": 100
+          }
+        },
+        "QZHW62100102": {
+          "value_usd": 122.4,
+          "why": "UM-03 Paper Kites, her recording (QZHW62100102, D-2): she and Dov Lindqvist wrote it 50/50, both self-administered; she registers her 50 percent only. Accrued 244.80 dollars, her share 122.40",
+          "expect": {
+            "share_pct": 50
+          }
+        },
+        "QZHW62200103": {
+          "value_usd": 120.6,
+          "why": "UM-05 Low Tide Radio (QZHW62200103, D-3): three writers, Nell 40, Dov 30 and Tobias 30, all self-administered; she registers 40 percent. Accrued 301.50 dollars, her share 120.60",
+          "expect": {
+            "share_pct": 40
+          }
+        },
+        "QZHW62300104": {
+          "value_usd": 156.0,
+          "why": "UM-06 Kettle Hill (Acoustic) (QZHW62300104, D-4): the work Kettle Hill is hers alone, so 100 percent, matched by the recording's ISRC under the recording's title. Accrued 156.00 dollars",
+          "expect": {
+            "share_pct": 100
+          }
+        },
+        "QZHW62200105": {
+          "value_usd": 130.8,
+          "why": "UM-07 Sparrow Season (QZHW62200105, D-5): she owns 60 percent, self-administered; Ines Valdor's 40 percent is administered by Hollin Court Music, which registers it. Accrued 218.00 dollars, her share 130.80",
+          "expect": {
+            "share_pct": 60
+          }
+        },
+        "QZPR42400221": {
+          "value_usd": 288.75,
+          "why": "UM-08 Winter Orchard, recorded by Pelham Row (QZPR42400221, D-6): the band recorded her song with the writers' permission; she owns 70 percent, Tobias Renquist 30 percent, both self-administered. Accrued 412.50 dollars, her share 288.75",
+          "expect": {
+            "share_pct": 70
+          }
+        }
+      },
+      "traps": {
+        "QZAW72200314": "UM-02 Harbor Lights by Ashbourne Weatherbirds: the same title as her song but a different composition; her Harbor Lights is the recording with ISRC QZHW62100101 (D-1). Matching by title would claim someone else's royalties",
+        "QZFS32000877": "UM-04 Paper Kites by Fenwick & Sloe: the same title as her song, a different composition and a different recording; her Paper Kites is QZHW62100102 (D-2)",
+        "QZHW62300106": "UM-09 Dust Roads: her own recording of a song T. Gannet and R. Oakes wrote (R-06 credits them); she has no writing share to register",
+        "QZHW62200107": "UM-10 Copper Bridge: Dov Lindqvist wrote it alone; Nell sang and produced the recording and has no share in the writing (D-8); registering it would claim a co-writer's money",
+        "QZHW62300108": "UM-11 Glasshouse: her 50 percent has been administered by Hollin Court Music since 1 July 2023 (D-7), and the publisher registers and collects it; she does not register it herself",
+        "QZHW62100109": "Ember Street (QZHW62100109): already registered on 11 March 2024 and matched (WK-1); it is not in the unmatched list and nothing is waiting",
+        "QZHW61900110": "Roadhouse Blue (QZHW61900110): a 2019 radio single never released digitally; the 178.40 dollars on her rights-desk statement (S-2) is a performance royalty paid through her performing rights organisation, and the collective holds nothing for it",
+        "QZHW62500111": "Tide Tables (QZHW62500111): streamed only in Germany and the United Kingdom (R-10); the blanket licence covers United States uses only, so nothing is held for it"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

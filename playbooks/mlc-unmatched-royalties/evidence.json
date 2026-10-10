@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "mlc-unmatched-royalties",
+  "captured_at": "2026-10-10T17:39:19Z",
+  "bench_run_at": "2026-10-10T17:36:36Z",
+  "narration": {
+    "text": "A songwriter's six songs registered with the collective so that their unmatched mechanical royalties reach her, each at her own share, while a namesake's recording, her cover of another's song, a work already matched, a share a publisher administers, a co-writer's song and money from radio and Germany are left alone. This is a chore for a singer-songwriter in Asheville, North Carolina, who releases her own records, writes with two co-writers and has never looked at what the collective is holding for her. On the bench, she found 6 of 6 eligible items, worth 1,338 dollars and 95 cents of the 1,338 dollars and 95 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 71 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 61.766,
+    "sha256": "fc454122812a9ea2cafee033e99aaa4208ce392adfed8d8d48848346e3041a4b"
+  },
+  "video": {
+    "path": "evidence/mlc-unmatched-royalties/evidence.mp4",
+    "duration_s": 61.766,
+    "bytes": 2994485,
+    "sha256": "af6491bbf8c06a951f009c7496e77f05a277ffa20c35ee6b300440d23de79c02"
+  },
+  "thumbnail": {
+    "path": "playbooks/mlc-unmatched-royalties/thumb.jpg",
+    "bytes": 78200,
+    "sha256": "8dad9711f882c8e0f9886216d032b685afaa466d9e4263c548a45159e425dfb8"
+  }
+}
