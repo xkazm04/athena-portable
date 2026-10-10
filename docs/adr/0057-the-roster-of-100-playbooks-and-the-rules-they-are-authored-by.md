@@ -191,6 +191,11 @@ names; each playbook carries the new one.
 - Row 55, `merchant-fee-audit`: "Docshelf" became "Binderwell", because DocShelf is a real document
   management app; and "Ledgerline bank" became "Ledgerwren bank", because Ledgerline is the name of
   several real accounting and invoicing products.
+- Row 56, `counterfeit-takedowns`: "Marketora" became "Stallwick seller", because Marketora is the name of
+  several real businesses (a marketing agency, a product-review site); "Bazaarly" became "Hawkerbrook
+  seller", because Bazaarly is a real online-shop name; "Brandledger" became "Brandwick registry",
+  because BrandLedger is a real app for brand deals and invoices; and "Docshelf" became "Binderwell",
+  because DocShelf is a real document management app.
 
 ### B7: Household money
 

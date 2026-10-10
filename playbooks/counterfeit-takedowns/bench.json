@@ -1,0 +1,373 @@
+{
+  "playbook": "counterfeit-takedowns",
+  "run_at": "2026-10-10T16:17:34Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 102.1,
+  "turns": 12,
+  "nudges": 0,
+  "follow_ups": 1,
+  "reads": 41,
+  "cost_usd": 1.3511,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.7
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 11030.0,
+    "value_found_usd": 11030.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 14,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "file_copyright_notice",
+        "key": "S-302",
+        "why": "Hollin & Pike Home is an authorised retailer with a licence for P-01 to P-06 on Stallwick through 31 December 2026 (D-2): the photograph is used under licence",
+        "filed": false
+      },
+      {
+        "action": "file_copyright_notice",
+        "key": "S-303",
+        "why": "Dunmore Resale resells genuine towels it bought from the brand (D-4) with its own photographs: 17 U.S.C. 109(a) lets the owner of a lawfully made copy sell it, and nothing of the brand's photographs is copied",
+        "filed": false
+      },
+      {
+        "action": "file_copyright_notice",
+        "key": "S-304",
+        "why": "The photos are the seller's own and show a different towel; no work of the brand's is copied, and \"Marrowby-style\" in a title does not make a copyright claim",
+        "filed": false
+      },
+      {
+        "action": "file_copyright_notice",
+        "key": "S-305",
+        "why": "The listing was removed on 2 October 2026 by the seller; there is nothing left to take down",
+        "filed": false
+      },
+      {
+        "action": "file_copyright_notice",
+        "key": "S-306",
+        "why": "The photographs are the seller's own and copy nothing; the claim is counterfeit goods, which goes through Stallwick's trademark form, not a copyright notice",
+        "filed": false
+      },
+      {
+        "action": "file_copyright_notice",
+        "key": "PM-77",
+        "why": "A listing on Peddlemoor, a marketplace the brand has no account on and this assistant has no portal for; it cannot be filed on Stallwick or Hawkerbrook",
+        "filed": false
+      },
+      {
+        "action": "file_trademark_complaint",
+        "key": "S-301",
+        "why": "Unbranded towels with a copied photograph: no mark is on the goods, so the claim is a copyright notice, not a trademark complaint",
+        "filed": false
+      },
+      {
+        "action": "file_trademark_complaint",
+        "key": "S-302",
+        "why": "Genuine goods from an authorised retailer: not counterfeit",
+        "filed": false
+      },
+      {
+        "action": "file_trademark_complaint",
+        "key": "S-303",
+        "why": "Genuine goods the brand sold (D-4): a trademark complaint against them would be false",
+        "filed": false
+      },
+      {
+        "action": "file_trademark_complaint",
+        "key": "S-304",
+        "why": "The goods carry Quillfeather's own label; \"Marrowby-style\" in the title is a name only, and Stallwick's trademark form says a listing that only names the brand is not a trademark complaint",
+        "filed": false
+      },
+      {
+        "action": "file_trademark_complaint",
+        "key": "S-305",
+        "why": "Already removed on 2 October 2026",
+        "filed": false
+      },
+      {
+        "action": "file_trademark_complaint",
+        "key": "S-307",
+        "why": "Genuine Marrowby towels from a retailer whose photo licence ended; the goods are not counterfeit, the photograph is the issue",
+        "filed": false
+      },
+      {
+        "action": "file_ip_complaint",
+        "key": "H-404",
+        "why": "A title that says \"like Marrowby\" on the seller's own towels with its own label and photos: a name only, neither a copied photograph nor a counterfeit",
+        "filed": false
+      },
+      {
+        "action": "file_ip_complaint",
+        "key": "H-405",
+        "why": "The photograph is P-07, a customer's kitchen photo that the brand only reposted; the brand has no assignment of it (D-1 covers P-01 to P-06), so the record cannot tie the listing to a work the brand owns",
+        "filed": false
+      }
+    ],
+    "filed_usd": 11030.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "file_copyright_notice",
+      "key": "S-301",
+      "outcome": "correct",
+      "value_usd": 2340.0,
+      "exact": true,
+      "why": "The listing's main photo is the brand's P-03 (the pine table, the window shadow, the Marrowby Studio 2024 stamp), the brand owns it by assignment (D-1), the seller is not authorised and holds no licence. Copied photograph: a 512(c)(3)(A) notice naming P-03. Sales stopped, 2,340 dollars"
+    },
+    {
+      "action": "file_copyright_notice",
+      "key": "S-307",
+      "outcome": "correct",
+      "value_usd": 1180.0,
+      "exact": true,
+      "why": "Cobblegate Gifts' licence for P-01 to P-06 ended on 30 June 2026 and was not renewed (D-3, told on 14 July); the listing was created on 12 July 2026 with P-03 and the stamp. It is a copy without a licence in force. Sales stopped, 1,180 dollars"
+    },
+    {
+      "action": "file_trademark_complaint",
+      "key": "S-306",
+      "outcome": "correct",
+      "value_usd": 1620.0,
+      "exact": true,
+      "why": "Counterfeit aprons carrying the MARROWBY label, proved by test purchase TP-1 (D-5, Stallwick order SO-8812); the brand holds registration 6215884 (TM-1) and Stallwick's trademark form asks for exactly the registration number and the test purchase. Sales stopped, 1,620 dollars"
+    },
+    {
+      "action": "file_ip_complaint",
+      "key": "H-402",
+      "outcome": "correct",
+      "value_usd": 3050.0,
+      "exact": true,
+      "why": "The main photo is the brand's P-03 with the Marrowby Studio 2024 stamp; the seller is unlicensed. Type copyright. Sales stopped, 3,050 dollars"
+    },
+    {
+      "action": "file_ip_complaint",
+      "key": "H-403",
+      "outcome": "correct",
+      "value_usd": 880.0,
+      "exact": true,
+      "why": "Counterfeit aprons with the MARROWBY label proved by test purchase TP-2 (D-6, Hawkerbrook order HB-5530); registration 6215884. The photos are the seller's own, so the type is trademark. Sales stopped, 880 dollars"
+    },
+    {
+      "action": "file_ip_complaint",
+      "key": "H-401",
+      "outcome": "correct",
+      "value_usd": 1960.0,
+      "exact": true,
+      "why": "The main photo is the brand's P-05 (two aprons, navy and oat, flour dusting), owned by assignment (D-1); the seller is unlicensed and the goods unbranded. Type copyright. Sales stopped, 1,960 dollars"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Nothing more to do in Stallwick: all three of its filings are already waiting on your answer. I haven't re-filed them, because a card runs only after you answer it.\n\n**Stallwick cards**\n- **apr_30e5a28b5ded:** copyright notice on S-301 (Cedarpine Gifts), photo P-03, $2,340.\n- **apr_23a685dc6825:** copyright notice on S-307 (Cobblegate Gifts), photo P-03, $1,180. Cobblegate's licence ended 30 June 2026.\n- **apr_3f9c85ef79e9:** trademark complaint on S-306 (Plumhurst Imports), registration 6215884, test purchase TP-1 (order SO-8812), $1,620.\n\n**Hawkerbrook cards (also waiting)**\n- **apr_eb095869f1cc:** H-402, photo P-03.\n- **apr_72ae69855283:** H-403, trademark, test purchase TP-2.\n- **apr_3b775927b47b:** H-401, photo P-05.\n\nStallwick will remove the listings two business days after a copyright notice is accepted.\n\nI'm leaving these alone, as you asked:\n- S-302 and S-304\n- S-303 and S-305\n",
+  "trace": [
+    {
+      "portal": "Brandwick registry",
+      "user": "I'm Ines, Marrowby Linen. First, in Brandwick, read our photographs, the sellers we have authorised, our sightings of suspect listings and our trademark registration. Don't file anything yet: I'll send you to our papers and the marketplaces",
+      "continued": false,
+      "said": "Reading all four Brandwick sources now. I'm filing nothing.",
+      "said_chars": 59,
+      "reads": [
+        "list_works",
+        "list_authorised_sellers",
+        "list_sightings",
+        "read_mark"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Brandwick registry",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of the sightings shows 7 of 13. I'm fetching page 2 and reading each photograph in full, because the filings will need first-publication dates and ownership.",
+      "said_chars": 164,
+      "reads": [
+        "list_sightings",
+        "read_work",
+        "read_work",
+        "read_work",
+        "read_work",
+        "read_work",
+        "read_work",
+        "read_work"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Brandwick registry",
+      "user": "",
+      "continued": true,
+      "said": "Brandwick is fully read and I've filed nothing. It covers all 7 photographs, 3 sellers, 13 sightings (7 + 6) and the trademark.\n\n**Photographs**\n- P-01 to P-06 are Marrowby's, assigned in Binderwell D-1. P-01 to P-03 were first published 2024-03-04, and P-04 to P-06 on 2024-09-12.\n- P-07 is a customer's photograph and isn't Marrowby's. It supports no copyright claim.\n\n**Trademark**\n- MARROWBY, registration 6215884, class 24 (tea towels, aprons).",
+      "said_chars": 1762,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "This is where we keep our legal papers. Read every document: who owns the photographs, who we have licensed, who we sold to, and our test purchases.",
+      "continued": false,
+      "said": "Reading every Binderwell document now. I'm filing nothing.",
+      "said_chars": 58,
+      "reads": [
+        "list_documents"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Six documents are listed. I'm reading all of them now, and I'm still filing nothing.",
+      "said_chars": 84,
+      "reads": [
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "All six Binderwell documents are read, and I've filed nothing.\n\n**Ownership**\n- D-1: Ines Calloway assigned the copyright in P-01 to P-06 to Marrowby Linen LLC on 2 March 2024. P-07 is not covered.\n\n**Licences and sales**\n- D-2: Hollin & Pike Home may use P-01 to P-06 on Stallwick from 1 January to 31 December 2026. This licence is current, so leave it alone.\n- D-3: Cobblegate Gifts' licence ran from 1 July 2025 to 30 June 2026. It was not renewed, and Cobblegate was told on 14 July 2026 that it had ended.",
+      "said_chars": 2134,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Stallwick seller",
+      "user": "This is Stallwick. Read its complaint policy and every listing. Then file what Stallwick's rules and our papers support, on the right form, and no more.",
+      "continued": false,
+      "said": "I'll read Stallwick's policy and listing pages first. Nothing gets filed until I've read them.",
+      "said_chars": 94,
+      "reads": [
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "list_listings",
+        "list_listings"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Stallwick seller",
+      "user": "",
+      "continued": true,
+      "said": "Both listing pages are read: 7 listings in all. Next I'll read each live listing in full for its photos, goods and 90-day sales. S-305 was removed by the seller on 2 October, so I'm skipping it.",
+      "said_chars": 194,
+      "reads": [
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Stallwick seller",
+      "user": "",
+      "continued": true,
+      "said": "I'll file three Stallwick filings: copyright notices on S-301 and S-307, and a trademark complaint on S-306. The other four listings stay untouched.\n\n- **S-301, Cedarpine Gifts:** the main photo is Marrowby's P-03, stamped \"Marrowby Studio 2024\". The seller holds no licence, and its towels are unbranded, so this is a copied photo and not a trademark case. 90-day sales: $2,340.\n- **S-307, Cobblegate Gifts:** the same photo.",
+      "said_chars": 1242,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_copyright_notice",
+          "key": "S-301",
+          "outcome": "correct",
+          "value_usd": 2340.0
+        },
+        {
+          "action": "file_copyright_notice",
+          "key": "S-307",
+          "outcome": "correct",
+          "value_usd": 1180.0
+        },
+        {
+          "action": "file_trademark_complaint",
+          "key": "S-306",
+          "outcome": "correct",
+          "value_usd": 1620.0
+        }
+      ]
+    },
+    {
+      "portal": "Hawkerbrook seller",
+      "user": "This is Hawkerbrook. Read its complaint policy and every listing. Then file what its rules and our papers support, with the right type, and no more. Afterwards tell me what you filed on each marketplace, the sales it stops, and what you lef",
+      "continued": false,
+      "said": "I'll read Hawkerbrook's policy and listings, and recall what Brandwick and Binderwell showed. I'm filing nothing yet.\n\nPolicy and listing-page answers haven't arrived yet. In the meantime I'll read the five Hawkerbrook listings that Brandwick flagged.",
+      "said_chars": 251,
+      "reads": [
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "list_listings",
+        "list_listings",
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing",
+        "read_listing"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hawkerbrook seller",
+      "user": "",
+      "continued": true,
+      "said": "Two Hawkerbrook filings are supported so far, and I'm filing them now. H-401 needs P-05 read first, because its photo doesn't carry the studio stamp.\n\n- **H-402, Nettlefold Co:** copyright. The photo matches P-03 (pine table, window shadow lower left, \"Marrowby Studio 2024\" stamp), first published 2024-03-04 and assigned to Marrowby in D-1. The seller has no licence. 90-day sales: $3,050.\n- **H-403, Tilbury Direct:** trademark.",
+      "said_chars": 3012,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_ip_complaint",
+          "key": "H-402",
+          "outcome": "correct",
+          "value_usd": 3050.0
+        },
+        {
+          "action": "file_ip_complaint",
+          "key": "H-403",
+          "outcome": "correct",
+          "value_usd": 880.0
+        },
+        {
+          "action": "file_ip_complaint",
+          "key": "H-401",
+          "outcome": "correct",
+          "value_usd": 1960.0
+        }
+      ]
+    },
+    {
+      "portal": "Stallwick seller",
+      "user": "I've switched to Stallwick seller as you asked. Go ahead.",
+      "continued": false,
+      "said": "Nothing more to do in Stallwick: all three of its filings are already waiting on your answer. I haven't re-filed them, because a card runs only after you answer it.\n\n**Stallwick cards**\n- **apr_30e5a28b5ded:** copyright notice on S-301 (Cedarpine Gifts), photo P-03, $2,340.\n- **apr_23a685dc6825:** copyright notice on S-307 (Cobblegate Gifts), photo P-03, $1,180. Cobblegate's licence ended 30 June 2026.",
+      "said_chars": 1016,
+      "reads": [],
+      "cards": []
+    }
+  ]
+}

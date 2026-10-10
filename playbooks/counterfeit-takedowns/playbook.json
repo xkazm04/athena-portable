@@ -1,0 +1,108 @@
+{
+  "id": "counterfeit-takedowns",
+  "title": "A linen brand's suspect listings sorted on two marketplaces, copied photographs taken down with copyright notices on four listings, counterfeit aprons on two with trademark complaints that carry a test purchase, while an authorised retailer, a reseller of genuine goods with its own photographs, a name-only title, a customer's photograph, a listing already removed and a listing on neither marketplace are left alone",
+  "domain": "E-commerce",
+  "audience": "work",
+  "promise": "A small linen brand's thirteen sightings of suspect listings are checked against its registry of photographs, its licences, its wholesale invoices and its test purchases. Four listings that copy the brand's photographs, one with a licence that ended in June, get a copyright notice naming the work and the sales it stops. Two counterfeit aprons get a trademark complaint with the registration number and the test purchase, on each marketplace's own form. An authorised retailer, a reseller of genuine towels with its own photographs, titles that only name the brand, a customer's photograph the brand does not own, a listing already removed and one on a marketplace the brand has no portal for are left alone.",
+  "persona": "The owner of a small linen goods brand in Maine, who sells on her own site and finds copies of her photographs on other sellers' listings",
+  "chore": "Read the brand's registry of photographs, authorised sellers, sightings and trademark registration, the legal papers (assignment, licences, wholesale invoice, test purchases) and each marketplace's IP policy and listings. Then apply 17 U.S.C. 512(c)(3)(A) and (f) and 109(a), and each marketplace's own policy, as they stand on 9 October 2026: file a copyright notice where a listing copies a photograph the brand owns without a licence in force, a trademark complaint where goods are counterfeit and proved, and nothing else.",
+  "command": "I'm Ines, Marrowby Linen. Go through our sightings in Brandwick, our papers in Binderwell and the listings on Stallwick and Hawkerbrook, and file the takedowns that our photographs and our trademark support, on the right form with the proof it asks for. Leave the rest alone.",
+  "apps": [
+    {
+      "name": "Brandwick registry",
+      "role": "the brand's photographs, authorised sellers, sightings of suspect listings and trademark registration",
+      "api": "Registry, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the assignment of the photographs, licences, wholesale invoice and test purchase reports",
+      "api": "Document store, no API",
+      "url": ""
+    },
+    {
+      "name": "Stallwick seller",
+      "role": "its IP complaint policy, the listings, and its copyright and trademark forms",
+      "api": "Seller portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Hawkerbrook seller",
+      "role": "its IP complaint policy, the listings, and its single IP complaint form",
+      "api": "Seller portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the photographs, authorised sellers, sightings and registration in Brandwick.",
+    "Reads the assignment, licences, invoice and test purchases in Binderwell.",
+    "Reads Stallwick's policy and listings and files the copyright notices and the trademark complaint it supports.",
+    "Reads Hawkerbrook's policy and listings and files its two copyright complaints and one trademark complaint."
+  ],
+  "gates": [
+    {
+      "action": "file_copyright_notice",
+      "label": "File a copyright notice with Stallwick",
+      "why": "A sworn statement, under penalty of perjury, that the listing copies the brand's photograph; a knowingly false one is actionable under 17 U.S.C. 512(f), and it takes a seller's listing down."
+    },
+    {
+      "action": "file_trademark_complaint",
+      "label": "File a trademark complaint with Stallwick",
+      "why": "A statement to a marketplace that goods are counterfeit and the brand's mark is registered; it takes a seller's listing down and the owner signs it."
+    },
+    {
+      "action": "file_ip_complaint",
+      "label": "File an IP complaint with Hawkerbrook",
+      "why": "A sworn copyright or trademark complaint to a marketplace; it takes a seller's listing down and the owner signs it."
+    }
+  ],
+  "traps": [
+    "Filing a copyright notice against an authorised retailer using the brand's photographs under a licence in force.",
+    "Filing against a reseller of genuine goods that uses its own photographs.",
+    "Filing a notice or complaint on a title that only names the brand.",
+    "Filing a copyright notice for a photograph the brand does not own.",
+    "Filing against a listing that has already been removed.",
+    "Filing a trademark complaint with no counterfeit proof, or a copyright notice for counterfeit goods with original photographs.",
+    "Trying to file on a marketplace the brand has no portal for."
+  ],
+  "memory": [
+    "Which photographs the brand owns, who is licensed until when, and who bought genuine goods, from Brandwick and Binderwell.",
+    "Each marketplace's policy and form, from its own portal.",
+    "Each listing's photographs, goods and sales, carried back to the marketplace's last tab."
+  ],
+  "economics": {
+    "value_usd": 10000,
+    "per": "year",
+    "basis": "An estimate. A small brand whose photographs and name are copied sees its sales drift to copies: the roster's $10,000 a year is the sales a small brand's takedowns stop on copying listings, and mostly the minutes they save. The bench world holds $11,030: the last 90 days of sales on six listings (2,340, 1,180, 1,620, 1,960, 3,050 and 880), counted at a listing's sales, not at the brand's lost margin. Times a year: four, a quarterly sweep of sightings. manual_minutes 150: reading thirteen sightings against the registry, the licences and the invoice, reading two marketplaces' policies and twelve listings, and filling six forms with the proof each asks for. Rules applied, as they stand on Friday 9 October 2026: 17 U.S.C. 512(c)(3)(A) (the elements of a notification: a signature, the work, the material and where it is, contact details, a good-faith statement and a statement under penalty of perjury of accuracy and authority), 512(f) (liability for knowingly materially misrepresenting infringement), and 109(a) (the owner of a lawfully made copy may sell it). A notice about copied photographs is a copyright matter; a complaint on the brand's name goes through the marketplace's own trademark policy. Each marketplace's policy, forms and removal time are the invented marketplace's own.",
+    "manual_minutes": 150,
+    "times_per_year": 4,
+    "incumbent": "Brand-protection services exist, but their published prices were not found for a share-of-recovery figure that can be cited, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "17 U.S.C. 512(c)(3) and (f), notification of claimed infringement and misrepresentation (U.S. Code)",
+        "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title17-section512&num=0&edition=prelim"
+      },
+      {
+        "label": "17 U.S.C. 109(a), effect of transfer of a particular copy (U.S. Code)",
+        "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title17-section109&num=0&edition=prelim"
+      },
+      {
+        "label": "U.S. Copyright Office, Section 512 of Title 17",
+        "url": "https://www.copyright.gov/512/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Thirteen sightings look alike and only some are copies: a licence that ended in June is a copy and one in force is not, a reseller with its own photographs is lawful, a counterfeit apron with original photographs is a trademark matter and not a copyright one, a photograph the brand does not own cannot be claimed, and two marketplaces ask for different proof on different forms.",
+    "usefulness_why": "Takes down the copying listings in minutes instead of an afternoon across a registry, a folder of papers and two forms, and stops her from sending a sworn notice against a legitimate reseller; a quarterly sweep, and the sales are modest."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner with the registry, the papers and both policies at hand files most of the six takedowns on the right form with the right proof, and none against a reseller, a licensee, a name-only title or a photograph she does not own, inside an hour."
+  },
+  "caveat": "Ines Calloway, Marrowby Linen LLC, its photographs P-01 to P-07, its licences, invoice and test purchases, the registration number 6215884, every seller, listing, order and sales figure, and Brandwick registry, Binderwell, Stallwick seller, Hawkerbrook seller and Peddlemoor are invented; each marketplace's complaint policy, forms and removal time are the invented marketplace's own, modelled on what real marketplaces publish. The public rules applied are 17 U.S.C. 512(c)(3)(A) and (f) and 109(a) as in force on 9 October 2026; a notice about copied photographs is a copyright matter and a complaint on a name alone is a trademark matter that goes through a marketplace's own policy, not a DMCA notice. Whether a real photograph is original, a real licence covers a real use, or goods are counterfeit is decided on the real facts, and a real notice is signed under penalty of perjury. This applies stated rules to stated facts; it is not legal advice."
+}

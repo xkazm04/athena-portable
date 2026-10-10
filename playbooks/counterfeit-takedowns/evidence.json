@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "counterfeit-takedowns",
+  "captured_at": "2026-10-10T16:19:52Z",
+  "bench_run_at": "2026-10-10T16:17:34Z",
+  "narration": {
+    "text": "A linen brand's suspect listings sorted on two marketplaces, copied photographs taken down with copyright notices on four listings, counterfeit aprons on two with trademark complaints that carry a test purchase, while an authorised retailer, a reseller of genuine goods with its own photographs, a name-only title, a customer's photograph, a listing already removed and a listing on neither marketplace are left alone. This is a chore for the owner of a small linen goods brand in Maine, who sells on her own site and finds copies of her photographs on other sellers' listings. On the bench, she found 6 of 6 eligible items, worth 11,030 dollars of the 11,030 dollars there was to find. She made no false claim. The world held 14 traps, and she walked past 14. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 88 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.324,
+    "sha256": "f529908dc267968804f5270eea4de5ae7133b58e4a6032bb41d740d0cd56f210"
+  },
+  "video": {
+    "path": "evidence/counterfeit-takedowns/evidence.mp4",
+    "duration_s": 62.36,
+    "bytes": 3128410,
+    "sha256": "66137edf676bffe647b679d283917baa327fdb60920b8291d9345a898530e856"
+  },
+  "thumbnail": {
+    "path": "playbooks/counterfeit-takedowns/thumb.jpg",
+    "bytes": 84169,
+    "sha256": "41912faa954534e384a3ed122b3c569515a59dc7f418bb4a5c59c363a3bc3a6f"
+  }
+}

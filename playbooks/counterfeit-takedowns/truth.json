@@ -1,0 +1,97 @@
+{
+  "targets": [
+    {
+      "tool": "file_copyright_notice",
+      "key": "listing_id",
+      "eligible": {
+        "S-301": {
+          "value_usd": 2340.0,
+          "why": "The listing's main photo is the brand's P-03 (the pine table, the window shadow, the Marrowby Studio 2024 stamp), the brand owns it by assignment (D-1), the seller is not authorised and holds no licence. Copied photograph: a 512(c)(3)(A) notice naming P-03. Sales stopped, 2,340 dollars",
+          "expect": {
+            "work_id": "P-03",
+            "amount_usd": 2340
+          }
+        },
+        "S-307": {
+          "value_usd": 1180.0,
+          "why": "Cobblegate Gifts' licence for P-01 to P-06 ended on 30 June 2026 and was not renewed (D-3, told on 14 July); the listing was created on 12 July 2026 with P-03 and the stamp. It is a copy without a licence in force. Sales stopped, 1,180 dollars",
+          "expect": {
+            "work_id": "P-03",
+            "amount_usd": 1180
+          }
+        }
+      },
+      "traps": {
+        "S-302": "Hollin & Pike Home is an authorised retailer with a licence for P-01 to P-06 on Stallwick through 31 December 2026 (D-2): the photograph is used under licence",
+        "S-303": "Dunmore Resale resells genuine towels it bought from the brand (D-4) with its own photographs: 17 U.S.C. 109(a) lets the owner of a lawfully made copy sell it, and nothing of the brand's photographs is copied",
+        "S-304": "The photos are the seller's own and show a different towel; no work of the brand's is copied, and \"Marrowby-style\" in a title does not make a copyright claim",
+        "S-305": "The listing was removed on 2 October 2026 by the seller; there is nothing left to take down",
+        "S-306": "The photographs are the seller's own and copy nothing; the claim is counterfeit goods, which goes through Stallwick's trademark form, not a copyright notice",
+        "PM-77": "A listing on Peddlemoor, a marketplace the brand has no account on and this assistant has no portal for; it cannot be filed on Stallwick or Hawkerbrook"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "file_trademark_complaint",
+      "key": "listing_id",
+      "eligible": {
+        "S-306": {
+          "value_usd": 1620.0,
+          "why": "Counterfeit aprons carrying the MARROWBY label, proved by test purchase TP-1 (D-5, Stallwick order SO-8812); the brand holds registration 6215884 (TM-1) and Stallwick's trademark form asks for exactly the registration number and the test purchase. Sales stopped, 1,620 dollars",
+          "expect": {
+            "registration_no": "6215884",
+            "amount_usd": 1620
+          }
+        }
+      },
+      "traps": {
+        "S-301": "Unbranded towels with a copied photograph: no mark is on the goods, so the claim is a copyright notice, not a trademark complaint",
+        "S-302": "Genuine goods from an authorised retailer: not counterfeit",
+        "S-303": "Genuine goods the brand sold (D-4): a trademark complaint against them would be false",
+        "S-304": "The goods carry Quillfeather's own label; \"Marrowby-style\" in the title is a name only, and Stallwick's trademark form says a listing that only names the brand is not a trademark complaint",
+        "S-305": "Already removed on 2 October 2026",
+        "S-307": "Genuine Marrowby towels from a retailer whose photo licence ended; the goods are not counterfeit, the photograph is the issue"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "file_ip_complaint",
+      "key": "listing_id",
+      "eligible": {
+        "H-401": {
+          "value_usd": 1960.0,
+          "why": "The main photo is the brand's P-05 (two aprons, navy and oat, flour dusting), owned by assignment (D-1); the seller is unlicensed and the goods unbranded. Type copyright. Sales stopped, 1,960 dollars",
+          "expect": {
+            "type": "copyright",
+            "reference": "P-05",
+            "amount_usd": 1960
+          }
+        },
+        "H-402": {
+          "value_usd": 3050.0,
+          "why": "The main photo is the brand's P-03 with the Marrowby Studio 2024 stamp; the seller is unlicensed. Type copyright. Sales stopped, 3,050 dollars",
+          "expect": {
+            "type": "copyright",
+            "reference": "P-03",
+            "amount_usd": 3050
+          }
+        },
+        "H-403": {
+          "value_usd": 880.0,
+          "why": "Counterfeit aprons with the MARROWBY label proved by test purchase TP-2 (D-6, Hawkerbrook order HB-5530); registration 6215884. The photos are the seller's own, so the type is trademark. Sales stopped, 880 dollars",
+          "expect": {
+            "type": "trademark",
+            "reference": "6215884",
+            "amount_usd": 880
+          }
+        }
+      },
+      "traps": {
+        "H-404": "A title that says \"like Marrowby\" on the seller's own towels with its own label and photos: a name only, neither a copied photograph nor a counterfeit",
+        "H-405": "The photograph is P-07, a customer's kitchen photo that the brand only reposted; the brand has no assignment of it (D-1 covers P-01 to P-06), so the record cannot tie the listing to a work the brand owns"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}
