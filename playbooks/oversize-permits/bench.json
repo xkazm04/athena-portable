@@ -1,0 +1,375 @@
+{
+  "playbook": "oversize-permits",
+  "run_at": "2026-10-10T11:48:55Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 238.6,
+  "turns": 17,
+  "nudges": 0,
+  "follow_ups": 2,
+  "reads": 45,
+  "cost_usd": 2.0557,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 4.0
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 392.5,
+    "value_found_usd": 392.5,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "purchase_ok_permit",
+        "key": "OK-2202",
+        "why": "A 7:00 a.m. Tuesday start puts the oversize load on I-40 in Oklahoma County inside the 7:00 to 9:00 a.m. Monday-to-Friday interstate curfew, and it duplicates OK-2201 for the same load",
+        "filed": false
+      },
+      {
+        "action": "purchase_ok_permit",
+        "key": "OK-2203",
+        "why": "The two tanks are divisible: each alone travels within the legal width and weight, so side by side they cannot be permitted as a non-divisible overweight load (OAC 730:50-5-3(2); 23 CFR 658.5)",
+        "filed": false
+      },
+      {
+        "action": "purchase_ok_permit",
+        "key": "OK-2204",
+        "why": "The transformer goes from Little Rock to Jackson and never enters Oklahoma",
+        "filed": false
+      },
+      {
+        "action": "purchase_ar_permit",
+        "key": "AR-5502",
+        "why": "The transformer is 13'10\" high, 8'6\" wide, 78,000 lb on 5 axles and on a 48-foot trailer: inside every Arkansas limit (14 feet high there), so no Arkansas permit is needed",
+        "filed": false
+      },
+      {
+        "action": "purchase_ar_permit",
+        "key": "AR-5503",
+        "why": "The two tanks can reasonably be reduced to legal size and weight by carrying them apart; Rule 2.A.2 forbids a permit",
+        "filed": false
+      },
+      {
+        "action": "purchase_tn_permit",
+        "key": "TN-8801",
+        "why": "Route A crosses structure B-4417, which failed the bridge analysis for L-1's axle group; a permit is valid only on its route, and this one would send the load over a bridge it must avoid",
+        "filed": false
+      },
+      {
+        "action": "purchase_tn_permit",
+        "key": "TN-8804",
+        "why": "The two tanks are divisible, and Tennessee issues special permits only for non-divisible loads",
+        "filed": false
+      },
+      {
+        "action": "purchase_tn_permit",
+        "key": "TN-8805",
+        "why": "The culvert needs a rear escort, and an escorted load may not move in Shelby County between 7:00 and 9:00 a.m. on a weekday: a 7:30 a.m. Tuesday start from Memphis breaks the curfew",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "purchase_ok_permit",
+      "key": "OK-2201",
+      "outcome": "correct",
+      "value_usd": 82.5,
+      "exact": true,
+      "why": "L-1 is over Oklahoma's width, height and weight, and non-divisible: the bucket travels apart and the counterweight takes about 12 work hours to remove, more than the 8 of 23 CFR 658.5 and OAC 730:50-5-3(2). At 12'4\" wide on I-40, four lanes divided, it needs a rear escort (OAC 730:50-5-18(b)(1)). The 9:15 a.m. start clears Oklahoma County's 7:00 to 9:00 a.m. interstate curfew and is in daylight. Weighted at a permit service's $82.50 for one overweight permit"
+    },
+    {
+      "action": "purchase_ar_permit",
+      "key": "AR-5501",
+      "outcome": "correct",
+      "value_usd": 82.5,
+      "exact": true,
+      "why": "L-1 is over Arkansas's 8'6\", 14' and 80,000 lb and non-divisible. At 12'4\" on I-40, a controlled-access divided highway of four lanes, no escort is required (one only over 14 feet). Wednesday from 8:00 a.m. is daylight, and the 12:30 p.m. pass through Little Rock's mile markers 151 to 155 is outside the 7 to 9 and 4 to 6 rush hours. Weighted at $82.50"
+    },
+    {
+      "action": "purchase_tn_permit",
+      "key": "TN-8802",
+      "outcome": "correct",
+      "value_usd": 82.5,
+      "exact": true,
+      "why": "L-1 is over Tennessee's limits and non-divisible, and its weight needs a route the bridge analysis passed: Route B's detour around structure B-4417. At 12'4\" (10'1\" to 12'6\") it needs an escort only on two-lane roads under 24 feet, so on I-40 and the four-lane detour it runs unescorted, and an unescorted load may travel continuously: the 7:00 a.m. Memphis start is lawful. Weighted at $82.50"
+    },
+    {
+      "action": "purchase_tn_permit",
+      "key": "TN-8803",
+      "outcome": "correct",
+      "value_usd": 72.5,
+      "exact": true,
+      "why": "The transformer is 13'10\" high, over Tennessee's 13'6\", so it needs a Tennessee permit for the Memphis to Jackson leg (unlike Arkansas); under 15'1\" it needs no escort. Weighted at a permit service's $72.50 for one oversize permit"
+    },
+    {
+      "action": "purchase_tn_permit",
+      "key": "TN-8806",
+      "outcome": "correct",
+      "value_usd": 72.5,
+      "exact": true,
+      "why": "The culvert, one precast section, is 13'2\" wide: 12'7\" to 13'6\" needs a rear escort on the interstate, and an escorted load must keep the 7 to 9 a.m. and 4 to 6 p.m. curfews in Shelby and Davidson counties. Leaving Memphis at 9:30 a.m. and reaching Nashville about 1:30 p.m. keeps both. Weighted at $72.50"
+    }
+  ],
+  "missed": [],
+  "closing_words": "Arkansas is finished on my side, and the only thing left here is your answer on the card.\n\n- **Waiting on you:** apr_6ed17df00644 is the purchase of AR-5501, the L-1 excavator, for Wed 14 Oct at 8:00 a.m. from the Oklahoma line, with no escorts. Approve it and Arkansas issues the permit and charges Kettle Ridge's account. Nothing is bought until you answer.\n- **Left alone on purpose:**\n  - AR-5502, the L-3 transformer, is 13'10\" high, 8'6\" wide and 78,000 lb on 5 axles. That is inside all of Arkansas's legal limits, so it needs no permit here.\n  - AR-5503, the L-2 tanks, is divisible. Each tank is legal alone, so Arkansas won't issue a permit under Rule 2.A.2.\n  - Ray should withdraw both drafts.\n\nThe other four cards are Oklahoma OK-2201 and Tennessee TN-8802, TN-8803 and TN-8806. They came from the other tabs, and I haven't re-checked them here. This tab has nothing more for me to do, ",
+  "trace": [
+    {
+      "portal": "Postwren dispatch inbox",
+      "user": "I'm Joel, I do the permits at Kettle Ridge Heavy Haul. Start in the dispatch inbox: read what the dispatcher and the customers sent about next week's loads.",
+      "continued": false,
+      "said": "I'll list the inbox messages first.",
+      "said_chars": 35,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren dispatch inbox",
+      "user": "",
+      "continued": true,
+      "said": "There are four messages in the inbox. I'll read all four.",
+      "said_chars": 57,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren dispatch inbox",
+      "user": "",
+      "continued": true,
+      "said": "Ray's note and the three customer notes are read. I'll save the facts I'll need in the other tabs.\n\n\nNothing is bought yet. The inbox leaves these questions open:\n\n- **L-1 excavator:** it travels as one piece, so it needs permits in Oklahoma, Arkansas and Tennessee. Its dimensions aren't in the inbox. Of Ray's two Oklahoma starts, 9:15 is likely the one that clears the Oklahoma City morning curfew, but I'll check that against Tarnwide's rules.\n- **L-2 tanks:** each tank is legal alone.",
+      "said_chars": 1178,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Pathcairn route planner",
+      "user": "Pathcairn has next week's loads and their routes. Read every load and every route, with the counties and the times.",
+      "continued": false,
+      "said": "I'll list the loads first, then read each load's route.\n\n\nActually, that's a READ/AUTO name, so I'll call it directly:",
+      "said_chars": 118,
+      "reads": [
+        "list_loads",
+        "list_loads"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Pathcairn route planner",
+      "user": "",
+      "continued": true,
+      "said": "Next I'll read the planned route for each of the four loads.",
+      "said_chars": 60,
+      "reads": [
+        "view_route",
+        "view_route",
+        "view_route",
+        "view_route"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Pathcairn route planner",
+      "user": "",
+      "continued": true,
+      "said": "Pathcairn has all four loads and routes. Some counties and times it doesn't state, and I've noted those rather than guess.\n\n\n**Routes are read, but nothing is bought yet.**\n\n| Load | Route and timing on Pathcairn |\n|---|---|\n| **L-1** excavator | **OK:** I-40 from Oklahoma City (Oklahoma County) to the Arkansas line, Tue 13 Oct. No start time is shown. **AR:** I-40 through Fort Smith and Little Rock to West Memphis, Wed 14 Oct, 8:00 a.m. to 3:00 p.m.",
+      "said_chars": 1877,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Tarnwide Oversize (Oklahoma)",
+      "user": "This is Tarnwide, for Oklahoma. Read the rules and every application our dispatcher drafted, and buy each Oklahoma permit we need, with the right escorts. Don't buy one we can't lawfully use.",
+      "continued": false,
+      "said": "I'll read Tarnwide's rule index and the drafted applications first, and recall what I saved from the other tabs.\n\nI've read Oklahoma's rule index and listed Ray's drafted applications, but the portal's answers haven't come back yet. I'm not calling them again. Nothing is bought.\n\nWhen they arrive, I'll check these before filing any purchase card:\n- **L-1 excavator (12'4\" wide, 14'2\" high, 86' long, 104,000 lb):** which of Ray's two Tuesday starts, 7:00 or 9:15, clears Oklahoma City's morning curfew.",
+      "said_chars": 814,
+      "reads": [
+        "read_rules",
+        "list_applications"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Tarnwide Oversize (Oklahoma)",
+      "user": "",
+      "continued": true,
+      "said": "The rule index only lists topics, so I'm reading each topic and each drafted application.",
+      "said_chars": 89,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "view_application",
+        "view_application",
+        "view_application",
+        "view_application"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Tarnwide Oversize (Oklahoma)",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing one purchase, OK-2201 for L-1 with a rear escort. The other three Oklahoma drafts should not be bought.\n\n**Buy: OK-2201, L-1 excavator, Tue 13 Oct, 9:15 a.m.**\n- **Permit needed:** the excavator is 12'4\" wide and 104,000 lb. The counterweight takes about 12 work hours to remove, which is over Oklahoma's 8-hour test, so it is non-divisible and can be permitted overweight.\n- **Rear escort:** a load over 12 feet and up to 14 feet wide needs a rear escort on multi-lane highways (OAC 730:50-5-18(b)).",
+      "said_chars": 1483,
+      "reads": [],
+      "cards": [
+        {
+          "action": "purchase_ok_permit",
+          "key": "OK-2201",
+          "outcome": "correct",
+          "value_usd": 82.5
+        }
+      ]
+    },
+    {
+      "portal": "Halvern Permit Desk (Arkansas)",
+      "user": "This is Halvern, for Arkansas. Read the rules and every drafted application, and buy each Arkansas permit we need, with the right escorts. Don't buy one we can't lawfully use or don't need.",
+      "continued": false,
+      "said": "I'll read Halvern's rules and the drafted applications, and recall what I saved from the other tabs.\n\nThe Halvern answers haven't come back yet. I'm not calling them again, and nothing is bought.\n\nWhat I have from the other tabs:\n- **L-1 excavator:** 12'4\" wide, 14'2\" high, 86' long, 104,000 lb. Arkansas leg is I-40 on Wed 14 Oct, 8:00 a.m. to 3:00 p.m.\n- **L-2 tanks:** each tank is legal alone, and the pair is divisible, so Arkansas shouldn't need a permit.",
+      "said_chars": 1085,
+      "reads": [
+        "list_applications",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Halvern Permit Desk (Arkansas)",
+      "user": "",
+      "continued": true,
+      "said": "Nothing is filed yet. I'm opening the three drafts to check their dimensions and starts against the rules.\n\nFrom the rules and my notes:\n- **AR-5502, L-3 transformer:** it's 13'10\" high, 8'6\" wide and 78,000 lb on 5 axles. That is inside Arkansas's 14' height, 8'6\" width and 80,000 lb limits, so it needs no permit here. It looks like a \"don't buy\".\n- **AR-5503, L-2 tanks:** each tank is legal alone, and Rule 2.A.2 refuses permits for loads that can reasonably be reduced to legal limits.",
+      "said_chars": 1121,
+      "reads": [
+        "view_application",
+        "view_application",
+        "view_application"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Halvern Permit Desk (Arkansas)",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing one purchase, AR-5501 for L-1 with no escorts. I'm leaving AR-5502 and AR-5503 unbought.\n\n**Buy: AR-5501, L-1 excavator, Wed 14 Oct, 8:00 a.m. from the Oklahoma line**\n- **Permit needed:** the excavator is 12'4\" wide, 14'2\" high and 104,000 lb. That is over Arkansas's 8'6\" width, 14' height and 80,000 lb limits.\n- **Non-divisible:** the quarry says the counterweight can't reasonably come off for the road (about 12 work hours with a 100-ton crane).",
+      "said_chars": 1739,
+      "reads": [],
+      "cards": [
+        {
+          "action": "purchase_ar_permit",
+          "key": "AR-5501",
+          "outcome": "correct",
+          "value_usd": 82.5
+        }
+      ]
+    },
+    {
+      "portal": "Fernaby Permits (Tennessee)",
+      "user": "This is Fernaby, for Tennessee. Read the rules, the bridge analysis and every drafted application, and buy each Tennessee permit we need, with the right escorts. Don't buy one we can't lawfully use. Then tell me what you bought, for which l",
+      "continued": false,
+      "said": "I'll start by reading Tennessee's rules and the drafted applications. Nothing is bought yet.\n\n\nI'll file purchase cards once these answers come back.\n\nThe Fernaby answers haven't come back yet. They arrive with my next turn, and I won't call them again. Nothing is bought.\n\nHere is what I have for Tennessee so far:\n- **L-1 excavator:** 12'4\" wide, 14'2\" high, 104,000 lb. It runs Memphis to Nashville on Thu 15 Oct from 7:00 a.m. The route has to follow Fernaby's bridge analysis, because a bridge failed.",
+      "said_chars": 1155,
+      "reads": [
+        "list_applications",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Fernaby Permits (Tennessee)",
+      "user": "",
+      "continued": true,
+      "said": "The rules and the application list are in. Next I'll read each drafted application in full, because TN-8801 and TN-8802 are both L-1 and TN-8805 and TN-8806 are both L-4. Nothing is bought yet.",
+      "said_chars": 193,
+      "reads": [
+        "view_application",
+        "view_application",
+        "view_application",
+        "view_application",
+        "view_application",
+        "view_application"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Fernaby Permits (Tennessee)",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing three Tennessee purchase cards: TN-8802, TN-8803 and TN-8806. Nothing is bought until you answer them.\n\n**Buy**\n- **TN-8802, L-1 excavator, Thu 15 Oct, 7:00 a.m. from Memphis, Route B.**\n  - **Permit needed:** the load is 12'4\" wide and 104,000 lb. Both are over Tennessee's 8'6\" and 80,000 lb limits.\n  - **Route:** Route B is the 14-mile four-lane divided detour around structure B-4417. The bridge analysis passed it, and Fernaby issues the permit only for the route the application states.",
+      "said_chars": 2257,
+      "reads": [],
+      "cards": [
+        {
+          "action": "purchase_tn_permit",
+          "key": "TN-8802",
+          "outcome": "correct",
+          "value_usd": 82.5
+        },
+        {
+          "action": "purchase_tn_permit",
+          "key": "TN-8803",
+          "outcome": "correct",
+          "value_usd": 72.5
+        },
+        {
+          "action": "purchase_tn_permit",
+          "key": "TN-8806",
+          "outcome": "correct",
+          "value_usd": 72.5
+        }
+      ]
+    },
+    {
+      "portal": "Tarnwide Oversize (Oklahoma)",
+      "user": "I've switched to Tarnwide Oversize (Oklahoma) as you asked. Go ahead.",
+      "continued": false,
+      "said": "The Oklahoma work is done. The OK-2201 card (apr_058af55008de) is waiting for your answer, and I've filed nothing more on Tarnwide.\n\n- **Waiting on you:** OK-2201, the L-1 excavator, Tue 13 Oct at 9:15 a.m., with a rear escort only. Approve it and the state issues the permit and charges Kettle Ridge's account.\n- **Left alone on purpose:** OK-2202 (7:00 a.m. start, inside the Oklahoma County curfew), OK-2203 (the L-2 tanks, divisible) and OK-2204 (the transformer, which never enters Oklahoma).",
+      "said_chars": 935,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Halvern Permit Desk (Arkansas)",
+      "user": "I've switched to Halvern Permit Desk (Arkansas) as you asked. Go ahead.",
+      "continued": false,
+      "said": "Arkansas is finished on my side, and the only thing left here is your answer on the card.\n\n- **Waiting on you:** apr_6ed17df00644 is the purchase of AR-5501, the L-1 excavator, for Wed 14 Oct at 8:00 a.m. from the Oklahoma line, with no escorts. Approve it and Arkansas issues the permit and charges Kettle Ridge's account. Nothing is bought until you answer.\n- **Left alone on purpose:**\n  - AR-5502, the L-3 transformer, is 13'10\" high, 8'6\" wide and 78,000 lb on 5 axles.",
+      "said_chars": 951,
+      "reads": [],
+      "cards": []
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "id": "oversize-permits",
+  "title": "A heavy hauler's oversize permits bought across Oklahoma, Arkansas and Tennessee: an excavator with each state's escorts, a start after Oklahoma City's curfew and a route around a failed bridge, a transformer only where it is too tall, and a culvert after the Memphis rush hour, while two tanks side by side and permits not needed are left alone",
+  "domain": "Trucking",
+  "audience": "work",
+  "promise": "A heavy hauler's four loads for next week are read across its dispatch inbox, its route planner and three states' permit portals, and each permit it needs is bought the way the federal size rules and each state's own rules allow: the excavator, non-divisible because its counterweight takes twelve hours to remove, permitted in Oklahoma with the rear escort a twelve-foot load needs on a four-lane road and a start after Oklahoma County's morning curfew, in Arkansas with no escort and a pass through Little Rock outside its rush hours, and in Tennessee on the route around a bridge its weight failed; the transformer only in Tennessee, where it is over the height; and the culvert with its rear escort, leaving Memphis after the curfew escorted loads keep. Two tanks the customer wants side by side, which are divisible, a second Oklahoma start inside the curfew, an Arkansas permit for a load within Arkansas's limits and an Oklahoma permit for a load that never enters Oklahoma are left alone.",
+  "persona": "The permit coordinator of a small heavy-haul carrier in Oklahoma City, who buys every state's oversize permit for the week's loads himself",
+  "chore": "Read the dispatcher's notes and the customers' messages on what each load is and what can come off it; each load's dimensions, weight and route by state, county and time in the route planner; and each state's rules and the drafted applications in Oklahoma's, Arkansas's and Tennessee's permit portals, with Tennessee's bridge analysis. Then apply 23 CFR Part 658 (the 102-inch width and 80,000 lb limits, the non-divisible load of 658.5, and the states' special permits under 658.15(c) and 658.17(h)) and each state's own rules as they stand on 9 October 2026: the dimensions that need a permit, escorts by width, travel hours and county curfews, holidays, the non-divisible requirement, and bridge and route restrictions. Each state draws the lines in a different place, and the customer's request decides divisibility.",
+  "command": "I'm Joel, I do the permits at Kettle Ridge Heavy Haul. Go through the dispatch inbox, Pathcairn, and the Tarnwide, Halvern and Fernaby permit portals, and buy every permit next week's loads need in Oklahoma, Arkansas and Tennessee, with the right escorts and times. Don't buy a permit we can't lawfully use or don't need.",
+  "apps": [
+    {
+      "name": "Postwren dispatch inbox",
+      "role": "the dispatch inbox: the dispatcher's note on the drafted applications, and the customers' messages on what each load is and what can come off it",
+      "api": "Mail",
+      "url": ""
+    },
+    {
+      "name": "Pathcairn route planner",
+      "role": "the route planner: each load's dimensions and weight, and its route by state with the counties and the planned times",
+      "api": "Routing software, no API",
+      "url": ""
+    },
+    {
+      "name": "Tarnwide Oversize (Oklahoma)",
+      "role": "Oklahoma's permit portal: the rules as ODOT states them, the drafted applications and the purchase",
+      "api": "State permit portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Halvern Permit Desk (Arkansas)",
+      "role": "Arkansas's permit portal: the rules from the ArDOT Permit Rules, the drafted applications and the purchase",
+      "api": "State permit portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Fernaby Permits (Tennessee)",
+      "role": "Tennessee's permit portal: the rules as TDOT states them, the bridge analysis, the drafted applications and the purchase",
+      "api": "State permit portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the dispatcher's and the customers' messages in the dispatch inbox.",
+    "Reads every load and its route by state, county and time in Pathcairn.",
+    "Reads Oklahoma's rules and applications in Tarnwide and buys the excavator's permit with a rear escort and the later start.",
+    "Reads Arkansas's rules and applications in Halvern and buys the excavator's permit.",
+    "Reads Tennessee's rules, the bridge analysis and the applications in Fernaby, and buys the excavator's permit on the passing route, the transformer's and the culvert's."
+  ],
+  "gates": [
+    {
+      "action": "purchase_ok_permit",
+      "label": "Buy an Oklahoma permit",
+      "why": "A state permit issued and paid for, binding the load to its route, times and escorts."
+    },
+    {
+      "action": "purchase_ar_permit",
+      "label": "Buy an Arkansas permit",
+      "why": "A state permit issued and paid for."
+    },
+    {
+      "action": "purchase_tn_permit",
+      "label": "Buy a Tennessee permit",
+      "why": "A state permit issued and paid for, valid only on its route."
+    }
+  ],
+  "traps": [
+    "Permitting the two tanks side by side, which are divisible, in any state.",
+    "The 7:00 a.m. Oklahoma start, inside Oklahoma County's interstate curfew.",
+    "An Arkansas permit for the transformer, which is inside Arkansas's 14-foot height.",
+    "An Oklahoma permit for the transformer, which never enters Oklahoma.",
+    "The Tennessee route across the bridge that failed the excavator's analysis.",
+    "The culvert leaving Memphis at 7:30 a.m., inside the curfew escorted loads keep."
+  ],
+  "memory": [
+    "What each load is, what can come off it and the customer's side-by-side request, carried from the dispatch inbox.",
+    "Each load's dimensions, weight, route, counties and times, carried from Pathcairn into each state's tab.",
+    "Which loads need which state's permit, with the escorts and times each state's rules give, carried from tab to tab."
+  ],
+  "economics": {
+    "value_usd": 1500,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. A heavy hauler buys a permit in each state an oversize or overweight load crosses, after checking each state's limits, escorts, hours, curfews, holidays and bridges, and after deciding whether the load is one a state may permit at all. Permit services charge for this by the permit: Highway Permits, Inc. publishes $72.50 for an oversize permit and $82.50 for an overweight one, effective 1 September 2026, before state fees. The roster's $1,500 a year is about twenty permits a year bought without a service. Each truth item is weighted at that price, a price avoided, not money recovered: the excavator's three overweight permits at $82.50, the transformer's and the culvert's oversize permits at $72.50; the bench world holds five, $392.50. Times a year: 12, one heavy week a month. manual_minutes 120: reading four loads and their routes against three states' rules and thirteen drafted applications, and buying five permits; TDOT says a single-trip permit may take up to 3 days to process, and no primary source gives the hours by hand. The rules applied, as they stand on Friday 9 October 2026: 23 CFR 658.5, 658.13, 658.15 and 658.17 (eCFR, version of 1 October 2026); Oklahoma: ODOT's size and weight permit page (read live on 10 October 2026) and OAC 730:50-5-3 and 730:50-5-18 (ODOT's published copy of November 2025), and 47 O.S. 14-101's holidays as compiled; Arkansas: the ArDOT Permit Rules (2023; a 2026 amendment was proposed for comment and is not adopted); Tennessee: TDOT's permit FAQ (its archived copy of February 2026, as tn.gov refused direct connections on 10 October 2026) and Rule 1680-07-01-.03. The bridge analysis result, structure B-4417 and its detour are the world's own, not TDOT's.",
+    "manual_minutes": 120,
+    "times_per_year": 12,
+    "incumbent": "Permit services charge a flat fee a permit ($72.50 oversize, $82.50 overweight at Highway Permits, Inc.); no share of anything, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "23 CFR Part 658: truck size and weight (658.5 non-divisible load, 658.15 width and special use permits, 658.17 weight and special permits)",
+        "url": "https://www.ecfr.gov/current/title-23/chapter-I/subchapter-G/part-658"
+      },
+      {
+        "label": "ODOT, size and weight permits: when a permit is needed, travel hours, interstate curfews",
+        "url": "https://oklahoma.gov/odot/about-us/laws-and-rules/size-and-weight-permits.html"
+      },
+      {
+        "label": "OAC 730:50, size and weight permits (730:50-5-3 non-divisible; 730:50-5-18 escorts)",
+        "url": "https://oklahoma.gov/content/dam/ok/en/odot/about-us/laws-rules/25.11.07%20-%20730%20Chap.%2050.pdf"
+      },
+      {
+        "label": "ArDOT, Permit Rules (2023): legal limits, divisible loads, movement restrictions, escorts",
+        "url": "https://media.ark.org/ardot/2023-Permit-Rules.pdf"
+      },
+      {
+        "label": "TDOT, oversize and overweight permit FAQ: legal limits, escorts, travel times and county curfews, bridge analysis",
+        "url": "https://www.tn.gov/tdot/traffic-operations-division/oversize---overweight-permits/frequently-asked-questions.html"
+      },
+      {
+        "label": "TDOT, Rule 1680-07-01 (2017): special permits generally only for non-divisible loads",
+        "url": "https://www.tn.gov/content/dam/tn/tdot/central-services/Ch%201680-07-01%20--%20Overweight%20over-dimensional%20movements%20-%20Final%20Rules%202017.pdf"
+      },
+      {
+        "label": "Highway Permits, Inc., fees effective 1 September 2026: $72.50 oversize, $82.50 overweight a permit",
+        "url": "https://highway-permits.com/fees/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Three states draw the same lines in different places: Arkansas's legal height is 14 feet and Tennessee's 13'6\", Oklahoma escorts a twelve-foot load on a four-lane road and Arkansas does not, Oklahoma's curfew binds every oversize load and Tennessee's only escorted ones. Divisibility turns on a customer's request and a dealer's work hours, a bridge failure sits in one portal's analysis, and two drafts for the same load differ only in a start time.",
+    "usefulness_why": "Gets a week's heavy loads permitted correctly in three states without a permit service, and keeps a carrier from buying permits it cannot use or moving a load in a curfew or over a failed bridge; mostly minutes, with fines and stopped loads avoided."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful permit coordinator with the loads, the routes and the three states' rules in hand gets most of it: the bar is the excavator permitted in all three states with the right escort, start and route, and the transformer and culvert where they need it, with nothing bought for the side-by-side tanks, the curfew start, the failed route, a state where the load is legal or one it never enters, inside an hour."
+  },
+  "caveat": "Joel Brandt, Kettle Ridge Heavy Haul, Ray Dutton, Brakefield Tank Works, Hollisford Quarry, the four loads, Postwren, Pathcairn, Tarnwide, Halvern and Fernaby are invented, and so are every application, time and figure; Tarnwide, Halvern and Fernaby stand in for Oklahoma's, Arkansas's and Tennessee's own permit systems, and no carrier or permit here is real. The public rules applied are 23 CFR Part 658 and each state's own published rules as they stand on 9 October 2026: ODOT's size and weight permit page and OAC 730:50, the ArDOT Permit Rules (2023), and TDOT's permit FAQ (read from its archived copy of February 2026) and Rule 1680-07-01. The route's restrictions are the world's own: the bridge analysis result, structure B-4417 and its detour are invented, not any state's current list, and no real bridge is said to fail. Each state's permit office decides a real permit, its route and its conditions. This applies stated rules to stated facts; it is not legal or regulatory-compliance advice."
+}

@@ -155,6 +155,11 @@ names; each playbook carries the new one.
   bank", because Ledgerline is the name of several real accounting and invoicing products;
   "Docshelf" became "Sheafbox", because DocShelf is a real document management app; and "Mailnest"
   became "Postwren", because mailnest.io is a real email service.
+- Row 51, `oversize-permits`: "Oversize Online" became "Tarnwide Oversize (Oklahoma)", because
+  oversizeonline.com is a real clothing brand; "Wideload Desk" became "Halvern Permit Desk
+  (Arkansas)", because Wide Load Permits is a real permit service; "Statepermit" became "Fernaby
+  Permits (Tennessee)", because State Permits is a real permit service; and "Routeplan" became
+  "Pathcairn route planner", because Routeplanner is the name of real route-planning products.
 
 ### B6: Small-business money, food, and selling online
 

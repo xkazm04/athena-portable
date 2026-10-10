@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "oversize-permits",
+  "captured_at": "2026-10-10T12:00:20Z",
+  "bench_run_at": "2026-10-10T11:48:55Z",
+  "narration": {
+    "text": "A heavy hauler's oversize permits bought across Oklahoma, Arkansas and Tennessee: an excavator with each state's escorts, a start after Oklahoma City's curfew and a route around a failed bridge, a transformer only where it is too tall, and a culvert after the Memphis rush hour, while two tanks side by side and permits not needed are left alone. This is a chore for the permit coordinator of a small heavy-haul carrier in Oklahoma City, who buys every state's oversize permit for the week's loads himself. On the bench, she found 5 of 5 eligible items, worth 392 dollars and 50 cents of the 392 dollars and 50 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 4 minutes. By hand, the same chore takes 2 hours, so she was about 30 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 60.507,
+    "sha256": "b3800059604fdb8d1630e02df168e60f4cafcb717cb3da7ce1e3cd634cd3f1e5"
+  },
+  "video": {
+    "path": "evidence/oversize-permits/evidence.mp4",
+    "duration_s": 60.52,
+    "bytes": 3471420,
+    "sha256": "af0e1ce41cdc9f4f1dbef523b508ef44b1214b0502633102e8fa12f923e54096"
+  },
+  "thumbnail": {
+    "path": "playbooks/oversize-permits/thumb.jpg",
+    "bytes": 84372,
+    "sha256": "700c985e2d643a83f85898b9ff7da5c0b852e61d2aa1817393b543240d824d35"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "targets": [
+    {
+      "tool": "purchase_ok_permit",
+      "key": "application_id",
+      "eligible": {
+        "OK-2201": {
+          "value_usd": 82.5,
+          "why": "L-1 is over Oklahoma's width, height and weight, and non-divisible: the bucket travels apart and the counterweight takes about 12 work hours to remove, more than the 8 of 23 CFR 658.5 and OAC 730:50-5-3(2). At 12'4\" wide on I-40, four lanes divided, it needs a rear escort (OAC 730:50-5-18(b)(1)). The 9:15 a.m. start clears Oklahoma County's 7:00 to 9:00 a.m. interstate curfew and is in daylight. Weighted at a permit service's $82.50 for one overweight permit",
+          "expect": {
+            "escorts": "rear"
+          }
+        }
+      },
+      "traps": {
+        "OK-2202": "A 7:00 a.m. Tuesday start puts the oversize load on I-40 in Oklahoma County inside the 7:00 to 9:00 a.m. Monday-to-Friday interstate curfew, and it duplicates OK-2201 for the same load",
+        "OK-2203": "The two tanks are divisible: each alone travels within the legal width and weight, so side by side they cannot be permitted as a non-divisible overweight load (OAC 730:50-5-3(2); 23 CFR 658.5)",
+        "OK-2204": "The transformer goes from Little Rock to Jackson and never enters Oklahoma"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "purchase_ar_permit",
+      "key": "application_id",
+      "eligible": {
+        "AR-5501": {
+          "value_usd": 82.5,
+          "why": "L-1 is over Arkansas's 8'6\", 14' and 80,000 lb and non-divisible. At 12'4\" on I-40, a controlled-access divided highway of four lanes, no escort is required (one only over 14 feet). Wednesday from 8:00 a.m. is daylight, and the 12:30 p.m. pass through Little Rock's mile markers 151 to 155 is outside the 7 to 9 and 4 to 6 rush hours. Weighted at $82.50"
+        }
+      },
+      "traps": {
+        "AR-5502": "The transformer is 13'10\" high, 8'6\" wide, 78,000 lb on 5 axles and on a 48-foot trailer: inside every Arkansas limit (14 feet high there), so no Arkansas permit is needed",
+        "AR-5503": "The two tanks can reasonably be reduced to legal size and weight by carrying them apart; Rule 2.A.2 forbids a permit"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "purchase_tn_permit",
+      "key": "application_id",
+      "eligible": {
+        "TN-8802": {
+          "value_usd": 82.5,
+          "why": "L-1 is over Tennessee's limits and non-divisible, and its weight needs a route the bridge analysis passed: Route B's detour around structure B-4417. At 12'4\" (10'1\" to 12'6\") it needs an escort only on two-lane roads under 24 feet, so on I-40 and the four-lane detour it runs unescorted, and an unescorted load may travel continuously: the 7:00 a.m. Memphis start is lawful. Weighted at $82.50"
+        },
+        "TN-8803": {
+          "value_usd": 72.5,
+          "why": "The transformer is 13'10\" high, over Tennessee's 13'6\", so it needs a Tennessee permit for the Memphis to Jackson leg (unlike Arkansas); under 15'1\" it needs no escort. Weighted at a permit service's $72.50 for one oversize permit"
+        },
+        "TN-8806": {
+          "value_usd": 72.5,
+          "why": "The culvert, one precast section, is 13'2\" wide: 12'7\" to 13'6\" needs a rear escort on the interstate, and an escorted load must keep the 7 to 9 a.m. and 4 to 6 p.m. curfews in Shelby and Davidson counties. Leaving Memphis at 9:30 a.m. and reaching Nashville about 1:30 p.m. keeps both. Weighted at $72.50",
+          "expect": {
+            "escorts": "rear"
+          }
+        }
+      },
+      "traps": {
+        "TN-8801": "Route A crosses structure B-4417, which failed the bridge analysis for L-1's axle group; a permit is valid only on its route, and this one would send the load over a bridge it must avoid",
+        "TN-8804": "The two tanks are divisible, and Tennessee issues special permits only for non-divisible loads",
+        "TN-8805": "The culvert needs a rear escort, and an escorted load may not move in Shelby County between 7:00 and 9:00 a.m. on a weekday: a 7:30 a.m. Tuesday start from Memphis breaks the curfew"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

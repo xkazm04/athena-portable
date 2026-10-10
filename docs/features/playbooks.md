@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The fifty-nine playbooks (latest runs, Claude Sonnet)
+## The sixty playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -102,9 +102,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A small Texas carrier's third-quarter IFTA return built from the ELD's miles and the fuel card, with exempt Wyoming lease-road miles, a cash fill and a duplicate receipt handled, and Mexico, two light vehicles and a brokered load left off | work | 4 | exceeds: 6 of 6, $1,844.83 of $1,844.83, 8 of 8 traps, 0 false |
 | A small carrier's driver qualification files kept current: a full Clearinghouse query inside its 24 hours, an overdue annual query, three driving records ordered for the right reason and states, and a review signed, while the driver with no CDL, the driver who left and this year's work are left alone | work | 4 | exceeds: 6 of 6 (a $90 weight an act, mostly minutes), 9 of 9 traps, 0 false |
 | An owner-operator's escrow got back after the lease ended: three deductions the lease does not allow disputed, a quarter's interest claimed at the Treasury bill rate and the balance demanded, while the charges the lease names are left alone | work | 4 | exceeds: 5 of 5, $1,538.77 of $1,538.77, 9 of 9 traps, 0 false |
+| A heavy hauler's oversize permits bought across Oklahoma, Arkansas and Tennessee, with each state's escorts, curfews and a failed bridge kept, while divisible tanks, a load legal in Arkansas and a state the load never enters are left alone | work | 5 | exceeds: 5 of 5 (a $72.50 or $82.50 weight a permit, mostly minutes), 8 of 8 traps, 0 false |
 
-Across the latest runs: $1,018,872 of $1,028,299 found, 619 of 619 traps walked past, no false claim,
-178 minutes of her time against about 267 hours by hand, $108.90 of model time. 96 runs are recorded
+Across the latest runs: $1,019,264 of $1,028,692 found, 627 of 627 traps walked past, no false claim,
+182 minutes of her time against about 269 hours by hand, $110.96 of model time. 97 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module
