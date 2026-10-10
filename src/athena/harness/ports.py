@@ -123,6 +123,7 @@ class ApprovalsPort(Protocol):
         conversation: str,
         surface: str,
         summary: str = "",
+        capture_id: str | None = None,
     ) -> Card: ...
 
     def describe(self, approval_id: str) -> Grant: ...

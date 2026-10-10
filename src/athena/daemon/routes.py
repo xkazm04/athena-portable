@@ -138,11 +138,13 @@ PENDING_LINE_CAP = 220
 #: in the user's words: the machine-readable ``reason`` beside it is the contract, this is not.
 NO_PAGE_SENTENCE = "Open the app this is about and focus its tab, then try again."
 
-#: Most origins one request may switch off; anything past it is ignored and the gate stays shut.
+#: Most origins one request may switch off. A longer list is refused, never cut: a cut list would
+#: read the origins past the cap as switched on.
 MAX_DISABLED_ORIGINS = 256
 
 #: Most first-sight origins or pinned tools one request may name (ADR 0063). Far past any real
-#: table: the shell names one origin per open tab and one name per pin.
+#: table: the shell names one origin per open tab and one name per pin. A longer list is refused,
+#: never cut, because a cut list loosens the gate (ADR 0066).
 MAX_GATED_NAMES = 4096
 
 #: How long ``GET /engines`` trusts its last probe, and what ``?fresh=1`` skips.
@@ -481,15 +483,19 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
     if project_id and not ids.is_id("project", project_id):
         return error(400, "unknown_ref", f"not a project id: {project_id!r}")
 
-    ctx = turn_context(
-        daemon,
-        session,
-        project_id,
-        surface=str(body.get("surface") or "panel"),
-        disabled_origins=disabled_origins_from(body),
-        gated_origins=gated_origins_from(body),
-        gated_tools=gated_tools_from(body),
-    )
+    try:
+        ctx = turn_context(
+            daemon,
+            session,
+            project_id,
+            surface=str(body.get("surface") or "panel"),
+            disabled_origins=disabled_origins_from(body),
+            gated_origins=gated_origins_from(body),
+            gated_tools=gated_tools_from(body),
+            capture_id=capture_id_from(body),
+        )
+    except ListTooLong as exc:
+        return error(400, "validator_failed", str(exc))
     raw_results = body.get("tool_results")
     results = tool_results_from(
         [row for row in raw_results if isinstance(row, Mapping)]
@@ -509,13 +515,30 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
     )
 
 
+class ListTooLong(ValueError):
+    """A request named more origins or tools than the cap allows; the request is refused whole."""
+
+
+def capture_id_from(body: Mapping[str, Any]) -> str | None:
+    """``capture_id`` off a request body: the shell's capture of the focused tab (ADR 0066).
+
+    A value that is not a capture id is read as none, so a malformed field files a card without
+    a screenshot and never a card that points at something else.
+    """
+    raw = body.get("capture_id")
+    if isinstance(raw, str) and ids.is_id("capture", raw.strip()):
+        return raw.strip()
+    return None
+
+
 def disabled_origins_from(body: Mapping[str, Any]) -> frozenset[str]:
     """``disabled_origins`` off a request body: the apps the user switched off for this run.
 
     The origins table lives in the shell's store, so the shell says it on every request and the
     daemon keeps none of it. A value that is not a list of strings is read as an empty list --
     nothing extra is refused -- because a malformed field must not switch an app *on*; the shell
-    is the one that decides, and it sends well-formed JSON.
+    is the one that decides, and it sends well-formed JSON. A list longer than the cap raises
+    :class:`ListTooLong`: cutting it would read the origins past the cap as switched on.
     """
     return _names_from(body, "disabled_origins", MAX_DISABLED_ORIGINS)
 
@@ -541,11 +564,17 @@ def gated_tools_from(body: Mapping[str, Any]) -> frozenset[str]:
 
 
 def _names_from(body: Mapping[str, Any], key: str, cap: int) -> frozenset[str]:
-    """The non-empty strings of ``body[key]``, stripped and capped; anything else is empty."""
+    """The non-empty strings of ``body[key]``, stripped; anything else is empty.
+
+    A list longer than ``cap`` raises :class:`ListTooLong` -- these lists only tighten the gate or
+    switch an origin off, so a cut one would loosen it.
+    """
     raw = body.get(key)
     if not isinstance(raw, list):
         return frozenset()
-    return frozenset(item.strip() for item in raw[:cap] if isinstance(item, str) and item.strip())
+    if len(raw) > cap:
+        raise ListTooLong(f"{key} names {len(raw)} entries; the most one request may name is {cap}")
+    return frozenset(item.strip() for item in raw if isinstance(item, str) and item.strip())
 
 
 def turn_context(
@@ -558,6 +587,7 @@ def turn_context(
     disabled_origins: frozenset[str] = frozenset(),
     gated_origins: frozenset[str] = frozenset(),
     gated_tools: frozenset[str] = frozenset(),
+    capture_id: str | None = None,
 ) -> TurnContext:
     """The context one turn runs under, and the session refreshed for it.
 
@@ -579,6 +609,7 @@ def turn_context(
         disabled_origins=disabled_origins,
         gated_origins=gated_origins,
         gated_tools=gated_tools,
+        capture_id=capture_id,
     )
     daemon.sessions.touch(session.origin, session.app_id, tools=session.tools)
     return ctx

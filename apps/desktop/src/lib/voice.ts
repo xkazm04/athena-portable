@@ -154,6 +154,10 @@ export type ClientFrame =
       origin: string;
       host_state: Record<string, unknown>;
       disabled_origins: string[];
+      gated_origins: string[];
+      gated_tools: string[];
+      /** The shell's capture of the focused tab, taken just before the key went down (ADR 0066). */
+      capture_id?: string;
       project_id?: string;
     }
   | { type: "stop" }
@@ -163,6 +167,9 @@ export type ClientFrame =
       origin: string;
       host_state: Record<string, unknown>;
       disabled_origins: string[];
+      gated_origins: string[];
+      gated_tools: string[];
+      capture_id?: string;
     }
   | {
       type: "tool_result";

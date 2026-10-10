@@ -66,7 +66,9 @@ from athena.contracts.channel import (
 from athena.daemon.routes import (
     NO_PAGE_SENTENCE,
     PENDING_LINES,
+    ListTooLong,
     Request,
+    capture_id_from,
     decide,
     disabled_origins_from,
     event_payload,
@@ -161,6 +163,7 @@ class _Utterance:
     disabled_origins: frozenset[str] = frozenset()
     gated_origins: frozenset[str] = frozenset()
     gated_tools: frozenset[str] = frozenset()
+    capture_id: str | None = None
     #: Whether this utterance began by talking over a reply. A stop word said that way is still
     #: a stop word, even though playback ended before the key came up.
     interrupted: bool = False
@@ -179,6 +182,8 @@ class _Job:
     #: The apps seen for the first time and the tools pinned ``GATED`` when they spoke (ADR 0063).
     gated_origins: frozenset[str] = frozenset()
     gated_tools: frozenset[str] = frozenset()
+    #: The shell's capture of the focused tab, taken before this utterance (ADR 0066).
+    capture_id: str | None = None
 
 
 @dataclass
@@ -266,7 +271,10 @@ class VoiceSession:
             interrupted = self.speaking
             if interrupted:
                 self.interrupt()
-            self._jobs.put(_Job(**self._job_fields(body), interrupted=interrupted))
+            fields = self._fields_or_refuse(body)
+            if fields is None:
+                return
+            self._jobs.put(_Job(**fields, interrupted=interrupted))
         elif kind == "tool_result":
             self._tool_result(body)
         else:
@@ -284,7 +292,10 @@ class VoiceSession:
             self._utterance = None
             self.send(TurnError(reason="engine_error", detail=reason or NOT_SET_UP))
             return
-        fields = self._job_fields(body)
+        fields = self._fields_or_refuse(body)
+        if fields is None:
+            self._utterance = None
+            return
         self._utterance = _Utterance(
             origin=fields["origin"],
             host_state=fields["host_state"],
@@ -293,6 +304,7 @@ class VoiceSession:
             disabled_origins=fields["disabled_origins"],
             gated_origins=fields["gated_origins"],
             gated_tools=fields["gated_tools"],
+            capture_id=fields["capture_id"],
             interrupted=interrupted,
         )
 
@@ -316,6 +328,7 @@ class VoiceSession:
                 disabled_origins=current.disabled_origins,
                 gated_origins=current.gated_origins,
                 gated_tools=current.gated_tools,
+                capture_id=current.capture_id,
             )
         )
 
@@ -336,6 +349,14 @@ class VoiceSession:
             self._results[call_id] = row
             self._results_ready.notify_all()
 
+    def _fields_or_refuse(self, body: Mapping[str, Any]) -> dict[str, Any] | None:
+        """The frame's fields, or ``None`` after telling the client why the frame was refused."""
+        try:
+            return self._job_fields(body)
+        except ListTooLong as exc:
+            self.send(TurnError(reason="validator_failed", detail=str(exc)))
+            return None
+
     @staticmethod
     def _job_fields(body: Mapping[str, Any]) -> dict[str, Any]:
         host_state = body.get("host_state")
@@ -347,6 +368,7 @@ class VoiceSession:
             "disabled_origins": disabled_origins_from(body),
             "gated_origins": gated_origins_from(body),
             "gated_tools": gated_tools_from(body),
+            "capture_id": capture_id_from(body),
         }
 
     # -- sending ---------------------------------------------------------------------------------
@@ -486,6 +508,7 @@ class VoiceSession:
                 disabled_origins=job.disabled_origins,
                 gated_origins=job.gated_origins,
                 gated_tools=job.gated_tools,
+                capture_id=job.capture_id,
             )
             carried, self.outstanding = self.outstanding, []
             proposed: list[ToolCall] = []

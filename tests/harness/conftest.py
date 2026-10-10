@@ -93,6 +93,7 @@ class FakeCard:
     conversation: str
     surface: str
     summary: str = ""
+    capture_id: str | None = None
     status: str = "pending"
     consumed: bool = False
 
@@ -105,6 +106,7 @@ class FakeCard:
             options=(DecisionOption("approve"), DecisionOption("decline")),
             origin=self.origin,
             surface=self.surface,
+            capture_id=self.capture_id,
         )
 
     @property
@@ -135,6 +137,7 @@ class FakeApprovals:
         conversation: str,
         surface: str,
         summary: str = "",
+        capture_id: str | None = None,
     ) -> FakeCard:
         card = FakeCard(
             id=f"apr_{len(self.rows):012d}",
@@ -144,6 +147,7 @@ class FakeApprovals:
             conversation=conversation,
             surface=surface,
             summary=summary,
+            capture_id=capture_id,
         )
         self.rows[card.id] = card
         return card

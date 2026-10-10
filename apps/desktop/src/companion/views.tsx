@@ -11,11 +11,12 @@
  *
  * Nothing readable is under 12px, body is 15px, and a gate class is always a word in a box.
  */
-import { useEffect, useRef, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
 
 import { Chip, Defs, Icon, Mark, Mood, Ring, Sketch, Stamp } from "./drawing";
 import { SHRINK_MS, type LedgerTab } from "./machine";
-import { showingOf } from "./model";
+import { readCapture, type CaptureRead } from "./capture";
+import { showingOf, type CardCapture } from "./model";
 import type {
   CardView,
   CompanionModel,
@@ -178,6 +179,47 @@ function Rail({ model, form }: { model: CompanionModel; form: CompanionModel["fo
 
 // -- the slip ----------------------------------------------------------------------------------
 
+/** The capture the daemon filed with the card, read back from the store (ADR 0066). */
+function ShotFigure({ id }: { id: string }) {
+  const [read, setRead] = useState<CaptureRead | null>(null);
+  useEffect(() => {
+    let current = true;
+    void readCapture(id).then((found) => current && setRead(found));
+    return () => {
+      current = false;
+    };
+  }, [id]);
+  return <CaptureShown id={id} read={read} />;
+}
+
+/** The figure for one read: the picture, or the sentence that says why there is none. */
+export function CaptureShown({ id, read }: { id: string; read: CaptureRead | null }) {
+  if (read === null) return <p className="sl-nocap">Reading the capture…</p>;
+  if (read.src === null) return <p className="sl-nocap">{`Capture ${id}: ${read.problem}.`}</p>;
+  return (
+    <figure className="sl-thumb sl-shot">
+      <img src={read.src} alt="The page as it was when this was proposed" />
+      <figcaption>{`page capture ${id}`}</figcaption>
+    </figure>
+  );
+}
+
+function CaptureFigure({ capture }: { capture: CardCapture }) {
+  if (capture.kind === "shot") return <ShotFigure id={capture.id} />;
+  if (capture.kind !== "sketch") return null;
+  return (
+    <figure className="sl-thumb">
+      <Sketch />
+      <figcaption>page capture, stylised</figcaption>
+    </figure>
+  );
+}
+
+/** A card that went without a capture says so, and why when the shell knows. */
+function NoCapture({ why }: { why: string | null }) {
+  return <p className="sl-nocap">{why ? `No capture was taken: ${why}.` : "No capture was taken for this request."}</p>;
+}
+
 function Slip({ model, card, inline }: { model: CompanionModel; card: CardView | undefined; inline: boolean }) {
   const { actions, decision } = model;
   if (!card) {
@@ -219,13 +261,9 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
               </div>
             ))}
           </dl>
-          {card.capture === "sketch" && !inline ? (
-            <figure className="sl-thumb">
-              <Sketch />
-              <figcaption>page capture, stylised</figcaption>
-            </figure>
-          ) : null}
+          {!inline ? <CaptureFigure capture={card.capture} /> : null}
         </div>
+        {card.capture.kind === "none" ? <NoCapture why={card.capture.why} /> : null}
       </div>
       <div className="sl-sign">
         <button type="button" className="aw-btn aw-btn-stamp" data-act="approve" aria-keyshortcuts="A" aria-busy={sendingNow("approve") || undefined} disabled={decided} onClick={() => actions.approve("click")}>

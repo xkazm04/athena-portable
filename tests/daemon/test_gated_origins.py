@@ -12,7 +12,16 @@ from __future__ import annotations
 
 from typing import Any
 
-from athena.daemon.routes import MAX_GATED_NAMES, gated_origins_from, gated_tools_from
+import pytest
+
+from athena.daemon.routes import (
+    MAX_DISABLED_ORIGINS,
+    MAX_GATED_NAMES,
+    ListTooLong,
+    capture_id_from,
+    gated_origins_from,
+    gated_tools_from,
+)
 
 from .conftest import APP_ID, Live, claude_round, op
 
@@ -96,7 +105,68 @@ def test_the_parse_reads_an_absent_or_malformed_field_as_empty() -> None:
         assert gated_tools_from(body) == frozenset()
 
 
-def test_the_parse_is_bounded() -> None:
-    names = [f"host.app.t{i}" for i in range(MAX_GATED_NAMES + 10)]
+def test_the_parse_refuses_a_list_past_its_cap_and_never_cuts_it() -> None:
+    names = [f"host.app.t{i}" for i in range(MAX_GATED_NAMES)] + ["host.app.the_pinned_one"]
+
+    with pytest.raises(ListTooLong):
+        gated_tools_from({"gated_tools": names})
+
+
+# -- the capture ---------------------------------------------------------------------------------
+
+PAY = f"host.{APP_ID}.pay"
+CAPTURE = "cap_0123456789ab"
+
+
+def test_a_gated_host_call_with_a_capture_id_files_a_card_that_carries_it(live: Live) -> None:
+    live.register()
+    live.script(claude_round(op(PAY, invoice="7")))
+
+    frames = live.run("pay it", capture_id=CAPTURE).frames()
+
+    (card,) = [payload for kind, payload in frames if kind == "decision.requested"]
+    assert card["capture_id"] == CAPTURE
+    (row,) = live.daemon.approvals.pending(10).rows
+    assert row.capture_id == CAPTURE
+
+
+def test_a_malformed_capture_id_is_read_as_none(live: Live) -> None:
+    live.register()
+    live.script(claude_round(op(PAY, invoice="7")))
+
+    live.run("pay it", capture_id="cap_not-an-id").frames()
+
+    (row,) = live.daemon.approvals.pending(10).rows
+    assert row.capture_id is None
+
+
+def test_the_capture_parse_takes_a_capture_id_and_nothing_else() -> None:
+    assert capture_id_from({"capture_id": f" {CAPTURE} "}) == CAPTURE
+    for raw in ("", "ep_01234567", "cap_xyz", 7, None, [CAPTURE]):
+        assert capture_id_from({"capture_id": raw}) is None
+    assert capture_id_from({}) is None
+
+
+# -- a list past its cap is refused --------------------------------------------------------------
+
+
+def test_a_list_past_its_cap_is_refused_whole_and_names_the_field(live: Live) -> None:
+    """A cut list would loosen the gate: the one name that mattered could be past the cut."""
+    live.register()
+    names = [f"host.app.t{i}" for i in range(MAX_GATED_NAMES)] + [PAY]
+
+    for key, value in (
+        ("gated_tools", names),
+        ("gated_origins", [f"host:a{i}" for i in range(MAX_GATED_NAMES + 1)]),
+        ("disabled_origins", [f"host:a{i}" for i in range(MAX_DISABLED_ORIGINS + 1)]),
+    ):
+        reply = live.run("pay it", **{key: value})
+        assert reply.status == 400
+        assert reply.body["reason"] == "validator_failed"
+        assert key in reply.body["detail"]
+
+
+def test_a_list_exactly_at_its_cap_is_read_whole() -> None:
+    names = [f"host.app.t{i}" for i in range(MAX_GATED_NAMES)]
 
     assert len(gated_tools_from({"gated_tools": names})) == MAX_GATED_NAMES

@@ -18,6 +18,7 @@ import {
   NO_ACTIONS,
   ledgerFrom,
   selectCompanion,
+  type CardView,
   type CompanionModel,
   type LedgerSnapshot,
   type OriginView,
@@ -247,7 +248,7 @@ function model(setup: Setup): CompanionModel {
     offer: setup.offer ? { n: 1, text: setup.offer } : null,
     actions: NO_ACTIONS,
   });
-  return setup.capture ? { ...built, cards: built.cards.map((c) => ({ ...c, capture: "sketch" })) } : built;
+  return setup.capture ? { ...built, cards: built.cards.map((c): CardView => ({ ...c, capture: { kind: "sketch" } })) } : built;
 }
 
 const one = [CARDS[0]];

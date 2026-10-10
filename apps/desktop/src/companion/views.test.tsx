@@ -13,7 +13,8 @@ import { SIZES } from "@/lib/companion";
 
 import { CARDS, fixtureIds, fixtures } from "./fixtures";
 import { modelFor, readQuery } from "./preview";
-import CompanionView from "./views";
+import { cardView } from "./model";
+import CompanionView, { CaptureShown } from "./views";
 
 const html = (id: string) => renderToStaticMarkup(createElement(CompanionView, { model: fixtures[id]() }));
 
@@ -269,4 +270,33 @@ test("a handed-over playbook shows her plan before the first turn: steps, tabs, 
   expect(out).toContain("Working on");
   // The generic suggestions give way to the plan.
   expect(out).not.toContain("aw-btn-sugg");
+});
+
+test("a card that carries a capture draws that capture, and a missing one says why", () => {
+  const filed = cardView({ ...CARDS[0], capture_id: "cap_0123456789ab" });
+  expect(filed.capture).toEqual({ kind: "shot", id: "cap_0123456789ab" });
+
+  const shown = renderToStaticMarkup(
+    createElement(CaptureShown, { id: "cap_0123456789ab", read: { src: "data:image/png;base64,AAAA", problem: null } }),
+  );
+  expect(shown).toContain('src="data:image/png;base64,AAAA"');
+  expect(shown).toContain("page capture cap_0123456789ab");
+  expect(shown).not.toContain("stylised");
+
+  const gone = renderToStaticMarkup(
+    createElement(CaptureShown, { id: "cap_0123456789ab", read: { src: null, problem: "the capture is no longer kept" } }),
+  );
+  expect(gone).toContain("the capture is no longer kept");
+});
+
+test("a card without a capture says no capture was taken, and why when it is known", () => {
+  const model = fixtures.slip();
+  const card = (why: string | null) => ({ ...model, cards: [{ ...model.cards[0], capture: { kind: "none" as const, why } }] });
+  const render = (m: typeof model) => renderToStaticMarkup(createElement(CompanionView, { model: m }));
+
+  expect(render(card(null))).toContain("No capture was taken for this request.");
+  expect(render(card("the screenshot took longer than 8 seconds"))).toContain(
+    "No capture was taken: the screenshot took longer than 8 seconds.",
+  );
+  expect(cardView(CARDS[0], "no shell").capture).toEqual({ kind: "none", why: "no shell" });
 });

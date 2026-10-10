@@ -1147,3 +1147,82 @@ describe("the active playbook", () => {
     useRun.getState().setProject(null);
   });
 });
+
+// -- the capture before a request (ADR 0066) -----------------------------------------------------
+
+describe("the capture", () => {
+  const taken = { id: "cap_0123456789ab", why: null };
+
+  it("is taken once, just before the request, and its id rides the body", async () => {
+    const daemon = fakeDaemon({ runs: [[hostCall("c1", "host.ledgerbox.read"), finished()], [finished()]] });
+    const seen: Array<[number, string]> = [];
+    const deps = wire(daemon, fakePage());
+    setRunDeps({
+      ...deps,
+      capture: async (tabId, origin) => {
+        seen.push([tabId, origin]);
+        return taken;
+      },
+    });
+
+    await useRun.getState().send("hello");
+
+    expect(seen).toEqual([
+      [1, "https://ledgerbox.local"],
+      [1, "https://ledgerbox.local"],
+    ]);
+    expect(daemon.runs().map((r) => r.body!.capture_id)).toEqual([taken.id, taken.id]);
+  });
+
+  it("that failed sends none, the request still goes, and the card keeps the reason", async () => {
+    const daemon = fakeDaemon({ runs: [[CARD, finished("I need your approval.")]] });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({
+      ...deps,
+      capture: async () => ({ id: null, why: "the screenshot took longer than 8 seconds" }),
+    });
+
+    await useRun.getState().send("chase it");
+
+    expect(daemon.runs()).toHaveLength(1);
+    expect(daemon.runs()[0].body).not.toHaveProperty("capture_id");
+    expect(useRun.getState().captureWhy[CARD.id as string]).toBe("the screenshot took longer than 8 seconds");
+  });
+
+  it("that throws is a capture that failed, not a request that failed", async () => {
+    const daemon = fakeDaemon({ runs: [[said("ok"), finished("ok")]] });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({
+      ...deps,
+      capture: async () => {
+        throw new Error("window gone");
+      },
+    });
+
+    await useRun.getState().send("hello");
+
+    expect(useRun.getState().phase).toBe("idle");
+    expect(daemon.runs()[0].body).not.toHaveProperty("capture_id");
+    expect(useRun.getState().captureNow).toContain("window gone");
+  });
+
+  it("is not asked for when nothing is wired, which is the shell-less path", async () => {
+    const daemon = fakeDaemon({ runs: [[finished()]] });
+    wire(daemon, fakePage());
+
+    await useRun.getState().send("hello");
+
+    expect(daemon.runs()[0].body).not.toHaveProperty("capture_id");
+  });
+
+  it("that worked leaves a card the daemon filed with it with no reason", async () => {
+    const daemon = fakeDaemon({ runs: [[{ ...CARD, capture_id: taken.id }, finished()]] });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({ ...deps, capture: async () => taken });
+
+    await useRun.getState().send("chase it");
+
+    expect(useRun.getState().cards[0].capture_id).toBe(taken.id);
+    expect(useRun.getState().captureWhy).toEqual({});
+  });
+});

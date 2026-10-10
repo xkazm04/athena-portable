@@ -491,3 +491,37 @@ def test_hanging_up_mid_turn_still_writes_the_row(
     rows = voiced.daemon.ledger.recent(10).rows
     assert len(rows) == 1 and rows[0].surface == "voice"
     assert PAGE_ORIGIN in voiced.daemon.sessions
+
+
+def test_a_spoken_and_a_typed_turn_file_a_card_that_carries_the_shells_capture(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    """ADR 0066: the capture id on the start frame and on a text frame reaches the gate."""
+    capture = "cap_0123456789ab"
+    voiced.register()
+    voiced.script(
+        claude_round(op("host.invoices.pay", invoice="7")),
+        claude_round(op("host.invoices.pay", invoice="8")),
+    )
+    backend.utterances = ["pay invoice 7"]
+
+    client.utter(capture_id=capture)
+    spoken = client.until("decision.requested")
+    client.until("turn.finished")
+    client.say("pay invoice 8", capture_id=capture)
+    typed = client.until("decision.requested", params={"invoice": "8"})
+    client.until("turn.finished")
+
+    assert spoken["capture_id"] == typed["capture_id"] == capture
+
+
+def test_a_voice_frame_with_a_list_past_its_cap_is_refused_not_cut(
+    voiced: Live, client: VoiceClient
+) -> None:
+    voiced.register()
+
+    client.say("pay", gated_tools=[f"host.invoices.t{i}" for i in range(5000)])
+    error = client.until("turn.error")
+
+    assert error["reason"] == "validator_failed"
+    assert "gated_tools" in error["detail"]

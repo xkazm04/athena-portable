@@ -399,3 +399,41 @@ describe("playback and barge-in", () => {
     expect(useVoice.getState().reason).toMatch(/voice closed/);
   });
 });
+
+describe("the capture (ADR 0066)", () => {
+  const taken = { id: "cap_0123456789ab", why: null };
+
+  it("is taken before the start frame and before a text frame, and rides both", async () => {
+    const { socket } = wire({ capture: async () => taken });
+    await startVoice();
+
+    await useVoice.getState().press();
+    useVoice.getState().release();
+    await useVoice.getState().say("hi");
+
+    const frames = socket.frames();
+    expect(frames.find((f) => f.type === "start")).toMatchObject({ capture_id: taken.id });
+    expect(frames.find((f) => f.type === "text")).toMatchObject({ capture_id: taken.id });
+  });
+
+  it("that failed sends none, the frame still goes, and the reason is kept", async () => {
+    const { socket } = wire({ capture: async () => ({ id: null, why: "no screenshot hand" }) });
+    await startVoice();
+
+    await useVoice.getState().say("hi");
+
+    const frame = socket.frames().find((f) => f.type === "text");
+    expect(frame).toBeDefined();
+    expect(frame).not.toHaveProperty("capture_id");
+    expect(useRun.getState().captureNow).toBe("no screenshot hand");
+  });
+
+  it("is not asked for when nothing is wired (no shell)", async () => {
+    const { socket } = wire();
+    await startVoice();
+
+    await useVoice.getState().say("hi");
+
+    expect(socket.frames().find((f) => f.type === "text")).not.toHaveProperty("capture_id");
+  });
+});

@@ -212,6 +212,9 @@ class TurnContext:
     #: Host registry names (``host.<app_id>.<tool>``) the user pinned ``GATED`` on a trusted
     #: origin. The gate files a card for them whatever their flags imply. A pin never loosens.
     gated_tools: frozenset[str] = frozenset()
+    #: The capture (``cap_…``) the surface took of the focused tab for this request, or ``None``.
+    #: The gate files it on a card for a gated call on the session's own host origin (README §3.5).
+    capture_id: str | None = None
     extra: dict[str, Any] = field(default_factory=dict)
 
 
@@ -258,6 +261,8 @@ class ToolEntry:
     #: Required for ``READ``: the character cap its answer is truncated to before it becomes an
     #: episode. README §3.3 fixes the catalog's default at 1,600.
     cap_chars: int | None = None
+    #: The tier when it is not the origin's: the shell's hands are ``host:`` tools at tier 2.
+    tier_override: Tier | None = None
 
     def __post_init__(self) -> None:
         if not self.name or "." not in self.name:
@@ -280,6 +285,8 @@ class ToolEntry:
 
     @property
     def tier(self) -> Tier:
+        if self.tier_override is not None:
+            return self.tier_override
         return self.parsed_origin.tier
 
     def enabled_in(self, lane: Lane) -> bool:

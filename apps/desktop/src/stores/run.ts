@@ -24,7 +24,7 @@
 import { create } from "zustand";
 
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
-import { callOnPage } from "@/lib/hands";
+import { callOnPage, takeCapture, type Taken } from "@/lib/hands";
 import type { Wire } from "@/lib/ipc";
 import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
 import { reasonOf, refusalSentence, switchedOffSentence } from "@/companion/plain";
@@ -141,6 +141,12 @@ export interface RunDeps {
    * something else may omit it; the shell always wires it.
    */
   gated?: () => GatedLists;
+  /**
+   * Take the capture of the focused tab, once, just before a request (README 3.5, ADR 0066). Never
+   * rejects: a capture that failed answers with no id and the reason. Optional so a test about
+   * something else may omit it, which sends no capture.
+   */
+  capture?: (tabId: number, origin: string) => Promise<Taken>;
   /** Keep one answered decision on this computer (the `activity` table). */
   record?: (row: ActivityWrite) => Promise<void>;
   /** Read back what earlier windows kept. */
@@ -171,6 +177,13 @@ export interface RunState {
   answering: Record<string, string>;
   /** Cards whose last answer was refused: id to the one sentence shown under the buttons. */
   refusals: Record<string, string>;
+  /**
+   * Why the capture of the request that filed a card is missing, by card id. A card that has a
+   * capture has no entry, and a card the daemon reported on its own (reconcile) has none either.
+   */
+  captureWhy: Record<string, string>;
+  /** Why the latest request went without a capture; `null` when it had one (ADR 0066). */
+  captureNow: string | null;
   /** Answers given in this window, newest first. */
   answered: AnsweredDecision[];
   /** What earlier windows kept, read once at start. `null` until the store has answered. */
@@ -203,6 +216,8 @@ export const EMPTY = {
   calls: [] as TranscriptEntry[],
   answering: {} as Record<string, string>,
   refusals: {} as Record<string, string>,
+  captureWhy: {} as Record<string, string>,
+  captureNow: null as string | null,
   answered: [] as AnsweredDecision[],
   earlier: null as EarlierRecord | null,
   project: null as ActivePlaybook | null,
@@ -221,6 +236,7 @@ const LIVE: RunDeps = {
     const origin = originOf(tab.url);
     return { tabId: tab.id, origin, appId: catalogIdOf(origin, byTab[tab.id]?.appId ?? null) };
   },
+  capture: takeCapture,
   hostState: () => {
     const { tabs } = useTabs.getState();
     const focused = focusedTab();
@@ -301,6 +317,33 @@ export interface GatedLists {
   gated_origins: string[];
   /** Registry names (`host.<app_id>.<tool>`) the user pinned `GATED` on an enabled row. */
   gated_tools: string[];
+}
+
+/**
+ * The capture of a tab through `capture`, or none. A dependency that throws is a capture that
+ * failed: the request goes either way (ADR 0066).
+ */
+export async function captureOf(
+  capture: RunDeps["capture"],
+  tabId: number,
+  origin: string,
+): Promise<Taken> {
+  if (!capture) return { id: null, why: null };
+  try {
+    return await capture(tabId, origin);
+  } catch (error) {
+    return { id: null, why: `the screenshot failed: ${error instanceof Error ? error.message : String(error)}` };
+  }
+}
+
+/** The `captureWhy` map after a card arrived: a card with no capture remembers why, if known. */
+export function withCaptureWhy(
+  known: Record<string, string>,
+  card: DecisionRequested,
+  why: string | null,
+): Record<string, string> {
+  if (card.capture_id || !why) return known;
+  return { ...known, [card.id]: why };
 }
 
 export const NOTHING_GATED: GatedLists = { gated_origins: [], gated_tools: [] };
@@ -556,6 +599,7 @@ export const useRun = create<RunState>((set, get) => {
           cards: s.cards.some((c) => c.id === event.id)
             ? s.cards.map((c) => (c.id === event.id ? event : c))
             : [...s.cards, event],
+          captureWhy: withCaptureWhy(s.captureWhy, event, s.captureNow),
         }));
         break;
       case "decision.resolved":
@@ -591,11 +635,15 @@ export const useRun = create<RunState>((set, get) => {
     }
     const carried = outstanding;
     outstanding = [];
+    // One capture of the focused tab per request. It never blocks the request and never fails it.
+    const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
+    set({ captureNow: taken.why });
     try {
       for await (const event of api.run({
         origin: focused.origin,
         message,
         surface: "panel",
+        ...(taken.id ? { capture_id: taken.id } : {}),
         host_state: deps.hostState(),
         tool_results: carried,
         disabled_origins: deps.disabledOrigins?.() ?? [],
@@ -827,6 +875,7 @@ export const useRun = create<RunState>((set, get) => {
         calls: keep.calls,
         answering: keep.answering,
         refusals: keep.refusals,
+        captureWhy: keep.captureWhy,
         answered: keep.answered,
         earlier: keep.earlier,
         project: keep.project,

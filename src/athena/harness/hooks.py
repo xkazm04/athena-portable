@@ -81,6 +81,18 @@ class GateOutcome:
         return isinstance(self.decision, Proceed)
 
 
+def _capture_for(entry: ToolEntry, ctx: TurnContext) -> str | None:
+    """The capture a card carries: the focused tab's, and only for the session's own host origin.
+
+    The surface captured the tab it is looking at. A connector's, core's or another app's call is
+    not about that page, so a screenshot on its card would show the user something else (README
+    §3.5, ADR 0066).
+    """
+    if ctx.capture_id is None or not ctx.app_id or entry.origin != f"host:{ctx.app_id}":
+        return None
+    return ctx.capture_id
+
+
 class GateHook:
     """The gate (README §3.3). Every tool call in this repository passes through here.
 
@@ -117,6 +129,7 @@ class GateHook:
         if self.catalog.classify(entry.name) is not ToolClass.GATED and not _tightened(entry, ctx):
             return GateOutcome(Proceed(dict(params)))
 
+        capture = _capture_for(entry, ctx)
         card = self.approvals.create(
             entry.name,
             dict(params),
@@ -124,6 +137,9 @@ class GateHook:
             conversation=ctx.conversation_id,
             surface=ctx.surface,
             summary=rationale,
+            # Only a card that has a capture names one, so a table that predates the column is
+            # asked nothing new.
+            **({"capture_id": capture} if capture else {}),
         )
         return GateOutcome(
             Cancel(

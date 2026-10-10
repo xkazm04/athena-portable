@@ -109,14 +109,23 @@ export type MessageBlock =
   | { kind: "assistant"; id: string; text: string }
   | { kind: "activity"; id: string; steps: readonly TranscriptEntry[] };
 
+/**
+ * What a card shows of its page. `shot` is the capture the daemon filed with the card (ADR 0066),
+ * `none` says no capture was taken and, when the shell knows, why. `sketch` is a labelled stand-in
+ * for fixtures and the preview, which have no shell.
+ */
+export type CardCapture =
+  | { kind: "sketch" }
+  | { kind: "shot"; id: string }
+  | { kind: "none"; why: string | null };
+
 /** One decision card, exactly as the approval was filed: every parameter, none cut. */
 export interface CardView {
   id: string;
   action: string;
   rationale: string;
   params: readonly { key: string; value: string }[];
-  /** `sketch` is a labelled stand-in, used by fixtures only; a live card has none yet. */
-  capture: "sketch" | null;
+  capture: CardCapture;
   /** The answer is on its way; the buttons read "Sending..." and are off. */
   sending: boolean;
   /** One plain sentence under the buttons when the daemon refused the last answer; `null` otherwise. */
@@ -320,6 +329,8 @@ export interface CompanionInputs {
     /** Cards whose answer is in flight, and the sentence under the buttons of a refused one. */
     answering?: Readonly<Record<string, string>>;
     refusals?: Readonly<Record<string, string>>;
+    /** Why a card has no capture, by card id, when the shell knows. */
+    captureWhy?: Readonly<Record<string, string>>;
     /** Every call of this window; when absent the transcript's tool rows are the record. */
     calls?: readonly TranscriptEntry[];
     earlier?: EarlierRecord | null;
@@ -384,7 +395,14 @@ export function moodOf(form: AthenaState, cards: number, listening: boolean, voi
 export function selectCompanion(i: CompanionInputs): CompanionModel {
   const m = i.machine;
   const form = m.form;
-  const waiting = cardsOf(i.run.cards, i.held, m, i.run.answering ?? {}, i.run.refusals ?? {});
+  const waiting = cardsOf(
+    i.run.cards,
+    i.held,
+    m,
+    i.run.answering ?? {},
+    i.run.refusals ?? {},
+    i.run.captureWhy ?? {},
+  );
   const n = shown(m);
   const busy = i.run.phase === "running" || i.run.phase === "acting";
   const steps = stepsOfTurn(i.run.transcript);
@@ -473,10 +491,11 @@ function cardsOf(
   m: MachineState,
   answering: Readonly<Record<string, string>>,
   refusals: Readonly<Record<string, string>>,
+  captureWhy: Readonly<Record<string, string>>,
 ): CardView[] {
   const list = m.decided && held && !cards.some((c) => c.id === held.id) ? [held, ...cards] : cards;
   return list.map((card, index) => ({
-    ...cardView(card),
+    ...cardView(card, captureWhy[card.id] ?? null),
     sending: answering[card.id] !== undefined || (index === 0 && m.decided?.sending === true),
     refusal: refusals[card.id] ?? null,
   }));
@@ -485,13 +504,13 @@ function cardsOf(
 /** What a card says when the daemon's pending row carried no reason. */
 export const NO_RATIONALE = "No reason was filed with this request. Read the details below before you answer.";
 
-export function cardView(card: DecisionRequested): CardView {
+export function cardView(card: DecisionRequested, why: string | null = null): CardView {
   return {
     id: card.id,
     action: card.action,
     rationale: card.rationale || NO_RATIONALE,
     params: Object.entries(card.params).map(([key, value]) => ({ key, value: spell(value) })),
-    capture: null,
+    capture: card.capture_id ? { kind: "shot", id: card.capture_id } : { kind: "none", why },
     sending: false,
     refusal: null,
   };

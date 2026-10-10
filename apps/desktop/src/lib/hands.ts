@@ -20,6 +20,17 @@ interface HandReply {
   reason: string | null;
   error: string | null;
   tier: number;
+  /** The `captures` row a `page_screenshot` filed; `null` for every other hand. */
+  capture_id?: string | null;
+}
+
+/** How long a capture may take before the request goes without one (ADR 0066). */
+export const CAPTURE_MS = 8000;
+
+/** What taking a capture came to: its id, or the one sentence that says why there is none. */
+export interface Taken {
+  id: string | null;
+  why: string | null;
 }
 
 let hands: readonly BridgeTool[] = [];
@@ -33,6 +44,44 @@ export function handTools(): readonly BridgeTool[] {
 export function setHandsForTests(next: readonly BridgeTool[]): void {
   hands = next;
 }
+
+/**
+ * The capture of a tab, taken through the shell's `page_screenshot` hand just before a request
+ * (README 3.5, ADR 0066). Never throws and never waits past {@link CAPTURE_MS}: a request must go
+ * with or without a picture, and `why` is where the card reads what happened.
+ */
+export async function takeCapture(
+  tabId: number,
+  origin: string,
+  limitMs: number = CAPTURE_MS,
+): Promise<Taken> {
+  if (!hasShell()) return { id: null, why: "this window has no shell to take one" };
+  if (!/^https?:\/\//.test(origin)) return { id: null, why: "the focused tab is not a web page" };
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<Taken>((resolve) => {
+    timer = setTimeout(
+      () => resolve({ id: null, why: `the screenshot took longer than ${limitMs / 1000} seconds` }),
+      limitMs,
+    );
+  });
+  const taken = (async (): Promise<Taken> => {
+    try {
+      const reply = await call<HandReply>("hands_call", { tab_id: tabId, name: SCREENSHOT, input: {} });
+      if (reply.ok && reply.capture_id) return { id: reply.capture_id, why: null };
+      return { id: null, why: reply.error || reply.reason || "the screenshot hand answered with no capture" };
+    } catch (error) {
+      return { id: null, why: `the screenshot failed: ${error instanceof Error ? error.message : String(error)}` };
+    }
+  })();
+  try {
+    return await Promise.race([taken, late]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** The one hand the shell answers (`hands.rs` `SCREENSHOT`). */
+const SCREENSHOT = "page_screenshot";
 
 /** Fetch the list once. It is static, so a second call asks nothing. A failure leaves it empty. */
 export async function startHands(): Promise<void> {

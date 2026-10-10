@@ -30,7 +30,7 @@ import { create } from "zustand";
 
 import { DaemonApi, type ExecuteRow } from "@/lib/api";
 import { VoiceSetupApi, availabilityOf, refusalText } from "@/lib/voice-setup";
-import { callOnPage } from "@/lib/hands";
+import { callOnPage, takeCapture, type Taken } from "@/lib/hands";
 import type { ChannelEvent, DecisionRequested, ToolCall } from "@/lib/events";
 import { catalogIdOf, manifestBodyOf } from "@/lib/manifest";
 import {
@@ -44,7 +44,15 @@ import {
 } from "@/lib/voice";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useOrigins } from "@/stores/origins";
-import { NOTHING_GATED, disabledOriginsOf, gatedListsOf, useRun, type GatedLists } from "@/stores/run";
+import {
+  NOTHING_GATED,
+  captureOf,
+  disabledOriginsOf,
+  gatedListsOf,
+  useRun,
+  withCaptureWhy,
+  type GatedLists,
+} from "@/stores/run";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
 
@@ -70,6 +78,8 @@ export interface VoiceDeps {
   disabledOrigins?: () => string[];
   /** The first-sight apps and the `GATED` pins, sent on every turn frame the same way (ADR 0063). */
   gated?: () => GatedLists;
+  /** Take the capture of the focused tab before a frame that starts a turn (ADR 0066). */
+  capture?: (tabId: number, origin: string) => Promise<Taken>;
   call: (
     tabId: number,
     name: string,
@@ -166,6 +176,7 @@ const LIVE: VoiceDeps = {
   disabledOrigins: () =>
     disabledOriginsOf(useOrigins.getState().records, useTabs.getState().tabs, useTools.getState().byTab),
   gated: () => gatedListsOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab),
+  capture: takeCapture,
   // A hand the page did not register goes to the shell's `hands_call`; the rest to the page.
   call: (tabId, name, input) =>
     callOnPage(tabId, name, input, useTools.getState().byTab[tabId]?.tools ?? []),
@@ -241,7 +252,10 @@ export const useVoice = create<VoiceState>((set, get) => {
         });
         break;
       case "decision.requested":
-        useRun.setState((s) => ({ cards: [...s.cards, event as DecisionRequested] }));
+        useRun.setState((s) => ({
+          cards: [...s.cards, event as DecisionRequested],
+          captureWhy: withCaptureWhy(s.captureWhy, event as DecisionRequested, s.captureNow),
+        }));
         break;
       case "decision.resolved":
         useRun.setState((s) => ({ cards: s.cards.filter((c) => c.id !== event.id) }));
@@ -394,10 +408,13 @@ export const useVoice = create<VoiceState>((set, get) => {
       const live = await ensureSocket();
       if (!live) return;
       if (state.generation !== null) player?.drop(state.generation);
+      const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
+      useRun.setState({ captureNow: taken.why });
       set({ phase: "listening", reason: "", partial: "", generation: null, speakingText: "", heard: "" });
       live.send({
         type: "start",
         origin: focused.origin,
+        ...(taken.id ? { capture_id: taken.id } : {}),
         host_state: deps.hostState(),
         disabled_origins: deps.disabledOrigins?.() ?? [],
         ...(deps.gated?.() ?? NOTHING_GATED),
@@ -432,11 +449,14 @@ export const useVoice = create<VoiceState>((set, get) => {
       const live = await ensureSocket();
       if (!live) return;
       if (get().generation !== null) player?.drop(get().generation as number);
+      const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
+      useRun.setState({ captureNow: taken.why });
       set({ phase: "thinking", reason: "", generation: null, speakingText: "", heard: "" });
       live.send({
         type: "text",
         text,
         origin: focused.origin,
+        ...(taken.id ? { capture_id: taken.id } : {}),
         host_state: deps.hostState(),
         disabled_origins: deps.disabledOrigins?.() ?? [],
         ...(deps.gated?.() ?? NOTHING_GATED),

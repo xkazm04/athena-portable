@@ -192,6 +192,8 @@ export interface TurnBody {
   gated_origins?: string[];
   /** Registry names (`host.<app_id>.<tool>`) the user pinned `GATED`. A pin only tightens. */
   gated_tools?: string[];
+  /** The shell's capture (`cap_…`) of the focused tab, taken just before this request (ADR 0066). */
+  capture_id?: string;
 }
 
 /** A refusal the daemon named. `reason` is a member of the one closed vocabulary. */
