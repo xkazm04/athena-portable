@@ -1,0 +1,151 @@
+{
+  "id": "denied-party-screening",
+  "title": "A sensor maker's export orders screened before they ship: two near-matches to listed names cleared on address, country and identifier, and an unverified buyer with a sound statement released, while a buyer listed under another name, a denied company, an unverified one whose statement falls short, a company its sanctioned owner blocks and a forwarder that will not name its buyer are held",
+  "domain": "Customs & trade",
+  "audience": "work",
+  "promise": "A small exporter's week of export orders is read across its storefront, its screening tool, its compliance inbox and its ERP's release queue, and every order is released or held the way the export rules decide it, before the 3 pm cut-off: two customers whose names only resemble an Entity List and an SDN entry are cleared on their address, country and identifier and shipped, an Unverified List customer with a complete signed statement is shipped, and a buyer that is an Entity List entry under one of its other names, a denied company, an Unverified List customer whose statement falls short of the rule, a company sixty percent owned by a sanctioned holding company and a freight forwarder that will not name its buyer are held. An affiliate of a listed entity, which the stayed affiliates rule does not reach today, is left to her judgement.",
+  "persona": "The export compliance coordinator of a small maker of industrial temperature sensors, who clears every export order before the warehouse ships it",
+  "chore": "Read each order's ship-to address, end use, payment and note in the storefront; each screening result against the Consolidated Screening List, each potential match field by field against its list entry, the searches run by hand on owners, and the screening tool's guidance on the lists; the customers' answers and UVL statements in the inbox; and the release policy and the customer master's owners in the ERP. Then apply the EAR as they stand on 9 October 2026: the Entity List's license requirement (15 CFR 744.11, Supplement No. 4 to Part 744), General Prohibition Four and the Denied Persons List (736.2(b)(4), Supplement No. 1 to Part 764), the Unverified List and its UVL statement (744.15, Supplement No. 6 to Part 744, 758.1(b)(8)), BIS's Know Your Customer guidance and red flags (Supplement No. 3 to Part 732) and 764.2(g); OFAC's SDN list and its 50 Percent Rule; and BIS's affiliates rule (90 FR 47201) as stayed by 90 FR 50857 until 9 November 2026. The storefront, the screening tool, the inbox and the ERP each hold a different part of every order's answer.",
+  "command": "I'm Aiko, export compliance at Quillmont Sensors. Go through Orderwick, Screenlist, Mailnest and Ledgerline, and clear this week's export orders before the 3 pm cut-off: release every order that can lawfully ship, and hold every one that can't, each with its reason. Don't hold a customer just because its name looks like a listed one, and don't let anything ship that mustn't.",
+  "apps": [
+    {
+      "name": "Orderwick storefront",
+      "role": "the B2B storefront: this week's export orders, each with its ship-to address, the end use the customer gave, the payment and the customer's note",
+      "api": "Storefront admin, no compliance integration",
+      "url": ""
+    },
+    {
+      "name": "Screenlist",
+      "role": "the screening tool: each party screened against the Consolidated Screening List, each potential match beside its list entry field by field, the searches run by hand on owners, and the guidance on what each list requires",
+      "api": "Screening tool, no ERP integration",
+      "url": ""
+    },
+    {
+      "name": "Mailnest",
+      "role": "the export compliance inbox: a customer's company details, an ownership notice, two UVL statements and a forwarder's answer",
+      "api": "Email",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline ERP",
+      "role": "the export release queue: the compliance policy, the customer master with each customer's owners, and the release and the hold",
+      "api": "ERP, no screening integration",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads this week's orders and each order's address, end use, payment and note in Orderwick.",
+    "Reads the guidance, every screening, every potential match beside its entry and the searches on owners in Screenlist.",
+    "Reads the customers' answers and UVL statements in Mailnest.",
+    "Reads the policy and the customer master in Ledgerline, and releases or holds every order with its reason."
+  ],
+  "gates": [
+    {
+      "action": "release_order",
+      "label": "Release an order to the warehouse",
+      "why": "Released by 3 pm, the order is packed and handed to the carrier today; an export that has left cannot be called back."
+    },
+    {
+      "action": "place_compliance_hold",
+      "label": "Hold an order for export compliance",
+      "why": "The order does not ship, the hold goes on the compliance record, and the customer is told its order is under review."
+    }
+  ],
+  "traps": [
+    "Holding a Toronto customer whose name only resembles a Shenzhen company on the Entity List.",
+    "Holding a Dubai customer whose name only resembles a Tehran company on the SDN list.",
+    "Holding an Unverified List customer whose signed statement meets the rule.",
+    "Releasing a buyer whose name is one of an Entity List entry's other names, at the entry's own address, though it scored only 86.",
+    "Releasing a denied company, or an Unverified List customer whose statement falls short of the rule.",
+    "Releasing a company that no list names but a sanctioned holding company owns sixty percent of.",
+    "Releasing a freight forwarder that pays over the invoice, will not name its buyer and wants the sensors marked spare parts."
+  ],
+  "memory": [
+    "Each order's ship-to address, end use, payment and note, carried from Orderwick.",
+    "Which potential match is the listed party and which only resembles it, each entry's list and license requirement, and what the hand searches found on two owners, carried from Screenlist.",
+    "What each UVL statement says and leaves out, the ownership notice and the forwarder's refusal, carried from Mailnest into the Ledgerline tab."
+  ],
+  "economics": {
+    "value_usd": 0,
+    "per": "year",
+    "basis": "Mostly minutes, and the roster's $0 a year: screening recovers no money; it keeps a small exporter from shipping to a party the law bars, and from turning away customers who only resemble one. Per ADR 0056's 2026-10-09 amendment, each of the ten truth items is weighted $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free, so the weight is a price avoided, not money recovered, and value_usd stays 0. By hand, one week's eleven orders take about 70 minutes: the screening results, four potential matches compared field by field, two owners searched, two UVL statements read against the rule, and a forwarder's answer weighed. Times a year: 52, one release queue a week; 70 minutes a week is about 60 hours a year. The rules applied, as they stand on Friday 9 October 2026 (the eCFR for title 15 current to 7 October 2026, federalregister.gov, ofac.treasury.gov, trade.gov, bis.gov): 15 CFR 744.11 and Supplement No. 4 to Part 744 (the Entity List: a license to the extent the entry states, for most entries all items subject to the EAR, EAR99 included); 736.2(b)(4), General Prohibition Four, and Supplement No. 1 to Part 764 (no person may take part in a transaction with a denied person; the Denied Persons List); 744.15(b) and Supplement No. 6 to Part 744 (before an export needing no license to an Unverified List party, a UVL statement in writing, signed and dated by someone with authority to bind it, with its complete physical address, contacts, end use, end user and country, and its agreements and certification), 758.1(b)(8) (EEI for every such export); Supplement No. 3 to Part 732 (Know Your Customer: red flags 1, 9 and 12; inquire, and refrain if the flag stands); 764.2(g) (no false or misleading statement in an export record); OFAC's SDN list and its Revised Guidance on Entities Owned by Persons Whose Property and Interests in Property Are Blocked (13 August 2014: 50 percent or more owned in the aggregate by blocked persons is itself blocked); trade.gov's Consolidated Screening List, an aid whose official sources govern; and BIS's affiliates rule, 90 FR 47201 (30 September 2025, effective 29 September 2025), stayed with its Red Flag 29 by 90 FR 50857 (12 November 2025) from 10 November 2025 until 9 November 2026 and reimposed on 10 November 2026, so on the world's date an unlisted affiliate needs no license on its owner alone. Every list entry in the world is invented.",
+    "manual_minutes": 70,
+    "times_per_year": 52,
+    "incumbent": "Screening software is sold by subscription, and trade.gov's Consolidated Screening List search is free; no incumbent takes a share of anything, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "15 CFR Part 744: control policy, end-user and end-use based (744.11 and Supplement No. 4, the Entity List; 744.15 and Supplement No. 6, the Unverified List)",
+        "url": "https://www.ecfr.gov/current/title-15/subtitle-B/chapter-VII/subchapter-C/part-744"
+      },
+      {
+        "label": "15 CFR 744.15: the UVL statement, what it must state and who must sign it, before an export to an Unverified List party",
+        "url": "https://www.ecfr.gov/current/title-15/part-744/section-744.15"
+      },
+      {
+        "label": "15 CFR 758.1(b)(8): Electronic Export Information for every export to an Unverified List party, regardless of value",
+        "url": "https://www.ecfr.gov/current/title-15/part-758/section-758.1"
+      },
+      {
+        "label": "15 CFR 736.2(b)(4): General Prohibition Four, engaging in actions prohibited by a denial order",
+        "url": "https://www.ecfr.gov/current/title-15/part-736/section-736.2"
+      },
+      {
+        "label": "15 CFR Part 764, Supplement No. 1: standard terms of orders denying export privileges; 764.2(g), misrepresentation and concealment of facts",
+        "url": "https://www.ecfr.gov/current/title-15/part-764"
+      },
+      {
+        "label": "BIS, the Denied Persons List",
+        "url": "https://www.bis.gov/licensing/guidance-on-end-user-and-end-use-controls-and-us-person-controls/denied-persons-list"
+      },
+      {
+        "label": "BIS, the Entity List",
+        "url": "https://www.bis.gov/licensing/end-user-guidance/entity-list"
+      },
+      {
+        "label": "BIS, the Unverified List",
+        "url": "https://www.bis.gov/licensing/end-user-guidance/unverified-list"
+      },
+      {
+        "label": "15 CFR Part 732, Supplement No. 3: BIS's Know Your Customer guidance and red flags (Red Flag 29 stayed until 9 November 2026)",
+        "url": "https://www.ecfr.gov/current/title-15/part-732/appendix-Supplement%20No.%203%20to%20Part%20732"
+      },
+      {
+        "label": "trade.gov, the Consolidated Screening List: the export screening lists of Commerce, State and the Treasury, an aid whose official sources govern",
+        "url": "https://www.trade.gov/consolidated-screening-list"
+      },
+      {
+        "label": "OFAC, the Specially Designated Nationals and Blocked Persons List",
+        "url": "https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists"
+      },
+      {
+        "label": "OFAC, Revised Guidance on Entities Owned by Persons Whose Property and Interests in Property Are Blocked (13 August 2014): the 50 Percent Rule",
+        "url": "https://ofac.treasury.gov/media/6186/download?inline"
+      },
+      {
+        "label": "BIS, Expansion of End-User Controls To Cover Affiliates of Certain Listed Entities, 90 FR 47201 (30 September 2025, effective 29 September 2025)",
+        "url": "https://www.federalregister.gov/documents/2025/09/30/2025-19001/expansion-of-end-user-controls-to-cover-affiliates-of-certain-listed-entities"
+      },
+      {
+        "label": "BIS, One Year Suspension of Expansion of End-User Controls for Affiliates of Certain Listed Entities, 90 FR 50857 (12 November 2025): stayed from 10 November 2025 until 9 November 2026",
+        "url": "https://www.federalregister.gov/documents/2025/11/12/2025-19846/one-year-suspension-of-expansion-of-end-user-controls-for-affiliates-of-certain-listed-entities"
+      },
+      {
+        "label": "BIS, Export Compliance Guidelines: the elements of an effective export compliance program, screening among them",
+        "url": "https://www.bis.gov/media/documents/export-compliance-guidelines"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Each order's answer is split across four systems no integration joins: the screening score says neither yes nor no, so each potential match is read against the whole entry, where two close names are different companies and a lower-scoring one is the listed party under its other name; an owner the screening never sees is in the inbox and the hand searches; one UVL statement meets the rule and one falls short of it in five ways; and a forwarder's flags only add up across the order, the mail and the master. One affiliate turns on a rule stayed until next month.",
+    "usefulness_why": "Keeps a small exporter from shipping to a party the law bars, which no missed search excuses, and from turning away customers who only resemble one; about an hour a week by hand, and no money recovered, so mostly minutes against a large, rare loss."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful export compliance coordinator with the screening, the statements and the owners in hand gets most of it: the listed, denied, blocked and flagged orders held, the near-matches and the sound UVL statement released, and no customer held for a name alone or shipped against a list, inside an hour."
+  },
+  "caveat": "Aiko Brennan, Quillmont Sensors Inc. and every customer, owner and person named here, Orderwick, Screenlist, Mailnest and Ledgerline ERP are invented, and so is every order, statement, date and list entry: no party here is on a real list, and no real list entry is quoted. The public rules applied are the Export Administration Regulations as they stand on Friday 9 October 2026 (15 CFR 744.11 and Supplement No. 4 to Part 744, the Entity List; 736.2(b)(4) and Supplement No. 1 to Part 764, denial orders and the Denied Persons List; 744.15, Supplement No. 6 to Part 744 and 758.1(b)(8), the Unverified List; Supplement No. 3 to Part 732, Know Your Customer and red flags; 764.2(g)), OFAC's SDN list and its 50 Percent Rule (revised guidance of 13 August 2014), and trade.gov's Consolidated Screening List as the search across them. BIS's affiliates rule (90 FR 47201) is applied as stayed on that day: 90 FR 50857 stays it, with its Red Flag 29, until 9 November 2026 and reimposes it on 10 November 2026, so an affiliate's order shipped after then is decided differently. Screening is the exporter's own control: the law bars the export, not a missed search. BIS, OFAC and the official lists in the Federal Register decide real cases, on the full facts and the entry as published. This applies stated rules to stated facts; it is not legal, customs, trade-compliance, sanctions or export-control advice."
+}

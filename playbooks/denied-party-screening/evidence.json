@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "denied-party-screening",
+  "captured_at": "2026-10-10T09:48:47Z",
+  "bench_run_at": "2026-10-10T09:45:28Z",
+  "narration": {
+    "text": "A sensor maker's export orders screened before they ship: two near-matches to listed names cleared on address, country and identifier, and an unverified buyer with a sound statement released, while a buyer listed under another name, a denied company, an unverified one whose statement falls short, a company its sanctioned owner blocks and a forwarder that will not name its buyer are held. This is a chore for the export compliance coordinator of a small maker of industrial temperature sensors, who clears every export order before the warehouse ships it. On the bench, she found 10 of 10 eligible items, worth 10 dollars of the 10 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 3 minutes. By hand, the same chore takes 70 minutes, so she was about 24 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 59.2,
+    "sha256": "f2e398d8e159778cd511968784818c4a63b3895ebfd971f298341a42e3e3436e"
+  },
+  "video": {
+    "path": "evidence/denied-party-screening/evidence.mp4",
+    "duration_s": 59.2,
+    "bytes": 4159375,
+    "sha256": "28b209da9d70c9312548fbd43f8d6fe3de8e9ab80d5069cd89111c5b963100ea"
+  },
+  "thumbnail": {
+    "path": "playbooks/denied-party-screening/thumb.jpg",
+    "bytes": 87513,
+    "sha256": "559d7e9da0fb65efa10f91693ab1d9966ddd8f35b51c028e2cc3d5f68cedeae8"
+  }
+}

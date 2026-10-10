@@ -1,0 +1,80 @@
+{
+  "targets": [
+    {
+      "tool": "release_order",
+      "key": "order_id",
+      "eligible": {
+        "O-4101": {
+          "value_usd": 1.0,
+          "why": "Halden Process Controls GmbH, Stuttgart: no list entry scored above 80, a family-owned customer since 2018 with its end use given, no red flag, and its TS-200s are EAR99 needing no license for Germany. Cleared, so it ships today. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+        },
+        "O-4102": {
+          "value_usd": 1.0,
+          "why": "Agricola Los Quillayes S.A., Rancagua: no potential match, a family-owned customer since 2021 with its end use given, and EAR99 probes needing no license for Chile. Cleared. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+        },
+        "O-4103": {
+          "value_usd": 1.0,
+          "why": "A near-match, not a match: the Entity List entry is Corvane Instrument Technology Co., Ltd. of Shenzhen, China, with a Chinese credit code and no a.k.a. or address outside Shenzhen; the customer is Corvane Instruments Ltd. of Toronto, Ontario business number 1002893417, owned by two Ontario founders, with no office, owner or affiliate in China (M-5). Close on name only; address, country and identifier differ, so it is cleared, recorded and released. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+        },
+        "O-4104": {
+          "value_usd": 1.0,
+          "why": "A near-match, not a match: the SDN entry is Sorvan Trading Company of Tehran, Iranian registration 10102847, with no alias, address, owner or link in the UAE; the customer is Sorvan Trading FZE of Jebel Ali, free zone licence JAFZA-118204, owned by Farid and Leila Sorvani, whose own search (S-5) found nothing. A quarterly customer since 2019 with its end use given and no red flag. Cleared and released. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+        },
+        "O-4107": {
+          "value_usd": 1.0,
+          "why": "The listed party on the Unverified List, but its UVL statement meets 15 CFR 744.15(b): in writing on letterhead, signed and dated 2 October 2026 by its Managing Director, who certifies his authority; the complete physical address, phone, fax, email and website; the items (TS-200, EAR99); the end use, end user and country; agreement to abide by the EAR, to cooperate with end-use checks and to provide records (M-2). An EAR99 export needing no license may proceed with it, the EEI filed and the export logged (758.1(b)(8), 744.15(b)(1)). Released. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+        }
+      },
+      "traps": {
+        "O-4105": "The listed party under an a.k.a.: Chengdu Qiaolin Microsystems Technology Co. is the first a.k.a. of the Entity List's Qiaolin Microsystems Co., Ltd., at the same No. 9 Kexin Road address. A license is required for all items subject to the EAR, EAR99 included, with a presumption of denial, and Quillmont holds none (744.11). Releasing it ships without the license",
+        "O-4106": "Veskimaa Industrial Supply OU is the denied person, same name, address and country, under a denial order in force to 14 March 2031. General Prohibition Four (736.2(b)(4)) bars any export to it, and no license exception applies",
+        "O-4108": "An Unverified List party whose statement does not meet 744.15(b): signed by a sales executive with no certification of authority, a post office box instead of a complete physical address, no phone, fax, email or website, no end use, end user or country declared, and no agreement to provide records (M-6). Without a valid statement the export may not proceed",
+        "O-4109": "Lumen Harbor Trading Ltd. has been 60 percent owned since 1 September 2026 by Dravik Capital Holdings Ltd., which is on the SDN List, same name, address and registration (S-7, M-3). Under OFAC's 50 Percent Rule it is itself blocked, listed or not, and an order to it cannot be filled",
+        "O-4111": "Unresolved red flags: a freight forwarder named as the final destination (red flag 9), no end use given and the end user refused when asked (1 and 12; M-4, M-7), payment from a third country above the invoice, and a request to mark the sensors 'spare parts', a false export record (764.2(g)). Under BIS's Know Your Customer guidance the exporter refrains while the flags stand"
+      },
+      "neutral": {
+        "O-4110": {
+          "why": "Wuxi Qiaoyun is 55 percent owned by the Entity List's Qiaolin Microsystems (S-6) but is not itself listed. BIS's affiliates rule, which would extend the Entity List license requirement to it, is stayed by 90 FR 50857 until 9 November 2026, and Red Flag 29 with it; the order ships today, so no license is required on the ground of its owner alone. Quillmont's policy leaves it to the coordinator: releasing it is lawful today, and holding it for a closer look at the owner is prudent"
+        }
+      }
+    },
+    {
+      "tool": "place_compliance_hold",
+      "key": "order_id",
+      "eligible": {
+        "O-4105": {
+          "value_usd": 1.0,
+          "why": "A true match under an a.k.a.: the order's Chengdu Qiaolin Microsystems Technology Co. is the first a.k.a. of the Entity List's Qiaolin Microsystems Co., Ltd., at the same address in Chengdu, though the screening scored it only 86. The entry requires a license for all items subject to the EAR, EAR99 included, with a presumption of denial (744.11, Supplement No. 4 to Part 744), and Quillmont holds none. Held: it does not ship. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+        },
+        "O-4106": {
+          "value_usd": 1.0,
+          "why": "The denied person: Veskimaa Industrial Supply OU, same name, address and country as the Denied Persons List entry, under a standard denial order effective 14 March 2024 to 14 March 2031. No person may export to it or take part in a transaction with it (736.2(b)(4), Supplement No. 1 to Part 764), and no license exception applies. Held. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+        },
+        "O-4108": {
+          "value_usd": 1.0,
+          "why": "The listed party on the Unverified List, with no statement that meets 744.15(b): the one received on 7 October (M-6) is signed by a sales executive with no certification of authority, gives a post office box, not a complete physical address, has no phone, fax, email or website, and declares no end use, end user or country and no agreement to provide records. Without a valid statement the export may not proceed. Held until a statement that meets the rule arrives. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+        },
+        "O-4109": {
+          "value_usd": 1.0,
+          "why": "Blocked by ownership: since 1 September 2026, 60 percent of Lumen Harbor Trading Ltd. is owned by Dravik Capital Holdings Ltd. (M-3), which Aiko's own search of 6 October found on the SDN List, same name, address and registration HE 412907 (S-7). Under OFAC's 50 Percent Rule (revised guidance of 13 August 2014) an entity 50 percent or more owned by a blocked person is itself blocked, though no list names it and the screening found no match. Held. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+        },
+        "O-4111": {
+          "value_usd": 1.0,
+          "why": "Red flags unresolved after asking: Marrow Bay Logistics is a freight forwarder named as the final destination (red flag 9), gave no end use and, asked on 6 October (M-4), refused to name its buyer (red flags 1 and 12; M-7); it paid $4,000 over the invoice from a bank in the Seychelles, and asked that the sensors be marked 'spare parts', a false description (764.2(g)). Under Supplement No. 3 to Part 732 the exporter refrains or puts the facts to BIS. Held. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+        }
+      },
+      "traps": {
+        "O-4101": "Halden Process Controls GmbH matched no list entry and raises no flag: holding it loses a sale and tells an innocent customer it is suspected",
+        "O-4102": "Agricola Los Quillayes S.A. matched no list entry and raises no flag: there is nothing to hold",
+        "O-4103": "A near-match on name only: Corvane Instruments Ltd. of Toronto differs from the Shenzhen entry on address, country and identifier, and the entry has no a.k.a. or address that fits it. Holding it blocks a customer who is not the listed party",
+        "O-4104": "A near-match on name only: Sorvan Trading FZE of Dubai differs from the Tehran SDN entry on address, country and identifier, and the entry lists nothing in the UAE. Holding it blocks a customer who is not the listed party",
+        "O-4107": "Ashvant's UVL statement of 2 October meets 744.15(b) in full, and the EAR99 sensors need no license: the export may proceed with the EEI filed. Holding it refuses an order the rule allows"
+      },
+      "neutral": {
+        "O-4110": {
+          "why": "Wuxi Qiaoyun is 55 percent owned by the Entity List's Qiaolin Microsystems (S-6) but is not itself listed. BIS's affiliates rule, which would extend the Entity List license requirement to it, is stayed by 90 FR 50857 until 9 November 2026, and Red Flag 29 with it; the order ships today, so no license is required on the ground of its owner alone. Quillmont's policy leaves it to the coordinator: releasing it is lawful today, and holding it for a closer look at the owner is prudent"
+        }
+      }
+    }
+  ]
+}
