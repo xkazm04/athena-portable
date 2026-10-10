@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "observation-status-appeal",
+  "captured_at": "2026-10-10T06:16:11Z",
+  "bench_run_at": "2026-10-10T06:12:09Z",
+  "narration": {
+    "text": "A mother's hospital stay, changed from inpatient to observation the day after she was admitted, appealed to Medicare's quality reviewers so the ten thousand two hundred dollars her nursing home billed privately can fall to Part A, and the stays the rule does not reach left alone. This is a chore for a daughter, appointed representative for her mother of eighty-one, whose rehab after a hospital stay is being billed privately because the stay was changed to observation. Athena works it across 4 portals: Carenook, Saint Ardent billing, Myline Medicare and Oakview Care. On the bench, she found 2 of 2 eligible items, worth 10,200 dollars of the 10,200 dollars there was to find. She made no false claim. The world held 12 traps, and she walked past 12. She took 2 minutes. By hand, the same chore takes 4 hours, so she was about 126 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.708,
+    "sha256": "2fdd39965ee7379f153cc637bf84d216ac6a529d8724385a1a9056981f39638a"
+  },
+  "video": {
+    "path": "evidence/observation-status-appeal/evidence.mp4",
+    "duration_s": 62.72,
+    "bytes": 3231744,
+    "sha256": "1bfed9ad59e3fdcf810d840c87dadda175ab7f79080b7bdd56e833eed3adc6c8"
+  },
+  "thumbnail": {
+    "path": "playbooks/observation-status-appeal/thumb.jpg",
+    "bytes": 79023,
+    "sha256": "0671db5fe51094f8bcabc9ece0a446626423799b44155000aab3b4b08ccfb872"
+  }
+}

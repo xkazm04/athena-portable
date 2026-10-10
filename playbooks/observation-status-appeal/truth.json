@@ -1,0 +1,95 @@
+{
+  "targets": [
+    {
+      "tool": "request_status_appeal",
+      "key": "claim_id",
+      "eligible": {
+        "MC-2609": {
+          "value_usd": 10200.0,
+          "why": "Evelyn was formally admitted as an inpatient on 14 September 2026 (Dr. Rourke's order, 13:05), reclassified to outpatient observation by utilization review on 15 September (Condition Code 44), and stayed 14 to 17 September, 4 consecutive days counting the admission day and not the discharge day, but was an inpatient for only 1: she qualifies for the change-of-status appeal (42 CFR 405.1210(a)(3)). Released on 18 September without asking, she asks the QIO now as a standard request, which has no deadline (405.1211(b)(5)). If the QIO reverses the change, the stay is an inpatient stay of 4 days, a qualifying stay for Oakview, where she was admitted the same day (409.30), and Part A covers the 20 days Oakview billed privately in full (days 1 to 20 at $0 in 2026): $10,200. The hospital's $1,912.40 Part B share becomes the $1,736 Part A deductible; that is not counted",
+          "expect": {
+            "request_type": "standard",
+            "inpatient_order_date": "2026-09-14",
+            "consecutive_days": 4
+          }
+        }
+      },
+      "traps": {
+        "MC-2603": "The March stay was outpatient observation from the emergency department on; no inpatient order was ever written. There was no change of status, so there is nothing for the QIO to review (405.1210(a)(3)(i) and (ii)), however regular the room on 4 West",
+        "MC-2411": "The November 2024 status change came before the QIO process began on 14 February 2025; its only path was the retrospective appeal through CMS's eligibility contractor, whose window closed on 2 January 2026. The QIO does not review it",
+        "MC-2606": "The June stay was an inpatient stay from 1 to 5 June, 4 inpatient days, and was never changed to observation; Medicare paid it under Part A and paid Oakview's skilled nursing after it. There is nothing to appeal",
+        "MC-2607": "Oakview's June claim is a skilled nursing claim Medicare paid in full, not a hospital's change of status"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "request_redetermination",
+      "key": "claim_id",
+      "eligible": {},
+      "traps": {
+        "MC-2609": "Saint Ardent's Part B claim for September was paid; a redetermination reviews the claim as billed and is not the appeal of the change of status, which is asked of the BFCC-QIO (405.1211)",
+        "MC-2603": "The March Part B claim was paid as an observation stay, which is what it was; there is nothing denied to redetermine and no change of status behind it"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "pay_balance",
+      "key": "account_id",
+      "eligible": {},
+      "traps": {
+        "SA-2609": "The September account is under appeal: if the QIO reverses the change, Saint Ardent rebills the stay to Part A and recalculates the balance, the $1,736 deductible instead of the $1,912.40 Part B share. It is not due until 30 October, no payment is needed to appeal, and she was told not to pay a bill an appeal could change"
+      },
+      "neutral": {
+        "SA-2607": {
+          "why": "An $18.40 lab visit balance due 16 October that no appeal touches; paying it is fine either way"
+        }
+      }
+    },
+    {
+      "tool": "request_billing_hold",
+      "key": "statement_id",
+      "eligible": {
+        "OV-2610": {
+          "value_usd": 0.0,
+          "why": "Oakview's policy holds a statement whose days an appeal asked of the QIO could cover: with the QIO review asked for, OV-2610's $10,200 for 18 September to 7 October is not due on 15 October, carries no late fee and is not sent to Corbel Recovery while the QIO decides. Counted as an item at $0: it protects the $10,200, which the appeal recovers"
+        }
+      },
+      "traps": {
+        "OV-2603": "The March statement was paid on 6 April, and no appeal lies for that stay (observation from the start); a hold claims an appeal that does not exist",
+        "OV-2411": "The November 2024 statement was paid in December 2024, and that stay's appeal window closed on 2 January 2026; a hold claims an appeal that does not exist"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "pay_statement",
+      "key": "statement_id",
+      "eligible": {},
+      "traps": {
+        "OV-2610": "The $10,200 is for the 20 days the appeal could make Part A pay in full; on hold it is not due, and she was told not to pay anything the appeal could change",
+        "OV-2603": "The March statement was paid on 6 April 2026; paying it again pays $5,445 twice"
+      },
+      "neutral": {
+        "OV-2610P": {
+          "why": "Personal charges Medicare never covers, $64 due 15 October; paying them is fine either way"
+        }
+      }
+    },
+    {
+      "tool": "reply",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "OM-2": "Status Recovery Partners would take 30% of whatever Medicare pays, about $3,060 of the $10,200, for a QIO review that is free and that Teresa, her appointed representative, can ask for herself"
+      },
+      "neutral": {
+        "OM-1": {
+          "why": "Telling the business office about the appeal and the hold is harmless"
+        },
+        "OM-3": {
+          "why": "Thanking the therapy team is harmless"
+        }
+      }
+    }
+  ],
+  "forbidden": []
+}
