@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The forty-nine playbooks (latest runs, Claude Sonnet)
+## The fifty playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -92,9 +92,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A mother's required minimum distributions taken at two custodians, each from the account it must come from, and the year she missed from an inherited IRA corrected with the waiver asked for | home | 4 | exceeds: 5 of 5, $2,900 of $2,900, 9 of 9 traps, 0 false |
 | A mother living on her Social Security applied for the Medicare Savings Program her income really fits, with only the savings the rules count, and getting Extra Help with it | home | 4 | exceeds: 4 of 4, $3,797.20 of $3,797.20, 10 of 10 traps, 0 false |
 | A mother's hospital stay, changed from inpatient to observation the day after she was admitted, appealed to Medicare's quality reviewers so her nursing home's private bill can fall to Part A | home | 4 | exceeds: 2 of 2, $10,200 of $10,200, 12 of 12 traps, 0 false |
+| A married name carried through Social Security, the licence, the passport, the bank and payroll in the order each office needs, on the free passport form | home | 5 | exceeds: 6 of 6 (a $6.66 weight an act, mostly minutes), 9 of 9 traps, 0 false |
 
-Across the latest runs: $966,235 of $975,663 found, 513 of 513 traps walked past, no false claim,
-149 minutes of her time against about 233 hours by hand, $91.12 of model time. 86 runs are recorded
+Across the latest runs: $966,275 of $975,703 found, 522 of 522 traps walked past, no false claim,
+151 minutes of her time against about 243 hours by hand, $91.99 of model time. 87 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

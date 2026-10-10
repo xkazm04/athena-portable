@@ -1,0 +1,116 @@
+{
+  "targets": [
+    {
+      "tool": "start_ss5",
+      "key": "person_id",
+      "eligible": {
+        "B-2": {
+          "value_usd": 6.66,
+          "why": "Elias took the compound name Kerrigan-Brandt on the marriage certificate, which a spouse may (POMS RM 10212.055), and his Social Security record still reads Elias James Brandt with no application started. Avonmere is not a participating state for the online-only service (RM 10205.630), so his SS-5 is started online and finished at a field office within 45 days (RM 10205.635), and every other office follows Social Security. Weighted at $6.66, a sixth of MissNowMrs's $39.95 Print at Home package: a price avoided, not money recovered",
+          "expect": {
+            "new_name": "Kerrigan-Brandt"
+          }
+        }
+      },
+      "traps": {
+        "B-1": "Nadia's record already shows Nadia Rose Kerrigan-Brandt, changed on 22 September 2026, and her card in the new name was mailed on 24 September and came on 1 October: a second application asks for a change that is made"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "book_appointment",
+      "key": "licence_no",
+      "eligible": {
+        "AV-118204": {
+          "value_usd": 6.66,
+          "why": "Social Security's record has shown Nadia's new name since 22 September, more than 2 business days ago, so the licence office's check against it (6 CFR 37.13(b)(2)) will match. Her licence is a standard one, not accepted at airport security since 7 May 2025, and her passport will be away with the DS-5504 at Thanksgiving, so the visit is NC-RID, the name change with the REAL ID upgrade (6 CFR 37.11: identity, Social Security number, two proofs of address and the marriage certificate linking the names), or she pays TSA's $45 ConfirmID with no promise. Weighted at $6.66, a sixth of $39.95: a price avoided",
+          "expect": {
+            "service": "NC-RID"
+          }
+        }
+      },
+      "traps": {
+        "AV-207355": "Elias's Social Security record still reads Elias James Brandt and his visit is not until 19 October at the earliest: IDway books a name change only once Social Security's record shows the new name, and a visit that fails the check is turned away with its fee kept. His licence change waits until his record changes, then 2 business days"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "prepare_application",
+      "key": "form",
+      "eligible": {
+        "DS-5504": {
+          "value_usd": 6.66,
+          "why": "Nadia's passport was issued on 1 December 2025, less than one year ago, and her name changed on 5 September 2026, inside that year, so the name change goes by DS-5504 by mail, with no fee (22 CFR 51.54(b); 22 CFR 22.1 item 2(d)), if applied for by 30 November 2026. Routine processing, 4 to 6 weeks plus up to 2 weeks each way in the mail, brings it back before the Lisbon flight on 22 December. Weighted at $6.66, a sixth of $39.95: a price avoided",
+          "expect": {
+            "new_name": "Kerrigan-Brandt"
+          }
+        }
+      },
+      "traps": {
+        "DS-82": "DS-82 is the renewal for a passport too old for DS-5504; hers is ten months old and her name changed within the year, so DS-82 charges $130 for what DS-5504 does free",
+        "DS-11": "DS-11 is for someone who can use neither mail form; it costs $165 with the $35 acceptance fee, in person, for a change DS-5504 makes free by mail",
+        "OPR": "Online renewal is not open to a name change: the name must match the most recent passport"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "request_name_change",
+      "key": "account_id",
+      "eligible": {
+        "L-1": {
+          "value_usd": 6.66,
+          "why": "Nadia's own checking account. Social Security's record shows her new name, which is what Ledgerline waits for, since it reports under the name on Social Security's record (IRS Publication 1281); the certified marriage certificate goes with the request. Weighted at $6.66, a sixth of $39.95: a price avoided",
+          "expect": {
+            "new_name": "Kerrigan-Brandt"
+          }
+        },
+        "L-2": {
+          "value_usd": 6.66,
+          "why": "Nadia's own savings account, whose interest goes on a Form 1099-INT under the name on Social Security's record, which now shows Kerrigan-Brandt. Weighted at $6.66, a sixth of $39.95: a price avoided",
+          "expect": {
+            "new_name": "Kerrigan-Brandt"
+          }
+        }
+      },
+      "traps": {
+        "L-3": "Elias's account: Ledgerline changes a holder's name only once Social Security's record shows it, and his still reads Elias James Brandt; his interest would be reported under a name Social Security does not have",
+        "L-4": "Kerrigan Design Studio LLC's account is in the company's legal name under its EIN; a marriage does not rename an LLC, and her own name as signer follows her profile with no request"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "update_legal_name",
+      "key": "employee_id",
+      "eligible": {
+        "E-3307": {
+          "value_usd": 6.66,
+          "why": "Payroll records the name on the Social Security card and keeps the old one until the employee shows the updated card (IRS Publication 15 (2026)); Nadia uploaded her updated card on 2 October, so payroll changes from the 16 October pay date, and her 2026 W-2 will match Social Security's record, as the IRS's matching needs. Weighted at $6.66, a sixth of $39.95: a price avoided",
+          "expect": {
+            "new_name": "Kerrigan-Brandt"
+          }
+        }
+      },
+      "traps": {},
+      "neutral": {}
+    },
+    {
+      "tool": "change_ticket_name",
+      "key": "trip_id",
+      "eligible": {},
+      "traps": {
+        "T-1": "The Lisbon ticket is in the name on the only passport she holds, Nadia Rose Kerrigan. The travel desk changes it free once the new passport is in her hand, up to 48 hours before the 22 December flight, and never to a name no passport she holds carries; renaming it now puts her on a ticket no passport she has matches"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "enroll_perk",
+      "key": "perk_id",
+      "eligible": {},
+      "traps": {
+        "K-1": "A $129 concierge to send changes that are free: Social Security's has no fee and Nadia's is made, the DS-5504 is free, Ledgerline charges nothing, and payroll is a form in Staffnest"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

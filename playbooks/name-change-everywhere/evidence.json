@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "name-change-everywhere",
+  "captured_at": "2026-10-10T06:18:54Z",
+  "bench_run_at": "2026-10-10T06:16:38Z",
+  "narration": {
+    "text": "A married name carried through Social Security, the licence, the passport, the bank and payroll in the order each office needs, on the free passport form, with a REAL ID before Thanksgiving and a husband's change started where it has to start. This is a chore for a woman of thirty-two, married five weeks ago, carrying her new name through every office and starting her husband's, who took the same name. Athena works it across 5 portals: Benefitline, IDway, Passdesk, Ledgerline bank and Staffnest. On the bench, she found 6 of 6 eligible items, worth 39 dollars and 96 cents of the 39 dollars and 96 cents there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes 10 hours, so she was about 333 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 60.441,
+    "sha256": "bb12a78f1e7a34a71e48ac97531d1c98bff63c1c34e4baca9e09e4d185a02893"
+  },
+  "video": {
+    "path": "evidence/name-change-everywhere/evidence.mp4",
+    "duration_s": 60.48,
+    "bytes": 3564153,
+    "sha256": "4c462e5b198ea6c9e0b33b8d9f806fbfd7fa29133669eff0b16d2917e0664212"
+  },
+  "thumbnail": {
+    "path": "playbooks/name-change-everywhere/thumb.jpg",
+    "bytes": 93320,
+    "sha256": "b5fa0c8869262a7dd60f45cacb1d938b181b16efb503d62eab0fecd4a678a4bc"
+  }
+}

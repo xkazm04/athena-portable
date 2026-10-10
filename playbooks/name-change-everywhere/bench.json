@@ -1,0 +1,331 @@
+{
+  "playbook": "name-change-everywhere",
+  "run_at": "2026-10-10T06:16:38Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 106.6,
+  "turns": 12,
+  "nudges": 0,
+  "follow_ups": 1,
+  "reads": 28,
+  "cost_usd": 0.8719,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.8
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 39.96,
+    "value_found_usd": 39.96,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "start_ss5",
+        "key": "B-1",
+        "why": "Nadia's record already shows Nadia Rose Kerrigan-Brandt, changed on 22 September 2026, and her card in the new name was mailed on 24 September and came on 1 October: a second application asks for a change that is made",
+        "filed": false
+      },
+      {
+        "action": "book_appointment",
+        "key": "AV-207355",
+        "why": "Elias's Social Security record still reads Elias James Brandt and his visit is not until 19 October at the earliest: IDway books a name change only once Social Security's record shows the new name, and a visit that fails the check is turned away with its fee kept. His licence change waits until his record changes, then 2 business days",
+        "filed": false
+      },
+      {
+        "action": "prepare_application",
+        "key": "DS-82",
+        "why": "DS-82 is the renewal for a passport too old for DS-5504; hers is ten months old and her name changed within the year, so DS-82 charges $130 for what DS-5504 does free",
+        "filed": false
+      },
+      {
+        "action": "prepare_application",
+        "key": "DS-11",
+        "why": "DS-11 is for someone who can use neither mail form; it costs $165 with the $35 acceptance fee, in person, for a change DS-5504 makes free by mail",
+        "filed": false
+      },
+      {
+        "action": "prepare_application",
+        "key": "OPR",
+        "why": "Online renewal is not open to a name change: the name must match the most recent passport",
+        "filed": false
+      },
+      {
+        "action": "request_name_change",
+        "key": "L-3",
+        "why": "Elias's account: Ledgerline changes a holder's name only once Social Security's record shows it, and his still reads Elias James Brandt; his interest would be reported under a name Social Security does not have",
+        "filed": false
+      },
+      {
+        "action": "request_name_change",
+        "key": "L-4",
+        "why": "Kerrigan Design Studio LLC's account is in the company's legal name under its EIN; a marriage does not rename an LLC, and her own name as signer follows her profile with no request",
+        "filed": false
+      },
+      {
+        "action": "change_ticket_name",
+        "key": "T-1",
+        "why": "The Lisbon ticket is in the name on the only passport she holds, Nadia Rose Kerrigan. The travel desk changes it free once the new passport is in her hand, up to 48 hours before the 22 December flight, and never to a name no passport she holds carries; renaming it now puts her on a ticket no passport she has matches",
+        "filed": false
+      },
+      {
+        "action": "enroll_perk",
+        "key": "K-1",
+        "why": "A $129 concierge to send changes that are free: Social Security's has no fee and Nadia's is made, the DS-5504 is free, Ledgerline charges nothing, and payroll is a form in Staffnest",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "start_ss5",
+      "key": "B-2",
+      "outcome": "correct",
+      "value_usd": 6.66,
+      "exact": true,
+      "why": "Elias took the compound name Kerrigan-Brandt on the marriage certificate, which a spouse may (POMS RM 10212.055), and his Social Security record still reads Elias James Brandt with no application started. Avonmere is not a participating state for the online-only service (RM 10205.630), so his SS-5 is started online and finished at a field office within 45 days (RM 10205.635), and every other office follows Social Security. Weighted at $6.66, a sixth of MissNowMrs's $39.95 Print at Home package: a price avoided, not money recovered"
+    },
+    {
+      "action": "book_appointment",
+      "key": "AV-118204",
+      "outcome": "correct",
+      "value_usd": 6.66,
+      "exact": true,
+      "why": "Social Security's record has shown Nadia's new name since 22 September, more than 2 business days ago, so the licence office's check against it (6 CFR 37.13(b)(2)) will match. Her licence is a standard one, not accepted at airport security since 7 May 2025, and her passport will be away with the DS-5504 at Thanksgiving, so the visit is NC-RID, the name change with the REAL ID upgrade (6 CFR 37.11: identity, Social Security number, two proofs of address and the marriage certificate linking the names), or she pays TSA's $45 ConfirmID with no promise. Weighted at $6.66, a sixth of $39.95: a price avoided"
+    },
+    {
+      "action": "prepare_application",
+      "key": "DS-5504",
+      "outcome": "correct",
+      "value_usd": 6.66,
+      "exact": true,
+      "why": "Nadia's passport was issued on 1 December 2025, less than one year ago, and her name changed on 5 September 2026, inside that year, so the name change goes by DS-5504 by mail, with no fee (22 CFR 51.54(b); 22 CFR 22.1 item 2(d)), if applied for by 30 November 2026. Routine processing, 4 to 6 weeks plus up to 2 weeks each way in the mail, brings it back before the Lisbon flight on 22 December. Weighted at $6.66, a sixth of $39.95: a price avoided"
+    },
+    {
+      "action": "request_name_change",
+      "key": "L-1",
+      "outcome": "correct",
+      "value_usd": 6.66,
+      "exact": true,
+      "why": "Nadia's own checking account. Social Security's record shows her new name, which is what Ledgerline waits for, since it reports under the name on Social Security's record (IRS Publication 1281); the certified marriage certificate goes with the request. Weighted at $6.66, a sixth of $39.95: a price avoided"
+    },
+    {
+      "action": "request_name_change",
+      "key": "L-2",
+      "outcome": "correct",
+      "value_usd": 6.66,
+      "exact": true,
+      "why": "Nadia's own savings account, whose interest goes on a Form 1099-INT under the name on Social Security's record, which now shows Kerrigan-Brandt. Weighted at $6.66, a sixth of $39.95: a price avoided"
+    },
+    {
+      "action": "update_legal_name",
+      "key": "E-3307",
+      "outcome": "correct",
+      "value_usd": 6.66,
+      "exact": true,
+      "why": "Payroll records the name on the Social Security card and keeps the old one until the employee shows the updated card (IRS Publication 15 (2026)); Nadia uploaded her updated card on 2 October, so payroll changes from the 16 October pay date, and her 2026 W-2 will match Social Security's record, as the IRS's matching needs. Weighted at $6.66, a sixth of $39.95: a price avoided"
+    }
+  ],
+  "missed": [],
+  "closing_words": "There's nothing new for me to do in IDway. Every booking here is waiting on a card you haven't answered yet.\n\n- **Nadia's visit (NC-RID, S-1, Tue 13 Oct, 10:20 am, $30):** This is card apr_32d5225fe41c, still open. Nothing is booked until you approve it. I won't file it a second time. If you want to leave enough time before 25 November, approve it soon, because S-1 is the earliest of three open slots.\n- **Elias's visit:** This stays unbooked. His Social Security record still says Brandt, and his SS-5 card (apr_2a48bfffeb12) is also unanswered. His Millbrook visit is 19 October, so the earliest IDway visit for him is the week of 21 October. I'll check the open slots then.\n\nBefore the visit, check the lease and power bill. IDway needs two documents showing your name and the Avonmere address. If they only carry Elias's name, you will need other proof of address.\n\nApprove apr_32d5225fe41c an",
+  "trace": [
+    {
+      "portal": "Benefitline",
+      "user": "Elias and I married on Saturday 5 September and we both took the name Kerrigan-Brandt. I have our certified marriage certificates, my birth certificate, and my new Social Security card, which came on 1 October. Start on Benefitline: read bo",
+      "continued": false,
+      "said": "Reading both records and the rules first.",
+      "said_chars": 41,
+      "reads": [
+        "view_records",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Benefitline",
+      "user": "",
+      "continued": true,
+      "said": "Your Social Security change is already done, so I won't file it again. Elias's hasn't been started. I still need the rules and the open visit slots before I file anything for him.",
+      "said_chars": 179,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "list_visit_slots"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Benefitline",
+      "user": "",
+      "continued": true,
+      "said": "Elias's Social Security record has no change requested, so I'm filing it now. Avonmere isn't a participating state, so it can't be finished online. It has to be started online and then confirmed at the Millbrook office within 45 days.\n\nI'm picking the earliest slot, V-1 (Monday 19 October, 9:40 am). That's well inside the 45 days, and it leaves time to do the licence next. He needs to bring the original certified marriage certificate, because photocopies are refused.",
+      "said_chars": 924,
+      "reads": [],
+      "cards": [
+        {
+          "action": "start_ss5",
+          "key": "B-2",
+          "outcome": "correct",
+          "value_usd": 6.66
+        }
+      ]
+    },
+    {
+      "portal": "IDway",
+      "user": "IDway, the Avonmere licence portal; Elias and I both have licences here. Read our licences, the rules and the open appointments, and book what can be booked now. My passport is going off to be changed, so on my Thanksgiving flight on Wednes",
+      "continued": false,
+      "said": "I'm reading both licences, the IDway rules and the open appointments first. I won't book anything until I've seen them.",
+      "said_chars": 119,
+      "reads": [
+        "view_licences",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "list_slots"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "IDway",
+      "user": "",
+      "continued": true,
+      "said": "I'm booking Nadia's name change with the REAL ID upgrade for Tuesday 13 October. Elias's can't be booked yet.\n\n**Nadia (AV-118204): book NC-RID, $30, at slot S-1 (Tue 13 Oct, 10:20 am).**\n- Her Social Security record has shown the new name since 22 September. That passes IDway's check, and S-1 is more than 2 business days later.\n- Her licence is a standard one marked Federal Limits Apply, and her passport will be away. The upgrade matters because a standard licence isn't accepted at the airport on 25 November.",
+      "said_chars": 2059,
+      "reads": [],
+      "cards": [
+        {
+          "action": "book_appointment",
+          "key": "AV-118204",
+          "outcome": "correct",
+          "value_usd": 6.66
+        }
+      ]
+    },
+    {
+      "portal": "Passdesk",
+      "user": "Passdesk. Read my passport record and the rules, and prepare the right application to put my new name in my passport. I fly to Lisbon for work on Tuesday 22 December.",
+      "continued": false,
+      "said": "I'm reading your passport record and the rules first, and I won't prepare anything until I've seen them.",
+      "said_chars": 104,
+      "reads": [
+        "view_passport",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Passdesk",
+      "user": "",
+      "continued": true,
+      "said": "The right form is DS-5504, which has no fee, and I'm filing it for routine service (no expedite).\n\n- **Why DS-5504:** your passport (548221907) was issued 1 December 2025, and your name changed on 5 September 2026. Both fall inside one year, so 22 CFR 51.54(b) waives the fee.\n- **Why not the others:** DS-82 would cost $130, DS-11 would cost $165, and online renewal can't carry a name change.\n- **Timing:** 22 December is 73 days away. Routine service is 4–6 weeks, plus up to 2 weeks of mail each way.",
+      "said_chars": 1256,
+      "reads": [],
+      "cards": [
+        {
+          "action": "prepare_application",
+          "key": "DS-5504",
+          "outcome": "correct",
+          "value_usd": 6.66
+        }
+      ]
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "Ledgerline, our bank. I can see Elias's account and my studio's account here too. Read the accounts and the bank's name change rules, and ask for every change that is due now.",
+      "continued": false,
+      "said": "I'll read the accounts and the bank's name change rules first.",
+      "said_chars": 62,
+      "reads": [
+        "list_accounts",
+        "read_policy",
+        "read_policy",
+        "read_policy"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerline bank",
+      "user": "",
+      "continued": true,
+      "said": "Two changes are due now: Nadia's checking (L-1) and her savings (L-2).\n\n- **L-1 and L-2:** Social Security's record has shown Nadia Rose Kerrigan-Brandt since 22 September. That meets Ledgerline's tax-name rule, so the bank will change both. The rule is stricter for the savings account, which reports interest on a 1099-INT. It is also free, and the account numbers stay the same. The cards and cheques are reissued within 10 days.\n- **L-3 (Elias's checking):** Not due yet.",
+      "said_chars": 1387,
+      "reads": [],
+      "cards": [
+        {
+          "action": "request_name_change",
+          "key": "L-1",
+          "outcome": "correct",
+          "value_usd": 6.66
+        },
+        {
+          "action": "request_name_change",
+          "key": "L-2",
+          "outcome": "correct",
+          "value_usd": 6.66
+        }
+      ]
+    },
+    {
+      "portal": "Staffnest",
+      "user": "Staffnest, Tallowbrook's HR, payroll and travel portal. Read my profile, my documents, the policies, my Lisbon trip and the perks. Change what is due now, then tell me what you left alone and when each thing that waits can be done.",
+      "continued": false,
+      "said": "I'll read the Staffnest profile, documents, policies, trips and perks first.\n\nThe Staffnest reads have gone to the page, but their answers haven't reached me yet. I can't tell you what is due in payroll or on the trip until they do, so I'm not filing anything.\n\nRecall brought back nothing on Staffnest. It did confirm that the DS-5504 passport application is still waiting on your approval, and that your passport will be away while it's processed. That matters for the Lisbon ticket.",
+      "said_chars": 1230,
+      "reads": [
+        "view_profile",
+        "list_documents",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "view_trips",
+        "list_perks"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Staffnest",
+      "user": "",
+      "continued": true,
+      "said": "Payroll is the one change due now, so I'm filing it.\n\n\n**Filed (waiting on your approval):** payroll legal name, E-3307, to Nadia Rose Kerrigan-Brandt. Your card was uploaded on 2 October and payroll takes the name exactly as on the card. If you approve before 16 October, wages are reported under the new name from that pay date. The 2026 W-2 will then carry it, and it will match Social Security's record.\n\n**Left alone:**\n- **Lisbon ticket (T-1, 22 December):** I can't change this yet.",
+      "said_chars": 1525,
+      "reads": [],
+      "cards": [
+        {
+          "action": "update_legal_name",
+          "key": "E-3307",
+          "outcome": "correct",
+          "value_usd": 6.66
+        }
+      ]
+    },
+    {
+      "portal": "IDway",
+      "user": "I've switched to IDway as you asked. Go ahead.",
+      "continued": false,
+      "said": "There's nothing new for me to do in IDway. Every booking here is waiting on a card you haven't answered yet.\n\n- **Nadia's visit (NC-RID, S-1, Tue 13 Oct, 10:20 am, $30):** This is card apr_32d5225fe41c, still open. Nothing is booked until you approve it. I won't file it a second time. If you want to leave enough time before 25 November, approve it soon, because S-1 is the earliest of three open slots.\n- **Elias's visit:** This stays unbooked.",
+      "said_chars": 964,
+      "reads": [],
+      "cards": []
+    }
+  ]
+}

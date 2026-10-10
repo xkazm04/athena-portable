@@ -1,0 +1,202 @@
+{
+  "id": "name-change-everywhere",
+  "title": "A married name carried through Social Security, the licence, the passport, the bank and payroll in the order each office needs, on the free passport form, with a REAL ID before Thanksgiving and a husband's change started where it has to start",
+  "domain": "Family affairs",
+  "audience": "home",
+  "promise": "A newly married woman's and her husband's Social Security records, licences, her passport, their bank accounts and her payroll and travel are read against each office's rules. Her name is already on Social Security's record, so her licence visit is booked with the REAL ID upgrade her Thanksgiving flight needs while her passport is away, her passport goes in on the free DS-5504 in time for a December trip, her own bank accounts and her payroll name change, and her husband's Social Security application is started with its office visit. His licence and bank changes, a second application for her, the paid passport forms, online renewal, her company's account, her Lisbon ticket and a paid concierge are left alone, and she is told when each can follow.",
+  "persona": "A woman of thirty-two, married five weeks ago, carrying her new name through every office and starting her husband's, who took the same name",
+  "chore": "Read both Social Security records, its name change rules and the field office's open visits; both licences, the licence office's rules and its slots; her passport and the passport rules; every bank account she can see and the bank's rules; and her payroll record, her uploads, her employer's policies, her booked trip and the perks. Then apply Social Security's name change rules (Form SS-5; POMS RM 10212.015, RM 10212.055, RM 10205.630 and RM 10205.635), the REAL ID rule (6 CFR 37.5, 37.11 and 37.13), the passport rules (22 CFR 22.1, 51.21, 51.25 and 51.54) and IRS Publications 15 and 1281 as they stand: Social Security first, and the licence, the bank and payroll only once its record shows the new name; the passport by the form its age allows. None of the five systems shares data with another.",
+  "command": "Elias and I married on 5 September and both took the name Kerrigan-Brandt. Go through Benefitline, IDway, Passdesk, Ledgerline and Staffnest and carry my new name through each in the order each one needs, and start whatever Elias's change needs first. I fly to my parents' for Thanksgiving on 25 November and to Lisbon for work on 22 December. Don't file anything twice, don't book anything an office will turn away, and don't pay anyone to fill in free forms.",
+  "apps": [
+    {
+      "name": "Benefitline",
+      "role": "both Social Security records, the name change rules, the field office's visits and the SS-5 application started online",
+      "api": "Benefits portal, no API",
+      "url": ""
+    },
+    {
+      "name": "IDway",
+      "role": "the Avonmere licence office: both licences, its rules for a name change and REAL ID, and its appointments",
+      "api": "State licence portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Passdesk",
+      "role": "a passport form-preparation and appointment portal: her passport, the State Department's rules and fees, and the application it prepares for her to sign and mail",
+      "api": "Form-preparation portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerline bank",
+      "role": "her accounts, her husband's and her company's, the bank's name change rules and the requests",
+      "api": "Online banking",
+      "url": ""
+    },
+    {
+      "name": "Staffnest",
+      "role": "the employer's HR, payroll and travel: her payroll name, her uploads, the policies, her Lisbon ticket and a perks marketplace",
+      "api": "HR self-service portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads both Social Security records and the rules in Benefitline, and starts Elias's application with his field office visit.",
+    "Reads both licences, the rules and the slots in IDway, and books her name change with the REAL ID upgrade.",
+    "Reads her passport and the rules in Passdesk, and prepares the free DS-5504.",
+    "Reads the accounts and the rules at Ledgerline, and asks for the name change on her own two accounts.",
+    "Reads her payroll record, uploads, policies, trip and perks in Staffnest, changes her payroll name, and says what waits and when."
+  ],
+  "gates": [
+    {
+      "action": "start_ss5",
+      "label": "Start a Social Security name change application",
+      "why": "A signed application to a federal agency, and a field office visit booked."
+    },
+    {
+      "action": "book_appointment",
+      "label": "Book a licence name change visit",
+      "why": "It books the licence office, and a visit that fails the Social Security check loses its fee."
+    },
+    {
+      "action": "prepare_application",
+      "label": "Prepare a passport application",
+      "why": "It sends her passport away and may charge a fee; the wrong form costs money or time."
+    },
+    {
+      "action": "request_name_change",
+      "label": "Ask the bank to change an account holder's name",
+      "why": "It reissues the account, its card and cheques, and the name the IRS is told."
+    },
+    {
+      "action": "update_legal_name",
+      "label": "Change the legal name in payroll",
+      "why": "Wages are reported under it, and the year's W-2 carries it."
+    },
+    {
+      "action": "change_ticket_name",
+      "label": "Change the name on a booked ticket",
+      "why": "It reaches the travel desk and the airline, and a name no passport carries cannot board."
+    },
+    {
+      "action": "enroll_perk",
+      "label": "Buy a perks marketplace offer",
+      "why": "It charges her card."
+    }
+  ],
+  "traps": [
+    "A licence visit for Elias before Social Security's record shows his new name.",
+    "A second Social Security application for Nadia, whose record already shows her new name.",
+    "A DS-82 at one hundred and thirty dollars when the free DS-5504 applies.",
+    "A DS-11 in person at one hundred and sixty-five dollars.",
+    "Online renewal, which does not take a name change.",
+    "Elias's bank account renamed before Social Security has his new name.",
+    "Her design studio's account renamed, as if a marriage renamed a company.",
+    "Her Lisbon ticket renamed before the passport in her new name is in her hand.",
+    "A one-hundred-and-twenty-nine-dollar concierge to send changes that are free."
+  ],
+  "memory": [
+    "That Social Security's record has shown her new name since 22 September and her card came on 1 October, that Elias's record still shows his old name, and his visit date, carried from Benefitline.",
+    "That her licence is a standard one and the booking is the REAL ID upgrade, and that Elias's licence waits for his record, carried from IDway.",
+    "That her passport was issued on 1 December 2025 and goes in on the DS-5504, so the new one comes before 22 December, carried from Passdesk.",
+    "That her own two accounts were renamed and Elias's and the studio's were left alone, carried from Ledgerline."
+  ],
+  "economics": {
+    "value_usd": 0,
+    "per": "episode",
+    "basis": "An estimate, mostly minutes. After a marriage the new name goes to Social Security first and then to the licence office, the passport, the banks and payroll, each with its own documents and its own check against Social Security's record; done by hand it takes reading each office's rules, appointments, forms and mailings, about 10 hours, with the risk of a wasted licence visit, a passport fee or a ticket that no passport matches. The roster's figure is $0 / episode, mostly minutes (about 10 h): nothing is recovered. Under ADR 0056's 2026-10-09 amendment each of the world's six acts is weighted at $6.66, a sixth of MissNowMrs's $39.95 Print at Home name change package, rounded to the cent, as a price avoided, not money recovered; the bench world holds $39.96. economics.value_usd stays 0. Times a year: one, the year of the marriage. The rules applied, as they stand on Friday 9 October 2026: Social Security's name change on Form SS-5, with proof of the event, the new name and identity (POMS RM 10212.015), a compound name for either spouse (RM 10212.055), the online-only service for marriages in participating states (RM 10205.630) and the start-online, finish-in-office application within 45 days (RM 10205.635); the REAL ID rule, enforced since 7 May 2025 (6 CFR 37.5), its documents (37.11) and the licence office's check against Social Security's record (37.13(b)(2)), with TSA's $45 ConfirmID; the passport name change by DS-5504 with no fee within one year of issue (22 CFR 51.54(b); 22 CFR 22.1 item 2(d)), DS-82 at $130 ($50 application and $80 security fee) and DS-11 at $165 with the $35 execution fee (22 CFR 22.1, 51.21), the marriage certificate as the name change document (51.25(c)(3)), online renewal closed to a name change and the State Department's published processing times; payroll under the name on the updated Social Security card (IRS Publication 15 (2026)); the IRS's matching of a return's names to Social Security's record; and a bank's 1099 name and its check against Social Security (IRS Publication 1281). Avonmere's licence rules, its 2 business days and its fees, and Ledgerline's, Tallowbrook's and Passdesk's policies are invented world rules.",
+    "manual_minutes": 600,
+    "times_per_year": 1,
+    "incumbent": "No incumbent takes a share: name change kits sell at a flat price (MissNowMrs's Print at Home package is $39.95, its delivered package $69.95), they fill in forms the person still files, and every office's change is free except the passport outside its first year.",
+    "sources": [
+      {
+        "label": "SSA POMS RM 10212.015: evidence of the name change event, the new name and identity (the marriage certificate as identity within two years)",
+        "url": "https://secure.ssa.gov/poms.nsf/lnx/0110212015"
+      },
+      {
+        "label": "SSA POMS RM 10212.055: a name change based on marriage, including a compound name for either or both spouses",
+        "url": "https://secure.ssa.gov/apps10/poms.nsf/lnx/0110212055"
+      },
+      {
+        "label": "SSA POMS RM 10205.630: Internet SSN replacement cards (iSSNRC), the last-name change after marriage online for participating states",
+        "url": "https://secure.ssa.gov/poms.nsf/lnx/0110205630"
+      },
+      {
+        "label": "SSA POMS RM 10205.635: the online SSN application (oSSNAP), started online and finished at an office within 45 calendar days",
+        "url": "https://secure.ssa.gov/poms.nsf/lnx/0110205635"
+      },
+      {
+        "label": "SSA: change your name with Social Security (Form SS-5; no fee)",
+        "url": "https://www.ssa.gov/personal-record/change-name"
+      },
+      {
+        "label": "6 CFR 37.5: REAL ID enforcement from 7 May 2025",
+        "url": "https://www.ecfr.gov/current/title-6/section-37.5"
+      },
+      {
+        "label": "6 CFR 37.11: the documents a REAL ID applicant must provide, including evidence of a name change",
+        "url": "https://www.ecfr.gov/current/title-6/section-37.11"
+      },
+      {
+        "label": "6 CFR 37.13: verification of the Social Security number with SSA before a REAL ID is issued",
+        "url": "https://www.ecfr.gov/current/title-6/section-37.13"
+      },
+      {
+        "label": "TSA: REAL ID (enforcement began 7 May 2025; a passport is acceptable)",
+        "url": "https://www.tsa.gov/real-id"
+      },
+      {
+        "label": "TSA: the $45 ConfirmID fee for travelers without a REAL ID, from 1 February 2026",
+        "url": "https://www.tsa.gov/news/press/releases/2026/01/15/45-fee-option-for-air-travelers-without-real-id-begins-february-1"
+      },
+      {
+        "label": "U.S. Department of State: change or correct a passport (DS-5504 within one year; DS-82; DS-11)",
+        "url": "https://travel.state.gov/content/travel/en/passports/have-passport/change-correct.html"
+      },
+      {
+        "label": "U.S. Department of State: passport processing times",
+        "url": "https://travel.state.gov/en/passports/apply/help/processing-time.html"
+      },
+      {
+        "label": "22 CFR 51.54: a replacement passport with no fee for a name change within one year of issue",
+        "url": "https://www.ecfr.gov/current/title-22/section-51.54"
+      },
+      {
+        "label": "22 CFR 22.1: the schedule of consular fees (passport book $50 and $80 security fee, $35 execution, $60 expedited, no fee for a name change within one year)",
+        "url": "https://www.ecfr.gov/current/title-22/section-22.1"
+      },
+      {
+        "label": "22 CFR 51.21: who must apply in person and who may apply by mail",
+        "url": "https://www.ecfr.gov/current/title-22/section-51.21"
+      },
+      {
+        "label": "IRS Publication 15 (2026): record the name as on the Social Security card, and keep the old name until the employee shows the updated card",
+        "url": "https://www.irs.gov/publications/p15"
+      },
+      {
+        "label": "IRS: name changes and Social Security number matching issues",
+        "url": "https://www.irs.gov/faqs/irs-procedures/name-changes-social-security-number-matching-issues"
+      },
+      {
+        "label": "IRS Publication 1281: name/TIN matching against IRS and SSA files, and the name on a Form 1099 after a marriage",
+        "url": "https://www.irs.gov/pub/irs-pdf/p1281.pdf"
+      },
+      {
+        "label": "MissNowMrs: complete name change packages ($39.95 Print at Home)",
+        "url": "https://www.missnowmrs.com/shop-complete-name-change-packages/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Each office checks the name against Social Security's record, so the order is the judgement, and the two spouses stand at different steps of it; the passport's form turns on its issue date against the marriage, the licence's kind on a passport that will be away, and a free ticket change on a passport not yet in hand; a second application, a company account and a paid concierge each look like help.",
+    "usefulness_why": "Turns about ten hours of rules, forms and appointments into minutes, and keeps a wasted licence visit, a hundred and thirty dollars of passport fee, a forty-five-dollar airport fee and an unboardable ticket off a newly married couple; little money, mostly hours."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful newlywed with each office's rules in hand gets most of it; the bar is the free passport form, the licence visit, her bank and payroll changes and her husband's Social Security start, nothing of his booked ahead of his record, inside an hour."
+  },
+  "caveat": "Nadia and Elias Kerrigan-Brandt, the State of Avonmere and its Motor Vehicle Division, the Millbrook field office and IDway centre, Kerrigan Design Studio LLC, Tallowbrook Analytics, the Iberian Analytics Forum, Corvane Airways, Veilside Name Concierge, Benefitline, IDway, Passdesk, Ledgerline and Staffnest are invented, and so are every record, number and date; no person here is real. Avonmere's licence rules, its fees and its 2 business days, and Ledgerline's, Tallowbrook's and Passdesk's policies are the invented actors' own. The public rules applied are Social Security's name change rules (Form SS-5; POMS RM 10212.015, RM 10212.055, RM 10205.630 and RM 10205.635), the REAL ID rule (6 CFR 37.5, 37.11 and 37.13) with TSA's $45 ConfirmID, the passport rules and 2026 fees (22 CFR 22.1, 51.21, 51.25 and 51.54, with the State Department's published processing times) and IRS Publications 15 (2026) and 1281, fixed in the bench world as of 9 October 2026. Social Security, the State Department, the state's licence office and each bank and employer decide real cases, on their current forms, times and lists of participating states. This applies stated rules to stated facts; it is not legal, tax or benefits advice."
+}
