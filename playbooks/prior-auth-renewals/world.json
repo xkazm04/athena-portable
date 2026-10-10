@@ -1,0 +1,498 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "chartleaf",
+      "name": "Chartleaf EHR",
+      "origin": "https://riverbend.chartleaf.example",
+      "path": "/authorizations/worklist",
+      "view": {
+        "view": "Chartleaf EHR: authorisation worklist, outpatient therapy",
+        "practice": "Riverbend Therapy Group (physical and occupational therapy)",
+        "user": "Jonah Price, authorisation coordinator",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_policy",
+          "kind": "READ",
+          "description": "Riverbend's authorisation policy by topic: timing, requests, payers. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "policy",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_patients",
+          "kind": "READ",
+          "description": "Every patient in ongoing therapy: patient id (P-n), payer and plan, the current authorisation (id, visits approved and used, last date), the next scheduled visits, and the plan of care (visits still needed after the current authorisation, through when, and the visit rate). Four patients a page; pass page for the next.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "patients",
+            "page_size": 4
+          }
+        }
+      ],
+      "aliases": [
+        "Chartleaf EHR",
+        "Chartleaf",
+        "the EHR",
+        "the worklist"
+      ]
+    },
+    {
+      "app_id": "authgate",
+      "name": "Authgate",
+      "origin": "https://providers.authgate.example",
+      "path": "/riverbend/authorizations",
+      "view": {
+        "view": "Authgate prior authorisation portal: Larkhaven Advantage and Statewell Health Plan",
+        "provider": "Riverbend Therapy Group, NPI on file",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Authgate's rules by topic: clock, continuations, faxes. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "authgate_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_authorizations",
+          "kind": "READ",
+          "description": "Every Larkhaven Advantage and Statewell authorisation on file for the practice's patients, with any request open on it.",
+          "params": {},
+          "returns": {
+            "table": "authgate_auths"
+          }
+        },
+        {
+          "name": "submit_continuation",
+          "kind": "REACHES_A_PERSON",
+          "description": "Request a continuation of one patient's authorisation (a new authorisation for further visits), by patient id, with the current authorisation id and the number of visits requested. The plan's reviewer decides it on the plan's clock.",
+          "params": {
+            "patient_id": {
+              "type": "string"
+            },
+            "auth_id": {
+              "type": "string"
+            },
+            "visits_requested": {
+              "type": "integer"
+            }
+          },
+          "says": "Continuation request for {patient_id} ({visits_requested} visits) submitted on {auth_id}."
+        }
+      ],
+      "aliases": [
+        "Authgate",
+        "the Larkhaven portal",
+        "the Statewell portal"
+      ]
+    },
+    {
+      "app_id": "authwise",
+      "name": "Authwise",
+      "origin": "https://www.authwise.example",
+      "path": "/provider/riverbend",
+      "view": {
+        "view": "Authwise utilization management portal: Pinecrest Benefits Plan and Bluehaven Marketplace",
+        "provider": "Riverbend Therapy Group",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Authwise's rules by topic: clock, renewals. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "authwise_rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_authorizations",
+          "kind": "READ",
+          "description": "Every Pinecrest and Bluehaven authorisation on file for the practice's patients, with any renewal open on it.",
+          "params": {},
+          "returns": {
+            "table": "authwise_auths"
+          }
+        },
+        {
+          "name": "submit_renewal",
+          "kind": "REACHES_A_PERSON",
+          "description": "Request a renewal of one patient's authorisation, by patient id, with the current authorisation id and the number of visits requested.",
+          "params": {
+            "patient_id": {
+              "type": "string"
+            },
+            "auth_id": {
+              "type": "string"
+            },
+            "visits_requested": {
+              "type": "integer"
+            }
+          },
+          "says": "Renewal request for {patient_id} ({visits_requested} visits) submitted on {auth_id}."
+        }
+      ],
+      "aliases": [
+        "Authwise",
+        "the Pinecrest portal",
+        "the Bluehaven portal"
+      ]
+    },
+    {
+      "app_id": "faxline",
+      "name": "Faxline",
+      "origin": "https://app.faxline.example",
+      "path": "/riverbend/outbox",
+      "view": {
+        "view": "Faxline: Riverbend Therapy Group's fax outbox and payer directory",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_directory",
+          "kind": "READ",
+          "description": "The payer fax directory: each payer, whether it takes prior authorisation requests by fax, and the number.",
+          "params": {},
+          "returns": {
+            "table": "directory"
+          }
+        },
+        {
+          "name": "read_payer_sheet",
+          "kind": "READ",
+          "description": "A fax-only payer's prior authorisation sheet, by payer name: what to send and how long it takes to decide.",
+          "params": {
+            "payer": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "payer_sheets",
+            "match": {
+              "payer": "payer"
+            },
+            "mode": "contains",
+            "require": [
+              "payer"
+            ]
+          }
+        },
+        {
+          "name": "send_fax",
+          "kind": "REACHES_A_PERSON",
+          "description": "Fax one patient's prior authorisation request with the plan of care, by patient id, to a fax number, with the current authorisation id and the number of visits requested.",
+          "params": {
+            "patient_id": {
+              "type": "string"
+            },
+            "fax_to": {
+              "type": "string"
+            },
+            "auth_id": {
+              "type": "string"
+            },
+            "visits_requested": {
+              "type": "integer"
+            }
+          },
+          "says": "Fax for {patient_id} sent to {fax_to}."
+        }
+      ],
+      "aliases": [
+        "Faxline",
+        "the fax",
+        "the fax outbox"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "chartleaf",
+      "message": "Friday authorisation run. Start in Chartleaf: read our authorisation policy and every patient in ongoing therapy, with their authorisations and schedules.",
+      "nudges": 1
+    },
+    {
+      "app": "authgate",
+      "message": "Now Authgate, for Larkhaven and Statewell. Read its rules and what's on file, and submit the continuations that are due today.",
+      "nudges": 1
+    },
+    {
+      "app": "authwise",
+      "message": "This is Authwise, for Pinecrest and Bluehaven. Same thing: read the rules and what's on file, and submit the renewals due today.",
+      "nudges": 1
+    },
+    {
+      "app": "faxline",
+      "message": "Last, Faxline, for any payer that only takes faxes. Send what's due today. Then tell me what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "policy": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Riverbend Therapy Group authorisation policy. Topics: timing, requests, payers. Authorisations are worked every Friday; the next run is Friday 16 October."
+      },
+      {
+        "topic": "timing",
+        "text": "A new authorisation must be decided before the first scheduled visit it has to cover: the first visit after the current authorisation's last date, or after its last approved visit, whichever comes first. The payer's own standard decision clock, counted from the day we submit, must end before that visit. Submit on the last Friday that still allows it: if waiting until Friday 16 October would let the clock run to that visit or past it, submit today. A request the payer would not yet accept is not sent."
+      },
+      {
+        "topic": "requests",
+        "text": "Request the visits the plan of care still needs after the current authorisation, on the current authorisation's id. Requests are standard: none of the current plans of care documents that waiting the standard time could seriously jeopardize the patient's health or ability to regain maximum function. Never send a second request while one is open, and never request visits for a patient being discharged."
+      },
+      {
+        "topic": "payers",
+        "text": "Larkhaven Advantage and Statewell Health Plan: Authgate. Pinecrest Benefits Plan and Bluehaven Marketplace: Authwise. Corbel Mutual: fax only, through Faxline. Original Medicare Part B requires no prior authorisation for outpatient therapy; past the year's KX threshold ($2,480 in 2026) the claim carries the KX modifier and the notes support medical necessity."
+      }
+    ],
+    "patients": [
+      {
+        "patient": "P-01",
+        "payer": "Larkhaven Advantage (Medicare Advantage)",
+        "auth": "LA-5531: 12 visits approved, 10 used, through 31 Oct 2026",
+        "next_visits": "13 Oct, 15 Oct, 20 Oct, 22 Oct",
+        "plan_of_care": "8 more visits after this authorisation, twice a week through 20 Nov; $92 a visit"
+      },
+      {
+        "patient": "P-02",
+        "payer": "Larkhaven Advantage (Medicare Advantage)",
+        "auth": "LA-5560: 20 visits approved, 9 used, through 31 Oct 2026",
+        "next_visits": "13, 16, 20, 23, 27 and 30 Oct, then 2 Nov",
+        "plan_of_care": "6 more visits after this authorisation, through 25 Nov; $92 a visit"
+      },
+      {
+        "patient": "P-03",
+        "payer": "Pinecrest Benefits Plan (self-funded employer plan)",
+        "auth": "PC-7710: 12 visits approved, 8 used, through 24 Oct 2026",
+        "next_visits": "14 Oct, 21 Oct, 26 Oct, 28 Oct",
+        "plan_of_care": "10 more visits after this authorisation, through 4 Dec; $110 a visit"
+      },
+      {
+        "patient": "P-04",
+        "payer": "Bluehaven Marketplace (federal exchange plan)",
+        "auth": "BH-3302: 10 visits approved, 6 used, through 29 Oct 2026",
+        "next_visits": "20 Oct, 27 Oct, 30 Oct",
+        "plan_of_care": "8 more visits after this authorisation, through 11 Dec; $104 a visit"
+      },
+      {
+        "patient": "P-05",
+        "payer": "Statewell Health Plan (Medicaid managed care)",
+        "auth": "SW-9120: 8 visits approved, 7 used, through 15 Nov 2026",
+        "next_visits": "14 Oct, 19 Oct, 21 Oct",
+        "plan_of_care": "6 more visits after this authorisation, through 20 Nov; $68 a visit"
+      },
+      {
+        "patient": "P-06",
+        "payer": "Original Medicare Part B",
+        "auth": "None: no prior authorisation for outpatient therapy",
+        "next_visits": "13 Oct, 20 Oct",
+        "plan_of_care": "6 more visits, through 20 Nov; past the KX threshold on 22 Sep"
+      },
+      {
+        "patient": "P-07",
+        "payer": "Larkhaven Advantage (Medicare Advantage)",
+        "auth": "LA-5502: 14 visits approved, 11 used, through 31 Oct 2026",
+        "next_visits": "16 Oct (the last visit)",
+        "plan_of_care": "Goals met; discharge from therapy on 16 Oct. No visits after it"
+      },
+      {
+        "patient": "P-08",
+        "payer": "Pinecrest Benefits Plan (self-funded employer plan)",
+        "auth": "PC-7688: 10 visits approved, 6 used, through 23 Oct 2026",
+        "next_visits": "19 Oct, 26 Oct",
+        "plan_of_care": "6 more visits after this authorisation, through 30 Nov; $110 a visit"
+      },
+      {
+        "patient": "P-09",
+        "payer": "Corbel Mutual (commercial)",
+        "auth": "CM-215: 8 visits approved, 5 used, through 27 Oct 2026",
+        "next_visits": "21 Oct, 28 Oct",
+        "plan_of_care": "6 more visits after this authorisation, through 4 Dec; $98 a visit"
+      },
+      {
+        "patient": "P-11",
+        "payer": "Pinecrest Benefits Plan (self-funded employer plan)",
+        "auth": "PC-7741: 16 visits approved, 3 used, through 30 Nov 2026",
+        "next_visits": "Weekly from 14 Oct: 14, 21, 28 Oct; 4, 11, 18, 25 Nov; 2 Dec",
+        "plan_of_care": "4 more visits after this authorisation, through 23 Dec; $110 a visit"
+      },
+      {
+        "patient": "P-12",
+        "payer": "Statewell Health Plan (Medicaid managed care)",
+        "auth": "SW-9188: 8 visits approved, 4 used, through 29 Oct 2026",
+        "next_visits": "22 Oct, 27 Oct, 30 Oct",
+        "plan_of_care": "6 more visits after this authorisation, through 4 Dec; $68 a visit"
+      }
+    ],
+    "authgate_rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Authgate carries Larkhaven Advantage, a Medicare Advantage plan, and Statewell Health Plan, a Medicaid managed care plan whose contract rating period began on 1 July 2026. Topics: clock, continuations, faxes."
+      },
+      {
+        "topic": "clock",
+        "text": "Both plans are impacted payers under the CMS Interoperability and Prior Authorization final rule (CMS-0057-F). Larkhaven, from 1 January 2026, and Statewell, from its first rating period beginning on or after that date (1 July 2026), decide a standard request within 7 calendar days of receipt and an expedited request within 72 hours, and give a specific reason for any denial."
+      },
+      {
+        "topic": "continuations",
+        "text": "A continuation is accepted no earlier than 14 calendar days before the first date of service it covers; an earlier request is returned unprocessed and must be sent again. One open request per authorisation. Request the visits the plan of care needs, on the current authorisation's id."
+      },
+      {
+        "topic": "faxes",
+        "text": "Larkhaven and Statewell take prior authorisation requests through Authgate only. Faxed requests are not accepted and are not answered."
+      }
+    ],
+    "authgate_auths": [
+      {
+        "auth": "LA-5531",
+        "patient": "P-01",
+        "plan": "Larkhaven Advantage",
+        "approved": "12 visits, 14 Sep to 31 Oct 2026",
+        "open_request": "none"
+      },
+      {
+        "auth": "LA-5560",
+        "patient": "P-02",
+        "plan": "Larkhaven Advantage",
+        "approved": "20 visits, 21 Sep to 31 Oct 2026",
+        "open_request": "none"
+      },
+      {
+        "auth": "LA-5502",
+        "patient": "P-07",
+        "plan": "Larkhaven Advantage",
+        "approved": "14 visits, 1 Sep to 31 Oct 2026",
+        "open_request": "none"
+      },
+      {
+        "auth": "SW-9120",
+        "patient": "P-05",
+        "plan": "Statewell Health Plan",
+        "approved": "8 visits, 15 Sep to 15 Nov 2026",
+        "open_request": "none"
+      },
+      {
+        "auth": "SW-9188",
+        "patient": "P-12",
+        "plan": "Statewell Health Plan",
+        "approved": "8 visits, 1 Oct to 29 Oct 2026",
+        "open_request": "none"
+      }
+    ],
+    "authwise_rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Authwise carries Pinecrest Benefits Plan, a self-funded employer plan, and Bluehaven Marketplace, a qualified health plan sold on the federally facilitated exchange. Topics: clock, renewals."
+      },
+      {
+        "topic": "clock",
+        "text": "Neither plan is on CMS-0057-F's decision clock: that rule's 72-hour and 7-day timeframes do not reach employer plans, and they exclude qualified health plan issuers on the federally facilitated exchanges. Each plan decides a standard pre-service request within 15 calendar days of receipt, and an urgent one within 72 hours, as its plan documents and the federal claims rules provide (29 CFR 2560.503-1; 45 CFR 147.136)."
+      },
+      {
+        "topic": "renewals",
+        "text": "A renewal is accepted up to 30 calendar days before the first date of service it covers; an earlier request is returned unprocessed. One open request per authorisation: a second request while one is pending is closed as a duplicate."
+      }
+    ],
+    "authwise_auths": [
+      {
+        "auth": "PC-7710",
+        "patient": "P-03",
+        "plan": "Pinecrest Benefits Plan",
+        "approved": "12 visits, 7 Sep to 24 Oct 2026",
+        "open_request": "none"
+      },
+      {
+        "auth": "PC-7688",
+        "patient": "P-08",
+        "plan": "Pinecrest Benefits Plan",
+        "approved": "10 visits, 31 Aug to 23 Oct 2026",
+        "open_request": "PC-7688-R, 6 visits, submitted 2 Oct 2026: pending, decision due by 17 Oct"
+      },
+      {
+        "auth": "PC-7741",
+        "patient": "P-11",
+        "plan": "Pinecrest Benefits Plan",
+        "approved": "16 visits, 1 Oct to 30 Nov 2026",
+        "open_request": "none"
+      },
+      {
+        "auth": "BH-3302",
+        "patient": "P-04",
+        "plan": "Bluehaven Marketplace",
+        "approved": "10 visits, 14 Sep to 29 Oct 2026",
+        "open_request": "none"
+      }
+    ],
+    "directory": [
+      {
+        "payer": "Corbel Mutual",
+        "prior_auth_by_fax": "Yes, fax only",
+        "fax": "+1 555 014 2200"
+      },
+      {
+        "payer": "Larkhaven Advantage",
+        "prior_auth_by_fax": "No: Authgate only",
+        "fax": "+1 555 019 7300 (claims correspondence, not prior authorisation)"
+      },
+      {
+        "payer": "Statewell Health Plan",
+        "prior_auth_by_fax": "No: Authgate only",
+        "fax": "+1 555 016 4410 (member services)"
+      },
+      {
+        "payer": "Pinecrest Benefits Plan and Bluehaven Marketplace",
+        "prior_auth_by_fax": "No: Authwise only",
+        "fax": "none listed"
+      }
+    ],
+    "payer_sheets": [
+      {
+        "payer": "Corbel Mutual",
+        "text": "Corbel Mutual takes prior authorisation requests for therapy by fax only, to +1 555 014 2200: the request, the current authorisation id and the plan of care. It decides a standard request within 10 business days of receipt. Business days exclude weekends and federal holidays; Monday 12 October 2026, Columbus Day, is a federal holiday. Requests are accepted any time before the first date of service they cover. Today is Friday 9 October 2026."
+      }
+    ]
+  }
+}

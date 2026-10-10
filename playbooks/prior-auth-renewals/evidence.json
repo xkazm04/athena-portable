@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "prior-auth-renewals",
+  "captured_at": "2026-10-10T01:18:01Z",
+  "bench_run_at": "2026-10-10T01:15:06Z",
+  "narration": {
+    "text": "Every therapy authorisation renewed before visits run past it, each on its own payer's clock. This is a chore for the authorisation coordinator of an outpatient physical and occupational therapy group with eleven patients in ongoing care across five payers. Athena works it across 4 portals: Chartleaf EHR, Authgate, Authwise and Faxline. On the bench, she found 5 of 5 eligible items, worth 3,664 dollars of the 3,664 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A Medicare Advantage renewal three weeks out, which the portal would return if sent today. A Medicaid managed care renewal that next Friday's run still has time for. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 62 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.681,
+    "sha256": "6ee936d13576ad7d022e8b90957b214c852dde42ef2de6074d8d1cd1107e1a74"
+  },
+  "video": {
+    "path": "evidence/prior-auth-renewals/evidence.mp4",
+    "duration_s": 62.681,
+    "bytes": 2807882,
+    "sha256": "8de2f02db3eed6d4e1baebe0f4a1b872f77270c3785232a7153d8884d8035440"
+  },
+  "thumbnail": {
+    "path": "playbooks/prior-auth-renewals/thumb.jpg",
+    "bytes": 83904,
+    "sha256": "1b58d56db1baaac5e7ce97ee5348292cba586425bcff11dd200d6dcdea4ff8a6"
+  }
+}
