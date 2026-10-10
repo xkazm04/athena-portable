@@ -12,7 +12,7 @@ contract can express — an op becomes ``tool.call`` / ``tool.result`` or a deci
 ``TTS:`` first line becomes ``turn.finished.tts``. A third line format with no event behind it
 would be a grammar the model is taught and nothing reads.
 
-**Repairs, and why there are only six.** A model that writes JSON by hand gets the same few
+**Repairs, and why there are only seven.** A model that writes JSON by hand gets the same few
 things wrong, and each has exactly one correct reading:
 
 - a **trailing comma** before ``}`` or ``]``;
@@ -26,14 +26,17 @@ things wrong, and each has exactly one correct reading:
   meant by it (ADR 0050);
 - **the parameters at the top level** (``{"op":"propose_action","action":"core.recall",
   "query":"x"}``) with no ``params``: every key the envelope does not define is a parameter, as
-  the only place they could have been meant to go (ADR 0050).
+  the only place they could have been meant to go (ADR 0050);
+- a **stray quote** after a closing ``}`` or ``]`` and before ``,``, ``}`` or ``]``
+  (``"params":{...}"," rationale"``): valid JSON cannot open a string there, so the quote is
+  dropped (ADR 0059).
 
 Anything else is a parse error carrying the offending line, and the caller tells the model next
 turn that its op was dropped and why (README §3.2 step 5's path, in reverse). Repairing further
 would mean guessing at intent, and an op is a request to *act*: a guess that parses is worse than
 a refusal that explains, because only one of the two can be reviewed.
 
-Both text repairs skip string literals, so a rationale that contains ``a: b,`` is left alone. They
+The text repairs skip string literals, so a rationale that contains ``a: b,`` is left alone. They
 run only over text that has already failed to parse, and every candidate must parse before it is
 accepted, so a repair that mangles the line falls through to the next candidate or to a reject.
 """
@@ -69,6 +72,7 @@ TTS_CAP = 1200
 #: The repair names an :class:`Op` reports in ``repairs``. Closed, like ``ERROR_REASONS``: a
 #: repair you cannot count is a repair nobody notices the model needing.
 REPAIRS: tuple[str, ...] = (
+    "stray_quote",
     "unquoted_key",
     "trailing_comma",
     "closing_brace",
@@ -241,13 +245,18 @@ def _loads(raw: str) -> tuple[Any, tuple[str, ...]]:
 def _candidates(raw: str) -> Iterator[tuple[str, tuple[str, ...]]]:
     """Every text worth trying, fewest repairs first.
 
-    The two text repairs accumulate — a line can have both — and each stage is then tried with
-    zero to three appended braces, so the cheapest reading of the line is always found first.
+    The three text repairs accumulate — a line can have all of them — and each stage is then tried
+    with zero to three appended braces, so the cheapest reading of the line is always found first.
     """
     stages: list[tuple[str, tuple[str, ...]]] = [(raw, ())]
     text = raw
     applied: tuple[str, ...] = ()
-    for name, repair in (("unquoted_key", _quote_keys), ("trailing_comma", _strip_commas)):
+    # The stray quote goes first: it changes which characters the other two see as inside a string.
+    for name, repair in (
+        ("stray_quote", _drop_stray_quotes),
+        ("unquoted_key", _quote_keys),
+        ("trailing_comma", _strip_commas),
+    ):
         fixed = repair(text)
         if fixed != text:
             text, applied = fixed, (*applied, name)
@@ -261,6 +270,29 @@ def _candidates(raw: str) -> Iterator[tuple[str, tuple[str, ...]]]:
                 continue
             seen.add(candidate)
             yield candidate, repairs if missing == 0 else (*repairs, "closing_brace")
+
+
+def _drop_stray_quotes(text: str) -> str:
+    """Drop a ``"`` that follows ``}`` or ``]`` and precedes ``,``, ``}`` or ``]``."""
+    out: list[str] = []
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if char == '"':
+            if _last_significant(out) in ("}", "]") and _next_significant(text, index + 1) in (
+                ",",
+                "}",
+                "]",
+            ):
+                index += 1
+                continue
+            end = _end_of_string(text, index)
+            out.append(text[index:end])
+            index = end
+            continue
+        out.append(char)
+        index += 1
+    return "".join(out)
 
 
 def _quote_keys(text: str) -> str:

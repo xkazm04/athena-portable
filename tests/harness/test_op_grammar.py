@@ -12,6 +12,7 @@ from athena.harness.op_grammar import (
     REPAIRS,
     Op,
     OpError,
+    _drop_stray_quotes,
     parse_op,
     parse_turn,
 )
@@ -174,8 +175,9 @@ def test_parameters_written_at_the_top_level_are_read_as_params() -> None:
     assert kept.params == {"query": "x"} and kept.repairs == ()
 
 
-def test_the_repairs_are_a_closed_list_of_six() -> None:
+def test_the_repairs_are_a_closed_list_of_seven() -> None:
     assert REPAIRS == (
+        "stray_quote",
         "unquoted_key",
         "trailing_comma",
         "closing_brace",
@@ -183,3 +185,39 @@ def test_the_repairs_are_a_closed_list_of_six() -> None:
         "name_field_names_tool",
         "params_at_top",
     )
+
+
+def test_a_stray_quote_after_a_closing_brace_is_dropped() -> None:
+    line = (
+        '{"op":"propose_action","action":"host.subhub.send_deficiency","params":{"sub_id":"S-02",'
+        '"deficiency":"Policy PM-7731-GL does not have CG 20 37 attached. Please post it to '
+        'Coverwell."}","rationale":"Coverwell shows no CG 20 37 on PM-7731-GL; Exhibit D requires '
+        'both endorsements"}'
+    )
+    parsed = parse_op(line)
+    assert isinstance(parsed, Op)
+    assert parsed.action == "host.subhub.send_deficiency"
+    assert parsed.params == {
+        "sub_id": "S-02",
+        "deficiency": (
+            "Policy PM-7731-GL does not have CG 20 37 attached. Please post it to Coverwell."
+        ),
+    }
+    assert parsed.rationale == (
+        "Coverwell shows no CG 20 37 on PM-7731-GL; Exhibit D requires both endorsements"
+    )
+    assert parsed.repairs == ("stray_quote",)
+
+
+def test_brace_quote_comma_inside_a_string_is_left_alone() -> None:
+    line = '{"op":"propose_action","action":"core.recall","params":{"query":"a }\\", b"}}'
+    assert _drop_stray_quotes(line) == line
+    parsed = parse_op(line)
+    assert isinstance(parsed, Op)
+    assert parsed.params == {"query": 'a }", b'}
+    assert parsed.repairs == ()
+
+
+def test_a_missing_comma_is_still_refused() -> None:
+    line = '{"op":"propose_action","action":"core.recall","params":{"query":"x"}"rationale":"y"}'
+    assert isinstance(parse_op(line), OpError)
