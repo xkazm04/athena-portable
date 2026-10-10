@@ -1,0 +1,54 @@
+{
+  "targets": [
+    {
+      "tool": "file_dispute",
+      "key": "entry",
+      "eligible": {
+        "TG-1": {
+          "value_usd": 125.0,
+          "why": "TG-1 says February 2026 was 60 days late, but Harbor received the payment on 18 February, two days before the due date of 20 February (M-1, P-2). Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+        },
+        "TG-2": {
+          "value_usd": 125.0,
+          "why": "TG-2 is a collection with its first delinquency on 14 March 2018; its seven years began on 10 September 2018 and ended on 10 September 2025 (1681c(a)(4), (c)), so it is past its time. Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+        },
+        "TG-3": {
+          "value_usd": 125.0,
+          "why": "TG-3 is a bankruptcy with the order for relief on 3 June 2016; ten years ended on 3 June 2026 (1681c(a)(1)), so it is past its time. Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+        },
+        "TG-6": {
+          "value_usd": 125.0,
+          "why": "TG-6 was disputed on 24 August with no documents and came back verified (R-TG1); Cobalt's letter of 16 April 2024 says the account is paid in full with a balance of 0 (M-3), so it is disputed again with that proof. Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+        },
+        "PM-1": {
+          "value_usd": 125.0,
+          "why": "PM-1 says February 2026 was 60 days late; the payment came on 18 February, before the due date (M-1, P-2). Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+        },
+        "PM-6": {
+          "value_usd": 125.0,
+          "why": "PM-6 is a Greenfield account opened from another person's application at 18 Pine Row, which Greenfield says is not hers and has closed (M-4). Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+        },
+        "KR-1": {
+          "value_usd": 125.0,
+          "why": "KR-1 says February 2026 was 60 days late; the payment came on 18 February, before the due date (M-1, P-2). Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+        },
+        "KR-2": {
+          "value_usd": 125.0,
+          "why": "KR-2 shows a 356.00 dollar balance unpaid, but she paid it in full on 8 June 2026 (M-5, P-3). Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+        }
+      },
+      "traps": {
+        "TG-4": "TG-4 says November 2025 was 30 days late, and it was: the payment came on 24 December, 34 days after the due date of 20 November (M-2, P-1); it is accurate",
+        "TG-5": "TG-5 is a hard inquiry from the lease application she made on 12 August 2026 (M-6); she authorised it",
+        "PM-2": "PM-2 is a collection on a bill she owes (M-8); its seven years run from 2 May 2022, 180 days after 3 November 2021, so it is accurate and in time",
+        "PM-3": "PM-3 was placed on 2 October 2019, over seven years ago, but its seven years run from 28 January 2020, 180 days after the delinquency of 1 August 2019 (1681c(c)), to 28 January 2027; it is accurate and in time",
+        "PM-4": "PM-4 is an account she closed on 15 January 2024, paid and never late (M-10), reported accurately",
+        "PM-5": "PM-5 was disputed on 21 September (R-PM1) and the 30 days run to 21 October; it is still being answered, and a repeat with nothing new would be frivolous",
+        "KR-3": "KR-3 was corrected on 30 September 2026 after her dispute (R-KR1); there is nothing left to dispute",
+        "KR-4": "KR-4 is a hard inquiry from the loan application she signed on 3 September 2026 (M-7); she authorised it"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

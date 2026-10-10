@@ -1,0 +1,355 @@
+{
+  "playbook": "credit-report-disputes",
+  "run_at": "2026-10-10T18:53:31Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 117.2,
+  "turns": 12,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 31,
+  "cost_usd": 1.0271,
+  "your_time_s": 240,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.0
+  },
+  "score": {
+    "eligible": 8,
+    "found": 8,
+    "exact": 8,
+    "value_total_usd": 1000.0,
+    "value_found_usd": 1000.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "file_dispute",
+        "key": "TG-4",
+        "why": "TG-4 says November 2025 was 30 days late, and it was: the payment came on 24 December, 34 days after the due date of 20 November (M-2, P-1); it is accurate",
+        "filed": false
+      },
+      {
+        "action": "file_dispute",
+        "key": "TG-5",
+        "why": "TG-5 is a hard inquiry from the lease application she made on 12 August 2026 (M-6); she authorised it",
+        "filed": false
+      },
+      {
+        "action": "file_dispute",
+        "key": "PM-2",
+        "why": "PM-2 is a collection on a bill she owes (M-8); its seven years run from 2 May 2022, 180 days after 3 November 2021, so it is accurate and in time",
+        "filed": false
+      },
+      {
+        "action": "file_dispute",
+        "key": "PM-3",
+        "why": "PM-3 was placed on 2 October 2019, over seven years ago, but its seven years run from 28 January 2020, 180 days after the delinquency of 1 August 2019 (1681c(c)), to 28 January 2027; it is accurate and in time",
+        "filed": false
+      },
+      {
+        "action": "file_dispute",
+        "key": "PM-4",
+        "why": "PM-4 is an account she closed on 15 January 2024, paid and never late (M-10), reported accurately",
+        "filed": false
+      },
+      {
+        "action": "file_dispute",
+        "key": "PM-5",
+        "why": "PM-5 was disputed on 21 September (R-PM1) and the 30 days run to 21 October; it is still being answered, and a repeat with nothing new would be frivolous",
+        "filed": false
+      },
+      {
+        "action": "file_dispute",
+        "key": "KR-3",
+        "why": "KR-3 was corrected on 30 September 2026 after her dispute (R-KR1); there is nothing left to dispute",
+        "filed": false
+      },
+      {
+        "action": "file_dispute",
+        "key": "KR-4",
+        "why": "KR-4 is a hard inquiry from the loan application she signed on 3 September 2026 (M-7); she authorised it",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "file_dispute",
+      "key": "TG-1",
+      "outcome": "correct",
+      "value_usd": 125.0,
+      "exact": true,
+      "why": "TG-1 says February 2026 was 60 days late, but Harbor received the payment on 18 February, two days before the due date of 20 February (M-1, P-2). Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+    },
+    {
+      "action": "file_dispute",
+      "key": "TG-2",
+      "outcome": "correct",
+      "value_usd": 125.0,
+      "exact": true,
+      "why": "TG-2 is a collection with its first delinquency on 14 March 2018; its seven years began on 10 September 2018 and ended on 10 September 2025 (1681c(a)(4), (c)), so it is past its time. Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+    },
+    {
+      "action": "file_dispute",
+      "key": "TG-3",
+      "outcome": "correct",
+      "value_usd": 125.0,
+      "exact": true,
+      "why": "TG-3 is a bankruptcy with the order for relief on 3 June 2016; ten years ended on 3 June 2026 (1681c(a)(1)), so it is past its time. Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+    },
+    {
+      "action": "file_dispute",
+      "key": "TG-6",
+      "outcome": "correct",
+      "value_usd": 125.0,
+      "exact": true,
+      "why": "TG-6 was disputed on 24 August with no documents and came back verified (R-TG1); Cobalt's letter of 16 April 2024 says the account is paid in full with a balance of 0 (M-3), so it is disputed again with that proof. Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+    },
+    {
+      "action": "file_dispute",
+      "key": "PM-1",
+      "outcome": "correct",
+      "value_usd": 125.0,
+      "exact": true,
+      "why": "PM-1 says February 2026 was 60 days late; the payment came on 18 February, before the due date (M-1, P-2). Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+    },
+    {
+      "action": "file_dispute",
+      "key": "PM-6",
+      "outcome": "correct",
+      "value_usd": 125.0,
+      "exact": true,
+      "why": "PM-6 is a Greenfield account opened from another person's application at 18 Pine Row, which Greenfield says is not hers and has closed (M-4). Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+    },
+    {
+      "action": "file_dispute",
+      "key": "KR-1",
+      "outcome": "correct",
+      "value_usd": 125.0,
+      "exact": true,
+      "why": "KR-1 says February 2026 was 60 days late; the payment came on 18 February, before the due date (M-1, P-2). Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+    },
+    {
+      "action": "file_dispute",
+      "key": "KR-2",
+      "outcome": "correct",
+      "value_usd": 125.0,
+      "exact": true,
+      "why": "KR-2 shows a 356.00 dollar balance unpaid, but she paid it in full on 8 June 2026 (M-5, P-3). Weighted 125 dollars, an eighth of the roster's 1,000 dollars a year"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm filing two disputes at Kessingham, and each is a decision card for you to answer.\n\n- **KR-1, Harbor, February 2026 \"60 days late\":** This is wrong. Harbor's message M-1 and bank payment P-2 show you paid on 18 Feb 2026 for a 20 Feb due date.\n- **KR-2, Northvale Medical Collections, 356.00 dollars \"unpaid\":** This is out of date. Northvale's message M-5 and bank payment P-3 show you paid in full on 8 June 2026, so the balance should be 0. The entry is inside its time limit, so I'm disputing the balance and not the age.\n\n\n**Left alone at Kessingham**\n- **KR-3, Tarnwick Bank Visa, June 2026:** Already fixed. Your earlier dispute R-KR1 was answered on 30 Sep 2026, and the entry now shows paid as agreed.\n- **KR-4, Northgate inquiry, 3 Sep 2026:** You authorised it (M-7), and it is inside the two-year display period.\n\n**Across all three reports**\n\nI can only vouch for what is in my notes. ",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Josefina Marrow. This is my mail. Read every message: they are my papers from lenders, collectors and utilities. Don't do anything yet: I'll send you to my bank and then to each of my three credit reports.",
+      "continued": false,
+      "said": "I'll start by listing your inbox, then read each message.",
+      "said_chars": 57,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Your inbox has 11 messages, and I'll read all of them now.",
+      "said_chars": 58,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "I've read all 11 messages and done nothing else. Nothing is filed, and the rules at each bureau will decide what counts as too old.\n\n**What the mail shows**\n- **Harbor Auto Finance, M-2:** the November 2025 payment was received on 24 December 2025, 34 days after its 20 November due date. Harbor says it will show as 30 days late, so that entry looks accurate.\n- **Harbor Auto Finance, M-1:** the February 2026 payment was received on 18 February 2026, for a due date of 20 February 2026. That is on time.",
+      "said_chars": 2569,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "This is my bank. Read the payments I made to my lenders and collectors.",
+      "continued": false,
+      "said": "I'll read your payments from the bank now.",
+      "said_chars": 42,
+      "reads": [
+        "list_payments"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "",
+      "continued": true,
+      "said": "I read four payments in your bank, and they match your mail.\n\n- **P-1, 24 Dec 2025:** Harbor Auto Finance, 412.55. This is the late November payment from M-2. It was 34 days late, so a 30-day late mark is accurate.\n- **P-2, 18 Feb 2026:** Harbor Auto Finance, 412.55. This was paid 2 days before the 20 Feb due date, which is on time (M-1). It is proof for disputing any late mark on that month.\n- **P-3, 8 Jun 2026:** Northvale Medical Collections, 356.00. This matches M-5, paid in full with a balance of 0.",
+      "said_chars": 1477,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Tallowgate Credit",
+      "user": "This is my first credit report, at Tallowgate Credit. Read its rules, my report on both pages and the disputes I have made here. Then dispute each entry that is wrong or past its time, with my proof from my mail and bank, and where an earli",
+      "continued": false,
+      "said": "I'll read the Tallowgate rules, both report pages and your earlier disputes first.",
+      "said_chars": 82,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_report",
+        "read_report",
+        "list_dispute_results"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Tallowgate Credit",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing four disputes at Tallowgate. Each is a decision card for you to answer.\n\n- **TG-1, Harbor, February 2026 \"60 days late\":** This is wrong. Harbor's message M-1 and bank payment P-2 show you paid on 18 Feb for a 20 Feb due date.\n- **TG-2, Brisley collection:** This is past its limit. The first delinquency was 14 Mar 2018, so the seven years ran from 10 Sep 2018 and ended 10 Sep 2025.\n- **TG-3, Chapter 7 bankruptcy:** This is past its limit.",
+      "said_chars": 1513,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_dispute",
+          "key": "TG-1",
+          "outcome": "correct",
+          "value_usd": 125.0
+        },
+        {
+          "action": "file_dispute",
+          "key": "TG-2",
+          "outcome": "correct",
+          "value_usd": 125.0
+        },
+        {
+          "action": "file_dispute",
+          "key": "TG-3",
+          "outcome": "correct",
+          "value_usd": 125.0
+        },
+        {
+          "action": "file_dispute",
+          "key": "TG-6",
+          "outcome": "correct",
+          "value_usd": 125.0
+        }
+      ]
+    },
+    {
+      "portal": "Pellmoor Credit",
+      "user": "This is my second credit report, at Pellmoor Credit. Do the same here: read its rules, my report on both pages and the disputes I have made, and dispute what is wrong or past its time, with my proof.",
+      "continued": false,
+      "said": "I'll read the Pellmoor rules, both report pages and your earlier disputes first.",
+      "said_chars": 80,
+      "reads": [
+        "read_rules",
+        "read_report",
+        "read_report",
+        "list_dispute_results"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Pellmoor Credit",
+      "user": "",
+      "continued": true,
+      "said": "The Pellmoor rules call only returned the index, so I'm reading the limits and disputes topics before I file anything.",
+      "said_chars": 118,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Pellmoor Credit",
+      "user": "",
+      "continued": true,
+      "said": "Two Pellmoor entries need disputes. I'm filing both as decision cards.\n\n- **PM-1, Harbor, February 2026 \"60 days late\":** This is wrong. Harbor's message M-1 and bank payment P-2 show you paid on 18 Feb 2026 for a 20 Feb due date.\n- **PM-6, Greenfield Card Services, opened 11 Feb 2025, 1,880.00 dollars:** This account is not yours. Greenfield's message M-4 says the application was another person's, from 18 Pine Row, Tucson. Greenfield closed the account and asked for it to be removed.",
+      "said_chars": 1375,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_dispute",
+          "key": "PM-1",
+          "outcome": "correct",
+          "value_usd": 125.0
+        },
+        {
+          "action": "file_dispute",
+          "key": "PM-6",
+          "outcome": "correct",
+          "value_usd": 125.0
+        }
+      ]
+    },
+    {
+      "portal": "Kessingham Reports",
+      "user": "This is my third credit report, at Kessingham Reports. Do the same here. Then tell me, across all three reports, what you disputed and on what proof, and what you left alone and why.",
+      "continued": false,
+      "said": "I'll read the Kessingham rules, your report and your earlier disputes here first.",
+      "said_chars": 81,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_report",
+        "list_dispute_results"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Kessingham Reports",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing two disputes at Kessingham, and each is a decision card for you to answer.\n\n- **KR-1, Harbor, February 2026 \"60 days late\":** This is wrong. Harbor's message M-1 and bank payment P-2 show you paid on 18 Feb 2026 for a 20 Feb due date.\n- **KR-2, Northvale Medical Collections, 356.00 dollars \"unpaid\":** This is out of date. Northvale's message M-5 and bank payment P-3 show you paid in full on 8 June 2026, so the balance should be 0.",
+      "said_chars": 2740,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_dispute",
+          "key": "KR-1",
+          "outcome": "correct",
+          "value_usd": 125.0
+        },
+        {
+          "action": "file_dispute",
+          "key": "KR-2",
+          "outcome": "correct",
+          "value_usd": 125.0
+        }
+      ]
+    }
+  ]
+}

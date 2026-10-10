@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "credit-report-disputes",
+  "captured_at": "2026-10-10T18:55:48Z",
+  "bench_run_at": "2026-10-10T18:53:31Z",
+  "narration": {
+    "text": "A nurse's three credit reports are disputed with her proof: a late payment she made on time, an old collection and a bankruptcy past their limits, a paid collection and an account that is not hers, while an accurate late payment, a collection still in time, authorised inquiries and entries already fixed or being answered are left alone. This is a chore for a nurse in Tucson, Arizona, doing her yearly check of three credit reports, with a mail folder of letters from lenders and collectors. On the bench, she found 8 of 8 eligible items, worth 1,000 dollars of the 1,000 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 75 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 57.024,
+    "sha256": "f133b9cadfcf33a4ba9a76d399dc8ce499c345284a48d57f4effa86455de1f76"
+  },
+  "video": {
+    "path": "evidence/credit-report-disputes/evidence.mp4",
+    "duration_s": 57.04,
+    "bytes": 2830017,
+    "sha256": "986cd5348393fbeaecd586eec34f1966919e5efde889d86439a9a8f1eb9bec25"
+  },
+  "thumbnail": {
+    "path": "playbooks/credit-report-disputes/thumb.jpg",
+    "bytes": 82253,
+    "sha256": "03379f2916240319beb43499a7ea7e6e75d88d3bba5e66a46850857ca4eb5438"
+  }
+}

@@ -239,6 +239,11 @@ names; each playbook carries the new one.
   is a real toll-payment service); "Cardwell" became "Cardhollow", because Cardwell Payment Systems is a real card-payment
   processor; and "Mailnest" became "Postwren", because mailnest.io is a real email service. Rows 67 to 70 use Cardhollow
   for Cardwell.
+- Row 63, `credit-report-disputes`: "Ledgerscore" became "Tallowgate Credit", because LedgerScore is a real credit-report
+  company; "Creditaire" became "Pellmoor Credit", because Creditaire Solutions is a real credit-repair company;
+  "Scorewell" became "Kessingham Reports", because Scorewell, Inc. is a real credit-advisory company; "Ledgerline bank"
+  became "Ledgerwren bank", because Ledgerline is the name of several real accounting and invoicing products; and
+  "Mailnest" became "Postwren", because mailnest.io is a real email service.
 
 ### B8: Work, pay and benefits
 

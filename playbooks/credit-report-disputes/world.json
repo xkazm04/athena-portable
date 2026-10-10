@@ -1,0 +1,608 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "postwren",
+      "message": "I'm Josefina Marrow. This is my mail. Read every message: they are my papers from lenders, collectors and utilities. Don't do anything yet: I'll send you to my bank and then to each of my three credit reports.",
+      "nudges": 1
+    },
+    {
+      "app": "bank",
+      "message": "This is my bank. Read the payments I made to my lenders and collectors.",
+      "nudges": 1
+    },
+    {
+      "app": "tallowgate",
+      "message": "This is my first credit report, at Tallowgate Credit. Read its rules, my report on both pages and the disputes I have made here. Then dispute each entry that is wrong or past its time, with my proof from my mail and bank, and where an earlier result does not match my proof, dispute it again. Leave alone an entry that is accurate and in time, an authorised inquiry, and anything already fixed or still being answered.",
+      "nudges": 2
+    },
+    {
+      "app": "pellmoor",
+      "message": "This is my second credit report, at Pellmoor Credit. Do the same here: read its rules, my report on both pages and the disputes I have made, and dispute what is wrong or past its time, with my proof.",
+      "nudges": 2
+    },
+    {
+      "app": "kessingham",
+      "message": "This is my third credit report, at Kessingham Reports. Do the same here. Then tell me, across all three reports, what you disputed and on what proof, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/josefina/inbox",
+      "view": {
+        "view": "Postwren: Josefina Marrow's inbox (invented)",
+        "signed_in": "Josefina Marrow",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The messages in the inbox: id, from, subject and date.",
+          "params": {},
+          "returns": {
+            "table": "msgs",
+            "fields": [
+              "msg_id",
+              "from",
+              "subject",
+              "date"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id (M-n).",
+          "params": {
+            "msg_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "msgs",
+            "match": {
+              "msg_id": "msg_id"
+            },
+            "require": [
+              "msg_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "bank",
+      "name": "Ledgerwren bank",
+      "origin": "https://online.ledgerwren-bank.example",
+      "path": "/josefina/checking",
+      "view": {
+        "view": "Ledgerwren bank: Josefina Marrow's checking account (invented)",
+        "signed_in": "Josefina Marrow",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_payments",
+          "kind": "READ",
+          "description": "The payments Josefina made to lenders and collectors from 1 November 2025: id, date, payee and amount.",
+          "params": {},
+          "returns": {
+            "table": "pays"
+          }
+        }
+      ],
+      "aliases": [
+        "Ledgerwren bank",
+        "my bank",
+        "the bank"
+      ]
+    },
+    {
+      "app_id": "tallowgate",
+      "name": "Tallowgate Credit",
+      "origin": "https://reports.tallowgate-credit.example",
+      "path": "/josefina-marrow/report",
+      "view": {
+        "view": "Tallowgate Credit: Josefina Marrow's credit report (invented)",
+        "signed_in": "Josefina Marrow",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Tallowgate Credit's rules for disputes and for how long an entry stays, by topic: index, disputes, limits or results.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_report",
+          "kind": "READ",
+          "description": "Josefina's credit report: entry, creditor, kind, detail and status. Five a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "ent_tg",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "list_dispute_results",
+          "kind": "READ",
+          "description": "The disputes Josefina has already made here, with their day, what she sent and the result or the day the answer is due.",
+          "params": {},
+          "returns": {
+            "table": "res_tg"
+          }
+        },
+        {
+          "name": "file_dispute",
+          "kind": "REACHES_A_PERSON",
+          "description": "Dispute one entry on this report, by entry id (entry), with why it is wrong (reason) and the proof she sends (proof). Josefina signs.",
+          "params": {
+            "entry": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "proof": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute of {entry} filed."
+        }
+      ],
+      "aliases": [
+        "Tallowgate Credit",
+        "Tallowgate",
+        "the first report"
+      ]
+    },
+    {
+      "app_id": "pellmoor",
+      "name": "Pellmoor Credit",
+      "origin": "https://reports.pellmoor-credit.example",
+      "path": "/josefina-marrow/report",
+      "view": {
+        "view": "Pellmoor Credit: Josefina Marrow's credit report (invented)",
+        "signed_in": "Josefina Marrow",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Pellmoor Credit's rules for disputes and for how long an entry stays, by topic: index, disputes, limits or results.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_report",
+          "kind": "READ",
+          "description": "Josefina's credit report: entry, creditor, kind, detail and status. Five a page; ask for the next with page (1 or 2).",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "ent_pm",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "list_dispute_results",
+          "kind": "READ",
+          "description": "The disputes Josefina has already made here, with their day, what she sent and the result or the day the answer is due.",
+          "params": {},
+          "returns": {
+            "table": "res_pm"
+          }
+        },
+        {
+          "name": "file_dispute",
+          "kind": "REACHES_A_PERSON",
+          "description": "Dispute one entry on this report, by entry id (entry), with why it is wrong (reason) and the proof she sends (proof). Josefina signs.",
+          "params": {
+            "entry": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "proof": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute of {entry} filed."
+        }
+      ],
+      "aliases": [
+        "Pellmoor Credit",
+        "Pellmoor",
+        "the second report"
+      ]
+    },
+    {
+      "app_id": "kessingham",
+      "name": "Kessingham Reports",
+      "origin": "https://reports.kessingham.example",
+      "path": "/josefina-marrow/report",
+      "view": {
+        "view": "Kessingham Reports: Josefina Marrow's credit report (invented)",
+        "signed_in": "Josefina Marrow",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Kessingham Reports's rules for disputes and for how long an entry stays, by topic: index, disputes, limits or results.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_report",
+          "kind": "READ",
+          "description": "Josefina's credit report: entry, creditor, kind, detail and status.",
+          "params": {},
+          "returns": {
+            "table": "ent_kr"
+          }
+        },
+        {
+          "name": "list_dispute_results",
+          "kind": "READ",
+          "description": "The disputes Josefina has already made here, with their day, what she sent and the result or the day the answer is due.",
+          "params": {},
+          "returns": {
+            "table": "res_kr"
+          }
+        },
+        {
+          "name": "file_dispute",
+          "kind": "REACHES_A_PERSON",
+          "description": "Dispute one entry on this report, by entry id (entry), with why it is wrong (reason) and the proof she sends (proof). Josefina signs.",
+          "params": {
+            "entry": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "proof": {
+              "type": "string"
+            }
+          },
+          "says": "Dispute of {entry} filed."
+        }
+      ],
+      "aliases": [
+        "Kessingham Reports",
+        "Kessingham",
+        "the third report"
+      ]
+    }
+  ],
+  "tables": {
+    "msgs": [
+      {
+        "msg_id": "M-1",
+        "from": "Harbor Auto Finance",
+        "subject": "Payment received",
+        "date": "2026-02-18",
+        "text": "Wednesday 18 February 2026. Thank you. We received your payment of 412.55 dollars on 18 February 2026, for the due date of 20 February 2026. Your account is current."
+      },
+      {
+        "msg_id": "M-2",
+        "from": "Harbor Auto Finance",
+        "subject": "Your payment was late",
+        "date": "2025-12-24",
+        "text": "Wednesday 24 December 2025. We received your payment of 412.55 dollars today, 34 days after its due date of 20 November 2025. Your payment history will show this payment as 30 days late."
+      },
+      {
+        "msg_id": "M-3",
+        "from": "Cobalt Utility Billing",
+        "subject": "Account paid in full",
+        "date": "2024-04-16",
+        "text": "Tuesday 16 April 2024. Your final payment of 212.40 dollars is received. Your account is paid in full and its balance is 0. We have withdrawn it from collection."
+      },
+      {
+        "msg_id": "M-4",
+        "from": "Greenfield Card Services",
+        "subject": "Your account inquiry",
+        "date": "2026-09-04",
+        "text": "Friday 4 September 2026. We have no account in your name. The account opened on 11 February 2025 came from an application at 18 Pine Row, Tucson, by another person, and we have closed it. We have asked to be removed as a source of that entry about you."
+      },
+      {
+        "msg_id": "M-5",
+        "from": "Northvale Medical Collections",
+        "subject": "Paid in full, thank you",
+        "date": "2026-06-08",
+        "text": "Monday 8 June 2026. We received your payment of 356.00 dollars today. The account is paid in full and its balance is 0."
+      },
+      {
+        "msg_id": "M-6",
+        "from": "Tarnwick Lease Auto",
+        "subject": "Thanks for your application",
+        "date": "2026-08-12",
+        "text": "Wednesday 12 August 2026. Thank you for applying online today for a lease. As you agreed, we have asked a credit reporting company for your report."
+      },
+      {
+        "msg_id": "M-7",
+        "from": "Northgate Credit Union",
+        "subject": "Your personal loan application",
+        "date": "2026-09-03",
+        "text": "Thursday 3 September 2026. We have your application for an 8,000 dollar personal loan, signed today, and have asked for your credit report as you authorised."
+      },
+      {
+        "msg_id": "M-8",
+        "from": "Wexley Credit Recovery",
+        "subject": "Your emergency room bill",
+        "date": "2022-02-12",
+        "text": "Saturday 12 February 2022. We hold your emergency room bill of 418.00 dollars, unpaid since 3 November 2021. Please contact us to arrange payment."
+      },
+      {
+        "msg_id": "M-9",
+        "from": "Fenwick Recovery",
+        "subject": "Your veterinary bill",
+        "date": "2019-10-02",
+        "text": "Wednesday 2 October 2019. We hold your veterinary bill of 640.00 dollars, unpaid since 1 August 2019, placed with us today. Please contact us."
+      },
+      {
+        "msg_id": "M-10",
+        "from": "Ridgeline Credit Card",
+        "subject": "Your account is closed",
+        "date": "2024-01-15",
+        "text": "Monday 15 January 2024. As you asked, your account is closed today. Your balance is 0 dollars and the account was never late."
+      },
+      {
+        "msg_id": "M-11",
+        "from": "Calloway Student Loan",
+        "subject": "Payment received",
+        "date": "2026-07-20",
+        "text": "Monday 20 July 2026. Your payment of 186.30 dollars was received 20 July 2026, due 20 July 2026. Thank you."
+      }
+    ],
+    "pays": [
+      {
+        "id": "P-1",
+        "date": "2025-12-24",
+        "payee": "Harbor Auto Finance",
+        "amount": 412.55
+      },
+      {
+        "id": "P-2",
+        "date": "2026-02-18",
+        "payee": "Harbor Auto Finance",
+        "amount": 412.55
+      },
+      {
+        "id": "P-3",
+        "date": "2026-06-08",
+        "payee": "Northvale Medical Collections",
+        "amount": 356.0
+      },
+      {
+        "id": "P-4",
+        "date": "2026-07-20",
+        "payee": "Calloway Student Loan",
+        "amount": 186.3
+      }
+    ],
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Friday 9 October 2026. This credit reporting company's rules for disputes and for how long an entry stays. Topics: disputes, limits, results."
+      },
+      {
+        "topic": "disputes",
+        "text": "Friday 9 October 2026. A consumer may dispute any entry she believes is wrong or incomplete (15 U.S.C. 1681i). We reinvestigate free within 30 days of receiving the dispute; if she sends more information inside the 30 days, we may take up to 15 days more. We tell the company that reported the entry, the furnisher, within 5 business days, with what she sent, and it must investigate (1681s-2(b)). We delete or fix an entry that is inaccurate, incomplete or cannot be verified, and send her the results within 5 business days of finishing. We may end a dispute as frivolous or irrelevant, for example one that repeats an earlier dispute with nothing new, and we tell her within 5 business days. A deleted entry goes back only if the furnisher certifies it is accurate, and we tell her within 5 business days. Copies of proof, not originals, make a dispute stronger."
+      },
+      {
+        "topic": "limits",
+        "text": "Friday 9 October 2026. We do not report most adverse entries more than seven years old, or a bankruptcy more than ten years after the order for relief (15 U.S.C. 1681c(a)). A collection account or charge-off counts its seven years from 180 days after the start of the delinquency that led to it, not from the day it was placed with a collector (1681c(c)). These limits do not apply to a report used for a credit transaction of 150,000 dollars or more, life insurance of 150,000 dollars or more, or a job paying 75,000 dollars a year or more (1681c(b)); none of those is in play here. An entry that is accurate and inside its time is not removed by a dispute. A hard inquiry made on an application she signed is accurate; our practice is to show an inquiry for two years."
+      },
+      {
+        "topic": "results",
+        "text": "Friday 9 October 2026. A result says whether an entry was deleted, changed or verified. 'Verified' means the furnisher confirmed what it reported; it may be wrong if she sent no proof. If a result does not match her proof she may dispute the entry again with the proof. A dispute whose 30 days have not run is still being answered."
+      }
+    ],
+    "ent_tg": [
+      {
+        "entry": "TG-1",
+        "creditor": "Harbor Auto Finance",
+        "kind": "payment history",
+        "detail": "February 2026: 60 days late",
+        "status": "negative"
+      },
+      {
+        "entry": "TG-2",
+        "creditor": "Brisley Credit Services",
+        "kind": "collection",
+        "detail": "1,310.00 dollars; placed 20 November 2018; first delinquency 14 March 2018",
+        "status": "unpaid"
+      },
+      {
+        "entry": "TG-3",
+        "creditor": "Chapter 7 bankruptcy",
+        "kind": "public record",
+        "detail": "order for relief 3 June 2016; discharged 12 October 2016",
+        "status": "discharged"
+      },
+      {
+        "entry": "TG-4",
+        "creditor": "Harbor Auto Finance",
+        "kind": "payment history",
+        "detail": "November 2025: 30 days late",
+        "status": "negative"
+      },
+      {
+        "entry": "TG-5",
+        "creditor": "Tarnwick Lease Auto",
+        "kind": "hard inquiry",
+        "detail": "12 August 2026",
+        "status": "inquiry"
+      },
+      {
+        "entry": "TG-6",
+        "creditor": "Cobalt Utility Billing",
+        "kind": "collection",
+        "detail": "212.40 dollars; placed 5 March 2024; first delinquency 3 October 2023",
+        "status": "unpaid; dispute R-TG1 verified"
+      }
+    ],
+    "res_tg": [
+      {
+        "result": "R-TG1",
+        "entry": "TG-6",
+        "filed": "2026-08-24",
+        "sent": "no documents",
+        "answer": "2026-09-21: verified, the furnisher confirmed the balance of 212.40 dollars"
+      }
+    ],
+    "ent_pm": [
+      {
+        "entry": "PM-1",
+        "creditor": "Harbor Auto Finance",
+        "kind": "payment history",
+        "detail": "February 2026: 60 days late",
+        "status": "negative"
+      },
+      {
+        "entry": "PM-2",
+        "creditor": "Wexley Credit Recovery",
+        "kind": "collection",
+        "detail": "418.00 dollars; placed 12 February 2022; first delinquency 3 November 2021",
+        "status": "unpaid"
+      },
+      {
+        "entry": "PM-3",
+        "creditor": "Fenwick Recovery",
+        "kind": "collection",
+        "detail": "640.00 dollars; placed 2 October 2019; first delinquency 1 August 2019",
+        "status": "unpaid"
+      },
+      {
+        "entry": "PM-4",
+        "creditor": "Ridgeline Credit Card",
+        "kind": "account",
+        "detail": "closed 15 January 2024 by the consumer; balance 0; never late",
+        "status": "closed, paid as agreed"
+      },
+      {
+        "entry": "PM-5",
+        "creditor": "Calloway Student Loan",
+        "kind": "payment history",
+        "detail": "July 2026: 30 days late",
+        "status": "negative; dispute R-PM1 in progress"
+      },
+      {
+        "entry": "PM-6",
+        "creditor": "Greenfield Card Services",
+        "kind": "account",
+        "detail": "opened 11 February 2025; balance 1,880.00 dollars",
+        "status": "open"
+      }
+    ],
+    "res_pm": [
+      {
+        "result": "R-PM1",
+        "entry": "PM-5",
+        "filed": "2026-09-21",
+        "sent": "no documents",
+        "answer": "due by 2026-10-21; still being answered"
+      }
+    ],
+    "ent_kr": [
+      {
+        "entry": "KR-1",
+        "creditor": "Harbor Auto Finance",
+        "kind": "payment history",
+        "detail": "February 2026: 60 days late",
+        "status": "negative"
+      },
+      {
+        "entry": "KR-2",
+        "creditor": "Northvale Medical Collections",
+        "kind": "collection",
+        "detail": "356.00 dollars; placed 10 January 2026; first delinquency 2 August 2025",
+        "status": "unpaid, balance 356.00"
+      },
+      {
+        "entry": "KR-3",
+        "creditor": "Tarnwick Bank Visa",
+        "kind": "payment history",
+        "detail": "June 2026: corrected on 30 September 2026 after dispute R-KR1; now shows paid as agreed",
+        "status": "corrected"
+      },
+      {
+        "entry": "KR-4",
+        "creditor": "Northgate Credit Union",
+        "kind": "hard inquiry",
+        "detail": "3 September 2026",
+        "status": "inquiry"
+      }
+    ],
+    "res_kr": [
+      {
+        "result": "R-KR1",
+        "entry": "KR-3",
+        "filed": "2026-09-02",
+        "sent": "bank letter",
+        "answer": "2026-09-30: corrected, June 2026 now shows paid as agreed"
+      }
+    ]
+  }
+}

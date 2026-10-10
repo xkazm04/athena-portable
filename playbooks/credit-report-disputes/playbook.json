@@ -1,0 +1,110 @@
+{
+  "id": "credit-report-disputes",
+  "title": "A nurse's three credit reports are disputed with her proof: a late payment she made on time, an old collection and a bankruptcy past their limits, a paid collection and an account that is not hers, while an accurate late payment, a collection still in time, authorised inquiries and entries already fixed or being answered are left alone",
+  "domain": "Credit",
+  "audience": "home",
+  "promise": "A nurse's three credit reports are read against her mail and her bank. Eight wrong entries are disputed with her proof: a payment marked 60 days late on all three reports that she made two days early, a collection and a bankruptcy past their seven and ten years, a utility collection her first dispute left verified, a medical collection she has paid, and a card account opened by someone else. An accurate late payment, a collection that looks old but is still inside its seven years, two inquiries she authorised, an account closed and reported accurately, an entry already corrected and a dispute the bureau still has time on are left alone.",
+  "persona": "A nurse in Tucson, Arizona, doing her yearly check of three credit reports, with a mail folder of letters from lenders and collectors",
+  "chore": "Read her mail and her bank payments, then each bureau's rules, report and earlier disputes. Apply 15 U.S.C. 1681i, 1681s-2(b) and 1681c as they stand on 9 October 2026: dispute each entry that is inaccurate or past its time with her proof, dispute again where a result ignores her proof, and leave alone what is accurate and in time or already being answered.",
+  "command": "I'm Josefina Marrow. Go through my Postwren mail, my Ledgerwren bank payments and my three credit reports, at Tallowgate Credit, Pellmoor Credit and Kessingham Reports. Dispute what is wrong or too old, with my proof, and check the results of my earlier disputes against it. Leave out what is accurate and still allowed, what I authorised, and what is already fixed or being answered.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "her letters from lenders, collectors and utilities, her proof",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren bank",
+      "role": "her payments to lenders and collectors",
+      "api": "Online banking, no API",
+      "url": ""
+    },
+    {
+      "name": "Tallowgate Credit",
+      "role": "the first credit report, its rules and her earlier dispute, and the disputes filed",
+      "api": "Credit bureau portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Pellmoor Credit",
+      "role": "the second credit report, its rules and her earlier dispute, and the disputes filed",
+      "api": "Credit bureau portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Kessingham Reports",
+      "role": "the third credit report, its rules and her earlier dispute, and the disputes filed",
+      "api": "Credit bureau portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads her letters in Postwren and her payments in Ledgerwren bank.",
+    "Reads Tallowgate's rules, report and results, and files four disputes.",
+    "Reads Pellmoor's, and files two.",
+    "Reads Kessingham's, and files two."
+  ],
+  "gates": [
+    {
+      "action": "file_dispute",
+      "label": "Dispute a credit report entry",
+      "why": "A signed dispute to a credit reporting company that an entry is wrong, with her proof; one on an accurate entry is a false statement, and a repeat with nothing new can be ended as frivolous."
+    }
+  ],
+  "traps": [
+    "Disputing an accurate late payment.",
+    "Disputing an accurate collection still inside its seven years, however old its placement date looks.",
+    "Disputing an inquiry she authorised.",
+    "Disputing an account closed and reported accurately.",
+    "Disputing an entry already corrected.",
+    "Disputing again an entry whose 30 days have not run."
+  ],
+  "memory": [
+    "The proof in her mail: payment dates, paid-in-full letters, the letter that an account is not hers, and the applications she signed, from Postwren and her bank.",
+    "Each bureau's entries, first-delinquency dates and earlier results, with the rules for 30 days and for seven and ten years, carried to the last bureau's tab."
+  ],
+  "economics": {
+    "value_usd": 1000,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. A wrong late payment or an obsolete collection on a report can raise the cost of a loan or a lease for years, and a household that checks its three reports once a year and disputes with proof clears them; the roster's $1,000 a year is that cost avoided, not a published figure, and each of the world's eight acts is weighted at $125, an eighth of it, a price avoided and not money recovered; the bench world holds eight acts, $1,000. Times a year: once, the yearly check of three reports (each consumer can obtain a free report from each bureau every year or more often). manual_minutes 150: reading eleven letters, four payments, three rules pages, sixteen entries and three earlier results, working out for each entry whether it is accurate and in time, and filing eight disputes with their proof. Rules applied, as they stand on Friday 9 October 2026 (the United States Code, read in the Legal Information Institute's copy): 15 U.S.C. 1681i(a)(1) (30 days, and up to 15 more when the consumer sends relevant information inside the 30), (a)(2) (the furnisher is notified within 5 business days), (a)(3) (frivolous or irrelevant disputes, notice in 5 business days), (a)(5) (deletion or modification; reinsertion only on the furnisher's certification, with notice in 5 business days) and (a)(6) (the results notice in 5 business days); 1681s-2(b) (the furnisher investigates, reviews what the bureau sends, reports the results and corrects or deletes what is inaccurate or unverifiable before the 1681i(a)(1) period ends); 1681c(a)(1) (a bankruptcy more than 10 years old), (a)(4) and (a)(5) (a collection or any other adverse item more than 7 years old), (b) (the limits do not apply to reports used for a credit transaction of $150,000 or more, life insurance of $150,000 or more, or a job at $75,000 or more) and (c) (a collection's seven years begin 180 days after the delinquency that led to it began). The CFPB's consumer pages on disputing an error and on how long negative information stays agree with the statute on the seven and ten years; the former gives the 30 days to the furnisher and none to the bureau, and the statute is followed.",
+    "manual_minutes": 150,
+    "times_per_year": 1,
+    "incumbent": "Credit-repair companies charge a monthly fee for this work, not a share of anything recovered, and the Credit Repair Organizations Act (15 U.S.C. 1679b(b)) bars charging before services are performed; no price was read for the bench, so none is given and no incumbent_fee_pct is stated. A fee is never converted into a share (ADR 0064).",
+    "sources": [
+      {
+        "label": "15 U.S.C. 1681i, procedure in case of disputed accuracy (United States Code)",
+        "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title15-section1681i&num=0&edition=prelim"
+      },
+      {
+        "label": "15 U.S.C. 1681s-2, responsibilities of furnishers of information to consumer reporting agencies (United States Code)",
+        "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title15-section1681s-2&num=0&edition=prelim"
+      },
+      {
+        "label": "15 U.S.C. 1681c, requirements relating to information contained in consumer reports (United States Code)",
+        "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title15-section1681c&num=0&edition=prelim"
+      },
+      {
+        "label": "CFPB: how do I dispute an error on my credit report?",
+        "url": "https://www.consumerfinance.gov/ask-cfpb/how-do-i-dispute-an-error-on-my-credit-report-en-314/"
+      },
+      {
+        "label": "CFPB: how long does negative information stay on my credit report? (reviewed 2 September 2026)",
+        "url": "https://www.consumerfinance.gov/ask-cfpb/how-long-does-negative-information-stay-on-my-credit-report-en-323/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Sixteen entries across three reports, one wrong payment repeated on all three, collections whose seven years run from the delinquency and not the placement date, a bankruptcy at ten years, an earlier result that ignored her proof beside one still being answered, and four accurate or authorised entries that look negative.",
+    "usefulness_why": "Saves an afternoon of reading letters against three reports once a year and keeps wrong entries from raising her cost of credit; the money is mostly minutes and depends on how many entries are wrong."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful consumer with her mail, her bank and the three reports disputes the eight wrong entries with proof and none of the eight accurate or settled ones, inside an hour."
+  },
+  "caveat": "Josefina Marrow, every lender, collector and utility (Harbor Auto Finance, Brisley Credit Services, Cobalt Utility Billing, Greenfield Card Services, Northvale Medical Collections, Wexley Credit Recovery, Fenwick Recovery, Ridgeline Credit Card, Calloway Student Loan, Tarnwick Lease Auto, Tarnwick Bank Visa and Northgate Credit Union), every amount, date and entry, and Tallowgate Credit, Pellmoor Credit, Kessingham Reports, Ledgerwren bank and Postwren are invented; no real credit bureau, credit repair company or lender is named. The public rules applied are 15 U.S.C. 1681i(a) (reinvestigation within 30 days, extended by up to 15 days when she sends more information inside them; notice to the furnisher within 5 business days; deletion of what is inaccurate, incomplete or unverifiable; the results notice within 5 business days; frivolous disputes; reinsertion), 1681s-2(b) (the furnisher's duties after notice) and 1681c(a) to (c) (seven years for most adverse items, measured for collections from 180 days after the start of the delinquency; ten years for a bankruptcy; the limits do not apply to a report used for a transaction of 150,000 dollars or more), as in the United States Code on 9 October 2026 (read in the Legal Information Institute's copy), with the CFPB's consumer pages on disputing an error and on how long negative information stays (the latter reviewed 2 September 2026). The CFPB's dispute page gives its 30 days to the furnisher and none for the bureau; the 30 days for the bureau come from the statute. How long a hard inquiry is shown is the invented bureaus' own practice, as are their results, dates and wording. What decides a real dispute is the bureau's and the furnisher's reinvestigation, the CFPB and the courts. This applies stated rules to stated facts; it is not legal or financial advice."
+}
