@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from athena.connectors.vault import Vault
+from athena.daemon.connectors import connectors
 from athena.daemon.server import DaemonConfig, bound_url, make_server
 from athena.harness.transports import ScriptedTransport
 from athena.wiring import build_local
@@ -70,6 +71,20 @@ def test_the_list_names_both_specs_and_no_secret(live: Live) -> None:
     assert notion["live"] is False
     assert "guide" in notion and "token" not in json.dumps(notion["connection"])
     assert "GET /connectors" in live.request("/health").body["routes"]
+    assert reply.body["records_notice"] == ""
+
+
+def test_an_unreadable_records_file_is_in_the_list_in_plain_words(
+    live: Live, tmp_path: Path
+) -> None:
+    root = tmp_path / "damaged"
+    root.mkdir()
+    (root / "connections.json").write_bytes(b"{")
+    vault = Vault(root, seal_preference="file")
+    status, body = connectors(live.daemon, vault)
+    assert status == 200
+    assert "could not be read" in body["records_notice"]
+    assert "connections.json.unreadable-" in body["records_notice"]
 
 
 def test_a_connect_is_in_the_catalog_at_once_and_a_disconnect_refuses_the_next_call(

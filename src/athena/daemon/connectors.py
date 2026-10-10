@@ -2,8 +2,9 @@
 
 ``GET /connectors``
     Every spec with its connection record: status, identity, the switches, the last probe with
-    its age, the setup guide, the tools it yields. Nothing here is or names a credential; the
-    record has no such field to leak.
+    its age, the setup guide, the tools it yields. ``records_notice`` is empty, or says in plain
+    words that the connections file could not be read and where its bytes were kept. Nothing here
+    is or names a credential; the record has no such field to leak.
 
 ``POST /connectors/<id>/connect``
     ``{"token": "..."}`` for a pasted-token service, or ``{"client_id": "...",
@@ -41,6 +42,7 @@ def connectors(daemon: AthenaDaemon, vault: Vault) -> Reply:
     return 200, {
         "ok": True,
         "connectors": vault.views(),
+        "records_notice": vault.records_notice,
         "showing": len(vault.specs),
         "total": len(vault.specs),
         "footer": "",

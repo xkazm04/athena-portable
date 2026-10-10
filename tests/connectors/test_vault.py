@@ -285,3 +285,76 @@ def test_the_transport_follows_no_redirect_so_the_credential_stays_on_the_pinned
             server.server_close()
     assert status == 302
     assert hits == [], "the second host received a request"
+
+
+# -- the records file (ADR 0021; the craft-1 and robustness-1 findings) ---------------------------
+
+UNREADABLE = {
+    "truncated": b'{"notion": {"status": "conn',
+    "empty": b"",
+    "nul": b"\x00\x00\x00\x00",
+    "not-an-object": b"[]",
+}
+
+
+def _vault_over(tmp_path: Path, specs: dict[str, ConnectorSpec], provider: FakeProvider) -> Vault:
+    return Vault(
+        tmp_path / "connectors",
+        specs=specs,
+        transport=provider,
+        seal=FileSeal(tmp_path / "connectors" / "sealed"),
+    )
+
+
+@pytest.mark.parametrize("name", sorted(UNREADABLE))
+def test_an_unreadable_records_file_is_kept_and_said_aloud(
+    name: str, tmp_path: Path, specs: dict[str, ConnectorSpec], provider: FakeProvider
+) -> None:
+    root = tmp_path / "connectors"
+    root.mkdir()
+    (root / "connections.json").write_bytes(UNREADABLE[name])
+    vault = _vault_over(tmp_path, specs, provider)
+    copies = sorted(root.glob("connections.json.unreadable-*"))
+    assert len(copies) == 1 and copies[0].read_bytes() == UNREADABLE[name]
+    assert "could not be read" in vault.records_notice and copies[0].name in vault.records_notice
+    assert all(v["records_notice"] == vault.records_notice for v in vault.views())
+    assert not vault.is_live("notion")
+
+
+def test_the_switches_set_afterwards_do_not_destroy_the_copy(
+    tmp_path: Path, specs: dict[str, ConnectorSpec], provider: FakeProvider
+) -> None:
+    root = tmp_path / "connectors"
+    root.mkdir()
+    (root / "connections.json").write_bytes(UNREADABLE["truncated"])
+    vault = _vault_over(tmp_path, specs, provider)
+    vault.set_writes("notion", True)
+    vault.set_allowlist("notion", ["page1"])
+    (copy,) = root.glob("connections.json.unreadable-*")
+    assert copy.read_bytes() == UNREADABLE["truncated"]
+    assert json.loads((root / "connections.json").read_text(encoding="utf-8"))["notion"][
+        "writes_enabled"
+    ]
+    again = _vault_over(tmp_path, specs, provider)
+    assert again.records_notice and copy.name in again.records_notice, "the copy stays in view"
+
+
+def test_a_readable_file_gives_no_notice(notion: Vault) -> None:
+    assert notion.records_notice == ""
+    assert all(v["records_notice"] == "" for v in notion.views())
+
+
+def test_a_crash_during_the_write_leaves_the_previous_file(
+    notion: Vault, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "connectors" / "connections.json"
+    before = path.read_bytes()
+
+    def boom(*_: object) -> None:
+        raise OSError("disk went away")
+
+    monkeypatch.setattr("athena.connectors.vault.os.replace", boom)
+    with pytest.raises(VaultError, match="could not be saved"):
+        notion.set_writes("notion", True)
+    assert path.read_bytes() == before
+    assert list(path.parent.glob("*.tmp")) == [], "no temp file is left behind"

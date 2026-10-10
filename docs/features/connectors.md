@@ -19,6 +19,12 @@ the browser, reached through one vault (ADR 0021).
   credential never rides to a host the pin did not name. A token or OAuth grant is
   probed before it is sealed (keyring, DPAPI or an owner-only file, `seal.py`), under
   `ATHENA_HOME/connectors/`, never inside a brain.
+- **The records file is swapped in, never rewritten.** `connections.json` is written whole to a
+  sibling file, flushed to disk and renamed over the old one, so a crash leaves the previous file.
+  A file that cannot be read (an I/O error, invalid JSON, a top level that is not an object) is
+  never taken for "nothing connected" and never lost: its bytes are copied aside as
+  `connections.json.unreadable-<UTC stamp>`, and `GET /connectors` and `Vault.views()` carry a
+  `records_notice` in plain words until the person looks.
 - **A provider's refusal never ends the turn.** A mail subject with a line break is refused as
   `validator_failed` before any request, and a `ValueError` a provider raises comes back as a
   failure from `Service.call`.

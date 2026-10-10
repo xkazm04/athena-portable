@@ -23,7 +23,10 @@ from __future__ import annotations
 
 import contextlib
 import json
+import logging
+import os
 import re
+import tempfile
 import threading
 import urllib.error
 import urllib.parse
@@ -63,6 +66,9 @@ REFRESH_FLOOR_S = 300.0
 #: Health is three-valued, rendered with its age, probed on events and never on render.
 HEALTH: tuple[str, ...] = ("healthy", "broken", "unknown")
 RECORDS_FILENAME = "connections.json"
+UNREADABLE_INFIX = ".unreadable-"
+
+logger = logging.getLogger(__name__)
 
 
 class VaultError(RuntimeError):
@@ -180,6 +186,8 @@ class Vault:
         self._open_browser = open_browser or (lambda url: webbrowser.open(url))
         self._lock = threading.RLock()
         self._records: dict[str, ConnectionRecord] = {}
+        #: Plain words when the records file could not be read; empty otherwise.
+        self.records_notice = ""
         self.flows = FlowManager()
         self._listeners: list[Callable[[str], None]] = []
         self._load()
@@ -191,26 +199,78 @@ class Vault:
         return self.root / RECORDS_FILENAME
 
     def _load(self) -> None:
-        if not self._records_path.exists():
-            return
+        """Read the records. A file that cannot be read is never taken for "nothing connected":
+        its bytes are copied aside and the vault says so (:attr:`records_notice`)."""
+        path = self._records_path
+        raw: bytes | None = None
         try:
-            data = json.loads(self._records_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
+            raw = path.read_bytes()
+            data = json.loads(raw.decode("utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("the top level is not an object")
+        except FileNotFoundError:
+            self._note_earlier_copies()
             return
-        if not isinstance(data, dict):
+        except (OSError, ValueError) as exc:
+            self._set_aside(path, raw, exc)
             return
         names = {f.name for f in ConnectionRecord.__dataclass_fields__.values()}
-        for cid, raw in data.items():
-            if isinstance(raw, dict) and cid in self.specs:
-                self._records[cid] = ConnectionRecord(
-                    **{k: v for k, v in raw.items() if k in names and k != "id"}, id=cid
+        for cid, item in data.items():
+            if isinstance(item, dict) and cid in self.specs:
+                rec = ConnectionRecord(
+                    **{k: v for k, v in item.items() if k in names and k != "id"}, id=cid
                 )
+                self._records[cid] = rec
+        self._note_earlier_copies()
+
+    def _note_earlier_copies(self) -> None:
+        kept = sorted(self.root.glob(f"{RECORDS_FILENAME}{UNREADABLE_INFIX}*"))
+        if kept:
+            self.records_notice = (
+                f"An earlier connections file could not be read; its bytes are kept as "
+                f"{kept[-1].name}."
+            )
+
+    def _set_aside(self, path: Path, raw: bytes | None, exc: Exception) -> None:
+        stamp = _now().strftime("%Y%m%dT%H%M%S%fZ")
+        copy = path.with_name(f"{path.name}{UNREADABLE_INFIX}{stamp}")
+        try:
+            if raw is None:
+                raw = path.read_bytes()
+            with copy.open("xb") as handle:
+                handle.write(raw)
+                handle.flush()
+                os.fsync(handle.fileno())
+            kept = f"Its bytes are kept as {copy.name}."
+        except OSError:
+            kept = "It could not be copied aside."
+        self.records_notice = (
+            f"The connections file could not be read ({type(exc).__name__}), so no connection "
+            f"is shown. {kept} Connect again to start a fresh file."
+        )
+        logger.warning("%s", self.records_notice)
 
     def _save(self) -> None:
-        payload = {cid: rec.view() for cid, rec in self._records.items()}
-        self._records_path.write_text(
-            json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8"
-        )
+        """Written whole into a sibling file, flushed to disk, then swapped in: a crash leaves
+        the previous file, never half of the next."""
+        with self._lock:
+            payload = json.dumps(
+                {cid: rec.view() for cid, rec in self._records.items()}, indent=2, sort_keys=True
+            )
+            fd, name = tempfile.mkstemp(dir=self.root, prefix=RECORDS_FILENAME, suffix=".tmp")
+            tmp = Path(name)
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                    handle.write(payload)
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                os.replace(tmp, self._records_path)
+            except OSError as exc:
+                with contextlib.suppress(OSError):
+                    tmp.unlink()
+                raise VaultError(
+                    f"the connections could not be saved ({type(exc).__name__})"
+                ) from None
 
     def record(self, connector_id: str) -> ConnectionRecord:
         with self._lock:
@@ -246,6 +306,7 @@ class Vault:
             "live": self.is_live(connector_id),
             "seal_available": self._seal is not None,
             "flow": flow.view() if flow is not None else None,
+            "records_notice": self.records_notice,
         }
 
     def views(self) -> list[dict[str, Any]]:
