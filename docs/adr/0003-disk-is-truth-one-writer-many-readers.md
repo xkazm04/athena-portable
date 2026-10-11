@@ -68,3 +68,18 @@ alternative is the queue the first build shipped.
 Anything that needs a memory's importance or its use history to survive a machine move has to
 write that state somewhere other than the index — a decision this ADR deliberately defers until
 the forgetting sweep exists and can say what it actually needs.
+
+## Amendment, 2026-10-11: `expires_at` is removed from the writer and the rebuild
+
+`companion_fact.expires_at` was an index column that no writer put on disk: the fact file had no
+such key, so a rebuild lost whatever the index held, and recall never honoured it. It was half a
+feature, and the index carried a value the disk could not.
+
+It is removed from `Brain.write_fact` and from the rebuild. A caller that passes `expires_at`
+gets a `TypeError` before any file is written, and a fact file with an `expires_at` line of any
+shape is indexed like any other fact, the key ignored, as recall always ignored it. The column
+stays in the schema for the Personas layout (README §8), so an existing index needs no migration
+and `SCHEMA_VERSION` does not change.
+
+An expiry that comes back must first be written to the fact's file and honoured by recall, under
+its own ADR. This answers the question ADR 0082 left open (craft-1).

@@ -397,7 +397,6 @@ class Brain:
         confidence: float = DEFAULT_CONFIDENCE,
         importance: int = DEFAULT_IMPORTANCE,
         tags: Sequence[str] | None = None,
-        expires_at: str | None = None,
         every_turn: bool = False,
     ) -> MemoryRef:
         """Write one distilled claim, citing the episodes it was drawn from.
@@ -449,9 +448,9 @@ class Brain:
                 tags=list(tags or []),
             )
             con.execute(
-                """INSERT INTO companion_fact (id, scope, fact_key, confidence, expires_at)
-                   VALUES (?, ?, ?, ?, ?)""",
-                (node_id, scope, key, confidence, expires_at),
+                """INSERT INTO companion_fact (id, scope, fact_key, confidence)
+                   VALUES (?, ?, ?, ?)""",
+                (node_id, scope, key, confidence),
             )
             self.index_provenance(con, node_id, cited, created_at)
         return MemoryRef(node_id, rel, "fact")

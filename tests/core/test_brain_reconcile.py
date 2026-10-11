@@ -262,44 +262,34 @@ def test_a_file_that_is_not_utf8_is_named_and_the_rest_are_indexed(tmp_path: Pat
 
 
 @pytest.mark.parametrize(
-    "bad",
-    ["expires_at:", 'expires_at:\n  - "a"\n  - "b"', "expires_at: 99999999999999999999"],
+    "line",
+    [
+        "expires_at:",
+        'expires_at:\n  - "a"\n  - "b"',
+        "expires_at: 99999999999999999999",
+        'expires_at: "2027-01-31"',
+    ],
 )
-def test_an_expires_at_that_cannot_bind_is_named_and_leaves_no_row(
-    tmp_path: Path, bad: str
+def test_a_fact_file_with_an_expires_at_line_is_indexed_and_the_key_is_ignored(
+    tmp_path: Path, line: str
 ) -> None:
     with Brain(tmp_path / "brain") as brain:
         _populate(brain)
         source = brain.append_episode("evidence", role="user")
-        victim = brain.write_fact("bad one", "text", scope="user", sources=[source.id])
-        path = brain.root / victim.path
-        text = path.read_text(encoding="utf-8").replace("\n---\n", f"\n{bad}\n---\n", 1)
-        path.write_text(text, encoding="utf-8", newline="\n")
-
-        stats = reconcile_from_disk(brain)
-
-        assert stats.skipped == [f"{victim.path}: expires_at is not a single value"]
-        assert stats.files == 7
-        assert _tables_holding(brain, victim.id) == []
-
-
-def test_an_expires_at_that_is_a_quoted_string_reads_back_unchanged(tmp_path: Path) -> None:
-    with Brain(tmp_path / "brain") as brain:
-        source = brain.append_episode("evidence", role="user")
         fact = brain.write_fact("dated", "text", scope="user", sources=[source.id])
         path = brain.root / fact.path
-        text = path.read_text(encoding="utf-8").replace(
-            "\n---\n", '\nexpires_at: "2027-01-31"\n---\n', 1
-        )
+        text = path.read_text(encoding="utf-8").replace("\n---\n", f"\n{line}\n---\n", 1)
         path.write_text(text, encoding="utf-8", newline="\n")
 
         stats = reconcile_from_disk(brain)
 
         assert stats.skipped == []
+        assert stats.files == 8
+        assert _tables_holding(brain, fact.id) != []
         row = brain.writer.execute(
             "SELECT expires_at FROM companion_fact WHERE id = ?", (fact.id,)
         ).fetchone()
-        assert row == ("2027-01-31",)
+        assert row == (None,)
 
 
 def test_cmd_reconcile_names_a_non_utf8_file_and_still_exits_zero(

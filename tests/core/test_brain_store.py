@@ -147,6 +147,30 @@ def test_a_key_with_a_line_break_writes_neither_file_nor_row(tmp_path: Path) -> 
         assert not list((brain.root / "semantic" / "user").glob("*.md"))
 
 
+def test_write_fact_refuses_an_expires_at_before_any_file_or_row(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("something worth distilling", role="user")
+        before = brain.counts()
+
+        with pytest.raises(TypeError):
+            brain.write_fact("k", "v", sources=[episode.id], expires_at="2020-01-01")  # type: ignore[call-arg]
+
+        assert brain.counts() == before
+        assert not list((brain.root / "semantic" / "user").glob("*.md"))
+        assert brain.writer.execute("SELECT COUNT(*) FROM companion_fact").fetchone() == (0,)
+
+
+def test_a_fact_written_normally_has_a_null_expires_at(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("something worth distilling", role="user")
+        fact = brain.write_fact("k", "v", sources=[episode.id])
+
+        row = brain.writer.execute(
+            "SELECT expires_at FROM companion_fact WHERE id = ?", (fact.id,)
+        ).fetchone()
+        assert row == (None,)
+
+
 def test_a_relative_brain_root_becomes_absolute_so_a_read_handle_can_be_opened(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

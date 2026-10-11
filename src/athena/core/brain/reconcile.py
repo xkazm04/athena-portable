@@ -145,9 +145,6 @@ def reconcile_from_disk(brain: Brain) -> ReconcileStats:
                         )
                         continue
                     confidence = checked
-                    if kind == "fact" and not _bindable(meta.get("expires_at")):
-                        stats.skipped.append(f"{rel}: expires_at is not a single value")
-                        continue
                     if not isinstance(meta.get("sources"), list):
                         stats.unsourced.append(rel)
                 seen.add(node_id)
@@ -174,17 +171,6 @@ def _confidence(meta: dict[str, Any]) -> float | None:
     except OverflowError:
         return None
     return number if math.isfinite(number) else None
-
-
-def _bindable(value: Any) -> bool:
-    """Whether ``expires_at`` binds to sqlite: absent, or a str, bool, float or 64-bit int.
-
-    ``frontmatter.parse`` turns a bare ``expires_at:`` line into a list, and an integer past 64
-    bits raises OverflowError at the bind. Both are refused before any insert.
-    """
-    if value is None or isinstance(value, (str, bool, float)):
-        return True
-    return isinstance(value, int) and -(2**63) <= value < 2**63
 
 
 def _show(value: Any) -> str:
@@ -231,14 +217,13 @@ def _index_file(
     )
     if kind == "fact":
         con.execute(
-            """INSERT OR REPLACE INTO companion_fact (id, scope, fact_key, confidence, expires_at)
-               VALUES (?, ?, ?, ?, ?)""",
+            """INSERT OR REPLACE INTO companion_fact (id, scope, fact_key, confidence)
+               VALUES (?, ?, ?, ?)""",
             (
                 node_id,
                 str(meta.get("scope") or "user"),
                 str(meta.get("key") or node_id),
                 confidence,
-                meta.get("expires_at"),
             ),
         )
     elif kind == "procedural":

@@ -48,6 +48,7 @@ SCHEMA: tuple[str, ...] = (
         PRIMARY KEY (node_id, source_id)
     )""",
     # -- typed sidecars: the per-kind columns a query needs and the body cannot answer ---------
+    # expires_at stays for the Personas layout; athena-portable never writes it (ADR 0003, amended).
     """CREATE TABLE IF NOT EXISTS companion_fact (
         id TEXT PRIMARY KEY,
         scope TEXT NOT NULL,
