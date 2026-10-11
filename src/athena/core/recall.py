@@ -349,7 +349,8 @@ def unavailable_trace(query: str, exc: sqlite3.Error, names: tuple[str, ...]) ->
     """The trace of a recall the store refused: every block empty and saying why (ADR 0076).
 
     The message is SQLite's own, made one line and swept of fence markers, because the
-    always tier's copy of it goes into the system prompt unfenced. Logged once, here, at warning level.
+    always tier's copy of it goes into the system prompt unfenced.
+    Logged once, here, at warning level.
     """
     message = fence.neutralise(canonical_line(str(exc)))
     note = UNAVAILABLE_PREFIX + (message or type(exc).__name__)
