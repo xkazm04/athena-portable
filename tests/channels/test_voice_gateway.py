@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Sequence
 
 import pytest
 
@@ -23,6 +24,7 @@ from athena.channels.voice.gateway import (
 )
 from athena.channels.voice.tts import TTS_CAP
 from athena.channels.voice.ws import HandshakeError, connect
+from athena.contracts import ToolCall
 from daemon.conftest import PAGE_ORIGIN, SHELL_ORIGIN, TOKEN, Live, claude_round, op
 
 from .conftest import VoiceClient
@@ -822,3 +824,34 @@ def test_a_handler_that_raises_on_an_undecodable_frame_closes_1011_with_one_log_
     records = [r for r in caplog.records if r.name == "athena.channels.voice.gateway"]
     assert len(records) == 1
     assert "handling a text frame failed" in records[0].getMessage()
+
+
+# -- a turn that has not started when the socket closes never starts ---------------------------
+
+
+def test_turns_waiting_behind_a_held_one_never_start_once_the_socket_closes(
+    voiced: Live, client: VoiceClient
+) -> None:
+    _hold_the_worker(voiced, client)
+    for n in range(MAX_PENDING_TURNS):
+        client.say(f"q{n}")
+    client.close()
+    _settle(1.0)  # the held turn gives up on the closed socket and finds the queue empty
+    assert len(voiced.transport.requests) == 1
+
+
+def test_a_page_that_answers_after_the_socket_closed_starts_no_continuation_step(
+    voiced: Live, client: VoiceClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    original = VoiceSession._await_results
+
+    def answered_then_closed(self: VoiceSession, calls: Sequence[ToolCall]) -> bool:
+        answered = original(self, calls)
+        self._closed = True  # the socket went away while the answer was on its way
+        return answered
+
+    monkeypatch.setattr(VoiceSession, "_await_results", answered_then_closed)
+    held = _hold_the_worker(voiced, client)
+    client.tool_result(held, output="drafted")
+    _settle(0.5)
+    assert len(voiced.transport.requests) == 1

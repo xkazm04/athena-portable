@@ -279,6 +279,7 @@ class VoiceSession:
         finally:
             self._closed = True
             self.interrupt()
+            self._drop_waiting_turns()
             self._jobs.put(None)
             self._speech.put(None)
             self.ws.close(code, reason)
@@ -286,6 +287,14 @@ class VoiceSession:
             # join is a courtesy to a worker that is idle, not a wait on one that is not.
             worker.join(timeout=1.0)
             speaker.join(timeout=1.0)
+
+    def _drop_waiting_turns(self) -> None:
+        """Empty the job queue: a turn that has not started when the socket closes never starts."""
+        while True:
+            try:
+                self._jobs.get_nowait()
+            except queue.Empty:
+                return
 
     def _audio(self, pcm: bytes) -> None:
         current = self._utterance
@@ -554,6 +563,8 @@ class VoiceSession:
             job = self._jobs.get()
             if job is None:
                 return
+            if self._closed:
+                continue  # the reader and this thread race; a closed socket starts no turn
             try:
                 self._handle(job)
             except Exception as exc:  # a bug ends the utterance honestly, never silently
@@ -592,6 +603,8 @@ class VoiceSession:
             return
         project = {"id": job.project_id} if job.project_id else None
         for step in range(self.gateway.max_continuations + 1):
+            if self._closed:
+                return  # a turn already inside turn_events ran to its end; no step begins after
             ctx = turn_context(
                 self.daemon,
                 session,
@@ -715,5 +728,5 @@ class VoiceSession:
         ]
         for call in calls:
             self.send(call)
-        if self._await_results(calls):
+        if self._await_results(calls) and not self._closed:
             self._turn(job, CONTINUE_MESSAGE)
