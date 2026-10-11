@@ -93,3 +93,13 @@ stop short hears that it stopped short.
 - `tests/channels/` runs the whole channel over a real socket on a scripted engine and a
   scripted backend: the door (token, origin, no backend), one utterance as one row, both
   barge-ins, the cap, a card approved and declined by voice, the page's answers, and a hang-up.
+
+## Amended 2026-10-11
+
+- The speaker thread outlives any synthesis failure (voice full r2 robustness-3). An `Exception`
+  raised while one line is spoken — the `voice.speaking` send, `backend.synthesize`, a generator
+  that raises after yielding chunks, an `http.client.IncompleteRead` from the OpenAI backend —
+  ends that line only: the traceback is logged once, naming the generation and never the line's
+  text, `voice.stopped` goes out with reason `error`, and the next line is spoken. A
+  `VoiceBackendError` is an expected engine refusal and keeps its reason `error` without a
+  traceback. `KeyboardInterrupt` and `SystemExit` are not caught.

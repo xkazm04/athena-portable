@@ -10,6 +10,7 @@ and a card answered by voice through the same route as a button.
 from __future__ import annotations
 
 import json
+import logging
 import threading
 import time
 from collections.abc import Callable, Iterator, Sequence
@@ -261,6 +262,91 @@ def test_a_backend_that_cannot_speak_says_so_and_the_turn_still_stands(
     client.say("hi")
     assert client.until("voice.stopped")["reason"] == "error"
     assert len(voiced.daemon.ledger.recent(10).rows) == 1
+
+
+def _speaker_records(caplog: pytest.LogCaptureFixture) -> list[logging.LogRecord]:
+    return [r for r in caplog.records if r.name == "athena.channels.voice.gateway"]
+
+
+def test_a_synthesis_that_raises_ends_that_line_and_the_next_is_spoken(
+    voiced: Live,
+    backend: ScriptedBackend,
+    client: VoiceClient,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    voiced.register()
+    voiced.script(claude_round("TTS: First.\nFirst."), claude_round("TTS: Second.\nSecond."))
+    real = backend.synthesize
+    calls: list[str] = []
+
+    def flaky(text: str) -> Iterator[bytes]:
+        calls.append(text)
+        if len(calls) == 1:
+            raise RuntimeError("engine fell over")
+        return real(text)
+
+    monkeypatch.setattr(backend, "synthesize", flaky)
+    with caplog.at_level("ERROR", logger="athena.channels.voice.gateway"):
+        client.say("one")
+        assert client.until("voice.stopped", generation=1)["reason"] == "error"
+        client.say("two")
+        assert client.until("voice.stopped", generation=2)["reason"] == "done"
+
+    assert calls == ["First.", "Second."]
+    assert backend.spoken == ["Second."]
+    records = _speaker_records(caplog)
+    assert len(records) == 1
+    assert records[0].exc_info is not None
+    assert "1" in records[0].getMessage()
+    assert "First" not in caplog.text
+    assert "First." not in records[0].getMessage()
+
+
+def test_a_synthesis_that_raises_after_a_chunk_ends_that_line_and_the_next_is_spoken(
+    voiced: Live,
+    backend: ScriptedBackend,
+    client: VoiceClient,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    voiced.register()
+    voiced.script(claude_round("TTS: First.\nFirst."), claude_round("TTS: Second.\nSecond."))
+    real = backend.synthesize
+    calls: list[str] = []
+
+    def breaks_midway(text: str) -> Iterator[bytes]:
+        calls.append(text)
+        if len(calls) > 1:
+            yield from real(text)
+            return
+        yield bytes(backend.chunk_bytes)
+        raise RuntimeError("connection dropped mid-line")
+
+    monkeypatch.setattr(backend, "synthesize", breaks_midway)
+    with caplog.at_level("ERROR", logger="athena.channels.voice.gateway"):
+        client.say("one")
+        assert client.until("voice.stopped", generation=1)["reason"] == "error"
+        client.say("two")
+        assert client.until("voice.stopped", generation=2)["reason"] == "done"
+
+    assert backend.spoken == ["Second."]
+    assert len(_speaker_records(caplog)) == 1
+
+
+def test_an_engine_refusal_is_not_logged_as_an_error(
+    voiced: Live,
+    backend: ScriptedBackend,
+    client: VoiceClient,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    voiced.register()
+    voiced.script(claude_round("TTS: Hello.\nHello."))
+    backend.fail_synthesis = True
+    with caplog.at_level("ERROR", logger="athena.channels.voice.gateway"):
+        client.say("hi")
+        assert client.until("voice.stopped")["reason"] == "error"
+    assert _speaker_records(caplog) == []
 
 
 # -- a card, by voice ------------------------------------------------------------------------

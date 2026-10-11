@@ -647,6 +647,11 @@ class VoiceSession:
                     self._send_audio(generation, chunk)
             except VoiceBackendError:
                 reason = "error"
+            except Exception:  # one line fails; the speaker outlives it
+                reason = "error"
+                logging.getLogger(__name__).exception(
+                    "voice: speaking generation %d failed", generation
+                )
             finally:
                 with self._lock:
                     self._playing = None
