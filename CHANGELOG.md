@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `docs(readme): the tier 2 row of section 3.4 says the capture is taken before each request and filed only on a gated card for the session's own host origin` — ADR 0066: the cell no longer says a screenshot is captured before every gated proposal; it now cites the ADR.
+
 - `docs(adr): a gated host proposal carries a capture of its tab, and the hands are tier 2` — ADR 0066 records how the capture is taken and attached, what a failed one does, the tier marker and why a page cannot set it, and the refusal of an over-cap list; ADR 0025 gains a dated note that its panel half has landed; the desktop feature doc describes the card, the capture, the tiers and the panel's tool rows.
 
 - `fix(copy): the setup, the origins header and the apps-she-has-seen copy say what first sight and the hands now do` — ADR 0063 and ADR 0065: the setup no longer says a page with no tools cannot be acted on, the empty apps-she-has-seen list no longer says a page's tools are off, and the origins store header describes the one model of first sight (no row) instead of a shell default that writes GATED.

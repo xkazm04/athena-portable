@@ -189,7 +189,7 @@ may tighten a class per origin but never loosen one below what the flags imply. 
 | Tier | Source | Origin | Executor |
 |---|---|---|---|
 | 1 | the page's own WebMCP tools, through `inject.js` and the relay | `host:<app_id>`: the page's published `athena:app`, else the id derived from its web origin (`https://ledger.test` is `host:web_https_sledger_dtest`, ADR 0065) | the page, on `execute` |
-| 2 | nine generic DOM hands with minted refs (`page_read`, `page_find`, `page_fill`, `page_click`, ...) | `host:<app_id>`: the page's published `athena:app`, else the id derived from its web origin (`https://ledger.test` is `host:web_https_sledger_dtest`, ADR 0065) | the shell's `hands_call`, with a screenshot captured before every gated proposal |
+| 2 | nine generic DOM hands with minted refs (`page_read`, `page_find`, `page_fill`, `page_click`, ...) | `host:<app_id>`: the page's published `athena:app`, else the id derived from its web origin (`https://ledger.test` is `host:web_https_sledger_dtest`, ADR 0065) | the shell's `hands_call`; the shell captures the focused tab before each request, and the gate files that capture only on a gated card for the session's own host origin (ADR 0066) |
 | 3 | third-party connectors (section 4) | `connector:<id>` | the vault, in the daemon's process |
 
 Other agents queue at the same gate: the MCP server's `request_guidance` and `request_approval`
