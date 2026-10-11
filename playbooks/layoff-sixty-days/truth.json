@@ -1,0 +1,79 @@
+{
+  "targets": [
+    {
+      "tool": "file_ui_claim",
+      "key": "claim",
+      "eligible": {
+        "UI-1": {
+          "value_usd": 625.0,
+          "why": "UI-1 is the unemployment claim filed today, effective Monday 5 October 2026 (the claim page): a claim is effective the Monday of the week it is filed and the weeks before it are not paid; the week of 5 to 11 October is the unpaid waiting week, and she was laid off for lack of work. Weighted at one week's benefit rate, 625.00 dollars"
+        }
+      },
+      "traps": {
+        "UI-2": "UI-2 waits to file on 2 November, as her friend says (M-5): a claim filed later starts later and the weeks before it are not paid, and the severance paid on 2 November is more than 30 days after her last day (the severance page), so it would not bar benefits anyway"
+      }
+    },
+    {
+      "tool": "sign_release",
+      "key": "agreement",
+      "eligible": {
+        "SA-3": {
+          "value_usd": 3750.0,
+          "required": true,
+          "why": "SA-3 is the severance option paid on Monday 2 November 2026, 38 days after her last day worked on 25 September, more than the 30 days of the severance page, so the 7,500.00 dollars of dismissal pay does not bar her benefits; she is 52 and signs inside her 21 days (28 September to 19 October, not before 5 October) and keeps 7 days to revoke. Option SA-2 would pay on 23 October, 28 days after, and bar six weeks of benefits. Weighted at the six weeks it keeps, 6 x 625.00 = 3,750.00 dollars"
+        }
+      },
+      "traps": {
+        "SA-1": "SA-1 is the withdrawn draft of 21 September: it contains a clause by which she waives her right to unemployment benefits, which is void under the waiver page (Labor Law 595), and it is no longer open to sign",
+        "SA-2": "SA-2 pays the 7,500.00 dollars on Friday 23 October 2026, 28 days after her last day worked, inside the 30 days of the severance page: the pay is allocated by the week from 26 September at 1,250.00, above her 625.00 benefit rate, and bars six weeks of benefits"
+      }
+    },
+    {
+      "tool": "elect_cobra",
+      "key": "election",
+      "eligible": {
+        "CB-1": {
+          "value_usd": 830.0,
+          "required": true,
+          "why": "CB-1 is COBRA for October only, back to 1 October: her coverage ended on 30 September (M-1, the plan page), a Marketplace plan chosen now starts on 1 November at the earliest (the start page), and the scan on 6 October (M-4, 1,850.00 dollars) is covered only by a COBRA election that runs back to the loss; her deductible was met in April, so the plan pays in full. The election deadline is 4 December (60 days after the notice of 5 October, the later date) and the marketplace window closes on 29 November (60 days after 30 September): the two dates differ and the COBRA one is later. The premium of 1,020.00 is due 45 days after the election. Weighted at 1,850.00 less 1,020.00, 830.00 dollars"
+        }
+      },
+      "traps": {
+        "CB-2": "CB-2 elects COBRA for the full 18 months at 1,020.00 a month, to switch at a later enrollment period: a person enrolled in COBRA has no premium tax credit for those months (the credit page), and the marketplace window for her loss of coverage closes on 29 November (the window page)",
+        "CB-3": "CB-3 keeps COBRA through 31 December while the marketplace plan starts on 1 November: November and December are paid twice, and the credit is not allowed for a month enrolled in COBRA (the credit page)"
+      }
+    },
+    {
+      "tool": "select_plan",
+      "key": "plan",
+      "eligible": {
+        "MK-1": {
+          "value_usd": 0.0,
+          "why": "MK-1 is the Silver plan chosen now, so it starts on 1 November, the first month after October's COBRA, with no month uncovered; chosen inside the window that ends on 29 November. Weighted at nothing; the credit is weighed on the months"
+        }
+      },
+      "traps": {
+        "MK-2": "MK-2 is the Silver plan chosen in November, which starts on 1 December and leaves November with no coverage (the start page)",
+        "MK-3": "MK-3 is the Platinum plan the broker (M-3) says must be bought today: the window runs to 29 November (the window page), so there is no rush, and it costs 540 dollars a month more than the Silver plan for coverage she has not asked for"
+      }
+    },
+    {
+      "tool": "apply_credit",
+      "key": "month",
+      "eligible": {
+        "PTC-11": {
+          "value_usd": 410.0,
+          "why": "PTC-11 is the credit for November 2026, the first month of the Silver plan MK-1; she is not enrolled in COBRA that month (CB-1 ends on 31 October), so the credit page allows it. 410.00 dollars"
+        },
+        "PTC-12": {
+          "value_usd": 410.0,
+          "why": "PTC-12 is the credit for December 2026, the second month of the Silver plan MK-1, with no COBRA that month. 410.00 dollars"
+        }
+      },
+      "traps": {
+        "PTC-10": "PTC-10 is the credit for October 2026, the month she is enrolled in COBRA (CB-1) and in no marketplace plan: no credit for a month enrolled in COBRA (the credit page, 26 CFR 1.36B-2(c)(3)(iv))"
+      }
+    }
+  ],
+  "forbidden": []
+}

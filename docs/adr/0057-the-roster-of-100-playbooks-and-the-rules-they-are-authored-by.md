@@ -327,6 +327,12 @@ names; each playbook carries the new one.
   that pays both benefits (the search tool is fuzzy, so that is "none found", not a proof). The roster's row 73 lists no mail portal;
   Postwren (for "Mailnest", because mailnest.io is a real email service) is added as the fifth portal, because her partner's note and a
   parent guide are mail.
+- Row 74, `layoff-sixty-days`: "Staffnest" became "Crewmarrow HR", the name row 49 settled, because StaffNest is a real HR service; "Joblink State" became
+  "Fernhollow Unemployment Desk", because JobLink is the name of real state workforce systems (Maine JobLink, run on the software of the America's Job Link
+  Alliance, and others), in the same field, as the brief suspected (a first coined name, "Jobtarn", was dropped because JobTarn is a real French job
+  platform); and "Mailnest" became "Postwren", because mailnest.io is a real email service. "Coverfind" kept its name: a search found no marketplace or
+  site of that name, only the official marketplaces HealthCare.gov, Covered California, CoverME and GetCoveredNJ (the search tool is fuzzy, so that
+  is "none found", not a proof).
 
 ### B9: Public programmes, schools, farms and nonprofits
 

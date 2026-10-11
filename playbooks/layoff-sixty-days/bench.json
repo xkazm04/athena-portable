@@ -1,0 +1,300 @@
+{
+  "playbook": "layoff-sixty-days",
+  "run_at": "2026-10-11T02:47:20Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 140.3,
+  "turns": 10,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 24,
+  "cost_usd": 0.8629,
+  "your_time_s": 180,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.3
+  },
+  "score": {
+    "eligible": 6,
+    "found": 6,
+    "exact": 6,
+    "value_total_usd": 6025.0,
+    "value_found_usd": 6025.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 8,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "file_ui_claim",
+        "key": "UI-2",
+        "why": "UI-2 waits to file on 2 November, as her friend says (M-5): a claim filed later starts later and the weeks before it are not paid, and the severance paid on 2 November is more than 30 days after her last day (the severance page), so it would not bar benefits anyway",
+        "filed": false
+      },
+      {
+        "action": "sign_release",
+        "key": "SA-1",
+        "why": "SA-1 is the withdrawn draft of 21 September: it contains a clause by which she waives her right to unemployment benefits, which is void under the waiver page (Labor Law 595), and it is no longer open to sign",
+        "filed": false
+      },
+      {
+        "action": "sign_release",
+        "key": "SA-2",
+        "why": "SA-2 pays the 7,500.00 dollars on Friday 23 October 2026, 28 days after her last day worked, inside the 30 days of the severance page: the pay is allocated by the week from 26 September at 1,250.00, above her 625.00 benefit rate, and bars six weeks of benefits",
+        "filed": false
+      },
+      {
+        "action": "elect_cobra",
+        "key": "CB-2",
+        "why": "CB-2 elects COBRA for the full 18 months at 1,020.00 a month, to switch at a later enrollment period: a person enrolled in COBRA has no premium tax credit for those months (the credit page), and the marketplace window for her loss of coverage closes on 29 November (the window page)",
+        "filed": false
+      },
+      {
+        "action": "elect_cobra",
+        "key": "CB-3",
+        "why": "CB-3 keeps COBRA through 31 December while the marketplace plan starts on 1 November: November and December are paid twice, and the credit is not allowed for a month enrolled in COBRA (the credit page)",
+        "filed": false
+      },
+      {
+        "action": "select_plan",
+        "key": "MK-2",
+        "why": "MK-2 is the Silver plan chosen in November, which starts on 1 December and leaves November with no coverage (the start page)",
+        "filed": false
+      },
+      {
+        "action": "select_plan",
+        "key": "MK-3",
+        "why": "MK-3 is the Platinum plan the broker (M-3) says must be bought today: the window runs to 29 November (the window page), so there is no rush, and it costs 540 dollars a month more than the Silver plan for coverage she has not asked for",
+        "filed": false
+      },
+      {
+        "action": "apply_credit",
+        "key": "PTC-10",
+        "why": "PTC-10 is the credit for October 2026, the month she is enrolled in COBRA (CB-1) and in no marketplace plan: no credit for a month enrolled in COBRA (the credit page, 26 CFR 1.36B-2(c)(3)(iv))",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "file_ui_claim",
+      "key": "UI-1",
+      "outcome": "correct",
+      "value_usd": 625.0,
+      "exact": true,
+      "why": "UI-1 is the unemployment claim filed today, effective Monday 5 October 2026 (the claim page): a claim is effective the Monday of the week it is filed and the weeks before it are not paid; the week of 5 to 11 October is the unpaid waiting week, and she was laid off for lack of work. Weighted at one week's benefit rate, 625.00 dollars"
+    },
+    {
+      "action": "sign_release",
+      "key": "SA-3",
+      "outcome": "correct",
+      "value_usd": 3750.0,
+      "exact": true,
+      "why": "SA-3 is the severance option paid on Monday 2 November 2026, 38 days after her last day worked on 25 September, more than the 30 days of the severance page, so the 7,500.00 dollars of dismissal pay does not bar her benefits; she is 52 and signs inside her 21 days (28 September to 19 October, not before 5 October) and keeps 7 days to revoke. Option SA-2 would pay on 23 October, 28 days after, and bar six weeks of benefits. Weighted at the six weeks it keeps, 6 x 625.00 = 3,750.00 dollars"
+    },
+    {
+      "action": "elect_cobra",
+      "key": "CB-1",
+      "outcome": "correct",
+      "value_usd": 830.0,
+      "exact": true,
+      "why": "CB-1 is COBRA for October only, back to 1 October: her coverage ended on 30 September (M-1, the plan page), a Marketplace plan chosen now starts on 1 November at the earliest (the start page), and the scan on 6 October (M-4, 1,850.00 dollars) is covered only by a COBRA election that runs back to the loss; her deductible was met in April, so the plan pays in full. The election deadline is 4 December (60 days after the notice of 5 October, the later date) and the marketplace window closes on 29 November (60 days after 30 September): the two dates differ and the COBRA one is later. The premium of 1,020.00 is due 45 days after the election. Weighted at 1,850.00 less 1,020.00, 830.00 dollars"
+    },
+    {
+      "action": "select_plan",
+      "key": "MK-1",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "MK-1 is the Silver plan chosen now, so it starts on 1 November, the first month after October's COBRA, with no month uncovered; chosen inside the window that ends on 29 November. Weighted at nothing; the credit is weighed on the months"
+    },
+    {
+      "action": "apply_credit",
+      "key": "PTC-11",
+      "outcome": "correct",
+      "value_usd": 410.0,
+      "exact": true,
+      "why": "PTC-11 is the credit for November 2026, the first month of the Silver plan MK-1; she is not enrolled in COBRA that month (CB-1 ends on 31 October), so the credit page allows it. 410.00 dollars"
+    },
+    {
+      "action": "apply_credit",
+      "key": "PTC-12",
+      "outcome": "correct",
+      "value_usd": 410.0,
+      "exact": true,
+      "why": "PTC-12 is the credit for December 2026, the second month of the Silver plan MK-1, with no COBRA that month. 410.00 dollars"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm filing three cards: choose MK-1, and apply the credit for PTC-11 and PTC-12. Nothing is chosen or applied until you answer them.\n\n\n**Chosen, pending your answer:** MK-1, Silver, starting 1 Nov. It costs $640.00 a month, or $230.00 after the $410.00 credit.\n\n**Credit:** I'm applying it for November (PTC-11) and December (PTC-12).\n\n**Left out**\n- **PTC-10, October:** That month is COBRA's, and the credit isn't allowed in a month you're enrolled in COBRA. No marketplace plan covers October anyway.\n- **MK-2:** It starts 1 Dec and leaves November uncovered.\n- **MK-3:** Platinum, the broker's pick. It's $540.00 a month more than MK-1 for the same credit, and its \"buy today\" deadline isn't in the rules.\n\n**Dependency:** This plan only works if the CB-1 card is approved. If you elect a longer COBRA instead, the credit would be disallowed for those months and MK-1 would overlap.\n\n**Dates you ",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Lena Okafor. This is my mail: HR's notes, my COBRA notice, a broker, a scan bill and a friend's advice. Read every message. Don't do anything yet: I'll send you to the unemployment desk, the marketplace and my HR.",
+      "continued": false,
+      "said": "I'll list the inbox first, then read each message.",
+      "said_chars": 50,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Five messages in the inbox. I'm reading all of them now.",
+      "said_chars": 56,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "I've read all five messages and done nothing else. Nothing is filed, signed, elected or chosen.\n\n**What each message says**\n- **M-1, HR, 28 Sep:** Your last day worked was Fri 25 Sep. Group health coverage ended 30 Sep. The severance agreement is in Crewmarrow HR.\n- **M-2, HR, 5 Oct, COBRA notice:** COBRA costs $1,020.00 a month. You have at least 60 days to elect, counted from the later of 30 Sep and the notice date of 5 Oct. The first premium is due 45 days after you elect.",
+      "said_chars": 2667,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Fernhollow Unemployment Desk",
+      "user": "This is the Fernhollow Unemployment Desk. Read every rule and my filing choices. File my unemployment claim the way that is right for me, and leave out the choice that is not. Then tell me what you filed and why.",
+      "continued": false,
+      "said": "I'll read the desk's rules and your filing choices first. Nothing is filed yet.",
+      "said_chars": 79,
+      "reads": [
+        "read_claims",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Fernhollow Unemployment Desk",
+      "user": "",
+      "continued": true,
+      "said": "UI-1 is the right claim, so I'm filing a card for it now. It's effective Monday 5 Oct and the claim is filed this week. UI-2 is the one I'm leaving out.\n\n\n**Why UI-1**\n- **Earliest start:** The desk makes a claim effective on the Monday of the week it is filed. Filing today, Friday 9 Oct, makes it effective Monday 5 Oct. The waiting week (5 to 11 Oct) is unpaid, and each later week is claimed after it ends.\n- **Your benefit rate:** The desk computes $625.00 a week.",
+      "said_chars": 1671,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_ui_claim",
+          "key": "UI-1",
+          "outcome": "correct",
+          "value_usd": 625.0
+        }
+      ]
+    },
+    {
+      "portal": "Coverfind",
+      "user": "This is Coverfind, the marketplace. Read every rule, the plans and the months of the credit. Don't do anything yet: I'll tell you what to choose after my HR.",
+      "continued": false,
+      "said": "I'll read Coverfind's rules, plans and credit months now. Nothing gets chosen or applied.",
+      "said_chars": 89,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_plans",
+        "read_credit_months"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Coverfind",
+      "user": "",
+      "continued": true,
+      "said": "Coverfind is read and nothing is chosen or applied.\n\n**Rules**\n- **Window:** Your special enrollment period runs to Sunday 29 Nov 2026. The broker's \"closes TODAY\" claim (M-3) isn't what the rules say.\n- **Start dates:** A plan chosen by 31 Oct starts 1 Nov. One chosen from 1 to 29 Nov starts 1 Dec, which leaves November uncovered.\n- **Credit:** The credit is $410.00 a month on the Silver plan. It is paid only for months you aren't enrolled in COBRA.",
+      "said_chars": 2191,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Crewmarrow HR",
+      "user": "This is my HR, Crewmarrow. Read the severance agreement, the COBRA elections and the plan, every page. Sign the one agreement that is right and elect the one COBRA coverage that is right, and leave out the others. Then tell me what you sign",
+      "continued": false,
+      "said": "I'll read the agreements, the COBRA elections and all the HR rules first.",
+      "said_chars": 73,
+      "reads": [
+        "read_agreements",
+        "read_cobra",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Crewmarrow HR",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing two cards: sign SA-3 and elect CB-1. Nothing is signed or elected until you answer them.\n\n\n**Signing SA-3.** It pays $7,500.00 once, on Monday 2 Nov 2026, with no waiver of unemployment benefits. SA-2 has the same terms but pays on 23 Oct. I'm leaving it out because that's an early payment. SA-1 is withdrawn, and its waiver would be void anyway under the desk's rule.\n\n**Electing CB-1.** COBRA covers 1 to 31 October at $1,020.00, and you end it after that.",
+      "said_chars": 1934,
+      "reads": [],
+      "cards": [
+        {
+          "action": "sign_release",
+          "key": "SA-3",
+          "outcome": "correct",
+          "value_usd": 3750.0
+        },
+        {
+          "action": "elect_cobra",
+          "key": "CB-1",
+          "outcome": "correct",
+          "value_usd": 830.0
+        }
+      ]
+    },
+    {
+      "portal": "Coverfind",
+      "user": "Back to Coverfind. Choose the plan that is right for me with the COBRA decision you made, and apply the premium tax credit only for the months it is allowed. Leave the other plans and months alone. Then tell me what you chose, what you left",
+      "continued": false,
+      "said": "I'm filing three cards: choose MK-1, and apply the credit for PTC-11 and PTC-12. Nothing is chosen or applied until you answer them.\n\n\n**Chosen, pending your answer:** MK-1, Silver, starting 1 Nov. It costs $640.00 a month, or $230.00 after the $410.00 credit.\n\n**Credit:** I'm applying it for November (PTC-11) and December (PTC-12).\n\n**Left out**\n- **PTC-10, October:** That month is COBRA's, and the credit isn't allowed in a month you're enrolled in COBRA. No marketplace plan covers October anyway.",
+      "said_chars": 1762,
+      "reads": [],
+      "cards": [
+        {
+          "action": "select_plan",
+          "key": "MK-1",
+          "outcome": "correct",
+          "value_usd": 0.0
+        },
+        {
+          "action": "apply_credit",
+          "key": "PTC-11",
+          "outcome": "correct",
+          "value_usd": 410.0
+        },
+        {
+          "action": "apply_credit",
+          "key": "PTC-12",
+          "outcome": "correct",
+          "value_usd": 410.0
+        }
+      ]
+    }
+  ]
+}

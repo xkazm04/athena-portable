@@ -1,0 +1,512 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "postwren",
+      "message": "I'm Lena Okafor. This is my mail: HR's notes, my COBRA notice, a broker, a scan bill and a friend's advice. Read every message. Don't do anything yet: I'll send you to the unemployment desk, the marketplace and my HR.",
+      "nudges": 1
+    },
+    {
+      "app": "fernhollow",
+      "message": "This is the Fernhollow Unemployment Desk. Read every rule and my filing choices. File my unemployment claim the way that is right for me, and leave out the choice that is not. Then tell me what you filed and why.",
+      "nudges": 2
+    },
+    {
+      "app": "coverfind",
+      "message": "This is Coverfind, the marketplace. Read every rule, the plans and the months of the credit. Don't do anything yet: I'll tell you what to choose after my HR.",
+      "nudges": 2
+    },
+    {
+      "app": "crewmarrow",
+      "message": "This is my HR, Crewmarrow. Read the severance agreement, the COBRA elections and the plan, every page. Sign the one agreement that is right and elect the one COBRA coverage that is right, and leave out the others. Then tell me what you signed and elected, and why, and how my health coverage runs from 1 October.",
+      "nudges": 2
+    },
+    {
+      "app": "coverfind",
+      "message": "Back to Coverfind. Choose the plan that is right for me with the COBRA decision you made, and apply the premium tax credit only for the months it is allowed. Leave the other plans and months alone. Then tell me what you chose, what you left out and why, and the dates I must not miss.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/lena/inbox",
+      "view": {
+        "view": "Postwren: Lena Okafor's inbox (invented)",
+        "signed_in": "Lena Okafor",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The messages in the inbox: id, from, subject and date.",
+          "params": {},
+          "returns": {
+            "table": "msgs",
+            "fields": [
+              "msg_id",
+              "from",
+              "subject",
+              "date"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id (M-n).",
+          "params": {
+            "msg_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "msgs",
+            "match": {
+              "msg_id": "msg_id"
+            },
+            "require": [
+              "msg_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "fernhollow",
+      "name": "Fernhollow Unemployment Desk",
+      "origin": "https://claims.fernhollow.example",
+      "path": "/lena/claim",
+      "view": {
+        "view": "Fernhollow Unemployment Desk: Lena Okafor's claim (invented)",
+        "signed_in": "Lena Okafor",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The desk's rules by topic: index, claim, severance or waiver.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "ny",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_claims",
+          "kind": "READ",
+          "description": "Her filing choices: id, what, effective date and a note.",
+          "params": {},
+          "returns": {
+            "table": "claims"
+          }
+        },
+        {
+          "name": "file_ui_claim",
+          "kind": "REACHES_A_PERSON",
+          "description": "File her unemployment claim by its id (claim: the UI- id on read_claims) with why it is right (reason). Lena signs.",
+          "params": {
+            "claim": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Unemployment claim {claim} filed with the Fernhollow Unemployment Desk."
+        }
+      ],
+      "aliases": [
+        "Fernhollow",
+        "Fernhollow Unemployment Desk",
+        "the unemployment desk",
+        "unemployment"
+      ]
+    },
+    {
+      "app_id": "coverfind",
+      "name": "Coverfind",
+      "origin": "https://plans.coverfind.example",
+      "path": "/lena/plans",
+      "view": {
+        "view": "Coverfind: Lena Okafor's plans (invented)",
+        "signed_in": "Lena Okafor",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The marketplace's rules by topic: index, window, start, credit or cobra.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "cf",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_plans",
+          "kind": "READ",
+          "description": "The plans she can choose: id, plan, start date, premium, credit and a note.",
+          "params": {},
+          "returns": {
+            "table": "plans"
+          }
+        },
+        {
+          "name": "read_credit_months",
+          "kind": "READ",
+          "description": "The months of the premium tax credit: id, month and a note.",
+          "params": {},
+          "returns": {
+            "table": "months"
+          }
+        },
+        {
+          "name": "select_plan",
+          "kind": "REACHES_A_PERSON",
+          "description": "Choose one plan by its id (plan: the MK- id on read_plans) with why it is right (reason). Lena signs.",
+          "params": {
+            "plan": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Plan {plan} chosen on Coverfind."
+        },
+        {
+          "name": "apply_credit",
+          "kind": "REACHES_A_PERSON",
+          "description": "Apply the advance premium tax credit for one month by its id (month: the PTC- id on read_credit_months) with why it is allowed (reason). Lena signs.",
+          "params": {
+            "month": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Credit for {month} applied on Coverfind."
+        }
+      ],
+      "aliases": [
+        "Coverfind",
+        "the marketplace"
+      ]
+    },
+    {
+      "app_id": "crewmarrow",
+      "name": "Crewmarrow HR",
+      "origin": "https://hr.crewmarrow.example",
+      "path": "/lena/separation",
+      "view": {
+        "view": "Crewmarrow HR: Lena Okafor's separation (invented)",
+        "signed_in": "Lena Okafor",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Her HR's rules by topic: index, agreement, cobra or plan.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "hr",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_agreements",
+          "kind": "READ",
+          "description": "The severance agreements: id, what, status and a note.",
+          "params": {},
+          "returns": {
+            "table": "agreements"
+          }
+        },
+        {
+          "name": "read_cobra",
+          "kind": "READ",
+          "description": "The COBRA elections: id, what, first day, last day, premium and a note.",
+          "params": {},
+          "returns": {
+            "table": "cobra"
+          }
+        },
+        {
+          "name": "sign_release",
+          "kind": "REACHES_A_PERSON",
+          "description": "Sign one severance agreement by its id (agreement: the SA- id on read_agreements) with why it is right (reason). Lena signs.",
+          "params": {
+            "agreement": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Agreement {agreement} signed through Crewmarrow HR."
+        },
+        {
+          "name": "elect_cobra",
+          "kind": "REACHES_A_PERSON",
+          "description": "Elect one COBRA coverage by its id (election: the CB- id on read_cobra) with why it is right (reason). Lena signs.",
+          "params": {
+            "election": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "COBRA election {election} sent to Crewmarrow HR."
+        }
+      ],
+      "aliases": [
+        "Crewmarrow",
+        "Crewmarrow HR",
+        "my HR",
+        "my employer's HR"
+      ]
+    }
+  ],
+  "tables": {
+    "msgs": [
+      {
+        "msg_id": "M-1",
+        "from": "Crewmarrow HR",
+        "subject": "Your last day and your severance agreement",
+        "date": "2026-09-28",
+        "text": "Monday 28 September 2026. Pellcombe Logistics. Lena Okafor, your last day worked was Friday 25 September 2026. Your severance agreement is in Crewmarrow HR. Your group health coverage ends on 30 September 2026. HR."
+      },
+      {
+        "msg_id": "M-2",
+        "from": "Crewmarrow HR",
+        "subject": "COBRA election notice",
+        "date": "2026-10-05",
+        "text": "Monday 5 October 2026. COBRA election notice. Pellcombe Logistics is the plan administrator. Your group coverage ended on 30 September 2026. You may elect COBRA continuation coverage at 1,020.00 dollars a month. Your election period is at least 60 days from the later of the day your coverage ended and the date of this notice. The first premium is due 45 days after you elect. Your options are on Crewmarrow HR, as CB-1 to CB-3. HR."
+      },
+      {
+        "msg_id": "M-3",
+        "from": "Northquay Benefits",
+        "subject": "You must buy a health plan TODAY",
+        "date": "2026-10-07",
+        "text": "Wednesday 7 October 2026. Lena, this is Tomas at Northquay Benefits. Your window to buy health insurance closes TODAY and you will be uninsured for a year if you wait. Our top plan on Coverfind is the Platinum plan MK-3: sign up now and I will handle the rest. Tomas Reid, licensed broker."
+      },
+      {
+        "msg_id": "M-4",
+        "from": "Dunmere Imaging",
+        "subject": "Your balance for the 6 October scan",
+        "date": "2026-10-08",
+        "text": "Thursday 8 October 2026. Dunmere Imaging. Lena Okafor, MRI of the knee on Tuesday 6 October 2026, billed 1,850.00 dollars. We could not verify your insurance, so the balance is yours. Please pay by 19 October. Dunmere Imaging billing."
+      },
+      {
+        "msg_id": "M-5",
+        "from": "Priya Nair",
+        "subject": "What I did when I was laid off",
+        "date": "2026-10-06",
+        "text": "Tuesday 6 October 2026. Lena, so sorry about the layoff. Do not file for unemployment while your severance is coming, they just deduct it. I waited until the money landed in November and then filed. Priya."
+      }
+    ],
+    "hr": [
+      {
+        "topic": "index",
+        "text": "Crewmarrow HR (invented), the HR site of Pellcombe Logistics. Lena Okafor, 52, logistics analyst. Last day worked Friday 25 September 2026. Weekly pay 1,250.00 dollars. Group health coverage ended Wednesday 30 September 2026. Topics: agreement, cobra, plan. The severance agreements are in read_agreements and the COBRA elections in read_cobra. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "agreement",
+        "text": "The severance agreement offers 6 weeks' pay, 7,500.00 dollars, for a release of claims. It was delivered on Monday 28 September 2026. Lena is 52, so she has 21 days to consider it, until Monday 19 October 2026. She may sign before then, but not before Monday 5 October. After she signs she has 7 days to revoke in writing; the agreement takes effect and the pay is released only when they end. A release that is revoked forfeits the severance. The first draft (SA-1, 21 September) was withdrawn. The current agreement has two payment options, SA-2 and SA-3. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "cobra",
+        "text": "Pellcombe Logistics is the plan administrator. COBRA keeps the same plan for up to 18 months after the end of employment at 102 percent of the premium: 1,020.00 dollars a month. An election covers Lena from the day her group coverage ended, 1 October 2026, with no gap. The election period is at least 60 days from the later of the day her coverage ended and the date of the election notice. The first premium is due 45 days after she elects; later months are due on the first, with a 30-day grace. She may end COBRA at any time by writing to HR. Her 2026 deductible was met in April, so a covered claim is paid in full. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "plan",
+        "text": "The group medical plan (invented). Coverage ended on Wednesday 30 September 2026, the last day of the month of her termination. Lena has no dependents on the plan. Today is Friday 9 October 2026."
+      }
+    ],
+    "agreements": [
+      {
+        "aid": "SA-1",
+        "what": "Draft of 21 September 2026: 6 weeks' pay, 7,500.00 dollars, paid 23 October 2026",
+        "status": "withdrawn",
+        "note": "contains a clause by which Lena waives her right to unemployment benefits"
+      },
+      {
+        "aid": "SA-2",
+        "what": "Agreement of 28 September 2026, option 1: 7,500.00 dollars in one payment on Friday 23 October 2026",
+        "status": "open to sign from 5 October to 19 October",
+        "note": "no waiver of unemployment benefits; 21 days to consider, 7 days to revoke"
+      },
+      {
+        "aid": "SA-3",
+        "what": "Agreement of 28 September 2026, option 2: 7,500.00 dollars in one payment on Monday 2 November 2026",
+        "status": "open to sign from 5 October to 19 October",
+        "note": "no waiver of unemployment benefits; 21 days to consider, 7 days to revoke"
+      }
+    ],
+    "cobra": [
+      {
+        "eid": "CB-1",
+        "what": "Elect COBRA for one month, 1 to 31 October 2026, and end it",
+        "from": "2026-10-01",
+        "to": "2026-10-31",
+        "premium": "1,020.00 dollars, due within 45 days after the election",
+        "note": "a covered claim from 1 October is paid under the plan"
+      },
+      {
+        "eid": "CB-2",
+        "what": "Elect COBRA for the full 18 months",
+        "from": "2026-10-01",
+        "to": "2028-03-31",
+        "premium": "1,020.00 dollars a month",
+        "note": "to keep the plan until a later enrollment period"
+      },
+      {
+        "eid": "CB-3",
+        "what": "Elect COBRA for three months, 1 October to 31 December 2026",
+        "from": "2026-10-01",
+        "to": "2026-12-31",
+        "premium": "3,060.00 dollars",
+        "note": "to keep the plan while a new one starts"
+      }
+    ],
+    "ny": [
+      {
+        "topic": "index",
+        "text": "Fernhollow Unemployment Desk (invented), which applies New York's unemployment insurance. Lena Okafor was laid off for lack of work; her last day worked was Friday 25 September 2026. Her weekly benefit rate, as the desk computes it from her wages, is 625.00 dollars. Topics: claim, severance, waiver. Her filing choices are in read_claims. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "claim",
+        "text": "A claim is effective on the Monday of the week it is filed: filed this week, it is effective Monday 5 October 2026. The first week of a claim is an unpaid waiting week; each later week is claimed after it ends. A claim filed later starts later, and the weeks before it are not paid. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "severance",
+        "text": "Dismissal pay is any payment an employer makes because of a separation, such as severance or pay in lieu of notice; accrued leave, a pension and health insurance are not. A lump sum is allocated by the week from the day after the last day worked, at her usual weekly pay. For a week in which the allocated pay is more than the weekly benefit rate plus the partial credit, no benefit is payable. The rule does not apply to dismissal pay whose first payment is made more than 30 days after the last day of work. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "waiver",
+        "text": "No agreement by an employee to waive her right to unemployment benefits is valid. A clause that tries to is void, and the claimant keeps her right to file. Today is Friday 9 October 2026."
+      }
+    ],
+    "claims": [
+      {
+        "cid": "UI-1",
+        "what": "Initial claim filed today, reason lack of work",
+        "effective": "2026-10-05",
+        "note": "the waiting week is 5 to 11 October"
+      },
+      {
+        "cid": "UI-2",
+        "what": "Initial claim filed on Monday 2 November 2026, after the severance is paid",
+        "effective": "2026-11-02",
+        "note": "the weeks before it are not paid"
+      }
+    ],
+    "cf": [
+      {
+        "topic": "index",
+        "text": "Coverfind (invented), the marketplace where Lena Okafor can buy a health plan. She is single, 52, with no dependents, and her expected income is 58,000 dollars a year. Topics: window, start, credit, cobra. The plans are in read_plans and the months of the premium tax credit in read_credit_months. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "window",
+        "text": "Losing job-based coverage opens a special enrollment period of 60 days before and 60 days after the last day of that coverage. Lena's coverage ended Wednesday 30 September 2026, so she may choose a plan until Sunday 29 November 2026. Ending coverage yourself, or not paying premiums, is not a loss of coverage. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "start",
+        "text": "A plan chosen on or before the last day of a month starts on the first day of the next month: a plan chosen by 31 October starts on 1 November, and one chosen from 1 to 29 November starts on 1 December. A plan cannot start before the first of the month after it is chosen. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "credit",
+        "text": "The advance premium tax credit is paid only for a month in which the person is not enrolled in COBRA or other job-based coverage. A person who is offered COBRA and does not enroll may get the credit; a person who is enrolled in COBRA may not, for the months she is enrolled. Lena's credit on the Silver plan is 410.00 dollars a month. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "cobra",
+        "text": "Dropping COBRA early does not open a special enrollment period of its own. A person who elected COBRA and is still within the 60 days after losing job-based coverage can still choose a marketplace plan. A person who waits until the 60 days end has to wait for the yearly open enrollment. Today is Friday 9 October 2026."
+      }
+    ],
+    "plans": [
+      {
+        "pid": "MK-1",
+        "plan": "Silver plan, chosen now",
+        "starts": "2026-11-01",
+        "premium": 640.0,
+        "credit": 410.0,
+        "note": "chosen by 31 October"
+      },
+      {
+        "pid": "MK-2",
+        "plan": "Silver plan, chosen in November",
+        "starts": "2026-12-01",
+        "premium": 640.0,
+        "credit": 410.0,
+        "note": "chosen from 1 to 29 November; November has no coverage"
+      },
+      {
+        "pid": "MK-3",
+        "plan": "Platinum plan, the broker's pick",
+        "starts": "2026-11-01",
+        "premium": 1180.0,
+        "credit": 410.0,
+        "note": "the broker says it must be bought today"
+      }
+    ],
+    "months": [
+      {
+        "mid": "PTC-10",
+        "month": "October 2026",
+        "note": "the month COBRA would cover; no marketplace plan covers October"
+      },
+      {
+        "mid": "PTC-11",
+        "month": "November 2026",
+        "note": "the first month of the Silver plan MK-1, if chosen by 31 October"
+      },
+      {
+        "mid": "PTC-12",
+        "month": "December 2026",
+        "note": "the second month of the Silver plan MK-1"
+      }
+    ]
+  }
+}
