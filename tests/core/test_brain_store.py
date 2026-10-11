@@ -479,18 +479,46 @@ def test_a_failed_replace_leaves_no_file_and_no_row(
         assert brain.counts() == counts
 
 
-def test_a_body_with_crlf_is_on_disk_byte_for_byte(tmp_path: Path) -> None:
+def test_a_body_is_written_with_lf_endings_and_no_newline_translation(tmp_path: Path) -> None:
     with Brain(tmp_path / "brain") as brain:
-        episode = brain.append_episode("row one\r\nrow two", role="user")
-        fact = brain.write_fact(
-            "k", "Acme pays net 60.\r\nAlways late.", scope="world", sources=[episode.id]
+        crlf_episode = brain.append_episode("row one\r\nrow two", role="user")
+        crlf_fact = brain.write_fact(
+            "k", "Acme pays net 60.\r\nAlways late.", scope="world", sources=[crlf_episode.id]
+        )
+        lf_episode = brain.append_episode("row one\nrow two\n\nrow four", role="user")
+        lf_fact = brain.write_fact(
+            "k2", "Acme pays net 60.\nAlways late.", scope="world", sources=[lf_episode.id]
         )
 
-        for ref in (episode, fact):
+        expected = {
+            crlf_episode: b"row one\nrow two",
+            crlf_fact: b"Acme pays net 60.\nAlways late.",
+            lf_episode: b"row one\nrow two\n\nrow four",
+            lf_fact: b"Acme pays net 60.\nAlways late.",
+        }
+        for ref, body in expected.items():
             on_disk = (brain.root / ref.path).read_bytes()
-            assert b"\r\n" in on_disk
+            assert b"\r" not in on_disk
             assert on_disk.decode("utf-8").encode("utf-8") == on_disk
-            assert b"\r\r" not in on_disk
+            assert on_disk.endswith(b"\n" + body + b"\n")
+
+
+def test_read_body_returns_the_lf_body_of_a_crlf_write(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("row one\r\nrow two\rrow three", role="user")
+
+        assert brain.read_body(episode.id) == "row one\nrow two\nrow three"
+
+
+def test_a_value_of_only_line_endings_is_refused_as_empty(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("evidence", role="user")
+        with pytest.raises(ValueError, match="empty fact"):
+            brain.write_fact("k", "\r\n\r", scope="world", sources=[episode.id])
+        with pytest.raises(ValueError, match="empty episode"):
+            brain.append_episode("\r\n\r")
+        with pytest.raises(ValueError, match="empty procedural"):
+            brain.write_procedural("w", "\r\n\r", sources=[episode.id])
 
 
 # -- a damaged index stops the brain with a typed error (ADR 0081) -----------------------------

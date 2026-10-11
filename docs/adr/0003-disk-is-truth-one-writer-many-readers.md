@@ -83,3 +83,28 @@ and `SCHEMA_VERSION` does not change.
 
 An expiry that comes back must first be written to the fact's file and honoured by recall, under
 its own ADR. This answers the question ADR 0082 left open (craft-1).
+
+## Amendment, 2026-10-11: a body's line endings are LF on disk
+
+The writer turns CRLF, then any lone CR, into LF before it renders (`Brain.append_episode`,
+`write_fact` and `write_procedural`, ahead of the strip and the empty check). The file bytes,
+`content_hash`, the excerpt, the FTS body and the typed row all see the same LF body, and a body
+made only of CR and LF is still refused as empty.
+
+Why: the readers translate. `reconcile_from_disk` and `Brain.read_body` open files with universal
+newlines, so a CR the writer kept never came back, and the row-for-row rebuild this ADR promises
+failed for pasted Windows text (craft-6).
+
+Why not `newline=""` on read: `frontmatter.parse` finds its fences by `\n`, so a fact that a
+Windows editor saved with CRLF would lose its header and be skipped. The readers keep universal
+newlines.
+
+A body with no CR is unchanged byte for byte, and `_write_file` still does no newline
+translation on any platform.
+
+A brain written before this fix keeps its CR files and rows until its next rebuild, which reads
+LF. Recall's neutraliser can therefore still meet a CR, and `tests/core/test_recall.py` pins that
+at the render seam, with a `Memory` and a `RecallBlock` built directly.
+
+This supersedes the CRLF-on-disk test added with 5e91fe4, whose real guard (no newline
+translation in the writer) stays in its rewritten form.

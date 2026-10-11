@@ -424,3 +424,43 @@ def test_an_every_turn_that_is_not_the_literal_true_is_today_s_default(
         node = brain.node("fact_0a1b2c3d")
         assert node is not None
         assert node.importance == DEFAULT_IMPORTANCE
+
+
+def test_a_body_written_with_crlf_and_a_lone_cr_rebuilds_the_rows_the_writer_indexed(
+    tmp_path: Path,
+) -> None:
+    original = tmp_path / "brain"
+    with Brain(original) as brain:
+        episode = brain.append_episode("row one\r\nrow two\rrow three", role="user")
+        brain.write_fact("k", "Acme pays net 60.\r\nAlways late.\rReally.", sources=[episode.id])
+        brain.write_procedural("w", "when X,\r\ndo Y\rthen Z", sources=[episode.id])
+        expected = index_fingerprint(brain)
+
+    copied = tmp_path / "copied-brain"
+    _copy_tree_without_the_index(original, copied)
+    with Brain(copied) as rebuilt:
+        stats = reconcile_from_disk(rebuilt)
+
+        assert stats.skipped == []
+        assert stats.by_kind == {"episode": 1, "fact": 1, "procedural": 1}
+        assert index_fingerprint(rebuilt) == expected
+
+
+def test_a_fact_file_saved_with_crlf_throughout_is_indexed_with_lf_key_and_body(
+    tmp_path: Path,
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("evidence", role="user")
+        fact = brain.write_fact("crlf-key", "first line\nsecond line", sources=[source.id])
+        path = brain.root / fact.path
+        text = path.read_bytes().decode("utf-8").replace("\n", "\r\n")
+        path.write_bytes(text.encode("utf-8"))
+
+        stats = reconcile_from_disk(brain)
+
+        assert stats.skipped == []
+        row = brain.writer.execute(
+            "SELECT fact_key FROM companion_fact WHERE id = ?", (fact.id,)
+        ).fetchone()
+        assert row == ("crlf-key",)
+        assert brain.read_body(fact.id) == "first line\nsecond line"

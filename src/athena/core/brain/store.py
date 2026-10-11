@@ -295,7 +295,7 @@ class Brain:
         The file is ``episodes/YYYY/MM/DD/<ep_id>_<role>.md`` with the header ref §8 fixes:
         ``id, type, role, session, created``, in that order.
         """
-        body = content.strip()
+        body = _lf(content).strip()
         if not body:
             raise ValueError("refusing to append an empty episode")
         if role not in EPISODE_ROLES:
@@ -412,7 +412,7 @@ class Brain:
         if scope not in FACT_SCOPES:
             raise ValueError(f"fact scope must be one of {FACT_SCOPES}: {scope!r}")
         _require_finite(confidence)
-        body = value.strip()
+        body = _lf(value).strip()
         if not body:
             raise ValueError("refusing to write an empty fact")
         cited = self._require_provenance(sources)
@@ -470,7 +470,7 @@ class Brain:
         if scope not in PROCEDURAL_SCOPES:
             raise ValueError(f"procedural scope must be one of {PROCEDURAL_SCOPES}: {scope!r}")
         _require_finite(confidence)
-        body = behavior.strip()
+        body = _lf(behavior).strip()
         if not body:
             raise ValueError("refusing to write an empty procedural")
         cited = self._require_provenance(sources)
@@ -634,6 +634,14 @@ class Brain:
                 "SELECT kind, COUNT(*) FROM companion_node WHERE importance > 0 GROUP BY kind"
             ).fetchall()
         return {str(kind): int(count) for kind, count in rows}
+
+
+def _lf(text: str) -> str:
+    """A body's line endings as the readers see them: CRLF, then a lone CR, become LF (ADR 0003).
+
+    The readers open files with universal newlines, so a CR the writer kept never came back.
+    """
+    return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
 def _require_finite(confidence: float) -> None:
