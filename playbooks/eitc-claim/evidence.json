@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "eitc-claim",
+  "captured_at": "2026-10-11T06:40:13Z",
+  "bench_run_at": "2026-10-11T06:37:27Z",
+  "narration": {
+    "text": "A working family's 2025 return on extension claims the earned income credit for three children, a daughter, a son who moved in in March and a student of 22, with Form 8862 for the disallowed 2023 credit, while a niece her mother claims, a boy there four months, a 21-year-old, another family's child and two offers are left alone. This is a chore for a mother in a family with two earners and several children, who files jointly and whose 2025 return is on extension. On the bench, she found 4 of 4 eligible items, worth 4,000 dollars of the 4,000 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 71 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 59.861,
+    "sha256": "c347387531401fc3dab043ff62fdc1af20d892823597b2d9be0ddcff49091194"
+  },
+  "video": {
+    "path": "evidence/eitc-claim/evidence.mp4",
+    "duration_s": 59.88,
+    "bytes": 2656451,
+    "sha256": "34915709121ec3210c6be2c16fc72ff2ba96a76f083fcf4bdca93ee17f9ea397"
+  },
+  "thumbnail": {
+    "path": "playbooks/eitc-claim/thumb.jpg",
+    "bytes": 96065,
+    "sha256": "346928db95088ce33b1b00cd417b7c3847360e5f62b50155abbb57d1ba58e4f7"
+  }
+}

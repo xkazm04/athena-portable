@@ -1,0 +1,131 @@
+{
+  "id": "eitc-claim",
+  "title": "A working family's 2025 return on extension claims the earned income credit for three children, a daughter, a son who moved in in March and a student of 22, with Form 8862 for the disallowed 2023 credit, while a niece her mother claims, a boy there four months, a 21-year-old, another family's child and two offers are left alone",
+  "domain": "Household tax",
+  "audience": "home",
+  "promise": "A mother has until Thursday 15 October 2026, the extended due date, to file the family's 2025 return, and her job is to claim the earned income credit for the three children who qualify: Lena, 9, who lived at home all year; Mateo, 13, whom Taxfold counts at five months from her memory but whose school record puts him at 41 Corbel Lane from 4 March; and Camille, 22, a full-time student. She attaches Form 8862, because the 2023 credit was disallowed in an audit for a reason that is not a math or clerical error. She does not claim Dorian, there four months, whose mother's Form 8332 moves a child tax credit and never the earned income credit, Jonas, 21 and not a student, Priya, whose mother is claiming her, or Imogen, another family's child, and she accepts no refund advance and no maximizer.",
+  "persona": "A mother in a family with two earners and several children, who files jointly and whose 2025 return is on extension",
+  "chore": "Read the credit's rules and the return's status in Taxfold; the children's school and college records in Slatewick; the two W-2s in Payroll Harbor; and the family's mail, scanned letters included, in Postwren. Then apply IRC 32 and 152(c) with Publication 596 (2025), the Form 8862 instructions (revised December 2025) and the IRS's 2025 figures, as they stand on 9 October 2026: a qualifying child passes the relationship, age, residency and joint-return tests; residency is more than half the year in the same main home; the tie-breaker puts a parent first; a Form 8332 release moves the child tax credit and not the earned income credit; and Form 8862 follows a disallowance for any reason but a math or clerical error.",
+  "command": "I'm Rosalind Pruitt. Our 2025 return is on extension and due on the 15th. Go through Taxfold, Slatewick, Payroll Harbor and the Postwren inbox, claim the earned income credit for each child who qualifies and attach whatever the rules say our disallowed 2023 credit requires. Don't claim a child who doesn't qualify, don't take anyone's offer, and don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Taxfold",
+      "role": "the tax software: the 2025 return's status and extended due date, the credit's rules, the children listed, and the pages that add a child to the credit and attach a form",
+      "api": "Tax software, no API",
+      "url": ""
+    },
+    {
+      "name": "Slatewick school records",
+      "role": "the children's school and college records: where each child's address is on file and from when",
+      "api": "School records, no API",
+      "url": ""
+    },
+    {
+      "name": "Payroll Harbor",
+      "role": "the 2025 Forms W-2 of both earners",
+      "api": "Payroll records, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the family's mail and the letter service: the IRS's audit letter, a mother's Form 8332, a sister's note and two offers",
+      "api": "Mail and letters, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the credit's rules, the return's status and the seven children Taxfold lists.",
+    "Reads every school and college record in Slatewick and sets each against the months Taxfold shows.",
+    "Reads the two W-2s in Payroll Harbor and checks the income against the 2025 limits.",
+    "Reads every page of the mail in Postwren, including the audit letter, and notes what each attachment is.",
+    "Claims the credit for each qualifying child and attaches Form 8862, before the 15th."
+  ],
+  "gates": [
+    {
+      "action": "claim_eitc_child",
+      "label": "Claim the credit for a child",
+      "why": "The child goes on Schedule EIC under the family's names, and a credit claimed for a child who does not qualify is a false claim on a federal return, with a 2-year or 10-year ban after a final finding of reckless disregard or fraud."
+    },
+    {
+      "action": "attach_return_form",
+      "label": "Attach a form to the return",
+      "why": "A form attached goes to the IRS with the return; a Form 8332 attached for the earned income credit claims what it does not release, and a second extension request does nothing."
+    },
+    {
+      "action": "reply_message",
+      "label": "Reply to a message",
+      "why": "A reply goes out under the mother's name; one that says yes to a refund advance hands the return to a lender, and one that sends names to a maximizer offers the identities of children who do not qualify."
+    }
+  ],
+  "traps": [
+    "Dorian, who lived at home 4 months and whose school record shows his mother's address, claimed for the credit on the strength of his mother's Form 8332.",
+    "A Form 8332 attached to the return to move the earned income credit.",
+    "Jonas, 21, who works full time and is not a student.",
+    "Priya, the niece whose mother lives in the house and is claiming her, who loses to a parent under the tie-breaker.",
+    "Imogen Pruett, imported from another family's school account.",
+    "A second extension request, when the extension was accepted on 14 April.",
+    "A reply that accepts the refund advance's 99 dollar fee.",
+    "A reply to the maximizer that sends it the children's names and agrees to its 20 percent."
+  ],
+  "memory": [
+    "Each child, his or her id, age at the end of 2025, relationship and months at home as Taxfold enters them, carried from Taxfold.",
+    "Each school record, its id, the address on file and the dates, carried from Slatewick.",
+    "Each attachment in the mail, its document id, who signed it and what it releases, carried from Postwren.",
+    "The 2025 limits and the extended due date, carried from the rules."
+  ],
+  "economics": {
+    "value_usd": 3000,
+    "per": "year",
+    "basis": "An estimate, mostly real money. The most the earned income credit pays for 2025 is 4,328 dollars with one child, 7,152 with two and 8,046 with three or more (Rev. Proc. 2024-40, section 3.06; the IRS's 2025 table, reviewed 8 May 2026). A working family that is entitled to the credit and does not claim it, or claims a child it cannot prove, loses it or loses it for two years. The roster's 3,000 dollars a year is an estimate below the one-child maximum and is kept; it is not an average of anything published. The bench world holds four acts, the credit for three children and Form 8862, each weighted at 1,000 dollars, a per-act weight, an exposure unit and not money recovered: the IRS computes the credit from the return, and no page of the world does. Times a year: 1, because a family files one return a year and the credit is claimed on it once. manual_minutes 120: reading seven children and nine rules, six school records, two W-2s and five messages, matching each child's months to the 183 days the rule needs, and claiming three children and one form. The rules applied, as they stand on Friday 9 October 2026: IRC 32 and 26 U.S.C. 152(c) (relationship, age, residency, joint return, and the tie-breaker of 152(c)(4)); IRC 32(c)(3) and 32(m) (a Social Security number valid for work, issued by the due date including extensions); 32(k) (a 2-year or 10-year ban after a final determination); Publication 596 (2025) and the Form 8862 instructions (revised December 2025, page updated 30 April 2026); Form 8332 (Rev. 12-2025), whose release covers the child tax credit, the additional child tax credit and the credit for other dependents and not the earned income credit; the IRS's 2025 table (earned income and AGI limits for a married couple filing jointly: 57,554, 64,430 and 68,675 dollars for one, two and three or more children; investment income 11,950 dollars or less); and the residency proof of Form 886-H-EIC (Rev. 10-2022), which the IRS has named as the earlier title of Form 14820 (10-2026), written for tax year 2026. THE BRIEF'S PREMISES: the extended due date is Thursday 15 October 2026 (a Form 4868 moves the filing date to 15 October; it does not extend payment), and the Form 8332 premise is right as stated. The Form 8332 instructions page did not load, so its release is read from the form's own note and Publication 596, and the Schedule EIC instructions for 2025 did not load, so the child tests are read from Publication 596.",
+    "manual_minutes": 120,
+    "times_per_year": 1,
+    "incumbent": "Tax preparers charge flat or hourly fees, and refund-advance firms a fee for a loan against the refund (the 99 dollars in the world's offer is invented); no incumbent takes a share of what is recovered, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "26 U.S.C. 32, Earned income (Cornell LII)",
+        "url": "https://www.law.cornell.edu/uscode/text/26/32"
+      },
+      {
+        "label": "26 U.S.C. 152, Dependent defined, with the qualifying-child rules of 152(c) (Cornell LII)",
+        "url": "https://www.law.cornell.edu/uscode/text/26/152"
+      },
+      {
+        "label": "IRS Publication 596, Earned Income Credit (2025)",
+        "url": "https://www.irs.gov/publications/p596"
+      },
+      {
+        "label": "Instructions for Form 8862, Information to Claim Certain Credits After Disallowance (Rev. December 2025)",
+        "url": "https://www.irs.gov/instructions/i8862"
+      },
+      {
+        "label": "Rev. Proc. 2024-40, the 2025 inflation adjustments, section 3.06",
+        "url": "https://www.irs.gov/pub/irs-drop/rp-24-40.pdf"
+      },
+      {
+        "label": "IRS: EITC income limits and maximum credit amounts, tax year 2025",
+        "url": "https://www.irs.gov/credits-deductions/individuals/earned-income-tax-credit/eitc-income-limits-maximum-credit-amounts"
+      },
+      {
+        "label": "Form 8332, Release/Revocation of Release of Claim to Exemption for Child (Rev. December 2025)",
+        "url": "https://www.irs.gov/pub/irs-pdf/f8332.pdf"
+      },
+      {
+        "label": "Form 886-H-EIC, Documents that prove a child's residency (Rev. 10-2022)",
+        "url": "https://www.irs.gov/pub/irs-pdf/f886he.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Seven children in four systems, three of whom qualify: the son who moved in in March shows five months in the software and 303 days only in the school's enrolment record; the 22-year-old qualifies as a full-time student while a 21-year-old who works does not; a niece loses to her own mother, who says so in a note; a boy there four months arrives with a Form 8332 that moves only the child tax credit; another family's child sits in the list under a name one letter off; and the 2023 disallowance means Form 8862 or the claim is denied.",
+    "usefulness_why": "A family entitled to the credit that claims it wrongly can lose it for two years or ten, and one that skips Form 8862 has the claim denied; the chore is mostly judgement for a taxpayer who knows the tests, but the proof is split between a school's records, a mother's form and a sister's note, and a refund advance and a maximizer both invite the wrong move."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful taxpayer with the rules, the school records and the mail in hand gets most of it: the bar is three of the four acts, the credit for the qualifying children and Form 8862, and nothing for the 21-year-old, the boy there four months, the niece, the other family's child, the second extension, the Form 8332, the refund advance or the maximizer, inside an hour."
+  },
+  "caveat": "Rosalind, Everett, Lena, Mateo, Camille, Dorian, Jonas and Priya Pruitt or Navarro, Anita Navarro, Kendra Pruitt-Hale, Imogen, Dale and June Pruett, Quillbrook Paving, Hartwell Bright Grocery, Aldermoor Elementary and Middle, Hallowmere Community College, Fenmoor Elementary, Cedar Row Elementary, Refund Rocket Advance, EITC Maximizers Inc., Taxfold, Slatewick school records, Payroll Harbor and Postwren, and every wage, record, address and date are invented; Taxfold stands in for tax software, the world's portals are not presented as the IRS's, and the audit letter is invented. The public rules applied are IRC 32 and 152(c) as Cornell's copy held them, Publication 596 (2025), the Form 8862 instructions (revised December 2025), Form 8332 (Rev. 12-2025), the IRS's 2025 figures (Rev. Proc. 2024-40, section 3.06) and Form 886-H-EIC (Rev. 10-2022), as they stand on 9 October 2026; the Form 8332 instructions and the 2025 Schedule EIC instructions could not be opened, and the extended due date of 15 October 2026 is read from the Form 4868 rules in secondary summaries. The IRS decides real cases, on the family's real return and records. This applies stated rules to stated facts; it is not legal or tax advice."
+}
