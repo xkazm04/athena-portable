@@ -144,13 +144,18 @@ def _confidence(meta: dict[str, Any]) -> float | None:
     """The file's confidence: the default when absent, ``None`` when present but not a number.
 
     Only finiteness is asked. The writers make no range check, so a rebuild must not make one.
+    An integer too large for a float (``1`` and 400 zeros) is not a number either: ``float``
+    raises OverflowError on it, which would have aborted the whole rebuild.
     """
     if "confidence" not in meta:
         return DEFAULT_CONFIDENCE
     value = meta["confidence"]
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
-    number = float(value)
+    try:
+        number = float(value)
+    except OverflowError:
+        return None
     return number if math.isfinite(number) else None
 
 

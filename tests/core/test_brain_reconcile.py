@@ -181,6 +181,24 @@ def test_a_confidence_that_is_not_a_number_is_named_and_the_rebuild_goes_on(
         assert _tables_holding(brain, victim.id) == []
 
 
+def test_a_confidence_too_large_for_a_float_is_named_and_the_rebuild_goes_on(
+    tmp_path: Path,
+) -> None:
+    """float() raises OverflowError past about 309 digits; that is one file, not the rebuild."""
+    huge = "1" + "0" * 400
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+        source = brain.append_episode("evidence", role="user")
+        victim = brain.write_fact("huge one", "text", scope="user", sources=[source.id])
+        _rewrite(brain, victim.path, ("confidence:",), f"confidence: {huge}")
+
+        stats = reconcile_from_disk(brain)
+
+        assert stats.skipped == [f"{victim.path}: confidence {huge} is not a number"]
+        assert stats.files == 7
+        assert _tables_holding(brain, victim.id) == []
+
+
 def test_a_confidence_of_zero_is_kept_and_an_absent_one_gets_the_default(tmp_path: Path) -> None:
     with Brain(tmp_path / "brain") as brain:
         source = brain.append_episode("evidence", role="user")
