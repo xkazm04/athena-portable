@@ -44,7 +44,7 @@ from athena.contracts.registry import (
     parse_origin,
 )
 from athena.core.prompt import BUDGETS
-from athena.core.validators import all_of, live_sources, schema_validator
+from athena.core.validators import all_of, fact_text, live_sources, schema_validator
 
 __all__ = [
     "CAPABILITIES_CHARS",
@@ -141,6 +141,8 @@ WRITE_FACT_SCHEMA: dict[str, Any] = {
         "every_turn": {"type": "boolean"},
     },
     "required": ["key", "value", "sources"],
+    # Closed (ADR 0082): the card lists every param, so every param must take effect.
+    "additionalProperties": False,
 }
 
 CHECKPOINT_SCHEMA: dict[str, Any] = {
@@ -203,6 +205,7 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
             params_schema=WRITE_FACT_SCHEMA,
             validator=all_of(
                 schema_validator(WRITE_FACT_SCHEMA),
+                fact_text(),
                 live_sources(services.sources_alive),
             ),
             executor=services.write_fact or _unattached("core.write_fact"),

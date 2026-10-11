@@ -12,7 +12,15 @@ from typing import Any
 import pytest
 
 from athena.contracts import ERROR_REASONS, TurnContext
-from athena.core.validators import all_of, check_schema, live_sources, schema_validator
+from athena.core.brain import frontmatter
+from athena.core.validators import (
+    FACT_KEY_LINE_BREAKS,
+    all_of,
+    check_schema,
+    fact_text,
+    live_sources,
+    schema_validator,
+)
 
 CTX = TurnContext(conversation_id="conv_demo", turn_id="turn-1")
 
@@ -179,3 +187,35 @@ def test_a_string_that_is_not_unicode_is_refused_and_never_echoed() -> None:
         assert "\ud800" not in result.detail
     assert "key" in top.detail
     assert "tags[1]" in nested.detail
+
+
+# --- fact_text: what the writer would refuse after the card (ADR 0082) --------------------------
+
+
+def test_fact_text_accepts_a_plain_key_and_value_and_skips_a_non_string() -> None:
+    check = fact_text()
+    assert check({"key": "acme pays late", "value": "60 days"}, CTX).ok
+    assert check({"key": 3, "value": ["x"]}, CTX).ok, "the schema refuses a type, not this"
+    assert check({}, CTX).ok
+
+
+@pytest.mark.parametrize("key", ["a\nb", "a\rb", "a\r\nb", "\n"])
+def test_fact_text_refuses_a_key_with_a_line_break_without_echoing_it(key: str) -> None:
+    result = fact_text()({"key": key, "value": "v"}, CTX)
+    assert not result.ok
+    assert result.reason == "validator_failed"
+    assert "key" in result.detail
+    assert "\n" not in result.detail
+    assert "\r" not in result.detail
+
+
+@pytest.mark.parametrize("value", ["", "   ", "\t", " \t\n "])
+def test_fact_text_refuses_a_value_empty_after_strip(value: str) -> None:
+    result = fact_text()({"key": "k", "value": value}, CTX)
+    assert not result.ok
+    assert result.reason == "validator_failed"
+    assert "value" in result.detail
+
+
+def test_fact_text_line_break_set_equals_the_frontmatter_writers() -> None:
+    assert FACT_KEY_LINE_BREAKS == frontmatter._LINE_BREAKS

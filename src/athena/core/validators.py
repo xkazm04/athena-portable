@@ -22,11 +22,17 @@ from athena.contracts.manifest import params_schema_problems
 from athena.contracts.registry import TurnContext, ValidationResult, ValidatorFn
 
 __all__ = [
+    "FACT_KEY_LINE_BREAKS",
     "all_of",
     "check_schema",
+    "fact_text",
     "live_sources",
     "schema_validator",
 ]
+
+#: The characters the frontmatter writer refuses in a header key. Copied, not imported, so this
+#: module stays free of the brain; a test pins it equal to ``frontmatter._LINE_BREAKS``.
+FACT_KEY_LINE_BREAKS: frozenset[str] = frozenset("\r\n")
 
 #: JSON Schema's type names, mapped onto what ``isinstance`` understands.
 _TYPES: dict[str, type | tuple[type, ...]] = {
@@ -209,6 +215,31 @@ def live_sources(
             return ValidationResult.reject(
                 "validator_failed",
                 f"{field}: no such live episodes: {', '.join(sources)}",
+            )
+        return ValidationResult.accept()
+
+    return _validate
+
+
+def fact_text(*, key_field: str = "key", value_field: str = "value") -> ValidatorFn:
+    """Refuse a fact the writer would refuse after its card (ADR 0082).
+
+    Two rules, each the writer's own: a key holding a line break cannot be rendered into the
+    header, and a value empty after ``strip()`` is "an empty fact". Run after the schema, so a
+    field that is not a string is the schema's to refuse and is skipped here. The detail names
+    the param and the rule and never echoes the value.
+    """
+
+    def _validate(params: dict[str, Any], ctx: TurnContext) -> ValidationResult:
+        key = params.get(key_field)
+        if isinstance(key, str) and FACT_KEY_LINE_BREAKS & set(key):
+            return ValidationResult.reject(
+                "validator_failed", f"{key_field}: may not contain a line break"
+            )
+        value = params.get(value_field)
+        if isinstance(value, str) and not value.strip():
+            return ValidationResult.reject(
+                "validator_failed", f"{value_field}: may not be empty or only whitespace"
             )
         return ValidationResult.accept()
 

@@ -606,3 +606,43 @@ def test_a_variation_selector_in_a_page_description_is_not_in_the_block() -> Non
     (line,) = tool_lines(lines, "list")
     _, _, tail = line.partition(" — ")
     assert json.loads(tail) == "pay now cafe\u0301"
+
+
+# --- a fact the writer would refuse is refused before its card (ADR 0082) -----------------------
+
+
+def _fact() -> dict[str, Any]:
+    return {"key": "northwind", "value": "pays late", "sources": [LIVE_EPISODE]}
+
+
+def test_write_fact_refuses_a_param_nothing_would_read() -> None:
+    catalog = build_catalog(services(LIVE_EPISODE))
+    for extra in ({"importance": 5}, {"expires_at": "2020-01-01"}, {"note": "x"}):
+        result = catalog.validate("core.write_fact", _fact() | extra, CTX)
+        assert not result.ok, extra
+        assert result.reason == "validator_failed"
+        assert next(iter(extra)) in result.detail
+
+    optional: dict[str, Any] = {"every_turn": True, "confidence": 0.5, "scope": "world"}
+    assert catalog.validate("core.write_fact", _fact(), CTX).ok
+    for name, value in optional.items():
+        assert catalog.validate("core.write_fact", _fact() | {name: value}, CTX).ok
+    assert catalog.validate("core.write_fact", _fact() | optional, CTX).ok
+
+
+@pytest.mark.parametrize(
+    ("field", "given"),
+    [("key", "a\nSECRETKEY"), ("key", "a\rSECRETKEY"), ("value", "  \t  ")],
+)
+def test_write_fact_refuses_text_the_writer_would_refuse(field: str, given: str) -> None:
+    catalog = build_catalog(services(LIVE_EPISODE))
+    result = catalog.validate("core.write_fact", _fact() | {field: given}, CTX)
+    assert not result.ok
+    assert result.reason == "validator_failed"
+    assert given not in result.detail
+    assert "SECRETKEY" not in result.detail
+
+
+def test_recall_stays_open_to_an_extra_param() -> None:
+    catalog = build_catalog(services(LIVE_EPISODE))
+    assert catalog.validate("core.recall", {"query": "q", "extra": 1}, CTX).ok

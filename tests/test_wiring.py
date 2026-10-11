@@ -449,3 +449,16 @@ def test_write_fact_with_a_lone_surrogate_is_refused_before_anything_is_written(
     assert result.reason == "validator_failed"
     assert "\ud800" not in result.detail
     assert not list((local.brain.root / "semantic").rglob("*.md"))
+
+
+def test_write_fact_with_a_line_break_in_its_key_is_refused_before_anything_is_written(
+    local: AthenaLocal,
+) -> None:
+    episode = local.brain.append_episode("Northwind paid 40 days late", session_id=CONVERSATION)
+    params = {"key": "pays\nlate", "value": "40 days", "sources": [episode.id]}
+
+    result = local.catalog.validate("core.write_fact", params, ctx())
+
+    assert not result.ok
+    assert result.reason == "validator_failed"
+    assert not list((local.brain.root / "semantic").rglob("*.md"))
