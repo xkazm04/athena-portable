@@ -318,6 +318,15 @@ names; each playbook carries the new one.
   called Flexwell (it turned up other FSA administrators with similar names) and none called Paylance as a health plan or member portal
   (the search tool is fuzzy, so that is "none found", not a proof); the benched `clinic-underpayments` and `out-of-network-claims`
   use Paylance unchanged and are not touched.
+- Row 73, `parental-leave-claims`: "Staffnest" became "Crewmarrow HR", the name row 49 settled, because StaffNest is a real HR service; and "Carenook" became
+  "Larkhollow Women's Health", because CareNook (carenook.app) is a real management platform for home care, home health and hospice
+  agencies, in the same field (the benched `abn-liability-sweep`, `medical-records-gather`, `medicare-enrollment-timing` and others keep
+  Carenook unchanged and are not touched). "Familyleave State" kept its name: a search found no portal of that name, only the state
+  programs' own sites, and here it is an invented rules site that pays nothing, because New York's carriers pay the benefit; "Shieldline"
+  kept its name: a search found no insurer of that name (Shield Insurance, an agency, and Green Shield Canada are different), the carrier
+  that pays both benefits (the search tool is fuzzy, so that is "none found", not a proof). The roster's row 73 lists no mail portal;
+  Postwren (for "Mailnest", because mailnest.io is a real email service) is added as the fifth portal, because her partner's note and a
+  parent guide are mail.
 
 ### B9: Public programmes, schools, farms and nonprofits
 

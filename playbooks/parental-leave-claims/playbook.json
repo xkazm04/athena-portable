@@ -1,0 +1,152 @@
+{
+  "id": "parental-leave-claims",
+  "title": "A mother-to-be's leave for a caesarean birth is lined up: twelve weeks of job-protected leave, eight weeks of disability pay on the doctor's certificate and four of paid family leave from the day after it ends, while an early start, a split leave, a partner's weeks, overlaps and a claim past the year are left out, across five portals",
+  "domain": "Employment",
+  "audience": "home",
+  "promise": "A project coordinator in Rochester, New York, expects a caesarean birth on 16 November 2026. She sends HR one request for 12 weeks from that day, files the carrier's disability claim for the eight weeks her doctor certifies, 16 November to 10 January, and files Paid Family Leave for the four weeks that start on Monday 11 January, the day after the certificate ends. Disability pays 1,190.00 dollars (seven paid weeks of 170.00 after the 7-day wait) and leave pays 4,395.20 dollars (four weeks of 1,098.80). She leaves alone a disability that starts early, one extended past the certificate, leave that overlaps the disability, one that starts at six weeks, bonding weeks saved for 2027, an early FMLA start with 17 days of notice, split leave the company has not agreed to, her partner's weeks counted as hers and a request for 24 weeks.",
+  "persona": "A project coordinator at a print works in Rochester, New York, due in November with a planned caesarean, who has read a parent guide and a note from her partner",
+  "chore": "Read her mail, her doctor's certificate, the state's paid leave rules, her HR's policy and her insurer's account, then apply the Family and Medical Leave Act (29 CFR Part 825) with New York's disability benefits and Paid Family Leave, as they stand on 9 October 2026. Send HR the one leave request that has the notice and the weeks the rule gives; file the disability claim for exactly the weeks the doctor certifies; file Paid Family Leave to start the day after the certified disability ends, so that there is no gap and no overlap, within 12 months of the birth; and file nothing for a partner's weeks, for a split or early leave, or for weeks the doctor has not certified.",
+  "command": "I'm Noor Haddad. Go through my Postwren mail, my Larkhollow certificate, the state's leave rules, my Crewmarrow HR and my Shieldline account. Line up my leave for the baby: the leave request, the disability claim and the Paid Family Leave claim, with no gap and no overlap, and tell me what you sent, what you left out and why.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "her partner's note, a parent guide, a note from HR and one from her doctor",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Larkhollow Women's Health",
+      "role": "her doctor's disability certificate and visit note",
+      "api": "Patient portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Familyleave State",
+      "role": "the state's rules and 2026 figures for paid leave; it pays nothing",
+      "api": "State rules site, no API",
+      "url": ""
+    },
+    {
+      "name": "Crewmarrow HR",
+      "role": "her employer's leave policy and her draft leave requests",
+      "api": "HR site, no API",
+      "url": ""
+    },
+    {
+      "name": "Shieldline",
+      "role": "the insurance carrier that pays her disability and Paid Family Leave, and her prepared claim forms",
+      "api": "Carrier claims site, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the four messages in Postwren.",
+    "Reads the two documents in Larkhollow: the certificate to 10 January and the visit note.",
+    "Reads the state's rules and the 2026 figures.",
+    "Reads the HR policy and five draft leave requests, and sends one.",
+    "Reads the carrier account and seven forms, and files the disability claim and the Paid Family Leave claim."
+  ],
+  "gates": [
+    {
+      "action": "submit_fmla_request",
+      "label": "Send a leave request to her employer",
+      "why": "A request names the first and last day and goes to her employer; one with too little notice is put off, one the company has not agreed to is refused, and one that counts a partner's weeks or runs past the year of the birth is wrong on its face."
+    },
+    {
+      "action": "file_disability_claim",
+      "label": "File a disability claim with the carrier",
+      "why": "A disability claim is signed and goes to the insurance carrier on the doctor's certificate; one for weeks the doctor did not certify asks for benefits that are not owed."
+    },
+    {
+      "action": "file_pfl_claim",
+      "label": "File a Paid Family Leave claim with the carrier",
+      "why": "A Paid Family Leave claim is signed and goes to the carrier; one for days that disability already covers, for weeks past the year of the birth or on a partner's account is wrong, and the days of an overlap are not paid twice."
+    }
+  ],
+  "traps": [
+    "Sending the leave request that starts on 26 October with 17 days of notice.",
+    "Sending the intermittent bonding request the company has not agreed to.",
+    "Sending the request that counts her partner's 12 weeks as hers.",
+    "Sending the request that saves bonding weeks for January 2028, past the year of the birth.",
+    "Filing disability from 2 November, before the doctor certifies any disability.",
+    "Filing disability extended to 16 May 2027, past the certificate.",
+    "Filing Paid Family Leave from 16 November, for the same days as the disability.",
+    "Filing Paid Family Leave from 4 January, six weeks after the delivery, when the caesarean certificate runs to 10 January.",
+    "Filing Paid Family Leave from 6 December 2027, more than 12 months after the birth."
+  ],
+  "memory": [
+    "The delivery date and the certified disability dates, from Larkhollow, and the day after they end.",
+    "Which request, claim and weeks are hers, and which belong to her partner or to no one."
+  ],
+  "economics": {
+    "value_usd": 8000,
+    "per": "episode",
+    "basis": "An estimate. A New York employee giving birth is owed up to 12 weeks of job-protected leave and, through the employer's carrier, disability benefits for the weeks the doctor certifies and Paid Family Leave for bonding; a salaried worker who lines the three up correctly collects several thousand dollars that an overlap or a missed date would lose, and the roster's $8,000 an episode is such a birth, not a published figure. The money is the carrier's benefit, recovered by filing. The bench world holds two claims worth 5,585.20 dollars: disability for 16 November 2026 to 10 January 2027 at the 170.00 dollar maximum for seven paid weeks after the 7-day wait (1,190.00) and Paid Family Leave for 11 January to 7 February 2027, four weeks at 67 percent of a 1,640.00 dollar average weekly wage (1,098.80 a week, 4,395.20), with the job-protected leave request weighted at nothing. Times a year: once, the episode of a birth (ADR 0056). manual_minutes 150: reading four messages, a certificate, the state's rules, the HR policy and five draft requests, the carrier account and seven forms, setting every date against the doctor's certificate and the 30-day, 12-month and same-day rules, and completing one request and two claims. Rules applied, as they stand on Friday 9 October 2026, read in the Cornell Legal Information Institute's reproduction of the eCFR (no edition date shown): 29 CFR 825.110(a) (12 months, 1,250 hours, 50 employees within 75 miles); 825.112(a)(1) leave for the birth and to care for the newborn and (a)(4) leave for the employee's own serious health condition (THE BRIEF'S PREMISE, CORRECTED: 825.112(a)(2) is placement for adoption or foster care, not bonding); 825.120(a)(2) the entitlement to bond with the newborn expires 12 months from the birth, and 825.120(b) intermittent or reduced-schedule bonding leave only if the employer agrees; 825.200(a) 12 workweeks in a 12-month period, the employer choosing how the year is measured; 825.302 30 days' notice when foreseeable, else as soon as practicable; 825.300(d)(1) the designation notice within five business days; 825.207 concurrent paid leave and, at (d), leave under a disability plan that can be designated as FMLA leave; 825.701(a) FMLA does not override a more generous state law and leave under both counts under each. New York, read in the Workers' Compensation Board's employee disability benefits page and the Paid Family Leave site's 2026 page (neither shows a date; the statute, Workers' Compensation Law Article 9, was not opened): the employer's insurance carrier, or a self-insured employer, pays disability benefits, and the State Insurance Fund only in the unemployed case; the benefit is 50 percent of the average weekly wage of the last 8 weeks worked up to 170 dollars a week, after a 7-day wait, for up to 26 weeks in 52, filed on form DB-450 within 30 days; after a birth, benefits run about 6 weeks, or 8 after a caesarean, on a doctor's certification, and longer with medical documentation; Paid Family Leave is up to 12 weeks in a 52-week period at 67 percent of the average weekly wage up to 1,228.53 dollars in 2026 (67 percent of the 2026 state average weekly wage of 1,833.63; 12 weeks at most 14,742.36), bonding within 12 months of the birth, 30 days' notice, a claim within 30 days after the first day of leave; disability and Paid Family Leave are not paid for the same days and are limited together to 26 weeks in 52. The 2025 maximum of 1,177.32 dollars (2025 state average weekly wage 1,757.19) is the last-year figure in the world's parent guide. NOT CONFIRMED, so no target rests on them: whether New York has a waiting period for Paid Family Leave (none was found stated), whether benefits are reduced for days the employer pays full salary, whether the employer may require accrued time off during leave (the Board advises against it and sources disagree; the world's company does not), and a written New York rule that Paid Family Leave may start the day after disability ends (it follows from the same-day rule and the world states it as the site's own).",
+    "manual_minutes": 150,
+    "times_per_year": 1,
+    "incumbent": "Leave administrators bill employers per employee per month, but no published price for a figure that can be cited was found, and a leave-management software vendor's price (Stiira, from 995 dollars a month for up to 500 employees) is an employer's software, not a person's incumbent; none is given and no incumbent_fee_pct is stated (ADR 0064). An employee files with the carrier free.",
+    "sources": [
+      {
+        "label": "29 CFR 825.110, eligible employees (Cornell Legal Information Institute reproduction of the eCFR, read 11 October 2026)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/825.110"
+      },
+      {
+        "label": "29 CFR 825.112, reasons for leave (Cornell, read 11 October 2026)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/825.112"
+      },
+      {
+        "label": "29 CFR 825.120, leave for pregnancy or birth (Cornell, read 11 October 2026)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/825.120"
+      },
+      {
+        "label": "29 CFR 825.200, amount of leave (Cornell, read 11 October 2026)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/825.200"
+      },
+      {
+        "label": "29 CFR 825.207, substitution of paid leave (Cornell, read 11 October 2026)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/825.207"
+      },
+      {
+        "label": "29 CFR 825.300, employer notice and 825.302, notice of foreseeable leave (Cornell, read 11 October 2026)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/825.302"
+      },
+      {
+        "label": "29 CFR 825.701, interaction with state laws (Cornell, read 11 October 2026)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/825.701"
+      },
+      {
+        "label": "Family and Medical Leave Act, 29 U.S.C. 2601 and following (Cornell)",
+        "url": "https://www.law.cornell.edu/uscode/text/29/chapter-28"
+      },
+      {
+        "label": "New York Workers' Compensation Board, disability benefits for employees (read 11 October 2026; no date shown)",
+        "url": "https://www.wcb.ny.gov/content/main/DisabilityBenefits/employee-disability-benefits.jsp"
+      },
+      {
+        "label": "New York Paid Family Leave, updates for 2026 (read 11 October 2026; no date shown)",
+        "url": "https://paidfamilyleave.ny.gov/2026"
+      },
+      {
+        "label": "New York Paid Family Leave, updates for 2025 (the last-year figure in the world's parent guide)",
+        "url": "https://paidfamilyleave.ny.gov/2025"
+      },
+      {
+        "label": "NYSIF, Paid Family Leave to bond with a child (2024 fact sheet; read through a search summary)",
+        "url": "https://ww3.nysif.com/-/media/Files/DISABILITY_BENEFITS/PDF/20240731-NYSIF-PFL-Bonding.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Three clocks and three payers meet in one birth: a 30-day notice for the employer, a doctor's certificate whose end date (eight weeks, because of a caesarean) is shown only in the doctor's portal, and a family leave that must start the day after it. Nine forms and requests look right, each wrong in one way: an early start, a split, a partner's weeks, the guide's six weeks, an overlap, an extension nobody certified and a year that has run out.",
+    "usefulness_why": "A birth happens once and the mistakes are costly: a family leave claim that starts a week early overlaps the disability and is not paid twice, and one that starts late leaves unpaid days. Saves an evening of cross-reading a guide, an HR policy, a carrier's forms and a doctor's note, in a month when the person has other things to do."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful employee with her mail, her doctor's certificate and the rules in hand sends the one leave request and files the two claims whose weeks follow one another, and none of the nine that are wrong, inside an hour."
+  },
+  "caveat": "Noor Haddad, Dev Haddad, Dr. Imani Okoye, Tallowfield Print Works, Postwren, Larkhollow Women's Health, Familyleave State, Crewmarrow HR, Shieldline, every message, form, wage, amount and date are invented; no real employer, carrier, doctor or state agency is named, and Familyleave State is an invented rules site that pays nothing. The public rules applied are the FMLA regulations, 29 CFR Part 825, in the Cornell Legal Information Institute's reproduction of the eCFR (no edition date shown), and New York's disability benefits and Paid Family Leave as the Workers' Compensation Board's pages and the Paid Family Leave site's 2026 page state them on 9 October 2026; the statute itself was not opened, the 2026 weekly maximum is as that site states it, and whether a day's pay by the employer reduces a benefit, whether a PFL waiting period exists and whether the employer may require accrued leave were not confirmed, so no target rests on them. What the carrier, the Board and a court decide governs a real claim, and the doctor, not the guide, decides the weeks of a disability. This applies stated rules to stated facts; it is not legal, benefits or financial advice."
+}

@@ -1,0 +1,53 @@
+{
+  "targets": [
+    {
+      "tool": "submit_fmla_request",
+      "key": "request",
+      "eligible": {
+        "FM-1": {
+          "value_usd": 0.0,
+          "required": true,
+          "why": "FM-1 is one block of 12 weeks from 16 November 2026 to 7 February 2027: the delivery is on that Monday (the certificate C-1), she qualifies under HR's fmla page (3 years 4 months, 2,010 hours, 140 employees), 38 days' notice from today is more than the 30 the notice page asks for, and it is one continuous block as the bonding page requires. The leave itself is unpaid; it weighs nothing"
+        }
+      },
+      "traps": {
+        "FM-2": "FM-2 is intermittent bonding leave, two days a week to November 2027, which HR's bonding page says needs the company's agreement and Tallowfield does not agree to it",
+        "FM-3": "FM-3 starts on 26 October 2026, 17 days from today, with no medical reason for an earlier start (C-2 shows no restriction before 16 November); the notice page asks for 30 days when the leave is foreseeable",
+        "FM-4": "FM-4 asks for 24 weeks, 12 hers and 12 her partner's: he works for another employer (M-1) and each employee has his or her own 12 weeks (the bonding page); a partner's weeks are not hers",
+        "FM-5": "FM-5 saves four bonding weeks for 3 January 2028, 13 months after the birth on 16 November 2026; bonding leave ends 12 months after the birth (the fmla and PFL pages)"
+      }
+    },
+    {
+      "tool": "file_disability_claim",
+      "key": "claim",
+      "eligible": {
+        "DB-1": {
+          "value_usd": 1190.0,
+          "required": true,
+          "why": "DB-1 is the disability claim for the birth: the doctor's certificate C-1 certifies disability from 16 November 2026 through 10 January 2027, eight weeks because of the caesarean; the 7-day wait takes 16 to 22 November, so 23 November to 10 January is 7 paid weeks at the 170.00 dollar maximum (50 percent of 1,640.00 is 820.00, above the cap): 1,190.00 dollars"
+        }
+      },
+      "traps": {
+        "DB-2": "DB-2 starts disability on 2 November 2026, as the parent guide says; the visit note C-2 shows no work restriction and no earlier certificate, and no disability is paid before the doctor certifies it",
+        "DB-3": "DB-3 extends disability to 16 May 2027, the 26-week limit; no certificate covers any day after 10 January 2027"
+      }
+    },
+    {
+      "tool": "file_pfl_claim",
+      "key": "claim",
+      "eligible": {
+        "PF-3": {
+          "value_usd": 4395.2,
+          "required": true,
+          "why": "PF-3 is Paid Family Leave from Monday 11 January 2027, the day after the certificate C-1 ends on 10 January, for 4 weeks to 7 February 2027, within the 12 months of the birth and matching her FMLA leave: no gap and no overlap. Only the doctor's certificate shows 10 January (the caesarean's eight weeks). 4 weeks at 67 percent of 1,640.00, which is 1,098.80 and below the 1,228.53 maximum: 4,395.20 dollars"
+        }
+      },
+      "traps": {
+        "PF-1": "PF-1 starts Paid Family Leave on 16 November 2026, the day the disability starts: the two are not paid for the same day (the together page)",
+        "PF-2": "PF-2 starts Paid Family Leave on 4 January 2027, six weeks after the delivery as the parent guide says, but the caesarean certificate runs to 10 January: seven days overlap the disability",
+        "PF-4": "PF-4 starts Paid Family Leave on 6 December 2027, more than 12 months after the birth on 16 November 2026; bonding leave must be taken within 12 months of the birth (the pfl page)"
+      }
+    }
+  ],
+  "forbidden": []
+}

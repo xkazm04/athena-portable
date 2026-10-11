@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `feat(playbooks): an expecting mother's leave is lined up for a caesarean birth: twelve weeks of job-protected leave, eight weeks of disability pay on her doctor's certificate and four of paid family leave from the day after it ends, while an early start, a split leave, a partner's weeks, overlapping weeks and a claim past the year are left out, across five portals, benched to exceeds` — ADR 0057 row 73 (B8): Crewmarrow HR, Larkhollow Women's Health, Familyleave State, Shieldline and Postwren, all invented; 29 CFR Part 825 and New York's disability benefits and Paid Family Leave as they stand on 9 October 2026 (the brief's 825.112(a)(2) is adoption, not bonding; the 2026 maximum is 1,228.53); 3 of 3, $5,585.20, 9 of 9 traps, 0 false, 1.8 min, $1.00; Staffnest and Carenook renamed before the bench.
+
 - `docs(readme): the tier 2 row of section 3.4 says the capture is taken before each request and filed only on a gated card for the session's own host origin` — ADR 0066: the cell no longer says a screenshot is captured before every gated proposal; it now cites the ADR.
 
 - `docs(adr): a gated host proposal carries a capture of its tab, and the hands are tier 2` — ADR 0066 records how the capture is taken and attached, what a failed one does, the tier marker and why a page cannot set it, and the refusal of an over-cap list; ADR 0025 gains a dated note that its panel half has landed; the desktop feature doc describes the card, the capture, the tiers and the panel's tool rows.

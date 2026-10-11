@@ -1,0 +1,269 @@
+{
+  "playbook": "parental-leave-claims",
+  "run_at": "2026-10-11T02:34:26Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 106.5,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 20,
+  "cost_usd": 1.0008,
+  "your_time_s": 90,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.8
+  },
+  "score": {
+    "eligible": 3,
+    "found": 3,
+    "exact": 3,
+    "value_total_usd": 5585.2,
+    "value_found_usd": 5585.2,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 9,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "submit_fmla_request",
+        "key": "FM-2",
+        "why": "FM-2 is intermittent bonding leave, two days a week to November 2027, which HR's bonding page says needs the company's agreement and Tallowfield does not agree to it",
+        "filed": false
+      },
+      {
+        "action": "submit_fmla_request",
+        "key": "FM-3",
+        "why": "FM-3 starts on 26 October 2026, 17 days from today, with no medical reason for an earlier start (C-2 shows no restriction before 16 November); the notice page asks for 30 days when the leave is foreseeable",
+        "filed": false
+      },
+      {
+        "action": "submit_fmla_request",
+        "key": "FM-4",
+        "why": "FM-4 asks for 24 weeks, 12 hers and 12 her partner's: he works for another employer (M-1) and each employee has his or her own 12 weeks (the bonding page); a partner's weeks are not hers",
+        "filed": false
+      },
+      {
+        "action": "submit_fmla_request",
+        "key": "FM-5",
+        "why": "FM-5 saves four bonding weeks for 3 January 2028, 13 months after the birth on 16 November 2026; bonding leave ends 12 months after the birth (the fmla and PFL pages)",
+        "filed": false
+      },
+      {
+        "action": "file_disability_claim",
+        "key": "DB-2",
+        "why": "DB-2 starts disability on 2 November 2026, as the parent guide says; the visit note C-2 shows no work restriction and no earlier certificate, and no disability is paid before the doctor certifies it",
+        "filed": false
+      },
+      {
+        "action": "file_disability_claim",
+        "key": "DB-3",
+        "why": "DB-3 extends disability to 16 May 2027, the 26-week limit; no certificate covers any day after 10 January 2027",
+        "filed": false
+      },
+      {
+        "action": "file_pfl_claim",
+        "key": "PF-1",
+        "why": "PF-1 starts Paid Family Leave on 16 November 2026, the day the disability starts: the two are not paid for the same day (the together page)",
+        "filed": false
+      },
+      {
+        "action": "file_pfl_claim",
+        "key": "PF-2",
+        "why": "PF-2 starts Paid Family Leave on 4 January 2027, six weeks after the delivery as the parent guide says, but the caesarean certificate runs to 10 January: seven days overlap the disability",
+        "filed": false
+      },
+      {
+        "action": "file_pfl_claim",
+        "key": "PF-4",
+        "why": "PF-4 starts Paid Family Leave on 6 December 2027, more than 12 months after the birth on 16 November 2026; bonding leave must be taken within 12 months of the birth (the pfl page)",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "submit_fmla_request",
+      "key": "FM-1",
+      "outcome": "correct",
+      "value_usd": 0.0,
+      "exact": true,
+      "why": "FM-1 is one block of 12 weeks from 16 November 2026 to 7 February 2027: the delivery is on that Monday (the certificate C-1), she qualifies under HR's fmla page (3 years 4 months, 2,010 hours, 140 employees), 38 days' notice from today is more than the 30 the notice page asks for, and it is one continuous block as the bonding page requires. The leave itself is unpaid; it weighs nothing"
+    },
+    {
+      "action": "file_disability_claim",
+      "key": "DB-1",
+      "outcome": "correct",
+      "value_usd": 1190.0,
+      "exact": true,
+      "why": "DB-1 is the disability claim for the birth: the doctor's certificate C-1 certifies disability from 16 November 2026 through 10 January 2027, eight weeks because of the caesarean; the 7-day wait takes 16 to 22 November, so 23 November to 10 January is 7 paid weeks at the 170.00 dollar maximum (50 percent of 1,640.00 is 820.00, above the cap): 1,190.00 dollars"
+    },
+    {
+      "action": "file_pfl_claim",
+      "key": "PF-3",
+      "outcome": "correct",
+      "value_usd": 4395.2,
+      "exact": true,
+      "why": "PF-3 is Paid Family Leave from Monday 11 January 2027, the day after the certificate C-1 ends on 10 January, for 4 weeks to 7 February 2027, within the 12 months of the birth and matching her FMLA leave: no gap and no overlap. Only the doctor's certificate shows 10 January (the caesarean's eight weeks). 4 weeks at 67 percent of 1,640.00, which is 1,098.80 and below the 1,228.53 maximum: 4,395.20 dollars"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I've read your account and all seven forms. I'm filing two of them, DB-1 and PF-3, and nothing has been filed yet. Both cards are waiting for your answer.\n\n**Disability: DB-1, 16 Nov 2026 to 10 Jan 2027 (8 weeks).** These are the dates on Dr. Okoye's certificate (C-1) for the caesarean. Your wage is $1,640 a week, so 50% would be $820. The $170 maximum applies, so you'd get $170 a week.\n\n**Paid Family Leave: PF-3, 11 Jan 2027 to 7 Feb 2027 (4 weeks).** It starts the day after the disability ends, so there is no gap and no overlap. The rate is 67% of $1,640, which is $1,098.80 a week and below the 2026 maximum of $1,228.53. The claim has to reach Shieldline within 30 days of 11 Jan, which is by 10 Feb 2027. DB-1 has to reach them by 16 Dec 2026.\n\nTogether that is 12 weeks, matching the leave request awaiting your answer (FM-1).\n\n**Left out (showing 5 of 5):**\n- **DB-2 (2–15 Nov):** The pa",
+  "trace": [
+    {
+      "portal": "Postwren",
+      "user": "I'm Noor Haddad. This is my mail: my partner's note, a parent guide, a note from HR and one from my doctor. Read every message. Don't do anything yet: I'll send you to my doctor, the state's leave site, my HR and my insurer.",
+      "continued": false,
+      "said": "I'll list the inbox first, then read each message. I won't act on anything yet.",
+      "said_chars": 79,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Four messages are in the inbox. I'm reading all of them now.",
+      "said_chars": 60,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "I've read all four messages. Nothing has been sent or filed.\n\n- **Dev (M-1):** He says you could ask HR for 24 weeks because you get 12 and he gets 12. That doesn't fit your own leave. His 12 weeks come from his own job and carrier, so they aren't yours to request, and I'm leaving them out. I'll check the state rules before relying on the 24 either way.\n- **Parent guide (M-2):** It was last revised in 2025, so I won't rely on it.",
+      "said_chars": 1243,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Larkhollow Women's Health",
+      "user": "This is my doctor's portal, Larkhollow. Read my certificate and my visit note, every page. Don't do anything yet.",
+      "continued": false,
+      "said": "I'll read the certificates on the Larkhollow chart now. I won't file or send anything.",
+      "said_chars": 86,
+      "reads": [
+        "read_certificates"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Larkhollow Women's Health",
+      "user": "",
+      "continued": true,
+      "said": "Both pages are read, and I've sent and filed nothing.\n\n- **C-1, disability certificate (5 Oct, Dr. Okoye):** It covers the scheduled caesarean on Monday 16 November 2026. Disability is certified from 16 November 2026 through 10 January 2027, which is eight weeks because the delivery is by caesarean. The earliest return to work is 11 January 2027.\n- **C-2, visit note (5 Oct, 36 weeks):** There were no complications and no work restriction before the delivery.",
+      "said_chars": 1327,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Familyleave State",
+      "user": "This is Familyleave State, the state's rules for paid leave. Read every topic. Don't do anything yet.",
+      "continued": false,
+      "said": "I'll read all six topics on the state site now and won't file or send anything.",
+      "said_chars": 79,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Familyleave State",
+      "user": "",
+      "continued": true,
+      "said": "All six topics are read, and I've sent and filed nothing. The state's rules back the plan: disability pay on the doctor's dates, with Paid Family Leave (PFL) starting the day after they end.\n\n- **Disability (DBL):** For a caesarean the doctor certifies 8 weeks. Pay is 50% of your average weekly wage, up to $170 a week, after a 7-day wait. Nothing is paid before the doctor certifies it. The claim must reach the carrier within 30 days after the disability begins.",
+      "said_chars": 2384,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Crewmarrow HR",
+      "user": "This is my HR, Crewmarrow. Read its policy and my draft leave requests. Send HR the one request that is right for this birth, and leave out the ones that are not. Then tell me what you sent and why.",
+      "continued": false,
+      "said": "I'll read HR's policy and your draft requests first. Nothing is sent yet.",
+      "said_chars": 73,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_requests"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Crewmarrow HR",
+      "user": "",
+      "continued": true,
+      "said": "FM-1 is the only request that fits this birth, so I'm filing it with HR. The card is waiting for your answer, and nothing has gone to HR yet.\n\n\n**Why FM-1:**\n- **Dates:** 16 Nov 2026 to 7 Feb 2027 is exactly 12 weeks.\n- **Notice:** It gives 38 days, and HR requires 30.\n- **Eligibility:** You qualify on all three FMLA tests: 3 years and 4 months of service, 2,010 hours and a 140-employee plant.",
+      "said_chars": 1839,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_fmla_request",
+          "key": "FM-1",
+          "outcome": "correct",
+          "value_usd": 0.0
+        }
+      ]
+    },
+    {
+      "portal": "Shieldline",
+      "user": "This is Shieldline, my insurance carrier. Read my account and my claim forms. File my disability claim and my Paid Family Leave claim so that the weeks follow one another with no gap and no overlap, and leave the other forms alone. Then tel",
+      "continued": false,
+      "said": "I'll read your Shieldline account and forms now. Nothing is filed yet.",
+      "said_chars": 70,
+      "reads": [
+        "read_account",
+        "read_forms"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Shieldline",
+      "user": "",
+      "continued": true,
+      "said": "I've read your account and all seven forms. I'm filing two of them, DB-1 and PF-3, and nothing has been filed yet. Both cards are waiting for your answer.\n\n**Disability: DB-1, 16 Nov 2026 to 10 Jan 2027 (8 weeks).** These are the dates on Dr. Okoye's certificate (C-1) for the caesarean. Your wage is $1,640 a week, so 50% would be $820. The $170 maximum applies, so you'd get $170 a week.",
+      "said_chars": 1918,
+      "reads": [],
+      "cards": [
+        {
+          "action": "file_disability_claim",
+          "key": "DB-1",
+          "outcome": "correct",
+          "value_usd": 1190.0
+        },
+        {
+          "action": "file_pfl_claim",
+          "key": "PF-3",
+          "outcome": "correct",
+          "value_usd": 4395.2
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "parental-leave-claims",
+  "captured_at": "2026-10-11T02:37:02Z",
+  "bench_run_at": "2026-10-11T02:34:26Z",
+  "narration": {
+    "text": "A mother-to-be's leave for a caesarean birth is lined up: twelve weeks of job-protected leave, eight weeks of disability pay on the doctor's certificate and four of paid family leave from the day after it ends, while an early start, a split leave, a partner's weeks, overlaps and a claim past the year are left out, across five portals. This is a chore for a project coordinator at a print works in Rochester, New York, due in November with a planned caesarean, who has read a parent guide and a note from her partner. On the bench, she found 3 of 3 eligible items, worth 5,585 dollars and 20 cents of the 5,585 dollars and 20 cents there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 83 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.182,
+    "sha256": "9f3b95bc531f23413449f462409fa199ba56c5554858286d854c8f4fa6a97c64"
+  },
+  "video": {
+    "path": "evidence/parental-leave-claims/evidence.mp4",
+    "duration_s": 62.2,
+    "bytes": 2892279,
+    "sha256": "28631e18028a0a0f876da047fe253e621481305da2a9476b211b65912d952664"
+  },
+  "thumbnail": {
+    "path": "playbooks/parental-leave-claims/thumb.jpg",
+    "bytes": 78294,
+    "sha256": "6df8e8660bc19ba65f1c6f89063f7e9b1d66bd4e7497edd412bf102cb00888e9"
+  }
+}

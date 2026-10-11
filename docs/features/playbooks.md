@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The eighty-one playbooks (latest runs, Claude Sonnet)
+## The eighty-two playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -124,9 +124,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A hygienist's class action claims filed from her own records: an air fryer, bulbs only her card shows, two kettles, earbuds by a sworn claim her card supports, pet food and a topper due tomorrow, while a late claim, an exclusion, a repeat, a purchase before the class period, resale, a Toronto purchase, one she cannot show and a fee scam are left alone | home | 5 | exceeds: 6 of 6, $158.00 of $158.00 (what she gets back), 8 of 8 traps, 0 false, 1.8 min, $1.03 |
 | A tester's unclaimed property claimed free from two states under both her names: a refund under her married name at an old address, two checks and a dividend under her own, a premium refund and a policy a finder wanted a quarter of, while three namesakes, an ex-husband's, a company's, a paid one and her dead mother's are left alone | home | 5 | exceeds: 6 of 6, $1,016.43 of $1,016.43 (what she gets back), 8 of 8 traps, 0 false, 2.4 min, $1.23 |
 | A planner's flexible spending account claimed before its run-out ends: a crown's and physical therapy's share on the EOBs, two pharmacy items, a day camp and after-school care, and a card swipe answered with its EOB, while whitening, a gym, vitamins, a premium, an overnight camp, a teen's care and a child of 13 are left out | home | 5 | exceeds (run 2 after a world fix; run 1 was short, 1 of 7, 6 false): 7 of 7, $966.47 of $966.47 (what she gets back), 15 of 15 traps, 0 false, 1.5 min, $0.81 |
+| A mother-to-be's leave for a caesarean birth lined up: a 12-week leave request, eight weeks of disability pay on the doctor's certificate and four of paid family leave from the day after it ends, while an early start, a split leave, a partner's weeks, overlapping weeks and a claim past the year are left out | home | 5 | exceeds: 3 of 3, $5,585.20 of $5,585.20 (what she gets in benefits), 9 of 9 traps, 0 false, 1.8 min, $1.00 |
 
-Across the latest runs: $1,121,110 of $1,130,537 found, 826 of 826 traps walked past, no false claim,
-222 minutes of her time against about 316 hours by hand, $136.81 of model time. 120 runs are recorded
+Across the latest runs: $1,126,695 of $1,136,122 found, 835 of 835 traps walked past, no false claim,
+224 minutes of her time against about 319 hours by hand, $137.81 of model time. 121 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

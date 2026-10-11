@@ -1,0 +1,473 @@
+{
+  "today": "2026-10-09",
+  "phases": [
+    {
+      "app": "postwren",
+      "message": "I'm Noor Haddad. This is my mail: my partner's note, a parent guide, a note from HR and one from my doctor. Read every message. Don't do anything yet: I'll send you to my doctor, the state's leave site, my HR and my insurer.",
+      "nudges": 1
+    },
+    {
+      "app": "larkhollow",
+      "message": "This is my doctor's portal, Larkhollow. Read my certificate and my visit note, every page. Don't do anything yet.",
+      "nudges": 1
+    },
+    {
+      "app": "familyleave",
+      "message": "This is Familyleave State, the state's rules for paid leave. Read every topic. Don't do anything yet.",
+      "nudges": 2
+    },
+    {
+      "app": "crewmarrow",
+      "message": "This is my HR, Crewmarrow. Read its policy and my draft leave requests. Send HR the one request that is right for this birth, and leave out the ones that are not. Then tell me what you sent and why.",
+      "nudges": 2
+    },
+    {
+      "app": "shieldline",
+      "message": "This is Shieldline, my insurance carrier. Read my account and my claim forms. File my disability claim and my Paid Family Leave claim so that the weeks follow one another with no gap and no overlap, and leave the other forms alone. Then tell me what you filed, what you left out and why.",
+      "nudges": 2
+    }
+  ],
+  "apps": [
+    {
+      "app_id": "postwren",
+      "name": "Postwren",
+      "origin": "https://mail.postwren.example",
+      "path": "/noor/inbox",
+      "view": {
+        "view": "Postwren: Noor Haddad's inbox (invented)",
+        "signed_in": "Noor Haddad",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "list_messages",
+          "kind": "READ",
+          "description": "The messages in the inbox: id, from, subject and date.",
+          "params": {},
+          "returns": {
+            "table": "msgs",
+            "fields": [
+              "msg_id",
+              "from",
+              "subject",
+              "date"
+            ]
+          }
+        },
+        {
+          "name": "read_message",
+          "kind": "READ",
+          "description": "One message in full, by id (M-n).",
+          "params": {
+            "msg_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "msgs",
+            "match": {
+              "msg_id": "msg_id"
+            },
+            "require": [
+              "msg_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Postwren",
+        "my mail",
+        "the mail",
+        "the inbox"
+      ]
+    },
+    {
+      "app_id": "larkhollow",
+      "name": "Larkhollow Women's Health",
+      "origin": "https://patient.larkhollow.example",
+      "path": "/noor/chart",
+      "view": {
+        "view": "Larkhollow Women's Health: Noor Haddad's chart (invented)",
+        "signed_in": "Noor Haddad",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_certificates",
+          "kind": "READ",
+          "description": "Her doctor's documents: id, date, kind and text.",
+          "params": {},
+          "returns": {
+            "table": "cert"
+          }
+        }
+      ],
+      "aliases": [
+        "Larkhollow",
+        "Larkhollow Women's Health",
+        "my doctor",
+        "my chart"
+      ]
+    },
+    {
+      "app_id": "familyleave",
+      "name": "Familyleave State",
+      "origin": "https://rules.familyleave.example",
+      "path": "/ny/paid-leave",
+      "view": {
+        "view": "Familyleave State: New York paid leave rules (invented)",
+        "signed_in": "Noor Haddad",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "The state's rules by topic: index, pfl, disability, together, claims or figures.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "state",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        }
+      ],
+      "aliases": [
+        "Familyleave",
+        "Familyleave State",
+        "the state site"
+      ]
+    },
+    {
+      "app_id": "crewmarrow",
+      "name": "Crewmarrow HR",
+      "origin": "https://hr.crewmarrow.example",
+      "path": "/noor/leave",
+      "view": {
+        "view": "Crewmarrow HR: Noor Haddad's leave (invented)",
+        "signed_in": "Noor Haddad",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_rules",
+          "kind": "READ",
+          "description": "Her HR's policy by topic: index, fmla, notice, bonding or pay.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "hr",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "read_requests",
+          "kind": "READ",
+          "description": "Her draft leave requests: id, what, first day, last day, weeks, days of notice and a note.",
+          "params": {},
+          "returns": {
+            "table": "reqs"
+          }
+        },
+        {
+          "name": "submit_fmla_request",
+          "kind": "REACHES_A_PERSON",
+          "description": "Send HR one leave request by its id (request: the FM- id of the draft on read_requests) with why it is right (reason). Noor signs.",
+          "params": {
+            "request": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Leave request {request} sent to Crewmarrow HR."
+        }
+      ],
+      "aliases": [
+        "Crewmarrow",
+        "Crewmarrow HR",
+        "my HR",
+        "my employer's HR"
+      ]
+    },
+    {
+      "app_id": "shieldline",
+      "name": "Shieldline",
+      "origin": "https://claims.shieldline.example",
+      "path": "/noor/claims",
+      "view": {
+        "view": "Shieldline: Noor Haddad's claims (invented)",
+        "signed_in": "Noor Haddad",
+        "today": "Friday 9 October 2026"
+      },
+      "tools": [
+        {
+          "name": "read_account",
+          "kind": "READ",
+          "description": "Her policy, average weekly wage and benefit rates.",
+          "params": {},
+          "returns": {
+            "table": "acct"
+          }
+        },
+        {
+          "name": "read_forms",
+          "kind": "READ",
+          "description": "Her prepared claim forms: id, form, first day, last day and a note.",
+          "params": {},
+          "returns": {
+            "table": "forms"
+          }
+        },
+        {
+          "name": "file_disability_claim",
+          "kind": "REACHES_A_PERSON",
+          "description": "File one disability claim by its id (claim: the DB- id of the form on read_forms) with the dates it covers (reason). Noor signs.",
+          "params": {
+            "claim": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Disability claim {claim} filed with Shieldline."
+        },
+        {
+          "name": "file_pfl_claim",
+          "kind": "REACHES_A_PERSON",
+          "description": "File one Paid Family Leave claim by its id (claim: the PF- id of the form on read_forms) with the dates it covers (reason). Noor signs.",
+          "params": {
+            "claim": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "says": "Paid Family Leave claim {claim} filed with Shieldline."
+        }
+      ],
+      "aliases": [
+        "Shieldline",
+        "my insurer",
+        "the carrier"
+      ]
+    }
+  ],
+  "tables": {
+    "msgs": [
+      {
+        "msg_id": "M-1",
+        "from": "Dev Haddad",
+        "subject": "Our leave, the way I read the guide",
+        "date": "2026-10-06",
+        "text": "Tuesday 6 October 2026. Noor, I read the parent guide again. It says we get 24 weeks together: 12 for you and 12 for me, so you could ask HR for 24 weeks and I would just come in. Also my own job (a dental lab, not yours) gives me 12 weeks, and I will claim mine there, with its carrier. Ask HR for the 24. Dev."
+      },
+      {
+        "msg_id": "M-2",
+        "from": "Bumpwise Parent Guide",
+        "subject": "New York paid leave after a baby: the short guide",
+        "date": "2026-09-28",
+        "text": "Monday 28 September 2026. Paid Family Leave pays up to 12 weeks at 67 percent of your pay, to a maximum of 1,177.32 dollars a week. Disability pays about 6 weeks after any birth, and can start four weeks before your due date. Some parents start family leave on the day the baby arrives so the checks add up; others start it in week 7, after the six weeks. Take your bonding weeks any time in the first two years. Bumpwise. (This guide was last revised in 2025.)"
+      },
+      {
+        "msg_id": "M-3",
+        "from": "Crewmarrow HR",
+        "subject": "Leave requests: give us 30 days",
+        "date": "2026-10-01",
+        "text": "Thursday 1 October 2026. Tallowfield Print Works. A leave request for a birth needs 30 days' notice when the date is known. Send yours through Crewmarrow HR; your drafts are in your requests list. HR."
+      },
+      {
+        "msg_id": "M-4",
+        "from": "Larkhollow Women's Health",
+        "subject": "Your certificate is in your chart",
+        "date": "2026-10-05",
+        "text": "Monday 5 October 2026. Noor Haddad, your disability certificate for the delivery on 16 November is in your chart as C-1, and today's visit note is C-2. Larkhollow Women's Health."
+      }
+    ],
+    "cert": [
+      {
+        "cid": "C-1",
+        "date": "2026-10-05",
+        "doc": "Certificate of disability for the carrier (Part B of the disability claim)",
+        "text": "Larkhollow Women's Health (invented). Patient Noor Haddad. Scheduled caesarean delivery on Monday 16 November 2026. Disability is certified from 16 November 2026 through 10 January 2027, eight weeks, because the delivery is by caesarean. She may return to work on 11 January 2027 at the earliest. Dr. Imani Okoye. Today is Friday 9 October 2026."
+      },
+      {
+        "cid": "C-2",
+        "date": "2026-10-05",
+        "doc": "Visit note",
+        "text": "Larkhollow Women's Health (invented). Visit of 5 October 2026, 36 weeks. No complications and no work restriction before the delivery: Noor Haddad is not disabled before 16 November 2026 and no earlier certificate was written. Due date Friday 20 November 2026; the delivery is planned three working days before it. Dr. Imani Okoye. Today is Friday 9 October 2026."
+      }
+    ],
+    "state": [
+      {
+        "topic": "index",
+        "text": "Familyleave State (invented), a state site of rules and forms for paid leave in New York. It pays nothing: benefits are paid by the employer's insurance carrier, and each employee files with that carrier. Topics: pfl, disability, together, claims, figures. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "pfl",
+        "text": "Paid Family Leave (PFL): up to 12 weeks in a 52-week period to bond with a new child, paid at 67 percent of the average weekly wage up to a weekly maximum set each year. Bonding leave must be taken within 12 months of the birth. An employee gives 30 days' notice when the leave is foreseeable. The claim must reach the carrier within 30 days after the first day of leave. PFL is job protected and health insurance continues. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "disability",
+        "text": "Disability benefits (DBL): for a birth, a doctor or midwife certifies the disability and its dates, usually 6 weeks after a vaginal birth and 8 after a caesarean. The benefit is 50 percent of the average weekly wage, up to 170 dollars a week. A 7-day waiting period applies, so benefits begin on the eighth day. Up to 26 weeks in any 52 weeks. The claim must reach the carrier within 30 days after the disability begins. No disability is paid before the doctor certifies it. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "together",
+        "text": "DBL and PFL are not paid for the same day, and together they are paid for no more than 26 weeks in any 52. A PFL claim for a birth that starts the day after the certified disability ends leaves no gap and no overlap. FMLA leave runs at the same time as both. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "claims",
+        "text": "The employee files each claim with the employer's insurance carrier, with the forms the carrier shows. The doctor's certificate is the proof of the disability's dates; the employer's leave request is separate and goes to the employer. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "figures",
+        "text": "For 2026 the PFL maximum weekly benefit is 1,228.53 dollars, 67 percent of the 2026 state average weekly wage of 1,833.63 dollars; 12 weeks at the maximum is 14,742.36 dollars. The benefit rate in effect on the first day of leave applies. Employee contribution 0.432 percent of gross wages, capped at 411.91 dollars a year. A guide that gives another maximum is for another year. Today is Friday 9 October 2026."
+      }
+    ],
+    "hr": [
+      {
+        "topic": "index",
+        "text": "Crewmarrow HR (invented), the HR site of Tallowfield Print Works. Noor Haddad, project coordinator, hired 5 June 2023: 3 years and 4 months, 2,010 hours worked in the last 12 months, weekly pay 1,640.00 dollars, 11 days of paid time off. The Rochester plant has 140 employees. Topics: fmla, notice, bonding, pay. Her draft leave requests are in read_requests. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "fmla",
+        "text": "Tallowfield follows the Family and Medical Leave Act. An employee qualifies after 12 months of employment, 1,250 hours in the last 12 months and a worksite with 50 or more employees within 75 miles: Noor qualifies on all three. Leave is 12 workweeks in the company's 12-month period, counted from the first day of leave. Leave for a birth and the newborn counts, and so does the mother's own incapacity after the birth. The entitlement to bond with the child ends 12 months after the birth. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "notice",
+        "text": "Foreseeable leave needs 30 days' notice. A request that gives fewer days than that may be put off until 30 days have passed, unless it was not practicable to give them. HR sends a written designation notice within 5 business days of a complete request. A request names its first day and its last day. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "bonding",
+        "text": "Leave to bond with a newborn is taken in one block at Tallowfield. Intermittent or reduced-schedule bonding leave needs the company's agreement, and Tallowfield does not agree to it. Leave for the mother's own incapacity after the delivery follows the doctor's certificate. Every week of both counts against the same 12 weeks, and each employee has his or her own 12: a partner's weeks at another employer are not hers. Today is Friday 9 October 2026."
+      },
+      {
+        "topic": "pay",
+        "text": "The company's insurance carrier, Shieldline, pays disability benefits and Paid Family Leave; Tallowfield pays neither. FMLA leave runs at the same time as both, so the weeks count against the 12 whether or not a benefit is paid. Tallowfield does not require an employee to use accrued paid time off during leave, and does not top up the carrier's benefit. Today is Friday 9 October 2026."
+      }
+    ],
+    "reqs": [
+      {
+        "rid": "FM-1",
+        "what": "One block of 12 weeks for the delivery, her recovery and bonding",
+        "first_day": "2026-11-16",
+        "last_day": "2027-02-07",
+        "weeks": 12,
+        "notice_days": 38,
+        "note": "continuous leave, notice given today"
+      },
+      {
+        "rid": "FM-2",
+        "what": "Bonding leave two days a week, after the first block",
+        "first_day": "2027-02-08",
+        "last_day": "2027-11-14",
+        "weeks": 12,
+        "notice_days": 38,
+        "note": "intermittent bonding leave; the company has not agreed"
+      },
+      {
+        "rid": "FM-3",
+        "what": "One block of 12 weeks that starts early, when she stops working",
+        "first_day": "2026-10-26",
+        "last_day": "2027-01-17",
+        "weeks": 12,
+        "notice_days": 17,
+        "note": "starts 17 days from today; no medical reason for an earlier start"
+      },
+      {
+        "rid": "FM-4",
+        "what": "24 weeks for the household, 12 hers and 12 Dev's",
+        "first_day": "2026-11-16",
+        "last_day": "2027-05-02",
+        "weeks": 24,
+        "notice_days": 38,
+        "note": "Dev works for another employer and has his own 12 weeks there"
+      },
+      {
+        "rid": "FM-5",
+        "what": "8 weeks now for her recovery and 4 weeks of bonding saved for January 2028",
+        "first_day": "2026-11-16",
+        "last_day": "2028-01-30",
+        "weeks": 12,
+        "notice_days": 38,
+        "note": "the bonding weeks would start 3 January 2028, 13 months after the birth"
+      }
+    ],
+    "acct": [
+      {
+        "item": "policy",
+        "text": "Shieldline (invented), the insurance carrier of Tallowfield Print Works for disability benefits and Paid Family Leave. Noor Haddad's average weekly wage over her last 8 weeks worked: 1,640.00 dollars. Disability rate: 50 percent is 820.00, so the 170.00 dollar maximum applies. PFL rate: 67 percent is 1,098.80 dollars a week, below the 2026 maximum of 1,228.53. Her claims are prepared in read_forms. Today is Friday 9 October 2026."
+      }
+    ],
+    "forms": [
+      {
+        "fid": "DB-1",
+        "form": "Disability benefits for the birth (DB-450)",
+        "from": "2026-11-16",
+        "to": "dates on the doctor's certificate",
+        "note": "Part B is the doctor's certificate"
+      },
+      {
+        "fid": "DB-2",
+        "form": "Disability benefits starting early",
+        "from": "2026-11-02",
+        "to": "2026-11-15",
+        "note": "the parent guide says disability starts four weeks before the due date"
+      },
+      {
+        "fid": "DB-3",
+        "form": "Disability benefits extended to the 26-week limit",
+        "from": "2026-11-16",
+        "to": "2027-05-16",
+        "note": "no certificate covers the weeks after the one in the chart"
+      },
+      {
+        "fid": "PF-1",
+        "form": "Paid Family Leave, bonding, 12 weeks",
+        "from": "2026-11-16",
+        "to": "2027-02-07",
+        "note": "starts on the day of the delivery"
+      },
+      {
+        "fid": "PF-2",
+        "form": "Paid Family Leave, bonding, 5 weeks",
+        "from": "2027-01-04",
+        "to": "2027-02-07",
+        "note": "starts six weeks after the delivery, as the parent guide says"
+      },
+      {
+        "fid": "PF-3",
+        "form": "Paid Family Leave, bonding, 4 weeks",
+        "from": "2027-01-11",
+        "to": "2027-02-07",
+        "note": "starts on a Monday, four weeks before her FMLA leave ends"
+      },
+      {
+        "fid": "PF-4",
+        "form": "Paid Family Leave, bonding, 4 weeks",
+        "from": "2027-12-06",
+        "to": "2027-12-31",
+        "note": "bonding weeks saved for the end of next year"
+      }
+    ]
+  }
+}
