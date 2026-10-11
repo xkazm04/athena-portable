@@ -213,6 +213,26 @@ def test_drop_origin_returns_what_it_removed_and_refuses_a_name_that_is_not_an_o
         catalog.drop_origin("invoices")
 
 
+def test_put_back_returns_an_origin_to_what_held_saw_including_nothing() -> None:
+    """The undo the manifest route runs when a step after its merge raises (robustness-1)."""
+    catalog = build_catalog(services(), manifest())
+    before = catalog.held("host:invoices")
+    absent = catalog.held("host:support")
+    assert before is not None and absent is None
+
+    catalog.merge_manifest(
+        manifest(tools=[{"name": "archive", "reversible": True, "side_effects": "none"}])
+    )
+    catalog.merge_manifest(manifest("support", page_origin="https://support.example"))
+    catalog.put_back("host:invoices", before)
+    catalog.put_back("host:support", absent)
+
+    assert catalog.held("host:invoices") == before
+    assert "host:support" not in catalog.origins
+    with pytest.raises(CatalogError):
+        catalog.held("core")
+
+
 # --- the generated capability block ---------------------------------------------------------------
 
 

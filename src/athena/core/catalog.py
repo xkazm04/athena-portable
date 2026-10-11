@@ -366,6 +366,30 @@ class Catalog:
         registry = self.host if parsed.kind == "host" else self.connector
         return len(registry.pop(str(parsed), {}))
 
+    def held(self, origin: str) -> dict[str, ToolEntry] | None:
+        """What one origin holds now, or ``None`` when it holds nothing: what :meth:`put_back`
+        takes, for a caller whose act after a merge can still fail."""
+        registry, key = self._registry_of(origin)
+        entries = registry.get(key)
+        return None if entries is None else dict(entries)
+
+    def put_back(self, origin: str, entries: dict[str, ToolEntry] | None) -> None:
+        """Return one origin to what :meth:`held` saw, in one assignment or one ``pop``."""
+        registry, key = self._registry_of(origin)
+        if entries is None:
+            registry.pop(key, None)
+        else:
+            registry[key] = dict(entries)
+
+    def _registry_of(self, origin: str) -> tuple[dict[str, dict[str, ToolEntry]], str]:
+        try:
+            parsed = parse_origin(origin)
+        except ValueError as exc:
+            raise CatalogError(str(exc)) from None
+        if parsed.kind == "core":
+            raise CatalogError("core tools are Athena's own and are not held by origin")
+        return (self.host if parsed.kind == "host" else self.connector), str(parsed)
+
     # -- lookup ----------------------------------------------------------------------------------
 
     def get(self, name: str) -> ToolEntry:

@@ -412,6 +412,12 @@ def manifest(daemon: AthenaDaemon, request: Request) -> Reply:
     (policy rule 3), and the session for that origin is opened or refreshed. A manifest that fails
     any check changes none of the three, so a refused manifest leaves the origin exactly the tools
     it already had — a half-merged origin is a gate with a hole in it.
+
+    This door is a page's. A connector registers in process (``Catalog.merge_connector``), bound
+    to its port; a body that says ``origin_kind: connector`` is refused here, or it would replace
+    a registered connector's entries with executor-less ones. Every precondition of the pin and
+    the session is checked before the merge, and if either still raises after it, the origin and
+    the pin are put back before the error leaves.
     """
     try:
         parsed = HostManifest.from_dict(dict(request.body))
@@ -419,10 +425,21 @@ def manifest(daemon: AthenaDaemon, request: Request) -> Reply:
         return error(400, "manifest_invalid", f"malformed manifest: {type(exc).__name__}: {exc}")
 
     problems = parsed.validate()
-    if parsed.origin_kind == "host" and not parsed.page_origin.strip():
+    if parsed.origin_kind != "host":
+        problems = [
+            *problems,
+            f"origin_kind must be 'host' here, got {parsed.origin_kind!r}: a connector registers "
+            "in process, never through POST /manifest",
+        ]
+    if not parsed.page_origin.strip():
         # The contract allows an absent ``page_origin`` because a connector has none. A page does
         # not: it is the session key and the thing rule 3 pins to, so the daemon requires it.
         problems = [*problems, "page_origin is required: it is the session this manifest opens"]
+    if parsed.app_id.strip():
+        try:
+            ids.conversation_for_app(parsed.app_id)
+        except ValueError as exc:
+            problems = [*problems, f"app_id cannot key a session: {exc}"]
     if problems:
         return 400, {
             "ok": False,
@@ -433,6 +450,8 @@ def manifest(daemon: AthenaDaemon, request: Request) -> Reply:
         }
 
     with daemon.writing():
+        held = daemon.catalog.held(parsed.registry_origin)
+        policy = daemon.gate.policy
         try:
             names = daemon.catalog.merge_manifest(parsed)
         except CatalogError as exc:
@@ -443,8 +462,15 @@ def manifest(daemon: AthenaDaemon, request: Request) -> Reply:
                 "app_id": parsed.app_id,
                 "problems": [str(exc)],
             }
-        daemon.pin(parsed.app_id, parsed.page_origin)
-        session = daemon.sessions.touch(parsed.page_origin, parsed.app_id, tools=len(names))
+        try:
+            daemon.pin(parsed.app_id, parsed.page_origin)
+            session = daemon.sessions.touch(parsed.page_origin, parsed.app_id, tools=len(names))
+        except BaseException:
+            # The checks above should leave nothing for these two to refuse. If one raises anyway,
+            # the merge is undone before the error answers, so even a 500 changes none of the three.
+            daemon.gate.policy = policy
+            daemon.catalog.put_back(parsed.registry_origin, held)
+            raise
 
     tools = [
         {
