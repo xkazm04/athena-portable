@@ -19,7 +19,7 @@ from typing import Any
 import pytest
 
 from athena.channels.voice import gateway as gateway_module
-from athena.channels.voice.backends import ScriptedBackend
+from athena.channels.voice.backends import ComposedBackend, OpenAIBackend, ScriptedBackend
 from athena.channels.voice.gateway import (
     MAX_PENDING_TURNS,
     MAX_SESSION_CARDS,
@@ -1363,3 +1363,274 @@ def test_a_turn_that_raises_is_logged_and_the_next_utterance_still_runs(
     assert len(records) == 1
     assert records[0].exc_info is not None
     assert records[0].getMessage() == "voice: a turn failed"
+
+
+# -- a metered speech provider writes its own rows (ADR 0083) ----------------------------------
+
+#: Enough 640-byte frames to pass the buffered transcriber's tenth of a second.
+SENT_CHUNKS = 6
+
+
+def _metered(
+    voiced: Live,
+    heard: list[str],
+    *,
+    chunks_per_line: int = 2,
+    chunk_delay_s: float = 0.0,
+    install: bool = True,
+) -> OpenAIBackend:
+    """The provider backend with its two requests replaced: nothing reaches a network, and
+    everything the gateway reads off it — the meters, the buffered transcriber — is the real one."""
+    provider = OpenAIBackend(api_key="sk-test-never-sent", base_url="http://127.0.0.1:9/never")
+
+    def transcribe(pcm: bytes) -> str:
+        return heard.pop(0)
+
+    def synthesize(text: str) -> Iterator[bytes]:
+        for _ in range(chunks_per_line):
+            if chunk_delay_s:
+                time.sleep(chunk_delay_s)
+            yield bytes(640)
+
+    provider.transcribe = transcribe  # type: ignore[method-assign]
+    provider.synthesize = synthesize  # type: ignore[method-assign]
+    if install:
+        _slot(voiced).swap(provider)
+    return provider
+
+
+def _slot(voiced: Live) -> VoiceGateway:
+    gateway = voiced.daemon.sockets.get(VOICE_PATH)
+    assert isinstance(gateway, VoiceGateway)
+    return gateway
+
+
+def _page_conversation(voiced: Live) -> str:
+    session = voiced.daemon.sessions.get(PAGE_ORIGIN)
+    assert session is not None
+    return session.conversation_id
+
+
+def test_a_metered_utterance_and_its_spoken_line_are_three_ledger_rows(
+    voiced: Live, client: VoiceClient
+) -> None:
+    voiced.register()
+    voiced.script(claude_round("TTS: Two are late.\nTwo invoices are over thirty days."))
+    provider = _metered(voiced, ["what is overdue"])
+
+    client.utter(chunks=SENT_CHUNKS)
+    assert client.until("voice.stopped")["reason"] == "done"
+
+    # A speech row sends no event of its own: the socket hears what it always heard.
+    assert client.kinds() == [
+        "voice.transcript",
+        "text.delta",
+        "turn.summary",
+        "turn.finished",
+        "voice.speaking",
+        "voice.stopped",
+    ]
+    rows = voiced.daemon.ledger.recent(10).rows
+    assert len(rows) == 3
+    hearing, turn, speaking = reversed(rows)
+    assert turn.engine != "openai"
+    assert (turn.surface, turn.trigger, turn.origin) == ("voice", "voice", "host:invoices")
+    assert (hearing.engine, hearing.model) == ("openai", provider.stt_model)
+    assert (speaking.engine, speaking.model) == ("openai", provider.tts_model)
+    for row in (hearing, speaking):
+        assert (row.surface, row.trigger) == ("voice", "voice")
+        assert (row.conversation, row.origin) == (turn.conversation, turn.origin)
+        assert (row.rounds, row.input_tokens, row.output_tokens) == (1, 0, 0)
+        assert (row.cost_usd, row.cost_estimated) == (None, False)
+        assert (row.is_error, row.error_reason) == (False, None)
+        assert row.ms >= 0
+    assert hearing.turn_id is None
+    assert turn.turn_id is not None
+    assert speaking.turn_id == turn.turn_id
+    assert len(voiced.transport.requests) == 1
+
+
+def test_a_transcription_the_provider_refuses_is_one_error_row_and_the_client_hears_the_same(
+    voiced: Live, client: VoiceClient
+) -> None:
+    voiced.register()
+    provider = _metered(voiced, [])
+
+    def refusing(pcm: bytes) -> str:
+        raise gateway_module.VoiceBackendError("transcription refused with 500")
+
+    provider.transcribe = refusing  # type: ignore[method-assign]
+    client.utter(chunks=SENT_CHUNKS)
+    refused = client.until("turn.error")
+    assert (refused["reason"], refused["detail"]) == (
+        "engine_error",
+        "transcription: transcription refused with 500",
+    )
+    _settle()
+    assert client.kinds() == ["turn.error"]
+
+    rows = voiced.daemon.ledger.recent(10).rows
+    assert len(rows) == 1
+    row = rows[0]
+    assert (row.engine, row.model, row.surface, row.trigger) == (
+        "openai",
+        provider.stt_model,
+        "voice",
+        "voice",
+    )
+    assert (row.is_error, row.error_reason) == (True, "engine_error")
+    assert (row.conversation, row.origin) == (_page_conversation(voiced), "host:invoices")
+    assert (row.cost_usd, row.turn_id) == (None, None)
+    assert voiced.transport.requests == []
+
+
+def test_a_synthesis_the_provider_refuses_is_one_error_row_and_the_line_still_stops(
+    voiced: Live, client: VoiceClient
+) -> None:
+    voiced.register()
+    voiced.script(claude_round("TTS: Hello.\nHello."))
+    provider = _metered(voiced, [])
+
+    def refusing(text: str) -> Iterator[bytes]:
+        raise gateway_module.VoiceBackendError("synthesis refused with 429")
+        yield b""  # a generator, as the provider's is: the request goes on the first pull
+
+    provider.synthesize = refusing  # type: ignore[method-assign]
+    client.say("hi")
+    assert client.until("voice.stopped")["reason"] == "error"
+
+    rows = voiced.daemon.ledger.recent(10).rows
+    assert len(rows) == 2
+    turn, speaking = reversed(rows)
+    assert (speaking.engine, speaking.model) == ("openai", provider.tts_model)
+    assert (speaking.is_error, speaking.error_reason) == (True, "engine_error")
+    assert (speaking.conversation, speaking.origin, speaking.turn_id) == (
+        turn.conversation,
+        turn.origin,
+        turn.turn_id,
+    )
+
+
+def test_a_metered_line_cut_off_by_barge_in_is_one_row_that_is_not_an_error(
+    voiced: Live, client: VoiceClient
+) -> None:
+    voiced.register()
+    voiced.script(claude_round("TTS: Here is a very long answer about every invoice.\nLong."))
+    provider = _metered(voiced, [], chunks_per_line=40, chunk_delay_s=0.05)
+
+    client.say("what is overdue")
+    client.until("voice.speaking", generation=1)
+    client.say("stop")
+    assert client.until("voice.stopped", generation=1)["reason"] == "barge_in"
+
+    rows = voiced.daemon.ledger.recent(10).rows
+    assert len(rows) == 2
+    turn, speaking = reversed(rows)
+    assert (speaking.engine, speaking.model) == ("openai", provider.tts_model)
+    assert (speaking.is_error, speaking.error_reason) == (False, None)
+    assert speaking.turn_id == turn.turn_id
+    assert 0 <= speaking.ms < 40 * 50  # up to its close, not the whole line
+
+
+def test_an_utterance_too_short_to_send_writes_no_row(voiced: Live, client: VoiceClient) -> None:
+    voiced.register()
+    heard = ["never sent"]
+    _metered(voiced, heard)
+
+    client.utter(chunks=1)
+    assert client.until("voice.transcript")["text"] == ""
+    _settle()
+
+    assert heard == ["never sent"]
+    assert voiced.daemon.ledger.recent(10).rows == ()
+
+
+def test_a_scripted_speaker_with_a_metered_listener_writes_only_the_transcription_row(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    voiced.register()
+    voiced.script(claude_round("TTS: Two are late.\nTwo are late."))
+    listener = _metered(voiced, ["what is overdue"], install=False)
+    _slot(voiced).swap(ComposedBackend(speaker=backend, listener=listener))
+
+    client.utter(chunks=SENT_CHUNKS)
+    assert client.until("voice.stopped")["reason"] == "done"
+
+    assert backend.spoken == ["Two are late."]
+    rows = voiced.daemon.ledger.recent(10).rows
+    assert len(rows) == 2
+    hearing, turn = reversed(rows)
+    assert (hearing.engine, hearing.model) == ("openai", listener.stt_model)
+    assert turn.engine != "openai"
+
+
+def test_a_ledger_that_refuses_every_speech_row_ends_no_line_and_no_session(
+    voiced: Live,
+    client: VoiceClient,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Every speech row raises; the turn's own row is written as ever, so the turn speaks."""
+    voiced.register()
+    voiced.script(claude_round("TTS: First.\nFirst."), claude_round("TTS: Second.\nSecond."))
+    _metered(voiced, ["first words", "second words"])
+    ledger = voiced.daemon.ledger
+    real = ledger.record
+    tries: list[str] = []
+
+    def refusing(**row: Any) -> Any:
+        if row["engine"] == "openai":
+            tries.append(row["model"])
+            raise OSError("disk full")
+        return real(**row)
+
+    monkeypatch.setattr(ledger, "record", refusing)
+    with caplog.at_level("WARNING", logger="athena.channels.voice.gateway"):
+        client.utter(chunks=SENT_CHUNKS)
+        assert client.until("voice.stopped", generation=1)["reason"] == "done"
+        client.utter(chunks=SENT_CHUNKS)
+        assert client.until("turn.finished", text="Second.")
+        assert client.until("voice.stopped", generation=2)["reason"] == "done"
+
+    assert [e["text"] for e in client.of("voice.transcript")] == ["first words", "second words"]
+    # Each speech row is tried once more, then let go: two utterances, two lines, eight tries.
+    hear, speak = "gpt-4o-mini-transcribe", "gpt-4o-mini-tts"
+    assert tries == [hear, hear, speak, speak] * 2
+    records = _speaker_records(caplog)
+    assert [r.getMessage() for r in records] == ["voice: a speech ledger row was not written"] * 4
+    assert all(r.exc_info is None for r in records)
+    assert "words" not in caplog.text
+    assert "First" not in caplog.text
+    rows = ledger.recent(10).rows
+    assert [row.engine == "openai" for row in rows] == [False, False]
+    assert client.ws.close_code is None
+
+
+def test_a_speech_row_that_fails_once_is_written_on_the_retry(
+    voiced: Live, client: VoiceClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    voiced.register()
+    provider = _metered(voiced, [])
+
+    def refusing(pcm: bytes) -> str:
+        raise gateway_module.VoiceBackendError("transcription refused with 503")
+
+    provider.transcribe = refusing  # type: ignore[method-assign]
+    ledger = voiced.daemon.ledger
+    real = ledger.record
+    failed: list[bool] = []
+
+    def once(**row: Any) -> Any:
+        if not failed:
+            failed.append(True)
+            raise OSError("database is locked")
+        return real(**row)
+
+    monkeypatch.setattr(ledger, "record", once)
+    client.utter(chunks=SENT_CHUNKS)
+    client.until("turn.error")
+
+    assert failed == [True]
+    assert [(r.engine, r.error_reason) for r in ledger.recent(10).rows] == [
+        ("openai", "engine_error")
+    ]

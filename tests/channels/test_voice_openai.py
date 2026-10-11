@@ -1,4 +1,4 @@
-"""The OpenAI backend's transport failures (channels/voice/backends.py; README §3.2; ADR 0019).
+"""The OpenAI backend: transport failures and the meter (voice/backends.py; ADR 0019, ADR 0083).
 
 ``urlopen`` is replaced by a fake reply; nothing here touches the network.
 """
@@ -11,7 +11,17 @@ from typing import Any
 import pytest
 
 from athena.channels.voice import backends as backends_module
-from athena.channels.voice.backends import INPUT_SAMPLE_RATE, OpenAIBackend, VoiceBackendError
+from athena.channels.voice.backends import (
+    INPUT_SAMPLE_RATE,
+    BufferedTranscriber,
+    ComposedBackend,
+    Meter,
+    OpenAIBackend,
+    ScriptedBackend,
+    VoiceBackendError,
+    hearing_meter,
+    speaking_meter,
+)
 
 KEY = "sk-test-secret-key-0123"
 TEXT = "the private sentence to speak"
@@ -105,3 +115,47 @@ def test_a_synthesis_reply_over_the_ceiling_yields_whole_chunks_then_is_refused(
     assert sum(map(len, got)) <= 8
     assert str(failed.value) == "synthesis failed: reply too long"
     _clean(failed.value)
+
+
+# -- the meter: which half bills, under which model (ADR 0083) ---------------------------------
+
+
+def test_the_provider_names_the_model_each_half_bills_under() -> None:
+    backend = OpenAIBackend(api_key=KEY, stt_model="stt-x", tts_model="tts-y")
+    assert hearing_meter(backend) == Meter(engine="openai", model="stt-x")
+    assert speaking_meter(backend) == Meter(engine="openai", model="tts-y")
+    assert KEY not in repr(hearing_meter(backend)) + repr(speaking_meter(backend))
+
+
+def test_a_scripted_backend_bills_nothing() -> None:
+    assert hearing_meter(ScriptedBackend()) is None
+    assert speaking_meter(ScriptedBackend()) is None
+
+
+def test_a_composed_backend_is_metered_per_half() -> None:
+    provider = OpenAIBackend(api_key=KEY)
+    hears = ComposedBackend(speaker=ScriptedBackend(), listener=provider)
+    assert hearing_meter(hears) == Meter("openai", provider.stt_model)
+    assert speaking_meter(hears) is None
+    speaks = ComposedBackend(speaker=provider, listener=ScriptedBackend())
+    assert hearing_meter(speaks) is None
+    assert speaking_meter(speaks) == Meter("openai", provider.tts_model)
+
+
+def test_a_buffered_transcriber_says_whether_it_sent_the_utterance() -> None:
+    sent: list[int] = []
+
+    def transcribe(pcm: bytes) -> str:
+        sent.append(len(pcm))
+        raise VoiceBackendError("transcription refused with 500")
+
+    tapped = BufferedTranscriber(transcribe)
+    tapped.feed(bytes(INPUT_SAMPLE_RATE // 10))
+    assert tapped.finish() == ""
+    assert (tapped.requested, sent) == (False, [])
+
+    spoken = BufferedTranscriber(transcribe)
+    spoken.feed(bytes(INPUT_SAMPLE_RATE))
+    with pytest.raises(VoiceBackendError):
+        spoken.finish()
+    assert (spoken.requested, sent) == (True, [INPUT_SAMPLE_RATE])

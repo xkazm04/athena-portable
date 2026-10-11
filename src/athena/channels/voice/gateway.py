@@ -3,8 +3,9 @@
 Voice is a transport and not a feature. An utterance becomes a message, the message runs the
 ordinary browser-lane turn through :func:`athena.daemon.routes.turn_events` — the same generator
 ``POST /run`` streams, under the same writer lock, in front of the same gate — and the reply's
-spoken line is synthesised back. The only things this module adds to a typed turn are the words
-``surface = voice`` and ``trigger = voice`` on the ledger row.
+spoken line is synthesised back. What this module adds to a typed turn's own ledger row is the
+words ``surface = voice`` and ``trigger = voice``; what it adds to the ledger is one more row per
+request a metered speech provider was sent (ADR 0083).
 
 **The wire.** Text frames carry JSON. From the client: ``start`` (the key went down; carries the
 page origin, the host state and a project id), binary frames of PCM16 for as long as it is held,
@@ -27,6 +28,13 @@ an interrupt raises the cutoff to the newest number, so the line playing stops a
 and the lines behind it are never started. A surface that hears ``voice.stopped`` with
 ``barge_in`` for a generation drops what it still holds of it, and an audio frame whose
 generation is at or below the cutoff is simply late.
+
+**A metered request is a row, and the row never ends anything (ADR 0083).** A half that names a
+:class:`~athena.channels.voice.backends.Meter` gets one ledger row per transcription it was sent
+and one per spoken line, failures included, written on the worker or the speaker thread under the
+conversation and origin the turn's own row carries, with no price and no event. A write that
+raises is tried once more, then logged in a fixed line and let go: a ledger fault never costs the
+user a sentence.
 
 **A host tool's answer rides the next frame.** The lane has no executor for a page's tool (ADR
 0010), so a ``tool.call`` for one goes to the client, the client runs it on the page and sends
@@ -51,8 +59,11 @@ from typing import TYPE_CHECKING, Any
 from athena.channels.voice.backends import (
     INPUT_SAMPLE_RATE,
     MAX_UTTERANCE_BYTES,
+    Meter,
     VoiceBackend,
     VoiceBackendError,
+    hearing_meter,
+    speaking_meter,
 )
 from athena.channels.voice.commands import Card, Spoken, recognise
 from athena.channels.voice.tts import SpokenLine, spoken_line
@@ -70,6 +81,7 @@ from athena.contracts.channel import (
     VoiceTranscript,
     now_iso,
 )
+from athena.contracts.registry import is_origin
 from athena.daemon.routes import (
     NO_PAGE_SENTENCE,
     PENDING_LINES,
@@ -84,6 +96,7 @@ from athena.daemon.routes import (
     turn_context,
     turn_events,
 )
+from athena.daemon.sessions import conversation_for
 from athena.lane.turn_frame import tool_results_from
 
 if TYPE_CHECKING:
@@ -133,6 +146,9 @@ MAX_SESSION_CARDS = 32
 
 #: The close code a refused socket gets: RFC 6455's "try again later".
 TRY_AGAIN_LATER = 1013
+
+#: What the log says when a speech row could not be written twice. Fixed: no text, no transcript.
+LEDGER_ROW_LOST = "voice: a speech ledger row was not written"
 
 
 #: What a ``start`` is refused with when no backend is set up and the studio gave no reason.
@@ -244,6 +260,8 @@ class _Utterance:
     heard: int = 0
     #: Set when the ceiling was crossed: the transcriber is released, later frames are ignored.
     refused: bool = False
+    #: What the transcriber's request bills under, taken with it at key-down (ADR 0083).
+    meter: Meter | None = None
 
 
 @dataclass
@@ -264,6 +282,18 @@ class _Job:
     #: A spoken utterance's transcriber, not yet finished: the worker turns it into ``text``
     #: before the turn, so the reader never waits on the provider or the engine.
     transcriber: Any = None
+    #: What that transcriber's request bills under, or ``None`` when it costs no request.
+    meter: Meter | None = None
+
+
+@dataclass(frozen=True)
+class _Bill:
+    """Whose a speech row is: the conversation and origin the turn's own row carries, and the
+    turn's id when there is a turn (ADR 0083)."""
+
+    conversation: str = ""
+    origin: str = "core"
+    turn_id: str | None = None
 
 
 def _is_count(value: object) -> bool:
@@ -303,7 +333,7 @@ class VoiceSession:
         self._holders = 2
         self._holders_lock = threading.Lock()
         self._jobs: queue.Queue[_Job | None] = queue.Queue()
-        self._speech: queue.Queue[tuple[int, SpokenLine] | None] = queue.Queue()
+        self._speech: queue.Queue[tuple[int, SpokenLine, _Bill] | None] = queue.Queue()
         self._results: dict[str, dict[str, Any]] = {}
         self._results_ready = threading.Condition(self._lock)
         #: The call ids this socket asked the page to run and has not yet given up on. An answer
@@ -481,6 +511,7 @@ class VoiceSession:
             host_state=fields["host_state"],
             project_id=fields["project_id"],
             transcriber=backend.transcriber(),
+            meter=hearing_meter(backend),
             disabled_origins=fields["disabled_origins"],
             gated_origins=fields["gated_origins"],
             gated_tools=fields["gated_tools"],
@@ -499,6 +530,7 @@ class VoiceSession:
             _Job(
                 text="",
                 transcriber=current.transcriber,
+                meter=current.meter,
                 origin=current.origin,
                 host_state=current.host_state,
                 project_id=current.project_id,
@@ -610,11 +642,11 @@ class VoiceSession:
             except queue.Empty:
                 break
 
-    def say(self, line: SpokenLine) -> int:
+    def say(self, line: SpokenLine, bill: _Bill | None = None) -> int:
         with self._lock:
             self._counter += 1
             generation = self._counter
-        self._speech.put((generation, line))
+        self._speech.put((generation, line, bill or _Bill()))
         return generation
 
     def _speak_loop(self) -> None:
@@ -622,7 +654,7 @@ class VoiceSession:
             item = self._speech.get()
             if item is None:
                 return
-            generation, line = item
+            generation, line, bill = item
             with self._lock:
                 if generation <= self._cutoff:
                     continue
@@ -630,6 +662,10 @@ class VoiceSession:
             reason = "done"
             # Taken per line: a swap lands between two lines, never inside one.
             backend, _ = self.gateway.current()
+            meter = speaking_meter(backend)
+            started: float | None = None
+            ms = 0
+            failure: str | None = None
             try:
                 if backend is None:
                     raise VoiceBackendError("no voice backend is set up")
@@ -643,6 +679,7 @@ class VoiceSession:
                 )
                 # Closed below however the loop ends, so a cut-off line stops its synthesis (and the
                 # process behind it) now, not when the generator happens to be collected.
+                started = time.monotonic()
                 chunks = backend.synthesize(line.text)
                 try:
                     for chunk in chunks:
@@ -656,10 +693,11 @@ class VoiceSession:
                     close = getattr(chunks, "close", None)
                     if close is not None:
                         close()
+                    ms = int((time.monotonic() - started) * 1000)
             except VoiceBackendError:
-                reason = "error"
+                reason, failure = "error", "engine_error"
             except Exception:  # one line fails; the speaker outlives it
-                reason = "error"
+                reason, failure = "error", "unknown"
                 logging.getLogger(__name__).exception(
                     "voice: speaking generation %d failed", generation
                 )
@@ -669,6 +707,9 @@ class VoiceSession:
                     if self._counter == generation and self._cutoff < generation:
                         # Nothing queued behind this line: ``speaking`` goes false with it.
                         self._cutoff = generation
+            if meter is not None and started is not None:
+                # A line cut off by barge-in is not an error: it is billed up to its close.
+                self._record(meter, bill, ms, failure)
             self.send(VoiceStopped(generation=generation, reason=reason))
 
     # -- the worker ------------------------------------------------------------------------------
@@ -700,14 +741,72 @@ class VoiceSession:
         """
         if job.transcriber is None:
             return job
+        started = time.monotonic()
         try:
             text = str(job.transcriber.finish() or "")
         except VoiceBackendError as exc:
+            self._record_hearing(job, started, "engine_error")
             self.send(TurnError(reason="engine_error", detail=f"transcription: {exc}"))
             return None
+        except Exception:
+            self._record_hearing(job, started, "unknown")
+            raise
+        self._record_hearing(job, started, None)
         if self._closed:
             return None
         return replace(job, text=text, transcriber=None)
+
+    # -- the ledger ------------------------------------------------------------------------------
+
+    def _record_hearing(self, job: _Job, started: float, failure: str | None) -> None:
+        """The transcription's row, when a metered half was sent the utterance. A transcriber
+        that does not say whether it sent anything is taken to have sent it."""
+        if job.meter is None or not getattr(job.transcriber, "requested", True):
+            return
+        ms = int((time.monotonic() - started) * 1000)
+        self._record(job.meter, self._bill(job), ms, failure)
+
+    def _bill(self, job: _Job) -> _Bill:
+        """Whose a speech row with no turn behind it is, worked out as :func:`turn_context` and
+        the harness work out a turn's own row: the page's session gives the conversation and
+        ``host:<app_id>``. A page with no session gets no turn row either; its row is ``core``."""
+        session = self.daemon.sessions.get(job.origin)
+        if session is None:
+            return _Bill()
+        try:
+            conversation = conversation_for(session, job.project_id)
+        except ValueError:  # not a minted project id; the turn would refuse it, the row may not
+            conversation = session.conversation_id
+        origin = f"host:{session.app_id}"
+        return _Bill(conversation, origin if is_origin(origin) else "core")
+
+    def _record(self, meter: Meter, bill: _Bill, ms: int, failure: str | None) -> None:
+        """One speech row. A write that raises is tried once more, then logged in a fixed line
+        and let go, as ``RoundHarness._finish`` does: a ledger fault never ends the line, the
+        transcript or the session."""
+        for _attempt in range(2):
+            try:
+                self.daemon.ledger.record(
+                    engine=meter.engine,
+                    model=meter.model,
+                    conversation=bill.conversation,
+                    origin=bill.origin,
+                    surface="voice",
+                    trigger="voice",
+                    rounds=1,
+                    input_tokens=0,
+                    output_tokens=0,
+                    cost_usd=None,
+                    cost_estimated=False,
+                    ms=ms,
+                    is_error=failure is not None,
+                    error_reason=failure,
+                    turn_id=bill.turn_id,
+                )
+            except Exception:  # the retry is the handling; the log line follows the second
+                continue
+            return
+        logging.getLogger(__name__).warning(LEDGER_ROW_LOST)
 
     def _handle(self, job: _Job) -> None:
         self.send(VoiceTranscript(text=job.text, final=True))
@@ -788,7 +887,8 @@ class VoiceSession:
             if finished is not None:
                 line = spoken_line(finished)
                 if line is not None:
-                    self.say(line)
+                    origin = f"host:{ctx.app_id}" if ctx.app_id else "core"
+                    self.say(line, _Bill(ctx.conversation_id, origin, ctx.turn_id))
             if not host_calls:
                 return
             answered = self._await_results(host_calls)
@@ -855,7 +955,8 @@ class VoiceSession:
         self.send(
             DecisionResolved(id=spoken.approval_id, choice=spoken.choice, by="user", at=now_iso())
         )
-        self.say(SpokenLine("Approved." if reply.get("status") == "approved" else "Declined."))
+        answer = "Approved." if reply.get("status") == "approved" else "Declined."
+        self.say(SpokenLine(answer), self._bill(job))
         execute = [row for row in reply.get("execute", []) if isinstance(row, dict)]
         if not execute:
             return

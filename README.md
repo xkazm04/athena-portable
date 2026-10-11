@@ -124,7 +124,7 @@ trustworthy.
 | 3 | Policy lives in the gate, never in the model. A `GATED` tool never executes without a resolved decision. | `core/catalog.py`, `harness/hooks.py` |
 | 4 | Bounded and honest: every truncated block announces `(showing N of M)`; every registry name appears in the composed prompt. | `PromptBlock`, `ExecResult` helpers |
 | 5 | No provider is mandatory. The core is stdlib-only; engines, transports and clouds are extras imported lazily. | ADR 0002 |
-| 6 | Cost is visible: one ledger row per model invocation, failures included, with a reason from a closed set. | `core/ledger.py`, `LedgerHook` |
+| 6 | Cost is visible: one ledger row per model invocation, failures included, with a reason from a closed set. | `core/ledger.py`, `LedgerHook`; speech requests: ADR 0083 |
 
 ---
 

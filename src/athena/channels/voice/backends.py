@@ -21,6 +21,11 @@ the standard library. Which backend ``/voice`` uses is the voice studio's to com
 :mod:`athena.channels.voice.config`): one :class:`Speaker` and one :class:`Listener`, chosen
 separately, behind :class:`ComposedBackend` — local Kokoro and whisper.cpp by default, the provider
 for hearing when a person picks it and its key is sealed or in the environment.
+
+**A metered half says so, and that is all it says (ADR 0083).** A provider half names the engine
+and the model a request of it bills under — :func:`hearing_meter`, :func:`speaking_meter` — and
+:class:`BufferedTranscriber` says whether ``finish`` sent anything. The gateway writes the ledger
+row from those; a local engine and the scripted backend name no meter and get none.
 """
 
 from __future__ import annotations
@@ -48,6 +53,7 @@ __all__ = [
     "BufferedTranscriber",
     "ComposedBackend",
     "Listener",
+    "Meter",
     "OpenAIBackend",
     "ScriptedBackend",
     "ScriptedTranscriber",
@@ -56,6 +62,8 @@ __all__ = [
     "VoiceBackend",
     "VoiceBackendError",
     "backend_from_name",
+    "hearing_meter",
+    "speaking_meter",
 ]
 
 #: What the microphone sends: 16 kHz, 16-bit, one channel. The rate a speech model was trained on
@@ -73,6 +81,26 @@ BACKENDS: tuple[str, ...] = ("config", "auto", "openai", "none")
 
 class VoiceBackendError(Exception):
     """The backend could not hear or could not speak. Never carries a key."""
+
+
+@dataclass(frozen=True)
+class Meter:
+    """What one request of a metered half bills under: the provider's name and its model."""
+
+    engine: str
+    model: str
+
+
+def hearing_meter(backend: object) -> Meter | None:
+    """The meter of ``backend``'s hearing half, or ``None`` when hearing costs no request."""
+    meter = getattr(backend, "hearing_meter", None)
+    return meter if isinstance(meter, Meter) else None
+
+
+def speaking_meter(backend: object) -> Meter | None:
+    """The meter of ``backend``'s speaking half, or ``None`` when speaking costs no request."""
+    meter = getattr(backend, "speaking_meter", None)
+    return meter if isinstance(meter, Meter) else None
 
 
 @runtime_checkable
@@ -151,6 +179,14 @@ class ComposedBackend:
 
     def synthesize(self, text: str) -> Iterator[bytes]:
         return self.speaker.synthesize(text)
+
+    @property
+    def hearing_meter(self) -> Meter | None:
+        return hearing_meter(self.listener)
+
+    @property
+    def speaking_meter(self) -> Meter | None:
+        return speaking_meter(self.speaker)
 
 
 # --- scripted, for tests ------------------------------------------------------------------------
@@ -239,6 +275,9 @@ class BufferedTranscriber:
         self._transcribe = transcribe
         self._chunks: list[bytes] = []
         self._held = 0
+        #: Whether ``finish`` handed the utterance to ``transcribe`` — set before the call, so a
+        #: request that failed still counts as sent (ADR 0083).
+        self.requested = False
 
     def feed(self, pcm: bytes) -> Sequence[str]:
         # Past the ceiling the frame is dropped, so the buffer never holds more than it (ADR 0072).
@@ -254,6 +293,7 @@ class BufferedTranscriber:
         # Under a tenth of a second is a key tapped by mistake, not a sentence.
         if len(audio) < INPUT_SAMPLE_RATE * 2 // 10:
             return ""
+        self.requested = True
         return self._transcribe(audio)
 
 
@@ -284,6 +324,14 @@ class OpenAIBackend:
     @property
     def name(self) -> str:
         return "openai"
+
+    @property
+    def hearing_meter(self) -> Meter:
+        return Meter(self.name, self.stt_model)
+
+    @property
+    def speaking_meter(self) -> Meter:
+        return Meter(self.name, self.tts_model)
 
     def transcriber(self) -> Transcriber:
         return BufferedTranscriber(self.transcribe)
