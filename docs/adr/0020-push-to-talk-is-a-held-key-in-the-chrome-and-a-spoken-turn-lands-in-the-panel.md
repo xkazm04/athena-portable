@@ -85,3 +85,9 @@ resampling and the real event handling against fakes, and `vitest` never needs a
   ceiling. With nothing pending and nothing listening it changes nothing. The `athena:ptt` chord
   is untouched: it reacts only to an event that fires during a press, not to a window that was
   already hidden when the press began, and its release arrives through the chord's own event.
+- **A failed `openMicrophone` releases what it took.** If anything after `getUserMedia` throws
+  (`audioContext()`, `createMediaStreamSource`, `createScriptProcessor`), every track of the
+  stream is stopped, a context that was created is closed, and the original error is rethrown, so
+  the store's catch still shows `microphone: ...`. Before, the stream stayed live with no owner.
+  `micLevel` is only set once the graph is built, so it stays `null`. The `ScriptProcessorNode`
+  design is kept.

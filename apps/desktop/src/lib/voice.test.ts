@@ -4,7 +4,7 @@
  * A wrong sample rate is a backend that hears chipmunks, and a frame split one byte off is a
  * player that plays a generation number as a click. Neither is caught by a run that "works".
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   LEVEL_CEIL_DB,
@@ -14,6 +14,7 @@ import {
   currentLevel,
   downsample,
   int16ToBytes,
+  openMicrophone,
   pcm16ToFloat32,
   rms,
   splitAudioFrame,
@@ -177,5 +178,58 @@ describe("the level the halo reads", () => {
 
   it("is 0 with no microphone capturing and nothing played", () => {
     expect(currentLevel()).toBe(0);
+  });
+});
+
+describe("openMicrophone releases the microphone on failure (council voice full r2 robustness-5)", () => {
+  function rig(failAt: "context" | "source" | "processor" | null) {
+    const boom = new Error(`boom at ${failAt}`);
+    const track = () => ({ stop: vi.fn() });
+    const tracks = [track(), track()];
+    const stream = { getTracks: () => tracks } as unknown as MediaStream;
+    const node = () => ({ connect: vi.fn(), disconnect: vi.fn() });
+    const close = vi.fn(() => Promise.resolve());
+    const context = {
+      sampleRate: 48_000,
+      destination: {},
+      close,
+      createMediaStreamSource: () => {
+        if (failAt === "source") throw boom;
+        return node();
+      },
+      createScriptProcessor: () => {
+        if (failAt === "processor") throw boom;
+        return { ...node(), onaudioprocess: null };
+      },
+      createGain: () => ({ ...node(), gain: { value: 1 } }),
+    };
+    const apis = {
+      getUserMedia: () => Promise.resolve(stream),
+      audioContext: () => {
+        if (failAt === "context") throw boom;
+        return context as unknown as AudioContext;
+      },
+    };
+    return { apis, tracks, close, boom };
+  }
+
+  it.each([
+    ["audioContext() throws", "context", false],
+    ["createMediaStreamSource throws", "source", true],
+    ["createScriptProcessor throws", "processor", true],
+  ] as const)("%s: the original error, both tracks stopped once", async (_name, failAt, created) => {
+    const { apis, tracks, close, boom } = rig(failAt);
+    await expect(openMicrophone(apis, () => undefined)).rejects.toBe(boom);
+    for (const t of tracks) expect(t.stop).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(created ? 1 : 0);
+  });
+
+  it("stop() stops both tracks and closes the context once; a second stop() does nothing", async () => {
+    const { apis, tracks, close } = rig(null);
+    const session = await openMicrophone(apis, () => undefined);
+    session.stop();
+    session.stop();
+    for (const t of tracks) expect(t.stop).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(1);
   });
 });

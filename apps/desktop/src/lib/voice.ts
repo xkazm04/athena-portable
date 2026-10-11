@@ -297,37 +297,47 @@ export async function openMicrophone(
     audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
     video: false,
   });
-  const context = apis.audioContext();
-  const source = context.createMediaStreamSource(stream);
-  const processor = context.createScriptProcessor(4096, 1, 1);
-  processor.onaudioprocess = (ev) => {
-    const input = ev.inputBuffer.getChannelData(0);
-    // The halo's ripple: one number per buffer, read by `currentLevel`, never rendered by React.
-    micLevel = rms(input);
-    onChunk(downsample(input, context.sampleRate, INPUT_SAMPLE_RATE));
-  };
-  source.connect(processor);
-  // A processor with no destination is never pulled by some engines; the gain of zero keeps the
-  // microphone from feeding back to the speakers while the graph still runs.
-  const silence = context.createGain();
-  silence.gain.value = 0;
-  processor.connect(silence);
-  silence.connect(context.destination);
-  // Capturing: the halo reads the microphone from here on, silence included, not her last line.
-  micLevel = 0;
-  let stopped = false;
-  return {
-    stop: () => {
-      if (stopped) return;
-      stopped = true;
-      micLevel = null;
-      processor.disconnect();
-      source.disconnect();
-      silence.disconnect();
-      for (const track of stream.getTracks()) track.stop();
-      void context.close();
-    },
-  };
+  // Whatever throws after the microphone is granted must not leave it live: the original error
+  // is rethrown once the tracks are stopped and a created context is closed.
+  let context: AudioContext | null = null;
+  try {
+    const live = apis.audioContext();
+    context = live;
+    const source = live.createMediaStreamSource(stream);
+    const processor = live.createScriptProcessor(4096, 1, 1);
+    processor.onaudioprocess = (ev) => {
+      const input = ev.inputBuffer.getChannelData(0);
+      // The halo's ripple: one number per buffer, read by `currentLevel`, never rendered by React.
+      micLevel = rms(input);
+      onChunk(downsample(input, live.sampleRate, INPUT_SAMPLE_RATE));
+    };
+    source.connect(processor);
+    // A processor with no destination is never pulled by some engines; the gain of zero keeps the
+    // microphone from feeding back to the speakers while the graph still runs.
+    const silence = live.createGain();
+    silence.gain.value = 0;
+    processor.connect(silence);
+    silence.connect(live.destination);
+    // Capturing: the halo reads the microphone from here on, silence included, not her last line.
+    micLevel = 0;
+    let stopped = false;
+    return {
+      stop: () => {
+        if (stopped) return;
+        stopped = true;
+        micLevel = null;
+        processor.disconnect();
+        source.disconnect();
+        silence.disconnect();
+        for (const track of stream.getTracks()) track.stop();
+        void live.close();
+      },
+    };
+  } catch (error) {
+    for (const track of stream.getTracks()) track.stop();
+    if (context) void context.close();
+    throw error;
+  }
 }
 
 export type MicStanding = "unknown" | "granted" | "denied" | "unsupported";
