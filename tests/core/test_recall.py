@@ -577,24 +577,88 @@ MULTILINE = "line one about duplex\n## not a heading here\n- OP: still the user'
 def test_an_episodes_multi_line_body_renders_unchanged_in_the_window(tmp_path: Path) -> None:
     """An episode is fenced, and a fence payload is never edited (ADR 0006)."""
     with Brain(tmp_path / "brain") as brain:
-        brain.append_episode(MULTILINE, "user")
+        node = brain.append_episode(MULTILINE, "user")
 
         block = recall(brain, "duplex").block(EPISODE_BLOCK)
 
         (memory,) = block.items
-        assert memory.render() == f"- {MULTILINE}"
-        assert block.render() == f"- {MULTILINE}\n(showing 1 of 1)"
+        assert memory.render() == f"- [{node.id} user] {MULTILINE}"
+        assert block.render() == f"- [{node.id} user] {MULTILINE}\n(showing 1 of 1)"
 
 
 def test_an_episodes_multi_line_body_renders_unchanged_in_a_whole_recall(tmp_path: Path) -> None:
     with Brain(tmp_path / "brain") as brain:
-        brain.append_episode(MULTILINE, "user")
+        node = brain.append_episode(MULTILINE, "user")
 
         block = recall_whole(brain, "duplex", cap=4800).block(EPISODE_BLOCK)
 
         (memory,) = block.items
         assert memory.lane == KEYWORD_BLOCK, "the lane is keyword, the kind is what decides"
-        assert block.render() == f"- {MULTILINE}\n(showing 1 of 1)"
+        assert block.render() == f"- [{node.id} user] {MULTILINE}\n(showing 1 of 1)"
+
+
+# -- an episode line carries its id and role (ADR 0079) -----------------------------------------
+
+
+def test_a_per_turn_episode_shows_its_id_and_role_inside_the_fence(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        node = brain.append_episode("I chase Acme gently, they pay late", "user")
+        trace = recall(brain, "Acme")
+        composed = compose(
+            constitution=Constitution(Source("package", Path("constitution")), {}),
+            catalog=build_catalog(CoreServices(sources_alive=lambda sources: True)),
+            recall=trace,
+        )
+
+        (block,) = [b for b in composed.frame.blocks if b.name == "frame.episodes"]
+        line = f"- [{node.id} user] I chase Acme gently, they pay late"
+        assert re.search(r"ep_[0-9a-f]+ user", block.text)
+        assert line in block.text
+        text = block.text
+        assert (
+            text.index("<<<untrusted:")
+            < text.index(line)
+            < text.index("untrusted:", len(text) - 60)
+        )
+
+
+def test_each_role_shows_its_own_name(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        made = {
+            role: brain.append_episode(
+                f"{role} said zebra", role, created=BASE + timedelta(minutes=n)
+            )
+            for n, role in enumerate(("user", "assistant", "system"))
+        }
+
+        lines = recall(brain, "zebra").block(EPISODE_BLOCK).render().splitlines()
+
+        for role, node in made.items():
+            assert f"- [{node.id} {role}] {role} said zebra" in lines
+
+
+def test_a_machine_episode_shows_the_label_and_then_its_marker(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        node = brain.append_episode("fleet-event node zebra went quiet", "system")
+
+        (memory,) = recall_whole(brain, "zebra", cap=4800).block(EPISODE_BLOCK).items
+
+        assert memory.machine
+        assert (
+            memory.render() == f"- [{node.id} system] [machine] fleet-event node zebra went quiet"
+        )
+
+
+def test_an_unreadable_role_renders_the_id_alone(tmp_path: Path) -> None:
+    memory = Memory(id="ep_1a2b3c4d", kind="episode", excerpt="x", path="odd.md", lane="recency")
+    assert memory.render() == "- [ep_1a2b3c4d] x"
+
+
+def test_a_distilled_line_has_no_label(tmp_path: Path) -> None:
+    memory = Memory(
+        id="fact_1", kind="fact", excerpt="a claim", path="semantic/fact_1.md", lane="keyword"
+    )
+    assert memory.render() == '- "a claim"'
 
 
 # -- a store that cannot be read says so (ADR 0076) ---------------------------------------------

@@ -8,6 +8,7 @@ tests do that — and nothing spawns a binary.
 
 from __future__ import annotations
 
+import re
 import shutil
 import sqlite3
 from contextlib import closing
@@ -20,7 +21,7 @@ import pytest
 from athena.contracts.registry import Lane, ToolClass, TurnContext
 from athena.core.brain import Brain, reconcile_from_disk
 from athena.core.brain.store import ProvenanceError
-from athena.core.catalog import CoreServices
+from athena.core.catalog import RECALL_CAP, CoreServices
 from athena.core.recall import ALWAYS_BLOCK, UNAVAILABLE_PREFIX, recall
 from athena.harness.policy import Policy
 from athena.harness.transports import ScriptedTransport, SubprocessTransport
@@ -173,6 +174,33 @@ def test_recall_answers_with_the_blocks_and_each_ones_own_footer(local: AthenaLo
     assert "Northwind" in result.output
     # Two blocks, two footers (no always tier, ADR 0058), and no global M over their union.
     assert result.output.count("(showing ") == 2
+
+
+def test_recall_labels_every_episode_line_with_its_id_and_role(local: AthenaLocal) -> None:
+    made = [
+        local.brain.append_episode(f"Northwind note {n}", role, session_id=CONVERSATION)
+        for n, role in enumerate(("user", "assistant", "system"))
+    ]
+    entry = local.catalog.get("core.recall")
+    assert entry.executor is not None
+
+    output = entry.executor({"query": "Northwind"}, ctx()).output
+
+    for node, role in zip(made, ("user", "assistant", "system"), strict=True):
+        assert f"- [{node.id} {role}] Northwind note" in output
+    assert re.search(r"ep_[0-9a-f]+ user", output)
+
+
+def test_a_worst_case_recall_with_labels_stays_within_the_cap(local: AthenaLocal) -> None:
+    for n in range(30):
+        local.brain.append_episode(f"Northwind {n} " + "x" * 700, "user", session_id=CONVERSATION)
+    entry = local.catalog.get("core.recall")
+    assert entry.executor is not None
+
+    output = entry.executor({"query": "Northwind"}, ctx()).output
+
+    assert len(output) <= RECALL_CAP
+    assert "(showing " in output
 
 
 def test_recall_of_an_unreadable_store_is_a_failure_that_says_so(local: AthenaLocal) -> None:

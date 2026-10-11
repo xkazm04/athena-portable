@@ -125,7 +125,23 @@ class Memory:
         if self.kind in DISTILLED_KINDS:
             cap = ALWAYS_LINE_CAP if self.lane == ALWAYS_BLOCK else KEYWORD_LINE_CAP
             return f"- {marker}{memory_line(self.excerpt, cap)}"
-        return f"- {marker}{self.excerpt}"
+        return f"- {self.label()}{marker}{self.excerpt}"
+
+    def role(self) -> str:
+        """The role the store recorded, read from the node's file name ``<id>_<role>.md``.
+
+        Never from the body. Empty when the name does not have that shape.
+        """
+        name = self.path.rsplit("/", 1)[-1]
+        prefix = f"{self.id}_"
+        if not name.startswith(prefix) or not name.endswith(".md"):
+            return ""
+        return name[len(prefix) : -len(".md")]
+
+    def label(self) -> str:
+        """``[<id> <role>] `` for an episode line (ADR 0079), built only from the store."""
+        role = self.role()
+        return f"[{self.id} {role}] " if role else f"[{self.id}] "
 
 
 def memory_line(text: str, cap: int = ALWAYS_LINE_CAP) -> str:
