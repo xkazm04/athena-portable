@@ -9,6 +9,7 @@ import unicodedata
 from contextlib import closing
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -28,7 +29,11 @@ from athena.core.recall import (
     KEYWORD_BLOCK,
     KEYWORD_LINE_CAP,
     KEYWORD_SLOTS,
+    MACHINE_EPISODE_SLOTS,
     UNAVAILABLE_PREFIX,
+    Memory,
+    RecallBlock,
+    RecallTrace,
     always_line,
     memory_line,
     recall,
@@ -690,3 +695,145 @@ def test_a_query_with_a_nul_in_it_is_an_honest_answer(tmp_path: Path) -> None:
     assert [m.excerpt for m in control.block(KEYWORD_BLOCK).items] == ["acme invoices are late"]
     assert fts_match("acme\x00invoices") == '"acmeinvoices"'
     assert fts_quote("a\x00b\x7f") == '"ab"'
+
+
+# -- a whole recall reads one page, not every match (council full r1 economics-1) ---------------
+
+
+def _rendered(trace: RecallTrace) -> str:
+    """What ``core.recall`` answers with (wiring.recall_executor), so a test pins the bytes."""
+    blocks = "\n\n".join(f"### {block.name}\n{block.render()}" for block in trace.blocks)
+    notes = "\n".join(f"({note})" for note in trace.notes)
+    return "\n\n".join(part for part in (blocks, notes) if part)
+
+
+def _reference_episodes(brain: Brain, query: str, cap: int, limit: int | None) -> RecallBlock:
+    """The episode block as recall_whole built it before the page: every match read, then packed.
+
+    A copy of the code at 60d9024, kept so the paged read is checked against it, not against
+    itself. The keyword lane it was packed after is the same in both.
+    """
+    keyword = recall_whole(brain, query, cap=cap, limit=limit).block(KEYWORD_BLOCK)
+    spent = len("### " + keyword.name + "\n" + keyword.render()) + 2
+    match = fts_match(query)
+    where = "companion_fts MATCH ? AND n.kind = 'episode' AND n.importance > 0"
+    with closing(brain.read_connection()) as con:
+        (total,) = con.execute(
+            f"""SELECT COUNT(*) FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
+                WHERE {where}""",
+            (match,),
+        ).fetchone()
+        rows = con.execute(
+            f"""SELECT n.id, n.kind, f.body, n.file_path, n.created_at, n.machine,
+                    bm25(companion_fts)
+                FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
+                WHERE {where}
+                ORDER BY bm25(companion_fts) ASC, n.created_at DESC, n.id DESC""",
+            (match,),
+        ).fetchall()
+    overhead = len(f"### {EPISODE_BLOCK}\n(showing {total} of {total})") + 2
+    room = cap - spent - overhead
+    items: list[Memory] = []
+    machine_taken = 0
+    for row in rows:
+        if limit is not None and len(items) >= limit:
+            break
+        memory = Memory(
+            id=str(row[0]),
+            kind=str(row[1]),
+            excerpt=str(row[2] or ""),
+            path=str(row[3] or ""),
+            lane=KEYWORD_BLOCK,
+            score=float(row[6]),
+            created_at=str(row[4] or ""),
+            machine=bool(row[5]),
+        )
+        if memory.machine:
+            if machine_taken >= MACHINE_EPISODE_SLOTS:
+                continue
+            machine_taken += 1
+        cost = len(memory.render()) + 1
+        if cost > room:
+            if not items and spent == 0 and cost + overhead > cap:
+                items.append(memory)
+            break
+        items.append(memory)
+        room -= cost
+    return RecallBlock(EPISODE_BLOCK, tuple(items), int(total))
+
+
+def _mixed_brain(root: Path) -> Brain:
+    brain = Brain(root)
+    source = brain.append_episode("evidence for the facts", "user", created=BASE).id
+    brain.write_fact("duplex", "the duplex closes in March", sources=[source])
+    for n in range(14):
+        words = "duplex " * (1 + n % 4)
+        brain.append_episode(
+            f"{words}note {n} " + "filler " * (n * 9), "user", created=BASE + timedelta(minutes=n)
+        )
+    for n in range(7):
+        brain.append_episode(
+            f"fleet-event worker {n} " + "duplex " * (1 + n % 3) + "x" * (n * 40),
+            "system",
+            created=BASE + timedelta(minutes=30 + n),
+        )
+    return brain
+
+
+@pytest.mark.parametrize("limit", [None, 1, 3, 20])
+@pytest.mark.parametrize("cap", [4800, 1500])
+def test_a_paged_whole_recall_answers_exactly_as_reading_every_match_did(
+    tmp_path: Path, limit: int | None, cap: int
+) -> None:
+    with _mixed_brain(tmp_path / "brain") as brain:
+        trace = recall_whole(brain, "duplex", cap=cap, limit=limit)
+        reference = _reference_episodes(brain, "duplex", cap, limit)
+
+    assert trace.block(EPISODE_BLOCK).render() == reference.render()
+    expected = RecallTrace(
+        query="duplex", blocks=(trace.block(KEYWORD_BLOCK), reference), notes=list(trace.notes)
+    )
+    assert _rendered(trace) == _rendered(expected)
+    assert trace.block(EPISODE_BLOCK).total == 21
+
+
+class _CountingConnection:
+    """A read handle that counts the episode bodies its statements return."""
+
+    def __init__(self, con: sqlite3.Connection, counts: list[int]) -> None:
+        self._con = con
+        self._counts = counts
+
+    def execute(self, sql: str, params: Any = ()) -> Any:
+        rows = self._con.execute(sql, params).fetchall()
+        if "f.body" in sql:
+            self._counts.append(len(rows))
+        return _Fetched(rows)
+
+    def close(self) -> None:
+        self._con.close()
+
+
+class _Fetched:
+    def __init__(self, rows: list[Any]) -> None:
+        self._rows = rows
+
+    def fetchall(self) -> list[Any]:
+        return self._rows
+
+
+def test_a_whole_recall_reads_one_page_of_episodes_not_every_match(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        for n in range(200):
+            body = ("fleet-event " if n % 4 == 0 else "") + f"invoice {n} " + "x" * 300
+            brain.append_episode(body, "user", created=BASE + timedelta(minutes=n))
+        counts: list[int] = []
+        real = brain.read_connection
+        monkeypatch.setattr(brain, "read_connection", lambda: _CountingConnection(real(), counts))
+
+        episodes = recall_whole(brain, "invoice", cap=4800, limit=1).block(EPISODE_BLOCK)
+
+    assert (episodes.shown, episodes.total) == (1, 200)
+    assert sum(counts) <= 1 + MACHINE_EPISODE_SLOTS

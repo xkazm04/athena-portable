@@ -311,6 +311,10 @@ def recall_whole(
     episodes take at most :data:`MACHINE_EPISODE_SLOTS` of the answer (ref §8), as in the frame
     window: one past that limit is skipped and packing goes on, so fleet chatter never fills
     ``cap`` ahead of anything she wrote or read, yet M still counts it.
+
+    The read is a page, not every match: at most ``limit`` (or :data:`EPISODE_WINDOW`) episodes a
+    person or a page wrote, and at most :data:`MACHINE_EPISODE_SLOTS` machine ones. The cap bounds
+    the answer, and the page bounds what is read to build it.
     """
     try:
         with closing(brain.read_connection()) as con:
@@ -354,14 +358,27 @@ def _whole_episodes(
             WHERE {where}""",
         (match,),
     )
-    rows = _rows(
-        con,
-        f"""SELECT n.id, n.kind, f.body, n.file_path, n.created_at, n.machine, bm25(companion_fts)
-            FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
-            WHERE {where}
-            ORDER BY bm25(companion_fts) ASC, n.created_at DESC, n.id DESC""",
-        (match,),
-    )
+    # Two pages in one order, then merged in it. The loop below takes at most ``page`` items and
+    # skips every machine episode past MACHINE_EPISODE_SLOTS, so no row past either page could
+    # ever have been packed: this is the same answer, read in a bounded number of rows.
+    page = limit if limit is not None else EPISODE_WINDOW
+    rows = [
+        row
+        for machine, size in ((0, page), (1, MACHINE_EPISODE_SLOTS))
+        for row in _rows(
+            con,
+            f"""SELECT n.id, n.kind, f.body, n.file_path, n.created_at, n.machine,
+                    bm25(companion_fts)
+                FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
+                WHERE {where} AND n.machine = ?
+                ORDER BY bm25(companion_fts) ASC, n.created_at DESC, n.id DESC LIMIT ?""",
+            (match, machine, size),
+        )
+    ]
+    # ORDER BY bm25 ASC, created_at DESC, id DESC, as three stable sorts from the last key.
+    rows.sort(key=lambda row: str(row[0]), reverse=True)
+    rows.sort(key=lambda row: str(row[4] or ""), reverse=True)
+    rows.sort(key=lambda row: float(row[6]))
     # The header, the worst-case footer and the notes line are reserved before any episode is.
     overhead = len(f"### {EPISODE_BLOCK}\n(showing {total} of {total})") + 2
     room = cap - spent - overhead

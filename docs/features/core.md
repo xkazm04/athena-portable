@@ -34,7 +34,8 @@ A contract changes only with a test.
   ...` instead of a footer, the turn still runs, and `core.recall` fails with `engine_error`. An
   empty recall means the store was read and nothing matched.
 - `core.recall` is also a tool she can call mid-turn; its answer is capped at 4,800 characters,
-  three page reads' worth (ADR 0049).
+  three page reads' worth (ADR 0049). It reads one page of matches, at most `limit` episodes (20
+  when none is given) and two machine-written ones, not every episode that matched.
 
 ## The catalog and the gate
 
