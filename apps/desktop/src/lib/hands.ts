@@ -11,7 +11,7 @@
  */
 import type { CallReply, BridgeTool } from "@/lib/bridge";
 import { bridgeCall } from "@/lib/bridge";
-import { call, hasShell, type Args } from "@/lib/ipc";
+import { call, capturesSweep, hasShell, type Args } from "@/lib/ipc";
 
 /** What `hands_call` answers. Never an error: a refusal is a result the model can read. */
 interface HandReply {
@@ -67,9 +67,27 @@ export function handTools(): readonly BridgeTool[] {
   return hands;
 }
 
-/** Test seam: set the list without a shell. */
+/** Test seam: set the list without a shell, and forget that the startup sweep ran. */
 export function setHandsForTests(next: readonly BridgeTool[]): void {
   hands = next;
+  swept = false;
+}
+
+let swept = false;
+
+/**
+ * Hold the `captures` table to its declared cap (README 3.5, ADR 0066): the shell's own
+ * `captures_sweep` at its default cap, which evicts the oldest-written rows first. Nothing waits
+ * for it and nothing it does changes a capture's id or why, so a failure is only logged.
+ */
+function sweepCaptures(): void {
+  try {
+    void Promise.resolve(capturesSweep()).catch((error: unknown) =>
+      console.error(`[athena] captures sweep: ${error instanceof Error ? error.message : String(error)}`),
+    );
+  } catch (error) {
+    console.error(`[athena] captures sweep: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 /**
@@ -94,7 +112,12 @@ export async function takeCapture(
   const taken = (async (): Promise<Taken> => {
     try {
       const reply = await call<HandReply>("hands_call", { tab_id: tabId, name: SCREENSHOT, input: {} });
-      if (reply.ok && reply.capture_id) return { id: reply.capture_id, why: null };
+      if (reply.ok && reply.capture_id) {
+        // A row was filed, so the table grew; a capture that came after the deadline filed one too.
+        // A capture that failed, or never had a shell, filed none and sweeps nothing.
+        sweepCaptures();
+        return { id: reply.capture_id, why: null };
+      }
       return { id: null, why: reply.error || reply.reason || "the screenshot hand answered with no capture" };
     } catch (error) {
       return { id: null, why: `the screenshot failed: ${error instanceof Error ? error.message : String(error)}` };
@@ -110,9 +133,15 @@ export async function takeCapture(
 /** The one hand the shell answers (`hands.rs` `SCREENSHOT`). */
 const SCREENSHOT = "page_screenshot";
 
-/** Fetch the list once. It is static, so a second call asks nothing. A failure leaves it empty. */
+/** Fetch the list once. It is static, so a second call asks nothing. The first call also sweeps `captures`. A failure leaves it empty. */
 export async function startHands(): Promise<void> {
-  if (!hasShell() || hands.length > 0) return;
+  if (!hasShell()) return;
+  // Once per window, so a table that is already over its cap is trimmed (README 3.5).
+  if (!swept) {
+    swept = true;
+    sweepCaptures();
+  }
+  if (hands.length > 0) return;
   try {
     hands = await call<BridgeTool[]>("hands_list");
   } catch {

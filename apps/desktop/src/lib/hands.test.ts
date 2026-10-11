@@ -13,6 +13,8 @@ const commands: { command: string; args: Args }[] = [];
 let shell = true;
 /** What `hands_call` does next, when a test needs it to do something other than succeed. */
 let handReply: (() => Promise<unknown>) | null = null;
+/** What `captures_sweep` does next; `null` answers a sweep result. */
+let sweepReply: (() => Promise<unknown>) | null = null;
 
 const HAND_NAMES = [
   "page_read",
@@ -35,6 +37,11 @@ vi.mock("@/lib/ipc", async (importOriginal) => {
   return {
     ...actual,
     hasShell: () => shell,
+    capturesSweep: (cap: number | null = null) => {
+      commands.push({ command: "captures_sweep", args: { cap_bytes: cap } });
+      if (sweepReply) return sweepReply();
+      return Promise.resolve({ removed: 0, freed: 0, bytes: 0, cap_bytes: 64 * 1024 * 1024 });
+    },
     call: (command: string, args: Args = {}) => {
       commands.push({ command, args });
       if (command === "hands_list") {
@@ -56,6 +63,7 @@ beforeEach(() => {
   commands.length = 0;
   shell = true;
   handReply = null;
+  sweepReply = null;
   hands.setHandsForTests([]);
 });
 
@@ -68,7 +76,8 @@ test("the list is fetched once, and not at all without a shell", async () => {
   shell = true;
   await hands.startHands();
   await hands.startHands();
-  expect(commands.map((c) => c.command)).toEqual(["hands_list"]);
+  // The first call also sweeps `captures` once (README 3.5); the second asks nothing.
+  expect(commands.map((c) => c.command)).toEqual(["captures_sweep", "hands_list"]);
   expect(hands.handTools().map((t) => t.name)).toEqual(HAND_NAMES);
 });
 
@@ -139,7 +148,8 @@ test("a capture is page_screenshot through hands_call and answers its id", async
   const taken = await hands.takeCapture(7, "https://ledger.test");
 
   expect(taken).toEqual({ id: "cap_0123456789ab", why: null });
-  expect(commands).toEqual([{ command: "hands_call", args: { tab_id: 7, name: "page_screenshot", input: {} } }]);
+  expect(commands.map((c) => c.command)).toEqual(["hands_call", "captures_sweep"]);
+  expect(commands[0]).toEqual({ command: "hands_call", args: { tab_id: 7, name: "page_screenshot", input: {} } });
 });
 
 test("a capture that is refused, throws or is late answers no id and says why", async () => {
@@ -160,4 +170,74 @@ test("without a shell, or on a tab that is not a web page, no capture is asked f
   shell = true;
   expect((await hands.takeCapture(7, "about:blank")).id).toBeNull();
   expect(commands).toEqual([]);
+});
+
+// -- the captures cap (README 3.5, ADR 0066) -------------------------------------------------------
+
+const sweeps = () => commands.filter((c) => c.command === "captures_sweep");
+const FILED = { ok: true, output: "", reason: null, error: null, tier: 2, ms: 1, capture_id: "cap_0123456789ab" };
+
+test("a capture is followed by exactly one sweep at the default cap", async () => {
+  handReply = () => Promise.resolve(FILED);
+  expect(await hands.takeCapture(7, "https://ledger.test")).toEqual({ id: "cap_0123456789ab", why: null });
+  expect(sweeps()).toEqual([{ command: "captures_sweep", args: { cap_bytes: null } }]);
+  expect(commands.map((c) => c.command)).toEqual(["hands_call", "captures_sweep"]);
+});
+
+test("a sweep that is slow does not hold the capture", async () => {
+  handReply = () => Promise.resolve(FILED);
+  sweepReply = () => new Promise(() => undefined);
+  expect((await hands.takeCapture(7, "https://ledger.test")).id).toBe("cap_0123456789ab");
+});
+
+test("a failing sweep leaves the capture's id and why as they were", async () => {
+  const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  try {
+    handReply = () => Promise.resolve(FILED);
+    sweepReply = () => Promise.reject(new Error("database is locked"));
+    expect(await hands.takeCapture(7, "https://ledger.test")).toEqual({ id: "cap_0123456789ab", why: null });
+    sweepReply = () => {
+      throw new Error("channel closed");
+    };
+    expect(await hands.takeCapture(7, "https://ledger.test")).toEqual({ id: "cap_0123456789ab", why: null });
+    await Promise.resolve();
+    expect(sweeps()).toHaveLength(2);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("database is locked"));
+  } finally {
+    log.mockRestore();
+  }
+});
+
+test("a capture that failed filed no row and sweeps nothing", async () => {
+  handReply = () => Promise.resolve({ ok: false, output: "", reason: "minimised", error: "the window is minimised", tier: 2, ms: 1 });
+  expect((await hands.takeCapture(7, "https://ledger.test")).id).toBeNull();
+  handReply = () => Promise.reject(new Error("channel closed"));
+  expect((await hands.takeCapture(7, "https://ledger.test")).id).toBeNull();
+  handReply = () => Promise.resolve({ ok: true, output: "", reason: null, error: null, tier: 2, ms: 1 });
+  expect((await hands.takeCapture(7, "https://ledger.test")).id).toBeNull();
+  expect(sweeps()).toHaveLength(0);
+});
+
+test("with no shell, or on a page that is not the web, nothing is asked and nothing is swept", async () => {
+  shell = false;
+  expect((await hands.takeCapture(7, "https://ledger.test")).id).toBeNull();
+  shell = true;
+  expect((await hands.takeCapture(7, "about:blank")).id).toBeNull();
+  shell = false;
+  await hands.startHands();
+  expect(sweeps()).toHaveLength(0);
+});
+
+test("startHands sweeps once, so a table already too big is trimmed, and a failure leaves the hands", async () => {
+  const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  try {
+    sweepReply = () => Promise.reject(new Error("database is locked"));
+    await hands.startHands();
+    await hands.startHands();
+    await hands.startHands();
+    expect(sweeps()).toHaveLength(1);
+    expect(hands.handTools().map((h) => h.name)).toEqual(HAND_NAMES);
+  } finally {
+    log.mockRestore();
+  }
 });
