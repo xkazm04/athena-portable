@@ -215,14 +215,20 @@ def run_bench(
     return pruned
 
 
-_SWITCH = r"\b(?:switch|go|move|head|flip|change|open)\w*\b[^.\n]{0,60}?"
+#: A request, not a mention: the base form of the verb, then where to ("switch to the X", "go back
+#: to X", "head over to X", "move into X") or, for open, the portal itself ("open the X").
+_SWITCH = (
+    r"\b(?:(?:switch|go|move|head|flip|change)\s+(?:to|back\s+to|over\s+to|into)|open)"
+    r"\s+(?:the\s+)?"
+)
 
 
 def switch_requested(playbook: Playbook, said: str, current: str) -> AppSpec | None:
     """The portal Athena's words ask the person to switch to, if any, other than the current one.
 
     Read from her text alone: "switch to the MyChart tab", "go back to the insurance portal". The
-    first portal named after a verb of moving wins; a portal merely mentioned is not a request.
+    earliest request wins; a portal merely mentioned, or after a verb that is not a request
+    ("the claim goes through Stallwick"), is not one.
     """
     best: tuple[int, AppSpec] | None = None
     for app in playbook.apps:

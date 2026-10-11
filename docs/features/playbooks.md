@@ -29,7 +29,9 @@ routes (`proving/world.py`). Each phase is one portal, since a turn is pinned to
 carries between portals is her memory. The simulated pages (`page.py`) answer host calls the way
 the desktop run loop does and know nothing of the truth. Two things a person would do are
 simulated from the run loop and her words alone: "keep going" when the loop's bound stops her
-mid-work, and switching tabs when she asks for one by name (at most three times).
+mid-work, and switching tabs when she asks for one by name (at most three times). Only a phrase shaped like a
+request counts: switch, go, move, head, flip or change followed by to, back to, over to or into and
+the portal, or open and the portal; "the claim goes through Stallwick" is a mention, not a request.
 
 ## The score
 

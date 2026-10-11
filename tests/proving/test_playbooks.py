@@ -683,6 +683,45 @@ def test_a_request_to_switch_tabs_is_heard_from_her_words_alone(tmp_path: Path) 
     assert switch_requested(book, "Switch to the carrier site.", "carrier") is None
 
 
+@pytest.mark.parametrize(
+    "said",
+    [
+        # counterfeit-takedowns (B6b): the sentence that sent her to Stallwick unasked
+        "The claim goes through the carrier site's trademark form.",
+        # medicare-plan-review (B4a), name-change-everywhere (B4b): built from their aliases
+        "The notice goes through the carrier site's mail-order step, so nothing changes.",
+        "Open cards: the carrier site card, then the others.",
+        # oversize-permits (B5b)
+        "Still open from the earlier tabs: the carrier site card.",
+        "She opened the carrier site yesterday and changes there are pending.",
+        "We are going to the carrier site's rules later; the carrier site moves slowly.",
+    ],
+)
+def test_a_portal_named_after_a_verb_that_is_not_a_request_is_not_a_switch(
+    tmp_path: Path, said: str
+) -> None:
+    book = load_playbook(_two_portals(tmp_path))
+    assert switch_requested(book, said, "shipdesk") is None
+
+
+@pytest.mark.parametrize(
+    "said",
+    [
+        "Switch to the carrier site and I'll read the notes.",
+        "Please go back to Carrier portal tab.",
+        "Let's head over to the carrier site.",
+        "Move into carrier site, please.",
+        "Flip to the carrier site.",
+        "Could you open the carrier site?",
+        "The claim goes through the form. Please change to the carrier site.",
+    ],
+)
+def test_a_request_shaped_phrase_routes_to_the_portal(tmp_path: Path, said: str) -> None:
+    book = load_playbook(_two_portals(tmp_path))
+    routed = switch_requested(book, said, "shipdesk")
+    assert routed is not None and routed.app_id == "carrier"
+
+
 def test_the_person_follows_a_switch_she_asks_for_and_it_is_bounded(tmp_path: Path) -> None:
     book = load_playbook(_two_portals(tmp_path))
 
