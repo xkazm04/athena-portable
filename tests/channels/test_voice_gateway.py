@@ -14,6 +14,7 @@ import logging
 import threading
 import time
 from collections.abc import Callable, Iterator, Sequence
+from typing import Any
 
 import pytest
 
@@ -263,6 +264,53 @@ def test_a_backend_that_cannot_speak_says_so_and_the_turn_still_stands(
     client.say("hi")
     assert client.until("voice.stopped")["reason"] == "error"
     assert len(voiced.daemon.ledger.recent(10).rows) == 1
+
+
+def test_a_line_cut_off_by_barge_in_closes_its_synthesis_before_voice_stopped(
+    voiced: Live,
+    backend: ScriptedBackend,
+    client: VoiceClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    voiced.register()
+    voiced.script(claude_round("TTS: Here is a very long answer about every invoice.\nLong."))
+    backend.utterances = ["what is overdue", "stop"]
+    backend.chunk_delay_s = 0.05
+    backend.chunks_per_text = 40
+    real = backend.synthesize
+    held: list[Iterator[bytes]] = []  # a reference, so counting alone cannot finalise it
+    finalised: list[bool] = []
+    events: list[str] = []
+
+    def watched(text: str) -> Iterator[bytes]:
+        try:
+            yield from real(text)
+        finally:
+            finalised.append(True)
+            events.append("closed")
+
+    def keeping(text: str) -> Iterator[bytes]:
+        generator = watched(text)
+        held.append(generator)
+        return generator
+
+    monkeypatch.setattr(backend, "synthesize", keeping)
+    send = gateway_module.VoiceSession.send
+
+    def recording(self: VoiceSession, event: Any) -> None:
+        if getattr(event, "kind", "") == "voice.stopped":
+            events.append("stopped")
+        send(self, event)
+
+    monkeypatch.setattr(gateway_module.VoiceSession, "send", recording)
+
+    client.utter()
+    client.until("voice.speaking", generation=1)
+    client.utter()
+    assert client.until("voice.stopped", generation=1)["reason"] == "barge_in"
+
+    assert held and finalised == [True]
+    assert events == ["closed", "stopped"]
 
 
 def _speaker_records(caplog: pytest.LogCaptureFixture) -> list[logging.LogRecord]:

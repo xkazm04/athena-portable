@@ -156,3 +156,12 @@ stop short hears that it stopped short.
   This is safe because `_speak_loop` sends `voice.stopped` after the generation's last chunk on
   the same ordered socket, so no chunk of it can follow. `Player.holds` is a read-only seam for
   the tests.
+- A line cut off by barge-in closes its synthesis at once (voice full r2 craft-6). `_speak_loop`
+  iterates `backend.synthesize(...)` and closes it in a `finally` (a `close()` if it has one), so leaving the loop by `break`
+  or by an exception runs the generator's `finally` before `voice.stopped` is sent. Left to
+  collection it ran whenever CPython freed the generator, which is not at once if anything holds
+  a reference, and for Kokoro that `finally` is what kills the sentence still rendering.
+  `KokoroTTS._render` checks `job.cancelled` before it spawns, but `_Render.cancel` can run
+  between that check and the assignment of `job.proc`, find no process, and return; the render
+  then ran to completion or to its timeout. `_render` now kills the process as soon as it is
+  assigned if `job.cancelled` is already set. The existing timeout and kill paths are unchanged.

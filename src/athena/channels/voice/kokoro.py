@@ -429,6 +429,9 @@ class KokoroTTS:
                 )
             except OSError as exc:
                 raise VoiceBackendError(f"kokoro would not start ({type(exc).__name__})") from None
+            if job.cancelled:
+                # A cancel that ran between the check above and the assignment found no process.
+                job.proc.kill()
             try:
                 _, stderr = job.proc.communicate(timeout=self.timeout_s)
             except subprocess.TimeoutExpired:

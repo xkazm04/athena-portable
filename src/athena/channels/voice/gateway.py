@@ -641,13 +641,21 @@ class VoiceSession:
                         sample_rate=backend.sample_rate,
                     )
                 )
-                for chunk in backend.synthesize(line.text):
-                    with self._lock:
-                        stale = generation <= self._cutoff
-                    if stale or self._closed:
-                        reason = "barge_in"
-                        break
-                    self._send_audio(generation, chunk)
+                # Closed below however the loop ends, so a cut-off line stops its synthesis (and the
+                # process behind it) now, not when the generator happens to be collected.
+                chunks = backend.synthesize(line.text)
+                try:
+                    for chunk in chunks:
+                        with self._lock:
+                            stale = generation <= self._cutoff
+                        if stale or self._closed:
+                            reason = "barge_in"
+                            break
+                        self._send_audio(generation, chunk)
+                finally:
+                    close = getattr(chunks, "close", None)
+                    if close is not None:
+                        close()
             except VoiceBackendError:
                 reason = "error"
             except Exception:  # one line fails; the speaker outlives it

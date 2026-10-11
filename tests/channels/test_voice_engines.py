@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -191,6 +192,28 @@ def test_closing_the_stream_early_stops_the_sentence_still_rendering(
     stream.close()  # a barge-in
     time.sleep(1.2)
     assert [run["argv"][-1] for run in runs(log)] == [" A first sentence to say."]  # type: ignore[index]
+
+
+def test_a_render_cancelled_before_its_process_exists_is_killed_when_it_starts(
+    homes: EngineHomes, log: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    lay_out_kokoro(homes.root)
+    tts = kokoro.KokoroTTS(homes, command=command("hang", log), timeout_s=5)
+    job = kokoro._Render(tts._render, "Hello.")
+    real = subprocess.Popen
+
+    def cancelled_while_spawning(*args: Any, **kwargs: Any) -> subprocess.Popen[bytes]:
+        proc = real(*args, **kwargs)
+        job.cancel()  # runs before ``job.proc`` is assigned: it finds no process to kill
+        return proc
+
+    monkeypatch.setattr(kokoro.subprocess, "Popen", cancelled_while_spawning)
+    began = time.monotonic()
+
+    assert tts._render(job) == b""
+
+    assert time.monotonic() - began < 4, "the engine ran until its timeout"
+    assert job.proc is not None and job.proc.returncode not in (None, 0)
 
 
 def test_a_sentence_that_never_finishes_times_out(homes: EngineHomes, log: Path) -> None:
