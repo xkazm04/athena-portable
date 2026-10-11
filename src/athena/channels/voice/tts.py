@@ -17,6 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from athena.contracts.channel import TurnFinished
+from athena.contracts.harness import PromptBlock
 from athena.harness.op_grammar import TTS_CAP
 
 __all__ = ["TTS_CAP", "SpokenLine", "spoken_line"]
@@ -38,4 +39,5 @@ def spoken_line(finished: TurnFinished) -> SpokenLine | None:
     total = len(text)
     if total <= TTS_CAP:
         return SpokenLine(text)
-    return SpokenLine(f"{text[:TTS_CAP]} (showing {TTS_CAP} of {total})", truncated=True)
+    footer = PromptBlock("tts", text[:TTS_CAP], shown=TTS_CAP, total=total).footer()
+    return SpokenLine(f"{text[:TTS_CAP]} {footer}", truncated=True)
