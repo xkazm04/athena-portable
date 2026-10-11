@@ -535,7 +535,10 @@ class VoiceSession:
 
     def _handle(self, job: _Job) -> None:
         self.send(VoiceTranscript(text=job.text, final=True))
-        spoken = recognise(job.text, self._known_cards(), speaking=job.interrupted or self.speaking)
+        presented, inbox = self._known_cards()
+        spoken = recognise(
+            job.text, presented, speaking=job.interrupted or self.speaking, inbox=inbox
+        )
         if spoken.kind == "silence":
             return
         if spoken.kind == "stop":
@@ -546,15 +549,15 @@ class VoiceSession:
             return
         self._turn(job, job.text)
 
-    def _known_cards(self) -> list[Card]:
-        """The cards this session was shown, then the inbox's, newest of ours first."""
+    def _known_cards(self) -> tuple[list[Card], list[Card]]:
+        """The cards this session presented, newest first, and the inbox's others, newest first."""
         seen = {card.id for card in self.cards}
         inbox = [
             Card(row.id, tuple((option, "") for option in row.options))
-            for row in self.daemon.approvals.pending(PENDING_LINES).rows
+            for row in reversed(self.daemon.approvals.pending(PENDING_LINES).rows)
             if row.id not in seen
         ]
-        return [*self.cards, *inbox]
+        return list(self.cards), inbox
 
     def _turn(self, job: _Job, message: str) -> None:
         session = self.daemon.sessions.get(job.origin)

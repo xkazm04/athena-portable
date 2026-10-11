@@ -38,7 +38,9 @@ Spoken commands that answer a card are parsed by `commands.py`, never by a backe
 a held key (ADR 0020). One utterance is at most 4 MiB of PCM, two minutes: past it the utterance is
 dropped with one `turn.error` `validator_failed` and the socket stays open (ADR 0072). The socket closes 1000 on a normal end, 1002 on a framing error, 1009 on an oversize
 frame and 1011 (logged) when handling a frame raised; a `tool_result` whose `tier` or `ms` is not a
-non-negative integer is refused with `validator_failed` and the socket stays open.
+non-negative integer is refused with `validator_failed` and the socket stays open. A bare "yes" or
+"no" answers only the newest card this socket presented; an inbox card it never showed is answered
+only by its own option id or label, and only when exactly one fits (ADR 0073).
 
 Every `start` and `text` frame carries `disabled_origins`, as `POST /run` does: a spoken turn honours the
 switch, and a spoken answer is replayed against the list current when the person spoke. The daemon keeps

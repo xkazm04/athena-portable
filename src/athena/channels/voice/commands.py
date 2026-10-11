@@ -75,12 +75,17 @@ def normalise(text: str) -> str:
     return _SPACES.sub(" ", _PUNCT.sub(" ", text.lower().replace("'", ""))).strip()
 
 
-def recognise(text: str, cards: Sequence[Card], *, speaking: bool) -> Spoken:
+def recognise(
+    text: str, cards: Sequence[Card], *, speaking: bool, inbox: Sequence[Card] = ()
+) -> Spoken:
     """Say what ``text`` is: a barge-in, an answer to the newest card, a message, or nothing.
 
-    ``cards`` is newest first — the card the user was just asked about is the one a bare "yes"
-    answers. ``speaking`` is whether a reply is playing right now, because a stop word only means
-    stop while there is something to stop; said into silence it is a message like any other.
+    ``cards`` are the cards this socket presented, newest first — the card the user was just asked
+    about is the one a bare "yes" answers. ``inbox`` are pending cards it never presented, newest
+    first: a bare "yes" never answers one (the user was not asked); its own option id or label does,
+    and only when exactly one such card fits (ADR 0073). ``speaking`` is whether a reply is playing
+    right now, because a stop word only means stop while there is something to stop; said into
+    silence it is a message like any other.
     """
     spoken = normalise(text)
     if not spoken:
@@ -98,6 +103,14 @@ def recognise(text: str, cards: Sequence[Card], *, speaking: bool) -> Spoken:
         choice = _label_only(spoken, card.options)
         if choice is not None:
             return Spoken("answer", text=text, approval_id=card.id, choice=choice)
+    fits = [
+        (card, choice)
+        for card in inbox
+        if (choice := _label_only(spoken, card.options)) is not None
+    ]
+    if len(fits) == 1:
+        card, choice = fits[0]
+        return Spoken("answer", text=text, approval_id=card.id, choice=choice)
     return Spoken("message", text=text)
 
 

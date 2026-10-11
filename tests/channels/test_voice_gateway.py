@@ -633,3 +633,69 @@ def test_an_unmasked_client_frame_closes_1002(voiced: Live, client: VoiceClient)
     client.ws._wfile.flush()
     assert client.next() is None
     assert client.ws.close_code == 1002
+
+
+# -- a bare yes answers only a card this socket presented ---------------------------------------
+
+
+def _fresh(voiced: Live) -> VoiceClient:
+    return VoiceClient(
+        connect(voiced.host, voiced.port, VOICE_PATH, token=TOKEN, origin=SHELL_ORIGIN)
+    )
+
+
+def _pending_ids(voiced: Live) -> set[str]:
+    return {row.id for row in voiced.daemon.approvals.pending(10).rows}
+
+
+def test_a_fresh_socket_with_two_inbox_cards_hears_no_bare_word_as_an_answer(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    first = _file_a_card(voiced, client)
+    second = _file_a_card(voiced, client)
+    fresh = _fresh(voiced)
+    try:
+        words = ["yes", "ok", "do it", "Yes.", "no"]
+        backend.utterances = list(words)
+        for word in words:
+            voiced.script(claude_round("Noted."))
+            fresh.utter()
+            assert fresh.until("voice.transcript", final=True)["text"] == word
+            fresh.until("turn.finished")
+        assert "decision.resolved" not in fresh.kinds()
+        assert _pending_ids(voiced) == {str(first["id"]), str(second["id"])}
+    finally:
+        fresh.close()
+
+
+def test_a_card_this_socket_presented_takes_a_bare_yes_while_older_inbox_cards_wait(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    older = _file_a_card(voiced, client)
+    fresh = _fresh(voiced)
+    try:
+        mine = _file_a_card(voiced, fresh)
+        voiced.script(claude_round("TTS: Paid.\nPaid."))
+        backend.utterances = ["yes"]
+        fresh.utter()
+        assert fresh.until("decision.resolved")["id"] == mine["id"]
+        assert _pending_ids(voiced) == {str(older["id"])}
+    finally:
+        fresh.close()
+
+
+def test_a_word_that_fits_two_unpresented_cards_resolves_neither(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    first = _file_a_card(voiced, client)
+    second = _file_a_card(voiced, client)
+    fresh = _fresh(voiced)
+    try:
+        voiced.script(claude_round("Noted."))
+        backend.utterances = ["decline"]
+        fresh.utter()
+        fresh.until("turn.finished")
+        assert "decision.resolved" not in fresh.kinds()
+        assert _pending_ids(voiced) == {str(first["id"]), str(second["id"])}
+    finally:
+        fresh.close()
