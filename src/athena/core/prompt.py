@@ -386,14 +386,21 @@ def _project_block(project: Mapping[str, Any] | None) -> PromptBlock:
     return PromptBlock(name="frame.project", text=f"## Active project\n\n{body}\n")
 
 
-def _decisions_block(lines: Sequence[str], limit: int = DECISION_LIMIT) -> PromptBlock:
+def _decisions_block(
+    lines: Sequence[str], nonce: str | None = None, limit: int = DECISION_LIMIT
+) -> PromptBlock:
     """Cards the user has not answered. You do not act on a pending card and you do not re-file
-    one; it is here so you can say what you are waiting for."""
+    one; it is here so you can say what you are waiting for. A card's params were proposed by the
+    model after reading a page, so the lines ride inside the turn's fence."""
     total = len(lines)
     shown = min(total, max(limit, 0))
     body = "\n".join(f"- {line}" for line in lines[:shown]) or "(nothing is waiting on the user)"
-    text = f"## Decisions waiting on the user\n\n{body}\n\n(showing {shown} of {total})\n"
-    return PromptBlock(name="frame.decisions", text=text, shown=shown, total=total)
+    text = (
+        "## Decisions waiting on the user\n\n"
+        f"{wrap_untrusted(body, nonce=nonce)}\n\n"
+        f"(showing {shown} of {total})\n"
+    )
+    return PromptBlock(name="frame.decisions", text=text, shown=shown, total=total, untrusted=True)
 
 
 # --- composition ------------------------------------------------------------------------------
@@ -480,7 +487,7 @@ def compose(
         _tool_results_block(tool_results, tag, tool_result_limit),
     ]
     frame_blocks.extend(block for name, block in recalled.items() if name.startswith(FRAME_PREFIX))
-    frame_blocks.append(_decisions_block(pending_decisions, decision_limit))
+    frame_blocks.append(_decisions_block(pending_decisions, tag, decision_limit))
 
     assert_split(static_blocks, frame_blocks)
     return Composed(
