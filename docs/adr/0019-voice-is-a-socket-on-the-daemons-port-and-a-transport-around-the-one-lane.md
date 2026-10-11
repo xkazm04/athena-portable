@@ -106,3 +106,11 @@ stop short hears that it stopped short.
 - The worker logs what it catches (voice full r2 robustness-7, craft-10). When a turn raises, its
   traceback is logged once under the fixed message `voice: a turn failed`, with no user text and
   no page text; the client's `turn.error` stays `unknown` with the exception's type name only.
+- A provider reply cut short is a `VoiceBackendError` like any other transport failure (voice
+  full r2 robustness-3, and the voice gateway fix's question on `backends.py`). The OpenAI
+  backend's `transcribe` and `synthesize` catch `http.client.HTTPException` — `IncompleteRead`,
+  `BadStatusLine` and `LineTooLong` among them — beside `URLError`, `TimeoutError` and `OSError`,
+  and raise `transcription failed: <TypeName>` or `synthesis failed: <TypeName>` from `None`. It
+  logs no traceback, and in transcription it never closes the socket. This supersedes the
+  `IncompleteRead` example in the first bullet of this section, which took the speaker's
+  traceback path.

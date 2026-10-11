@@ -25,6 +25,7 @@ for hearing when a person picks it and its key is sealed or in the environment.
 
 from __future__ import annotations
 
+import http.client
 import io
 import json
 import os
@@ -316,7 +317,13 @@ class OpenAIBackend:
                 payload = json.loads(reply.read().decode("utf-8"))
         except urllib.error.HTTPError as exc:
             raise VoiceBackendError(f"transcription refused with {exc.code}") from None
-        except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+        except (
+            urllib.error.URLError,
+            http.client.HTTPException,
+            TimeoutError,
+            OSError,
+            ValueError,
+        ) as exc:
             raise VoiceBackendError(f"transcription failed: {type(exc).__name__}") from None
         text = payload.get("text") if isinstance(payload, dict) else None
         return str(text or "").strip()
@@ -347,7 +354,12 @@ class OpenAIBackend:
                     yield chunk
         except urllib.error.HTTPError as exc:
             raise VoiceBackendError(f"synthesis refused with {exc.code}") from None
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        except (
+            urllib.error.URLError,
+            http.client.HTTPException,
+            TimeoutError,
+            OSError,
+        ) as exc:
             raise VoiceBackendError(f"synthesis failed: {type(exc).__name__}") from None
 
 
