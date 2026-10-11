@@ -1,0 +1,110 @@
+{
+  "id": "workers-comp-premium-audit",
+  "title": "A contractor's workers' compensation audit is answered by duties and records: a bookkeeper to clerical, a salesman to outside sales, a crew's extra overtime pay and two insured subs' costs taken off, one found only in its contract file, while an office manager on job sites and a general-liability certificate are left alone",
+  "domain": "Business insurance",
+  "audience": "work",
+  "promise": "A New York renovation contractor's premium audit is read against its payroll firm's register and time records, its subcontract files, its agent's certificates and the rules of the New York manual, and the lines the auditor got wrong are disputed with the carrier by their deadline of 14 October: a bookkeeper who is never on a job site moves from the carpentry code to clerical, a salesman who sells from customers' homes to outside sales, the extra half of one crew's overtime comes off because the register records it separately, and the cost of two insured subs comes off, one on the agent's certificate and one on a certificate stapled only in the contract file. The office manager who directs crews on site, the estimator who frames, the other crew's overtime with no records, a general-liability certificate, an expired policy, an uninsured painter, an estimated split of payroll, last year's closed audit and a recovery firm's 40 percent are left alone.",
+  "persona": "The president of a small New York renovation contractor with six carpenters and laborers and four office and sales staff",
+  "chore": "Read the carrier's rules and the auditor's worksheet in Auditwell; the register and the time records in Payroll Harbor; the subcontract files with whatever is stapled to them in Binderwell; and the policy, the certificates the agent holds and the offers in Coverwell. Then apply the New York Manual for Workers' Compensation and Employers' Liability Insurance, 2020 edition (Rule IV(B)(2), (E) and (F)(2); Rule V(E)(2); Rule VIII(C)(3); Rule I(J)) as it stands on 9 October 2026: duties, not title, decide the class; a payroll divides between classes only on records that allocate it; the extra half of overtime comes off only where the books show it separately; and a sub's cost stays in the premium unless evidence shows its own workers' compensation insurance in force for the work.",
+  "command": "I'm Joan Delaplane, president of Delaplane Renovation. Our workers' comp audit is back. Go through Auditwell, Payroll Harbor, Binderwell and Coverwell, and dispute every line the rules and our records show the auditor got wrong, with the correction, while the carrier will still take it. Leave the lines that are right, and don't accept any offer.",
+  "apps": [
+    {
+      "name": "Auditwell",
+      "role": "the carrier's premium audit desk: the rules it applies, the auditor's worksheet, last year's audit lines, and the form to dispute a line",
+      "api": "Carrier portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Payroll Harbor",
+      "role": "the payroll firm: the register for the policy year with overtime records, and the time records of the office and sales staff",
+      "api": "Payroll service, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the document store: the subcontract files with the contract, the dates each sub worked and what is stapled to the file",
+      "api": "Document store, no API",
+      "url": ""
+    },
+    {
+      "name": "Coverwell",
+      "role": "the agent's portal: the policy, the dispute window, the certificates the agent holds and the offers received",
+      "api": "Agent portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules, the worksheet and last year's audit lines in Auditwell.",
+    "Reads the register and the time records in Payroll Harbor.",
+    "Reads each sub's contract file and the dates it worked in Binderwell.",
+    "Reads the policy, the certificates and the offers in Coverwell, then files the disputes in Auditwell."
+  ],
+  "gates": [
+    {
+      "action": "dispute_audit_line",
+      "label": "Dispute an audit line with the carrier",
+      "why": "A dispute goes to the carrier under the insured's name and states a class or a payroll the insured says is right; one that claims a clerical class for a person on job sites, or an exclusion without records, is a false statement on an audit."
+    },
+    {
+      "action": "request_payroll_division",
+      "label": "Ask the carrier to divide an employee's payroll",
+      "why": "A division is a statement about how an employee's pay was earned; the manual allows it only on the employer's original records, and an estimate is not allowed."
+    },
+    {
+      "action": "accept_offer",
+      "label": "Accept an outside firm's offer",
+      "why": "It binds the insured to a recovery firm's share of every dollar returned, which she can avoid by disputing the lines herself."
+    }
+  ],
+  "traps": [
+    "Disputing the office manager into clerical because of her title, when the time records show 24 hours a week directing crews on site.",
+    "Disputing the estimator who frames 26 hours a week into outside sales.",
+    "Excluding the other crew's overtime when its register records no overtime separately.",
+    "Removing a sub's cost on a general-liability certificate, or on a workers' compensation policy that ended before the sub worked.",
+    "Removing the cost of the painter who has no policy anywhere.",
+    "Asking for an estimated 60/40 or 50/50 division of payroll with no record that allocates it.",
+    "Disputing last year's audit lines after the carrier's window closed.",
+    "Accepting a recovery firm's offer of 40 percent of every dollar returned."
+  ],
+  "memory": [
+    "The auditor's lines, codes and rates, carried from Auditwell.",
+    "Each person's duties by hours and the overtime records, carried from Payroll Harbor.",
+    "Each sub's dates and certificates, carried from Binderwell and Coverwell into the Auditwell tab."
+  ],
+  "economics": {
+    "value_usd": 5000,
+    "per": "year",
+    "basis": "An estimate. A contractor with a handful of employees and several subs is audited once a year, and an auditor who classes by title or business, includes all overtime and charges a sub's cost for want of a certificate can add thousands of dollars to the premium; the roster's $5,000 a year is a small contractor's premium avoided on one audit, not a published figure. Each truth item is weighted at the premium its dispute takes off at the carrier's rates (the carrier's rates in the world are invented): the bookkeeper's 52,000.00 from 5645 to 8810, 5,730.40; the salesman's 71,500.00 to 8742, 7,757.75; crew A's extra overtime pay 4,960.00 excluded, 555.52; Marrow Roofing's 21,000.00, 2,352.00; Tarrow Decks' 23,400.00, 2,620.80; $19,016.47 in all. Times a year: 1, an annual audit. manual_minutes 150: reading a twelve-line worksheet, six staff records, five subcontract files, three certificates and six rules against the manual, and filing five disputes. The rules applied, as they stand on Friday 9 October 2026, are those of the New York Manual for Workers' Compensation and Employers' Liability Insurance, 2020 edition, original printing effective 1 May 2020 with pages of the 1st reprint effective 1 October 2021, as posted by the New York Compensation Insurance Rating Board (file dated 31 January 2022, read on 11 October 2026): Rule IV(B)(2) and the codes 8810 and 8742 (a clerical office employee works in an area separated by floors, walls or counters and is not regularly exposed to the operative hazards; an outside salesperson works away from the premises and not at merchandise or other work), Rule IV(C) and (E)(1) (the business is classified, not the individual), code 5606 note 1 (a person directly in charge of construction work takes the construction classification), Rule IV(F)(2) (division of payroll in construction only on original records disclosing an allocation; 8810, 8742, 8809, 8871 and 7380 cannot be divided), Rule V(E)(2) (overtime: (a) entire extra pay where records show it separately by employee and in summary by classification, (b) one-third of the total, (c) one-half for double time), Rule VIII(C)(3) (an uninsured sub's cost is charged unless satisfactory evidence shows workers' compensation insurance in force for the work; 50 percent of a labor-and-material price and 90 percent of a labor-only price as payroll without records), and Rule I(J) (appeal to the Rating Board, a staff conference, its Underwriting Committee, then a hearing at the Department of Financial Services). THE BRIEF'S MANUAL, AS FOUND: NCCI's Basic Manual is licensed; the North Carolina Rate Bureau, the Massachusetts and California bureaus publish theirs, but their sites refused the bench machine's connection or returned 403 on 11 October 2026, and Texas's manual is 1997 to 2013 text, so New York's, published free by its independent bureau and readable in full, is applied. NOT TAKEN OR NOT CONFIRMED, so no target rests on it: executive officers' minimum and maximum payroll (Rule VIII(A)(6) refers to values in Part Three, Loss Costs, not read), the payroll limitation law for construction (Rule V(G): the world's work is all one- and two-family residential, which it excludes), a later reprint of the manual, and any deadline for the Rule I(J) steps (the manual states none; the 30 days in the world is the invented carrier's).",
+    "manual_minutes": 150,
+    "times_per_year": 1,
+    "incumbent_fee_pct": 50,
+    "incumbent": "Premium audit recovery firms take a share of what they get back: WC Audit Recovery publishes 50 percent of recovered premium, invoiced after the carrier refunds or credits it, and nothing if nothing is recovered (its site, read on 11 October 2026, undated, copyright 2026). The 40 percent in the world's offer is invented.",
+    "sources": [
+      {
+        "label": "New York Compensation Insurance Rating Board: New York Manual for Workers' Compensation and Employers' Liability Insurance, 2020 edition (Rules I, IV, V, VIII)",
+        "url": "https://www.nycirb.org/pdfmanuals/NYWCEL_%20013122.pdf"
+      },
+      {
+        "label": "New York Compensation Insurance Rating Board: manuals and the appeal process (Rule I(J))",
+        "url": "https://www.nycirb.org"
+      },
+      {
+        "label": "WC Audit Recovery: published fee of 50 percent of recovered premium",
+        "url": "https://wcauditrecovery.com/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Twelve audit lines in four systems and a manual whose answer turns on duties and records, not names: an office manager is not clerical because of her title, an estimator who frames is not an outside salesperson, overtime comes off on one crew's records and not the other's, and a sub's cost comes off on a certificate for workers' compensation, in force for the work dates, wherever it sits, including one stapled in a contract file. The carrier's window for the audit ends on 14 October, and last year's has closed.",
+    "usefulness_why": "An audit that is wrong in the insured's favor and in the carrier's can be corrected only by disputing line by line with the right evidence; for a small contractor this is thousands of dollars of premium and a rare, once-a-year chore that an owner does from memory, and a wrong claim is a misstatement on the audit."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner with the worksheet, the time records, the register, the files and the certificates in hand gets most of it: the bar is the five disputes, with the sub whose certificate is only in its contract file among them, filed inside the carrier's window, and nothing for the office manager, the estimator who frames, the other crew's overtime, the two certificates that do not count, the uninsured painter, the estimated divisions, last year's audit, or the recovery firm's offer, inside an hour."
+  },
+  "caveat": "Joan Delaplane, Delaplane Renovation Corp., its employees and subs (Hollin Drywall, Marrow Roofing, Quillon Fencing, Tarrow Decks, Pike & Son Painting, Alder Masonry), Northgate Mutual, Fairhaven Casualty, Premium Rebate Partners, Auditwell, Coverwell, Payroll Harbor and Binderwell, and every payroll, hour, contract, certificate, rate and date are invented; the carrier's rates and its 30-day dispute window are the invented carrier's, and the New York manual states no deadline for its appeals. The public rules applied are those of the New York Manual for Workers' Compensation and Employers' Liability Insurance, 2020 edition (Rules I, IV, V and VIII, codes 5606, 5645, 8742 and 8810), as posted by the New York Compensation Insurance Rating Board in a file dated 31 January 2022 and read on 11 October 2026; a later reprint may differ, and the NCCI Basic Manual used in most other states is licensed and was not read. Executive officers' payroll limits and the construction payroll limitation law are not applied. The Rating Board, the Department of Financial Services and a court decide real audits, on a real policy and real records. This applies stated rules to stated facts; it is not legal or insurance advice."
+}

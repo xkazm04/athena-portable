@@ -1,0 +1,78 @@
+{
+  "targets": [
+    {
+      "tool": "dispute_audit_line",
+      "key": "line_id",
+      "eligible": {
+        "W-2": {
+          "value_usd": 5730.4,
+          "why": "Priya is a bookkeeper who works 40 hours a week in the closed front office and is never on a job site (the time records): 8810 Clerical Office Employees, not 5645 (Rule IV(B)(2)). The premium falls by 5,730.40: 52,000.00 at the difference of 11.02 per 100",
+          "expect": {
+            "correct_class_code": "8810"
+          }
+        },
+        "W-4": {
+          "value_usd": 7757.75,
+          "why": "Neil spends 40 hours a week at customers' homes on estimates and sales calls and does no carpentry (the time records): 8742 Outside Salespersons, away from the premises (Rule IV(B)(2)). The premium falls by 7,757.75: 71,500.00 at the difference of 10.85 per 100",
+          "expect": {
+            "correct_class_code": "8742"
+          }
+        },
+        "W-6": {
+          "value_usd": 555.52,
+          "why": "Crew A's register records the extra half of its overtime separately, by employee and in summary by classification, 4,960.00 of the 14,880.00: the entire extra pay is excluded (Rule V(E)(2)(a)). The premium falls by 555.52: 4,960.00 at 11.20 per 100",
+          "expect": {
+            "payroll_to_remove": 4960.0
+          }
+        },
+        "W-9": {
+          "value_usd": 2352.0,
+          "why": "Marrow Roofing worked 4 to 29 August 2025 and the agent holds its workers' compensation certificate for 1 January 2025 to 1 January 2026, so insurance was in force for the work (Rule VIII(C)(3)(a)). The 21,000.00 charged comes off; the premium falls by 2,352.00",
+          "expect": {
+            "payroll_to_remove": 21000.0
+          }
+        },
+        "W-11": {
+          "value_usd": 2620.8,
+          "why": "Tarrow Decks worked 10 November 2025 to 16 January 2026 and its workers' compensation certificate, for 1 March 2025 to 1 March 2026, is stapled in its contract file in Binderwell and nowhere else: insurance was in force for the work. The 23,400.00 charged comes off; the premium falls by 2,620.80",
+          "required": true,
+          "expect": {
+            "payroll_to_remove": 23400.0
+          }
+        }
+      },
+      "traps": {
+        "W-1": "The six carpenters and laborers are rightly 5645, the governing classification",
+        "W-3": "Rosalind is an office manager by title, but the time records show 24 hours a week on job sites directly in charge of the crews: she is not clerical (8810 needs an office away from the operative hazards), and 8810 cannot be divided, so her payroll takes 5645, the class of greatest payroll",
+        "W-5": "Gwen is an estimator who also frames 26 hours a week with the crews: 8742 excludes anyone who does other work of the business, and 8742 is not available for division, so her payroll stays in 5645",
+        "W-7": "Crew B's register records no overtime separately, only gross pay: with no such records nothing is excluded (Rule V(E)(2))",
+        "W-8": "Hollin Drywall's only certificate is for general liability, which is not evidence of workers' compensation insurance (Rule VIII(C)(3))",
+        "W-10": "Quillon Fencing's workers' compensation policy ended 30 June 2025, before it worked, 6 to 24 October 2025: no insurance was in force for the work",
+        "W-12": "Pike & Son Painting has no policy and no certificate anywhere: the charge stands",
+        "P-1": "The prior audit's bill is dated 12 August 2025 and the carrier took disputes only until 11 September 2025: it takes none now",
+        "P-2": "The prior audit's window closed on 11 September 2025, so the carrier takes no dispute of its lines"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "request_payroll_division",
+      "key": "employee_id",
+      "eligible": {},
+      "traps": {
+        "EMP-09": "An estimated 60/40 split of Rosalind's payroll between 8810 and 5645 is not allowed: no record allocates her payroll, and 8810 is not available for division (Rule IV(F)(2))",
+        "EMP-11": "An estimated 50/50 split of Gwen's payroll between 8742 and 5645 is not allowed: no record allocates her payroll, and 8742 is not available for division (Rule IV(F)(2))"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "accept_offer",
+      "key": "offer_id",
+      "eligible": {},
+      "traps": {
+        "O-1": "An audit-recovery firm's 40 percent of every dollar returned is a share the insured can avoid by disputing the lines herself, inside the carrier's window"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

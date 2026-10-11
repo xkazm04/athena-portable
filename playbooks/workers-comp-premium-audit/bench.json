@@ -1,0 +1,290 @@
+{
+  "playbook": "workers-comp-premium-audit",
+  "run_at": "2026-10-11T04:18:40Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 109.5,
+  "turns": 9,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 16,
+  "cost_usd": 0.9427,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.8
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 19016.47,
+    "value_found_usd": 19016.47,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 12,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "dispute_audit_line",
+        "key": "W-1",
+        "why": "The six carpenters and laborers are rightly 5645, the governing classification",
+        "filed": false
+      },
+      {
+        "action": "dispute_audit_line",
+        "key": "W-3",
+        "why": "Rosalind is an office manager by title, but the time records show 24 hours a week on job sites directly in charge of the crews: she is not clerical (8810 needs an office away from the operative hazards), and 8810 cannot be divided, so her payroll takes 5645, the class of greatest payroll",
+        "filed": false
+      },
+      {
+        "action": "dispute_audit_line",
+        "key": "W-5",
+        "why": "Gwen is an estimator who also frames 26 hours a week with the crews: 8742 excludes anyone who does other work of the business, and 8742 is not available for division, so her payroll stays in 5645",
+        "filed": false
+      },
+      {
+        "action": "dispute_audit_line",
+        "key": "W-7",
+        "why": "Crew B's register records no overtime separately, only gross pay: with no such records nothing is excluded (Rule V(E)(2))",
+        "filed": false
+      },
+      {
+        "action": "dispute_audit_line",
+        "key": "W-8",
+        "why": "Hollin Drywall's only certificate is for general liability, which is not evidence of workers' compensation insurance (Rule VIII(C)(3))",
+        "filed": false
+      },
+      {
+        "action": "dispute_audit_line",
+        "key": "W-10",
+        "why": "Quillon Fencing's workers' compensation policy ended 30 June 2025, before it worked, 6 to 24 October 2025: no insurance was in force for the work",
+        "filed": false
+      },
+      {
+        "action": "dispute_audit_line",
+        "key": "W-12",
+        "why": "Pike & Son Painting has no policy and no certificate anywhere: the charge stands",
+        "filed": false
+      },
+      {
+        "action": "dispute_audit_line",
+        "key": "P-1",
+        "why": "The prior audit's bill is dated 12 August 2025 and the carrier took disputes only until 11 September 2025: it takes none now",
+        "filed": false
+      },
+      {
+        "action": "dispute_audit_line",
+        "key": "P-2",
+        "why": "The prior audit's window closed on 11 September 2025, so the carrier takes no dispute of its lines",
+        "filed": false
+      },
+      {
+        "action": "request_payroll_division",
+        "key": "EMP-09",
+        "why": "An estimated 60/40 split of Rosalind's payroll between 8810 and 5645 is not allowed: no record allocates her payroll, and 8810 is not available for division (Rule IV(F)(2))",
+        "filed": false
+      },
+      {
+        "action": "request_payroll_division",
+        "key": "EMP-11",
+        "why": "An estimated 50/50 split of Gwen's payroll between 8742 and 5645 is not allowed: no record allocates her payroll, and 8742 is not available for division (Rule IV(F)(2))",
+        "filed": false
+      },
+      {
+        "action": "accept_offer",
+        "key": "O-1",
+        "why": "An audit-recovery firm's 40 percent of every dollar returned is a share the insured can avoid by disputing the lines herself, inside the carrier's window",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "dispute_audit_line",
+      "key": "W-2",
+      "outcome": "correct",
+      "value_usd": 5730.4,
+      "exact": true,
+      "why": "Priya is a bookkeeper who works 40 hours a week in the closed front office and is never on a job site (the time records): 8810 Clerical Office Employees, not 5645 (Rule IV(B)(2)). The premium falls by 5,730.40: 52,000.00 at the difference of 11.02 per 100"
+    },
+    {
+      "action": "dispute_audit_line",
+      "key": "W-4",
+      "outcome": "correct",
+      "value_usd": 7757.75,
+      "exact": true,
+      "why": "Neil spends 40 hours a week at customers' homes on estimates and sales calls and does no carpentry (the time records): 8742 Outside Salespersons, away from the premises (Rule IV(B)(2)). The premium falls by 7,757.75: 71,500.00 at the difference of 10.85 per 100"
+    },
+    {
+      "action": "dispute_audit_line",
+      "key": "W-6",
+      "outcome": "correct",
+      "value_usd": 555.52,
+      "exact": true,
+      "why": "Crew A's register records the extra half of its overtime separately, by employee and in summary by classification, 4,960.00 of the 14,880.00: the entire extra pay is excluded (Rule V(E)(2)(a)). The premium falls by 555.52: 4,960.00 at 11.20 per 100"
+    },
+    {
+      "action": "dispute_audit_line",
+      "key": "W-9",
+      "outcome": "correct",
+      "value_usd": 2352.0,
+      "exact": true,
+      "why": "Marrow Roofing worked 4 to 29 August 2025 and the agent holds its workers' compensation certificate for 1 January 2025 to 1 January 2026, so insurance was in force for the work (Rule VIII(C)(3)(a)). The 21,000.00 charged comes off; the premium falls by 2,352.00"
+    },
+    {
+      "action": "dispute_audit_line",
+      "key": "W-11",
+      "outcome": "correct",
+      "value_usd": 2620.8,
+      "exact": true,
+      "why": "Tarrow Decks worked 10 November 2025 to 16 January 2026 and its workers' compensation certificate, for 1 March 2025 to 1 March 2026, is stapled in its contract file in Binderwell and nowhere else: insurance was in force for the work. The 23,400.00 charged comes off; the premium falls by 2,620.80"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm filing five disputes. Each one goes to you as a decision card before it reaches the carrier.\n\n\n**Disputes filed for your answer**\n- **W-2, Anand:** correct to 8810 on $52,000. She's full-time in the closed front office. The saving is about $5,730 in premium.\n- **W-4, Okoye:** correct to 8742 on $71,500. All his time is estimating and selling at customers' homes. The saving is about $7,760.\n- **W-6, crew A overtime:** remove $4,960. The register shows the extra pay separately, so all of it is excluded. The saving is about $555.\n- **W-9, Marrow Roofing:** remove $21,000. Its workers' comp certificate was in force on the dates it worked. The saving is $2,352.\n- **W-11, Tarrow Decks:** remove $23,400. The certificate sits only in the contract file, and it covers the dates worked. The saving is $2,620.80.\n\n**Left alone**\n- **W-1 (the rest), crews A and B:** this is carpentry at 5645.\n- **",
+  "trace": [
+    {
+      "portal": "Auditwell",
+      "user": "I'm Joan Delaplane, president of Delaplane Renovation. Our workers' comp audit came back. Start in Auditwell: read the rules the carrier applies, the auditor's worksheet and last year's audit lines.",
+      "continued": false,
+      "said": "I'll read the carrier's rules, the auditor's worksheet (all three pages) and last year's lines now.\n\nMy last OP lines used the wrong format, so I'm re-sending them as `propose_action`.",
+      "said_chars": 184,
+      "reads": [
+        "read_audit_rules",
+        "read_audit_rules",
+        "read_audit_rules",
+        "read_audit_rules",
+        "read_audit_rules",
+        "read_audit_rules",
+        "list_audit_lines",
+        "list_audit_lines",
+        "list_audit_lines",
+        "list_prior_audit_lines"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Auditwell",
+      "user": "",
+      "continued": true,
+      "said": "Auditwell is read, and I haven't filed any disputes yet. Each one needs a fact from your records, and I can only reach each app's tools from its own tab.\n\n**What the carrier's rules say**\n- The carrier takes disputes until **Wednesday 14 October 2026**, which is 30 days from the 14 September bill. After that, your only course is the Rating Board.\n- Classification goes by duties, not title.\n  - 8810 clerical rate: 0.18.\n  - 8742 outside sales rate: 0.35.\n  - 5645 carpentry rate: 11.20.",
+      "said_chars": 2617,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "Payroll Harbor has our register and the time records. Read both.",
+      "continued": false,
+      "said": "Reading both Payroll Harbor sources now.",
+      "said_chars": 40,
+      "reads": [
+        "list_register",
+        "list_time_records"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "",
+      "continued": true,
+      "said": "Payroll Harbor is read. It settles Priya Anand, Neil Okoye, Crew A's overtime and the two staff who stay as billed. I've filed nothing yet.\n\n**What the records show**\n- **Priya Anand (EMP-08, W-2):** She works 40 hours a week in the closed front office and is never on a job site. The shop drop-offs are made by a driver, so the auditor's note is wrong. The correction is 8810, on $52,000.\n- **Neil Okoye (EMP-10):** He spends 40 hours a week on estimates and sales calls at customers' homes.",
+      "said_chars": 2255,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "Binderwell holds our subcontract files. Read what each sub's file holds and the dates they worked.",
+      "continued": false,
+      "said": "I'm reading Binderwell's subcontract files now.",
+      "said_chars": 47,
+      "reads": [
+        "list_subcontract_files"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "Binderwell's files settle Tarrow Decks (W-11) in your favour. Pike & Son (W-12) stays as billed. Marrow and Quillon depend on certificates the agent holds in Coverwell.\n\n| File | Sub and contract | Dates worked | What the file holds | What it means |\n|---|---|---|---|---|\n| D-1 | Hollin Drywall, labor only, $30,000 | 12 Sep to 2 Oct 2025 | General-liability certificate only, with no workers' comp | GL doesn't satisfy the rule. Hollin is uninsured for this purpose, so leave its line alone.",
+      "said_chars": 2590,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Coverwell",
+      "user": "Coverwell is our agent's portal. Read the policy, the certificates she holds and what has come in.",
+      "continued": false,
+      "said": "I'm reading the policy, the certificates and the offers now.",
+      "said_chars": 60,
+      "reads": [
+        "read_policy",
+        "list_certificates",
+        "list_offers"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Coverwell",
+      "user": "",
+      "continued": true,
+      "said": "Coverwell settles Marrow and Quillon, and I haven't accepted anything.\n\n**What I read**\n- **Policy:** The audit bill is dated 14 Sep 2026. The carrier's dispute window closes **Wednesday 14 October 2026**. Rates are 5645 at 11.20, 8810 at 0.18 and 8742 at 0.35.\n- **C-2, Marrow Roofing:** It holds workers' comp and employers' liability with Northgate Mutual, 1 Jan 2025 to 1 Jan 2026. Marrow worked 4 to 29 Aug 2025, so the cover was in force. Marrow's line is wrong and gets disputed.",
+      "said_chars": 1850,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Auditwell",
+      "user": "Back in Auditwell: dispute every line the rules and our records show the auditor got wrong, with the correction, and only where the carrier will still take it. Leave the lines that are right. Don't accept any offer. Then tell me, for each d",
+      "continued": false,
+      "said": "I'm filing five disputes. Each one goes to you as a decision card before it reaches the carrier.\n\n\n**Disputes filed for your answer**\n- **W-2, Anand:** correct to 8810 on $52,000. She's full-time in the closed front office. The saving is about $5,730 in premium.\n- **W-4, Okoye:** correct to 8742 on $71,500. All his time is estimating and selling at customers' homes. The saving is about $7,760.\n- **W-6, crew A overtime:** remove $4,960. The register shows the extra pay separately, so all of it is excluded.",
+      "said_chars": 1876,
+      "reads": [],
+      "cards": [
+        {
+          "action": "dispute_audit_line",
+          "key": "W-2",
+          "outcome": "correct",
+          "value_usd": 5730.4
+        },
+        {
+          "action": "dispute_audit_line",
+          "key": "W-4",
+          "outcome": "correct",
+          "value_usd": 7757.75
+        },
+        {
+          "action": "dispute_audit_line",
+          "key": "W-6",
+          "outcome": "correct",
+          "value_usd": 555.52
+        },
+        {
+          "action": "dispute_audit_line",
+          "key": "W-9",
+          "outcome": "correct",
+          "value_usd": 2352.0
+        },
+        {
+          "action": "dispute_audit_line",
+          "key": "W-11",
+          "outcome": "correct",
+          "value_usd": 2620.8
+        }
+      ]
+    }
+  ]
+}

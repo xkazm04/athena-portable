@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "workers-comp-premium-audit",
+  "captured_at": "2026-10-11T04:20:40Z",
+  "bench_run_at": "2026-10-11T04:18:40Z",
+  "narration": {
+    "text": "A contractor's workers' compensation audit is answered by duties and records: a bookkeeper to clerical, a salesman to outside sales, a crew's extra overtime pay and two insured subs' costs taken off, one found only in its contract file, while an office manager on job sites and a general-liability certificate are left alone. This is a chore for the president of a small New York renovation contractor with six carpenters and laborers and four office and sales staff. On the bench, she found 5 of 5 eligible items, worth 19,016 dollars and 47 cents of the 19,016 dollars and 47 cents there was to find. She made no false claim. The world held 12 traps, and she walked past 12. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 83 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 61.481,
+    "sha256": "2efedef403f39107132500e51070c976d4fa4722b86e5ed1987e9118927e9aa0"
+  },
+  "video": {
+    "path": "evidence/workers-comp-premium-audit/evidence.mp4",
+    "duration_s": 61.481,
+    "bytes": 2937135,
+    "sha256": "d8fdd805228410838fc4a2abbdf3aee50e274841c58f178196223c82a84cec98"
+  },
+  "thumbnail": {
+    "path": "playbooks/workers-comp-premium-audit/thumb.jpg",
+    "bytes": 81670,
+    "sha256": "f998ffcbab271131fee905b6e8f48a56dcffe6819bd0371d3da3616b538f9470"
+  }
+}
