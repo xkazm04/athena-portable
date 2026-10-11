@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "aid-professional-judgment",
+  "captured_at": "2026-10-11T05:54:37Z",
+  "bench_run_at": "2026-10-11T05:51:01Z",
+  "narration": {
+    "text": "A laid-off father's and a pay-cut mother's changes go to the college's aid office with proof and an estimated 2026 income by its 16 October deadline, while a 2024 cut, a seasonal job, a brother's other college, a tuition rise, a premium, a dependency override and an appeal service are left alone. This is a chore for a parent whose husband was laid off and whose daughter's college aid still rests on 2024 income. Athena works it across 4 portals: Aidcenter, Fernhollow Unemployment Desk, Payroll Harbor and Postwren. On the bench, she found 2 of 2 eligible items, worth 4,000 dollars of the 4,000 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 79 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.27,
+    "sha256": "5411970193ba0f6e55dd7c60f3f8d6a9e5de8411663b9d75e83f1bbf817f130b"
+  },
+  "video": {
+    "path": "evidence/aid-professional-judgment/evidence.mp4",
+    "duration_s": 62.28,
+    "bytes": 3194905,
+    "sha256": "22b224f011e4de002feb3c490d5126fcd656b812aeaf0a1ff5a9b419c5da8aa4"
+  },
+  "thumbnail": {
+    "path": "playbooks/aid-professional-judgment/thumb.jpg",
+    "bytes": 95919,
+    "sha256": "79976aafa5dc9241f14692d2abd21e49d6b2676cb628537e0fc8ed6953d81a59"
+  }
+}

@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The ninety-one playbooks (latest runs, Claude Sonnet)
+## The ninety-two playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -134,9 +134,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A software company's remote hires registered with their states before the payroll runs that pay them: Colorado withholding and unemployment accounts for a Denver engineer, Minnesota ones for a support lead whose move shows only in the HR change log, and a Texas unemployment account, while Texas withholding, Washington, Virginia, a withdrawn offer, a contractor and a service's offer to register every state are left out | work | 5 | exceeds: 5 of 5, $995.00 of $995.00 (199 dollars an account, a price avoided and not money recovered), 14 of 14 traps, 0 false, 2.0 min, $1.23 |
 | A distributor's background-check rejections taken in the order the FCRA sets: four pre-adverse notices with the report and the summary of rights, final notices for three whose own wait has ended and a namesake's dispute sent on, while a candidate whose wait ends later, a skills test, a hire, a missing authorization, a corrected report, notices already sent and a vendor's offer are left out | work | 3 | exceeds: 8 of 8, $8,000.00 of $8,000.00 (1,000 dollars an act, an exposure and not money recovered), 24 of 24 traps, 0 false, 1.4 min, $0.86 |
 | A student's FAFSA verification answered with the documents the college names: a notarized ID, a five-person family statement, the 2024 return transcript, her non-filer statement and two W-2s, one found only in a 2025 letter, and the family size fixed, while old forms, a paid service, the IRS's figures and the bursar are left out | home | 4 | exceeds: 7 of 7, $7,000.00 of $7,000.00 (1,000 dollars an act, an exposure and not money recovered), 16 of 16 traps, 0 false, 1.8 min, $1.37 |
+| A laid-off father's and a pay-cut mother's changes sent to the college's aid office with proof and an estimated 2026 income by its deadline, while a 2024 cut, a seasonal job, a brother's other college, a tuition rise, a premium, a dependency override and an appeal service are left out | home | 4 | exceeds: 2 of 2, $4,000.00 of $4,000.00 (2,000 dollars a request, a per-act weight and not money recovered), 10 of 10 traps, 0 false, 1.9 min, $1.51 |
 
-Across the latest runs: $1,294,319 of $1,353,396 found, 951 of 951 traps walked past, no false claim,
-242 minutes of her time against about 337 hours by hand, $147.62 of model time. 131 runs are recorded
+Across the latest runs: $1,298,319 of $1,357,396 found, 961 of 961 traps walked past, no false claim,
+244 minutes of her time against about 339 hours by hand, $149.12 of model time. 132 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module
