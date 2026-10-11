@@ -1,0 +1,152 @@
+{
+  "id": "ui-claim-responses",
+  "title": "A small firm answers unemployment claim notices from three states by each one's deadline: layoffs and a part-time claim with the facts, a quit and a documented discharge contested with evidence, a stranger's claim and an employee's reported, while a repeat, a late one, a layoff called a quit and a firm's offer to contest all are left alone",
+  "domain": "Unemployment insurance",
+  "audience": "work",
+  "promise": "The owner of a 24-person surveying firm with remote staff in Texas, California and Washington has ten unemployment notices open on 9 October 2026. She answers a layoff in Texas with the facts, a California layoff's discharge with the fact that she has no warning or policy, and a California part-time claim whose letter came only by post and is due today, 9 October, 10 days after its date of 29 September. She contests a Texas resignation with the employee's email and a Washington discharge with three written warnings and the signed policy. She reports that a Texas claimant never worked for her, and that a Washington claim in the name of an employee still on the payroll is fraud. She leaves alone a Texas notice already answered, one past its 14 days, a layoff her field lead calls a quit, a discharge with no warning on record, a Washington request past its due date and a firm's offer to contest everything for 95 dollars a notice.",
+  "persona": "The owner of a 24-person surveying firm with remote field staff in Texas, California and Washington, who has ten unemployment notices, one of them only by post, and a field lead who is sure a laid-off man quit",
+  "chore": "Read her mail, her HR's people and her personnel files, then answer each state's notice on that state's own clock as it stands on 9 October 2026: Texas 14 calendar days from the mailing date, California 10 days from the date on the notice, and Washington by the due date printed on the request. Apply 26 U.S.C. 3303(f), which the brief cited as Social Security Act 303(a)(10): an employer's account is not relieved of charges for a payment made because it failed to respond timely or adequately, when it has a pattern of such failures. Answer a layoff for lack of work with the facts and do not contest it; contest a quit or a misconduct discharge only with the evidence in the files; say that a stranger never worked there; report a claim in the name of an employee still on the payroll as fraud; and answer nothing twice, late or on a firm's offer.",
+  "command": "I'm Marguerite Aldous. Go through my Postwren mail, my Crewmarrow HR, my Binderwell files and the Texas, California and Washington desks. Answer each unemployment notice that should be answered, on its own state's deadline, with the facts and the evidence; contest only what the files support; and tell me what you did with each of the ten and the dates I must not miss.",
+  "apps": [
+    {
+      "name": "Postwren",
+      "role": "her office manager's note, a scan of a California letter that came only by post, a field lead's note, a claims firm's offer and an employee's email",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Crewmarrow HR",
+      "role": "her people, their states, status and what is on file",
+      "api": "HR site, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the personnel files: layoff letters, a resignation, warnings and the signed policy",
+      "api": "Documents site, no API",
+      "url": ""
+    },
+    {
+      "name": "Brazenhall Notices (Texas)",
+      "role": "Texas's rules and five notices",
+      "api": "State notice site, no API",
+      "url": ""
+    },
+    {
+      "name": "Sutterwick Claim Desk (California)",
+      "role": "California's rules and one notice",
+      "api": "State notice site, no API",
+      "url": ""
+    },
+    {
+      "name": "Evergale Separation Desk (Washington)",
+      "role": "Washington's rules and three requests",
+      "api": "State notice site, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the five messages in Postwren, one of them a scan of a California letter received today.",
+    "Reads the nine people in Crewmarrow and looks up a name that is on no payroll.",
+    "Reads the ten documents in Binderwell, three a page.",
+    "Reads Texas's rules and five notices, then answers, contests or reports.",
+    "Does the same in California, including the letter that came only by post, and in Washington.",
+    "Returns to Postwren to answer the mail that needs it."
+  ],
+  "gates": [
+    {
+      "action": "answer_notice",
+      "label": "Answer a notice of claim",
+      "why": "A response goes to the state under the owner's signature and states the reason for the separation; one that calls a layoff a quit, or alleges misconduct with no evidence, is a false statement, and a second response to a closed notice is not taken."
+    },
+    {
+      "action": "contest_claim",
+      "label": "Contest a claim as disqualified",
+      "why": "A contest asserts that the claimant quit without good cause or was discharged for misconduct and goes to the state with the evidence; one against a valid claim, such as a layoff, is false and puts the account's relief from charges at risk."
+    },
+    {
+      "action": "report_not_employee",
+      "label": "Report that the person never worked for the employer",
+      "why": "A report tells the state that the notice is about a stranger; it is a statement under the owner's signature, and one about a person who did work there is false."
+    },
+    {
+      "action": "report_fraud",
+      "label": "Report a claim filed fraudulently",
+      "why": "A fraud report says the claim was filed in the name of a person who still works there; one about a real separation is a false accusation."
+    },
+    {
+      "action": "send_reply",
+      "label": "Reply to a message",
+      "why": "A reply goes to the sender under the owner's name; one that accepts a claims firm's offer binds her to its fees and to contest claims she has no ground to contest."
+    }
+  ],
+  "traps": [
+    "Contesting the Texas layoff of Rafael Quintero as a quit because her field lead says so, when the layoff letter is on file.",
+    "Contesting the California discharge of Maria Delgado as misconduct, when there is no warning and no signed policy on file.",
+    "Answering Hiro Tanaka's Texas notice a second time, when it was answered on 2 October.",
+    "Answering Gideon Park's Texas notice as a separation, when he never worked for her.",
+    "Answering Kofi Mensah's Texas notice after its due date of 5 October, counting from the day it arrived.",
+    "Answering Sana Iqbal's Washington request after its due date of 6 October.",
+    "Answering Iris Lund's Washington request as a separation, when she is still on the payroll.",
+    "Replying yes to the claims firm's offer to contest every notice."
+  ],
+  "memory": [
+    "Each notice's state, claimant, date and clock: 14 days from mailing in Texas, 10 days from the date on the notice in California, the printed due date in Washington.",
+    "For each claimant, what the files show: layoff letter, resignation, warnings and policy, hours now, or no record."
+  ],
+  "economics": {
+    "value_usd": 3000,
+    "per": "year",
+    "basis": "An estimate. A small employer with remote staff in several states gets a notice of claim for each separation, and a state charges the benefits paid to the employer's account unless the employer answers on time and adequately; a notice that is contested without evidence, answered late or answered about the wrong person costs money or credibility, and the roster's $3,000 a year is such a small firm's charges avoided and effort saved, not a published figure. The money is the maximum potential charge each notice states, used as an upper bound: the bench world holds 9,880.00 dollars in four items, each weighted at the maximum potential charge on its own notice (the Texas resignation contested 2,080.00, the Washington misconduct discharge contested 2,860.00, the stranger's claim 1,820.00, the identity-theft claim 3,120.00), and three answers of valid claims weighted at nothing (they keep the account's relief from charges and prove nothing in dollars); a contest that fails saves nothing. Times a year: 2, an estimate: a separation round in the spring and one in the autumn each bring a cluster of notices. manual_minutes 240: reading five messages, nine people, ten documents and three states' rules, setting ten notices against three clocks and the files, and writing nine responses. Rules applied, as they stand on Friday 9 October 2026. THE BRIEF'S PREMISE, CORRECTED: Social Security Act 303(a)(10), 42 U.S.C. 503(a)(10), read in Cornell, is the requirement that a claimant referred through the worker profiling system take part in the re-employment services; it does not mention an employer's charges, timeliness, adequacy or a pattern. The rule the brief describes, added by the Trade Adjustment Assistance Extension Act of 2011, is in the Federal Unemployment Tax Act: 26 U.S.C. 3303(f)(1), read in Cornell: a State law meets 3303(a)(1) only if it provides that an employer's account is not relieved of charges for a payment from the State fund if the State agency determines that (A) the payment was made because the employer, or an agent of the employer, was at fault for failing to respond timely or adequately to the agency's request for information relating to the claim, and (B) the employer or agent has established a pattern of failing to respond timely or adequately to such requests; (f)(2) lets a State go further, such as after the first failure. THE BRIEF'S UIPL, CORRECTED: the Department of Labor's letter is UIPL No. 02-12 (issued 20 December 2011), not 1-12; the page read (dol.gov/node/182395) is its Change 3 of 30 October 2024, which retires the combined-wage-claim application and restates that a State must not relieve an employer of charges in those cases, that each State is responsible for determining its own standard for a pattern, that the paying State decides whether a pattern exists for an employer under its law, and that it defines neither timely nor adequately. STATES APPLIED: Washington RCW 50.29.021(5) (app.leg.wa.gov, two versions shown, identical in (5)): 'adequately' means providing accurate information of sufficient quantity and quality that would allow a reasonable person to determine whether an individual is eligible or qualified, a pattern is the greater of three failures in the previous two years and 20 percent of the current claims, an agent's pattern is assessed for each client employer, and good cause is excepted; Texas, from the Texas Workforce Commission's employer notices and appeals pages (twc.texas.gov, which could not be opened from the bench machine; read through a search summary of both): 14 calendar days from the date the Commission mails a Notice of Application for Unemployment Benefits, a timely response makes the employer an interested party who receives the determination and may appeal it, a late or missing one does not, the response gives the dates worked, the separation reason, extra pay and the final incident, prior warnings, relevant policies and witness statements, an appeal is 14 calendar days from the mailing of the determination and a chargeback dispute 30 calendar days; California, from the Employment Development Department's page on responding to claim notices (edd.ca.gov, read): an employer responds 'within 10 days of the date of the notice' (the page does not say calendar or business days; the world's desk counts calendar days), and a late response loses the written decision and the right to appeal; the notice is the DE 1101CZ, not the DE 1545 the brief names. Washington's Employment Security Department page (esd.wa.gov, read): a request for separation information is answered by the due date in the letter, otherwise the Department decides on the information it has and a failure to respond may affect the tax rating. NOT CONFIRMED, so no target rests on them: the quit and misconduct standards of California and Washington (the world's desks ask for the final incident, the warnings and the policy, the Texas response content), whether a late response can be excused for good cause in Texas or California, how any of the three treats severance, pay in lieu of notice and a vacation payout, any penalty for an employer's false statement, and the steps to report a claim filed in the name of a current employee in California, Texas or Washington (the Washington page points to a fraud reporting section that was not read).",
+    "manual_minutes": 240,
+    "times_per_year": 2,
+    "incumbent": "Unemployment claims-management firms are paid a flat fee for each claim or a share of the charges they avoid, but no published rate was found for a figure that can be cited (the 95 dollars and 25 percent in the world's offer are invented), so none is given and no incumbent_fee_pct is stated (ADR 0064).",
+    "sources": [
+      {
+        "label": "26 U.S.C. 3303(f), employer accounts not relieved of charges after a failure to respond timely or adequately (Cornell Legal Information Institute, read 11 October 2026)",
+        "url": "https://www.law.cornell.edu/uscode/text/26/3303"
+      },
+      {
+        "label": "42 U.S.C. 503(a)(10), Social Security Act 303(a)(10), the profiling requirement (Cornell, read 11 October 2026): the brief's cited provision, which is not the charging rule",
+        "url": "https://www.law.cornell.edu/uscode/text/42/503"
+      },
+      {
+        "label": "UIPL No. 02-12 and its Change 3 of 30 October 2024, U.S. Department of Labor, on the TAAEA noncharging provision (read 11 October 2026)",
+        "url": "https://www.dol.gov/node/182395"
+      },
+      {
+        "label": "Revised Code of Washington 50.29.021, benefit charges to experience rating accounts (Washington State Legislature, read 11 October 2026)",
+        "url": "https://app.leg.wa.gov/rcw/default.aspx?cite=50.29.021"
+      },
+      {
+        "label": "Washington Employment Security Department, when a former employee files for unemployment (read 11 October 2026)",
+        "url": "https://esd.wa.gov/employer-requirements/when-former-employee-files-unemployment"
+      },
+      {
+        "label": "California Employment Development Department, responding to unemployment insurance claim notices (read 11 October 2026)",
+        "url": "https://www.edd.ca.gov/en/unemployment/responding_to_ui_claim_notices/"
+      },
+      {
+        "label": "Texas Workforce Commission, employer notices (could not be opened from the bench machine; read through a search summary, 11 October 2026)",
+        "url": "https://www.twc.texas.gov/programs/unemployment-tax/employer-notices"
+      },
+      {
+        "label": "Texas Workforce Commission, appeals process for employers (read through a search summary, 11 October 2026)",
+        "url": "https://www.twc.texas.gov/programs/unemployment-benefits/appeals-process-employers"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 4,
+    "difficulty_why": "Ten notices from three states run on three clocks that start on different days: 14 calendar days from the mailing date in Texas, 10 days from the date on the notice in California, and a printed due date in Washington. One California letter came only by post and is due today; two others are already closed. Each answer needs a different act: the facts, a contest with evidence, a stranger's report or a fraud report, and eight tempting responses are wrong in one way each, led by a field lead who is sure of something the files contradict.",
+    "usefulness_why": "A missed or inadequate response can cost an employer its relief from charges and its right to appeal, and a contested valid claim costs credibility; a small firm with remote staff gets these in clusters after a layoff. Saves an afternoon of reading three states' rules, nine files and ten notices, on the day a letter is due."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner with her files and the three states' rules in hand answers the seven notices that should be answered, in time and on the facts, and none of the eight that should not, inside an hour."
+  },
+  "caveat": "Marguerite Aldous, Ketterby Survey Group, Wendell Pruitt, Bryn Okoro, Noticeguard Claims, Iris Lund and every other claimant and employee, Postwren, Crewmarrow HR, Binderwell, Brazenhall Notices, Sutterwick Claim Desk, Evergale Separation Desk, every notice, file, amount and date are invented; no real employer, claims firm or state agency is named, and the three desks are invented sites that summarize their states' rules. The public rules applied are 26 U.S.C. 3303(f) (the brief cited Social Security Act 303(a)(10), which is the profiling requirement), the Department of Labor's UIPL 02-12 as changed on 30 October 2024, Washington's RCW 50.29.021, the Employment Development Department's and the Employment Security Department's pages as read on 11 October 2026, and the Texas Workforce Commission's pages, which could not be opened and were read through search summaries. The quit and misconduct standards of California and Washington, any good-cause cure for a late response, the treatment of severance, pay in lieu of notice and a vacation payout, any penalty for a false statement and the steps to report a claim filed in a current employee's name were not confirmed, and no target rests on them. What each state's agency decides, and a court, governs a real notice, and a real response must be true. This applies stated rules to stated facts; it is not legal advice."
+}

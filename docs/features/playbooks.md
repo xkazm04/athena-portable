@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The eighty-three playbooks (latest runs, Claude Sonnet)
+## The eighty-four playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -126,9 +126,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A planner's flexible spending account claimed before its run-out ends: a crown's and physical therapy's share on the EOBs, two pharmacy items, a day camp and after-school care, and a card swipe answered with its EOB, while whitening, a gym, vitamins, a premium, an overnight camp, a teen's care and a child of 13 are left out | home | 5 | exceeds (run 2 after a world fix; run 1 was short, 1 of 7, 6 false): 7 of 7, $966.47 of $966.47 (what she gets back), 15 of 15 traps, 0 false, 1.5 min, $0.81 |
 | A mother-to-be's leave for a caesarean birth lined up: a 12-week leave request, eight weeks of disability pay on the doctor's certificate and four of paid family leave from the day after it ends, while an early start, a split leave, a partner's weeks, overlapping weeks and a claim past the year are left out | home | 5 | exceeds: 3 of 3, $5,585.20 of $5,585.20 (what she gets in benefits), 9 of 9 traps, 0 false, 1.8 min, $1.00 |
 | A laid-off analyst's three clocks kept in New York: unemployment filed this week, COBRA for October only to cover a scan, a marketplace plan and credit from November, and severance signed to be paid after thirty days, while a withdrawn draft, an early payment, a full COBRA, a December start and a broker's rush are left out | home | 4 | exceeds: 6 of 6, $6,025.00 of $6,025.00 (benefits kept and a bill covered), 8 of 8 traps, 0 false, 2.3 min, $0.86 |
+| A surveying firm's ten unemployment claim notices answered in three states, each on its own clock: layoffs and a part-time claim with the facts, a quit and a documented discharge contested with evidence, a stranger's claim and an employee's reported, while a repeat, a late one, a layoff called a quit and a firm's offer to contest all are left alone | work | 6 | exceeds (run 2 after a world fix; run 1 was short, 7 of 7 with 2 false claims): 7 of 7, $9,880.00 of $9,880.00 (charges avoided, an upper bound), 8 of 8 traps, 0 false, 4.5 min, $1.54 |
 
-Across the latest runs: $1,132,720 of $1,142,147 found, 843 of 843 traps walked past, no false claim,
-226 minutes of her time against about 322 hours by hand, $138.67 of model time. 122 runs are recorded
+Across the latest runs: $1,142,600 of $1,152,027 found, 851 of 851 traps walked past, no false claim,
+231 minutes of her time against about 326 hours by hand, $140.21 of model time. 124 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

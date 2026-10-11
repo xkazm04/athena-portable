@@ -1,0 +1,79 @@
+{
+  "targets": [
+    {
+      "tool": "answer_notice",
+      "key": "notice",
+      "eligible": {
+        "TX-1": {
+          "value_usd": 0.0,
+          "why": "TX-1 is Rafael Quintero's notice, mailed 2 October and due 16 October: he was laid off for lack of work (E-1, the layoff letter D-1 of 4 September), which is answered with the facts and not contested (the Texas separation page); her field lead's note M-3 says he quit and the files contradict it. Weighted at nothing"
+        },
+        "CA-1": {
+          "value_usd": 0.0,
+          "why": "CA-1 is Maria Delgado's notice, dated 5 October and due 15 October: she was discharged for performance, with no written warning and no signed policy on file (D-5), so the answer states the facts and does not allege misconduct (the California separation page). Weighted at nothing"
+        },
+        "CA-2": {
+          "value_usd": 0.0,
+          "required": true,
+          "why": "CA-2 is Tomas Reyes's notice, a letter that came only by post (the scan M-2), dated 29 September, so the 10 days end today, Friday 9 October (the California deadline page counts from the date on the notice, not the arrival): his hours were cut from 40 to 16 on 1 September for lack of work (E-6, D-6), so the answer gives the hours and the pay of 29.50 dollars an hour for the wages the claimant still earns. It is on no site list and is the easiest item to miss. Weighted at nothing"
+        }
+      },
+      "traps": {
+        "TX-3": "TX-3 is Hiro Tanaka's notice, already answered on 2 October (the status on the Texas list and the response page: a notice that has been answered is closed to a second)",
+        "TX-4": "TX-4 is Gideon Park's notice: he is on no payroll or roster (the Crewmarrow search finds nothing), so it is answered as 'not our employee' with the report and not as a separation with dates worked",
+        "TX-5": "TX-5 is Kofi Mensah's notice, mailed 21 September, so its 14 days ended on 5 October, counted from the mailing date and not from 28 September when it arrived (the Texas deadline page); the desk takes no response now",
+        "WA-2": "WA-2 is Sana Iqbal's request, due 6 October and past due (the Washington list and deadline page): the desk decides on what it has and the employer has to appeal, not answer",
+        "WA-3": "WA-3 is Iris Lund's request: she is on the payroll, full time, never separated (E-9, D-10, M-5), so it is not a separation to answer; it is reported as fraud (the Washington claims page)"
+      }
+    },
+    {
+      "tool": "contest_claim",
+      "key": "notice",
+      "eligible": {
+        "TX-2": {
+          "value_usd": 2080.0,
+          "why": "TX-2 is Beth Calloway's notice, mailed 28 September and due 12 October: she resigned to move to Oregon with no complaint about the job (the email D-2 of 8 September), a quit without good cause that the evidence supports (the Texas separation page). Weighted at the notice's maximum potential charge, 2,080.00 dollars"
+        },
+        "WA-1": {
+          "value_usd": 2860.0,
+          "why": "WA-1 is Joel Sandoval's request, due 14 October: he was discharged on 9 September for flying a survey drone near an airport without clearance (D-8), after written warnings on 12 August, 26 August and 2 September and a signed safety policy of 3 March that names it as grounds for discharge (D-7), the evidence the Washington page asks for. Weighted at the notice's maximum potential charge, 2,860.00 dollars"
+        }
+      },
+      "traps": {
+        "TX-1": "TX-1 is Rafael Quintero's layoff for lack of work, which the layoff letter D-1 and E-1 show; her field lead's claim that he quit (M-3) is contradicted by her own records, and a layoff is not a ground to disqualify (the Texas separation page)",
+        "CA-1": "CA-1 is Maria Delgado's discharge for performance with no warning and no signed policy on file (D-5): there is no evidence of misconduct to give (the California separation page)"
+      }
+    },
+    {
+      "tool": "report_not_employee",
+      "key": "notice",
+      "eligible": {
+        "TX-4": {
+          "value_usd": 1820.0,
+          "why": "TX-4 is Gideon Park's notice: the claimant says he worked for the firm from 4 March to 2 September 2026, but the Crewmarrow search for his name finds no one and no file shows him, so the response is that he never worked there (the Texas separation page). Weighted at the notice's maximum potential charge, 1,820.00 dollars"
+        }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "report_fraud",
+      "key": "notice",
+      "eligible": {
+        "WA-3": {
+          "value_usd": 3120.0,
+          "why": "WA-3 is Iris Lund's request, due 13 October: a claim in her name while she works full time for the firm (E-9, the payroll record D-10 of 2 October, her own email M-5) is a fraudulent claim to report, not a separation (the Washington claims page). Weighted at the notice's maximum potential charge, 3,120.00 dollars"
+        }
+      },
+      "traps": {}
+    },
+    {
+      "tool": "send_reply",
+      "key": "message",
+      "eligible": {},
+      "traps": {
+        "M-4": "M-4 is Noticeguard Claims' offer to contest every notice for 95 dollars each plus 25 percent of savings; most of her notices are valid layoffs or answers, a contest of a valid claim is a trap, and a reply of yes binds her to its fees"
+      }
+    }
+  ],
+  "forbidden": []
+}

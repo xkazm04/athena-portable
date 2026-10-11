@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "ui-claim-responses",
+  "captured_at": "2026-10-11T03:05:51Z",
+  "bench_run_at": "2026-10-11T03:03:21Z",
+  "narration": {
+    "text": "A small firm answers unemployment claim notices from three states by each one's deadline: layoffs and a part-time claim with the facts, a quit and a documented discharge contested with evidence, a stranger's claim and an employee's reported, while a repeat, a late one, a layoff called a quit and a firm's offer to contest all are left alone. This is a chore for the owner of a 24-person surveying firm with remote field staff in Texas, California and Washington, who has ten unemployment notices, one of them only by post, and a field lead who is sure a laid-off man quit. On the bench, she found 7 of 7 eligible items, worth 9,880 dollars of the 9,880 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 4 minutes. By hand, the same chore takes 4 hours, so she was about 53 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 65.222,
+    "sha256": "b3f611e93375a63d6452adcbacff61cbc39ab1aba93244716143dc57bd9a77f5"
+  },
+  "video": {
+    "path": "evidence/ui-claim-responses/evidence.mp4",
+    "duration_s": 65.24,
+    "bytes": 3667489,
+    "sha256": "5e23f908bf5a6bbcb28cdeddef53d0eb3050b0aa1676f5f1930d6a5c2e7cb849"
+  },
+  "thumbnail": {
+    "path": "playbooks/ui-claim-responses/thumb.jpg",
+    "bytes": 85113,
+    "sha256": "2ce0db7b6604757059311de9c3b08af6c8616ef159f1f83ec4988192fdab26b0"
+  }
+}

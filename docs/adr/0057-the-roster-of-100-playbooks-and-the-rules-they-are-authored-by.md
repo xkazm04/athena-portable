@@ -333,6 +333,12 @@ names; each playbook carries the new one.
   platform); and "Mailnest" became "Postwren", because mailnest.io is a real email service. "Coverfind" kept its name: a search found no marketplace or
   site of that name, only the official marketplaces HealthCare.gov, Covered California, CoverME and GetCoveredNJ (the search tool is fuzzy, so that
   is "none found", not a proof).
+- Row 75, `ui-claim-responses`: "Joblink employer portal" became three portals, "Brazenhall Notices (Texas)", "Sutterwick Claim Desk (California)" and "Evergale
+  Separation Desk (Washington)", because JobLink is the name of real state workforce systems (Maine JobLink and others) and the world applies three states
+  with three deadlines; "Staffnest" became "Crewmarrow HR", the name row 49 settled, because StaffNest is a real HR service; "Docshelf" became "Binderwell",
+  because DocShelf is a real document management app; and "Mailnest" became "Postwren", because mailnest.io is a real email service. Brazenhall,
+  Sutterwick and Evergale were found nowhere in the field (a search returned only the states' real agencies); "Noticeguard Claims", the claims firm,
+  and "Ketterby Survey Group", the employer, were also found nowhere (the search tool is fuzzy, so that is "none found", not a proof).
 
 ### B9: Public programmes, schools, farms and nonprofits
 
