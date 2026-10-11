@@ -1,0 +1,116 @@
+{
+  "id": "401k-late-deposits",
+  "title": "A small plan's late 401(k) deposits are made good with their lost earnings: two deferrals and three loan repayments deposited after the seventh business day, one found only on the loan list, while deposits on the sixth and seventh days across Labor Day, a late match, a stopped deferral and a recovery firm's share are left alone",
+  "domain": "Benefits administration",
+  "audience": "work",
+  "promise": "A 38-person packaging company's 401(k) is checked for the third quarter: its payroll firm's register, the recordkeeper's deposit log and loan list, its bank and a lost-earnings calculator are read side by side, and every deferral and loan repayment deposited after the seventh business day following payday, counting Labor Day as no business day, is made good with the lost earnings the calculator gives, paid into the plan from the bank. Two deferrals and three loan repayments qualify, one of them only on the recordkeeper's separate loan list. A deposit on the sixth or seventh business day, an employer match deposited in October, a deferral an employee stopped, the unfinished 2 October payroll, another company's plan and a recovery firm's offer for a quarter of the lost earnings are all left alone.",
+  "persona": "The owner and 401(k) plan trustee of a 38-person packaging company",
+  "chore": "Read the payroll register and the payroll firm's remittance practice in Payroll Harbor; the plan's rules, the deposit log, the loan remittances and the offers in Retireline; the lost earnings per deposit in Correctcalc; and the transfers to the plan in the bank. Then apply 29 CFR 2510.3-102 (a)(1), (a)(2), (b)(1) and (e) and the Voluntary Fiduciary Correction Program as updated for 17 March 2025 (the self-correction component, the 6621(a)(2) rate and PTE 2002-51), as they stand on 9 October 2026. A deposit past the seventh business day is late here because the payroll firm's documented practice shows the money could have been segregated the next business day.",
+  "command": "I'm Neil, owner of Wexcombe Packaging and trustee of our 401(k). Go through Payroll Harbor, Retireline, Correctcalc and the bank, find the deferrals and loan repayments from this quarter that were deposited late, and pay the lost earnings into the plan for each one. Don't pay anything for a deposit that wasn't late, and don't accept any offer.",
+  "apps": [
+    {
+      "name": "Payroll Harbor",
+      "role": "the payroll firm: each payroll's deferrals, loan repayments and match, an employee's changed election, and the firm's remittance practice",
+      "api": "Payroll service, no API",
+      "url": ""
+    },
+    {
+      "name": "Retireline",
+      "role": "the recordkeeper: the plan's rules, the deposit log, the separate list of loan remittances and offers from outside firms",
+      "api": "Recordkeeper portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Correctcalc",
+      "role": "the lost-earnings calculator: the principal, the days, the rate and the figure for each deposit",
+      "api": "Calculator, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren bank",
+      "role": "the company's bank: the transfers to the plan's trust, and the payment of lost earnings into it",
+      "api": "Business bank, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the payroll firm's remittance practice and the register in Payroll Harbor.",
+    "Reads the rules, the deposit log, the loan remittances and the offers in Retireline, and counts business days from each payday.",
+    "Reads the lost earnings for each deposit in Correctcalc.",
+    "Reads the transfers in the bank and pays the lost earnings for each late deposit."
+  ],
+  "gates": [
+    {
+      "action": "pay_lost_earnings",
+      "label": "Pay lost earnings into the plan",
+      "why": "Money leaves the company's account into the plan's trust, allocated to the participants affected, and cannot be recalled; one paid for a timely deposit is a correction of nothing."
+    },
+    {
+      "action": "accept_offer",
+      "label": "Accept an outside firm's offer",
+      "why": "It binds the sponsor to a firm's fees, here a quarter of the lost earnings with a minimum charge many times what is owed."
+    }
+  ],
+  "traps": [
+    "Lost earnings for a deposit made on the sixth business day, counted as late because ten calendar days passed.",
+    "Lost earnings for a deposit on the seventh business day, called the eighth because Labor Day was counted as a business day.",
+    "A deposit on the third business day corrected as late.",
+    "An employer match deposited in October, corrected as a late deferral.",
+    "A deferral an employee stopped, corrected as one never deposited.",
+    "A payroll that belongs to another company's plan, corrected.",
+    "The 2 October payroll, not yet deposited and not yet late, corrected.",
+    "A recovery firm's offer for a share of the lost earnings, accepted."
+  ],
+  "memory": [
+    "Each payroll's date and the payroll firm's practice, carried from Payroll Harbor.",
+    "Which deposits are late, by business days, carried from Retireline into the Correctcalc tab.",
+    "The lost earnings per deposit, carried from Correctcalc into the bank tab."
+  ],
+  "economics": {
+    "value_usd": 2500,
+    "per": "year",
+    "basis": "An estimate. A small plan's payroll firm and recordkeeper can slip a loan batch or a deferral by days without anyone noticing, and a late participant contribution is a prohibited use of plan assets that carries an excise tax of 15 percent of the amount involved each year (IRC 4975(a), reported on Form 5330) and, if uncorrected, 100 percent (4975(b)); the Voluntary Fiduciary Correction Program, with PTE 2002-51 relief, is how a sponsor makes the plan whole and avoids the tax. The roster's $2,500 a year is an estimate of the correction work and exposure for a plan of this size, not a published figure. Each truth item is weighted at the lost earnings the calculator gives for it, which is what the plan's participants are owed, not what the sponsor gains: five items, $87.93. Times a year: 4, a quarterly review of the quarter's payrolls. manual_minutes 90: reading eight payrolls and thirteen deposit lines, counting business days past a holiday, getting five figures and paying five. The rules applied, as they stand on Friday 9 October 2026: 29 CFR 2510.3-102 (eCFR, version of 1 October 2026): (a)(1) amounts withheld from pay for contributions and loan repayments become plan assets on the earliest date they can reasonably be segregated; (a)(2)(i) a plan with fewer than 100 participants at the start of the plan year treats a deposit by the 7th business day after the day the amount would otherwise have been payable to the participant in cash as timely; (b)(1) the 15th business day of the following month is the outer limit for a pension plan; (e) a business day is any day other than a Saturday, a Sunday or a federal holiday. The VFCP as amended on 15 January 2025 (Federal Register document 2025-00327, effective 17 March 2025): the self-correction component for delinquent participant contributions and loan repayments with lost earnings of $1,000 or less (section 7.1(b)), remitted within 180 days of withholding, the sponsor not under investigation, lost earnings from the date of withholding to the date the principal was restored, computed with the online calculator (section 5(b)), a notice filed online and the delinquency reported on Form 5500; the lost-earnings rate is the IRC 6621(a)(2) underpayment rate by quarter, 7 percent for the third and fourth quarters of 2026 (IRS quarterly interest rates page: IRB 2026-22 and 2026-36); PTE 2002-51 as amended gives excise-tax relief for the self-correction (read through law-firm summaries, not the exemption text). THE BRIEF'S CITATIONS, CORRECTED: the outer limit for a pension plan is 2510.3-102(b)(1) (the 15th business day), not (c), which is the 90 days for a welfare plan; (a)(2) counts from the day the amount would otherwise have been payable in cash. The brief's premise that a deposit after the 7th business day is late was not taken from the regulation, which only declines the safe harbor to it: the world states the payroll firm's practice of remitting the next business day, so the money could be segregated sooner. The brief's understanding that a match is not a participant contribution was confirmed by the text of (a)(1).",
+    "manual_minutes": 90,
+    "times_per_year": 4,
+    "incumbent": "Retirement-plan fiduciary-correction help is charged by the hour or by a flat fee; the 25 percent of lost earnings with a 900 dollar minimum in the world's offer is invented, and no published contingency rate was found, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "29 CFR 2510.3-102: when participant contributions become plan assets (7 business days; 15th business day)",
+        "url": "https://www.ecfr.gov/current/title-29/subtitle-B/chapter-XXV/subchapter-F/part-2510/subpart-B/section-2510.3-102"
+      },
+      {
+        "label": "DOL EBSA, Voluntary Fiduciary Correction Program, final amendments, Federal Register document 2025-00327 (15 January 2025; self-correction effective 17 March 2025)",
+        "url": "https://www.federalregister.gov/documents/2025/01/15/2025-00327/voluntary-fiduciary-correction-program"
+      },
+      {
+        "label": "DOL EBSA, Voluntary Fiduciary Correction Program page, with its online calculator and the PTE 2002-51 amendment",
+        "url": "https://www.dol.gov/agencies/ebsa/employers-and-advisers/plan-administration-and-compliance/correction-programs/vfcp"
+      },
+      {
+        "label": "IRS: quarterly interest rates (IRC 6621(a)(2) underpayment rate, third and fourth quarters of 2026)",
+        "url": "https://www.irs.gov/payments/quarterly-interest-rates"
+      },
+      {
+        "label": "IRC 4975: tax on prohibited transactions (15 percent, then 100 percent)",
+        "url": "https://www.law.cornell.edu/uscode/text/26/4975"
+      },
+      {
+        "label": "IRS: Form 5330, return of excise taxes related to employee benefit plans",
+        "url": "https://www.irs.gov/forms-pubs/about-form-5330"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Eight payrolls and thirteen deposit lines in four systems, with a rule that counts business days from payday and skips a federal holiday: a deposit ten calendar days later is on time, one on the seventh business day across Labor Day is on time, and one on the eighth is not. Loan repayments sit on a separate list, a match is not a deferral, a stopped deferral looks like a missing deposit, another company's payroll sits in the same register, and a recovery firm offers to do it for a share.",
+    "usefulness_why": "A late deposit is a prohibited use of plan assets that the sponsor must make good, and finding it before an auditor or the Form 5500 does keeps the correction small and the excise tax away; a small plan has a few each year, so the chore is a quarterly hour, but the amounts are small and the exposure is not."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful trustee with the register, the logs and the rules in hand gets most of it: the bar is the five late deposits, with the loan repayment on the separate list among them, paid at the calculator's figures, and nothing for the deposits on the sixth and seventh days, the match, the stopped deferral, the unfinished payroll, the other company's plan, or the recovery firm's offer, inside an hour."
+  },
+  "caveat": "Neil Ostrander, Wexcombe Packaging and Wexcombe Holdings and their employees and payrolls, Fiducia Recovery Partners, Payroll Harbor, Retireline, Correctcalc, Ledgerwren bank and every deposit, amount and date are invented; Correctcalc stands in for the Department of Labor's own VFCP online calculator, which compounds, and simplifies it to simple interest, so its figures are approximations. The public rules applied are 29 CFR 2510.3-102 as in the eCFR version of 1 October 2026, the Voluntary Fiduciary Correction Program as amended on 15 January 2025 (self-correction from 17 March 2025), and the IRC 6621(a)(2) rates for the third and fourth quarters of 2026; PTE 2002-51 as amended was read through summaries, not its text. Whether a deposit after the 7th business day is late is decided here from the stated facts (the payroll firm remits the next business day), and a real case turns on its own facts. The Department of Labor, the IRS and a court decide real cases. This applies stated rules to stated facts; it is not legal, tax or benefits advice."
+}

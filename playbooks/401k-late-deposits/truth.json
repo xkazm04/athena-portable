@@ -1,0 +1,68 @@
+{
+  "targets": [
+    {
+      "tool": "pay_lost_earnings",
+      "key": "item_id",
+      "eligible": {
+        "R-01": {
+          "value_usd": 25.87,
+          "why": "R-01: withheld 10 Jul 2026, deposited 22 Jul 2026 (8 business days after payday, past the 7th); the plan had 38 participants. Lost earnings 25.87 at 7 percent over 12 days from payday to the deposit (the self-correction's loss date is the day of withholding)",
+          "expect": {
+            "amount": 25.87
+          }
+        },
+        "R-03": {
+          "value_usd": 8.82,
+          "why": "R-03: withheld 24 Jul 2026, deposited 18 Aug 2026 (17 business days after payday, past the 7th). A loan repayment withheld from pay counts under 2510.3-102(a)(1), and it sits only on the loan remittance list. Lost earnings 8.82",
+          "expect": {
+            "amount": 8.82
+          },
+          "required": true
+        },
+        "R-05": {
+          "value_usd": 42.3,
+          "why": "R-05: withheld 21 Aug 2026, deposited 9 Sep 2026 (12 business days after payday, past the 7th). Lost earnings 42.30",
+          "expect": {
+            "amount": 42.3
+          }
+        },
+        "R-09": {
+          "value_usd": 4.59,
+          "why": "R-09: withheld 18 Sep 2026, deposited 1 Oct 2026 (9 business days after payday, past the 7th). A loan repayment. Lost earnings 4.59",
+          "expect": {
+            "amount": 4.59
+          }
+        },
+        "R-14": {
+          "value_usd": 6.35,
+          "why": "R-14: withheld 7 Aug 2026, deposited 25 Aug 2026 (12 business days after payday, past the 7th). A loan repayment. Lost earnings 6.35",
+          "expect": {
+            "amount": 6.35
+          }
+        }
+      },
+      "traps": {
+        "R-02": "Deposited 29 Jul, the 3rd business day after payday: inside the 7-business-day safe harbor",
+        "R-04": "Deposited 17 Aug, the 6th business day after payday (10 calendar days): inside the safe harbor, which counts business days",
+        "R-06": "Deposited 16 Sep, the 7th business day after 4 Sep because Labor Day, Mon 7 Sep, is not a business day: inside the safe harbor",
+        "R-07": "The employer match is the company's own funding, not a participant contribution: the 7 business days do not apply, and the plan document gives 30 days after the quarter",
+        "R-08": "Deposited 29 Sep, the 7th business day after payday: the 7th business day is in time",
+        "R-10": "The 2 Oct payroll's deposit is not yet due: its 7th business day is Wed 14 Oct (Mon 12 Oct, Columbus Day, is not a business day) and it is a fourth-quarter payroll",
+        "R-11": "Marcus Teal changed his deferral to 0% from the 7 Aug payroll (form signed 24 Jul); nothing was withheld, so nothing was deposited late",
+        "R-13": "The loan repayment of 10 Jul was remitted 20 Jul, the 6th business day: inside the safe harbor",
+        "H-2": "Wexcombe Holdings' payroll belongs to a different employer's plan with its own recordkeeper, not this plan"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "accept_offer",
+      "key": "offer_id",
+      "eligible": {},
+      "traps": {
+        "O-1": "A recovery firm's offer to correct for a quarter of the lost earnings with a 900 dollar minimum costs far more than the lost earnings, which the sponsor can compute and pay itself"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

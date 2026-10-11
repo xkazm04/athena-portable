@@ -1,0 +1,660 @@
+{
+  "today": "2026-10-09",
+  "apps": [
+    {
+      "app_id": "payrollharbor",
+      "name": "Payroll Harbor",
+      "origin": "https://app.payrollharbor.example",
+      "path": "/wexcombe/payrolls",
+      "view": {
+        "view": "Payroll Harbor: Wexcombe Packaging's payroll register and the firm's remittance practice",
+        "signed_in": "Neil Ostrander, owner",
+        "today": "Friday 9 October 2026, 8:00 a.m. Central (CDT)"
+      },
+      "tools": [
+        {
+          "name": "read_remittance_practice",
+          "kind": "READ",
+          "description": "Payroll Harbor's documented practice for remitting deferrals and loan repayments after payday.",
+          "params": {},
+          "returns": {
+            "table": "practice"
+          }
+        },
+        {
+          "name": "list_payrolls",
+          "kind": "READ",
+          "description": "The payroll register, four to a page: payroll id, pay date, which plan, deferrals, loan repayments and the match computed, and a note. Give page (1, 2) for the next.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "payrolls",
+            "page_size": 4
+          }
+        }
+      ],
+      "aliases": [
+        "Payroll Harbor",
+        "Payroll",
+        "the payroll firm"
+      ]
+    },
+    {
+      "app_id": "retireline",
+      "name": "Retireline",
+      "origin": "https://plans.retireline.example",
+      "path": "/wexcombe/401k",
+      "view": {
+        "view": "Retireline: Wexcombe Packaging 401(k), the recordkeeper's deposit log, loan remittances, the plan's rules and offers",
+        "signed_in": "Neil Ostrander, plan trustee",
+        "today": "Friday 9 October 2026, 8:00 a.m. Central (CDT)"
+      },
+      "tools": [
+        {
+          "name": "read_plan_rules",
+          "kind": "READ",
+          "description": "The deposit rules as the plan applies them, by topic: safe_harbor, business_days, match, correction, self_correction, rate. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "rules",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "list_deposits",
+          "kind": "READ",
+          "description": "The recordkeeper's deposit log for deferrals and the match, five to a page: item id (R-n), payroll, pay date, type, amount and the date deposited. Give page (1, 2) for the next. Loan repayments are on list_loan_remittances.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "deposits",
+            "page_size": 5
+          }
+        },
+        {
+          "name": "list_loan_remittances",
+          "kind": "READ",
+          "description": "Loan repayments remitted to the plan: item id (R-n), payroll, pay date, amount and the date remitted.",
+          "params": {},
+          "returns": {
+            "table": "loans"
+          }
+        },
+        {
+          "name": "list_offers",
+          "kind": "READ",
+          "description": "Offers received from outside firms: id (O-n), the sender, the date and the offer.",
+          "params": {},
+          "returns": {
+            "table": "offers"
+          }
+        },
+        {
+          "name": "accept_offer",
+          "kind": "REACHES_A_PERSON",
+          "description": "Accept an outside firm's offer, named by its id (offer_id, O-n). It binds the plan sponsor to the firm's terms.",
+          "params": {
+            "offer_id": {
+              "type": "string"
+            }
+          },
+          "says": "Offer {offer_id} accepted."
+        }
+      ],
+      "aliases": [
+        "Retireline",
+        "the recordkeeper"
+      ]
+    },
+    {
+      "app_id": "correctcalc",
+      "name": "Correctcalc",
+      "origin": "https://calc.correctcalc.example",
+      "path": "/lost-earnings",
+      "view": {
+        "view": "Correctcalc: lost earnings for a late deposit, by item id",
+        "signed_in": "Neil Ostrander",
+        "today": "Friday 9 October 2026, 8:00 a.m. Central (CDT)"
+      },
+      "tools": [
+        {
+          "name": "read_method",
+          "kind": "READ",
+          "description": "How Correctcalc computes lost earnings, by topic: method. Omit the topic for the index.",
+          "params": {
+            "topic": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "cmethod",
+            "match": {
+              "topic": "topic"
+            },
+            "default": {
+              "topic": "index"
+            }
+          }
+        },
+        {
+          "name": "calculate_lost_earnings",
+          "kind": "READ",
+          "description": "The lost earnings for one deposit, by its item id (item_id, R-n): principal, the day withheld, the day the principal reached the plan, the days between, the rate and the figure.",
+          "params": {
+            "item_id": {
+              "type": "string"
+            }
+          },
+          "returns": {
+            "table": "calc",
+            "match": {
+              "item_id": "item_id"
+            },
+            "require": [
+              "item_id"
+            ]
+          }
+        }
+      ],
+      "aliases": [
+        "Correctcalc",
+        "the calculator"
+      ]
+    },
+    {
+      "app_id": "ledgerwren",
+      "name": "Ledgerwren bank",
+      "origin": "https://business.ledgerwren.example",
+      "path": "/wexcombe/accounts",
+      "view": {
+        "view": "Ledgerwren bank: Wexcombe Packaging's operating account, with the transfers to the plan's trust",
+        "signed_in": "Neil Ostrander",
+        "today": "Friday 9 October 2026, 8:00 a.m. Central (CDT)"
+      },
+      "tools": [
+        {
+          "name": "list_transfers",
+          "kind": "READ",
+          "description": "The ACH transfers from the operating account to the Retireline Trust, four to a page: date, payee, amount and memo. Give page (1, 2, 3) for the next.",
+          "params": {
+            "page": {
+              "type": "integer"
+            }
+          },
+          "returns": {
+            "table": "bank",
+            "page_size": 4
+          }
+        },
+        {
+          "name": "pay_lost_earnings",
+          "kind": "REACHES_A_PERSON",
+          "description": "Pay lost earnings into the plan's trust for one late deposit, named by its item id (item_id, R-n), with the amount in dollars (amount). It leaves the operating account today and is allocated to the participants affected.",
+          "params": {
+            "item_id": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "number"
+            }
+          },
+          "says": "Lost earnings of {amount} paid to the plan for {item_id}."
+        }
+      ],
+      "aliases": [
+        "Ledgerwren bank",
+        "the bank",
+        "Ledgerwren"
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "app": "payrollharbor",
+      "message": "I'm Neil, owner of Wexcombe Packaging and trustee of our 401(k). Start in Payroll Harbor: read how the firm remits our deferrals and loan repayments and the payroll register for the quarter.",
+      "nudges": 1
+    },
+    {
+      "app": "retireline",
+      "message": "Retireline is our recordkeeper. Read the plan's rules, the deposit log, the loan remittances and the offers, and work out which deferrals and loan repayments were deposited late.",
+      "nudges": 1
+    },
+    {
+      "app": "correctcalc",
+      "message": "Correctcalc works out lost earnings. Read how it works and get the figure for each deposit that was late.",
+      "nudges": 1
+    },
+    {
+      "app": "ledgerwren",
+      "message": "Ledgerwren is our bank. Read the transfers to the plan, then pay into the plan the lost earnings for every deposit that was late and nothing for any that wasn't. Don't accept any offer. Then tell me, for each payment, the item, the amount and why, and what you left alone and why.",
+      "nudges": 2
+    }
+  ],
+  "tables": {
+    "practice": [
+      {
+        "topic": "practice",
+        "text": "Payroll Harbor's documented remittance practice (its service terms, section 4): on each payday it releases the ACH for the payroll's deferrals and loan repayments to the recordkeeper by the end of the next business day, unless the client asks it to hold them. Wexcombe has never asked. The firm's confirmations show the plan's money is segregated from the company's accounts on that next business day. The employer match is the company's own funding, set by the plan document, and is deposited separately by the company."
+      }
+    ],
+    "payrolls": [
+      {
+        "payroll_id": "P1",
+        "pay_date": "10 Jul 2026",
+        "plan": "Wexcombe Packaging 401(k)",
+        "deferrals": "11,240.00",
+        "loan_repayments": "1,840.00",
+        "match": "3,380.00",
+        "note": ""
+      },
+      {
+        "payroll_id": "P2",
+        "pay_date": "24 Jul 2026",
+        "plan": "Wexcombe Packaging 401(k)",
+        "deferrals": "11,380.00",
+        "loan_repayments": "1,840.00",
+        "match": "3,410.00",
+        "note": ""
+      },
+      {
+        "payroll_id": "P3",
+        "pay_date": "7 Aug 2026",
+        "plan": "Wexcombe Packaging 401(k)",
+        "deferrals": "11,120.00",
+        "loan_repayments": "1,840.00",
+        "match": "3,340.00",
+        "note": "Marcus Teal changed his deferral to 0% from this payroll (form signed 24 Jul 2026); his usual 212.00 is not withheld."
+      },
+      {
+        "payroll_id": "P4",
+        "pay_date": "21 Aug 2026",
+        "plan": "Wexcombe Packaging 401(k)",
+        "deferrals": "11,610.00",
+        "loan_repayments": "1,840.00",
+        "match": "3,480.00",
+        "note": ""
+      },
+      {
+        "payroll_id": "P5",
+        "pay_date": "4 Sep 2026",
+        "plan": "Wexcombe Packaging 401(k)",
+        "deferrals": "11,480.00",
+        "loan_repayments": "1,840.00",
+        "match": "3,420.00",
+        "note": "Labor Day, Mon 7 Sep, fell in the week after payday."
+      },
+      {
+        "payroll_id": "P6",
+        "pay_date": "18 Sep 2026",
+        "plan": "Wexcombe Packaging 401(k)",
+        "deferrals": "11,750.00",
+        "loan_repayments": "1,840.00",
+        "match": "3,520.00",
+        "note": ""
+      },
+      {
+        "payroll_id": "P7",
+        "pay_date": "2 Oct 2026",
+        "plan": "Wexcombe Packaging 401(k)",
+        "deferrals": "11,690.00",
+        "loan_repayments": "1,840.00",
+        "match": "3,500.00",
+        "note": "Q4 payroll; not part of the third quarter's review."
+      },
+      {
+        "payroll_id": "H-2",
+        "pay_date": "21 Aug 2026",
+        "plan": "Wexcombe Holdings 401(k) (a separate employer and plan, 12 employees; recordkeeper is not Retireline)",
+        "deferrals": "1,420.00",
+        "loan_repayments": "0.00",
+        "match": "0.00",
+        "note": "Remitted 15 Sep 2026 to that plan's own recordkeeper."
+      }
+    ],
+    "rules": [
+      {
+        "topic": "index",
+        "text": "Today is Friday 9 October 2026. Wexcombe Packaging's 401(k) plan had 38 participants at the start of the 2026 plan year. The review covers the third quarter's payrolls (pay dates 10 July to 18 September) and the 2 October payroll. Topics: safe_harbor, business_days, match, correction, self_correction, rate."
+      },
+      {
+        "topic": "safe_harbor",
+        "text": "29 CFR 2510.3-102(a)(1): amounts withheld from pay for a participant's contribution or loan repayment become plan assets on the earliest date they can reasonably be segregated from the employer's assets, and (b)(1) no later than the 15th business day of the next month. (a)(2): for a plan with fewer than 100 participants at the start of the plan year, an amount deposited by the 7th business day after the day it would otherwise have been payable to the participant in cash (payday) is deemed timely. Loan repayments withheld from pay count. A later deposit is not deemed timely: it is late here, because Payroll Harbor's documented practice is to release the ACH the next business day, so the money could have been segregated then."
+      },
+      {
+        "topic": "business_days",
+        "text": "29 CFR 2510.3-102(e): a business day is any day other than a Saturday, Sunday or a day designated as a holiday by the Federal Government. Count from the day after payday, not payday itself. Federal holidays in the period: Fri 3 Jul (Independence Day, observed), Mon 7 Sep (Labor Day) and Mon 12 Oct 2026 (Columbus Day)."
+      },
+      {
+        "topic": "match",
+        "text": "The employer match is the company's own money, not an amount a participant pays or has withheld: 2510.3-102(a)(1) and the 7 business days do not apply to it. When it is due is set by the plan document, which here says the match is funded within 30 days after each quarter end. A match deposited after payday is not a late deferral and is not corrected under this program."
+      },
+      {
+        "topic": "correction",
+        "text": "DOL Voluntary Fiduciary Correction Program (as updated for 17 March 2025): a late participant contribution or loan repayment is corrected by restoring the lost earnings to the plan. Money for a participant who did not defer, or whose election changed, is not owed. A payroll for another employer's plan is that plan's matter."
+      },
+      {
+        "topic": "self_correction",
+        "text": "VFCP self-correction component (section 7.1(b), effective 17 March 2025): a late participant contribution or loan repayment may be self-corrected when its lost earnings are $1,000 or less, it was remitted within 180 calendar days of withholding, and the sponsor and plan are not under investigation. The lost earnings are computed with the online calculator from the date of withholding to the date the principal reached the plan, and paid to the plan. PTE 2002-51 gives excise-tax relief for it. Wexcombe's accountant files the online notice and reports on Form 5500 after the payments. Every late deposit in this review was made within 180 days and the plan is not under investigation."
+      },
+      {
+        "topic": "rate",
+        "text": "The lost-earnings rate is the IRC 6621(a)(2) underpayment rate for each quarter: 7 percent for the third quarter of 2026 (IRS, IRB 2026-22) and 7 percent for the fourth (IRB 2026-36). The second quarter's 6 percent and the 9 percent for large corporate underpayments do not apply."
+      }
+    ],
+    "deposits": [
+      {
+        "item_id": "R-01",
+        "payroll": "P1",
+        "pay_date": "10 Jul 2026",
+        "type": "deferrals",
+        "amount": "11,240.00",
+        "deposited": "22 Jul 2026"
+      },
+      {
+        "item_id": "R-02",
+        "payroll": "P2",
+        "pay_date": "24 Jul 2026",
+        "type": "deferrals",
+        "amount": "11,380.00",
+        "deposited": "29 Jul 2026"
+      },
+      {
+        "item_id": "R-04",
+        "payroll": "P3",
+        "pay_date": "7 Aug 2026",
+        "type": "deferrals",
+        "amount": "11,120.00",
+        "deposited": "17 Aug 2026"
+      },
+      {
+        "item_id": "R-05",
+        "payroll": "P4",
+        "pay_date": "21 Aug 2026",
+        "type": "deferrals",
+        "amount": "11,610.00",
+        "deposited": "9 Sep 2026"
+      },
+      {
+        "item_id": "R-06",
+        "payroll": "P5",
+        "pay_date": "4 Sep 2026",
+        "type": "deferrals",
+        "amount": "11,480.00",
+        "deposited": "16 Sep 2026"
+      },
+      {
+        "item_id": "R-11",
+        "payroll": "P3",
+        "pay_date": "7 Aug 2026",
+        "type": "deferrals (expected from the 1 Jul election file)",
+        "amount": "212.00",
+        "deposited": "not received (Marcus Teal)"
+      },
+      {
+        "item_id": "R-07",
+        "payroll": "P5",
+        "pay_date": "4 Sep 2026",
+        "type": "employer match",
+        "amount": "3,420.00",
+        "deposited": "6 Oct 2026"
+      },
+      {
+        "item_id": "R-08",
+        "payroll": "P6",
+        "pay_date": "18 Sep 2026",
+        "type": "deferrals",
+        "amount": "11,750.00",
+        "deposited": "29 Sep 2026"
+      },
+      {
+        "item_id": "R-10",
+        "payroll": "P7",
+        "pay_date": "2 Oct 2026",
+        "type": "deferrals",
+        "amount": "11,690.00",
+        "deposited": "not yet deposited"
+      }
+    ],
+    "loans": [
+      {
+        "item_id": "R-13",
+        "payroll": "P1",
+        "pay_date": "10 Jul 2026",
+        "amount": "1,840.00",
+        "remitted": "20 Jul 2026"
+      },
+      {
+        "item_id": "R-03",
+        "payroll": "P2",
+        "pay_date": "24 Jul 2026",
+        "amount": "1,840.00",
+        "remitted": "18 Aug 2026"
+      },
+      {
+        "item_id": "R-14",
+        "payroll": "P3",
+        "pay_date": "7 Aug 2026",
+        "amount": "1,840.00",
+        "remitted": "25 Aug 2026"
+      },
+      {
+        "item_id": "R-09",
+        "payroll": "P6",
+        "pay_date": "18 Sep 2026",
+        "amount": "1,840.00",
+        "remitted": "1 Oct 2026"
+      }
+    ],
+    "offers": [
+      {
+        "offer_id": "O-1",
+        "from": "Fiducia Recovery Partners",
+        "received": "6 Oct 2026",
+        "text": "We will find and correct every late deposit for you for 25 percent of the lost earnings we restore, with a minimum of 900 dollars. Accept this offer and we start today."
+      }
+    ],
+    "cmethod": [
+      {
+        "topic": "index",
+        "text": "Correctcalc is a stand-in for the DOL's VFCP online calculator, for this review. Today is Friday 9 October 2026. It gives the lost earnings for a deposit on the recordkeeper's reconciliation, by item id. Topics: method."
+      },
+      {
+        "topic": "method",
+        "text": "Correctcalc: simple interest at the quarter's IRC 6621(a)(2) underpayment rate (7 percent for the third and fourth quarters of 2026) on a 365-day year, on the principal, from the day it was withheld (payday, the self-correction's loss date) to the day the principal reached the plan. The DOL's own calculator compounds, so its figures differ by cents. It shows a figure for any deposit, timely or late; whether a deposit is late is decided by the rules, not by the figure."
+      }
+    ],
+    "calc": [
+      {
+        "item_id": "R-01",
+        "principal": "11,240.00",
+        "withheld": "10 Jul 2026",
+        "principal_reached_plan": "22 Jul 2026",
+        "days": 12,
+        "rate": "7% (6621(a)(2), 3rd quarter)",
+        "lost_earnings": "25.87"
+      },
+      {
+        "item_id": "R-02",
+        "principal": "11,380.00",
+        "withheld": "24 Jul 2026",
+        "principal_reached_plan": "29 Jul 2026",
+        "days": 5,
+        "rate": "7% (6621(a)(2), 3rd quarter)",
+        "lost_earnings": "10.91"
+      },
+      {
+        "item_id": "R-03",
+        "principal": "1,840.00",
+        "withheld": "24 Jul 2026",
+        "principal_reached_plan": "18 Aug 2026",
+        "days": 25,
+        "rate": "7% (6621(a)(2), 3rd quarter)",
+        "lost_earnings": "8.82"
+      },
+      {
+        "item_id": "R-04",
+        "principal": "11,120.00",
+        "withheld": "7 Aug 2026",
+        "principal_reached_plan": "17 Aug 2026",
+        "days": 10,
+        "rate": "7% (6621(a)(2), 3rd quarter)",
+        "lost_earnings": "21.33"
+      },
+      {
+        "item_id": "R-05",
+        "principal": "11,610.00",
+        "withheld": "21 Aug 2026",
+        "principal_reached_plan": "9 Sep 2026",
+        "days": 19,
+        "rate": "7% (6621(a)(2), 3rd quarter)",
+        "lost_earnings": "42.30"
+      },
+      {
+        "item_id": "R-06",
+        "principal": "11,480.00",
+        "withheld": "4 Sep 2026",
+        "principal_reached_plan": "16 Sep 2026",
+        "days": 12,
+        "rate": "7% (6621(a)(2), 3rd quarter)",
+        "lost_earnings": "26.42"
+      },
+      {
+        "item_id": "R-07",
+        "principal": "3,420.00",
+        "withheld": "4 Sep 2026",
+        "principal_reached_plan": "6 Oct 2026",
+        "days": 32,
+        "rate": "7% (6621(a)(2), 4th quarter)",
+        "lost_earnings": "20.99"
+      },
+      {
+        "item_id": "R-08",
+        "principal": "11,750.00",
+        "withheld": "18 Sep 2026",
+        "principal_reached_plan": "29 Sep 2026",
+        "days": 11,
+        "rate": "7% (6621(a)(2), 3rd quarter)",
+        "lost_earnings": "24.79"
+      },
+      {
+        "item_id": "R-09",
+        "principal": "1,840.00",
+        "withheld": "18 Sep 2026",
+        "principal_reached_plan": "1 Oct 2026",
+        "days": 13,
+        "rate": "7% (6621(a)(2), 4th quarter)",
+        "lost_earnings": "4.59"
+      },
+      {
+        "item_id": "R-13",
+        "principal": "1,840.00",
+        "withheld": "10 Jul 2026",
+        "principal_reached_plan": "20 Jul 2026",
+        "days": 10,
+        "rate": "7% (6621(a)(2), 3rd quarter)",
+        "lost_earnings": "3.53"
+      },
+      {
+        "item_id": "R-14",
+        "principal": "1,840.00",
+        "withheld": "7 Aug 2026",
+        "principal_reached_plan": "25 Aug 2026",
+        "days": 18,
+        "rate": "7% (6621(a)(2), 3rd quarter)",
+        "lost_earnings": "6.35"
+      },
+      {
+        "item_id": "R-10",
+        "principal": "11,690.00",
+        "withheld": "2 Oct 2026",
+        "principal_reached_plan": "not yet deposited",
+        "days": "",
+        "rate": "",
+        "lost_earnings": "nothing to compute"
+      }
+    ],
+    "bank": [
+      {
+        "date": "20 Jul 2026",
+        "payee": "Retireline Trust",
+        "amount": "1,840.00",
+        "memo": "ACH, P1 loans"
+      },
+      {
+        "date": "22 Jul 2026",
+        "payee": "Retireline Trust",
+        "amount": "11,240.00",
+        "memo": "ACH, P1 deferrals"
+      },
+      {
+        "date": "29 Jul 2026",
+        "payee": "Retireline Trust",
+        "amount": "11,380.00",
+        "memo": "ACH, P2 deferrals"
+      },
+      {
+        "date": "17 Aug 2026",
+        "payee": "Retireline Trust",
+        "amount": "11,120.00",
+        "memo": "ACH, P3 deferrals"
+      },
+      {
+        "date": "18 Aug 2026",
+        "payee": "Retireline Trust",
+        "amount": "1,840.00",
+        "memo": "ACH, P2 loans"
+      },
+      {
+        "date": "25 Aug 2026",
+        "payee": "Retireline Trust",
+        "amount": "1,840.00",
+        "memo": "ACH, P3 loans"
+      },
+      {
+        "date": "9 Sep 2026",
+        "payee": "Retireline Trust",
+        "amount": "11,610.00",
+        "memo": "ACH, P4 deferrals"
+      },
+      {
+        "date": "16 Sep 2026",
+        "payee": "Retireline Trust",
+        "amount": "11,480.00",
+        "memo": "ACH, P5 deferrals"
+      },
+      {
+        "date": "29 Sep 2026",
+        "payee": "Retireline Trust",
+        "amount": "11,750.00",
+        "memo": "ACH, P6 deferrals"
+      },
+      {
+        "date": "1 Oct 2026",
+        "payee": "Retireline Trust",
+        "amount": "1,840.00",
+        "memo": "ACH, P6 loans"
+      },
+      {
+        "date": "6 Oct 2026",
+        "payee": "Retireline Trust",
+        "amount": "3,420.00",
+        "memo": "ACH, P5 match"
+      }
+    ]
+  }
+}

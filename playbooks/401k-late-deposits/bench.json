@@ -1,0 +1,306 @@
+{
+  "playbook": "401k-late-deposits",
+  "run_at": "2026-10-11T03:59:14Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 95.1,
+  "turns": 11,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 23,
+  "cost_usd": 0.9177,
+  "your_time_s": 150,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.6
+  },
+  "score": {
+    "eligible": 5,
+    "found": 5,
+    "exact": 5,
+    "value_total_usd": 87.93,
+    "value_found_usd": 87.93,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 10,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "pay_lost_earnings",
+        "key": "R-02",
+        "why": "Deposited 29 Jul, the 3rd business day after payday: inside the 7-business-day safe harbor",
+        "filed": false
+      },
+      {
+        "action": "pay_lost_earnings",
+        "key": "R-04",
+        "why": "Deposited 17 Aug, the 6th business day after payday (10 calendar days): inside the safe harbor, which counts business days",
+        "filed": false
+      },
+      {
+        "action": "pay_lost_earnings",
+        "key": "R-06",
+        "why": "Deposited 16 Sep, the 7th business day after 4 Sep because Labor Day, Mon 7 Sep, is not a business day: inside the safe harbor",
+        "filed": false
+      },
+      {
+        "action": "pay_lost_earnings",
+        "key": "R-07",
+        "why": "The employer match is the company's own funding, not a participant contribution: the 7 business days do not apply, and the plan document gives 30 days after the quarter",
+        "filed": false
+      },
+      {
+        "action": "pay_lost_earnings",
+        "key": "R-08",
+        "why": "Deposited 29 Sep, the 7th business day after payday: the 7th business day is in time",
+        "filed": false
+      },
+      {
+        "action": "pay_lost_earnings",
+        "key": "R-10",
+        "why": "The 2 Oct payroll's deposit is not yet due: its 7th business day is Wed 14 Oct (Mon 12 Oct, Columbus Day, is not a business day) and it is a fourth-quarter payroll",
+        "filed": false
+      },
+      {
+        "action": "pay_lost_earnings",
+        "key": "R-11",
+        "why": "Marcus Teal changed his deferral to 0% from the 7 Aug payroll (form signed 24 Jul); nothing was withheld, so nothing was deposited late",
+        "filed": false
+      },
+      {
+        "action": "pay_lost_earnings",
+        "key": "R-13",
+        "why": "The loan repayment of 10 Jul was remitted 20 Jul, the 6th business day: inside the safe harbor",
+        "filed": false
+      },
+      {
+        "action": "pay_lost_earnings",
+        "key": "H-2",
+        "why": "Wexcombe Holdings' payroll belongs to a different employer's plan with its own recordkeeper, not this plan",
+        "filed": false
+      },
+      {
+        "action": "accept_offer",
+        "key": "O-1",
+        "why": "A recovery firm's offer to correct for a quarter of the lost earnings with a 900 dollar minimum costs far more than the lost earnings, which the sponsor can compute and pay itself",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "pay_lost_earnings",
+      "key": "R-01",
+      "outcome": "correct",
+      "value_usd": 25.87,
+      "exact": true,
+      "why": "R-01: withheld 10 Jul 2026, deposited 22 Jul 2026 (8 business days after payday, past the 7th); the plan had 38 participants. Lost earnings 25.87 at 7 percent over 12 days from payday to the deposit (the self-correction's loss date is the day of withholding)"
+    },
+    {
+      "action": "pay_lost_earnings",
+      "key": "R-03",
+      "outcome": "correct",
+      "value_usd": 8.82,
+      "exact": true,
+      "why": "R-03: withheld 24 Jul 2026, deposited 18 Aug 2026 (17 business days after payday, past the 7th). A loan repayment withheld from pay counts under 2510.3-102(a)(1), and it sits only on the loan remittance list. Lost earnings 8.82"
+    },
+    {
+      "action": "pay_lost_earnings",
+      "key": "R-14",
+      "outcome": "correct",
+      "value_usd": 6.35,
+      "exact": true,
+      "why": "R-14: withheld 7 Aug 2026, deposited 25 Aug 2026 (12 business days after payday, past the 7th). A loan repayment. Lost earnings 6.35"
+    },
+    {
+      "action": "pay_lost_earnings",
+      "key": "R-05",
+      "outcome": "correct",
+      "value_usd": 42.3,
+      "exact": true,
+      "why": "R-05: withheld 21 Aug 2026, deposited 9 Sep 2026 (12 business days after payday, past the 7th). Lost earnings 42.30"
+    },
+    {
+      "action": "pay_lost_earnings",
+      "key": "R-09",
+      "outcome": "correct",
+      "value_usd": 4.59,
+      "exact": true,
+      "why": "R-09: withheld 18 Sep 2026, deposited 1 Oct 2026 (9 business days after payday, past the 7th). A loan repayment. Lost earnings 4.59"
+    }
+  ],
+  "missed": [],
+  "closing_words": "The bank agrees with Retireline on all five late deposits. The amount and date of each late transfer match the principal and arrival date Correctcalc used. All 11 transfers are principal or the match, so no lost earnings have been paid yet. I'm filing five cards, one per late deposit.\n\n\nFive cards are filed, totalling $87.93. Nothing is paid until you answer each one.\n\n**Payments**\n\n| Item | Amount | Why |\n|---|---|---|\n| R-01 | $25.87 | P1 deferrals of $11,240.00 arrived 22 Jul, one day after the 21 Jul deadline. That is 12 days at 7%. |\n| R-03 | $8.82 | P2 loan repayments of $1,840.00 arrived 18 Aug against a 4 Aug deadline. That is 25 days at 7%. This one showed up only on the loan list. |\n| R-14 | $6.35 | P3 loan repayments of $1,840.00 arrived 25 Aug against an 18 Aug deadline. That is 18 days at 7%. |\n| R-05 | $42.30 | P4 deferrals of $11,610.00 arrived 9 Sep against a 1 Sep deadli",
+  "trace": [
+    {
+      "portal": "Payroll Harbor",
+      "user": "I'm Neil, owner of Wexcombe Packaging and trustee of our 401(k). Start in Payroll Harbor: read how the firm remits our deferrals and loan repayments and the payroll register for the quarter.",
+      "continued": false,
+      "said": "Starting in Payroll Harbor: I'm reading the remittance practice and the first page of the payroll register.\n\n\nI'll read page 2 once these return.",
+      "said_chars": 145,
+      "reads": [
+        "read_remittance_practice",
+        "list_payrolls"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "",
+      "continued": true,
+      "said": "Payroll Harbor says it releases deferrals and loan repayments by the end of the next business day after each payday. Wexcombe has never asked it to hold them. The register's first four payrolls (P1–P4) are read, and I'm now reading page 2.\n\n\nNotes so far (showing 4 of 8 payrolls):\n- P3 (7 Aug): Marcus Teal's deferral was stopped at 0%, effective that payroll. His usual 212.00 was never withheld, so no deposit is owed for it.\n- The match is funded by the company and deposited separately.",
+      "said_chars": 559,
+      "reads": [
+        "list_payrolls"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Payroll Harbor",
+      "user": "",
+      "continued": true,
+      "said": "The Payroll Harbor register is read in full (8 of 8 rows). Six payrolls, P1–P6, are in scope for Q3 and the Wexcombe Packaging plan.\n\n- **P7 (2 Oct):** this is a Q4 payroll, so I'm leaving it out.\n- **H-2:** this belongs to Wexcombe Holdings, a separate employer and plan with a different recordkeeper, so I'm leaving it out.\n- **P3:** Marcus Teal's deferral was stopped, so there's no deposit to check for it.\n- **P5 (4 Sep):** Labor Day, Monday 7 Sep, falls in the week after payday.",
+      "said_chars": 1194,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Retireline",
+      "user": "Retireline is our recordkeeper. Read the plan's rules, the deposit log, the loan remittances and the offers, and work out which deferrals and loan repayments were deposited late.",
+      "continued": false,
+      "said": "I'm reading the Retireline rules, the deposit log, the loan remittances and the offers now. I'll work out which deposits were late once they return.",
+      "said_chars": 148,
+      "reads": [
+        "read_plan_rules",
+        "read_plan_rules",
+        "read_plan_rules",
+        "read_plan_rules",
+        "list_deposits",
+        "list_deposits",
+        "list_loan_remittances",
+        "list_offers"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Retireline",
+      "user": "",
+      "continued": true,
+      "said": "Five deposits were late. Two are deferrals and three are loan repayments. I'm now getting Correctcalc's lost-earnings figure for each.\n\nI counted business days from the day after payday. The 7th business day is the last timely one, and Mon 7 Sep (Labor Day) isn't a business day.",
+      "said_chars": 2057,
+      "reads": [
+        "read_plan_rules",
+        "read_plan_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Retireline",
+      "user": "",
+      "continued": true,
+      "said": "I'm still in Retireline, and Correctcalc's tools can't be called from here, so the five figures are still missing. Switch me to Correctcalc and I'll calculate them for R-01, R-03, R-14, R-05 and R-09.\n\nThe last two plan-rule topics add this:\n- **Rate:** lost earnings use 7% for both Q3 and Q4 2026, so Correctcalc should show 7%. If it shows 6% or 9%, I'll flag it.",
+      "said_chars": 968,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Correctcalc",
+      "user": "Correctcalc works out lost earnings. Read how it works and get the figure for each deposit that was late.",
+      "continued": false,
+      "said": "I'm reading Correctcalc's method and running the figure for each of the five late items.\n\n\nI'll check the rate and day counts when the results return. Then I'll set out the payments to file.",
+      "said_chars": 190,
+      "reads": [
+        "read_method",
+        "calculate_lost_earnings",
+        "calculate_lost_earnings",
+        "calculate_lost_earnings",
+        "calculate_lost_earnings",
+        "calculate_lost_earnings"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Correctcalc",
+      "user": "",
+      "continued": true,
+      "said": "I have all five figures. I'm reading the \"method\" topic too, because I can't reach Correctcalc's tools from the bank tab.",
+      "said_chars": 121,
+      "reads": [
+        "read_method"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Correctcalc",
+      "user": "",
+      "continued": true,
+      "said": "Correctcalc gives lost earnings of $87.93 across the five late deposits. I checked each figure against its method: simple interest at 7% on a 365-day year, from the day withheld to the day the principal reached the plan.",
+      "said_chars": 1325,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "Ledgerwren is our bank. Read the transfers to the plan, then pay into the plan the lost earnings for every deposit that was late and nothing for any that wasn't. Don't accept any offer. Then tell me, for each payment, the item, the amount a",
+      "continued": false,
+      "said": "I'll read the bank transfers first, and recall the Correctcalc figures for R-05 and R-09.\n\nI have the five lost-earnings figures, but the bank transfer pages haven't come back yet, so I'm not filing any payment cards yet.\n\nThe figures are $25.87 for R-01, $8.82 for R-03, $6.35 for R-14, $42.30 for R-05 and $4.59 for R-09. They total $87.93.\n\nWhen the transfers arrive, I'll check each late principal against what actually reached the trust, and I'll look for any lost-earnings payment already made.",
+      "said_chars": 623,
+      "reads": [
+        "list_transfers",
+        "list_transfers",
+        "list_transfers"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren bank",
+      "user": "",
+      "continued": true,
+      "said": "The bank agrees with Retireline on all five late deposits. The amount and date of each late transfer match the principal and arrival date Correctcalc used. All 11 transfers are principal or the match, so no lost earnings have been paid yet. I'm filing five cards, one per late deposit.\n\n\nFive cards are filed, totalling $87.93. Nothing is paid until you answer each one.\n\n**Payments**\n\n| Item | Amount | Why |\n|---|---|---|\n| R-01 | $25.87 | P1 deferrals of $11,240.00 arrived 22 Jul, one day after the 21 Jul deadline.",
+      "said_chars": 2230,
+      "reads": [],
+      "cards": [
+        {
+          "action": "pay_lost_earnings",
+          "key": "R-01",
+          "outcome": "correct",
+          "value_usd": 25.87
+        },
+        {
+          "action": "pay_lost_earnings",
+          "key": "R-03",
+          "outcome": "correct",
+          "value_usd": 8.82
+        },
+        {
+          "action": "pay_lost_earnings",
+          "key": "R-14",
+          "outcome": "correct",
+          "value_usd": 6.35
+        },
+        {
+          "action": "pay_lost_earnings",
+          "key": "R-05",
+          "outcome": "correct",
+          "value_usd": 42.3
+        },
+        {
+          "action": "pay_lost_earnings",
+          "key": "R-09",
+          "outcome": "correct",
+          "value_usd": 4.59
+        }
+      ]
+    }
+  ]
+}

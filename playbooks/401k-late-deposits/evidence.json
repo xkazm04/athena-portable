@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "401k-late-deposits",
+  "captured_at": "2026-10-11T04:01:11Z",
+  "bench_run_at": "2026-10-11T03:59:14Z",
+  "narration": {
+    "text": "A small plan's late 401(k) deposits are made good with their lost earnings: two deferrals and three loan repayments deposited after the seventh business day, one found only on the loan list, while deposits on the sixth and seventh days across Labor Day, a late match, a stopped deferral and a recovery firm's share are left alone. This is a chore for the owner and 401(k) plan trustee of a 38-person packaging company. Athena works it across 4 portals: Payroll Harbor, Retireline, Correctcalc and Ledgerwren bank. On the bench, she found 5 of 5 eligible items, worth 87 dollars and 93 cents of the 87 dollars and 93 cents there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 56 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.335,
+    "sha256": "243270ea052c137d8e55acbcefdffce6d25185a22d1e00e73cede86b5feac90a"
+  },
+  "video": {
+    "path": "evidence/401k-late-deposits/evidence.mp4",
+    "duration_s": 63.335,
+    "bytes": 2923238,
+    "sha256": "072b34ba32e2a246114db2d129370416718c1b8624f5109365424514db65ae44"
+  },
+  "thumbnail": {
+    "path": "playbooks/401k-late-deposits/thumb.jpg",
+    "bytes": 98871,
+    "sha256": "8fa6d174b9bd17540ae5f6cb1f3b7858a1fcb8854e72063c32dea5864cd723f0"
+  }
+}

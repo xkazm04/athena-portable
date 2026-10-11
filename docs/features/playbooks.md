@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The eighty-five playbooks (latest runs, Claude Sonnet)
+## The eighty-six playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -128,9 +128,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A laid-off analyst's three clocks kept in New York: unemployment filed this week, COBRA for October only to cover a scan, a marketplace plan and credit from November, and severance signed to be paid after thirty days, while a withdrawn draft, an early payment, a full COBRA, a December start and a broker's rush are left out | home | 4 | exceeds: 6 of 6, $6,025.00 of $6,025.00 (benefits kept and a bill covered), 8 of 8 traps, 0 false, 2.3 min, $0.86 |
 | A surveying firm's ten unemployment claim notices answered in three states, each on its own clock: layoffs and a part-time claim with the facts, a quit and a documented discharge contested with evidence, a stranger's claim and an employee's reported, while a repeat, a late one, a layoff called a quit and a firm's offer to contest all are left alone | work | 6 | exceeds (run 2 after a world fix; run 1 was short, 7 of 7 with 2 false claims): 7 of 7, $9,880.00 of $9,880.00 (charges avoided, an upper bound), 8 of 8 traps, 0 false, 4.5 min, $1.54 |
 | A manufacturer's COBRA election notices mailed inside their windows from its own plan: a layoff, a resignation, an hours cut, a death, a divorce and a child's twenty-sixth birthday reported in time, and a separated spouse at her own address, while a waiver, a cut that kept coverage, a late or missing report, a transfer, a leave, a Medicare date and a notice already mailed are left out | work | 3 | exceeds: 7 of 7, $770.00 of $770.00 (an exposure unit, not money recovered), 11 of 11 traps, 0 false, 1.9 min, $1.18 |
+| A small company's third-quarter 401(k) deposits checked against the 7-business-day safe harbor, and the lost earnings paid for each late one: two deferrals and three loan repayments, one found only on the loan list, while deposits on the sixth and seventh days across Labor Day, a late match, a stopped deferral, an unfinished payroll, another plan's payroll and a recovery firm's share are left out | work | 4 | exceeds: 5 of 5, $87.93 of $87.93 (lost earnings owed to the plan), 10 of 10 traps, 0 false, 1.6 min, $0.92 |
 
-Across the latest runs: $1,143,370 of $1,152,797 found, 862 of 862 traps walked past, no false claim,
-232 minutes of her time against about 327 hours by hand, $141.39 of model time. 125 runs are recorded
+Across the latest runs: $1,143,458 of $1,152,885 found, 872 of 872 traps walked past, no false claim,
+234 minutes of her time against about 328 hours by hand, $142.31 of model time. 126 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module
