@@ -1,0 +1,131 @@
+{
+  "targets": [
+    {
+      "tool": "record_case",
+      "key": "incident_id",
+      "eligible": {
+        "IR-1": {
+          "value_usd": 16550.0,
+          "why": "Five sutures are medical treatment beyond first aid (1904.7(b)(5)(i), (ii)(D)): recordable, no days away",
+          "expect": {
+            "case_type": "other recordable"
+          }
+        },
+        "IR-2": {
+          "value_usd": 16550.0,
+          "why": "Lumbar strain, off 11 to 16 March: days away count from the day after the injury (10 March) and include the weekend the physician kept him off, 6 days (1904.7(b)(3)(i), (iv)); counting 10 March would make 7",
+          "expect": {
+            "case_type": "days away",
+            "days_away": 6
+          }
+        },
+        "IR-3": {
+          "value_usd": 16550.0,
+          "why": "Restricted from the right hand 7 to 27 May and moved to inspection: a job transfer or restricted work case, 21 days (1904.7(b)(4))",
+          "expect": {
+            "case_type": "restricted or transfer",
+            "restricted_days": 21
+          }
+        },
+        "IR-4": {
+          "value_usd": 16550.0,
+          "why": "The doctor recommended ibuprofen 800 mg, prescription strength, and he declined it: still medical treatment, recordable (1904.7(b)(5)(ii)(A), (v)). The supervisor's report shows only an over-the-counter pill; the clinic's note is the only place the recommendation is stated",
+          "required": true,
+          "expect": {
+            "case_type": "other recordable"
+          }
+        },
+        "IR-5": {
+          "value_usd": 16550.0,
+          "why": "A groin injury (an intimate body part) is a privacy concern case (1904.29(b)(7)(i)): recordable with 3 days away, 9 to 11 July, and 'privacy case' in place of the name",
+          "expect": {
+            "case_type": "days away",
+            "days_away": 3,
+            "privacy_case": true
+          }
+        },
+        "IR-6": {
+          "value_usd": 16550.0,
+          "why": "An amputation with bone loss, reported to OSHA on 20 August within 24 hours (1904.39), is also recorded: off 20 August to 1 September, 13 calendar days",
+          "expect": {
+            "case_type": "days away",
+            "days_away": 13
+          }
+        },
+        "IR-7": {
+          "value_usd": 16550.0,
+          "why": "Rotator cuff tear, away from 15 April 2025 and still away on 30 January 2026: more than 180 days, so 180 is entered (1904.7(b)(3)(vii), (ix)); it is recorded in 2025 only",
+          "expect": {
+            "case_type": "days away",
+            "days_away": 180
+          }
+        }
+      },
+      "traps": {
+        "IR-8": "A second supervisor's report of Luis Ferreira's back strain (IR-2): the same case, recorded once (1904.6)",
+        "IR-9": "A butterfly bandage is first aid (1904.7(b)(5)(ii)(D)), not medical treatment",
+        "IR-10": "Over-the-counter ibuprofen at the label dose and ice are first aid (1904.7(b)(5)(ii)(A), (E))",
+        "IR-11": "A tetanus shot is first aid (1904.7(b)(5)(ii)(B))",
+        "IR-12": "A motor vehicle accident in the company parking lot while arriving for work is excepted from work-relatedness (1904.5(b)(2)(vii)), though she got a prescription and missed two days",
+        "IR-13": "The flu is excepted from work-relatedness (1904.5(b)(2)(viii)), though she missed three days",
+        "IR-14": "Choking on a sandwich in the break room is eating for personal consumption (1904.5(b)(2)(iv))",
+        "IR-15": "Already entered on the log on 29 December 2025 (LE-1): a case is recorded once",
+        "IR-16": "Already entered on the log on 6 June 2025 (LE-2): a case is recorded once"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "send_for_certification",
+      "key": "certifier_id",
+      "eligible": {
+        "P-2": {
+          "value_usd": 16550.0,
+          "why": "Wendell Brandt is the highest ranking company official working at the Fenwick Road establishment, one of the people who may certify (1904.32(b)(4)(iii))",
+          "expect": {
+            "certifier_id": "P-2"
+          }
+        }
+      },
+      "traps": {
+        "P-5": "Dana is the EHS coordinator, not an owner, an officer of the corporation, the highest ranking official at the establishment or that official's supervisor (1904.32(b)(4))",
+        "P-6": "The HR manager is not a company executive under 1904.32(b)(4)",
+        "P-7": "The maintenance supervisor is not a company executive under 1904.32(b)(4)"
+      },
+      "neutral": {
+        "P-3": {
+          "why": "Marcus Hale, an officer of the corporation and the highest ranking official's immediate supervisor, may also certify (1904.32(b)(4)(ii), (iv)); either executive is acceptable"
+        }
+      }
+    },
+    {
+      "tool": "submit_to_ita",
+      "key": "form",
+      "eligible": {
+        "300A": {
+          "value_usd": 16550.0,
+          "why": "An establishment of 20 to 249 employees in an Appendix A industry (all of NAICS 31-33) submits the 300A by 2 March 2026 (1904.41(a)(1)(i)); the average is 109 and the hours 224,600",
+          "expect": {
+            "average_employees": 109,
+            "total_hours": 224600
+          }
+        },
+        "300-301": {
+          "value_usd": 16550.0,
+          "why": "An establishment with 100 or more employees (118) in an Appendix B industry (3327 Machine Shops) also submits the 300 and 301 data by 2 March 2026 (1904.41(a)(2))"
+        }
+      },
+      "traps": {},
+      "neutral": {}
+    },
+    {
+      "tool": "accept_offer",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-1": "A vendor's offer to file for 395 dollars is a fee for something the company's own coordinator submits online; accepting it binds the company to it"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

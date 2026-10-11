@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "osha-300-log",
+  "captured_at": "2026-10-11T04:32:37Z",
+  "bench_run_at": "2026-10-11T04:30:05Z",
+  "narration": {
+    "text": "A machine shop closes its 2025 injury log: seven cases entered with their days, one a privacy case and one made recordable by a declined prescription, the summary certified by the plant's top official and the 300A and 300 and 301 data submitted, while first aid, a parking-lot crash, the flu and repeats are left alone. This is a chore for the EHS coordinator of a 118-person machine shop, who keeps the OSHA 300 Log. Athena works it across 4 portals: Crewmarrow HR, Postwren, Binderwell and Injurylog ITA. On the bench, she found 7 of 10 eligible items, worth 115,850 dollars of the 165,500 dollars there was to find. All 7 were filed at the exact amount the rules allow. She made no false claim. The world held 13 traps, and she walked past 13. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 75 times faster. The verdict: short. Found 70% of the value, expected 75%; found 7 of 10 items, expected 75%. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 71.027,
+    "sha256": "94cd58a88eba69b655594ae6eca585d5d1889ecfa50281c8769eb324553919b1"
+  },
+  "video": {
+    "path": "evidence/osha-300-log/evidence.mp4",
+    "duration_s": 71.04,
+    "bytes": 3078644,
+    "sha256": "c56040f4d69f6cbc1fbdf681a885e1c7a59bffbb21e64dd603b023acf7480d52"
+  },
+  "thumbnail": {
+    "path": "playbooks/osha-300-log/thumb.jpg",
+    "bytes": 78498,
+    "sha256": "abbcc0ec976ad9d5b120f14d1ab89d0ff698336e013c08121ce8e48dcb240408"
+  }
+}
