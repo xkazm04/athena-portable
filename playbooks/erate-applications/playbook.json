@@ -1,0 +1,123 @@
+{
+  "id": "erate-applications",
+  "title": "A school district's Form 471s for funding year 2026 are filed on Friday 13 February with the lowest eligible bid for four services, one a switch bid that came only by mail, while the vendor that drafted a 470, a 470 posted 11 days ago, bus Wi-Fi, Chromebooks, a filed service and a consultant's share are left alone",
+  "domain": "Schools & libraries",
+  "audience": "work",
+  "promise": "A technology director has until Wednesday 1 April 2026, the close of the funding year 2026 window, to file the district's FCC Form 471s, and on Friday 13 February her job is to file four: Internet access with Tallis's 18,000 dollar bid, because Brightmarrow's lower bid comes from the vendor that drafted the Form 470; managed Wi-Fi with Northgate's 17,500; the switches with Dunmere's 12,000 dollar bid, which arrived only by post and is lower than both portal bids; and the fiber link with Tallis's 7,000. She files nothing for the firewall service, whose Form 470 is only 11 days old, the school-bus hotspots, the student Chromebooks or the maintenance already filed on 28 January, picks no higher bid, and answers no consultant who wants 12 percent of the funding or vendor who offers a gift card.",
+  "persona": "The technology director of a small school district, with a board policy that takes the lowest price among the bids that answer the Form 470",
+  "chore": "Read the district's services with their Form 470 dates and the bids that came through the portal in Rateline; the ledger in Ledgerwren; the board's documents in Binderwell; and the mail, scanned letters included, in Postwren. Then apply 47 CFR 54.503 and 54.511 and the funding year 2026 Eligible Services List (DA 25-1069), as they stand on Friday 13 February 2026: the Form 470 is posted four weeks (28 days, the day certified counting as day one) before the district commits; the price of the eligible services is the primary factor in choosing the bid; a vendor that prepared the Form 470 makes the competition not fair and open; end-user devices and off-campus use are not eligible; and the FCC Form 471 window runs from 21 January to 1 April 2026.",
+  "command": "I'm the technology director of Larchmoor Unified School District. It's the middle of the Form 471 window. Go through Rateline, Binderwell, Ledgerwren and the Postwren inbox, and file the FCC Form 471 for each service the rules let us file today, with the bid that the rules and our board policy select. File nothing we can't, and don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Rateline",
+      "role": "the stand-in for USAC's filing system: the funding year 2026 rules, the district's services with their Form 470 dates, the bids that came through the portal and the page that files a Form 471",
+      "api": "E-Rate portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren",
+      "role": "the district's ledger: what it paid, to whom and for what",
+      "api": "Accounting, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the board's documents: the procurement policy, the draft Form 470, the bid log and the resolution",
+      "api": "Board documents, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the district's mail and the letter service: a vendor's mailed bid, a consultant's offer, a vendor's gift and USAC's notice",
+      "api": "Mail and letters, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules, the services with their Form 470 dates and every page of the portal bids in Rateline.",
+    "Reads the board's policy, the draft Form 470, the bid log and the resolution in Binderwell.",
+    "Reads the technology entries in Ledgerwren.",
+    "Reads every page of the mail in Postwren, including the bid that came only by post, and notes what each attachment is.",
+    "Files a Form 471 for each service the rules let the district file, with the lowest eligible bid, inside the window."
+  ],
+  "gates": [
+    {
+      "action": "file_form_471",
+      "label": "File an FCC Form 471",
+      "why": "The Form 471 commits the district to a vendor and a price under the district's certification; one filed before the 28 days, for an ineligible service, for a service already filed, or with a bid that is not the lowest eligible one or comes from the vendor that drafted the Form 470, puts the funding request at risk and the district's certification in question."
+    },
+    {
+      "action": "reply_message",
+      "label": "Reply to a message",
+      "why": "A reply goes out under the district's name; one that says yes to a consultant commits a share of the funding, and one that confirms a vendor for a gift card breaches the gift limit and the price-first rule."
+    }
+  ],
+  "traps": [
+    "Brightmarrow Networks' lowest bid for Internet access, when its engineer drafted the Form 470.",
+    "A higher bid for Internet access, managed Wi-Fi, the switches or the fiber link.",
+    "The portal's lowest bid for the switches, when a lower one came by post.",
+    "A Form 471 for the firewall service, whose Form 470 is 11 days old.",
+    "A Form 471 for the school-bus hotspots, which are off-campus use.",
+    "A Form 471 for the student Chromebooks, which are end-user devices.",
+    "A second Form 471 for the maintenance already filed on 28 January.",
+    "A reply that signs the consultant at 12 percent of the funding.",
+    "A reply that confirms the vendor for the gift card."
+  ],
+  "memory": [
+    "Each service, its id, the date its Form 470 was certified and its Allowable Contract Date, carried from Rateline.",
+    "Each bid, its id, the service, the vendor and the price, carried from Rateline and from the paper bid in Postwren.",
+    "Who drafted each Form 470 and the district's policy, carried from Binderwell and the ledger.",
+    "The window's close and the eligibility rules, carried from the rules."
+  ],
+  "economics": {
+    "value_usd": 40000,
+    "per": "year",
+    "basis": "An estimate, mostly real money. A school district's E-Rate discount pays a share of what it spends on eligible services, and a Form 471 not filed in the window, filed before the 28 days or filed for an ineligible service or a conflicted bid loses or puts at risk that funding. For funding years 2026 to 2030 the Category Two budget is 201.57 dollars a student before discount over five years (Wireline Competition Bureau notice DA 25-471, 4 June 2025): a district of 1,100 students has 221,727 dollars, 44,345 a year, 35,476 at an 80 percent discount. The roster's 40,000 dollars a year is an estimate of that order for the Category Two and Category One services a district bids in a year and is kept; it is not an average of anything published. The bench world holds four Form 471s weighted at the funding each requests at an 80 percent discount, 14,400, 14,000, 9,600 and 5,600 dollars, 43,600 dollars, what the district asks to be committed and an exposure and not money recovered: USAC decides, and no page of the world computes it. Times a year: 1, because a district files its funding year's Form 471s once in a window, and the world holds eight of them. manual_minutes 240: reading six rules, eight services with their dates, thirteen portal bids, a paper bid, four board documents, three ledger entries and four letters, checking each service against 28 days, the Eligible Services List and the conflict rule, picking the lowest eligible bid for each, and filing four forms. The rules applied, as they stand on Friday 13 February 2026, read in the eCFR (fetched on 11 October 2026) and on USAC's pages: 47 CFR 54.503(c)(4) (at least four weeks after posting the Form 470 before commitments; USAC counts 28 days with the day certified as day one, and its Allowable Contract Date is 28 days after certification), 54.503(c)(2)(ii)(B) and 54.511(a) (the price of the eligible services is the primary factor; the most cost-effective offering), the Note to 54.503(a) (a provider that prepares the Form 470, is its named contact or takes part in evaluating the bids makes the process not fair and open), 54.503(d) (a limit of 50 dollars per provider per funding year on gifts); USAC's funding year 2026 pages (the Form 471 window from noon Eastern on Wednesday 21 January to 11:59 p.m. Eastern on Wednesday 1 April 2026, the last Form 470 date to allow 28 days, Wednesday 4 March 2026); and the funding year 2026 Eligible Services List (DA 25-1069, 17 December 2025, whose text names end-user devices such as computers, laptops and tablets as ineligible and puts off-campus use outside support, and keeps basic firewalls only). THE BRIEF'S PREMISES: the rule says four weeks, which USAC counts as 28 days; the withdrawal of school-bus Wi-Fi (FCC 25-63) and off-premises hotspots (FCC 25-62) on 30 September 2025 is right and is read through the FCC's orders as summarized and the Eligible Services List's off-campus rule, not in an ESL line about hotspots; there is no rule or USAC guidance in force that bans a consultant's percentage fee, and the FCC only proposed a ban in its further notice of June 2026 (FCC 26-41), so the consultant's offer is a trap by price and not by prohibition. The Category Two budget notice was read in full; the Eligible Services List was read in the PDF text and not on USAC's page.",
+    "manual_minutes": 240,
+    "times_per_year": 1,
+    "incumbent": "E-Rate consultants charge flat or hourly fees, and some a share of the funding, which the FCC has proposed to ban (the 12 percent in the world's offer is invented); a consultant's share is not an incumbent fee this chore recovers and no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "47 CFR 54.503, Competitive bidding requirements (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-54/subpart-F/section-54.503"
+      },
+      {
+        "label": "47 CFR 54.511, Ordering services (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-B/part-54/subpart-F/section-54.511"
+      },
+      {
+        "label": "FCC DA 25-1069: funding year 2026 Eligible Services List (17 December 2025)",
+        "url": "https://www.usac.org/wp-content/uploads/e-rate/documents/resources/DA-25-1069A1.pdf"
+      },
+      {
+        "label": "USAC: funding year 2026 filing window (Form 471 from 21 January to 1 April 2026)",
+        "url": "https://www.usac.org/e-rate/resources/e-rate-productivity-center/funding-year-2026-filing-window/"
+      },
+      {
+        "label": "USAC: the 28-day waiting period for competitive bidding",
+        "url": "https://www.usac.org/e-rate/applicant-process/competitive-bidding/28-day-waiting-period/"
+      },
+      {
+        "label": "USAC: open and fair competitive bidding process",
+        "url": "https://www.usac.org/e-rate/applicant-process/competitive-bidding/open-fair-process/"
+      },
+      {
+        "label": "FCC DA 25-471: Category Two budgets for funding years 2026 to 2030 (201.57 dollars a student)",
+        "url": "https://docs.fcc.gov/public/attachments/DA-25-471A1.pdf"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 4,
+    "difficulty_why": "Eight services and thirteen portal bids in four systems, four to file: the lowest Internet bid is from the vendor whose engineer drafted the Form 470, which only the board's draft and a ledger invoice show; the lowest switch bid is not on the portal and arrived by post in the district's mail; one Form 470 is 11 days old and cannot yet be filed; two services are ineligible for different reasons, off-campus use and end-user devices; one service was filed on 28 January; and a consultant and a vendor each offer something in a reply.",
+    "usefulness_why": "A district that files with the wrong bid, too early or for an ineligible service risks the funding for the year, and the window closes on 1 April; the chore is a few hours of rules for a director who knows them, but the proof is split between a filing portal, a ledger, a board binder and a paper bid in the mail, and a consultant's share and a gift card both invite the wrong move."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful director with the services, the bids, the board's documents and the mail in hand gets most of it: the bar is three quarters of the 43,600 dollars the four forms request, and nothing for a conflicted bid, a higher bid, a Form 471 too early, an ineligible service, a service already filed, the consultant or the gift card, inside an hour."
+  },
+  "caveat": "Larchmoor Unified School District, its schools, board and technology director, Tallis Cable & Fiber, Brightmarrow Networks, Northgate Wireless Services, Dunmere Network Supply, Terrence Aldous, FundingShare Advisors, Rateline, Ledgerwren, Binderwell and Postwren, and every bid, price, application number, document and date are invented; Rateline stands in for USAC's filing system (named without 'EPC', which is USAC's own E-Rate Productivity Center) and is not presented as USAC's. The public rules applied are 47 CFR 54.503 and 54.511 as the eCFR held them on 11 October 2026, USAC's pages on the funding year 2026 window and its competitive bidding rules, the funding year 2026 Eligible Services List (DA 25-1069, 17 December 2025) and the Category Two notice (DA 25-471), as they stand on Friday 13 February 2026, a date inside the Form 471 window; the rule that school-bus Wi-Fi and off-premises hotspots are ineligible is read through summaries of FCC 25-62 and FCC 25-63 and the Eligible Services List's off-campus rule, because those orders were not opened. USAC and the FCC decide real cases, on the applicant's real forms and bids. This applies stated rules to stated facts; it is not legal or E-Rate advice."
+}

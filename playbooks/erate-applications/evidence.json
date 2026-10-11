@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "erate-applications",
+  "captured_at": "2026-10-11T06:56:11Z",
+  "bench_run_at": "2026-10-11T06:53:20Z",
+  "narration": {
+    "text": "A school district's Form 471s for funding year 2026 are filed on Friday 13 February with the lowest eligible bid for four services, one a switch bid that came only by mail, while the vendor that drafted a 470, a 470 posted 11 days ago, bus Wi-Fi, Chromebooks, a filed service and a consultant's share are left alone. This is a chore for the technology director of a small school district, with a board policy that takes the lowest price among the bids that answer the Form 470. On the bench, she found 4 of 4 eligible items, worth 43,600 dollars of the 43,600 dollars there was to find. She made no false claim. The world held 12 traps, and she walked past 12. She took 2 minutes. By hand, the same chore takes 4 hours, so she was about 141 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.94,
+    "sha256": "859df39ecfd34a7a658b48d68c1418533b70d9dc8dd82cbb7aad2ec7dab114c6"
+  },
+  "video": {
+    "path": "evidence/erate-applications/evidence.mp4",
+    "duration_s": 63.96,
+    "bytes": 3044584,
+    "sha256": "d4174b0ad40f78231147d03d84fa6eee7a1a32ac9ea478542257d1868eaef080"
+  },
+  "thumbnail": {
+    "path": "playbooks/erate-applications/thumb.jpg",
+    "bytes": 79115,
+    "sha256": "6960f6893cc9e0870a120861496bb97986db1bcad35e2394db3bdbde6fe18ff8"
+  }
+}
