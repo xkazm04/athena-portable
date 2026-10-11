@@ -60,6 +60,11 @@ function fakeSocket() {
       live?.onmessage?.({ data: new Uint8Array([0, 0, 0, generation, 1, 0, 2, 0]).buffer });
     },
     drop: () => live?.close(),
+    refuse: (code: number, reason: string) => {
+      if (!live) return;
+      live.readyState = 3;
+      live.onclose?.({ code, reason });
+    },
   };
 }
 
@@ -649,5 +654,49 @@ describe("the microphone closes whenever listening ends (council full r1 robustn
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+});
+
+describe("a typed line whose socket closes while it waits", () => {
+  const held = () => {
+    let finish: (() => void) | null = null;
+    const capture = () => new Promise((done) => (finish = () => done({ id: null, why: null }) as never));
+    return { capture, release: () => finish!(), pending: () => finish !== null };
+  };
+
+  it("keeps the refusal's reason and sends nothing when a 1013 lands during the capture", async () => {
+    const hold = held();
+    const { socket } = wire({ capture: hold.capture as VoiceDeps["capture"] });
+    await startVoice();
+    const said = useVoice.getState().say("hi");
+    await vi.waitFor(() => expect(hold.pending()).toBe(true));
+
+    await socket.emit({
+      kind: "turn.error",
+      reason: "validator_failed",
+      detail: "at most 2 voice sockets may be open at once; try again when one has closed",
+    });
+    socket.refuse(1013, "at most 2 voice sockets");
+    hold.release();
+    await said;
+
+    expect(useVoice.getState().phase).not.toBe("thinking");
+    expect(useVoice.getState().reason).toContain("at most 2 voice sockets");
+    expect(socket.frames().filter((f) => f.type === "text")).toEqual([]);
+  });
+
+  it("sets no thinking phase and sends nothing when a plain close lands during the capture", async () => {
+    const hold = held();
+    const { socket } = wire({ capture: hold.capture as VoiceDeps["capture"] });
+    await startVoice();
+    const said = useVoice.getState().say("hi");
+    await vi.waitFor(() => expect(hold.pending()).toBe(true));
+
+    socket.drop();
+    hold.release();
+    await said;
+
+    expect(useVoice.getState().phase).not.toBe("thinking");
+    expect(socket.frames().filter((f) => f.type === "text")).toEqual([]);
   });
 });

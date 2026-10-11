@@ -89,3 +89,8 @@ line (`say`) whose socket is refused while it awaits the tab capture then sets t
   server's connection question, outside this module.
 - The cap is a constant, like the per-socket one, and a `VoiceGateway` field defaulting to it, so
   a test can name its own and `wiring.py` does not change.
+
+**Panel rough edge closed.** `say` in `apps/desktop/src/stores/voice.ts` now stops when its socket
+closed while it waited: after the publish, the connect and the tab capture it continues only while
+that socket is still the store's open one, so it sets no phase, keeps the reason the refusal's
+`turn.error` or `onClose` left, and sends nothing. Tests in `apps/desktop/src/stores/voice.test.ts`.

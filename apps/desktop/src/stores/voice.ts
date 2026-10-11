@@ -492,10 +492,12 @@ export const useVoice = create<VoiceState>((set, get) => {
       snap = taking;
       if (!(await publish(taking))) return;
       const live = await ensureSocket();
-      if (!live) return;
+      // A refusal or a close that lands during an await leaves its own phase and reason: say stops.
+      if (!live || socket !== live || !live.open) return;
       if (get().generation !== null) player?.drop(get().generation as number);
       const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
       useRun.setState({ captureNow: taken.why });
+      if (socket !== live || !live.open) return;
       set({ phase: "thinking", reason: "", generation: null, speakingText: "", heard: "" });
       live.send({
         type: "text",
