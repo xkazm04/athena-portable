@@ -402,6 +402,11 @@ def test_a_model_turn_that_errors_stops_the_run_with_its_reason(tmp_path: Path) 
     assert line == "engine_error: scripted failure"
 
 
+def test_the_summary_keeps_how_many_cards_were_judged_neutral() -> None:
+    summary = summary_of({"score": {"eligible": 3, "neutral": 1}})
+    assert summary["score"]["neutral"] == 1
+
+
 def test_the_summary_is_what_the_desktop_reads(tmp_path: Path) -> None:
     book = load_playbook(make_playbook(tmp_path))
     report = run_bench(

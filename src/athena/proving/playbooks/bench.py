@@ -594,6 +594,7 @@ def summary_of(report: Mapping[str, Any]) -> dict[str, Any]:
             "eligible",
             "found",
             "exact",
+            "neutral",
             "value_total_usd",
             "value_found_usd",
             "recall_value",
