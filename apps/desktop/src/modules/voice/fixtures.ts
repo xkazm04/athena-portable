@@ -45,7 +45,7 @@ function kokoro(over: Partial<VoiceEngine> = {}): VoiceEngine {
     kind: "local",
     state: "ready",
     reason: null,
-    size_mb: 400,
+    size_mb: 360,
     voices: [HEART],
     models: [],
     ...over,

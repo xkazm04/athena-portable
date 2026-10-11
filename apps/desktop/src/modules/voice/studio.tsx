@@ -25,6 +25,7 @@ import {
   STEP_LABEL,
   STEP_ORDER,
   keyAction,
+  kokoroSize,
   sttName,
   type StepId,
   type StyleLine,
@@ -325,7 +326,7 @@ function EngineCard({ model }: { model: VoiceModel }) {
           onClick={() => model.actions.studio({ t: "choose_engine" })}
         >
           <Kbd>1</Kbd>
-          <span className="typo-heading">Kokoro — local, private, about 400 MB</span>
+          <span className="typo-heading">{["Kokoro — local, private", kokoroSize(model.kokoro)].filter(Boolean).join(", ")}</span>
           <span className="typo-label vs-tag">Recommended</span>
           <span className="vs-opt__desc">
             {kokoro ? <EngineState engine={kokoro} /> : <span className="typo-caption">Not reported by the daemon.</span>}

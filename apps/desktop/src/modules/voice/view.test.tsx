@@ -18,12 +18,24 @@ const html = (id: string) => renderToStaticMarkup(<VoiceView model={fixtures[id]
 describe("the studio", () => {
   it("offers Kokoro alone, recommended, with its install state and key 1", () => {
     const out = html("engine");
-    expect(out).toContain("Kokoro — local, private, about 400 MB");
+    expect(out).toContain("Kokoro — local, private, about 360 MB");
     expect(out).toContain("Recommended");
     expect(out).toContain("Needs install");
     expect(out).toContain("Her voice");
     expect(out).toContain("Your voice");
     expect(out).toContain("not yet");
+  });
+
+  it("the engine heading carries the size the daemon reports, and none when it reports none", () => {
+    const base = fixtures.engine;
+    const kokoro = base.kokoro;
+    if (!kokoro) throw new Error("the engine fixture has a kokoro row");
+    const render = (k: typeof kokoro | null) => renderToStaticMarkup(<VoiceView model={{ ...base, kokoro: k }} />);
+    expect(render({ ...kokoro, size_mb: 123 })).toContain("Kokoro — local, private, about 123 MB");
+    for (const out of [render(null), render({ ...kokoro, size_mb: null })]) {
+      expect(out).toContain("Kokoro — local, private<");
+      expect(out).not.toContain("MB");
+    }
   });
 
   it("an install in flight shows its phase and percentage; a failure its reason and Try again; manual its links", () => {

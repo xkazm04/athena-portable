@@ -312,3 +312,19 @@ function sources(over: Partial<VoiceSources>): VoiceSources {
     ...over,
   };
 }
+
+describe("Kokoro's size", () => {
+  it("the install line takes the size the daemon reports, and names none when it reports none", () => {
+    const base = fixtures.typical.config as VoiceConfig;
+    const withKokoro = (size_mb: number | null | "gone"): VoiceConfig => ({
+      ...base,
+      engines: base.engines.flatMap((e) =>
+        e.id !== "kokoro" ? [e] : size_mb === "gone" ? [] : [{ ...e, state: "absent" as const, size_mb }],
+      ),
+    });
+    const line = (config: VoiceConfig) => selectVoice(sources({ config, studio: { ...STUDIO_START, step: "install" } })).line;
+    expect(line(withKokoro(123))).toBe("I need the engine and my voice on disk first — about 123 MB, once.");
+    expect(line(withKokoro(null))).toBe("I need the engine and my voice on disk first, once.");
+    expect(line(withKokoro("gone"))).toBe("I need the engine and my voice on disk first, once.");
+  });
+});

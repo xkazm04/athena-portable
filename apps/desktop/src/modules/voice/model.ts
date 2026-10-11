@@ -575,7 +575,12 @@ export function voiceMeta(voice: VoiceOption): string {
   return `${lang} · ${voice.gender} · ${voice.grade}`;
 }
 
-function lineFor(source: VoiceSources, install: InstallView): string {
+/** "about N MB" from the size the daemon reported for Kokoro, or null when it reported none. */
+export function kokoroSize(kokoro: VoiceEngine | null): string | null {
+  return kokoro?.size_mb == null ? null : `about ${Math.round(kokoro.size_mb)} MB`;
+}
+
+function lineFor(source: VoiceSources, install: InstallView, kokoro: VoiceEngine | null): string {
   const { studio } = source;
   switch (studio.step) {
     case "engine":
@@ -587,7 +592,7 @@ function lineFor(source: VoiceSources, install: InstallView): string {
       if (install.phase === "failed") return "That download did not finish. The reason is below; try again when you're ready.";
       if (install.busy) return "Fetching my voice. This takes a minute or two — it only happens once.";
       if (install.phase === "completed" || install.phase === "not_needed") return "All set. Let's hear what I sound like.";
-      return "I need the engine and my voice on disk first — about 400 MB, once.";
+      return `I need the engine and my voice on disk first${kokoroSize(kokoro) ? ` — ${kokoroSize(kokoro)}` : ""}, once.`;
     case "pick":
       return studio.wokeUp
         ? "There I am. Play it again if you like — then tell me this is my voice."
@@ -705,7 +710,7 @@ export function selectVoice(source: VoiceSources): VoiceModel {
     stages,
     progress: pathProgress(stages),
     receipts,
-    line: lineFor(source, install),
+    line: lineFor(source, install, kokoro),
     status: statusFor(source, install),
     install,
     whisperInstall: installView(source.install?.component?.startsWith("whisper:") ? source.install : null),
