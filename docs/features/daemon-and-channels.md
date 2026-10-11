@@ -35,7 +35,9 @@ request and caps each host tool result at 1,600 characters with `(showing N of M
 16 kHz in, events and audio out. One `Speaker` and one `Listener` are composed separately: local
 Kokoro and whisper.cpp by default (ADR 0028), a cloud provider for hearing when the person picks it.
 Spoken commands that answer a card are parsed by `commands.py`, never by a backend. Push-to-talk is
-a held key (ADR 0020). One utterance is at most 4 MiB of PCM, two minutes: past it the utterance is
+a held key (ADR 0020); the microphone stops when the key comes up, the window loses focus or
+becomes hidden, the socket closes or a `turn.error` arrives, and a press whose key is already up
+opens none. One utterance is at most 4 MiB of PCM, two minutes: past it the utterance is
 dropped with one `turn.error` `validator_failed` and the socket stays open (ADR 0072). The socket closes 1000 on a normal end, 1002 on a framing error, 1009 on an oversize
 frame and 1011 (logged) when handling a frame raised; a `tool_result` whose `tier` or `ms` is not a
 non-negative integer is refused with `validator_failed` and the socket stays open. A bare "yes" or

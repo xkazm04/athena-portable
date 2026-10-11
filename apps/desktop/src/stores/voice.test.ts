@@ -82,6 +82,28 @@ function fakeMic() {
   };
 }
 
+/** A microphone that opens only when the test says so, to put a release inside the open. */
+function slowMic() {
+  let resolve: (() => void) | null = null;
+  let chunk: ((pcm: Int16Array) => void) | null = null;
+  let stopped = 0;
+  let opens = 0;
+  return {
+    opens: () => opens,
+    stops: () => stopped,
+    speak: (pcm: Int16Array) => chunk?.(pcm),
+    pending: () => resolve !== null,
+    resolve: () => resolve?.(),
+    open: (onChunk: (pcm: Int16Array) => void) => {
+      opens += 1;
+      chunk = onChunk;
+      return new Promise<{ stop: () => void }>((done) => {
+        resolve = () => done({ stop: () => (stopped += 1) });
+      });
+    },
+  };
+}
+
 function fakePlayer() {
   const played: number[] = [];
   const dropped: number[] = [];
@@ -548,5 +570,84 @@ describe("one snapshot per turn (ADR 0067)", () => {
     );
 
     expect(w.routed).toEqual([[own]]);
+  });
+});
+
+describe("the microphone closes whenever listening ends (council full r1 robustness-6)", () => {
+  it("a release during a pending openMic stops the mic that resolves and sends no PCM after it", async () => {
+    const slow = slowMic();
+    const { socket } = wire({ openMic: slow.open });
+    await startVoice();
+    const pressed = useVoice.getState().press();
+    await vi.waitFor(() => expect(slow.pending()).toBe(true));
+    expect(useVoice.getState().phase).toBe("listening");
+
+    useVoice.getState().release();
+    slow.resolve();
+    await pressed;
+
+    expect(slow.stops()).toBe(1);
+    slow.speak(new Int16Array([1, 2]));
+    expect(socket.audio()).toEqual([]);
+    expect(socket.frames().map((f) => f.type)).toEqual(["start", "stop"]);
+    expect(useVoice.getState().phase).not.toBe("listening");
+  });
+
+  it("a release during captureOf never opens the microphone and never sends start", async () => {
+    const slow = slowMic();
+    let finish: (() => void) | null = null;
+    const { socket } = wire({
+      openMic: slow.open,
+      capture: () => new Promise((done) => (finish = () => done({ id: null, why: "late" }) as never)),
+    });
+    await startVoice();
+    const pressed = useVoice.getState().press();
+    await vi.waitFor(() => expect(finish).not.toBeNull());
+
+    useVoice.getState().release();
+    finish!();
+    await pressed;
+
+    expect(slow.opens()).toBe(0);
+    expect(socket.frames()).toEqual([]);
+    expect(useVoice.getState().phase).toBe("idle");
+  });
+
+  it("the socket closing while listening stops the microphone", async () => {
+    const { socket, mic } = wire();
+    await startVoice();
+    await useVoice.getState().press();
+    expect(mic.opened()).toBe(true);
+    socket.drop();
+    expect(mic.stops()).toBe(1);
+    expect(mic.opened()).toBe(false);
+  });
+
+  it("a turn.error while listening stops the microphone", async () => {
+    const { socket, mic } = wire();
+    await startVoice();
+    await useVoice.getState().press();
+    await socket.emit({ kind: "turn.error", reason: "validator_failed", detail: "too long" });
+    expect(mic.stops()).toBe(1);
+    expect(useVoice.getState().phase).toBe("error");
+  });
+
+  it("a blur while listening acts as the key coming up", async () => {
+    const listeners = new Map<string, () => void>();
+    const target = { addEventListener: (type: string, fn: () => void) => listeners.set(type, fn) };
+    vi.stubGlobal("window", target);
+    vi.stubGlobal("document", { ...target, visibilityState: "visible" });
+    try {
+      const { socket, mic } = wire();
+      await startVoice();
+      await useVoice.getState().press();
+      expect(useVoice.getState().phase).toBe("listening");
+      listeners.get("blur")?.();
+      expect(mic.stops()).toBe(1);
+      expect(socket.frames().map((f) => f.type)).toEqual(["start", "stop"]);
+      expect(useVoice.getState().phase).toBe("thinking");
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

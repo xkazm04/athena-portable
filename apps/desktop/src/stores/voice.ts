@@ -220,6 +220,9 @@ export function resetVoiceForTests(): void {
 export const useVoice = create<VoiceState>((set, get) => {
   let socket: VoiceSocket | null = null;
   let mic: MicrophoneSession | null = null;
+  /** Each press takes the next number and anything that ends listening takes another, so a press
+   * that finds its number stale stops: it sends no start and keeps no microphone. */
+  let pressToken = 0;
   let player: Player | null = null;
   /** Host calls of the current turn with no result yet, in the order they were proposed. */
   let proposed = new Map<string, ToolCall>();
@@ -231,6 +234,13 @@ export const useVoice = create<VoiceState>((set, get) => {
     useRun.setState((s) => ({ transcript: [...s.transcript, entry] }));
 
   const fail = (reason: string) => set({ phase: "error", reason });
+
+  /** Listening is over, however it ended: the microphone stops and a press still waiting is stale. */
+  function endListening(): void {
+    pressToken += 1;
+    mic?.stop();
+    mic = null;
+  }
 
   function onAudio(frame: AudioFrame): void {
     player?.play(frame.generation, frame.pcm, sampleRate);
@@ -276,6 +286,7 @@ export const useVoice = create<VoiceState>((set, get) => {
         break;
       case "turn.error":
         proposed = new Map();
+        if (get().phase === "listening") endListening();
         fail(`${event.reason}: ${event.detail}`);
         break;
       case "turn.finished": {
@@ -387,6 +398,7 @@ export const useVoice = create<VoiceState>((set, get) => {
       onClose: (reason) => {
         socket = null;
         proposed = new Map();
+        endListening();
         set((s) => ({
           generation: null,
           speakingText: "",
@@ -412,7 +424,10 @@ export const useVoice = create<VoiceState>((set, get) => {
       // The config may have changed in another window since the last check (the Voice module
       // runs in Main; this store lives in hers), so a press on an unavailable key asks once more
       // before it gives up.
+      if (get().phase === "listening") return;
+      const token = (pressToken += 1);
       if (!get().available) await checkConfig();
+      if (token !== pressToken) return;
       const state = get();
       if (!state.available || state.phase === "listening") return;
       // One read of the tab per turn, for the manifest, the frame's lists and the routing (ADR 0067).
@@ -423,12 +438,14 @@ export const useVoice = create<VoiceState>((set, get) => {
         return;
       }
       snap = taking;
-      if (!(await publish(taking))) return;
+      if (!(await publish(taking)) || token !== pressToken) return;
       const live = await ensureSocket();
-      if (!live) return;
+      if (!live || token !== pressToken) return;
       if (state.generation !== null) player?.drop(state.generation);
       const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
       useRun.setState({ captureNow: taken.why });
+      // The key came up while the capture was taken: no start, no microphone.
+      if (token !== pressToken) return;
       set({ phase: "listening", reason: "", partial: "", generation: null, speakingText: "", heard: "" });
       live.send({
         type: "start",
@@ -443,15 +460,22 @@ export const useVoice = create<VoiceState>((set, get) => {
         return;
       }
       try {
-        mic = await deps.openMic((pcm) => live.sendAudio(pcm));
+        const opened = await deps.openMic((pcm) => {
+          if (token === pressToken) live.sendAudio(pcm);
+        });
+        if (token !== pressToken) {
+          // Listening ended while the microphone was opening: it is never kept.
+          opened.stop();
+          return;
+        }
+        mic = opened;
       } catch (error) {
-        fail(`microphone: ${error instanceof Error ? error.message : String(error)}`);
+        if (token === pressToken) fail(`microphone: ${error instanceof Error ? error.message : String(error)}`);
       }
     },
 
     release() {
-      mic?.stop();
-      mic = null;
+      endListening();
       if (get().phase !== "listening") return;
       socket?.send({ type: "stop" });
       set({ phase: "thinking" });
@@ -485,8 +509,7 @@ export const useVoice = create<VoiceState>((set, get) => {
     },
 
     close() {
-      mic?.stop();
-      mic = null;
+      endListening();
       socket?.close();
       socket = null;
       player = null;
@@ -551,6 +574,15 @@ export async function startVoice(): Promise<void> {
     });
     window.addEventListener("keyup", (ev) => {
       if (ev.code === "Space") useVoice.getState().release();
+    });
+    // A key released while the window was not looking sends no keyup: losing the keyboard ends it.
+    window.addEventListener("blur", () => {
+      if (useVoice.getState().phase === "listening") useVoice.getState().release();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden" && useVoice.getState().phase === "listening") {
+        useVoice.getState().release();
+      }
     });
   }
 }
