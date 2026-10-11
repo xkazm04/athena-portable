@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "adverse-action-notices",
+  "captured_at": "2026-10-11T05:47:12Z",
+  "bench_run_at": "2026-10-11T05:43:21Z",
+  "narration": {
+    "text": "A distributor's background-check rejections taken in the order the FCRA sets: four pre-adverse notices with the report and the summary of rights, final notices for three whose own wait has ended and a namesake's dispute sent on, while a skills test, a hire, a missing authorization and a corrected report are left alone. This is a chore for the HR coordinator of a 118-person Texas wholesale distributor that makes its offers contingent on a background report. Athena works it across 3 portals: Applyrook ATS, Veritarn Screening and Postwren. On the bench, she found 8 of 8 eligible items, worth 8,000 dollars of the 8,000 dollars there was to find. She made no false claim. The world held 24 traps, and she walked past 24. She took 1 minute. By hand, the same chore takes 45 minutes, so she was about 32 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.351,
+    "sha256": "3deae4da82672554714b9bbbd06d9c9a1c218fb834c9c59ce4563075c08157f8"
+  },
+  "video": {
+    "path": "evidence/adverse-action-notices/evidence.mp4",
+    "duration_s": 63.36,
+    "bytes": 3238236,
+    "sha256": "fa27e8fd63034aa7d8f6095c67876b96dd575d778eb36d717313e95cb3cea665"
+  },
+  "thumbnail": {
+    "path": "playbooks/adverse-action-notices/thumb.jpg",
+    "bytes": 84513,
+    "sha256": "28b2d6aec5f6963f1da72a2cea3d13162eb600d92d12ceb6af8020235dbb2e72"
+  }
+}

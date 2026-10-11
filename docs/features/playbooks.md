@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The eighty-nine playbooks (latest runs, Claude Sonnet)
+## The ninety playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -132,9 +132,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A New York contractor's workers' compensation audit disputed by duties and records before the carrier's window closes: a bookkeeper to clerical, a salesman to outside sales, a crew's extra overtime pay and two insured subs' costs taken off, one found only in its contract file, while an office manager on job sites, a framing estimator, a general-liability certificate and last year's audit are left out | work | 4 | exceeds: 5 of 5, $19,016.47 of $19,016.47 (premium taken off the audit), 12 of 12 traps, 0 false, 1.8 min, $0.94 |
 | A machine shop's 2025 OSHA injury log closed under Part 1904: seven cases entered with their days, one a privacy case and one made recordable by a declined prescription, while first aid, a parking-lot crash, the flu and repeats are left out; the summary to certify and the 300A and 300 and 301 data to submit were held for the entries' approval | work | 4 | short: 7 of 10, $115,850.00 of $165,500.00 (an exposure unit, not money recovered), 13 of 13 traps, 0 false, 1.6 min, $0.91 |
 | A software company's remote hires registered with their states before the payroll runs that pay them: Colorado withholding and unemployment accounts for a Denver engineer, Minnesota ones for a support lead whose move shows only in the HR change log, and a Texas unemployment account, while Texas withholding, Washington, Virginia, a withdrawn offer, a contractor and a service's offer to register every state are left out | work | 5 | exceeds: 5 of 5, $995.00 of $995.00 (199 dollars an account, a price avoided and not money recovered), 14 of 14 traps, 0 false, 2.0 min, $1.23 |
+| A distributor's background-check rejections taken in the order the FCRA sets: four pre-adverse notices with the report and the summary of rights, final notices for three whose own wait has ended and a namesake's dispute sent on, while a candidate whose wait ends later, a skills test, a hire, a missing authorization, a corrected report, notices already sent and a vendor's offer are left out | work | 3 | exceeds: 8 of 8, $8,000.00 of $8,000.00 (1,000 dollars an act, an exposure and not money recovered), 24 of 24 traps, 0 false, 1.4 min, $0.86 |
 
-Across the latest runs: $1,279,319 of $1,338,396 found, 911 of 911 traps walked past, no false claim,
-239 minutes of her time against about 334 hours by hand, $145.39 of model time. 129 runs are recorded
+Across the latest runs: $1,287,319 of $1,346,396 found, 935 of 935 traps walked past, no false claim,
+240 minutes of her time against about 335 hours by hand, $146.25 of model time. 130 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

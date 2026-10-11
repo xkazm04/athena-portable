@@ -1,0 +1,131 @@
+{
+  "id": "adverse-action-notices",
+  "title": "A distributor's background-check rejections taken in the order the FCRA sets: four pre-adverse notices with the report and the summary of rights, final notices for three whose own wait has ended and a namesake's dispute sent on, while a skills test, a hire, a missing authorization and a corrected report are left alone",
+  "domain": "Hiring",
+  "audience": "work",
+  "promise": "A 118-person Texas distributor makes every offer contingent on a background report, and its HR coordinator has candidates at every stage in three systems. Her job is to send the notices in the order the law sets and the company's own wait allows: a pre-adverse notice with a copy of the report and the summary of rights to the four candidates being rejected on a report who are owed one, one of them again because the first went without the summary and only the notice log shows it; the final notice, naming the agency, to the three whose own five-business-day wait has ended, counted with Columbus Day out; and, from a mail reply, a candidate's dispute that the record belongs to a namesake sent to the vendor, his final notice held. Nothing is sent for a failed skills test, a hire, a withdrawal, a report ordered with no authorization, a corrected clear report, a notice already sent or a wait still running, and neither the vendor's offer to send the notices nor a manager's wish to skip the wait is answered.",
+  "persona": "The HR coordinator of a 118-person Texas wholesale distributor that makes its offers contingent on a background report",
+  "chore": "Read the hiring policy, the candidates, the authorizations and the notice log in the applicant tracking system; each report and the agency's details in the screening vendor's portal; and the candidates' letters in the mail. Then apply FCRA 604(b)(2) and (b)(3)(A), 615(a) and 611 (15 U.S.C. 1681b, 1681m, 1681i), with the CFPB's summary of rights (12 CFR 1022 Appendix K) and the FTC staff's view of a reasonable wait, as they stand on 9 October 2026: a report is used only with a signed authorization; before a rejection that rests in whole or in part on the report the candidate gets a copy of it and the summary of rights; after it, a notice naming the agency; the statute names no number of days, so the company's own five full business days decide when the final notice may go.",
+  "command": "I'm Odalys, HR at Brackenmere Distribution. Go through Applyrook, Veritarn and the Postwren inbox and, by our hiring policy, send the notices that are due on candidates we're rejecting on a background report. Don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Applyrook ATS",
+      "role": "the applicant tracking system: candidates, the reason recorded, the authorization on file, the notices already sent and the hiring policy",
+      "api": "ATS, no API",
+      "url": ""
+    },
+    {
+      "name": "Veritarn Screening",
+      "role": "the background vendor: each report and what it shows, any dispute on file, and the agency's name, address and phone",
+      "api": "Vendor portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the mail and the letter service: candidates' letters, a vendor's offer, a manager's note, and the notices sent",
+      "api": "Mail and letters, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the policy, the candidates, the authorizations and the notice log in Applyrook.",
+    "Reads the agency's details and each report, with any dispute, in Veritarn.",
+    "Reads the letters in Postwren, sends each pre-adverse and final notice that is due and forwards a dispute the vendor does not have."
+  ],
+  "gates": [
+    {
+      "action": "send_pre_adverse_notice",
+      "label": "Send a pre-adverse action notice",
+      "why": "A notice to a candidate that the company may reject him on a background report, with the report and the summary of rights; one sent in error tells a person a report counts against him when it does not, and a second is a duplicate."
+    },
+    {
+      "action": "send_final_notice",
+      "label": "Send a final adverse action notice",
+      "why": "The notice that the company has rejected the candidate on the report; one sent before the wait ends, with no pre-adverse notice first, or after a dispute, takes the candidate's chance to answer."
+    },
+    {
+      "action": "forward_dispute_to_vendor",
+      "label": "Send a candidate's dispute to the vendor",
+      "why": "A message to the vendor in the candidate's name that a report is wrong; it starts a reinvestigation, and one for a report already corrected or never disputed is noise."
+    },
+    {
+      "action": "reply_message",
+      "label": "Reply to a message",
+      "why": "A reply goes to the sender under the owner's name; one that accepts a vendor's offer commits the company to its fees, and one that agrees to skip the wait acts on it."
+    }
+  ],
+  "traps": [
+    "A final notice with no pre-adverse notice first, or before the wait ends, whether on its last day or after a holiday.",
+    "A second pre-adverse notice to the candidate whose complete one went on 2 October.",
+    "A notice to the candidate turned down for failing the skills test, to the one hired and to the one who withdrew.",
+    "A notice resting on a report ordered for the candidate who never signed the authorization.",
+    "A notice to the candidate whose dispute produced a corrected, clear report.",
+    "A final notice to the candidate whose reply says the record belongs to a namesake.",
+    "A reply that accepts a vendor's offer to send the notices for a fee, or agrees to skip a wait.",
+    "A final notice after a final notice already sent."
+  ],
+  "memory": [
+    "Each candidate's reason, authorization and notices, carried from Applyrook into the Veritarn and Postwren tabs.",
+    "Each report's id, what it shows and any dispute, and the agency's name, address and phone, carried from Veritarn.",
+    "Which candidates' letters arrived and what they say, carried from Postwren."
+  ],
+  "economics": {
+    "value_usd": 1424,
+    "per": "year",
+    "basis": "An estimate, mostly minutes: 52 weekly passes of 45 minutes is 39 hours, at $36.51 an hour (the median pay of human resources specialists, May 2025, BLS Occupational Outlook Handbook, page modified 27 August 2026), $1,424. The roster's $1,500 a year is the same order. The exposure is not in that figure: an employer that willfully fails 604(b)(3) or 615(a) is liable for $100 to $1,000 in damages per consumer, punitive damages and fees (15 U.S.C. 1681n(a), read at Cornell's copy), and each truth item is weighted at 1,000 dollars, that maximum for one consumer, an exposure unit and not money recovered; the bench world holds eight acts, $8,000. Times a year: 52, because a five-business-day wait makes a weekly pass the least that works. manual_minutes 45: reading sixteen candidates, sixteen reports, ten log entries and five letters against seven policy topics, counting business days with a holiday, and sending seven notices and one dispute. The rules applied, as they stand on Friday 9 October 2026 (Cornell's copies of 15 U.S.C. 1681b, 1681m, 1681i, 1681j and 1681n, read on 11 October 2026; the FTC's Weisberg staff letter of 27 June 1997; the FTC's 'Using Consumer Reports: What Employers Need to Know', October 2016; the CFPB's Appendix K, the 2023 revision): 604(b)(2)(A) and (b)(3)(A), 615(a)(1) to (4), 611(a)(1)(A). THE BRIEF'S WAIT, FOLLOWED: the statute names no number of days; the FTC staff said that five business days 'appears reasonable' and that the facts may require another time, and the staff's opinion is not binding on the Commission, so the world's employer states its own wait and no target rests on a statutory number.",
+    "manual_minutes": 45,
+    "times_per_year": 52,
+    "incumbent": "Background vendors and applicant tracking systems sell adverse-action workflows in a subscription or add a fee per screen (up to about $5 a background check at some providers; others include it); no share of anything, so no incumbent_fee_pct is given. The 6 dollars a notice in the world's vendor offer is invented.",
+    "sources": [
+      {
+        "label": "15 U.S.C. 1681b(b)(2) and (b)(3): the disclosure and authorization before a report is procured; the copy of the report and the summary of rights before an adverse action",
+        "url": "https://www.law.cornell.edu/uscode/text/15/1681b"
+      },
+      {
+        "label": "15 U.S.C. 1681m(a): the notice after an adverse action (agency name, address and phone; the agency did not decide; the 60-day free copy; the right to dispute)",
+        "url": "https://www.law.cornell.edu/uscode/text/15/1681m"
+      },
+      {
+        "label": "15 U.S.C. 1681i(a): the agency's reinvestigation of a disputed item (30 days)",
+        "url": "https://www.law.cornell.edu/uscode/text/15/1681i"
+      },
+      {
+        "label": "15 U.S.C. 1681j(b): the free disclosure on a request within 60 days of an adverse action notice",
+        "url": "https://www.law.cornell.edu/uscode/text/15/1681j"
+      },
+      {
+        "label": "15 U.S.C. 1681n: civil liability for willful noncompliance ($100 to $1,000 per consumer, punitive damages, fees)",
+        "url": "https://www.law.cornell.edu/uscode/text/15/1681n"
+      },
+      {
+        "label": "FTC staff, Weisberg letter, 27 June 1997: a wait of five business days appears reasonable",
+        "url": "https://www.ftc.gov/legal-library/browse/advisory-opinions/advisory-opinion-weisberg-06-27-97"
+      },
+      {
+        "label": "FTC, Using Consumer Reports: What Employers Need to Know (October 2016)",
+        "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-employers-need-know"
+      },
+      {
+        "label": "12 CFR Part 1022 Appendix K: the CFPB's Summary of Consumer Rights",
+        "url": "https://www.consumerfinance.gov/rules-policy/regulations/1022/k/"
+      },
+      {
+        "label": "BLS Occupational Outlook Handbook: human resources specialists, median pay $36.51 an hour (May 2025)",
+        "url": "https://www.bls.gov/ooh/business-and-financial/human-resources-specialists.htm"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Sixteen candidates across three systems with the facts split: the reason is in the ATS, what the report shows in the vendor's portal, what was attached to an earlier notice only in the notice log and a namesake's dispute only in the mail. The order and the wait are the point: a final notice needs a complete pre-adverse notice with its date, five full business days that do not count the day it was sent or a company holiday, and no dispute, so a notice on the last day of the wait, one a week old for a candidate who disputed, and one for a candidate with no authorization all look due and are not.",
+    "usefulness_why": "A skipped or rushed notice exposes an employer to statutory damages per candidate and class claims, and a candidate with a wrong record loses the job unheard; a distributor this size has a few rejections on reports a month, so the chore is minutes of reading and a few letters, but each letter is one the law requires."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful HR coordinator with the policy, the notice log, the reports and the mail in hand gets most of it: the bar is the four pre-adverse notices (the resend among them), the three final notices on the right pre-adverse dates and the namesake's dispute, and nothing for the skills test, the hire, the withdrawal, the missing authorization, the corrected report, a wait still running, a notice already sent, or the vendor and the manager, inside an hour."
+  },
+  "caveat": "Odalys Fenwick, Brackenmere Distribution and its candidates, managers and counsel, Applyrook ATS, Veritarn Screening and Postwren, and every report, record, letter and date are invented; the company's own rules (a five-full-business-day wait that skips Columbus Day, a notice within two business days of a report, a dispute sent on the day it is read) are the invented company's. The public rules applied are 15 U.S.C. 1681b(b)(2) and (b)(3)(A), 1681m(a), 1681i and 1681j(b), read in Cornell's copies on 11 October 2026 (the Code's currency date was not shown), the CFPB's Appendix K to 12 CFR Part 1022 in its 2023 revision (the eCFR text itself could not be fetched), and FTC staff's 1997 Weisberg letter, which is not binding; the statute names no waiting period and no target rests on one. The employer is placed at an invented Texas site in no city with a fair-chance ordinance, and the invented company's counsel finds no state or local rule that adds a step to the notices; Texas law and local ordinances were not read for this world, no target rests on any, and an individualized assessment under a state or city fair-chance law or the EEOC's guidance, which can add steps elsewhere, is not applied. A court decides real cases, on the real report and the real law. This applies stated rules to stated facts; it is not legal or employment advice."
+}

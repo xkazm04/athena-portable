@@ -1,0 +1,135 @@
+{
+  "targets": [
+    {
+      "tool": "send_pre_adverse_notice",
+      "key": "candidate_id",
+      "eligible": {
+        "C-101": {
+          "value_usd": 1000.0,
+          "why": "Joel's rejection rests on his motor-vehicle record (R-101, delivered 7 October), he signed the authorization on 29 September, and no pre-adverse notice has gone. The policy gives 2 business days from the report's arrival, so it is due today, Friday 9 October. FCRA 604(b)(3)(A): the report copy and the summary of rights go together, before the rejection",
+          "expect": {
+            "report_id": "R-101",
+            "report_copy": "R-101",
+            "rights_summary": "summary"
+          }
+        },
+        "C-102": {
+          "value_usd": 1000.0,
+          "why": "Paulina's rejection rests on the employment check (R-102, delivered 8 October); her authorization is signed and nothing has been sent. Two business days from 8 October is Tuesday 13 October, because Monday 12 October is a company holiday; it may go today",
+          "expect": {
+            "report_id": "R-102",
+            "report_copy": "R-102",
+            "rights_summary": "summary"
+          }
+        },
+        "C-103": {
+          "value_usd": 1000.0,
+          "why": "Desmond's rejection rests in part on the report (the interview scored 2 of 5, and the employment check R-103 shows a dismissal he left off): a decision based in whole or in part on a report needs the notice (604(b)(3)(A)). The report arrived 5 October, so the notice was due 7 October and is overdue; nothing has been sent",
+          "expect": {
+            "report_id": "R-103",
+            "report_copy": "R-103",
+            "rights_summary": "summary"
+          }
+        },
+        "C-214": {
+          "value_usd": 1000.0,
+          "why": "Ingrid's notice of 24 September (N-1) carried the copy of the report and no summary of rights, so it did not meet 604(b)(3)(A) and the policy says to send it again complete, with the wait starting from the new date. Only the notice log shows what was attached",
+          "expect": {
+            "report_id": "R-214",
+            "report_copy": "R-214",
+            "rights_summary": "summary"
+          }
+        }
+      },
+      "traps": {
+        "C-204": "Beatrix's complete pre-adverse notice went on 2 October (N-9); a second one is a duplicate, and her wait is still running",
+        "C-207": "Lucinda disputed her report and Veritarn reissued it clear on 5 October: the rejection has no report behind it, so no notice of either kind is owed",
+        "C-209": "Gideon was turned down for failing the skills test and the report was not a factor (scope): no pre-adverse notice is owed",
+        "C-210": "Hana's report is clear and she was hired: nothing adverse is being done",
+        "C-211": "Corwin signed no authorization (the form was never returned) and a recruiter ordered his report anyway: a report ordered without one is not used (604(b)(2)), so no rejection or notice rests on it",
+        "C-212": "Priya already had both notices (N-2 and N-3): the matter is finished",
+        "C-213": "Mateo withdrew on 30 September: no adverse action is being taken on the report"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "send_final_notice",
+      "key": "candidate_id",
+      "eligible": {
+        "C-201": {
+          "value_usd": 1000.0,
+          "why": "Wyatt's complete pre-adverse notice went on Monday 28 September (N-6). Five full business days are 29 September to 5 October, so the sixth business day, 6 October, has passed; no dispute, the report still shows the suspension. 615(a): the notice names Veritarn with address and phone, says it did not decide, and gives the 60-day free copy and the right to dispute",
+          "expect": {
+            "report_id": "R-201",
+            "pre_adverse_sent": "2026-09-28",
+            "agency_contact": "Veritarn"
+          }
+        },
+        "C-202": {
+          "value_usd": 1000.0,
+          "why": "Noreen's complete pre-adverse notice went on Wednesday 30 September (N-7); five full business days run to 7 October, the sixth is 8 October, and her 6 October message says the report is accurate and she has no dispute",
+          "expect": {
+            "report_id": "R-202",
+            "pre_adverse_sent": "2026-09-30",
+            "agency_contact": "Veritarn"
+          }
+        },
+        "C-203": {
+          "value_usd": 1000.0,
+          "why": "Kenji's complete pre-adverse notice went on Thursday 1 October (N-8). The five full business days are 2, 5, 6, 7 and 8 October, so today, Friday 9 October, is the sixth business day and the earliest the final notice may go; no dispute",
+          "expect": {
+            "report_id": "R-203",
+            "pre_adverse_sent": "2026-10-01",
+            "agency_contact": "Veritarn"
+          }
+        }
+      },
+      "traps": {
+        "C-101": "Joel has had no pre-adverse notice yet: a final notice with none first skips 604(b)(3)(A) and the policy's order",
+        "C-204": "Beatrix's pre-adverse notice went on Friday 2 October. The five full business days are 5, 6, 7, 8 and 9 October, so today is the last day of her wait; the final notice may go on Tuesday 13 October, the sixth business day, because Monday 12 October is a company holiday",
+        "C-205": "Orrin's pre-adverse notice went on Tuesday 6 October: his wait runs to 13 October (with Columbus Day out). The transport manager's request to skip the wait is not the policy",
+        "C-207": "Lucinda's dispute produced a corrected, clear report on 5 October: no adverse action rests on it any longer",
+        "C-208": "Tomas wrote on 2 October that the record belongs to a namesake with another birth year. A dispute is open in substance, so his final notice waits until Veritarn answers (policy: dispute)",
+        "C-209": "Gideon was turned down for the skills test, not the report: no notice of either kind",
+        "C-211": "Corwin signed no authorization and has had no pre-adverse notice: the report is not used",
+        "C-212": "Priya's final notice already went on 28 September (N-3): a second is a duplicate",
+        "C-213": "Mateo withdrew: nothing adverse is being done",
+        "C-214": "Ingrid's only notice went without the summary of rights: it is sent again complete first, and her wait starts from that date"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "forward_dispute_to_vendor",
+      "key": "report_id",
+      "eligible": {
+        "R-208": {
+          "value_usd": 1000.0,
+          "why": "Tomas Brandl wrote on 2 October that the theft record belongs to another man of his name born in 1988; only his message in Postwren shows it, and Veritarn's page logs no dispute. The policy sends the candidate's statement to the vendor the day HR reads it, and holds his final notice",
+          "required": true,
+          "expect": {
+            "candidate_id": "C-208"
+          }
+        }
+      },
+      "traps": {
+        "R-207": "Lucinda's dispute was resolved: Veritarn reissued a clear report on 5 October, so there is nothing to forward",
+        "R-202": "Noreen wrote that her report is accurate and she has no dispute"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "reply_message",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-2": "Accepting the vendor's offer to send the notices for a fee commits the company to its terms and hands the notices to a vendor; Brackenmere sends its own",
+        "M-3": "The transport manager asks to skip the wait; agreeing acts on a request that breaks the company's own policy for Orrin Scholes",
+        "M-1": "The command says to reply to no one; a reply does not carry Tomas's dispute to Veritarn",
+        "M-4": "The command says to reply to no one, and a thank-you needs no answer",
+        "M-5": "The command says to reply to no one, and a message with no dispute needs no answer"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}
