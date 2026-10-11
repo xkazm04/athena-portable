@@ -240,7 +240,16 @@ export class VoiceSocket {
 
   private receive(data: unknown): void {
     if (typeof data === "string") {
-      this.handlers.onEvent(eventFromJson(data));
+      let event: ChannelEvent;
+      try {
+        event = eventFromJson(data);
+      } catch (error) {
+        const why = error instanceof Error ? error.message : String(error);
+        this.handlers.onClose(`a frame the panel does not read (${why})`);
+        this.close();
+        return;
+      }
+      this.handlers.onEvent(event);
       return;
     }
     const bytes =

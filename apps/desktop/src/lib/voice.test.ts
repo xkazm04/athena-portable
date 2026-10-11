@@ -132,15 +132,20 @@ describe("the socket", () => {
 
   it("refuses an unknown event kind rather than skipping it", async () => {
     const fake = fakeSocket();
+    const events: string[] = [];
+    const reasons: string[] = [];
     const client = new VoiceSocket(fake.factory, {
-      onEvent: () => {},
+      onEvent: (event) => events.push(event.kind),
       onAudio: () => {},
-      onClose: () => {},
+      onClose: (reason) => reasons.push(reason),
     });
     await client.connect("http://d", "t");
-    expect(() => fake.socket()?.onmessage?.({ data: JSON.stringify({ kind: "voice.invented" }) })).toThrow(
-      /unknown channel event kind/,
-    );
+    expect(() =>
+      fake.socket()?.onmessage?.({ data: JSON.stringify({ kind: "voice.invented" }) }),
+    ).not.toThrow();
+    expect(reasons[0]).toContain("voice.invented");
+    expect(events).toEqual([]);
+    expect(client.open).toBe(false);
   });
 });
 
