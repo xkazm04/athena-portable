@@ -22,6 +22,7 @@ class _Reply:
 
     def __init__(self, reads: list[bytes | BaseException]) -> None:
         self._reads = list(reads)
+        self.sizes: list[int] = []
 
     def __enter__(self) -> _Reply:
         return self
@@ -30,17 +31,21 @@ class _Reply:
         return None
 
     def read(self, size: int = -1) -> bytes:
+        self.sizes.append(size)
         step = self._reads.pop(0)
         if isinstance(step, BaseException):
             raise step
         return step
 
 
-def _reply(monkeypatch: pytest.MonkeyPatch, reads: list[bytes | BaseException]) -> None:
+def _reply(monkeypatch: pytest.MonkeyPatch, reads: list[bytes | BaseException]) -> _Reply:
+    reply = _Reply(reads)
+
     def urlopen(request: Any, timeout: float | None = None) -> _Reply:
-        return _Reply(reads)
+        return reply
 
     monkeypatch.setattr(backends_module.urllib.request, "urlopen", urlopen)
+    return reply
 
 
 def _clean(exc: BaseException) -> None:
@@ -70,4 +75,33 @@ def test_a_transcription_reply_cut_short_is_a_backend_error(
     with pytest.raises(VoiceBackendError) as failed:
         OpenAIBackend(api_key=KEY).transcribe(pcm)
     assert str(failed.value) == "transcription failed: IncompleteRead"
+    _clean(failed.value)
+
+
+def test_a_transcription_reply_over_the_ceiling_is_refused_before_it_is_parsed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(backends_module, "MAX_TRANSCRIPTION_REPLY_BYTES", 16)
+    reply = _reply(monkeypatch, [b'{"text": "' + b"x" * 100 + b'"}'])
+    pcm = bytes(INPUT_SAMPLE_RATE // 5)
+    with pytest.raises(VoiceBackendError) as failed:
+        OpenAIBackend(api_key=KEY).transcribe(pcm)
+    assert str(failed.value) == "transcription failed: reply too large"
+    assert reply.sizes == [17]
+    _clean(failed.value)
+
+
+def test_a_synthesis_reply_over_the_ceiling_yields_whole_chunks_then_is_refused(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(backends_module, "MAX_SPEECH_REPLY_SECONDS", 1)
+    backend = OpenAIBackend(api_key=KEY, sample_rate=4, chunk_bytes=3)  # ceiling: 8 bytes
+    _reply(monkeypatch, [b"" * 3, b"" * 3, b"" * 3, b"" * 3])
+    got: list[bytes] = []
+    with pytest.raises(VoiceBackendError) as failed:
+        for chunk in backend.synthesize(TEXT):
+            got.append(chunk)
+    assert got == [b"" * 3, b"" * 3]
+    assert sum(map(len, got)) <= 8
+    assert str(failed.value) == "synthesis failed: reply too long"
     _clean(failed.value)

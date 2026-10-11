@@ -41,6 +41,8 @@ from typing import Protocol, runtime_checkable
 __all__ = [
     "BACKENDS",
     "INPUT_SAMPLE_RATE",
+    "MAX_SPEECH_REPLY_SECONDS",
+    "MAX_TRANSCRIPTION_REPLY_BYTES",
     "MAX_UTTERANCE_BYTES",
     "OPENAI_KEY_ENV",
     "BufferedTranscriber",
@@ -219,6 +221,11 @@ class ScriptedBackend:
 #: the HTTP twin ``/voice/transcribe`` already enforces as ``MAX_RAW_BODY_BYTES`` (a test pins the
 #: two equal; the daemon is not imported here) (ADR 0072).
 MAX_UTTERANCE_BYTES = 4_194_304
+#: A transcription reply is a short JSON object; past this it is not one (ADR 0019, amended).
+MAX_TRANSCRIPTION_REPLY_BYTES = 1_048_576
+#: A spoken line is a sentence or two; a synthesis reply longer than this many seconds of PCM16 at
+#: the backend's sample rate is cut off and refused (ADR 0019, amended).
+MAX_SPEECH_REPLY_SECONDS = 180
 
 
 class BufferedTranscriber:
@@ -314,7 +321,10 @@ class OpenAIBackend:
         )
         try:
             with urllib.request.urlopen(request, timeout=self.timeout_s) as reply:
-                payload = json.loads(reply.read().decode("utf-8"))
+                raw = reply.read(MAX_TRANSCRIPTION_REPLY_BYTES + 1)
+                if len(raw) > MAX_TRANSCRIPTION_REPLY_BYTES:
+                    raise VoiceBackendError("transcription failed: reply too large") from None
+                payload = json.loads(raw.decode("utf-8"))
         except urllib.error.HTTPError as exc:
             raise VoiceBackendError(f"transcription refused with {exc.code}") from None
         except (
@@ -346,11 +356,16 @@ class OpenAIBackend:
             },
         )
         try:
+            ceiling = MAX_SPEECH_REPLY_SECONDS * self.sample_rate * 2
+            sent = 0
             with urllib.request.urlopen(request, timeout=self.timeout_s) as reply:
                 while True:
                     chunk = reply.read(self.chunk_bytes)
                     if not chunk:
                         return
+                    sent += len(chunk)
+                    if sent > ceiling:
+                        raise VoiceBackendError("synthesis failed: reply too long") from None
                     yield chunk
         except urllib.error.HTTPError as exc:
             raise VoiceBackendError(f"synthesis refused with {exc.code}") from None

@@ -127,3 +127,19 @@ stop short hears that it stopped short.
   transcribed, at most `MAX_PENDING_TURNS` x `MAX_UTTERANCE_BYTES` per socket (5 x 4 MiB), under
   `MAX_SESSIONS` sockets. A transcriber that raises something other than `VoiceBackendError` is
   now a worker error (`turn.error` `unknown`, logged) and no longer closes the socket 1011.
+- A provider reply is read up to a ceiling (voice full r2 economics-7). `OpenAIBackend.transcribe`
+  reads at most `MAX_TRANSCRIPTION_REPLY_BYTES` (1,048,576) plus one byte; more is
+  `VoiceBackendError('transcription failed: reply too large')`, raised before any JSON parse.
+  `synthesize` yields whole chunks while the running total stays within `MAX_SPEECH_REPLY_SECONDS`
+  (180) x `sample_rate` x 2 bytes; the chunk that would cross it is not yielded and the stream ends
+  with `VoiceBackendError('synthesis failed: reply too long')`. Both are raised from `None` and
+  carry neither the key nor the text. Why: one line of input (about 1,225 characters) bounds
+  speech only in practice, not in the code that reads the reply, and a provider, a proxy or a
+  misconfigured `base_url` is foreign bytes like any other.
+- Correction to the craft-2 bullet's memory bound. It wrote "`MAX_PENDING_TURNS` x
+  `MAX_UTTERANCE_BYTES` per socket (5 x 4 MiB)", but `MAX_PENDING_TURNS` is 4, and a socket can
+  hold PCM in six places: the four jobs waiting (`_turns_full` admits a `_stop` while `qsize()` is
+  under 4), the one job the worker took and is transcribing in `_transcribed` (it left the queue,
+  so it no longer counts as waiting), and the utterance the reader is still hearing (`_start` set
+  `_utterance`, `_stop` has not yet turned it into a job). That is 6 x 4 MiB per socket and
+  48 MiB under `MAX_SESSIONS = 2`. The earlier CHANGELOG line is left as it was written.
