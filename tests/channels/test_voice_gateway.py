@@ -855,3 +855,63 @@ def test_a_page_that_answers_after_the_socket_closed_starts_no_continuation_step
     client.tool_result(held, output="drafted")
     _settle(0.5)
     assert len(voiced.transport.requests) == 1
+
+
+# -- _results holds only answers to calls this socket asked the page to run --------------------
+
+
+def _session_of(voiced: Live) -> VoiceSession:
+    gateway = voiced.daemon.sockets.get(VOICE_PATH)
+    assert isinstance(gateway, VoiceGateway)
+    return VoiceSession(gateway=gateway, ws=None)  # type: ignore[arg-type]
+
+
+def test_two_thousand_results_for_calls_nobody_asked_for_are_held_nowhere(voiced: Live) -> None:
+    session = _session_of(voiced)
+    for n in range(2_000):
+        session._tool_result({"call_id": f"x{n}", "name": "n", "ok": True, "output": "o" * 100})
+    assert session._results == {}
+    assert session._expected == set()
+
+
+def test_a_result_answered_before_the_wait_begins_is_still_collected(
+    voiced: Live, client: VoiceClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    original = VoiceSession._await_results
+    collected: list[bool] = []
+
+    def late_to_the_wait(self: VoiceSession, calls: Sequence[ToolCall]) -> bool:
+        deadline = time.monotonic() + 10
+        while not self._results and time.monotonic() < deadline:
+            time.sleep(0.01)  # the page has already answered when the wait starts
+        collected.append(original(self, calls))
+        return collected[-1]
+
+    monkeypatch.setattr(VoiceSession, "_await_results", late_to_the_wait)
+    held = _hold_the_worker(voiced, client)
+    client.tool_result(held, output="drafted")
+    client.until("turn.finished", text="held done")
+    assert collected == [True]
+
+
+def test_a_result_after_the_timeout_is_dropped_and_nothing_is_kept(
+    voiced: Live, client: VoiceClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sessions: list[VoiceSession] = []
+    original = VoiceSession._await_results
+
+    def remember(self: VoiceSession, calls: Sequence[ToolCall]) -> bool:
+        sessions.append(self)
+        return original(self, calls)
+
+    monkeypatch.setattr(VoiceSession, "_await_results", remember)
+    voiced.register()
+    voiced.script(claude_round(op("host.invoices.chase", invoice="3")))
+    client.say("chase invoice 3")
+    call = client.until("tool.call", name="host.invoices.chase")
+    _settle(0.8)  # past the test's result timeout
+    client.tool_result(call, output="too late")
+    _settle(0.3)
+    assert len(sessions) == 1
+    assert sessions[0]._results == {}
+    assert sessions[0]._expected == set()

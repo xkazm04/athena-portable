@@ -43,7 +43,7 @@ import queue
 import struct
 import threading
 import time
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
@@ -235,6 +235,9 @@ class VoiceSession:
         self._speech: queue.Queue[tuple[int, SpokenLine] | None] = queue.Queue()
         self._results: dict[str, dict[str, Any]] = {}
         self._results_ready = threading.Condition(self._lock)
+        #: The call ids this socket asked the page to run and has not yet given up on. An answer
+        #: to any other id is dropped, so ``_results`` holds only what a turn can still collect.
+        self._expected: set[str] = set()
         self._utterance: _Utterance | None = None
         self._counter = 0
         self._cutoff = 0
@@ -445,8 +448,22 @@ class VoiceSession:
             "ms": ms,
         }
         with self._results_ready:
+            if call_id not in self._expected:
+                logging.getLogger(__name__).debug("voice: dropped a result for an unknown call")
+                return
             self._results[call_id] = row
             self._results_ready.notify_all()
+
+    def _expect(self, call_ids: Iterable[str]) -> None:
+        with self._results_ready:
+            self._expected.update(call_ids)
+
+    def _forget(self, call_ids: Iterable[str]) -> None:
+        ids = set(call_ids)
+        with self._results_ready:
+            self._expected.difference_update(ids)
+            for call_id in ids:
+                self._results.pop(call_id, None)
 
     def _fields_or_refuse(self, body: Mapping[str, Any]) -> dict[str, Any] | None:
         """The frame's fields, or ``None`` after telling the client why the frame was refused."""
@@ -633,6 +650,7 @@ class VoiceSession:
                         0, Card(event.id, tuple((o.id, o.label) for o in event.options))
                     )
                 elif isinstance(event, ToolCall) and event.origin != "core":
+                    self._expect([event.call_id])  # before the page can see the call
                     proposed.append(event)
                 elif isinstance(event, ToolResult):
                     settled.add(event.call_id)
@@ -642,6 +660,7 @@ class VoiceSession:
             # A host call the daemon already answered in the same turn — a gated one, refused
             # ``pending_approval`` until the card is answered — is not the page's to run. Only a
             # call with no result behind it left the daemon as an instruction (ADR 0010).
+            self._forget(settled)
             host_calls = [call for call in proposed if call.call_id not in settled]
             if finished is not None:
                 line = spoken_line(finished)
@@ -676,6 +695,7 @@ class VoiceSession:
                     break
                 self._results_ready.wait(timeout=min(remaining, 0.25))
             rows = {cid: self._results.pop(cid) for cid in list(wanted) if cid in self._results}
+            self._expected.difference_update(wanted)  # an answer after this point is dropped
         for call_id, call in wanted.items():
             row = rows.get(call_id) or {
                 "call_id": call_id,
@@ -726,6 +746,7 @@ class VoiceSession:
             )
             for row in execute
         ]
+        self._expect(call.call_id for call in calls)
         for call in calls:
             self.send(call)
         if self._await_results(calls) and not self._closed:
