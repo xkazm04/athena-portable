@@ -29,9 +29,10 @@ A contract changes only with a test.
   keeps it in the tier. Each line enters the system prompt as one quoted line of at most 400
   characters, with fence markers redacted (ADR 0071).
 - **Every distilled memory is one quoted line**, in what she always carries and in memory that
-  matched the message alike: control and format characters dropped and whitespace folded first,
-  then fence markers redacted, then cut (400 and 500 characters) and quoted (ADR 0075). An
-  episode is fenced instead and is shown as it was said.
+  matched the message alike: control and format characters and variation selectors dropped and
+  whitespace folded first, then fence markers redacted, then cut (400 and 500 characters) and
+  quoted (ADR 0075). An episode is fenced instead and is shown as it was said. A page's tool
+  description in the capabilities block loses the same characters (ADR 0068).
 - **A memory store that cannot be read says so** (ADR 0076). A lock, a missing table or an I/O
   error ends the recall at its first statement; every block then reads `memory could not be read:
   ...` instead of a footer, the turn still runs, and `core.recall` fails with `engine_error`. An

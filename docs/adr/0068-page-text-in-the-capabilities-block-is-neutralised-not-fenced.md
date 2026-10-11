@@ -43,3 +43,12 @@ per tool; 40 covers any real identifier or enum token; 12 values show the shape 
 - The static-block exemption is still by block name, not provenance (council craft-1); this
   decision makes the one static block that carries foreign text safe, it does not generalise.
 - `memory.always` is also static and page-adjacent; it is a separate line (robustness-5).
+
+## Amended 2026-10-11
+
+Injection-resistance council full r2 robustness-3 and craft-1. `neutralise_text` (through
+`canonical_line`, split out by ADR 0075) also drops the variation selectors U+FE00-FE0F and
+U+E0100-E01EF. They are category Mn, not Cf, so the rule above kept them, yet they show nothing on
+their own and could hide text in a description or a memory line. Only those two ranges are
+dropped: every other Mn character, a combining accent among them, is part of a word and is kept.
+Fence bodies are not neutralised and are unchanged (ADR 0006).

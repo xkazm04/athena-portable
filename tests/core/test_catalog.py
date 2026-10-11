@@ -24,6 +24,8 @@ from athena.core.catalog import (
     CatalogError,
     CoreServices,
     build_catalog,
+    canonical_line,
+    neutralise_text,
 )
 from athena.core.validators import schema_validator
 
@@ -582,3 +584,25 @@ def test_the_capabilities_line_offers_every_turn_and_says_when_to_ask_for_it() -
 
     assert "every_turn?: boolean" in line
     assert "every turn" in line
+
+
+def test_variation_selectors_are_dropped_like_format_characters() -> None:
+    """Category Mn, yet invisible on their own: U+FE00-FE0F and U+E0100-E01EF (ADR 0068)."""
+    assert neutralise_text("pay\ufe0fnow\ufe00\ufe0e") == "paynow"
+    supplement = "".join(chr(c) for c in range(0xE0100, 0xE0110))
+    assert neutralise_text(f"a{supplement}b\U000e01ef") == "ab"
+    assert canonical_line(f"x{supplement}y") == "xy"
+
+
+def test_a_combining_accent_survives_neutralising() -> None:
+    assert neutralise_text("cafe\u0301") == "cafe\u0301"
+    assert neutralise_text("n\u0303o\u0308") == "n\u0303o\u0308"
+
+
+def test_a_variation_selector_in_a_page_description_is_not_in_the_block() -> None:
+    lines = capability_lines(
+        hostile_catalog({"name": "list", "description": "pay\ufe0f now\U000e0100 cafe\u0301"})
+    )
+    (line,) = tool_lines(lines, "list")
+    _, _, tail = line.partition(" — ")
+    assert json.loads(tail) == "pay now cafe\u0301"

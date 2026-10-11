@@ -558,16 +558,28 @@ def _cut_sentence(cut: int) -> str:
     )
 
 
+def _invisible(c: str) -> bool:
+    """A control or format character, or a variation selector (ADR 0068, amended).
+
+    The selectors U+FE00-FE0F and U+E0100-E01EF are category Mn, not Cf, yet show nothing on
+    their own. Only those two ranges: every other Mn character, a combining accent among them,
+    is part of the word it sits on and is kept.
+    """
+    code = ord(c)
+    if 0xFE00 <= code <= 0xFE0F or 0xE0100 <= code <= 0xE01EF:
+        return True
+    return unicodedata.category(c) in ("Cc", "Cf")
+
+
 def canonical_line(text: str) -> str:
     """``text`` as one uncut line: the first half of :func:`neutralise_text` (ADR 0068).
 
     Whitespace runs (carriage returns, newlines, U+2028 and U+2029 among them) become one space,
-    other control and format characters are dropped, and the ends are stripped. A caller that
-    validates the text, such as the fence sweep of a memory line (ADR 0075), runs on this first.
+    other control and format characters and the variation selectors are dropped, and the ends are
+    stripped. A caller that validates the text, such as the fence sweep of a memory line
+    (ADR 0075), runs on this first.
     """
-    kept = "".join(
-        c for c in _WHITESPACE.sub(" ", text) if unicodedata.category(c) not in ("Cc", "Cf")
-    )
+    kept = "".join(c for c in _WHITESPACE.sub(" ", text) if not _invisible(c))
     return kept.strip()
 
 
