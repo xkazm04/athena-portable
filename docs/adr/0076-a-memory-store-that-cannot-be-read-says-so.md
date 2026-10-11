@@ -60,3 +60,15 @@ or provider error). `unknown` is for a reason nobody recognised, and this one is
   (`acmeinvoices`), which is an honest miss rather than an error.
 - No timing is asserted. A test shortens `BUSY_TIMEOUT_MS` by monkeypatch, holds an exclusive lock
   and counts the statements the recall ran: at most one `SELECT`.
+
+## Amendment 2026-10-11 (memory full r2 craft-9)
+
+- The note now goes through the fence sweep after it is made one line: `unavailable_trace` runs
+  `canonical_line` and then `fence.neutralise`, the first two steps of `memory_line`, so a marker
+  split by a zero-width character is whole again before the sweep looks for it.
+- Why: ADR 0075 sets one rule for memory text in an unfenced block, and the always tier copies this
+  note into the system prompt unfenced. Some SQLite messages embed object names read from the
+  index file, which is text a page could shape.
+- Why the note is not quoted or cut: it must stay a plain line that starts with
+  `UNAVAILABLE_PREFIX`, which callers and tests match on, and a cut could drop the part of the
+  message that names what failed. The sweep is enough to leave it no live marker.
