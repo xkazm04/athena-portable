@@ -997,6 +997,13 @@ A playbook's portals are a model of the real ones: the bench proves her judgment
 the rules, not that a given site registers these tools. On a real site she reaches the same data
 through the generic hands (tier 2).
 
+The hundred are ranked by a method fixed before their results existed (ADR 0056):
+`uv run python -m athena.proving.playbooks rank` regenerates `playbooks/ranking.json`. The best
+use of Athena it finds is **lien-desk**, a subcontractor's lien and retainage notices, at 11.98;
+the top three are lien-desk, clinic-denials (10.70) and estate-settlement (10.56). The ranking
+rests on simulated worlds and sourced estimates; the limits are in
+[docs/features/playbooks.md](docs/features/playbooks.md#ranking).
+
 ---
 
 ## License and credits

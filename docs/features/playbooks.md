@@ -193,6 +193,66 @@ On the desktop the still sits on the playbook's tile with the film's length, and
 seeks), the still elsewhere, its length, when it was captured, the voice, the narration's words,
 and whether it is current against the bench or stale.
 
+## Ranking
+
+`playbooks/ranking.json` ranks every playbook by the method ADR 0056 fixed before the results
+existed ([0056](../adr/0056-how-the-best-use-of-athena-is-ranked.md), with its amendments of
+2026-10-09 and 2026-10-10 and [0064](../adr/0064-a-flat-incumbent-fee-is-not-a-share.md)). A score
+is three points of 0 to 5 added with equal weight: money (`log10` of proven dollars a year, minus
+1), time (`1 + log10` of saved hours a year) and edge (the square root of difficulty times
+usefulness). Proven dollars are `value_usd` over a year times the bench's `recall_value`. It is
+computed from the committed `playbook.json` and `bench.json` files only: no model call, no bench.
+
+```bash
+uv run python -m athena.proving.playbooks rank           # write playbooks/ranking.json
+uv run python -m athena.proving.playbooks rank --check   # exit 1 if the committed file differs
+```
+
+The file carries no timestamp, so the same inputs give the same bytes. All 100 are listed: 99 ranked
+and 1 unranked. The top ten:
+
+| # | Playbook | Score | Proven $ a year | Saved hours a year | Edge (d/u) |
+|---|---|---|---|---|---|
+| 1 | lien-desk | 11.98 | 380,000 | 24.9 | 5/5 |
+| 2 | clinic-denials | 10.70 | 50,400 | 9.9 | 5/5 |
+| 3 | estate-settlement | 10.56 | 18,400 | 19.8 | 5/5 |
+| 4 | change-order-notices | 10.45 | 60,000 | 46.9 | 4/4 |
+| 5 | customs-protests | 10.24 | 30,000 | 19.7 | 5/4 |
+| 6 | certified-payroll | 10.07 | 40,000 | 29.2 | 4/4 |
+| 7 | ltc-claims | 10.07 | 20,000 | 5.8 | 5/5 |
+| 8 | clinic-underpayments | 10.02 | 30,000 | 34.8 | 4/4 |
+| 9 | cpg-deductions | 9.95 | 60,000 | 14.9 | 4/4 |
+| 10 | duty-drawback | 9.94 | 30,000 | 9.8 | 5/4 |
+
+**The best use is lien-desk**, a Construction chore for a subcontractor: $380,000 a year proven (a
+value of $380,000 a year at recall 1.0), 1,491 minutes saved a pass against 8.8 of the person's
+own, about 24.9 hours a year at the default frequency of one pass, and an edge of 5/5. That is
+4.58 money points, 2.40 time points and 5.00 edge points, 11.98 in all, 1.28 ahead of the second.
+Its value is protection and not recovery: what a missed day would put at risk (ADR 0056 (f)).
+ltc-claims and certified-payroll tie at 10.07 and the tie-break (more proven dollars) puts
+certified-payroll first.
+
+Unranked, with the reason: **osha-300-log**, short: found 7 of 10 items, expected 75%. Four ranked
+rows are worth $0 a year (their truth is weighted by a count, ADR 0056's 2026-10-09 amendment) and
+score 0 money points: bid-opportunity-triage (90), denied-party-screening (93),
+name-change-everywhere (96) and data-broker-deletion (99).
+
+### What the ranking cannot claim
+
+From ADR 0056 (f):
+
+- The worlds are simulated portals with invented actors; no ranked figure is any real person's
+  money. Recall is one run with one model (Sonnet), extrapolated to a year.
+- The economics are sourced estimates, several of them vendor figures. The money is not all of one
+  kind: lien-desk's is protection, estate-settlement's is fees avoided, most of the rest is money
+  recovered, and the ranking adds them as though they were one.
+- The default frequency understates: the nine original playbooks have no `times_per_year`, so
+  they are ranked on one pass of their world.
+- The edge is the author's judgement, the only input set without a source.
+- `incumbent_fee_pct` is a contingency share only and is reported, never scored (ADR 0064);
+  household-employer-tax keeps the one converted flat fee, so its reported fee avoided is the
+  flat $708.
+
 ## Limits
 
 A playbook's portals are a model of the real ones: the bench proves her judgement on the data and
