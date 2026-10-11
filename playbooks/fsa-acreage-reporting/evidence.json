@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "fsa-acreage-reporting",
+  "captured_at": "2026-10-11T07:47:51Z",
+  "bench_run_at": "2026-10-11T07:42:31Z",
+  "narration": {
+    "text": "A grain farm's 2026 acreage report is filed before 15 July, as farmed and not as insured or as last year: a flooded corn plan replanted to soybeans, a 60 percent share lease, prevented planting, a crop after wheat, while rented-out, custom, sold, idle and future ground, wheat on file and a paid filing service are left alone. This is a chore for joanne Pellham, who farms corn and soybeans in central Iowa, on owned, cash-rented and share-leased ground, five days before the acreage reporting date. On the bench, she found 7 of 7 eligible items, worth 132 dollars and 65 cents of the 132 dollars and 65 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 65 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.913,
+    "sha256": "2c5200d8a6934dde8b105385bf93701bb9e4fba8a8bedb38aa4debe22e0ec795"
+  },
+  "video": {
+    "path": "evidence/fsa-acreage-reporting/evidence.mp4",
+    "duration_s": 63.92,
+    "bytes": 3129197,
+    "sha256": "60c6264f094ea7148efe2f26974b6e565dd04dc39db15697a504693d0ddde849"
+  },
+  "thumbnail": {
+    "path": "playbooks/fsa-acreage-reporting/thumb.jpg",
+    "bytes": 86847,
+    "sha256": "6527cec7bf8e61568a77df94738d542bfd0c19a666006b57570f0fe71e8c4f5e"
+  }
+}
