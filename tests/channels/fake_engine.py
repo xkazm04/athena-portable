@@ -81,8 +81,9 @@ def kokoro(mode: str, args: list[str]) -> int:
     if mode == "kokoro-fail":
         sys.stderr.write("the model would not load\n")
         return 2
-    flags = dict(arg[2:].split("=", 1) for arg in args[:-1] if arg.startswith("--"))
-    text = args[-1].encode("utf-8")
+    # Kaldi-style: any argument starting with "--" is a flag, the trailing text included.
+    flags = dict(arg[2:].split("=", 1) for arg in args if arg.startswith("--") and "=" in arg)
+    text = b"" if args[-1].startswith("--") else args[-1].encode("utf-8")
     if len(text) % 2:
         text += b" "
     with wave.open(flags["output-filename"], "wb") as wav:

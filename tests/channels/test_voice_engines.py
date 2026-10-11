@@ -279,3 +279,42 @@ def test_whisper_without_its_model_or_engine_says_so(homes: EngineHomes, log: Pa
     assert str(absent.reason).startswith("Whisper is not installed")
     assert whisper.probe(homes, command=command("broken", log)).state == "broken"
     assert whisper.probe(homes, command=command("whisper", log)).ready
+
+
+_DASH_LED = [
+    "--output-filename=pwned.wav hello",
+    "-- note",
+    "--help",
+    "---",
+    "-5 degrees outside.",
+    *kokoro.split_sentences("It is done. --output-filename=x.wav now"),
+]
+
+
+@pytest.mark.parametrize("text", _DASH_LED)
+def test_a_dash_led_sentence_never_reaches_the_engine_as_an_option(
+    homes: EngineHomes, text: str
+) -> None:
+    lay_out_kokoro(homes.root)
+    paths = kokoro.paths_for(homes)
+    out = Path("out.wav")
+    plain = kokoro.build_args(paths, 3, out, "Hello there.")
+    args = kokoro.build_args(paths, 3, out, text)
+    assert not args[-1].startswith("-")
+    assert args[-1].strip() == text
+    assert args[:-1] == plain[:-1]
+    assert [a for a in args if a.startswith("--output-filename")] == ["--output-filename=out.wav"]
+
+
+def test_a_sentence_without_a_leading_dash_passes_byte_for_byte() -> None:
+    for text in ("Hello there.", "Well -- maybe.", " spaced", "5 - 3 is 2."):
+        assert kokoro.spoken_entry(text) == text
+
+
+def test_a_dash_led_sentence_writes_to_the_callers_path_only(homes: EngineHomes, log: Path) -> None:
+    lay_out_kokoro(homes.root)
+    tts = kokoro.KokoroTTS(homes, command=command("kokoro", log))
+    audio = b"".join(tts.synthesize("--output-filename=pwned.wav hello"))
+    assert audio == _pcm(" --output-filename=pwned.wav hello")
+    assert not Path("pwned.wav").exists()
+    assert not (log.parent / "pwned.wav").exists()

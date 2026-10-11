@@ -204,6 +204,16 @@ def split_sentences(text: str) -> list[str]:
     return out
 
 
+def spoken_entry(text: str) -> str:
+    """The sentence as the engine's one positional argument: never begins with a dash (ADR 0069).
+
+    Reply text is shaped by pages the model has read, and a sentence such as ``--output-filename=x``
+    would be read as a flag. One leading space cannot start an option, espeak ignores it, and no
+    word or sign is dropped. A sentence that does not begin with ``-`` passes byte for byte.
+    """
+    return f" {text}" if text.startswith("-") else text
+
+
 def build_args(paths: KokoroPaths, sid: int, output: Path, text: str) -> list[str]:
     """The engine's flags, exactly Personas', text last and positional. No executable."""
     args = [
@@ -214,7 +224,7 @@ def build_args(paths: KokoroPaths, sid: int, output: Path, text: str) -> list[st
     ]
     if paths.lexicon.is_file():
         args.append(f"--kokoro-lexicon={paths.lexicon}")
-    args += ["--num-threads=2", f"--sid={sid}", f"--output-filename={output}", text]
+    args += ["--num-threads=2", f"--sid={sid}", f"--output-filename={output}", spoken_entry(text)]
     return args
 
 
