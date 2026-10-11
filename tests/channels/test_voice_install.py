@@ -30,7 +30,12 @@ from athena.channels.voice.install import (
     STALE_LOCK_S,
     InstallBusy,
     Installer,
+    InstallError,
     Sources,
+    _inside,
+    _safe_parts,
+    extract_kokoro_model,
+    extract_sherpa_engine,
     parse_component,
 )
 
@@ -279,6 +284,52 @@ def test_an_entry_that_climbs_out_of_the_model_directory_is_refused(
     assert _settle(installer) == "failed"
     assert "escapes" in str(installer.state().error)
     assert not (tmp_path / "personas" / "evil.dll").exists()
+
+
+DRIVE_MEMBER = f"{PREFIX}/espeak-ng-data/D:\\evil.txt"
+DRIVE_EXE = f"sherpa/bin/D:{kokoro.ENGINE_FILENAME}"
+
+
+def _files_under(root: Path) -> set[Path]:
+    return {p for p in root.rglob("*") if p.is_file()}
+
+
+def test_a_colon_in_any_part_of_a_member_name_is_refused() -> None:
+    assert _safe_parts(DRIVE_MEMBER) is None
+    assert _safe_parts(DRIVE_EXE) is None
+    assert _safe_parts(f"{PREFIX}/espeak-ng-data/voices") == (PREFIX, "espeak-ng-data", "voices")
+
+
+def test_a_kokoro_member_with_a_drive_letter_raises_and_writes_nothing_outside(
+    tmp_path: Path,
+) -> None:
+    archive = tmp_path / "model.tar.bz2"
+    archive.write_bytes(_tar({f"{PREFIX}/model.onnx": b"onnx", DRIVE_MEMBER: b"nope"}))
+    model_dir = tmp_path / "home" / "model"
+    with pytest.raises(InstallError, match="escapes"):
+        extract_kokoro_model(archive, model_dir)
+    assert all(model_dir in p.parents for p in _files_under(tmp_path / "home"))
+    assert _files_under(tmp_path) == {archive, *_files_under(model_dir)}
+
+
+def test_an_engine_whose_only_exe_has_a_drive_letter_writes_nothing_outside_bin_dir(
+    tmp_path: Path,
+) -> None:
+    archive = tmp_path / "engine.tar.bz2"
+    archive.write_bytes(_tar({DRIVE_EXE: b"exe"}))
+    bin_dir = tmp_path / "home" / "bin"
+    bin_dir.mkdir(parents=True)
+    with pytest.raises(InstallError, match=r"had no"):
+        extract_sherpa_engine(archive, bin_dir)
+    assert _files_under(tmp_path) == {archive}
+
+
+def test_a_destination_outside_its_home_is_refused_by_name(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    assert _inside(home / "a" / "b.dll", home, "a/b.dll") == home / "a" / "b.dll"
+    with pytest.raises(InstallError, match=r"x\.dll escapes the engine home; refusing"):
+        _inside(tmp_path / "x.dll", home, "x.dll")
 
 
 def test_a_second_install_while_one_runs_is_refused(

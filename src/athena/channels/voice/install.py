@@ -370,9 +370,18 @@ def _safe_parts(name: str) -> tuple[str, ...] | None:
     path = PurePosixPath(name.replace("\\", "/"))
     if path.is_absolute() or any(part in ("..", "") for part in path.parts):
         return None
-    if path.parts and ":" in path.parts[0]:
+    if any(":" in part for part in path.parts):
         return None
     return tuple(part for part in path.parts if part != ".")
+
+
+def _inside(dest: Path, home: Path, member: str) -> Path:
+    """``dest`` if it resolves inside ``home``, else an :class:`InstallError` naming the member."""
+    try:
+        dest.resolve().relative_to(home.resolve())
+    except ValueError:
+        raise InstallError(f"{member} escapes the engine home; refusing") from None
+    return dest
 
 
 def _open_bz2(archive: Path) -> tarfile.TarFile:
@@ -393,7 +402,7 @@ def extract_sherpa_engine(archive: Path, bin_dir: Path) -> None:
             name = parts[-1]
             if name.lower() != kokoro.ENGINE_FILENAME.lower() and not name.lower().endswith(".dll"):
                 continue
-            _write_member(tar, member, bin_dir / name)
+            _write_member(tar, member, _inside(bin_dir / name, bin_dir, member.name))
             found = found or name.lower() == kokoro.ENGINE_FILENAME.lower()
     if not found:
         raise InstallError(f"the engine archive had no {kokoro.ENGINE_FILENAME}")
@@ -414,7 +423,7 @@ def extract_kokoro_model(archive: Path, model_dir: Path) -> None:
             rel = parts[1:]
             if rel[0] not in KOKORO_KEEP and rel[0] not in KOKORO_KEEP_DIRS:
                 continue
-            dest = model_dir.joinpath(*rel)
+            dest = _inside(model_dir.joinpath(*rel), model_dir, member.name)
             if member.isdir():
                 dest.mkdir(parents=True, exist_ok=True)
             elif member.isfile():
@@ -445,7 +454,8 @@ def extract_whisper_engine(archive: Path, bin_dir: Path) -> None:
                 name = parts[-1]
                 if not name.lower().endswith((".exe", ".dll")):
                     continue
-                with bundle.open(info) as source, (bin_dir / name).open("wb") as out:
+                dest = _inside(bin_dir / name, bin_dir, info.filename)
+                with bundle.open(info) as source, dest.open("wb") as out:
                     shutil.copyfileobj(source, out)
                 found = found or name.lower() in {c.lower() for c in whisper.ENGINE_CANDIDATES}
     except (zipfile.BadZipFile, OSError) as exc:
