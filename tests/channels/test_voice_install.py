@@ -27,7 +27,10 @@ import pytest
 from athena.channels.voice import kokoro, whisper
 from athena.channels.voice.home import EngineHomes
 from athena.channels.voice.install import (
+    DOWNLOAD_CHUNK,
+    DOWNLOAD_DEADLINE_S,
     LOCK_FILENAME,
+    READ_TIMEOUT_S,
     SOURCES,
     STALE_LOCK_S,
     InstallBusy,
@@ -53,6 +56,8 @@ class Files:
     #: going" serves it slowly.
     slow: dict[str, float] = field(default_factory=dict)
     requested: list[str] = field(default_factory=list)
+    #: Paths served without a Content-Length header.
+    no_length: set[str] = field(default_factory=set)
 
 
 @pytest.fixture
@@ -75,7 +80,8 @@ def server(files: Files) -> Iterator[str]:
                 self.end_headers()
                 return
             self.send_response(200)
-            self.send_header("Content-Length", str(len(body)))
+            if self.path not in files.no_length:
+                self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             delay = files.slow.get(self.path, 0.0)
             try:
@@ -125,13 +131,36 @@ class _ServedDigests(Mapping[str, str]):
         return len(self.files.bodies)
 
 
-def _sources(base: str, sha256: Mapping[str, str] | None = None) -> Sources:
+class _ServedSizes(Mapping[str, int]):
+    """The byte count of what the server serves at each URL now: the fixtures' own size pins.
+
+    A path the server does not have is pinned to 1, so its download still fails on the 404.
+    """
+
+    def __init__(self, base: str, files: Files) -> None:
+        self.base, self.files = base, files
+
+    def __getitem__(self, url: str) -> int:
+        body = self.files.bodies.get(url.removeprefix(self.base))
+        return 1 if body is None else len(body)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter([f"{self.base}{path}" for path in self.files.bodies])
+
+    def __len__(self) -> int:
+        return len(self.files.bodies)
+
+
+def _sources(
+    base: str, sha256: Mapping[str, str] | None = None, size: Mapping[str, int] | None = None
+) -> Sources:
     return Sources(
         kokoro_engine=f"{base}/engine.tar.bz2",
         kokoro_model=f"{base}/model.tar.bz2",
         whisper_engine=f"{base}/whisper-bin-x64.zip",
         whisper_models=f"{base}/models",
         sha256=_ServedDigests(base, _SERVED[base]) if sha256 is None else sha256,
+        size=_ServedSizes(base, _SERVED[base]) if size is None else size,
     )
 
 
@@ -562,3 +591,118 @@ def test_a_component_with_no_pinned_digest_is_never_downloaded(
     )
     assert files.requested == []
     assert _files_under(tmp_path / "personas") == set()
+
+
+# -- size and time ceilings (ADR 0078, amended) ----------------------------------------------------
+
+
+def test_every_production_url_has_a_positive_size_pin_and_the_archives_match_the_adr() -> None:
+    for url in _production_urls():
+        size = SOURCES.pinned_size(url)
+        assert size is not None and size > 0, url
+    assert set(SOURCES.size) == set(_production_urls())
+    assert SOURCES.pinned_size(SOURCES.kokoro_engine) == 24_378_225
+    assert SOURCES.pinned_size(SOURCES.kokoro_model) == 349_906_910
+    assert SOURCES.pinned_size(SOURCES.whisper_engine) == 8_194_445
+
+
+def test_a_run_cannot_outlive_its_own_lock() -> None:
+    assert DOWNLOAD_DEADLINE_S + READ_TIMEOUT_S < STALE_LOCK_S
+
+
+def test_a_size_pin_that_is_not_a_positive_int_is_no_pin() -> None:
+    sources = Sources("a", "b", "c", "d", sha256={}, size={"a": 5, "b": 0, "c": -1, "d": True})  # type: ignore[dict-item]
+    assert sources.pinned_size("a") == 5
+    assert [sources.pinned_size(u) for u in ("b", "c", "d", "e")] == [None] * 4
+
+
+def test_a_component_with_no_pinned_size_is_never_downloaded(
+    tmp_path: Path, files: Files, server: str
+) -> None:
+    _kokoro_archives(files)
+    installer = Installer(
+        EngineHomes(tmp_path / "personas"),
+        sources=_sources(server, size={f"{server}/model.tar.bz2": 5}),
+        platform="win32",
+    )
+    installer.start("kokoro")
+    assert _settle(installer) == "failed"
+    assert installer.state().error == "engine.tar.bz2 has no pinned size; it is never downloaded"
+    assert files.requested == []
+    assert _files_under(tmp_path / "personas") == set()
+
+
+def test_a_size_pin_that_differs_from_the_content_length_fails_before_a_byte_is_written(
+    tmp_path: Path, files: Files, server: str
+) -> None:
+    _kokoro_archives(files)
+    served = len(files.bodies["/engine.tar.bz2"])
+    sizes = dict(_ServedSizes(server, files))
+    sizes[f"{server}/engine.tar.bz2"] = served + 7
+    installer = Installer(
+        EngineHomes(tmp_path / "personas"), sources=_sources(server, size=sizes), platform="win32"
+    )
+    installer.start("kokoro")
+    assert _settle(installer) == "failed"
+    assert installer.state().error == (
+        f"engine.tar.bz2 is {served} bytes upstream, not its pinned {served + 7}; "
+        "nothing was downloaded"
+    )
+    assert installer.state().received_bytes == 0
+    assert _files_under(tmp_path / "personas") == set()
+
+
+def test_a_body_without_content_length_that_passes_its_pin_stops_within_one_chunk(
+    tmp_path: Path, files: Files, server: str
+) -> None:
+    files.bodies["/whisper-bin-x64.zip"] = _zip({f"Release/{whisper.ENGINE_CANDIDATES[0]}": b"cli"})
+    pin = 1024
+    files.bodies["/models/ggml-tiny.en.bin"] = b"ggml" * (pin * 5 * DOWNLOAD_CHUNK // 4 // pin)
+    files.no_length.add("/models/ggml-tiny.en.bin")
+    sizes = dict(_ServedSizes(server, files))
+    sizes[f"{server}/models/ggml-tiny.en.bin"] = pin
+    installer = Installer(
+        EngineHomes(tmp_path / "personas"), sources=_sources(server, size=sizes), platform="win32"
+    )
+    installer.start("whisper:tiny.en")
+    assert _settle(installer) == "failed"
+    assert installer.state().error == "download of ggml-tiny.en.bin passed its pinned 1024 bytes"
+    assert pin < installer.state().received_bytes <= pin + DOWNLOAD_CHUNK
+    assert _files_under(tmp_path / "personas") == set()
+
+
+def test_downloads_that_outlast_the_runs_deadline_fail_and_leave_no_partial(
+    tmp_path: Path, files: Files, server: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from athena.channels.voice import install
+
+    monkeypatch.setattr(install, "DOWNLOAD_DEADLINE_S", 0.3)
+    files.bodies["/whisper-bin-x64.zip"] = _zip({f"Release/{whisper.ENGINE_CANDIDATES[0]}": b"cli"})
+    files.bodies["/models/ggml-tiny.en.bin"] = b"ggml" * 16 * 1024
+    files.slow["/models/ggml-tiny.en.bin"] = 0.02
+    installer = _installer(tmp_path, server)
+    installer.start("whisper:tiny.en")
+    assert _settle(installer) == "failed"
+    assert installer.state().error == (
+        "download of ggml-tiny.en.bin passed the 0.005-minute limit for one install"
+    )
+    assert _files_under(tmp_path / "personas") == set()
+
+
+def test_without_content_length_progress_total_is_the_size_pin(
+    tmp_path: Path, files: Files, server: str
+) -> None:
+    _kokoro_archives(files, padding=64 * 1024)
+    files.no_length.update({"/engine.tar.bz2", "/model.tar.bz2"})
+    files.slow["/model.tar.bz2"] = 0.01
+    installer = _installer(tmp_path, server)
+    installer.start("kokoro")
+    seen = []
+    deadline = time.monotonic() + WAIT_S
+    while installer.running and time.monotonic() < deadline:
+        seen.append(installer.state())
+        time.sleep(0.02)
+    total = len(files.bodies["/model.tar.bz2"])
+    downloading = [s for s in seen if s.state == "downloading_model" and s.received_bytes]
+    assert downloading and all(s.total_bytes == total for s in downloading)
+    assert _settle(installer) == "completed"

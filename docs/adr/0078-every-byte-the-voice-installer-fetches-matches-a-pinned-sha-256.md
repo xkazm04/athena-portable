@@ -77,3 +77,50 @@ deleted, and both matched the API.
 - **Personas' own installer** writes into the same engine home and is not changed here. A file it
   wrote is run by Athena as it finds it; this decision covers only what Athena downloads.
 - Size and time ceilings on a download (economics-5) are not part of this decision.
+
+## Amended 2026-10-11: size and time ceilings (voice full r2 economics-5)
+
+The last consequence above left size and time ceilings out. This amendment supplies them and
+supersedes that bullet.
+
+**Decision.**
+
+1. **A size beside every URL.** `Sources.size` maps each URL to the exact byte count its bytes
+   must have, like `sha256`; `Sources.pinned_size(url)` returns it, or `None` when it is absent or
+   not a positive int. A URL with no size pin is refused before any request: `<file> has no pinned
+   size; it is never downloaded`.
+2. **The pin is the total.** Progress `total_bytes` is always the size pin. A `Content-Length`
+   that differs from it fails the run before any byte is written (`<file> is <n> bytes upstream,
+   not its pinned <m>; nothing was downloaded`). Once the bytes received pass the pin the read
+   stops at once (`download of <file> passed its pinned <m> bytes`); a short body keeps `stopped
+   at X of Y bytes`, now against the pin.
+3. **One time limit per run.** `DOWNLOAD_DEADLINE_S = 45 * 60` covers all the downloads of one
+   install run, measured from when `_run` takes the home lock, checked after each chunk with
+   `time.monotonic` and read at call time. Past it the run fails, naming the file and the limit in
+   minutes. The lock goes stale at `STALE_LOCK_S` (one hour, by mtime from its creation), and
+   45 minutes plus one 60 s read stays under it.
+
+| Source | Bytes | From (read 2026-10-11) |
+|---|---|---|
+| `sherpa-onnx-v1.13.4-win-x64-shared-MT-Release.tar.bz2` | 24,378,225 | this ADR's digest table |
+| `kokoro-multi-lang-v1_0.tar.bz2` | 349,906,910 | this ADR's digest table |
+| `whisper-bin-x64.zip` | 8,194,445 | this ADR's digest table |
+| `ggml-tiny.en.bin` | 77,704,715 | Hugging Face tree API at `5359861c…`, the file's `lfs.size` |
+| `ggml-base.en.bin` | 147,964,211 | the same tree, `lfs.size` |
+| `ggml-small.en.bin` | 487,614,201 | the same tree, `lfs.size` |
+| `ggml-tiny.bin` | 77,691,713 | the same tree, `lfs.size` |
+| `ggml-base.bin` | 147,951,465 | the same tree, `lfs.size` |
+| `ggml-small.bin` | 487,601,967 | the same tree, `lfs.size` |
+
+Only metadata was read; no model or archive was downloaded for this amendment.
+
+**Consequences.**
+
+- **A pin bump changes the URL, the digest and the size together**, in one commit. A URL changed
+  alone has neither pin and is refused.
+- **At most one chunk past the pin touches disk.** The read stops after the chunk that crosses it,
+  and `_download` deletes the file.
+- **A slow link.** Below roughly 1 Mbit/s the Kokoro model (349,906,910 bytes) cannot finish in
+  45 minutes, so it cannot install in one run. Such a run would already have outlived its lock
+  after an hour and been open to takeover by another installer.
+- Unpacking, the lock and the SHA-256 check are unchanged.

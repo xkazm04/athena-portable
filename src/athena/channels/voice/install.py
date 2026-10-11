@@ -16,6 +16,10 @@ the bytes are hashed as they arrive. A download whose digest is not the pinned o
 fails the run before anything is extracted or moved into the engine home, and a URL with no pin
 is never fetched. A pin proves the bytes are the ones pinned, not that they were good then.
 
+**And so is the size** (ADR 0078, amended). Every URL also has its exact byte count pinned: a
+``Content-Length`` that differs is refused before a byte is written, a body that passes its pin
+stops the read within one chunk, and all the downloads of one run share :data:`DOWNLOAD_DEADLINE_S`.
+
 **One install at a time, across both products.** A second request while one runs is refused
 (409 at the route). A lock file in the engine home — ``.install.lock``, created exclusively — is
 held for the whole run, so Athena never extracts over a tree another installer is writing; a lock
@@ -53,6 +57,7 @@ from athena.channels.voice import kokoro, whisper
 from athena.channels.voice.home import EngineHomes
 
 __all__ = [
+    "DOWNLOAD_DEADLINE_S",
     "INSTALL_STATES",
     "LOCK_FILENAME",
     "SOURCES",
@@ -93,6 +98,9 @@ STALE_LOCK_S = 60 * 60.0
 #: Per-read socket timeout. A whole archive may take many minutes; a stalled read may not.
 READ_TIMEOUT_S = 60.0
 DOWNLOAD_CHUNK = 256 * 1024
+#: One limit for all the downloads of one install run, from when the run took the home lock. With
+#: one more read it stays under :data:`STALE_LOCK_S`, so a run never outlives its own lock.
+DOWNLOAD_DEADLINE_S = 45 * 60
 #: The top-level directory inside the Kokoro model archive.
 KOKORO_PREFIX = "kokoro-multi-lang-v1_0"
 #: What of the model package is kept: the English voice needs nothing Chinese.
@@ -114,6 +122,8 @@ class Sources:
     #: Lowercase hex SHA-256 by URL. Keyed by the URL itself, so a URL changed without its digest
     #: has no pin and is refused before it is fetched (ADR 0078).
     sha256: Mapping[str, str]
+    #: The exact byte count each URL's bytes must have, keyed like :attr:`sha256`.
+    size: Mapping[str, int]
 
     def whisper_model(self, model: whisper.WhisperModel) -> str:
         return f"{self.whisper_models}/{model.filename}"
@@ -125,6 +135,13 @@ class Sources:
             return None
         return digest
 
+    def pinned_size(self, url: str) -> int | None:
+        """The byte count ``url``'s bytes must have, or ``None`` when it has no positive pin."""
+        size = self.size.get(url)
+        if not isinstance(size, int) or isinstance(size, bool) or size <= 0:
+            return None
+        return size
+
 
 _HEX_DIGITS = frozenset("0123456789abcdef")
 
@@ -135,8 +152,8 @@ _WHISPER_MODELS = (
     "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1"
 )
 
-#: Where every pin came from, and when, is ADR 0078. A pin is bumped by changing a URL and its
-#: digest together, in one commit.
+#: Where every pin came from, and when, is ADR 0078. A pin is bumped by changing a URL, its digest
+#: and its size together, in one commit.
 SOURCES = Sources(
     kokoro_engine=f"{_SHERPA}/v1.13.4/sherpa-onnx-v1.13.4-win-x64-shared-MT-Release.tar.bz2",
     kokoro_model=f"{_SHERPA}/tts-models/kokoro-multi-lang-v1_0.tar.bz2",
@@ -170,6 +187,17 @@ SOURCES = Sources(
         f"{_WHISPER_MODELS}/ggml-small.bin": (
             "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b"
         ),
+    },
+    size={
+        f"{_SHERPA}/v1.13.4/sherpa-onnx-v1.13.4-win-x64-shared-MT-Release.tar.bz2": 24_378_225,
+        f"{_SHERPA}/tts-models/kokoro-multi-lang-v1_0.tar.bz2": 349_906_910,
+        f"{_WHISPER_ENGINE}/v1.9.2/whisper-bin-x64.zip": 8_194_445,
+        f"{_WHISPER_MODELS}/ggml-tiny.en.bin": 77_704_715,
+        f"{_WHISPER_MODELS}/ggml-base.en.bin": 147_964_211,
+        f"{_WHISPER_MODELS}/ggml-small.en.bin": 487_614_201,
+        f"{_WHISPER_MODELS}/ggml-tiny.bin": 77_691_713,
+        f"{_WHISPER_MODELS}/ggml-base.bin": 147_951_465,
+        f"{_WHISPER_MODELS}/ggml-small.bin": 487_601_967,
     },
 )
 
@@ -228,6 +256,8 @@ class Installer:
     _state: InstallState = field(default_factory=InstallState)
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
     _thread: threading.Thread | None = field(default=None, repr=False)
+    #: ``time.monotonic()`` past which the running install's downloads stop; set by ``_run``.
+    _deadline: float | None = field(default=None, repr=False)
 
     # -- reading -----------------------------------------------------------------------------------
 
@@ -298,6 +328,7 @@ class Installer:
         home = self.homes.tts if engine == "kokoro" else self.homes.stt
         try:
             with _HomeLock(home):
+                self._deadline = time.monotonic() + DOWNLOAD_DEADLINE_S
                 if engine == "kokoro":
                     self._kokoro()
                 else:
@@ -360,8 +391,11 @@ class Installer:
         pinned = self.sources.pinned(url)
         if pinned is None:
             raise InstallError(f"{name} has no pinned SHA-256 digest; it is never downloaded")
+        size = self.sources.pinned_size(url)
+        if size is None:
+            raise InstallError(f"{name} has no pinned size; it is never downloaded")
         try:
-            received = self._fetch(url, dest, phase)
+            received = self._fetch(url, dest, phase, size)
         except BaseException:
             dest.unlink(missing_ok=True)
             raise
@@ -371,16 +405,21 @@ class Installer:
                 f"{name} does not match its pinned SHA-256 digest; nothing was installed"
             )
 
-    def _fetch(self, url: str, dest: Path, phase: InstallPhase) -> str:
-        """The bytes into ``dest``, checked against Content-Length; their SHA-256, as hex."""
-        self._set(state=phase, received_bytes=0, total_bytes=None)
+    def _fetch(self, url: str, dest: Path, phase: InstallPhase, size: int) -> str:
+        """The bytes into ``dest``, exactly ``size`` of them and within the run's deadline; their
+        SHA-256, as hex."""
+        name = PurePosixPath(url).name
+        self._set(state=phase, received_bytes=0, total_bytes=size)
         digest = hashlib.sha256()
         request = urllib.request.Request(url, headers={"User-Agent": "athena-voice-installer"})
         try:
             with urllib.request.urlopen(request, timeout=READ_TIMEOUT_S) as reply:
                 length = reply.headers.get("Content-Length")
-                total = int(length) if length and length.isdigit() else None
-                self._set(total_bytes=total)
+                if length and length.isdigit() and int(length) != size:
+                    raise InstallError(
+                        f"{name} is {int(length)} bytes upstream, not its pinned {size}; "
+                        "nothing was downloaded"
+                    )
                 received = 0
                 with dest.open("wb") as out:
                     while True:
@@ -393,14 +432,20 @@ class Installer:
                         digest.update(chunk)
                         received += len(chunk)
                         self._set(received_bytes=received)
+                        if received > size:
+                            raise InstallError(f"download of {name} passed its pinned {size} bytes")
+                        if self._deadline is not None and time.monotonic() > self._deadline:
+                            raise InstallError(
+                                f"download of {name} passed the "
+                                f"{DOWNLOAD_DEADLINE_S / 60:g}-minute "
+                                "limit for one install"
+                            )
         except (OSError, http.client.HTTPException) as exc:  # URLError, HTTPError: OSErrors
             code = getattr(exc, "code", None)
             what = f"HTTP {code}" if code else type(exc).__name__
-            raise InstallError(f"download of {PurePosixPath(url).name} failed ({what})") from None
-        if total is not None and received != total:
-            raise InstallError(
-                f"download of {PurePosixPath(url).name} stopped at {received} of {total} bytes"
-            )
+            raise InstallError(f"download of {name} failed ({what})") from None
+        if received != size:
+            raise InstallError(f"download of {name} stopped at {received} of {size} bytes")
         return digest.hexdigest()
 
 
