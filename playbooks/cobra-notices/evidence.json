@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "cobra-notices",
+  "captured_at": "2026-10-11T03:48:36Z",
+  "bench_run_at": "2026-10-11T03:46:20Z",
+  "narration": {
+    "text": "A self-administered employer's COBRA election notices go out inside their windows: a layoff, a resignation, an hours cut, a death, a divorce and a child's twenty-sixth birthday reported in time, and a separated spouse at her own address, while a waiver, a cut that kept coverage, a late or missing report and a leave are left alone. This is a chore for the HR and benefits manager of a 46-person manufacturer that administers its own group health plan. Athena works it across 3 portals: Crewmarrow HR, Carriercore and Postwren. On the bench, she found 7 of 7 eligible items, worth 770 dollars of the 770 dollars there was to find. She made no false claim. The world held 11 traps, and she walked past 11. She took 2 minutes. By hand, the same chore takes 75 minutes, so she was about 39 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.456,
+    "sha256": "d207080561aa7145f91163ebd505bf03379d8ab9eed316cb6a3784950b6f0935"
+  },
+  "video": {
+    "path": "evidence/cobra-notices/evidence.mp4",
+    "duration_s": 62.456,
+    "bytes": 2557528,
+    "sha256": "f436386d6cc189e91a0407386534b20f074c7ec438310423db070d2d89717da5"
+  },
+  "thumbnail": {
+    "path": "playbooks/cobra-notices/thumb.jpg",
+    "bytes": 83310,
+    "sha256": "1147cdc2c6c27fa6fd0fb0af9027b90e25e555e2190940c00d908e536a9c0df0"
+  }
+}

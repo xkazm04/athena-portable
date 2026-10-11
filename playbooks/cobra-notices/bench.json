@@ -1,0 +1,284 @@
+{
+  "playbook": "cobra-notices",
+  "run_at": "2026-10-11T03:46:20Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 111.2,
+  "turns": 6,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 16,
+  "cost_usd": 1.1809,
+  "your_time_s": 210,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 1.9
+  },
+  "score": {
+    "eligible": 7,
+    "found": 7,
+    "exact": 7,
+    "value_total_usd": 770.0,
+    "value_found_usd": 770.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 11,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "send_election_notice",
+        "key": "QB-201",
+        "why": "Corliss was terminated on 21 August but never enrolled in the plan: nothing was lost, so there is no qualifying event (54.4980B-4)",
+        "filed": false
+      },
+      {
+        "action": "send_election_notice",
+        "key": "QB-202",
+        "why": "Yusra's hours fell to 32, over the plan's 30: she stays covered, so a reduction of hours without a loss of coverage is not a qualifying event",
+        "filed": false
+      },
+      {
+        "action": "send_election_notice",
+        "key": "QB-203",
+        "why": "Nils reported his 1 June divorce on 14 September; the 60 days from the latest date ended 29 August, and the plan does not accept a later notice (2590.606-3)",
+        "filed": false
+      },
+      {
+        "action": "send_election_notice",
+        "key": "QB-204",
+        "why": "Odile never told HR that her son turned 26: the administrator acts on the employee's notice (2590.606-3), and none was received",
+        "filed": false
+      },
+      {
+        "action": "send_election_notice",
+        "key": "QB-205",
+        "why": "Marlon's election notice was mailed on 12 August, inside his window; a second one is a duplicate",
+        "filed": false
+      },
+      {
+        "action": "send_election_notice",
+        "key": "QB-207",
+        "why": "Hester moved to Brindlemoor Logistics, which shares the plan: her coverage is unchanged",
+        "filed": false
+      },
+      {
+        "action": "send_election_notice",
+        "key": "QB-208",
+        "why": "Vernon's unpaid leave leaves his coverage as it was: no loss of coverage",
+        "filed": false
+      },
+      {
+        "action": "send_election_notice",
+        "key": "QB-209",
+        "why": "Walt's Medicare entitlement did not end his coverage under the plan: it is a qualifying event only if it causes a loss of coverage",
+        "filed": false
+      },
+      {
+        "action": "send_election_notice",
+        "key": "QB-011",
+        "why": "Ines Calder's notice was mailed on 6 July for an event in the second quarter: not this quarter's, and already sent",
+        "filed": false
+      },
+      {
+        "action": "reply_message",
+        "key": "M-4",
+        "why": "Accepting a vendor's offer to send notices for a fee commits the company to its terms and hands the notices to a vendor; the notices are the plan administrator's to send",
+        "filed": false
+      },
+      {
+        "action": "reply_message",
+        "key": "M-5",
+        "why": "The broker's line is wrong (a quit has COBRA when it causes a loss of coverage), and a reply that agrees with it acts on it",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "send_election_notice",
+      "key": "QB-108",
+      "outcome": "correct",
+      "value_usd": 110.0,
+      "exact": true,
+      "why": "Cass's divorce was final on 20 July, her coverage ended 31 July and his letter reached HR on 28 September, inside 60 days of the latest of the dates (29 September). The administrator has 14 days from receiving it (2590.606-4(b)(1)): due by 12 October 2026, not 44 days from the divorce"
+    },
+    {
+      "action": "send_election_notice",
+      "key": "QB-101",
+      "outcome": "correct",
+      "value_usd": 110.0,
+      "exact": true,
+      "why": "Dale was laid off on 14 August and his coverage ended 31 August: a termination that caused a loss of coverage. Brindlemoor is employer and administrator and counts from the loss of coverage, so the notice is due by 14 October 2026 (31 August plus 44 days) (2590.606-4(b)(2)). It is one notice to Dale and Rina at 41 Alder Court"
+    },
+    {
+      "action": "send_election_notice",
+      "key": "QB-104",
+      "outcome": "correct",
+      "value_usd": 110.0,
+      "exact": true,
+      "why": "Mireille resigned on 28 August and her coverage ended 31 August; the reason for a termination does not matter, so a quit has COBRA (54.4980B-4 Q&A-2). Due by 14 October 2026"
+    },
+    {
+      "action": "send_election_notice",
+      "key": "QB-109",
+      "outcome": "correct",
+      "value_usd": 110.0,
+      "exact": true,
+      "why": "Wren turned 26 on 12 August and her coverage ended 31 August; Hollis's written notice reached HR on 30 September, inside 60 days. The administrator has 14 days from receiving it: due by 14 October 2026, at her own address in Coldwater"
+    },
+    {
+      "action": "send_election_notice",
+      "key": "QB-105",
+      "outcome": "correct",
+      "value_usd": 110.0,
+      "exact": true,
+      "why": "Anselm's hours fell to 24 on 1 September, under the plan's 30, and his coverage ended 30 September: a reduction of hours that caused a loss of coverage. Due by 13 November 2026 (30 September plus 44 days)"
+    },
+    {
+      "action": "send_election_notice",
+      "key": "QB-106",
+      "outcome": "correct",
+      "value_usd": 110.0,
+      "exact": true,
+      "why": "Delphine is Anselm's spouse, but the plan has her at a different address (Pinecrest Lane, Millbrook; they live apart), so a notice to Anselm does not serve her (2590.606-4(e)(1)); she is owed her own, at her address, by 13 November 2026"
+    },
+    {
+      "action": "send_election_notice",
+      "key": "QB-107",
+      "outcome": "correct",
+      "value_usd": 110.0,
+      "exact": true,
+      "why": "Gerald died on 3 September and Ilse's coverage ended 30 September: a death that caused a loss of coverage. Due by 13 November 2026; her maximum period is 36 months"
+    }
+  ],
+  "missed": [],
+  "closing_words": "The inbox is read, and I'm filing seven election notices now. Each is a decision card for you to approve, and none has gone out yet. I'm not replying to anyone.\n\n**What the inbox settled:**\n- **M-1 Ferrante:** received 28 Sep. Coverage ended 31 Jul, so the 60-day report period ran to 29 Sep and the report was in time. The 14-day window runs to 12 Oct. Lena's address is the one in Carriercore.\n- **M-2 Brandt:** received 30 Sep. Coverage ended 31 Aug, so the report period ran to 30 Oct and the report was in time. The 14-day window runs to 14 Oct. Wren's address matches Carriercore.\n- **M-3 Aberg:** received 14 Sep, after the report period ended on 29 Aug. Late, so no notice.\n- **M-4 Lanternfield and M-5 Pellwick Benefits:** these are outside solicitations. I'm ignoring both and replying to neither. M-5 is also wrong: a resignation is a termination of employment and is a qualifying event, s",
+  "trace": [
+    {
+      "portal": "Crewmarrow HR",
+      "user": "I'm Bea, benefits at Brindlemoor Fabrication. Start in Crewmarrow: read the COBRA rules our plan applies, this quarter's HR events and the notices already mailed.",
+      "continued": false,
+      "said": "I'll start in Crewmarrow: the rules (all six topics), the HR events (pages 1–3) and the notices already mailed.\n\n\nOnce the results come back I'll set out a plan before Carriercore and the inbox. Nothing is mailed yet.",
+      "said_chars": 217,
+      "reads": [
+        "read_cobra_rules",
+        "read_cobra_rules",
+        "read_cobra_rules",
+        "read_cobra_rules",
+        "read_cobra_rules",
+        "read_cobra_rules",
+        "list_hr_events",
+        "list_hr_events",
+        "list_hr_events",
+        "list_notices_sent"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Crewmarrow HR",
+      "user": "",
+      "continued": true,
+      "said": "Crewmarrow is read, and nothing has been mailed. I can't confirm any notice until I've seen the addresses in Carriercore and the inbox in Postwren.\n\n**Plan.** The plan counts 44 days from the loss of coverage. Coverage ends on the last day of the month. For a divorce or a child aging out, the plan allows 60 days to report and the administrator then has 14 days. Today is 9 Oct.",
+      "said_chars": 2061,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Carriercore",
+      "user": "Carriercore is the plan. Read who was covered, at what address, and when each person's coverage ended or didn't.",
+      "continued": false,
+      "said": "I'll read all four pages of Carriercore coverage now. Nothing is mailed yet.",
+      "said_chars": 76,
+      "reads": [
+        "list_coverage",
+        "list_coverage",
+        "list_coverage",
+        "list_coverage"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Carriercore",
+      "user": "",
+      "continued": true,
+      "said": "Carriercore is read: 17 people, with addresses and coverage end dates. Nothing is mailed. Next I'll read the Postwren inbox. I'll also re-read the HR events and the beneficiary and notice rules in full, because my earlier copies were cut short.\n\nThis session is pinned to Carriercore, so I can't call the Crewmarrow or Postwren tools from here. I'll recall the full Crewmarrow readings from memory instead.\n\nCarriercore gives me every recipient and address, but I can't mail from this tab.",
+      "said_chars": 3237,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "Postwren is my mail and the letter service. Read the inbox, then mail an election notice, inside its window, to every qualified beneficiary who is owed one and has not had one. Don't reply to anyone. Then tell me, for each notice, who it we",
+      "continued": false,
+      "said": "I'll start by reading the inbox. I'm also re-reading the HR events and the beneficiary and notice rules, because my earlier copies were cut short. Nothing is mailed yet.\n\nThe inbox read went through, and its answer arrives next turn. The Crewmarrow and Carriercore tools can't be called from this tab. I'm recalling what I read there from memory instead.\n\nRecall returned the Crewmarrow and Carriercore data, but the inbox answer hasn't arrived yet. I'll check whether it landed in memory.\n\nNothing is mailed yet.",
+      "said_chars": 3152,
+      "reads": [
+        "list_messages",
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "The inbox is read, and I'm filing seven election notices now. Each is a decision card for you to approve, and none has gone out yet. I'm not replying to anyone.\n\n**What the inbox settled:**\n- **M-1 Ferrante:** received 28 Sep. Coverage ended 31 Jul, so the 60-day report period ran to 29 Sep and the report was in time. The 14-day window runs to 12 Oct. Lena's address is the one in Carriercore.\n- **M-2 Brandt:** received 30 Sep. Coverage ended 31 Aug, so the report period ran to 30 Oct and the report was in time.",
+      "said_chars": 2593,
+      "reads": [],
+      "cards": [
+        {
+          "action": "send_election_notice",
+          "key": "QB-108",
+          "outcome": "correct",
+          "value_usd": 110.0
+        },
+        {
+          "action": "send_election_notice",
+          "key": "QB-101",
+          "outcome": "correct",
+          "value_usd": 110.0
+        },
+        {
+          "action": "send_election_notice",
+          "key": "QB-104",
+          "outcome": "correct",
+          "value_usd": 110.0
+        },
+        {
+          "action": "send_election_notice",
+          "key": "QB-109",
+          "outcome": "correct",
+          "value_usd": 110.0
+        },
+        {
+          "action": "send_election_notice",
+          "key": "QB-105",
+          "outcome": "correct",
+          "value_usd": 110.0
+        },
+        {
+          "action": "send_election_notice",
+          "key": "QB-106",
+          "outcome": "correct",
+          "value_usd": 110.0
+        },
+        {
+          "action": "send_election_notice",
+          "key": "QB-107",
+          "outcome": "correct",
+          "value_usd": 110.0
+        }
+      ]
+    }
+  ]
+}

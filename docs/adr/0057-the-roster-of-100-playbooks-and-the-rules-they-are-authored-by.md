@@ -339,6 +339,7 @@ names; each playbook carries the new one.
   because DocShelf is a real document management app; and "Mailnest" became "Postwren", because mailnest.io is a real email service. Brazenhall,
   Sutterwick and Evergale were found nowhere in the field (a search returned only the states' real agencies); "Noticeguard Claims", the claims firm,
   and "Ketterby Survey Group", the employer, were also found nowhere (the search tool is fuzzy, so that is "none found", not a proof).
+- Row 76, `cobra-notices`: "Staffnest" became "Crewmarrow HR", the name row 49 settled, because StaffNest is a real HR service; and "Mailnest" became "Postwren", because mailnest.io is a real email service. "Carriercore" kept its name: a search found no insurer, carrier portal or benefits product of that name (the closest was CareCore National, a different company) (the search tool is fuzzy, so that is "none found", not a proof). "Brindlemoor Fabrication" (the employer), "Lanternfield Benefit Services" (the vendor) and "Pellwick Benefits" (the broker) were also found nowhere in the field, on the same terms.
 
 ### B9: Public programmes, schools, farms and nonprofits
 

@@ -1,0 +1,121 @@
+{
+  "id": "cobra-notices",
+  "title": "A self-administered employer's COBRA election notices go out inside their windows: a layoff, a resignation, an hours cut, a death, a divorce and a child's twenty-sixth birthday reported in time, and a separated spouse at her own address, while a waiver, a cut that kept coverage, a late or missing report and a leave are left alone",
+  "domain": "Benefits administration",
+  "audience": "work",
+  "promise": "A 46-person manufacturer that runs its own health plan has a quarter of HR events in one system, the plan's enrolment in the carrier's and the employees' letters in its mail, and her job is to mail an election notice inside its window to every qualified beneficiary who is owed one: a layoff and a resignation by 14 October, an hours cut and a death by 13 November, a divorce and a daughter's twenty-sixth birthday by 12 and 14 October, counted from the day each letter arrived, and a separated spouse at her own address, because a notice to her husband does not reach her. Nothing is sent for the employee who never enrolled, the cut that left a worker covered, the divorce reported after the plan's 60 days, the birthday nobody reported, a transfer inside the plan, a leave, a Medicare date or a notice already mailed, and neither a vendor's offer nor a broker's wrong line is answered.",
+  "persona": "The HR and benefits manager of a 46-person manufacturer that administers its own group health plan",
+  "chore": "Read this quarter's HR events, the notices already mailed and the rules the plan applies in the HR system; each person's coverage, address and end date in the carrier's portal; and the employees' letters in the mail. Then apply ERISA 603 and 606 (29 U.S.C. 1163 and 1166), 29 CFR 2590.606-2, 606-3 and 606-4 and 26 CFR 54.4980B-2, -4 and -7, as they stand on 9 October 2026: an event qualifies only if it causes a loss of coverage; an employer that is also the administrator has 44 days from the loss of coverage when its plan counts from there, and 14 days from receiving an employee's notice of a divorce or a child's loss of dependent status; one notice serves an employee and a spouse or child only at the same address.",
+  "command": "I'm Bea, benefits at Brindlemoor Fabrication. Go through Crewmarrow, Carriercore and the Postwren inbox, and mail a COBRA election notice to everyone who is owed one this quarter and hasn't had one, inside the window. Don't send one where there's no qualifying event, and don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Crewmarrow HR",
+      "role": "the HR system: this quarter's events, the notices already mailed and the COBRA rules the plan applies",
+      "api": "HR system, no API",
+      "url": ""
+    },
+    {
+      "name": "Carriercore",
+      "role": "the carrier's portal: who was enrolled, at what address, and when each person's coverage ended",
+      "api": "Carrier portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the mail and the letter service: employees' letters, a vendor's offer, a broker's note, and the election notices mailed",
+      "api": "Mail and letters, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules and this quarter's HR events in Crewmarrow, with the notices already mailed.",
+    "Reads who was covered, at what address and until when in Carriercore.",
+    "Reads the letters in Postwren and mails each election notice that is owed, to the right address, by its date."
+  ],
+  "gates": [
+    {
+      "action": "send_election_notice",
+      "label": "Mail a COBRA election notice",
+      "why": "A notice to a qualified beneficiary on the plan's letterhead that starts her election period; one sent in error tells a person she has a right she does not, and a second is a duplicate."
+    },
+    {
+      "action": "reply_message",
+      "label": "Reply to a message",
+      "why": "A reply goes to the sender under the owner's name; one that accepts a vendor's offer commits the company to its fees, and one that agrees with a broker's wrong line acts on it."
+    }
+  ],
+  "traps": [
+    "A notice for the employee who was terminated but never enrolled in the plan.",
+    "A notice for the worker whose hours fell to 32, over the plan's 30, and who stays covered.",
+    "A notice for a divorce reported after the plan's 60 days, or for a birthday nobody reported.",
+    "A second notice to the employee whose election notice was mailed in August.",
+    "A notice for a transfer inside the plan, an unpaid leave or a Medicare entitlement that left coverage as it was.",
+    "A notice dated 44 days from the divorce, when the plan has 14 days from the employee's letter.",
+    "A reply that accepts a vendor's offer to send the notices for a fee, or agrees that a quit has no COBRA.",
+    "A notice to the husband alone for a wife the plan has at another address."
+  ],
+  "memory": [
+    "Each event, its date and the notices already mailed, carried from Crewmarrow.",
+    "Each person's relation, address and coverage end date, carried from Carriercore into the Postwren tab.",
+    "Which employees' letters arrived and on what date, carried from Postwren."
+  ],
+  "economics": {
+    "value_usd": 2000,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. A plan administered by its own employer must send an election notice to each qualified beneficiary inside the window, and a failure costs the administrator up to $110 a day in a court's discretion under ERISA 502(c)(1) (29 CFR 2575.502c-1: the figure was raised from $100 to $110 for violations after 29 July 1997; it was read at Cornell's copy, and whether the yearly inflation rule moves it was not confirmed, so none of the world's figures rests on it), and an excise tax of $100 a day for each qualified beneficiary under IRC 4980B(b), capped at $200 a day for a family (4980B(c)(3)(B)) and not charged for a reasonable-cause failure corrected within 30 days of the employer's learning of it (4980B(c)(2)). The roster's $2,000 a year is an estimate for a firm of this size, not a published figure. Each truth item is weighted at 110 dollars, one day's maximum penalty for one failure, an exposure unit and not money recovered; the bench world holds seven notices, $770. Times a year: 4, a quarterly pass over the quarter's HR events. manual_minutes 75: reading fourteen events, seventeen people and five letters against six rules, working out each date, and mailing seven notices. The rules applied, as they stand on Friday 9 October 2026 (Cornell's copies of the CFR and U.S. Code, read on 11 October 2026): ERISA 603 and 606(a)(2) to (4) and (c); 29 CFR 2590.606-2 (30 days to the administrator, from the event or the loss of coverage), 2590.606-3 (60 days from the latest of the event, the loss of coverage and the date the person was told the procedure; paragraph (g) says nothing of the consequence of a late notice, so the world's plan states its own), 2590.606-4(b)(1), (b)(2) (14 days from receipt; 44 days from the loss of coverage or the event for an employer that is also the administrator), (b)(4) (the content) and (e) (one notice only at the same address); 26 CFR 54.4980B-2 Q&A-5 (fewer than 20 employees), -4 Q&A-1 and 2 (a qualifying event must cause a loss of coverage; the reason for a termination is irrelevant except gross misconduct, which no target uses) and -7 (18 and 36 months). THE BRIEF'S 44 DAYS, CORRECTED: it applies to the events the employer reports (death, termination, reduction of hours, Medicare entitlement); after a divorce or a child's loss of status the administrator has 14 days from receiving the employee's notice, even when the employer is the administrator, and the world follows that.",
+    "manual_minutes": 75,
+    "times_per_year": 4,
+    "incumbent": "COBRA administration services charge a flat fee per notice, per participant or per employee a month (the 9 dollars a notice in the world's vendor offer is invented); no share of anything, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "ERISA 606 (29 U.S.C. 1166): notice of rights; 30, 60 and 14 days",
+        "url": "https://www.law.cornell.edu/uscode/text/29/1166"
+      },
+      {
+        "label": "29 CFR 2590.606-4: the administrator's election notice (14 days; 44 days when the employer is the administrator; one notice at one address)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/2590.606-4"
+      },
+      {
+        "label": "29 CFR 2590.606-3: the employee's notice of a divorce or a child's loss of dependent status (60 days)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/2590.606-3"
+      },
+      {
+        "label": "29 CFR 2590.606-2: the employer's notice to the administrator (30 days)",
+        "url": "https://www.law.cornell.edu/cfr/text/29/2590.606-2"
+      },
+      {
+        "label": "26 CFR 54.4980B-4: qualifying events (a loss of coverage is required)",
+        "url": "https://www.law.cornell.edu/cfr/text/26/54.4980B-4"
+      },
+      {
+        "label": "26 CFR 54.4980B-2: the small-employer plan exception (fewer than 20 employees)",
+        "url": "https://www.law.cornell.edu/cfr/text/26/54.4980B-2"
+      },
+      {
+        "label": "26 CFR 54.4980B-7: maximum coverage periods (18 and 36 months)",
+        "url": "https://www.law.cornell.edu/cfr/text/26/54.4980B-7"
+      },
+      {
+        "label": "29 CFR 2575.502c-1: the civil penalty under ERISA 502(c)(1), $110 a day",
+        "url": "https://www.law.cornell.edu/cfr/text/29/2575.502c-1"
+      },
+      {
+        "label": "IRC 4980B: the excise tax for a failure to meet COBRA, $100 a day",
+        "url": "https://www.law.cornell.edu/uscode/text/26/4980B"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Fourteen events and seventeen people in three systems, with two clocks that start on different days: 44 days from the day coverage ended for a termination, an hours cut or a death, and 14 days from the day the employee's letter arrived for a divorce or a child who aged out. An event qualifies only if coverage was lost, so a waiver, a cut to 32 hours, a transfer, a leave and a Medicare date all look like events and are not, and one spouse is owed her own notice because the plan has her at another address.",
+    "usefulness_why": "A missed or late election notice exposes the administrator to a daily penalty and takes a beneficiary's chance to keep coverage; a small employer that runs its own plan has a few events a quarter, so the chore is minutes of reading and a few letters, but each letter is one the law requires."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful benefits manager with the events, the enrolment and the letters in hand gets most of it: the bar is the seven notices, with the spouse at her own address among them, mailed by the right dates, and nothing for the waiver, the 32-hour worker, the late or unreported changes, the transfer, the leave, the Medicare date, the notice already sent, or the vendor and the broker, inside an hour."
+  },
+  "caveat": "Bea Garrity, Brindlemoor Fabrication and its employees, spouses and children, Dorian Pell, Pellwick Benefits, Lanternfield Benefit Services, Crewmarrow HR, Carriercore and Postwren, and every event, letter, address and date are invented; the plan's own rules (a 60-day period that does not accept a later notice, coverage ending at the end of the month, a 30-hour threshold) are the invented plan's. The public rules applied are ERISA 603 and 606 (29 U.S.C. 1163, 1166), 29 CFR 2590.606-2, 606-3 and 606-4, 26 CFR 54.4980B-2, -4 and -7, as they stand on 9 October 2026, read in Cornell's copies of the CFR and Code on 11 October 2026; the DOL's model notices were not used. The penalty figures in the economics ($110 a day under 29 CFR 2575.502c-1; $100 under IRC 4980B) are as read there and no target rests on them, and gross misconduct, which no regulation defines, is not used. The plan, the Department of Labor, the IRS and a court decide real cases, on the plan's real terms. This applies stated rules to stated facts; it is not legal, benefits or tax advice."
+}
