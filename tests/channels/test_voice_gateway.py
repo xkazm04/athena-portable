@@ -15,7 +15,7 @@ import time
 import pytest
 
 from athena.channels.voice.backends import ScriptedBackend
-from athena.channels.voice.gateway import VOICE_PATH
+from athena.channels.voice.gateway import MAX_PENDING_TURNS, VOICE_PATH, VoiceGateway
 from athena.channels.voice.tts import TTS_CAP
 from athena.channels.voice.ws import HandshakeError, connect
 from daemon.conftest import PAGE_ORIGIN, SHELL_ORIGIN, TOKEN, Live, claude_round, op
@@ -699,3 +699,79 @@ def test_a_word_that_fits_two_unpresented_cards_resolves_neither(
         assert _pending_ids(voiced) == {str(first["id"]), str(second["id"])}
     finally:
         fresh.close()
+
+
+# -- a socket queues at most four turns (ADR 0074) ---------------------------------------------
+
+
+def _hold_the_worker(voiced: Live, client: VoiceClient) -> dict[str, object]:
+    """Run one turn that waits on the page's answer, and give the page all the time it needs."""
+    gateway = voiced.daemon.sockets.get(VOICE_PATH)
+    assert isinstance(gateway, VoiceGateway)
+    gateway.result_timeout_s = 30.0
+    voiced.register()
+    voiced.script(
+        claude_round(op("host.invoices.chase", invoice="7")),
+        claude_round("held done"),
+        *[claude_round(f"queued {n}") for n in range(MAX_PENDING_TURNS)],
+    )
+    client.say("hold")
+    return client.until("tool.call", params={"invoice": "7"})
+
+
+def test_a_fifth_waiting_text_turn_is_refused_once_and_the_four_queued_still_run(
+    voiced: Live, client: VoiceClient
+) -> None:
+    held = _hold_the_worker(voiced, client)
+    for n in range(MAX_PENDING_TURNS):
+        client.say(f"q{n}")
+    client.say("one too many")
+
+    refused = client.until("turn.error")
+    assert refused["reason"] == "validator_failed"
+    assert refused["detail"] == "4 turns are already waiting; this one was not queued"
+
+    client.tool_result(held, output="drafted")
+    client.until("turn.finished", text="held done")
+    for n in range(MAX_PENDING_TURNS):
+        client.until("turn.finished", text=f"queued {n}")
+    _settle()
+    assert len(client.of("turn.error")) == 1
+    assert [e["text"] for e in client.of("voice.transcript")] == [
+        "hold",
+        "q0",
+        "q1",
+        "q2",
+        "q3",
+    ]
+
+
+def test_a_stop_with_four_waiting_gets_one_error_and_is_never_transcribed(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    finished: list[str] = []
+
+    class Spy:
+        def feed(self, pcm: bytes) -> list[str]:
+            return []
+
+        def finish(self) -> str:
+            finished.append("finish")
+            return "never heard"
+
+    backend.transcriber = Spy  # type: ignore[method-assign,assignment]
+    held = _hold_the_worker(voiced, client)
+    for n in range(MAX_PENDING_TURNS):
+        client.say(f"q{n}")
+
+    client.utter()
+    refused = client.until("turn.error")
+    assert refused["reason"] == "validator_failed"
+    _settle()
+    assert finished == []
+    assert len(client.of("turn.error")) == 1
+
+    client.tool_result(held, output="drafted")
+    client.until("turn.finished", text="held done")
+    for n in range(MAX_PENDING_TURNS):
+        client.until("turn.finished", text=f"queued {n}")

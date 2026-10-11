@@ -91,6 +91,7 @@ if TYPE_CHECKING:
 __all__ = [
     "CONTINUE_MESSAGE",
     "MAX_CONTINUATIONS",
+    "MAX_PENDING_TURNS",
     "NOT_SET_UP",
     "RESULT_TIMEOUT_S",
     "VOICE_PATH",
@@ -113,6 +114,10 @@ MAX_CONTINUATIONS = 8
 #: The continuation's message. A fixed line rather than the user's words repeated: the user has
 #: not said anything new, and a transcript that says they did is a false record.
 CONTINUE_MESSAGE = "(the tools you called have answered; continue)"
+
+#: How many turns one socket may have waiting behind the one the worker is running. Each is a
+#: metered lane turn, so the client that queues them is the one that is refused (ADR 0074).
+MAX_PENDING_TURNS = 4
 
 
 #: What a ``start`` is refused with when no backend is set up and the studio gave no reason.
@@ -323,6 +328,8 @@ class VoiceSession:
         elif kind == "stop":
             self._stop()
         elif kind == "text":
+            if self._turns_full():
+                return
             interrupted = self.speaking
             if interrupted:
                 self.interrupt()
@@ -334,6 +341,23 @@ class VoiceSession:
             self._tool_result(body)
         else:
             self.send(TurnError(reason="validator_failed", detail=f"unknown frame type {kind!r}"))
+
+    def _turns_full(self) -> bool:
+        """Refuse a turn while :data:`MAX_PENDING_TURNS` are already waiting, with one error.
+
+        Only the reader enqueues, and the worker only dequeues, so a count that is not full here
+        is still not full at the ``put``. The queue itself stays unbounded so the closing sentinel
+        always fits.
+        """
+        if self._jobs.qsize() < MAX_PENDING_TURNS:
+            return False
+        self.send(
+            TurnError(
+                reason="validator_failed",
+                detail=f"{MAX_PENDING_TURNS} turns are already waiting; this one was not queued",
+            )
+        )
+        return True
 
     def _start(self, body: Mapping[str, Any]) -> None:
         interrupted = self.speaking
@@ -367,6 +391,8 @@ class VoiceSession:
         current = self._utterance
         self._utterance = None
         if current is None or current.refused:
+            return
+        if self._turns_full():
             return
         try:
             text = str(current.transcriber.finish() or "")

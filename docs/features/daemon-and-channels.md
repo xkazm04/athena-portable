@@ -42,7 +42,7 @@ dropped with one `turn.error` `validator_failed` and the socket stays open (ADR 
 frame and 1011 (logged) when handling a frame raised; a `tool_result` whose `tier` or `ms` is not a
 non-negative integer is refused with `validator_failed` and the socket stays open. A bare "yes" or
 "no" answers only the newest card this socket presented; an inbox card it never showed is answered
-only by its own option id or label, and only when exactly one fits (ADR 0073). A message is at most 1,024 data frames as well as 1 MiB; past either it closes 1009. An archive member with a `:` in any part of its name is refused, and each writer checks that its destination resolves inside the engine home before it writes. The panel treats an event it cannot read, an unknown `kind` included, as a close with a reason naming it, and closes the socket; it never skips the frame.
+only by its own option id or label, and only when exactly one fits (ADR 0073). A message is at most 1,024 data frames as well as 1 MiB; past either it closes 1009. An archive member with a `:` in any part of its name is refused, and each writer checks that its destination resolves inside the engine home before it writes. The panel treats an event it cannot read, an unknown `kind` included, as a close with a reason naming it, and closes the socket; it never skips the frame. A socket has at most four turns waiting behind the one running; a `text` frame or a `stop` past that gets one `turn.error` `validator_failed`, nothing is queued or transcribed, and the socket stays open (ADR 0074).
 
 Every `start` and `text` frame carries `disabled_origins`, as `POST /run` does: a spoken turn honours the
 switch, and a spoken answer is replayed against the list current when the person spoke. The daemon keeps
