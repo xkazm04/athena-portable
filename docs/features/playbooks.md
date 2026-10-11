@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The ninety-eight playbooks (latest runs, Claude Sonnet)
+## The ninety-nine playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -141,9 +141,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A school district's Form 471s for funding year 2026 filed with the lowest eligible bid for four services, one a switch bid that came only by mail, while the vendor that drafted a Form 470, a Form 470 posted 11 days earlier, bus Wi-Fi, Chromebooks, a service already filed, a consultant's share and a gift card are left out | work | 4 | exceeds: 4 of 4, $43,600.00 of $43,600.00 (80 percent of each bid's price, an exposure and not money recovered), 12 of 12 traps, 0 false, 1.7 min, $1.20 |
 | A grain farm's 2026 acreage report filed field by field before 15 July, as farmed and not as insured or as last year: a flooded corn plan replanted to soybeans, a 60 percent share lease, prevented planting and soybeans after wheat, while rented-out, custom, sold, idle and future ground, wheat on file and a paid filing service are left out | work | 4 | exceeds: 7 of 7, $132.65 of $132.65 (18.95 dollars a field line, an hour of farm labour, a price avoided and not money recovered), 8 of 8 traps, 0 false, 2.3 min, $1.69 |
 | A kitchen nonprofit's restricted funds released as their terms are met: a cooler in service, a gift whose date a mailed amendment moved up, 6,300 dollars of a meals gift and 9,400 and 5,700 dollars of two conditional grants, with two booked releases reported to funders, while a van, a gift for 2028, a date moved later, stipends, a board reserve, an endowment, a grant 104 of 150 earned, a repeat report and a consultant are left out | work | 6 | exceeds: 7 of 7, $74,600.00 of $74,600.00 (the dollars each act releases or reports, an exposure and not money recovered), 10 of 10 traps, 0 false, 2.8 min, $1.70 |
+| A small firm's solicitations triaged on Friday 9 October 2026: six kept, one because a mailed amendment changed its set-aside, and four questions sent before their deadlines, while set-asides it does not hold, a size standard it exceeds, a plan over the 50 percent limit, dead notices, a local-only bid, late questions and paid services are left out | work | 4 | exceeds: 10 of 10, $10.00 of $10.00 (a 1 dollar count weight, a price avoided and not money recovered), 12 of 12 traps, 0 false, 2.4 min, $1.92 |
 
-Across the latest runs: $1,437,052 of $1,496,129 found, 1015 of 1015 traps walked past, no false claim,
-255 minutes of her time against about 355 hours by hand, $157.67 of model time. 138 runs are recorded
+Across the latest runs: $1,437,062 of $1,496,139 found, 1027 of 1027 traps walked past, no false claim,
+258 minutes of her time against about 357 hours by hand, $159.60 of model time. 139 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

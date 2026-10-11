@@ -1,0 +1,154 @@
+{
+  "id": "bid-opportunity-triage",
+  "title": "A small firm triages solicitations on 9 October 2026: six are kept, one because a mailed amendment changed its set-aside, and four questions go in on time, while set-asides it lacks, a size standard it exceeds, a plan over the 50 percent limit, dead notices, a local-only bid, late questions and paid services are left alone",
+  "domain": "Government contracting",
+  "audience": "work",
+  "promise": "A small IT and facilities firm's week of new solicitations is read across a federal opportunities page, a county purchasing portal, its own records and its mail, and each is kept or left alone the way the rules decide it. Kept are a help desk bid, a condition-survey bid that its latest year's receipts would seem to rule out but its five-year average does not, an IT asset bid, and a facilities-support bid posted for service-disabled veterans that a mailed amendment turned into a small business set-aside, and two county bids open to all. Questions go in before their deadlines on three of the federal bids, the facilities-support one on a deadline only that amendment gives, and on one county bid. Left alone are the set-asides for service-disabled veterans, HUBZone firms and 8(a) participants that the firm is not certified for (one of them a bid a mailed amendment moved to 8(a)), a bid whose NAICS size standard its average receipts exceed, a janitorial bid whose teaming plan gives a large business 70 percent against the 50 percent limit, a cancelled notice, a closed one, a county bid reserved for local firms, two questions past their deadlines and two paid services that want a reply of YES.",
+  "persona": "The owner and president of a 96-person IT support and facilities services firm, who decides each week which new solicitations to chase",
+  "chore": "Read each federal solicitation's set-aside, NAICS code, size standard, status, questions deadline and what its Sections L and M ask; each county notice and who may bid on it; the firm's own size record, NAICS codes, certifications, past performance, bid policy and worksheet of teaming plans and open questions; and the mail, where two amendments arrived only by post. Then apply the rules as they stand on 9 October 2026: FAR Part 19 as agencies apply it by class deviation (the Revolutionary FAR Overhaul model text), 13 CFR 121.104 and 121.106 (how size is measured), 13 CFR 121.201 (SBA's table of size standards effective 17 March 2023), 13 CFR 125.6 (limitations on subcontracting) and each solicitation's own Section L. Keep each solicitation the firm can win, and send its open question before its questions deadline as the latest amendment states it.",
+  "command": "I'm Marian Oyelaran, I run Larkfield Systems & Services. Go through Noticewick, Bidmoor, Contractdesk and Postwren and triage this week's solicitations: keep each one we can win under our policy, send our open questions before their deadlines, and leave the rest alone. Don't submit any offer, and don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Noticewick",
+      "role": "the federal opportunities page: each solicitation's set-aside, NAICS code, size standard, status, dates and posted amendments, the rules, and the page that sends the contracting officer a question",
+      "api": "Opportunities page, no integration with the firm's records",
+      "url": ""
+    },
+    {
+      "name": "Bidmoor",
+      "role": "Eastmere County's purchasing notices: who may bid, the questions deadline and proposals due, and the page that sends the county's buyer a question",
+      "api": "County portal only",
+      "url": ""
+    },
+    {
+      "name": "Contractdesk",
+      "role": "the firm's own records (receipts by year, NAICS codes, certifications, past performance), its bid policy, its worksheet of teaming plans and open questions, and the bid list",
+      "api": "Records and bid list, no feed from the opportunity pages",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the firm's mail: two amendments that came only by post, a county confirmation and two paid services' offers",
+      "api": "Mail, not data",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules and every solicitation in Noticewick: set-aside as posted, NAICS code, size standard, status and dates.",
+    "Reads the county's rules and notices in Bidmoor.",
+    "Reads the firm's size record, certifications, past performance, policy and worksheet in Contractdesk.",
+    "Reads the mail in Postwren and takes the two amendments that changed a set-aside and a questions deadline.",
+    "Keeps each solicitation the firm can win in Contractdesk, and sends the open questions in Noticewick and Bidmoor before their deadlines."
+  ],
+  "gates": [
+    {
+      "action": "keep_for_bid",
+      "label": "Keep a solicitation for a bid",
+      "why": "The bid team is notified and starts reading Sections L and M and drafting; a bid kept in error costs the firm days of work, and no offer is submitted."
+    },
+    {
+      "action": "send_question",
+      "label": "Send a question to a contracting officer",
+      "why": "It goes to the government under the firm's name, once, and the answer is shared with every offeror."
+    },
+    {
+      "action": "submit_question",
+      "label": "Send a question to the county's buyer",
+      "why": "It goes to the county under the firm's name, and the answer is posted for every vendor."
+    },
+    {
+      "action": "reply_message",
+      "label": "Reply to a message",
+      "why": "The sender receives it; a reply of YES to a paid service accepts its terms."
+    }
+  ],
+  "traps": [
+    "Keeping a bid set aside for service-disabled veteran-owned or HUBZone firms, which the firm is not certified as.",
+    "Keeping a total small business bid in NAICS 238220, whose 19.0 million dollar size standard the firm's five-year average receipts of 21.4 million exceeds.",
+    "Keeping a janitorial bid whose teaming plan gives a large business 70 percent of the price, over the 50 percent limit.",
+    "Keeping a cancelled notice, a closed one, and a bid a mailed amendment moved to an 8(a) set-aside.",
+    "Keeping a county bid reserved for local business enterprises.",
+    "Sending a question past its deadline on a federal bid or a county notice.",
+    "Replying YES to a proposal-writing service or a bid-matching subscription."
+  ],
+  "memory": [
+    "Each solicitation's set-aside, NAICS code, size standard, status and dates, carried from Noticewick and Bidmoor.",
+    "The firm's receipts by year, certifications, past performance, plans and open questions, carried from Contractdesk.",
+    "What each mailed amendment changed, carried from Postwren into the Contractdesk and Noticewick tabs."
+  ],
+  "economics": {
+    "value_usd": 0,
+    "per": "year",
+    "basis": "Mostly minutes, and the roster's $0 a year: triaging solicitations recovers no money; it keeps a small firm from spending bid-team days on awards it cannot take, and from missing the questions window on ones it can. Per ADR 0056's 2026-10-09 amendment, each of the ten truth items (six kept, four questions) is weighted $1, a count weight: bid-matching is sold by subscription and no public price per bid kept or question sent was found, so the weight is a price avoided, not money recovered, and value_usd stays 0. By hand, one week's fourteen solicitations take about 120 minutes: the posted notices, the size record averaged over five years against each NAICS code's standard, each teaming plan against the 50 percent limit, the certifications against each set-aside, the mail's two amendments, and the questions. Times a year: 52, one sweep of new notices a week; 120 minutes a week is about 104 hours, about 100 hours a year. The rules applied, as they stand on Friday 9 October 2026 (read on 11 October 2026): FAR Part 19, which agencies apply by class deviation using the Revolutionary FAR Overhaul model text (the Part 19 model text released 26 September 2025; GSA from 3 November 2025, DoD from 1 February 2026, DHS and Treasury by their own deviations), the formal rulemaking for Part 19 not yet published; its set-aside categories and certifications (19.105-1 HUBZone, 19.106-1 SDVOSB, 19.107-1 WOSB, 19.108-2 8(a), each verified in SAM or SBA's systems), 19.103 (one NAICS code and size standard in effect on the issue date; size as of the offer with its price); 13 CFR 121.104 (annual receipts averaged over the most recently completed five fiscal years), 121.106 (employees averaged over the preceding 24 months), 121.201 and SBA's table of size standards effective 17 March 2023 (541512, 34.0 million dollars; 541330, 25.5 million; 561210, 47.0 million; 561720, 22.0 million; 238220, 19.0 million); 13 CFR 125.6(a)(1) and 125.1 (a services set-aside prime may not pay more than 50 percent of the amount paid to it to firms that are not similarly situated; for a small business set-aside a similarly situated firm is a small business) and clause 52.219-14; and the uniform contract format's Section L (instructions to offerors) and Section M (evaluation factors), FAR 15.204-5. Every solicitation, county notice and its deadline is invented. SBA's proposed overhaul of its size standards (published 20 August 2026, comments closed 21 September 2026) is not in force, so the 2023 table applies.",
+    "manual_minutes": 120,
+    "times_per_year": 52,
+    "incumbent": "Bid-matching services are sold by subscription, not by share: DemandStar's national plan is $2,699 a year and its county plans start at $60 a year, per its pricing page; proposal writers charge by the proposal. No incumbent takes a percentage of anything, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "Acquisition.gov, the Revolutionary FAR Overhaul, FAR Part 19 model deviation text: rule of two (19.104-1), NAICS code and size standard (19.103), HUBZone, SDVOSB, WOSB and 8(a) verification (19.105-1, 19.106-1, 19.107-1, 19.108-2)",
+        "url": "https://www.acquisition.gov/far-overhaul/far-part-deviation-guide/far-overhaul-part-19"
+      },
+      {
+        "label": "SmallGovCon, FAR 2.0 update: deviations and current status (DoD Class Deviation 2026-O0037 applies the RFO Part 19 from 1 February 2026; the FAR not yet revised by rulemaking)",
+        "url": "https://smallgovcon.com/statutes-and-regulations/far-2-0-update-deviations-and-current-status/"
+      },
+      {
+        "label": "DHS FAR Class Deviation 26-03, Revision 1: follow the RFO Part 19 model deviation text instead of codified FAR Part 19",
+        "url": "https://www.dhs.gov/sites/default/files/2025-11/25-1110-cpo-far-class-dev-26-03-r1-part-19.pdf"
+      },
+      {
+        "label": "FAR 15.204-5: Section L (instructions, conditions and notices to offerors) and Section M (evaluation factors) of the uniform contract format",
+        "url": "https://www.acquisition.gov/far/15.204-5"
+      },
+      {
+        "label": "13 CFR 121.104: how annual receipts are computed (the most recently completed five fiscal years, divided by 5), as Cornell's copy of the eCFR holds it",
+        "url": "https://www.law.cornell.edu/cfr/text/13/121.104"
+      },
+      {
+        "label": "13 CFR 121.106: how the number of employees is computed (the preceding 24 months), as Cornell's copy holds it",
+        "url": "https://www.law.cornell.edu/cfr/text/13/121.106"
+      },
+      {
+        "label": "13 CFR 121.201: size standards by NAICS code, as Cornell's copy holds them",
+        "url": "https://www.law.cornell.edu/cfr/text/13/121.201"
+      },
+      {
+        "label": "SBA, Table of Size Standards, effective 17 March 2023",
+        "url": "https://legacy.sba.gov/document/support-table-size-standards"
+      },
+      {
+        "label": "13 CFR 125.6: prime contractor performance requirements (limitations on subcontracting), as Cornell's copy holds it",
+        "url": "https://www.law.cornell.edu/cfr/text/13/125.6"
+      },
+      {
+        "label": "13 CFR 125.1: the definition of a similarly situated entity",
+        "url": "https://www.law.cornell.edu/cfr/text/13/125.1"
+      },
+      {
+        "label": "FAR 19.102: size standards and NAICS codes, with the pointer to 13 CFR 121.201",
+        "url": "https://www.acquisition.gov/far/19.102"
+      },
+      {
+        "label": "Mayer Brown, SBA proposes major overhaul of small business size standards (proposed 20 August 2026, comments to 21 September 2026; current standards stay in effect until a final rule)",
+        "url": "https://www.mayerbrown.com/en/insights/publications/2026/08/sba-proposes-major-overhaul-of-small-business-size-standards-for-federal-contracts"
+      },
+      {
+        "label": "DemandStar, supplier pricing: a bid-matching subscription is priced by plan, not by share",
+        "url": "https://network.demandstar.com/pricing-suppliers/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "The answer for each solicitation is split across four places no integration joins: the notice says what is set aside and its size standard, the firm's records give five years of receipts to average, the worksheet gives a teaming plan to hold against the 50 percent limit, and the mail holds two amendments the notices do not show, one that opens a set-aside the firm could not take and one that closes one it could. A year of receipts above a standard does not make the firm large, and a questions deadline that has passed can be reopened by an amendment.",
+    "usefulness_why": "Saves a small firm about two hours a week of reading and arithmetic and the bid-team days spent on awards it cannot take, but recovers no money, and a missed bid is a missed chance rather than a loss."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful owner with the notices, the records, the worksheet and the mail in hand gets most of it: the bids she can win kept, the questions sent inside their deadlines, the set-asides she does not hold, the size she exceeds and the plan over the limit left alone, inside an hour."
+  },
+  "caveat": "Marian Oyelaran, Larkfield Systems & Services LLC, Eastmere County, every agency office, solicitation, county notice, subcontractor, proposal writer and bid-matching service named here, and the portals Noticewick, Bidmoor, Contractdesk and Postwren are invented, and so is every receipts figure, plan, amendment, date and deadline. Noticewick is an invented stand-in for the federal contract opportunities page and Bidmoor for a county purchasing portal, and nothing in the world presents either as an agency's; Eastmere County's purchasing code, including its reserve for local businesses, is invented. The public rules applied are FAR Part 19 as agencies apply it on Friday 9 October 2026, by class deviation using the Revolutionary FAR Overhaul model text (the codified Part 19 has not been replaced by rulemaking, and agencies' deviations differ in date and detail), 13 CFR 121.104, 121.106, 121.201 and 125.6, and SBA's table of size standards effective 17 March 2023; the 13 CFR sections were read in Cornell's copy of the eCFR on 11 October 2026, and SBA's proposed new size standards of 20 August 2026 are not in force. Each solicitation's own Sections L and M and its amendments decide what it asks, and the contracting officer, SBA's size determination and certification, the agency's class deviation and the county's code decide real cases. The world does not test which NAICS codes a women-owned set-aside may use. This applies stated rules to stated facts; it is not legal, procurement, accounting or tax advice."
+}

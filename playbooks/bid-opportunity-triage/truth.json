@@ -1,0 +1,87 @@
+{
+  "targets": [
+    {
+      "tool": "keep_for_bid",
+      "key": "solicitation_id",
+      "eligible": {
+        "BL-101": {
+          "value_usd": 1.0,
+          "why": "Total small business set-aside, NAICS 541512, size standard 34.0 million dollars; Larkfield's five-year average is (14.2 + 17.9 + 22.6 + 24.1 + 28.2) / 5 = 21.4 million, so it is small. Active; the plan gives a large business 45 percent, within the 50 percent limit; two help desk references of 150 users or more (past performance 1 and 2). Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+        },
+        "BL-102": {
+          "value_usd": 1.0,
+          "why": "Posted as an SDVOSB set-aside the firm cannot take, but Amendment 0002, which came only by post (M-1), changes it to total small business: NAICS 561210, size standard 47.0 million dollars, so the firm at 21.4 million is small. The plan gives a large business 38 percent, within 50 percent; one 240,000 square foot reference (past performance 3). Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+        },
+        "BL-103": {
+          "value_usd": 1.0,
+          "why": "Total small business, NAICS 541330, size standard 25.5 million dollars. FY2025 receipts of 28.2 million are above it but size is the five-year average, 21.4 million, which is not. The plan gives a large business 30 percent; one reference of 31 buildings (past performance 4). Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+        },
+        "BL-111": {
+          "value_usd": 1.0,
+          "why": "Total small business, NAICS 541512, 34.0 million dollars; average 21.4 million. Active, offers due Fri 30 Oct 2026; the plan gives a large business 40 percent; one reference of 7,200 items (past performance 6). Its questions deadline has passed, which bars a question, not the bid. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+        },
+        "PN-201": {
+          "value_usd": 1.0,
+          "why": "Eastmere County, open to all registered vendors; Larkfield has been registered since 2022 and is active until 31 Dec 2026 (M-5). Two public-sector IT support references (past performance 1 and 2). Federal size does not matter to a county notice. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+        },
+        "PN-203": {
+          "value_usd": 1.0,
+          "why": "Eastmere County, open to all registered vendors, proposals due Fri 23 Oct 2026; one records-scanning reference of 1.8 million pages (past performance 5). Its questions deadline has passed, which bars a question, not the bid. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+        }
+      },
+      "traps": {
+        "BL-104": "Total small business, NAICS 561720, 22.0 million dollars, and the firm at 21.4 million is small; but the worksheet plan gives Hollis & Crane Building Services, a large business, 70 percent of the price, over the 50 percent limit of 13 CFR 125.6(a)(1) that clause 52.219-14 carries, so the plan cannot meet it",
+        "BL-105": "An SDVOSB set-aside; Larkfield holds no SBA certification as one (records, certifications)",
+        "BL-106": "A HUBZone set-aside; Larkfield holds no HUBZone certification",
+        "BL-107": "Total small business, but NAICS 238220 has a size standard of 19.0 million dollars and Larkfield's five-year average is 21.4 million, over it: not small for this solicitation",
+        "BL-108": "Cancelled by the agency on Fri 2 Oct 2026; no offers will be accepted",
+        "BL-109": "Closed: offers were due Tue 6 Oct 2026 and are in",
+        "BL-112": "Posted as total small business, but Amendment 0003, which came only by post (M-3), changes it to an 8(a) set-aside; Larkfield is not an 8(a) participant",
+        "PN-202": "Reserved for Eastmere County Local Business Enterprises; Larkfield's principal office is in Ashgrove, Corran County, and it is not an LBE, so a proposal would be returned unread"
+      }
+    },
+    {
+      "tool": "send_question",
+      "key": "solicitation_id",
+      "eligible": {
+        "BL-101": {
+          "value_usd": 1.0,
+          "why": "The worksheet's open question for a solicitation the firm can win; the questions deadline is Fri 16 Oct 2026, 2:00 p.m. Central, a week away. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+        },
+        "BL-102": {
+          "value_usd": 1.0,
+          "why": "The posted questions deadline, Thu 8 Oct 2026, has passed, but Amendment 0002, which came only by post (M-1), moves it to Wed 14 Oct 2026, 12:00 noon Central; the worksheet's open question goes in before then. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+        },
+        "BL-103": {
+          "value_usd": 1.0,
+          "why": "The worksheet's open question for a solicitation the firm can win; the questions deadline is Wed 21 Oct 2026, 12:00 noon Eastern. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+        }
+      },
+      "traps": {
+        "BL-111": "The questions deadline was Wed 7 Oct 2026, 3:00 p.m. Eastern; the question would be two days late and the contracting officer answers none received after it"
+      }
+    },
+    {
+      "tool": "submit_question",
+      "key": "notice_id",
+      "eligible": {
+        "PN-201": {
+          "value_usd": 1.0,
+          "why": "The worksheet's open question for a county notice the firm can bid; the deadline is Tue 20 Oct 2026, 3:00 p.m. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+        }
+      },
+      "traps": {
+        "PN-203": "The county's questions deadline was Mon 5 Oct 2026, 3:00 p.m.; the buyer answers none received after it"
+      }
+    },
+    {
+      "tool": "reply_message",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-2": "Pennant Proposal Partners wants 6,500 dollars a proposal paid in full on a reply of YES; the bid policy says the firm does not buy proposal-writing services, and a reply would accept it",
+        "M-4": "Tenderfox Alerts wants a subscription of 149 dollars a month on a reply of YES; the bid policy says the firm does not buy bid-matching services, and a reply would accept it"
+      }
+    }
+  ]
+}

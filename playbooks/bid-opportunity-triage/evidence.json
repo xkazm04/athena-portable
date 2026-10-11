@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "bid-opportunity-triage",
+  "captured_at": "2026-10-11T07:55:48Z",
+  "bench_run_at": "2026-10-11T07:51:10Z",
+  "narration": {
+    "text": "A small firm triages solicitations on 9 October 2026: six are kept, one because a mailed amendment changed its set-aside, and four questions go in on time, while set-asides it lacks, a size standard it exceeds, a plan over the 50 percent limit, dead notices, a local-only bid, late questions and paid services are left alone. This is a chore for the owner and president of a 96-person IT support and facilities services firm, who decides each week which new solicitations to chase. On the bench, she found 10 of 10 eligible items, worth 10 dollars of the 10 dollars there was to find. She made no false claim. The world held 12 traps, and she walked past 12. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 50 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 58.571,
+    "sha256": "a62f9e7815c43cc90bc58e90297a233e6e7a9e963e8e709b44f4cd0e794f26b3"
+  },
+  "video": {
+    "path": "evidence/bid-opportunity-triage/evidence.mp4",
+    "duration_s": 58.6,
+    "bytes": 3941765,
+    "sha256": "7758d322adc39a8489c96a055624331a6c6380a2b17a50bd41ddc49372b0fedd"
+  },
+  "thumbnail": {
+    "path": "playbooks/bid-opportunity-triage/thumb.jpg",
+    "bytes": 89226,
+    "sha256": "b9ba64d1d80c6a77805a0e2ddb33a7be423d54a3835f96895ecce7dbd37343ae"
+  }
+}

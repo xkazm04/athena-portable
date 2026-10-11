@@ -1,0 +1,461 @@
+{
+  "playbook": "bid-opportunity-triage",
+  "run_at": "2026-10-11T07:51:10Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 145.0,
+  "turns": 16,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 47,
+  "cost_usd": 1.9242,
+  "your_time_s": 300,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.4
+  },
+  "score": {
+    "eligible": 10,
+    "found": 10,
+    "exact": 10,
+    "value_total_usd": 10.0,
+    "value_found_usd": 10.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 12,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "keep_for_bid",
+        "key": "BL-104",
+        "why": "Total small business, NAICS 561720, 22.0 million dollars, and the firm at 21.4 million is small; but the worksheet plan gives Hollis & Crane Building Services, a large business, 70 percent of the price, over the 50 percent limit of 13 CFR 125.6(a)(1) that clause 52.219-14 carries, so the plan cannot meet it",
+        "filed": false
+      },
+      {
+        "action": "keep_for_bid",
+        "key": "BL-105",
+        "why": "An SDVOSB set-aside; Larkfield holds no SBA certification as one (records, certifications)",
+        "filed": false
+      },
+      {
+        "action": "keep_for_bid",
+        "key": "BL-106",
+        "why": "A HUBZone set-aside; Larkfield holds no HUBZone certification",
+        "filed": false
+      },
+      {
+        "action": "keep_for_bid",
+        "key": "BL-107",
+        "why": "Total small business, but NAICS 238220 has a size standard of 19.0 million dollars and Larkfield's five-year average is 21.4 million, over it: not small for this solicitation",
+        "filed": false
+      },
+      {
+        "action": "keep_for_bid",
+        "key": "BL-108",
+        "why": "Cancelled by the agency on Fri 2 Oct 2026; no offers will be accepted",
+        "filed": false
+      },
+      {
+        "action": "keep_for_bid",
+        "key": "BL-109",
+        "why": "Closed: offers were due Tue 6 Oct 2026 and are in",
+        "filed": false
+      },
+      {
+        "action": "keep_for_bid",
+        "key": "BL-112",
+        "why": "Posted as total small business, but Amendment 0003, which came only by post (M-3), changes it to an 8(a) set-aside; Larkfield is not an 8(a) participant",
+        "filed": false
+      },
+      {
+        "action": "keep_for_bid",
+        "key": "PN-202",
+        "why": "Reserved for Eastmere County Local Business Enterprises; Larkfield's principal office is in Ashgrove, Corran County, and it is not an LBE, so a proposal would be returned unread",
+        "filed": false
+      },
+      {
+        "action": "send_question",
+        "key": "BL-111",
+        "why": "The questions deadline was Wed 7 Oct 2026, 3:00 p.m. Eastern; the question would be two days late and the contracting officer answers none received after it",
+        "filed": false
+      },
+      {
+        "action": "submit_question",
+        "key": "PN-203",
+        "why": "The county's questions deadline was Mon 5 Oct 2026, 3:00 p.m.; the buyer answers none received after it",
+        "filed": false
+      },
+      {
+        "action": "reply_message",
+        "key": "M-2",
+        "why": "Pennant Proposal Partners wants 6,500 dollars a proposal paid in full on a reply of YES; the bid policy says the firm does not buy proposal-writing services, and a reply would accept it",
+        "filed": false
+      },
+      {
+        "action": "reply_message",
+        "key": "M-4",
+        "why": "Tenderfox Alerts wants a subscription of 149 dollars a month on a reply of YES; the bid policy says the firm does not buy bid-matching services, and a reply would accept it",
+        "filed": false
+      }
+    ],
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "keep_for_bid",
+      "key": "BL-101",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "Total small business set-aside, NAICS 541512, size standard 34.0 million dollars; Larkfield's five-year average is (14.2 + 17.9 + 22.6 + 24.1 + 28.2) / 5 = 21.4 million, so it is small. Active; the plan gives a large business 45 percent, within the 50 percent limit; two help desk references of 150 users or more (past performance 1 and 2). Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+    },
+    {
+      "action": "keep_for_bid",
+      "key": "BL-102",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "Posted as an SDVOSB set-aside the firm cannot take, but Amendment 0002, which came only by post (M-1), changes it to total small business: NAICS 561210, size standard 47.0 million dollars, so the firm at 21.4 million is small. The plan gives a large business 38 percent, within 50 percent; one 240,000 square foot reference (past performance 3). Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+    },
+    {
+      "action": "keep_for_bid",
+      "key": "BL-103",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "Total small business, NAICS 541330, size standard 25.5 million dollars. FY2025 receipts of 28.2 million are above it but size is the five-year average, 21.4 million, which is not. The plan gives a large business 30 percent; one reference of 31 buildings (past performance 4). Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+    },
+    {
+      "action": "keep_for_bid",
+      "key": "BL-111",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "Total small business, NAICS 541512, 34.0 million dollars; average 21.4 million. Active, offers due Fri 30 Oct 2026; the plan gives a large business 40 percent; one reference of 7,200 items (past performance 6). Its questions deadline has passed, which bars a question, not the bid. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+    },
+    {
+      "action": "keep_for_bid",
+      "key": "PN-201",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "Eastmere County, open to all registered vendors; Larkfield has been registered since 2022 and is active until 31 Dec 2026 (M-5). Two public-sector IT support references (past performance 1 and 2). Federal size does not matter to a county notice. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+    },
+    {
+      "action": "keep_for_bid",
+      "key": "PN-203",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "Eastmere County, open to all registered vendors, proposals due Fri 23 Oct 2026; one records-scanning reference of 1.8 million pages (past performance 5). Its questions deadline has passed, which bars a question, not the bid. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+    },
+    {
+      "action": "send_question",
+      "key": "BL-101",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "The worksheet's open question for a solicitation the firm can win; the questions deadline is Fri 16 Oct 2026, 2:00 p.m. Central, a week away. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+    },
+    {
+      "action": "send_question",
+      "key": "BL-102",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "The posted questions deadline, Thu 8 Oct 2026, has passed, but Amendment 0002, which came only by post (M-1), moves it to Wed 14 Oct 2026, 12:00 noon Central; the worksheet's open question goes in before then. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+    },
+    {
+      "action": "send_question",
+      "key": "BL-103",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "The worksheet's open question for a solicitation the firm can win; the questions deadline is Wed 21 Oct 2026, 12:00 noon Eastern. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+    },
+    {
+      "action": "submit_question",
+      "key": "PN-201",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "The worksheet's open question for a county notice the firm can bid; the deadline is Tue 20 Oct 2026, 3:00 p.m. Weighted at $1, a count weight: no public per-act price was found (bid-matching is sold by subscription, not by act), so the weight is a price avoided, not money recovered (ADR 0056, 2026-10-09 amendment)"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I'm filing the PN-201 question now. Its deadline is Tue 20 Oct, 3:00 p.m., so it's in time.\n\n\nNine cards were already waiting, and this is the tenth. Nothing has been kept or sent yet, because each runs only when you answer its card.\n\n**Per solicitation**\n\n| ID | Keep | Question | Why |\n|---|---|---|---|\n| BL-101 | Card filed | Card filed (due 16 Oct) | Active, small business, within the size standard, and 45% to a large business. |\n| BL-102 | Card filed | Card filed (due 14 Oct, noon CT) | Mailed Amendment 0002 changed the set-aside from SDVOSB to total small business and moved the questions deadline to 14 Oct. The 38% large-business share is within the limit. |\n| BL-103 | Card filed | Card filed (due 21 Oct) | Small business set-aside, within the size standard, and 30% to a large business. |\n| BL-111 | Card filed | Not sent | Kept for the same reasons (40% to a large business). Its que",
+  "trace": [
+    {
+      "portal": "Noticewick",
+      "user": "I'm Marian Oyelaran; I run Larkfield Systems & Services. Start in Noticewick: read the rules, every page of this week's federal solicitations, and open each one for its set-aside, NAICS code and size standard, status and dates. Read only; k",
+      "continued": false,
+      "said": "Starting with the rules and the first page of solicitations.",
+      "said_chars": 60,
+      "reads": [
+        "read_federal_rules",
+        "list_solicitations"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Noticewick",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 of 3 is read; I'm fetching pages 2 and 3 and the rules topics now.",
+      "said_chars": 73,
+      "reads": [
+        "list_solicitations",
+        "list_solicitations",
+        "read_federal_rules",
+        "read_federal_rules",
+        "read_federal_rules",
+        "read_federal_rules",
+        "read_federal_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Noticewick",
+      "user": "",
+      "continued": true,
+      "said": "All 11 solicitations are listed (BL-110 is not among them), and the rules are read. Next I'll open each solicitation for its size standard, dates and amendments.",
+      "said_chars": 161,
+      "reads": [
+        "view_solicitation",
+        "view_solicitation",
+        "view_solicitation",
+        "view_solicitation",
+        "view_solicitation",
+        "view_solicitation",
+        "view_solicitation",
+        "view_solicitation",
+        "view_solicitation",
+        "view_solicitation",
+        "view_solicitation"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Noticewick",
+      "user": "",
+      "continued": true,
+      "said": "Noticewick is fully read: all 11 solicitations, with the rules and each notice opened. I have kept nothing and asked nothing.\n\n| ID | Set-aside | NAICS / size standard | Status | Questions due (2026) | Offers due |\n|---|---|---|---|---|---|\n| BL-101 | Total small business | 541512 / $34.0M receipts | Active | Fri 16 Oct, 2pm CT | 6 Nov |\n| BL-102 | SDVOSB | 561210 / $47.0M | Active | **Thu 8 Oct, noon CT (passed)** | 6 Nov |\n| BL-103 | Total small business | 541330 / $25.5M receipts | Active | Wed 21 Oct, noon ET",
+      "said_chars": 2726,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Bidmoor",
+      "user": "Bidmoor has Eastmere County's notices. Read the rules and open every notice.",
+      "continued": false,
+      "said": "Reading the county's rules and the notice list first, then I'll open each notice.",
+      "said_chars": 81,
+      "reads": [
+        "read_county_rules",
+        "read_county_rules",
+        "read_county_rules",
+        "read_county_rules",
+        "list_notices"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Bidmoor",
+      "user": "",
+      "continued": true,
+      "said": "Three notices are listed. I'll open each one.",
+      "said_chars": 45,
+      "reads": [
+        "view_notice",
+        "view_notice",
+        "view_notice"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Bidmoor",
+      "user": "",
+      "continued": true,
+      "said": "Bidmoor is read: the rules and all 3 county notices (showing 3 of 3). I've kept nothing and asked nothing.\n\n| ID | Who may bid | Questions due | Proposals due | Status for Larkfield |\n|---|---|---|---|---|\n| PN-201 | Open to all registered vendors | Tue 20 Oct, 3:00 p.m. | Fri 13 Nov | Open. You're a registered vendor. It needs two public-sector IT support references. |\n| PN-202 | Reserved: Local Business Enterprise | Tue 20 Oct, 3:00 p.m.",
+      "said_chars": 1461,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Contractdesk",
+      "user": "Contractdesk is our own records and policy. Read the policy, every record, and every page of the bid worksheet. Keep nothing yet.",
+      "continued": false,
+      "said": "I'll read the bid policy, all five firm record topics and the first worksheet page now. I'll keep nothing and ask nothing.",
+      "said_chars": 122,
+      "reads": [
+        "read_bid_policy",
+        "read_bid_policy",
+        "read_bid_policy",
+        "read_firm_records",
+        "read_firm_records",
+        "read_firm_records",
+        "read_firm_records",
+        "read_firm_records",
+        "read_bid_worksheet"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Contractdesk",
+      "user": "",
+      "continued": true,
+      "said": "Policy and records are read, and worksheet page 1 of 3 is in. I'm fetching pages 2 and 3 now and have kept nothing.",
+      "said_chars": 115,
+      "reads": [
+        "read_bid_worksheet",
+        "read_bid_worksheet"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Contractdesk",
+      "user": "",
+      "continued": true,
+      "said": "Contractdesk is fully read: the policy, all five record topics and all 3 worksheet pages (14 of 14 rows). I've kept nothing and asked nothing.\n\n**Policy.** Keep a solicitation only if all of these hold on its latest amendment:\n- It is active.\n- Larkfield holds the set-aside category, or the notice is open to all.\n- Larkfield is within the size standard.\n- For a services set-aside, the share going to firms that aren't similarly situated is 50% or less.\n- A reserved county notice is one Larkfield belongs to.",
+      "said_chars": 2750,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "Postwren is our mail. Read every message, the scanned letters too. Don't reply to anyone.",
+      "continued": false,
+      "said": "I'll start by listing the inbox. It shows three messages to a page, so I'm requesting several pages at once.",
+      "said_chars": 108,
+      "reads": [
+        "list_messages",
+        "list_messages",
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "Five messages in total. Next I'll read all of them.",
+      "said_chars": 51,
+      "reads": [
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message",
+        "read_message"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "All five messages are read, and I haven't replied to anyone. Two scanned letters change the picture, and one of them turns BL-102 into a solicitation we can win.\n\n- **M-1, BL-102 (GSA Plains Field Office):** Amendment 0002 was issued 5 Oct and arrived by post on 8 Oct. It changes the set-aside from SDVOSB to total small business. It moves the questions deadline to Wed 14 Oct, 12:00 noon Central, and offers are now due Fri 13 Nov. NAICS 561210 and the $47.0M standard are unchanged.",
+      "said_chars": 2541,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Contractdesk",
+      "user": "Back in Contractdesk, keep for a bid each solicitation, federal and county, that our policy and the latest amendment let us keep. Keep nothing else.",
+      "continued": false,
+      "said": "I'm filing six keeps: BL-101, BL-102, BL-103, BL-111, PN-201 and PN-203. Each is active, passes the set-aside, size and 50% plan tests on its latest amendment, and is a category Larkfield holds or open to all. I'm also recalling the Noticewick detail for BL-105 to 109, which isn't in this turn.\n\n\n**Left alone:**\n- **BL-104:** 70% of the price goes to a large business, over the 50% limit.\n- **BL-112:** Amendment 0003 made it 8(a)-only, and Larkfield isn't 8(a).",
+      "said_chars": 1833,
+      "reads": [],
+      "cards": [
+        {
+          "action": "keep_for_bid",
+          "key": "BL-101",
+          "outcome": "correct",
+          "value_usd": 1.0
+        },
+        {
+          "action": "keep_for_bid",
+          "key": "BL-102",
+          "outcome": "correct",
+          "value_usd": 1.0
+        },
+        {
+          "action": "keep_for_bid",
+          "key": "BL-103",
+          "outcome": "correct",
+          "value_usd": 1.0
+        },
+        {
+          "action": "keep_for_bid",
+          "key": "BL-111",
+          "outcome": "correct",
+          "value_usd": 1.0
+        },
+        {
+          "action": "keep_for_bid",
+          "key": "PN-201",
+          "outcome": "correct",
+          "value_usd": 1.0
+        },
+        {
+          "action": "keep_for_bid",
+          "key": "PN-203",
+          "outcome": "correct",
+          "value_usd": 1.0
+        }
+      ]
+    },
+    {
+      "portal": "Noticewick",
+      "user": "In Noticewick, send each open question on our worksheet for a federal solicitation we can win, before its questions deadline as the latest amendment states it.",
+      "continued": false,
+      "said": "I need the exact worksheet question texts, so I'm recalling them first.\n\nThree questions are going in on federal solicitations Larkfield can win, each before its deadline. I'm skipping the BL-111 question, because its questions deadline passed on 7 Oct and no amendment moves it.\n\n- **BL-101:** due Fri 16 Oct, 2pm CT.\n- **BL-102:** due Wed 14 Oct, noon CT under mailed Amendment 0002. The posted Section L date of 8 Oct has passed, so the amendment is what makes this question timely.",
+      "said_chars": 768,
+      "reads": [],
+      "cards": [
+        {
+          "action": "send_question",
+          "key": "BL-101",
+          "outcome": "correct",
+          "value_usd": 1.0
+        },
+        {
+          "action": "send_question",
+          "key": "BL-102",
+          "outcome": "correct",
+          "value_usd": 1.0
+        },
+        {
+          "action": "send_question",
+          "key": "BL-103",
+          "outcome": "correct",
+          "value_usd": 1.0
+        }
+      ]
+    },
+    {
+      "portal": "Bidmoor",
+      "user": "In Bidmoor, send the worksheet's open question for a county notice we can win, if its deadline has not passed. Then tell me, for each solicitation, whether you kept it and sent its question, and why you left the rest alone.",
+      "continued": false,
+      "said": "I'm filing the PN-201 question now. Its deadline is Tue 20 Oct, 3:00 p.m., so it's in time.\n\n\nNine cards were already waiting, and this is the tenth. Nothing has been kept or sent yet, because each runs only when you answer its card.\n\n**Per solicitation**\n\n| ID | Keep | Question | Why |\n|---|---|---|---|\n| BL-101 | Card filed | Card filed (due 16 Oct) | Active, small business, within the size standard, and 45% to a large business.",
+      "said_chars": 2156,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_question",
+          "key": "PN-201",
+          "outcome": "correct",
+          "value_usd": 1.0
+        }
+      ]
+    }
+  ]
+}
