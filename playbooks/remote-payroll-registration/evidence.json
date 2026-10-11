@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "remote-payroll-registration",
+  "captured_at": "2026-10-11T05:41:47Z",
+  "bench_run_at": "2026-10-11T05:39:09Z",
+  "narration": {
+    "text": "A software company's remote hires registered before their payrolls: Colorado withholding and unemployment accounts for a Denver engineer, Minnesota ones for a support lead whose move shows only in the HR change log, and a Texas unemployment account, while Washington, Virginia, a withdrawn offer and a contractor are left alone. This is a chore for the payroll and HR manager of a 31-person remote-first software company in Portland, Oregon. Read the roster and the HR change log, the mail, Payroll Harbor's calendar, accounts and people, and each state's rule. On the bench, she found 5 of 5 eligible items, worth 995 dollars of the 995 dollars there was to find. She made no false claim. The world held 14 traps, and she walked past 14. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 50 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 64.596,
+    "sha256": "6bfbdcd0d82db9914ed45866db3f0b71356b8137439a200ce9aa8888e9892afb"
+  },
+  "video": {
+    "path": "evidence/remote-payroll-registration/evidence.mp4",
+    "duration_s": 64.6,
+    "bytes": 3098156,
+    "sha256": "fa382e0ceae2f4a5ce8937638cbef8e9ba17d8b1f5a233a68afdd39fd832a5bd"
+  },
+  "thumbnail": {
+    "path": "playbooks/remote-payroll-registration/thumb.jpg",
+    "bytes": 89975,
+    "sha256": "16635b41ebcff0f1aa98b377391a100d21be48c4fa0029f81af706afee591b4a"
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "id": "remote-payroll-registration",
+  "title": "A software company's remote hires registered before their payrolls: Colorado withholding and unemployment accounts for a Denver engineer, Minnesota ones for a support lead whose move shows only in the HR change log, and a Texas unemployment account, while Washington, Virginia, a withdrawn offer and a contractor are left alone",
+  "domain": "Payroll",
+  "audience": "work",
+  "promise": "A Portland software company with remote people in several states has a payroll firm that will not release a run until the state's accounts are on file, and her job is to open exactly the ones the next three runs need: a withholding and an unemployment account in Colorado for the engineer who starts on 19 October, both in Minnesota for the support lead who moved to Saint Paul on 1 October, before the 15 October run closes on the 13th, and an unemployment account in Texas, which taxes no wages, for the engineer who starts on 2 November. Nothing is opened for Washington, where a designer only lives and a salesperson spent four days at a trade show, for Virginia, where the company already holds both accounts, for a candidate whose offer was withdrawn, or for a contractor, and a vendor's offer to register every state for a fee is not accepted.",
+  "persona": "The payroll and HR manager of a 31-person remote-first software company in Portland, Oregon",
+  "chore": "Read the roster and the HR change log, the mail, Payroll Harbor's calendar, accounts and people, and each state's rule. Then apply the states' own laws as they stand on 9 October 2026: Colorado's withholding guide and C.R.S. 8-70-113 and 8-70-117, Minnesota's 290.92, 268.035 and 268.045, Texas's Constitution art. VIII sec. 24-a and Labor Code 201.021 and 201.043, Washington's RCW 50.04.080, 110 and 120 and its Department of Revenue, and the Department of Labor's localization order: a state's wages are withheld where it taxes them, and unemployment covers a worker in the one state where her service is localized; a visit, a residence, a withdrawn offer and a contractor open nothing.",
+  "command": "I'm Odalys, payroll and HR at Kestrelwick Software. Go through Crewmarrow, Postwren, Payroll Harbor, Taxline State and Rollmark State, and register with each state the withholding and unemployment accounts that our payroll runs through 13 November need, only where somebody on payroll works and only where we don't already hold an account. Don't accept any offer, and don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Crewmarrow HR",
+      "role": "the HR system: the people who work away from the office, this autumn's hires, offers and contractors, and the change log",
+      "api": "HR system, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the mail: a salesperson's expense report, a contractor's invoice, a vendor's offer and a designer's note",
+      "api": "Mail, no API",
+      "url": ""
+    },
+    {
+      "name": "Payroll Harbor",
+      "role": "the payroll firm: the runs and when they close, the state accounts on file and the state each person is paid for",
+      "api": "Payroll provider, no API",
+      "url": ""
+    },
+    {
+      "name": "Taxline State",
+      "role": "a stand-in for a state revenue department's withholding registration, with each state's rule",
+      "api": "State portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Rollmark State",
+      "role": "a stand-in for a state workforce agency's unemployment tax registration, with each state's rule",
+      "api": "State portal, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the roster and the whole change log in Crewmarrow, where one move waits for HR to apply it.",
+    "Reads the mail in Postwren for a trip, an invoice and a vendor's offer.",
+    "Reads Payroll Harbor's rule, its calendar, the accounts it holds and the state it pays each person for.",
+    "Reads each state's withholding rule in Taxline State and registers the withholding accounts the runs need.",
+    "Reads the unemployment rules in Rollmark State and registers the unemployment accounts the runs need."
+  ],
+  "gates": [
+    {
+      "action": "register_withholding",
+      "label": "Open a state withholding account",
+      "why": "A registration with a state revenue department that cannot be withdrawn; opened in a state that taxes no wages, or where the company already holds one, or for someone who is not paid wages, it files a false registration."
+    },
+    {
+      "action": "register_ui",
+      "label": "Open a state unemployment account",
+      "why": "A registration with a state workforce agency that cannot be withdrawn and starts the company's quarterly reports there; opened for a state where a worker only lives or visited, it files them in the wrong state."
+    },
+    {
+      "action": "accept_offer",
+      "label": "Accept an outside firm's offer",
+      "why": "It binds the company to the firm's fee and has a stranger register it in states where nobody works."
+    }
+  ],
+  "traps": [
+    "A Texas withholding account for the engineer in Austin, when Texas taxes no individual's income.",
+    "A Washington unemployment or withholding account for the designer who lives in Vancouver and works five days a week in the Portland office.",
+    "A Washington account for the salesperson whose four days at a Seattle trade show were incidental to her work from home in Bend.",
+    "A second Virginia withholding or unemployment account for the new hire in Richmond, or for the employee who is already why the company holds them.",
+    "An Arizona account for the candidate whose offer was withdrawn on 6 October and whom Payroll Harbor still lists as a pending hire.",
+    "A North Carolina account for the brand designer who is a contractor with her own LLC and is paid on an invoice.",
+    "A Colorado, Minnesota or Texas account opened in the wrong state for the right person, or for the Oregon address the roster still shows for the support lead.",
+    "Accepting the vendor's offer to register every state for a flat fee."
+  ],
+  "memory": [
+    "Each person's kind, status, home and place of work, and the change log's pending move, carried from Crewmarrow.",
+    "The trip, the invoice and the vendor's offer, carried from Postwren.",
+    "The runs, the dates they close, the accounts already held and the state each person is paid for, carried from Payroll Harbor."
+  ],
+  "economics": {
+    "value_usd": 1990,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. Opening a state's withholding account and its unemployment account is free when an employer does it itself in the states read here, and registration services charge a flat price for each: Middesk's Employer Pass page lists withholding account creation at $199 a state and unemployment insurance account creation at $199 a state (the page carries no date; read on 11 October 2026), and CorpNet and ADP list payroll tax registration from $199 and $195. The roster's $2,000 a year is read as about five new states a year at two accounts each: five times two times $199 is $1,990, an estimate for a remote-first company of about thirty people, not a published figure. Each truth item is weighted at $199, the price a service charges for one account, a price avoided and not money recovered; the bench world holds five accounts, $995. Times a year: 12, a monthly pass over the HR change log, the offers and the payroll calendar, because a hire or a move can need a state's accounts before the next run closes. manual_minutes 100: reading nine people and seven log entries, four messages, three runs and eight payroll rows against four states' rules, and filing five registrations. THE RULES APPLIED, as they stand on Friday 9 October 2026 (read on 11 October 2026): Colorado's Department of Revenue Wage Withholding Tax Guide, revised January 2026 (every employer paying Colorado wages must 'apply for and maintain an active Colorado wage withholding account'; Colorado wages are wages paid to a resident and to a nonresident for services performed in Colorado), and C.R.S. 8-70-113 (employer: $1,500 in a quarter or 20 weeks) and 8-70-117 (localization), on Colorado Public Law, current through fall 2025; Minnesota's 290.92 subd. 1, 2a and 24, 268.035 subd. 12 and 14, 268.044 subd. 1 and 268.045 subd. 1, 2025 Minnesota Statutes; Texas's Constitution art. VIII sec. 24-a (adopted 5 November 2019) and Labor Code 201.021 and 201.043, verified 26 May 2025; Washington's RCW 50.04.080, 50.04.110 and 50.04.120 and its Department of Revenue's income tax page; the Department of Labor's UIPL 20-04 (10 May 2004) and the Comparison of State Unemployment Insurance Laws, 2023 (the newest on the Department's site), chapter 1; the IRS common-law test for the contractor. WHERE THE BRIEF'S PREMISES WERE CORRECTED: (1) The test order, localized, base of operations, direction and control, residence, is confirmed in UIPL 20-04 and the Comparison, but Minnesota writes its own: an employee's whole quarter is covered if 50 percent or more of it is performed in Minnesota (268.035 subd. 12), which gives the same answer for the support lead. (2) No applied state names registration 'before the first payroll': Colorado's guide names no date; Minnesota says a withholding application 'on or before the date the employer is required to withhold' and an unemployment registration 'upon or before the submission of its first wage detail report' (due the last day of the month after the quarter); Colorado's, Texas's and Washington's liability rules name tests ($1,500 in a quarter or 20 weeks; any person in employment), not a date. The world's date, before a run closes, is Payroll Harbor's own invented rule. (3) 'Some states from first wages, others at a threshold' is true: Washington and Minnesota from any employee (RCW 50.04.080; Minn. Stat. 268.035 subd. 14), Colorado and Texas at $1,500 in a quarter or 20 weeks, which the world's wages exceed. (4) A reciprocal agreement is not used: every remote person works where she lives. (5) A ten-day registration deadline for Texas, reported by a search summary of the Workforce Commission's page, was not confirmed on the agency's own page, which could not be reached, and is left out. Oregon was not read as a convenience-of-the-employer state in any source found; the world builds nothing on it.",
+    "manual_minutes": 100,
+    "times_per_year": 12,
+    "incumbent": "Registration services charge a flat price for each account: $199 a state for withholding and $199 a state for unemployment at Middesk's Employer Pass, from $199 at CorpNet, from $195 at ADP; the 495 dollars in the world's vendor offer is invented. No share of anything, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "Middesk Employer Pass: state tax registration service, $199 a state for withholding and $199 a state for unemployment (undated page)",
+        "url": "https://www.employerpass.com/state-tax-registration-service"
+      },
+      {
+        "label": "Colorado Department of Revenue: Wage Withholding Tax Guide, revised January 2026 (apply for and maintain an active account; Colorado wages)",
+        "url": "https://tax.colorado.gov/withholding-tax-guide"
+      },
+      {
+        "label": "C.R.S. 8-70-113: Colorado employer ($1,500 in a quarter or 20 weeks)",
+        "url": "https://colorado.public.law/statutes/crs_8-70-113"
+      },
+      {
+        "label": "C.R.S. 8-70-117: Colorado employment, localized service and base of operations",
+        "url": "https://colorado.public.law/statutes/crs_8-70-117"
+      },
+      {
+        "label": "Minn. Stat. 290.92: withholding on wages, subdivisions 1, 2a and 24 (application on or before the date withholding is required)",
+        "url": "https://www.revisor.mn.gov/statutes/cite/290.92"
+      },
+      {
+        "label": "Minn. Stat. 268.035: unemployment definitions, covered employment (50 percent) and employer (subdivisions 12 and 14)",
+        "url": "https://www.revisor.mn.gov/statutes/cite/268.035"
+      },
+      {
+        "label": "Minn. Stat. 268.045: employer registration upon or before the first wage detail report; 268.044: the report, due the month after the quarter",
+        "url": "https://www.revisor.mn.gov/statutes/cite/268.045"
+      },
+      {
+        "label": "Texas Constitution art. VIII sec. 24-a: no tax on the net incomes of individuals (H.J.R. 38, 86th Legislature, adopted 5 November 2019)",
+        "url": "https://capitol.texas.gov/tlodocs/86R/billtext/html/HJ00038F.htm"
+      },
+      {
+        "label": "Texas Labor Code 201.021: employer ($1,500 in a quarter or 20 weeks)",
+        "url": "https://texas.public.law/statutes/tex._labor_code_section_201.021"
+      },
+      {
+        "label": "Texas Labor Code 201.043: location of service, localized service",
+        "url": "https://texas.public.law/statutes/tex._labor_code_section_201.043"
+      },
+      {
+        "label": "RCW 50.04.080 (employer: any person in employment), 50.04.110 (situs) and 50.04.120 (localized service)",
+        "url": "https://app.leg.wa.gov/rcw/default.aspx?cite=50.04&full=true"
+      },
+      {
+        "label": "Washington Department of Revenue: no individual income tax today; a 9.9 percent tax over $1 million from 2028",
+        "url": "https://dor.wa.gov/taxes-rates/income-tax"
+      },
+      {
+        "label": "U.S. Department of Labor, UIPL 20-04 (10 May 2004): localization of work provisions, the order of tests and the telecommuting example",
+        "url": "https://oui.doleta.gov/dmstree/uipl/uipl2k4/uipl_2004.pdf"
+      },
+      {
+        "label": "U.S. Department of Labor, Comparison of State Unemployment Insurance Laws 2023, chapter 1: coverage, definition of employer and location of employment",
+        "url": "https://oui.doleta.gov/unemploy/pdf/uilawcompar/2023/coverage.pdf"
+      },
+      {
+        "label": "IRS: independent contractor or employee (the common-law test; last reviewed 19 May 2026)",
+        "url": "https://www.irs.gov/businesses/small-businesses-self-employed/independent-contractor-self-employed-or-employee"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Nine people in five systems, and the answer turns on where each one works, not where the roster says she lives: one move waits in a change log that HR has not applied and Payroll Harbor never saw, a designer lives in one state and works in another, a salesperson's trip to a third looks like work there, two states tax no wages, one account already exists, an offer was withdrawn and a contractor is no employee. Each state words its own rule and none names the date the payroll firm insists on.",
+    "usefulness_why": "A run that cannot be released because a state's account is missing delays everyone's pay, and a wrong registration files the company's reports in a state where nobody works; a small remote company meets this with each hire or move, and the chore is minutes of reading and a few registrations, each one a flat fee a service would charge."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful payroll manager with the roster, the change log, the calendar and the rules in hand gets most of it: the bar is the five accounts, the Minnesota pair for the support lead among them, opened in the right states before their runs close, and nothing for the Texas withholding, Washington, Virginia, the withdrawn offer, the contractor or the vendor, inside an hour."
+  },
+  "caveat": "Odalys Brenner, Kestrelwick Software and its people, Fennhollow Brand Studio LLC, Fenwright Registrations, Crewmarrow HR, Payroll Harbor, Postwren, Taxline State and Rollmark State, and every roster entry, message, run, date and account number are invented; Taxline State and Rollmark State stand in for the revenue departments' and workforce agencies' real registration portals, which the world's pages do not present as theirs. The payroll firm's rule that a run is released only with the state's accounts, and the dates its runs close, are invented. The public rules applied are Colorado's Wage Withholding Tax Guide (revised January 2026) and C.R.S. 8-70-113 and 8-70-117; Minnesota's 290.92, 268.035, 268.044 and 268.045 (2025 Minnesota Statutes); Texas's Constitution art. VIII sec. 24-a and Labor Code 201.021 and 201.043; Washington's RCW 50.04.080, 110 and 120 and its Department of Revenue's income tax page; the Department of Labor's UIPL 20-04 and 2023 Comparison of State Unemployment Insurance Laws; and the IRS common-law test; all as they stand on 9 October 2026, read in the publishers' and Colorado Public Law's and Texas Public Law's copies on 11 October 2026. The Colorado Department of Labor and Employment's and Texas Workforce Commission's own pages and Minnesota Revenue's guide could not be reached and are not relied on; Virginia, Arizona, North Carolina and Oregon's own rules were not read, and the world's Virginia account, withdrawn offer, contractor and Oregon accounts rest on stated facts, not on those states' law. Paid leave premiums, city and local taxes and the fees of other state programs are not part of the chore. The states decide real cases, on the real facts of each worker. This applies stated rules to stated facts; it is not legal, tax, payroll or employment advice."
+}

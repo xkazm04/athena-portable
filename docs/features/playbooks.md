@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The eighty-eight playbooks (latest runs, Claude Sonnet)
+## The eighty-nine playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -131,9 +131,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A small company's third-quarter 401(k) deposits checked against the 7-business-day safe harbor, and the lost earnings paid for each late one: two deferrals and three loan repayments, one found only on the loan list, while deposits on the sixth and seventh days across Labor Day, a late match, a stopped deferral, an unfinished payroll, another plan's payroll and a recovery firm's share are left out | work | 4 | exceeds: 5 of 5, $87.93 of $87.93 (lost earnings owed to the plan), 10 of 10 traps, 0 false, 1.6 min, $0.92 |
 | A New York contractor's workers' compensation audit disputed by duties and records before the carrier's window closes: a bookkeeper to clerical, a salesman to outside sales, a crew's extra overtime pay and two insured subs' costs taken off, one found only in its contract file, while an office manager on job sites, a framing estimator, a general-liability certificate and last year's audit are left out | work | 4 | exceeds: 5 of 5, $19,016.47 of $19,016.47 (premium taken off the audit), 12 of 12 traps, 0 false, 1.8 min, $0.94 |
 | A machine shop's 2025 OSHA injury log closed under Part 1904: seven cases entered with their days, one a privacy case and one made recordable by a declined prescription, while first aid, a parking-lot crash, the flu and repeats are left out; the summary to certify and the 300A and 300 and 301 data to submit were held for the entries' approval | work | 4 | short: 7 of 10, $115,850.00 of $165,500.00 (an exposure unit, not money recovered), 13 of 13 traps, 0 false, 1.6 min, $0.91 |
+| A software company's remote hires registered with their states before the payroll runs that pay them: Colorado withholding and unemployment accounts for a Denver engineer, Minnesota ones for a support lead whose move shows only in the HR change log, and a Texas unemployment account, while Texas withholding, Washington, Virginia, a withdrawn offer, a contractor and a service's offer to register every state are left out | work | 5 | exceeds: 5 of 5, $995.00 of $995.00 (199 dollars an account, a price avoided and not money recovered), 14 of 14 traps, 0 false, 2.0 min, $1.23 |
 
-Across the latest runs: $1,278,324 of $1,337,401 found, 897 of 897 traps walked past, no false claim,
-237 minutes of her time against about 333 hours by hand, $144.16 of model time. 128 runs are recorded
+Across the latest runs: $1,279,319 of $1,338,396 found, 911 of 911 traps walked past, no false claim,
+239 minutes of her time against about 334 hours by hand, $145.39 of model time. 129 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

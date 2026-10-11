@@ -1,0 +1,81 @@
+{
+  "targets": [
+    {
+      "tool": "register_withholding",
+      "key": "person_id",
+      "eligible": {
+        "P-1": {
+          "value_usd": 199.0,
+          "why": "Corwin Alder lives and will work in Denver from Mon 19 Oct. Colorado wages include wages paid to a Colorado resident, so Kestrelwick must hold a Colorado withholding account (Colorado Wage Withholding Tax Guide, revised January 2026: 'apply for and maintain an active Colorado wage withholding account'; it names no date). Payroll Harbor pays him from run R-2 (Fri 30 Oct), which closes Wed 28 Oct and is not released without the account",
+          "expect": {
+            "state": "CO"
+          }
+        },
+        "P-3": {
+          "value_usd": 199.0,
+          "required": true,
+          "why": "Linnea Tavares moved to Saint Paul, MN on Thu 1 Oct and has worked from there since; the roster and Payroll Harbor still say Oregon, and only change C-7 in the HR log (pending review) shows it. Minnesota taxes a resident's wages wherever she works (Minn. Stat. 290.92 subd. 1 and 2a), and the employer files its application 'on or before the date the employer is required to withhold' (subd. 24): the first Minnesota pay is run R-1 on Thu 15 Oct, which closes Tue 13 Oct (Mon 12 Oct is not a Payroll Harbor business day)",
+          "expect": {
+            "state": "MN"
+          }
+        }
+      },
+      "traps": {
+        "P-2": "Imani Vasquez works from Austin, TX. Texas imposes no tax on individuals' net income (Tex. Const. art. VIII, sec. 24-a), so there is no Texas withholding account to open",
+        "P-4": "Gideon Pruitt lives in Vancouver, WA but works at the Portland office five days a week, so his wages are Oregon's, under the Oregon account already held. Washington has no individual income tax, so no Washington withholding account exists in any case",
+        "P-5": "Siobhan Marrick works from her home in Bend, OR; the four days in Seattle (5 to 8 Oct) were a trade show. Washington has no individual income tax, so no Washington withholding account exists",
+        "P-6": "Tobias Hallett will work from Richmond, VA, where Payroll Harbor already holds a Virginia withholding account (since 18 March 2024, for Nadia Cormier): a second registration in the same state is not needed",
+        "P-7": "Nadia Cormier is the Virginia employee for whom the Virginia withholding account was opened on 18 March 2024: it is already held",
+        "P-8": "Marcus Ellery's offer was withdrawn on 6 Oct (change C-6) and he did not start; Payroll Harbor's pending hire for Arizona is stale and no wages will be paid there",
+        "P-9": "Rosalind Fenn is a contractor with her own LLC, tools and clients, paid by accounts payable on an invoice: no wages, so nothing is withheld and no withholding account is opened for her (IRS common-law test: behavioral control, financial control, type of relationship)"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "register_ui",
+      "key": "person_id",
+      "eligible": {
+        "P-1": {
+          "value_usd": 199.0,
+          "why": "Corwin Alder will perform all his service at home in Denver, so it is localized in Colorado (C.R.S. 8-70-117). Kestrelwick becomes a Colorado employer on paying wages of $1,500 or more in a quarter (8-70-113): Payroll Harbor expects about $19,000 this quarter from run R-2 (Fri 30 Oct), which closes Wed 28 Oct and is not released without the Colorado accounts",
+          "expect": {
+            "state": "CO"
+          }
+        },
+        "P-2": {
+          "value_usd": 199.0,
+          "why": "Imani Vasquez will perform all her service at home in Austin, localized in Texas (Labor Code 201.043). Kestrelwick becomes a Texas employer on paying $1,500 or more in a quarter (201.021): about $14,000 is expected this quarter from run R-3 (Fri 13 Nov), which closes Tue 10 Nov",
+          "expect": {
+            "state": "TX"
+          }
+        },
+        "P-3": {
+          "value_usd": 199.0,
+          "why": "Since Thu 1 Oct all of Linnea Tavares's service has been done at home in Saint Paul, MN: 100 percent of the quarter's employment is in Minnesota (Minn. Stat. 268.035 subd. 12), and DOL's UIPL 20-04 telecommuting example puts wages in the state she telecommutes from, from the date she began. Minnesota asks for registration upon or before the first wage detail report (268.045 subd. 1), but Payroll Harbor releases run R-1 (Thu 15 Oct, closes Tue 13 Oct) only with the account",
+          "expect": {
+            "state": "MN"
+          }
+        }
+      },
+      "traps": {
+        "P-4": "Gideon Pruitt lives in Vancouver, WA but all his service is performed in the Portland office, so it is localized in Oregon (RCW 50.04.120 and the DOL order: residence is the last test), under the Oregon account already held; a Washington account would be for a state where he only lives",
+        "P-5": "Siobhan Marrick's four days in Seattle (5 to 8 Oct) were temporary and incidental to her service in Oregon, so her service stays localized in Oregon (RCW 50.04.120: 'temporary or transitory in nature'); no Washington account",
+        "P-6": "Tobias Hallett will work from Richmond, VA, where Payroll Harbor already holds a Virginia unemployment account (since 18 March 2024): no second registration",
+        "P-7": "Nadia Cormier is the Virginia employee for whom the Virginia unemployment account was opened on 18 March 2024: it is already held",
+        "P-8": "Marcus Ellery's offer was withdrawn on 6 Oct and he never started, so no wages will be paid for work in Arizona; Payroll Harbor's pending hire is stale",
+        "P-9": "Rosalind Fenn is an independent contractor paid on an invoice, not an employee paid wages, so her work is not employment for unemployment insurance and no account is opened for her"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "accept_offer",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-2": "Accepting Fenwright Registrations' offer to register every state for a flat $495 commits Kestrelwick to its fee and has a stranger register in states where nobody works; the needed registrations are three states' worth and Kestrelwick files them itself"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}
