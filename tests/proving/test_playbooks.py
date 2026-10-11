@@ -467,6 +467,33 @@ def test_a_closing_total_that_matches_the_cards_agrees() -> None:
     assert audit == {"said_usd": 1359.78, "record_usd": 1359.78, "agrees": True}
 
 
+def test_a_total_that_matches_the_value_found_agrees_when_filed_double_counts() -> None:
+    # lease-operator-escrow: the demand ($1,514.65) already holds the three disputed charges, so
+    # the filed dollars (2,483.77) overstate what she is owed; her $1,538.77 is the value found.
+    said = "**What you should get back:** escrow $1,514.65 and interest $24.12, $1,538.77 in total."
+    assert prose_audit(said, 2483.77, 1538.77) == {
+        "said_usd": 1538.77,
+        "record_usd": 1538.77,
+        "agrees": True,
+    }
+
+
+def test_a_total_is_checked_against_the_value_found_when_no_card_has_an_amount() -> None:
+    # mlc-unmatched-royalties: registration cards carry no amount, so filed_usd is None.
+    said = "The six recordings hold $1,853.20 in total."
+    assert prose_audit(said, None, 1338.95) == {
+        "said_usd": 1853.20,
+        "record_usd": 1338.95,
+        "agrees": False,
+    }
+    assert prose_audit(said, None, None) is None
+
+
+def test_a_wrong_total_names_the_filed_figure_before_the_value_found() -> None:
+    audit = prose_audit("That is $99.00 in total.", 50.0, 40.0)
+    assert audit == {"said_usd": 99.0, "record_usd": 50.0, "agrees": False}
+
+
 def test_no_stated_total_or_no_record_means_no_audit() -> None:
     assert prose_audit("Five cards are waiting: $34.99 and $29.99.", 64.98) is None
     assert prose_audit("$10 in total", None) is None

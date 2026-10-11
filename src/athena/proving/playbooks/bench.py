@@ -518,22 +518,28 @@ _TOTAL = re.compile(r"total[^$\n]{0,40}\$\s?([0-9][0-9,]*(?:\.[0-9]{2})?)", re.I
 _TOTAL_BEFORE = re.compile(r"\$\s?([0-9][0-9,]*(?:\.[0-9]{2})?)\s+(?:in\s+)?total", re.IGNORECASE)
 
 
-def prose_audit(said: str, record_usd: float | None) -> dict[str, Any] | None:
-    """Did Athena's own closing words state a total the cards do not add up to?
+def prose_audit(
+    said: str, record_usd: float | None, found_usd: float | None = None
+) -> dict[str, Any] | None:
+    """Did Athena's own closing words state a total that neither record bears out?
 
     The bench scores cards, never prose; this is the other direction, for the reader: a sentence
-    a person might believe, checked against the record. ``None`` when she stated no total or
-    there is no record to check it against.
+    a person might believe, checked against two records, the dollars the cards filed
+    (``record_usd``) and the value found (``found_usd``). A total agrees when it equals either
+    within a cent; with no filed figure only the value found is checked. ``None`` when she stated
+    no total or there is no record to check it against.
     """
-    if record_usd is None:
+    records = [r for r in (record_usd, found_usd) if r is not None]
+    if not records:
         return None
     stated = [float(m.replace(",", "")) for m in _TOTAL.findall(said) + _TOTAL_BEFORE.findall(said)]
     if not stated:
         return None
-    wrong = [v for v in stated if abs(v - record_usd) > 0.01]
+    matched = {v: next((r for r in records if abs(v - r) <= 0.01), None) for v in stated}
+    wrong = [v for v, hit in matched.items() if hit is None]
     return {
         "said_usd": wrong[0] if wrong else stated[0],
-        "record_usd": record_usd,
+        "record_usd": records[0] if wrong else matched[stated[0]],
         "agrees": not wrong,
     }
 
@@ -636,7 +642,7 @@ def summary_of(report: Mapping[str, Any]) -> dict[str, Any]:
             "cards": cards,
             "missed": scored.get("missed", []),
             "closing_words": str(last_said)[:900],
-            "prose_audit": prose_audit(str(last_said), scored.get("filed_usd")),
+            "prose_audit": prose_audit(str(last_said), scored.get("filed_usd"), scored.get("value_found_usd")),
             "trace": trace_of(report),
         }
     )

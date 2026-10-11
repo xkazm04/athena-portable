@@ -35,8 +35,9 @@ mid-work, and switching tabs when she asks for one by name (at most three times)
 
 Read from the cards the gate filed, never from her prose. Each card is right, fair either way, a
 duplicate, a trap, unfounded or forbidden; exact parameters, the money found, the traps walked past
-and a ledger of every trap follow. A total stated in her closing words is audited against the
-cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
+and a ledger of every trap follow. A total stated in her closing words is audited against two records, the
+dollars the cards filed and the value found, and agrees when it equals either within a cent (a demand
+card can already contain the dispute cards beside it, and registration cards carry no amount). The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
 ## The one hundred playbooks (latest runs, Claude Sonnet)
