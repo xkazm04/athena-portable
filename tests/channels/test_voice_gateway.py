@@ -585,3 +585,51 @@ def test_a_buffered_transcriber_never_holds_more_than_the_ceiling() -> None:
         transcriber.feed(bytes(65_536))
     transcriber.finish()
     assert heard == [MAX_UTTERANCE_BYTES]
+
+
+# -- the reader's errors -------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [{"tier": "high"}, {"tier": [1]}, {"ms": "fast"}, {"tier": 1.9}, {"ms": True}, {"tier": -1}],
+)
+def test_a_tool_result_with_a_tier_or_ms_that_is_not_a_count_is_refused_and_the_socket_stays(
+    voiced: Live, client: VoiceClient, bad: dict[str, object]
+) -> None:
+    voiced.register()
+    client.send(type="tool_result", call_id="c1", name="x", ok=True, output="", **bad)
+    assert client.until("turn.error")["reason"] == "validator_failed"
+    voiced.script(claude_round("Still here."))
+    client.say("hello")
+    assert client.until("turn.finished")["text"] == "Still here."
+
+
+def test_a_transcriber_that_raises_closes_1011_and_the_log_says_so(
+    voiced: Live,
+    backend: ScriptedBackend,
+    client: VoiceClient,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    class Broken:
+        def feed(self, pcm: bytes) -> list[str]:
+            raise RuntimeError("SECRET-AUDIO-DETAIL")
+
+        def finish(self) -> str:
+            return ""
+
+    backend.transcriber = Broken  # type: ignore[method-assign,assignment]
+    voiced.register()
+    with caplog.at_level("ERROR", logger="athena.channels.voice.gateway"):
+        client.start()
+        client.chunks(1)
+        assert client.next() is None
+    assert client.ws.close_code == 1011
+    assert any("handling a binary frame failed" in r.getMessage() for r in caplog.records)
+
+
+def test_an_unmasked_client_frame_closes_1002(voiced: Live, client: VoiceClient) -> None:
+    client.ws._wfile.write(bytes([0x81, 2]) + b"hi")
+    client.ws._wfile.flush()
+    assert client.next() is None
+    assert client.ws.close_code == 1002

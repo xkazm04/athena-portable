@@ -38,6 +38,7 @@ timeouts are carried into the next utterance's frame, and that utterance's model
 from __future__ import annotations
 
 import json
+import logging
 import queue
 import struct
 import threading
@@ -54,7 +55,7 @@ from athena.channels.voice.backends import (
 )
 from athena.channels.voice.commands import Card, Spoken, recognise
 from athena.channels.voice.tts import SpokenLine, spoken_line
-from athena.channels.voice.ws import WebSocket, WebSocketError
+from athena.channels.voice.ws import FrameTooLarge, WebSocket, WebSocketError
 from athena.contracts.channel import (
     ChannelEvent,
     DecisionRequested,
@@ -195,6 +196,23 @@ class _Job:
     capture_id: str | None = None
 
 
+def _is_count(value: object) -> bool:
+    """A JSON integer that is not a bool and not negative."""
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _frame_label(message: Any) -> str:
+    """What a log line may say of a frame: its kind and, for a control frame, its ``type`` word
+    (short, and only when it is a plain string). Never the frame's content."""
+    if message.kind == "binary":
+        return "binary"
+    try:
+        kind = json.loads(message.text).get("type")
+    except (ValueError, AttributeError):
+        return "text"
+    return f"text:{kind[:24]}" if isinstance(kind, str) and kind.isidentifier() else "text"
+
+
 @dataclass
 class VoiceSession:
     """One connection: the reader, the worker, the speaker, and what they share."""
@@ -229,24 +247,36 @@ class VoiceSession:
         speaker = threading.Thread(target=self._speak_loop, name="voice-speaker", daemon=True)
         worker.start()
         speaker.start()
+        code, reason = 1000, ""
         try:
             while True:
                 try:
                     message = self.ws.recv()
+                except FrameTooLarge:
+                    code, reason = 1009, "frame too large"
+                    break
                 except WebSocketError:
+                    code, reason = 1002, "protocol error"
                     break
                 if message is None:
                     break
-                if message.kind == "binary":
-                    self._audio(message.data)
-                else:
-                    self._control(message.text)
+                try:
+                    if message.kind == "binary":
+                        self._audio(message.data)
+                    else:
+                        self._control(message.text)
+                except Exception:  # a bug in one frame's handling ends the socket, loudly
+                    logging.getLogger(__name__).exception(
+                        "voice: handling a %s frame failed", _frame_label(message)
+                    )
+                    code, reason = 1011, "internal error"
+                    break
         finally:
             self._closed = True
             self.interrupt()
             self._jobs.put(None)
             self._speech.put(None)
-            self.ws.close()
+            self.ws.close(code, reason)
             # A worker inside a turn holds the writer lock and runs to its end (ADR 0012); the
             # join is a courtesy to a worker that is idle, not a wait on one that is not.
             worker.join(timeout=1.0)
@@ -361,14 +391,23 @@ class VoiceSession:
         call_id = str(body.get("call_id", ""))
         if not call_id:
             return
+        tier, ms = body.get("tier", 1), body.get("ms", 0)
+        if not (_is_count(tier) and _is_count(ms)):
+            self.send(
+                TurnError(
+                    reason="validator_failed",
+                    detail="a tool_result's tier and ms must be non-negative integers",
+                )
+            )
+            return
         row = {
             "call_id": call_id,
             "name": str(body.get("name", "")),
             "ok": bool(body.get("ok", False)),
             "output": str(body.get("output", "")),
             "error": body.get("error"),
-            "tier": int(body.get("tier", 1) or 1),
-            "ms": int(body.get("ms", 0) or 0),
+            "tier": tier or 1,
+            "ms": ms,
         }
         with self._results_ready:
             self._results[call_id] = row

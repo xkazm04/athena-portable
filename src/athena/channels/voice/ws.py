@@ -36,6 +36,7 @@ __all__ = [
     "GUID",
     "MAX_FRAME_BYTES",
     "PROTOCOL_PREFIX",
+    "FrameTooLarge",
     "HandshakeError",
     "Message",
     "WebSocket",
@@ -67,6 +68,10 @@ OP_PONG = 0xA
 
 class WebSocketError(Exception):
     """The peer broke the framing rules, or the socket is gone."""
+
+
+class FrameTooLarge(WebSocketError):
+    """A frame or message past :data:`MAX_FRAME_BYTES`: the caller closes with 1009, not 1002."""
 
 
 class HandshakeError(WebSocketError):
@@ -160,7 +165,7 @@ class WebSocket:
                 raise WebSocketError(f"unknown opcode {opcode:#x}")
             parts.append(payload)
             if sum(len(p) for p in parts) > MAX_FRAME_BYTES:
-                raise WebSocketError("message exceeds MAX_FRAME_BYTES")
+                raise FrameTooLarge("message exceeds MAX_FRAME_BYTES")
             if fin:
                 data = b"".join(parts)
                 if first_opcode == OP_TEXT:
@@ -198,7 +203,7 @@ class WebSocket:
         elif length == 127:
             length = struct.unpack("!Q", self._read_exact(8))[0]
         if length > MAX_FRAME_BYTES:
-            raise WebSocketError("frame exceeds MAX_FRAME_BYTES")
+            raise FrameTooLarge("frame exceeds MAX_FRAME_BYTES")
         if opcode >= OP_CLOSE and (length > 125 or not fin):
             raise WebSocketError("a control frame must be short and whole")
         # The side that must mask is the side that is not us: a server reads masked frames and
