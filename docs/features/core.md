@@ -23,7 +23,9 @@ A contract changes only with a test.
 - **Recall** (`core/recall.py`) returns three lanes: what she always carries, distilled memory that
   matched the message, and recalled episodes. Matching is FTS5 BM25 over any meaningful word of
   the question, stopwords dropped (ADR 0042), and an episode is shown as the 500-byte window around
-  its first match, so the row asked about is visible even deep in a page of results.
+  its first match, so the row asked about is visible even deep in a page of results. Each
+  episode line starts with a label, `[ep_1a2b3c4d user]`, its id and stored role, so a fact can
+  cite what was said (ADR 0079).
 - **What she always carries** is filled by one path: a `core.write_fact` card the user approved
   with `every_turn: true`. The fact's file records it as its last frontmatter key, so a rebuild
   keeps it in the tier. Each line enters the system prompt as one quoted line of at most 400

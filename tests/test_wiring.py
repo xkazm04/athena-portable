@@ -274,6 +274,35 @@ def test_write_fact_writes_the_claim_when_it_cites_a_live_episode(local: AthenaL
     assert local.brain.counts()["fact"] == 1
 
 
+def test_a_fact_can_cite_the_users_own_words_found_through_core_recall(
+    local: AthenaLocal,
+) -> None:
+    """The branch ``fact-from-the-users-own-words`` (ADR 0079): the lane records the message, a
+    recall over its words shows the id, and a fact citing that id passes and is written."""
+    message = "I chase Acme gently, they pay about 45 days late"
+    local.brain.append_episode(message, "user", session_id=CONVERSATION)
+    recall_entry = local.catalog.get("core.recall")
+    assert recall_entry.executor is not None
+
+    answer = recall_entry.executor({"query": "Acme pay late"}, ctx()).output
+
+    match = re.search(r"\[(ep_[0-9a-f]+) user\]", answer)
+    assert match, answer
+    episode_id = match.group(1)
+    params = {
+        "key": "client/acme",
+        "value": "Acme pays about 45 days late.",
+        "scope": "world",
+        "sources": [episode_id],
+    }
+    assert local.catalog.validate("core.write_fact", params, ctx()).ok
+    write_entry = local.catalog.get("core.write_fact")
+    assert write_entry.executor is not None
+    result = write_entry.executor(params, ctx())
+    assert result.ok
+    assert local.brain.sources_of(result.output.split()[1]) == [episode_id]
+
+
 def test_the_brains_own_provenance_rule_is_the_one_the_catalog_asks(local: AthenaLocal) -> None:
     """``CoreServices.sources_alive`` is bound to this brain, so the validator refuses *before*
     a card is filed rather than after the user approves one."""

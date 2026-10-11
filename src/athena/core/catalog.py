@@ -208,6 +208,8 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
             executor=services.write_fact or _unattached("core.write_fact"),
             description=(
                 "Distil a claim about the user, a project or the world; cites episodes. "
+                "A citable id is in the label of a recalled episode; what the user said this "
+                "turn is recorded, so core.recall over its words returns its id. "
                 "Set every_turn only for a standing fact every later conversation needs, such as "
                 "how a client pays; it then rides every turn."
             ),
