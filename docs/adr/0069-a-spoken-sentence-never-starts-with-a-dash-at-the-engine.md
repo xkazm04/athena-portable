@@ -32,7 +32,7 @@ added: no committed code shows the engine honours one. The test fake now treats 
 
 ## Amended 2026-10-11
 
-Council full round 1, robustness-3. The guard above tested only an ASCII `-`. Under a narrow
+Council full round 1, robustness-1. The guard above tested only an ASCII `-`. Under a narrow
 Windows argv (code pages 1250 and 1252) U+2010, U+2011, U+2012, U+2015, U+2212 and U+FF0D are
 folded to `-`, so a sentence starting with one of them reached the engine as an option and the
 guarantee did not hold. A deny-list of code points depends on the code page and is never complete.

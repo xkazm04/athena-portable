@@ -3,7 +3,7 @@
 Date: 2026-10-11
 
 Implements README section 3.1 (voice) and ADR 0019. Closes the full-council round 1
-must-address robustness-5 of voice-conversation.
+finding robustness-3 of voice-conversation.
 
 ## Context
 

@@ -3,7 +3,7 @@
 Date: 2026-10-11
 
 Implements README section 3.1 (voice) and ADR 0019. Closes the full-council round 1
-must-address robustness-1, robustness-7 and economics-1 of voice-conversation (the hard failure
+findings robustness-5 and economics-1 of voice-conversation (the hard failure
 `unbounded_foreign_decode`).
 
 ## Context

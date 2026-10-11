@@ -573,7 +573,7 @@ describe("one snapshot per turn (ADR 0067)", () => {
   });
 });
 
-describe("the microphone closes whenever listening ends (council full r1 robustness-6)", () => {
+describe("the microphone closes whenever listening ends (council full r1 robustness-4)", () => {
   it("a release during a pending openMic stops the mic that resolves and sends no PCM after it", async () => {
     const slow = slowMic();
     const { socket } = wire({ openMic: slow.open });
