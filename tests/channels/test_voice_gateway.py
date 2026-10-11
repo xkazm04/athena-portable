@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import logging
+import struct
 import threading
 import time
 from collections.abc import Callable, Iterator, Sequence
@@ -29,7 +30,7 @@ from athena.channels.voice.gateway import (
     VoiceSession,
 )
 from athena.channels.voice.tts import TTS_CAP
-from athena.channels.voice.ws import HandshakeError, connect
+from athena.channels.voice.ws import MAX_FRAME_BYTES, HandshakeError, connect
 from athena.contracts import ToolCall
 from daemon.conftest import PAGE_ORIGIN, SHELL_ORIGIN, TOKEN, Live, claude_round, op
 
@@ -778,6 +779,14 @@ def test_an_unmasked_client_frame_closes_1002(voiced: Live, client: VoiceClient)
     client.ws._wfile.flush()
     assert client.next() is None
     assert client.ws.close_code == 1002
+
+
+def test_a_frame_declaring_more_than_the_cap_closes_1009(voiced: Live, client: VoiceClient) -> None:
+    header = bytes([0x81, 0xFF]) + struct.pack("!Q", MAX_FRAME_BYTES + 1) + bytes(4)
+    client.ws._wfile.write(header)
+    client.ws._wfile.flush()
+    assert client.next() is None
+    assert client.ws.close_code == 1009
 
 
 # -- a bare yes answers only a card this socket presented ---------------------------------------
