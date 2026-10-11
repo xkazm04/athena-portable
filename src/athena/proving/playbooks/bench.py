@@ -648,7 +648,9 @@ def summary_of(report: Mapping[str, Any]) -> dict[str, Any]:
             "cards": cards,
             "missed": scored.get("missed", []),
             "closing_words": str(last_said)[:900],
-            "prose_audit": prose_audit(str(last_said), scored.get("filed_usd"), scored.get("value_found_usd")),
+            "prose_audit": prose_audit(
+                str(last_said), scored.get("filed_usd"), scored.get("value_found_usd")
+            ),
             "trace": trace_of(report),
         }
     )
