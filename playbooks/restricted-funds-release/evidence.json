@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "restricted-funds-release",
+  "captured_at": "2026-10-11T07:52:50Z",
+  "bench_run_at": "2026-10-11T07:48:33Z",
+  "narration": {
+    "text": "A kitchen nonprofit's restricted funds are released on 9 October as their terms are met: a cooler in service, a gift whose date a mailed amendment moved up, 6,300 dollars of meals money, 9,400 and 5,700 dollars of two grants, and two releases reported, while a van, a later date, 104 of 150 served and a consultant wait. This is a chore for the finance manager of a small community kitchen, a week after the quarter's close, who books the releases and files the funders' reports. On the bench, she found 7 of 7 eligible items, worth 74,600 dollars of the 74,600 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 3 minutes. By hand, the same chore takes 3 hours, so she was about 64 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 62.566,
+    "sha256": "8f9b0ee5565e497a29ee6b1e4416c8b5c6fb12dd6188e56f62bbb1d2fb25c203"
+  },
+  "video": {
+    "path": "evidence/restricted-funds-release/evidence.mp4",
+    "duration_s": 62.566,
+    "bytes": 3489175,
+    "sha256": "ae12992fb81dd27531b8c8dc38895068734672068446ff49d7179b3c252e5863"
+  },
+  "thumbnail": {
+    "path": "playbooks/restricted-funds-release/thumb.jpg",
+    "bytes": 86518,
+    "sha256": "da28502e281e950f1708c752e71481323ff1bc7cb625316dfe69859349e40181"
+  }
+}

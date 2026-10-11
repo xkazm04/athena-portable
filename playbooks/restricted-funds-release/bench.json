@@ -1,0 +1,371 @@
+{
+  "playbook": "restricted-funds-release",
+  "run_at": "2026-10-11T07:48:33Z",
+  "engine": "claude_code",
+  "model": "sonnet",
+  "approve": "none",
+  "wall_s": 168.6,
+  "turns": 14,
+  "nudges": 0,
+  "follow_ups": 0,
+  "reads": 32,
+  "cost_usd": 1.702,
+  "your_time_s": 210,
+  "verdict": {
+    "word": "exceeds",
+    "reasons": [],
+    "expected": {
+      "recall": 0.75,
+      "false_claims": 0,
+      "minutes": 60.0
+    },
+    "minutes": 2.8
+  },
+  "score": {
+    "eligible": 7,
+    "found": 7,
+    "exact": 7,
+    "value_total_usd": 74600.0,
+    "value_found_usd": 74600.0,
+    "recall_value": 1.0,
+    "false_claims": 0,
+    "traps_total": 10,
+    "traps_filed": 0,
+    "trap_ledger": [
+      {
+        "action": "book_release",
+        "key": "RF-4",
+        "why": "The Greenbarrow gift (BD-4) is for operating costs in fiscal year 2028 and is not available before 1 July 2027: a time restriction that has not arrived",
+        "filed": false
+      },
+      {
+        "action": "book_release",
+        "key": "RF-5",
+        "why": "BD-5 says available from 1 October 2026, but the amendment BD-6, signed 3 and 8 September 2026, moved the date to 1 February 2027; the restriction has not expired",
+        "filed": false
+      },
+      {
+        "action": "book_release",
+        "key": "RF-6",
+        "why": "The Hartsmere van (BD-7) is met when the van is delivered and in service; only the 4,000 dollar deposit is paid (LE-3) and the van is due about 20 November (M-3)",
+        "filed": false
+      },
+      {
+        "action": "book_release",
+        "key": "RF-7",
+        "why": "The Vesper Lane gift (BD-8) excludes instructors' stipends, and the only 6,500 dollars coded to it (LE-8) is stipends: no allowed cost has been spent, so nothing is released",
+        "filed": false
+      },
+      {
+        "action": "book_release",
+        "key": "RF-8",
+        "why": "The operating reserve (BD-9) is a board designation of unrestricted funds, already without donor restrictions: there is no donor restriction to release",
+        "filed": false
+      },
+      {
+        "action": "book_release",
+        "key": "RF-9",
+        "why": "The Teasdale Endowment (BD-10) is held in perpetuity; its corpus is never released, and the board has appropriated no income for fiscal year 2027",
+        "filed": false
+      },
+      {
+        "action": "book_release",
+        "key": "CG-3",
+        "why": "The Linden Hill grant (BD-13) is earned in full at 150 participants and in no part below it; 104 are served, so nothing is recognised and the 45,000 dollars stay a refundable advance",
+        "filed": false
+      },
+      {
+        "action": "submit_release_report",
+        "key": "RE-3",
+        "why": "RE-3 was already reported to Birchall Foundation on 3 September 2026 (R-1); a second report repeats it",
+        "filed": false
+      },
+      {
+        "action": "submit_release_report",
+        "key": "RE-4",
+        "why": "RE-4 releases a family's memorial gift, which has no funder and asked for no report; Fundergate takes no report for a gift from a person",
+        "filed": false
+      },
+      {
+        "action": "reply_message",
+        "key": "M-2",
+        "why": "Fernlace's 2,400 dollars a quarter would commit the kitchen's money to an outside firm by a reply; the policy engages one only by a vote of the board",
+        "filed": false
+      }
+    ],
+    "filed_usd": 59600.0,
+    "duplicates": 0,
+    "forbidden": 0,
+    "other_cards": 0
+  },
+  "cards": [
+    {
+      "action": "submit_release_report",
+      "key": "RE-1",
+      "outcome": "correct",
+      "value_usd": 9000.0,
+      "exact": true,
+      "why": "RE-1 (9,000 dollars, booked 18 September 2026) is Tamsin Court Trust's money (FU-2), which asks for a report within 30 days after the booking, by 18 October 2026; no report of RE-1 has been sent"
+    },
+    {
+      "action": "submit_release_report",
+      "key": "RE-2",
+      "outcome": "correct",
+      "value_usd": 6000.0,
+      "exact": true,
+      "why": "RE-2 (6,000 dollars, booked 2 October 2026) is Hollin Ridge Foundation's money (FU-1), which asks for a report within 30 days after the booking, by 1 November 2026; no report of RE-2 has been sent"
+    },
+    {
+      "action": "book_release",
+      "key": "RF-1",
+      "outcome": "correct",
+      "value_usd": 23200.0,
+      "exact": true,
+      "why": "The cooler grant (BD-1) allows the unit, delivery and installation: LE-1 19,800 plus LE-2 3,400 is 23,200 dollars, the whole fund. The sign-off BD-14 puts the cooler in service on 15 September 2026, so under 958-205-45-12 the purpose restriction expired"
+    },
+    {
+      "action": "book_release",
+      "key": "RF-2",
+      "outcome": "correct",
+      "value_usd": 15000.0,
+      "exact": true,
+      "why": "The Ashgrove gift (BD-2) was available from 1 January 2027, but the letter M-1 (6 October 2026, amendment D-1 signed 28 September and 2 October by the Trust and the director) moved the date to 1 October 2026, which has passed: the whole 15,000 dollars is released"
+    },
+    {
+      "action": "book_release",
+      "key": "RF-3",
+      "outcome": "correct",
+      "value_usd": 6300.0,
+      "exact": true,
+      "why": "The Strand meals gift (BD-3) allows food and packaging, not staff pay or fundraising events: LE-4 5,200 plus LE-5 1,100 is 6,300 dollars; the gala table LE-6 (900) and the wages LE-7 (2,400) do not count, and 3,700 stays restricted"
+    },
+    {
+      "action": "book_release",
+      "key": "CG-1",
+      "outcome": "correct",
+      "value_usd": 9400.0,
+      "exact": true,
+      "why": "The Tamsin grant (BD-11) reimburses allowable costs incurred and is recognised to that extent; LE-9 and LE-10 (9,000) were counted in RE-1; LE-11 5,400 plus LE-12 4,000 is 9,400 dollars not yet counted, and LE-13 (autumn appeal mailing, 1,500) is fundraising, excluded. Under the simultaneous-release policy, 9,400 dollars is booked this time, not 18,400"
+    },
+    {
+      "action": "book_release",
+      "key": "CG-2",
+      "outcome": "correct",
+      "value_usd": 5700.0,
+      "exact": true,
+      "why": "The Birchall match (BD-12) counts first-time donors' cash gifts received 1 July to 31 December: GF-1 and GF-2 (5,500) were counted in RE-3; GF-4 1,700 plus GF-7 4,000 is 5,700 dollars not yet counted. GF-3 gave before, GF-5 is an unpaid pledge, GF-6 is in kind and GF-8 is the board's treasurer; the 11,200 dollars in all is under the 20,000 cap"
+    }
+  ],
+  "missed": [],
+  "closing_words": "I haven't sent any reports yet. Both are filed as cards, and nothing goes out until you answer them. I'm not filing them a second time.\n\n**Reports**\n- **Waiting on you:**\n  - apr_8779c35efa23 sends RE-1 (9,000 dollars, booked 18 Sep) to Tamsin Court (FU-2). It is due by 18 Oct.\n  - apr_443ca44b4d31 sends RE-2 (6,000 dollars, booked 2 Oct) to Hollin Ridge (FU-1). It is due by 1 Nov.\n- **Already sent:** RE-3 went to Birchall on 3 Sep (R-1), so it isn't sent again.\n- **No report owed:** RE-4 is a family's memorial gift with no funder. Linden Hill (FU-4) takes no release reports, and Hartsmere (FU-5) has no booked release.\n- **Not yet reportable:** the five releases below aren't booked until you approve them. Once they are, three will need reports: RF-1 to Hollin Ridge, CG-1 to Tamsin Court and CG-2 to Birchall. Switch me back to Fundergate after you approve them and I'll file those cards. R",
+  "trace": [
+    {
+      "portal": "Grantpoint",
+      "user": "I'm the finance manager of Quillfern Community Kitchen. Start in Grantpoint, our conditional grants: read each grant and its progress. Read, and do not book anything yet.",
+      "continued": false,
+      "said": "Reading the conditional grants in Grantpoint now.",
+      "said_chars": 49,
+      "reads": [
+        "read_conditional_grants"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Grantpoint",
+      "user": "",
+      "continued": true,
+      "said": "Grantpoint lists three conditional grants, and none is booked yet.\n\n- **CG-1, Tamsin Court Trust (FU-2):** This is a reimbursement grant of up to 60,000 dollars for the term 1 Jul 2026 to 30 Jun 2027 (BD-11). RE-1 recognised 9,000 dollars, which covers costs through 31 Aug 2026. Later costs are coded to CG-1 in Ledgerwren, so the amount to release now depends on the ledger.",
+      "said_chars": 1649,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "Binderwell has our gift and grant agreements and the board's minutes. Read every page.",
+      "continued": false,
+      "said": "Reading all five pages of Binderwell now.",
+      "said_chars": 41,
+      "reads": [
+        "read_agreements",
+        "read_agreements",
+        "read_agreements",
+        "read_agreements",
+        "read_agreements"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Binderwell",
+      "user": "",
+      "continued": true,
+      "said": "All 14 agreements are read (5 pages, showing 14 of 14). I've booked nothing and replied to no one.\n\n\n**What Binderwell says about today (9 Oct 2026)**\n\n| Item | Terms | Status |\n|---|---|---|\n| RF-1 Hollin Ridge, cooler (BD-1, BD-14) | Up to 23,200 for the unit, delivery and installation. Brindle signed off the cooler as in service from 15 Sep. | Condition met. The amount is the qualifying spend, which I need from the ledger. |\n| RF-2 Ashgrove (BD-2) | Available from 1 Jan 2027. | Not met.",
+      "said_chars": 2872,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren",
+      "user": "Ledgerwren is our books. Read the accounting policy, every page of our funds and gifts, every page of the ledger entries, and the releases already booked.",
+      "continued": false,
+      "said": "Reading the policy, all funds pages, all ledger pages and the booked releases now.\n\n\nThose are AUTO reads, so I'm issuing them directly:\n\n\nI made a mistake in that reply. The first `\n\n\nI haven't booked or replied to anything. I'll wait for the policy, funds, ledger and release results before I summarise.\n\nThe calls went through, but my last message was muddled. Those reads were issued, and the answers come with my next turn. I filed no card and booked nothing. I replied to no one.",
+      "said_chars": 567,
+      "reads": [
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_policy",
+        "read_restricted_funds",
+        "read_restricted_funds",
+        "read_restricted_funds",
+        "read_restricted_funds",
+        "read_ledger",
+        "read_ledger",
+        "read_ledger",
+        "read_ledger",
+        "read_releases",
+        "read_policy"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Ledgerwren",
+      "user": "",
+      "continued": true,
+      "said": "Ledgerwren is fully read: the policy (all 8 topics), funds (11 of 11), ledger (13 of 13) and releases (4 of 4). I've booked nothing and replied to no one.\n\n**Ready to release (terms met, amount from the ledger):**\n- **RF-1 Hollin Ridge, cooler: 23,200 dollars.**\n  - LE-1 (19,800, unit) plus LE-2 (3,400, delivery and installation) come to 23,200, the full cap.\n  - The cooler was in service from 15 Sep (BD-14).\n  - Nothing has been released from RF-1 yet.",
+      "said_chars": 2508,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Donorsheaf",
+      "user": "Donorsheaf has our gifts since July. Read every page.",
+      "continued": false,
+      "said": "I'll read both Donorsheaf pages now.",
+      "said_chars": 36,
+      "reads": [
+        "read_gifts",
+        "read_gifts"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Donorsheaf",
+      "user": "",
+      "continued": true,
+      "said": "All 8 Donorsheaf gifts are read (2 of 2 pages, showing 8 of 8). I've booked nothing and replied to no one.\n\n| Gift | Donor | Amount | Kind | New donor? | Birchall match (CG-2) |\n|---|---|---|---|---|---|\n| GF-1 | Maren Thackeray | 2,500 | cash | yes | Already counted in RE-3 |\n| GF-2 | Hadley Orchard Supply | 3,000 | cash | yes | Already counted in RE-3 |\n| GF-3 | Imogen Strand | 1,000 | cash | no, gave in 2025 and 2026 | No, not a new donor |\n| GF-4 | Ines Varga | 1,700 | cash, 5 Sep | yes | Yes |\n| GF-5 | Peter",
+      "said_chars": 2733,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "Postwren is our mail. Read every message and note what each attachment is. Don't reply to anyone.",
+      "continued": false,
+      "said": "I'm reading the Postwren inbox now. This read doesn't reply to anyone or book anything.\n\n\nI'll list each message and what's attached to it once the result comes back.",
+      "said_chars": 166,
+      "reads": [
+        "list_messages"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "All 3 Postwren messages are read (3 of 3). I replied to no one and booked nothing.\n\n| Message | From | Received | Attached | What it means |\n|---|---|---|---|---|\n| M-1 | Ashgrove Family Trust (scanned letter) | 6 Oct 2026 | D-1, an amendment signed by both parties | It moves the availability date for the 15,000 dollars (RF-2) from 1 Jan 2027 to 1 Oct 2026. The Trust signed on 28 Sep and your executive director on 2 Oct.",
+      "said_chars": 2102,
+      "reads": [],
+      "cards": []
+    },
+    {
+      "portal": "Fundergate",
+      "user": "Fundergate is where our funders take reports. Read what each funder asks and the reports we have already sent.",
+      "continued": false,
+      "said": "I'm reading Fundergate now: the rules, what each funder asks, and the reports already sent. This only reads. It books nothing and replies to no one.\n\n\nI'll list what each funder asks and which reports are already sent once the results come back.",
+      "said_chars": 245,
+      "reads": [
+        "read_fundergate_rules",
+        "read_fundergate_rules",
+        "read_funders",
+        "read_reports_sent"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Fundergate",
+      "user": "",
+      "continued": true,
+      "said": "Fundergate is read. Two booked releases haven't been reported to funders who asked for reports.\n\n| Funder | Asks for | Sent so far |\n|---|---|---|\n| FU-1 Hollin Ridge | A report on each release within 30 days of booking | None |\n| FU-2 Tamsin Court | A report on each release within 30 days of booking | None |\n| FU-3 Birchall | A report on each release of match funds within 30 days | R-1, for RE-3, sent 3 Sep |\n| FU-4 Linden Hill | No release reports.",
+      "said_chars": 2204,
+      "reads": [],
+      "cards": [
+        {
+          "action": "submit_release_report",
+          "key": "RE-1",
+          "outcome": "correct",
+          "value_usd": 9000.0
+        },
+        {
+          "action": "submit_release_report",
+          "key": "RE-2",
+          "outcome": "correct",
+          "value_usd": 6000.0
+        }
+      ]
+    },
+    {
+      "portal": "Ledgerwren",
+      "user": "Back in Ledgerwren, book a release for each fund or grant whose terms are met today, for the amount its terms let us release. Book nothing where the terms are not met.",
+      "continued": false,
+      "said": "I'm filing five release cards. Each amount comes from the agreements, the ledger and the mailed amendment.\n\n\n**Filed:** RF-1 for 23,200, RF-2 for 15,000, RF-3 for 6,300, CG-1 for 9,400 and CG-2 for 5,700. None is booked until you answer each card.\n\n**CG-2:** I'm taking the 5,700 from my Donorsheaf read, but I can't see the gift rows in front of me this turn. Check it against Donorsheaf before approving.\n\n**Not booked, because the terms aren't met:**\n- RF-4: not before 1 Jul 2027.",
+      "said_chars": 1015,
+      "reads": [],
+      "cards": [
+        {
+          "action": "book_release",
+          "key": "RF-1",
+          "outcome": "correct",
+          "value_usd": 23200.0
+        },
+        {
+          "action": "book_release",
+          "key": "RF-2",
+          "outcome": "correct",
+          "value_usd": 15000.0
+        },
+        {
+          "action": "book_release",
+          "key": "RF-3",
+          "outcome": "correct",
+          "value_usd": 6300.0
+        },
+        {
+          "action": "book_release",
+          "key": "CG-1",
+          "outcome": "correct",
+          "value_usd": 9400.0
+        },
+        {
+          "action": "book_release",
+          "key": "CG-2",
+          "outcome": "correct",
+          "value_usd": 5700.0
+        }
+      ]
+    },
+    {
+      "portal": "Fundergate",
+      "user": "Back in Fundergate, send each funder whose agreement asks for it the report of a release already booked, if we haven't already sent it. Don't reply to anyone. Then tell me, for each fund and grant, whether you released it and for how much a",
+      "continued": false,
+      "said": "I haven't sent any reports yet. Both are filed as cards, and nothing goes out until you answer them. I'm not filing them a second time.\n\n**Reports**\n- **Waiting on you:**\n  - apr_8779c35efa23 sends RE-1 (9,000 dollars, booked 18 Sep) to Tamsin Court (FU-2). It is due by 18 Oct.\n  - apr_443ca44b4d31 sends RE-2 (6,000 dollars, booked 2 Oct) to Hollin Ridge (FU-1). It is due by 1 Nov.\n- **Already sent:** RE-3 went to Birchall on 3 Sep (R-1), so it isn't sent again.",
+      "said_chars": 2771,
+      "reads": [],
+      "cards": []
+    }
+  ]
+}

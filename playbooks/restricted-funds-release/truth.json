@@ -1,0 +1,90 @@
+{
+  "targets": [
+    {
+      "tool": "book_release",
+      "key": "item_id",
+      "eligible": {
+        "RF-1": {
+          "value_usd": 23200.0,
+          "why": "The cooler grant (BD-1) allows the unit, delivery and installation: LE-1 19,800 plus LE-2 3,400 is 23,200 dollars, the whole fund. The sign-off BD-14 puts the cooler in service on 15 September 2026, so under 958-205-45-12 the purpose restriction expired",
+          "expect": {
+            "amount_usd": 23200
+          }
+        },
+        "RF-2": {
+          "value_usd": 15000.0,
+          "why": "The Ashgrove gift (BD-2) was available from 1 January 2027, but the letter M-1 (6 October 2026, amendment D-1 signed 28 September and 2 October by the Trust and the director) moved the date to 1 October 2026, which has passed: the whole 15,000 dollars is released",
+          "expect": {
+            "amount_usd": 15000
+          }
+        },
+        "RF-3": {
+          "value_usd": 6300.0,
+          "why": "The Strand meals gift (BD-3) allows food and packaging, not staff pay or fundraising events: LE-4 5,200 plus LE-5 1,100 is 6,300 dollars; the gala table LE-6 (900) and the wages LE-7 (2,400) do not count, and 3,700 stays restricted",
+          "expect": {
+            "amount_usd": 6300
+          }
+        },
+        "CG-1": {
+          "value_usd": 9400.0,
+          "why": "The Tamsin grant (BD-11) reimburses allowable costs incurred and is recognised to that extent; LE-9 and LE-10 (9,000) were counted in RE-1; LE-11 5,400 plus LE-12 4,000 is 9,400 dollars not yet counted, and LE-13 (autumn appeal mailing, 1,500) is fundraising, excluded. Under the simultaneous-release policy, 9,400 dollars is booked this time, not 18,400",
+          "expect": {
+            "amount_usd": 9400
+          }
+        },
+        "CG-2": {
+          "value_usd": 5700.0,
+          "why": "The Birchall match (BD-12) counts first-time donors' cash gifts received 1 July to 31 December: GF-1 and GF-2 (5,500) were counted in RE-3; GF-4 1,700 plus GF-7 4,000 is 5,700 dollars not yet counted. GF-3 gave before, GF-5 is an unpaid pledge, GF-6 is in kind and GF-8 is the board's treasurer; the 11,200 dollars in all is under the 20,000 cap",
+          "expect": {
+            "amount_usd": 5700
+          }
+        }
+      },
+      "traps": {
+        "RF-4": "The Greenbarrow gift (BD-4) is for operating costs in fiscal year 2028 and is not available before 1 July 2027: a time restriction that has not arrived",
+        "RF-5": "BD-5 says available from 1 October 2026, but the amendment BD-6, signed 3 and 8 September 2026, moved the date to 1 February 2027; the restriction has not expired",
+        "RF-6": "The Hartsmere van (BD-7) is met when the van is delivered and in service; only the 4,000 dollar deposit is paid (LE-3) and the van is due about 20 November (M-3)",
+        "RF-7": "The Vesper Lane gift (BD-8) excludes instructors' stipends, and the only 6,500 dollars coded to it (LE-8) is stipends: no allowed cost has been spent, so nothing is released",
+        "RF-8": "The operating reserve (BD-9) is a board designation of unrestricted funds, already without donor restrictions: there is no donor restriction to release",
+        "RF-9": "The Teasdale Endowment (BD-10) is held in perpetuity; its corpus is never released, and the board has appropriated no income for fiscal year 2027",
+        "CG-3": "The Linden Hill grant (BD-13) is earned in full at 150 participants and in no part below it; 104 are served, so nothing is recognised and the 45,000 dollars stay a refundable advance"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "submit_release_report",
+      "key": "release_id",
+      "eligible": {
+        "RE-1": {
+          "value_usd": 9000.0,
+          "why": "RE-1 (9,000 dollars, booked 18 September 2026) is Tamsin Court Trust's money (FU-2), which asks for a report within 30 days after the booking, by 18 October 2026; no report of RE-1 has been sent",
+          "expect": {
+            "funder_id": "FU-2"
+          }
+        },
+        "RE-2": {
+          "value_usd": 6000.0,
+          "why": "RE-2 (6,000 dollars, booked 2 October 2026) is Hollin Ridge Foundation's money (FU-1), which asks for a report within 30 days after the booking, by 1 November 2026; no report of RE-2 has been sent",
+          "expect": {
+            "funder_id": "FU-1"
+          }
+        }
+      },
+      "traps": {
+        "RE-3": "RE-3 was already reported to Birchall Foundation on 3 September 2026 (R-1); a second report repeats it",
+        "RE-4": "RE-4 releases a family's memorial gift, which has no funder and asked for no report; Fundergate takes no report for a gift from a person"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "reply_message",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-2": "Fernlace's 2,400 dollars a quarter would commit the kitchen's money to an outside firm by a reply; the policy engages one only by a vote of the board"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

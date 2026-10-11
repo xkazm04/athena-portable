@@ -1,0 +1,138 @@
+{
+  "id": "restricted-funds-release",
+  "title": "A kitchen nonprofit's restricted funds are released on 9 October as their terms are met: a cooler in service, a gift whose date a mailed amendment moved up, 6,300 dollars of meals money, 9,400 and 5,700 dollars of two grants, and two releases reported, while a van, a later date, 104 of 150 served and a consultant wait",
+  "domain": "Nonprofit",
+  "audience": "work",
+  "promise": "A finance manager's restricted funds, read against each agreement, the ledger, the donor records and the mail on Friday 9 October, released for exactly what their terms let go: the cooler grant of 23,200 dollars, in service since 15 September; the Ashgrove gift of 15,000 dollars, whose date a mailed amendment moved from 1 January 2027 to 1 October 2026; 6,300 dollars of the 10,000 dollar meals gift, the food and packaging and not the wages or the gala table; 9,400 dollars of the cost-reimbursement grant, the costs not yet recognised; and 5,700 dollars of the match, two new donors' cash gifts. Then the two releases booked in September and October reported to the funders that asked for them. Nothing for the van still to be delivered, the gift for fiscal year 2028, the gift whose date moved later, the grant 104 of 150 earned, the board's reserve, the endowment, the stipends or the gift that wants no report, and no yes to the consultant.",
+  "persona": "The finance manager of a small community kitchen, a week after the quarter's close, who books the releases and files the funders' reports",
+  "chore": "Read the conditional grants in Grantpoint; the agreements, amendments and board minutes in Binderwell; the kitchen's accounting policy, funds, ledger entries and releases already booked in Ledgerwren; the gifts in Donorsheaf; the funders' rules and the reports already sent in Fundergate; and the mail, scanned letters included, in Postwren. Then apply FASB ASC 958 as the kitchen's policy states it on Friday 9 October 2026: a restriction is released when its purpose is fulfilled or its date arrives, as each agreement and its amendments say, and only for the costs the agreement allows; a restriction on equipment ends when it is placed in service; a barrier counted in costs, match dollars or milestones is recognised in part, and one that unlocks a whole grant at once is not recognised until it is met; a board designation is no donor restriction and an endowment's corpus is never released. Book each release, then report the booked releases to the funders whose agreements ask, once each, and answer no offer.",
+  "command": "I'm the finance manager of Quillfern Community Kitchen. Go through Grantpoint, Binderwell, Ledgerwren, Donorsheaf, Fundergate and the Postwren inbox, release every restricted fund and grant whose terms are met today for the amount its terms let go, report the releases already booked to the funders that asked, and don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Grantpoint",
+      "role": "the conditional grants, each with its barrier and its progress",
+      "api": "Grants tracker, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the gift and grant agreements, the amendments filed and the board's minutes",
+      "api": "Documents, not data",
+      "url": ""
+    },
+    {
+      "name": "Ledgerwren",
+      "role": "the accounting policy, the restricted funds, the ledger entries coded to them, the releases booked and the page that books a release",
+      "api": "Accounting, no grants feed",
+      "url": ""
+    },
+    {
+      "name": "Donorsheaf",
+      "role": "the gifts since July, with whether each donor gave before",
+      "api": "Donor records, not data",
+      "url": ""
+    },
+    {
+      "name": "Fundergate",
+      "role": "the stand-in for the funders' report portals: what each funder asks, the reports sent and the page that sends one",
+      "api": "Report portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the kitchen's mail, scanned letters included: a funder's amendment, a consultant's offer, a funder's letter",
+      "api": "Mail, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the conditional grants and their progress in Grantpoint.",
+    "Reads every agreement, amendment and minute in Binderwell.",
+    "Reads the policy, the funds, the ledger entries and the releases already booked in Ledgerwren.",
+    "Reads the gifts in Donorsheaf and the mail in Postwren, and finds the amendment that moved a date.",
+    "Reads what each funder asks and the reports already sent in Fundergate.",
+    "Books each release at the amount the terms let go, then sends the booked releases' reports to the funders that asked."
+  ],
+  "gates": [
+    {
+      "action": "book_release",
+      "label": "Book a release",
+      "why": "It moves money between net asset classes in the books: a release for a purpose not yet spent, a date not yet reached, a barrier not overcome or a corpus that is never released misstates the financial statements and the donor's restriction."
+    },
+    {
+      "action": "submit_release_report",
+      "label": "Send a funder a release report",
+      "why": "It tells a funder the kitchen released its money, under the kitchen's name; one sent twice, to the wrong funder or for a gift that wants no report is a statement to a funder that can't be taken back."
+    },
+    {
+      "action": "reply_message",
+      "label": "Reply to a message",
+      "why": "A reply goes out under the kitchen's name; a yes to an outside firm commits the kitchen's money without the board's vote."
+    }
+  ],
+  "traps": [
+    "The van: ordered and 4,000 dollars deposited, not delivered until about 20 November, so its restriction is not met.",
+    "A gift available only from 1 July 2027, for fiscal year 2028.",
+    "A gift whose date Binderwell shows passed, but an amendment signed in September moved it to 1 February 2027.",
+    "A cooking-classes gift of 6,500 dollars spent wholly on instructor stipends, which the donor excluded.",
+    "The board's 40,000 dollar operating reserve: a board designation is no donor restriction.",
+    "The endowment's 50,000 dollar corpus, held in perpetuity.",
+    "A 45,000 dollar grant earned in full at 150 participants and in no part below it, 104 served.",
+    "A September report on a release already reported on 3 September.",
+    "A report to a funder for a family's memorial gift that asked for none.",
+    "A yes to a consultant at 2,400 dollars a quarter, without the board's vote."
+  ],
+  "memory": [
+    "Each fund's and grant's id, source, terms and class, carried from the register, Grantpoint and the agreements.",
+    "Which amendments change a date, and which way, carried from the mail and Binderwell.",
+    "What each ledger entry bought, what the agreement allows and which entries a release already counted.",
+    "Which releases are booked, which funders asked for a report and which reports were sent."
+  ],
+  "economics": {
+    "value_usd": 5724,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. A monthly pass of three hours over the restricted funds, the ledger, the agreements and the mail, at $159 an hour, the average hourly rate of nonprofit consultants in Nonprofit.ist's 2025 survey, is $477 a pass and $5,724 over twelve. The roster's $30,000 a year is not reproduced: it matches the $2,500 a month of JFW Accounting Services' Gold package ($30,000 a year; copyright 2026, no effective date on the page), which is a whole accounting service that includes restricted-fund tracking, not a price for this chore, so it is shown below as a cross-check and not as the value. The bench world's items are not that value: each truth item is weighted at the dollars it releases or reports (23,200, 15,000, 6,300, 9,400 and 5,700 dollars released, 9,000 and 6,000 reported, 74,600 dollars), an exposure unit and not money recovered, since a wrong release misstates net assets and a missed report puts the next payment from a funder at risk. Times a year: 12, a monthly close pass, because a date passes, an amendment arrives or a cost is paid in any month. manual_minutes 180: reading eleven funds, thirteen ledger entries, fourteen agreements, three grants, eight gifts, four releases and three letters against the policy, booking five releases and sending two reports. THE RULES APPLIED, as they stand on Friday 9 October 2026 (read on 11 October 2026): ASC 958-605-25-5A (a condition is a barrier plus a right of return or release), 958-605-25-5F (a refundable advance until the conditions are substantially met), 958-605-55-17 and 55-21 (a match and costs and milestones recognised to the extent met), 958-605-45-4A and 45-4B (the simultaneous-release election), 958-205-45-9 (a restriction expires when its time passes or its purpose is fulfilled) and 958-205-45-12 (a long-lived asset's restriction expires when it is placed in service), in the text of ASU 2018-08 as FASB posts it and PwC Viewpoint's copies of ASU 2016-14 and ASU 2018-08. WHERE THE BRIEF'S PREMISES WERE CORRECTED: (1) 'A condition met in part is not met' is true only of a barrier that unlocks the whole grant at once; ASU 2018-08 recognises a match, costs and milestones to the extent met (958-605-55-17, 55-21 and Example 19), so the world builds three conditional grants, two recognised in part and one, which its own agreement earns in full or not at all, not recognised, and says in its policy that the agreement decides. (2) A conditional grant is not in net assets with donor restrictions until its barrier is overcome, so the world keeps conditional grants in Grantpoint and releases them only under the simultaneous-release policy that the world states (958-605-45-4B). (3) The roster's value was not a published price for the chore.",
+    "manual_minutes": 180,
+    "times_per_year": 12,
+    "incumbent": "An outsourced nonprofit accountant or consultant, billed by the hour ($159 an hour on average at Nonprofit.ist, 2025) or monthly (JFW's Gold package, with restricted-fund tracking, $2,500 a month); nobody takes a share of anything, so no incumbent_fee_pct is given. The 2,400 dollars a quarter in the world's consultant offer is invented.",
+    "sources": [
+      {
+        "label": "FASB ASU 2018-08, Not-for-Profit Entities (Topic 958): clarifying the scope and the accounting guidance for contributions received and made (June 2018): 958-605-25-5A to 25-5F, 55-17, 55-21, 45-4A and 45-4B, Example 19",
+        "url": "https://storage.fasb.org/ASU%202018-08.pdf"
+      },
+      {
+        "label": "PwC Viewpoint: the full text of ASU 2018-08, with 958-605-25-2 (a conditional contribution is recognised when the barrier is overcome) and the matching, cost-reimbursement and milestone examples",
+        "url": "https://viewpoint.pwc.com/dt/us/en/fasb_financial_accou/asus_fulltext/2018/asu_201808notforprof/asu_201808notforprof_US/asu_201808notforprof_US.html"
+      },
+      {
+        "label": "PwC Viewpoint: the full text of ASU 2016-14 (Topic 958): 958-205-45-9 and 45-12, the glossary's board-designated net assets, and perpetual restrictions",
+        "url": "https://viewpoint.pwc.com/dt/us/en/fasb_financial_accou/asus_fulltext/2016/asu_201614notforprof/asu_201614notforprof_US/asu_201614notforprof_US.html"
+      },
+      {
+        "label": "PwC Viewpoint, Not-for-profit entities guide, 6.7 Donor-imposed restrictions (page dated 27 August 2026): expiration, placed in service, simultaneous release, restrictions that last forever",
+        "url": "https://viewpoint.pwc.com/dt/us/en/pwc/accounting_guides/not-for-profit-entities/Not-for-profit-entities/Nfp06_1/67_Donorimposed_restrictions_14.html"
+      },
+      {
+        "label": "Nonprofit.ist 2025 consultant survey: about $159 an hour on average",
+        "url": "https://www.nonprofit.ist/nonprofitconsultantsurvey"
+      },
+      {
+        "label": "JFW Accounting Services, nonprofit accounting packages: Gold $2,500 a month includes grant tracking and restricted vs. unrestricted fund reporting (undated, copyright 2026), a cross-check",
+        "url": "https://jfwaccountingservices.cpa/non-profit-accounting/pricing/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 3,
+    "difficulty_why": "Six systems with no shared data; eleven funds and three grants to sort by whether a time has come, a purpose is spent on allowed costs, a barrier is overcome in part or only whole, with an amendment in the mail that moves one date up and another in Binderwell that moves one back, and a release to book at the right amount before the two earlier ones are reported once each.",
+    "usefulness_why": "A small nonprofit's only finance person does this every month, and a release booked early or late misstates net assets, draws the auditor's adjustment and breaks a donor's restriction; the chore is hours, not a large sum, and a missed funder report is a courtesy that can cost the next gift."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful finance manager books most of the releases at the right amounts and reports the booked ones; the bar is most of the released and reported value, no release for an unmet term, and no yes to the consultant, inside an hour."
+  },
+  "caveat": "Quillfern Community Kitchen, the funders and donors (Hollin Ridge Foundation, Tamsin Court Trust, Birchall Foundation, Linden Hill Fund, Ashgrove Family Trust, Greenbarrow Trust, Fallowfield Trust, Hartsmere Foundation, Vesper Lane Giving Circle and the others), Fernlace Nonprofit Advisors, every agreement, amount and date, and the portals Grantpoint, Fundergate, Ledgerwren, Binderwell, Donorsheaf and Postwren are invented; Fundergate stands in for funders' own report portals and nothing in the world presents it as a real funder's. The kitchen's accounting policy, the 30-day report rule each funder states and the rule that a board votes on outside help are invented. The public rule applied is FASB ASC Topic 958 as it stands on Friday 9 October 2026, read in the text of ASU 2018-08 (June 2018, FASB's own PDF) and in PwC Viewpoint's copies of ASU 2016-14 and ASU 2018-08 and its guide section 6.7 (page dated 27 August 2026), all read on 11 October 2026: conditions are a barrier plus a right of return or release (958-605-25-5A), recognised as the barrier is overcome, in increments for a cost, a match or a milestone with its own amount (958-605-55-17 and 55-21); restrictions expire when the time passes or the purpose is fulfilled, and a restriction on a long-lived asset when it is placed in service (958-205-45-9 and 45-12); the simultaneous-release election is 958-605-45-4A and 45-4B and the world's policy states it. The Codification itself needs a login and was not opened, and later changes to it were not checked beyond those pages. Whether a barrier can be met in part is read from each invented agreement, as the policy says; real agreements, the organisation's auditor and its accountant decide real cases. This applies stated rules to stated facts; it is not accounting, audit or legal advice."
+}
