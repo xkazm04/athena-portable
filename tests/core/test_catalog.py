@@ -14,6 +14,7 @@ from typing import Any
 import pytest
 
 from athena.contracts import HostManifest, Lane, ToolClass, TurnContext
+from athena.contracts.registry import ToolEntry
 from athena.core.catalog import (
     DESCRIPTION_CAP,
     READ_CAP,
@@ -23,6 +24,7 @@ from athena.core.catalog import (
     CoreServices,
     build_catalog,
 )
+from athena.core.validators import schema_validator
 
 CTX = TurnContext(conversation_id="conv_invoices", turn_id="turn-1")
 
@@ -426,3 +428,43 @@ def test_a_core_entry_renders_byte_for_byte_as_before() -> None:
         "back whole, best first, as many as fit; a narrower query reaches the rest. The answer "
         "returns as a system episode. [cap 4800 chars]"
     ) in lines
+
+
+# --- a malformed schema already in a catalog fails closed (robustness-2) -------------------------
+
+
+@pytest.mark.parametrize(
+    "schema",
+    [
+        {"properties": {"a": {"type": "string"}}, "required": 5},
+        {"properties": {"a": {"type": "string"}}, "required": [["a"]]},
+        {"properties": [1, 2]},
+        {"properties": {"a": {"enum": "abc", "type": {"x": 1}}}},
+        [1, 2],
+    ],
+)
+def test_a_malformed_schema_forced_into_a_catalog_renders_and_refuses_every_call(
+    schema: Any,
+) -> None:
+    """``validate`` refuses these at the door. If one is in a catalog anyway, it must not end the
+    render for every other origin, and its validator must refuse rather than raise or pass."""
+    catalog = build_catalog(services(), manifest())
+    catalog.merge_manifest(manifest("support", page_origin="https://support.example"))
+    forced = ToolEntry(
+        name="host.support.broken",
+        origin="host:support",
+        cls=ToolClass.AUTO,
+        params_schema=schema,
+        description="Broken.",
+        validator=schema_validator(schema),
+    )
+    catalog.host["host:support"] = {**catalog.host["host:support"], forced.name: forced}
+
+    lines = catalog.render_capabilities(Lane.BROWSER).text.splitlines()
+
+    assert [ln for ln in lines if "`host.support.broken`(parameters unreadable)" in ln]
+    assert [ln for ln in lines if "`host.invoices.list_invoices`(status?:" in ln]
+    for params in ({}, {"a": "x"}):
+        verdict = catalog.validate("host.support.broken", params, CTX)
+        assert not verdict.ok and verdict.reason == "validator_failed"
+        assert "params_schema" in verdict.detail

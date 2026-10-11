@@ -7,14 +7,15 @@ is the catalog's answer and not the page's preference.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
-from athena.contracts.manifest import HostTool
-from athena.contracts.registry import ExecResult, ToolClass, ToolEntry, TurnContext
+from athena.contracts.manifest import HostManifest, HostTool
+from athena.contracts.registry import ExecResult, Lane, ToolClass, ToolEntry, TurnContext
 from athena.daemon import routes
 from athena.daemon.server import AthenaDaemon
 
@@ -338,3 +339,55 @@ def test_a_first_merge_whose_pin_raises_leaves_no_origin_behind(
 
     assert f"host:{APP_ID}" not in daemon.catalog.host
     assert daemon.catalog.names() == names
+
+
+# --- a params_schema of the wrong shape is refused at the door (robustness-2, robustness-3) -----
+
+
+@pytest.mark.parametrize(
+    ("schema", "field"),
+    [
+        ([1, 2], "params_schema"),
+        ({"properties": [1, 2]}, "properties"),
+        ({"properties": {"a": 5}}, "properties"),
+        ({"required": 5}, "required"),
+        ({"required": [["a"]]}, "required"),
+        ({"properties": {"a": {"enum": "abc"}}}, "enum"),
+        ({"properties": {"a": {"type": 5}}}, "type"),
+    ],
+)
+def test_a_malformed_params_schema_is_a_400_and_changes_nothing(
+    live: Live, schema: Any, field: str
+) -> None:
+    """``required: 5`` used to merge and then raise in every render on every tab, and
+    ``properties: [1, 2]`` used to raise inside ``validate`` and answer 500."""
+    live.register()
+    names = live.daemon.catalog.names()
+    held = live.daemon.catalog.held(f"host:{APP_ID}")
+    tools = [{"name": "tag", "reversible": True, "side_effects": "none", "params_schema": schema}]
+
+    reply = live.register(tools=tools)
+
+    assert reply.status == 400
+    assert reply.body["reason"] == "manifest_invalid"
+    assert field in json.dumps(reply.body)
+    assert live.daemon.catalog.names() == names
+    assert live.daemon.catalog.held(f"host:{APP_ID}") == held
+    live.daemon.catalog.render_capabilities(Lane.BROWSER)
+
+
+def test_an_exception_inside_validate_is_a_400_and_never_a_500(
+    live: Live, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Whatever ``validate`` trips on, the answer is the refusal and not the dispatcher's 500."""
+
+    def raising(self: HostManifest) -> list[str]:
+        raise AttributeError("'list' object has no attribute 'items'")
+
+    monkeypatch.setattr(HostManifest, "validate", raising)
+
+    reply = live.register()
+
+    assert reply.status == 400
+    assert reply.body["reason"] == "manifest_invalid"
+    assert live.daemon.catalog.names() == sorted(live.daemon.catalog.core)

@@ -132,3 +132,12 @@ def test_live_sources_refuses_an_empty_list_and_anything_that_is_not_an_episode_
     malformed = validator({"sources": ["fact_000000000001"]}, CTX)
     assert not malformed.ok
     assert "not episode ids" in malformed.detail
+
+
+def test_a_schema_of_the_wrong_shape_refuses_every_call_instead_of_raising() -> None:
+    """robustness-2: ``required: 5`` used to raise TypeError here, at the gate itself."""
+    for schema in ({"required": 5}, {"required": [["a"]]}, {"properties": [1, 2]}, [1, 2]):
+        for params in ({}, {"a": 1}):
+            result = check_schema(params, schema)  # type: ignore[arg-type]
+            assert not result.ok and result.reason == "validator_failed"
+            assert "params_schema" in result.detail

@@ -26,6 +26,7 @@ __all__ = [
     "StateReadable",
     "ToolOrigin",
     "is_origin",
+    "params_schema_problems",
     "parse_origin",
 ]
 
@@ -34,6 +35,47 @@ __all__ = [
 SideEffects = Literal["none", "internal", "external"]
 
 SIDE_EFFECTS: tuple[str, ...] = ("none", "internal", "external")
+
+
+def params_schema_problems(schema: object) -> list[str]:
+    """What is wrong with the *shape* of one tool's ``params_schema``; empty when nothing is.
+
+    The render and the gate's validator read ``properties``, ``required`` and each property's
+    ``type`` and ``enum`` as the types JSON Schema gives them, so a schema that holds anything
+    else there is refused at the door rather than raising in every later render (council
+    injection-resistance r1, robustness-2). ``core.validators`` checks the same shape before it
+    validates a call, so one that reached a catalog anyway fails closed.
+    """
+    if not isinstance(schema, dict):
+        return [f"params_schema must be an object, got {type(schema).__name__}"]
+    problems: list[str] = []
+    props = schema.get("properties", {})
+    if not isinstance(props, dict):
+        problems.append(f"params_schema.properties must be an object, got {type(props).__name__}")
+        props = {}
+    for name, sub in props.items():
+        if not isinstance(name, str):
+            problems.append(f"params_schema.properties has a non-string key {name!r}")
+            continue
+        if not isinstance(sub, dict):
+            problems.append(f"params_schema.properties.{name} must be an object")
+            continue
+        if "enum" in sub and not isinstance(sub["enum"], list):
+            problems.append(f"params_schema.properties.{name}.enum must be a list")
+        kind = sub.get("type")
+        if not (
+            kind is None
+            or isinstance(kind, str)
+            or (isinstance(kind, list) and all(isinstance(k, str) for k in kind))
+        ):
+            problems.append(
+                f"params_schema.properties.{name}.type must be a string or a list of strings"
+            )
+    required = schema.get("required", [])
+    if not isinstance(required, list) or not all(isinstance(r, str) for r in required):
+        problems.append("params_schema.required must be a list of strings")
+    return problems
+
 
 #: The one value of a tool's ``runner`` that means "the shell appended this generic hand" (README
 #: §3.4 tier 2; ADR 0066). The TypeScript spells it once as ``HAND_RUNNER`` in ``lib/hands.ts``.
@@ -83,10 +125,13 @@ class HostTool:
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> HostTool:
         raw = d.get("reversible")
+        # A schema that is not an object is kept as it came, so ``validate`` names it, rather
+        # than coerced here into whatever ``dict()`` would make of it.
+        schema: Any = d.get("params_schema") or d.get("input_schema") or {}
         return cls(
             name=str(d.get("name", "")),
             description=str(d.get("description", "")),
-            params_schema=dict(d.get("params_schema") or d.get("input_schema") or {}),
+            params_schema=dict(schema) if isinstance(schema, dict) else schema,
             reversible=None if raw is None else bool(raw),
             side_effects=str(d.get("side_effects", "internal")),
             transport=str(d.get("transport", "webmcp")),
@@ -178,12 +223,11 @@ class HostManifest:
                     f"got {tool.side_effects!r}"
                 )
 
-            props = (
-                tool.params_schema.get("properties", {})
-                if isinstance(tool.params_schema, dict)
-                else {}
-            )
-            for pname, pschema in props.items():
+            shape = params_schema_problems(tool.params_schema)
+            problems.extend(f"tool {tool.name!r}: {problem}" for problem in shape)
+            if shape:
+                continue
+            for pname, pschema in tool.params_schema.get("properties", {}).items():
                 if not isinstance(pschema, dict):
                     continue
                 if pschema.get("type") == "array" and "maxItems" not in pschema:

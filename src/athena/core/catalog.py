@@ -27,7 +27,12 @@ from typing import Any
 
 from athena.connectors.port import ConnectorPort
 from athena.contracts.harness import PromptBlock
-from athena.contracts.manifest import HAND_RUNNER, HostManifest, HostTool
+from athena.contracts.manifest import (
+    HAND_RUNNER,
+    HostManifest,
+    HostTool,
+    params_schema_problems,
+)
 from athena.contracts.registry import (
     ExecResult,
     ExecutorFn,
@@ -523,6 +528,10 @@ def _params_line(schema: dict[str, Any], foreign: bool = False) -> str:
     ``foreign`` is true for a page's or connector's entry, whose names, types and enum values are
     neutralised (ADR 0068); a core entry renders exactly as it always has.
     """
+    if params_schema_problems(schema):
+        # Refused at the door; one forced in anyway is shown as unreadable, and its validator
+        # refuses every call, so it can never stop the render for every other origin.
+        return "parameters unreadable"
     props = schema.get("properties")
     if not isinstance(props, dict) or not props:
         return ""

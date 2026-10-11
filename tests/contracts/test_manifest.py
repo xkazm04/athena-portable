@@ -8,6 +8,7 @@ from __future__ import annotations
 import pytest
 
 from athena.contracts import HostManifest, HostTool, StateReadable, ToolClass
+from athena.contracts.manifest import params_schema_problems
 
 
 def a_manifest(**kw: object) -> HostManifest:
@@ -113,3 +114,48 @@ def test_a_connector_manifest_is_the_same_shape_with_a_connector_origin() -> Non
     manifest = a_manifest(app_id="gmail", origin_kind="connector", page_origin="")
     assert manifest.validate() == []
     assert manifest.registry_origin == "connector:gmail"
+
+
+# --- the shape of a params_schema (council injection-resistance r1, robustness-2 and -3) -------
+
+#: Each shape a page could post that used to merge and then break the render or the validator,
+#: with the field the refusal must name.
+MALFORMED_SCHEMAS: list[tuple[object, str]] = [
+    ([1, 2], "params_schema"),
+    ("object", "params_schema"),
+    ({"properties": [1, 2]}, "properties"),
+    ({"properties": {"a": 5}}, "properties"),
+    ({"properties": {5: {"type": "string"}}}, "properties"),
+    ({"required": 5}, "required"),
+    ({"required": [["a"]]}, "required"),
+    ({"required": "a"}, "required"),
+    ({"properties": {"a": {"enum": "abc"}}}, "enum"),
+    ({"properties": {"a": {"type": 5}}}, "type"),
+    ({"properties": {"a": {"type": ["string", 5]}}}, "type"),
+]
+
+
+@pytest.mark.parametrize(("schema", "field"), MALFORMED_SCHEMAS)
+def test_a_malformed_params_schema_refuses_the_manifest_naming_the_tool_and_field(
+    schema: object, field: str
+) -> None:
+    tool = HostTool(name="tag", reversible=True, side_effects="none")
+    tool.params_schema = schema  # type: ignore[assignment]
+    problems = a_manifest(tools=[tool]).validate()
+    assert any("'tag'" in p and field in p for p in problems), problems
+
+
+def test_a_well_formed_params_schema_has_no_shape_problem() -> None:
+    schema = {
+        "type": "object",
+        "properties": {
+            "status": {"type": "string", "enum": ["open", "paid"]},
+            "amount": {"type": ["number", "null"]},
+            "ids": {"type": "array", "items": {"type": "string"}, "maxItems": 5},
+        },
+        "required": ["status"],
+        "additionalProperties": False,
+    }
+    tool = HostTool(name="tag", reversible=True, side_effects="none", params_schema=schema)
+    assert a_manifest(tools=[tool]).validate() == []
+    assert params_schema_problems({}) == []

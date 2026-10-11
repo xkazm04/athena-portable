@@ -17,6 +17,7 @@ from collections.abc import Callable, Sequence
 from typing import Any
 
 from athena.contracts.ids import is_id
+from athena.contracts.manifest import params_schema_problems
 from athena.contracts.registry import TurnContext, ValidationResult, ValidatorFn
 
 __all__ = [
@@ -38,9 +39,18 @@ _TYPES: dict[str, type | tuple[type, ...]] = {
 
 
 def check_schema(params: dict[str, Any], schema: dict[str, Any]) -> ValidationResult:
-    """Validate ``params`` against the supported subset, or reject with the first problem found."""
+    """Validate ``params`` against the supported subset, or reject with the first problem found.
+
+    A schema of the wrong shape refuses every call: the manifest door refuses one, so a schema
+    that reached a catalog anyway fails closed here rather than raising or passing.
+    """
     if not isinstance(params, dict):
         return ValidationResult.reject("validator_failed", "params must be an object")
+    shape = params_schema_problems(schema)
+    if shape:
+        return ValidationResult.reject(
+            "validator_failed", f"this tool's params_schema is malformed: {shape[0]}"
+        )
 
     for name in schema.get("required", []):
         if name not in params:

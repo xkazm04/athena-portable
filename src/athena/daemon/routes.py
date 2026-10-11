@@ -423,8 +423,12 @@ def manifest(daemon: AthenaDaemon, request: Request) -> Reply:
         parsed = HostManifest.from_dict(dict(request.body))
     except (AttributeError, TypeError, ValueError) as exc:
         return error(400, "manifest_invalid", f"malformed manifest: {type(exc).__name__}: {exc}")
-
-    problems = parsed.validate()
+    try:
+        problems = parsed.validate()
+    except Exception as exc:
+        # ``validate`` reads a page's own structure. Whatever it trips on is that structure being
+        # wrong, which is this route's refusal and never the dispatcher's 500.
+        return error(400, "manifest_invalid", f"malformed manifest: {type(exc).__name__}: {exc}")
     if parsed.origin_kind != "host":
         problems = [
             *problems,
