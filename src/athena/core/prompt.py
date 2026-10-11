@@ -18,9 +18,12 @@ tell which of the two outputs a block belongs to from its name alone, and so can
 
 Two consequences fall out of the rule and are worth stating because they look like omissions:
 
-- Static blocks are **never fenced**. They are Athena's own text, not a page's, and a fence
-  carries a fresh nonce — which would move their hashes every turn and destroy the property the
-  next paragraph relies on.
+- Static blocks are **never fenced**, because a fence carries a fresh nonce — which would move
+  their hashes every turn and destroy the property the next paragraph relies on. Most are
+  Athena's own text. The capabilities block also carries a page's or connector's tool
+  descriptions and parameter names, and those are neutralised rather than fenced (ADR 0068):
+  each is cut to one capped line and written as a JSON string literal, deterministically, so it
+  cannot open a heading, a list item or an ``OP:`` line and the hash still holds.
 - Static block hashes are **stable across turns when the content did not move**, which is what
   makes prompt-cache churn visible: a block that appears in :func:`churn` while its size held
   steady is cache-creation tokens being paid for nothing.
