@@ -13,6 +13,7 @@ invented its own reason string would be a ledger column nobody can group by.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Sequence
 from typing import Any
 
@@ -126,6 +127,12 @@ def _check_value(path: str, value: Any, schema: dict[str, Any]) -> ValidationRes
                     return result
 
     if isinstance(value, int | float) and not isinstance(value, bool):
+        # NaN compares False with every bound, so a range check alone lets it through, and a
+        # store then refuses it after the file is written. Infinity is no one's number either.
+        if isinstance(value, float) and not math.isfinite(value):
+            return ValidationResult.reject(
+                "validator_failed", f"{path}: {value} is not a finite number"
+            )
         low = schema.get("minimum")
         if isinstance(low, int | float) and value < low:
             return ValidationResult.reject(

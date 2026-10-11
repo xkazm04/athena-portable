@@ -206,6 +206,25 @@ def test_write_fact_refuses_a_source_that_is_not_a_live_episode(local: AthenaLoc
     assert local.brain.counts().get("fact") is None
 
 
+def test_write_fact_with_a_nan_confidence_is_validator_failed_and_writes_nothing(
+    local: AthenaLocal,
+) -> None:
+    episode = local.brain.append_episode("Northwind paid 40 days late", session_id=CONVERSATION)
+    entry = local.catalog.get("core.write_fact")
+    assert entry.executor is not None
+
+    result = entry.executor(
+        {"key": "k", "value": "pays late", "sources": [episode.id], "confidence": float("nan")},
+        ctx(),
+    )
+
+    assert not result.ok
+    assert result.error == "validator_failed"
+    assert "is not a finite number" in result.output
+    assert local.brain.counts().get("fact") is None
+    assert not list((local.brain.root / "semantic").rglob("*.md"))
+
+
 def test_write_fact_writes_the_claim_when_it_cites_a_live_episode(local: AthenaLocal) -> None:
     episode = local.brain.append_episode("Northwind paid 40 days late", session_id=CONVERSATION)
     entry = local.catalog.get("core.write_fact")

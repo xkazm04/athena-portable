@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import sqlite3
 import threading
 from collections.abc import Iterator, Sequence
@@ -384,6 +385,7 @@ class Brain:
         """
         if scope not in FACT_SCOPES:
             raise ValueError(f"fact scope must be one of {FACT_SCOPES}: {scope!r}")
+        _require_finite(confidence)
         body = value.strip()
         if not body:
             raise ValueError("refusing to write an empty fact")
@@ -441,6 +443,7 @@ class Brain:
         """Write one "when X, do Y" rule, citing the episodes that taught it."""
         if scope not in PROCEDURAL_SCOPES:
             raise ValueError(f"procedural scope must be one of {PROCEDURAL_SCOPES}: {scope!r}")
+        _require_finite(confidence)
         body = behavior.strip()
         if not body:
             raise ValueError("refusing to write an empty procedural")
@@ -588,6 +591,16 @@ class Brain:
                 "SELECT kind, COUNT(*) FROM companion_node WHERE importance > 0 GROUP BY kind"
             ).fetchall()
         return {str(kind): int(count) for kind, count in rows}
+
+
+def _require_finite(confidence: float) -> None:
+    """Refuse a NaN or infinite confidence before the file is written.
+
+    The ``REAL NOT NULL`` column refuses NaN only at the INSERT, after the file is on disk, which
+    left a file with no row.
+    """
+    if not math.isfinite(confidence):
+        raise ValueError(f"confidence: {confidence} is not a finite number")
 
 
 def _stored_version(con: sqlite3.Connection) -> int:

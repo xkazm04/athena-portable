@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -391,3 +392,21 @@ def test_reindexing_a_node_leaves_exactly_one_fts_row_under_its_rowid(tmp_path: 
     assert node_rowid == fts_rowid
     assert body == "second body under the same id"
     assert total == 2
+
+
+@pytest.mark.parametrize("confidence", [math.nan, math.inf, -math.inf])
+def test_a_confidence_that_is_not_finite_is_refused_before_any_file(
+    tmp_path: Path, confidence: float
+) -> None:
+    """The REAL column refused NaN only at the INSERT, after the file: a file with no row."""
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("evidence", role="user").id
+        files = sorted(p.relative_to(brain.root) for p in brain.root.rglob("*.md"))
+
+        with pytest.raises(ValueError, match="is not a finite number"):
+            brain.write_fact("k", "a claim", sources=[source], confidence=confidence)
+        with pytest.raises(ValueError, match="is not a finite number"):
+            brain.write_procedural("t", "a rule", sources=[source], confidence=confidence)
+
+        assert sorted(p.relative_to(brain.root) for p in brain.root.rglob("*.md")) == files
+        assert brain.counts() == {"episode": 1}

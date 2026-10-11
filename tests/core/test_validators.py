@@ -5,8 +5,11 @@ core/validators.py, README §3.3 and §2 invariant 2.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable, Sequence
 from typing import Any
+
+import pytest
 
 from athena.contracts import ERROR_REASONS, TurnContext
 from athena.core.validators import all_of, check_schema, live_sources, schema_validator
@@ -74,6 +77,27 @@ def test_the_bounds_are_checked_on_strings_numbers_and_arrays() -> None:
     assert not check_schema({"key": "a", "count": 9}, SCHEMA).ok
     assert not check_schema({"key": "a", "tags": []}, SCHEMA).ok
     assert not check_schema({"key": "a", "tags": ["x", "y", "z"]}, SCHEMA).ok
+
+
+@pytest.mark.parametrize("value", [math.nan, math.inf, -math.inf])
+def test_a_number_that_is_not_finite_is_refused(value: float) -> None:
+    """NaN compares False with every bound, so the range check alone let it through."""
+    schema = {"type": "object", "properties": {"ratio": {"type": "number", "minimum": 0}}}
+    result = check_schema({"ratio": value}, schema)
+    assert not result.ok
+    assert result.reason == "validator_failed"
+    assert result.detail == f"ratio: {value} is not a finite number"
+
+
+def test_write_facts_schema_refuses_a_confidence_of_nan_and_inf() -> None:
+    from athena.core.catalog import WRITE_FACT_SCHEMA
+
+    params = {"key": "k", "value": "v", "sources": ["ep_00000000"]}
+    for value in (math.nan, math.inf):
+        result = check_schema({**params, "confidence": value}, WRITE_FACT_SCHEMA)
+        assert not result.ok and result.reason == "validator_failed"
+        assert "is not a finite number" in result.detail
+    assert check_schema({**params, "confidence": 0.9}, WRITE_FACT_SCHEMA).ok
 
 
 def test_an_item_schema_is_applied_to_every_element() -> None:
