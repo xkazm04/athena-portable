@@ -412,6 +412,8 @@ class Brain:
         if scope not in FACT_SCOPES:
             raise ValueError(f"fact scope must be one of {FACT_SCOPES}: {scope!r}")
         _require_finite(confidence)
+        if not key.strip():
+            raise ValueError("refusing to write a fact with no key")
         body = _lf(value).strip()
         if not body:
             raise ValueError("refusing to write an empty fact")
@@ -470,6 +472,8 @@ class Brain:
         if scope not in PROCEDURAL_SCOPES:
             raise ValueError(f"procedural scope must be one of {PROCEDURAL_SCOPES}: {scope!r}")
         _require_finite(confidence)
+        if not trigger.strip():
+            raise ValueError("refusing to write a procedural with no trigger")
         body = _lf(behavior).strip()
         if not body:
             raise ValueError("refusing to write an empty procedural")

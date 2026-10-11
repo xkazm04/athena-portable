@@ -521,6 +521,38 @@ def test_a_value_of_only_line_endings_is_refused_as_empty(tmp_path: Path) -> Non
             brain.write_procedural("w", "\r\n\r", sources=[episode.id])
 
 
+@pytest.mark.parametrize("key", ["", "   ", "\t\n"])
+def test_a_fact_with_no_key_is_refused_before_anything_is_written(tmp_path: Path, key: str) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("evidence", role="user")
+        files, counts = _file_count(brain.root), brain.counts()
+
+        with pytest.raises(ValueError, match="no key"):
+            brain.write_fact(key, "60 days", scope="world", sources=[episode.id])
+
+        assert _file_count(brain.root) == files
+        assert not list((brain.root / "semantic").rglob("*.md"))
+        assert brain.counts() == counts
+        row = brain.writer.execute("SELECT COUNT(*) FROM companion_fact").fetchone()
+        assert row == (0,)
+
+
+@pytest.mark.parametrize("trigger", ["", "   "])
+def test_a_procedural_with_no_trigger_is_refused_before_anything_is_written(
+    tmp_path: Path, trigger: str
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("evidence", role="user")
+        files, counts = _file_count(brain.root), brain.counts()
+
+        with pytest.raises(ValueError, match="no trigger"):
+            brain.write_procedural(trigger, "reply short", sources=[episode.id])
+
+        assert _file_count(brain.root) == files
+        assert not list((brain.root / "procedurals").rglob("*.md"))
+        assert brain.counts() == counts
+
+
 # -- a damaged index stops the brain with a typed error (ADR 0081) -----------------------------
 
 

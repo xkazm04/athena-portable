@@ -11,9 +11,12 @@ this module renders and parses it like any other scalar and knows nothing of wha
 The one refusal in this module is the interesting part. A scalar is interpolated into the header
 with no escaping, so a line break inside one is header injection: a model-authored ``key`` that
 carries ``\\nid: ep_deadbeef`` writes a second ``id:`` line, :func:`parse` takes the last
-occurrence, and the next reconcile overwrites a different memory's row. We refuse rather than
-escape — refusing leaves every legal value's bytes untouched, which is what byte parity requires;
-escaping would change them.
+occurrence, and the next reconcile overwrites a different memory's row. Our own parse splits on
+LF only, but ``str.splitlines()`` and YAML 1.1 readers break a line on ten characters: LF, CR,
+VT, FF, U+001C to U+001E, NEL, LS and PS. A foreign reader of the brain directory must not see a
+line break inside one value, so all ten are refused. We refuse rather than escape: refusing
+leaves every legal value's bytes untouched, which is what byte parity requires; escaping would
+change them.
 """
 
 from __future__ import annotations
@@ -24,7 +27,8 @@ from typing import Any
 #: Keys rendered bare rather than quoted, because the Rust writer emits them bare.
 BARE_KEYS: frozenset[str] = frozenset({"type", "role"})
 
-_LINE_BREAKS = frozenset("\r\n")
+#: Exactly the ten characters ``str.splitlines()`` breaks a line on below U+10000.
+_LINE_BREAKS = frozenset("\n\r\x0b\x0c\x1c\x1d\x1e\x85\u2028\u2029")
 
 FENCE = "---"
 
@@ -50,8 +54,10 @@ def render(pairs: Sequence[tuple[str, Any]], body: str) -> str:
     """Render one memory file.
 
     A value is a scalar or a sequence; a sequence becomes a YAML block sequence, which is how
-    ``sources:`` is written. Raises :class:`FrontmatterError` for a key or value carrying a line
-    break — the catalog turns that into an ``ExecResult(ok=False, ...)`` the model reads back.
+    ``sources:`` is written. Raises :class:`FrontmatterError` for a key or value carrying any of
+    the ten characters ``str.splitlines()`` breaks a line on (not only CR and LF), and never
+    escapes them, so a legal value renders byte for byte as before. The catalog turns that into
+    an ``ExecResult(ok=False, ...)`` the model reads back.
     """
     lines = [FENCE]
     for key, value in pairs:

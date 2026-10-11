@@ -199,7 +199,7 @@ def test_fact_text_accepts_a_plain_key_and_value_and_skips_a_non_string() -> Non
     assert check({}, CTX).ok
 
 
-@pytest.mark.parametrize("key", ["a\nb", "a\rb", "a\r\nb", "\n"])
+@pytest.mark.parametrize("key", ["a\nb", "a\rb", "a\r\nb", "\n", "a\u2028b", "a\x85b", "a\u2029b"])
 def test_fact_text_refuses_a_key_with_a_line_break_without_echoing_it(key: str) -> None:
     result = fact_text()({"key": key, "value": "v"}, CTX)
     assert not result.ok
@@ -207,6 +207,14 @@ def test_fact_text_refuses_a_key_with_a_line_break_without_echoing_it(key: str) 
     assert "key" in result.detail
     assert "\n" not in result.detail
     assert "\r" not in result.detail
+
+
+@pytest.mark.parametrize("key", ["", "   ", " \t "])
+def test_fact_text_refuses_an_empty_key_without_echoing_it(key: str) -> None:
+    result = fact_text()({"key": key, "value": "v"}, CTX)
+    assert not result.ok
+    assert result.reason == "validator_failed"
+    assert result.detail == "key: may not be empty or only whitespace"
 
 
 @pytest.mark.parametrize("value", ["", "   ", "\t", " \t\n "])

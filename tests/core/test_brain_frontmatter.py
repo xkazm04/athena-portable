@@ -52,6 +52,30 @@ def test_a_carriage_return_counts_as_a_line_break() -> None:
         frontmatter.render([("key", "a\rb")], "body")
 
 
+_TEN = ["\n", "\r", "\x0b", "\x0c", "\x1c", "\x1d", "\x1e", "\x85", "\u2028", "\u2029"]
+
+
+@pytest.mark.parametrize("char", _TEN, ids=[f"U+{ord(c):04X}" for c in _TEN])
+def test_a_key_holding_any_splitlines_break_is_refused(char: str) -> None:
+    with pytest.raises(FrontmatterError, match="line break"):
+        frontmatter.render([("key", f"a{char}b")], "body")
+
+
+def test_the_line_breaks_are_exactly_what_splitlines_breaks_on() -> None:
+    derived = {
+        chr(code) for code in range(0x10000) if len(("a" + chr(code) + "b").splitlines()) == 2
+    }
+    assert derived == frontmatter._LINE_BREAKS
+    assert len(derived) == 10
+
+
+@pytest.mark.parametrize("key", ['pays "late" often', 'pays late"'], ids=["inside", "trailing"])
+def test_a_key_with_a_double_quote_round_trips(key: str) -> None:
+    meta, _ = frontmatter.parse(frontmatter.render([("key", key)], "body"))
+
+    assert meta["key"] == key
+
+
 def test_a_file_with_no_header_parses_as_all_body() -> None:
     meta, body = frontmatter.parse("no header here\n")
 

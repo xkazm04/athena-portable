@@ -100,6 +100,10 @@ def test_write_fact_refuses_dead_sources_and_accepts_live_ones() -> None:
     for bad in ({"key": "k", "value": "v"}, {"key": "k", "value": "v", "sources": []}):
         assert not catalog.validate("core.write_fact", bad, CTX).ok
 
+    empty_key = catalog.validate("core.write_fact", good | {"key": "  "}, CTX)
+    assert not empty_key.ok
+    assert empty_key.reason == "validator_failed"
+
 
 def test_an_unknown_name_is_a_rejection_and_never_an_execution() -> None:
     catalog = build_catalog(services())

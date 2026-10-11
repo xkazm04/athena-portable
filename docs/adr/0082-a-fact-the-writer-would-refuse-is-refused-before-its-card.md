@@ -43,3 +43,26 @@ provenance check. A refusal the writer would give belongs there, before the user
   should be able to set `expires_at` is craft-1 and stays open.
 - The writer still refuses the same inputs, so a route that skips the gate is still caught.
 - Writer inputs the validator does not cover (an empty key, a `"` in a key) are not added here.
+
+## Amendment, 2026-10-12: an empty key, and every line break a reader splits on
+
+The last Consequences bullet left two writer inputs out. Both are now refused.
+
+- A key (or, for a procedural, a trigger) that is empty after `strip()` is refused.
+  `Brain.write_fact` raises `refusing to write a fact with no key` and `Brain.write_procedural`
+  raises `refusing to write a procedural with no trigger`, before anything is minted or written.
+  `fact_text()` refuses the same key first with `validator_failed` and `key: may not be empty or
+  only whitespace`, then a line break in the key, then an empty value. A key that is not empty is
+  stored byte for byte; it is not stripped.
+- `frontmatter._LINE_BREAKS` was CR and LF only. It is now the ten characters `str.splitlines()`
+  breaks a line on: LF, CR, VT, FF, U+001C to U+001E, NEL, LS and PS. Athena's own parse splits on
+  LF, but a foreign reader of the brain directory (`splitlines()`, YAML 1.1) would see a line
+  break inside one value. `validators.FACT_KEY_LINE_BREAKS` is the same ten, and the existing
+  test pins the two equal; a new test derives the set from `str.splitlines()`.
+
+The writer and the validator refuse the same inputs, so a route that skips the gate is still caught.
+
+A key with a double quote, inside it or at its end, is rendered unescaped inside the outer quotes.
+`parse` and `_unquote` round-trip it, so it is pinned by a test and left as it is.
+
+Refusing keeps byte parity. Nothing is escaped, so no legal value changes by a byte.
