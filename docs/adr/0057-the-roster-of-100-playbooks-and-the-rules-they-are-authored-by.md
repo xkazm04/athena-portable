@@ -483,3 +483,106 @@ world as it was. So the corrections below live here, and no file under `playbook
    bench.json were not touched after the bench (their hashes were checked); only the title and its
    filmed evidence changed." The full old title is therefore recorded here as unrecoverable from
    the repo, with that fragment as its only trace.
+
+## Amendment, 2026-10-11: a real name found after the bench stays, and is listed
+
+### Context
+
+The roster says "a name that turns out to collide with a real product is renamed before the first
+bench", and rule 4 says every person, business and portal is invented. Both held for every name
+found before a bench, and the batch notes record those renames. But a name is sometimes found to
+belong to a real business only after its playbook is benched: the note of row 77 and the note
+after row 87 record Fiducia Recovery Partners, Orchard Securities and Fieldstone Hardware this
+way, and the notes of rows 72, 73, 80, 81, 82 and 84 record names that a later row renamed while
+the benched playbooks kept them. Renaming those would collide with three things the rules fix:
+
+- Rule 3 freezes `truth.json` at the first bench, and some of these names are in `truth.json`
+  (found by grep: Corner Pharmacy in `medicare-plan-review`, Fieldstone Hardware in
+  `class-action-claims`, Taxline in `household-employer-tax`, Ledgerline and Staffnest in
+  `name-change-everywhere`).
+- `bench.json` and `evidence.json` record a run on the world as it was. A world renamed under them
+  makes the record misstate what was run.
+- A re-bench is kept for authoring errors that a bench reveals, at most twice. A real name found
+  afterwards is not an error a bench revealed.
+
+### Decision
+
+A playbook that is already benched keeps a business or portal name that is later found to belong
+to a real business. The collision is listed here, one line per name. The before-the-bench rule
+(the roster's "renamed before the first bench", and rule 4) is unchanged: a name found before the
+first bench is renamed.
+
+Each line gives the name; the playbook ids that carry it; the files it appears in (w `world.json`,
+p `playbook.json`, t `truth.json`, b `bench.json`, e `evidence.json`); the real business it
+collides with, as the notes or the commit bodies record it; and the role the name plays in the
+world: (a) a venue or portal, (b) a counterparty the person deals with in the ordinary way, or
+(c) a sender or offer the truth marks as a trap to decline. The files were found by searching
+`playbooks/` for the name on 2026-10-11.
+
+**Collisions recorded after the bench, or kept by the notes**
+
+| Name | Playbooks (files) | Real business, as recorded | Role |
+|---|---|---|---|
+| Corner Pharmacy | `medicare-plan-review` (wptbe), `part-d-exception` (wpbe), `rep-payee-accounting` (wp) | the name of several real pharmacies in Brooklyn, Manhattan, Flushing and Greenfield, Ohio (row 72 note) | (b) in `medicare-plan-review` (the pharmacy she uses; named in `truth.json`) and in `rep-payee-accounting` (a debit on a statement); (a) in `part-d-exception` (a patient-profile app in the world) |
+| Carenook | `abn-liability-sweep`, `medical-records-gather`, `medicare-plan-review`, `observation-status-appeal`, `overpayment-refunds`, `part-d-exception` (each wpbe) | CareNook (carenook.app), a management platform for home care, home health and hospice agencies (row 73 note) | (a) |
+| Orchard Securities | `unclaimed-property-sweep` (wb) | a broker-dealer in Pleasant Grove, Utah (the note after row 87) | (b), the holder of an unclaimed dividend, IL-8, an eligible item in `truth.json` that does not name it |
+| Fieldstone Hardware | `class-action-claims` (wptb) | a hardware and construction supplier in Pavia, Iloilo, the Philippines (the note after row 87) | (b), a card-statement merchant whose line is the proof for S-2 in `truth.json` |
+| Fiducia Recovery Partners | `401k-late-deposits` (wp) | near Fiducia Group (Pittsburgh) and Fiducia Partners (London, Sunnyvale), which work in retirement-plan fiduciary advice and wealth management; no business of the exact name (row 77 note) | **(c)**, offer O-1, a trap in `truth.json` (a recovery firm's 25 percent offer "costs far more than the lost earnings"; the trap text does not name the firm) |
+| Taxline | `first-time-abate` ("Taxline Federal", wpb), `household-employer-tax` (wptb), `remote-payroll-registration` (wpb), `sales-tax-exemption-certs` (wpb) (the last three "Taxline State") | TaxLine Accounting (taxlineaccounting.com), a tax-planning and preparation firm in the same field (row 82 note; the row 80 note found no business called Taxline in two searches) | (a); `household-employer-tax` `truth.json` names it as the free filing portal in the BILL-32 trap, which declines a $195 filing service, not Taxline |
+| Talentry ATS | `wotc-screening` (wpbe) | Talentry, an applicant tracking system sold in the field (SelectHub lists it) (row 81 note) | (a) |
+| Refund Rocket Advance | `eitc-claim` (wpb) | close to Rocket Tax and Team Rocket Tax, real preparers that offer refund advances; no business of the exact name (row 84 note) | **(c)**, message M-1, a trap in `truth.json` (a $99-fee advance that files the return "with the advance firm"; the trap text does not name the firm) |
+
+**Recorded by the notes as real, and still carried by benched playbooks**
+
+The batch notes renamed these in later rows and record why. They were not listed with a
+"benched ... unchanged" line in every case, so this list is from the search of `playbooks/`. Each
+is a portal, role (a).
+
+| Name | Playbooks | Real business, as recorded |
+|---|---|---|
+| Ledgerline | `customs-protests`, `denied-party-screening`, `duty-drawback`, `federal-prompt-pay-interest`, `grant-drawdown-reporting`, `hospital-financial-assistance`, `household-employer-tax`, `medicaid-renewal`, `msp-extra-help`, `name-change-everywhere`, `out-of-network-claims`, `overpayment-refunds`, `pmi-cancellation`, `recoverable-depreciation`, `rep-payee-accounting`, `section8-landlord`, `veteran-burial-benefits` | the name of several real accounting and invoicing products (rows 72 and 87 notes); in `truth.json` of `name-change-everywhere` |
+| Mailnest | 25 playbooks: `crop-insurance-notice`, `data-broker-deletion`, `denied-party-screening`, `escrow-analysis-check`, `eu261-flight-compensation`, `federal-prompt-pay-interest`, `freight-claims`, `funeral-price-check`, `good-faith-estimates`, `homestead-exemption`, `hospital-financial-assistance`, `medicaid-renewal`, `medical-records-gather`, `medicare-enrollment-timing`, `msp-extra-help`, `ocean-demurrage-disputes`, `out-of-network-claims`, `parcel-guarantee-refunds`, `pmi-cancellation`, `property-tax-appeal`, `pslf-employment-certification`, `recoverable-depreciation`, `rmd-check`, `sub-insurance-certs`, `wotc-screening` | mailnest.io, a real email service (rows 80 to 87 notes); in no `truth.json` |
+| Docshelf | `certified-payroll`, `clinic-underpayments`, `closeout-package`, `customs-protests`, `duty-drawback`, `freight-claims`, `funeral-price-check`, `grant-drawdown-reporting`, `provider-revalidation`, `rep-payee-accounting`, `rmd-check`, `stormwater-permit-log`, `veteran-burial-benefits` | DocShelf, a real document management app (rows 49, 75, 79 and 87 notes); in no `truth.json` |
+| Staffnest | `medicare-enrollment-timing`, `name-change-everywhere` | StaffNest, a real HR service (rows 73, 79 and 80 notes); in `truth.json` of `name-change-everywhere` |
+
+**Weakly checked, no collision found**
+
+These are not collisions. The notes or commit bodies record one search with no match in the field,
+or no search at all, so they are listed apart and may move to the tables above if a later search
+finds a business.
+
+| Name | Playbook (files) | What the record says | Role |
+|---|---|---|---|
+| Northgate Wireless Services | `erate-applications` (wp) | one search; the nearest was Northgate Managed Services, a UK school wireless contractor of 2012; "the weakest check" (row 87 note) | (b), a vendor whose bids are higher and are left alone |
+| Slatewick | `eitc-claim` (wpb) | one search, no match (it returned Slate, a college-admissions tool) (row 84 note) | (a), school records portal |
+| Aldermoor | `eitc-claim` (wp) | Aldermoor Elementary: one search found no US school of the name (Aldermoor Farm Primary School in Coventry is another school in another country); "Aldermoor Middle" and the family names were not searched (row 84 note) | (b), the school the children attend |
+| Thornbury Hollow College | `aid-professional-judgment` (wptb) | found nowhere in the field on the same terms; Thornbury is a real place with real schools (row 83 note) | (a)/(b), the college whose aid portal the request goes to |
+| Pinegate Family Dental | `aid-professional-judgment` (wp) | found nowhere in the field (row 83 note) | (b), an employer |
+| Quillgate Metalworks | `aid-professional-judgment` (wpb) | a first coined "Marlow Metalworks" was dropped for real businesses; "Quillgate Metalworks" was not searched (row 83 note) | (b), an employer whose payroll message arrives |
+| Calder Freight, Gantry Supply | `adverse-action-notices` (w) | not searched: "the prior employers ... and the towns were not searched" (row 81 note) | (b), prior employers named in background reports: Calder Freight "has no record of" a candidate who wrote that she worked there, and a candidate was dismissed from Gantry Supply in 2024; neither is in `truth.json` |
+
+Where a collision's source is not in the repo, this list says what the notes record and nothing
+more. The pages the searches found were recorded at batch review, not in the repo.
+
+### Consequences
+
+- The playbooks keep their benched worlds, and the ranking and the evidence are unchanged.
+- The before-the-bench rule stays, so a new batch still searches each name and renames a collision
+  before its first bench. The list only covers what was found afterwards or kept by an earlier
+  note.
+- Two entries cast the named party as one to decline: Fiducia Recovery Partners (an overpriced
+  recovery offer) and Refund Rocket Advance (a refund-advance message). The notes record near
+  neighbours, not a business of the exact name, and the world claims no fact about any real
+  business, but a reader should know the roles.
+- The operator may order a rename of any listed name. That is a risk decision taken outside this
+  ADR, and it would land as its own amendment, with its own list of the files it touches.
+
+### Alternatives that lost
+
+- **(a) Rename in every file.** It edits the frozen `truth.json`, against rule 3, and rewrites
+  `bench.json` and `evidence.json`, so they would state a run on a world that was never run.
+- **(b) Rename the world and playbook and re-bench each one.** It spends a bench and a re-film per
+  playbook on something no bench revealed, which is not what a re-bench is kept for, and
+  `truth.json` still names the old business.
+- **(c) Rename display text only.** The bench record would then misstate its own run: the world
+  the run saw would not be the world the record shows.
