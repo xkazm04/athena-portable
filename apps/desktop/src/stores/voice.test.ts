@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { BridgeTool } from "@/lib/bridge";
 import { setHandsForTests } from "@/lib/hands";
 import { derivedIdOf } from "@/lib/manifest";
-import type { Player, SocketLike } from "@/lib/voice";
+import { Player as RealPlayer, type Player, type SocketLike } from "@/lib/voice";
 import { snapshotOf, useRun } from "@/stores/run";
 import type { TabTools } from "@/stores/tools";
 
@@ -419,6 +419,63 @@ describe("playback and barge-in", () => {
     expect(player.dropped).toEqual([3]);
     expect(useVoice.getState().phase).toBe("listening");
     expect(socket.frames().at(-1)?.type).toBe("start");
+  });
+
+  describe("the player holds nothing of a generation once its voice.stopped is handled", () => {
+    function realPlayer(): RealPlayer {
+      const source = () => ({
+        buffer: null as unknown,
+        connect: () => {},
+        start: () => {},
+        stop: () => {},
+        onended: null as unknown,
+      });
+      const context = {
+        currentTime: 0,
+        destination: {},
+        createAnalyser: () => ({ fftSize: 0, connect: () => {} }),
+        createBuffer: (_c: number, length: number) => ({
+          duration: length / 16000,
+          copyToChannel: () => {},
+        }),
+        createBufferSource: source,
+      };
+      return new RealPlayer(() => context as unknown as AudioContext);
+    }
+
+    async function speaking(generation: number) {
+      const player = realPlayer();
+      const { socket } = wire({ player: () => player });
+      await startVoice();
+      await useVoice.getState().say("hi");
+      await socket.emit(finished("Hello."), {
+        kind: "voice.speaking",
+        generation,
+        text: "Hello.",
+        truncated: false,
+        sample_rate: 16000,
+      });
+      return { player, socket };
+    }
+
+    it("on barge_in", async () => {
+      const { player, socket } = await speaking(5);
+      socket.emitAudio(5);
+      expect(player.holds(5)).toBe(true);
+      await socket.emit({ kind: "voice.stopped", generation: 5, reason: "barge_in" });
+      expect(player.holds(5)).toBe(false);
+    });
+
+    it("after a local drop, a late chunk is ignored and voice.stopped done forgets it", async () => {
+      const { player, socket } = await speaking(6);
+      socket.emitAudio(6);
+      await useVoice.getState().press();
+      expect(player.holds(6)).toBe(true);
+      socket.emitAudio(6); // before its voice.stopped: still ignored
+      expect(player.playing(6)).toBe(false);
+      await socket.emit({ kind: "voice.stopped", generation: 6, reason: "done" });
+      expect(player.holds(6)).toBe(false);
+    });
   });
 
   it("a socket that closes mid-turn leaves the key usable and says what happened", async () => {

@@ -442,9 +442,21 @@ export class Player {
     this.ends.delete(generation);
   }
 
-  /** Forget a generation that played out, so the set of dropped ones does not grow forever. */
+  /**
+   * Forget a generation once its `voice.stopped` has been handled, so the set of dropped ones does
+   * not grow forever. The daemon sends `voice.stopped` after the generation's last chunk on the
+   * same ordered socket, so no chunk of it can arrive after this.
+   */
   finished(generation: number): void {
     this.sources.delete(generation);
     this.ends.delete(generation);
+    this.dropped.delete(generation);
+  }
+
+  /** Whether the player holds anything of `generation`: sources, a schedule or a drop mark. */
+  holds(generation: number): boolean {
+    return (
+      this.sources.has(generation) || this.ends.has(generation) || this.dropped.has(generation)
+    );
   }
 }

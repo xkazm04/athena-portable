@@ -143,3 +143,16 @@ stop short hears that it stopped short.
   so it no longer counts as waiting), and the utterance the reader is still hearing (`_start` set
   `_utterance`, `_stop` has not yet turned it into a job). That is 6 x 4 MiB per socket and
   48 MiB under `MAX_SESSIONS = 2`. The earlier CHANGELOG line is left as it was written.
+- What a session keeps for the life of its socket is bounded (voice full r2 economics-6,
+  craft-7). `KokoroTTS.started` keeps the newest `STARTED_KEPT` = 32 sentences (still a list,
+  trimmed on append). `VoiceSession.cards` keeps at most `MAX_SESSION_CARDS` = 32 cards, newest
+  first: the 33rd inserted drops the oldest, whether or not it is still pending, and the top card
+  stays the newest one presented, so a bare yes answers what it answered before. A trimmed card
+  that is still pending falls into the inbox list `_known_cards` builds, so ADR 0073's stricter
+  rule applies: only its own option id or label answers it, and only when exactly one card fits.
+  In the panel, `Player.dropped` loses a generation once the daemon's `voice.stopped` for it has
+  been handled (`finished` now deletes it, as its docstring said); the store calls `drop` then
+  `finished` on a barge-in, and a local drop keeps its mark until that `voice.stopped` arrives.
+  This is safe because `_speak_loop` sends `voice.stopped` after the generation's last chunk on
+  the same ordered socket, so no chunk of it can follow. `Player.holds` is a read-only seam for
+  the tests.

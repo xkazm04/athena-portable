@@ -302,8 +302,10 @@ export const useVoice = create<VoiceState>((set, get) => {
         set({ phase: "speaking", generation: event.generation, speakingText: event.text, heard: "" });
         break;
       case "voice.stopped":
+        // Nothing of the generation outlives its `voice.stopped`: a barge-in stops its sources
+        // first, and `finished` then forgets the generation, drop mark included.
         if (event.reason === "barge_in") player?.drop(event.generation);
-        else player?.finished(event.generation);
+        player?.finished(event.generation);
         if (get().generation === event.generation) {
           set({
             generation: null,

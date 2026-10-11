@@ -136,6 +136,22 @@ def test_synthesis_runs_one_process_per_sentence_and_yields_the_wav_frames_in_or
     assert tts.sample_rate == 24_000
 
 
+def test_started_keeps_only_the_newest_sentences(
+    homes: EngineHomes, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``started`` is evidence for a test, not a log: a long-lived engine keeps the newest 32."""
+    tts = kokoro.KokoroTTS(homes)
+    monkeypatch.setattr(tts, "_render", lambda job: b"")
+    sentences = [f"Sentence {n}." for n in range(kokoro.STARTED_KEPT + 8)]
+
+    for sentence in sentences:
+        tts._start(sentence).result()
+
+    assert len(tts.started) == kokoro.STARTED_KEPT == 32
+    assert tts.started == sentences[-32:]
+    assert tts.started[-1] == sentences[-1]
+
+
 def test_the_next_sentence_renders_while_this_one_is_played(homes: EngineHomes, log: Path) -> None:
     """Prefetch: sentence n+1 is started before sentence n is handed out, so a listener who
     takes as long as the engine never waits between sentences."""

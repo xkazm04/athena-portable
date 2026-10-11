@@ -127,6 +127,10 @@ MAX_PENDING_TURNS = 4
 #: running, so a socket that closed mid-turn still counts while that turn bills.
 MAX_SESSIONS = 2
 
+#: How many cards one session remembers having presented, newest first. A card trimmed while it
+#: is still pending falls to the inbox rule of ADR 0073 (its own option id or label only).
+MAX_SESSION_CARDS = 32
+
 #: The close code a refused socket gets: RFC 6455's "try again later".
 TRY_AGAIN_LATER = 1013
 
@@ -759,6 +763,7 @@ class VoiceSession:
                     self.cards.insert(
                         0, Card(event.id, tuple((o.id, o.label) for o in event.options))
                     )
+                    del self.cards[MAX_SESSION_CARDS:]
                 elif isinstance(event, ToolCall) and event.origin != "core":
                     self._expect([event.call_id])  # before the page can see the call
                     proposed.append(event)

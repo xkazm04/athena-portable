@@ -344,6 +344,10 @@ def read_pcm(wav_path: Path) -> bytes:
         raise VoiceBackendError(f"kokoro's output was not a WAV ({type(exc).__name__})") from None
 
 
+#: How many started sentences ``KokoroTTS.started`` keeps.
+STARTED_KEPT = 32
+
+
 @dataclass
 class _Render:
     """One sentence on its own thread: the process, its WAV, and a way to stop it early."""
@@ -393,8 +397,9 @@ class KokoroTTS:
     command: Sequence[str] | None = None
     timeout_s: float = TIMEOUT_S
     sample_rate: int = SAMPLE_RATE
-    #: Every sentence handed to the engine, in the order it was started — a test's evidence that
-    #: sentence n+1 began before sentence n was finished being played.
+    #: The newest ``STARTED_KEPT`` sentences handed to the engine, in the order they were started —
+    #: a test's evidence that sentence n+1 began before sentence n was finished being played. It
+    #: is bounded because one engine serves a daemon for as long as it runs.
     started: list[str] = field(default_factory=list)
 
     @property
@@ -461,4 +466,5 @@ class KokoroTTS:
 
     def _start(self, sentence: str) -> _Render:
         self.started.append(sentence)
+        del self.started[:-STARTED_KEPT]
         return _Render(self._render, sentence).start()

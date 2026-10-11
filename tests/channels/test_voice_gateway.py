@@ -21,6 +21,7 @@ from athena.channels.voice import gateway as gateway_module
 from athena.channels.voice.backends import ScriptedBackend
 from athena.channels.voice.gateway import (
     MAX_PENDING_TURNS,
+    MAX_SESSION_CARDS,
     MAX_SESSIONS,
     VOICE_PATH,
     VoiceGateway,
@@ -1021,6 +1022,35 @@ def test_a_page_that_answers_after_the_socket_closed_starts_no_continuation_step
 
 
 # -- _results holds only answers to calls this socket asked the page to run --------------------
+
+
+def test_a_session_remembers_the_newest_cards_and_a_bare_yes_answers_the_newest(
+    voiced: Live,
+    backend: ScriptedBackend,
+    client: VoiceClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sessions: list[VoiceSession] = []
+    init = VoiceSession.__init__
+
+    def remember(self: VoiceSession, *args: object, **kwargs: object) -> None:
+        init(self, *args, **kwargs)  # type: ignore[arg-type]
+        sessions.append(self)
+
+    monkeypatch.setattr(VoiceSession, "__init__", remember)
+    fresh = _fresh(voiced)
+    try:
+        filed = [str(_file_a_card(voiced, fresh)["id"]) for _ in range(MAX_SESSION_CARDS + 2)]
+        (session,) = sessions
+        assert [card.id for card in session.cards] == filed[::-1][:MAX_SESSION_CARDS]
+        assert len(session.cards) == MAX_SESSION_CARDS == 32
+
+        voiced.script(claude_round("TTS: Paid.\nPaid."))
+        backend.utterances = ["yes"]
+        fresh.utter()
+        assert fresh.until("decision.resolved")["id"] == filed[-1]
+    finally:
+        fresh.close()
 
 
 def _session_of(voiced: Live) -> VoiceSession:
