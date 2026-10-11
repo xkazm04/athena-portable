@@ -5,7 +5,9 @@ Three populations answer three different questions, so they are three blocks and
 - **always** — the distilled memories that are true whatever was asked. A fact at importance
   :data:`ALWAYS_IMPORTANCE_FLOOR` or above is in the prompt every turn, up to a cap. This is the
   tier act 4 of the demo depends on: the fact Athena wrote about the late-paying client reaches
-  the next day's turn without anyone querying for it.
+  the next day's turn without anyone querying for it. The product's way in is a ``core.write_fact``
+  card the user approved with ``every_turn: true``, which the file records so a rebuild keeps it
+  (ADR 0071). The block is static and unfenced, so each memory renders as one capped, quoted line.
 - **keyword** — BM25 over FTS5 across the distilled memories the always tier did not already
   include. Query-driven, and empty when the query matches nothing. An empty lane is the answer;
   padding it with whatever ranked next would be a lie the model cannot detect.
@@ -27,20 +29,27 @@ safe to call from a daemon read route while a turn is writing (README §3.5, ADR
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from contextlib import closing
 from dataclasses import dataclass, field
 from typing import Any
 
 from athena.contracts.harness import PromptBlock
-from athena.core.brain.store import Brain
+from athena.core import fence
+from athena.core.brain.store import ALWAYS_IMPORTANCE, Brain
 from athena.core.brain.text import EXCERPT_BYTES, excerpt, fts_match, fts_terms
+from athena.core.catalog import neutralise_text
 
-#: A fact or procedural at this importance or above is in every prompt, query or no query.
-ALWAYS_IMPORTANCE_FLOOR = 4
+#: A fact or procedural at this importance or above is in every prompt, query or no query. It is
+#: the importance an approved ``every_turn`` fact is written and rebuilt at (ADR 0071).
+ALWAYS_IMPORTANCE_FLOOR = ALWAYS_IMPORTANCE
 #: Caps on the always tier. Two numbers, not one, so a flood of facts cannot crowd out the rules.
 ALWAYS_FACTS = 8
 ALWAYS_PROCEDURALS = 6
+#: Characters of one always-tier line, the ellipsis included (ADR 0071). Fourteen lines at this
+#: cap, every character one JSON must escape, still fit the block's 12,000-character budget.
+ALWAYS_LINE_CAP = 400
 
 #: The episode window is a budget, not a quota: relevant turns keep their slots and a recency
 #: tail fills whatever is left.
@@ -89,8 +98,22 @@ class Memory:
         }
 
     def render(self) -> str:
+        if self.lane == ALWAYS_BLOCK:
+            return f"- {always_line(self.excerpt)}"
         marker = "[machine] " if self.machine else ""
         return f"- {marker}{self.excerpt}"
+
+
+def always_line(text: str) -> str:
+    """One always-tier memory as it enters the system prompt (ADR 0071, after ADR 0068).
+
+    The block is static and unfenced, and a fact the user approved can still carry words a page
+    shaped. So fence markers are redacted, the text is made one line of at most
+    :data:`ALWAYS_LINE_CAP` characters by :func:`~athena.core.catalog.neutralise_text`, and it is
+    written as a JSON string, which cannot start a line, a heading or an ``OP:`` line. No nonce,
+    so the block's hash moves only when the tier does.
+    """
+    return json.dumps(neutralise_text(fence.neutralise(text), ALWAYS_LINE_CAP), ensure_ascii=False)
 
 
 @dataclass(frozen=True)

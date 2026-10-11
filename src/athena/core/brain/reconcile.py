@@ -10,6 +10,8 @@ one insert path, so a rebuild cannot drift from an incremental write.
 What disk cannot carry back is deliberate and documented in ADR 0003: importance, machine markers
 and use timestamps are index columns, not frontmatter (ref §8), so a rebuild restores every
 memory at its writer default. A demotion that was never expressed on disk does not survive.
+The one exception is a fact whose file says ``every_turn: true``, the user's approval that it
+rides every turn: it comes back at ``ALWAYS_IMPORTANCE`` (ADR 0071).
 """
 
 from __future__ import annotations
@@ -22,8 +24,10 @@ from typing import Any
 from athena.core.brain import frontmatter, text
 from athena.core.brain.schema import INDEX_TABLES
 from athena.core.brain.store import (
+    ALWAYS_IMPORTANCE,
     DEFAULT_CONFIDENCE,
     DEFAULT_IMPORTANCE,
+    EVERY_TURN_KEY,
     MACHINE_IMPORTANCE,
     Brain,
 )
@@ -184,6 +188,9 @@ def _index_file(
     role = str(meta.get("role") or "")
     machine = kind == "episode" and text.is_machine(body)
     importance = MACHINE_IMPORTANCE if machine else DEFAULT_IMPORTANCE
+    if kind == "fact" and meta.get(EVERY_TURN_KEY) is True:
+        # Only the literal ``true`` a writer emits; any other value is the default, as it was.
+        importance = ALWAYS_IMPORTANCE
     tags = [f"role:{role}"] if role else []
     fts_tags = f"session:{session_id} role:{role}" if kind == "episode" else None
     brain.index_node(

@@ -115,6 +115,9 @@ def write_fact_executor(brain: Brain) -> ExecutorFn:
     The provenance rule is the brain's and is not re-stated here (README §2 invariant 2). A
     refusal comes back as ``validator_failed`` with the brain's own sentence, so a model that
     cited a dead episode is told which one rather than told "no".
+
+    ``every_turn`` is the always tier's one product path (ADR 0071). The tool is gated, so this
+    runs only on a card the user approved, and the approval is bound to the params it showed.
     """
 
     def run(params: dict[str, Any], ctx: TurnContext) -> ExecResult:
@@ -126,6 +129,7 @@ def write_fact_executor(brain: Brain) -> ExecutorFn:
                 scope=str(params.get("scope", "user")),
                 sources=sources,
                 confidence=float(params.get("confidence", DEFAULT_CONFIDENCE)),
+                every_turn=params.get("every_turn") is True,
             )
         except (ProvenanceError, ValueError) as exc:
             return ExecResult.failure("validator_failed", str(exc))

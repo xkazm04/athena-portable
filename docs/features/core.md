@@ -21,6 +21,10 @@ A contract changes only with a test.
   matched the message, and recalled episodes. Matching is FTS5 BM25 over any meaningful word of
   the question, stopwords dropped (ADR 0042), and an episode is shown as the 500-byte window around
   its first match, so the row asked about is visible even deep in a page of results.
+- **What she always carries** is filled by one path: a `core.write_fact` card the user approved
+  with `every_turn: true`. The fact's file records it as its last frontmatter key, so a rebuild
+  keeps it in the tier. Each line enters the system prompt as one quoted line of at most 400
+  characters, with fence markers redacted (ADR 0071).
 - `core.recall` is also a tool she can call mid-turn; its answer is capped at 4,800 characters,
   three page reads' worth (ADR 0049).
 

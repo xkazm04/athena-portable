@@ -62,6 +62,13 @@ EPISODE_ROLES: tuple[str, ...] = ("user", "assistant", "system")
 #: Importance a writer starts a memory at (ref §8): conversation at 3, machine chatter at 1.
 DEFAULT_IMPORTANCE = 3
 MACHINE_IMPORTANCE = 1
+#: Importance of a fact the user approved to ride every turn: the always tier's floor in recall.
+#: It is the one importance a file records, as :data:`EVERY_TURN_KEY`, so a rebuild restores it
+#: (ADR 0071); every other importance stays an index column (ADR 0003).
+ALWAYS_IMPORTANCE = 4
+#: The frontmatter key that records that approval. Written last, and only when true, so a fact
+#: without it is the seven keys it was before ADR 0071, byte for byte.
+EVERY_TURN_KEY = "every_turn"
 DEFAULT_CONFIDENCE = 0.7
 
 #: Five seconds is the whole budget a read route has; waiting longer for a lock is a timeout the
@@ -359,11 +366,17 @@ class Brain:
         importance: int = DEFAULT_IMPORTANCE,
         tags: Sequence[str] | None = None,
         expires_at: str | None = None,
+        every_turn: bool = False,
     ) -> MemoryRef:
         """Write one distilled claim, citing the episodes it was drawn from.
 
         ``sources`` is keyword-only and has no default, so "I forgot the provenance" is a
         ``TypeError`` at the call site rather than an empty list at the gate.
+
+        ``every_turn`` puts the fact in the always tier and on disk says so (ADR 0071): the file
+        gains ``every_turn: true`` as its last key and the row is written at
+        :data:`ALWAYS_IMPORTANCE`, whatever ``importance`` says, which is the value a rebuild
+        restores. The product reaches it only through an approved ``core.write_fact`` card.
         """
         if scope not in FACT_SCOPES:
             raise ValueError(f"fact scope must be one of {FACT_SCOPES}: {scope!r}")
@@ -375,18 +388,19 @@ class Brain:
         node_id = ids.mint("fact")
         created_at = _now_iso()
         rel = f"semantic/{scope}/{node_id}_{text.slug(key)}.md"
-        file_text = frontmatter.render(
-            [
-                ("id", node_id),
-                ("type", "fact"),
-                ("scope", scope),
-                ("key", key),
-                ("confidence", confidence),
-                ("created", created_at),
-                ("sources", cited),
-            ],
-            body,
-        )
+        header: list[tuple[str, Any]] = [
+            ("id", node_id),
+            ("type", "fact"),
+            ("scope", scope),
+            ("key", key),
+            ("confidence", confidence),
+            ("created", created_at),
+            ("sources", cited),
+        ]
+        if every_turn:
+            header.append((EVERY_TURN_KEY, True))
+            importance = ALWAYS_IMPORTANCE
+        file_text = frontmatter.render(header, body)
         self._write_file(rel, file_text)
 
         with self.write_txn() as con:

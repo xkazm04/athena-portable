@@ -8,6 +8,7 @@ tests do that — and nothing spawns a binary.
 
 from __future__ import annotations
 
+import shutil
 from dataclasses import fields
 from pathlib import Path
 from typing import Any
@@ -15,8 +16,10 @@ from typing import Any
 import pytest
 
 from athena.contracts.registry import Lane, ToolClass, TurnContext
+from athena.core.brain import Brain, reconcile_from_disk
 from athena.core.brain.store import ProvenanceError
 from athena.core.catalog import CoreServices
+from athena.core.recall import ALWAYS_BLOCK, recall
 from athena.harness.policy import Policy
 from athena.harness.transports import ScriptedTransport, SubprocessTransport
 from athena.wiring import AthenaLocal, build_local
@@ -285,3 +288,56 @@ def test_the_surface_is_the_only_door_and_it_still_opens(local: AthenaLocal) -> 
     assert resolution.result is not None
     assert resolution.result.ok
     assert local.approvals.describe(card.id).status == "approved"
+
+
+# -- the always tier has a product path, and it is the gated one (ADR 0071) ---------------------
+
+
+def _always(local: AthenaLocal, query: str) -> list[str]:
+    return [memory.id for memory in recall(local.brain, query).block(ALWAYS_BLOCK).items]
+
+
+def test_an_approved_every_turn_fact_rides_a_turn_that_never_asked_for_it(
+    local: AthenaLocal, tmp_path: Path
+) -> None:
+    """Act 4: the late-paying client reaches the next day's turn with no query that names it."""
+    episode = local.brain.append_episode("Northwind paid 40 days late", session_id=CONVERSATION)
+    entry = local.catalog.get("core.write_fact")
+    assert entry.executor is not None
+    params = {
+        "key": "client/northwind",
+        "value": "Northwind pays about forty days late.",
+        "sources": [episode.id],
+        "every_turn": True,
+    }
+    assert local.catalog.validate("core.write_fact", params, ctx()).ok
+
+    result = entry.executor(params, ctx())
+
+    assert result.ok
+    node_id = result.output.split()[1]
+    assert _always(local, "draft the quarterly tax pack") == [node_id]
+
+    # And a rebuild on a copied directory keeps it there.
+    copied = tmp_path / "copied-brain"
+    shutil.copytree(local.brain.root, copied, ignore=shutil.ignore_patterns("index.sqlite*"))
+    with Brain(copied) as rebuilt:
+        reconcile_from_disk(rebuilt)
+        always = recall(rebuilt, "draft the quarterly tax pack").block(ALWAYS_BLOCK)
+        assert [memory.id for memory in always.items] == [node_id]
+
+
+def test_a_fact_written_without_every_turn_waits_for_a_query(local: AthenaLocal) -> None:
+    episode = local.brain.append_episode("Northwind paid 40 days late", session_id=CONVERSATION)
+    entry = local.catalog.get("core.write_fact")
+    assert entry.executor is not None
+
+    result = entry.executor(
+        {"key": "client/northwind", "value": "Northwind pays late.", "sources": [episode.id]},
+        ctx(),
+    )
+
+    assert result.ok
+    assert _always(local, "draft the quarterly tax pack") == []
+    reconcile_from_disk(local.brain)
+    assert _always(local, "draft the quarterly tax pack") == []

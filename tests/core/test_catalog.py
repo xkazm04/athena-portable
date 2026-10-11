@@ -553,3 +553,32 @@ def test_identical_registries_render_identical_text_when_cut() -> None:
 def test_a_block_under_the_bound_says_nothing_about_a_cut() -> None:
     text = build_catalog(services(), manifest()).render_capabilities(Lane.BROWSER).text
     assert "did not fit" not in text
+
+
+# --- every_turn: the gated path into the always tier (ADR 0071) ---------------------------------
+
+
+def test_every_turn_is_an_optional_boolean_and_write_fact_is_still_gated() -> None:
+    catalog = build_catalog(services(LIVE_EPISODE))
+    good = {"key": "northwind", "value": "pays late", "sources": [LIVE_EPISODE]}
+
+    assert catalog.classify("core.write_fact") is ToolClass.GATED
+    assert catalog.validate("core.write_fact", good, CTX).ok, "omitting it is today's call"
+    for flag in (True, False):
+        assert catalog.validate("core.write_fact", good | {"every_turn": flag}, CTX).ok
+    for wrong in ("true", 1, 0, None, ["yes"]):
+        result = catalog.validate("core.write_fact", good | {"every_turn": wrong}, CTX)
+        assert not result.ok, wrong
+        assert result.reason == "validator_failed"
+        assert "every_turn" in result.detail
+    # The provenance validator is unchanged: the flag does not carry a dead source through.
+    dead = good | {"every_turn": True, "sources": ["ep_deadbeef"]}
+    assert not catalog.validate("core.write_fact", dead, CTX).ok
+
+
+def test_the_capabilities_line_offers_every_turn_and_says_when_to_ask_for_it() -> None:
+    text = build_catalog(services()).render_capabilities(Lane.BROWSER).text
+    (line,) = [row for row in text.splitlines() if row.startswith("- `core.write_fact`")]
+
+    assert "every_turn?: boolean" in line
+    assert "every turn" in line

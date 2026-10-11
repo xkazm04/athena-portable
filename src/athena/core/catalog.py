@@ -136,6 +136,9 @@ WRITE_FACT_SCHEMA: dict[str, Any] = {
             "maxItems": 12,
         },
         "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        # The always tier's one way in (ADR 0071). On the card as ``every_turn: true``, so the
+        # user approves the ride as well as the claim; omitted, the fact waits for a query.
+        "every_turn": {"type": "boolean"},
     },
     "required": ["key", "value", "sources"],
 }
@@ -203,7 +206,11 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
                 live_sources(services.sources_alive),
             ),
             executor=services.write_fact or _unattached("core.write_fact"),
-            description="Distil a claim about the user, a project or the world; cites episodes.",
+            description=(
+                "Distil a claim about the user, a project or the world; cites episodes. "
+                "Set every_turn only for a standing fact every later conversation needs, such as "
+                "how a client pays; it then rides every turn."
+            ),
         ),
         ToolEntry(
             name="core.checkpoint",

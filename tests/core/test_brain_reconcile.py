@@ -16,7 +16,8 @@ import pytest
 
 from athena.cli import cmd_reconcile
 from athena.core.brain import Brain, index_fingerprint, reconcile_from_disk
-from athena.core.brain.store import DEFAULT_CONFIDENCE
+from athena.core.brain.store import DEFAULT_CONFIDENCE, DEFAULT_IMPORTANCE, sha256
+from athena.core.recall import ALWAYS_BLOCK, recall
 
 
 def _populate(brain: Brain) -> None:
@@ -297,3 +298,121 @@ def test_cmd_reconcile_names_a_non_utf8_file_and_still_exits_zero(
     assert code == 0
     assert out["ok"] is False
     assert "semantic/world/raw.md: not UTF-8" in out["skipped"]
+
+
+# -- the always tier survives a rebuild (ADR 0071) ---------------------------------------------
+
+#: A fact file exactly as a writer before ADR 0071 rendered it: seven keys, no ``every_turn``.
+TODAYS_FACT = (
+    "---\n"
+    'id: "fact_0a1b2c3d"\n'
+    "type: fact\n"
+    'scope: "user"\n'
+    'key: "acme pays late"\n'
+    "confidence: 0.7\n"
+    'created: "2026-09-01T09:00:00+00:00"\n'
+    "sources:\n"
+    '  - "ep_0a1b2c3d"\n'
+    "---\n"
+    "\n"
+    "Acme has paid late three quarters running\n"
+)
+
+
+def _always_ids(brain: Brain) -> set[str]:
+    return {memory.id for memory in recall(brain, "helicopter").block(ALWAYS_BLOCK).items}
+
+
+def test_a_copied_brain_with_an_every_turn_fact_rebuilds_an_identical_index(
+    tmp_path: Path,
+) -> None:
+    original = tmp_path / "brain"
+    with Brain(original) as brain:
+        _populate(brain)
+        source = brain.append_episode("Northwind paid 40 days late", role="user")
+        always = brain.write_fact(
+            "northwind pays late",
+            "Northwind pays about forty days late; chase on day 30",
+            sources=[source.id],
+            every_turn=True,
+        )
+        expected = index_fingerprint(brain)
+        assert _always_ids(brain) == {always.id}
+
+    copied = tmp_path / "copied-brain"
+    _copy_tree_without_the_index(original, copied)
+
+    with Brain(copied) as rebuilt:
+        stats = reconcile_from_disk(rebuilt)
+
+        assert stats.skipped == []
+        assert index_fingerprint(rebuilt) == expected
+        assert rebuilt.node(always.id) is not None
+        assert _always_ids(rebuilt) == {always.id}, "the always tier survives a machine move"
+
+
+def test_a_fact_written_without_every_turn_is_not_always_before_or_after_a_rebuild(
+    tmp_path: Path,
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("Acme paid 34 days late", role="user")
+        fact = brain.write_fact("acme pays late", "Acme pays late", sources=[source.id])
+        assert "every_turn" not in (brain.root / fact.path).read_text(encoding="utf-8")
+        assert _always_ids(brain) == set()
+
+        reconcile_from_disk(brain)
+
+        assert _always_ids(brain) == set()
+        node = brain.node(fact.id)
+        assert node is not None
+        assert node.importance == DEFAULT_IMPORTANCE
+
+
+def test_a_fact_file_in_todays_frontmatter_rebuilds_to_the_rows_it_always_did(
+    tmp_path: Path,
+) -> None:
+    """ADR 0003's promise, held by ADR 0071: a file with no ``every_turn`` is read as before."""
+    with Brain(tmp_path / "brain") as brain:
+        path = brain.root / "semantic" / "user" / "fact_0a1b2c3d_acme-pays-late.md"
+        path.write_text(TODAYS_FACT, encoding="utf-8", newline="\n")
+
+        stats = reconcile_from_disk(brain)
+
+        assert stats.skipped == []
+        body = "Acme has paid late three quarters running"
+        when = "2026-09-01T09:00:00+00:00"
+        assert index_fingerprint(brain) == [
+            (
+                "fact_0a1b2c3d",
+                "fact",
+                "semantic/user/fact_0a1b2c3d_acme-pays-late.md",
+                sha256(TODAYS_FACT),
+                DEFAULT_IMPORTANCE,
+                body,
+                "[]",
+                0,
+                None,
+                when,
+                when,
+            ),
+            ("provenance", "fact_0a1b2c3d", "ep_0a1b2c3d"),
+            ("fact", "fact_0a1b2c3d", "user", "acme pays late", 0.7),
+            ("fts", "fact_0a1b2c3d", body, "fact"),
+        ]
+        assert _always_ids(brain) == set()
+
+
+@pytest.mark.parametrize("value", ['"true"', "1", "yes", "false"])
+def test_an_every_turn_that_is_not_the_literal_true_is_today_s_default(
+    tmp_path: Path, value: str
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        path = brain.root / "semantic" / "user" / "fact_0a1b2c3d_acme-pays-late.md"
+        text = TODAYS_FACT.replace("\n---\n\n", f"\nevery_turn: {value}\n---\n\n", 1)
+        path.write_text(text, encoding="utf-8", newline="\n")
+
+        reconcile_from_disk(brain)
+
+        node = brain.node("fact_0a1b2c3d")
+        assert node is not None
+        assert node.importance == DEFAULT_IMPORTANCE

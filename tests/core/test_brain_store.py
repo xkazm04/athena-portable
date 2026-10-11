@@ -8,8 +8,9 @@ from pathlib import Path
 import pytest
 
 from athena.contracts import ids
-from athena.core.brain import Brain, ProvenanceError
+from athena.core.brain import Brain, ProvenanceError, frontmatter
 from athena.core.brain.frontmatter import FrontmatterError
+from athena.core.brain.store import ALWAYS_IMPORTANCE, DEFAULT_IMPORTANCE
 
 
 def test_an_episode_lands_on_disk_with_the_header_ref_8_fixes(tmp_path: Path) -> None:
@@ -159,3 +160,68 @@ def test_a_relative_brain_root_becomes_absolute_so_a_read_handle_can_be_opened(
             assert con.execute("SELECT COUNT(*) FROM companion_node").fetchone()[0] == 1
         assert brain.counts() == {"episode": 1}
         assert brain.read_body(episode.id) == "said in a relative brain"
+
+
+# -- every_turn: the always tier on disk (ADR 0071) --------------------------------------------
+
+
+def _header(text: str) -> list[str]:
+    lines = text.splitlines()
+    return lines[: lines.index("---", 1) + 1]
+
+
+def test_a_fact_without_every_turn_has_the_seven_keys_it_always_had(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("Acme paid 34 days late again", role="user")
+
+        fact = brain.write_fact("acme pays late", "Acme pays late", sources=[episode.id])
+
+        header = _header((brain.root / fact.path).read_text(encoding="utf-8"))
+        assert [line.partition(":")[0] for line in header[1:-2]] == [
+            "id",
+            "type",
+            "scope",
+            "key",
+            "confidence",
+            "created",
+            "sources",
+        ]
+        assert header[-2:] == [f'  - "{episode.id}"', "---"]
+        node = brain.node(fact.id)
+        assert node is not None and node.importance == DEFAULT_IMPORTANCE
+
+
+def test_an_every_turn_fact_carries_one_more_key_last_and_the_always_importance(
+    tmp_path: Path,
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("Northwind paid 40 days late", role="user")
+
+        plain = brain.write_fact("northwind", "Northwind pays late", sources=[episode.id])
+        always = brain.write_fact(
+            "northwind", "Northwind pays late", sources=[episode.id], every_turn=True
+        )
+
+        plain_header = _header((brain.root / plain.path).read_text(encoding="utf-8"))
+        always_header = _header((brain.root / always.path).read_text(encoding="utf-8"))
+        assert always_header[-2:] == ["every_turn: true", "---"]
+        assert len(always_header) == len(plain_header) + 1
+        meta, _ = frontmatter.parse((brain.root / always.path).read_text(encoding="utf-8"))
+        assert meta["every_turn"] is True
+        node = brain.node(always.id)
+        assert node is not None and node.importance == ALWAYS_IMPORTANCE
+
+
+def test_a_file_without_every_turn_round_trips_through_frontmatter_unchanged(
+    tmp_path: Path,
+) -> None:
+    """``parse`` then ``render`` gives back the same bytes, and invents no ``every_turn`` key."""
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("Acme paid 34 days late again", role="user")
+        fact = brain.write_fact("acme pays late", "Acme pays late", sources=[episode.id])
+        text = (brain.root / fact.path).read_text(encoding="utf-8")
+
+        meta, body = frontmatter.parse(text)
+
+        assert "every_turn" not in meta
+        assert frontmatter.render(list(meta.items()), body) == text
