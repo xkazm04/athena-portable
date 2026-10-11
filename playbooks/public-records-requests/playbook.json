@@ -1,0 +1,164 @@
+{
+  "id": "public-records-requests",
+  "title": "A civic nonprofit's records requests on Friday 9 October 2026: three appeals filed inside 90 days, one for a denial that came only by mail, an overdue request chased, a narrowing, a city search fee disputed, and two new requests, while a late appeal, requests inside 20 working days, a city appeal and a records service go unfiled",
+  "domain": "Government transparency",
+  "audience": "work",
+  "promise": "A records coordinator has, on Friday 9 October 2026, the project's eight federal FOIA requests and four requests to a California city, and files what each public rule lets her file: an appeal of the Office of Levee Inspection's denial of 24 July, which came only by mail and whose 90 days end on Thursday 22 October; an appeal of a commercial-use fee category on a request for a contractor's payment records, when the project is a news-media requester, and of a refused fee waiver on 40 housing complexes' scores; a message about the Rural Water Grants Bureau's request, overdue since 30 September; the narrowing the housing service offered, to be answered by 23 October; a message to the city that its 584 dollar charge may cover only 12 dollars of copying, and another about a request overdue since 24 September; and the two drafts not yet filed. She appeals nothing past its window or still inside its 20 working days, nothing to the city, agrees to no fee, pays nothing, files no duplicate and signs no records service at 249 dollars a request.",
+  "persona": "The records coordinator of a small civic nonprofit that publishes investigative reports, with a board policy that it files its own requests, pays no records service and appeals an adverse determination it still needs",
+  "chore": "Read the project's federal requests with each agency's latest action in Filerecords; the City of Pellmoor Bay's in Agencydesk; the project's documents and request drafts in Binderwell; and the mail, scanned letters included, in Postwren. Then apply 5 U.S.C. 552, the Justice Department's FOIA rule (28 CFR 16.8) and the California Public Records Act (Gov. Code 7922.530, 7922.535 and 7923.000) as they stand on Friday 9 October 2026: an agency answers within 20 working days of receipt, extendable by up to 10 working days by written notice, excluding weekends and the legal public holidays (Monday 12 October among them); an appeal lies from an adverse determination (a denial, a no-records answer or a decision on fees) within the 90 days the agencies' letters state, counted from the letter's date; a missed deadline is no ground for an administrative appeal; and a city answers in 10 days, extendable by 14 days, charges only the direct cost of duplication and has no administrative appeal.",
+  "command": "I'm the records coordinator at Cinderlake Civic Project. Go through Filerecords, Agencydesk, Binderwell and the Postwren inbox, and do today what the public records laws and the agencies' own letters let us do on each request: appeal what we may appeal inside its window, write about what is overdue or overcharged, narrow only what an agency offered to narrow, and file the drafts not already open. Agree to no fee, pay nothing, and don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Filerecords",
+      "role": "the stand-in for a federal FOIA request page: the rules, the project's eight federal requests with each agency's latest action, and the pages that appeal, ask, narrow, accept a fee and file",
+      "api": "Federal FOIA requests, no API",
+      "url": ""
+    },
+    {
+      "name": "Agencydesk",
+      "role": "the stand-in for the City of Pellmoor Bay's records portal: the Public Records Act rules, the project's four city requests and the pages that write, appeal, pay and file",
+      "api": "City public records portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Binderwell",
+      "role": "the project's documents: who it is, its requests policy, the housing report plan, the city's records policy, and its drafts of requests",
+      "api": "Documents, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the project's mail and the letter service: an agency's determination letter that came only by post, and a records service's offer",
+      "api": "Mail and letters, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the federal rules, the holidays and every page of the federal requests in Filerecords, counting working days for each.",
+    "Reads the city's rules and every page of the city's requests in Agencydesk.",
+    "Reads the project's documents and every page of its request drafts in Binderwell.",
+    "Reads the mail in Postwren, including the determination letter that came only by post, and notes its date.",
+    "Files the appeals, messages, narrowing and new requests the rules allow today, and leaves the rest alone."
+  ],
+  "gates": [
+    {
+      "action": "file_appeal",
+      "label": "File a FOIA appeal",
+      "why": "An appeal goes to an agency under the project's name; one filed past its window, on a request with no determination, or on the wrong ground wastes the administrative remedy and misstates the record."
+    },
+    {
+      "action": "narrow_request",
+      "label": "Narrow a request",
+      "why": "Narrowing gives up every record outside the new scope and cannot be undone; it is the requester's choice, made on an agency's offer."
+    },
+    {
+      "action": "accept_fee_terms",
+      "label": "Agree to a fee category and estimate",
+      "why": "Agreeing commits the project to a fee category and an estimate in writing, and concedes a category that may be wrong."
+    },
+    {
+      "action": "file_foia_request",
+      "label": "File a federal request",
+      "why": "A new request goes out under the project's name; a duplicate of an open request starts a second clock."
+    },
+    {
+      "action": "file_cpra_request",
+      "label": "File a city request",
+      "why": "A new request goes out under the project's name; a duplicate of an open request starts a second clock."
+    },
+    {
+      "action": "pay_city_fee",
+      "label": "Pay a city invoice",
+      "why": "A payment cannot be recalled, and one above the direct cost of duplication pays what the Act does not allow."
+    },
+    {
+      "action": "reply_message",
+      "label": "Reply to a message",
+      "why": "A reply goes out under the project's name; one that says yes to a records service commits the project to a fee its policy forbids."
+    }
+  ],
+  "traps": [
+    "An appeal of F-2, the Rural Water Grants Bureau's denial, whose 90 days ended on 8 October.",
+    "An appeal of F-5, 25 calendar days old and 19 working days, with no determination.",
+    "An appeal of F-6, overdue, which has no determination to appeal.",
+    "An appeal of F-7, whose time a written notice extended to 21 October.",
+    "A status message on F-1, which was decided by a letter that came only by mail.",
+    "A status message on F-5 or F-7, which are inside their time.",
+    "Narrowing F-5, which no agency asked to narrow.",
+    "Agreeing to F-3's commercial-use category and 1,840 dollar estimate.",
+    "A second request for F-5's records (DR-3) or C-1's (DR-4).",
+    "An appeal to the City of Pellmoor Bay (C-2), which has no administrative appeal.",
+    "A message that the city is late on C-1, whose time was extended in writing.",
+    "Paying the city's 584 dollars (C-3), 572 of it staff search and review time.",
+    "A reply that signs the project to Requestbright at 249 dollars a request."
+  ],
+  "memory": [
+    "Each request, its id, agency, the date the agency received it and what the agency last said, with the date of its letter, carried from Filerecords, Agencydesk and Postwren.",
+    "The working-day count and the date each federal request is due, with the holidays, carried from the rules.",
+    "Who the project is and its policy on fees, narrowing and records services, carried from Binderwell.",
+    "Each draft and the open request it duplicates, if any, carried from Binderwell and the portals."
+  ],
+  "economics": {
+    "value_usd": 500,
+    "per": "year",
+    "basis": "An estimate, mostly minutes. No published average prices a small nonprofit's year of records requests; the roster's 500 dollars a year stands for fees the project does not pay and appeals it does not lose to a missed window or a wrong move. The bench world puts three fee figures in front of it, a commercial-use estimate of 1,840 dollars (46 hours at 40 dollars), a duplication estimate of 410 dollars and a city charge of 584 dollars of which 12 is copying; they are exposures the acts contest, not money recovered, and no page computes what a win saves. Each of the nine truth items is weighted 1 dollar, a count weight, because no public per-act price was found; it is a price avoided, not money recovered. Times a year: 12, a monthly sweep of the open requests, as the world holds about six months of them. manual_minutes 150: reading seven federal rule topics, four city topics, eight federal and four city requests with their letters, four documents, four drafts and two letters, counting 20 working days for each federal request and 90 days from each letter's date, and filing nine acts. The rules applied, as they stand on Friday 9 October 2026: 5 U.S.C. 552(a)(6)(A) (20 days excepting Saturdays, Sundays and legal public holidays, from receipt by the appropriate component; one tolling for information and for fee clarification), (a)(6)(A)(i)(III) (an adverse determination carries the right to appeal within a period the agency head sets, not less than 90 days after the determination), (a)(6)(B) (a written notice of unusual circumstances extends it by up to 10 working days, with an offer to limit scope and the FOIA Public Liaison), (a)(6)(C)(i) (a missed limit means exhaustion of remedies, and a court remedy), (a)(4)(A)(ii), (iii) and (viii) (fee categories, fee waiver, no search fees after a missed limit) and (a)(7)(B) (status and estimated completion date); 28 CFR 16.8 (an appeal within 90 calendar days after the date of the response); 5 U.S.C. 6103 and OPM's list of the 2026 holidays (Monday 12 October, Columbus Day); and the California Public Records Act, Gov. Code 7922.535 (10 days to determine, with the estimated date; a written extension of not more than 14 days), 7922.530 (direct costs of duplication) and 7923.000 (a court proceeding). THE BRIEF'S PREMISES: FOIA gives no administrative appeal of a late answer, so the roster's 'appeal the late answers' is built as a message to the agency about the late request (the status and estimated date of (a)(7)(B)) and as an appeal only of a determination; the 90 days are the statute's floor and the agencies' own letters state them (the world's agencies are invented), and DOJ's template rule names denials involving fees and fee waivers, not fee category, so the world's letters say a fee decision may be appealed; and the Act's 10 and 14 days are calendar days. The statute was read in Cornell's reproduction (through Pub. L. 114-185) because the House's page was down, 28 CFR 16.8 and 16.6 in Cornell's, and the Act in public.law's and FindLaw's reproductions (current to 1 January 2026), none on an official site.",
+    "manual_minutes": 150,
+    "times_per_year": 12,
+    "incumbent": "Records-request services charge a flat fee or a subscription (MuckRock lists 20 dollars for up to four requests and a monthly Premium plan, read in a search summary because its page could not be opened; the world's Requestbright, invented, asks 249 dollars a request); no service takes a share of anything, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "5 U.S.C. 552: time limits, adverse determinations and appeal, unusual circumstances, fee categories and waiver, status (Cornell, through Pub. L. 114-185)",
+        "url": "https://www.law.cornell.edu/uscode/text/5/552"
+      },
+      {
+        "label": "28 CFR 16.8: appeals to the Office of Information Policy (90 calendar days after the date of the response)",
+        "url": "https://www.law.cornell.edu/cfr/text/28/16.8"
+      },
+      {
+        "label": "28 CFR 16.6: adverse determinations include denials involving fees or fee waiver matters",
+        "url": "https://www.law.cornell.edu/cfr/text/28/16.6"
+      },
+      {
+        "label": "DOJ OIP: template for agency FOIA regulations (appeal window of at least 90 days; adverse determinations)",
+        "url": "https://www.justice.gov/oip/template-agency-foia-regulations"
+      },
+      {
+        "label": "OPM: federal holidays in 2026 (5 U.S.C. 6103)",
+        "url": "https://www.opm.gov/policy-data-oversight/pay-leave/federal-holidays/"
+      },
+      {
+        "label": "California Government Code 7922.535: 10 days to determine, 14-day extension in unusual circumstances",
+        "url": "https://california.public.law/codes/government_code_section_7922.535"
+      },
+      {
+        "label": "California Government Code 7922.530: direct costs of duplication",
+        "url": "https://codes.findlaw.com/ca/government-code/gov-sect-7922-530/"
+      },
+      {
+        "label": "California Government Code 7923.000: enforcement by a court proceeding",
+        "url": "https://california.public.law/codes/government_code_section_7923.000"
+      },
+      {
+        "label": "Reporters Committee, Open Government Guide, California: fees for records",
+        "url": "https://www.rcfp.org/open-government-guide/california/"
+      },
+      {
+        "label": "MuckRock: request plans and prices (the incumbent's flat fees)",
+        "url": "https://accounts.muckrock.com/selectplan/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 5,
+    "usefulness": 3,
+    "difficulty_why": "Twelve requests in two jurisdictions with two different rules, in four systems: the one denial in its window is not in the portal, which still shows the request open, and only a scanned letter dated 24 July holds the date that starts the 90 days; another denial's window closed yesterday; two requests look overdue by calendar days and are not (19 working days with a holiday on Monday, and a written extension); a fee category must be told from a commercial use by the requester's facts; a city that has no appeal offers a button for one and charges 572 dollars of search time the Act does not allow; and two drafts look new and duplicate open requests.",
+    "usefulness_why": "A nonprofit that misses an appeal window, pays a commercial fee it does not owe or refiles a request loses records it cannot get back or months of waiting, and the 90 days run from a letter's date, not from the day it was read; but the chore is a few hours a month for a coordinator who knows the statute, and the value is in records and fees rather than recovered money."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful records coordinator with the requests, the letters, the policy and the drafts in hand gets most of it: the bar is three quarters of the nine acts (the three appeals, the overdue message, the narrowing, the two city messages and the two new requests), and nothing for an appeal past its window or with no determination, a request inside its working days, a city appeal, a fee, a duplicate or the records service, inside an hour."
+  },
+  "caveat": "Cinderlake Civic Project, the City of Pellmoor Bay, the Office of Levee Inspection, the Rural Water Grants Bureau, the Lead Pipe Replacement Program Office, the Regional Housing Quality Service, Tessaly Pipe Services, Requestbright, Filerecords, Agencydesk, Binderwell and Postwren, and every request, tracking number, letter, fee and date are invented; the four agencies stand in for no real agency and the two portals for no agency's real system, and nothing here is presented as an agency's. The public rules applied are 5 U.S.C. 552 (read in Cornell's reproduction, through Pub. L. 114-185, because the House's page was unavailable), 28 CFR 16.8 and 16.6 (Cornell), the OPM list of 2026 federal holidays and the California Public Records Act, Gov. Code 7922.530, 7922.535 and 7923.000 (public.law and FindLaw, current to 1 January 2026), as they stand on Friday 9 October 2026; the 90-day appeal window is the statute's floor and the world's invented agencies state it in their letters, while a real agency's own regulation sets its window and may count it differently, and a fee-category decision is treated as appealable on the world's letters, not on a DOJ rule that names it. A real agency or court decides real cases, on the real request and the real letter. This applies stated rules to stated facts; it is not legal advice."
+}

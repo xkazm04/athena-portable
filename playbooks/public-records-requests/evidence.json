@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "public-records-requests",
+  "captured_at": "2026-10-11T07:58:43Z",
+  "bench_run_at": "2026-10-11T07:55:10Z",
+  "narration": {
+    "text": "A civic nonprofit's records requests on Friday 9 October 2026: three appeals filed inside 90 days, one for a denial that came only by mail, an overdue request chased, a narrowing, a city search fee disputed, and two new requests, while a late appeal, requests inside 20 working days, a city appeal and a records service go unfiled. This is a chore for the records coordinator of a small civic nonprofit that publishes investigative reports, with a board policy that it files its own requests, pays no records service and appeals an adverse determination it still needs. On the bench, she found 9 of 9 eligible items, worth 9 dollars of the 9 dollars there was to find. She made no false claim. The world held 15 traps, and she walked past 15. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 68 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.8,
+    "sha256": "14485400fa69690deda085c6ee9f02435e4243f31adf67542994e60a3d3d296c"
+  },
+  "video": {
+    "path": "evidence/public-records-requests/evidence.mp4",
+    "duration_s": 63.8,
+    "bytes": 3939504,
+    "sha256": "33ddb986fd49768716a9aa661cb7fbed3a46a4797743fa616ac0ef69e9d3cd4c"
+  },
+  "thumbnail": {
+    "path": "playbooks/public-records-requests/thumb.jpg",
+    "bytes": 89626,
+    "sha256": "5031b844022c71d060f2da5aaada2e9804114cbe8b133aedd06770a6e7d24f18"
+  }
+}

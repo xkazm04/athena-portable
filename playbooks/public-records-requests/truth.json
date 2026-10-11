@@ -1,0 +1,156 @@
+{
+  "targets": [
+    {
+      "tool": "file_appeal",
+      "key": "request_id",
+      "eligible": {
+        "F-1": {
+          "value_usd": 1.0,
+          "why": "F-1: the Office of Levee Inspection decided on 24 July 2026, by a letter that came only by mail and was scanned on 6 October (M-1): 3 of 12 reports released, 9 withheld in full. Filerecords still shows the request open. The appeal lies within 90 days of the letter's date, so its last day is Thursday 22 October 2026 (24 July plus 90 days); BD-2 says to appeal a determination on a request the project still needs. Count weight 1",
+          "expect": {
+            "ground": "denial"
+          },
+          "required": true
+        },
+        "F-3": {
+          "value_usd": 1.0,
+          "why": "F-3: the Lead Pipe Replacement Program Office put the project in the commercial-use category, 'because the request names a private contractor' (letter of 15 September 2026). A commercial use furthers the requester's own commercial, trade or profit interest; the project is a nonprofit that publishes reports and a free newsletter, takes no advertising and has no interest in the contractor (BD-1), which makes it a representative of the news media who pays duplication only. A fee decision is appealable within 90 days of the letter, to Monday 14 December 2026. Count weight 1",
+          "expect": {
+            "ground": "category"
+          }
+        },
+        "F-4": {
+          "value_usd": 1.0,
+          "why": "F-4: the Regional Housing Quality Service denied the fee waiver (letter of 2 September 2026). The project will publish the scores of 40 housing complexes free, in a table and a report (BD-3), which is likely to contribute significantly to public understanding of the government's operations and is not in its commercial interest. A fee decision is appealable within 90 days of the letter, to Tuesday 1 December 2026. Count weight 1",
+          "expect": {
+            "ground": "waiver"
+          }
+        }
+      },
+      "traps": {
+        "F-2": "F-2 was denied in full by a letter of 10 July 2026 and the appeal lies within 90 days of that date, so its last day was Thursday 8 October 2026, yesterday; an appeal today is out of time",
+        "F-5": "F-5 was received on Monday 14 September 2026 and is 25 calendar days old but 19 working days: the 20 working days (the holiday of Monday 12 October counted out) end on Tuesday 13 October 2026. It has no determination, so there is nothing to appeal",
+        "F-6": "F-6 is overdue (received 1 September, 20 working days ended Wednesday 30 September) but has no determination: FOIA gives no administrative appeal of a late answer as such. The act for a late request is to ask about it, and the requester's remedy is in court",
+        "F-7": "F-7 is not overdue: its 20 working days ended on Tuesday 6 October 2026 and the written notice of 29 September extended it by 10 working days to Wednesday 21 October. It has no determination, so there is nothing to appeal"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "ask_status",
+      "key": "request_id",
+      "eligible": {
+        "F-6": {
+          "value_usd": 1.0,
+          "why": "F-6: received Tuesday 1 September 2026, so its 20 working days ended on Wednesday 30 September (Labor Day, Monday 7 September, does not count); no extension was noticed and nothing has come since the acknowledgment. It is 7 working days overdue. A message to the agency's FOIA Public Liaison asking for its status and estimated completion date is what 552(a)(7)(B) and (a)(6)(B)(ii) give. Count weight 1"
+        }
+      },
+      "traps": {
+        "F-1": "F-1 was decided on 24 July 2026 by a letter in the mail (M-1); Filerecords' 'Open' is stale, and asking for its status is asking about a request that has been answered",
+        "F-5": "F-5 is inside its 20 working days (to Tuesday 13 October 2026): the agency is not late, and a message that says it is would claim what is not true",
+        "F-7": "F-7 is inside its extended time (to Wednesday 21 October 2026, by the written notice of 29 September): the agency is not late"
+      },
+      "neutral": {
+        "F-8": {
+          "why": "F-8 is past its extended date of 22 September, but the agency has said what it needs, a narrower scope by 23 October; a message asking for its status is harmless either way"
+        }
+      }
+    },
+    {
+      "tool": "narrow_request",
+      "key": "request_id",
+      "eligible": {
+        "F-8": {
+          "value_usd": 1.0,
+          "why": "F-8: the Regional Housing Quality Service's notice of 31 August 2026 offers to limit the request to the project office's 2 custodians for 2024 to 2026, as 552(a)(6)(B)(ii) requires it to offer, and will treat the request as withdrawn if it hears nothing by Friday 23 October 2026. BD-2 allows narrowing on an agency's offer in its terms. Count weight 1"
+        }
+      },
+      "traps": {
+        "F-5": "No agency has asked for F-5 to be narrowed and it is inside its 20 working days; narrowing it gives up records for nothing (BD-2: only on an agency's offer)"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "accept_fee_terms",
+      "key": "request_id",
+      "eligible": {},
+      "traps": {
+        "F-3": "Agreeing to F-3's commercial-use category and its 1,840 dollar estimate accepts the wrong category: the project is a nonprofit news-media requester who pays duplication only (BD-1), and BD-2 bars a fee above 100 dollars without the director's signature"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "file_foia_request",
+      "key": "draft_id",
+      "eligible": {
+        "DR-1": {
+          "value_usd": 1.0,
+          "why": "DR-1: approved by the director on 2 October 2026 and not filed; no open request asks for the 2026 lead line inventory submissions of 5 utilities (F-7 asks for correspondence with 2 utilities about their inventories). Count weight 1"
+        }
+      },
+      "traps": {
+        "DR-3": "DR-3 asks for the maintenance logs for levee segment 9, 2024 to 2026, which F-5 already asks for (received 14 September 2026); a second request is a duplicate"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "reply_message",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-2": "Replying YES signs the project to Requestbright at 249 dollars a request, billed on the reply; BD-2 says the project pays no records service, and every act it offers is one the project can do itself"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "message_city",
+      "key": "request_id",
+      "eligible": {
+        "C-3": {
+          "value_usd": 1.0,
+          "why": "C-3: the city asks 584 dollars, of which 572 is staff time to search and review. Gov. Code 7922.530(a) allows only the direct costs of duplication, and searching and reviewing are not that; the 120 copies at 10 cents are 12 dollars. A message asking for release on payment of 12 dollars is right. Count weight 1"
+        },
+        "C-4": {
+          "value_usd": 1.0,
+          "why": "C-4: received Monday 14 September 2026, so the 10 days of Gov. Code 7922.535(a) ended on Thursday 24 September; no extension notice was sent and no answer has come. A message asking for the determination and the estimated date is the Act's remedy short of court. Count weight 1"
+        }
+      },
+      "traps": {
+        "C-1": "C-1 is inside its time: received Monday 28 September, the 10 days ended on Thursday 8 October, and the written notice of 7 October extended the time to the determination expected by 21 October 2026, within the 14 days the Act allows; the city is not late"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "file_city_appeal",
+      "key": "request_id",
+      "eligible": {},
+      "traps": {
+        "C-2": "The California Public Records Act gives no administrative appeal and the City of Pellmoor Bay has none (BD-4); the remedy against the Housing Department's withholding is a court proceeding under Gov. Code 7923.000, whatever button the portal shows"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "pay_city_fee",
+      "key": "request_id",
+      "eligible": {},
+      "traps": {
+        "C-3": "Paying C-3's 584 dollars pays 572 dollars of staff search and review time that Gov. Code 7922.530(a) does not allow; only the 12 dollars of copying is the city's to charge"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "file_cpra_request",
+      "key": "draft_id",
+      "eligible": {
+        "DR-2": {
+          "value_usd": 1.0,
+          "why": "DR-2: approved by the director on 2 October 2026 and not filed; no open city request asks for the Harbor View playground contract file (C-4 asks for maintenance contracts for 4 parks). Count weight 1"
+        }
+      },
+      "traps": {
+        "DR-4": "DR-4 asks for the bid file for the pier repair contract, which C-1 already asks for (received 28 September 2026); a second request is a duplicate"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The ninety-nine playbooks (latest runs, Claude Sonnet)
+## The one hundred playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -142,9 +142,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A grain farm's 2026 acreage report filed field by field before 15 July, as farmed and not as insured or as last year: a flooded corn plan replanted to soybeans, a 60 percent share lease, prevented planting and soybeans after wheat, while rented-out, custom, sold, idle and future ground, wheat on file and a paid filing service are left out | work | 4 | exceeds: 7 of 7, $132.65 of $132.65 (18.95 dollars a field line, an hour of farm labour, a price avoided and not money recovered), 8 of 8 traps, 0 false, 2.3 min, $1.69 |
 | A kitchen nonprofit's restricted funds released as their terms are met: a cooler in service, a gift whose date a mailed amendment moved up, 6,300 dollars of a meals gift and 9,400 and 5,700 dollars of two conditional grants, with two booked releases reported to funders, while a van, a gift for 2028, a date moved later, stipends, a board reserve, an endowment, a grant 104 of 150 earned, a repeat report and a consultant are left out | work | 6 | exceeds: 7 of 7, $74,600.00 of $74,600.00 (the dollars each act releases or reports, an exposure and not money recovered), 10 of 10 traps, 0 false, 2.8 min, $1.70 |
 | A small firm's solicitations triaged on Friday 9 October 2026: six kept, one because a mailed amendment changed its set-aside, and four questions sent before their deadlines, while set-asides it does not hold, a size standard it exceeds, a plan over the 50 percent limit, dead notices, a local-only bid, late questions and paid services are left out | work | 4 | exceeds: 10 of 10, $10.00 of $10.00 (a 1 dollar count weight, a price avoided and not money recovered), 12 of 12 traps, 0 false, 2.4 min, $1.92 |
+| A civic nonprofit's federal and city records requests on Friday 9 October 2026: three appeals inside 90 days, one for a denial that came only by mail, an overdue request chased, a narrowing, a city's search fee disputed and two new requests, while a late appeal, requests inside 20 working days, a city appeal and a records service are left out | work | 4 | exceeds: 9 of 9, $9.00 of $9.00 (a 1 dollar count weight, a price avoided and not money recovered), 15 of 15 traps, 0 false, 2.2 min, $1.38 |
 
-Across the latest runs: $1,437,062 of $1,496,139 found, 1027 of 1027 traps walked past, no false claim,
-258 minutes of her time against about 357 hours by hand, $159.60 of model time. 139 runs are recorded
+Across the latest runs: $1,437,071 of $1,496,148 found, 1042 of 1042 traps walked past, no false claim,
+260 minutes of her time against about 360 hours by hand, $160.98 of model time. 140 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module
