@@ -154,7 +154,7 @@ def test_a_ready_socket_hears_and_speaks_through_the_fakes(live: Live, installed
         assert speaking["sample_rate"] == 24_000
         client.until("voice.stopped", reason="done", timeout=30)
         audio = b"".join(chunk for generation, chunk in client.audio)
-        assert audio == b"Two are late. "  # the fake's WAV frames are the sentence, padded
+        assert audio == b" Two are late."  # the fake echoes the sentence, one space first
         assert {generation for generation, _ in client.audio} == {speaking["generation"]}
     finally:
         client.close()
@@ -176,7 +176,7 @@ def test_a_preview_is_raw_pcm_with_its_provenance_in_headers(live: Live, install
     assert reply.header("X-Tts-Provider") == "kokoro"
     assert reply.header("X-Tts-Voice") == "af_heart"
     assert int(reply.header("X-Tts-Elapsed-Ms")) >= 0
-    assert reply.raw == b"Hello, I am Athena. "
+    assert reply.raw == b" Hello, I am Athena."
     exposed = reply.header("Access-Control-Expose-Headers")
     assert {"X-Tts-Provider", "X-Tts-Voice", "X-Tts-Elapsed-Ms"} <= set(exposed.split(", "))
 

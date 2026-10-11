@@ -89,7 +89,7 @@ def test_the_arguments_are_personas_with_the_text_last(homes: EngineHomes) -> No
         "--num-threads=2",
         "--sid=3",
         "--output-filename=out.wav",
-        "Hello there.",
+        " Hello there.",
     ]
 
 
@@ -121,11 +121,13 @@ def test_synthesis_runs_one_process_per_sentence_and_yields_the_wav_frames_in_or
 
     audio = b"".join(tts.synthesize(text))
 
-    assert audio == _pcm("The first invoice is late.") + _pcm("The second one was paid yesterday.")
+    assert audio == _pcm(" The first invoice is late.") + _pcm(
+        " The second one was paid yesterday."
+    )
     seen = runs(log)
     assert [run["argv"][-1] for run in seen] == [  # type: ignore[index]
-        "The first invoice is late.",
-        "The second one was paid yesterday.",
+        " The first invoice is late.",
+        " The second one was paid yesterday.",
     ]
     assert all("--sid=3" in run["argv"] for run in seen)  # type: ignore[operator]
     assert tts.sample_rate == 24_000
@@ -140,7 +142,7 @@ def test_the_next_sentence_renders_while_this_one_is_played(homes: EngineHomes, 
     stream = tts.synthesize("Sentence number one is here. Sentence number two follows it.")
 
     first = next(stream)
-    assert first.startswith(b"Sentence number one")
+    assert first.startswith(b" Sentence number one")
     assert tts.started == ["Sentence number one is here.", "Sentence number two follows it."]
 
     # Playing sentence one: wait, undrained, for sentence two's render to finish by itself. Without
@@ -154,10 +156,10 @@ def test_the_next_sentence_renders_while_this_one_is_played(homes: EngineHomes, 
     drain_began = time.time()
     rest = b"".join(stream)
     one, two = seen
-    assert one["argv"][-1] == "Sentence number one is here."  # type: ignore[index]
-    assert two["argv"][-1] == "Sentence number two follows it."  # type: ignore[index]
+    assert one["argv"][-1] == " Sentence number one is here."  # type: ignore[index]
+    assert two["argv"][-1] == " Sentence number two follows it."  # type: ignore[index]
     assert two["end"] < drain_began, "sentence two finished only once the drain began"  # type: ignore[operator]
-    assert rest.endswith(_pcm("Sentence number two follows it."))
+    assert rest.endswith(_pcm(" Sentence number two follows it."))
 
 
 def test_closing_the_stream_early_stops_the_sentence_still_rendering(
@@ -169,7 +171,7 @@ def test_closing_the_stream_early_stops_the_sentence_still_rendering(
     next(stream)
     stream.close()  # a barge-in
     time.sleep(1.2)
-    assert [run["argv"][-1] for run in runs(log)] == ["A first sentence to say."]  # type: ignore[index]
+    assert [run["argv"][-1] for run in runs(log)] == [" A first sentence to say."]  # type: ignore[index]
 
 
 def test_a_sentence_that_never_finishes_times_out(homes: EngineHomes, log: Path) -> None:
@@ -300,15 +302,24 @@ def test_a_dash_led_sentence_never_reaches_the_engine_as_an_option(
     out = Path("out.wav")
     plain = kokoro.build_args(paths, 3, out, "Hello there.")
     args = kokoro.build_args(paths, 3, out, text)
-    assert not args[-1].startswith("-")
-    assert args[-1].strip() == text
+    assert args[-1] == f" {text}"
     assert args[:-1] == plain[:-1]
     assert [a for a in args if a.startswith("--output-filename")] == ["--output-filename=out.wav"]
 
 
-def test_a_sentence_without_a_leading_dash_passes_byte_for_byte() -> None:
-    for text in ("Hello there.", "Well -- maybe.", " spaced", "5 - 3 is 2."):
-        assert kokoro.spoken_entry(text) == text
+#: The code points a narrow Windows argv (code pages 1250 and 1252) folds to an ASCII ``-``, and
+#: the dashes beside them that it does not (ADR 0069, amended).
+_DASHES = [0x2010, 0x2011, 0x2012, 0x2015, 0x2212, 0xFF0D, 0x2013, 0x2014, 0xFE63]
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["Hello there.", "--output-filename=x.wav", *(f"{chr(c)} word" for c in _DASHES)],
+)
+def test_every_sentence_is_one_space_then_itself_byte_for_byte(text: str) -> None:
+    entry = kokoro.spoken_entry(text)
+    assert entry.startswith(" ")
+    assert entry[1:] == text
 
 
 def test_a_dash_led_sentence_writes_to_the_callers_path_only(homes: EngineHomes, log: Path) -> None:

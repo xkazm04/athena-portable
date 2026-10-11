@@ -29,3 +29,17 @@ added: no committed code shows the engine honours one. The test fake now treats 
 - A leading dash costs one byte of text; nothing else changes on the argv.
 - A guard on the text is stronger than a marker we cannot verify; it holds for any parser.
 - Other voice findings wait for their own round.
+
+## Amended 2026-10-11
+
+Council full round 1, robustness-3. The guard above tested only an ASCII `-`. Under a narrow
+Windows argv (code pages 1250 and 1252) U+2010, U+2011, U+2012, U+2015, U+2212 and U+FF0D are
+folded to `-`, so a sentence starting with one of them reached the engine as an option and the
+guarantee did not hold. A deny-list of code points depends on the code page and is never complete.
+
+`spoken_entry` now prefixes exactly one space to every sentence (after `split_sentences` has
+stripped it), whatever it starts with. The entry cannot begin with `-` under any parser or code
+page. espeak ignores the space, so no word is dropped. The earlier rule that a sentence without a
+leading dash passes byte for byte is withdrawn on purpose: the tests that pinned it now pin one
+space first and the sentence otherwise byte for byte, for the six folded code points, U+2013,
+U+2014, U+FE63 and an ASCII `--` sentence. Playbook narration gains one inaudible space.

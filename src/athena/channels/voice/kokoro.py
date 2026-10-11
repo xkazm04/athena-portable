@@ -205,13 +205,15 @@ def split_sentences(text: str) -> list[str]:
 
 
 def spoken_entry(text: str) -> str:
-    """The sentence as the engine's one positional argument: never begins with a dash (ADR 0069).
+    """The sentence as the engine's one positional argument: always one space first (ADR 0069).
 
     Reply text is shaped by pages the model has read, and a sentence such as ``--output-filename=x``
-    would be read as a flag. One leading space cannot start an option, espeak ignores it, and no
-    word or sign is dropped. A sentence that does not begin with ``-`` passes byte for byte.
+    would be read as a flag. A narrow argv on Windows folds six Unicode dashes to ``-``, so a guard
+    on the text depends on the code page and is never complete. One leading space on every
+    sentence cannot start an option under any parser, espeak ignores it, and no word or sign is
+    dropped.
     """
-    return f" {text}" if text.startswith("-") else text
+    return f" {text}"
 
 
 def build_args(paths: KokoroPaths, sid: int, output: Path, text: str) -> list[str]:
