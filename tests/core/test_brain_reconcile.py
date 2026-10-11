@@ -7,10 +7,16 @@ not a fact, and the brain has silently become the database.
 
 from __future__ import annotations
 
+import argparse
+import json
 import shutil
 from pathlib import Path
 
+import pytest
+
+from athena.cli import cmd_reconcile
 from athena.core.brain import Brain, index_fingerprint, reconcile_from_disk
+from athena.core.brain.store import DEFAULT_CONFIDENCE
 
 
 def _populate(brain: Brain) -> None:
@@ -118,3 +124,106 @@ def test_a_reconcile_leaves_runtime_state_alone(tmp_path: Path) -> None:
             "SELECT id FROM companion_session WHERE id = ?", ("sess-42",)
         ).fetchone()
         assert row == ("sess-42",)
+
+
+def _tables_holding(brain: Brain, node_id: str) -> list[str]:
+    found: list[str] = []
+    for table, column in (
+        ("companion_node", "id"),
+        ("companion_fts", "node_id"),
+        ("companion_provenance", "node_id"),
+        ("companion_fact", "id"),
+        ("companion_procedural", "id"),
+    ):
+        row = brain.writer.execute(
+            f"SELECT 1 FROM {table} WHERE {column} = ?",
+            (node_id,),
+        ).fetchone()
+        if row is not None:
+            found.append(table)
+    return found
+
+
+def _rewrite(brain: Brain, rel: str, drop_prefixes: tuple[str, ...], add: str = "") -> None:
+    """Edit a file's frontmatter by hand, the way a person would."""
+    path = brain.root / rel
+    kept = [
+        line
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if not line.startswith(drop_prefixes)
+    ]
+    if add:
+        kept.insert(1, add)
+    path.write_text("\n".join(kept) + "\n", encoding="utf-8", newline="\n")
+
+
+@pytest.mark.parametrize("bad", ['"high"', "true", "false", "nan", "inf", "-inf"])
+@pytest.mark.parametrize("kind", ["fact", "procedural"])
+def test_a_confidence_that_is_not_a_number_is_named_and_the_rebuild_goes_on(
+    tmp_path: Path, kind: str, bad: str
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+        source = brain.append_episode("evidence", role="user")
+        if kind == "fact":
+            victim = brain.write_fact("bad one", "text", scope="user", sources=[source.id])
+        else:
+            victim = brain.write_procedural("bad one", "text", scope="chat", sources=[source.id])
+        _rewrite(brain, victim.path, ("confidence:",), f"confidence: {bad}")
+
+        stats = reconcile_from_disk(brain)
+
+        shown = bad.strip('"')
+        assert f"{victim.path}: confidence {shown} is not a number" in stats.skipped
+        assert len(stats.skipped) == 1
+        assert stats.files == 7
+        assert _tables_holding(brain, victim.id) == []
+
+
+def test_a_confidence_of_zero_is_kept_and_an_absent_one_gets_the_default(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("evidence", role="user")
+        zero = brain.write_fact("zero", "text", scope="user", sources=[source.id])
+        absent = brain.write_fact("absent", "other text", scope="user", sources=[source.id])
+        _rewrite(brain, zero.path, ("confidence:",), "confidence: 0")
+        _rewrite(brain, absent.path, ("confidence:",))
+
+        stats = reconcile_from_disk(brain)
+
+        assert stats.skipped == []
+        got = dict(brain.writer.execute("SELECT id, confidence FROM companion_fact").fetchall())
+        assert got[zero.id] == 0.0
+        assert got[absent.id] == DEFAULT_CONFIDENCE
+
+
+def test_a_fact_with_no_sources_is_indexed_and_named(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+        source = brain.append_episode("evidence", role="user")
+        bare = brain.write_fact("bare", "text", scope="user", sources=[source.id])
+        _rewrite(brain, bare.path, ("sources:", "  - "))
+
+        stats = reconcile_from_disk(brain)
+
+        assert stats.skipped == []
+        assert stats.unsourced == [bare.path]
+        assert stats.as_dict()["unsourced"] == [bare.path]
+        assert "1 without sources" in stats.summary()
+        assert brain.node(bare.id) is not None
+
+
+def test_cmd_reconcile_reports_a_bad_file_and_still_exits_zero(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+        source = brain.append_episode("evidence", role="user")
+        victim = brain.write_fact("bad one", "text", scope="user", sources=[source.id])
+        _rewrite(brain, victim.path, ("confidence:",), "confidence: high")
+
+    code = cmd_reconcile(argparse.Namespace(brain=tmp_path / "brain"))
+
+    out = json.loads(capsys.readouterr().out)
+    assert code == 0
+    assert out["ok"] is False
+    assert f"{victim.path}: confidence high is not a number" in out["skipped"]

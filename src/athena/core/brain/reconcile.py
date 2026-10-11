@@ -14,6 +14,7 @@ memory at its writer default. A demotion that was never expressed on disk does n
 
 from __future__ import annotations
 
+import math
 import sqlite3
 from dataclasses import dataclass, field
 from typing import Any
@@ -56,17 +57,24 @@ class ReconcileStats:
     files: int = 0
     by_kind: dict[str, int] = field(default_factory=dict)
     skipped: list[str] = field(default_factory=list)
+    #: Facts and procedurals indexed with no ``sources`` list. A rebuild trusts the disk
+    #: (ADR 0003), so they stay; they are named because the write gate would have refused them.
+    unsourced: list[str] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "files": self.files,
             "by_kind": dict(self.by_kind),
             "skipped": list(self.skipped),
+            "unsourced": list(self.unsourced),
         }
 
     def summary(self) -> str:
         kinds = ", ".join(f"{kind} {n}" for kind, n in sorted(self.by_kind.items()))
-        return f"{self.files} files indexed ({kinds or 'none'}), {len(self.skipped)} skipped"
+        return (
+            f"{self.files} files indexed ({kinds or 'none'}), {len(self.skipped)} skipped, "
+            f"{len(self.unsourced)} without sources"
+        )
 
 
 def reconcile_from_disk(brain: Brain) -> ReconcileStats:
@@ -103,11 +111,43 @@ def reconcile_from_disk(brain: Brain) -> ReconcileStats:
                     # a clean rebuild that had lost a memory. Name the collision instead.
                     stats.skipped.append(f"{rel}: duplicate id {node_id}")
                     continue
+                confidence = DEFAULT_CONFIDENCE
+                if kind in ("fact", "procedural"):
+                    checked = _confidence(meta)
+                    if checked is None:
+                        # Refused before any insert, so the file leaves no row behind.
+                        stats.skipped.append(
+                            f"{rel}: confidence {_show(meta.get('confidence'))} is not a number"
+                        )
+                        continue
+                    confidence = checked
+                    if not isinstance(meta.get("sources"), list):
+                        stats.unsourced.append(rel)
                 seen.add(node_id)
-                _index_file(brain, con, node_id, kind, rel, file_text, body, meta)
+                _index_file(brain, con, node_id, kind, rel, file_text, body, meta, confidence)
                 stats.files += 1
                 stats.by_kind[kind] = stats.by_kind.get(kind, 0) + 1
     return stats
+
+
+def _confidence(meta: dict[str, Any]) -> float | None:
+    """The file's confidence: the default when absent, ``None`` when present but not a number.
+
+    Only finiteness is asked. The writers make no range check, so a rebuild must not make one.
+    """
+    if "confidence" not in meta:
+        return DEFAULT_CONFIDENCE
+    value = meta["confidence"]
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    number = float(value)
+    return number if math.isfinite(number) else None
+
+
+def _show(value: Any) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return str(value)
 
 
 def _index_file(
@@ -119,6 +159,7 @@ def _index_file(
     file_text: str,
     body: str,
     meta: dict[str, Any],
+    confidence: float,
 ) -> None:
     body = body.strip()
     created_at = str(meta.get("created") or "")
@@ -150,7 +191,7 @@ def _index_file(
                 node_id,
                 str(meta.get("scope") or "user"),
                 str(meta.get("key") or node_id),
-                float(meta.get("confidence") or DEFAULT_CONFIDENCE),
+                confidence,
                 meta.get("expires_at"),
             ),
         )
@@ -162,7 +203,7 @@ def _index_file(
                 node_id,
                 str(meta.get("scope") or "chat"),
                 str(meta.get("trigger") or ""),
-                float(meta.get("confidence") or DEFAULT_CONFIDENCE),
+                confidence,
             ),
         )
     sources = meta.get("sources")
