@@ -15,7 +15,12 @@ import time
 import pytest
 
 from athena.channels.voice.backends import ScriptedBackend
-from athena.channels.voice.gateway import MAX_PENDING_TURNS, VOICE_PATH, VoiceGateway
+from athena.channels.voice.gateway import (
+    MAX_PENDING_TURNS,
+    VOICE_PATH,
+    VoiceGateway,
+    VoiceSession,
+)
 from athena.channels.voice.tts import TTS_CAP
 from athena.channels.voice.ws import HandshakeError, connect
 from daemon.conftest import PAGE_ORIGIN, SHELL_ORIGIN, TOKEN, Live, claude_round, op
@@ -775,3 +780,45 @@ def test_a_stop_with_four_waiting_gets_one_error_and_is_never_transcribed(
     client.until("turn.finished", text="held done")
     for n in range(MAX_PENDING_TURNS):
         client.until("turn.finished", text=f"queued {n}")
+
+
+# -- a frame json cannot decode is refused, and the error door cannot raise --------------------
+
+
+@pytest.mark.parametrize(
+    "frame",
+    ["[" * 100_000, '{"type": ' + "[" * 100_000 + "]" * 100_000 + "}"],
+    ids=["bare-brackets", "nested-type"],
+)
+def test_a_frame_too_deep_to_decode_is_refused_once_and_the_socket_stays(
+    voiced: Live, client: VoiceClient, frame: str
+) -> None:
+    voiced.register()
+    client.ws.send_text(frame)
+    refused = client.until("turn.error")
+    assert refused["reason"] == "parse_error"
+    voiced.script(claude_round("Still here."))
+    client.say("hello")
+    assert client.until("turn.finished")["text"] == "Still here."
+    assert len(client.of("turn.error")) == 1
+    assert client.ws.close_code is None
+
+
+def test_a_handler_that_raises_on_an_undecodable_frame_closes_1011_with_one_log_record(
+    voiced: Live,
+    client: VoiceClient,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    def broken(self: object, raw: str) -> None:
+        raise RuntimeError("SECRET-FRAME-DETAIL")
+
+    monkeypatch.setattr(VoiceSession, "_control", broken)
+    voiced.register()
+    with caplog.at_level("ERROR", logger="athena.channels.voice.gateway"):
+        client.ws.send_text("[" * 100_000)
+        assert client.next() is None
+    assert client.ws.close_code == 1011
+    records = [r for r in caplog.records if r.name == "athena.channels.voice.gateway"]
+    assert len(records) == 1
+    assert "handling a text frame failed" in records[0].getMessage()

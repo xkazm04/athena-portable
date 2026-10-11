@@ -213,7 +213,7 @@ def _frame_label(message: Any) -> str:
         return "binary"
     try:
         kind = json.loads(message.text).get("type")
-    except (ValueError, AttributeError):
+    except Exception:  # a label must never raise inside the error door
         return "text"
     return f"text:{kind[:24]}" if isinstance(kind, str) and kind.isidentifier() else "text"
 
@@ -271,10 +271,10 @@ class VoiceSession:
                     else:
                         self._control(message.text)
                 except Exception:  # a bug in one frame's handling ends the socket, loudly
+                    code, reason = 1011, "internal error"
                     logging.getLogger(__name__).exception(
                         "voice: handling a %s frame failed", _frame_label(message)
                     )
-                    code, reason = 1011, "internal error"
                     break
         finally:
             self._closed = True
@@ -316,7 +316,7 @@ class VoiceSession:
     def _control(self, raw: str) -> None:
         try:
             body = json.loads(raw)
-        except json.JSONDecodeError:
+        except (ValueError, RecursionError):  # JSONDecodeError is a ValueError
             self.send(TurnError(reason="parse_error", detail="a control frame must be JSON"))
             return
         if not isinstance(body, dict):
