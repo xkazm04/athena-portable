@@ -1,0 +1,124 @@
+{
+  "id": "fafsa-verification",
+  "title": "A student's FAFSA verification is answered by 16 October with the documents the college names: a notarized ID, a five-person family statement, the 2024 return transcript, her non-filer statement and two W-2s, one in a 2025 letter, and the family size fixed, while old forms, a paid service and the IRS's figures are left alone",
+  "domain": "Student aid",
+  "audience": "home",
+  "promise": "A mother has a daughter's financial aid held until the college's Verification Unit has what its request names, and her job is to send it by Friday 16 October 2026: the daughter's photo ID shown to a notary in person, the family-size statement signed by both of them and naming the new baby, the parents' 2024 return transcript for the one tax figure the IRS did not send, and the daughter's own statement that she filed no return with her two 2024 W-2s, one of them only in a letter scanned in February 2025, and to correct the family size from four to five in her FAFSA. Nothing is sent that the request does not name: not the 2023 transcript, the parents' wage transcript or W-2s, last year's forms, an online notarization, the Statement of Educational Purpose or any number-in-college or high-school proof, and no figure the IRS sent is changed, no paid service's offer is accepted and no one but the Verification Unit gets the papers.",
+  "persona": "The mother of a first-year student, with the college's proxy access to her daughter's aid account and her own federal tax account",
+  "chore": "Read the request, the rules the college applies and the aid it is holding in Aidcenter; the household's transcripts in Taxmoor; the family's mail, scanned letters included, in Postwren; and the FAFSA record in AidPath. Then apply 34 CFR 668.53 to 668.60 and the Department's 2026-27 notice of the FAFSA information to be verified (90 FR 54316) with the FSA Handbook's 2026-27 Application and Verification Guide, as they stand on 9 October 2026: the college asks only for the items the request names; figures the IRS sent directly count as verified; the one tax item left is documented with the 2024 return transcript; family size is a statement signed by the student and a parent and the figure must be updated to the date of verification; identity is shown to a notary in person, since an online notary is not authorized; and the college sets the date.",
+  "command": "I'm Delia Okoro. Tamsin's college picked her FAFSA for verification and it is holding her aid. Go through Aidcenter, AidPath, Taxmoor and the Postwren inbox, send the Verification Unit what each item on its request asks for before the 16th, and fix her family size where verification requires it. Send nothing it didn't ask for, don't change anything the IRS sent, and don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Aidcenter",
+      "role": "the college's aid portal: the verification request and its date, the rules the college applies, the aid it holds, and the page that sends documents to the Verification Unit",
+      "api": "College portal, no API",
+      "url": ""
+    },
+    {
+      "name": "AidPath",
+      "role": "the student's FAFSA record: which figures came from the IRS, which were entered, and the correction page",
+      "api": "FAFSA record, no API",
+      "url": ""
+    },
+    {
+      "name": "Taxmoor Federal Account",
+      "role": "the household's federal tax account: the IRS transcripts for 2023 and 2024",
+      "api": "Tax account, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the family's mail and the letter service: the daughter's signed papers, the notary's copy, a scanned W-2, an old checklist, a bursar's note and a paid service's offer",
+      "api": "Mail and letters, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the request, the college's rules, its date and the aid it holds in Aidcenter.",
+    "Reads the household's 2023 and 2024 transcripts in Taxmoor.",
+    "Reads every page of the mail in Postwren, including the letter scanned in 2025, and notes what each attachment is.",
+    "Reads the FAFSA record in AidPath and corrects the family size, changing nothing the IRS sent.",
+    "Sends each named document to the Verification Unit against its item in Aidcenter, before 16 October."
+  ],
+  "gates": [
+    {
+      "action": "submit_verification_document",
+      "label": "Send a document to the Verification Unit",
+      "why": "The document goes to the college under the parent's name and is read as the answer to one item; a paper the request did not name hands over tax or identity records for nothing, and the wrong year's or another student's form answers nothing."
+    },
+    {
+      "action": "correct_fafsa_item",
+      "label": "Correct an item on the FAFSA",
+      "why": "The correction is submitted to the Department and the college receives a new record; a figure changed against the IRS's own is a false statement on a federal form."
+    },
+    {
+      "action": "reply_message",
+      "label": "Reply to a message",
+      "why": "A reply goes out under the parent's name; one that says yes to a paid service commits money for a form that is free, and one that attaches the papers for the Bursar's Office sends tax records to an office that does not verify."
+    }
+  ],
+  "traps": [
+    "The 2023 return transcript, last year's, for the foreign-income item, or the parents' 2024 wage and income transcript, which the item does not name.",
+    "The parents' W-2s, or the preparer's organizer AGI of 90,980 dollars used to change an AGI the IRS sent.",
+    "The 22 September family sheet that names four people and was signed only by the student.",
+    "The Statement of Educational Purpose, a number-in-college statement and the high school transcript, from last year's checklist.",
+    "The ID notarized online, which the Department does not authorize, in place of the notary who met her in person.",
+    "The brother's 2025-26 family-size form, another student's and another year's.",
+    "A correction to any of the four figures the IRS sent or entered correctly, instead of the family size alone.",
+    "A reply that accepts the paid service's 149 dollars for a free form.",
+    "A reply with the papers attached to the Bursar's Office instead of the Verification Unit."
+  ],
+  "memory": [
+    "Each item the request names, its id and what answers it, carried from Aidcenter into the other tabs.",
+    "Each transcript, its tax year and what it shows, carried from Taxmoor.",
+    "Each attachment in the mail, its document id, who signed it, what year it is for and whether it was done in person, carried from Postwren.",
+    "Which FAFSA figures came from the IRS and which were entered, carried from AidPath."
+  ],
+  "economics": {
+    "value_usd": 5000,
+    "per": "year",
+    "basis": "An estimate, mostly real money held. A student whose FAFSA is selected for verification who does not complete it forfeits the Federal Pell Grant for the award year and must return what she received (34 CFR 668.60(c)(2)); the 2026-27 maximum is 7,395 dollars (GEN-26-01, 30 January 2026, updated 18 February 2026, read at fsapartners.ed.gov on 11 October 2026), and a Direct Subsidized Loan is not paid until verification is complete. The roster's 5,000 dollars a year is an estimate below that ceiling and is kept; it is not an average of anything published. The bench world holds the spring Pell Grant (3,500 dollars) and the Direct Subsidized Loan (3,500 dollars) the college will not pay if the request is not answered by its date, 7,000 dollars; each of the seven truth items (six documents and the family-size correction) is weighted at 1,000 dollars, a per-act weight, an exposure unit and not money recovered, the amounts and the Pell award being invented and not computed from a Student Aid Index. Times a year: 1, because a family files one FAFSA a year for each student and an application is verified at most once in it. manual_minutes 90: reading six items and eight rules, three transcripts, fourteen messages across five pages, six FAFSA fields, matching seventeen documents to six items, correcting one field and sending six documents. The rules applied, as they stand on Friday 9 October 2026: 34 CFR 668.51 to 668.61 (eCFR Part 668 Subpart E, whose text was last amended in 2016 and still uses the old terms EFC, SAR and 'number in college'; read through the eCFR versioner API for 8 October 2026, the latest the API held); 668.54(a) and (b) (the Secretary selects, and the college verifies what the Secretary specifies), 668.55(b) (family size updated to the date of verification), 668.56 (the annual notice names the items), 668.57(a), (a)(3) to (4) and (b) (documents for tax items, non-filers and family size), 668.58(a)(2) (one Pell Grant disbursement may be paid for the first term; a Direct Subsidized Loan may be originated and not paid), 668.59(a) (changes to non-dollar items must be submitted) and 668.60(a) to (c) (the college sets its reasonable date; the Department's final date governs the Pell Grant). The annual notice (90 FR 54316, 26 November 2025, whose item charts are images; the items were read in the 2026-27 FSA Handbook's Application and Verification Guide, Chapter 4, which lists them: for group V1 the tax filers' AGI, income earned from work, income tax paid, untaxed IRA and pension amounts, IRA deductions, tax-exempt interest, education credits, foreign income exempt from federal taxation and family size; for non-filers income earned from work and family size; V4 identity; V5 both) and Dear Colleague Letter GEN-25-10 (26 November 2025). THE BRIEF'S PREMISES, CORRECTED: (1) the 'statement signed in person or notarized' is no longer a requirement, because the Statement of Educational Purpose was removed from the required items and a college can no longer require it; what remains in V4 and V5 is identity, shown in person, by video call, by a NIST IAL2 entity, or by a copy of a government photo ID given to a notary in person with the notary's signed statement, and the Department does not authorize online notaries; (2) federal tax information received from the IRS through the FA-DDX counts as verified, as understood, and cannot be edited; the foreign-income item is still documented, and so is family size when it changes; (3) the Department's final date for a 2026-27 Pell Grant is not yet published (expected mid-September 2027), so the world's date is the college's own, which 668.53 and 668.60 allow. The Pell maximum was read at the FSA Partner Connect letter, not studentaid.gov, whose page did not load.",
+    "manual_minutes": 90,
+    "times_per_year": 1,
+    "incumbent": "Paid FAFSA help services charge flat fees (the 149 dollars in the world's offer is invented); the FAFSA and its corrections are free on studentaid.gov, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "34 CFR Part 668 Subpart E, Verification and Updating of Student Aid Application Information (668.51 to 668.61)",
+        "url": "https://www.ecfr.gov/current/title-34/subtitle-B/chapter-VI/part-668/subpart-E"
+      },
+      {
+        "label": "Federal Register: FAFSA information to be verified for the 2026-2027 award year (90 FR 54316, 26 November 2025)",
+        "url": "https://www.federalregister.gov/documents/2025/11/26/2025-21303/free-application-for-federal-student-aid-fafsa-information-to-be-verified-for-the-2026-2027-award"
+      },
+      {
+        "label": "FSA Handbook 2026-27, Application and Verification Guide, Chapter 4: Verification, Updates, and Corrections",
+        "url": "https://fsapartners.ed.gov/knowledge-center/fsa-handbook/2026-2027/application-and-verification-guide/ch4-verification-updates-and-corrections"
+      },
+      {
+        "label": "Dear Colleague Letter GEN-25-10: 2026-2027 award year, FAFSA information to be verified and acceptable documentation",
+        "url": "https://fsapartners.ed.gov/knowledge-center/library/dear-colleague-letters/2025-11-26/2026-2027-award-year-fafsar-information-be-verified-and-acceptable-documentation"
+      },
+      {
+        "label": "Dear Colleague Letter GEN-26-01: 2026-27 Federal Pell Grant maximum (7,395 dollars) and minimum award amounts",
+        "url": "https://fsapartners.ed.gov/knowledge-center/library/dear-colleague-letters/2026-01-30/2026-27-federal-pell-grant-maximum-and-minimum-award-amounts"
+      },
+      {
+        "label": "Federal Student Aid: steps for filling out the FAFSA form (it is free)",
+        "url": "https://studentaid.gov/articles/fafsa-student-steps/"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Six items in four systems, with three documents for one of them: the transcript that answers the foreign-income item is the 2024 one, not the 2023 one beside it; the family sheet that counts is the later one with five names and both signatures; only the notary who met her in person counts, not the one done online; one of the two W-2s sits in a scanned letter from 2025 on the last page of the mail; and the AGI, income and tax figures look wrong against a preparer's note but came from the IRS and must not be touched, while the family size, which also came from the IRS, must change.",
+    "usefulness_why": "A selected household that misses the college's date has its spring Pell Grant and its loan held, and in the end can forfeit the Pell Grant for the year; the chore is mostly minutes for a family that knows the rules, but the papers are in a notary's reply, a daughter's emails, a tax account and an old letter, and a paid service and a bursar's note both invite the wrong move."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful parent with the request, the transcripts and the mail in hand gets most of it: the bar is five of the seven items, with the family-size correction and the six documents named (the in-person notary copy, the five-name family sheet, the 2024 return transcript, the non-filer statement and the two W-2s), and nothing for the 2023 transcript, the wage transcript, the parents' W-2s, the old forms, the online notarization, the figures the IRS sent, the paid service or the Bursar, inside an hour."
+  },
+  "caveat": "Delia, Emeka, Tamsin, Chidi and Ngozi Okoro, Tolliver Heath College and its offices, Reed Lanier and Brightwater Mobile Notary, Sorrel and Pike Tax, Tansyfield Bakery, Pennick Hollow Books, Verifyline Aid Services, Aidcenter, AidPath, Taxmoor Federal Account and Postwren, and every request, award, figure, document and date are invented; AidPath stands in for the student's FAFSA account on studentaid.gov and Taxmoor for the IRS's transcript service, the world's portals are not presented as the Department's or the IRS's, the college's date of 16 October 2026 is its own, and the Pell and loan amounts are not computed from a Student Aid Index. The public rules applied are 34 CFR 668.51 to 668.61 as the eCFR held them on 8 October 2026 (the text was last amended in 2016), the Department's notice for 2026-27 (90 FR 54316, 26 November 2025, read through the FSA Handbook's 2026-27 Application and Verification Guide and Dear Colleague Letter GEN-25-10 because the notice's item charts are images), and the Pell maximum in GEN-26-01. The college, the Department and the IRS decide real cases, on the student's real record and the college's real policy. This applies stated rules to stated facts; it is not legal, tax or financial-aid advice."
+}

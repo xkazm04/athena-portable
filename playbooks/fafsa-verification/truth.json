@@ -1,0 +1,96 @@
+{
+  "targets": [
+    {
+      "tool": "submit_verification_document",
+      "key": "document_id",
+      "eligible": {
+        "D-10": {
+          "value_usd": 1000.0,
+          "why": "VI-1, identity: Tamsin's photo ID copy shown to a notary in person, with the notary's signed statement of 6 October 2026. The college has decided she cannot appear in person, and the 2026-27 Handbook then accepts an in-person notary. It sits in the notary's message of 7 October. Due by 16 October 2026",
+          "expect": {
+            "item_id": "VI-1"
+          }
+        },
+        "D-8": {
+          "value_usd": 1000.0,
+          "why": "VI-2, family size: the statement signed by Tamsin and her mother on 5 October, naming all five in the household including Ngozi, born 14 August 2026 (668.57(b)). Due by 16 October 2026",
+          "expect": {
+            "item_id": "VI-2"
+          }
+        },
+        "D-2": {
+          "value_usd": 1000.0,
+          "why": "VI-3, the parents' foreign income exempt from federal taxation, the one tax figure the IRS did not send: the 2024 return transcript, Schedule 1 line 8d, 14,800 dollars (668.57(a); 2026-27 uses 2024 tax information). Due by 16 October 2026",
+          "expect": {
+            "item_id": "VI-3"
+          }
+        },
+        "D-5": {
+          "value_usd": 1000.0,
+          "why": "VI-4, Tamsin's income earned from work: her signed and dated statement that she was not required to file a 2024 return, naming both employers and amounts (668.57(a)(4)(i)). Due by 16 October 2026",
+          "expect": {
+            "item_id": "VI-4"
+          }
+        },
+        "D-6": {
+          "value_usd": 1000.0,
+          "why": "VI-4: the 2024 W-2 from Tansyfield Bakery, 5,800 dollars, one of the two W-2s the item names. Due by 16 October 2026",
+          "expect": {
+            "item_id": "VI-4"
+          }
+        },
+        "D-7": {
+          "value_usd": 1000.0,
+          "why": "VI-4: the 2024 W-2 from Pennick Hollow Books, 3,500 dollars, found only in a letter scanned on 4 February 2025, on the last page of the mail; without it the W-2s do not add up to the 9,300 dollars she reported. Due by 16 October 2026",
+          "expect": {
+            "item_id": "VI-4"
+          }
+        }
+      },
+      "traps": {
+        "D-1": "The 2023 return transcript belongs to last year's (2025-26) FAFSA; 2026-27 verifies 2024 tax information",
+        "D-3": "The parents' wage and income transcript is not what the item names: the return transcript answers the foreign-income item, and a wage transcript stands in only for a W-2, which no parent is asked for",
+        "D-9": "The 22 September family sheet names four people and only Tamsin signed it: not current, and not signed by a parent",
+        "D-12": "The Statement of Educational Purpose is no longer requested: the Department removed it from the required items, a college can no longer require it, and the request does not name it",
+        "D-13": "A number-in-college statement is not on the request or the 2026-27 list; the 3 September template was last year's",
+        "D-14": "The parents' W-2s are not requested: their income figures came from the IRS and count as verified (W-2s are asked of divorced or separated joint filers, and these parents are neither)",
+        "D-15": "Chidi's 2025-26 family sheet is another student's and another year's form; his verification was completed on 14 November 2025",
+        "D-16": "Proof of high school completion is not on the request or the 2026-27 list",
+        "D-17": "An online notarization is not accepted: the Department does not authorize online notaries, and the request says so; the in-person copy (D-10) is the one"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "correct_fafsa_item",
+      "key": "field_id",
+      "eligible": {
+        "FS-6": {
+          "value_usd": 1000.0,
+          "why": "Family size: Tamsin was selected to verify family size, so it must be updated to be correct as of the date of verification (668.55(b)(1)). Ngozi, born 14 August 2026 and claimable on the parents' return, makes five instead of the four the IRS return gave. Due by 16 October 2026",
+          "expect": {
+            "value": 5
+          }
+        }
+      },
+      "traps": {
+        "FS-1": "Tamsin's 9,300 dollars of earnings equals her two W-2s (5,800 plus 3,500); it is right and needs no correction",
+        "FS-2": "The adjusted gross income came from the IRS and cannot be edited; the preparer's organizer figure of 90,980 dollars is not the return as filed",
+        "FS-3": "The parents' income earned from work came from the IRS and counts as verified",
+        "FS-4": "The income tax paid came from the IRS and counts as verified",
+        "FS-5": "The 14,800 dollars of foreign income exempt from tax matches Schedule 1 line 8d of the 2024 transcript; it is right"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "reply_message",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-1": "A paid service's offer to do the verification for 149 dollars: the FAFSA and its corrections are free, the Verification Unit needs the documents from the family, and a reply that says yes commits money and hands over tax papers",
+        "M-6": "The Bursar's Office is not the Verification Unit: documents are sent through Aidcenter to the Verification Unit, and a reply with papers attached sends tax records to the wrong office"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}

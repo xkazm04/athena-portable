@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "fafsa-verification",
+  "captured_at": "2026-10-11T05:50:58Z",
+  "bench_run_at": "2026-10-11T05:47:10Z",
+  "narration": {
+    "text": "A student's FAFSA verification is answered by 16 October with the documents the college names: a notarized ID, a five-person family statement, the 2024 return transcript, her non-filer statement and two W-2s, one in a 2025 letter, and the family size fixed, while old forms, a paid service and the IRS's figures are left alone. This is a chore for the mother of a first-year student, with the college's proxy access to her daughter's aid account and her own federal tax account. On the bench, she found 7 of 7 eligible items, worth 7,000 dollars of the 7,000 dollars there was to find. She made no false claim. The world held 16 traps, and she walked past 16. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 50 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 59.513,
+    "sha256": "38f6cf8645929522f6a2add1d5d4b22c1ea93eec00d848a23a5022aeced8db32"
+  },
+  "video": {
+    "path": "evidence/fafsa-verification/evidence.mp4",
+    "duration_s": 59.52,
+    "bytes": 3178010,
+    "sha256": "f7e517b95cc67c82badbf3153a3f0e8df2aa7d924e1e9242f088e60ff65acef5"
+  },
+  "thumbnail": {
+    "path": "playbooks/fafsa-verification/thumb.jpg",
+    "bytes": 82687,
+    "sha256": "8af85a39c4f84db1b782d943f59133ba04a136d6e1eec4bd807fb0f2f3b73d7a"
+  }
+}
