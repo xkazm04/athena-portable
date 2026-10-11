@@ -14,14 +14,17 @@ import json
 import struct
 from http.client import HTTPConnection
 from pathlib import Path
+from typing import Any
 
 import pytest
 
+from athena.channels.voice.backends import Meter, VoiceBackendError
 from athena.channels.voice.config import VoiceStudio
-from athena.channels.voice.gateway import VOICE_PATH, VoiceGateway
+from athena.channels.voice.gateway import LEDGER_ROW_LOST, VOICE_PATH, VoiceGateway
 from athena.channels.voice.home import EngineHomes
 from athena.channels.voice.ws import connect
 from athena.connectors.seal import FileSeal
+from athena.core.ledger import LedgerRow
 from athena.daemon.server import ALLOWED_METHODS, TOKEN_HEADER
 from channels.conftest import VoiceClient
 from channels.fake_engine import command, lay_out_kokoro, lay_out_whisper_model
@@ -227,6 +230,126 @@ def test_transcribe_refuses_an_unknown_engine_an_empty_body_and_an_unready_engin
     assert cloud.status == 503
     assert cloud.body["reason"] == "engine_error"
     assert "OpenAI key" in cloud.body["detail"]
+
+
+class _Heard:
+    """A transcriber that answers a fixed text, or raises; ``requested`` is set only when given."""
+
+    def __init__(self, text: str, fault: Exception | None, requested: bool | None) -> None:
+        self.text = text
+        self.fault = fault
+        if requested is not None:
+            self.requested = requested
+
+    def feed(self, pcm: bytes) -> list[str]:
+        return []
+
+    def finish(self) -> str:
+        if self.fault is not None:
+            raise self.fault
+        return self.text
+
+
+class _MeteredListener:
+    """An OpenAI-style listener: a hearing meter and a transcriber, and no network."""
+
+    hearing_meter = Meter("openai", "gpt-test-transcribe")
+
+    def __init__(
+        self, *, text: str = "hello there", fault: Exception | None = None, requested: bool | None
+    ) -> None:
+        self.heard = _Heard(text, fault, requested)
+
+    def transcriber(self) -> _Heard:
+        return self.heard
+
+
+def _cloud(studio: VoiceStudio, listener: _MeteredListener) -> None:
+    studio.openai_factory = lambda key: listener  # type: ignore[assignment,return-value]
+    studio.set_key("openai", KEY)
+
+
+def _rows(live: Live) -> tuple[LedgerRow, ...]:
+    return live.daemon.ledger.recent(10).rows
+
+
+def test_a_cloud_transcription_is_one_ledger_row_of_a_page_with_no_session(
+    live: Live, studio: VoiceStudio
+) -> None:
+    _cloud(studio, _MeteredListener(requested=None))
+
+    reply = _raw(live, "/voice/transcribe?engine=openai", bytes(6400))
+
+    assert reply.status == 200 and reply.body["text"] == "hello there"
+    (row,) = _rows(live)
+    assert (row.engine, row.model) == ("openai", "gpt-test-transcribe")
+    assert (row.conversation, row.origin, row.surface, row.trigger) == (
+        "",
+        "core",
+        "voice",
+        "voice",
+    )
+    assert (row.turn_id, row.rounds, row.input_tokens, row.output_tokens) == (None, 1, 0, 0)
+    assert (row.cost_usd, row.cost_estimated) == (None, False)
+    assert (row.is_error, row.error_reason) == (False, None)
+    assert row.ms >= 0
+
+
+def test_a_cloud_transcription_the_provider_refuses_is_one_error_row_and_a_503(
+    live: Live, studio: VoiceStudio
+) -> None:
+    refusal = VoiceBackendError("transcription refused with 500")
+    _cloud(studio, _MeteredListener(fault=refusal, requested=None))
+
+    reply = _raw(live, "/voice/transcribe?engine=openai", bytes(6400))
+
+    assert reply.status == 503 and reply.body["reason"] == "engine_error"
+    (row,) = _rows(live)
+    assert (row.engine, row.model) == ("openai", "gpt-test-transcribe")
+    assert (row.is_error, row.error_reason) == (True, "engine_error")
+    assert (row.conversation, row.origin, row.turn_id) == ("", "core", None)
+
+
+def test_a_local_engine_and_the_three_refusals_write_no_row(
+    live: Live, studio: VoiceStudio, installed: Path
+) -> None:
+    assert _raw(live, "/voice/transcribe?engine=whisper", bytes(6400)).status == 200
+    assert _raw(live, "/voice/transcribe?engine=deepgram", b"\x00\x00").status == 400
+    assert _raw(live, "/voice/transcribe?engine=openai", b"").status == 400
+    assert _raw(live, "/voice/transcribe?engine=openai", b"\x00\x00\x00").status == 400
+    assert _raw(live, "/voice/transcribe?engine=openai", bytes(6400)).status == 503  # no key
+
+    assert _rows(live) == ()
+
+
+def test_a_transcriber_that_sent_nothing_writes_no_row(live: Live, studio: VoiceStudio) -> None:
+    _cloud(studio, _MeteredListener(text="", requested=False))
+
+    assert _raw(live, "/voice/transcribe?engine=openai", bytes(6400)).status == 200
+
+    assert _rows(live) == ()
+
+
+def test_a_ledger_that_refuses_the_row_is_tried_twice_logged_and_the_route_still_answers(
+    live: Live,
+    studio: VoiceStudio,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    _cloud(studio, _MeteredListener(requested=None))
+    tries: list[str] = []
+
+    def refusing(**row: Any) -> Any:
+        tries.append(row["model"])
+        raise OSError("disk full")
+
+    monkeypatch.setattr(live.daemon.ledger, "record", refusing)
+    with caplog.at_level("WARNING", logger="athena.channels.voice.gateway"):
+        reply = _raw(live, "/voice/transcribe?engine=openai", bytes(6400))
+
+    assert reply.status == 200 and reply.body["text"] == "hello there"
+    assert tries == ["gpt-test-transcribe"] * 2
+    assert [r.getMessage() for r in caplog.records] == [LEDGER_ROW_LOST]
 
 
 # -- install -------------------------------------------------------------------------------------

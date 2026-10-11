@@ -112,6 +112,7 @@ __all__ = [
     "VOICE_PATH",
     "VoiceGateway",
     "VoiceSession",
+    "record_speech",
 ]
 
 #: Where the channel lives on the daemon's port.
@@ -294,6 +295,45 @@ class _Bill:
     conversation: str = ""
     origin: str = "core"
     turn_id: str | None = None
+
+
+def record_speech(
+    ledger: Any,
+    meter: Meter,
+    *,
+    conversation: str,
+    origin: str,
+    turn_id: str | None,
+    ms: int,
+    failure: str | None,
+) -> None:
+    """One speech row (ADR 0083). A write that raises is tried once more, then logged in a fixed
+    line and let go, as ``RoundHarness._finish`` does: a ledger fault never ends the line, the
+    transcript, the session or the studio's answer. The session's ``_record`` and the studio's
+    transcription route both write through here."""
+    for _attempt in range(2):
+        try:
+            ledger.record(
+                engine=meter.engine,
+                model=meter.model,
+                conversation=conversation,
+                origin=origin,
+                surface="voice",
+                trigger="voice",
+                rounds=1,
+                input_tokens=0,
+                output_tokens=0,
+                cost_usd=None,
+                cost_estimated=False,
+                ms=ms,
+                is_error=failure is not None,
+                error_reason=failure,
+                turn_id=turn_id,
+            )
+        except Exception:  # the retry is the handling; the log line follows the second
+            continue
+        return
+    logging.getLogger(__name__).warning(LEDGER_ROW_LOST)
 
 
 def _is_count(value: object) -> bool:
@@ -784,29 +824,15 @@ class VoiceSession:
         """One speech row. A write that raises is tried once more, then logged in a fixed line
         and let go, as ``RoundHarness._finish`` does: a ledger fault never ends the line, the
         transcript or the session."""
-        for _attempt in range(2):
-            try:
-                self.daemon.ledger.record(
-                    engine=meter.engine,
-                    model=meter.model,
-                    conversation=bill.conversation,
-                    origin=bill.origin,
-                    surface="voice",
-                    trigger="voice",
-                    rounds=1,
-                    input_tokens=0,
-                    output_tokens=0,
-                    cost_usd=None,
-                    cost_estimated=False,
-                    ms=ms,
-                    is_error=failure is not None,
-                    error_reason=failure,
-                    turn_id=bill.turn_id,
-                )
-            except Exception:  # the retry is the handling; the log line follows the second
-                continue
-            return
-        logging.getLogger(__name__).warning(LEDGER_ROW_LOST)
+        record_speech(
+            self.daemon.ledger,
+            meter,
+            conversation=bill.conversation,
+            origin=bill.origin,
+            turn_id=bill.turn_id,
+            ms=ms,
+            failure=failure,
+        )
 
     def _handle(self, job: _Job) -> None:
         self.send(VoiceTranscript(text=job.text, final=True))

@@ -101,3 +101,17 @@ half that did not make it.
   sends a metered request and still writes no row. It runs outside a voice session, with no
   conversation and no surface, and was outside this change's paths. It is left open.
 - A provider added later as a speech half gets rows by naming a `Meter`, and nothing else changes.
+
+## Amendment, 2026-10-11: the studio's comparison route writes its row
+
+The open item above is closed. `POST /voice/transcribe` (`daemon/voice.py`) now writes one row
+when the listener has a hearing meter and the transcriber did not report `requested == False`:
+`failure` is `None` on success, `engine_error` for a `VoiceBackendError` (the reply is still a
+503), and `unknown` for any other exception, which is then re-raised, as the gateway does. A
+local engine, an unknown engine, an empty or odd body and an unready listener write none.
+
+The row is the one a page with no session already gets from the gateway: conversation `""`,
+origin `core`, surface `voice`, trigger `voice`, no turn id. A comparison belongs to no
+conversation, has no surface of its own, and a new trigger value would change `ledger.TRIGGERS`
+for a row that is the same kind of request. One helper, `record_speech` in `gateway.py`, writes
+both rows, so the retry-once-then-log behaviour and the `LEDGER_ROW_LOST` line exist once.

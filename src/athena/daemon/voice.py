@@ -30,11 +30,12 @@ error shape, and an absent value on the wire is ``null``, never a missing key.
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from athena.channels.voice import kokoro
-from athena.channels.voice.backends import VoiceBackendError
+from athena.channels.voice.backends import VoiceBackendError, hearing_meter
 from athena.channels.voice.config import STT_ENGINES, ConfigError, VoiceStudio
+from athena.channels.voice.gateway import record_speech
 from athena.channels.voice.install import InstallBusy
 from athena.connectors.seal import SealUnavailable
 from athena.daemon.routes import BinaryReply, RawRequest, Reply, Request, Route, error
@@ -101,7 +102,7 @@ def preview(studio: VoiceStudio, request: Request) -> Reply | BinaryReply:
     )
 
 
-def transcribe(studio: VoiceStudio, request: Request) -> Reply:
+def transcribe(studio: VoiceStudio, request: Request, ledger: Any) -> Reply:
     engine = request.query.get("engine") or studio.choice.stt_engine
     if engine not in STT_ENGINES:
         return error(400, "validator_failed", f"unknown engine {engine!r}")
@@ -112,13 +113,32 @@ def transcribe(studio: VoiceStudio, request: Request) -> Reply:
     listener, reason = studio.listener(engine, model)
     if listener is None:
         return error(503, "engine_error", reason or f"{engine} is not ready.")
+    meter = hearing_meter(listener)
     started = time.monotonic()
+    heard: object = None
+
+    def bill(failure: str | None) -> None:
+        """The request's row (ADR 0083), when a metered half was sent anything: the row a page
+        with no session gets, since a comparison has no conversation and no surface of its own."""
+        if meter is None or not getattr(heard, "requested", True):
+            return
+        ms = int((time.monotonic() - started) * 1000)
+        record_speech(
+            ledger, meter, conversation="", origin="core", turn_id=None, ms=ms, failure=failure
+        )
+
     try:
-        heard = listener.transcriber()
-        heard.feed(pcm)
-        text = heard.finish()
+        transcriber = listener.transcriber()
+        heard = transcriber
+        transcriber.feed(pcm)
+        text = transcriber.finish()
     except VoiceBackendError as exc:
+        bill("engine_error")
         return error(503, "engine_error", str(exc))
+    except Exception:
+        bill("unknown")
+        raise
+    bill(None)
     elapsed = int((time.monotonic() - started) * 1000)
     return 200, {"ok": True, "engine": engine, "text": text, "elapsed_ms": elapsed}
 
@@ -166,7 +186,7 @@ def voice_routes(daemon: AthenaDaemon, studio: VoiceStudio) -> list[Route]:
         Route("GET", CONFIG_PATH, lambda request: get_config(studio)),
         Route("PUT", CONFIG_PATH, lambda request: put_config(studio, request)),
         Route("POST", PREVIEW_PATH, lambda request: preview(studio, request)),
-        Route("POST", TRANSCRIBE_PATH, lambda request: transcribe(studio, request)),
+        Route("POST", TRANSCRIBE_PATH, lambda request: transcribe(studio, request, daemon.ledger)),
         Route("POST", INSTALL_PATH, lambda request: start_install(studio, request)),
         Route("GET", INSTALL_PATH, lambda request: install_state(studio)),
         Route("PUT", KEY_PATH, lambda request: put_key(studio, request)),
