@@ -20,7 +20,11 @@ Three verbs, because three are what this build has a person do from a terminal.
 ``athena brain reconcile``
     Rebuild the index from the markdown tree. This is the command that makes "a brain is portable
     by copying the directory" a thing you can do rather than a thing that is claimed: copy it,
-    delete ``index.sqlite``, run this.
+    delete ``index.sqlite``, run this. It also repairs a damaged index itself: a file SQLite calls
+    corrupt or not a database is renamed to ``index.sqlite.damaged-<UTC time>`` (with its ``-wal``
+    and ``-shm`` files), never deleted, and a fresh index is rebuilt (ADR 0081). The approvals and
+    ledger rows in that file were never on disk and are not rebuilt. Deleting the index by hand
+    still works.
 
 Every command prints one JSON object on stdout and nothing else, so a shell, a test and the
 desktop shell all read the same answer.
@@ -255,21 +259,43 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def cmd_reconcile(args: argparse.Namespace) -> int:
-    """Rebuild the index from the markdown tree (README §2 invariant 1; ADR 0003)."""
-    from athena.core.brain import reconcile
-    from athena.core.brain.store import Brain
+    """Rebuild the index from the markdown tree, setting a damaged one aside (ADR 0003, 0081)."""
+    from athena.core.brain import paths, reconcile
+    from athena.core.brain.store import Brain, IndexDamagedError
 
-    with Brain(args.brain, session_id="cli") as brain:
+    set_aside: list[Path] = []
+    try:
+        brain = Brain(args.brain, session_id="cli")
+    except IndexDamagedError:
+        try:
+            reconcile.set_aside_index(paths.index_path(args.brain), set_aside)
+        except OSError as exc:
+            _emit(
+                {
+                    "ok": False,
+                    "brain": str(paths.brain_root(args.brain)),
+                    "error": f"the damaged index could not be set aside: {exc}",
+                    "set_aside": [str(p) for p in set_aside],
+                }
+            )
+            return 1
+        brain = Brain(args.brain, session_id="cli")
+    with brain:
         stats = reconcile.reconcile_from_disk(brain)
-        _emit(
-            {
-                "ok": not stats.skipped,
-                "brain": str(brain.root),
-                **stats.as_dict(),
-                "summary": stats.summary(),
-                "missing": reconcile.missing_files(brain),
-            }
-        )
+        report: dict[str, Any] = {
+            "ok": not stats.skipped,
+            "brain": str(brain.root),
+            **stats.as_dict(),
+            "summary": stats.summary(),
+            "missing": reconcile.missing_files(brain),
+            "set_aside": [str(p) for p in set_aside],
+        }
+        if set_aside:
+            report["not_rebuilt"] = (
+                "approvals and ledger rows in the damaged index were not rebuilt; "
+                "they were never on disk"
+            )
+        _emit(report)
     return 0
 
 

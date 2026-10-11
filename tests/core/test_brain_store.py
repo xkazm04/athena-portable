@@ -16,7 +16,7 @@ from athena.core.brain import Brain, ProvenanceError, frontmatter
 from athena.core.brain.frontmatter import FrontmatterError
 from athena.core.brain.reconcile import index_fingerprint, reconcile_from_disk
 from athena.core.brain.schema import SCHEMA_VERSION
-from athena.core.brain.store import ALWAYS_IMPORTANCE, DEFAULT_IMPORTANCE
+from athena.core.brain.store import ALWAYS_IMPORTANCE, DEFAULT_IMPORTANCE, IndexDamagedError
 from athena.core.recall import recall
 
 
@@ -467,3 +467,50 @@ def test_a_body_with_crlf_is_on_disk_byte_for_byte(tmp_path: Path) -> None:
             assert b"\r\n" in on_disk
             assert on_disk.decode("utf-8").encode("utf-8") == on_disk
             assert b"\r\r" not in on_disk
+
+
+# -- a damaged index stops the brain with a typed error (ADR 0081) -----------------------------
+
+
+def _damage(index: Path, case: str) -> bytes:
+    data = index.read_bytes()
+    if case == "pages":
+        data = data[:4096] + b"\x5a" * (len(data) - 4096)
+    else:
+        data = b"this is not a database, just some text " * 200
+    index.write_bytes(data)
+    return data
+
+
+@pytest.mark.parametrize("case", ["pages", "not_a_database"])
+def test_a_damaged_index_raises_a_typed_error_naming_the_repair(tmp_path: Path, case: str) -> None:
+    root = tmp_path / "brain"
+    with Brain(root) as brain:
+        episode = brain.append_episode("Northwind paid 40 days late", role="user")
+        brain.write_fact("k", "pays late", scope="world", sources=[episode.id])
+    for sidecar in ("-wal", "-shm"):
+        (root / f"index.sqlite{sidecar}").unlink(missing_ok=True)
+    _damage(root / "index.sqlite", case)
+
+    with pytest.raises(IndexDamagedError) as raised:
+        Brain(root)
+
+    assert isinstance(raised.value, sqlite3.DatabaseError)
+    assert "athena brain reconcile" in str(raised.value)
+    assert (root / "index.sqlite").exists()
+
+
+def test_a_locked_index_is_not_called_damaged(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("athena.core.brain.store.BUSY_TIMEOUT_MS", 50)
+    root = tmp_path / "brain"
+    Brain(root).close()
+    blocker = sqlite3.connect(root / "index.sqlite", isolation_level=None)
+    blocker.execute("BEGIN EXCLUSIVE")
+    try:
+        with pytest.raises(sqlite3.OperationalError) as raised:
+            Brain(root)
+        assert not isinstance(raised.value, IndexDamagedError)
+    finally:
+        blocker.close()

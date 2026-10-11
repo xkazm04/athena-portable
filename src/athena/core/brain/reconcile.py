@@ -19,6 +19,8 @@ from __future__ import annotations
 import math
 import sqlite3
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from athena.core.brain import frontmatter, text
@@ -79,6 +81,21 @@ class ReconcileStats:
             f"{self.files} files indexed ({kinds or 'none'}), {len(self.skipped)} skipped, "
             f"{len(self.unsourced)} without sources"
         )
+
+
+def set_aside_index(index: Path, moved: list[Path]) -> None:
+    """Rename a damaged index and its ``-wal`` and ``-shm`` files out of the way. Never deletes.
+
+    The new name is ``<name>.damaged-<UTC yyyymmddThhmmssZ>`` in the same directory (ADR 0081).
+    The sidecars move first, so a failure never leaves a fresh index beside an old log. An
+    ``OSError`` stops at the first rename that fails; each file moved so far is already in
+    ``moved``, which the caller owns so it can still report them.
+    """
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    for suffix in ("-wal", "-shm", ""):
+        source = index.with_name(index.name + suffix)
+        if source.exists():
+            moved.append(source.rename(source.with_name(f"{source.name}.damaged-{stamp}")))
 
 
 def reconcile_from_disk(brain: Brain) -> ReconcileStats:

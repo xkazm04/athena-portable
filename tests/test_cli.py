@@ -165,10 +165,63 @@ def test_reconcile_rebuilds_the_index_from_the_tree(
     assert report["by_kind"] == {"episode": 1, "fact": 1}
     assert report["skipped"] == []
     assert report["missing"] == []
+    assert report["set_aside"] == []
+    assert "not_rebuilt" not in report
     with Brain(root) as rebuilt:
         assert rebuilt.counts() == {"episode": 1, "fact": 1}
         # The provenance came back with it: the fact still cites the episode it was drawn from.
         assert rebuilt.sources_of(_only_fact(rebuilt)) == [episode.id]
+
+
+@pytest.mark.parametrize("case", ["pages", "not_a_database"])
+def test_reconcile_sets_a_damaged_index_aside_and_rebuilds(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], case: str
+) -> None:
+    root = tmp_path / "brain"
+    with Brain(root) as brain:
+        episode = brain.append_episode("Northwind paid 40 days late", role="user")
+        brain.write_fact("client/northwind", "pays late", scope="world", sources=[episode.id])
+    index = root / "index.sqlite"
+    for sidecar in ("-wal", "-shm"):
+        (root / f"index.sqlite{sidecar}").unlink(missing_ok=True)
+    data = index.read_bytes()
+    if case == "pages":
+        damaged = data[:4096] + b"Z" * (len(data) - 4096)
+    else:
+        damaged = b"this is not a database, just some text " * 200
+    index.write_bytes(damaged)
+
+    code, report = _run(capsys, "brain", "reconcile", "--brain", str(root))
+
+    assert code == 0
+    assert len(report["set_aside"]) == 1
+    kept = Path(report["set_aside"][0])
+    assert kept.exists()
+    assert ".damaged-" in kept.name
+    assert kept.read_bytes() == damaged
+    assert "not rebuilt" in report["not_rebuilt"]
+    with Brain(root) as rebuilt:
+        assert rebuilt.counts() == {"episode": 1, "fact": 1}
+        assert rebuilt.sources_of(_only_fact(rebuilt)) == [episode.id]
+
+
+def test_reconcile_stops_when_the_damaged_index_cannot_be_renamed(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "brain"
+    Brain(root).close()
+    (root / "index.sqlite").write_bytes(b"not a database " * 300)
+
+    def refuse(self: Path, target: object) -> Path:
+        raise PermissionError("held by the daemon")
+
+    monkeypatch.setattr(Path, "rename", refuse)
+    code, report = _run(capsys, "brain", "reconcile", "--brain", str(root))
+
+    assert code == 1
+    assert report["ok"] is False
+    assert "held by the daemon" in report["error"]
+    assert (root / "index.sqlite").read_bytes() == b"not a database " * 300
 
 
 def _only_fact(brain: Brain) -> str:

@@ -62,6 +62,16 @@ from athena.core.brain.schema import SCHEMA, SCHEMA_VERSION
 #: rebuild — which is why these are refused rather than created.
 FACT_SCOPES: tuple[str, ...] = ("user", "project", "world")
 PROCEDURAL_SCOPES: tuple[str, ...] = ("chat", "action", "memory", "build")
+
+#: The only SQLite result codes that mean the index file itself is damaged (ADR 0081). A locked or
+#: read-only brain is a different failure and must never be called damaged.
+_DAMAGE_CODES = (sqlite3.SQLITE_CORRUPT, sqlite3.SQLITE_NOTADB)
+
+
+class IndexDamagedError(sqlite3.DatabaseError):
+    """``index.sqlite`` is not a readable database. ``athena brain reconcile`` repairs it."""
+
+
 EPISODE_ROLES: tuple[str, ...] = ("user", "assistant", "system")
 
 #: Importance a writer starts a memory at (ref §8): conversation at 3, machine chatter at 1.
@@ -163,23 +173,36 @@ class Brain:
             isolation_level=None,
             check_same_thread=False,
         )
-        self._con.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
-        # WAL is what lets a reader hold a snapshot while the writer commits. Without it the
-        # per-request read handle of README §3.5 would trade a stalled write queue for a
-        # stalled read queue and change nothing.
-        self._con.execute("PRAGMA journal_mode = WAL")
-        self._con.execute("PRAGMA synchronous = NORMAL")
-        with self.write_txn():
-            for statement in SCHEMA:
-                self._con.execute(statement)
-            # Read before the stamp below overwrites it: an older index is migrated in this same
-            # transaction, so no reader ever sees it half re-keyed.
-            if _stored_version(self._con) < 2:
-                _rekey_fts(self._con)
-            self._con.execute(
-                "INSERT OR REPLACE INTO companion_meta (key, value) VALUES ('schema_version', ?)",
-                (str(SCHEMA_VERSION),),
-            )
+        try:
+            self._con.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
+            # WAL is what lets a reader hold a snapshot while the writer commits. Without it the
+            # per-request read handle of README §3.5 would trade a stalled write queue for a
+            # stalled read queue and change nothing.
+            self._con.execute("PRAGMA journal_mode = WAL")
+            self._con.execute("PRAGMA synchronous = NORMAL")
+            with self.write_txn():
+                for statement in SCHEMA:
+                    self._con.execute(statement)
+                # Read before the stamp below overwrites it: an older index is migrated in this same
+                # transaction, so no reader ever sees it half re-keyed.
+                if _stored_version(self._con) < 2:
+                    _rekey_fts(self._con)
+                self._con.execute(
+                    "INSERT OR REPLACE INTO companion_meta (key, value) "
+                    "VALUES ('schema_version', ?)",
+                    (str(SCHEMA_VERSION),),
+                )
+        except BaseException as exc:
+            self._con.close()
+            if (
+                isinstance(exc, sqlite3.DatabaseError)
+                and (exc.sqlite_errorcode & 0xFF) in _DAMAGE_CODES
+            ):
+                raise IndexDamagedError(
+                    f"the index {self.db_path} is damaged ({exc}); "
+                    "run `athena brain reconcile` to set it aside and rebuild it"
+                ) from exc
+            raise
         self.ensure_session(session_id)
 
     # -- lifecycle -----------------------------------------------------------------------------
