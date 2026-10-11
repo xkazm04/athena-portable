@@ -673,6 +673,7 @@ class VoiceSession:
                 try:
                     self._handle(job)
                 except Exception as exc:  # a bug ends the utterance honestly, never silently
+                    logging.getLogger(__name__).exception("voice: a turn failed")
                     self.send(TurnError(reason="unknown", detail=type(exc).__name__))
         finally:
             self._let_go()  # the turn it was running, if any, has ended

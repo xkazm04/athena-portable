@@ -1177,3 +1177,37 @@ def test_fifty_sockets_opened_and_closed_in_a_row_leave_the_count_at_zero(
         _until(f"socket {n} let go", lambda: gateway.admitted <= 0)
         assert gateway.admitted == 0
     assert all(session._holders == 0 for session in sessions)
+
+
+# -- a turn that raises is logged and the socket goes on ---------------------------------------
+
+
+def test_a_turn_that_raises_is_logged_and_the_next_utterance_still_runs(
+    voiced: Live,
+    client: VoiceClient,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    voiced.register()
+    voiced.script(claude_round("Nothing is overdue."))
+    original = VoiceSession._turn
+    calls: list[str] = []
+
+    def flaky(self: VoiceSession, *args: object, **kwargs: object) -> None:
+        calls.append("turn")
+        if len(calls) == 1:
+            raise KeyError("SECRET-PAGE-TEXT")
+        original(self, *args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(VoiceSession, "_turn", flaky)
+    with caplog.at_level("ERROR", logger="athena.channels.voice.gateway"):
+        client.say("first")
+        failed = client.until("turn.error")
+        client.say("second")
+        assert client.until("turn.finished")["text"] == "Nothing is overdue."
+
+    assert (failed["reason"], failed["detail"]) == ("unknown", "KeyError")
+    records = _speaker_records(caplog)
+    assert len(records) == 1
+    assert records[0].exc_info is not None
+    assert records[0].getMessage() == "voice: a turn failed"

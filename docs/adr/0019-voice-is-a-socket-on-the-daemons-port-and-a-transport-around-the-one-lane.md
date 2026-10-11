@@ -103,3 +103,6 @@ stop short hears that it stopped short.
   text, `voice.stopped` goes out with reason `error`, and the next line is spoken. A
   `VoiceBackendError` is an expected engine refusal and keeps its reason `error` without a
   traceback. `KeyboardInterrupt` and `SystemExit` are not caught.
+- The worker logs what it catches (voice full r2 robustness-7, craft-10). When a turn raises, its
+  traceback is logged once under the fixed message `voice: a turn failed`, with no user text and
+  no page text; the client's `turn.error` stays `unknown` with the exception's type name only.
