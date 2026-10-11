@@ -15,12 +15,12 @@ JSON ``/run`` puts on an SSE frame — plus the voice family: ``voice.transcript
 ``voice.speaking`` and ``voice.stopped``. Audio comes back as binary frames of a 4-byte
 big-endian generation number followed by PCM16 at the backend's rate.
 
-**Three threads per connection, and why.** The handler thread reads the socket, because a
-barge-in arrives *while* a reply is playing and a reader that was busy speaking would hear it
-late. A worker runs utterances one at a time, because a turn holds the writer lock and two of
-them would only queue on it. A speaker plays lines in order, because a continuation's reply must
-not wait for the previous line to finish. The three share a send lock and a generation counter,
-and nothing else.
+**Three threads per connection, and why.** The handler thread only reads the socket, because a
+barge-in arrives *while* a reply is playing and a reader that was busy, speaking or transcribing,
+would hear it late. A worker transcribes an utterance and then runs it, one at a time, because a
+turn holds the writer lock and two of them would only queue on it. A speaker plays
+lines in order, because a continuation's reply must not wait for the previous line to
+finish. The three share a send lock and a generation counter, and nothing else.
 
 **Barge-in is a generation counter.** Every spoken line takes the next number when it is queued;
 an interrupt raises the cutoff to the newest number, so the line playing stops at its next chunk
@@ -45,7 +45,7 @@ import threading
 import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from contextlib import suppress
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any
 
 from athena.channels.voice.backends import (
@@ -257,6 +257,9 @@ class _Job:
     gated_tools: frozenset[str] = frozenset()
     #: The shell's capture of the focused tab, taken before this utterance (ADR 0066).
     capture_id: str | None = None
+    #: A spoken utterance's transcriber, not yet finished: the worker turns it into ``text``
+    #: before the turn, so the reader never waits on the provider or the engine.
+    transcriber: Any = None
 
 
 def _is_count(value: object) -> bool:
@@ -488,14 +491,10 @@ class VoiceSession:
             return
         if self._turns_full():
             return
-        try:
-            text = str(current.transcriber.finish() or "")
-        except VoiceBackendError as exc:
-            self.send(TurnError(reason="engine_error", detail=f"transcription: {exc}"))
-            return
         self._jobs.put(
             _Job(
-                text=text,
+                text="",
+                transcriber=current.transcriber,
                 origin=current.origin,
                 host_state=current.host_state,
                 project_id=current.project_id,
@@ -671,12 +670,32 @@ class VoiceSession:
                 if self._closed:
                     continue  # the reader and this thread race; a closed socket starts no turn
                 try:
-                    self._handle(job)
+                    heard = self._transcribed(job)
+                    if heard is not None:
+                        self._handle(heard)
                 except Exception as exc:  # a bug ends the utterance honestly, never silently
                     logging.getLogger(__name__).exception("voice: a turn failed")
                     self.send(TurnError(reason="unknown", detail=type(exc).__name__))
         finally:
             self._let_go()  # the turn it was running, if any, has ended
+
+    def _transcribed(self, job: _Job) -> _Job | None:
+        """The job with its text, or ``None`` when no turn should run.
+
+        A text job is returned as it is. A spoken one is finished here, on the worker, and a
+        refusal from the engine is the same ``engine_error`` the reader used to send. A socket
+        that closed while ``finish`` ran starts no turn (ADR 0012).
+        """
+        if job.transcriber is None:
+            return job
+        try:
+            text = str(job.transcriber.finish() or "")
+        except VoiceBackendError as exc:
+            self.send(TurnError(reason="engine_error", detail=f"transcription: {exc}"))
+            return None
+        if self._closed:
+            return None
+        return replace(job, text=text, transcriber=None)
 
     def _handle(self, job: _Job) -> None:
         self.send(VoiceTranscript(text=job.text, final=True))

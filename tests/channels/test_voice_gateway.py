@@ -873,6 +873,80 @@ def test_a_stop_with_four_waiting_gets_one_error_and_is_never_transcribed(
         client.until("turn.finished", text=f"queued {n}")
 
 
+# -- transcription runs on the worker, so the reader keeps reading (craft-2) -------------------
+
+
+class _Transcribing:
+    """A transcriber whose ``finish`` is the test's to hold, raise from or count."""
+
+    def __init__(self, text: str = "", gate: threading.Event | None = None) -> None:
+        self.text, self.gate, self.finished = text, gate, 0
+
+    def feed(self, pcm: bytes) -> list[str]:
+        return []
+
+    def finish(self) -> str:
+        self.finished += 1
+        if self.gate is not None:
+            assert self.gate.wait(10.0)
+        return self.text
+
+
+def test_the_reader_keeps_reading_while_an_utterance_is_being_transcribed(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    gate = threading.Event()
+    monkeypatch.setattr(backend, "transcriber", lambda: _Transcribing("spoken words", gate))
+    voiced.register()
+    voiced.script(claude_round("heard you"))
+    try:
+        client.utter()
+        client.send(type="no-such-frame")
+        refused = client.until("turn.error")
+        assert refused["reason"] == "validator_failed"
+        assert "unknown frame type" in refused["detail"]
+        assert client.of("voice.transcript") == []
+    finally:
+        gate.set()
+    client.until("turn.finished", text="heard you")
+    assert [e["text"] for e in client.of("voice.transcript")] == ["spoken words"]
+
+
+def test_a_transcription_refusal_is_an_engine_error_and_the_next_utterance_runs(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class Refusing(_Transcribing):
+        def finish(self) -> str:
+            raise gateway_module.VoiceBackendError("transcription failed: IncompleteRead")
+
+    transcribers = [Refusing(), _Transcribing("second try")]
+    monkeypatch.setattr(backend, "transcriber", lambda: transcribers.pop(0))
+    voiced.register()
+    voiced.script(claude_round("second heard"))
+    client.utter()
+    refused = client.until("turn.error")
+    assert refused["reason"] == "engine_error"
+    assert refused["detail"] == "transcription: transcription failed: IncompleteRead"
+    client.utter()
+    client.until("turn.finished", text="second heard")
+    assert [e["text"] for e in client.of("voice.transcript")] == ["second try"]
+    assert client.ws.close_code is None
+
+
+def test_a_stop_waiting_behind_a_turn_is_never_transcribed_once_the_socket_closes(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    waiting = _Transcribing("never heard")
+    monkeypatch.setattr(backend, "transcriber", lambda: waiting)
+    _hold_the_worker(voiced, client)
+    client.utter()
+    _settle()
+    client.close()
+    _settle(1.0)  # the held turn gives up on the closed socket and finds the queue empty
+    assert waiting.finished == 0
+    assert len(voiced.transport.requests) == 1
+
+
 # -- a frame json cannot decode is refused, and the error door cannot raise --------------------
 
 

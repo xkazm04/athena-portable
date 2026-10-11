@@ -114,3 +114,16 @@ stop short hears that it stopped short.
   logs no traceback, and in transcription it never closes the socket. This supersedes the
   `IncompleteRead` example in the first bullet of this section, which took the speaker's
   traceback path.
+- Transcription runs on the worker, not the reader (voice full r2 craft-2). The reader's job is
+  to hear a barge-in, a `ping`, a new `start` and a `tool_result` on time, and `finish()` is an
+  HTTP call of up to 30 s (OpenAI) or a subprocess of up to 120 s (Whisper). `_stop` takes the
+  utterance, returns if it is none or refused, runs the `_turns_full` check (ADR 0074; a refused
+  stop is never transcribed), and enqueues a job that carries the utterance's transcriber. The
+  worker finishes it before the turn: a `VoiceBackendError` sends the same `turn.error`
+  `engine_error` `transcription: <exc>` and no turn runs; a socket that closed before or during
+  `finish()` starts no turn (ADR 0012); a job dropped at close or skipped as closed is never
+  transcribed. `feed` stays on the reader, so partials still drive barge-in. The cap check stays
+  before the enqueue. The memory bound is new: a waiting job holds its PCM until it is
+  transcribed, at most `MAX_PENDING_TURNS` x `MAX_UTTERANCE_BYTES` per socket (5 x 4 MiB), under
+  `MAX_SESSIONS` sockets. A transcriber that raises something other than `VoiceBackendError` is
+  now a worker error (`turn.error` `unknown`, logged) and no longer closes the socket 1011.
