@@ -16,6 +16,7 @@ import pytest
 from athena.contracts import HostManifest, Lane, ToolClass, TurnContext
 from athena.contracts.registry import ToolEntry
 from athena.core.catalog import (
+    CAPABILITIES_CHARS,
     DESCRIPTION_CAP,
     READ_CAP,
     RECALL_CAP,
@@ -468,3 +469,87 @@ def test_a_malformed_schema_forced_into_a_catalog_renders_and_refuses_every_call
         verdict = catalog.validate("host.support.broken", params, CTX)
         assert not verdict.ok and verdict.reason == "validator_failed"
         assert "params_schema" in verdict.detail
+
+
+# --- the block has a total bound (economics-1, ADR 0070) ----------------------------------------
+
+
+def _wide_manifest(app_id: str, tools: int) -> HostManifest:
+    """Every tool at the parameter cap, every name and enum value at its text cap."""
+    enum = ["e" * 60 for _ in range(4)]
+    properties = {f"{'p' * 30}{n:02d}": {"type": "string", "enum": enum} for n in range(24)}
+    return HostManifest.from_dict(
+        {
+            "app_id": app_id,
+            "page_origin": f"https://{app_id}.example",
+            "tools": [
+                {
+                    "name": f"tool{n:02d}",
+                    "description": "d" * 500,
+                    "reversible": n % 2 == 0,
+                    "side_effects": "internal",
+                    "params_schema": {"type": "object", "properties": properties},
+                }
+                for n in range(tools)
+            ],
+        }
+    )
+
+
+def test_the_bound_is_the_prompts_capabilities_budget() -> None:
+    from athena.core.prompt import BUDGETS
+
+    assert BUDGETS["capabilities"] == CAPABILITIES_CHARS
+
+
+def test_a_block_over_the_bound_keeps_every_core_entry_and_announces_the_cut() -> None:
+    catalog = build_catalog(services(), manifest())
+    for app_id in ("sigma", "tau", "upsilon"):
+        catalog.merge_manifest(_wide_manifest(app_id, 8))
+
+    block = catalog.render_capabilities(Lane.BROWSER)
+
+    assert len(block.text) <= CAPABILITIES_CHARS
+    assert block.shown is not None and block.total is not None
+    assert block.shown < block.total
+    assert block.text.endswith(f"(showing {block.shown} of {block.total})\n")
+    assert block.announces_truncation()
+    for name in catalog.core:
+        assert f"- `{name}`(" in block.text
+    assert "did not fit" in block.text
+    # Order is the block's own, by class and then by name: invoices sorts before sigma.
+    assert "`host.invoices.send_reminder`" in block.text
+
+
+def test_a_cut_never_changes_a_class_or_a_registration() -> None:
+    catalog = build_catalog(services())
+    for app_id in ("alpha", "beta", "gamma"):
+        catalog.merge_manifest(_wide_manifest(app_id, 8))
+    before = {name: entry.cls for name, entry in catalog.entries.items()}
+
+    text = catalog.render_capabilities(Lane.BROWSER).text
+
+    cut = [name for name in catalog.names() if f"`{name}`" not in text]
+    assert cut, "the fixture is meant to overflow the bound"
+    assert {name: entry.cls for name, entry in catalog.entries.items()} == before
+    assert any(catalog.classify(name) is ToolClass.GATED for name in cut)
+    verdict = catalog.validate("host.gamma.tool01", {"p" * 30 + "00": "e" * 60}, CTX)
+    assert verdict.ok, "a name the block did not show is still gated as registered"
+
+
+def test_identical_registries_render_identical_text_when_cut() -> None:
+    def build() -> Catalog:
+        catalog = build_catalog(services())
+        for app_id in ("gamma", "alpha", "beta"):
+            catalog.merge_manifest(_wide_manifest(app_id, 8))
+        return catalog
+
+    first, second = build(), build()
+    assert first.render_capabilities(Lane.BROWSER).text == (
+        second.render_capabilities(Lane.BROWSER).text
+    )
+
+
+def test_a_block_under_the_bound_says_nothing_about_a_cut() -> None:
+    text = build_catalog(services(), manifest()).render_capabilities(Lane.BROWSER).text
+    assert "did not fit" not in text

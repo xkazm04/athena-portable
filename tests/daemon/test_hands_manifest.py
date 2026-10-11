@@ -8,7 +8,12 @@ its flags, not from its name.
 
 from __future__ import annotations
 
+import re
 from typing import Any
+
+from athena.contracts import HostManifest, Lane, ToolClass
+from athena.core.catalog import CAPABILITIES_CHARS, CoreServices, build_catalog
+from athena.core.prompt import BUDGETS
 
 from .conftest import Live
 
@@ -190,3 +195,27 @@ def test_the_marker_changes_the_tier_and_never_the_class(live: Live) -> None:
     assert by_name["host.ledger.pay"]["class"] == "GATED"
     assert by_name["host.ledger.page_click"]["class"] == "GATED"
     assert by_name["host.ledger.page_read"]["class"] == "AUTO"
+
+
+def test_two_hundred_origins_of_hands_render_within_the_bound_and_announce_the_cut() -> None:
+    """economics-1: 200 origins carrying the nine hands rendered 184,468 characters into every
+    model call's system prompt. The block is bounded now and says what it left out (ADR 0070)."""
+    catalog = build_catalog(CoreServices(sources_alive=lambda sources: True))
+    for n in range(200):
+        body = hands_manifest(f"web{n:03d}", f"https://site{n:03d}.test")
+        catalog.merge_manifest(HostManifest.from_dict(body))
+
+    block = catalog.render_capabilities(Lane.BROWSER)
+
+    assert len(block.text) <= CAPABILITIES_CHARS <= BUDGETS["capabilities"]
+    footer = re.search(r"\(showing (\d+) of (\d+)\)\n\Z", block.text)
+    assert footer is not None
+    shown, total = int(footer[1]), int(footer[2])
+    assert (shown, total) == (block.shown, block.total)
+    assert shown < total == 3 + 200 * 9
+    assert all(f"`{name}`" in block.text for name in catalog.core)
+    assert block.text == catalog.render_capabilities(Lane.BROWSER).text
+    # The cut is the prompt's and never the gate's: a hand left out is still GATED.
+    cut = "host.web199.page_click"
+    assert f"`{cut}`" not in block.text
+    assert catalog.classify(cut) is ToolClass.GATED

@@ -20,6 +20,8 @@ from athena.contracts.registry import ToolClass, ToolOrigin, is_origin, parse_or
 
 __all__ = [
     "HAND_RUNNER",
+    "MAX_PROPERTIES_PER_TOOL",
+    "MAX_TOOLS_PER_MANIFEST",
     "HostManifest",
     "HostTool",
     "SideEffects",
@@ -35,6 +37,15 @@ __all__ = [
 SideEffects = Literal["none", "internal", "external"]
 
 SIDE_EFFECTS: tuple[str, ...] = ("none", "internal", "external")
+
+
+#: The most tools one manifest may declare, and the most parameters one tool may take (ADR 0070).
+#: Every one of them is a line, or part of a line, in every model call's system prompt, so a
+#: manifest past either is refused whole. The largest the repository ships are Ledgerbox at 41
+#: tools (32 of its own and the nine hands) and Hirelane's ``search_candidates`` at 8 parameters;
+#: each cap stands at more than twice that.
+MAX_TOOLS_PER_MANIFEST = 96
+MAX_PROPERTIES_PER_TOOL = 24
 
 
 def params_schema_problems(schema: object) -> list[str]:
@@ -207,6 +218,11 @@ class HostManifest:
                     f"page_origin must be https (or http://localhost): {self.page_origin!r}"
                 )
 
+        if len(self.tools) > MAX_TOOLS_PER_MANIFEST:
+            problems.append(
+                f"{len(self.tools)} tools is over the cap of {MAX_TOOLS_PER_MANIFEST} per manifest"
+            )
+
         seen: set[str] = set()
         for tool in self.tools:
             if not tool.name.strip():
@@ -227,7 +243,13 @@ class HostManifest:
             problems.extend(f"tool {tool.name!r}: {problem}" for problem in shape)
             if shape:
                 continue
-            for pname, pschema in tool.params_schema.get("properties", {}).items():
+            props = tool.params_schema.get("properties", {})
+            if len(props) > MAX_PROPERTIES_PER_TOOL:
+                problems.append(
+                    f"tool {tool.name!r}: {len(props)} parameters is over the cap of "
+                    f"{MAX_PROPERTIES_PER_TOOL} per tool"
+                )
+            for pname, pschema in props.items():
                 if not isinstance(pschema, dict):
                     continue
                 if pschema.get("type") == "array" and "maxItems" not in pschema:

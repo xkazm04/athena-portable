@@ -8,7 +8,11 @@ from __future__ import annotations
 import pytest
 
 from athena.contracts import HostManifest, HostTool, StateReadable, ToolClass
-from athena.contracts.manifest import params_schema_problems
+from athena.contracts.manifest import (
+    MAX_PROPERTIES_PER_TOOL,
+    MAX_TOOLS_PER_MANIFEST,
+    params_schema_problems,
+)
 
 
 def a_manifest(**kw: object) -> HostManifest:
@@ -159,3 +163,37 @@ def test_a_well_formed_params_schema_has_no_shape_problem() -> None:
     tool = HostTool(name="tag", reversible=True, side_effects="none", params_schema=schema)
     assert a_manifest(tools=[tool]).validate() == []
     assert params_schema_problems({}) == []
+
+
+# --- how many tools and parameters one manifest may carry (economics-1, ADR 0070) -------------
+
+
+def _tool(name: str, properties: int = 0) -> HostTool:
+    schema = {
+        "type": "object",
+        "properties": {f"p{n}": {"type": "string"} for n in range(properties)},
+    }
+    return HostTool(name=name, reversible=True, side_effects="none", params_schema=schema)
+
+
+def test_a_tool_with_a_thousand_parameters_refuses_the_manifest() -> None:
+    problems = a_manifest(tools=[_tool("wide", 1000)]).validate()
+    assert any("'wide'" in p and "1000 parameters" in p for p in problems), problems
+
+
+def test_a_manifest_with_too_many_tools_is_refused() -> None:
+    tools = [_tool(f"t{n}") for n in range(MAX_TOOLS_PER_MANIFEST + 1)]
+    problems = a_manifest(tools=tools).validate()
+    assert any(f"{MAX_TOOLS_PER_MANIFEST + 1} tools" in p for p in problems), problems
+
+
+def test_a_manifest_at_both_caps_is_accepted() -> None:
+    tools = [_tool(f"t{n}", MAX_PROPERTIES_PER_TOOL) for n in range(MAX_TOOLS_PER_MANIFEST)]
+    assert a_manifest(tools=tools).validate() == []
+
+
+def test_the_caps_stand_above_the_largest_manifests_the_repo_ships() -> None:
+    """ADR 0070's measured maxima: Ledgerbox's 32 page tools plus the 9 hands, and Hirelane's
+    search_candidates with 8 parameters. A cap at or under them would refuse a real page."""
+    assert MAX_TOOLS_PER_MANIFEST >= 2 * 41
+    assert MAX_PROPERTIES_PER_TOOL >= 2 * 8

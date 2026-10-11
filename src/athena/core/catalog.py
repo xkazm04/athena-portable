@@ -43,9 +43,11 @@ from athena.contracts.registry import (
     ValidationResult,
     parse_origin,
 )
+from athena.core.prompt import BUDGETS
 from athena.core.validators import all_of, live_sources, schema_validator
 
 __all__ = [
+    "CAPABILITIES_CHARS",
     "READ_CAP",
     "RECALL_CAP",
     "Catalog",
@@ -75,6 +77,15 @@ DESCRIPTION_CAP = 240
 PARAM_TEXT_CAP = 40
 ENUM_SHOWN = 12
 _PLAIN_NAME = re.compile(r"[A-Za-z0-9_-]{1,40}\Z")
+
+#: The most characters the capabilities block may hold (ADR 0070). It is the prompt's own budget
+#: for the block, imported rather than copied so the two cannot drift: the budget there is a
+#: tripwire, and this is the cap that keeps it from tripping. Core entries are always shown;
+#: foreign entries are added in the block's order until the next would pass it, and the rest are
+#: cut and announced.
+CAPABILITIES_CHARS = BUDGETS["capabilities"]
+
+_CLASS_ORDER = (ToolClass.GATED, ToolClass.READ, ToolClass.AUTO)
 _WHITESPACE = re.compile(r"\s+")
 
 
@@ -440,10 +451,16 @@ class Catalog:
     ) -> PromptBlock:
         """The capability block of the prompt, generated from the registry (README §2 invariant 4).
 
-        Every entry enabled in this lane appears exactly once, under its class, with its
+        Every entry enabled in this lane appears at most once, under its class, with its
         parameters. The order is by class and then by name, so two calls over an unchanged
         registry produce identical text — which is what lets the ledger's block hash mean
         something.
+
+        The block holds at most :data:`CAPABILITIES_CHARS` characters (ADR 0070). Athena's own
+        entries are always shown. A page's or connector's entry is added in the order above until
+        the next one would pass the bound, and every one after it is cut; a sentence and the
+        ``(showing N of M)`` footer say so. The cut is the prompt's only: a name left out keeps
+        its class and its registration, and the gate treats it exactly as before.
         """
         entries = [e for e in self.for_lane(lane) if str(e.parsed_origin) not in exclude_origins]
         total = len(self.entries)
@@ -474,27 +491,64 @@ class Catalog:
             "you — a name listed here is a name you address with an `OP:` line.",
             "",
         ]
-        for cls in (ToolClass.GATED, ToolClass.READ, ToolClass.AUTO):
-            group = [entry for entry in entries if entry.cls is cls]
+        ordered = [entry for cls in _CLASS_ORDER for entry in entries if entry.cls is cls]
+        rendered = {entry.name: _capability_line(entry) for entry in ordered}
+
+        # What the block carries besides its entry lines, each counted at its longest: the
+        # header, a heading and a blank line per class, the cut sentence and the footer at M of M.
+        used = len("\n".join(lines)) + 1
+        used += sum(len(f"### {cls.value}") + 2 for cls in _CLASS_ORDER)
+        used += len(_cut_sentence(total)) + 2 + len(f"(showing {total} of {total})") + 1
+        used += sum(len(rendered[e.name]) + 1 for e in ordered if e.origin == "core")
+        kept: set[str] = set()
+        full = False
+        for entry in ordered:
+            if entry.origin == "core":
+                kept.add(entry.name)
+                continue
+            cost = len(rendered[entry.name]) + 1
+            if full or used + cost > CAPABILITIES_CHARS:
+                full = True
+                continue
+            used += cost
+            kept.add(entry.name)
+        shown = [entry for entry in ordered if entry.name in kept]
+
+        for cls in _CLASS_ORDER:
+            group = [entry for entry in shown if entry.cls is cls]
             if not group:
                 continue
             lines.append(f"### {cls.value}")
-            for entry in group:
-                foreign = entry.origin != "core"
-                params = _params_line(entry.params_schema, foreign=foreign)
-                cap = f" [cap {entry.cap_chars} chars]" if entry.cap_chars else ""
-                description = entry.description or "(no description)"
-                if foreign:
-                    description = json.dumps(neutralise_text(description), ensure_ascii=False)
-                lines.append(f"- `{entry.name}`({params}) — {description}{cap}")
+            lines.extend(rendered[entry.name] for entry in group)
             lines.append("")
-        lines.append(f"(showing {len(entries)} of {total})")
+        if len(shown) < len(ordered):
+            lines += [_cut_sentence(len(ordered) - len(shown)), ""]
+        lines.append(f"(showing {len(shown)} of {total})")
         return PromptBlock(
             name="capabilities",
             text="\n".join(lines).rstrip() + "\n",
-            shown=len(entries),
+            shown=len(shown),
             total=total,
         )
+
+
+def _capability_line(entry: ToolEntry) -> str:
+    """One entry's line in the block; a foreign entry's text is neutralised (ADR 0068)."""
+    foreign = entry.origin != "core"
+    params = _params_line(entry.params_schema, foreign=foreign)
+    cap = f" [cap {entry.cap_chars} chars]" if entry.cap_chars else ""
+    description = entry.description or "(no description)"
+    if foreign:
+        description = json.dumps(neutralise_text(description), ensure_ascii=False)
+    return f"- `{entry.name}`({params}) — {description}{cap}"
+
+
+def _cut_sentence(cut: int) -> str:
+    """What the block says when the bound left page or connector names out (ADR 0070)."""
+    return (
+        f"{cut} more names from pages and connectors did not fit in this block and are not "
+        "listed. Each is still gated as its class says."
+    )
 
 
 def neutralise_text(text: str, cap: int = DESCRIPTION_CAP) -> str:
