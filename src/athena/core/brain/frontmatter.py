@@ -119,6 +119,7 @@ def _unquote(raw: str) -> str:
 
 
 def _coerce(raw: str) -> Any:
+    """Type one value as ADR 0084 records it: a bare scalar is typed, a quoted one stays text."""
     if raw[:1] in ('"', "'"):
         return _unquote(raw)
     if raw in ("true", "false"):

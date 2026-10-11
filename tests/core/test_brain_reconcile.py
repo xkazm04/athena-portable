@@ -181,6 +181,22 @@ def test_a_confidence_that_is_not_a_number_is_named_and_the_rebuild_goes_on(
         assert _tables_holding(brain, victim.id) == []
 
 
+def test_a_quoted_confidence_is_skipped_by_name_and_the_rebuild_goes_on(tmp_path: Path) -> None:
+    """ADR 0084: a quoted number is text, so a hand-edited ``"0.9"`` is never read as 0.9."""
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+        source = brain.append_episode("evidence", role="user")
+        victim = brain.write_fact("bad one", "text", scope="user", sources=[source.id])
+        _rewrite(brain, victim.path, ("confidence:",), 'confidence: "0.9"')
+
+        stats = reconcile_from_disk(brain)
+
+        assert f"{victim.path}: confidence 0.9 is not a number" in stats.skipped
+        assert len(stats.skipped) == 1
+        assert stats.files == 7
+        assert _tables_holding(brain, victim.id) == []
+
+
 def test_a_confidence_too_large_for_a_float_is_named_and_the_rebuild_goes_on(
     tmp_path: Path,
 ) -> None:

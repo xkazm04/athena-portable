@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from athena.core.brain import frontmatter
@@ -81,3 +83,36 @@ def test_a_file_with_no_header_parses_as_all_body() -> None:
 
     assert meta == {}
     assert body == "no header here\n"
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("00123", 123),
+        ('"00123"', "00123"),
+        ("'00123'", "00123"),
+        ("true", True),
+        ('"true"', "true"),
+        ("True", "True"),
+        ("TRUE", "TRUE"),
+        ("1_000", 1000),
+        ("+5", 5),
+        ("1e5", 100000.0),
+        ("0x10", "0x10"),
+        ("plain text", "plain text"),
+        ('"abc', '"abc'),
+    ],
+)
+def test_a_bare_scalar_is_typed_and_a_quoted_one_stays_text(raw: str, expected: object) -> None:
+    """ADR 0084 pins the dialect as it is: value and type, so a change must supersede it."""
+    meta, _ = frontmatter.parse(f"---\nkey: {raw}\n---\n\nbody\n")
+
+    assert meta["key"] == expected
+    assert type(meta["key"]) is type(expected)
+
+
+def test_a_bare_nan_is_a_float_and_not_text() -> None:
+    meta, _ = frontmatter.parse("---\nkey: nan\n---\n\nbody\n")
+
+    assert isinstance(meta["key"], float)
+    assert math.isnan(meta["key"])
