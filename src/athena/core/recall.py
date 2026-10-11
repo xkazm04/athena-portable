@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import sqlite3
 from contextlib import closing
 from dataclasses import dataclass, field
@@ -428,8 +429,9 @@ def around(body: str, query: str) -> str:
     """
     if len(body.encode("utf-8")) <= EXCERPT_BYTES:
         return body
-    lower = body.lower()
-    hits = [i for t in fts_terms(query) if (i := lower.find(t.lower())) >= 0]
+    hits = [
+        m.start() for t in fts_terms(query) if (m := re.search(re.escape(t), body, re.IGNORECASE))
+    ]
     if not hits:
         return excerpt(body)
     start = max(0, min(hits) - EXCERPT_BYTES // 4)

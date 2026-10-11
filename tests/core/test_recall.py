@@ -35,6 +35,7 @@ from athena.core.recall import (
     RecallBlock,
     RecallTrace,
     always_line,
+    around,
     memory_line,
     recall,
     recall_whole,
@@ -944,3 +945,10 @@ def test_a_whole_recall_reads_one_page_of_episodes_not_every_match(
 
     assert (episodes.shown, episodes.total) == (1, 200)
     assert sum(counts) <= 1 + MACHINE_EPISODE_SLOTS
+
+
+def test_around_finds_a_match_past_characters_that_lower_to_two_code_points() -> None:
+    # U+0130 lowers to two code points, so offsets taken from body.lower() drift off the body.
+    body = "İ" * 300 + " needle " + "filler " * (EXCERPT_BYTES // 2)
+    assert len(body.encode("utf-8")) > EXCERPT_BYTES
+    assert "needle" in around(body, "needle")
