@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The ninety-four playbooks (latest runs, Claude Sonnet)
+## The ninety-five playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -137,9 +137,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A laid-off father's and a pay-cut mother's changes sent to the college's aid office with proof and an estimated 2026 income by its deadline, while a 2024 cut, a seasonal job, a brother's other college, a tuition rise, a premium, a dependency override and an appeal service are left out | home | 4 | exceeds: 2 of 2, $4,000.00 of $4,000.00 (2,000 dollars a request, a per-act weight and not money recovered), 10 of 10 traps, 0 false, 1.9 min, $1.51 |
 | A working family's 2025 return on extension claims the earned income credit for three children, a daughter, a son who moved in in March and a student of 22, with Form 8862 for the disallowed 2023 credit, while a niece her mother claims, a boy there four months, a 21-year-old, another family's child, a Form 8332, a refund advance and a maximizer are left out | home | 4 | exceeds: 4 of 4, $4,000.00 of $4,000.00 (1,000 dollars an act, an exposure and not money recovered), 8 of 8 traps, 0 false, 1.7 min, $1.51 |
 | A disabled worker's earnings reported to Social Security in the month they were earned, June to September, with a second employer whose stubs came only by mail, while three months on file, October, her husband's job, a work expense, a paid advocate and a text are left out | home | 3 | exceeds: 5 of 5, $4,000.00 of $4,000.00 (800 dollars an act, an exposure and not money recovered), 8 of 8 traps, 0 false, 1.1 min, $0.84 |
+| A flooded household's three FEMA appeals, filed inside the 60 days: the house's repair and the contents for what the insurer's limits left unpaid, and the car, while a furnace the insurer paid, a lake cabin, landscaping, an approved rental, a neighbour's estimate, a decision 60 days past, a claim service and a contractor are left out | home | 4 | exceeds: 3 of 3, $12,400.00 of $12,400.00 (the amounts the appeals ask FEMA to pay, an exposure and not money recovered), 8 of 8 traps, 0 false, 1.7 min, $1.61 |
 
-Across the latest runs: $1,306,319 of $1,365,396 found, 977 of 977 traps walked past, no false claim,
-247 minutes of her time against about 343 hours by hand, $151.47 of model time. 134 runs are recorded
+Across the latest runs: $1,318,719 of $1,377,796 found, 985 of 985 traps walked past, no false claim,
+249 minutes of her time against about 346 hours by hand, $153.08 of model time. 135 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

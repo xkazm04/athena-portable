@@ -1,0 +1,126 @@
+{
+  "id": "fema-individual-assistance",
+  "title": "A household's FEMA appeals are filed by 19 October: 7,300 dollars of repair and 2,150 of contents that the insurer's limits left unpaid, and 2,950 for a flooded car, while a furnace the insurer paid, a cabin, landscaping, an approved rental, a neighbour's estimate, a late appeal and a claim service are left alone",
+  "domain": "Disaster aid",
+  "audience": "home",
+  "promise": "A homeowner whose house was flooded in an invented declared disaster has FEMA's decisions in hand, and her job is to appeal, by Monday 19 October 2026, 60 days from the letter of 20 August, the three that are wrong: the house's repair, for the 7,300 dollars that Hearthguard's water-damage limit left unpaid out of an estimate of 21,300, which only the settlement letter in the mail shows; the contents, for the 2,150 dollars above the insurer's contents limit; and the car, for the 2,950 dollars of flood repair that the invoice and photos document. She does not appeal the furnace that insurance paid in full, the lake cabin, the landscaping and fence, the rental assistance FEMA approved, the mold item with only a neighbour's estimate or the lodging decision whose 60 days ended on 5 October, and she answers no claim service or contractor.",
+  "persona": "A homeowner in an invented flooded valley, with FEMA registration and decision letters already on file and a homeowners policy that paid up to its limits",
+  "chore": "Read FEMA's decisions, the rules and the last day to appeal in Reliefmoor; the insurer's payments in Hearthguard; the photos, estimates and receipts in Lenswick; and the household's mail, scanned letters included, in Postwren. Then apply 44 CFR 206.110 to 206.120 as amended by the Individual Assistance rule effective 22 March 2024, with Stafford Act sections 312 and 408 and FEMA's Individual Assistance Program and Policy Guide, as they stand on 9 October 2026: an appeal is due within 60 days of the date on the decision letter, in writing, signed, with an explanation or documents; insurance comes first and FEMA pays only what it did not; housing help is for the primary residence; and what 206.117 and 206.119 do not authorize is excluded.",
+  "command": "I'm Calla Rourke. FEMA decided our flood requests in two letters and I want to appeal what's wrong inside the 60 days. Go through Reliefmoor, Hearthguard, Lenswick and the Postwren inbox, and appeal each decision the rules say is wrong, for the amount insurance left unpaid or FEMA didn't pay. Don't appeal anything the rules don't allow, and don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Reliefmoor",
+      "role": "the stand-in for FEMA's applicant site: the registration, the rules, each decision with its letter date and last day to appeal, and the page that files an appeal",
+      "api": "Disaster assistance portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Hearthguard",
+      "role": "the household's insurer: what it paid on claim HG-441, line by line",
+      "api": "Insurance claims portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Lenswick photos",
+      "role": "the household's photos, estimates and receipts",
+      "api": "Photo storage, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the household's mail and the letter service: the insurer's settlement letter, a neighbour's estimate, a claim service's offer and a contractor's",
+      "api": "Mail and letters, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules, the registration and every page of FEMA's decisions in Reliefmoor, with each last day to appeal.",
+    "Reads what Hearthguard paid on each line of the claim.",
+    "Reads every page of the photos, estimates and receipts in Lenswick and notes what each one is.",
+    "Reads every page of the mail in Postwren, including the insurer's scanned settlement letter, and notes what each attachment is.",
+    "Files an appeal for each wrong decision and its unmet amount, inside the 60 days."
+  ],
+  "gates": [
+    {
+      "action": "file_appeal",
+      "label": "Appeal a FEMA decision",
+      "why": "The appeal goes to FEMA under the applicant's signature and the answer is final; an appeal for a loss insurance paid, a second home, an excluded item, an approved item, a neighbour's figure or a decision out of time asks FEMA for what the rules do not allow."
+    },
+    {
+      "action": "reply_message",
+      "label": "Reply to a message",
+      "why": "A reply goes out under the applicant's name; one that says yes to a claim service commits money for an appeal she can file free, and one that pays a contractor a deposit on FEMA's word commits 2,000 dollars for an item FEMA has denied."
+    }
+  ],
+  "traps": [
+    "An appeal for the furnace and water heater, which Hearthguard paid in full.",
+    "An appeal for the lake cabin, a second home.",
+    "An appeal for the landscaping and fence.",
+    "An appeal for the rental assistance that FEMA approved in full.",
+    "An appeal for mold remediation on the neighbour's 9,400 dollar estimate.",
+    "An appeal for the lodging decision of 6 August, 60 days past on 5 October.",
+    "A reply that signs the household up with the 495 dollar claim service.",
+    "A reply that books the contractor with a 2,000 dollar deposit."
+  ],
+  "memory": [
+    "Each FEMA decision, its id, the letter date, the amount asked and the last day to appeal, carried from Reliefmoor.",
+    "Each line of the insurer's payment, its id and amount, carried from Hearthguard.",
+    "Each photo, estimate or receipt, its id and amount, carried from Lenswick.",
+    "Each attachment in the mail, its document id and what limits it shows, carried from Postwren."
+  ],
+  "economics": {
+    "value_usd": 8000,
+    "per": "episode",
+    "basis": "An estimate, mostly real money. A household whose home is flooded and whose policy pays only to its limits can ask FEMA for the unmet part, up to the Individuals and Households Program maximum for a disaster declared in fiscal year 2026, 44,800 dollars for housing assistance and 44,800 for other needs assistance (the Federal Register notice of 29 September 2026, confirmed in a state emergency agency's summary; the notice itself did not open). An appeal not filed inside 60 days is lost. The roster's 8,000 dollars an episode is an estimate of what an appeal of a denial for insurance duplication and missing documents recovers and is kept; it is not an average of anything published. The bench world holds three appeals weighted at the amounts they ask, 7,300, 2,150 and 2,950 dollars, 12,400 dollars, what the appeals ask FEMA to pay and an exposure and not money recovered: FEMA decides, and no page of the world computes what it will pay. Times a year: 1, because a disaster that floods a home is an episode and its appeals are made once, in the year it happens. manual_minutes 180: reading six rules, nine decisions, three insurer lines, nine photos and receipts and four letters, computing two unmet amounts against insurer limits that only a letter shows, and filing three appeals. The rules applied, as they stand on Friday 9 October 2026, read in Cornell's copies of the eCFR (no edition date given) and not on ecfr.gov, which refused every fetch: 44 CFR 206.115 (60 days after FEMA notifies the applicant; a written explanation or verifiable documentation, signed by the applicant or a designated representative; a written answer within 90 days; the decision final), 206.113 (conditions of eligibility and ineligibility: the primary residence, insurance, anything not authorized by 206.117 and 206.119), 206.117 (repair of an owner-occupied primary residence where the damage is not covered by insurance), 206.119 (other needs assistance as the 2024 rule rewrote it: serious needs, displacement, medical and dental, child care, funeral, personal property, transportation, moving and storage, group flood insurance, miscellaneous; no SBA application requirement in the text) and 206.191 (duplication of benefits: insurance first, FEMA to determine whether a settlement covers the need). Stafford Act sections 312 and 408 and FEMA's Individual Assistance Program and Policy Guide (the newest version found is Version 1.1 Amended, July 2025; the PDF did not open) were not read at their own pages, nor the Individual Assistance rule of 22 January 2024 (89 FR 3990, an interim final rule effective 22 March 2024); what the 2024 rule added (Serious Needs Assistance, Displacement Assistance, no SBA application before some other needs assistance) is from summaries and from 206.119 as Cornell holds it. THE BRIEF'S PREMISES: the 60 days run from the date FEMA notifies the applicant, which the world makes the date on the decision letter; the insurer-first rule is right as stated, and FEMA accepts a settlement letter, a denial letter or a delay letter.",
+    "manual_minutes": 180,
+    "times_per_year": 1,
+    "incumbent": "Paid FEMA claim services charge flat fees (the 495 dollars in the world's offer is invented); FEMA's assistance, its application and its appeals are free, and public adjusters work on contingency only for insurance claims and not for FEMA appeals, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "44 CFR 206.115, Appeals (Cornell LII)",
+        "url": "https://www.law.cornell.edu/cfr/text/44/206.115"
+      },
+      {
+        "label": "44 CFR 206.113, Eligibility factors (Cornell LII)",
+        "url": "https://www.law.cornell.edu/cfr/text/44/206.113"
+      },
+      {
+        "label": "44 CFR 206.117, Housing assistance (Cornell LII)",
+        "url": "https://www.law.cornell.edu/cfr/text/44/206.117"
+      },
+      {
+        "label": "44 CFR 206.119, Financial assistance to address other needs (Cornell LII)",
+        "url": "https://www.law.cornell.edu/cfr/text/44/206.119"
+      },
+      {
+        "label": "44 CFR 206.191, Duplication of benefits (Cornell LII)",
+        "url": "https://www.law.cornell.edu/cfr/text/44/206.191"
+      },
+      {
+        "label": "Stafford Act section 312, 42 U.S.C. 5155, Duplication of benefits (not read at its own page)",
+        "url": "https://www.law.cornell.edu/uscode/text/42/5155"
+      },
+      {
+        "label": "FEMA Individual Assistance Program and Policy Guide, Version 1.1 Amended, July 2025 (the PDF did not open)",
+        "url": "https://www.fema.gov/sites/default/files/documents/fema_iappg-1.1_amended_july2025.pdf"
+      },
+      {
+        "label": "Federal Register: Notice of Maximum Amount of Assistance Under the Individuals and Households Program, 29 September 2026 (the page did not open)",
+        "url": "https://www.federalregister.gov/documents/2026/09/29/2026-19854/notice-of-maximum-amount-of-assistance-under-the-individuals-and-households-program"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Nine decisions in two letters across four systems: the two largest appeals rest on a policy limit that only a scanned settlement letter in the mail shows, so that the unmet amounts are 21,300 less 14,000 and 6,250 less 4,100; the furnace looks the same as the house, and is not, because Hearthguard paid it in full; the car's appeal rests on an invoice and photos in a third portal; and the lodging decision's last day to appeal passed on 5 October, four days ago, while a neighbour's 9,400 dollar estimate sits one click from a mold item the household has no figure for.",
+    "usefulness_why": "A household that appeals nothing keeps the denials, one that appeals everything asks FEMA for what insurance paid and for items the rules exclude, and the 60 days run from the date on the letter; the chore is mostly judgement, but the proof is split between FEMA's page, an insurer's payments, a photo album and a paper letter, and a claim service and a contractor both invite the wrong move."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful applicant with FEMA's decisions, the insurer's payments, the receipts and the mail in hand gets most of it: the bar is three quarters of the 12,400 dollars that the three appeals ask, the house, the contents and the car, and nothing for the furnace, the cabin, the landscaping, the approved rental, the neighbour's estimate, the late lodging decision, the claim service or the contractor, inside an hour."
+  },
+  "caveat": "Calla and Desmond Rourke, the Voss household, Hal Voss, the Harrowmere Valley floods and DR-9017, Harrowmere, Millrace Road and Heron Landing, Tarnholt Builders, Oakhurst Auto, Hollis Heating, Claimstar FEMA Helpers, Stormline Restoration, Reliefmoor, Hearthguard, Lenswick photos and Postwren, and every decision, amount, letter and date are invented; Reliefmoor stands in for FEMA's applicant site, and nothing in the world is presented as FEMA's or as an agency's. The public rules applied are 44 CFR 206.113, 206.115, 206.117, 206.119 and 206.191 as Cornell's copy of the eCFR held them (it gives no edition date; ecfr.gov and the Federal Register refused every fetch), the Individual Assistance rule in force since 22 March 2024 as 206.119 now reads, and the 2026 maximum of 44,800 dollars from a state emergency agency's summary of the Federal Register notice of 29 September 2026, as they stand on 9 October 2026; the Stafford Act, FEMA's Individual Assistance Program and Policy Guide and the 2024 rule itself were not opened. FEMA decides real cases, on the household's real file and the real declaration. This applies stated rules to stated facts; it is not legal, insurance or disaster-aid advice."
+}
