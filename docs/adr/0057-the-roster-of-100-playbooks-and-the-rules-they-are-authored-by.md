@@ -443,3 +443,43 @@ names; each playbook carries the new one.
 - **Free choice per batch.** It is cheap to start, but parallel batches would pick the same chores,
   and a batch could choose what benches well rather than what matters. That is the fitting that
   ADR 0056 exists to prevent, moved from the method to the roster.
+
+## Errata, 2026-10-11: two frozen answer-key lines and one title
+
+Checked against the files in `playbooks/` and against the commit bodies before writing. Rule 3
+freezes `truth.json` at the first bench, and `bench.json` and `evidence.json` record a run on the
+world as it was. So the corrections below live here, and no file under `playbooks/` is edited.
+
+1. **Row 81, `adverse-action-notices`: the end of Orrin's wait.** The `traps` entry C-205 in
+   `truth.json` (also copied into `bench.json`) says Orrin Scholes's wait "runs to 13 October
+   (with Columbus Day out)". `world.json` states the policy (the rules page): five full business
+   days after the pre-adverse notice, Monday to Friday except company holidays, the sending day not
+   counted, the final notice "on the sixth business day or later", and Monday 12 October as a
+   company holiday. The notice went on Tuesday 6 October. The five days are Wednesday 7, Thursday 8,
+   Friday 9, Tuesday 13 and Wednesday 14 October, so the wait runs to 14 October and the final
+   notice may go from Thursday 15 October. The same line's neighbour, C-204 (notice on Friday
+   2 October; days 5, 6, 7, 8 and 9; sixth business day Tuesday 13 October because 12 October is
+   a holiday), counts correctly by the same rule. **No score or verdict depends on the end date.**
+   C-205 is a trap, a plain string in `traps`, and it has no `expect` block. It is hit by a final
+   notice sent for C-205 on the world's date, Friday 9 October, which is inside the wait whether it
+   ends on 13 or on 14 October. The scorer reads no date out of the string.
+2. **Row 87, `erate-applications`: "11 days from now".** The trap B-9 in `truth.json` (also in
+   `bench.json`) says S-4's Allowable Contract Date of 2 March 2026 is "11 days from now". The
+   world is dated Friday 13 February 2026 (`world.json`, `today`), so 2 March is 17 days away
+   (15 days to 28 February, and 2 more). Eleven days is how long S-4's Form 470, certified on
+   2 February, had been posted. The commit body of ce814b8 says the same. **The trap holds either
+   way:** a Form 471 for S-4 on 13 February is before 2 March, 11 days or 17 days ahead, and the
+   rule it rests on (the 28 days, counted with the certification day as day one) does not use the
+   number of days left. The bench avoided it (12 of 12 traps avoided), and her closing words give
+   "17 days".
+3. **Row 87's title was corrected after its bench.** The `title` in `playbook.json` was changed,
+   and the evidence re-filmed, after the bench, so the bench ran on the old title. The old title is
+   **not in the repo**: `playbook.json` has one commit, ce814b8, which holds the corrected title,
+   `bench.json` carries no title, and a search of `playbooks/` and `docs/` for the old words finds
+   nothing. The one record of it is ce814b8's body, which says: "the title in the playbook.json
+   that was benched said "a service 11 days short"; this commit's title says "a 470 posted 11
+   days ago" (the playbook text is handed to her as the active project, and her closing words say
+   "earlier I'd heard '11 days short', but the dates give 17"). truth.json, world.json and
+   bench.json were not touched after the bench (their hashes were checked); only the title and its
+   filmed evidence changed." The full old title is therefore recorded here as unrecoverable from
+   the repo, with that fragment as its only trace.
