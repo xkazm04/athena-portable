@@ -578,13 +578,10 @@ export async function startVoice(): Promise<void> {
       if (ev.code === "Space") useVoice.getState().release();
     });
     // A key released while the window was not looking sends no keyup: losing the keyboard ends it.
-    window.addEventListener("blur", () => {
-      if (useVoice.getState().phase === "listening") useVoice.getState().release();
-    });
+    // release() also makes a press still awaiting stale, and changes nothing when neither is going.
+    window.addEventListener("blur", () => useVoice.getState().release());
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden" && useVoice.getState().phase === "listening") {
-        useVoice.getState().release();
-      }
+      if (document.visibilityState === "hidden") useVoice.getState().release();
     });
   }
 }

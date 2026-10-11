@@ -637,6 +637,67 @@ describe("the microphone closes whenever listening ends (council full r1 robustn
     expect(useVoice.getState().phase).toBe("error");
   });
 
+  /** window and document stubs whose listeners the test fires by hand. */
+  function stubKeyboard() {
+    const listeners = new Map<string, () => void>();
+    const target = { addEventListener: (type: string, fn: () => void) => listeners.set(type, fn) };
+    const doc = { ...target, visibilityState: "visible" };
+    vi.stubGlobal("window", target);
+    vi.stubGlobal("document", doc);
+    return { listeners, doc };
+  }
+
+  async function losingTheKeyboardDuringCapture(lose: (k: ReturnType<typeof stubKeyboard>) => void) {
+    const keyboard = stubKeyboard();
+    try {
+      const slow = slowMic();
+      let finish: (() => void) | null = null;
+      const { socket } = wire({
+        openMic: slow.open,
+        capture: () => new Promise((done) => (finish = () => done({ id: null, why: "late" }) as never)),
+      });
+      await startVoice();
+      const pressed = useVoice.getState().press();
+      await vi.waitFor(() => expect(finish).not.toBeNull());
+
+      lose(keyboard);
+      finish!();
+      await pressed;
+
+      expect(slow.opens()).toBe(0);
+      expect(socket.frames()).toEqual([]);
+      expect(useVoice.getState().phase).not.toBe("listening");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  }
+
+  it("a blur during captureOf makes the press stale: no start, no microphone", async () => {
+    await losingTheKeyboardDuringCapture((k) => k.listeners.get("blur")?.());
+  });
+
+  it("the window going hidden during captureOf makes the press stale", async () => {
+    await losingTheKeyboardDuringCapture((k) => {
+      k.doc.visibilityState = "hidden";
+      k.listeners.get("visibilitychange")?.();
+    });
+  });
+
+  it("a blur when idle sends no frame and leaves the phase and reason", async () => {
+    const keyboard = stubKeyboard();
+    try {
+      const { socket } = wire();
+      await startVoice();
+      const before = useVoice.getState();
+      keyboard.listeners.get("blur")?.();
+      expect(socket.frames()).toEqual([]);
+      expect(useVoice.getState().phase).toBe(before.phase);
+      expect(useVoice.getState().reason).toBe(before.reason);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("a blur while listening acts as the key coming up", async () => {
     const listeners = new Map<string, () => void>();
     const target = { addEventListener: (type: string, fn: () => void) => listeners.set(type, fn) };

@@ -73,3 +73,15 @@ resampling and the real event handling against fakes, and `vitest` never needs a
   needs a device and a WebView2 permission; both are the act 2 rehearsal's, and the act 2 command
   remains on a key in the demo script as the plan requires.
 - The OS-global shortcut is the one item of c32 deferred, named above with what it takes.
+
+## Amendment, 2026-10-11 (voice full r2 robustness-4, robustness-5)
+
+- **Losing the keyboard ends a pending press.** A window `blur` or a document going `hidden` now
+  calls `release()` whatever the phase. While listening that is what it was: `stop` is sent and
+  the phase is `thinking`. While a press is still awaiting its config check, publish, socket or
+  capture, `release()` bumps `pressToken`, so that press never sends `start`, never opens the
+  microphone and never sets `listening`; before, the phase was not yet `listening`, the event did
+  nothing, and the microphone opened with the key already up and stayed open to the 131 s
+  ceiling. With nothing pending and nothing listening it changes nothing. The `athena:ptt` chord
+  is untouched: it reacts only to an event that fires during a press, not to a window that was
+  already hidden when the press began, and its release arrives through the chord's own event.
