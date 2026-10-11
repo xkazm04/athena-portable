@@ -6,10 +6,14 @@
  * what the test asserts is what the shell would do with them — where the transcript lands, which
  * calls run on the page and which are refused, when the player drops a generation.
  */
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { BridgeTool } from "@/lib/bridge";
+import { setHandsForTests } from "@/lib/hands";
+import { derivedIdOf } from "@/lib/manifest";
 import type { Player, SocketLike } from "@/lib/voice";
-import { useRun } from "@/stores/run";
+import { snapshotOf, useRun } from "@/stores/run";
+import type { TabTools } from "@/stores/tools";
 
 import {
   applyVoiceConfig,
@@ -435,5 +439,114 @@ describe("the capture (ADR 0066)", () => {
     await useVoice.getState().say("hi");
 
     expect(socket.frames().find((f) => f.type === "text")).not.toHaveProperty("capture_id");
+  });
+});
+
+describe("one snapshot per turn (ADR 0067)", () => {
+  const ORIGIN = "https://sx.dtest";
+  const DERIVED = derivedIdOf(ORIGIN) as string;
+  const tool = (name: string): BridgeTool => ({
+    name,
+    title: name,
+    description: `${name}.`,
+    inputSchema: {},
+    annotations: null,
+    athena: { reversible: true, side_effects: "none" },
+  });
+  const entry = (appId: string | null, tools: BridgeTool[]): TabTools => ({
+    tabId: 1,
+    url: `${ORIGIN}/`,
+    tools,
+    transport: tools.length ? "webmcp-native" : null,
+    appId,
+    appVersion: null,
+    problem: null,
+    asking: false,
+  });
+  const NO_ROWS = { records: {}, known: [] as string[], loaded: true, problem: null };
+  const tabs = [{ id: 1, label: "page-1", url: `${ORIGIN}/`, title: "", loading: false, focused: true }] as never;
+  const manifests: Array<{ app_id: string }> = [];
+
+  beforeEach(() => {
+    manifests.length = 0;
+    setHandsForTests([tool("page_read")]);
+    vi.stubGlobal("fetch", async (url: string, init: RequestInit = {}) => {
+      if (String(url).endsWith("/manifest")) manifests.push(JSON.parse(String(init.body)));
+      return new Response("{}", { status: 200, headers: { "content-type": "application/json" } });
+    });
+  });
+  afterEach(() => {
+    setHandsForTests([]);
+    vi.unstubAllGlobals();
+  });
+
+  const nothing = { id: null, why: null };
+
+  /** The tab as the store would read it; `refresh` is what lands between the manifest and the frame. */
+  function world(initial: Record<number, TabTools>, refresh?: (state: { byTab: Record<number, TabTools> }) => void) {
+    const state = { byTab: initial };
+    const routed: Array<readonly BridgeTool[] | undefined> = [];
+    const harness = wire({
+      snapshot: () => snapshotOf(NO_ROWS, tabs, state.byTab),
+      capture: async () => (refresh?.(state), nothing),
+      call: async (_tab, _name, _params, tools) => {
+        routed.push(tools);
+        return { ok: true, output: "ran" };
+      },
+    });
+    return { ...harness, state, routed };
+  }
+
+  it("say: a refresh that blanks the entry after the manifest leaves the frame naming the manifest's app", async () => {
+    const w = world({ 1: entry("ledger", [tool("list")]) }, (s) => void (s.byTab = { 1: entry(null, []) }));
+    await startVoice();
+
+    await useVoice.getState().say("hi");
+
+    expect(manifests[0].app_id).toBe("ledger");
+    expect(w.socket.frames().find((f) => f.type === "text")).toMatchObject({ gated_origins: ["host:ledger"] });
+  });
+
+  it("press: a tab unread at the manifest whose list arrives before the frame stays the derived app", async () => {
+    const w = world({}, (s) => void (s.byTab = { 1: entry("ledger", [tool("list")]) }));
+    await startVoice();
+
+    await useVoice.getState().press();
+
+    expect(manifests[0].app_id).toBe(DERIVED);
+    expect(w.socket.frames().find((f) => f.type === "start")).toMatchObject({ gated_origins: [`host:${DERIVED}`] });
+  });
+
+  it("a later frame carries no lists, and the next utterance takes a new snapshot", async () => {
+    const w = world({ 1: entry("ledger", [tool("list")]) });
+    await startVoice();
+    await useVoice.getState().say("one");
+    await w.socket.emit(
+      { kind: "tool.call", call_id: "c1", name: "host.ledger.list", params: {}, origin: "host:ledgerbox", tier: 1 },
+      finished("Reading."),
+    );
+    expect(w.socket.frames().find((f) => f.type === "tool_result")).not.toHaveProperty("gated_origins");
+
+    w.state.byTab = { 1: entry("other", [tool("list")]) };
+    await useVoice.getState().say("two");
+
+    const texts = w.socket.frames().filter((f) => f.type === "text");
+    expect(texts.map((f) => f.gated_origins)).toEqual([["host:ledger"], ["host:other"]]);
+    expect(manifests.map((m) => m.app_id)).toEqual(["ledger", "other"]);
+  });
+
+  it("routes a released call by the list the gate classified, not the live one (robustness-5)", async () => {
+    const own = tool("page_click");
+    const w = world({ 1: entry("ledger", [own]) });
+    await startVoice();
+    await useVoice.getState().say("click it");
+    w.state.byTab = { 1: entry(null, []) };
+
+    await w.socket.emit(
+      { kind: "tool.call", call_id: "c1", name: "host.ledgerbox.page_click", params: {}, origin: "host:ledgerbox", tier: 1 },
+      finished("Clicking."),
+    );
+
+    expect(w.routed).toEqual([[own]]);
   });
 });

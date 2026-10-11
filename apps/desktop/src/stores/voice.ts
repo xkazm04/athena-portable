@@ -29,6 +29,7 @@
 import { create } from "zustand";
 
 import { DaemonApi, type ExecuteRow } from "@/lib/api";
+import type { BridgeTool } from "@/lib/bridge";
 import { VoiceSetupApi, availabilityOf, refusalText } from "@/lib/voice-setup";
 import { callOnPage, takeCapture, type Taken } from "@/lib/hands";
 import type { ChannelEvent, DecisionRequested, ToolCall } from "@/lib/events";
@@ -45,13 +46,16 @@ import {
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useOrigins } from "@/stores/origins";
 import {
-  NOTHING_GATED,
   captureOf,
   disabledOriginsOf,
   gatedListsOf,
+  routingTools,
+  snapshotFrom,
+  snapshotOf,
   useRun,
   withCaptureWhy,
   type GatedLists,
+  type Snapshot,
 } from "@/stores/run";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
@@ -84,7 +88,11 @@ export interface VoiceDeps {
     tabId: number,
     name: string,
     input: Record<string, unknown>,
+    /** The tool list the turn's snapshot holds for this tab (ADR 0067); live when omitted. */
+    tools?: readonly BridgeTool[],
   ) => Promise<{ ok: boolean; output: string; error?: string | null; tier?: number }>;
+  /** Everything one turn reads about the focused tab, read once (ADR 0067); see `RunDeps`. */
+  snapshot?: () => Snapshot;
   /**
    * The focused page's manifest body, or `null` when there is nothing to register.
    *
@@ -178,8 +186,9 @@ const LIVE: VoiceDeps = {
   gated: () => gatedListsOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab),
   capture: takeCapture,
   // A hand the page did not register goes to the shell's `hands_call`; the rest to the page.
-  call: (tabId, name, input) =>
-    callOnPage(tabId, name, input, useTools.getState().byTab[tabId]?.tools ?? []),
+  call: (tabId, name, input, tools) =>
+    callOnPage(tabId, name, input, tools ?? useTools.getState().byTab[tabId]?.tools ?? []),
+  snapshot: () => snapshotOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab),
   manifest: () => {
     const { tabs } = useTabs.getState();
     const tab = tabs.find((t) => t.focused) ?? tabs[0];
@@ -215,6 +224,8 @@ export const useVoice = create<VoiceState>((set, get) => {
   /** Host calls of the current turn with no result yet, in the order they were proposed. */
   let proposed = new Map<string, ToolCall>();
   let sampleRate = 16_000;
+  /** The snapshot of the turn in progress: what the daemon's gate was told (ADR 0067). */
+  let snap: Snapshot | null = null;
 
   const runPush = (entry: { id: string; kind: "user" | "assistant" | "tool"; text: string }) =>
     useRun.setState((s) => ({ transcript: [...s.transcript, entry] }));
@@ -310,7 +321,12 @@ export const useVoice = create<VoiceState>((set, get) => {
       answer = { ok: false, output: "", error: `foreign_origin: ${row.origin} is not the focused page` };
     } else {
       try {
-        answer = await deps.call(focused.tabId, bareName(row.name), row.params);
+        answer = await deps.call(
+          focused.tabId,
+          bareName(row.name),
+          row.params,
+          routingTools(snap, focused.tabId),
+        );
       } catch (error) {
         answer = { ok: false, output: "", error: error instanceof Error ? error.message : String(error) };
       }
@@ -340,8 +356,8 @@ export const useVoice = create<VoiceState>((set, get) => {
    * written. A refusal is reported and the utterance is not sent — an unregistered page cannot
    * answer anything, and a spoken sentence that vanishes is worse than one that says why.
    */
-  async function publish(): Promise<boolean> {
-    const body = deps.manifest?.() ?? null;
+  async function publish(taking: Snapshot): Promise<boolean> {
+    const body = taking.manifest;
     if (body === null) return true;
     const found = deps.endpoint();
     if (!found) {
@@ -399,12 +415,15 @@ export const useVoice = create<VoiceState>((set, get) => {
       if (!get().available) await checkConfig();
       const state = get();
       if (!state.available || state.phase === "listening") return;
-      const focused = deps.focused();
+      // One read of the tab per turn, for the manifest, the frame's lists and the routing (ADR 0067).
+      const taking = snapshotFrom(deps);
+      const focused = taking.focused;
       if (!focused) {
         fail("open a page first — Athena works inside the app you are looking at");
         return;
       }
-      if (!(await publish())) return;
+      snap = taking;
+      if (!(await publish(taking))) return;
       const live = await ensureSocket();
       if (!live) return;
       if (state.generation !== null) player?.drop(state.generation);
@@ -416,8 +435,8 @@ export const useVoice = create<VoiceState>((set, get) => {
         origin: focused.origin,
         ...(taken.id ? { capture_id: taken.id } : {}),
         host_state: deps.hostState(),
-        disabled_origins: deps.disabledOrigins?.() ?? [],
-        ...(deps.gated?.() ?? NOTHING_GATED),
+        disabled_origins: taking.disabledOrigins,
+        ...taking.gated,
       });
       if (deps.openMic === null) {
         fail("this webview offers no microphone");
@@ -440,12 +459,14 @@ export const useVoice = create<VoiceState>((set, get) => {
 
     async say(text) {
       if (!get().available) return;
-      const focused = deps.focused();
+      const taking = snapshotFrom(deps);
+      const focused = taking.focused;
       if (!focused) {
         fail("open a page first — Athena works inside the app you are looking at");
         return;
       }
-      if (!(await publish())) return;
+      snap = taking;
+      if (!(await publish(taking))) return;
       const live = await ensureSocket();
       if (!live) return;
       if (get().generation !== null) player?.drop(get().generation as number);
@@ -458,8 +479,8 @@ export const useVoice = create<VoiceState>((set, get) => {
         origin: focused.origin,
         ...(taken.id ? { capture_id: taken.id } : {}),
         host_state: deps.hostState(),
-        disabled_origins: deps.disabledOrigins?.() ?? [],
-        ...(deps.gated?.() ?? NOTHING_GATED),
+        disabled_origins: taking.disabledOrigins,
+        ...taking.gated,
       });
     },
 

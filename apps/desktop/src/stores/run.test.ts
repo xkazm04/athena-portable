@@ -13,7 +13,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DaemonApi } from "@/lib/api";
 
+import type { BridgeTool } from "@/lib/bridge";
+import { setHandsForTests } from "@/lib/hands";
+import { catalogIdOf, derivedIdOf } from "@/lib/manifest";
 import type { OriginRow } from "@/lib/store";
+import type { TabTools } from "@/stores/tools";
 
 import {
   MAX_CONTINUATIONS,
@@ -23,6 +27,7 @@ import {
   gatedListsOf,
   mergeCards,
   resetRunForTests,
+  snapshotOf,
   setRunDeps,
   startRun,
   useRun,
@@ -89,6 +94,7 @@ function fakeDaemon(script: Script = {}) {
       if (typeof answer === "function") return (answer as () => Promise<Response>)();
       return jsonResponse(answer);
     }
+    if (path === "/manifest") return jsonResponse({ ok: true });
     if (path === "/run") {
       const next = script.runs?.[turn];
       turn += 1;
@@ -1224,5 +1230,156 @@ describe("the capture", () => {
 
     expect(useRun.getState().cards[0].capture_id).toBe(taken.id);
     expect(useRun.getState().captureWhy).toEqual({});
+  });
+});
+
+// -- one snapshot per exchange (ADR 0067) ---------------------------------------------------------
+
+describe("one snapshot per exchange", () => {
+  const ORIGIN = "https://sx.dtest";
+  const DERIVED = derivedIdOf(ORIGIN) as string;
+  const tool = (name: string): BridgeTool => ({
+    name,
+    title: name,
+    description: `${name}.`,
+    inputSchema: {},
+    annotations: null,
+    athena: { reversible: true, side_effects: "none" },
+  });
+  const entry = (appId: string | null, tools: BridgeTool[]): TabTools => ({
+    tabId: 1,
+    url: `${ORIGIN}/`,
+    tools,
+    transport: tools.length ? "webmcp-native" : null,
+    appId,
+    appVersion: null,
+    problem: null,
+    asking: false,
+  });
+  const NO_ROWS = { records: {}, known: [] as string[], loaded: true, problem: null };
+  const tabs = [{ id: 1, label: "page-1", url: `${ORIGIN}/`, title: "", loading: false, focused: true }] as never;
+
+  /** A world the test can change between the manifest and the request, read the way LIVE reads it. */
+  function world(initial: Record<number, TabTools>) {
+    const state = { byTab: initial };
+    const calls: Array<{ name: string; tools: readonly BridgeTool[] | undefined }> = [];
+    const daemon = fakeDaemon({
+      runs: [[hostCall("c1", "host.ledger.list"), finished()], [finished()]],
+    });
+    const deps: RunDeps = {
+      ...wire(daemon, fakePage()),
+      snapshot: () => snapshotOf(NO_ROWS, tabs, state.byTab),
+      call: async (_tab, name, _input, tools) => {
+        calls.push({ name, tools });
+        await after(); // a continuation lies between this answer and the next request
+        return { ok: true, output: "ran" };
+      },
+    };
+    let after: () => Promise<void> | void = () => undefined;
+    return {
+      state,
+      daemon,
+      calls,
+      deps,
+      afterCall: (fn: () => void) => void (after = fn),
+      manifestApp: () => (daemon.seen.find((s) => s.path === "/manifest")?.body as { app_id: string }).app_id,
+    };
+  }
+
+  beforeEach(() => setHandsForTests([tool("page_read")]));
+  afterEach(() => setHandsForTests([]));
+
+  it("a refresh that blanks the entry after the manifest leaves the request naming the manifest's app", async () => {
+    const w = world({ 1: entry("ledger", [tool("list")]) });
+    setRunDeps({ ...w.deps, capture: async () => (w.state.byTab = { 1: entry(null, []) }, { id: null, why: null }) });
+
+    await useRun.getState().send("go");
+
+    expect(w.manifestApp()).toBe("ledger");
+    expect(w.daemon.runs()).toHaveLength(2);
+    for (const run of w.daemon.runs()) expect(run.body!.gated_origins).toEqual(["host:ledger"]);
+  });
+
+  it("a tab unread at the manifest whose list arrives before the request stays the derived app", async () => {
+    const w = world({});
+    setRunDeps({
+      ...w.deps,
+      capture: async () => ((w.state.byTab = { 1: entry("ledger", [tool("list")]) }), { id: null, why: null }),
+    });
+
+    await useRun.getState().send("go");
+
+    expect(w.manifestApp()).toBe(DERIVED);
+    for (const run of w.daemon.runs()) expect(run.body!.gated_origins).toEqual([`host:${DERIVED}`]);
+  });
+
+  it("a change across a continuation leaves the second request as the first", async () => {
+    const w = world({ 1: entry("ledger", [tool("list")]) });
+    w.afterCall(() => void (w.state.byTab = { 1: entry("other", [tool("pay")]) }));
+    setRunDeps(w.deps);
+
+    await useRun.getState().send("go");
+
+    expect(w.daemon.runs()).toHaveLength(2);
+    expect(w.daemon.seen.filter((s) => s.path === "/manifest")).toHaveLength(1);
+    for (const run of w.daemon.runs()) expect(run.body!.gated_origins).toEqual(["host:ledger"]);
+  });
+
+  it("the next exchange takes a new snapshot", async () => {
+    const w = world({ 1: entry("ledger", [tool("list")]) });
+    const daemon = fakeDaemon({ runs: [[finished()], [finished()]] });
+    const deps: RunDeps = { ...wire(daemon, fakePage()), snapshot: () => snapshotOf(NO_ROWS, tabs, w.state.byTab) };
+    setRunDeps(deps);
+
+    await useRun.getState().send("one");
+    w.state.byTab = { 1: entry("other", [tool("list")]) };
+    await useRun.getState().send("two");
+
+    expect(daemon.runs().map((r) => r.body!.gated_origins)).toEqual([["host:ledger"], ["host:other"]]);
+  });
+
+  it("routes a released call by the list the gate classified, not the live one (robustness-5)", async () => {
+    const own = tool("page_click");
+    const w = world({ 1: entry("ledger", [own]) });
+    setRunDeps({ ...w.deps, capture: async () => ((w.state.byTab = { 1: entry(null, []) }), { id: null, why: null }) });
+
+    await useRun.getState().send("go");
+
+    expect(w.calls).toHaveLength(1);
+    expect(w.calls[0].tools).toEqual([own]);
+  });
+
+  it("falls back to reading each part once when a surface wires no snapshot", async () => {
+    const daemon = fakeDaemon({ runs: [[hostCall("c1", "host.ledgerbox.read"), finished()], [finished()]] });
+    let reads = 0;
+    const deps = wire(daemon, fakePage());
+    setRunDeps({
+      ...deps,
+      manifest: () => ({ app_id: "ledgerbox", tools: [] }),
+      gated: () => ({ gated_origins: [`host:g${(reads += 1)}`], gated_tools: [] }),
+    });
+
+    await useRun.getState().send("go");
+
+    expect(reads).toBe(1);
+    for (const run of daemon.runs()) expect(run.body!.gated_origins).toEqual(["host:g1"]);
+  });
+
+  describe("the pure probe (robustness-1)", () => {
+    it("names the manifest's app on gated_origins whichever order the list moved in", () => {
+      const blank = { 1: entry(null, []) };
+      const read = { 1: entry("ledger", [tool("list")]) };
+      // The two reads taken apart, as the old code took them, disagree:
+      expect(catalogIdOf(ORIGIN, "ledger")).toBe("ledger");
+      expect(gatedListsOf(NO_ROWS, tabs, blank).gated_origins).toEqual([`host:${DERIVED}`]);
+      expect(gatedListsOf(NO_ROWS, tabs, read).gated_origins).toEqual(["host:ledger"]);
+      // Taken together, they cannot:
+      for (const byTab of [blank, read]) {
+        const snap = snapshotOf(NO_ROWS, tabs, byTab);
+        const app = (snap.manifest as { app_id: string }).app_id;
+        expect(snap.gated.gated_origins).toEqual([`host:${app}`]);
+        expect(snap.focused?.appId).toBe(app);
+      }
+    });
   });
 });

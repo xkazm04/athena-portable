@@ -24,6 +24,7 @@
 import { create } from "zustand";
 
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
+import type { BridgeTool } from "@/lib/bridge";
 import { callOnPage, takeCapture, type Taken } from "@/lib/hands";
 import type { Wire } from "@/lib/ipc";
 import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
@@ -121,7 +122,15 @@ export interface RunDeps {
     tabId: number,
     name: string,
     input: Record<string, unknown>,
+    /** The tool list the exchange's snapshot holds for this tab (ADR 0067); live when omitted. */
+    tools?: readonly BridgeTool[],
   ) => Promise<{ ok: boolean; output: string; error?: string | null; tier?: number }>;
+  /**
+   * Everything one exchange reads about the focused tab, read once (ADR 0067). Optional: without
+   * it the loop reads `focused`, `manifest`, `disabledOrigins` and `gated` once, at the start of
+   * the exchange, which is the same single read.
+   */
+  snapshot?: () => Snapshot;
   /**
    * The focused page's manifest body, or `null` when there is nothing to register.
    *
@@ -249,8 +258,9 @@ const LIVE: RunDeps = {
     };
   },
   // A hand the page did not register goes to the shell's `hands_call`; the rest to the page.
-  call: (tabId, name, input) =>
-    callOnPage(tabId, name, input, useTools.getState().byTab[tabId]?.tools ?? []),
+  call: (tabId, name, input, tools) =>
+    callOnPage(tabId, name, input, tools ?? useTools.getState().byTab[tabId]?.tools ?? []),
+  snapshot: () => snapshotOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab),
   manifest: () => {
     const tab = focusedTab();
     if (!tab) return null;
@@ -317,6 +327,83 @@ export interface GatedLists {
   gated_origins: string[];
   /** Registry names (`host.<app_id>.<tool>`) the user pinned `GATED` on an enabled row. */
   gated_tools: string[];
+}
+
+/**
+ * Everything one exchange reads about the focused tab, taken at one moment (ADR 0067).
+ *
+ * The manifest, the gate's lists and the routing of a released call all come from here, so a
+ * refresh of the tab's tool list between them cannot make the daemon's session and the request
+ * disagree about which app is first sight (robustness-1), nor change which executor runs a call
+ * the gate classified (robustness-5).
+ */
+export interface Snapshot {
+  focused: { tabId: number; origin: string; appId: string | null } | null;
+  manifest: Record<string, unknown> | null;
+  disabledOrigins: string[];
+  gated: GatedLists;
+  /** The tab's tool list the manifest was built from; `null` where the source cannot say. */
+  tools: readonly BridgeTool[] | null;
+}
+
+/** The pure read behind {@link Snapshot}: the focused tab is the one flagged, else the first. */
+export function snapshotOf(
+  origins: Pick<OriginsState, "records" | "known" | "loaded" | "problem">,
+  tabs: readonly Tab[],
+  byTab: Readonly<Record<number, TabTools>>,
+): Snapshot {
+  const tab = tabs.find((t) => t.focused) ?? tabs[0];
+  const lists = {
+    disabledOrigins: disabledOriginsOf(origins.records, tabs, byTab),
+    gated: gatedListsOf(origins, tabs, byTab),
+  };
+  if (!tab) return { focused: null, manifest: null, tools: null, ...lists };
+  const origin = originOf(tab.url);
+  const found = byTab[tab.id];
+  return {
+    focused: { tabId: tab.id, origin, appId: catalogIdOf(origin, found?.appId ?? null) },
+    manifest: manifestBodyOf({
+      origin,
+      appId: found?.appId ?? null,
+      appVersion: found?.appVersion ?? null,
+      transport: found?.transport ?? null,
+      tools: found?.tools ?? [],
+    }),
+    tools: found?.tools ?? [],
+    ...lists,
+  };
+}
+
+/** The readers a surface wires; {@link snapshotFrom} calls each of them once. */
+export interface SnapshotSource {
+  snapshot?: () => Snapshot;
+  focused: RunDeps["focused"];
+  manifest?: () => Record<string, unknown> | null;
+  disabledOrigins?: () => string[];
+  gated?: () => GatedLists;
+}
+
+/** One snapshot from a surface: its own, or one read of each of its parts. */
+export function snapshotFrom(source: SnapshotSource): Snapshot {
+  if (source.snapshot) return source.snapshot();
+  return {
+    focused: source.focused(),
+    manifest: source.manifest?.() ?? null,
+    disabledOrigins: source.disabledOrigins?.() ?? [],
+    gated: source.gated?.() ?? NOTHING_GATED,
+    tools: null,
+  };
+}
+
+/**
+ * The tool list a released call is routed by: the snapshot's, when the call lands on the tab the
+ * snapshot was taken of. Another tab was never classified, so it is read live.
+ */
+export function routingTools(
+  snap: Pick<Snapshot, "focused" | "tools"> | null,
+  tabId: number,
+): readonly BridgeTool[] | undefined {
+  return snap?.tools && snap.focused?.tabId === tabId ? snap.tools : undefined;
 }
 
 /**
@@ -546,7 +633,12 @@ export const useRun = create<RunState>((set, get) => {
     set({ phase: "acting" });
     let answer: { ok: boolean; output: string; error?: string | null; tier?: number };
     try {
-      answer = await deps.call(focused.tabId, bareName(row.name), row.params);
+      answer = await deps.call(
+        focused.tabId,
+        bareName(row.name),
+        row.params,
+        routingTools(snap, focused.tabId),
+      );
     } catch (error) {
       answer = { ok: false, output: "", error: error instanceof Error ? error.message : String(error) };
     }
@@ -572,6 +664,9 @@ export const useRun = create<RunState>((set, get) => {
    * `turn.finished` is what the page runs (ADR 0010).
    */
   let proposed = new Map<string, ExecuteRow>();
+
+  /** The snapshot of the exchange in progress: what the daemon's gate was told (ADR 0067). */
+  let snap: Snapshot | null = null;
 
   async function apply(event: ChannelEvent): Promise<void> {
     switch (event.kind) {
@@ -622,9 +717,9 @@ export const useRun = create<RunState>((set, get) => {
   }
 
   /** Stream one turn. Returns `false` when the request itself was refused. */
-  async function consume(message: string): Promise<boolean> {
+  async function consume(message: string, taking: Snapshot): Promise<boolean> {
     const api = deps.api();
-    const focused = deps.focused();
+    const focused = taking.focused;
     if (!api || !focused) {
       fail(
         !api
@@ -646,8 +741,8 @@ export const useRun = create<RunState>((set, get) => {
         ...(taken.id ? { capture_id: taken.id } : {}),
         host_state: deps.hostState(),
         tool_results: carried,
-        disabled_origins: deps.disabledOrigins?.() ?? [],
-        ...(deps.gated?.() ?? NOTHING_GATED),
+        disabled_origins: taking.disabledOrigins,
+        ...taking.gated,
         ...activeProject(get().project),
       })) {
         await apply(event);
@@ -679,8 +774,8 @@ export const useRun = create<RunState>((set, get) => {
    * A page with nothing to register — no `athena:app` id, or no tools — is not an error here.
    * The turn goes out and the daemon says what it thinks of it, in its own words.
    */
-  async function publish(): Promise<boolean> {
-    const body = deps.manifest?.() ?? null;
+  async function publish(taking: Snapshot): Promise<boolean> {
+    const body = taking.manifest;
     if (body === null) return true;
     const api = deps.api();
     if (!api) {
@@ -697,10 +792,14 @@ export const useRun = create<RunState>((set, get) => {
   }
 
   async function exchange(first: string): Promise<void> {
-    if (!(await publish())) return;
+    // One read of the tab per exchange; the manifest, every request's lists and the routing of the
+    // calls it releases all come from it (ADR 0067).
+    const taking = snapshotFrom(deps);
+    snap = taking;
+    if (!(await publish(taking))) return;
     let message = first;
     for (let step = 0; step <= MAX_CONTINUATIONS; step += 1) {
-      if (!(await consume(message))) return;
+      if (!(await consume(message, taking))) return;
       if (outstanding.length === 0) {
         set({ phase: "idle" });
         return;
@@ -787,17 +886,13 @@ export const useRun = create<RunState>((set, get) => {
       // A decision restored from a previous daemon process has no session behind it until the page
       // has been registered (UAT r2: it was refused as "a different app" on the right tab). Register
       // the focused page first, exactly as a turn does; a failure here is the answer's to report.
-      const body = deps.manifest?.() ?? null;
-      if (body !== null) await api.manifest(body).catch(() => undefined);
+      // The republish, the resolve and the routing of the rows it releases read the tab once.
+      const taking = snapshotFrom(deps);
+      snap = taking;
+      if (taking.manifest !== null) await api.manifest(taking.manifest).catch(() => undefined);
       let resolution;
       try {
-        resolution = await api.resolve(
-          id,
-          choice,
-          deps.focused()?.origin,
-          undefined,
-          deps.disabledOrigins?.() ?? [],
-        );
+        resolution = await api.resolve(id, choice, taking.focused?.origin, undefined, taking.disabledOrigins);
       } catch (error) {
         await refuse(reasonOf(error));
         return;
