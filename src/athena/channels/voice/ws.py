@@ -34,6 +34,7 @@ from typing import Any, Literal
 
 __all__ = [
     "GUID",
+    "MAX_FRAGMENTS",
     "MAX_FRAME_BYTES",
     "PROTOCOL_PREFIX",
     "FrameTooLarge",
@@ -52,6 +53,10 @@ GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 #: The largest frame either side will read. Audio arrives in chunks of a few kilobytes and a
 #: channel event is well under one; anything near this is refused before it is decoded.
 MAX_FRAME_BYTES = 1_048_576
+
+#: The most data frames one message may be made of (the first frame and its continuations; control
+#: frames do not count). Empty continuations never move the byte ceiling, so this bounds them.
+MAX_FRAGMENTS = 1024
 
 #: The subprotocol a browser client carries the daemon token in: ``athena-token.<token>``.
 #: A page's ``WebSocket`` cannot set a header, and a query string lands in URLs and histories;
@@ -142,6 +147,7 @@ class WebSocket:
         stream. A protocol violation raises; the caller closes with 1002.
         """
         parts: list[bytes] = []
+        total = 0
         first_opcode: int | None = None
         while True:
             fin, opcode, payload = self._read_frame()
@@ -164,8 +170,11 @@ class WebSocket:
             else:
                 raise WebSocketError(f"unknown opcode {opcode:#x}")
             parts.append(payload)
-            if sum(len(p) for p in parts) > MAX_FRAME_BYTES:
+            total += len(payload)
+            if total > MAX_FRAME_BYTES:
                 raise FrameTooLarge("message exceeds MAX_FRAME_BYTES")
+            if len(parts) > MAX_FRAGMENTS:
+                raise FrameTooLarge("message exceeds MAX_FRAGMENTS frames")
             if fin:
                 data = b"".join(parts)
                 if first_opcode == OP_TEXT:

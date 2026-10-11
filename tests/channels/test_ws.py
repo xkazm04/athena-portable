@@ -8,7 +8,9 @@ import struct
 import pytest
 
 from athena.channels.voice.ws import (
+    MAX_FRAGMENTS,
     MAX_FRAME_BYTES,
+    FrameTooLarge,
     Message,
     WebSocket,
     WebSocketError,
@@ -123,3 +125,45 @@ def test_sending_on_a_closed_socket_raises_unless_it_is_the_close_itself() -> No
     with pytest.raises(WebSocketError, match="closed"):
         client.send_text("late")
     client.close()  # idempotent
+
+
+def _fragmented(count: int, payload: bytes = b"") -> io.BytesIO:
+    """One text message of ``count`` unmasked data frames, each carrying ``payload``."""
+    buffer = io.BytesIO()
+    for index in range(count):
+        opcode = 0x01 if index == 0 else 0x00
+        fin = 0x80 if index == count - 1 else 0x00
+        buffer.write(bytes([fin | opcode, len(payload)]) + payload)
+    buffer.seek(0)
+    return buffer
+
+
+def test_a_message_of_exactly_max_fragments_frames_is_accepted() -> None:
+    got = WebSocket(_fragmented(MAX_FRAGMENTS, b"a"), io.BytesIO(), masked=True).recv()
+    assert got is not None and got.text == "a" * MAX_FRAGMENTS
+
+
+def test_a_message_of_one_frame_more_than_max_fragments_is_refused() -> None:
+    with pytest.raises(FrameTooLarge):
+        WebSocket(_fragmented(MAX_FRAGMENTS + 1), io.BytesIO(), masked=True).recv()
+
+
+def test_control_frames_between_fragments_do_not_count_toward_max_fragments() -> None:
+    buffer = io.BytesIO()
+    buffer.write(bytes([0x01, 0]))
+    for _ in range(MAX_FRAGMENTS):
+        buffer.write(bytes([0x8A, 0]))  # pong
+    buffer.write(bytes([0x80, 0]))
+    buffer.seek(0)
+    got = WebSocket(buffer, io.BytesIO(), masked=True).recv()
+    assert got is not None and got.text == ""
+
+
+def test_the_byte_ceiling_still_raises_across_fragments() -> None:
+    buffer = io.BytesIO()
+    half = MAX_FRAME_BYTES // 2 + 1
+    buffer.write(bytes([0x02, 0x7F]) + struct.pack("!Q", half) + b"x" * half)
+    buffer.write(bytes([0x80, 0x7F]) + struct.pack("!Q", half) + b"x" * half)
+    buffer.seek(0)
+    with pytest.raises(FrameTooLarge):
+        WebSocket(buffer, io.BytesIO(), masked=True).recv()
