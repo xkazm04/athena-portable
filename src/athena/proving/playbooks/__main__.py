@@ -7,6 +7,7 @@
         [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write]
     uv run python -m athena.proving.playbooks rescore <id> <run>/report.json
     uv run python -m athena.proving.playbooks evidence <id>|--all [--dry] [--verify]
+    uv run python -m athena.proving.playbooks rank [--check]
 
 ``bench`` runs a real Athena on the user's own ``claude`` CLI (no key needed) and writes the full
 report under ``proving-runs/<ts>/playbook-<id>/`` (gitignored) and the summary into the playbook's
@@ -19,6 +20,9 @@ runs no tool; ``--verify`` reports each index as current, stale, missing or unre
 ``bench.json`` or ``evidence.json`` that is not a JSON object) against its bench.
 Exit 0 when every step ran (or, with ``--verify``, every benched playbook is current), 1 when one
 did not, 2 when a playbook could not be loaded or has no bench to film.
+
+``rank`` writes ``playbooks/ranking.json`` by the method of ADR 0056 (:mod:`.rank`), from the
+committed files alone. ``--check`` writes nothing and exits 1 when the file differs.
 """
 
 from __future__ import annotations
@@ -46,6 +50,7 @@ from athena.proving.playbooks.evidence import (
     verify,
 )
 from athena.proving.playbooks.page import SimulatedPortals
+from athena.proving.playbooks.rank import run_rank
 from athena.proving.playbooks.spec import PLAYBOOKS_DIRNAME, PlaybookError, load_all, load_playbook
 from athena.proving.report import RUNS_DIRNAME, new_run_dir
 
@@ -75,6 +80,8 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument(
         "--verify", action="store_true", help="current, stale, missing or unreadable, re-hashed"
     )
+    k = verbs.add_parser("rank", help="rank every playbook by ADR 0056")
+    k.add_argument("--check", action="store_true", help="exit 1 if ranking.json would change")
     return parser
 
 
@@ -146,6 +153,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 1 if cut else 0
     if args.verb == "evidence":
         return evidence(args)
+    if args.verb == "rank":
+        return run_rank(Path(args.dir), check=args.check)
     try:
         book = load_playbook(Path(args.dir) / args.playbook)
     except PlaybookError as exc:
