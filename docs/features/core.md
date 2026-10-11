@@ -25,6 +25,10 @@ A contract changes only with a test.
   with `every_turn: true`. The fact's file records it as its last frontmatter key, so a rebuild
   keeps it in the tier. Each line enters the system prompt as one quoted line of at most 400
   characters, with fence markers redacted (ADR 0071).
+- **Every distilled memory is one quoted line**, in what she always carries and in memory that
+  matched the message alike: control and format characters dropped and whitespace folded first,
+  then fence markers redacted, then cut (400 and 500 characters) and quoted (ADR 0075). An
+  episode is fenced instead and is shown as it was said.
 - `core.recall` is also a tool she can call mid-turn; its answer is capped at 4,800 characters,
   three page reads' worth (ADR 0049).
 

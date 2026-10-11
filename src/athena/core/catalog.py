@@ -558,17 +558,26 @@ def _cut_sentence(cut: int) -> str:
     )
 
 
-def neutralise_text(text: str, cap: int = DESCRIPTION_CAP) -> str:
-    """One line of at most ``cap`` characters (ADR 0068).
+def canonical_line(text: str) -> str:
+    """``text`` as one uncut line: the first half of :func:`neutralise_text` (ADR 0068).
 
     Whitespace runs (carriage returns, newlines, U+2028 and U+2029 among them) become one space,
-    other control and format characters are dropped, and a cut ends in an ellipsis. Deterministic
-    and nonce-free, so the capabilities block's hash holds.
+    other control and format characters are dropped, and the ends are stripped. A caller that
+    validates the text, such as the fence sweep of a memory line (ADR 0075), runs on this first.
     """
     kept = "".join(
         c for c in _WHITESPACE.sub(" ", text) if unicodedata.category(c) not in ("Cc", "Cf")
     )
-    kept = kept.strip()
+    return kept.strip()
+
+
+def neutralise_text(text: str, cap: int = DESCRIPTION_CAP) -> str:
+    """One line of at most ``cap`` characters (ADR 0068).
+
+    :func:`canonical_line`, then a cut that ends in an ellipsis. Deterministic and nonce-free, so
+    the capabilities block's hash holds.
+    """
+    kept = canonical_line(text)
     return kept if len(kept) <= cap else kept[: cap - 1].rstrip() + "…"
 
 

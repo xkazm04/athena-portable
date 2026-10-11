@@ -134,3 +134,12 @@ the file keep the user's text as written.
 - `every_turn` is for facts only. Procedurals have no product writer, so none carries the key.
 - The keyword lane (`frame.memory`) is also unfenced and still renders raw excerpts. It is in the
   per-turn frame, not the static prompt, and this ADR does not change it.
+
+## Amended 2026-10-11
+
+By [0075](0075-every-distilled-memory-enters-a-prompt-as-one-quoted-neutralised-line.md) (council
+full r1 robustness-5). The three steps of decision 3 now run canonicalise first: control and
+format characters are dropped and whitespace is folded before `fence.neutralise` sweeps, then the
+cut and the quoting. In the order above, a marker split by U+200B passed the sweep and was made
+whole by the drop. `always_line` is now an alias of `recall.memory_line`, which also renders the
+keyword lane, so the last consequence above no longer holds.

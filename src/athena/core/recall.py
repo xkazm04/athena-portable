@@ -10,7 +10,8 @@ Three populations answer three different questions, so they are three blocks and
   (ADR 0071). The block is static and unfenced, so each memory renders as one capped, quoted line.
 - **keyword** — BM25 over FTS5 across the distilled memories the always tier did not already
   include. Query-driven, and empty when the query matches nothing. An empty lane is the answer;
-  padding it with whatever ranked next would be a lie the model cannot detect.
+  padding it with whatever ranked next would be a lie the model cannot detect. Its block is not
+  fenced either, so a fact or procedural here is the same one quoted line (ADR 0075).
 - **episodes** — the last :data:`EPISODE_WINDOW` turns, relevance first and then a recency tail,
   oldest first so the block reads as conversation. A relevant episode longer than an excerpt is
   shown as the excerpt-sized window around its match, not its first 500 bytes (ADR 0042).
@@ -39,7 +40,7 @@ from athena.contracts.harness import PromptBlock
 from athena.core import fence
 from athena.core.brain.store import ALWAYS_IMPORTANCE, Brain
 from athena.core.brain.text import EXCERPT_BYTES, excerpt, fts_match, fts_terms
-from athena.core.catalog import neutralise_text
+from athena.core.catalog import canonical_line, neutralise_text
 
 #: A fact or procedural at this importance or above is in every prompt, query or no query. It is
 #: the importance an approved ``every_turn`` fact is written and rebuilt at (ADR 0071).
@@ -50,6 +51,11 @@ ALWAYS_PROCEDURALS = 6
 #: Characters of one always-tier line, the ellipsis included (ADR 0071). Fourteen lines at this
 #: cap, every character one JSON must escape, still fit the block's 12,000-character budget.
 ALWAYS_LINE_CAP = 400
+
+#: Characters of one keyword-lane line, the ellipsis included (ADR 0075). A stored excerpt is at
+#: most this many bytes already, so the cap only bounds the line; six lines of it at worst still
+#: fit the frame's 12,000-character budget.
+KEYWORD_LINE_CAP = EXCERPT_BYTES
 
 #: The episode window is a budget, not a quota: relevant turns keep their slots and a recency
 #: tail fills whatever is left.
@@ -98,22 +104,40 @@ class Memory:
         }
 
     def render(self) -> str:
-        if self.lane == ALWAYS_BLOCK:
-            return f"- {always_line(self.excerpt)}"
+        """One line of a block. A distilled memory is quoted and neutralised in either lane
+        (ADR 0075); an episode renders as it is, because its block is fenced (ADR 0006).
+
+        It branches on ``kind`` and not on ``lane``: a whole recall's episodes ride in lane
+        ``keyword`` too, and a fence payload is never edited.
+        """
         marker = "[machine] " if self.machine else ""
+        if self.kind in DISTILLED_KINDS:
+            cap = ALWAYS_LINE_CAP if self.lane == ALWAYS_BLOCK else KEYWORD_LINE_CAP
+            return f"- {marker}{memory_line(self.excerpt, cap)}"
         return f"- {marker}{self.excerpt}"
 
 
-def always_line(text: str) -> str:
-    """One always-tier memory as it enters the system prompt (ADR 0071, after ADR 0068).
+def memory_line(text: str, cap: int = ALWAYS_LINE_CAP) -> str:
+    """One distilled memory as it enters an unfenced block (ADR 0075, after ADR 0071 and 0068).
 
-    The block is static and unfenced, and a fact the user approved can still carry words a page
-    shaped. So fence markers are redacted, the text is made one line of at most
-    :data:`ALWAYS_LINE_CAP` characters by :func:`~athena.core.catalog.neutralise_text`, and it is
-    written as a JSON string, which cannot start a line, a heading or an ``OP:`` line. No nonce,
-    so the block's hash moves only when the tier does.
+    Neither memory block is fenced, and a fact the user approved can still carry words a page
+    shaped. Three steps, in this order:
+
+    1. :func:`~athena.core.catalog.canonical_line` makes it one line: whitespace runs become one
+       space, control and format characters are dropped. This goes first, so a marker split by a
+       zero-width character is whole again before anything looks for it.
+    2. :func:`~athena.core.fence.neutralise` redacts every fence marker of the default label.
+    3. It is cut to ``cap`` characters with an ellipsis and written as a JSON string, which cannot
+       start a line, a heading or an ``OP:`` line.
+
+    No nonce, so a block's hash moves only when its memories do.
     """
-    return json.dumps(neutralise_text(fence.neutralise(text), ALWAYS_LINE_CAP), ensure_ascii=False)
+    swept = fence.neutralise(canonical_line(text))
+    return json.dumps(neutralise_text(swept, cap), ensure_ascii=False)
+
+
+#: The always tier's name for :func:`memory_line` (ADR 0071).
+always_line = memory_line
 
 
 @dataclass(frozen=True)
