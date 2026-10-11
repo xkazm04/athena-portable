@@ -10,14 +10,17 @@ and a card answered by voice through the same route as a button.
 from __future__ import annotations
 
 import json
+import threading
 import time
-from collections.abc import Sequence
+from collections.abc import Callable, Iterator, Sequence
 
 import pytest
 
+from athena.channels.voice import gateway as gateway_module
 from athena.channels.voice.backends import ScriptedBackend
 from athena.channels.voice.gateway import (
     MAX_PENDING_TURNS,
+    MAX_SESSIONS,
     VOICE_PATH,
     VoiceGateway,
     VoiceSession,
@@ -915,3 +918,176 @@ def test_a_result_after_the_timeout_is_dropped_and_nothing_is_kept(
     assert len(sessions) == 1
     assert sessions[0]._results == {}
     assert sessions[0]._expected == set()
+
+
+# -- one daemon admits at most MAX_SESSIONS voice sockets (ADR 0074, amended) ------------------
+
+
+def _gateway(voiced: Live) -> VoiceGateway:
+    gateway = voiced.daemon.sockets.get(VOICE_PATH)
+    assert isinstance(gateway, VoiceGateway)
+    return gateway
+
+
+def _until(what: str, predicate: Callable[[], bool], timeout: float = 10.0) -> None:
+    """Wait for a thread on the daemon side to get somewhere; a wait, never a timing claim."""
+    deadline = time.monotonic() + timeout
+    while not predicate():
+        if time.monotonic() > deadline:
+            raise AssertionError(f"never: {what}")
+        time.sleep(0.01)
+
+
+def _admitted(voiced: Live, count: int) -> None:
+    gateway = _gateway(voiced)
+    _until(f"{count} admitted (now {gateway.admitted})", lambda: gateway.admitted == count)
+
+
+def _served(monkeypatch: pytest.MonkeyPatch) -> list[VoiceSession]:
+    """Every session the gateway let in, in order: a refused socket never gets one."""
+    sessions: list[VoiceSession] = []
+    original = VoiceSession.serve
+
+    def serve(self: VoiceSession) -> None:
+        sessions.append(self)
+        original(self)
+
+    monkeypatch.setattr(VoiceSession, "serve", serve)
+    return sessions
+
+
+def _assert_refused(refused: VoiceClient) -> None:
+    error = refused.until("turn.error")
+    assert error["reason"] == "validator_failed"
+    assert error["detail"] == (
+        f"at most {MAX_SESSIONS} voice sockets may be open at once; try again when one has closed"
+    )
+    assert refused.next() is None
+    assert refused.ws.close_code == 1013
+    assert refused.kinds() == ["turn.error"]
+
+
+def test_one_socket_past_the_cap_gets_one_error_and_1013_and_starts_no_thread(
+    voiced: Live, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sessions = _served(monkeypatch)
+    clients: list[VoiceClient] = []
+    try:
+        for n in range(MAX_SESSIONS):
+            clients.append(_fresh(voiced))
+            _admitted(voiced, n + 1)
+        refused = _fresh(voiced)
+        clients.append(refused)
+        _assert_refused(refused)
+        assert len(sessions) == MAX_SESSIONS
+        assert _gateway(voiced).admitted == MAX_SESSIONS
+        assert voiced.transport.requests == []
+    finally:
+        for client in clients:
+            client.close()
+    _admitted(voiced, 0)
+
+
+def test_a_closed_socket_holds_its_admission_until_its_running_turn_ends(
+    voiced: Live, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    entered, release = threading.Event(), threading.Event()
+
+    def held_turn(*args: object, **kwargs: object) -> Iterator[object]:
+        entered.set()
+        release.wait(timeout=30)
+        yield from ()
+
+    monkeypatch.setattr(gateway_module, "turn_events", held_turn)
+    sessions = _served(monkeypatch)
+    voiced.register()
+    client = _fresh(voiced)
+    _admitted(voiced, 1)
+    client.say("hold")
+    assert entered.wait(timeout=10)
+    others = [_fresh(voiced) for _ in range(MAX_SESSIONS - 1)]
+    try:
+        _admitted(voiced, MAX_SESSIONS)
+        client.close()
+        held = sessions[0]
+        _until("the held socket's reader returned", lambda: held._holders == 1)
+        refused = _fresh(voiced)
+        try:
+            _assert_refused(refused)
+        finally:
+            refused.close()
+        assert _gateway(voiced).admitted == MAX_SESSIONS
+
+        release.set()
+        _admitted(voiced, MAX_SESSIONS - 1)
+        admitted = _fresh(voiced)
+        try:
+            _admitted(voiced, MAX_SESSIONS)
+            admitted.say("let in")
+            assert admitted.until("voice.transcript", final=True)["text"] == "let in"
+            assert "turn.error" not in admitted.kinds()
+        finally:
+            admitted.close()
+    finally:
+        release.set()
+        for other in others:
+            other.close()
+    _admitted(voiced, 0)
+
+
+def test_a_reader_that_ends_1011_gives_its_admission_back(
+    voiced: Live, client: VoiceClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def broken(self: object, raw: str) -> None:
+        raise RuntimeError("a bug in one frame's handling")
+
+    monkeypatch.setattr(VoiceSession, "_control", broken)
+    _admitted(voiced, 1)
+    client.say("anything")
+    assert client.next() is None
+    assert client.ws.close_code == 1011
+    _admitted(voiced, 0)
+
+
+class _DyingSocket:
+    """A socket whose read raises what no handler expects: the reader thread dies by it."""
+
+    closed_with: tuple[int, str] | None = None
+
+    def recv(self) -> None:
+        raise RuntimeError("the reader dies")
+
+    def send_text(self, text: str) -> None:
+        pass
+
+    def close(self, code: int = 1000, reason: str = "") -> None:
+        self.closed_with = (code, reason)
+
+
+def test_a_reader_that_dies_by_exception_gives_the_admission_back_exactly_once(
+    voiced: Live,
+) -> None:
+    ended: list[int] = []
+    session = VoiceSession(
+        gateway=_gateway(voiced),
+        ws=_DyingSocket(),  # type: ignore[arg-type]
+        on_end=lambda: ended.append(1),
+    )
+    with pytest.raises(RuntimeError):
+        session.serve()
+    _until("the worker gave its hold back", lambda: session._holders == 0)
+    assert ended == [1]
+
+
+def test_fifty_sockets_opened_and_closed_in_a_row_leave_the_count_at_zero(
+    voiced: Live, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sessions = _served(monkeypatch)
+    gateway = _gateway(voiced)
+    for n in range(50):
+        client = _fresh(voiced)
+        _until(f"socket {n} admitted", lambda count=n + 1: len(sessions) == count)
+        client.close()
+        _until(f"socket {n} let go", lambda: gateway.admitted <= 0)
+        assert gateway.admitted == 0
+    assert all(session._holders == 0 for session in sessions)

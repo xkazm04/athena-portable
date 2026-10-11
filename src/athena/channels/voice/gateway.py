@@ -44,6 +44,7 @@ import struct
 import threading
 import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
+from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
@@ -92,6 +93,7 @@ __all__ = [
     "CONTINUE_MESSAGE",
     "MAX_CONTINUATIONS",
     "MAX_PENDING_TURNS",
+    "MAX_SESSIONS",
     "NOT_SET_UP",
     "RESULT_TIMEOUT_S",
     "VOICE_PATH",
@@ -119,6 +121,15 @@ CONTINUE_MESSAGE = "(the tools you called have answered; continue)"
 #: metered lane turn, so the client that queues them is the one that is refused (ADR 0074).
 MAX_PENDING_TURNS = 4
 
+#: How many voice sockets one daemon serves at once (ADR 0074, amended). The panel holds one, and
+#: briefly a second while it reconnects; a third is refused with ``turn.error`` and close 1013. A
+#: session counts until its reader has returned and its worker has finished the turn it was
+#: running, so a socket that closed mid-turn still counts while that turn bills.
+MAX_SESSIONS = 2
+
+#: The close code a refused socket gets: RFC 6455's "try again later".
+TRY_AGAIN_LATER = 1013
+
 
 #: What a ``start`` is refused with when no backend is set up and the studio gave no reason.
 NOT_SET_UP = "Athena's voice is not set up yet; open the voice studio."
@@ -136,6 +147,11 @@ class VoiceGateway:
     sentence in half or hands half an utterance to a different engine. An empty slot is a socket
     that is open and says why it cannot hear — ``turn.error`` with ``engine_error`` and the
     studio's reason — rather than no socket at all.
+
+    **The door counts** (ADR 0074, amended). At most :attr:`max_sessions` sessions hold an
+    admission at once, across every socket, so the turns one client can leave billing have a width
+    the daemon chose and not the client. A session gives its admission back when its reader has
+    returned and its worker has finished, never merely when its socket closes.
     """
 
     daemon: AthenaDaemon
@@ -148,9 +164,18 @@ class VoiceGateway:
     #: engine installed since the last look (by Personas, beside this daemon) is heard on the
     #: next press rather than after someone opens the studio.
     recheck: Callable[[], object] | None = None
+    max_sessions: int = MAX_SESSIONS
 
     def __post_init__(self) -> None:
         self._slot = threading.Lock()
+        self._admission = threading.Lock()
+        self._admitted = 0
+
+    @property
+    def admitted(self) -> int:
+        """How many sessions hold an admission now."""
+        with self._admission:
+            return self._admitted
 
     def swap(self, backend: VoiceBackend | None, reason: str | None = None) -> None:
         with self._slot:
@@ -162,7 +187,40 @@ class VoiceGateway:
             return self.backend, self.reason
 
     def __call__(self, ws: WebSocket, request: Request) -> None:
-        VoiceSession(self, ws).serve()
+        if not self._admit():
+            self._refuse(ws)
+            return
+        try:
+            session = VoiceSession(self, ws, on_end=self._release)
+        except BaseException:
+            self._release()
+            raise
+        session.serve()
+
+    def _admit(self) -> bool:
+        with self._admission:
+            if self._admitted >= self.max_sessions:
+                return False
+            self._admitted += 1
+            return True
+
+    def _release(self) -> None:
+        with self._admission:
+            self._admitted -= 1
+
+    def _refuse(self, ws: WebSocket) -> None:
+        """One ``turn.error`` naming the limit, then close 1013. No thread starts, nothing is
+        heard, transcribed or billed."""
+        refused = TurnError(
+            reason="validator_failed",
+            detail=(
+                f"at most {self.max_sessions} voice sockets may be open at once; "
+                "try again when one has closed"
+            ),
+        )
+        with suppress(WebSocketError):  # a client that already left is still owed the close
+            ws.send_text(json.dumps(event_payload(refused), sort_keys=True))
+        ws.close(TRY_AGAIN_LATER, "too many voice sockets")
 
 
 @dataclass
@@ -228,9 +286,15 @@ class VoiceSession:
     cards: list[Card] = field(default_factory=list)
     #: Host answers produced since the last turn, waiting to ride the next frame.
     outstanding: list[dict[str, Any]] = field(default_factory=list)
+    #: Called once, when the reader has returned and the worker has finished: the gateway's
+    #: admission is given back then, and not at the close (ADR 0074, amended).
+    on_end: Callable[[], None] | None = None
 
     def __post_init__(self) -> None:
         self._lock = threading.Lock()
+        #: Who still holds the session open: the reader and the worker.
+        self._holders = 2
+        self._holders_lock = threading.Lock()
         self._jobs: queue.Queue[_Job | None] = queue.Queue()
         self._speech: queue.Queue[tuple[int, SpokenLine] | None] = queue.Queue()
         self._results: dict[str, dict[str, Any]] = {}
@@ -253,10 +317,26 @@ class VoiceSession:
     def serve(self) -> None:
         worker = threading.Thread(target=self._work, name="voice-worker", daemon=True)
         speaker = threading.Thread(target=self._speak_loop, name="voice-speaker", daemon=True)
-        worker.start()
-        speaker.start()
+        try:
+            self._read(worker, speaker)
+        finally:
+            if worker.ident is None:
+                self._let_go()  # a worker that never started holds nothing
+            self._let_go()  # the reader has returned, however it ended
+
+    def _let_go(self) -> None:
+        """One holder is done; the last one gives the admission back, exactly once."""
+        with self._holders_lock:
+            self._holders -= 1
+            last = self._holders == 0
+        if last and self.on_end is not None:
+            self.on_end()
+
+    def _read(self, worker: threading.Thread, speaker: threading.Thread) -> None:
         code, reason = 1000, ""
         try:
+            worker.start()
+            speaker.start()
             while True:
                 try:
                     message = self.ws.recv()
@@ -288,8 +368,10 @@ class VoiceSession:
             self.ws.close(code, reason)
             # A worker inside a turn holds the writer lock and runs to its end (ADR 0012); the
             # join is a courtesy to a worker that is idle, not a wait on one that is not.
-            worker.join(timeout=1.0)
-            speaker.join(timeout=1.0)
+            if worker.ident is not None:
+                worker.join(timeout=1.0)
+            if speaker.ident is not None:
+                speaker.join(timeout=1.0)
 
     def _drop_waiting_turns(self) -> None:
         """Empty the job queue: a turn that has not started when the socket closes never starts."""
@@ -576,16 +658,19 @@ class VoiceSession:
     # -- the worker ------------------------------------------------------------------------------
 
     def _work(self) -> None:
-        while True:
-            job = self._jobs.get()
-            if job is None:
-                return
-            if self._closed:
-                continue  # the reader and this thread race; a closed socket starts no turn
-            try:
-                self._handle(job)
-            except Exception as exc:  # a bug ends the utterance honestly, never silently
-                self.send(TurnError(reason="unknown", detail=type(exc).__name__))
+        try:
+            while True:
+                job = self._jobs.get()
+                if job is None:
+                    return
+                if self._closed:
+                    continue  # the reader and this thread race; a closed socket starts no turn
+                try:
+                    self._handle(job)
+                except Exception as exc:  # a bug ends the utterance honestly, never silently
+                    self.send(TurnError(reason="unknown", detail=type(exc).__name__))
+        finally:
+            self._let_go()  # the turn it was running, if any, has ended
 
     def _handle(self, job: _Job) -> None:
         self.send(VoiceTranscript(text=job.text, final=True))
