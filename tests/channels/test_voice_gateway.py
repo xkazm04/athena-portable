@@ -525,3 +525,63 @@ def test_a_voice_frame_with_a_list_past_its_cap_is_refused_not_cut(
 
     assert error["reason"] == "validator_failed"
     assert "gated_tools" in error["detail"]
+
+
+# -- the utterance ceiling -----------------------------------------------------------------------
+
+
+def test_the_utterance_ceiling_is_the_http_twins_body_cap() -> None:
+    from athena.channels.voice.backends import MAX_UTTERANCE_BYTES
+    from athena.daemon.server import MAX_RAW_BODY_BYTES
+
+    assert MAX_UTTERANCE_BYTES == MAX_RAW_BODY_BYTES == 4_194_304
+
+
+def test_frames_past_the_ceiling_drop_the_utterance_once_and_the_next_one_works(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    from athena.channels.voice.backends import MAX_UTTERANCE_BYTES, ScriptedTranscriber
+
+    voiced.register()
+    made: list[ScriptedTranscriber] = []
+    real = backend.transcriber
+
+    def recording() -> ScriptedTranscriber:
+        transcriber = real()
+        assert isinstance(transcriber, ScriptedTranscriber)
+        made.append(transcriber)
+        return transcriber
+
+    backend.transcriber = recording  # type: ignore[method-assign]
+    backend.utterances = ["never heard", "hello there"]
+
+    client.start()
+    frame = bytes(MAX_UTTERANCE_BYTES // 4)
+    for _ in range(7):  # four fill the ceiling, three more are past it
+        client.ws.send_binary(frame)
+    refused = client.until("turn.error")
+    assert refused["reason"] == "validator_failed"
+    assert "seconds" in refused["detail"]
+    client.stop()
+    _settle()
+    assert made[0].fed <= MAX_UTTERANCE_BYTES
+    assert made[0].fed == MAX_UTTERANCE_BYTES, "frames up to the ceiling were fed, no more"
+    assert len(client.of("turn.error")) == 1
+    assert client.of("voice.transcript") == [], "nothing was transcribed"
+
+    voiced.script(claude_round("Still here."))
+    client.utter()
+    assert client.until("voice.transcript", final=True)["text"] == "hello there"
+    assert client.until("turn.finished")["text"] == "Still here."
+    assert len(client.of("turn.error")) == 1
+
+
+def test_a_buffered_transcriber_never_holds_more_than_the_ceiling() -> None:
+    from athena.channels.voice.backends import MAX_UTTERANCE_BYTES, BufferedTranscriber
+
+    heard: list[int] = []
+    transcriber = BufferedTranscriber(lambda audio: str(heard.append(len(audio))))
+    for _ in range(MAX_UTTERANCE_BYTES // 65_536 + 10):
+        transcriber.feed(bytes(65_536))
+    transcriber.finish()
+    assert heard == [MAX_UTTERANCE_BYTES]

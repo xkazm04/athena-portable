@@ -40,6 +40,7 @@ from typing import Protocol, runtime_checkable
 __all__ = [
     "BACKENDS",
     "INPUT_SAMPLE_RATE",
+    "MAX_UTTERANCE_BYTES",
     "OPENAI_KEY_ENV",
     "BufferedTranscriber",
     "ComposedBackend",
@@ -213,6 +214,12 @@ class ScriptedBackend:
 # --- one provider ---------------------------------------------------------------------------------
 
 
+#: One utterance is at most this many bytes of PCM16: two minutes at 16 kHz mono. It is the number
+#: the HTTP twin ``/voice/transcribe`` already enforces as ``MAX_RAW_BODY_BYTES`` (a test pins the
+#: two equal; the daemon is not imported here) (ADR 0072).
+MAX_UTTERANCE_BYTES = 4_194_304
+
+
 class BufferedTranscriber:
     """Collects the utterance and transcribes it whole on ``finish`` — no partials.
 
@@ -223,14 +230,19 @@ class BufferedTranscriber:
     def __init__(self, transcribe: Callable[[bytes], str]) -> None:
         self._transcribe = transcribe
         self._chunks: list[bytes] = []
+        self._held = 0
 
     def feed(self, pcm: bytes) -> Sequence[str]:
-        self._chunks.append(pcm)
+        # Past the ceiling the frame is dropped, so the buffer never holds more than it (ADR 0072).
+        if self._held + len(pcm) <= MAX_UTTERANCE_BYTES:
+            self._chunks.append(pcm)
+            self._held += len(pcm)
         return []
 
     def finish(self) -> str:
         audio = b"".join(self._chunks)
         self._chunks = []
+        self._held = 0
         # Under a tenth of a second is a key tapped by mistake, not a sentence.
         if len(audio) < INPUT_SAMPLE_RATE * 2 // 10:
             return ""

@@ -35,7 +35,8 @@ request and caps each host tool result at 1,600 characters with `(showing N of M
 16 kHz in, events and audio out. One `Speaker` and one `Listener` are composed separately: local
 Kokoro and whisper.cpp by default (ADR 0028), a cloud provider for hearing when the person picks it.
 Spoken commands that answer a card are parsed by `commands.py`, never by a backend. Push-to-talk is
-a held key (ADR 0020).
+a held key (ADR 0020). One utterance is at most 4 MiB of PCM, two minutes: past it the utterance is
+dropped with one `turn.error` `validator_failed` and the socket stays open (ADR 0072).
 
 Every `start` and `text` frame carries `disabled_origins`, as `POST /run` does: a spoken turn honours the
 switch, and a spoken answer is replayed against the list current when the person spoke. The daemon keeps

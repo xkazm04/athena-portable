@@ -46,7 +46,12 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from athena.channels.voice.backends import VoiceBackend, VoiceBackendError
+from athena.channels.voice.backends import (
+    INPUT_SAMPLE_RATE,
+    MAX_UTTERANCE_BYTES,
+    VoiceBackend,
+    VoiceBackendError,
+)
 from athena.channels.voice.commands import Card, Spoken, recognise
 from athena.channels.voice.tts import SpokenLine, spoken_line
 from athena.channels.voice.ws import WebSocket, WebSocketError
@@ -167,6 +172,10 @@ class _Utterance:
     #: Whether this utterance began by talking over a reply. A stop word said that way is still
     #: a stop word, even though playback ended before the key came up.
     interrupted: bool = False
+    #: Bytes of PCM fed so far. The ceiling is on this count, before ``feed`` (ADR 0072).
+    heard: int = 0
+    #: Set when the ceiling was crossed: the transcriber is released, later frames are ignored.
+    refused: bool = False
 
 
 @dataclass
@@ -247,6 +256,22 @@ class VoiceSession:
         current = self._utterance
         if current is None:
             return  # audio with no key down is a client bug, and a quiet one
+        if current.refused:
+            return
+        if current.heard + len(pcm) > MAX_UTTERANCE_BYTES:
+            # The frame that would cross the ceiling is not fed; the utterance is dropped and the
+            # client is told once. The socket stays open for the next key (ADR 0072).
+            current.refused = True
+            current.transcriber = None
+            seconds = MAX_UTTERANCE_BYTES // (INPUT_SAMPLE_RATE * 2)
+            self.send(
+                TurnError(
+                    reason="validator_failed",
+                    detail=f"an utterance is at most {seconds} seconds; release the key sooner",
+                )
+            )
+            return
+        current.heard += len(pcm)
         for partial in current.transcriber.feed(pcm):
             if self.speaking:
                 current.interrupted = True
@@ -311,7 +336,7 @@ class VoiceSession:
     def _stop(self) -> None:
         current = self._utterance
         self._utterance = None
-        if current is None:
+        if current is None or current.refused:
             return
         try:
             text = str(current.transcriber.finish() or "")
