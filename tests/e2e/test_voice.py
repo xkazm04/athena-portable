@@ -171,4 +171,4 @@ def test_a_spoken_answer_resolves_a_pending_card_through_the_route_a_button_uses
     assert second.body["reason"] == "pending_approval"
     surfaces = daemon.request("/ledger/rollup?by=surface").body["rollup"]
     assert [row["key"] for row in surfaces] == ["voice"]
-    assert surfaces[0]["turns"] == 2, "the utterance and the continuation, one row each"
+    assert surfaces[0]["calls"] == 2, "the utterance and the continuation, one row each"

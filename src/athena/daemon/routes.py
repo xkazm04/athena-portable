@@ -935,12 +935,13 @@ def ledger_rollup(daemon: AthenaDaemon, request: Request) -> Reply:
     items = [
         {
             "key": row.key,
-            "turns": row.turns,
+            "calls": row.calls,
             "errors": row.errors,
             "rounds": row.rounds,
             "input_tokens": row.input_tokens,
             "output_tokens": row.output_tokens,
             "cost_usd": row.cost_usd,
+            "unpriced": row.unpriced,
             "ms": row.ms,
         }
         for row in rows[:MAX_LIMIT]

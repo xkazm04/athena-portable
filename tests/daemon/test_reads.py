@@ -161,9 +161,23 @@ def test_the_rollup_sums_one_dimension_dearest_first(live: Live, daemon: AthenaD
     assert body["by"] == "model"
     assert (body["showing"], body["total"], body["footer"]) == (2, 2, "")
     assert [row["key"] for row in body["rollup"]] == ["opus", "haiku"]
-    assert body["rollup"][0]["turns"] == 2
+    assert body["rollup"][0]["calls"] == 2
     assert body["rollup"][0]["cost_usd"] == 1.0
-    assert body["rollup"][1]["turns"] == 3
+    assert body["rollup"][1]["calls"] == 3
+
+
+def test_a_rollup_item_carries_calls_and_unpriced_and_no_turns(
+    live: Live, daemon: AthenaDaemon
+) -> None:
+    _rows(daemon.ledger, 1, model="whisper", cost_usd=0.5)
+    _rows(daemon.ledger, 1, model="whisper", cost_usd=None)
+
+    item = live.request("/ledger/rollup?by=model").body["rollup"][0]
+
+    assert item["calls"] == 2
+    assert item["unpriced"] == 1
+    assert item["cost_usd"] == 0.5
+    assert "turns" not in item
 
 
 def test_the_rollup_defaults_to_model_and_refuses_a_dimension_that_is_not_one(

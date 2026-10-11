@@ -115,3 +115,21 @@ origin `core`, surface `voice`, trigger `voice`, no turn id. A comparison belong
 conversation, has no surface of its own, and a new trigger value would change `ledger.TRIGGERS`
 for a row that is the same kind of request. One helper, `record_speech` in `gateway.py`, writes
 both rows, so the retry-once-then-log behaviour and the `LEDGER_ROW_LOST` line exist once.
+
+## Amendment, 2026-10-12: the rollup counts calls and names what it could not price
+
+Since this ADR the ledger also holds metered speech requests, so a rollup row's `COUNT(*)` is a
+count of model invocations, not of turns. README section 1 act 4 says the activity module shows
+"every call ... with its cost", and `docs/features/daemon-and-channels.md` calls the rollup "model
+invocations and spend". `RollupRow.turns` is renamed `calls`: every row in the key, one model
+invocation each, speech requests included.
+
+Speech rows carry `cost_usd` NULL until a price is committed. `SUM(COALESCE(cost_usd, 0.0))`
+counted them as $0 and did not say so. `RollupRow` now has `unpriced`, the number of rows in the
+key whose `cost_usd` is NULL. While `unpriced` > 0, `cost_usd` sums only the priced rows and is a
+floor, not the spend.
+
+This is a breaking change to the `GET /ledger/rollup` reply: each item's `turns` is now `calls`,
+and `unpriced` follows `cost_usd`. Nothing under `apps/` reads that route (`git grep` finds only
+tests and docs), and `docs/daemon.md` is updated. The ordering is unchanged: dearest first, then
+most calls, then key.

@@ -20,7 +20,7 @@ the token on every route), ADR 0012 (one turn is one SSE stream of channel event
 | `POST /decisions/<id>` | the user's answer; replays the gate and returns `execute` | writer |
 | `GET /decisions` | the pending inbox, bounded | read |
 | `GET /ledger?limit=` | recent model invocations, newest first, bounded | read |
-| `GET /ledger/rollup?by=` | spend and errors summed on one dimension | read |
+| `GET /ledger/rollup?by=` | calls, spend and errors summed on one dimension | read |
 | `GET /playbooks?origin=` | the procedurals the brain has distilled about one origin | read |
 | `GET /voice` + `Upgrade: websocket` | the voice channel: PCM16 in, events and audio out | writer, per turn |
 | `GET`/`PUT /voice/config` | the chosen speaker and listener, every engine's standing, `ready` and why not | read / writer |
@@ -290,7 +290,7 @@ curl -s "$ATHENA/health"                    -H "X-Athena-Token: $TOKEN"
 
 ```json
 {"ok": true, "rows": [{"row_id": 1, "turn_id": "turn_bf71…", "engine": "claude_code", "model": "scripted", "conversation_id": "conv_invoices", "origin": "host:invoices", "surface": "panel", "trigger": "cli", "rounds": 1, "input_tokens": 1840, "output_tokens": 96, "cost_usd": 0.04, "is_error": false, "error_reason": null, "created_at": "…"}], "showing": 1, "total": 1, "footer": ""}
-{"ok": true, "rollup": [{"key": "host:invoices", "turns": 1, "errors": 0, "rounds": 1, "input_tokens": 1840, "output_tokens": 96, "cost_usd": 0.04, "ms": 1}], "showing": 1, "total": 1, "footer": "", "by": "origin"}
+{"ok": true, "rollup": [{"key": "host:invoices", "calls": 1, "errors": 0, "rounds": 1, "input_tokens": 1840, "output_tokens": 96, "cost_usd": 0.04, "unpriced": 0, "ms": 1}], "showing": 1, "total": 1, "footer": "", "by": "origin"}
 {"ok": true, "items": [], "showing": 0, "total": 0, "footer": "", "origin": "host:invoices"}
 {"ok": true, "engine": "claude_code", "model": "scripted", "brain": ".../demo-brain", "uptime_s": 24.651, "sessions": 1, "tools": 6, "pending": {"showing": 0, "total": 0, "footer": ""}, "routes": ["GET /health", "GET /engines", "POST /manifest", "POST /run", "GET /decisions", "GET /ledger", "GET /ledger/rollup", "GET /playbooks", "POST /decisions/<id>"], "sockets": []}
 ```

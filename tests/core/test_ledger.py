@@ -187,14 +187,28 @@ def test_rollup_sums_per_key(ledger: Ledger) -> None:
 
     by_model = {row.key: row for row in ledger.rollup(by="model")}
 
-    assert by_model["opus"].turns == 2
+    assert by_model["opus"].calls == 2
     assert by_model["opus"].cost_usd == pytest.approx(0.30)
     assert by_model["opus"].input_tokens == 300
     assert by_model["opus"].output_tokens == 30
     assert by_model["opus"].ms == 3000
     assert by_model["opus"].errors == 0
-    assert by_model["haiku"].turns == 1
+    assert by_model["haiku"].calls == 1
     assert by_model["haiku"].errors == 1
+
+
+def test_the_rollup_counts_every_call_and_names_the_rows_it_could_not_price(
+    ledger: Ledger,
+) -> None:
+    _record(ledger, model="whisper", cost_usd=0.10)
+    _record(ledger, model="whisper", cost_usd=0.20)
+    _record(ledger, model="whisper", cost_usd=None)
+
+    row = {r.key: r for r in ledger.rollup(by="model")}["whisper"]
+
+    assert row.calls == 3
+    assert row.unpriced == 1
+    assert row.cost_usd == pytest.approx(0.30)
 
 
 def test_rollup_is_dearest_first(ledger: Ledger) -> None:
@@ -224,7 +238,7 @@ def test_every_dimension_groups_on_its_own_column(
     rows = {row.key: row for row in ledger.rollup(by=dimension)}
 
     assert len(rows) == 2
-    assert rows[value].turns == 2
+    assert rows[value].calls == 2
     assert rows[value].cost_usd == pytest.approx(0.25)
 
 

@@ -137,17 +137,19 @@ def test_the_ledger_and_its_rollup_answer_in_the_documented_shape_and_page_their
     summed = rollup["rollup"][0]
     assert set(summed) == {
         "key",
-        "turns",
+        "calls",
         "errors",
         "rounds",
         "input_tokens",
         "output_tokens",
         "cost_usd",
+        "unpriced",
         "ms",
     }
     assert summed["key"] == MODEL
-    assert (summed["turns"], summed["errors"], summed["rounds"]) == (turns, 0, turns)
+    assert (summed["calls"], summed["errors"], summed["rounds"]) == (turns, 0, turns)
     assert round(summed["cost_usd"], 4) == round(ROUND_COST * turns, 4)
+    assert summed["unpriced"] == 0
 
     by_origin = daemon.request("/ledger/rollup?by=origin").body
     assert [row["key"] for row in by_origin["rollup"]] == [f"host:{APP_ID}"]

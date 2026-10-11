@@ -142,15 +142,21 @@ class LedgerRow:
 
 @dataclass(frozen=True)
 class RollupRow:
-    """What one key of a :meth:`Ledger.rollup` cost."""
+    """What one key of a :meth:`Ledger.rollup` cost.
+
+    ``calls`` is every row in the key: one model invocation each, speech requests included.
+    ``unpriced`` is the rows whose ``cost_usd`` is NULL, so ``cost_usd`` sums only the priced rows
+    and is a floor whenever ``unpriced`` > 0.
+    """
 
     key: str
-    turns: int = 0
+    calls: int = 0
     errors: int = 0
     rounds: int = 0
     input_tokens: int = 0
     output_tokens: int = 0
     cost_usd: float = 0.0
+    unpriced: int = 0
     ms: int = 0
 
 
@@ -345,7 +351,8 @@ class Ledger:
         # this interpolation safe; SQLite takes no parameter in a GROUP BY position.
         query = (
             f"SELECT {column}, COUNT(*), SUM(is_error), SUM(rounds), SUM(input_tokens), "
-            f"SUM(output_tokens), SUM(COALESCE(cost_usd, 0.0)), SUM(ms) "
+            f"SUM(output_tokens), SUM(COALESCE(cost_usd, 0.0)), SUM(ms), "
+            f"SUM(CASE WHEN cost_usd IS NULL THEN 1 ELSE 0 END) "
             f"FROM companion_turn GROUP BY {column}"
         )
         with closing(self.brain.read_connection()) as con:
@@ -353,17 +360,18 @@ class Ledger:
         rows = [
             RollupRow(
                 key=str(raw[0]),
-                turns=int(raw[1]),
+                calls=int(raw[1]),
                 errors=int(raw[2] or 0),
                 rounds=int(raw[3] or 0),
                 input_tokens=int(raw[4] or 0),
                 output_tokens=int(raw[5] or 0),
                 cost_usd=float(raw[6] or 0.0),
                 ms=int(raw[7] or 0),
+                unpriced=int(raw[8] or 0),
             )
             for raw in raws
         ]
-        return sorted(rows, key=lambda r: (-r.cost_usd, -r.turns, r.key))
+        return sorted(rows, key=lambda r: (-r.cost_usd, -r.calls, r.key))
 
 
 def _iso(moment: datetime) -> str:
