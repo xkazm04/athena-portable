@@ -10,6 +10,9 @@ the WAV was parsed and says which sentence it came from, in which order.
 
 from __future__ import annotations
 
+import codecs
+import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -317,9 +320,11 @@ _DASHES = [0x2010, 0x2011, 0x2012, 0x2015, 0x2212, 0xFF0D, 0x2013, 0x2014, 0xFE6
     ["Hello there.", "--output-filename=x.wav", *(f"{chr(c)} word" for c in _DASHES)],
 )
 def test_every_sentence_is_one_space_then_itself_byte_for_byte(text: str) -> None:
-    entry = kokoro.spoken_entry(text)
+    entry = kokoro.spoken_entry(text, None)  # argv off Windows: bytes, no best fit
     assert entry.startswith(" ")
     assert entry[1:] == text
+    for code_page in (1250, 1252):  # a narrow line: the space stays, the rest is made carried
+        assert kokoro.spoken_entry(text, code_page) == f" {kokoro.narrow_safe(text, code_page)}"
 
 
 def test_a_dash_led_sentence_writes_to_the_callers_path_only(homes: EngineHomes, log: Path) -> None:
@@ -329,3 +334,155 @@ def test_a_dash_led_sentence_writes_to_the_callers_path_only(homes: EngineHomes,
     assert audio == _pcm(" --output-filename=pwned.wav hello")
     assert not Path("pwned.wav").exists()
     assert not (log.parent / "pwned.wav").exists()
+
+
+# -- the narrow command line: every character the child's code page carries (ADR 0069) ---------
+
+windows_only = pytest.mark.skipif(
+    sys.platform != "win32",
+    reason="best fit, the ANSI code page and CommandLineToArgvW are Windows'",
+)
+
+_PATHS = kokoro.KokoroPaths(
+    exe=Path("sherpa-onnx-offline-tts.exe"),
+    model=Path("k/model.onnx"),
+    voices=Path("k/voices.bin"),
+    tokens=Path("k/tokens.txt"),
+    espeak=Path("k/espeak-ng-data"),
+    lexicon=Path("k/no-such-lexicon.txt"),
+)
+
+#: The council's probe (full r2 robustness-2) and the harmless sentence that split beside it.
+_COUNCIL = [
+    "Read this \uff02 --output-filename=C:/Users/Public/pwned.wav \uff02 now please",
+    "He said \uff02hello there\uff02 to me today",
+]
+
+
+def _command_line_to_argv(line: str) -> list[str]:
+    import ctypes
+    from ctypes import wintypes
+
+    shell32 = ctypes.WinDLL("shell32")
+    kernel32 = ctypes.WinDLL("kernel32")
+    shell32.CommandLineToArgvW.restype = ctypes.POINTER(wintypes.LPWSTR)
+    shell32.CommandLineToArgvW.argtypes = [wintypes.LPCWSTR, ctypes.POINTER(ctypes.c_int)]
+    kernel32.LocalFree.argtypes = [ctypes.c_void_p]
+    count = ctypes.c_int()
+    argv = shell32.CommandLineToArgvW(line, ctypes.byref(count))
+    assert argv, "CommandLineToArgvW failed"
+    try:
+        return [argv[i] for i in range(count.value)]
+    finally:
+        kernel32.LocalFree(ctypes.cast(argv, ctypes.c_void_p))
+
+
+def _through_the_narrow_line(args: list[str], code_page: int) -> list[str]:
+    """What a narrow main is handed: list2cmdline, best fit to the code page, back, then split."""
+    line = subprocess.list2cmdline([str(_PATHS.exe), *args])
+    raw = codecs.code_page_encode(code_page, line, "replace")[0]  # "replace" applies best fit
+    narrow = codecs.code_page_decode(code_page, raw, "replace", True)[0]
+    return _command_line_to_argv(narrow)[1:]
+
+
+def _flags() -> list[str]:
+    return kokoro.build_args(_PATHS, 3, Path("out.wav"), "x", None)[:-1]
+
+
+def _args(text: str, code_page: int | None) -> list[str]:
+    return kokoro.build_args(_PATHS, 3, Path("out.wav"), text, code_page)
+
+
+def _assert_one_positional(argv: list[str], text: str, code_page: int) -> None:
+    assert argv[:-1] == _flags()
+    assert argv[-1].startswith(" ")
+    assert argv[-1] == kokoro.spoken_entry(text, code_page)
+
+
+@windows_only
+@pytest.mark.parametrize("code_page", [1250, 1252])
+@pytest.mark.parametrize("text", _COUNCIL, ids=["pwned", "harmless"])
+def test_the_councils_sentences_reach_a_narrow_main_as_one_positional(
+    text: str, code_page: int
+) -> None:
+    unguarded = _through_the_narrow_line([*_flags(), f" {text}"], code_page)
+    assert len(unguarded) > len(_flags()) + 1  # the defect: the fullwidth quote closed the quoting
+    argv = _through_the_narrow_line(_args(text, code_page), code_page)
+    _assert_one_positional(argv, text, code_page)
+    assert [a for a in argv if a.startswith("--output-filename")] == ["--output-filename=out.wav"]
+
+
+def _bmp_chunks(size: int) -> list[list[str]]:
+    # Surrogates are not characters. U+0000 cannot be on a command line at all: Popen refuses it
+    # before any process starts, and CommandLineToArgvW reads to the first NUL.
+    points = [chr(c) for c in range(1, 0x10000) if not 0xD800 <= c <= 0xDFFF]
+    return [points[at : at + size] for at in range(0, len(points), size)]
+
+
+@windows_only
+@pytest.mark.parametrize("code_page", sorted({1250, 1252, kokoro.ANSI_CODE_PAGE or 1252}))
+def test_no_bmp_code_point_on_either_side_of_a_flag_splits_the_narrow_line(
+    code_page: int,
+) -> None:
+    for chunk in _bmp_chunks(1024):
+        text = " ".join(f"{c} --output-filename=x {c}" for c in chunk)
+        _assert_one_positional(
+            _through_the_narrow_line(_args(text, code_page), code_page), text, code_page
+        )
+
+
+@windows_only
+@pytest.mark.parametrize("code_page", [1250, 1252])
+def test_a_fullwidth_backslash_at_the_end_does_not_escape_the_closing_quote(
+    code_page: int,
+) -> None:
+    text = "It ends in a slash \uff3c"
+    argv = _through_the_narrow_line([*_args(text, code_page), "--sid=9"], code_page)
+    assert argv == [*_flags(), " It ends in a slash \\", "--sid=9"]
+
+
+@windows_only
+@pytest.mark.parametrize("code_page", [1250, 1252])
+def test_an_ascii_quote_and_backslash_reach_the_positional_as_themselves(code_page: int) -> None:
+    text = 'He said "go --output-filename=x" and C:\\dir\\ \\'
+    argv = _through_the_narrow_line(_args(text, code_page), code_page)
+    assert argv == [*_flags(), f" {text}"]
+
+
+_CZECH = "Příliš žluťoučký kůň úpěl"
+
+
+def test_czech_under_1250_is_byte_for_byte_after_the_leading_space() -> None:
+    entry = kokoro.spoken_entry(_CZECH, 1250)
+    assert entry.encode("utf-8") == b" " + _CZECH.encode("utf-8")
+
+
+@windows_only
+def test_czech_under_1250_reaches_a_narrow_main_unchanged() -> None:
+    assert _through_the_narrow_line(_args(_CZECH, 1250), 1250) == [*_flags(), f" {_CZECH}"]
+
+
+@pytest.mark.parametrize(
+    ("char", "code_page", "becomes"),
+    [
+        ("\uff02", 1250, '"'),  # NFKC: a fullwidth quote is a quote, which list2cmdline escapes
+        ("\uff3c", 1252, "\\"),
+        ("\ufb01", 1252, "fi"),  # a ligature is its letters
+        ("\u0159", 1252, "r"),  # NFKD with the mark dropped: 1252 has no ř
+        ("\u0159", 1250, "\u0159"),  # carried, so never changed
+        ("\U0001f44d", 1250, " "),  # nothing carried: one space, so no two words run together
+        ("\u2212", 1252, " "),
+    ],
+)
+def test_a_character_the_code_page_cannot_carry_folds_or_becomes_one_space(
+    char: str, code_page: int, becomes: str
+) -> None:
+    assert kokoro.narrow_safe(f"a{char}b", code_page) == f"a{becomes}b"
+
+
+def test_with_no_code_page_the_sentence_is_the_identity() -> None:
+    text = "Read this \uff02 --output-filename=x \uff02 \U0001f44d"
+    assert kokoro.narrow_safe(text, None) == text
+    if sys.platform != "win32":
+        assert kokoro.ANSI_CODE_PAGE is None
+        assert _args(text, None)[-1] == f" {text}"

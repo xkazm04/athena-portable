@@ -22,10 +22,14 @@ so a voice is added here only with a verified sid.
 
 from __future__ import annotations
 
+import codecs
+import functools
 import re
 import subprocess
+import sys
 import tempfile
 import threading
+import unicodedata
 import wave
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
@@ -43,6 +47,7 @@ from athena.channels.voice.home import (
 )
 
 __all__ = [
+    "ANSI_CODE_PAGE",
     "ENGINE_FILENAME",
     "KOKORO_SIZE_MB",
     "MAX_CHARS",
@@ -55,9 +60,11 @@ __all__ = [
     "KokoroVoice",
     "build_args",
     "find_voice",
+    "narrow_safe",
     "paths_for",
     "probe",
     "split_sentences",
+    "spoken_entry",
 ]
 
 ENGINE_FILENAME = f"sherpa-onnx-offline-tts{EXE_SUFFIX}"
@@ -204,19 +211,103 @@ def split_sentences(text: str) -> list[str]:
     return out
 
 
-def spoken_entry(text: str) -> str:
+def _ansi_code_page() -> int | None:
+    """The code page a narrow ``main`` reads its command line in: ``GetACP()`` on Windows.
+
+    ``None`` elsewhere: a POSIX argv is bytes the parent hands over as they are, with no best fit
+    and no second parse, so there is nothing to make safe.
+    """
+    if sys.platform != "win32":
+        return None
+    import ctypes
+
+    return int(ctypes.windll.kernel32.GetACP())
+
+
+#: The running process's ANSI code page, or ``None`` off Windows. A child started by
+#: :class:`KokoroTTS` inherits it, and ``sherpa-onnx-offline-tts`` has a narrow ``main``.
+ANSI_CODE_PAGE = _ansi_code_page()
+
+
+@functools.lru_cache(maxsize=4096)
+def _carried(char: str, code_page: int) -> bool:
+    """Whether ``char`` survives ``code_page`` exactly: encoded with no best fit, then decoded.
+
+    On Windows this asks the system's own table (``codecs.code_page_encode`` with ``strict``
+    passes ``WC_NO_BEST_FIT_CHARS``); elsewhere, for a test that pins a code page, Python's
+    ``cp<N>`` codec, which has no best fit either. A code page neither knows carries only ASCII.
+    """
+    encode = getattr(codecs, "code_page_encode", None)
+    decode = getattr(codecs, "code_page_decode", None)
+    try:
+        if encode is not None and decode is not None:
+            raw = encode(code_page, char, "strict")[0]
+            back = decode(code_page, raw, "strict", True)[0]
+        else:
+            back = char.encode(f"cp{code_page}").decode(f"cp{code_page}")
+    except (LookupError, OSError):  # no such code page here
+        return char.isascii()
+    except UnicodeError:
+        return False
+    return bool(back == char)
+
+
+def _fold(char: str, code_page: int) -> str:
+    """What one character the code page cannot carry becomes (ADR 0069, second amendment).
+
+    Its NFKC form when that is carried (U+FF02 is ``"``, U+FF3C a backslash, a ligature its
+    letters), else its NFKD form with the combining marks dropped when that is carried (``ř`` is
+    ``r`` under 1252), else one space, so two words never run together.
+    """
+    for form in (
+        unicodedata.normalize("NFKC", char),
+        "".join(
+            c
+            for c in unicodedata.normalize("NFKD", char)
+            if unicodedata.category(c) not in ("Mn", "Me")
+        ),
+    ):
+        if form and all(_carried(c, code_page) for c in form):
+            return form
+    return " "
+
+
+def narrow_safe(text: str, code_page: int | None) -> str:
+    """``text`` with every character ``code_page`` cannot carry exactly replaced (ADR 0069).
+
+    Windows builds a narrow child's command line with ``WideCharToMultiByte``, which best-fits a
+    character the code page lacks: U+FF02 becomes ``"`` and U+FF3C a backslash, so the child
+    splits its arguments where ``list2cmdline`` quoted one. A character is carried when encoding
+    it to the code page with no best fit and decoding it back gives the same character; the rule
+    is the code page's, never a list of code points. Once every character is carried the narrow
+    line decodes back to the wide one, and the child parses what ``list2cmdline`` built. A word
+    made only of carried characters never changes. ``code_page`` ``None`` is the identity: argv
+    off Windows is bytes, handed over with no best fit.
+    """
+    if code_page is None:
+        return text
+    return "".join(char if _carried(char, code_page) else _fold(char, code_page) for char in text)
+
+
+def spoken_entry(text: str, code_page: int | None = ANSI_CODE_PAGE) -> str:
     """The sentence as the engine's one positional argument: always one space first (ADR 0069).
 
     Reply text is shaped by pages the model has read, and a sentence such as ``--output-filename=x``
-    would be read as a flag. A narrow argv on Windows folds six Unicode dashes to ``-``, so a guard
-    on the text depends on the code page and is never complete. One leading space on every
-    sentence cannot start an option under any parser, espeak ignores it, and no word or sign is
-    dropped.
+    would be read as a flag. One leading space on every sentence means the entry never begins
+    with ``-``, espeak ignores it, and no word is dropped. Where the argument ends is the other
+    half: :func:`narrow_safe` keeps every character the child's code page would best-fit to a
+    quote or a backslash off the command line.
     """
-    return f" {text}"
+    return f" {narrow_safe(text, code_page)}"
 
 
-def build_args(paths: KokoroPaths, sid: int, output: Path, text: str) -> list[str]:
+def build_args(
+    paths: KokoroPaths,
+    sid: int,
+    output: Path,
+    text: str,
+    code_page: int | None = ANSI_CODE_PAGE,
+) -> list[str]:
     """The engine's flags, exactly Personas', text last and positional. No executable."""
     args = [
         f"--kokoro-model={paths.model}",
@@ -226,7 +317,12 @@ def build_args(paths: KokoroPaths, sid: int, output: Path, text: str) -> list[st
     ]
     if paths.lexicon.is_file():
         args.append(f"--kokoro-lexicon={paths.lexicon}")
-    args += ["--num-threads=2", f"--sid={sid}", f"--output-filename={output}", spoken_entry(text)]
+    args += [
+        "--num-threads=2",
+        f"--sid={sid}",
+        f"--output-filename={output}",
+        spoken_entry(text, code_page),
+    ]
     return args
 
 
