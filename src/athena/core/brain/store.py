@@ -167,6 +167,10 @@ class Brain:
         with self.write_txn():
             for statement in SCHEMA:
                 self._con.execute(statement)
+            # Read before the stamp below overwrites it: an older index is migrated in this same
+            # transaction, so no reader ever sees it half re-keyed.
+            if _stored_version(self._con) < 2:
+                _rekey_fts(self._con)
             self._con.execute(
                 "INSERT OR REPLACE INTO companion_meta (key, value) VALUES ('schema_version', ?)",
                 (str(SCHEMA_VERSION),),
@@ -504,11 +508,20 @@ class Brain:
         fts_tags: str | None = None,
     ) -> None:
         tag_list = list(tags or [])
-        con.execute(
-            """INSERT OR REPLACE INTO companion_node
+        # An upsert, not INSERT OR REPLACE: a replace deletes the row and gives the new one a new
+        # rowid, and the rowid is the key of this node's FTS row (ADR 0077).
+        ((rowid,),) = con.execute(
+            """INSERT INTO companion_node
                (id, kind, session_id, file_path, content_hash, importance, body_excerpt,
                 tags_json, machine, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT (id) DO UPDATE SET
+                 kind = excluded.kind, session_id = excluded.session_id,
+                 file_path = excluded.file_path, content_hash = excluded.content_hash,
+                 importance = excluded.importance, body_excerpt = excluded.body_excerpt,
+                 tags_json = excluded.tags_json, machine = excluded.machine,
+                 created_at = excluded.created_at, updated_at = excluded.updated_at
+               RETURNING rowid""",
             (
                 node_id,
                 kind,
@@ -522,11 +535,16 @@ class Brain:
                 created_at,
                 created_at,
             ),
-        )
-        con.execute("DELETE FROM companion_fts WHERE node_id = ?", (node_id,))
+        ).fetchall()
+        con.execute("DELETE FROM companion_fts WHERE rowid = ?", (rowid,))
         con.execute(
-            "INSERT INTO companion_fts (node_id, body, tags) VALUES (?, ?, ?)",
-            (node_id, body, fts_tags if fts_tags is not None else (" ".join(tag_list) or kind)),
+            "INSERT INTO companion_fts (rowid, node_id, body, tags) VALUES (?, ?, ?, ?)",
+            (
+                rowid,
+                node_id,
+                body,
+                fts_tags if fts_tags is not None else (" ".join(tag_list) or kind),
+            ),
         )
 
     @staticmethod
@@ -570,6 +588,38 @@ class Brain:
                 "SELECT kind, COUNT(*) FROM companion_node WHERE importance > 0 GROUP BY kind"
             ).fetchall()
         return {str(kind): int(count) for kind, count in rows}
+
+
+def _stored_version(con: sqlite3.Connection) -> int:
+    """The schema version an index was stamped with; 0 for none or one that is not a number."""
+    row = con.execute("SELECT value FROM companion_meta WHERE key = 'schema_version'").fetchone()
+    try:
+        return int(row[0]) if row is not None else 0
+    except ValueError:
+        return 0
+
+
+def _rekey_fts(con: sqlite3.Connection) -> None:
+    """Give every FTS row its node's rowid, and drop the rows no node has (ADR 0077).
+
+    A version-1 index let FTS5 pick its own rowids. The rows are copied out joined to their node,
+    the table is emptied, and they go back under the node's rowid. Where one node had two rows,
+    the newer is kept. Only the index changes: the disk is the truth (ADR 0003).
+    """
+    con.execute(
+        """CREATE TEMP TABLE athena_fts_rekey AS
+           SELECT n.rowid AS node_rowid, f.node_id, f.body, f.tags
+           FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
+           WHERE f.rowid IN (SELECT MAX(rowid) FROM companion_fts GROUP BY node_id)"""
+    )
+    try:
+        con.execute("DELETE FROM companion_fts")
+        con.execute(
+            """INSERT INTO companion_fts (rowid, node_id, body, tags)
+               SELECT node_rowid, node_id, body, tags FROM athena_fts_rekey"""
+        )
+    finally:
+        con.execute("DROP TABLE temp.athena_fts_rekey")
 
 
 def _now_iso() -> str:

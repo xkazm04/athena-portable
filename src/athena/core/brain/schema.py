@@ -13,7 +13,9 @@ from __future__ import annotations
 
 #: Bumped when a statement below changes shape; stored in ``companion_meta`` so a later migration
 #: can tell an old index from a new one instead of guessing from the presence of a column.
-SCHEMA_VERSION = 1
+#: Version 2 keys each ``companion_fts`` row by its node's rowid (ADR 0077); an index stamped 1, or
+#: not stamped, is re-keyed when a :class:`~athena.core.brain.store.Brain` opens it.
+SCHEMA_VERSION = 2
 
 SCHEMA: tuple[str, ...] = (
     # -- index core: one row per memory, derivable from its file ------------------------------
@@ -33,7 +35,9 @@ SCHEMA: tuple[str, ...] = (
     "CREATE INDEX IF NOT EXISTS idx_node_kind ON companion_node(kind, importance)",
     "CREATE INDEX IF NOT EXISTS idx_node_created ON companion_node(created_at)",
     # ``node_id`` is UNINDEXED: it is a join key, not something anyone searches for, and
-    # indexing it would let a query match a memory by its own id.
+    # indexing it would let a query match a memory by its own id. A row is found for a write by
+    # its rowid, which is its node's rowid in ``companion_node`` (ADR 0077): a lookup by an
+    # UNINDEXED column scans the whole index.
     """CREATE VIRTUAL TABLE IF NOT EXISTS companion_fts
        USING fts5(node_id UNINDEXED, body, tags)""",
     # -- provenance: which episodes a distilled memory cites (README §2 invariant 2) -----------

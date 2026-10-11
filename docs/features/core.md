@@ -15,6 +15,9 @@ A contract changes only with a test.
 - **Disk is truth** (invariant 1, ADR 0003). Episodes, facts and procedurals are markdown files with
   frontmatter; SQLite is a rebuildable index (`athena brain reconcile`). One writer behind a lock,
   a read-only connection per read request. A brain is portable by copying its directory.
+- **The index is schema version 2** (ADR 0077): each full-text row has its memory's rowid, so a
+  write costs the same at any brain size. An older index is re-keyed when a brain opens it; the
+  markdown is untouched.
 - **Provenance at write** (invariant 2). `write_fact` and `write_procedural` reject any source that
   is not a live episode id. There is no bypass, tests included.
 - **Recall** (`core/recall.py`) returns three lanes: what she always carries, distilled memory that

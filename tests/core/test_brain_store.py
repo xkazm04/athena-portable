@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
+import sqlite3
 from contextlib import closing
 from pathlib import Path
+from types import SimpleNamespace
+from typing import cast
 
 import pytest
 
 from athena.contracts import ids
 from athena.core.brain import Brain, ProvenanceError, frontmatter
 from athena.core.brain.frontmatter import FrontmatterError
+from athena.core.brain.reconcile import index_fingerprint, reconcile_from_disk
+from athena.core.brain.schema import SCHEMA_VERSION
 from athena.core.brain.store import ALWAYS_IMPORTANCE, DEFAULT_IMPORTANCE
+from athena.core.recall import recall
 
 
 def test_an_episode_lands_on_disk_with_the_header_ref_8_fixes(tmp_path: Path) -> None:
@@ -225,3 +231,163 @@ def test_a_file_without_every_turn_round_trips_through_frontmatter_unchanged(
 
         assert "every_turn" not in meta
         assert frontmatter.render(list(meta.items()), body) == text
+
+
+# -- an FTS row is found by its rowid, the node's own (ADR 0077) --------------------------------
+
+
+def _index(brain: Brain, node_id: str, body: str) -> None:
+    with brain.write_txn() as con:
+        brain.index_node(
+            con,
+            node_id=node_id,
+            kind="episode",
+            rel=f"episodes/{node_id}.md",
+            file_text=body,
+            body=body,
+            importance=DEFAULT_IMPORTANCE,
+            created_at="2026-10-11T09:00:00+00:00",
+        )
+
+
+def _steps_per_write(brain: Brain, start: int) -> float:
+    """The mean SQLite VM steps of 20 index_node calls, each for a node not yet indexed."""
+    steps = 0
+
+    def count() -> int:
+        nonlocal steps
+        steps += 1
+        return 0
+
+    brain.writer.set_progress_handler(count, 1)
+    try:
+        for n in range(start, start + 20):
+            _index(brain, f"ep_step{n:06d}", f"invoice {n} paid late")
+    finally:
+        brain.writer.set_progress_handler(None, 1)
+    return steps / 20
+
+
+def test_a_writes_cost_does_not_grow_with_the_brain(tmp_path: Path) -> None:
+    """Counted in VM steps, not timed: the delete no longer scans the whole FTS index."""
+    with Brain(tmp_path / "brain") as brain:
+        with brain.write_txn() as con:
+            for n in range(100):
+                brain.index_node(
+                    con,
+                    node_id=f"ep_seed{n:06d}",
+                    kind="episode",
+                    rel=f"episodes/ep_seed{n:06d}.md",
+                    file_text="x",
+                    body=f"seed {n} invoice paid",
+                    importance=DEFAULT_IMPORTANCE,
+                    created_at="2026-10-11T09:00:00+00:00",
+                )
+        small = _steps_per_write(brain, 0)
+        with brain.write_txn() as con:
+            for n in range(100, 1980):  # 100 seeds, 20 measured, 1,880 more: 2,000
+                brain.index_node(
+                    con,
+                    node_id=f"ep_seed{n:06d}",
+                    kind="episode",
+                    rel=f"episodes/ep_seed{n:06d}.md",
+                    file_text="x",
+                    body=f"seed {n} invoice paid",
+                    importance=DEFAULT_IMPORTANCE,
+                    created_at="2026-10-11T09:00:00+00:00",
+                )
+        large = _steps_per_write(brain, 100)
+
+    assert large <= 2 * small, f"{small:.0f} steps a write at 100 nodes, {large:.0f} at 2,000"
+
+
+def _fts_keys(db: Path) -> tuple[list[tuple[int, int]], int, str]:
+    """(node rowid, FTS rowid) per FTS row, the FTS rows with no node, and the stamped version."""
+    with closing(sqlite3.connect(str(db))) as con:
+        pairs = con.execute(
+            """SELECT n.rowid, f.rowid FROM companion_fts f
+               JOIN companion_node n ON n.id = f.node_id ORDER BY n.rowid"""
+        ).fetchall()
+        (orphans,) = con.execute(
+            """SELECT COUNT(*) FROM companion_fts
+               WHERE node_id NOT IN (SELECT id FROM companion_node)"""
+        ).fetchone()
+        (version,) = con.execute(
+            "SELECT value FROM companion_meta WHERE key = 'schema_version'"
+        ).fetchone()
+    return [(int(a), int(b)) for a, b in pairs], int(orphans), str(version)
+
+
+def _recalled(brain: Brain) -> list[tuple[str, list[str]]]:
+    trace = recall(brain, "duplex invoice")
+    return [(block.name, [m.id for m in block.items]) for block in trace.blocks]
+
+
+def test_a_version_1_index_is_rekeyed_by_node_rowid_when_opened(tmp_path: Path) -> None:
+    root = tmp_path / "brain"
+    with Brain(root) as brain:
+        sources = [
+            brain.append_episode(f"{'duplex ' * (n + 1)}invoice {n}", "user").id for n in range(6)
+        ]
+        brain.write_fact("duplex", "the duplex invoice is late", sources=sources[:1])
+        brain.write_procedural("chase", "chase the duplex invoice", sources=sources[:1])
+    db = root / "index.sqlite"
+    # What a version-1 index looks like: FTS rowids of FTS5's own choosing, one row whose node is
+    # gone, and the old stamp.
+    with closing(sqlite3.connect(str(db), isolation_level=None)) as con:
+        con.execute("BEGIN")
+        con.execute(
+            """CREATE TEMP TABLE shifted AS
+               SELECT rowid + 1000 AS r, node_id, body, tags FROM companion_fts"""
+        )
+        con.execute("DELETE FROM companion_fts")
+        con.execute(
+            """INSERT INTO companion_fts (rowid, node_id, body, tags)
+               SELECT r, node_id, body, tags FROM shifted"""
+        )
+        con.execute(
+            """INSERT INTO companion_fts (rowid, node_id, body, tags)
+               VALUES (9999, 'ep_gone0000', 'duplex invoice orphan', 'episode')"""
+        )
+        con.execute("UPDATE companion_meta SET value = '1' WHERE key = 'schema_version'")
+        con.execute("COMMIT")
+    pairs, orphans, version = _fts_keys(db)
+    assert version == "1" and orphans == 1
+    assert all(node != fts for node, fts in pairs)
+    # Recall on the version-1 index, read as it is: nothing has opened a Brain on it yet.
+    before = _recalled(
+        cast(Brain, SimpleNamespace(read_connection=lambda: sqlite3.connect(str(db))))
+    )
+
+    with Brain(root) as brain:
+        after = _recalled(brain)
+        fingerprint = index_fingerprint(brain)
+        reconcile_from_disk(brain)
+        assert index_fingerprint(brain) == fingerprint, "the re-keyed index is the rebuilt one"
+
+    pairs, orphans, version = _fts_keys(db)
+    assert version == str(SCHEMA_VERSION) == "2"
+    assert orphans == 0
+    assert len(pairs) == 8 and all(node == fts for node, fts in pairs)
+    assert after == before
+    assert any(ids for _, ids in after), "the recall compared is not empty"
+
+
+def test_reindexing_a_node_leaves_exactly_one_fts_row_under_its_rowid(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        _index(brain, "ep_aaaa0000", "first body")
+        _index(brain, "ep_bbbb0000", "another node")
+        _index(brain, "ep_aaaa0000", "first body")
+        _index(brain, "ep_aaaa0000", "second body under the same id")
+
+        with closing(brain.read_connection()) as con:
+            rows = con.execute(
+                """SELECT n.rowid, f.rowid, f.body FROM companion_fts f
+                   JOIN companion_node n ON n.id = f.node_id WHERE f.node_id = 'ep_aaaa0000'"""
+            ).fetchall()
+            (total,) = con.execute("SELECT COUNT(*) FROM companion_fts").fetchone()
+
+    ((node_rowid, fts_rowid, body),) = rows
+    assert node_rowid == fts_rowid
+    assert body == "second body under the same id"
+    assert total == 2
