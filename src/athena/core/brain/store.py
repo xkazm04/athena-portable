@@ -7,7 +7,9 @@ Three rules hold this module together, and each is a lesson the first build lear
 transaction that inserts every index row for it. A crash between the two leaves a findable file
 and a missing row — which the next :func:`~athena.core.brain.reconcile.reconcile_from_disk`
 repairs. The other order would leave a row pointing at a file that does not exist, and no
-rebuild can repair that.
+rebuild can repair that. The file itself is written whole or not at all (ADR 0080): the payload is
+encoded first, written to a temporary file beside its target, fsynced and renamed into place, so a
+write that fails leaves neither an empty file nor a half-written one.
 
 **Provenance at write.** :meth:`Brain.write_fact` and :meth:`Brain.write_procedural` refuse any
 ``sources`` list that does not resolve to live episode ids *in this brain*. There is no bypass,
@@ -40,6 +42,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
+import secrets
 import sqlite3
 import threading
 from collections.abc import Iterator, Sequence
@@ -489,10 +493,27 @@ class Brain:
     # -- write plumbing ------------------------------------------------------------------------
 
     def _write_file(self, rel: str, payload: str) -> None:
-        """Disk first. ``newline="\\n"`` on every platform: the tree is portable by copying."""
+        """Disk first, whole or not at all (ADR 0080).
+
+        Bytes are written as they are, with no newline translation on any platform: the tree is
+        portable by copying. The payload is encoded first, so text that is not valid Unicode
+        creates nothing. The bytes go to a temporary file whose name does not end in ``.md`` (a
+        reconcile never indexes it), are fsynced, and replace the target in one step. The
+        directory is not fsynced; Windows cannot.
+        """
+        data = payload.encode("utf-8")
         target = self.root / rel
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(payload, encoding="utf-8", newline="\n")
+        temp = target.with_name(f".{target.name}.{secrets.token_hex(6)}.tmp")
+        try:
+            with temp.open("xb") as handle:
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temp, target)
+        except BaseException:
+            temp.unlink(missing_ok=True)
+            raise
 
     def index_node(
         self,

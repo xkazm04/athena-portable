@@ -435,3 +435,17 @@ def test_a_fact_written_without_every_turn_waits_for_a_query(local: AthenaLocal)
     assert _always(local, "draft the quarterly tax pack") == []
     reconcile_from_disk(local.brain)
     assert _always(local, "draft the quarterly tax pack") == []
+
+
+def test_write_fact_with_a_lone_surrogate_is_refused_before_anything_is_written(
+    local: AthenaLocal,
+) -> None:
+    episode = local.brain.append_episode("Northwind paid 40 days late", session_id=CONVERSATION)
+    params = {"key": "k", "value": "pays \ud800 late", "sources": [episode.id]}
+
+    result = local.catalog.validate("core.write_fact", params, ctx())
+
+    assert not result.ok
+    assert result.reason == "validator_failed"
+    assert "\ud800" not in result.detail
+    assert not list((local.brain.root / "semantic").rglob("*.md"))

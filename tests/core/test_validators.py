@@ -165,3 +165,17 @@ def test_a_schema_of_the_wrong_shape_refuses_every_call_instead_of_raising() -> 
             result = check_schema(params, schema)  # type: ignore[arg-type]
             assert not result.ok and result.reason == "validator_failed"
             assert "params_schema" in result.detail
+
+
+def test_a_string_that_is_not_unicode_is_refused_and_never_echoed() -> None:
+    top = check_schema({"key": "\ud800"}, SCHEMA)
+    nested = check_schema({"key": "a", "tags": ["ok", "\ud800"]}, SCHEMA)
+    via_validator = schema_validator(SCHEMA)({"key": "\ud800"}, CTX)
+
+    for result in (top, nested, via_validator):
+        assert not result.ok
+        assert result.reason == "validator_failed"
+        assert "not valid Unicode" in result.detail
+        assert "\ud800" not in result.detail
+    assert "key" in top.detail
+    assert "tags[1]" in nested.detail

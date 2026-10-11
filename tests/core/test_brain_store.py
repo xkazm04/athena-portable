@@ -410,3 +410,60 @@ def test_a_confidence_that_is_not_finite_is_refused_before_any_file(
 
         assert sorted(p.relative_to(brain.root) for p in brain.root.rglob("*.md")) == files
         assert brain.counts() == {"episode": 1}
+
+
+# -- a file is written whole or not at all (ADR 0080) ------------------------------------------
+
+
+def _file_count(root: Path) -> int:
+    return sum(1 for p in root.rglob("*") if p.is_file() and not p.name.startswith("index.sqlite"))
+
+
+def test_a_value_that_is_not_unicode_creates_no_file(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("Northwind paid 40 days late", role="user")
+        files, counts = _file_count(brain.root), brain.counts()
+
+        with pytest.raises(ValueError):
+            brain.write_fact("k", "pays \ud800 late", scope="world", sources=[episode.id])
+        with pytest.raises(ValueError):
+            brain.write_fact("k\ud800", "pays late", scope="world", sources=[episode.id])
+        with pytest.raises(ValueError):
+            brain.append_episode("lone \ud800 surrogate", role="user")
+
+        assert _file_count(brain.root) == files
+        assert brain.counts() == counts
+
+
+def test_a_failed_replace_leaves_no_file_and_no_row(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("Northwind paid 40 days late", role="user")
+        counts = brain.counts()
+
+        def refuse(*_args: object, **_kwargs: object) -> None:
+            raise OSError("replace refused")
+
+        monkeypatch.setattr("athena.core.brain.store.os.replace", refuse)
+        with pytest.raises(OSError, match="replace refused"):
+            brain.write_fact("k", "pays late", scope="world", sources=[episode.id])
+
+        assert list((brain.root / "semantic").rglob("*")) == [
+            p for p in (brain.root / "semantic").rglob("*") if p.is_dir()
+        ]
+        assert brain.counts() == counts
+
+
+def test_a_body_with_crlf_is_on_disk_byte_for_byte(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("row one\r\nrow two", role="user")
+        fact = brain.write_fact(
+            "k", "Acme pays net 60.\r\nAlways late.", scope="world", sources=[episode.id]
+        )
+
+        for ref in (episode, fact):
+            on_disk = (brain.root / ref.path).read_bytes()
+            assert b"\r\n" in on_disk
+            assert on_disk.decode("utf-8").encode("utf-8") == on_disk
+            assert b"\r\r" not in on_disk

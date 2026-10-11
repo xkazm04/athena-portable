@@ -20,6 +20,8 @@ A contract changes only with a test.
   markdown is untouched.
 - **Provenance at write** (invariant 2). `write_fact` and `write_procedural` reject any source that
   is not a live episode id. There is no bypass, tests included.
+  A memory file is written whole or not at all, and text that is not valid Unicode is refused
+  before a card is filed (ADR 0080).
 - **Recall** (`core/recall.py`) returns three lanes: what she always carries, distilled memory that
   matched the message, and recalled episodes. Matching is FTS5 BM25 over any meaningful word of
   the question, stopwords dropped (ADR 0042), and an episode is shown as the 500-byte window around

@@ -102,6 +102,12 @@ def _check_value(path: str, value: Any, schema: dict[str, Any]) -> ValidationRes
             )
 
     if isinstance(value, str):
+        # A lone surrogate (JSON's \ud800) is a str Python holds and no file can: refused here,
+        # before the card, rather than after the user approved it (ADR 0080). Never echoed.
+        try:
+            value.encode("utf-8")
+        except UnicodeEncodeError:
+            return ValidationResult.reject("validator_failed", f"{path}: is not valid Unicode text")
         limit = schema.get("maxLength")
         if isinstance(limit, int) and len(value) > limit:
             return ValidationResult.reject(
