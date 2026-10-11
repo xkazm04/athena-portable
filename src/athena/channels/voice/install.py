@@ -6,9 +6,15 @@ it is not there yet), into the home Personas shares. Standard library only — `
 
 **The sources are constants.** Personas' pins: sherpa-onnx v1.13.4 ``win-x64-shared-MT-Release``,
 the ``kokoro-multi-lang-v1_0`` model package, whisper.cpp v1.9.2 ``whisper-bin-x64``, and the ggml
-models from the upstream Hugging Face repository. A request names a *component* — ``kokoro`` or
-``whisper:<model id from the allowlist>`` — and never a URL, so nothing a caller sends reaches an
-authority. (:class:`Sources` exists so a test can point the installer at a local server.)
+models from the upstream Hugging Face repository at one commit. A request names a *component* —
+``kokoro`` or ``whisper:<model id from the allowlist>`` — and never a URL, so nothing a caller
+sends reaches an authority. (:class:`Sources` exists so a test can point the installer at a local
+server.)
+
+**So are the bytes** (ADR 0078). Every URL has a SHA-256 beside it, keyed by the URL itself, and
+the bytes are hashed as they arrive. A download whose digest is not the pinned one is deleted and
+fails the run before anything is extracted or moved into the engine home, and a URL with no pin
+is never fetched. A pin proves the bytes are the ones pinned, not that they were good then.
 
 **One install at a time, across both products.** A second request while one runs is refused
 (409 at the route). A lock file in the engine home — ``.install.lock``, created exclusively — is
@@ -25,6 +31,7 @@ of reporting a tree that will not run.
 
 from __future__ import annotations
 
+import hashlib
 import http.client
 import json
 import os
@@ -36,7 +43,7 @@ import threading
 import time
 import urllib.request
 import zipfile
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from contextlib import suppress
 from dataclasses import dataclass, field, replace
 from pathlib import Path, PurePosixPath
@@ -97,25 +104,73 @@ KOKORO_KEEP_DIRS: frozenset[str] = frozenset({"espeak-ng-data"})
 
 @dataclass(frozen=True)
 class Sources:
-    """Where each archive comes from. Production uses :data:`SOURCES` and nothing else."""
+    """Where each archive comes from, and the SHA-256 its bytes must have. Production uses
+    :data:`SOURCES` and nothing else."""
 
     kokoro_engine: str
     kokoro_model: str
     whisper_engine: str
     whisper_models: str
+    #: Lowercase hex SHA-256 by URL. Keyed by the URL itself, so a URL changed without its digest
+    #: has no pin and is refused before it is fetched (ADR 0078).
+    sha256: Mapping[str, str]
 
     def whisper_model(self, model: whisper.WhisperModel) -> str:
         return f"{self.whisper_models}/{model.filename}"
 
+    def pinned(self, url: str) -> str | None:
+        """The digest ``url``'s bytes must have, or ``None`` when it has no well-formed pin."""
+        digest = self.sha256.get(url)
+        if digest is None or len(digest) != 64 or not set(digest) <= _HEX_DIGITS:
+            return None
+        return digest
 
+
+_HEX_DIGITS = frozenset("0123456789abcdef")
+
+_SHERPA = "https://github.com/k2-fsa/sherpa-onnx/releases/download"
+_WHISPER_ENGINE = "https://github.com/ggml-org/whisper.cpp/releases/download"
+#: ggerganov/whisper.cpp on Hugging Face at one commit, never at ``main``, which moves.
+_WHISPER_MODELS = (
+    "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1"
+)
+
+#: Where every pin came from, and when, is ADR 0078. A pin is bumped by changing a URL and its
+#: digest together, in one commit.
 SOURCES = Sources(
-    kokoro_engine="https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.4/"
-    "sherpa-onnx-v1.13.4-win-x64-shared-MT-Release.tar.bz2",
-    kokoro_model="https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/"
-    "kokoro-multi-lang-v1_0.tar.bz2",
-    whisper_engine="https://github.com/ggml-org/whisper.cpp/releases/download/v1.9.2/"
-    "whisper-bin-x64.zip",
-    whisper_models="https://huggingface.co/ggerganov/whisper.cpp/resolve/main",
+    kokoro_engine=f"{_SHERPA}/v1.13.4/sherpa-onnx-v1.13.4-win-x64-shared-MT-Release.tar.bz2",
+    kokoro_model=f"{_SHERPA}/tts-models/kokoro-multi-lang-v1_0.tar.bz2",
+    whisper_engine=f"{_WHISPER_ENGINE}/v1.9.2/whisper-bin-x64.zip",
+    whisper_models=_WHISPER_MODELS,
+    sha256={
+        f"{_SHERPA}/v1.13.4/sherpa-onnx-v1.13.4-win-x64-shared-MT-Release.tar.bz2": (
+            "c312b30e55258d291067537ce4a6f90e155f1c16b6a10381a5729924e98b7879"
+        ),
+        f"{_SHERPA}/tts-models/kokoro-multi-lang-v1_0.tar.bz2": (
+            "c5f7e2d2caf082bc1d20fb70334a61d99d20b484500aad32e7cf84c128ea3298"
+        ),
+        f"{_WHISPER_ENGINE}/v1.9.2/whisper-bin-x64.zip": (
+            "49dcc16de826f20bd53d44f947a1ae49dfa81f86cad67a64d80820cb192d674a"
+        ),
+        f"{_WHISPER_MODELS}/ggml-tiny.en.bin": (
+            "921e4cf8686fdd993dcd081a5da5b6c365bfde1162e72b08d75ac75289920b1f"
+        ),
+        f"{_WHISPER_MODELS}/ggml-base.en.bin": (
+            "a03779c86df3323075f5e796cb2ce5029f00ec8869eee3fdfb897afe36c6d002"
+        ),
+        f"{_WHISPER_MODELS}/ggml-small.en.bin": (
+            "c6138d6d58ecc8322097e0f987c32f1be8bb0a18532a3f88f734d1bbf9c41e5d"
+        ),
+        f"{_WHISPER_MODELS}/ggml-tiny.bin": (
+            "be07e048e1e599ad46341c8d2a135645097a538221678b7acdd1b1919c6e1b21"
+        ),
+        f"{_WHISPER_MODELS}/ggml-base.bin": (
+            "60ed5bc3dd14eea856493d334349b405782ddcaf0028d4b5df4088345fba2efe"
+        ),
+        f"{_WHISPER_MODELS}/ggml-small.bin": (
+            "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b"
+        ),
+    },
 )
 
 
@@ -299,7 +354,27 @@ class Installer:
                     partial.unlink()
 
     def _download(self, url: str, dest: Path, phase: InstallPhase) -> None:
+        """``url`` into ``dest``, or :class:`InstallError` with ``dest`` gone. The bytes are hashed
+        as they arrive and match the pin before the caller extracts or moves anything."""
+        name = PurePosixPath(url).name
+        pinned = self.sources.pinned(url)
+        if pinned is None:
+            raise InstallError(f"{name} has no pinned SHA-256 digest; it is never downloaded")
+        try:
+            received = self._fetch(url, dest, phase)
+        except BaseException:
+            dest.unlink(missing_ok=True)
+            raise
+        if received != pinned:
+            dest.unlink(missing_ok=True)
+            raise InstallError(
+                f"{name} does not match its pinned SHA-256 digest; nothing was installed"
+            )
+
+    def _fetch(self, url: str, dest: Path, phase: InstallPhase) -> str:
+        """The bytes into ``dest``, checked against Content-Length; their SHA-256, as hex."""
         self._set(state=phase, received_bytes=0, total_bytes=None)
+        digest = hashlib.sha256()
         request = urllib.request.Request(url, headers={"User-Agent": "athena-voice-installer"})
         try:
             with urllib.request.urlopen(request, timeout=READ_TIMEOUT_S) as reply:
@@ -315,6 +390,7 @@ class Installer:
                         if not chunk:
                             break
                         out.write(chunk)
+                        digest.update(chunk)
                         received += len(chunk)
                         self._set(received_bytes=received)
         except (OSError, http.client.HTTPException) as exc:  # URLError, HTTPError: OSErrors
@@ -325,6 +401,7 @@ class Installer:
             raise InstallError(
                 f"download of {PurePosixPath(url).name} stopped at {received} of {total} bytes"
             )
+        return digest.hexdigest()
 
 
 # --- the lock -------------------------------------------------------------------------------------

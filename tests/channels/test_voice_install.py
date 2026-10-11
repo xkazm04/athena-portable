@@ -9,13 +9,15 @@ pointed at them through :class:`Sources` — the one seam production never uses.
 
 from __future__ import annotations
 
+import hashlib
 import io
 import os
+import re
 import tarfile
 import threading
 import time
 import zipfile
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -88,19 +90,48 @@ def server(files: Files) -> Iterator[str]:
     httpd.daemon_threads = True
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
+    base = f"http://127.0.0.1:{httpd.server_address[1]}"
+    _SERVED[base] = files
     try:
-        yield f"http://127.0.0.1:{httpd.server_address[1]}"
+        yield base
     finally:
+        del _SERVED[base]
         httpd.shutdown()
         httpd.server_close()
 
 
-def _sources(base: str) -> Sources:
+#: What each running test server serves, by its base URL, so a test's pins can follow its files.
+_SERVED: dict[str, Files] = {}
+
+
+class _ServedDigests(Mapping[str, str]):
+    """The SHA-256 of what the server serves at each URL now: the fixtures' own pins (ADR 0078).
+
+    A path the server does not have is pinned to zeros, so its download still fails on the 404
+    that test is about rather than on a missing pin.
+    """
+
+    def __init__(self, base: str, files: Files) -> None:
+        self.base, self.files = base, files
+
+    def __getitem__(self, url: str) -> str:
+        body = self.files.bodies.get(url.removeprefix(self.base))
+        return "0" * 64 if body is None else hashlib.sha256(body).hexdigest()
+
+    def __iter__(self) -> Iterator[str]:
+        return iter([f"{self.base}{path}" for path in self.files.bodies])
+
+    def __len__(self) -> int:
+        return len(self.files.bodies)
+
+
+def _sources(base: str, sha256: Mapping[str, str] | None = None) -> Sources:
     return Sources(
         kokoro_engine=f"{base}/engine.tar.bz2",
         kokoro_model=f"{base}/model.tar.bz2",
         whisper_engine=f"{base}/whisper-bin-x64.zip",
         whisper_models=f"{base}/models",
+        sha256=_ServedDigests(base, _SERVED[base]) if sha256 is None else sha256,
     )
 
 
@@ -422,3 +453,112 @@ def test_a_failed_model_download_leaves_no_partial_file(
     installer.start("whisper:small")
     assert _settle(installer) == "failed"
     assert not list((tmp_path / "personas" / "companion-stt" / "models").glob("*"))
+
+
+# -- every byte fetched matches a pinned SHA-256 (ADR 0078) -------------------------------------
+
+_HEX64 = re.compile(r"[0-9a-f]{64}")
+
+
+def _production_urls() -> list[str]:
+    return [
+        SOURCES.kokoro_engine,
+        SOURCES.kokoro_model,
+        SOURCES.whisper_engine,
+        *(SOURCES.whisper_model(model) for model in whisper.MODELS),
+    ]
+
+
+def test_every_production_archive_and_whisper_model_has_a_pinned_sha256() -> None:
+    urls = _production_urls()
+    assert len(urls) == 3 + len(whisper.MODELS) == 9
+    for url in urls:
+        assert _HEX64.fullmatch(SOURCES.sha256[url]), url
+        assert SOURCES.pinned(url) == SOURCES.sha256[url]
+    assert set(SOURCES.sha256) == set(urls)
+
+
+def test_no_production_url_follows_a_moving_branch() -> None:
+    for url in [*_production_urls(), SOURCES.whisper_models]:
+        assert "/resolve/main" not in url, url
+    assert re.search(r"/resolve/[0-9a-f]{40}$", SOURCES.whisper_models)
+
+
+def _pins_with(base: str, files: Files, path: str, wrong: bytes) -> dict[str, str]:
+    """The fixtures' own pins, except that ``path`` is pinned to the digest of other bytes."""
+    pins = dict(_ServedDigests(base, files))
+    pins[f"{base}{path}"] = hashlib.sha256(wrong).hexdigest()
+    return pins
+
+
+def test_an_engine_archive_that_does_not_match_its_pin_fails_and_leaves_nothing(
+    tmp_path: Path, files: Files, server: str
+) -> None:
+    _kokoro_archives(files)
+    installer = Installer(
+        EngineHomes(tmp_path / "personas"),
+        sources=_sources(server, _pins_with(server, files, "/engine.tar.bz2", b"what was pinned")),
+        platform="win32",
+    )
+    installer.start("kokoro")
+    assert _settle(installer) == "failed"
+    assert installer.state().error == (
+        "engine.tar.bz2 does not match its pinned SHA-256 digest; nothing was installed"
+    )
+    assert files.requested == ["/engine.tar.bz2"]
+    assert _files_under(tmp_path / "personas") == set()
+
+
+def test_a_whisper_model_that_does_not_match_its_pin_leaves_no_partial_and_no_engine(
+    tmp_path: Path, files: Files, server: str
+) -> None:
+    files.bodies["/whisper-bin-x64.zip"] = _zip({f"Release/{whisper.ENGINE_CANDIDATES[0]}": b"cli"})
+    files.bodies["/models/ggml-tiny.en.bin"] = b"ggml" * 100
+    installer = Installer(
+        EngineHomes(tmp_path / "personas"),
+        sources=_sources(
+            server, _pins_with(server, files, "/models/ggml-tiny.en.bin", b"the pinned model")
+        ),
+        platform="win32",
+    )
+    installer.start("whisper:tiny.en")
+    assert _settle(installer) == "failed"
+    assert installer.state().error == (
+        "ggml-tiny.en.bin does not match its pinned SHA-256 digest; nothing was installed"
+    )
+    assert _files_under(tmp_path / "personas") == set()
+
+
+def test_an_archive_that_matches_its_written_pin_installs_as_before(
+    tmp_path: Path, files: Files, server: str
+) -> None:
+    _kokoro_archives(files)
+    pins = {
+        f"{server}/engine.tar.bz2": hashlib.sha256(files.bodies["/engine.tar.bz2"]).hexdigest(),
+        f"{server}/model.tar.bz2": hashlib.sha256(files.bodies["/model.tar.bz2"]).hexdigest(),
+    }
+    installer = Installer(
+        EngineHomes(tmp_path / "personas"), sources=_sources(server, pins), platform="win32"
+    )
+    installer.start("kokoro")
+    assert _settle(installer) == "completed"
+    assert kokoro.paths_for(installer.homes).missing() == []
+
+
+def test_a_component_with_no_pinned_digest_is_never_downloaded(
+    tmp_path: Path, files: Files, server: str
+) -> None:
+    _kokoro_archives(files)
+    unpinned = {
+        f"{server}/model.tar.bz2": hashlib.sha256(files.bodies["/model.tar.bz2"]).hexdigest()
+    }
+    installer = Installer(
+        EngineHomes(tmp_path / "personas"), sources=_sources(server, unpinned), platform="win32"
+    )
+    installer.start("kokoro")
+    assert _settle(installer) == "failed"
+    assert installer.state().error == (
+        "engine.tar.bz2 has no pinned SHA-256 digest; it is never downloaded"
+    )
+    assert files.requested == []
+    assert _files_under(tmp_path / "personas") == set()
