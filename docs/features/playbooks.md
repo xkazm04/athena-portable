@@ -39,7 +39,7 @@ and a ledger of every trap follow. A total stated in her closing words is audite
 cards. The verdict (exceeds, meets, short) holds both the money and the count of items to the
 playbook's bar, and missing a required item is short (ADR 0051).
 
-## The ninety-three playbooks (latest runs, Claude Sonnet)
+## The ninety-four playbooks (latest runs, Claude Sonnet)
 
 | Playbook | Audience | Portals | Latest run |
 |---|---|---|---|
@@ -136,9 +136,10 @@ playbook's bar, and missing a required item is short (ADR 0051).
 | A student's FAFSA verification answered with the documents the college names: a notarized ID, a five-person family statement, the 2024 return transcript, her non-filer statement and two W-2s, one found only in a 2025 letter, and the family size fixed, while old forms, a paid service, the IRS's figures and the bursar are left out | home | 4 | exceeds: 7 of 7, $7,000.00 of $7,000.00 (1,000 dollars an act, an exposure and not money recovered), 16 of 16 traps, 0 false, 1.8 min, $1.37 |
 | A laid-off father's and a pay-cut mother's changes sent to the college's aid office with proof and an estimated 2026 income by its deadline, while a 2024 cut, a seasonal job, a brother's other college, a tuition rise, a premium, a dependency override and an appeal service are left out | home | 4 | exceeds: 2 of 2, $4,000.00 of $4,000.00 (2,000 dollars a request, a per-act weight and not money recovered), 10 of 10 traps, 0 false, 1.9 min, $1.51 |
 | A working family's 2025 return on extension claims the earned income credit for three children, a daughter, a son who moved in in March and a student of 22, with Form 8862 for the disallowed 2023 credit, while a niece her mother claims, a boy there four months, a 21-year-old, another family's child, a Form 8332, a refund advance and a maximizer are left out | home | 4 | exceeds: 4 of 4, $4,000.00 of $4,000.00 (1,000 dollars an act, an exposure and not money recovered), 8 of 8 traps, 0 false, 1.7 min, $1.51 |
+| A disabled worker's earnings reported to Social Security in the month they were earned, June to September, with a second employer whose stubs came only by mail, while three months on file, October, her husband's job, a work expense, a paid advocate and a text are left out | home | 3 | exceeds: 5 of 5, $4,000.00 of $4,000.00 (800 dollars an act, an exposure and not money recovered), 8 of 8 traps, 0 false, 1.1 min, $0.84 |
 
-Across the latest runs: $1,302,319 of $1,361,396 found, 969 of 969 traps walked past, no false claim,
-246 minutes of her time against about 341 hours by hand, $150.63 of model time. 133 runs are recorded
+Across the latest runs: $1,306,319 of $1,365,396 found, 977 of 977 traps walked past, no false claim,
+247 minutes of her time against about 343 hours by hand, $151.47 of model time. 134 runs are recorded
 in the playbooks' histories.
 
 ## The desktop module

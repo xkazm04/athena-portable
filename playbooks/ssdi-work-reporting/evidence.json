@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "playbook": "ssdi-work-reporting",
+  "captured_at": "2026-10-11T06:42:24Z",
+  "bench_run_at": "2026-10-11T06:39:05Z",
+  "narration": {
+    "text": "A disabled worker's earnings go to Social Security by the month they were earned: June to September, 1,447, 1,408, 1,274 and 1,320 dollars, and a second employer whose stubs came only by mail, while three months on file, October, her husband's job, a paid advocate and a text are left alone. This is a chore for a woman on a disabled worker's Social Security benefit, back at part-time work since March, with a husband who works full time. Athena works it across 3 portals: Benefitline, Payroll Harbor and Postwren. On the bench, she found 5 of 5 eligible items, worth 4,000 dollars of the 4,000 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 1 minute. By hand, the same chore takes about 2 hours, so she was about 82 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
+    "engine": "kokoro",
+    "voice": "af_heart",
+    "duration_s": 63.698,
+    "sha256": "2b9591151ece8f610ad421a9bb4158cc601601d24029955114855e8a775421e8"
+  },
+  "video": {
+    "path": "evidence/ssdi-work-reporting/evidence.mp4",
+    "duration_s": 63.698,
+    "bytes": 2796947,
+    "sha256": "4ed477a400c3eb8a2b5a5d7c8d57391dbbf5af6ab240c5cf1e0b829df81f4e8b"
+  },
+  "thumbnail": {
+    "path": "playbooks/ssdi-work-reporting/thumb.jpg",
+    "bytes": 79202,
+    "sha256": "4c95557698e4d3ed7037132722d81120680ca1c4396d94db28e07edb45948930"
+  }
+}

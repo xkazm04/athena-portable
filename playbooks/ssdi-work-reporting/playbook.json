@@ -1,0 +1,124 @@
+{
+  "id": "ssdi-work-reporting",
+  "title": "A disabled worker's earnings go to Social Security by the month they were earned: June to September, 1,447, 1,408, 1,274 and 1,320 dollars, and a second employer whose stubs came only by mail, while three months on file, October, her husband's job, a paid advocate and a text are left alone",
+  "domain": "Public benefits",
+  "audience": "home",
+  "promise": "A disabled worker who went back to part-time work in March has not told Social Security about her second employer or about June to September, and her job is to report both now: her gross earnings for each month in the month they were earned, which are 1,447 dollars for June, 1,408 for July, 1,274 for August, whose total passes 1,210 only with a garden supply's stub that came by mail, and 1,320 for September, which was paid on 5 October; and the second employer, Larkspur Garden Supply. She reports no month twice, no October, none of her husband's work and no expense taken off a month, and she answers no advocate or text.",
+  "persona": "A woman on a disabled worker's Social Security benefit, back at part-time work since March, with a husband who works full time",
+  "chore": "Read the rules, the months and employers on file in Benefitline; the pay records of both spouses in Payroll Harbor; and the mail, scanned letters included, in Postwren. Then apply 20 CFR 404.1588 and 404.1592 with POMS DI 10505.005 and DI 13010.035, as they stand on 9 October 2026: a trial work month is a month of gross earnings of more than 1,210 dollars, the 2026 amount; nine in 60 months end the period; wages count in the month earned and not the month paid; impairment-related work expenses are not deducted when counting; a beneficiary reports a return to work, a new employer and her earnings promptly, and not a spouse's.",
+  "command": "I'm Marguerite Tolland. I've been back at part-time work since March. Go through Benefitline, Payroll Harbor and the Postwren inbox, and report to Social Security what I haven't yet: my own earnings for each month, in the month earned, and any employer of mine it doesn't have. Don't report anything twice or anything of my husband's, and don't reply to anyone.",
+  "apps": [
+    {
+      "name": "Benefitline",
+      "role": "the stand-in for Social Security's work reporting: the rules, the months and employers already reported, and the pages that report a month's earnings and a new employer",
+      "api": "Benefits portal, no API",
+      "url": ""
+    },
+    {
+      "name": "Payroll Harbor",
+      "role": "the pay records of Marguerite and her husband: the month each pay is earned for, the pay date and the gross",
+      "api": "Payroll records, no API",
+      "url": ""
+    },
+    {
+      "name": "Postwren",
+      "role": "the family's mail and the letter service: a second employer's pay stubs, Social Security's letter, an advocate's offer and a text",
+      "api": "Mail and letters, no API",
+      "url": ""
+    }
+  ],
+  "steps": [
+    "Reads the rules, the months already reported and the employers on file in Benefitline.",
+    "Reads every page of the pay records in Payroll Harbor and sets the month earned against the pay date.",
+    "Reads every page of the mail in Postwren, including the second employer's stubs, and notes what each attachment is.",
+    "Reports each month of her own earnings not yet reported, in the month earned, and the employer not yet reported."
+  ],
+  "gates": [
+    {
+      "action": "report_month_earnings",
+      "label": "Report a month's earnings",
+      "why": "The report goes to Social Security under her name and decides which months are trial work months; a month in the wrong month, net of an expense, with a spouse's pay in it or reported twice miscounts the nine months and can build an overpayment."
+    },
+    {
+      "action": "report_new_employer",
+      "label": "Report a new employer",
+      "why": "The report goes to Social Security under her name; an employer that is not hers, or one already reported, puts a false or duplicate entry on her record."
+    },
+    {
+      "action": "reply_message",
+      "label": "Reply to a message",
+      "why": "A reply goes out under her name; one that says yes to a paid advocate commits money for a free report, and one that answers the text hands over her Social Security number and her wages."
+    }
+  ],
+  "traps": [
+    "March, April or May, already reported on the record.",
+    "October, the month the September pay was paid in, when the wages were earned in September.",
+    "A month's gross with the 220 dollar ride service taken off it.",
+    "A month's total with her husband's pay added.",
+    "Fennick Staffing, already reported as an employer.",
+    "Brannock Freight Lines, her husband's employer.",
+    "A reply that signs her up with the paid advocate at 95 dollars a month.",
+    "A reply to the text with her Social Security number and last month's wages."
+  ],
+  "memory": [
+    "Each month already reported, its amount and how it was counted, carried from Benefitline.",
+    "Each pay record, whose it is, the month it was earned for and its gross, carried from Payroll Harbor.",
+    "Each attachment in the mail, its document id, the employer and the months it covers, carried from Postwren.",
+    "The 2026 trial work amount and the rule that wages count in the month earned, carried from the rules."
+  ],
+  "economics": {
+    "value_usd": 4000,
+    "per": "year",
+    "basis": "An estimate, mostly an exposure. A beneficiary who works and does not report, or reports the wrong month, can be paid a benefit that Social Security later finds she was not due and must collect back; and one whose trial work months are miscounted can lose the nine-month period's protection or enter it late. The roster's 4,000 dollars a year is an estimate of the benefit months at risk in a year of part-time work and is kept; it is not an average of anything published. The bench world holds five acts, the earnings of four months and one employer, each weighted at 800 dollars, a per-act weight, an exposure unit and not money recovered: the benefit and any overpayment are Social Security's to decide, and no page of the world computes them. Times a year: 1, because a beneficiary who works reports each month and the year's reports are the chore; the world holds the last four of seven months. manual_minutes 90: reading six rules, three months on file, ten pay records, four letters and three employers, building four monthly totals from two employers and matching each stub to the month earned, and sending five reports. The rules applied, as they stand on Friday 9 October 2026: 20 CFR 404.1592 (the trial work period: nine months, not consecutive, in a rolling 60; for an employee a month counts when gross earnings are more than the year's amount) and 404.1592a (the 36-month reentitlement period after it, which the fact sheet calls the extended period of eligibility); 20 CFR 404.1588 (a beneficiary should promptly tell Social Security about a return to work, a new employer and increased earnings, with no day of the month named); POMS DI 13010.035 (no work incentive, impairment-related work expenses among them, is applied to the existence of trial work months), DI 13010.060 (a month counts when earnings are more than the amount) and DI 10505.005 (revised 10 January 2025: determine when earnings were earned, and presume the month paid only when nothing supports a pay period); and Social Security's fact sheet on the trial work period, which gives 1,210 dollars for 2026 and says 'or more' where the regulation and POMS say 'more than'. THE BRIEF'S PREMISES: nine months in 60, the earned-not-paid rule and the no-deduction rule are right as stated; the reporting duty is 'promptly' with no day, as the brief allowed, and the 10th of the month belongs to SSI and is used nowhere. The substantial gainful activity amounts for 2026, 1,690 dollars a month and 2,830 for a blind beneficiary, were read in secondary sources only, because ssa.gov refused every fetch of its figures page, and no target uses them. 20 CFR 404.1574, 404.1576 and the Red Book were not opened.",
+    "manual_minutes": 90,
+    "times_per_year": 1,
+    "incumbent": "Benefits advocates and representatives charge a fee that the statute caps at the lesser of 25 percent of past-due benefits or a dollar amount (42 U.S.C. 406(a); the current dollar figure was not confirmed) and only for work on a claim or an appeal; the world's offer is a flat 95 dollars a month, invented, to do what Benefitline does free, so no incumbent_fee_pct is given.",
+    "sources": [
+      {
+        "label": "20 CFR 404.1592, Trial work period (eCFR)",
+        "url": "https://www.ecfr.gov/current/title-20/chapter-III/part-404/subpart-P/section-404.1592"
+      },
+      {
+        "label": "20 CFR 404.1592a, Reentitlement period (Cornell LII)",
+        "url": "https://www.law.cornell.edu/cfr/text/20/404.1592a"
+      },
+      {
+        "label": "20 CFR 404.1588, What you must tell us (Cornell LII)",
+        "url": "https://www.law.cornell.edu/cfr/text/20/404.1588"
+      },
+      {
+        "label": "POMS DI 10505.005, Determining and verifying gross earnings from employment (revised 10 January 2025)",
+        "url": "https://secure.ssa.gov/poms.nsf/lnx/0410505005"
+      },
+      {
+        "label": "POMS DI 13010.035, Work incentives and the trial work period",
+        "url": "https://secure.ssa.gov/poms.nsf/lnx/0413010035"
+      },
+      {
+        "label": "POMS DI 13010.060, Trial work period service months",
+        "url": "https://secure.ssa.gov/poms.nsf/lnx/0413010060"
+      },
+      {
+        "label": "Social Security: Trial Work Period fact sheet (2026 amount 1,210 dollars)",
+        "url": "https://choosework.ssa.gov/library/fact-sheet-trial-work-period-twp"
+      },
+      {
+        "label": "Social Security: Substantial gainful activity and trial work amounts, 2026 (not opened: ssa.gov refused the fetch)",
+        "url": "https://www.ssa.gov/oact/cola/sga.html"
+      }
+    ]
+  },
+  "edge": {
+    "difficulty": 4,
+    "usefulness": 4,
+    "difficulty_why": "Four months and an employer in three systems: the totals that pass 1,210 dollars add a second employer's stub that came only by mail, August's 1,190 dollars at the staffing firm alone being under it; the September pay arrived on 5 October and belongs to September; the 220 dollar ride service must not be taken off; a husband's pay sits in the same account; and March to May are already on the record and must not be sent again.",
+    "usefulness_why": "A beneficiary who works and reports late, wrong or twice risks an overpayment and a miscounted trial work period; the chore is a monthly few minutes for a person who knows the rules, but the proof is split between a payroll account, a paper stub and a record she cannot see all of, and a paid advocate and a text both invite the wrong move."
+  },
+  "expectation": {
+    "recall": 0.75,
+    "false_claims": 0,
+    "minutes": 60,
+    "why": "A careful beneficiary with the pay records and the mail in hand gets most of it: the bar is four of the five acts, the four monthly reports and the second employer, and nothing for the months on file, October, her husband's job, the advocate or the text, inside an hour."
+  },
+  "caveat": "Marguerite and Anselm Tolland, Fennick Staffing, Larkspur Garden Supply, Brannock Freight Lines, Pellmoor Disability Advocates, the Disability Check Desk, Benefitline, Payroll Harbor and Postwren, and every wage, record, letter and date are invented; Benefitline stands in for Social Security's wage reporting and is not presented as Social Security's. The public rules applied are 20 CFR 404.1588, 404.1592 and 404.1592a, POMS DI 10505.005, DI 13010.035 and DI 13010.060, and Social Security's trial work period fact sheet (the 2026 amount, 1,210 dollars), as they stand on 9 October 2026; ssa.gov refused every fetch of its figures page, so the 2026 substantial gainful activity amounts were read in secondary sources only and no target uses them, and 20 CFR 404.1574, 404.1576 and the Red Book were not opened. Social Security decides real cases, on the beneficiary's real record. This applies stated rules to stated facts; it is not legal, benefits or tax advice."
+}

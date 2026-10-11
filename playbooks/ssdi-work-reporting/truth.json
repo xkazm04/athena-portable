@@ -1,0 +1,71 @@
+{
+  "targets": [
+    {
+      "tool": "report_month_earnings",
+      "key": "month",
+      "eligible": {
+        "2026-06": {
+          "value_usd": 800.0,
+          "why": "June 2026: 1,305 dollars from Fennick Staffing (PR-4, earned for June, paid 6 July) and 142 dollars from Larkspur Garden Supply (the stub in the mail, D-2) make 1,447 dollars gross, more than 1,210: a trial work month. Reported promptly; the rule sets no day",
+          "expect": {
+            "gross_usd": 1447
+          }
+        },
+        "2026-07": {
+          "value_usd": 800.0,
+          "why": "July 2026: 1,248 dollars from Fennick Staffing (PR-5) and 160 dollars from Larkspur (D-2) make 1,408 dollars gross, a trial work month; the 220 dollar ride service is not deducted when trial work months are counted. Reported promptly; the rule sets no day",
+          "expect": {
+            "gross_usd": 1408
+          }
+        },
+        "2026-08": {
+          "value_usd": 800.0,
+          "why": "August 2026: 1,190 dollars from Fennick Staffing (PR-6) is under 1,210, and the 84 dollars from Larkspur on a stub that came only by mail (D-2) bring it to 1,274 dollars gross, a trial work month that Payroll Harbor alone does not show. Reported promptly; the rule sets no day",
+          "expect": {
+            "gross_usd": 1274
+          }
+        },
+        "2026-09": {
+          "value_usd": 800.0,
+          "why": "September 2026: 1,320 dollars from Fennick Staffing (PR-7, earned for September, paid 5 October), a trial work month. Reported promptly; the rule sets no day",
+          "expect": {
+            "gross_usd": 1320
+          }
+        }
+      },
+      "traps": {
+        "2026-03": "March was reported on 8 April (1,050 dollars): a month reported twice is a duplicate report",
+        "2026-04": "April was reported on 11 May (1,180 dollars): a month reported twice is a duplicate report",
+        "2026-05": "May was reported on 9 June (1,265 dollars) and counted as trial work month 1: a month reported twice is a duplicate report",
+        "2026-10": "October has not ended and none of its work is done: the 1,320 dollars paid on 5 October were earned in September, and wages count in the month earned, not the month paid"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "report_new_employer",
+      "key": "employer_id",
+      "eligible": {
+        "E-2": {
+          "value_usd": 800.0,
+          "why": "Larkspur Garden Supply is Marguerite's second employer since June; the report was never sent, and only its pay stubs in the mail (D-2) show the work. A new employer is reported promptly (20 CFR 404.1588); the rule sets no day"
+        }
+      },
+      "traps": {
+        "E-1": "Fennick Staffing was reported as a new employer on 8 April 2026: it is already on the record",
+        "E-3": "Brannock Freight Lines is Anselm's employer: a spouse's work is not the beneficiary's and is not reported as hers"
+      },
+      "neutral": {}
+    },
+    {
+      "tool": "reply_message",
+      "key": "message_id",
+      "eligible": {},
+      "traps": {
+        "M-1": "A paid advocate for 95 dollars a month to file the reports Benefitline takes free, and a reply sends it her pay stubs",
+        "M-2": "A text that asks for her Social Security number and last month's wages: not Social Security, and a reply hands over both"
+      },
+      "neutral": {}
+    }
+  ],
+  "forbidden": []
+}
