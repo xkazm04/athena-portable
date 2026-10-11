@@ -4,14 +4,16 @@ from __future__ import annotations
 
 import json
 import re
+import sqlite3
 import unicodedata
+from contextlib import closing
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
-from athena.core.brain import Brain
-from athena.core.brain.text import EXCERPT_BYTES
+from athena.core.brain import Brain, store
+from athena.core.brain.text import EXCERPT_BYTES, fts_match, fts_quote
 from athena.core.catalog import CoreServices, build_catalog
 from athena.core.constitution import Constitution, Source
 from athena.core.prompt import BUDGETS, compose
@@ -26,6 +28,7 @@ from athena.core.recall import (
     KEYWORD_BLOCK,
     KEYWORD_LINE_CAP,
     KEYWORD_SLOTS,
+    UNAVAILABLE_PREFIX,
     always_line,
     memory_line,
     recall,
@@ -587,3 +590,103 @@ def test_an_episodes_multi_line_body_renders_unchanged_in_a_whole_recall(tmp_pat
         (memory,) = block.items
         assert memory.lane == KEYWORD_BLOCK, "the lane is keyword, the kind is what decides"
         assert block.render() == f"- {MULTILINE}\n(showing 1 of 1)"
+
+
+# -- a store that cannot be read says so (ADR 0076) ---------------------------------------------
+
+
+def _drop_fts(brain: Brain) -> None:
+    with closing(sqlite3.connect(str(brain.db_path), isolation_level=None)) as other:
+        other.execute("DROP TABLE companion_fts")
+
+
+def test_a_missing_fts_table_is_unavailable_not_nothing_matched(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("Acme paid 34 days late", role="user").id
+        brain.write_fact("acme", "Acme pays late", sources=[source], every_turn=True)
+        _drop_fts(brain)
+
+        trace = recall(brain, "Acme")
+
+    assert trace.unavailable
+    assert trace.items == []
+    (note,) = trace.notes
+    assert note.startswith(UNAVAILABLE_PREFIX) and "companion_fts" in note
+    assert "no distilled memory matched the query" not in trace.notes
+    assert [block.render() for block in trace.blocks] == [note, note, note]
+    assert trace.as_dict()["unavailable"] is True
+
+
+def test_an_unreadable_store_reaches_the_prompt_as_missing_memory(tmp_path: Path) -> None:
+    """The turn still runs, and both unfenced memory blocks say memory is missing."""
+    with Brain(tmp_path / "brain") as brain:
+        brain.append_episode("Acme paid 34 days late", role="user")
+        _drop_fts(brain)
+
+        composed = compose(
+            constitution=Constitution(Source("package", Path("constitution")), {}),
+            catalog=build_catalog(CoreServices(sources_alive=lambda sources: True)),
+            recall=recall(brain, "Acme"),
+        )
+
+    for block in (composed.static.block("memory.always"), composed.frame.block("frame.memory")):
+        assert block is not None
+        assert UNAVAILABLE_PREFIX in block.text
+        assert "(nothing recalled)" not in block.text
+
+
+def test_a_whole_recall_of_an_unreadable_store_is_unavailable(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        brain.append_episode("duplex notes", "user")
+        _drop_fts(brain)
+
+        trace = recall_whole(brain, "duplex", cap=4800)
+
+    assert trace.unavailable
+    assert [block.name for block in trace.blocks] == [KEYWORD_BLOCK, EPISODE_BLOCK]
+    assert all(block.items == () and block.note for block in trace.blocks)
+
+
+def test_a_locked_index_ends_the_recall_at_the_first_statement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """One busy timeout, not one per statement. The timeout is shortened here, not in the store."""
+    monkeypatch.setattr(store, "BUSY_TIMEOUT_MS", 50)
+    brain = Brain(tmp_path / "brain")
+    brain.append_episode("Acme paid late", role="user")
+    brain.close()  # recall reads on its own handles; the lock below needs the writer gone
+    statements: list[str] = []
+    real = brain.read_connection
+
+    def traced() -> sqlite3.Connection:
+        con = real()
+        con.set_trace_callback(statements.append)
+        return con
+
+    monkeypatch.setattr(brain, "read_connection", traced)
+    with closing(sqlite3.connect(str(brain.db_path), isolation_level=None)) as lock:
+        lock.execute("PRAGMA locking_mode = EXCLUSIVE")
+        lock.execute("BEGIN EXCLUSIVE")
+        lock.execute("SELECT COUNT(*) FROM companion_node").fetchone()
+        trace = recall(brain, "Acme")
+        lock.execute("ROLLBACK")
+
+    assert trace.unavailable
+    assert trace.notes[0].startswith(UNAVAILABLE_PREFIX + "database is locked")
+    assert len([s for s in statements if s.lstrip().upper().startswith("SELECT")]) <= 1
+
+
+def test_a_query_with_a_nul_in_it_is_an_honest_answer(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("acme invoices", role="user").id
+        brain.write_fact("acme", "acme invoices are late", sources=[source])
+
+        trace = recall(brain, "acme\x00invoices")
+        whole = recall_whole(brain, "acme\x00invoices", cap=4800)
+        control = recall(brain, "acme \x01\x00 invoices")
+
+    assert not trace.unavailable and not whole.unavailable
+    assert trace.block(KEYWORD_BLOCK).total == 0, "the NUL is dropped: one word, acmeinvoices"
+    assert [m.excerpt for m in control.block(KEYWORD_BLOCK).items] == ["acme invoices are late"]
+    assert fts_match("acme\x00invoices") == '"acmeinvoices"'
+    assert fts_quote("a\x00b\x7f") == '"ab"'

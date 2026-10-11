@@ -29,6 +29,10 @@ A contract changes only with a test.
   matched the message alike: control and format characters dropped and whitespace folded first,
   then fence markers redacted, then cut (400 and 500 characters) and quoted (ADR 0075). An
   episode is fenced instead and is shown as it was said.
+- **A memory store that cannot be read says so** (ADR 0076). A lock, a missing table or an I/O
+  error ends the recall at its first statement; every block then reads `memory could not be read:
+  ...` instead of a footer, the turn still runs, and `core.recall` fails with `engine_error`. An
+  empty recall means the store was read and nothing matched.
 - `core.recall` is also a tool she can call mid-turn; its answer is capped at 4,800 characters,
   three page reads' worth (ADR 0049).
 

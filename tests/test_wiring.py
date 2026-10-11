@@ -9,6 +9,8 @@ tests do that — and nothing spawns a binary.
 from __future__ import annotations
 
 import shutil
+import sqlite3
+from contextlib import closing
 from dataclasses import fields
 from pathlib import Path
 from typing import Any
@@ -19,7 +21,7 @@ from athena.contracts.registry import Lane, ToolClass, TurnContext
 from athena.core.brain import Brain, reconcile_from_disk
 from athena.core.brain.store import ProvenanceError
 from athena.core.catalog import CoreServices
-from athena.core.recall import ALWAYS_BLOCK, recall
+from athena.core.recall import ALWAYS_BLOCK, UNAVAILABLE_PREFIX, recall
 from athena.harness.policy import Policy
 from athena.harness.transports import ScriptedTransport, SubprocessTransport
 from athena.wiring import AthenaLocal, build_local
@@ -171,6 +173,22 @@ def test_recall_answers_with_the_blocks_and_each_ones_own_footer(local: AthenaLo
     assert "Northwind" in result.output
     # Two blocks, two footers (no always tier, ADR 0058), and no global M over their union.
     assert result.output.count("(showing ") == 2
+
+
+def test_recall_of_an_unreadable_store_is_a_failure_that_says_so(local: AthenaLocal) -> None:
+    """A missing table is not "nothing matched" (ADR 0076)."""
+    local.brain.append_episode("the late-paying client is Northwind", session_id=CONVERSATION)
+    with closing(sqlite3.connect(str(local.brain.db_path), isolation_level=None)) as other:
+        other.execute("DROP TABLE companion_fts")
+    entry = local.catalog.get("core.recall")
+    assert entry.executor is not None
+
+    result = entry.executor({"query": "Northwind"}, ctx())
+
+    assert not result.ok
+    assert result.error == "engine_error"
+    assert result.output.startswith(UNAVAILABLE_PREFIX)
+    assert "companion_fts" in result.output
 
 
 def test_write_fact_refuses_a_source_that_is_not_a_live_episode(local: AthenaLocal) -> None:

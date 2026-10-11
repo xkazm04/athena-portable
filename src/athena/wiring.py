@@ -96,12 +96,17 @@ def recall_executor(brain: Brain) -> ExecutorFn:
     own ``(showing N of M)`` and there is no global M that any of them is bounded by (see
     :mod:`athena.core.recall`). Packing already keeps the rendering inside the cap, so the gate's
     character cut is announced only for one episode longer than the cap on its own.
+
+    A store that could not be read is a failure, not an empty answer (ADR 0076): ``engine_error``,
+    the reason a connector gives when the service behind its tool fails, with the trace's note.
     """
 
     def run(params: dict[str, Any], ctx: TurnContext) -> ExecResult:
         query = str(params.get("query", ""))
         limit = int(params["limit"]) if params.get("limit") else None
         trace = recall_whole(brain, query, cap=RECALL_CAP, limit=limit)
+        if trace.unavailable:
+            return ExecResult.failure("engine_error", "\n".join(trace.notes))
         blocks = "\n\n".join(f"### {block.name}\n{block.render()}" for block in trace.blocks)
         notes = "\n".join(f"({note})" for note in trace.notes)
         return ExecResult(ok=True, output="\n\n".join(part for part in (blocks, notes) if part))

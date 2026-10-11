@@ -41,8 +41,14 @@ def slug(text: str, limit: int = 48) -> str:
     return out[:limit].rstrip("-") or "untitled"
 
 
+def _no_controls(text: str) -> str:
+    """``text`` without its Cc characters other than whitespace (ADR 0076). SQLite reads a NUL as
+    the end of the string, so a quoted MATCH with one inside was unterminated."""
+    return "".join(c for c in text if c.isspace() or unicodedata.category(c) != "Cc")
+
+
 def fts_quote(term: str) -> str:
-    return '"' + term.replace('"', '""') + '"'
+    return '"' + _no_controls(term).replace('"', '""') + '"'
 
 
 #: Words too common to say what a recall is about. Dropped before matching, because with any-term
@@ -104,8 +110,8 @@ STOPWORDS: frozenset[str] = frozenset(
 
 def fts_terms(query: str) -> list[str]:
     """The words of ``query`` a match is made of: short words and :data:`STOPWORDS` dropped, unless
-    nothing else is left."""
-    terms = [term for term in query.split() if term.strip()]
+    nothing else is left. Control characters are dropped first; whitespace ones still split."""
+    terms = [term for term in _no_controls(query).split() if term.strip()]
     meaningful = [t for t in terms if len(t) > 2 and t.lower().strip("?.,!:;") not in STOPWORDS]
     return meaningful or terms
 

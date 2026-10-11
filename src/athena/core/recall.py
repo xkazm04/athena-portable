@@ -26,11 +26,17 @@ counted twice and nothing is printed twice.
 
 Nothing here writes. The whole function runs on one :meth:`Brain.read_connection` handle, so it is
 safe to call from a daemon read route while a turn is writing (README §3.5, ADR 0003).
+
+**A store that cannot be read says so** (ADR 0076). The first ``sqlite3.Error`` ends the recall:
+no further statement runs, every block is empty and renders ``memory could not be read: ...``
+instead of a footer, and the trace is marked :attr:`RecallTrace.unavailable`. Reading a lock or a
+missing table as "nothing matched" would tell the model memory is empty when it is missing.
 """
 
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 from contextlib import closing
 from dataclasses import dataclass, field
@@ -71,6 +77,11 @@ MACHINE_EPISODE_SLOTS = 2
 #: The kinds the keyword lane and the always tier draw from — everything except episodes, which
 #: have a window of their own.
 DISTILLED_KINDS: tuple[str, ...] = ("fact", "procedural")
+
+#: What every block of a recall that could not read the store says, before SQLite's own message.
+UNAVAILABLE_PREFIX = "memory could not be read: "
+
+_log = logging.getLogger(__name__)
 
 #: Block names, in the order a prompt renders them.
 ALWAYS_BLOCK = "always"
@@ -151,6 +162,9 @@ class RecallBlock:
     name: str
     items: tuple[Memory, ...]
     total: int
+    #: Set only when the store could not be read: the block renders this line and no footer,
+    #: because ``(showing 0 of 0)`` would claim a population nobody counted (ADR 0076).
+    note: str = ""
 
     @property
     def shown(self) -> int:
@@ -165,6 +179,8 @@ class RecallBlock:
         return f"(showing {self.shown} of {self.total})"
 
     def render(self) -> str:
+        if self.note:
+            return self.note
         lines = [memory.render() for memory in self.items]
         return "\n".join([*lines, self.footer()])
 
@@ -195,6 +211,9 @@ class RecallTrace:
     query: str
     blocks: tuple[RecallBlock, ...] = ()
     notes: list[str] = field(default_factory=list)
+    #: ``True`` when the store could not be read, so an empty trace is not an honest "nothing
+    #: matched" (ADR 0076). The reason is the one note.
+    unavailable: bool = False
 
     @property
     def items(self) -> list[Memory]:
@@ -244,6 +263,7 @@ class RecallTrace:
                 for block in self.blocks
             ],
             "notes": list(self.notes),
+            "unavailable": self.unavailable,
         }
 
 
@@ -255,12 +275,18 @@ def recall(
     keyword_slots: int = KEYWORD_SLOTS,
     include_always: bool = True,
 ) -> RecallTrace:
-    """Build the bundle for one turn. Read-only, on one per-call handle."""
-    with closing(brain.read_connection()) as con:
-        always = _always_block(con) if include_always else RecallBlock(ALWAYS_BLOCK, (), 0)
-        shown_ids = {memory.id for memory in always.items}
-        keyword = _keyword_block(con, query, keyword_slots, shown_ids)
-        episodes = _episode_block(con, query, episode_budget)
+    """Build the bundle for one turn. Read-only, on one per-call handle.
+
+    A store that cannot be read gives :func:`unavailable_trace`, and the turn still runs on it.
+    """
+    try:
+        with closing(brain.read_connection()) as con:
+            always = _always_block(con) if include_always else RecallBlock(ALWAYS_BLOCK, (), 0)
+            shown_ids = {memory.id for memory in always.items}
+            keyword = _keyword_block(con, query, keyword_slots, shown_ids)
+            episodes = _episode_block(con, query, episode_budget)
+    except sqlite3.Error as exc:
+        return unavailable_trace(query, exc, (ALWAYS_BLOCK, KEYWORD_BLOCK, EPISODE_BLOCK))
     trace = RecallTrace(query=query, blocks=(always, keyword, episodes))
     if not keyword.total:
         trace.notes.append("no distilled memory matched the query")
@@ -286,13 +312,28 @@ def recall_whole(
     window: one past that limit is skipped and packing goes on, so fleet chatter never fills
     ``cap`` ahead of anything she wrote or read, yet M still counts it.
     """
-    with closing(brain.read_connection()) as con:
-        keyword = _keyword_block(con, query, keyword_slots, set())
-        episodes = _whole_episodes(con, query, cap, limit, _packed_chars(keyword))
+    try:
+        with closing(brain.read_connection()) as con:
+            keyword = _keyword_block(con, query, keyword_slots, set())
+            episodes = _whole_episodes(con, query, cap, limit, _packed_chars(keyword))
+    except sqlite3.Error as exc:
+        return unavailable_trace(query, exc, (KEYWORD_BLOCK, EPISODE_BLOCK))
     trace = RecallTrace(query=query, blocks=(keyword, episodes))
     if not keyword.total:
         trace.notes.append("no distilled memory matched the query")
     return trace
+
+
+def unavailable_trace(query: str, exc: sqlite3.Error, names: tuple[str, ...]) -> RecallTrace:
+    """The trace of a recall the store refused: every block empty and saying why (ADR 0076).
+
+    The message is SQLite's own, made one line, because the always tier's copy of it goes into
+    the system prompt unfenced. Logged once, here, at warning level.
+    """
+    note = UNAVAILABLE_PREFIX + (canonical_line(str(exc)) or type(exc).__name__)
+    _log.warning("recall: %s", note)
+    blocks = tuple(RecallBlock(name, (), 0, note=note) for name in names)
+    return RecallTrace(query=query, blocks=blocks, notes=[note], unavailable=True)
 
 
 def _packed_chars(block: RecallBlock) -> int:
@@ -369,11 +410,14 @@ def around(body: str, query: str) -> str:
 
 
 def _rows(con: sqlite3.Connection, sql: str, params: tuple[Any, ...]) -> list[tuple[Any, ...]]:
-    """Run a read. A malformed FTS MATCH is the caller's query, not a crash: empty is honest."""
-    try:
-        return [tuple(row) for row in con.execute(sql, params).fetchall()]
-    except sqlite3.OperationalError:
-        return []
+    """Run a read. An error is not caught here: it ends the recall (ADR 0076).
+
+    Every MATCH is built from quoted terms with control characters dropped
+    (:func:`~athena.core.brain.text.fts_match`), so a user's query cannot make one malformed. What
+    is left is the store itself: a lock, a missing table, an I/O error. Read as no rows, those
+    told the model nothing matched, and a lock cost one busy timeout per statement.
+    """
+    return [tuple(row) for row in con.execute(sql, params).fetchall()]
 
 
 def _count(con: sqlite3.Connection, sql: str, params: tuple[Any, ...]) -> int:
