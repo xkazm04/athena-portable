@@ -995,13 +995,27 @@ pub fn start_at_launch(app: &AppHandle) {
     let stored = store::opened(app)
         .and_then(|s| s.get("settings", "engine"))
         .unwrap_or(serde_json::Value::Null);
-    if let Err(e) = start(app, &launch_engine(&stored)) {
+    let engine = launch_engine(&stored);
+    if let Err(e) = start(app, &engine) {
         eprintln!("[daemon] not started: {e}");
-        app.state::<Daemon>().edit(app, |s| {
-            s.health = Health::Failed;
-            s.error = e;
-        });
+        record_start_failure(app, &engine, e);
     }
+}
+
+/// What the status says once a start has failed: failed, the message, no url, and the engine
+/// that was attempted (not the one that ran before, not the default).
+fn mark_start_failed(status: &mut DaemonStatus, engine: &str, error: String) {
+    status.health = Health::Failed;
+    status.error = error;
+    status.url = None;
+    status.engine = engine.to_string();
+}
+
+/// Tell the chrome that a start failed. `start` has already shut the old daemon down, so without
+/// this the status would still describe a process that is gone.
+fn record_start_failure(app: &AppHandle, engine: &str, error: String) {
+    app.state::<Daemon>()
+        .edit(app, |s| mark_start_failed(s, engine, error));
 }
 
 /// The exit hook. `ExitRequested` fires when the last window closes and `Exit` just before the
@@ -1033,7 +1047,10 @@ pub async fn daemon_restart(app: AppHandle, engine: String) -> Result<DaemonStat
     } else {
         engine
     };
-    start(&app, engine)?;
+    if let Err(e) = start(&app, engine) {
+        record_start_failure(&app, engine, e.clone());
+        return Err(e);
+    }
     Ok(app.state::<Daemon>().status())
 }
 
@@ -1053,6 +1070,31 @@ mod tests {
             tx.send((*line).to_string()).expect("send");
         }
         rx
+    }
+
+    // -- a failed start ------------------------------------------------------------------------
+
+    #[test]
+    fn a_failed_start_says_failed_on_the_attempted_engine_with_no_url() {
+        let mut status = DaemonStatus {
+            url: Some("http://127.0.0.1:51057".to_string()),
+            token: "t".to_string(),
+            engine: "claude_code".to_string(),
+            health: Health::Ready,
+            error: String::new(),
+            source: "sidecar".to_string(),
+            brain: "b".to_string(),
+        };
+        mark_start_failed(
+            &mut status,
+            "codex",
+            "no athena-daemon beside the app".to_string(),
+        );
+        assert_eq!(status.health, Health::Failed);
+        assert_eq!(status.error, "no athena-daemon beside the app");
+        assert_eq!(status.url, None);
+        assert_eq!(status.engine, "codex");
+        assert_eq!(status.source, "sidecar");
     }
 
     // -- the launch engine ---------------------------------------------------------------------
