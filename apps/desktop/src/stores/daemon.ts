@@ -92,11 +92,63 @@ export interface DaemonState extends DaemonView {
 /** Restarts run one at a time, in the order asked, and a failure does not stop the next. */
 let tail: Promise<unknown> = Promise.resolve();
 let pending = 0;
+/** Bumped by the test reset, so a restart left held by one case cannot touch the next. */
+let epoch = 0;
+/** The engine the store last asked Rust to start; `null` until it has asked for one. */
+let asked: string | null = null;
+/** The engine of the restart in flight, or `null` between restarts. */
+let inflight: string | null = null;
+/** The latest status that named the engine in flight; applied once the queue drains. */
+let held: DaemonStatus | null = null;
+
+/**
+ * Take a status from Rust, or leave it. README 3.5, ADR 0085 (full r2, robustness-1).
+ *
+ * While a restart is queued or in flight an event describes the daemon before that restart, or
+ * the restart itself half done, and a `ready` in it must not read as the engine the person
+ * chose. Only an event naming the engine in flight is kept (the latest one), and it is applied
+ * when the queue drains. Once the store has asked for an engine, an event naming another one is
+ * stale: Rust changes the engine at launch and on a requested restart, and nowhere else.
+ */
+function observe(status: DaemonStatus): void {
+  if (pending > 0) {
+    if (inflight !== null && status.engine === inflight) held = status;
+    return;
+  }
+  if (asked !== null && status.engine !== asked) return;
+  useDaemon.setState((s) => reduce(s, status));
+}
+
+/** The queue is empty: the store reflects what Rust says now, not what it said on the way. */
+function drained(): void {
+  const mine = epoch;
+  const fallback = held;
+  held = null;
+  const apply = (status: DaemonStatus, truth: boolean) => {
+    if (mine !== epoch || pending > 0) return;
+    if (!truth && status.engine !== asked) return;
+    if (truth) asked = status.engine;
+    useDaemon.setState((s) => reduce(s, status));
+  };
+  if (!hasShell()) {
+    if (fallback) apply(fallback, false);
+    return;
+  }
+  daemonStatus().then(
+    (status) => apply(status, true),
+    () => {
+      if (fallback) apply(fallback, false);
+    },
+  );
+}
 
 function enqueue(job: () => Promise<void>): Promise<void> {
   pending += 1;
+  const mine = epoch;
   const run = tail.then(job, job).finally(() => {
+    if (mine !== epoch) return;
     pending -= 1;
+    if (pending === 0) drained();
   });
   tail = run.catch(() => undefined);
   return run;
@@ -108,6 +160,8 @@ export const useDaemon = create<DaemonState>((set, get) => {
     set({ engine, health: "starting", url: null, token: "", loaded: true });
 
   const run = async (engine: string) => {
+    inflight = engine;
+    held = null;
     markStarting(engine);
     try {
       set(reduce(get(), await daemonRestart(engine)));
@@ -122,19 +176,27 @@ export const useDaemon = create<DaemonState>((set, get) => {
         loaded: true,
       });
       throw error;
+    } finally {
+      inflight = null;
     }
   };
 
-  const onEngine = (engine: string) => get().loaded && get().engine === engine;
+  /** A daemon that failed or stopped on the engine is not on it: choosing it again restarts it. */
+  const onEngine = (engine: string) => {
+    const { loaded, engine: current, health } = get();
+    return loaded && current === engine && health !== "failed" && health !== "stopped";
+  };
 
   return {
     ...EMPTY_DAEMON,
     restart: (engine) => {
+      asked = engine;
       markStarting(engine);
       return enqueue(() => run(engine));
     },
     ensureEngine: (engine) => {
       if (pending === 0 && onEngine(engine)) return Promise.resolve();
+      asked = engine;
       return enqueue(async () => {
         if (!onEngine(engine)) await run(engine);
       });
@@ -150,13 +212,18 @@ export async function startDaemon(): Promise<void> {
   // Subscribe before the first read. Rust spawns the daemon inside `setup`, so the ready line can
   // land between these two lines, and an event missed here is a panel that says "starting"
   // until something else happens to change.
-  await onDaemonStatus((status) => useDaemon.setState((s) => reduce(s, status)));
-  const first = await daemonStatus();
-  useDaemon.setState((s) => reduce(s, first));
+  await onDaemonStatus(observe);
+  observe(await daemonStatus());
 }
 
 /** For tests only: forget that the app root already started this store. */
 export function resetDaemonForTests(): void {
   started = false;
+  epoch += 1;
+  tail = Promise.resolve();
+  pending = 0;
+  asked = null;
+  inflight = null;
+  held = null;
   useDaemon.setState({ ...EMPTY_DAEMON });
 }
