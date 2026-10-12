@@ -363,6 +363,8 @@ export interface CompanionInputs {
   runningEngineId?: string;
   /** The daemon's health. When set, the welcome says ready only for "ready". */
   daemonHealth?: DaemonHealth;
+  /** The daemon store has heard from Rust. When false, `runningEngineId` is a placeholder. */
+  daemonLoaded?: boolean;
   /** The welcome has been answered: when it has not, Main may have been left hidden. */
   onboarded?: boolean;
   /** The clock, for "2 h ago". Injected so the selector stays pure. */
@@ -485,7 +487,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     },
     welcome: {
       engine: i.engine,
-      engineView: engineView(i.engineId ?? "claude_code", i.probes ?? null, i.probeProblem ?? null, i.probing ?? false, i.runningEngineId, i.daemonHealth),
+      engineView: engineView(i.engineId ?? "claude_code", i.probes ?? null, i.probeProblem ?? null, i.probing ?? false, i.runningEngineId, i.daemonHealth, i.daemonLoaded),
     },
     actions: i.actions,
   };
@@ -734,6 +736,7 @@ export function engineView(
   checking: boolean,
   runningId?: string,
   health?: DaemonHealth,
+  loaded?: boolean,
 ): EngineView {
   const label = engineLabel(id);
   if (probes === null) {
@@ -751,6 +754,10 @@ export function engineView(
   if (mine?.state === "found") {
     // Found on this computer is not running: until the one that answers turns is this engine,
     // the welcome does not call it ready. `runningId` is left out where nothing runs (fixtures).
+    // Before the daemon has said which engine it is on, `runningId` is a placeholder, not a reading.
+    if (loaded === false) {
+      return { state: "looking", text: "Looking for your engine…", sub: "", offer: null, checking };
+    }
     if (runningId !== undefined && runningId !== id) {
       return { state: "looking", text: `Switching to ${label}…`, sub: "", offer: null, checking };
     }

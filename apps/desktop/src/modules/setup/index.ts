@@ -37,6 +37,7 @@ function Live() {
   const tabs = useTabs((s) => s.tabs);
   const daemonHealth = useDaemon((s) => s.health);
   const daemonEngine = useDaemon((s) => s.engine);
+  const daemonLoaded = useDaemon((s) => s.loaded);
   const probes = useEngines((s) => s.probes);
   const checking = useEngines((s) => s.checking);
   const problem = useEngines((s) => s.problem);
@@ -107,6 +108,7 @@ function Live() {
         storePath,
         daemonHealth,
         daemonEngine,
+        daemonLoaded,
         reopened,
         actions,
       }),
@@ -124,6 +126,7 @@ function Live() {
       storePath,
       daemonHealth,
       daemonEngine,
+      daemonLoaded,
       probes,
       checking,
       problem,

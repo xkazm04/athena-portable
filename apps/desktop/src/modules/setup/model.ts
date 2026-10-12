@@ -89,6 +89,8 @@ export interface SetupModel {
   daemonHealth: DaemonHealth;
   /** The engine the daemon is running on, or "" while it is not running. */
   daemonEngine: string;
+  /** The daemon has reported once. Before that `daemonEngine` is a placeholder, not a reading. */
+  loaded: boolean;
   /** An engine the user chose that the running daemon is not on. Null when settled. */
   pendingEngine: string | null;
   actions: SetupActions;
@@ -115,6 +117,8 @@ export interface SetupSources {
   storePath: string | null;
   daemonHealth?: DaemonHealth;
   daemonEngine?: string;
+  /** The daemon store has heard from Rust. Defaults to true, so a fixture is unchanged. */
+  daemonLoaded?: boolean;
   /** `true` for one visit after "Show the welcome again", whatever the stored row says. */
   reopened?: boolean;
   actions: SetupActions;
@@ -153,6 +157,7 @@ export function selectSetup(source: SetupSources): SetupModel {
     storePath: source.storePath,
     daemonHealth: health,
     daemonEngine,
+    loaded: source.daemonLoaded ?? true,
     pendingEngine: pendingEngineOf(source.engine, daemonEngine, health),
     actions: source.actions,
   };

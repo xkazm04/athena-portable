@@ -53,6 +53,13 @@ export function engineFact(model: SetupModel): Fact {
   if (chosen?.state === "found") {
     // Found is the probe's word; running is the daemon's. A turn goes to the engine the daemon
     // is on, so the fact is done only when both name the chosen one.
+    if (!model.loaded) {
+      return {
+        ...base,
+        standing: "unknown",
+        summary: `${engineLabel(chosen.id)} is chosen, but Athena has not yet said which engine she is on`,
+      };
+    }
     if (model.daemonEngine !== model.engine) {
       const label = engineLabel(chosen.id);
       return {

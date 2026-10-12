@@ -67,3 +67,10 @@ test("once onboarded, setEngine alone writes the row and never restarts", async 
   expect(seams.writes).toEqual([{ key: SETTING_KEYS.engine, value: "codex" }]);
   expect(seams.restarts).toEqual([]);
 });
+
+test("the daemon has not loaded: a choice that differs from its placeholder engine still restarts", async () => {
+  expect(useDaemon.getState().loaded).toBe(false);
+  await chooseFirstRunEngine("codex");
+  expect(seams.writes).toEqual([{ key: SETTING_KEYS.engine, value: "codex" }]);
+  expect(seams.restarts).toEqual(["codex"]);
+});

@@ -191,3 +191,11 @@ test("the chosen engine on the daemon: starting, failed and stopped each have th
   expect(stopped.summary).not.toContain("starting up");
   for (const f of [starting, failed, stopped]) expect(f.summary).not.toMatch(/daemon|hands|origin|probe|PATH|—/);
 });
+
+test("before the daemon has reported, the engine fact is unknown, not read off the placeholder", () => {
+  const fact = engineFact(model({ daemonLoaded: false, daemonEngine: "claude_code", daemonHealth: "stopped" }));
+  expect(fact.standing).toBe("unknown");
+  expect(fact.summary).toContain("has not yet said which engine she is on");
+  expect(fact.summary).not.toMatch(/daemon|hands|origin|probe|PATH|—/);
+  expect(isReady(model({ daemonLoaded: false, daemonEngine: "claude_code", daemonHealth: "stopped" }))).toBe(false);
+});

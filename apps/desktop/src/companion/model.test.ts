@@ -489,3 +489,10 @@ test("the welcome says ready only when the daemon on the chosen engine is ready"
   expect(failed.text).toBe("Athena could not start on Codex.");
   expect(engineView("codex", probes, null, false, "claude_code", "ready").state).toBe("looking");
 });
+
+test("the welcome does not read the daemon's placeholder engine before it has reported", () => {
+  const probes = [{ id: "claude_code", state: "found" as const, detail: "2.1" }];
+  expect(engineView("claude_code", probes, null, false, "claude_code", "ready", false).state).toBe("looking");
+  expect(engineView("claude_code", probes, null, false, "claude_code", "ready", true).state).toBe("ready");
+  expect(engineView("claude_code", probes, null, false, "claude_code", "ready").state).toBe("ready");
+});
