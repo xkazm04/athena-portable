@@ -45,7 +45,7 @@ import { endpoint, useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
 import { gatedListsOf, useRun } from "@/stores/run";
-import { useSettings } from "@/stores/settings";
+import { chooseFirstRunEngine, useSettings } from "@/stores/settings";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
 import { useVoice } from "@/stores/voice";
@@ -361,7 +361,7 @@ export default function Live() {
     },
     checkEngines: () => void useEngines.getState().check(),
     useEngine: (id) => {
-      if (isEngineId(id)) void useSettings.getState().setEngine(id).catch(report("engine"));
+      if (isEngineId(id)) void chooseFirstRunEngine(id).catch(report("engine"));
     },
   };
 
@@ -387,6 +387,7 @@ export default function Live() {
     probes,
     probing,
     probeProblem,
+    runningEngineId: daemon.engine,
     onboarded,
     offer,
     project: run.project,

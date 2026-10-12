@@ -22,6 +22,7 @@ import { create } from "zustand";
 import { hasShell, onStoreChanged } from "@/lib/ipc";
 import { DEFAULT_ENGINE, isEngineId, type EngineId } from "@/lib/engines";
 import { SETTING_KEYS, settingRead, settingWrite, storePath } from "@/lib/store";
+import { useDaemon } from "@/stores/daemon";
 import { applyTheme, useShell, type Theme } from "@/stores/shell";
 
 /** The three a person may choose between. `system` is the default, because it is nobody's. */
@@ -128,6 +129,17 @@ export const useSettings = create<SettingsState>((set, get) => ({
     await settingWrite(SETTING_KEYS.onboarded, onboarded);
   },
 }));
+
+/**
+ * A first-run engine choice: the row is written, and the running daemon is moved onto the engine
+ * at once when it is on another. Once the letter has been read the person decides when to
+ * restart, so callers use `setEngine` alone there. Rejects like `setEngine` and `restart` do;
+ * the caller reports it.
+ */
+export async function chooseFirstRunEngine(engine: EngineId): Promise<void> {
+  await useSettings.getState().setEngine(engine);
+  if (useDaemon.getState().engine !== engine) await useDaemon.getState().restart(engine);
+}
 
 let started = false;
 

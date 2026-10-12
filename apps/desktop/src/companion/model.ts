@@ -358,6 +358,8 @@ export interface CompanionInputs {
   probes?: readonly EngineProbe[] | null;
   probing?: boolean;
   probeProblem?: string | null;
+  /** The engine the daemon runs. When set and not `engineId`, the welcome does not say ready. */
+  runningEngineId?: string;
   /** The welcome has been answered: when it has not, Main may have been left hidden. */
   onboarded?: boolean;
   /** The clock, for "2 h ago". Injected so the selector stays pure. */
@@ -480,7 +482,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     },
     welcome: {
       engine: i.engine,
-      engineView: engineView(i.engineId ?? "claude_code", i.probes ?? null, i.probeProblem ?? null, i.probing ?? false),
+      engineView: engineView(i.engineId ?? "claude_code", i.probes ?? null, i.probeProblem ?? null, i.probing ?? false, i.runningEngineId),
     },
     actions: i.actions,
   };
@@ -727,6 +729,7 @@ export function engineView(
   probes: readonly EngineProbe[] | null,
   problem: string | null,
   checking: boolean,
+  runningId?: string,
 ): EngineView {
   const label = engineLabel(id);
   if (probes === null) {
@@ -742,6 +745,11 @@ export function engineView(
   }
   const mine = probes.find((p) => p.id === id);
   if (mine?.state === "found") {
+    // Found on this computer is not running: until the one that answers turns is this engine,
+    // the welcome does not call it ready. `runningId` is left out where nothing runs (fixtures).
+    if (runningId !== undefined && runningId !== id) {
+      return { state: "looking", text: `Switching to ${label}…`, sub: "", offer: null, checking };
+    }
     return { state: "ready", text: `Engine: ${label}, ready.`, sub: "She never asks for a key.", offer: null, checking };
   }
   if (mine === undefined || mine.state === "unknown") {

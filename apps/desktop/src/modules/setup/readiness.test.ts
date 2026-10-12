@@ -147,3 +147,32 @@ test("there is no restart notice until a running daemon disagrees with the store
   expect(notice?.actionLabel).toBe("Restart on Codex");
   expect(notice?.title).toContain("Claude Code");
 });
+
+const BOTH_FOUND: EngineProbe[] = [
+  { id: "claude_code", state: "found", detail: "2.1.268" },
+  { id: "codex", state: "found", detail: "0.40" },
+];
+
+test("codex chosen and found, daemon on claude_code: not done, and not ready to start", () => {
+  const m = model({ engine: "codex", probes: BOTH_FOUND, daemonEngine: "claude_code" });
+  const fact = engineFact(m);
+  expect(fact.standing).not.toBe("done");
+  expect(fact.summary).toContain("still running on Claude Code");
+  expect(fact.summary).not.toMatch(/daemon|hands|origin|—/);
+  expect(isReady({ ...m, tabs: [{ id: 1, title: "a", host: "a.test" }] })).toBe(false);
+});
+
+test("codex chosen and found, daemon on codex and ready: done", () => {
+  const m = model({ engine: "codex", probes: BOTH_FOUND, daemonEngine: "codex" });
+  expect(engineFact(m).standing).toBe("done");
+});
+
+test("codex chosen and found, daemon on codex but still starting: not done", () => {
+  const m = model({
+    engine: "codex",
+    probes: BOTH_FOUND,
+    daemonEngine: "codex",
+    daemonHealth: "starting",
+  });
+  expect(engineFact(m).standing).toBe("todo");
+});

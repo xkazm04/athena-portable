@@ -471,3 +471,10 @@ test("a project's plan comes from the bundled playbook by id, and an unknown one
   const plain = fixtures.ledger().talk.project;
   expect(plain).toBeNull();
 });
+
+test("the welcome does not call a found engine ready while the daemon runs another", () => {
+  const probes = [{ id: "codex", state: "found" as const, detail: "0.40" }];
+  expect(engineView("codex", probes, null, false, "claude_code")).toMatchObject({ state: "looking", text: "Switching to Codex…" });
+  expect(engineView("codex", probes, null, false, "codex").state).toBe("ready");
+  expect(engineView("codex", probes, null, false).state).toBe("ready");
+});

@@ -37,6 +37,8 @@ use std::time::{Duration, Instant};
 use serde::Serialize;
 use tauri::{AppHandle, Manager};
 
+use crate::store;
+
 /// The origins the daemon must accept from the browser's side of the fence: the dev server in
 /// both spellings of loopback (a browser treats `127.0.0.1` and `localhost` as different
 /// origins), and the two shapes the Tauri asset protocol takes across platforms. 1431 is this
@@ -71,9 +73,13 @@ const HEALTH_BODY_CAP: u64 = 64 * 1024;
 
 /// Where the token is written and where `--token-file` is pointed. The daemon reads it back.
 const TOKEN_FILENAME: &str = "daemon.json";
-/// The engine a shell starts on before anything has been configured. c21's Settings module owns
-/// the stored answer and applies it with `daemon_restart`; this module never reads the store.
+/// The engine a shell starts on when the stored `settings/engine` row is absent or not a known id,
+/// and the one a restart falls back to when it is handed an empty name. A known stored id wins at
+/// launch (`launch_engine`); a change made while the app is open is applied with `daemon_restart`.
 pub const DEFAULT_ENGINE: &str = "claude_code";
+/// The engine ids the shell accepts from the store. The same two as `ENGINE_IDS` in
+/// `apps/desktop/src/lib/engines.ts`; change them together.
+const KNOWN_ENGINES: [&str; 2] = ["claude_code", "codex"];
 /// The name `scripts/build-sidecar.py` gives the frozen daemon, and the name Tauri's
 /// `externalBin` leaves beside the executable once it has stripped the target triple.
 const SIDECAR_STEM: &str = "athena-daemon";
@@ -970,10 +976,26 @@ fn poll_health(app: &AppHandle, generation: u64, url: &str, token: &str) {
 // What `lib.rs` calls
 // ==============================================================================================
 
-/// Start the daemon at launch. Non-fatal: the shell must come up even when the daemon does not,
-/// and the panel's degraded fixture is the surface for that.
+/// The engine to launch on, given the stored `settings/engine` value. A JSON string that is a
+/// known id once trimmed gives that id; anything else (null, empty, unknown, any other type)
+/// gives `DEFAULT_ENGINE`.
+fn launch_engine(stored: &serde_json::Value) -> String {
+    stored
+        .as_str()
+        .map(str::trim)
+        .filter(|id| KNOWN_ENGINES.contains(id))
+        .unwrap_or(DEFAULT_ENGINE)
+        .to_string()
+}
+
+/// Start the daemon at launch, on the engine the store holds. Non-fatal: the shell must come up
+/// even when the daemon does not, and the panel's degraded fixture is the surface for that. A
+/// store that did not open, or a read that fails, starts the daemon on the default.
 pub fn start_at_launch(app: &AppHandle) {
-    if let Err(e) = start(app, DEFAULT_ENGINE) {
+    let stored = store::opened(app)
+        .and_then(|s| s.get("settings", "engine"))
+        .unwrap_or(serde_json::Value::Null);
+    if let Err(e) = start(app, &launch_engine(&stored)) {
         eprintln!("[daemon] not started: {e}");
         app.state::<Daemon>().edit(app, |s| {
             s.health = Health::Failed;
@@ -1031,6 +1053,31 @@ mod tests {
             tx.send((*line).to_string()).expect("send");
         }
         rx
+    }
+
+    // -- the launch engine ---------------------------------------------------------------------
+
+    #[test]
+    fn the_launch_engine_is_the_stored_one_when_it_is_known() {
+        use serde_json::json;
+        assert_eq!(launch_engine(&json!("codex")), "codex");
+        assert_eq!(launch_engine(&json!("claude_code")), "claude_code");
+        assert_eq!(launch_engine(&json!(" codex ")), "codex");
+    }
+
+    #[test]
+    fn the_launch_engine_is_the_default_for_anything_else() {
+        use serde_json::json;
+        for stored in [
+            json!(null),
+            json!("gpt-9"),
+            json!(""),
+            json!({"engine": "codex"}),
+            json!(7),
+            json!(true),
+        ] {
+            assert_eq!(launch_engine(&stored), DEFAULT_ENGINE, "{stored}");
+        }
     }
 
     // -- the ready line ------------------------------------------------------------------------
