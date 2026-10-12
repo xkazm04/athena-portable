@@ -496,3 +496,38 @@ test("the welcome does not read the daemon's placeholder engine before it has re
   expect(engineView("claude_code", probes, null, false, "claude_code", "ready", true).state).toBe("ready");
   expect(engineView("claude_code", probes, null, false, "claude_code", "ready").state).toBe("ready");
 });
+
+test("W: a daemon that failed on the chosen engine says so, shows why, and offers to try again", () => {
+  const found = [
+    { id: "claude_code", state: "found" as const, detail: "2.1" },
+    { id: "codex", state: "found" as const, detail: "0.40" },
+  ];
+  const view = engineView("claude_code", found, null, false, "claude_code", "failed", true, "spawn exited with code 1");
+  expect(view.state).toBe("missing");
+  expect(view.text).toBe("Athena could not start on Claude Code.");
+  expect(view.reason).toBe("spawn exited with code 1");
+  expect(view.sub).toContain("spawn exited with code 1");
+  expect(view.retry).toEqual({ id: "claude_code", label: "Try again" });
+  expect(view.offer).toEqual({ id: "codex", label: "Codex" });
+  expect(`${view.text} ${view.sub}`).not.toContain("Check again in a moment");
+
+  const alone = engineView("claude_code", [found[0]], null, false, "claude_code", "failed", true, "boom");
+  expect(alone.retry).toEqual({ id: "claude_code", label: "Try again" });
+  expect(alone.offer).toBeNull();
+});
+
+test("W: probes null with a failed daemon is a failed start, not a failed look", () => {
+  for (const problem of [null, "The daemon is not ready yet."]) {
+    const view = engineView("codex", null, problem, false, "codex", "failed", true, "no engine binary");
+    expect(view.state).toBe("missing");
+    expect(view.text).toBe("Athena could not start on Codex.");
+    expect(view.reason).toBe("no engine binary");
+    expect(view.retry).toEqual({ id: "codex", label: "Try again" });
+    expect(`${view.text} ${view.sub}`).not.toMatch(/could not look|Check again in a moment/);
+  }
+  // failed on another engine, or nothing has been heard: the old lines stand
+  expect(engineView("codex", null, "x", false, "claude_code", "failed", true, "e").text).toBe(
+    "Athena could not look for your engine.",
+  );
+  expect(engineView("codex", null, null, false, "codex", "failed", false, "").state).toBe("looking");
+});

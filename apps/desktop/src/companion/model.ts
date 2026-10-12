@@ -65,6 +65,8 @@ export interface CompanionActions {
   checkEngines: () => void;
   /** Use another engine than the stored one (the welcome offers it when the default is missing). */
   useEngine: (id: string) => void;
+  /** Start Athena again on the engine that failed to start (the welcome's "Try again"). */
+  retryEngine: (id: string) => void;
 }
 
 export const NO_ACTIONS: CompanionActions = {
@@ -86,6 +88,7 @@ export const NO_ACTIONS: CompanionActions = {
   openMain: () => {},
   checkEngines: () => {},
   useEngine: () => {},
+  retryEngine: () => {},
 };
 
 // -- the pieces --------------------------------------------------------------------------------
@@ -237,6 +240,10 @@ export interface EngineView {
   sub: string;
   /** Another engine that is ready, offered when the stored one is not. */
   offer: { id: string; label: string } | null;
+  /** Why the start failed, as the daemon said it, when `retry` is set; empty otherwise. */
+  reason: string;
+  /** Start again on the chosen engine, offered when Athena could not start on it. */
+  retry: { id: string; label: string } | null;
   checking: boolean;
 }
 
@@ -363,6 +370,8 @@ export interface CompanionInputs {
   runningEngineId?: string;
   /** The daemon's health. When set, the welcome says ready only for "ready". */
   daemonHealth?: DaemonHealth;
+  /** The reason the last start failed, as the store kept it. Empty when there is none. */
+  daemonError?: string;
   /** The daemon store has heard from Rust. When false, `runningEngineId` is a placeholder. */
   daemonLoaded?: boolean;
   /** The welcome has been answered: when it has not, Main may have been left hidden. */
@@ -487,7 +496,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     },
     welcome: {
       engine: i.engine,
-      engineView: engineView(i.engineId ?? "claude_code", i.probes ?? null, i.probeProblem ?? null, i.probing ?? false, i.runningEngineId, i.daemonHealth, i.daemonLoaded),
+      engineView: engineView(i.engineId ?? "claude_code", i.probes ?? null, i.probeProblem ?? null, i.probing ?? false, i.runningEngineId, i.daemonHealth, i.daemonLoaded, i.daemonError),
     },
     actions: i.actions,
   };
@@ -737,18 +746,34 @@ export function engineView(
   runningId?: string,
   health?: DaemonHealth,
   loaded?: boolean,
+  lastError?: string,
 ): EngineView {
   const label = engineLabel(id);
+  const none = { reason: "", retry: null } as const;
+  // The engine is chosen and Rust could not start it: say so, say why, and offer to start again.
+  // Found or not found does not matter here, since the failure is the daemon's, not the probe's.
+  const failedHere = health === "failed" && loaded !== false && (runningId === undefined || runningId === id);
+  const failure = (offer: EngineView["offer"]): EngineView => ({
+    state: "missing",
+    text: `Athena could not start on ${label}.`,
+    sub: lastError || "No reason was given.",
+    offer,
+    reason: lastError ?? "",
+    retry: { id, label: "Try again" },
+    checking,
+  });
   if (probes === null) {
+    if (failedHere) return failure(null);
     return problem
       ? {
           state: "missing",
           text: "Athena could not look for your engine.",
           sub: "Check again in a moment.",
           offer: null,
+          ...none,
           checking,
         }
-      : { state: "looking", text: "Looking for your engine…", sub: "", offer: null, checking };
+      : { state: "looking", text: "Looking for your engine…", sub: "", offer: null, ...none, checking };
   }
   const mine = probes.find((p) => p.id === id);
   if (mine?.state === "found") {
@@ -756,24 +781,25 @@ export function engineView(
     // the welcome does not call it ready. `runningId` is left out where nothing runs (fixtures).
     // Before the daemon has said which engine it is on, `runningId` is a placeholder, not a reading.
     if (loaded === false) {
-      return { state: "looking", text: "Looking for your engine…", sub: "", offer: null, checking };
+      return { state: "looking", text: "Looking for your engine…", sub: "", offer: null, ...none, checking };
     }
     if (runningId !== undefined && runningId !== id) {
-      return { state: "looking", text: `Switching to ${label}…`, sub: "", offer: null, checking };
+      return { state: "looking", text: `Switching to ${label}…`, sub: "", offer: null, ...none, checking };
     }
     // Running the chosen engine is still not ready until the daemon says so. `health` is left out
     // where nothing reports it (fixtures), and then the match alone reads as ready.
     if (health === "failed") {
-      return { state: "missing", text: `Athena could not start on ${label}.`, sub: "Check again in a moment.", offer: null, checking };
+      const other = probes.find((p) => p.id !== id && p.state === "found" && (ENGINE_IDS as readonly string[]).includes(p.id));
+      return failure(other ? { id: other.id, label: engineLabel(other.id) } : null);
     }
     if (health === "starting" || health === "stopped") {
       const text = health === "starting" ? `Starting Athena on ${label}…` : `Athena is not running on ${label} yet…`;
-      return { state: "looking", text, sub: "", offer: null, checking };
+      return { state: "looking", text, sub: "", offer: null, ...none, checking };
     }
-    return { state: "ready", text: `Engine: ${label}, ready.`, sub: "She never asks for a key.", offer: null, checking };
+    return { state: "ready", text: `Engine: ${label}, ready.`, sub: "She never asks for a key.", offer: null, ...none, checking };
   }
   if (mine === undefined || mine.state === "unknown") {
-    return { state: "looking", text: "Looking for your engine…", sub: "", offer: null, checking };
+    return { state: "looking", text: "Looking for your engine…", sub: "", offer: null, ...none, checking };
   }
   const other = probes.find((p) => p.id !== id && p.state === "found" && (ENGINE_IDS as readonly string[]).includes(p.id));
   const offer = other ? { id: other.id, label: engineLabel(other.id) } : null;
@@ -787,6 +813,7 @@ export function engineView(
     text,
     sub: offer ? `${offer.label} is ready on this computer, and she can use it instead. Or ${remedy.charAt(0).toLowerCase()}${remedy.slice(1)}` : remedy,
     offer,
+    ...none,
     checking,
   };
 }

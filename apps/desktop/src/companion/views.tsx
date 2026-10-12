@@ -439,9 +439,15 @@ function EngineFact({ view, actions }: { view: EngineView; actions: CompanionMod
         <b>{view.text}</b> {view.sub}
         {view.state === "missing" ? (
           <span className="wl-engine-act">
-            <button type="button" className="aw-btn aw-btn-ghost-ink" data-act="check-engines" disabled={view.checking} onClick={actions.checkEngines}>
-              {view.checking ? "Checking…" : "Check again"}
-            </button>
+            {view.retry ? (
+              <button type="button" className="aw-btn aw-btn-ghost-ink" data-act="retry-engine" onClick={() => actions.retryEngine(view.retry!.id)}>
+                {view.retry.label}
+              </button>
+            ) : (
+              <button type="button" className="aw-btn aw-btn-ghost-ink" data-act="check-engines" disabled={view.checking} onClick={actions.checkEngines}>
+                {view.checking ? "Checking…" : "Check again"}
+              </button>
+            )}
             {view.offer ? (
               <button type="button" className="aw-btn aw-btn-ghost-ink" data-act="use-engine" onClick={() => actions.useEngine(view.offer!.id)}>
                 Use {view.offer.label}

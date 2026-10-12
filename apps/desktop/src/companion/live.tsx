@@ -363,6 +363,9 @@ export default function Live() {
     useEngine: (id) => {
       if (isEngineId(id)) void chooseFirstRunEngine(id).catch(report("engine"));
     },
+    retryEngine: (id) => {
+      if (isEngineId(id)) void useDaemon.getState().restart(id).catch(report("engine"));
+    },
   };
 
   const originViews: OriginView[] = known.map((o) => ({
@@ -390,6 +393,7 @@ export default function Live() {
     runningEngineId: daemon.engine,
     daemonHealth: daemon.health,
     daemonLoaded: daemon.loaded,
+    daemonError: daemon.lastError,
     onboarded,
     offer,
     project: run.project,

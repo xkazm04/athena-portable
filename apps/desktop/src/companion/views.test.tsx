@@ -312,3 +312,22 @@ test("an empty list of apps she has seen says first sight asks, and does not say
   expect(out).toContain("waits for your answer");
   expect(out).not.toContain("tools are off");
 });
+
+test("welcome: a failed start shows the reason and a Try again button that restarts, not only Check again", () => {
+  const model = fixtures["welcome"]();
+  model.welcome.engineView = {
+    state: "missing",
+    text: "Athena could not start on Claude Code.",
+    sub: "spawn exited with code 1",
+    offer: { id: "codex", label: "Codex" },
+    reason: "spawn exited with code 1",
+    retry: { id: "claude_code", label: "Try again" },
+    checking: false,
+  };
+  const out = renderToStaticMarkup(createElement(CompanionView, { model }));
+  expect(out).toContain("Athena could not start on Claude Code.");
+  expect(out).toContain("spawn exited with code 1");
+  expect(out).toMatch(/<button[^>]*data-act="retry-engine"[^>]*>Try again</);
+  expect(out).toContain("Use Codex");
+  expect(out).not.toContain("Check again in a moment");
+});
