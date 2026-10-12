@@ -500,7 +500,9 @@ function micSentence(model: SetupModel): string {
 
 function voiceSentence(model: SetupModel): string {
   if (model.voiceAvailable) return "Athena can hear you and speak back.";
-  if (model.daemonHealth !== "ready") return "Athena is still starting, so nothing is known yet.";
+  if (model.daemonHealth === "starting") return "Athena is still starting, so nothing is known yet.";
+  if (model.daemonHealth === "failed") return "Athena could not start, so nothing is known yet.";
+  if (model.daemonHealth === "stopped") return "Athena is not running, so nothing is known yet.";
   return "Voice is not installed with this copy of Athena.";
 }
 

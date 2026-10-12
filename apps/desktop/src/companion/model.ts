@@ -14,6 +14,7 @@
  * Nothing here decides anything. The class on a tool, the cards and every refusal arrive already
  * decided by the gate; the companion renders what it is told (README section 3.3).
  */
+import type { DaemonHealth } from "@/lib/daemon";
 import type { AthenaState } from "@/lib/companion";
 import type { Side, Valign } from "@/lib/companion";
 import type { ToolRow } from "@/lib/api";
@@ -360,6 +361,8 @@ export interface CompanionInputs {
   probeProblem?: string | null;
   /** The engine the daemon runs. When set and not `engineId`, the welcome does not say ready. */
   runningEngineId?: string;
+  /** The daemon's health. When set, the welcome says ready only for "ready". */
+  daemonHealth?: DaemonHealth;
   /** The welcome has been answered: when it has not, Main may have been left hidden. */
   onboarded?: boolean;
   /** The clock, for "2 h ago". Injected so the selector stays pure. */
@@ -482,7 +485,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     },
     welcome: {
       engine: i.engine,
-      engineView: engineView(i.engineId ?? "claude_code", i.probes ?? null, i.probeProblem ?? null, i.probing ?? false, i.runningEngineId),
+      engineView: engineView(i.engineId ?? "claude_code", i.probes ?? null, i.probeProblem ?? null, i.probing ?? false, i.runningEngineId, i.daemonHealth),
     },
     actions: i.actions,
   };
@@ -730,6 +733,7 @@ export function engineView(
   problem: string | null,
   checking: boolean,
   runningId?: string,
+  health?: DaemonHealth,
 ): EngineView {
   const label = engineLabel(id);
   if (probes === null) {
@@ -749,6 +753,15 @@ export function engineView(
     // the welcome does not call it ready. `runningId` is left out where nothing runs (fixtures).
     if (runningId !== undefined && runningId !== id) {
       return { state: "looking", text: `Switching to ${label}…`, sub: "", offer: null, checking };
+    }
+    // Running the chosen engine is still not ready until the daemon says so. `health` is left out
+    // where nothing reports it (fixtures), and then the match alone reads as ready.
+    if (health === "failed") {
+      return { state: "missing", text: `Athena could not start on ${label}.`, sub: "Check again in a moment.", offer: null, checking };
+    }
+    if (health === "starting" || health === "stopped") {
+      const text = health === "starting" ? `Starting Athena on ${label}…` : `Athena is not running on ${label} yet…`;
+      return { state: "looking", text, sub: "", offer: null, checking };
     }
     return { state: "ready", text: `Engine: ${label}, ready.`, sub: "She never asks for a key.", offer: null, checking };
   }

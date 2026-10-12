@@ -63,6 +63,20 @@ export function engineFact(model: SetupModel): Fact {
           : `${label} is chosen, and Athena is still starting up on it`,
       };
     }
+    if (model.daemonHealth === "failed") {
+      return {
+        ...base,
+        standing: "missing",
+        summary: `${engineLabel(chosen.id)} is chosen, but Athena could not start on it`,
+      };
+    }
+    if (model.daemonHealth === "stopped") {
+      return {
+        ...base,
+        standing: "todo",
+        summary: `${engineLabel(chosen.id)} is chosen, but Athena is not running`,
+      };
+    }
     if (model.daemonHealth !== "ready") {
       return {
         ...base,

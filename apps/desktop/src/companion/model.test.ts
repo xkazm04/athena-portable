@@ -478,3 +478,14 @@ test("the welcome does not call a found engine ready while the daemon runs anoth
   expect(engineView("codex", probes, null, false, "codex").state).toBe("ready");
   expect(engineView("codex", probes, null, false).state).toBe("ready");
 });
+
+test("the welcome says ready only when the daemon on the chosen engine is ready", () => {
+  const probes = [{ id: "codex", state: "found" as const, detail: "0.40" }];
+  expect(engineView("codex", probes, null, false, "codex", "ready").state).toBe("ready");
+  expect(engineView("codex", probes, null, false, "codex", "starting").state).toBe("looking");
+  expect(engineView("codex", probes, null, false, "codex", "stopped").state).toBe("looking");
+  const failed = engineView("codex", probes, null, false, "codex", "failed");
+  expect(failed.state).toBe("missing");
+  expect(failed.text).toBe("Athena could not start on Codex.");
+  expect(engineView("codex", probes, null, false, "claude_code", "ready").state).toBe("looking");
+});

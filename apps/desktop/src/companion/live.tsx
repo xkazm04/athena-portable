@@ -388,6 +388,7 @@ export default function Live() {
     probing,
     probeProblem,
     runningEngineId: daemon.engine,
+    daemonHealth: daemon.health,
     onboarded,
     offer,
     project: run.project,

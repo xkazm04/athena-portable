@@ -176,3 +176,18 @@ test("codex chosen and found, daemon on codex but still starting: not done", () 
   });
   expect(engineFact(m).standing).toBe("todo");
 });
+
+test("the chosen engine on the daemon: starting, failed and stopped each have their own words", () => {
+  const base = { engine: "codex", probes: BOTH_FOUND, daemonEngine: "codex" };
+  const starting = engineFact(model({ ...base, daemonHealth: "starting" }));
+  expect(starting.standing).toBe("todo");
+  expect(starting.summary).toContain("still starting up");
+  const failed = engineFact(model({ ...base, daemonHealth: "failed" }));
+  expect(failed.standing).toBe("missing");
+  expect(failed.summary).toContain("could not start on it");
+  expect(failed.summary).not.toContain("starting up");
+  const stopped = engineFact(model({ ...base, daemonHealth: "stopped" }));
+  expect(stopped.summary).toContain("not running");
+  expect(stopped.summary).not.toContain("starting up");
+  for (const f of [starting, failed, stopped]) expect(f.summary).not.toMatch(/daemon|hands|origin|probe|PATH|—/);
+});
