@@ -43,3 +43,20 @@ restart notice that could have caught it renders only in the Settings mood.
 - The known-id list now exists in Rust and in TypeScript; the comment names the pair, and
   an unknown stored value falls back to the default rather than failing the launch.
 - While the restart runs, "Start using Athena" is disabled and the engine line says why.
+
+## Amendment 2026-10-12: the copy rule for ready
+
+Ready means three things at once: the engine is found, the daemon runs the chosen engine, and its
+health is ready. Setup's engine fact and the welcome's engine line follow it, and each of the
+other states has its own words:
+
+- Starting: "still starting up" (Setup) and "Starting Athena on X" (welcome, read as looking).
+- Failed: "Athena could not start on it" (Setup, standing missing; welcome, missing).
+- Stopped: "Athena is not running" (Setup; welcome, read as looking).
+- Not yet heard: until the daemon store has reported once, its engine is a placeholder and is
+  never read as the running one. Setup's fact is unknown ("Athena has not yet said which engine
+  she is on") and the welcome reads as looking.
+
+A caller that leaves out the health or the loaded flag (a fixture) behaves as before.
+`chooseFirstRunEngine` is unchanged: it restarts whenever the daemon's engine differs from the
+choice, loaded or not, and the welcome always moves the daemon.
