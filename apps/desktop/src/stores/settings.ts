@@ -141,6 +141,15 @@ export async function chooseFirstRunEngine(engine: EngineId): Promise<void> {
   if (useDaemon.getState().engine !== engine) await useDaemon.getState().restart(engine);
 }
 
+/**
+ * Setup's engine choice: before the letter is read the choice moves the daemon too; afterwards the
+ * restart notice leaves that to the person.
+ */
+export function chooseSetupEngine(engine: EngineId): Promise<void> {
+  const settings = useSettings.getState();
+  return settings.onboarded ? settings.setEngine(engine) : chooseFirstRunEngine(engine);
+}
+
 let started = false;
 
 /**

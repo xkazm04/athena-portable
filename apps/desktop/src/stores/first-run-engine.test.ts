@@ -37,7 +37,8 @@ vi.mock("@/lib/daemon", async (importOriginal) => ({
 import { SETTING_KEYS } from "@/lib/store";
 
 import { resetDaemonForTests, useDaemon } from "./daemon";
-import { chooseFirstRunEngine, useSettings } from "./settings";
+import { chooseFirstRunEngine, chooseSetupEngine, useSettings } from "./settings";
+import { daemonRestart } from "@/lib/daemon";
 
 beforeEach(() => {
   seams.writes.length = 0;
@@ -71,6 +72,28 @@ test("once onboarded, setEngine alone writes the row and never restarts", async 
 test("the daemon has not loaded: a choice that differs from its placeholder engine still restarts", async () => {
   expect(useDaemon.getState().loaded).toBe(false);
   await chooseFirstRunEngine("codex");
+  expect(seams.writes).toEqual([{ key: SETTING_KEYS.engine, value: "codex" }]);
+  expect(seams.restarts).toEqual(["codex"]);
+});
+
+test("the restart rejects after the row was written: the choice rejects with that error and the row stays", async () => {
+  useDaemon.setState({ engine: "claude_code", health: "ready" });
+  vi.mocked(daemonRestart).mockRejectedValueOnce(new Error("sidecar would not start"));
+  await expect(chooseFirstRunEngine("codex")).rejects.toThrow("sidecar would not start");
+  expect(seams.writes).toEqual([{ key: SETTING_KEYS.engine, value: "codex" }]);
+});
+
+test("Setup's choice once onboarded calls setEngine alone", async () => {
+  useSettings.setState({ onboarded: true });
+  useDaemon.setState({ engine: "claude_code", health: "ready" });
+  await chooseSetupEngine("codex");
+  expect(seams.writes).toEqual([{ key: SETTING_KEYS.engine, value: "codex" }]);
+  expect(seams.restarts).toEqual([]);
+});
+
+test("Setup's choice before the letter is read moves the daemon", async () => {
+  useDaemon.setState({ engine: "claude_code", health: "ready" });
+  await chooseSetupEngine("codex");
   expect(seams.writes).toEqual([{ key: SETTING_KEYS.engine, value: "codex" }]);
   expect(seams.restarts).toEqual(["codex"]);
 });

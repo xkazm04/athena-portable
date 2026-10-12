@@ -17,7 +17,7 @@ import { checkMicrophone, type MicStanding } from "@/lib/voice";
 import type { ModuleEntry } from "@/modules/types";
 import { useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
-import { chooseFirstRunEngine, useSettings, type ThemeChoice, type TypeScale } from "@/stores/settings";
+import { chooseSetupEngine, useSettings, type ThemeChoice, type TypeScale } from "@/stores/settings";
 import { useShell } from "@/stores/shell";
 import { useTabs } from "@/stores/tabs";
 import { useVoice } from "@/stores/voice";
@@ -57,11 +57,7 @@ function Live() {
     return {
       chooseEngine: (id) => {
         if (!isEngineId(id)) return;
-        const settings = useSettings.getState();
-        // Before the letter is read the choice moves the daemon too; afterwards the restart
-        // notice leaves that to the person.
-        const chosen = settings.onboarded ? settings.setEngine(id) : chooseFirstRunEngine(id);
-        void chosen.catch(report("engine"));
+        void chooseSetupEngine(id).catch(report("engine"));
       },
       checkEngines: () => void useEngines.getState().check(),
       restart: () => {
