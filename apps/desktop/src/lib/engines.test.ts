@@ -4,7 +4,10 @@
  */
 import { expect, test } from "vitest";
 
-import { engineLine, remedyFor, type EngineProbe } from "./engines";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+import { ENGINE_IDS, engineLine, remedyFor, type EngineProbe } from "./engines";
 
 const JARGON = /PATH|probe|version flag|daemon|terminal/i;
 
@@ -33,4 +36,12 @@ test("the engine line names the standing, the remedy, or that it is still checki
   for (const probes of [null, [p("found")], [p("not_found")], [p("not_logged_in")]]) {
     expect(engineLine("claude_code", probes, probes ? null : "x")).not.toMatch(JARGON);
   }
+});
+
+test("the desktop's engine ids are the ones daemon.rs launches, in order", () => {
+  const rust = readFileSync(resolve(__dirname, "../../src-tauri/src/daemon.rs"), "utf8");
+  const found = /KNOWN_ENGINES:\s*\[&str;\s*\d+\]\s*=\s*\[([^\]]*)\]/.exec(rust);
+  expect(found, "KNOWN_ENGINES not found in daemon.rs").not.toBeNull();
+  const ids = [...(found?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  expect(ids).toEqual([...ENGINE_IDS]);
 });
