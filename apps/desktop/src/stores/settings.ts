@@ -133,12 +133,14 @@ export const useSettings = create<SettingsState>((set, get) => ({
 /**
  * A first-run engine choice: the row is written, and the running daemon is moved onto the engine
  * at once when it is on another. Once the letter has been read the person decides when to
- * restart, so callers use `setEngine` alone there. Rejects like `setEngine` and `restart` do;
+ * restart, so callers use `setEngine` alone there. A choice made while a restart is in flight
+ * waits for it and compares again; one made before the daemon has reported always restarts.
+ * Rejects like `setEngine` and `restart` do;
  * the caller reports it.
  */
 export async function chooseFirstRunEngine(engine: EngineId): Promise<void> {
   await useSettings.getState().setEngine(engine);
-  if (useDaemon.getState().engine !== engine) await useDaemon.getState().restart(engine);
+  await useDaemon.getState().ensureEngine(engine);
 }
 
 /**

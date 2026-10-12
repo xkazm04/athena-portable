@@ -60,3 +60,20 @@ other states has its own words:
 A caller that leaves out the health or the loaded flag (a fixture) behaves as before.
 `chooseFirstRunEngine` is unchanged: it restarts whenever the daemon's engine differs from the
 choice, loaded or not, and the welcome always moves the daemon.
+
+## Amendment 2026-10-12 (second): in-flight choices, an unloaded store, a failed restart
+
+Reason: first-run-setup full council r1, robustness-1, -2 and -4. This reverses the last sentence
+of the amendment above ("loaded or not").
+
+- **One restart at a time.** A restart or first-run choice requested while another restart is in
+  flight waits for it, compares again, and restarts only if the daemon is still not on the chosen
+  engine. Nothing is dropped and nothing runs beside the one in flight. The store marks itself
+  starting on the target engine, with no url, from the call until the command settles, so neither
+  Setup nor the welcome reads ready on the old engine.
+- **Not loaded means restart.** Before the daemon store has reported, its engine is a placeholder
+  and is never compared with the choice: the choice always restarts. (The alternative, waiting
+  for the first status, would hold a person's click on a launch that may never report.)
+- **A failed restart is a status.** Rust sets health failed, the message, no url and the attempted
+  engine through the status door before returning the error, and the store holds the same state
+  locally on rejection, so "could not start" reads on the chosen engine.

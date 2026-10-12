@@ -82,15 +82,65 @@ export function endpoint(view: DaemonView): { url: string; token: string } | nul
 export interface DaemonState extends DaemonView {
   /** Restart on an engine. The answer arrives as events; this only reports a refused spawn. */
   restart: (engine: string) => Promise<void>;
+  /**
+   * Move the daemon onto an engine unless it is already there, after any restart in flight has
+   * settled. Before the first status the store's engine is a placeholder, so it always restarts.
+   */
+  ensureEngine: (engine: string) => Promise<void>;
 }
 
-export const useDaemon = create<DaemonState>((set, get) => ({
-  ...EMPTY_DAEMON,
-  restart: async (engine) => {
-    const status = await daemonRestart(engine);
-    set(reduce(get(), status));
-  },
-}));
+/** Restarts run one at a time, in the order asked, and a failure does not stop the next. */
+let tail: Promise<unknown> = Promise.resolve();
+let pending = 0;
+
+function enqueue(job: () => Promise<void>): Promise<void> {
+  pending += 1;
+  const run = tail.then(job, job).finally(() => {
+    pending -= 1;
+  });
+  tail = run.catch(() => undefined);
+  return run;
+}
+
+export const useDaemon = create<DaemonState>((set, get) => {
+  /** Starting on the target until the command settles: never ready, never on the old engine. */
+  const markStarting = (engine: string) =>
+    set({ engine, health: "starting", url: null, token: "", loaded: true });
+
+  const run = async (engine: string) => {
+    markStarting(engine);
+    try {
+      set(reduce(get(), await daemonRestart(engine)));
+    } catch (error) {
+      // Rust sets the same status before it returns the error; this is the local copy of it.
+      set({
+        engine,
+        health: "failed",
+        lastError: error instanceof Error ? error.message : String(error),
+        url: null,
+        token: "",
+        loaded: true,
+      });
+      throw error;
+    }
+  };
+
+  const onEngine = (engine: string) => get().loaded && get().engine === engine;
+
+  return {
+    ...EMPTY_DAEMON,
+    restart: (engine) => {
+      markStarting(engine);
+      return enqueue(() => run(engine));
+    },
+    ensureEngine: (engine) => {
+      if (pending === 0 && onEngine(engine)) return Promise.resolve();
+      return enqueue(async () => {
+        if (!onEngine(engine)) await run(engine);
+      });
+    },
+  };
+});
 
 let started = false;
 

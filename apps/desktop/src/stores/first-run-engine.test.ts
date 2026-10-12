@@ -55,7 +55,7 @@ test("first run, daemon on claude_code, choose codex: the row is written and the
 });
 
 test("choosing the engine the daemon already runs writes the row and restarts nothing", async () => {
-  useDaemon.setState({ engine: "codex", health: "ready" });
+  useDaemon.setState({ engine: "codex", health: "ready", loaded: true });
   await chooseFirstRunEngine("codex");
   expect(seams.writes).toEqual([{ key: SETTING_KEYS.engine, value: "codex" }]);
   expect(seams.restarts).toEqual([]);
