@@ -38,6 +38,7 @@ function Live() {
   const daemonHealth = useDaemon((s) => s.health);
   const daemonEngine = useDaemon((s) => s.engine);
   const daemonLoaded = useDaemon((s) => s.loaded);
+  const daemonError = useDaemon((s) => s.lastError);
   const probes = useEngines((s) => s.probes);
   const checking = useEngines((s) => s.checking);
   const problem = useEngines((s) => s.problem);
@@ -105,6 +106,7 @@ function Live() {
         daemonHealth,
         daemonEngine,
         daemonLoaded,
+        daemonError,
         reopened,
         actions,
       }),
@@ -123,6 +125,7 @@ function Live() {
       daemonHealth,
       daemonEngine,
       daemonLoaded,
+      daemonError,
       probes,
       checking,
       problem,

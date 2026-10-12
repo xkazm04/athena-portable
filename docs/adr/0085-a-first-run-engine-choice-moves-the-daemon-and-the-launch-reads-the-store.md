@@ -77,3 +77,26 @@ of the amendment above ("loaded or not").
 - **A failed restart is a status.** Rust sets health failed, the message, no url and the attempted
   engine through the status door before returning the error, and the store holds the same state
   locally on rejection, so "could not start" reads on the chosen engine.
+
+## Amendment 2026-10-12 (third): a status is not applied over a queued restart, and a failed start is retried
+
+Reason: first-run-setup full council r2, robustness-1, robustness-2 and value-failed-start-dead-end.
+
+- **The late-status rule.** While a restart is queued or in flight, no `daemon:status` event and
+  no first `daemonStatus()` read changes the store, except the latest event that names the engine
+  in flight, which is held. When the queue drains the store re-reads `daemonStatus()` once and
+  takes that answer; if the read fails, the held event is applied only when it names the engine
+  last asked for. A `ready` for the engine being started is therefore not lost, and a `ready` for
+  the engine before the restart cannot make Setup or the welcome say ready.
+- **Stale after asking.** Once the store has asked for an engine, an event naming another engine
+  is stale and is ignored: Rust changes the engine only at launch and on a requested restart. The
+  drain re-read is the exception, since it is Rust's own answer. Choosing the old engine again
+  then issues a restart. `resetDaemonForTests` resets the queue so a held restart cannot leak.
+- **A failed start is not "on the engine".** `ensureEngine` treats a daemon that failed or stopped
+  on the chosen engine as not on it, so choosing the same engine again restarts it.
+- **The retry.** The welcome, when Athena could not start on the chosen engine (with the engine
+  found, or with no probe answer at all), says so, shows the store's `lastError`, and offers Try
+  again, which restarts on that engine through the same queue, plus Use {other} when another
+  engine is found. Setup shows the reason and "Try again on {engine}" wired to its restart
+  action, and no longer shows "could not check which engines are installed" with the daemon's
+  not-ready reason for that case. `pendingEngineOf` keeps its ready-only rule.

@@ -39,6 +39,9 @@ export const STANDING_TONE: Record<Standing, Tone> = {
 export function engineFact(model: SetupModel): Fact {
   const base = { key: "engine" as const };
   if (model.probes === null) {
+    if (model.startFailure) {
+      return { ...base, standing: "missing", summary: model.startFailure.title.replace(/\.$/, "") };
+    }
     return {
       ...base,
       standing: "unknown",

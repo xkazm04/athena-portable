@@ -102,3 +102,37 @@ test("the actions are the view's only route out, and they are passed through unt
   expect(actions.openPage).toHaveBeenCalledWith("https://a.test/");
   expect(actions.setTheme).toHaveBeenCalledWith("dark");
 });
+
+test("U: a daemon that failed on the stored engine is a start failure with the reason and a retry, not a failed look", () => {
+  const restart = vi.fn();
+  const model = selectSetup(
+    sources({
+      daemonHealth: "failed",
+      daemonEngine: "claude_code",
+      daemonError: "spawn exited with code 1",
+      probes: null,
+      problem: "The daemon is not ready yet.",
+      actions: { ...INERT_ACTIONS, restart },
+    }),
+  );
+  expect(model.startFailure).toMatchObject({
+    engine: "claude_code",
+    title: "Athena could not start on Claude Code.",
+    reason: "spawn exited with code 1",
+    actionLabel: "Try again on Claude Code",
+  });
+  expect(model.problem).toBeNull();
+  expect(model.pendingEngine).toBeNull();
+  model.actions.restart();
+  expect(restart).toHaveBeenCalledOnce();
+});
+
+test("U: a stopped daemon on the stored engine is one too; a failure on another engine, or before the first reading, is not", () => {
+  expect(selectSetup(sources({ daemonHealth: "stopped" })).startFailure?.title).toBe(
+    "Athena is not running on Claude Code.",
+  );
+  expect(selectSetup(sources({ daemonHealth: "failed", daemonEngine: "codex" })).startFailure).toBeNull();
+  expect(selectSetup(sources({ daemonHealth: "failed", daemonLoaded: false })).startFailure).toBeNull();
+  expect(selectSetup(sources({ daemonHealth: "ready" })).startFailure).toBeNull();
+  expect(selectSetup(sources({ daemonHealth: "starting" })).startFailure).toBeNull();
+});

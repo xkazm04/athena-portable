@@ -103,6 +103,7 @@ function Onboarding({ model }: { model: SetupModel }) {
         </ul>
 
         <Passage glyph="engine" title="Choose the engine" fact={engineFact(model)}>
+          <StartFailureNote model={model} />
           <EngineChoice model={model} />
           <EngineDetail model={model} />
           <EngineCheck model={model} />
@@ -263,6 +264,8 @@ function Settings({ model, initialOpen = null }: { model: SetupModel; initialOpe
           detail="The names below are all this page can say until a check goes through. Press Check again."
         />
       ) : null}
+
+      <StartFailureNote model={model} />
 
       {notice ? (
         <div className="setup-notice setup-notice--banner" role="status">
@@ -465,6 +468,7 @@ function ThemePreview({ theme, chosen }: { theme: "light" | "dark"; chosen: bool
 
 function engineSentence(model: SetupModel): string {
   if (model.probes === null) {
+    if (model.startFailure) return model.startFailure.title;
     if (model.checking) return "Checking which engines are installed...";
     return model.problem
       ? "Athena could not check which engines are installed."
@@ -504,6 +508,21 @@ function voiceSentence(model: SetupModel): string {
   if (model.daemonHealth === "failed") return "Athena could not start, so nothing is known yet.";
   if (model.daemonHealth === "stopped") return "Athena is not running, so nothing is known yet.";
   return "Voice is not installed with this copy of Athena.";
+}
+
+/** The daemon could not start, or stopped, on the stored engine: the reason and one retry. */
+function StartFailureNote({ model }: { model: SetupModel }) {
+  const failure = model.startFailure;
+  if (!failure) return null;
+  return (
+    <ProblemNote
+      title={failure.title}
+      reason={failure.reason}
+      tone="error"
+      onRetry={model.actions.restart}
+      retryLabel={failure.actionLabel}
+    />
+  );
 }
 
 // -- the controls ----------------------------------------------------------------------------------

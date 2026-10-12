@@ -59,6 +59,15 @@ export interface SetupActions {
   reopenOnboarding: () => void;
 }
 
+/** The daemon failed or stopped on the stored engine: what to say, why, and the one action. */
+export interface StartFailure {
+  engine: string;
+  title: string;
+  /** The daemon's own words, or a plain sentence when it gave none. */
+  reason: string;
+  actionLabel: string;
+}
+
 export interface SetupModel {
   mode: SetupMode;
   /** True once the `settings` rows have been read. Before that, every value is a default. */
@@ -93,6 +102,8 @@ export interface SetupModel {
   loaded: boolean;
   /** An engine the user chose that the running daemon is not on. Null when settled. */
   pendingEngine: string | null;
+  /** Non-null when the daemon failed or stopped on the stored engine. Restart is its action. */
+  startFailure: StartFailure | null;
   actions: SetupActions;
 }
 
@@ -117,6 +128,8 @@ export interface SetupSources {
   storePath: string | null;
   daemonHealth?: DaemonHealth;
   daemonEngine?: string;
+  /** The reason the last start failed, as the daemon store kept it. */
+  daemonError?: string;
   /** The daemon store has heard from Rust. Defaults to true, so a fixture is unchanged. */
   daemonLoaded?: boolean;
   /** `true` for one visit after "Show the welcome again", whatever the stored row says. */
@@ -134,13 +147,32 @@ export function selectSetup(source: SetupSources): SetupModel {
   });
   const health = source.daemonHealth ?? "stopped";
   const daemonEngine = source.daemonEngine ?? "";
+  const label = engineLabel(source.engine);
+  // A daemon that failed or stopped on the stored engine is a failed start. It is not a failed
+  // look, so the probe's "daemon is not ready" reason is not shown beside it.
+  const startFailure: StartFailure | null =
+    (source.daemonLoaded ?? true) &&
+    daemonEngine === source.engine &&
+    (health === "failed" || health === "stopped")
+      ? {
+          engine: source.engine,
+          title:
+            health === "failed"
+              ? `Athena could not start on ${label}.`
+              : `Athena is not running on ${label}.`,
+          reason:
+            source.daemonError ||
+            (health === "failed" ? "No reason was given." : "It stopped without saying why."),
+          actionLabel: `Try again on ${label}`,
+        }
+      : null;
   return {
     mode: source.onboarded && !source.reopened ? "settings" : "onboarding",
     hydrated: source.hydrated,
     engine: source.engine,
     engines,
     probes: source.probes,
-    problem: source.problem,
+    problem: startFailure ? null : source.problem,
     checking: source.checking ?? false,
     theme: source.theme,
     typeScale: source.typeScale ?? "comfortable",
@@ -159,6 +191,7 @@ export function selectSetup(source: SetupSources): SetupModel {
     daemonEngine,
     loaded: source.daemonLoaded ?? true,
     pendingEngine: pendingEngineOf(source.engine, daemonEngine, health),
+    startFailure,
     actions: source.actions,
   };
 }
