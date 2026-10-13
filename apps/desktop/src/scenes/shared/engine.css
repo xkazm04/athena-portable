@@ -15,14 +15,34 @@
   display: grid;
   gap: 8px;
   align-content: start;
+  position: relative;
   padding: 14px 16px;
   border-radius: var(--radius-card);
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--card-bg) 80%, transparent);
+  transition: border-color var(--duration-fast);
+}
+/* The chosen ring and glow live on a layer that fades, so choosing the other engine moves the
+ * emphasis across instead of jumping (opacity only, ADR 0089). */
+.engines__card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 1px var(--accent), 0 0 24px var(--glow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast);
 }
 .engines__card[data-chosen="true"] {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 0 24px var(--glow);
+}
+.engines__card[data-chosen="true"]::after {
+  opacity: 1;
+}
+:root[data-motion="calm"] .engines__card,
+:root[data-motion="calm"] .engines__card::after {
+  transition: none;
 }
 .engines__head {
   display: flex;

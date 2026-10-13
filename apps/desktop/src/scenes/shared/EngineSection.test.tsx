@@ -36,3 +36,16 @@ describe("copy", () => {
     expect(html("checking")).not.toContain("Checking...");
   });
 });
+
+describe("the chosen card", () => {
+  it("eases its edge and glow in and out, on opacity and border colour only", () => {
+    expect(css).toMatch(/\.engines__card\s*\{[^}]*transition:[^;]*border-color var\(--duration-fast\)/);
+    expect(css).toMatch(/\.engines__card::after\s*\{[^}]*transition:\s*opacity var\(--duration-fast\)/);
+    expect(css).not.toMatch(/transition:\s*all/);
+    expect(css).not.toMatch(/\.engines__card\[data-chosen="true"\]\s*\{[^}]*box-shadow/);
+  });
+
+  it("holds still under Calm", () => {
+    expect(css).toMatch(/\[data-motion="calm"\] \.engines__card[\s\S]*transition: none/);
+  });
+});
