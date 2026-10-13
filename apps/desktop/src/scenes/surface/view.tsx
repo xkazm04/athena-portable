@@ -86,17 +86,19 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
               className="surface__send focus-ring"
               disabled={!model.canAsk || draft.trim() === "" || sent === "sending"}
             >
-              Hand it to her
+              {sent === "sending" ? "Handing it over…" : "Hand it to her"}
             </button>
           </div>
-          <p className="surface__ask-note" role="status">
+          <p className="surface__ask-note" role="status" data-tone={typeof sent === "object" ? "error" : undefined}>
             {!model.canAsk
               ? model.askReason
-              : sent === "sent"
-                ? "Handed to her window. She answers there."
-                : typeof sent === "object"
-                  ? sent.problem
-                  : "Your words go to her own window, where she answers and where you approve."}
+              : sent === "sending"
+                ? "Handing it to her window…"
+                : sent === "sent"
+                  ? "Handed to her window. She answers there."
+                  : typeof sent === "object"
+                    ? sent.problem
+                    : "Your words go to her own window, where she answers and where you approve."}
           </p>
         </form>
       </div>

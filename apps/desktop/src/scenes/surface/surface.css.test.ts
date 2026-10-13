@@ -25,3 +25,8 @@ test("every control the pointer can press eases its hover on the fast duration, 
     expect(css.includes(`${sel}:hover`), sel).toBe(true);
   }
 });
+
+test("a refusal to hand the words over is told in the error colour, eased in", () => {
+  expect(rule('.surface__ask-note[data-tone="error"]')).toMatch(/color:\s*var\(--status-error\)/);
+  expect(rule(".surface__ask-note")).toMatch(/transition:[^;]*color var\(--duration-fast\)/);
+});

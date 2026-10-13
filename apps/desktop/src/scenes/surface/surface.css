@@ -121,6 +121,10 @@
   font-size: 0.8125rem;
   color: var(--muted-foreground);
   min-height: 1.4em;
+  transition: color var(--duration-fast);
+}
+.surface__ask-note[data-tone="error"] {
+  color: var(--status-error);
 }
 
 .surface__lights {
