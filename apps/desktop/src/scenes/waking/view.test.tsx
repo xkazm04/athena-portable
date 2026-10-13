@@ -99,3 +99,11 @@ describe("the steps say what is done in more than a colour", () => {
     expect(h).toMatch(/waking__step-n" aria-hidden="true">1</);
   });
 });
+
+describe("the way forward names the step, not a clipped question", () => {
+  it("says Next and the next step's name", () => {
+    expect(html("ready", 0)).toContain("Next: Reach");
+    expect(html("ready", 1)).toContain("Next: Voice");
+    expect(html("ready", 1)).not.toContain("do you want to talk to her");
+  });
+});

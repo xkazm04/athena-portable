@@ -174,7 +174,7 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
         <div className="waking__foot">
           {step < 2 ? (
             <Button variant="primary" onClick={() => setStep((step + 1) as 1 | 2)}>
-              Next: {STEPS[step + 1].ask.toLowerCase().replace("?", "")}
+              Next: {STEPS[step + 1].name}
             </Button>
           ) : (
             <Button
