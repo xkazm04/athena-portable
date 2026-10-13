@@ -5,26 +5,33 @@
  * view-model, so the verdicts, the map, the arrangement and the actions are the ones the module bar
  * shows. What differs here is one thing, and it is passed in: opening a portal makes the Browser
  * tab and does not select the Browser module (a Rust `browser` selection shows a page under a scene,
- * ADR 0088). The Apps depth owns the page level (`apps/<app>/page`); until it lands there is no
- * place to take the person to, so the tab is made and the scene stays where it is, and says so.
+ * ADR 0088). The Apps depth owns the page level, so once the tab exists the scene moves to
+ * `apps/<origin>/page`; a page with no origin to name stays where it is, and says so.
  */
-import { createElement } from "react";
+import { createElement, useCallback } from "react";
 
 import type { Labeller, Path } from "@/depth/model";
 import { PLAYBOOKS } from "@/lib/playbooks";
+import { originOf } from "@/modules/browser/model";
 import { usePlaybooksModel } from "@/modules/playbooks/index";
 import type { PlaybooksModel } from "@/modules/playbooks/model";
 import type { FixtureId } from "@/modules/types";
+import { pagePath } from "@/scenes/apps/model";
 import type { DepthScene, SceneProps } from "@/scenes/types";
 
 import { facetFor, fixtureIds, fixtures } from "./fixtures";
 import ChoresView from "./view";
 
-/** Nothing to follow the tab with yet: the Apps depth's page level is not ported. */
-const stay = () => {};
-
 function Live({ path, go }: SceneProps) {
-  const model = usePlaybooksModel({ afterOpen: stay });
+  // The tab exists by the time this runs; the Apps depth names the page it opened by its origin.
+  const afterOpen = useCallback(
+    (url: string) => {
+      const origin = originOf(url);
+      if (origin !== "" && origin !== "null") go(pagePath(origin));
+    },
+    [go],
+  );
+  const model = usePlaybooksModel({ afterOpen });
   return createElement(ChoresView, { model, path, go });
 }
 
