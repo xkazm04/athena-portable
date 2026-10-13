@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(console): the console's frame sheet loses the bridged-module wrapper rule nothing draws any more.` README 3.5, ADR 0087 (scan-sweep, code-optimizer): `.console__bridge` had zero consumers since the cutover; a test now pins that the sheet styles only classes root.tsx draws.
 - `fix(waking): the steps hang from the top, so swapping to a shorter step no longer slides the pills.` README 3.1, ADR 0087 and 0089 (scan-sweep, ui-perfectionist): `.waking` centred both columns, so the pills and the title moved by half the height difference between the engine step and the voice step on every Next; it is `align-items: start` now with the Mind level's 4vh inset. Tests: scenes/waking/waking.css.test.
 - `fix(desktop): the engine restart notice fades in on the depth clock instead of popping into the column.` README 3.5, ADR 0089 (scan-sweep, ui-perfectionist): `.engines__notice` mounted with no entrance while its neighbours stayed put; it now runs an opacity-only `--dur-depth` / `--ease-depth` fade, which is 0 ms under Calm. Tests: scenes/shared/EngineSection.test.tsx.
 - `fix(stage): the dock rises into place on the dive's clock instead of standing there on the first frame.` README 3.1, ADR 0089 (scan-sweep, ui-perfectionist): the footer is mounted at depth 1 and was fully drawn at once beside a scene that eased in over 360 ms; it now plays an opacity and transform keyframe on `--dur-depth`.

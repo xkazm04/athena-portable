@@ -90,3 +90,12 @@
 .engines__notice p {
   margin: 0;
 }
+/* The restart notice arrives with the change that asked for it: it fades in on the shared depth
+ * clock (0 ms under Calm, so it lands at once). Opacity only, ADR 0089. */
+.engines__notice {
+  animation: engines-notice-in var(--dur-depth) var(--ease-depth) both;
+}
+@keyframes engines-notice-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -49,3 +49,13 @@ describe("the chosen card", () => {
     expect(css).toMatch(/\[data-motion="calm"\] \.engines__card[\s\S]*transition: none/);
   });
 });
+
+describe("the restart notice", () => {
+  it("fades in on the shared depth clock, opacity only", () => {
+    expect(css).toMatch(/\.engines__notice\s*\{[^}]*animation:\s*engines-notice-in var\(--dur-depth\) var\(--ease-depth\)/);
+    const frames = /@keyframes engines-notice-in\s*\{([\s\S]*?\n\})/.exec(css)?.[1] ?? "";
+    const props = [...frames.matchAll(/([a-z-]+)\s*:/g)].map((m) => m[1]);
+    expect(props.length).toBeGreaterThan(0);
+    for (const p of props) expect(p).toBe("opacity");
+  });
+});
