@@ -35,3 +35,10 @@ test("a key chip on a primary button is set in the button's own ink, which clear
   expect(chip).toMatch(/color:\s*var\(--primary-fg\)/);
   expect(chip).not.toMatch(/--on-primary/);
 });
+
+test("the install bar fills by scale, not width, and stills under Calm", () => {
+  const fill = rule(".vs-progress > span");
+  expect(fill).toMatch(/transition:\s*transform/);
+  expect(fill).not.toMatch(/width\s+0|transition:\s*width/);
+  expect(css).toMatch(/:root\[data-motion="calm"\] \.vs-progress > span \{\s*transition: none/);
+});

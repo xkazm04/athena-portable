@@ -140,10 +140,14 @@
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--role-agent), var(--primary));
-  transition: width 0.3s var(--vs-ease);
+  transform-origin: left;
+  transition: transform 0.3s var(--vs-ease);
 }
 
+/* The fill is full width scaled to the figure (ADR 0089: transform, never width); the pulse of an
+ * unknown total is a third of the track sliding across it. */
 .vs-progress[data-indeterminate="true"] > span {
+  width: 30%;
   animation: vs-pulse 1.4s ease-in-out infinite;
 }
 
@@ -160,7 +164,20 @@
   }
 }
 
+:root[data-motion="calm"] .vs-progress > span {
+  transition: none;
+}
+
+:root[data-motion="calm"] .vs-progress[data-indeterminate="true"] > span {
+  animation: none;
+  opacity: 0.7;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .vs-progress > span {
+    transition: none;
+  }
+
   .vs-progress[data-indeterminate="true"] > span {
     animation: none;
     opacity: 0.7;

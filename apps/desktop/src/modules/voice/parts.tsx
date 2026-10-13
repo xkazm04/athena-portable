@@ -74,7 +74,9 @@ export function InstallBlock({
           <span className="typo-data vs-push">{view.figure}</span>
         </span>
         <span className="vs-progress" data-indeterminate={view.percent === null ? "true" : "false"}>
-          <span style={{ width: `${view.percent ?? 30}%` }} />
+          <span
+            style={view.percent === null ? undefined : { transform: `scaleX(${Math.min(1, Math.max(0, view.percent / 100))})` }}
+          />
         </span>
       </div>
     );
