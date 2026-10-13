@@ -23,6 +23,12 @@
   --halo-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+@property --live {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
 @property --hue {
   syntax: "<color>";
   inherits: true;
@@ -48,12 +54,12 @@ html.halo-demo {
 .halo {
   --level: 0;
   --rest: 0.08;
+  --live: 1;
   --hue: var(--halo-speak);
   position: fixed;
   inset: 0;
-  opacity: 1;
   /* the hue switches, it is never interpolated: a fading gradient is a repaint per frame */
-  transition: opacity 400ms ease-out;
+  transition: --live 400ms ease-out;
 }
 .halo[data-phase="listening"] {
   --hue: var(--halo-listen);
@@ -68,11 +74,13 @@ html.halo-demo {
 .halo[data-phase="speaking"] {
   --rest: 0.1;
 }
-/* idle fades out in the hue it had: the hue waits for the fade before it resets */
+/* idle fades the EDGES out (`--live` scales their opacity), in the hue they had: the hue waits for the
+ * fade before it resets. The page itself stays opaque, because the caption is inside it and lingers
+ * after her reply ends (`CAPTION_LINGER_MS`); fading the root took the caption with the edges. */
 .halo[data-phase="idle"] {
-  opacity: 0;
+  --live: 0;
   transition:
-    opacity 400ms ease-out,
+    --live 400ms ease-out,
     --hue 0s linear 400ms;
 }
 
@@ -81,7 +89,7 @@ html.halo-demo {
 .edge {
   position: absolute;
   overflow: hidden;
-  opacity: calc(0.55 + 0.45 * var(--level));
+  opacity: calc((0.55 + 0.45 * var(--level)) * var(--live));
   will-change: transform, opacity;
   --strong: color-mix(in srgb, var(--hue) 85%, transparent);
   --soft: color-mix(in srgb, var(--hue) 30%, transparent);
@@ -170,7 +178,7 @@ html.halo-demo {
   background: linear-gradient(to bottom, transparent, color-mix(in srgb, #fff 45%, var(--hue)), transparent);
 }
 .halo[data-phase="thinking"] .edge {
-  opacity: 0.8;
+  opacity: calc(0.8 * var(--live));
 }
 .halo[data-phase="thinking"] .edge i {
   display: block;
@@ -287,7 +295,7 @@ html.halo-demo {
   .halo .edge,
   .halo[data-phase] .edge {
     animation: none;
-    opacity: 0.8;
+    opacity: calc(0.8 * var(--live));
   }
   .edge.top,
   .edge.bottom {
