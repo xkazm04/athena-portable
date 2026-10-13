@@ -34,22 +34,6 @@
   margin: 0;
   font-size: 1.25rem;
 }
-.engines__badge {
-  font-size: 0.8125rem;
-  padding: 1px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line-strong);
-  color: var(--muted-foreground);
-}
-.engines__badge[data-state="found"] {
-  color: var(--status-success);
-  border-color: var(--status-success);
-}
-.engines__badge[data-state="not_found"],
-.engines__badge[data-state="not_logged_in"] {
-  color: var(--status-warning);
-  border-color: var(--status-warning);
-}
 .engines__line {
   margin: 0;
   color: var(--muted-foreground);

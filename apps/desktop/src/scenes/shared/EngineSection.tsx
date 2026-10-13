@@ -6,8 +6,10 @@
  * probe's remedy in plain words, the failure to start with its one retry, the restart notice that
  * asks to be done now, and Check again. A pure function of the Setup view-model.
  */
+import Badge from "@/components/Badge";
 import Button from "@/components/Button";
 import ProblemNote from "@/components/ProblemNote";
+import type { Tone } from "@/components/StatusDot";
 import { remedyFor } from "@/lib/engines";
 import type { SetupModel } from "@/modules/setup/model";
 import { engineFact, restartNotice } from "@/modules/setup/readiness";
@@ -18,6 +20,13 @@ const BADGE: Record<string, string> = {
   found: "found",
   not_logged_in: "not signed in",
   not_found: "not found",
+};
+
+/** The hue rides the badge's dot, not its words (house style 4b). */
+const BADGE_TONE: Record<string, Tone> = {
+  found: "success",
+  not_logged_in: "warning",
+  not_found: "warning",
 };
 
 export default function EngineSection({ model }: { model: SetupModel }) {
@@ -52,9 +61,7 @@ export default function EngineSection({ model }: { model: SetupModel }) {
             <li key={e.id} className="engines__card" data-chosen={chosen} data-state={state}>
               <div className="engines__head">
                 <h2>{e.label}</h2>
-                <span className="engines__badge" data-state={state}>
-                  {BADGE[state] ?? "checking"}
-                </span>
+                <Badge tone={BADGE_TONE[state] ?? "pending"}>{BADGE[state] ?? "checking"}</Badge>
               </div>
               <p className="engines__line">
                 {e.probe ? remedyFor(e.probe) : "Athena has not heard back about this engine yet."}
