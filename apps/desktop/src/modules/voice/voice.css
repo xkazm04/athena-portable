@@ -60,6 +60,12 @@
   margin-right: 6px;
 }
 
+/* A chip that ends the label (Hold to talk, then Space) has nothing after it to clear: its 6px
+ * margin would sit inside the button's right padding only, 16px against the left's 10px. */
+.btn .vs-kbd:last-child {
+  margin-right: 0;
+}
+
 .btn--primary .vs-kbd {
   border-color: color-mix(in srgb, var(--primary-fg) 45%, transparent);
   background: color-mix(in srgb, var(--primary-fg) 12%, transparent);

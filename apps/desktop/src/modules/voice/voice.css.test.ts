@@ -42,3 +42,7 @@ test("the install bar fills by scale, not width, and stills under Calm", () => {
   expect(fill).not.toMatch(/width\s+0|transition:\s*width/);
   expect(css).toMatch(/:root\[data-motion="calm"\] \.vs-progress > span \{\s*transition: none/);
 });
+
+test("a chip that ends a button's label does not leave its leading margin on the trailing edge", () => {
+  expect(rule(".btn .vs-kbd:last-child")).toMatch(/margin-right:\s*0/);
+});
