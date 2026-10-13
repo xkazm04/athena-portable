@@ -61,9 +61,14 @@
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   gap: 10px;
 }
+/* `content-visibility: auto` paints inside the item's box, and the orb's focus ring (2px line, 2px
+ * offset) reaches 4px past the orb, which is the item's full width. The item carries that room and
+ * gives it back as margin, so the orbs sit where they did. */
 .apps__orbs > li {
   content-visibility: auto;
   contain-intrinsic-size: auto 232px;
+  padding: 4px;
+  margin: -4px;
 }
 .apps__orb {
   width: 100%;

@@ -33,3 +33,12 @@ describe("the page chips and the tools answer a pointer as the orbs do", () => {
     expect(css).not.toMatch(/transition:\s*all/);
   });
 });
+
+describe("the orb's focus ring is not cut by its content-visibility box", () => {
+  it("holds 4px of room in the item and gives it back as margin, so the grid does not move", () => {
+    const item = rule(".apps__orbs > li");
+    expect(item).toMatch(/content-visibility:\s*auto/);
+    expect(item).toMatch(/padding:\s*4px/);
+    expect(item).toMatch(/margin:\s*-4px/);
+  });
+});
