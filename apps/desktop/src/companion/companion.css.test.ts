@@ -69,3 +69,11 @@ test("every data attribute the sheet selects on is written by the view (or the p
   for (const attr of attrs) expect(sources, attr).toContain(attr);
   for (const dead of [".wl-sim", ".aw-fact"]) expect(css.includes(dead), dead).toBe(false);
 });
+
+test("a parameter's key on the decision card grows or breaks inside its column; it never runs over the value", () => {
+  const dt = rule(".sl-params dt");
+  expect(dt).not.toMatch(/\swidth:\s*64px/);
+  expect(dt).toContain("min-width: 64px");
+  expect(dt).toContain("max-width: 45%");
+  expect(dt).toContain("overflow-wrap: anywhere");
+});

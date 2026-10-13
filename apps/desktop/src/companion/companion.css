@@ -1241,7 +1241,11 @@ body.athena {
 }
 .sl-params dt {
   flex: none;
-  width: 64px;
+  /* 64px for the short keys (to, invoice); a longer one (recipient_email) grows to fit, to 45% of the
+   * row, and breaks inside the word after that, instead of running over the value */
+  min-width: 64px;
+  max-width: 45%;
+  overflow-wrap: anywhere;
   font-size: var(--t-label);
   font-weight: 700;
   letter-spacing: var(--ls-label);
