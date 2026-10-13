@@ -175,6 +175,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted-foreground);
+  transition: color var(--duration-fast);
 }
 .vsc-stage[data-status="now"] .vsc-stage__label {
   color: var(--accent);
@@ -189,6 +190,7 @@
   padding-left: 10px;
   margin-left: -1px;
   border-left: 2px solid transparent;
+  transition: border-color var(--duration-fast);
 }
 .vsc-steps > li[data-status="current"] {
   border-left-color: var(--accent);

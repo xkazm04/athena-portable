@@ -34,3 +34,8 @@ test("the take, the voice card and the wave frame ease the state that changes th
   expect(rule(".vsc-voice")).toMatch(/transition:\s*border-color var\(--duration-fast\)/);
   expect(rule(".vsc-wave")).toMatch(/transition:\s*border-color var\(--duration-fast\)/);
 });
+
+test("the rail's current-step bar and stage label ease as the studio moves on", () => {
+  expect(rule(".vsc-steps > li")).toMatch(/transition:\s*border-color var\(--duration-fast\)/);
+  expect(rule(".vsc-stage__label")).toMatch(/transition:\s*color var\(--duration-fast\)/);
+});
