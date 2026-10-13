@@ -658,6 +658,9 @@ select:focus-visible {
   background: transparent;
   color: var(--muted-foreground);
   cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-fast),
+    color var(--duration-fast) var(--ease-fast);
 }
 
 .window-btn:hover {
@@ -681,6 +684,11 @@ select:focus-visible {
   cursor: pointer;
   user-select: none;
   touch-action: none;
+  transition:
+    background var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast),
+    color var(--duration-fast) var(--ease-fast),
+    opacity var(--duration-fast) var(--ease-fast);
 }
 
 .ptt:hover {
@@ -713,7 +721,7 @@ select:focus-visible {
 }
 
 .ptt[data-phase="listening"] .ptt__dot {
-  background: #e81123;
+  background: var(--status-error);
   animation: ptt-pulse 1s ease-in-out infinite;
 }
 
@@ -727,7 +735,12 @@ select:focus-visible {
 }
 
 .ptt[data-phase="error"] .ptt__dot {
-  background: #e81123;
+  background: var(--status-error);
+}
+
+/* A held key stays lit; Calm only stops it breathing. */
+:root[data-motion="calm"] .ptt__dot {
+  animation: none;
 }
 
 @keyframes ptt-pulse {
@@ -788,6 +801,10 @@ select:focus-visible {
   border-bottom: 2px solid transparent;
   border-radius: 0;
   color: var(--muted-foreground);
+  transition:
+    background var(--duration-fast) var(--ease-fast),
+    border-bottom-color var(--duration-fast) var(--ease-fast),
+    color var(--duration-fast) var(--ease-fast);
 }
 
 .tab-chip:hover {
@@ -819,6 +836,7 @@ select:focus-visible {
   background: none;
   color: var(--muted-foreground);
   cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-fast);
 }
 
 .tab-chip__close:hover {
