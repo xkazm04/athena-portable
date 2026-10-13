@@ -49,6 +49,11 @@
   line-height: 1.55;
   color: var(--muted-foreground);
 }
+/* The field's line changes on every hover (a place's hint is up to 125 characters, the standing a
+ * sentence) and wraps at the smallest window, so it holds two lines and the places stay put. */
+.vsc--field .vsc-lead {
+  min-height: 3.1em;
+}
 .vsc-wait {
   color: var(--muted-foreground);
 }

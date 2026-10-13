@@ -1,0 +1,17 @@
+/** The Voice depth's stylesheet rules — README section 3.1, ADR 0087 and 0089. */
+import { readFileSync } from "node:fs";
+import { expect, test } from "vitest";
+
+const css = readFileSync(new URL("./voice.css", import.meta.url), "utf8");
+
+/** The declarations of the rule whose selector is exactly `selector`. */
+function rule(selector: string): string {
+  const head = "\n" + selector + " {";
+  const at = css.indexOf(head);
+  if (at === -1) throw new Error(`no rule ${selector}`);
+  return css.slice(at, css.indexOf("\n}", at));
+}
+
+test("the field's line, which changes on every hover, holds two lines so the places stay put", () => {
+  expect(rule(".vsc--field .vsc-lead")).toMatch(/min-height:\s*3\.1em/);
+});
