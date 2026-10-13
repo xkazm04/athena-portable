@@ -16,3 +16,12 @@ test("the eyebrow is set in the primary, which clears 4.5:1 in both themes, not 
   expect(rule(".surface__eyebrow")).toMatch(/color:\s*var\(--primary\)/);
   expect(rule(".surface__eyebrow")).not.toMatch(/--accent/);
 });
+
+test("every control the pointer can press eases its hover on the fast duration, and has a hover", () => {
+  const blocks = css.split("}").filter((b) => /cursor:\s*pointer/.test(b));
+  expect(blocks.length).toBeGreaterThan(0);
+  for (const b of blocks) expect(b, b.trim().split("{")[0]).toMatch(/transition:[^;]*var\(--duration-fast\)/);
+  for (const sel of [".surface__summon", ".surface__send", ".surface__input"]) {
+    expect(css.includes(`${sel}:hover`), sel).toBe(true);
+  }
+});

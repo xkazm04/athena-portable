@@ -63,6 +63,10 @@
   border: 1px solid var(--role-human);
   background: color-mix(in srgb, var(--role-human) 10%, transparent);
   cursor: pointer;
+  transition: background var(--duration-fast), border-color var(--duration-fast), opacity var(--duration-fast);
+}
+.surface__summon:hover {
+  background: color-mix(in srgb, var(--role-human) 18%, transparent);
 }
 
 .surface__ask {
@@ -87,6 +91,10 @@
   color: var(--foreground);
   border: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--recessed) 70%, transparent);
+  transition: border-color var(--duration-fast), opacity var(--duration-fast);
+}
+.surface__input:hover:not(:disabled) {
+  border-color: var(--foreground);
 }
 .surface__input:disabled {
   opacity: 0.55;
@@ -99,6 +107,10 @@
   color: var(--on-primary);
   background: var(--btn-primary);
   cursor: pointer;
+  transition: background var(--duration-fast), border-color var(--duration-fast), opacity var(--duration-fast);
+}
+.surface__send:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--btn-primary) 85%, var(--foreground));
 }
 .surface__send:disabled {
   opacity: 0.45;
