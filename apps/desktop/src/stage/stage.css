@@ -15,6 +15,7 @@
   background: var(--depth-0);
   isolation: isolate;
   container-type: size;
+  --dock-h: 76px;
 }
 
 /* ---- the water ---------------------------------------------------------------------------- */
@@ -93,7 +94,7 @@
 .backdrop__vignette {
   position: absolute;
   inset: 0;
-  background: radial-gradient(120% 120% at 50% 45%, transparent 55%, color-mix(in srgb, black 45%, transparent));
+  background: radial-gradient(120% 120% at 50% 45%, transparent 55%, var(--vignette));
 }
 
 /* ---- the bar over it ---------------------------------------------------------------------- */
@@ -196,7 +197,7 @@
   z-index: 2;
   left: 18px;
   top: 96px;
-  bottom: 120px;
+  bottom: calc(var(--dock-h) + 44px);
   width: 14px;
 }
 .stage__rail {
@@ -239,7 +240,7 @@
 .stage[data-depth="3"] .stage__rail b { --rail-at: 1; }
 /* The rail is as tall as the stage less the bar above and the dock below; `cqh` is the stage's own
  * height, so the mark's travel is right in the window and in the preview harness alike. */
-.stage__gauge { --rail-h: calc(100cqh - 96px - 120px); }
+.stage__gauge { --rail-h: calc(100cqh - 96px - var(--dock-h) - 44px); }
 
 /* ---- the scenes --------------------------------------------------------------------------- */
 
@@ -254,6 +255,14 @@
   outline: none;
   contain: layout paint style;
   transform-origin: 50% 46%;
+}
+/* The dock is a row of its own under every depth below the surface, so no scene runs underneath it.
+ * A layer reads its own depth, not the stage's, so a surface leaving keeps its full height while a
+ * depth arriving already stands above the dock. */
+.stage__layer[data-depth="1"],
+.stage__layer[data-depth="2"],
+.stage__layer[data-depth="3"] {
+  inset: 0 0 var(--dock-h);
 }
 .stage__layer[data-phase^="enter-"],
 .stage__layer[data-phase^="leave-"] {
@@ -370,6 +379,7 @@
 
 /* Narrow windows: the scene becomes one scrolling column and the gauge steps aside. */
 @media (max-width: 760px) {
+  .stage { --dock-h: 132px; }
   .stage__gauge { display: none; }
   .stage__roots { margin-left: 0; flex-wrap: wrap; }
   .stage__dock { flex-direction: column; align-items: flex-start; gap: 8px; }

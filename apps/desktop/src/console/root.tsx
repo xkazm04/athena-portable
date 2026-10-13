@@ -25,7 +25,7 @@ import "./console.css";
 
 export default function ConsoleRoot() {
   useEffect(() => {
-    void startShell();
+    startShell();
     void startTabs();
     void startTools();
     void startDaemon();

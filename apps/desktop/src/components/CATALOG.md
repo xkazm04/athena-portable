@@ -8,10 +8,6 @@ and each file's header carries the argument for its own shape.
 
 | Component | What it's for |
 |---|---|
-| `PageShell` | Every module's outer frame: one width (`120rem`), one gutter, one rhythm. `fill` for a module whose body is a viewport-height workspace. Never write a width or a gutter in a module. |
-| `PageHeader` | The sticky title band — `eyebrow` · `title` (2–5 words, wraps, never elides) · `caption` (one sentence, ≤ 12 words) · `meta` · `action`. Renders outside every conditional. |
-| `PageSection` | A titled band *inside* a page: heading, optional note, a hairline, content flush under it. Not a card. |
-| `SectionCard` | The raised surface, for content that reads as one object. `posture`: `raised` (the chosen one) / `flat` / `absent` (the only dashed edge the app allows). |
 | `Table` | The app's one table. A `columns` array with a `render` per column and a **required** `empty` sentence. Never a `<table>`, never a grid of divs. |
 | `Button` | `primary` / `secondary` / `ghost`, two sizes, and `disabledReason` — a disabled control is never silent. |
 | `PillGroup` | The one value picker on a rail: a `radiogroup` with one tab stop and arrow keys. A rail that sets a *setting*, not one that switches a view. |
@@ -22,10 +18,6 @@ and each file's header carries the argument for its own shape.
 | `Badge` | A small labelled pill. Its label is `--foreground` in every tone; the hue rides the `StatusDot` inside it. |
 | `StatusDot` | The hue of a state, beside the word that says the same thing. A graphic needs 3:1, not 4.5:1. |
 | `EmptyState` | "Nothing here yet": glyph, title, one line saying what would put something here, optional action. Not the same fact as "could not be read". |
-| `Tile` | One item on an overview grid, the whole of it one button: emblem, name, standing pill, an optional headline `figure`, one line, a foot. The only act an overview keeps is opening an item (ADR 0029). |
-| `Emblem` | A drawing set in the brand's stamp — plate, inset seal ring, tilted ghost plate, the diamond mark — inked teal when the item stands done, recessed and dashed when not. `GLYPHS` holds the shared drawings (ADR 0029). |
-| `Layer` | The second layer: a sheet from the right over a scrim, closed by Back, the scrim or Escape through one `onClose`, focus returned to its opener. `md` holds one form; `lg` holds a submodule, usually as `LayerColumns` (ADR 0029). |
-| `ModuleBar` | The thin band: the stamp-face mark, the module labels, and a presence pill that says what Athena is doing and summons her. Pure: a list, a selection, a presence, callbacks. Its height is a contract with `src-tauri/src/layout.rs`. Also exports `StampMark` and `BarIcon`. |
 
 ## Adding one
 

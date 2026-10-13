@@ -19,9 +19,9 @@ import { useReopened } from "@/scenes/waking/reopen";
 import { useSettings } from "@/stores/settings";
 
 import { useFollowShell } from "./follow";
-import { DEPTH_SCENES, sceneFor } from "./scenes";
+import { LIVE_SCENES, sceneFor } from "./scenes";
 
-const SCENES = Object.values(DEPTH_SCENES);
+const SCENES = Object.values(LIVE_SCENES);
 
 /**
  * Every scene's crumb names, in one labeller. The hooks are called for every scene on every render
@@ -61,7 +61,7 @@ export default function Console() {
     (p: Path) => sceneFor(p, { hydrated, onboarded, reopened, go }),
     [hydrated, onboarded, reopened, go],
   );
-  const Band = shapeOf(path) === "page" && path.root !== null ? DEPTH_SCENES[path.root]?.Band : undefined;
+  const Band = shapeOf(path) === "page" && path.root !== null ? LIVE_SCENES[path.root].Band : undefined;
 
   return (
     <Stage

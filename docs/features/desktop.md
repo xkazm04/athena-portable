@@ -1,7 +1,7 @@
-# The desktop: shell, modules, companion and halo
+# The desktop: shell, depths, companion and halo
 
 `apps/desktop/`: a Tauri v2 shell in Rust (`src-tauri/src/`) and a React 19 + zustand front end
-(`src/`). Two windows (ADR 0026): **Main**, the workhorse with the modules, and **Athena**, her own
+(`src/`). Two windows (ADR 0026): **Main**, the workhorse (the depth console), and **Athena**, her own
 small window, plus a click-through **halo** on every screen.
 
 ## The shell (Rust)
@@ -15,57 +15,28 @@ small window, plus a click-through **halo** on every screen.
 | `store.rs` | one SQLite store behind four generic commands (ADR 0016): settings, origins, projects, activity, captures with an LRU sweep |
 | `companion.rs`, `halo.rs`, `hotkeys.rs`, `tray.rs`, `capture.rs` | her window, the screen-edge light, the summon chord, the tray, window capture |
 
-## The module contract
+## The depths
 
-Each module is `model.ts` (a pure view-model), `fixtures.ts`, `view.tsx` (a pure function of the
-model) and `index.ts` (the one file that touches a store). Every module renders without Tauri in
-`preview.html?module=&fixture=&theme=`. A module is two layers (ADR 0029): an overview that only
-reads, and a layer for every write.
+Main is one scene (ADR 0087, planned in [`../redesign/fathom.md`](../redesign/fathom.md)): Athena at
+the surface, drawn as a bell of light with a tendril per app and account, and five depths beneath
+her. The depth is a path with a fixed grammar (`src/depth/model.ts`): a root (Apps, Chores,
+Accounts, Voice, Mind), an item, and a sub-level, so every capability is at most three moves away.
+Escape rises one level and never closes the window. `apps/<app>/page` is the one place a native
+page webview owns the window, and the stage then draws only a band over it (ADR 0088).
 
-| Module | What it shows |
+Each depth keeps a module's behaviour (`model.ts`, `fixtures.ts`, `index.ts` with the hook that
+builds the model from the stores) and draws it as a scene (`src/scenes/<depth>/`): a pure view of
+`{ model, path, go }`, fixtures, a `live.tsx` the running app imports (its view a lazy chunk) and an
+`index.tsx` with the fixtures for the preview harness and the tests (ADR 0090, 0091). Every scene
+renders without Tauri in `preview.html?scene=<depth>&fixture=&theme=`.
+
+| Depth | What it shows |
 |---|---|
-| **Browser** | the ledger of registered apps (Open, Details); registering and an app's switch or Forget happen in layers |
-| **Playbooks** | the edge map (difficulty × usefulness, an "only Athena" corner), the record across the latest runs, a grid filtered by home or work and ordered by edge, money or hours, and each playbook's layer: an abstract with a line per part, each part one level down (ADR 0053): story, command, portals, gates, traps, then the proof (money, cards, the traps she walked past, the replay of the run, the runs over time, what it taught Athena, the economics). See [playbooks.md](playbooks.md). |
-| **Connectors** | emblem tiles per service and a layer per connector ([connectors.md](connectors.md)) |
-| **Setup** | seven cards for the machine's facts (engine, brain, voice, theme...), each its name large over its drawing faint behind, with a layer each; the theme's layer also sets the text size, comfortable or compact (ADR 0054); onboarding inline on first run |
-| **Voice** | a studio to pick and hear her voice and test the microphone, then the settings (ADR 0028) |
-
-`components/` holds the shared parts (`Tile`, `Layer`, `Emblem`, `PillGroup`, `SectionCard`...);
-`styles/app.css` holds the token layer, dark and light.
-
-## The run loop
-
-`stores/run.ts` is the only run loop: it posts `/run` with the focused page's manifest, holds host
-calls until the turn ends, runs the page's tools, continues with the answers, and is bounded at
-eight continuations. A handed-over playbook rides every turn as the active project (ADR 0044).
-
-**Tiers and the manifest.** Tier 1 is the page's own WebMCP tools, tier 2 the nine generic hands
-(`lib/hands.ts`, run by the shell's `hands_call`). The manifest of every tab with an origin is the
-page's tools followed by the hands, so a page that registered nothing still has hands; a page tool
-named like a hand keeps the page's. `catalogIdOf` (`lib/manifest.ts`) gives a tab its one catalog
-id: the published `athena:app`, or `web_<scheme>_s<host>` derived from the web origin when there is
-none, which a page cannot publish for itself (ADR 0065). Hands are gated on first sight like any
-tool (ADR 0063). The shell appended hands carry `athena.runner: "shell"` (set in `lib/hands.ts`,
-stripped from every page tool), the daemon reports them as tier 2 in its `/manifest` reply, and the
-panel's tool rows list them at tier 2 with the class the gate will apply (`GATED` on a first-sight
-app or a pinned tool).
-
-**Captures.** Before each `/run` request and each voice `start` or `text` frame the shell takes one
-`page_screenshot` of the focused tab (`takeCapture`, `lib/hands.ts`) and sends its id as
-`capture_id`. The daemon files it on a gated card whose origin is the session's own page. A capture
-that fails or takes over eight seconds sends none and never fails the request; the card then says
-"No capture was taken" and why. A card with an id draws the stored capture (`companion/capture.ts`);
-the sketch is for fixtures only (ADR 0066). A request naming more first-sight origins, pins or
-switched-off origins than the daemon's cap is refused, not cut.
-
-## Athena's window, the companion
-
-`src/companion/`: a pure state machine (`machine.ts`) whose form is derived, not stored: `seal`,
-`tape`, `hear`, `slip` (a card), `welcome`, `ledger` (Talk, Record, Origins) and `tab` when docked.
-The seal shows her state as a mood. Talk is the conversation and the composer; a playbook handed
-from Main arrives as a drafted command, a "Working on" chip, and, before the first turn, her plan:
-steps, the tabs she will ask for, and where she stops for a signature. Record lists every call and
-decision; Origins lists the apps she can reach.
+| **Apps** | registered apps as windows of light whose standing is a shape and a word; an app with its switch, Open and two-press Forget; what its open page registered as tools (as claims, never a class); the band over a page: tabs, address, tools |
+| **Chores** | the playbooks' edge map as the hero, a drawing for every chore, a chore's own scene with its facets, and the replay of a run as a place of its own. The shipped set loads lazily (2.7 MB of JSON). See [playbooks.md](playbooks.md). |
+| **Accounts** | a drawing per connector, a staged connect, the gated writes switch, the allow-list, a records notice that cannot be dismissed ([connectors.md](connectors.md)) |
+| **Voice** | the studio as a staged act and settings as two instruments, with the keys and one frame loop (ADR 0092) |
+| **Mind** | the engine, the brain, the look (theme, text size and Calm motion), the data and the microphone; the first act (Mind, Reach, Voice) opens the same scene on first run |
 
 ## The halo
 
@@ -75,5 +46,6 @@ push-to-talk without showing her window (ADR 0027).
 
 ## Tests
 
-443 tests in 39 files (vitest): module models and views as static markup, the companion machine on
-a virtual clock, the run loop against a fake daemon, the bridge and hands.
+About 1,100 tests in 70 files (vitest): the depth model and every scene as static markup and, where a
+control must be proved wired, driven in jsdom; the companion machine on a virtual clock, the run loop
+against a fake daemon, the bridge and hands. `pnpm perf:all` holds the motion and weight budgets.

@@ -252,6 +252,7 @@ function SceneLayer({
       ref={isTop ? (topRef as React.RefObject<HTMLElement>) : undefined}
       className="stage__layer"
       data-phase={layer.phase}
+      data-depth={depthOf(layer.path)}
       tabIndex={isTop ? -1 : undefined}
       aria-hidden={leaving || undefined}
       inert={leaving || undefined}

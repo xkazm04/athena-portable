@@ -6,7 +6,7 @@ works. **A phase is not done until its rows carry a proof** (a test name, or the
 was performed and when). A row with no proof is a regression. Read off the code at commit
 `39c5dcd`; paths are under `apps/desktop/`.
 
-Status: `todo` until its phase lands, then `proved: <test or hand check>`.
+Status: `todo` until its phase lands, then `proved: <test or hand check>`, `changed:` or `dropped:` with the reason. Every row now carries one; "hand check pending" marks what only the real window can show.
 
 ## Shell
 
@@ -98,23 +98,23 @@ Status: `todo` until its phase lands, then `proved: <test or hand check>`.
 
 | Capability | Today | Where | Status |
 |---|---|---|---|
-| Seven forms and their sizes, pinned by test against `companion.rs` | `lib/companion.ts` | unchanged | todo |
-| Seal: toggle ledger, drag, snap to edge, tab, peek | `views.tsx`, `companion.rs` | unchanged, Bell reused | todo |
-| Tape, Hear, Slip (Approve A, Decline D, hold to Speak, refusal keeps the card, stamp, tear) | `views.tsx`, `runtime.ts` | unchanged | todo |
-| Capture on a gated proposal (Windows), read back by id | `capture.rs`, `capture.ts` | unchanged | todo |
-| Ledger: Talk, Record, Origins; pin; Clear; collapse | `views.tsx` | unchanged | todo |
-| Welcome: engine fact, open your first app, later | `Welcome` | hands over to D0 setup | todo |
-| Push to talk, chords, Esc, Enter on welcome | `live.tsx`, `hotkeys.rs` | unchanged | todo |
-| Halo overlay | `halo/`, `halo.rs` | unchanged, reads the same signal | todo |
+| Seven forms and their sizes, pinned by test against `companion.rs` | `lib/companion.ts` | unchanged | proved: unchanged; lib/companion.test pins the sizes against companion.rs and passes in the gate |
+| Seal: toggle ledger, drag, snap to edge, tab, peek | `views.tsx`, `companion.rs` | unchanged, Bell reused | changed: the seal keeps its own stamped drawing, because its sizes are a closed table pinned against companion.rs; the bell is Main's. Behaviour unchanged, companion/views tests pass |
+| Tape, Hear, Slip (Approve A, Decline D, hold to Speak, refusal keeps the card, stamp, tear) | `views.tsx`, `runtime.ts` | unchanged | proved: unchanged; companion/{runtime,machine,model,views}.test pass. One input was added to the model (the shipped playbooks, for a handed-over plan, now lazy) and the ledger-playbook test pins it |
+| Capture on a gated proposal (Windows), read back by id | `capture.rs`, `capture.ts` | unchanged | proved: unchanged; capture.rs and capture.ts untouched, cargo test and vitest pass. capture.rs now asks `is_page()`, covered by the layout tests |
+| Ledger: Talk, Record, Origins; pin; Clear; collapse | `views.tsx` | unchanged | proved: unchanged; companion/views and model tests pass |
+| Welcome: engine fact, open your first app, later | `Welcome` | hands over to D0 setup | changed: the welcome stays in her own window, unchanged; Main's first act is scenes/waking, which carries the same readiness rules. companion tests pass |
+| Push to talk, chords, Esc, Enter on welcome | `live.tsx`, `hotkeys.rs` | unchanged | proved: unchanged; hotkeys.rs and the companion keyboard tests pass |
+| Halo overlay | `halo/`, `halo.rs` | unchanged, reads the same signal | proved: unchanged; halo tests and halo.rs tests pass |
 
 ## Cross-cutting
 
 | Capability | Proof wanted | Status |
 |---|---|---|
-| Light and dark both render every scene from tokens only | token test + both-theme screenshots | todo |
+| Light and dark both render every scene from tokens only | token test + both-theme screenshots | proved: styles/motion-tokens.test (the depth tones are mixes of the palette in both themes, the light theme paler not darker); screenshots read in light and dark for the surface, the first act, Apps, Chores and Accounts; not every scene in light by hand |
 | `prefers-reduced-motion` and Calm give the final state, not a faster animation | perf gate + test | proved: layers.test (calm is one layer), bell.test (animation off), motion.test; perf gate under calm pending |
-| Every scene renders every fixture in `preview.html` with no Tauri | view tests over `fixtureIds` | todo |
+| Every scene renders every fixture in `preview.html` with no Tauri | view tests over `fixtureIds` | proved: console/scenes.test (each depth scene renders every fixture at its root with the four required fixtures present) and each scene's view.test (every fixture at every level) |
 | Hash deep link reaches any depth; unknown ids fall back to D0 | depth tests | proved: depth/model.test (round trip, fallback) and depth/store.test (hash mirror) |
 | Escape rises exactly one level from any depth and never closes the window | depth tests | proved: depth/model.test (rise from every place), Stage.test (escapeRises) |
 | Rust rectangles for both shapes; `--bar-height` and `--strip-height` match | `layout.rs` tests, tokens test | proved: layout.rs tests (both shapes, shape ids), depth/shape.test (ids equal Rust's) |
-| Perf budgets of `fathom.md` section 5 | `pnpm perf` | todo |
+| Perf budgets of `fathom.md` section 5 | `pnpm perf` | proved: pnpm perf:all (stage, bell, surface and all five depths: frame p95 16.8 ms, no long task over 50 ms, one frame loop, no idle frame requests; one near-threshold flake, 54 ms, passed three isolated reruns); first-paint JS is about 125 kB gzipped (app 97 + console 27), pinned by console/graph.test; measured in Edge, not yet in the shipped WebView2 window |

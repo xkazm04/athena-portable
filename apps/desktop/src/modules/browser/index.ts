@@ -1,28 +1,23 @@
 /**
- * The Browser module's `ModuleEntry` — the one file in this directory that knows a store exists.
+ * The Browser model hook — the one file in this directory that knows a store exists.
  *
- * `Live` is where the two halves meet: the store snapshots go into the selector, the view-model
- * comes out, and the view renders it. Every other file here is testable and previewable without a
- * shell because this is the only one that is not.
+ * This is where the two halves meet: the store snapshots go into the selector and the view-model
+ * comes out. Every other file here is testable and previewable without a shell because this is the
+ * only one that is not.
  *
  * Three stores are read and none is started here (README section 3.5): the tabs, the tools the
  * relay reported per tab, and the origins table. Registering an app is the one action that
  * touches two of them in order — the row first, so the page is trusted before it is read, then
  * the tab.
  */
-import { createElement } from "react";
-
 import { engineLine } from "@/lib/engines";
 import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
 import { useSettings } from "@/stores/settings";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
-import type { ModuleEntry } from "@/modules/types";
 
-import { fixtureIds, fixtures, initialAppFor } from "./fixtures";
 import { originOf, selectBrowser, tabOn, type BrowserActions, type BrowserModel } from "./model";
-import BrowserView from "./view";
 
 export interface BrowserModelOptions {
   /**
@@ -36,7 +31,7 @@ export interface BrowserModelOptions {
 
 /**
  * The model, built from the stores. A hook so the Browser module and the Apps depth scene share one
- * selector and one set of actions; the old view and the new ones differ only in what they draw.
+ * selector and one set of actions.
  */
 export function useBrowserModel(options: BrowserModelOptions = {}): BrowserModel {
   const { onShown } = options;
@@ -100,20 +95,3 @@ export function useBrowserModel(options: BrowserModelOptions = {}): BrowserModel
       : null,
   );
 }
-
-function Live() {
-  return createElement(BrowserView, { model: useBrowserModel() });
-}
-
-export const entry: ModuleEntry = {
-  id: "browser",
-  label: "Browser",
-  blurb: "The apps Athena works in: what is open, what is registered, and the one rectangle this app does not paint.",
-  fixtureIds,
-  preview: (fixture) =>
-    createElement(BrowserView, {
-      model: fixtures[fixture] ?? fixtures.typical,
-      initialApp: initialAppFor(fixture),
-    }),
-  Live,
-};

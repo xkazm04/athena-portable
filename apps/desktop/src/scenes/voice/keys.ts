@@ -9,7 +9,7 @@
  * Space, and the stage keeps Escape (it rises a level).
  */
 import { keyAction, type KeyAction, type VoiceModel } from "@/modules/voice/model";
-import { primary } from "@/modules/voice/studio";
+import { primary } from "@/modules/voice/pieces";
 
 interface Target {
   closest?: (selector: string) => unknown;

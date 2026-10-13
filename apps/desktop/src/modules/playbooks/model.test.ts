@@ -9,7 +9,7 @@ import type { TraceTurn } from "@/lib/playbooks";
 import { fixtures } from "./fixtures";
 import { arrange, facetsOf, foundBy, readsOf, turnState, visitsOf } from "./model";
 import { fixtureIds, initialOpenFor } from "./fixtures";
-import { PLAYBOOKS } from "@/lib/playbooks";
+import { PLAYBOOKS } from "@/lib/playbooks.shipped";
 
 const turn = (portal: string, over: Partial<TraceTurn> = {}): TraceTurn => ({
   portal,

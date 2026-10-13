@@ -18,7 +18,6 @@
     "allow-tabs-focus",
     "allow-tabs-navigate",
     "allow-tabs-list",
-    "allow-layout-module",
     "allow-layout-select",
     "allow-bridge-list",
     "allow-bridge-call",

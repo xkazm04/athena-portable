@@ -1,19 +1,16 @@
 /**
- * The Connectors module's `ModuleEntry` — the one file here that knows a store exists.
+ * The Connectors model hook — the one file here that knows a store exists.
  *
  * The list is asked for when this surface mounts and again whenever the daemon becomes ready,
  * and never from the app root: what is connected matters only on this surface and to the daemon,
  * which is the one that reads the vault on every call.
  */
-import { createElement, useEffect } from "react";
+import { useEffect } from "react";
 
-import type { ModuleEntry } from "@/modules/types";
 import { useConnectors } from "@/stores/connectors";
 import { endpoint, useDaemon } from "@/stores/daemon";
 
-import { fixtureIds, fixtures, initialOpenFor } from "./fixtures";
 import { selectConnectors, type ConnectorActions, type ConnectorsModel } from "./model";
-import ConnectorsView from "./view";
 
 const ACTIONS: ConnectorActions = {
   connect: (id, body) => void useConnectors.getState().connect(id, body),
@@ -27,8 +24,7 @@ const ACTIONS: ConnectorActions = {
 
 /**
  * The model, built from the stores. A hook so the Connectors module and the Accounts depth share
- * one selector and one set of actions (README 3.5, ADR 0090); the old view and the scene differ
- * only in what they draw. Loading the list belongs here too: it is asked for when a surface that
+ * one selector and one set of actions (README 3.5, ADR 0090). Loading the list belongs here too: it is asked for when a surface that
  * shows it mounts and again whenever the daemon becomes ready.
  */
 export function useConnectorsModel(): ConnectorsModel {
@@ -47,20 +43,3 @@ export function useConnectorsModel(): ConnectorsModel {
 
   return selectConnectors(items, loaded, problem, ready, busy, errors, ACTIONS, undefined, recordsNotice);
 }
-
-function Live() {
-  return createElement(ConnectorsView, { model: useConnectorsModel() });
-}
-
-export const entry: ModuleEntry = {
-  id: "connectors",
-  label: "Connectors",
-  blurb: "Mail and notes Athena may use from any page, each behind its own switch.",
-  fixtureIds,
-  preview: (fixture) =>
-    createElement(ConnectorsView, {
-      model: fixtures[fixture] ?? fixtures.typical,
-      initialOpen: initialOpenFor(fixture),
-    }),
-  Live,
-};

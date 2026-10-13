@@ -21,6 +21,12 @@ import InstrumentArt, { type Instrument } from "@/art/mind";
 import type { Path } from "@/depth/model";
 import { engineLabel } from "@/lib/engines";
 import { MOTION_CHOICES } from "@/lib/motion";
+import type { SetupModel } from "@/modules/setup/model";
+import { brainFact, engineFact, micFact, restartNotice, type Standing } from "@/modules/setup/readiness";
+import EngineSection from "@/scenes/shared/EngineSection";
+import { THEME_CHOICES, TYPE_SCALES } from "@/stores/settings";
+
+import "./mind.css";
 import {
   THEME_HINTS,
   TYPE_SCALE_HINTS,
@@ -29,13 +35,7 @@ import {
   micSentence,
   pageSentence,
   voiceSentence,
-} from "@/modules/setup/view";
-import type { SetupModel } from "@/modules/setup/model";
-import { brainFact, engineFact, micFact, restartNotice, type Standing } from "@/modules/setup/readiness";
-import EngineSection from "@/scenes/shared/EngineSection";
-import { THEME_CHOICES, TYPE_SCALES } from "@/stores/settings";
-
-import "./mind.css";
+} from "./shared";
 
 const NAME: Record<Instrument, string> = {
   engine: "Engine",

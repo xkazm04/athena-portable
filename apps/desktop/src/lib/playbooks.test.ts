@@ -5,8 +5,9 @@
  */
 import { expect, test } from "vitest";
 
+import { PLAYBOOKS } from "./playbooks.shipped";
+
 import {
-  PLAYBOOKS,
   clock,
   evidenceCurrent,
   loadPlaybooks,

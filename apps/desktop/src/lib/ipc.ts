@@ -64,15 +64,14 @@ export const tabsFocus = (id: number) => call<void>("tabs_focus", { id });
 export const tabsNavigate = (id: number, url: string) => call<void>("tabs_navigate", { id, url });
 export const tabsList = () => call<Tab[]>("tabs_list");
 
-// -- the selected module (c18) -------------------------------------------------------------------
+// -- the window's shape (ADR 0088) ---------------------------------------------------------------
 
 /**
- * Which module the window is showing. Rust owns it because the window's rectangles depend on it
- * (`src-tauri/src/layout.rs`): the Browser module hands the area under the chrome to a page
- * webview and every other module keeps it.
+ * Tell Rust which shape the window is in: `page` (a page webview owns everything under the chrome's
+ * band) or `scene`. Rust owns it because the window's rectangles depend on it
+ * (`src-tauri/src/layout.rs`); the depth stage is what says it (`depth/shape.ts`).
  */
-export const layoutModule = () => call<string>("layout_module");
-export const layoutSelect = (module: string) => call<void>("layout_select", { module });
+export const layoutSelect = (shape: string) => call<void>("layout_select", { shape });
 
 // -- the store (c21) ---------------------------------------------------------------------------
 
@@ -159,9 +158,9 @@ export const on = <T>(event: string, f: (payload: T) => void): Promise<UnlistenF
 export const onTabsChanged = (f: (tabs: Tab[]) => void): Promise<UnlistenFn> =>
   listen<Tab[]>("tabs:changed", (e) => f(e.payload));
 
-/** Emitted whenever the selected module changes, whoever changed it. */
-export const onLayoutChanged = (f: (module: string, shape?: string) => void): Promise<UnlistenFn> =>
-  listen<{ module: string; shape?: string }>("layout:changed", (e) => f(e.payload.module, e.payload.shape));
+/** Emitted whenever the selected shape changes, whoever changed it. */
+export const onLayoutChanged = (f: (shape: string) => void): Promise<UnlistenFn> =>
+  listen<{ shape: string }>("layout:changed", (e) => f(e.payload.shape));
 
 /**
  * A table changed under another window's hand (ADR 0026): `{table, key}`. The settings, origins

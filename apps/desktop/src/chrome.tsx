@@ -1,26 +1,20 @@
+/**
+ * The chrome webview's entry — README section 3.1 and 3.5, ADR 0087.
+ *
+ * Main is one scene with depths: the console (`console/root.tsx`) mounts the stage on the stores.
+ * The dev inspector (ADR 0086) is dropped from a build with the rest of the DEV branch.
+ */
 import React, { lazy, Suspense } from "react";
 import ReactDOM from "react-dom/client";
 
-import App from "@/app";
-import { consoleUiOn } from "@/lib/ui";
+import ConsoleRoot from "@/console/root";
 import "@/styles/app.css";
 
-// The dev inspector (ADR 0086): dropped from a build with the rest of the DEV branch.
 const Inspector = import.meta.env.DEV ? lazy(() => import("@/lib/dev/inspector")) : null;
-
-// The depth console (ADR 0087) is opt-in until the cutover; the module bar is the default.
-const ConsoleRoot = lazy(() => import("@/console/root"));
-const Root = consoleUiOn() ? (
-  <Suspense fallback={null}>
-    <ConsoleRoot />
-  </Suspense>
-) : (
-  <App />
-);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    {Root}
+    <ConsoleRoot />
     {Inspector && (
       <Suspense fallback={null}>
         <Inspector />

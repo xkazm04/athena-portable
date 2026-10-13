@@ -29,7 +29,7 @@ import {
   type VoiceModel,
 } from "@/modules/voice/model";
 import { EngineState, InstallBlock, Kbd } from "@/modules/voice/parts";
-import { primary, KeyField, WhisperModels } from "@/modules/voice/studio";
+import { primary, KeyField, WhisperModels } from "@/modules/voice/pieces";
 
 import { perform, studioKey } from "./keys";
 import { Chip, HOTKEY, HoldButton, Hero } from "./parts";

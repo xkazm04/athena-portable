@@ -27,8 +27,7 @@ fn main() {
             "tabs_focus",
             "tabs_navigate",
             "tabs_list",
-            // layout.rs (c18) — which module the window is showing
-            "layout_module",
+            // layout.rs — which shape the window is in (ADR 0088)
             "layout_select",
             // ---- later milestones add their commands here, one block per module ----
             // bridge.rs (c19) — the first two are the chrome's, the third is the page's only one

@@ -2,8 +2,8 @@
  * @catalog The title bar's right end: the theme flip and the window buttons, with a close that asks first when a decision waits.
  *
  * Implements README section 3.1 and 3.5 (the decorations are off, so this document is also the
- * title bar) and ADR 0026 (closing Main closes both windows, and says so). Shared by the module bar
- * and the depth stage, which differ in everything but this.
+ * title bar) and ADR 0026 (closing Main closes both windows, and says so). The depth stage draws it
+ * at the right end of its bar.
  *
  * The theme button flips to the opposite of what is *painted* and writes a definite choice, because
  * "the opposite of system" is not a theme. The window buttons draw only with a shell. The close
@@ -13,10 +13,18 @@
 import { useEffect, useRef, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
-import { BarIcon } from "@/components/ModuleBar";
 import { hasShell } from "@/lib/ipc";
 import { useSettings } from "@/stores/settings";
 import { useShell } from "@/stores/shell";
+
+/** A 24x24 stroked path, in the title bar's one icon style. */
+function BarIcon({ d }: { d: string }) {
+  return (
+    <svg className="window-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d={d} />
+    </svg>
+  );
+}
 
 const ICON_SUN =
   "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3 7 7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7";

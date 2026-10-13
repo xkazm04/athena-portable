@@ -1,21 +1,17 @@
 /**
- * ADR 0028 (Athena's voice is set up in a studio), README section 3.1 — the Voice `ModuleEntry`.
+ * ADR 0028 (Athena's voice is set up in a studio), README section 3.1 — the Voice model hook.
  *
  * The one file in this directory that subscribes to a store. Two meet here: `daemon` (is there a
  * daemon to talk to, and where) and the module's own `useVoiceSetup` (`live.ts`), which is pointed
  * at the daemon whenever its endpoint changes and never started from the app root — what the voice
- * setup holds matters only while this surface is open. The preview is the same view against a
- * fixture, with nothing behind it.
+ * setup holds matters only while this surface is open. The depth scene (`scenes/voice`) draws it.
  */
-import { createElement, useEffect } from "react";
+import { useEffect } from "react";
 
-import type { ModuleEntry } from "@/modules/types";
 import { endpoint, useDaemon } from "@/stores/daemon";
 
-import { fixtureIds, fixtures } from "./fixtures";
 import { useVoiceSetup } from "./live";
 import { selectVoice, type DaemonStanding, type VoiceModel } from "./model";
-import VoiceView from "./view";
 
 export function standingOf(health: string, loaded: boolean): DaemonStanding {
   if (health === "ready") return "ready";
@@ -25,8 +21,7 @@ export function standingOf(health: string, loaded: boolean): DaemonStanding {
 
 /**
  * The model, built from the daemon store and the module's own voice-setup store. A hook so the
- * Voice module and its depth scene share one selector, one connect and one set of actions; the old
- * view and the new one differ only in what they draw.
+ * Voice module and its depth scene share one selector, one connect and one set of actions.
  */
 export function useVoiceModel(): VoiceModel {
   const daemon = useDaemon();
@@ -60,16 +55,3 @@ export function useVoiceModel(): VoiceModel {
     meters: state.meters,
   });
 }
-
-function Live() {
-  return createElement(VoiceView, { model: useVoiceModel() });
-}
-
-export const entry: ModuleEntry = {
-  id: "voice",
-  label: "Voice",
-  blurb: "Her voice and how she hears you: a studio the first time, settings after it.",
-  fixtureIds,
-  preview: (fixture) => createElement(VoiceView, { model: fixtures[fixture] ?? fixtures.typical }),
-  Live,
-};

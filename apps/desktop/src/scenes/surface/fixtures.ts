@@ -22,7 +22,7 @@ const base: SurfaceSources = {
     { id: "notion", label: "Notion", connected: true, attention: false },
     { id: "calendar", label: "Google Calendar", connected: false, attention: false },
   ],
-  chores: { total: 16, benched: 12, foundUsd: 551 },
+  chores: { total: 16, benched: 12, foundUsd: 551, loaded: true },
   voiceAvailable: true,
   engine: { label: "Claude Code", ready: true },
   inShell: true,
@@ -36,7 +36,7 @@ export const fixtures: Record<string, SurfaceModel> = {
     apps: [],
     openTabs: 0,
     accounts: [],
-    chores: { total: 0, benched: 0, foundUsd: 0 },
+    chores: { total: 0, benched: 0, foundUsd: 0, loaded: true },
     voiceAvailable: false,
     engine: { label: "Claude Code", ready: null },
   }),
@@ -52,6 +52,8 @@ export const fixtures: Record<string, SurfaceModel> = {
     })),
     openTabs: 12,
   }),
+  // The shipped playbooks load lazily: until they arrive the light says it is counting.
+  counting: make({ chores: { total: 0, benched: 0, foundUsd: 0, loaded: false } }),
   degraded: make({
     inShell: false,
     engine: { label: "Claude Code", ready: false },

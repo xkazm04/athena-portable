@@ -31,3 +31,13 @@ test("the depth colours are mixes of the palette, never a literal colour", () =>
     expect(line![1]).toMatch(/var\(--/);
   }
 });
+
+test("the light theme steps the water paler, not darker, and still from the palette alone", () => {
+  const light = rule(':root[data-theme="light"]');
+  for (const n of [0, 1, 2, 3]) {
+    const line = new RegExp(`--depth-${n}:([^;]+);`).exec(light);
+    expect(line, `--depth-${n}`).not.toBeNull();
+    expect(line![1]).not.toMatch(/#[0-9a-f]{3,8}|rgb\(|hsl\(|black/i);
+  }
+  expect(light).toMatch(/--vignette:/);
+});

@@ -19,7 +19,7 @@ import type { AthenaState } from "@/lib/companion";
 import type { Side, Valign } from "@/lib/companion";
 import type { ToolRow } from "@/lib/api";
 import { ENGINE_IDS, engineLabel, type EngineProbe } from "@/lib/engines";
-import { PLAYBOOKS } from "@/lib/playbooks";
+import type { Playbook } from "@/lib/playbooks";
 import type { DecisionRequested, TurnSummary } from "@/lib/events";
 import type { ActivityRow } from "@/lib/store";
 import { clockOf, whenAgo } from "@/lib/time";
@@ -363,6 +363,12 @@ export interface CompanionInputs {
   offer?: { n: number; text: string } | null;
   /** The active playbook, if any. */
   project?: { id?: string; title: string } | null;
+  /**
+   * The shipped playbooks, once they have been fetched (they load lazily, `stores/playbooks.ts`): a
+   * handed-over playbook's plan is read from here by id. Empty until they arrive, and then the plan
+   * rides empty and fills in.
+   */
+  shipped?: readonly Playbook[];
   probes?: readonly EngineProbe[] | null;
   probing?: boolean;
   probeProblem?: string | null;
@@ -478,7 +484,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
       blocked: blockedBecause(i.daemonReady, i.origin, busy),
       host: hostOf(i.origin),
       draft: i.offer ?? { n: 0, text: "" },
-      project: i.project ? projectView(i.project) : null,
+      project: i.project ? projectView(i.project, i.shipped ?? []) : null,
     },
     record: recordView({
       calls: i.run.calls ?? i.run.transcript,
@@ -948,8 +954,8 @@ export interface ProjectView {
   stops: readonly string[];
 }
 
-function projectView(project: { id?: string; title: string }): ProjectView {
-  const shipped = project.id ? PLAYBOOKS.find((p) => p.id === project.id) : undefined;
+function projectView(project: { id?: string; title: string }, library: readonly Playbook[]): ProjectView {
+  const shipped = project.id ? library.find((p) => p.id === project.id) : undefined;
   return {
     title: project.title,
     steps: shipped?.steps ?? [],

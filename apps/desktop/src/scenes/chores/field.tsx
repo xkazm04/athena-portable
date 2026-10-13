@@ -58,6 +58,16 @@ export default function Field({ model, go }: { model: PlaybooksModel; go: (to: P
   const [hotId, setHotId] = useState<string | null>(null);
   const { totals } = model;
 
+  if (model.loading) {
+    return (
+      <div className="chores ch-field">
+        <div className="ch-field__empty">
+          <EmptyState title="Loading the playbooks" line="They are fetched the first time they are asked for." />
+        </div>
+      </div>
+    );
+  }
+
   if (model.items.length === 0) {
     return (
       <div className="chores ch-field">

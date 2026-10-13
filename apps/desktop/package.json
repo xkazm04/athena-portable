@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "The shell (README section 3.1, surfaces): one window, a module bar, a page webview per tab, and the module contract every later surface is written against.",
+  "description": "The shell (README section 3.1, surfaces): one window, the depth console, a page webview per tab, and the scene contract every depth is written against.",
   "scripts": {
     "dev": "vite",
     "dev:inspect": "cross-env ATHENA_INSPECTOR=1 vite",
     "tauri:inspect": "cross-env ATHENA_INSPECTOR=1 tauri dev",
-    "tauri:console": "cross-env VITE_ATHENA_UI=console tauri dev",
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",

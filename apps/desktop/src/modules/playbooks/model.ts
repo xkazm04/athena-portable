@@ -113,6 +113,8 @@ export interface PlaybooksModel {
     manualMinutes: number;
     costUsd: number;
   };
+  /** The shipped set has not arrived yet (it loads lazily): an empty list is then not "none ship". */
+  loading: boolean;
   actions: PlaybookActions;
 }
 
@@ -233,6 +235,7 @@ export function annualValue(p: Playbook): number {
 export function selectPlaybooks(
   playbooks: readonly Playbook[],
   actions: PlaybookActions,
+  loading = false,
 ): PlaybooksModel {
   const points = layoutPoints(playbooks);
   const items = playbooks.map((p, i): PlaybookView => {
@@ -273,6 +276,7 @@ export function selectPlaybooks(
       manualMinutes: benched.reduce((s, v) => s + v.playbook.economics.manualMinutes, 0),
       costUsd: sumBench(benched, (b) => b.costUsd ?? 0),
     },
+    loading,
     actions,
   };
 }

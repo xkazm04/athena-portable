@@ -1,18 +1,13 @@
 /**
- * Which module the window is showing, and which theme it is painted in — README section 3.1.
+ * Which theme the window is painted in — README section 3.1.
  *
- * The selection lives in Rust (`src-tauri/src/layout.rs`) because the window's rectangles depend
- * on it, so this store is a mirror exactly as `tabs.ts` is: `select` is a command and the answer
- * arrives on `layout:changed`. A React state here would be a second opinion about a fact the
- * window has already acted on.
- *
- * The theme is the shell's alone for now — the Settings module takes it over in c21 and writes it
- * to the store table. Until then `applyTheme` is the one place `data-theme` is written, so the
- * app and the preview harness can never disagree about what `light` looks like.
+ * The window's shape is not here: the depth path decides it and `depth/shape.ts` tells Rust. What
+ * is left is the theme, which `applyTheme` writes as `data-theme`; that is the one place the
+ * attribute is written, so the app and the preview harness can never disagree about what `light`
+ * looks like. The settings store resolves a person's choice (including `system`) and keeps this in
+ * step.
  */
 import { create } from "zustand";
-
-import { hasShell, layoutModule, layoutSelect, onLayoutChanged } from "@/lib/ipc";
 
 export type Theme = "dark" | "light";
 
@@ -28,31 +23,19 @@ export function applyTheme(theme: Theme): void {
 }
 
 export interface ShellState {
-  /** The module id the window is on. `browser` is the launch default (`layout.rs`). */
-  module: string;
   theme: Theme;
-  select: (module: string) => Promise<void>;
   setTheme: (theme: Theme) => void;
 }
 
 export const useShell = create<ShellState>((set) => ({
-  module: "browser",
   theme: "dark",
-  select: async (module) => {
-    await layoutSelect(module);
-  },
   setTheme: (theme) => {
     applyTheme(theme);
     set({ theme });
   },
 }));
 
-let started = false;
-
-export async function startShell(): Promise<void> {
+/** Paint the theme the store holds, so the first frame is right in every window. */
+export function startShell(): void {
   applyTheme(useShell.getState().theme);
-  if (started || !hasShell()) return;
-  started = true;
-  await onLayoutChanged((module) => useShell.setState({ module }));
-  useShell.setState({ module: await layoutModule() });
 }

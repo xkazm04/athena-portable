@@ -141,21 +141,15 @@ async fn tabs_list(app: AppHandle) -> Vec<Tab> {
     app.state::<Tabs>().list()
 }
 
-/// Which module the window is showing.
+/// Select the shape the window is in: `page` (a page webview owns everything under the chrome's
+/// band) or `scene` (the chrome owns the window). Rust holds the selection because the rectangles
+/// depend on it; the depth stage tells it (ADR 0088). Any other id is a scene.
 #[tauri::command(rename_all = "snake_case")]
-async fn layout_module(app: AppHandle) -> String {
-    app.state::<Selection>().get()
-}
-
-/// Select a module. Rust holds the selection because the rectangles depend on it; it knows only
-/// that one id is `browser` and passes every other through untouched, so adding a module stays a
-/// TypeScript change.
-#[tauri::command(rename_all = "snake_case")]
-async fn layout_select(app: AppHandle, module: String) -> Result<(), String> {
-    if module.trim().is_empty() {
-        return Err("a module id is required".to_string());
+async fn layout_select(app: AppHandle, shape: String) -> Result<(), String> {
+    if shape.trim().is_empty() {
+        return Err("a shape is required".to_string());
     }
-    layout::select(&app, &module);
+    layout::select(&app, &shape);
     Ok(())
 }
 
@@ -191,7 +185,6 @@ pub fn run() {
             tabs_focus,
             tabs_navigate,
             tabs_list,
-            layout_module,
             layout_select,
             // ── registrations: handlers (keep one line per command, grouped by module) ────────
             bridge::bridge_list,
@@ -291,7 +284,7 @@ fn start_url() -> Option<String> {
 /// One window, decorations off, with the chrome webview as its only child. Pages are added later,
 /// one per tab.
 ///
-/// The chrome is built at its **module-mode** geometry — the whole window — because that is what
+/// The chrome is built at its **scene** geometry — the whole window — because that is what
 /// the default selection means with no tab open yet, and `layout::apply` at the end is what makes
 /// the first frame right whichever shape the shell actually comes up in.
 ///

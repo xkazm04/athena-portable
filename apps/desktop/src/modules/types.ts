@@ -1,33 +1,32 @@
 /**
- * The module contract — plan §10 ("module directory"), README section 3.5.
+ * The module contract — plan §10 ("module directory"), README section 3.5, ADR 0087 and 0090.
  *
- * A module is a directory that owns everything about itself and nothing about anything else:
+ * A module is a directory that owns a capability's behaviour and nothing about anything else:
  *
  * ```
  * src/modules/<name>/
  *   model.ts      the one view-model type, and a pure selector that builds it from the stores
  *   fixtures.ts   view-models for preview: at minimum `empty`, `typical`, `heavy`, `degraded`
- *   view.tsx      a pure function of the view-model
- *   index.ts      the store subscription, the view, and this module's `ModuleEntry`
+ *   index.ts      the hook that subscribes to the stores and returns the model
  * ```
  *
- * **The view is a pure function of the view-model.** It fetches nothing, subscribes to nothing
- * and imports no store — which is what lets `preview.html?module=&fixture=&theme=` render it in a
- * plain browser with no Tauri, and what makes "seven people editing one panel" a survivable
- * arrangement rather than the merge conflict the first build had.
+ * The module is not drawn here. A depth scene (`src/scenes/<depth>/`) draws it, and its view is a
+ * pure function of the view-model: it fetches nothing, subscribes to nothing and imports no store,
+ * which is what lets `preview.html?scene=&fixture=&theme=` render it in a plain browser with no
+ * Tauri, and what makes several people editing one depth a survivable arrangement.
  *
  * Callbacks are part of the view-model, not an exception to that rule. A surface that cannot act
  * is not the surface being designed, so every model carries an `actions` object: the selector
  * wires it to the stores and a fixture wires it to nothing. A view calls an action and never
  * reaches past it.
  *
- * `ModuleEntry` is the erased face of a module — the one shape the bar and the harness can hold
- * a list of without knowing every view-model type. Each `index.ts` builds its own with full type
- * safety inside.
+ * `ModuleEntry` is the erased face of the two scenes that are not depths (the surface and the
+ * first act): the one shape the console and the harness can hold without knowing every view-model
+ * type. A depth scene is a `DepthScene` (`src/scenes/types.ts`).
  */
 import type { ReactElement } from "react";
 
-/** What every `view.tsx` default-exports. */
+/** What a scene's `view.tsx` default-exports. */
 export type View<M> = (props: { model: M }) => ReactElement;
 
 /**
@@ -42,7 +41,7 @@ export type FixtureId = "empty" | "typical" | "heavy" | "degraded" | (string & {
 
 export interface ModuleEntry {
   id: string;
-  /** What the bar and the harness call it. Two words at most; it sits in a 36px band. */
+  /** What the harness calls it. */
   label: string;
   /** One line: what this module is for. Shown in the harness, not in the app. */
   blurb: string;

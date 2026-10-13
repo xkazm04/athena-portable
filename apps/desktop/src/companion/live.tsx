@@ -44,6 +44,7 @@ import { openMicrophone } from "@/lib/voice";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
+import { usePlaybooks } from "@/stores/playbooks";
 import { gatedListsOf, useRun } from "@/stores/run";
 import { chooseFirstRunEngine, useSettings } from "@/stores/settings";
 import { useTabs } from "@/stores/tabs";
@@ -287,6 +288,12 @@ export default function Live() {
   const probes = useEngines((s) => s.probes);
   const probing = useEngines((s) => s.checking);
   const probeProblem = useEngines((s) => s.problem);
+  // A handed-over playbook's plan is read from the shipped set, which loads when one is handed over.
+  const shipped = usePlaybooks((s) => s.items);
+  const handedOver = run.project !== undefined && run.project !== null;
+  useEffect(() => {
+    if (handedOver) void usePlaybooks.getState().load();
+  }, [handedOver]);
 
   const focused = tabs.find((tab) => tab.focused) ?? tabs[0];
   const origin = focused ? originOf(focused.url) : null;
@@ -397,6 +404,7 @@ export default function Live() {
     onboarded,
     offer,
     project: run.project,
+    shipped: shipped ?? [],
     actions,
   });
 

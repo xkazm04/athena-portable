@@ -41,3 +41,12 @@ export interface DepthScene {
    */
   Band?: () => ReactElement;
 }
+
+/**
+ * The part of a scene the running app needs: where it lives, how it is drawn live, what its crumbs
+ * are called and its band. Its **view is a lazy chunk** (`Live` renders it under `Suspense`), and
+ * its fixtures and preview are not here at all, so opening Main draws the surface and fetches a
+ * depth only when it is entered (ADR 0089). `DepthScene` adds what the preview harness and the
+ * tests need on top.
+ */
+export type LiveScene = Pick<DepthScene, "root" | "Live" | "useLabeller" | "Band">;

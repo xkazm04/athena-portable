@@ -9,7 +9,8 @@
  * evidence capture films (ADR 0055).
  */
 import type { FixtureId } from "@/modules/types";
-import { PLAYBOOKS, parseEvidence, parsePlaybook, type Evidence, type Playbook } from "@/lib/playbooks";
+import { parseEvidence, parsePlaybook, type Evidence, type Playbook } from "@/lib/playbooks";
+import { PLAYBOOKS } from "@/lib/playbooks.shipped";
 
 import { selectPlaybooks, type FacetId, type PlaybookActions, type PlaybooksModel } from "./model";
 

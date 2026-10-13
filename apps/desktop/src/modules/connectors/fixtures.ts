@@ -288,16 +288,3 @@ export const fixtureIds = [
   "open-records-unreadable",
   "open-reconnected",
 ] as const;
-
-/** The fixtures that render a connector's layer open (ADR 0029), and which connector. */
-export function initialOpenFor(fixture: string): string | null {
-  const opened: Record<string, string> = {
-    "open-notion": "notion",
-    "open-gmail": "gmail",
-    "open-reauth": "gmail",
-    "open-flow-failed": "gmail",
-    "open-records-unreadable": "notion",
-    "open-reconnected": "gmail",
-  };
-  return opened[fixture] ?? null;
-}

@@ -278,99 +278,6 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* -- The frame (§3.1) ----------------------------------------------------------------------
- * One width, one gutter, one rhythm. A module never writes a width, a gutter or a scroll.
- */
-.page-shell {
-  display: flex;
-  flex-direction: column;
-  gap: var(--density-gap);
-  width: 100%;
-  max-width: 120rem;
-  margin: 0 auto;
-  padding: 0 var(--density-pad) var(--density-pad);
-}
-
-.page-shell--fill {
-  height: 100%;
-  min-height: 0;
-}
-
-.page-header {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px var(--density-gap);
-  padding: 10px 0;
-  background: var(--background);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.page-header__eyebrow {
-  color: var(--muted-foreground);
-  text-transform: none;
-}
-
-.page-header__titles {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.page-header__meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-}
-
-.page-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.page-section__head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-/* -- Rung two: the card --------------------------------------------------------------------- */
-.section-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: var(--density-pad-sm);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-card);
-  background: var(--card-bg);
-  box-shadow: var(--shadow-elevation-1);
-}
-
-.section-card--flat {
-  background: transparent;
-  box-shadow: none;
-  border-color: var(--border-subtle);
-}
-
-.section-card--absent {
-  background: transparent;
-  box-shadow: none;
-  border-style: dashed;
-}
-
-.section-card--padless {
-  padding: 0;
-}
-
 /* -- Rung three: a row or well recessed inside a card ---------------------------------------- */
 .well {
   padding: 8px 10px;
@@ -700,163 +607,12 @@ select:focus-visible {
   color: var(--muted-foreground);
 }
 
-/* -- The window: a bar, and one module under it ----------------------------------------------
- *
- * The app root is these two rectangles and nothing else. The module area is the only scroll in
- * the document; the bar never scrolls away, because it is what says which module you are on.
- */
-.app-root {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
-
-.app-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-}
-
 .window-buttons {
   display: inline-flex;
   align-items: stretch;
 }
 
-/* The Browser module's own frame. Its first child is the tab strip and that is a contract with
- * `src-tauri/src/layout.rs`: in browser mode the chrome webview is clipped to the bar plus the
- * strip, and everything below is covered by a page webview. */
-.module-browser {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-
-.module-browser__body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-/* -- The chrome: the module bar, and the Browser module's tab strip ---------------------------
- *
- * Both heights are also constants in `src-tauri/src/layout.rs`. The window has no HTML container
- * — the webviews are siblings the Rust side positions — so these two numbers are a contract
- * between a stylesheet and a Rust file, and they are edited together or not at all.
- */
-.module-bar {
-  position: relative;
-  display: flex;
-  align-items: stretch;
-  height: var(--bar-height);
-  background: var(--recessed);
-  border-bottom: 1px solid var(--border-default);
-  user-select: none;
-}
-
-.module-bar__brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 14px 0 12px;
-}
-
-.module-bar__mark {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  user-select: none;
-}
-
-.module-bar__word {
-  font-size: calc(0.875rem + var(--type-step));
-  font-weight: 700;
-  letter-spacing: -0.03em;
-}
-
-.module-bar__spacer {
-  flex: 1 1 auto;
-  min-width: 20px;
-  align-self: stretch;
-}
-
-.module-bar__item {
-  position: relative;
-  padding: 0 14px;
-  border: none;
-  background: transparent;
-  color: var(--muted-foreground);
-  font-size: calc(0.8125rem + var(--type-step));
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background var(--duration-fast),
-    color var(--duration-fast);
-}
-
-.module-bar__item:hover {
-  background: var(--hover-wash);
-  color: var(--foreground);
-}
-
-.module-bar__item[aria-current="page"] {
-  color: var(--foreground);
-}
-
-.module-bar__item[aria-current="page"]::after {
-  content: "";
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 0;
-  height: 2px;
-  background: var(--primary);
-}
-
-/* The presence pill: what Athena is doing, and a way to bring her window forward. */
-.module-bar__presence {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  border: none;
-  background: transparent;
-  color: var(--muted-foreground);
-  font-size: calc(0.8125rem + var(--type-step));
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.module-bar__presence:hover {
-  background: var(--hover-wash);
-  color: var(--foreground);
-}
-
-.module-bar__dot {
-  width: 8px;
-  height: 8px;
-  border: 1.5px solid var(--muted);
-  border-radius: 50%;
-}
-
-.module-bar__presence[data-tone="work"] .module-bar__dot {
-  background: var(--status-info);
-  border-color: var(--status-info);
-}
-
-.module-bar__presence[data-tone="human"] {
-  color: var(--role-human);
-  font-weight: 700;
-}
-
-.module-bar__presence[data-tone="human"] .module-bar__dot {
-  background: var(--role-human);
-  border-color: var(--role-human);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--role-human) 30%, transparent);
-}
-
-.module-bar__icon {
+.window-btn__icon {
   width: 16px;
   height: 16px;
   fill: none;
@@ -882,7 +638,6 @@ select:focus-visible {
   background: var(--hover-wash);
   color: var(--foreground);
 }
-
 
 /* Push-to-talk (c32). A held key is a lit dot and a label; the phases differ by the dot alone,
  * so the control reads at a glance beside the window buttons without a second colour. */
@@ -1050,27 +805,6 @@ select:focus-visible {
   user-select: text;
 }
 
-/* -- The page area the shell does not paint --------------------------------------------------
- *
- * In the window this rectangle belongs to a page webview and this element is clipped away
- * unseen; in the preview harness there is no page webview, so it says what would be there.
- * Same view, both times — a module's view is a pure function of its view-model, and "am I in
- * Tauri" is not one of its fields.
- */
-.page-stand-in {
-  display: flex;
-  flex: 1 1 auto;
-  min-height: 12rem;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border: 1px dashed var(--border-default);
-  border-radius: var(--radius-card);
-  background: var(--recessed);
-  text-align: center;
-}
-
 /* -- Two columns where there is room, one where there is not (c21) -----------------------------
  *
  * The window is 1440 wide and its minimum is 900, so a module that is one column at every width
@@ -1172,6 +906,17 @@ select:focus-visible {
   --depth-1: color-mix(in srgb, var(--primary) 9%, var(--background));
   --depth-2: var(--background);
   --depth-3: color-mix(in srgb, black 35%, var(--background));
+  --vignette: color-mix(in srgb, black 45%, transparent);
+}
+
+:root[data-theme="light"] {
+  /* In the light theme depth does not darken, it cools: the water is a paler tint of the primary the
+   * deeper you go, and the edges of the frame stay light. */
+  --depth-0: color-mix(in srgb, var(--primary) 16%, var(--background));
+  --depth-1: color-mix(in srgb, var(--primary) 10%, var(--background));
+  --depth-2: color-mix(in srgb, var(--primary) 5%, var(--background));
+  --depth-3: var(--background);
+  --vignette: color-mix(in srgb, var(--foreground) 7%, transparent);
 }
 
 :root[data-motion="calm"] {
@@ -1203,109 +948,6 @@ select:focus-visible {
   background: var(--hover-wash);
 }
 
-/* -- Layer (ADR 0029): the second layer, a sheet from the right under the module bar ---------- */
-.layer {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.layer__scrim {
-  position: absolute;
-  inset: 0;
-  background: var(--scrim);
-  animation: layer-scrim 180ms ease-out both;
-}
-
-.layer__sheet {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: min(100%, 44rem);
-  height: 100%;
-  border-left: 1px solid var(--border-default);
-  background: var(--background);
-  box-shadow: -18px 0 48px rgba(0, 0, 0, 0.32);
-  outline: none;
-  animation: layer-sheet 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-.layer[data-size="lg"] .layer__sheet {
-  width: min(100%, 76rem);
-}
-
-.layer__head {
-  display: flex;
-  align-items: center;
-  gap: var(--density-gap);
-  padding: 10px var(--density-pad);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.layer__back {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px 4px 4px;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-interactive);
-  background: transparent;
-  color: var(--foreground);
-  cursor: pointer;
-}
-
-.layer__back:hover {
-  background: var(--hover-wash);
-}
-
-.layer__titles {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.layer__eyebrow {
-  color: var(--muted-foreground);
-}
-
-.layer__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-left: auto;
-}
-
-.layer__body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding: var(--density-pad);
-}
-
-.layer-columns {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  gap: calc(var(--density-gap) * 1.5);
-  align-items: start;
-}
-
-.layer-columns__left,
-.layer-columns__right {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: var(--density-gap);
-}
-
-@media (max-width: 900px) {
-  .layer-columns {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 @keyframes layer-sheet {
   from {
     transform: translateX(48px);
@@ -1317,162 +959,4 @@ select:focus-visible {
   from {
     opacity: 0;
   }
-}
-
-/* -- Tile (ADR 0029): one item on an overview grid, the whole of it one button ---------------- */
-.tile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  min-width: 0;
-  padding: var(--density-pad);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-card);
-  background: var(--card-bg);
-  box-shadow: var(--shadow-elevation-1);
-  color: var(--foreground);
-  text-align: left;
-  cursor: pointer;
-  transition:
-    border-color var(--duration-fast) ease,
-    background-color var(--duration-fast) ease,
-    transform var(--duration-fast) ease;
-}
-
-.tile:hover {
-  border-color: var(--border-emphasis);
-  background: var(--card-raised);
-  transform: translateY(-1px);
-}
-
-.tile--accent {
-  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
-  background: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--primary) 9%, var(--card-bg)) 0%,
-    var(--card-bg) 55%
-  );
-}
-
-.tile__top {
-  display: flex;
-  width: 100%;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 24px;
-}
-
-.tile__emblem {
-  display: inline-flex;
-}
-
-.tile__pill {
-  margin-left: auto;
-}
-
-.tile__eyebrow {
-  color: var(--muted-foreground);
-}
-
-.tile__title {
-  line-height: 1.3;
-}
-
-.tile__figure {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tile__figure-n {
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums lining-nums;
-  color: var(--accent);
-}
-
-.tile__line {
-  color: var(--foreground);
-}
-
-.tile__foot {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: auto;
-  padding-top: 6px;
-}
-
-/* -- Emblem (ADR 0029): the stamp a tile's drawing is set in ---------------------------------- */
-.emblem {
-  flex: none;
-  overflow: visible;
-}
-
-.emblem__ghost {
-  fill: none;
-  stroke: var(--border-default);
-  stroke-width: 1.5;
-}
-
-.emblem__plate {
-  fill: var(--recessed);
-  stroke: var(--border-default);
-  stroke-width: 1;
-}
-
-.emblem__ring {
-  fill: none;
-  stroke: var(--muted);
-  stroke-width: 1.5;
-  stroke-dasharray: 3 4;
-}
-
-.emblem__glyph path {
-  fill: none;
-  stroke: var(--muted-foreground);
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.emblem__mark {
-  fill: var(--muted);
-}
-
-.emblem--done .emblem__plate {
-  fill: var(--primary);
-  stroke: transparent;
-}
-
-.emblem--done .emblem__ring {
-  stroke: var(--primary-fg);
-  stroke-dasharray: none;
-  opacity: 0.55;
-}
-
-.emblem--done .emblem__glyph path {
-  stroke: var(--primary-fg);
-}
-
-.emblem--done .emblem__mark {
-  fill: var(--role-human);
-}
-
-.emblem--done .emblem__ghost {
-  stroke: color-mix(in srgb, var(--primary) 55%, transparent);
-}
-
-.emblem__glyph {
-  color: var(--muted-foreground);
-}
-
-.emblem--done .emblem__glyph {
-  color: var(--primary-fg);
 }

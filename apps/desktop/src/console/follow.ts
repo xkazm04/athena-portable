@@ -55,8 +55,7 @@ export function useFollowShell(): void {
 
   useEffect(() => {
     let stop: (() => void) | undefined;
-    void onLayoutChanged((_module, shape) => {
-      if (shape === undefined) return;
+    void onLayoutChanged((shape) => {
       const { path, go } = useDepth.getState();
       const tab = useTabs.getState().tabs.find((t) => t.focused);
       const to = followLayout(path, shape, tab ? { id: tab.id, url: tab.url } : null);

@@ -1,5 +1,5 @@
 /**
- * The Setup module's `ModuleEntry` — the one file in this directory that knows a store exists.
+ * The Setup model hook — the one file in this directory that knows a store exists.
  *
  * Four stores meet here and none of them is started here: `settings` (the engine, the theme,
  * the brain path, whether the letter has been read), `tabs` (whether a page is open), `daemon`
@@ -10,22 +10,18 @@
  * the microphone's answer (a permission is the browser's fact, not the store's) and whether the
  * welcome was reopened.
  */
-import { createElement, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { ENGINE_IDS, isEngineId } from "@/lib/engines";
 import type { MotionChoice } from "@/lib/motion";
 import { checkMicrophone, type MicStanding } from "@/lib/voice";
-import type { ModuleEntry } from "@/modules/types";
 import { useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { chooseSetupEngine, useSettings, type ThemeChoice, type TypeScale } from "@/stores/settings";
-import { useShell } from "@/stores/shell";
 import { useTabs } from "@/stores/tabs";
 import { useVoice } from "@/stores/voice";
 
-import { fixtureIds, fixtures, initialOpenFor } from "./fixtures";
 import { selectSetup, type SetupActions, type SetupModel } from "./model";
-import SetupView from "./view";
 
 /**
  * The model, built from the stores. A hook so the Setup module and the depth scenes that carry its
@@ -90,10 +86,9 @@ export function useSetupModel(
       finish: () => {
         setReopened(false);
         void useSettings.getState().setOnboarded(true).catch(report("onboarded"));
-        // The module bar leaves into the Browser. The depth scenes pass their own destination: a
-        // stray `browser` selection would tell Rust a page is wanted under a scene.
-        if (afterFinish) afterFinish();
-        else void useShell.getState().select("browser").catch(report("leave"));
+        // Where waking her leaves to is the scene's to say: a `browser` selection would tell Rust a
+        // page is wanted under a scene (ADR 0088), so this module selects nothing itself.
+        afterFinish?.();
       },
       // The module bar re-shows its own welcome; a scene says where the first act is shown instead.
       reopenOnboarding: () => (onReopen ? onReopen() : setReopened(true)),
@@ -154,20 +149,3 @@ export function useSetupModel(
 
   return model;
 }
-
-function Live() {
-  return createElement(SetupView, { model: useSetupModel() });
-}
-
-export const entry: ModuleEntry = {
-  id: "setup",
-  label: "Setup",
-  blurb: "What this machine needs before the first turn, and every setting after it — derived, never stored.",
-  fixtureIds,
-  preview: (fixture) =>
-    createElement(SetupView, {
-      model: fixtures[fixture] ?? fixtures.typical,
-      initialOpen: initialOpenFor(fixture),
-    }),
-  Live,
-};

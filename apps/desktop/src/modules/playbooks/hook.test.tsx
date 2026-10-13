@@ -1,30 +1,31 @@
 // @vitest-environment jsdom
 /**
- * `usePlaybooksModel` — README section 3.5, ADR 0088 and 0090. The module bar's Playbooks opens a
- * portal by selecting the Browser and making a tab; a console scene must make the tab and not
- * select the Browser (a Rust `browser` selection shows a page under a scene), then tell the scene.
+ * `usePlaybooksModel` — README section 3.5, ADR 0088 and 0090. Opening a portal makes the tab and
+ * selects no module (a Rust `browser` selection shows a page under a scene), then tells the scene,
+ * which decides where the person goes.
  */
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { PLAYBOOKS } from "@/lib/playbooks.shipped";
+import { usePlaybooks } from "@/stores/playbooks";
+
 import type { PlaybooksModel } from "./model";
 
 const tabsCreate = vi.fn<(url: string) => Promise<number>>();
-const select = vi.fn<(id: string) => Promise<void>>();
 
 vi.mock("@/lib/ipc", () => ({ tabsCreate: (url: string) => tabsCreate(url) }));
-vi.mock("@/stores/shell", () => ({ useShell: { getState: () => ({ select: (id: string) => select(id) }) } }));
 vi.mock("@/lib/companion", () => ({ athenaOffer: vi.fn(async () => {}) }));
 
 const { usePlaybooksModel } = await import("./index");
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-function modelWith(options?: { afterOpen?: (url: string) => void }): PlaybooksModel {
+function modelWith(afterOpen: (url: string) => void = () => {}): PlaybooksModel {
   let got: PlaybooksModel | null = null;
   function Probe() {
-    got = usePlaybooksModel(options);
+    got = usePlaybooksModel(afterOpen);
     return null;
   }
   const host = document.createElement("div");
@@ -36,37 +37,37 @@ function modelWith(options?: { afterOpen?: (url: string) => void }): PlaybooksMo
 
 beforeEach(() => {
   tabsCreate.mockReset().mockResolvedValue(7);
-  select.mockReset().mockResolvedValue();
 });
 
 describe("opening a portal", () => {
-  it("selects the Browser and then makes the tab, as the module bar's Playbooks always did", async () => {
-    modelWith().actions.open("https://example.com/a");
-    await vi.waitFor(() => expect(tabsCreate).toHaveBeenCalledWith("https://example.com/a"));
-    expect(select).toHaveBeenCalledWith("browser");
-    expect(select.mock.invocationCallOrder[0]!).toBeLessThan(tabsCreate.mock.invocationCallOrder[0]!);
-  });
-
-  it("with afterOpen makes the tab, selects nothing, and tells the scene after the tab exists", async () => {
+  it("makes the tab and tells the scene after the tab exists", async () => {
     const afterOpen = vi.fn();
-    modelWith({ afterOpen }).actions.open("https://example.com/b");
+    modelWith(afterOpen).actions.open("https://example.com/b");
     await vi.waitFor(() => expect(afterOpen).toHaveBeenCalledWith("https://example.com/b"));
     expect(tabsCreate).toHaveBeenCalledWith("https://example.com/b");
-    expect(select).not.toHaveBeenCalled();
   });
 
   it("does not tell the scene when the tab could not be made, and logs it", async () => {
     const afterOpen = vi.fn();
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
     tabsCreate.mockRejectedValue(new Error("no shell"));
-    modelWith({ afterOpen }).actions.open("https://example.com/c");
+    modelWith(afterOpen).actions.open("https://example.com/c");
     await vi.waitFor(() => expect(log).toHaveBeenCalled());
     expect(afterOpen).not.toHaveBeenCalled();
     log.mockRestore();
   });
 
-  it("is the same model the module's view uses: the shipped chores, the verdicts, the totals", () => {
+  it("says it is loading while the shipped set has not arrived, and is not an empty build", () => {
+    usePlaybooks.setState({ items: null });
     const m = modelWith();
+    expect(m.loading).toBe(true);
+    expect(m.items).toEqual([]);
+  });
+
+  it("is the same model the module's view uses once the set is here: the verdicts and the totals", () => {
+    usePlaybooks.setState({ items: PLAYBOOKS });
+    const m = modelWith();
+    expect(m.loading).toBe(false);
     expect(m.items.length).toBe(m.totals.count);
     expect(m.items.length).toBeGreaterThan(0);
   });

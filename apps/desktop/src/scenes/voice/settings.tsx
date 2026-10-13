@@ -21,7 +21,7 @@ import StatusDot from "@/components/StatusDot";
 import type { SttEngineId } from "@/lib/voice-setup";
 import { sttName, voiceMeta, type VoiceModel } from "@/modules/voice/model";
 import { EngineState, HoldToTalk, InstallBlock, Kbd } from "@/modules/voice/parts";
-import { KeyField, WhisperModels } from "@/modules/voice/studio";
+import { KeyField, WhisperModels } from "@/modules/voice/pieces";
 import { Waveform } from "@/modules/voice/waveform";
 
 import { HOTKEY } from "./parts";

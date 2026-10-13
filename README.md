@@ -202,7 +202,7 @@ file cards on the same approval table and block until the user answers.
 | The daemon was single-threaded behind one SQLite connection; a long `/run` stalled every read | one writer behind a lock, a read-only connection per read request, `ThreadingHTTPServer`, `Connection: close`, and the starvation test written before the server |
 | A resumed CLI session kept its first system prompt | the two-output composer of 3.2 |
 | Orphaned daemons after one evening | sidecar lifecycle is one Rust module with a tree kill and a Windows job object, tested in the commit that first spawns it |
-| Seven panel surfaces in a 380 px column | module-first window from the start; the browser is one module among them; each module is a view-model, fixtures and a pure view |
+| Seven panel surfaces in a 380 px column | one scene with depths from the start (ADR 0087): Athena on the surface and Apps, Chores, Accounts, Voice and Mind beneath her; each depth is a view-model, fixtures and a pure view over a module's own behaviour |
 | No automation seam for the panel | every module renders in `preview.html?module=&fixture=` without Tauri; a headless test drives the run loop against a fake daemon |
 | Ids minted in two places with two prefixes | one `ids.py`, one `ids.ts`, a parity test |
 | Screenshots never cleaned, capture-to-approval link approximate | captures in a table with a size cap and an LRU sweep; the daemon mints the approval with the capture id in its params |

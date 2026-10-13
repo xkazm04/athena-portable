@@ -9,6 +9,7 @@
  * The page capture on the slip is a labelled sketch; a live card has none until captures are wired.
  */
 import type { ToolRow } from "@/lib/api";
+import { PLAYBOOKS } from "@/lib/playbooks.shipped";
 import type { EngineProbe } from "@/lib/engines";
 import type { DecisionRequested } from "@/lib/events";
 import type { EarlierRecord, TranscriptEntry } from "@/stores/run";
@@ -233,6 +234,7 @@ function model(setup: Setup): CompanionModel {
     },
     voice: { phase: setup.voice ? "listening" : setup.speaking ? "speaking" : "idle", available: true, partial: setup.partial ?? "" },
     daemonReady: setup.ready ?? true,
+    shipped: PLAYBOOKS,
     origin: setup.origin === undefined ? ORIGIN : setup.origin,
     tools: TOOLS,
     held: setup.held ?? null,

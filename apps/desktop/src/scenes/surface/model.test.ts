@@ -68,6 +68,11 @@ describe("the five lights", () => {
     expect(by.voice!.stat).toBe("not set up");
   });
 
+  it("says it is counting the chores while the shipped playbooks are still being fetched", () => {
+    const by = Object.fromEntries(fixtures.counting!.lights.map((l) => [l.root, l]));
+    expect(by.chores!.stat).toBe("counting…");
+  });
+
   it("count a page open before any app is registered", () => {
     const m = selectSurface({ ...src(), apps: [], openTabs: 2 });
     expect(m.lights[0]!.stat).toBe("2 pages open");
@@ -90,7 +95,7 @@ function src(): SurfaceSources {
     apps: [],
     openTabs: 0,
     accounts: [],
-    chores: { total: 0, benched: 0, foundUsd: 0 },
+    chores: { total: 0, benched: 0, foundUsd: 0, loaded: true },
     voiceAvailable: false,
     engine: { label: "Claude Code", ready: true },
     inShell: true,

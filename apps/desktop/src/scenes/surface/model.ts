@@ -28,7 +28,8 @@ export interface SurfaceSources {
   apps: readonly { id: string; host: string; enabled: boolean }[];
   openTabs: number;
   accounts: readonly { id: string; label: string; connected: boolean; attention: boolean }[];
-  chores: { total: number; benched: number; foundUsd: number };
+  /** `loaded` is false while the shipped playbooks are still being fetched (they load lazily). */
+  chores: { total: number; benched: number; foundUsd: number; loaded: boolean };
   voiceAvailable: boolean;
   engine: { label: string; ready: boolean | null };
   /** False in a plain browser, where there is no window of hers to hand anything to. */
@@ -87,8 +88,9 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
     },
     chores: {
       label: ROOT_LABEL.chores,
-      stat:
-        s.chores.total === 0
+      stat: !s.chores.loaded
+        ? "counting…"
+        : s.chores.total === 0
           ? "none in this build"
           : `${s.chores.benched} of ${s.chores.total} benched · ${usd(s.chores.foundUsd)} found`,
       hint: "Chores worth starting, with what they save and the proof.",

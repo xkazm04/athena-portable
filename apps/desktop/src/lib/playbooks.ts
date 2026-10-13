@@ -484,23 +484,34 @@ export function speedup(manual: number, measured: number): string {
 
 // -- the shipped set -----------------------------------------------------------------------------
 
-const SHOWCASES = import.meta.glob("../../../../playbooks/*/playbook.json", { eager: true });
-const BENCHES = import.meta.glob("../../../../playbooks/*/bench.json", { eager: true });
-const EVIDENCES = import.meta.glob("../../../../playbooks/*/evidence.json", { eager: true });
+// Lazy on purpose: the hundred playbooks, their benches and their evidence are about 2.7 MB of JSON,
+// and nothing needs them to draw the first frame. `loadShipped` fetches them when a depth or the
+// surface's totals ask (`stores/playbooks.ts`); `lib/playbooks.shipped.ts` is the eager copy a test
+// or a fixture reads synchronously, and nothing in the running app imports it.
+const SHOWCASES = import.meta.glob("../../../../playbooks/*/playbook.json");
+const BENCHES = import.meta.glob("../../../../playbooks/*/bench.json");
+const EVIDENCES = import.meta.glob("../../../../playbooks/*/evidence.json");
 const THUMBNAILS = import.meta.glob<string>("../../../../playbooks/*/thumb.jpg", {
-  eager: true,
   query: "?url",
   import: "default",
 });
 
-/** What this build ships. The film plays only where the dev server serves `evidence/`. */
-export const PLAYBOOKS: readonly Playbook[] = loadPlaybooks(
-  SHOWCASES,
-  BENCHES,
-  EVIDENCES,
-  THUMBNAILS,
-  import.meta.env.DEV,
-);
+/** Await every module a lazy glob names, keeping its path as the key. */
+async function resolved(glob: Record<string, () => Promise<unknown>>): Promise<Record<string, unknown>> {
+  const entries = await Promise.all(Object.entries(glob).map(async ([path, load]) => [path, await load()] as const));
+  return Object.fromEntries(entries);
+}
+
+/** What this build ships, fetched on demand. The film plays only where the dev server serves `evidence/`. */
+export async function loadShipped(): Promise<readonly Playbook[]> {
+  const [showcases, benches, evidences, thumbnails] = await Promise.all([
+    resolved(SHOWCASES),
+    resolved(BENCHES),
+    resolved(EVIDENCES),
+    resolved(THUMBNAILS),
+  ]);
+  return loadPlaybooks(showcases, benches, evidences, thumbnails, import.meta.env.DEV);
+}
 
 /** Whether the evidence films the bench run it is filed against, or an earlier one. */
 export function evidenceCurrent(p: Playbook): boolean {

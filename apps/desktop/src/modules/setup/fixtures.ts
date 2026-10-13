@@ -141,10 +141,6 @@ export const fixtures: Record<string, SetupModel> = {
   checking,
   onboarding,
   settings,
-  "open-engine": settings,
-  "open-theme": settings,
-  "open-page": settings,
-  "open-engine-missing": notFound,
 };
 
 export const fixtureIds = [
@@ -156,19 +152,4 @@ export const fixtureIds = [
   "checking",
   "onboarding",
   "settings",
-  "open-engine",
-  "open-theme",
-  "open-page",
-  "open-engine-missing",
 ] as const;
-
-/** The fixtures that render one fact's layer open (ADR 0029), and which fact. */
-export function initialOpenFor(fixture: string): "engine" | "theme" | "page" | null {
-  const opened: Record<string, "engine" | "theme" | "page"> = {
-    "open-engine": "engine",
-    "open-theme": "theme",
-    "open-page": "page",
-    "open-engine-missing": "engine",
-  };
-  return opened[fixture] ?? null;
-}
