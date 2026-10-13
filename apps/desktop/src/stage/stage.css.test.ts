@@ -35,6 +35,15 @@ describe("the dock", () => {
   });
 });
 
+describe("the bar's Rise and crumbs", () => {
+  it("fade in on the depth clock when a dive mounts them, by opacity alone", () => {
+    for (const sel of [".stage__rise", ".stage__crumb"]) {
+      expect(decls(sel)).toMatch(/animation:\s*bar-in var\(--dur-depth\) var\(--ease-depth\)/);
+    }
+    expect(/@keyframes bar-in\s*\{([\s\S]*?\}\s*)\}/.exec(css)![1]).not.toMatch(/transform|translate|scale/);
+  });
+});
+
 describe("the gauge's ticks", () => {
   it("light by opacity on the mark's own clock, not by a background swap that jumps", () => {
     expect(decls(".stage__rail i::after")).toMatch(/transition:\s*opacity var\(--dur-depth\) var\(--ease-depth\)/);

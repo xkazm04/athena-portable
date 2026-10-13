@@ -164,6 +164,15 @@
   background: color-mix(in srgb, var(--card-bg) 70%, transparent);
   color: var(--accent);
 }
+/* Rise and each crumb are mounted by the dive that makes them, so they fade in on its clock. */
+.stage__rise,
+.stage__crumb {
+  animation: bar-in var(--dur-depth) var(--ease-depth) both;
+}
+@keyframes bar-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 .stage__rise b {
   color: var(--foreground);
 }
