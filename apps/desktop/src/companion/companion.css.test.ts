@@ -43,3 +43,10 @@ test("the text buttons (Main is hidden, done) answer a pointer and ease the chan
   expect(rule(".aw .aw-textbtn")).toContain("transition: color var(--dur-fast)");
   expect(rule(".aw .aw-textbtn:hover")).toContain("color: var(--paper-ink)");
 });
+
+test("a count badge centres its figure: the line is as tall as the badge, at either text-size step", () => {
+  expect(rule(".pip-n")).toContain("height: 18px");
+  expect(rule(".pip-n")).toContain("/18px ");
+  expect(rule(".aw-badge")).toContain("height: 20px");
+  expect(rule(".aw-badge")).toContain("line-height: 20px");
+});

@@ -723,7 +723,7 @@ body.athena {
   border-radius: 9px;
   background: var(--h-human);
   color: #0a1214;
-  font: 800 calc(12px + var(--type-step))/calc(18px + var(--type-step)) var(--font-ui);
+  font: 800 calc(12px + var(--type-step))/18px var(--font-ui);
   text-align: center;
 }
 
