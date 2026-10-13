@@ -79,3 +79,13 @@ describe("the crumb buttons", () => {
     expect(d).toMatch(/margin:\s*-8px -6px/);
   });
 });
+
+describe("the gauge's geometry", () => {
+  it("is written once, as two tokens the box and the mark's travel both read", () => {
+    expect(css.match(/96px/g)).toHaveLength(1);
+    expect(css.match(/44px/g)).toHaveLength(1);
+    expect(decls(".stage__gauge")).toMatch(/top:\s*var\(--gauge-top\)/);
+    expect(decls(".stage__gauge")).toMatch(/bottom:\s*var\(--gauge-bottom\)/);
+    expect(decls(".stage__gauge")).toMatch(/--rail-h:\s*calc\(100cqh - var\(--gauge-top\) - var\(--gauge-bottom\)\)/);
+  });
+});

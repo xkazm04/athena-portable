@@ -238,9 +238,13 @@
   position: absolute;
   z-index: 2;
   left: 18px;
-  top: 96px;
-  bottom: calc(var(--dock-h) + 44px);
+  top: var(--gauge-top);
+  bottom: var(--gauge-bottom);
   width: 14px;
+  /* The rail is as tall as the stage less the bar above and the dock below: written once here, read
+   * by the box and by the mark's travel. */
+  --gauge-top: 96px;
+  --gauge-bottom: calc(var(--dock-h) + 44px);
 }
 .stage__rail {
   position: relative;
@@ -289,9 +293,9 @@
 .stage[data-depth="1"] .stage__rail b { --rail-at: 0.3333; }
 .stage[data-depth="2"] .stage__rail b { --rail-at: 0.6667; }
 .stage[data-depth="3"] .stage__rail b { --rail-at: 1; }
-/* The rail is as tall as the stage less the bar above and the dock below; `cqh` is the stage's own
- * height, so the mark's travel is right in the window and in the preview harness alike. */
-.stage__gauge { --rail-h: calc(100cqh - 96px - var(--dock-h) - 44px); }
+/* `cqh` is the stage's own height, so the mark's travel is right in the window and in the preview
+ * harness alike. */
+.stage__gauge { --rail-h: calc(100cqh - var(--gauge-top) - var(--gauge-bottom)); }
 
 /* ---- the scenes --------------------------------------------------------------------------- */
 
