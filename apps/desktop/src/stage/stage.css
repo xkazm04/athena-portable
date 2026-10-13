@@ -132,6 +132,11 @@
   background: none;
   border: 0;
   cursor: pointer;
+  /* The same ease the scenes' own buttons use, so a hover is never a jump. */
+  transition:
+    color var(--duration-fast),
+    background var(--duration-fast),
+    border-color var(--duration-fast);
 }
 .stage__brand {
   display: inline-flex;
@@ -363,6 +368,9 @@
   border-radius: 999px;
   color: var(--role-human);
   border: 1px solid var(--role-human);
+}
+.stage__dock-athena:hover {
+  border-color: var(--accent);
 }
 .stage__dock-bell {
   display: block;
