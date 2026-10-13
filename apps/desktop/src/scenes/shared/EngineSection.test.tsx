@@ -29,3 +29,10 @@ describe("an engine's standing (house style 4b)", () => {
     expect(css).not.toMatch(/engines__fact\[data-standing/);
   });
 });
+
+describe("copy", () => {
+  it("uses the ellipsis character like every other busy label", () => {
+    expect(html("checking")).toContain("Checking…");
+    expect(html("checking")).not.toContain("Checking...");
+  });
+});

@@ -37,7 +37,7 @@ describe("the mind", () => {
 
   it("can check again, and says it is checking while it does", () => {
     expect(html("ready", 0)).toContain("Check again");
-    expect(html("checking", 0)).toContain("Checking...");
+    expect(html("checking", 0)).toContain("Checking…");
   });
 });
 
@@ -83,5 +83,19 @@ describe("the bell lights as the machine does", () => {
     );
     expect(bare.match(/data-lit="true"/g)).toBeNull();
     expect(bare).toContain("She has no mind yet.");
+  });
+});
+
+describe("the steps say what is done in more than a colour", () => {
+  it("marks a done step with a check and names it done to a screen reader", () => {
+    const h = html("ready", 0);
+    expect(h).toContain('aria-label="Mind, done"');
+    expect(h).toContain('aria-label="Reach, done"');
+    expect(h).toContain(">✓<");
+  });
+  it("keeps the number and the plain name while a step is not done", () => {
+    const h = html("engine-missing", 0);
+    expect(h).toContain('aria-label="Mind"');
+    expect(h).toMatch(/waking__step-n" aria-hidden="true">1</);
   });
 });

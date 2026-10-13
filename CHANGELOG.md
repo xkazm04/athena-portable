@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(stage): the gauge's ticks light on the mark's own clock and no longer jump while it slides.` README 3.1, ADR 0089 (scan-sweep, ui-perfectionist): ticks swapped background and opacity instantly while the mark slid for 360 ms; they now light by the opacity of an accent layer on `--dur-depth`.
 - `fix(waking): the step pills and the Later link ease their hover, and the pills answer a pointer at all.` README 3.1, ADR 0087 and 0089 (scan-sweep, ui-perfectionist): `.waking__step` had no hover and no transition, the current and done states swapped in one frame; all three pointer controls now ease background, border-color and color on `--duration-fast`. Tests: scenes/waking/waking.css.test.
 - `fix(accounts): pressing Disconnect no longer drops the keyboard's place.` README 3.5, ADR 0089 (scan-sweep, accessibility-checker): the pressed button was replaced by the question, so focus fell to the document; Keep it now takes it, and Disconnect takes it back when Keep it is pressed (the same fix as Apps' Forget). Tests: scenes/accounts/interact.test.
 - `fix(desktop): the engine section's busy label says Checking… with the ellipsis the other busy labels use.` README 3.5, ADR 0087 (scan-sweep, copy-auditor): the Check again button read "Checking..." while the companion's twin and the accounts scene use the single character. Tests: scenes/shared/EngineSection.test.tsx, scenes/waking/view.test.tsx.

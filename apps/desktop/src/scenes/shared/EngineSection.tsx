@@ -82,7 +82,7 @@ export default function EngineSection({ model }: { model: SetupModel }) {
       </ul>
       <div className="engines__row">
         <Button size="sm" onClick={model.actions.checkEngines} disabled={model.checking}>
-          {model.checking ? "Checking..." : "Check again"}
+          {model.checking ? "Checking…" : "Check again"}
         </Button>
         <span className="engines__fact" data-standing={fact.standing}>
           <StatusDot tone={STANDING_TONE[fact.standing]} />
