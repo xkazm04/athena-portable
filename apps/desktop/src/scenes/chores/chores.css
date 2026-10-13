@@ -716,6 +716,13 @@ button.ch-glance:hover {
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--card-bg) 88%, transparent);
+  /* Choosing another part remounts the panel (keyed by part): it fades in on the depth clock, which
+   * is 0 ms under Calm, instead of swapping its whole content in one frame. Opacity only. */
+  animation: ch-panel-in var(--dur-depth) var(--ease-depth) both;
+}
+@keyframes ch-panel-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .ch-panel__title {
   margin: 0;

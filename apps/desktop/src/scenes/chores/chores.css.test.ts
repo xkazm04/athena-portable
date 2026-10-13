@@ -40,3 +40,10 @@ test("a turn dot answers the pointer: it lifts to full strength and takes the wa
   expect(css).toMatch(/\.ch-dot:hover\s*\{[^}]*background:\s*var\(--wash\)/);
   expect(css).toMatch(/\.ch-dot:hover,[^{]*\{[^}]*opacity:\s*1/);
 });
+
+test("a part of the chore fades in on the depth clock when it is chosen, opacity only", () => {
+  expect(rule(".ch-panel")).toMatch(/animation:\s*ch-panel-in var\(--dur-depth\) var\(--ease-depth\)/);
+  const frames = css.slice(css.indexOf("@keyframes ch-panel-in"), css.indexOf("\n}\n", css.indexOf("@keyframes ch-panel-in")));
+  expect(frames).toMatch(/opacity/);
+  expect(frames).not.toMatch(/transform|height|width|margin/);
+});
