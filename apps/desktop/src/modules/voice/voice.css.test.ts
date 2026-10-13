@@ -14,10 +14,24 @@ function sources(): string {
     .join("\n");
 }
 
+/** The declarations of the rule whose selector is exactly `selector`. */
+function rule(selector: string): string {
+  const head = "\n" + selector + " {";
+  const at = css.indexOf(head);
+  if (at === -1) throw new Error(`no rule ${selector}`);
+  return css.slice(at, css.indexOf("\n}", at));
+}
+
 test("every vs- class the module's stylesheet styles is written by a component", () => {
   const code = sources();
   const classes = new Set(Array.from(css.matchAll(/\.(vs-[a-z]+(?:__[a-z]+)?)/g), (m) => m[1]!));
   expect(classes.size).toBeGreaterThan(8);
   const dead = [...classes].filter((name) => !code.includes(name));
   expect(dead).toEqual([]);
+});
+
+test("a key chip on a primary button is set in the button's own ink, which clears contrast in both themes", () => {
+  const chip = rule(".btn--primary .vs-kbd");
+  expect(chip).toMatch(/color:\s*var\(--primary-fg\)/);
+  expect(chip).not.toMatch(/--on-primary/);
 });
