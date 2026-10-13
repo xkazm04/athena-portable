@@ -46,7 +46,7 @@ export function engineFact(model: SetupModel): Fact {
       ...base,
       standing: "unknown",
       summary: model.checking
-        ? "checking the engine..."
+        ? "checking the engine…"
         : model.problem
           ? `Athena could not check the engine (${model.problem})`
           : "Athena has not heard back about the engine yet",

@@ -75,7 +75,7 @@ test("an installed engine that is signed out is missing, not done", () => {
 
 test("an empty probe list is a different sentence from a probe that found nothing usable", () => {
   expect(engineFact(model({ probes: [] })).summary).toContain("no engines at all");
-  expect(engineFact(model({ probes: null, checking: true })).summary).toBe("checking the engine...");
+  expect(engineFact(model({ probes: null, checking: true })).summary).toBe("checking the engine…");
   const none: EngineProbe[] = [{ id: "claude_code", state: "not_found", detail: "absent" }];
   expect(engineFact(model({ probes: none })).summary).toContain("none of the 1");
 });
