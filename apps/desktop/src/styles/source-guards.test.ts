@@ -54,3 +54,10 @@ test("a lazy depth shows a calm placeholder, not nothing: delayed, opacity only,
     expect(live, depth).not.toMatch(/fallback:\s*null/);
   }
 });
+
+test("no comment holds a star-slash of its own, which closes it early and breaks the CSS minifier", () => {
+  for (const { path, text } of all) {
+    const rest = text.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(rest, path).not.toContain("*/");
+  }
+});
