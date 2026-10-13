@@ -12,7 +12,7 @@ import { useConnectors } from "@/stores/connectors";
 import { endpoint, useDaemon } from "@/stores/daemon";
 
 import { fixtureIds, fixtures, initialOpenFor } from "./fixtures";
-import { selectConnectors, type ConnectorActions } from "./model";
+import { selectConnectors, type ConnectorActions, type ConnectorsModel } from "./model";
 import ConnectorsView from "./view";
 
 const ACTIONS: ConnectorActions = {
@@ -25,7 +25,13 @@ const ACTIONS: ConnectorActions = {
     void useConnectors.getState().settings(id, { allowlist: [...entries] }),
 };
 
-function Live() {
+/**
+ * The model, built from the stores. A hook so the Connectors module and the Accounts depth share
+ * one selector and one set of actions (README 3.5, ADR 0090); the old view and the scene differ
+ * only in what they draw. Loading the list belongs here too: it is asked for when a surface that
+ * shows it mounts and again whenever the daemon becomes ready.
+ */
+export function useConnectorsModel(): ConnectorsModel {
   const items = useConnectors((s) => s.items);
   const loaded = useConnectors((s) => s.loaded);
   const problem = useConnectors((s) => s.problem);
@@ -39,9 +45,11 @@ function Live() {
     if (ready) void useConnectors.getState().load();
   }, [ready]);
 
-  return createElement(ConnectorsView, {
-    model: selectConnectors(items, loaded, problem, ready, busy, errors, ACTIONS, undefined, recordsNotice),
-  });
+  return selectConnectors(items, loaded, problem, ready, busy, errors, ACTIONS, undefined, recordsNotice);
+}
+
+function Live() {
+  return createElement(ConnectorsView, { model: useConnectorsModel() });
 }
 
 export const entry: ModuleEntry = {

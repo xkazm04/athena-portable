@@ -1,0 +1,591 @@
+/* The Accounts depth — README sections 3.1 and 4, ADR 0087 and 0089. Tokens and mixes of them only;
+ * no text under 12px, reading text at 14px or more. Motion is transform and opacity on CSS, off
+ * under Calm. No blur layers: the panels are flat mixes of the card
+ * colour, so a settled scene asks for no frames. */
+
+.accounts {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 2.5vh 6vw 112px 4.5vw;
+  overflow: auto;
+  overflow-x: hidden;
+}
+
+/* ---- shared words ------------------------------------------------------------------------------ */
+
+.accounts__eyebrow {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.accounts__marquee {
+  margin: 0;
+  font-size: clamp(2.6rem, 6.4vw, 5.4rem);
+  font-weight: 300;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+  min-height: 1.1em;
+}
+.accounts__line {
+  margin: 0;
+  max-width: 40rem;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.accounts__fine {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.accounts__note {
+  max-width: 44rem;
+  margin: 0 auto;
+}
+.accounts__locked {
+  margin: 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--status-warning);
+  background: color-mix(in srgb, var(--status-warning) 8%, transparent);
+  color: var(--foreground);
+}
+.accounts__healthnote {
+  margin: 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  color: var(--foreground);
+}
+
+/* ---- the records notice: a banner, in the vault's words, never dismissable -------------------------- */
+
+.accounts__notice {
+  flex: none;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  max-width: 62rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 12px 16px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--status-warning);
+  border-left-width: 6px;
+  background: color-mix(in srgb, var(--status-warning) 10%, var(--card-bg));
+}
+.accounts__notice-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-weight: 700;
+  color: var(--card-bg);
+  background: var(--status-warning);
+}
+.accounts__notice-text {
+  margin: 0 0 4px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.accounts__notice-more {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+/* ---- standing: a shape and a word, tone only on the shape --------------------------------------------- */
+
+.standing {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+.standing__word {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.standing-mark {
+  flex: none;
+}
+.accounts__word {
+  margin: 0;
+}
+
+/* ---- the field --------------------------------------------------------------------------------------------- */
+
+.reach {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4vh;
+  text-align: center;
+  min-height: 0;
+}
+.reach__words {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-height: 15.5rem;
+  align-content: start;
+}
+.reach__words .accounts__line {
+  min-height: 3em;
+}
+.reach__cards {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.4vw;
+  width: 100%;
+}
+.reach__cards > li {
+  display: block;
+}
+.card {
+  width: min(22rem, 78vw);
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 10px 14px 16px;
+  font: inherit;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--card-bg) 55%, transparent);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius-card) * 1.8);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast),
+    opacity var(--duration-fast),
+    border-color var(--duration-fast),
+    background var(--duration-fast);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 19rem 18rem;
+}
+.card:hover,
+.card[data-on="true"] {
+  transform: translateY(-6px);
+  background: color-mix(in srgb, var(--card-bg) 85%, transparent);
+  border-color: var(--accent);
+}
+.reach__cards[data-hovering="true"] .card[data-on="false"] {
+  opacity: 0.6;
+}
+.card__name {
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.acc-chip {
+  font-size: 0.75rem;
+  padding: 2px 9px;
+  border-radius: 999px;
+  color: var(--foreground);
+  border: 1px solid var(--line-strong);
+}
+.acc-chip--gated {
+  border-style: dashed;
+  border-color: var(--status-warning);
+}
+.reach > .accounts__fine {
+  margin: 0;
+}
+
+.notfound {
+  margin: auto;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+/* ---- one account ----------------------------------------------------------------------------------------------- */
+
+.item {
+  flex: 1 0 auto;
+  display: grid;
+  grid-template-columns: minmax(280px, 40%) minmax(0, 1fr);
+  gap: 3vw;
+  align-items: start;
+}
+.item__stage {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  align-self: start;
+  position: sticky;
+  top: 3vh;
+  padding-top: 2vh;
+}
+.item__art {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  width: min(100%, 20rem);
+  padding: 14px 18px 8px;
+  border-radius: 50% 50% 46% 46% / 56% 56% 44% 44%;
+  background: radial-gradient(70% 70% at 50% 46%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 72%);
+}
+.item__art .account-art {
+  width: 100%;
+  height: auto;
+}
+.item__art .accounts__fine {
+  justify-self: center;
+}
+.item__standing {
+  margin: 0;
+}
+.item__sentence {
+  margin: 0;
+  max-width: 34rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.item__act {
+  display: grid;
+  gap: 12px;
+  max-width: 46rem;
+  min-width: 0;
+}
+
+.panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px 18px 16px;
+  border-radius: calc(var(--radius-card) * 1.4);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card-bg) 80%, transparent);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 12rem;
+}
+.panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+}
+.panel__title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+.panel__note {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.panel__body {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.act-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.act-row--top {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.act-row__words {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 14rem;
+}
+.confirm {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--status-warning);
+  background: color-mix(in srgb, var(--status-warning) 8%, transparent);
+}
+
+/* tools */
+.tools {
+  display: grid;
+  gap: 12px 24px;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+.tools__col {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+.tools__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.tools__tool {
+  display: grid;
+  gap: 2px;
+}
+.tools__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+.gated {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border-radius: 4px;
+  color: var(--foreground);
+  border: 1px solid var(--status-warning);
+  background: color-mix(in srgb, var(--status-warning) 12%, transparent);
+}
+
+/* the guide */
+.guide {
+  border-radius: calc(var(--radius-card) * 1.4);
+  border: 1px dashed var(--line-strong);
+  padding: 0 18px;
+}
+.guide__summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: var(--radius-interactive);
+}
+.guide__body {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 14px;
+  max-width: 40rem;
+  overflow-wrap: anywhere;
+}
+.guide__steps {
+  margin: 0;
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 4px;
+}
+
+/* ---- the connect act, in stages ---------------------------------------------------------------------------------- */
+
+.connect {
+  display: grid;
+  gap: 12px;
+}
+.stages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 4px;
+  align-items: center;
+}
+.stages__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 12px 3px 4px;
+  font-size: 0.8125rem;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  border: 1px solid var(--line);
+}
+.stages__step + .stages__step::before {
+  content: none;
+}
+.stages__n {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  border: 1px solid var(--line-strong);
+}
+.stages__step[data-state="now"] {
+  color: var(--foreground);
+  border-color: var(--accent);
+  background: var(--wash);
+}
+.stages__step[data-state="now"] .stages__n {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.stages__step[data-state="done"] {
+  color: var(--foreground);
+}
+.stages__step[data-state="done"] .stages__n {
+  color: var(--primary-fg);
+  background: var(--status-success);
+  border-color: var(--status-success);
+}
+.connect__fields {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  align-items: end;
+}
+.consent {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.consent__words {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.consent__link {
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+.consent__pulse {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  animation: consent-pulse 1.6s ease-in-out infinite;
+}
+@keyframes consent-pulse {
+  from { transform: scale(0.7); opacity: 1; }
+  to { transform: scale(1.25); opacity: 0.35; }
+}
+
+/* ---- the allow-list ----------------------------------------------------------------------------------------------------- */
+
+.list {
+  flex: 1 0 auto;
+  display: grid;
+  grid-template-columns: minmax(280px, 40%) minmax(0, 1fr);
+  gap: 3vw;
+  align-items: start;
+}
+.list__head {
+  display: grid;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+}
+.list__head .accounts__marquee {
+  font-size: clamp(2.2rem, 4.6vw, 4rem);
+}
+.list__editor {
+  display: grid;
+  gap: 12px;
+  max-width: 40rem;
+  min-width: 0;
+}
+.entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px 6px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card-bg) 80%, transparent);
+  overflow-wrap: anywhere;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 44px;
+}
+.entries--peek .entry {
+  padding: 3px 10px;
+}
+.entries:empty {
+  display: none;
+}
+.list__add {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+.list__add > .btn,
+.list__add > span {
+  margin-top: 1.65rem;
+}
+
+/* ---- calm and narrow ------------------------------------------------------------------------------------------------------ */
+
+:root[data-motion="calm"] .consent__pulse {
+  animation: none;
+}
+:root[data-motion="calm"] .card {
+  transition: none;
+}
+
+@media (max-width: 900px) {
+  .accounts {
+    padding: 2vh 16px 150px 16px;
+  }
+  .item,
+  .list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .item__stage,
+  .list__head {
+    position: static;
+  }
+  .item__art {
+    width: min(100%, 14rem);
+  }
+  .reach__words {
+    min-height: 0;
+  }
+  .list__add {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .list__add > .btn,
+  .list__add > span {
+    margin-top: 0;
+  }
+}
