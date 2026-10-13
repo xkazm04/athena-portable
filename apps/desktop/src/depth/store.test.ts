@@ -93,4 +93,24 @@ describe("the hash mirror", () => {
     expect(useDepth.getState().path).toEqual({ root: null });
     stop();
   });
+
+  it("rewrites a hash that is not canonical to the place it resolved to, once, at start", () => {
+    const w = fakeWindow("#/nowhere/at/all");
+    vi.stubGlobal("window", w);
+    const stop = startDepth();
+    expect(w.history.replaceState).toHaveBeenCalledTimes(1);
+    expect(w.history.replaceState).toHaveBeenCalledWith(null, "", "#/");
+    expect(w.location.hash).toBe("#/");
+    stop();
+  });
+
+  it("leaves a canonical hash and an absent one alone", () => {
+    for (const hash of ["#/mind/engine", ""]) {
+      const w = fakeWindow(hash);
+      vi.stubGlobal("window", w);
+      const stop = startDepth();
+      expect(w.history.replaceState, hash).not.toHaveBeenCalled();
+      stop();
+    }
+  });
 });

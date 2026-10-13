@@ -58,6 +58,13 @@ export function startDepth(): () => void {
 
   const fromHash = parseHash(window.location.hash);
   useDepth.setState({ path: fromHash, from: null, move: "none" });
+  // A hash the grammar did not write (a stale link, a typo, odd case) is rewritten to the place it
+  // resolved to, so the bar's URL and the store never disagree about where the window is. No hash at
+  // all is the surface already and is left alone.
+  const canonical = formatHash(fromHash);
+  if (window.location.hash !== "" && window.location.hash !== canonical) {
+    window.history.replaceState(null, "", canonical);
+  }
 
   const onHash = () => {
     const to = parseHash(window.location.hash);
