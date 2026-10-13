@@ -86,10 +86,13 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
                 type="button"
                 className="waking__step focus-ring"
                 aria-current={step === i ? "step" : undefined}
+                aria-label={lit[i] ? `${s.name}, done` : s.name}
                 data-done={lit[i]}
                 onClick={() => setStep(i as 0 | 1 | 2)}
               >
-                <span className="waking__step-n">{i + 1}</span>
+                <span className="waking__step-n" aria-hidden="true">
+                  {lit[i] ? "✓" : i + 1}
+                </span>
                 {s.name}
               </button>
             </li>
