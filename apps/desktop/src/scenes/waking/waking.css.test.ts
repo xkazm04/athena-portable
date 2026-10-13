@@ -30,3 +30,8 @@ test("the act hangs from the top, so the steps do not move when a taller step is
   expect(rule(".waking")).not.toMatch(/align-items:\s*center/);
   expect(rule(".waking__her")).toMatch(/padding-top:\s*4vh/);
 });
+
+test("the text field eases its hover like the surface's ask field", () => {
+  expect(rule(".waking__input")).toMatch(/transition:[^;]*var\(--duration-fast\)/);
+  expect(css.includes(".waking__input:hover")).toBe(true);
+});

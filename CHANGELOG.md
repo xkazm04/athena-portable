@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(scenes): the first act's address field and the Mind depth's brain path ease their hover like the surface's ask field.` README 3.1, ADR 0087 and 0089 (scan-sweep, ui-perfectionist): two of three twin text fields had no hover and no transition; all three now ease border-color on `--duration-fast`. Tests: scenes/{waking,mind}/*.css.test.
 - `fix(mind): the field holds two lines for the sentence that changes under the pointer, so the tiles stay put.` README 3.1, ADR 0087 and 0089 (scan-sweep, ui-perfectionist): `.mind__line` reserved one line while the surface's twin reserves two; at the 900 px window the Look sentence wraps on hover and slid the grid down 25 px; the field now holds 3em. Tests: scenes/mind/mind.css.test.
 - `fix(mind): the Look tile and its eyebrow say "system theme", not a bare "system".` README 3.1 and 3.5, ADR 0087 (scan-sweep, copy-auditor): the Look badge and the level's eyebrow read SYSTEM, LIGHT or DARK with nothing saying what the word was about; they now read "system theme", "light theme", "dark theme". Tests: scenes/mind/view.test.
 - `fix(mind): an instrument's badge carries the hue of its standing, so "needs you" no longer looks like "set".` README 3.1 and 3.5, ADR 0087 (scan-sweep, visual-craft): every badge on the field was a neutral dot (which StatusDot defines as no state at all); Engine, Brain and Microphone now draw success, warning, pending or neutral from the Setup module's own standing. Tests: scenes/mind/view.test.

@@ -167,6 +167,10 @@
   color: var(--foreground);
   border: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--recessed) 70%, transparent);
+  transition: border-color var(--duration-fast);
+}
+.mind__input:hover {
+  border-color: var(--foreground);
 }
 .mind__path {
   font-family: var(--font-mono);

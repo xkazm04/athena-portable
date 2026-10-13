@@ -20,3 +20,8 @@ test("the eyebrow is set in the primary, which clears 4.5:1 in both themes, not 
 test("the field's line, which changes on every hover, holds two lines like the surface's", () => {
   expect(rule(".mind--field .mind__line")).toMatch(/min-height:\s*3em/);
 });
+
+test("the text field eases its hover like the surface's ask field", () => {
+  expect(rule(".mind__input")).toMatch(/transition:[^;]*var\(--duration-fast\)/);
+  expect(css.includes(".mind__input:hover")).toBe(true);
+});
