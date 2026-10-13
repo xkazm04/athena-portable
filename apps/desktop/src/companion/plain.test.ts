@@ -65,3 +65,11 @@ test("the reason code comes from the daemon's refusal, or is made up for one tha
   expect(reasonOf(new ApiError(500, "unknown", "boom"))).toBe("unknown");
   expect(reasonOf(new TypeError("Failed to fetch"))).toBe("unreachable");
 });
+
+test("a switched-off app tells the person where the switch is now, in words Main still uses", () => {
+  for (const reason of ["disabled_origin", "origin_disabled"]) {
+    const sentence = plainFailure(reason, "Claude Code");
+    expect(sentence).toContain("Switch it back on under Apps in Main");
+    expect(sentence).not.toContain("Act here");
+  }
+});

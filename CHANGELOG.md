@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(companion): a switched-off app is told to be switched back on under Apps in Main, not at a button that is gone.` README 3.5, ADR 0026 (scan-sweep, copy-auditor): the stopped-turn sentence said "Press Act here again in Main", a control no surface has any more; it names the Apps depth, where the on/off switch is.
 - `fix(companion): each Enable or Disable button on Origins names its app, and its state is said once.` README 3.5, ADR 0026 (scan-sweep, accessibility-checker): every row's button read just Disable or Enable and also carried `aria-pressed` beside a label that flips with the state; the name is "Disable <host>" now and `aria-pressed` is gone.
 - `fix(chores): the hero's words hold two lines for the sentence and the hint that change under the pointer.` README 3.5, ADR 0087 and 0089 (scan-sweep, ui-perfectionist): the words column is centred in the hero and its line and hint changed height as marks were crossed, moving the title; `.ch-words .ch-line` holds 3em and `.ch-hint` 2.9em. `chores.css.test.ts` pins it.
 - `fix(companion): the Record and Origins tabs are named regions, as Talk's conversation is.` README 3.5, ADR 0026 (scan-sweep, accessibility-checker): both bodies were focusable divs with no role and no name; they are `role="region"` with `aria-label` Record and Origins.

@@ -75,7 +75,7 @@ export function plainFailure(reason: string, engine: string): string {
       return "Athena has not been shown what this app can do. Reload the app and ask again.";
     case "disabled_origin":
     case "origin_disabled":
-      return "Athena was told not to act on this app. Press Act here again in Main to ask again.";
+      return "Athena was told not to act on this app. Switch it back on under Apps in Main, then ask again.";
     case "not_ready":
     case "unreachable":
       return "Athena is still starting. Try again in a moment.";
