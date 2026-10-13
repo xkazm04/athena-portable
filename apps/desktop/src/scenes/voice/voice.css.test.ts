@@ -51,3 +51,10 @@ test("the take card pads like its twin, the voice card", () => {
   expect(pad(".vsc-take")).toBe("14px 16px");
   expect(pad(".vsc-take")).toBe(pad(".vsc-voice"));
 });
+
+test("no selector is written twice at the same level", () => {
+  const heads = Array.from(css.matchAll(/(?:\}|\*\/)\s*\n(\.[^\r\n{,]*) \{\r?$/gm), (m) => m[1]!);
+  const seen = new Set<string>();
+  const again = heads.filter((h) => (seen.has(h) ? true : (seen.add(h), false)));
+  expect(again).toEqual([]);
+});

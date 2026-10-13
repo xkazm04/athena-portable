@@ -292,8 +292,6 @@ li[data-status="done"] > .vsc-step > span:first-child {
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--recessed) 70%, transparent);
   transition: border-color var(--duration-fast);
-}
-.vsc-wave {
   position: relative;
   overflow: hidden;
 }
@@ -572,8 +570,6 @@ li[data-status="done"] > .vsc-step > span:first-child {
   .vsc--studio {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
-  }
-  .vsc--studio {
     overflow: auto;
     grid-template-rows: none;
   }
