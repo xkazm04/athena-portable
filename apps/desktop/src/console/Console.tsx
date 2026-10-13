@@ -1,21 +1,40 @@
 /**
- * The console — README section 3.1 and 3.5, ADR 0026 and 0087.
+ * The console — README section 3.1 and 3.5, ADR 0026, 0087 and 0090.
  *
  * The stage, wired to the stores: where the window is (`depth/store`), how she is (`athena`), and
  * what the settings say (first act or surface, Calm). It starts nothing; `root.tsx` does. It is
- * the one place that turns the stage's callbacks into depth moves and her mirror into a presence.
+ * the one place that turns the stage's callbacks into depth moves and her mirror into a presence,
+ * and that gathers the crumb names the scenes know and the band the Apps scene owns.
  */
 import { useCallback } from "react";
 
 import { poseOf, POSE_WORDS } from "@/bell/pose";
 import WindowControls from "@/components/WindowControls";
-import { resolveMotion, systemPrefersReduced } from "@/lib/motion";
+import { shapeOf, type Labeller, type Path } from "@/depth/model";
 import { useDepth } from "@/depth/store";
+import { resolveMotion, systemPrefersReduced } from "@/lib/motion";
 import Stage from "@/stage/Stage";
 import { pillText, useAthena } from "@/stores/athena";
 import { useSettings } from "@/stores/settings";
 
-import { sceneFor } from "./scenes";
+import { DEPTH_SCENES, sceneFor } from "./scenes";
+
+const SCENES = Object.values(DEPTH_SCENES);
+
+/**
+ * Every scene's crumb names, in one labeller. The hooks are called for every scene on every render
+ * and in one fixed order, which is what keeps them legal however the depth changes.
+ */
+function useLabeller(): Labeller {
+  const labellers = SCENES.map((s) => s.useLabeller?.());
+  return (path: Path) => {
+    for (const l of labellers) {
+      const name = l?.(path);
+      if (name !== undefined) return name;
+    }
+    return undefined;
+  };
+}
 
 export default function Console() {
   const path = useDepth((s) => s.path);
@@ -31,18 +50,22 @@ export default function Console() {
   const hydrated = useSettings((s) => s.hydrated);
   const onboarded = useSettings((s) => s.onboarded);
   const motion = useSettings((s) => s.motion);
+  const label = useLabeller();
 
   const pose = poseOf(athena);
   const render = useCallback(
-    (p: Parameters<typeof sceneFor>[0]) => sceneFor(p, { hydrated, onboarded }),
-    [hydrated, onboarded],
+    (p: Path) => sceneFor(p, { hydrated, onboarded, go }),
+    [hydrated, onboarded, go],
   );
+  const Band = shapeOf(path) === "page" && path.root !== null ? DEPTH_SCENES[path.root]?.Band : undefined;
 
   return (
     <Stage
       state={{ path, from, move, seq }}
       calm={resolveMotion(motion, systemPrefersReduced()) === "calm"}
       renderScene={render}
+      label={label}
+      band={Band ? <Band /> : undefined}
       presence={{
         pose,
         text: athena.cards > 0 || pose !== "resting" ? pillText(athena) : POSE_WORDS.resting,
