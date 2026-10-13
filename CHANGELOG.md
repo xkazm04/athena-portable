@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(companion): the Talk tab's count badge centres its figure at the default text size.` README 3.1, ADR 0026 (scan-sweep, ui-perfectionist): `.pip-n` is 18px high with a line of `calc(18px + step)`, 20px by default, so the figure sat 1px low; the line is the badge's height, as the seal's `.aw-badge` already has it.
 - `fix(styles): the close confirm's Close and Keep buttons ease their hover wash.` README 3.1, ADR 0089 (scan-sweep, ui-perfectionist): the one place a quit is decided was the last chrome control whose hover snapped; `background` now eases on `--duration-fast` / `--ease-fast`. Tests: styles/motion-tokens.test.
 - `fix(chores): the depth's 14px gaps and pads are the density tokens, as the engine section's already are.` README 3.5, ADR 0087 (scan-sweep, ui-perfectionist): the Chores sheet carried a 14px between the 12 and 16 of the density scale in its grids, tiles, glance, portals and quote; they read `--density-gap`, `--density-pad` and `--density-pad-sm` now. `chores.css.test.ts` forbids a 14px in a padding, gap or margin.
 - `fix(voice): a take, the voice card, the wave frame and its bars ease the state that recolours them.` README 3.1, ADR 0087 and 0089 (scan-sweep, ui-perfectionist): picking a listener, playing her voice and starting a mic take swapped borders, a ring and bar colours in one frame; they now ease on `--duration-fast` and the picked ring fades by opacity.

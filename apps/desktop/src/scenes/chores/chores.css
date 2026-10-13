@@ -138,7 +138,7 @@ h4.ch-title {
 }
 .ch-quote {
   margin: 0;
-  padding: 4px 0 4px 14px;
+  padding: 4px 0 4px var(--density-pad-sm);
   border-left: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
 }
 .ch-quote p {
@@ -350,14 +350,14 @@ h4.ch-title {
 .ch-numbers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 14px;
+  gap: var(--density-gap);
   margin: 0;
 }
 .ch-number {
   display: grid;
   gap: 2px;
   align-content: start;
-  padding: 14px 16px;
+  padding: var(--density-pad-sm) var(--density-pad);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--card-bg) 86%, transparent);
@@ -381,12 +381,12 @@ h4.ch-title {
 /* the chores */
 .ch-roll {
   display: grid;
-  gap: 14px;
+  gap: var(--density-gap);
 }
 .ch-roll__head {
   display: flex;
   align-items: baseline;
-  gap: 14px;
+  gap: var(--density-gap);
   flex-wrap: wrap;
 }
 .ch-roll__title {
@@ -405,7 +405,7 @@ h4.ch-title {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
-  gap: 14px;
+  gap: var(--density-gap);
 }
 /* `content-visibility: auto` paints inside the item's box, so the tile's 2px lift and its focus
  * ring (2px line, 2px offset) would be cut off at the card's own edge. The item carries 4px of
@@ -425,7 +425,7 @@ h4.ch-title {
   align-content: start;
   justify-items: start;
   text-align: left;
-  padding: 12px 14px 14px;
+  padding: var(--density-pad-sm);
   font: inherit;
   color: var(--foreground);
   cursor: pointer;
@@ -536,7 +536,7 @@ h4.ch-title {
 .ch-chore__art {
   display: grid;
   gap: 10px;
-  padding: 14px;
+  padding: var(--density-pad-sm);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--recessed) 60%, transparent);
@@ -549,7 +549,7 @@ h4.ch-title {
 }
 .ch-chore__intro {
   display: grid;
-  gap: 14px;
+  gap: var(--density-gap);
   align-content: start;
 }
 .ch-promise {
@@ -561,7 +561,7 @@ h4.ch-title {
 .ch-worth {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 14px;
+  gap: 8px var(--density-gap);
   align-items: baseline;
 }
 .ch-worth__n {
@@ -592,7 +592,7 @@ h4.ch-title {
   text-align: left;
   font: inherit;
   color: var(--foreground);
-  padding: 14px 16px;
+  padding: var(--density-pad-sm) var(--density-pad);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--card-bg) 90%, transparent);
@@ -776,7 +776,7 @@ button.ch-glance:hover {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
-  padding: 10px 14px;
+  padding: var(--density-pad-sm);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--card-bg) 88%, transparent);
@@ -825,7 +825,7 @@ button.ch-glance:hover {
   flex-wrap: wrap;
   gap: 8px 22px;
   align-items: center;
-  padding: 10px 14px;
+  padding: var(--density-pad-sm);
   border-radius: var(--radius-card);
   border: 1px solid var(--line);
 }
@@ -1018,7 +1018,7 @@ button.ch-glance:hover {
   display: grid;
   gap: 4px;
   padding: 8px 16px 6px 0;
-  margin-right: 14px;
+  margin-right: var(--density-pad-sm);
   border-top: 3px solid var(--line-strong);
 }
 .ch-rail__visit[data-here] {
@@ -1132,7 +1132,7 @@ button.ch-glance:hover {
 }
 .ch-turn {
   display: grid;
-  gap: 14px;
+  gap: var(--density-gap);
   padding: 20px 24px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-card);
@@ -1204,7 +1204,7 @@ button.ch-glance:hover {
 
 .ch-gone {
   display: grid;
-  gap: 14px;
+  gap: var(--density-gap);
   align-content: center;
   justify-items: start;
   max-width: 40rem;

@@ -52,3 +52,10 @@ test("the line that says what a press did is reserved, so the words arriving mov
   expect(rule(".ch-said")).toMatch(/min-height:\s*1\.45em/);
   expect(rule(".ch-actions .ch-said")).toMatch(/flex:\s*1 0 100%/);
 });
+
+test("gaps and pads are the density tokens, not 14px one-offs between the 12 and the 16", () => {
+  expect(css).not.toMatch(/(padding|gap|margin)[a-z-]*:[^;]*\b14px/);
+  expect(rule(".ch-grid")).toMatch(/gap:\s*var\(--density-gap\)/);
+  expect(rule(".ch-numbers")).toMatch(/gap:\s*var\(--density-gap\)/);
+  expect(rule(".ch-card-tile")).toMatch(/padding:\s*var\(--density-pad-sm\)/);
+});
