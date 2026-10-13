@@ -50,6 +50,17 @@ describe("the chosen card", () => {
   });
 });
 
+describe("spacing", () => {
+  it("is the app's density tokens, or the 8px inner gap, never a one-off pad", () => {
+    const values = [...css.matchAll(/(?:^|[\s;{])(?:gap|padding)\s*:\s*([^;]+);/g)].map((m) => m[1]!.trim());
+    expect(values.length).toBeGreaterThan(4);
+    for (const v of values) {
+      const ok = v === "0" || v === "8px" || /^var\(--density-(gap|pad|pad-sm)\)( var\(--density-(gap|pad|pad-sm)\))?$/.test(v);
+      expect(ok, v).toBe(true);
+    }
+  });
+});
+
 describe("the restart notice", () => {
   it("fades in on the shared depth clock, opacity only", () => {
     expect(css).toMatch(/\.engines__notice\s*\{[^}]*animation:\s*engines-notice-in var\(--dur-depth\) var\(--ease-depth\)/);

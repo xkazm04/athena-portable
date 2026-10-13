@@ -1,7 +1,7 @@
 /* Choosing the engine — README section 3.5, ADR 0087. Tokens only; no text under 12px. */
 .engines {
   display: grid;
-  gap: 12px;
+  gap: var(--density-pad-sm);
 }
 .engines__list {
   list-style: none;
@@ -9,14 +9,14 @@
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
+  gap: var(--density-pad-sm);
 }
 .engines__card {
   display: grid;
   gap: 8px;
   align-content: start;
   position: relative;
-  padding: 14px 16px;
+  padding: var(--density-pad-sm) var(--density-pad);
   border-radius: var(--radius-card);
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--card-bg) 80%, transparent);
@@ -68,7 +68,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--density-pad-sm);
 }
 .engines__fact {
   display: inline-flex;
@@ -82,8 +82,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: var(--density-pad-sm);
+  padding: var(--density-pad-sm);
   border-radius: var(--radius-card);
   border: 1px solid var(--status-warning);
 }
