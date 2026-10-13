@@ -1,32 +1,10 @@
-/* ADR 0028 (Athena's voice is set up in a studio), README section 3.1 — the Voice module.
+/* ADR 0028 (Athena's voice is set up in a studio), README section 3.1 — the pieces the Voice scene
+ * borrows from the module: the key chip, the install bar, the waveform, the hold button, the tag.
  *
- * The studio is Personas' "Table" layout re-seated on this app's tokens: a path on the left, the
- * conversation in the centre, her card on the right, all three in one grid whose side columns
- * collapse under ~860px of *container* width — the module lives in a window, not a viewport, so
- * the breakpoints are container queries. Every colour is a token or a `color-mix` over one, so
- * both themes repaint it; every gap is a density variable or the 8px rhythm `.stack` uses.
- *
- * Motion is three things only — the card rising 8px into place, the 80ms waveform bars, the orb's
- * glow — and each one is dropped under `prefers-reduced-motion`. */
-
-.vs {
-  --vs-line: var(--border-subtle);
-  --vs-line-2: var(--border-default);
-  --vs-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  container-type: inline-size;
-  position: relative;
-  height: 100%;
-  min-height: 32rem;
-  overflow: hidden;
-  border: 1px solid var(--vs-line);
-  border-radius: var(--radius-card);
-  margin-top: var(--density-pad);
-  background:
-    radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--role-agent) 8%, transparent), transparent 60%),
-    radial-gradient(900px 500px at 50% 110%, color-mix(in srgb, var(--primary) 6%, transparent), transparent 60%),
-    var(--background);
-  outline: none;
-}
+ * The scene (`scenes/voice/voice.css`) lays them out and defines the line variables they read.
+ * Every colour is a token or a `color-mix` over one, so both themes repaint it. The selectors here
+ * are exactly the classes the module's components write; `voice.css.test.ts` fails on one that no
+ * component draws. */
 
 .vs-push {
   margin-left: auto;
@@ -36,16 +14,10 @@
   color: var(--status-error);
 }
 
-.vs-path,
-.vs-links,
-.vs-style__lines,
-.vs-substeps {
+.vs-links {
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.vs-links {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -59,115 +31,12 @@
   overflow-wrap: anywhere;
 }
 
-.vs-link {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--muted-foreground);
-  cursor: pointer;
-  font: inherit;
-}
-
-.vs-link:hover {
-  color: var(--foreground);
-}
-
-.vs-orb {
-  --lvl: 0;
-  --progress: 0;
-  position: relative;
-  width: 88px;
-  height: 88px;
-  flex: none;
-  border-radius: 999px;
-}
-
-.vs-orb__ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: conic-gradient(var(--primary) calc(var(--progress) * 1turn), var(--vs-line-2) 0);
-  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 2px));
-}
-
-.vs-orb__glow {
-  position: absolute;
-  inset: 6px;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle at 38% 30%,
-    color-mix(in srgb, var(--role-agent) 55%, transparent),
-    color-mix(in srgb, var(--accent) 22%, transparent) 55%,
-    transparent 76%
-  );
-  box-shadow: 0 0 calc(12px + var(--lvl) * 48px) calc(var(--lvl) * 6px)
-    color-mix(in srgb, var(--accent) 45%, transparent);
-  transform: scale(calc(1 + var(--lvl) * 0.06));
-  transition:
-    box-shadow 80ms linear,
-    transform 80ms linear;
-}
-
-.vs-orb__face {
-  position: absolute;
-  inset: 18px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 40% 35%, var(--card-raised), var(--card-bg));
-  box-shadow: inset 0 0 0 1px var(--vs-line-2);
-}
-
-@keyframes vs-rise {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 .vs-tag {
   color: var(--primary);
 }
 
 .vs-tag[data-cloud="true"] {
   color: var(--status-warning);
-}
-
-.vs-take {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px;
-  border: 1px solid var(--vs-line-2);
-  border-radius: var(--radius-card);
-  background: var(--recessed);
-  transition:
-    border-color var(--duration-fast),
-    transform var(--duration-fast) var(--vs-ease);
-}
-
-.vs-take[data-playing="true"] {
-  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
-}
-
-.vs-take[data-picked="true"] {
-  border-color: var(--primary);
-  transform: translateY(-2px);
-}
-
-.vs-take[data-muted="true"] {
-  opacity: 0.7;
-}
-
-.vs-take__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
 }
 
 .vs-kbd {
@@ -291,77 +160,7 @@
   }
 }
 
-button.vs-style__line {
-  cursor: pointer;
-}
-
-button.vs-style__line:hover {
-  background: var(--hover-wash);
-}
-
-button.vs-style__line:hover .vs-style__change,
-button.vs-style__line:focus-visible .vs-style__change {
-  opacity: 1;
-}
-
-/* -- settings ----------------------------------------------------------------------------------- */
-
-.vs-scope {
-  container-type: inline-size;
-}
-
-/* -- narrow containers -------------------------------------------------------------------------- */
-
-@container (max-width: 980px) {
-  .vs-frame {
-    grid-template-columns: 184px minmax(0, 1fr) 232px;
-  }
-
-  .vs-thread,
-  .vs-dock,
-  .vs-presence {
-    padding-right: var(--density-pad);
-    padding-left: var(--density-pad);
-  }
-}
-
-@container (max-width: 860px) {
-  .vs-frame {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .vs-rail {
-    display: none;
-  }
-
-  .vs-hide-narrow {
-    display: none;
-  }
-
-  .vs-takes {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .vs-settings {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .vs-row {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-
-  .vs-take[data-picked="true"] {
-    transform: none;
-  }
-
-  .vs-orb__glow {
-    transform: none;
-    transition: none;
-  }
-
   .vs-progress[data-indeterminate="true"] > span {
     animation: none;
     opacity: 0.7;

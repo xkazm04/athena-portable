@@ -1,8 +1,8 @@
 /**
- * ADR 0028 (Athena's voice is set up in a studio), README section 3.1 — the three live meters.
+ * ADR 0028 (Athena's voice is set up in a studio), README section 3.1 — the live meters.
  *
- * Her waveform, her orb's glow and the microphone's level all move at the audio's rate, and none of
- * them is React state: each reads a meter function from the view-model on its own animation frame
+ * Her waveform and the microphone's level both move at the audio's rate, and neither
+ * is React state: each reads a meter function from the view-model on its own animation frame
  * and writes a style property through a ref. A fixture's meters return silence, and
  * `renderToStaticMarkup` never runs an effect, so the preview harness and the registry test see
  * the resting shape and nothing else.
@@ -92,33 +92,6 @@ export function Waveform({
       {Array.from({ length: bars }, (_, i) => (
         <span key={i} data-bar="" style={{ height: MIN_PX }} />
       ))}
-    </div>
-  );
-}
-
-/**
- * Her orb: a conic ring that is real install progress (`ring`, 0..1, a prop because it moves at
- * the poll's 250 ms, not the audio's rate) and a glow that breathes with her playback level,
- * written to `--lvl` per frame while she speaks.
- */
-export function Orb({ ring, speaking, level }: { ring: number; speaking: boolean; level: () => number }) {
-  const root = useRef<HTMLDivElement | null>(null);
-  useFrame(
-    speaking,
-    () => root.current?.style.setProperty("--lvl", level().toFixed(3)),
-    () => root.current?.style.setProperty("--lvl", "0"),
-  );
-  return (
-    <div
-      ref={root}
-      className="vs-orb"
-      data-speaking={speaking ? "true" : "false"}
-      style={{ ["--progress" as string]: Math.max(0, Math.min(1, ring)) }}
-      aria-hidden="true"
-    >
-      <span className="vs-orb__ring" />
-      <span className="vs-orb__glow" />
-      <span className="vs-orb__face" />
     </div>
   );
 }

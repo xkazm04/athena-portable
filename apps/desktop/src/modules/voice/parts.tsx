@@ -2,15 +2,15 @@
  * ADR 0028 (Athena's voice is set up in a studio), README section 3.1 — the pieces both moods share.
  *
  * The studio and the settings page say the same facts in two layouts, so the controls that carry a
- * fact — an install's progress, her voice as a tile you can play, the hold-to-talk button — are
+ * fact — an install's progress, the hold-to-talk button — are
  * written once here and placed by each. All of them are pure functions of what they are handed.
  */
 import Button from "@/components/Button";
 import StatusDot, { type Tone } from "@/components/StatusDot";
-import type { VoiceEngine, VoiceOption } from "@/lib/voice-setup";
+import type { VoiceEngine } from "@/lib/voice-setup";
 
-import { MANUAL_LINKS, voiceMeta, type InstallView, type PreviewState, type VoiceMeters } from "./model";
-import { MicMeter, Waveform } from "./waveform";
+import { MANUAL_LINKS, type InstallView, type VoiceMeters } from "./model";
+import { MicMeter } from "./waveform";
 
 export function Kbd({ children }: { children: string }) {
   return <kbd className="vs-kbd">{children}</kbd>;
@@ -127,58 +127,6 @@ export function InstallBlock({
         {sizeMb ? <span className="typo-caption">about {sizeMb} MB, once</span> : null}
       </span>
       {refusal ? <p className="typo-caption vs-error">{refusal}</p> : null}
-    </div>
-  );
-}
-
-/** Her voice as a take: the name, what it is, Play/Stop and the live waveform. */
-export function VoiceTile({
-  voice,
-  preview,
-  picked,
-  disabledReason,
-  meters,
-  onToggle,
-  kbd = true,
-}: {
-  voice: VoiceOption;
-  preview: PreviewState;
-  picked: boolean;
-  disabledReason?: string;
-  meters: VoiceMeters;
-  onToggle: () => void;
-  /** Show the Space chip: the studio's keyboard plays it. */
-  kbd?: boolean;
-}) {
-  const mine = preview.voice === voice.id;
-  const playing = mine && preview.phase === "playing";
-  const synth = mine && preview.phase === "synth";
-  return (
-    <div className="vs-take" data-playing={playing ? "true" : "false"} data-picked={picked ? "true" : "false"}>
-      <div className="vs-take__head">
-        <span className="typo-heading">{voice.name}</span>
-        {picked ? <span className="typo-label vs-tag">Her voice</span> : null}
-        <span className="typo-caption vs-push">{voiceMeta(voice)}</span>
-      </div>
-      {voice.blurb ? <p className="typo-caption">{voice.blurb}</p> : null}
-      <div className="row">
-        <Button
-          size="sm"
-          variant={playing ? "primary" : "secondary"}
-          disabledReason={disabledReason}
-          aria-pressed={playing}
-          onClick={onToggle}
-        >
-          {playing ? "Stop" : synth ? "Getting ready..." : "Play"}
-        </Button>
-        {kbd ? <Kbd>Space</Kbd> : null}
-        <Waveform active={playing} read={meters.spectrum} />
-      </div>
-      {mine && preview.phase === "error" && preview.error ? (
-        <p className="typo-caption vs-error" role="alert">
-          {preview.error}
-        </p>
-      ) : null}
     </div>
   );
 }

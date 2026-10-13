@@ -96,7 +96,7 @@ export default function StudioAct({ model }: { model: VoiceModel }) {
   const kokoroDone = studio.done.includes("install") || model.kokoro?.state === "ready";
 
   return (
-    <div className="vsc vsc--studio vs-scope" data-step={step} ref={root}>
+    <div className="vsc vsc--studio" data-step={step} ref={root}>
       <Rail model={model} />
 
       <main className="vsc-act">

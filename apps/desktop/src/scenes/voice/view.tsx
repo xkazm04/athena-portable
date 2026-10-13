@@ -62,7 +62,7 @@ export default function VoiceScene({ model: raw, path, go }: VoiceSceneProps) {
 
   if (path.item !== "studio" && path.item !== "settings") {
     return (
-      <div className="vsc vsc--gate vs-scope">
+      <div className="vsc vsc--gate">
         <header className="vsc-bar">
           <div>
             <p className="vsc-eyebrow">Voice</p>
@@ -81,7 +81,7 @@ export default function VoiceScene({ model: raw, path, go }: VoiceSceneProps) {
 
   if (gate !== null) {
     return (
-      <div className="vsc vsc--gate vs-scope">
+      <div className="vsc vsc--gate">
         <header className="vsc-bar">
           <div>
             <p className="vsc-eyebrow">Voice · {path.item === "studio" ? "Studio" : "Settings"}</p>
@@ -164,7 +164,7 @@ function Field({ model, gate, go }: { model: VoiceModel; gate: ReturnType<typeof
   const now = standing(model, gate);
   const lean = focused === null ? 0 : focused === "studio" ? -0.6 : 0.6;
   return (
-    <div className="vsc vsc--field vs-scope" data-standing={gate ?? (model.available ? "ready" : "off")}>
+    <div className="vsc vsc--field" data-standing={gate ?? (model.available ? "ready" : "off")}>
       <div className="vsc-field__bell">
         <Bell pose={poseOf(model)} reach={[]} lean={lean} size={400} label="Athena" />
       </div>

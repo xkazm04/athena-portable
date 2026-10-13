@@ -34,7 +34,7 @@ const STT_HINT: Record<SttEngineId, string> = {
 export default function SettingsAct({ model }: { model: VoiceModel }) {
   const { actions } = model;
   return (
-    <div className="vsc vsc--settings vs-scope">
+    <div className="vsc vsc--settings">
       <header className="vsc-bar">
         <div>
           <p className="vsc-eyebrow">Voice · Settings</p>
