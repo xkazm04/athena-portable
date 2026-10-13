@@ -25,6 +25,16 @@ describe("the light shafts under a reduced-motion machine", () => {
   });
 });
 
+describe("the dock", () => {
+  it("arrives on the depth clock, by transform and opacity only", () => {
+    expect(decls(".stage__dock")).toMatch(/animation:\s*dock-in var\(--dur-depth\) var\(--ease-depth\)/);
+    const frames = /@keyframes dock-in\s*\{([\s\S]*?\}\s*)\}/.exec(css);
+    expect(frames).not.toBeNull();
+    const props = [...frames![1]!.matchAll(/([a-z-]+):/g)].map((m) => m[1]);
+    expect([...new Set(props)].sort()).toEqual(["opacity", "transform"]);
+  });
+});
+
 describe("the gauge's ticks", () => {
   it("light by opacity on the mark's own clock, not by a background swap that jumps", () => {
     expect(decls(".stage__rail i::after")).toMatch(/transition:\s*opacity var\(--dur-depth\) var\(--ease-depth\)/);
