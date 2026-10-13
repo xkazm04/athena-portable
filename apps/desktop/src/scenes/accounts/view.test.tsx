@@ -358,6 +358,12 @@ describe("the scene's own rules", () => {
     expect(css).not.toMatch(/filter\s*:|backdrop-filter|animation:[^;]*(width|height|top|left)/);
     expect(source).not.toMatch(/requestAnimationFrame|setInterval/);
   });
+  it("eases the connect rail's steps as they pass, with no rule that styles nothing", () => {
+    const step = css.slice(css.indexOf(".stages__step {"), css.indexOf("}", css.indexOf(".stages__step {")));
+    expect(step).toMatch(/transition:[^;]*border-color var\(--duration-fast\)/);
+    expect(css).not.toMatch(/content:\s*none/);
+    expect(css).not.toMatch(/transition:\s*all/);
+  });
   it("holds no store, no fetch and no Tauri: a view is a function of its model", () => {
     expect(source).not.toMatch(/@\/stores|@tauri-apps|fetch\(/);
   });

@@ -426,9 +426,7 @@
   border-radius: 999px;
   color: var(--muted-foreground);
   border: 1px solid var(--line);
-}
-.stages__step + .stages__step::before {
-  content: none;
+  transition: color var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
 }
 .stages__n {
   display: inline-grid;
@@ -438,6 +436,7 @@
   border-radius: 50%;
   font-size: 0.75rem;
   border: 1px solid var(--line-strong);
+  transition: color var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
 }
 .stages__step[data-state="now"] {
   color: var(--foreground);
