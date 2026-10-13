@@ -55,6 +55,11 @@ export interface ConnectorRow {
    * later probe overwrites it on the record. Information, never an error.
    */
   healthNote: string;
+  /**
+   * How long ago the daemon last probed a connected connector ("3 min ago"), or "" when it never
+   * has or the connector is not connected. Derived from the record at render, never stored.
+   */
+  probedAge: string;
   /** Why the writes switch and the allow-list cannot be changed now, or "" when they can. */
   disabledReason: string;
   reads: readonly ConnectorToolView[];
@@ -212,6 +217,7 @@ export function rowOf(
     sealAvailable: view.seal_available,
     connected,
     healthNote: connected && c.health !== "broken" ? c.health_detail : "",
+    probedAge: connected && c.health_at ? ageOf(c.health_at, now) : "",
     disabledReason: connected
       ? ""
       : `Connect ${view.label} first; the switches apply to the account you connect.`,

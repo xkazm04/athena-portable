@@ -226,3 +226,16 @@ test("the switches carry a plain reason while not connected, and none once conne
   expect(gone.disabledReason).toBe("Connect Gmail first; the switches apply to the account you connect.");
   expect(reauth.disabledReason).toBe("Connect Gmail first; the switches apply to the account you connect.");
 });
+
+// -- the last probe's age, for the Accounts depth ------------------------------------------------------
+
+test("a connected row says how long ago it was last probed, and a row that is not connected says nothing", () => {
+  const [probed, never, gone] = rowsUnder("", [
+    view({}, { health: "healthy", health_at: "2026-09-12T11:57:00Z" }),
+    view({}, { health: "unknown", health_at: "" }),
+    view({ id: "gmail", label: "Gmail" }, { status: "disconnected", health_at: "2026-09-12T11:57:00Z" }),
+  ]);
+  expect(probed.probedAge).toBe("3 min ago");
+  expect(never.probedAge).toBe("");
+  expect(gone.probedAge).toBe("");
+});

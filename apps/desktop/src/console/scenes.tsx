@@ -15,6 +15,7 @@ import { createElement, type ReactNode } from "react";
 
 import { ROOT_MODULE, type Path, type Root } from "@/depth/model";
 import { moduleFor } from "@/modules/registry";
+import { entry as accounts } from "@/scenes/accounts";
 import { entry as apps } from "@/scenes/apps";
 import { entry as surface } from "@/scenes/surface";
 import type { DepthScene } from "@/scenes/types";
@@ -23,6 +24,7 @@ import { entry as waking } from "@/scenes/waking";
 /** The depths with a scene of their own. Each phase adds one. */
 export const DEPTH_SCENES: Readonly<Partial<Record<Root, DepthScene>>> = {
   apps,
+  accounts,
 };
 
 export const PORTED: ReadonlySet<Root> = new Set(Object.keys(DEPTH_SCENES) as Root[]);

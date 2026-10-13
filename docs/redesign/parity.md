@@ -52,16 +52,16 @@ Status: `todo` until its phase lands, then `proved: <test or hand check>`.
 
 | Capability | Today | Depth | Status |
 |---|---|---|---|
-| Standing: not connected, connected, needs re-auth, off, broken, unconfirmed | `modules/connectors/model.ts` | D1 accounts | todo |
-| Records notice: alert, verbatim, not dismissable, rows read unconfirmed while it stands | `view.tsx` L127 | D1 accounts | todo |
-| Connect by token (Enter sends); by OAuth (client id and secret, consent link, phases, failure) | `view.tsx` | D2 account | todo |
-| Disconnect with two presses; Keep it | `view.tsx` L541 | D2 account | todo |
-| Credential seal sentence (file rung stated as not encrypted); health; Check now | `view.tsx` | D2 account | todo |
-| Enable on or off; writes on or off with the approval hint; disabled reason | `view.tsx` | D2 account | todo |
-| Tool lists: reads, and writes marked GATED | `isWrite` | D2 account | todo |
-| Allow-list editor (draft, Escape cancels, add, remove) | `view.tsx` | D3 allow-list | todo |
-| Per-row busy and error ("refused") | `view.tsx` | D2 account | todo |
-| Unreadable, unreachable, waiting for the daemon | `problem`, `ready` | D1 accounts | todo |
+| Standing: not connected, connected, needs re-auth, off, broken, unconfirmed | `modules/connectors/model.ts` | D1 accounts | proved: scenes/accounts/view.test (each standing has its word and its own shape, `StandingMark`; shape by data-standing, never colour alone) |
+| Records notice: alert, verbatim, not dismissable, rows read unconfirmed while it stands | `view.tsx` L127 | D1 accounts | proved: scenes/accounts/view.test (banner above the field, verbatim, no button; no row reads connected) and interact.test (no control inside it, survives presses); it also stands at the account and the allow-list |
+| Connect by token (Enter sends); by OAuth (client id and secret, consent link, phases, failure) | `view.tsx` | D2 account | proved: interact.test (Enter sends the trimmed token once and clears it; the pair is sent as client_id and client_secret and the secret cleared) and view.test (waiting for consent, exchanging the code, the consent link, "The consent did not complete." with the reason). changed: the form is three stages (get it, give it, consent) on a rail, and the guide is one tap away under "How to connect" |
+| Disconnect with two presses; Keep it | `view.tsx` L541 | D2 account | proved: interact.test (first press asks and calls nothing, Keep it calls nothing, Yes, disconnect calls once; also on needs-reauth) |
+| Credential seal sentence (file rung stated as not encrypted); health; Check now | `view.tsx` | D2 account | proved: view.test (each rung's sentence verbatim, "it is not encrypted", never "sealed", the health note as a note and not an error, Check now) and interact.test (Check now probes that account). changed: the last probe's age ("Last checked 2 h ago.") is now shown for a connected account (`probedAge` in the model, tested in model.test) |
+| Enable on or off; writes on or off with the approval hint; disabled reason | `view.tsx` | D2 account | proved: view.test (switches named for the account, the hint "Writes run after your approval, to the list below.", locked with the reason until connected) and interact.test (each switch calls its own action; the locked one cannot be pressed) |
+| Tool lists: reads, and writes marked GATED | `isWrite` | D2 account | proved: view.test (every write carries GATED with a lock shape, no read does) |
+| Allow-list editor (draft, Escape cancels, add, remove) | `view.tsx` | D3 allow-list | proved: interact.test (typing saves nothing, Add and Enter save the whole list with the entry on the end, commas add several, duplicates are not doubled, Escape drops the draft and a second Escape lets the field go, Remove saves without the entry, inert while not connected). changed: one entry per row with its own Remove and a single-line draft with Add, in place of the textarea with Save the list and Discard; the draft rule is the same: nothing is on the list until Add |
+| Per-row busy and error ("refused") | `view.tsx` | D2 account | proved: view.test ("saving..." and "connecting..." on the row and its switches disabled; "<label> refused." with the daemon's words on the account refused and on no other) |
+| Unreadable, unreachable, waiting for the daemon | `problem`, `ready` | D1 accounts | proved: view.test (daemon offline note, the list could not be read with who refused it, never an empty field; an unknown account says "No such account") |
 
 ## Setup (first act, then Mind)
 

@@ -22,7 +22,7 @@ const GMAIL_GUIDE =
 const NOTION_GUIDE =
   "Notion connects with an internal integration token you mint yourself and paste once.\n\n1. Open https://www.notion.so/my-integrations and create a new internal integration in your workspace.\n2. Copy the internal integration secret and paste it here. It is stored on this machine and never shown again.\n3. In Notion, open each page Athena may touch and add the integration under Connections.\n\nWriting stays off until you turn writes on and list the page ids Athena may write to.";
 
-function connection(id: string, over: Partial<ConnectorView["connection"]> = {}): ConnectorView["connection"] {
+export function connection(id: string, over: Partial<ConnectorView["connection"]> = {}): ConnectorView["connection"] {
   return {
     id,
     status: "disconnected",
@@ -41,7 +41,7 @@ function connection(id: string, over: Partial<ConnectorView["connection"]> = {})
   };
 }
 
-function gmail(over: Partial<ConnectorView> = {}): ConnectorView {
+export function gmail(over: Partial<ConnectorView> = {}): ConnectorView {
   return {
     id: "gmail",
     label: "Gmail",
@@ -64,7 +64,7 @@ function gmail(over: Partial<ConnectorView> = {}): ConnectorView {
   };
 }
 
-function notion(over: Partial<ConnectorView> = {}): ConnectorView {
+export function notion(over: Partial<ConnectorView> = {}): ConnectorView {
   return {
     id: "notion",
     label: "Notion",
@@ -88,7 +88,7 @@ function notion(over: Partial<ConnectorView> = {}): ConnectorView {
   };
 }
 
-const NOTION_CONNECTED = notion({
+export const NOTION_CONNECTED = notion({
   live: true,
   connection: connection("notion", {
     status: "connected",
@@ -100,7 +100,7 @@ const NOTION_CONNECTED = notion({
   }),
 });
 
-function model(
+export function model(
   items: ConnectorView[],
   over: {
     loaded?: boolean;
