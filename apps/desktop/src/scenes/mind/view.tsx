@@ -16,6 +16,7 @@ import { useState } from "react";
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
 import PillGroup from "@/components/PillGroup";
+import type { Tone } from "@/components/StatusDot";
 import ProblemNote from "@/components/ProblemNote";
 import InstrumentArt, { type Instrument } from "@/art/mind";
 import type { Path } from "@/depth/model";
@@ -52,6 +53,14 @@ const STANDING_WORD: Record<Standing, string> = {
   unknown: "checking",
 };
 
+/** The hue beside the word: set is good news, needs-you is a warning, and "not yet" is no state at all. */
+const STANDING_TONE: Record<Standing, Tone> = {
+  done: "success",
+  todo: "neutral",
+  missing: "warning",
+  unknown: "pending",
+};
+
 const MOTION_HINTS: Record<(typeof MOTION_CHOICES)[number], string> = {
   system: "Follow the operating system's setting.",
   calm: "Moves land at once; nothing drifts, floats or ripples.",
@@ -76,21 +85,30 @@ export default function MindView({ model, path, go }: MindProps) {
 }
 
 /** One line of how an instrument stands, in the module's own words. */
-function lineOf(model: SetupModel, which: Instrument): { word: string | null; line: string } {
+function lineOf(model: SetupModel, which: Instrument): { word: string | null; tone: Tone; line: string } {
   switch (which) {
     case "engine":
-      return { word: STANDING_WORD[engineFact(model).standing], line: engineSentence(model) };
+      return {
+        word: STANDING_WORD[engineFact(model).standing],
+        tone: STANDING_TONE[engineFact(model).standing],
+        line: engineSentence(model),
+      };
     case "brain":
       return {
         word: STANDING_WORD[brainFact(model).standing],
+        tone: STANDING_TONE[brainFact(model).standing],
         line: model.brainPath ? "Episodes, facts and playbooks are written to a folder of your own." : "Episodes go to Athena's own folder.",
       };
     case "look":
-      return { word: model.theme, line: `${THEME_HINTS[model.theme]} Text: ${model.typeScale}. Motion: ${model.motion}.` };
+      return { word: model.theme, tone: "neutral", line: `${THEME_HINTS[model.theme]} Text: ${model.typeScale}. Motion: ${model.motion}.` };
     case "data":
-      return { word: model.storePath ? "local" : null, line: "One SQLite file holds this machine's Athena." };
+      return { word: model.storePath ? "local" : null, tone: "neutral", line: "One SQLite file holds this machine's Athena." };
     case "mic":
-      return { word: STANDING_WORD[micFact(model).standing], line: micSentence(model) };
+      return {
+        word: STANDING_WORD[micFact(model).standing],
+        tone: STANDING_TONE[micFact(model).standing],
+        line: micSentence(model),
+      };
   }
 }
 
@@ -137,14 +155,14 @@ function Field({ model, go }: { model: SetupModel; go: (to: Path) => void }) {
 
       <ul className="mind__instruments" aria-label="Settings">
         {INSTRUMENTS.map((which) => {
-          const { word } = lineOf(model, which);
+          const { word, tone, line } = lineOf(model, which);
           return (
             <li key={which}>
               <button
                 type="button"
                 className="mind__instrument focus-ring"
                 data-focused={focused === which}
-                title={lineOf(model, which).line}
+                title={line}
                 onMouseEnter={() => setFocused(which)}
                 onMouseLeave={() => setFocused((f) => (f === which ? null : f))}
                 onFocus={() => setFocused(which)}
@@ -153,7 +171,7 @@ function Field({ model, go }: { model: SetupModel; go: (to: Path) => void }) {
               >
                 <InstrumentArt item={which} size={104} />
                 <span className="mind__instrument-name">{NAME[which]}</span>
-                {word && <Badge tone="neutral">{word}</Badge>}
+                {word && <Badge tone={tone}>{word}</Badge>}
               </button>
             </li>
           );

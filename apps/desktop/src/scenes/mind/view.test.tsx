@@ -119,3 +119,16 @@ describe("a place that names nothing", () => {
     expect(h).toContain("Back to all settings");
   });
 });
+
+describe("an instrument's badge carries the hue of how it stands", () => {
+  it("is success when set, warning when it needs the person, and never neutral for those", () => {
+    const ready = html("typical");
+    expect(ready).toMatch(/status-dot--success[^>]*><\/span>set</);
+    const missing = html("engine-missing");
+    expect(missing).toMatch(/status-dot--warning[^>]*><\/span>needs you</);
+  });
+  it("leaves Look and Data neutral, which have no state to be good or bad", () => {
+    const h = html("typical");
+    expect(h).toMatch(/status-dot--neutral[^>]*><\/span>local</);
+  });
+});
