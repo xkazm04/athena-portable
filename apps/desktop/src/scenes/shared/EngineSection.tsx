@@ -9,10 +9,10 @@
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
 import ProblemNote from "@/components/ProblemNote";
-import type { Tone } from "@/components/StatusDot";
+import StatusDot, { type Tone } from "@/components/StatusDot";
 import { remedyFor } from "@/lib/engines";
 import type { SetupModel } from "@/modules/setup/model";
-import { engineFact, restartNotice } from "@/modules/setup/readiness";
+import { STANDING_TONE, engineFact, restartNotice } from "@/modules/setup/readiness";
 
 import "./engine.css";
 
@@ -85,6 +85,7 @@ export default function EngineSection({ model }: { model: SetupModel }) {
           {model.checking ? "Checking..." : "Check again"}
         </Button>
         <span className="engines__fact" data-standing={fact.standing}>
+          <StatusDot tone={STANDING_TONE[fact.standing]} />
           {fact.summary}
         </span>
       </div>

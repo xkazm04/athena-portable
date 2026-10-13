@@ -51,11 +51,12 @@
   gap: 10px;
 }
 .engines__fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.875rem;
   color: var(--muted-foreground);
 }
-.engines__fact[data-standing="done"] { color: var(--status-success); }
-.engines__fact[data-standing="missing"] { color: var(--status-warning); }
 .engines__notice {
   display: flex;
   flex-wrap: wrap;

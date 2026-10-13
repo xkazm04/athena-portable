@@ -22,4 +22,10 @@ describe("an engine's standing (house style 4b)", () => {
   it("warns with a warning dot when the engine is missing", () => {
     expect(html("notFound")).toContain("status-dot--warning");
   });
+
+  it("puts the summary's hue on a dot as well, never on the words", () => {
+    const h = html("typical");
+    expect(h).toMatch(/class="engines__fact"[^>]*><span class="status-dot status-dot--[a-z]+"/);
+    expect(css).not.toMatch(/engines__fact\[data-standing/);
+  });
 });
