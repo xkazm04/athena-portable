@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@athena/demo-kit": "workspace:*",
+    "@swc/helpers": "^0.5.23",
     "clsx": "2.1.1",
     "lucide-react": "1.41.0",
     "motion": "13.2.0",
