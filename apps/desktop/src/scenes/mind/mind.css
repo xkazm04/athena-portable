@@ -39,6 +39,11 @@
   color: var(--muted-foreground);
   min-height: 1.5em;
 }
+/* The field's line changes on every hover and its longest (Look: theme, text, motion) wraps at the
+ * smallest window, so it holds two lines, as the surface's does, and the instruments stay put. */
+.mind--field .mind__line {
+  min-height: 3em;
+}
 
 .mind__notice {
   display: flex;

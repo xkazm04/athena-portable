@@ -16,3 +16,7 @@ test("the eyebrow is set in the primary, which clears 4.5:1 in both themes, not 
   expect(rule(".mind__eyebrow")).toMatch(/color:\s*var\(--primary\)/);
   expect(rule(".mind__eyebrow")).not.toMatch(/--accent/);
 });
+
+test("the field's line, which changes on every hover, holds two lines like the surface's", () => {
+  expect(rule(".mind--field .mind__line")).toMatch(/min-height:\s*3em/);
+});
