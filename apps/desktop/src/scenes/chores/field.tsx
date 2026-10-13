@@ -14,6 +14,7 @@ import { useState } from "react";
 
 import ChoreArt from "@/art/chore";
 import Badge from "@/components/Badge";
+import Button from "@/components/Button";
 import EmptyState from "@/components/EmptyState";
 import PillGroup from "@/components/PillGroup";
 import StatusDot from "@/components/StatusDot";
@@ -269,7 +270,12 @@ export default function Field({ model, go }: { model: PlaybooksModel; go: (to: P
           />
         </div>
         {grid.length === 0 ? (
-          <p className="ch-body">No chore here is of that kind.</p>
+          <div className="ch-none">
+            <p className="ch-body">{`No chore here is meant for ${audience === "home" ? "home" : "work"}.`}</p>
+            <Button size="sm" variant="ghost" onClick={() => setAudience("all")}>
+              {`Show all ${model.items.length}`}
+            </Button>
+          </div>
         ) : (
           <ul className="ch-grid">
             {grid.map(({ view: v, rank }) => (

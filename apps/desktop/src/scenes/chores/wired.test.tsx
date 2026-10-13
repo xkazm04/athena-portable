@@ -113,6 +113,18 @@ describe("the field", () => {
     expect(qa(".ch-mark[data-dim]")).toHaveLength(0);
   });
 
+  it("says which kind has no chore, and gives the way back to all of them in one press", () => {
+    const typical = fixtures.typical!;
+    const workOnly = { ...typical, items: typical.items.filter((v) => v.playbook.audience === "work") };
+    show(workOnly, { root: "chores" });
+    click(qa('[role="radio"]').find((r) => r.textContent?.startsWith("At home")) ?? null);
+    expect(qa(".ch-card-tile")).toHaveLength(0);
+    expect(host.textContent).toContain("No chore here is meant for home.");
+    click(button(`Show all ${workOnly.items.length}`));
+    expect(qa(".ch-card-tile")).toHaveLength(workOnly.items.length);
+    expect(host.textContent).not.toContain("No chore here is meant for");
+  });
+
   it("orders by money and by time, and says which", () => {
     show(fixtures.typical!, { root: "chores" });
     const order = () => qa(".ch-card-tile__title").map((t) => t.textContent);

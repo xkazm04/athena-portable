@@ -394,6 +394,11 @@ h4.ch-title {
   font-size: 1.5rem;
   font-weight: 400;
 }
+.ch-none {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
 .ch-toolbar {
   display: flex;
   flex-wrap: wrap;
