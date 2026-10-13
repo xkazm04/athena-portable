@@ -576,6 +576,14 @@ h4.ch-title {
   gap: 10px;
   align-items: center;
 }
+/* What a press just did is said on a line that is already there: the words arrive without the
+ * actions wrapping or the part under them sliding down. */
+.ch-said {
+  min-height: 1.45em;
+}
+.ch-actions .ch-said {
+  flex: 1 0 100%;
+}
 
 .ch-glance {
   display: grid;

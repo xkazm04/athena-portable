@@ -47,3 +47,8 @@ test("a part of the chore fades in on the depth clock when it is chosen, opacity
   expect(frames).toMatch(/opacity/);
   expect(frames).not.toMatch(/transform|height|width|margin/);
 });
+
+test("the line that says what a press did is reserved, so the words arriving move nothing", () => {
+  expect(rule(".ch-said")).toMatch(/min-height:\s*1\.45em/);
+  expect(rule(".ch-actions .ch-said")).toMatch(/flex:\s*1 0 100%/);
+});

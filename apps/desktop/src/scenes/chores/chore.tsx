@@ -93,7 +93,7 @@ export default function Chore({
             >
               Hand it to Athena
             </Button>
-            <span className="ch-note" role="status">
+            <span className="ch-note ch-said" role="status">
               {said}
             </span>
           </div>
@@ -196,7 +196,7 @@ function FacetBody({
               </li>
             ))}
           </ul>
-          <p className="ch-note" role="status">
+          <p className="ch-note ch-said" role="status">
             {opened}
           </p>
         </>
@@ -289,7 +289,7 @@ function FacetBody({
       return (
         <>
           <Money playbook={p} onOpen={(url) => open(url, "the source")} />
-          <p className="ch-note" role="status">
+          <p className="ch-note ch-said" role="status">
             {opened}
           </p>
         </>
