@@ -679,7 +679,25 @@ body.athena {
   color: var(--house-ink);
   font-size: var(--t-label);
   font-weight: 600;
-  transition: background var(--dur-fast);
+  overflow: hidden;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+/* the selected edge is a bar that fades in, not a box-shadow that snaps; the button's own radius clips it */
+.tabs button::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--h-info);
+  opacity: 0;
+  transition: opacity var(--dur-fast);
+}
+.aw[data-side="right"] .tabs button::before {
+  left: auto;
+  right: 0;
+}
+.tabs button[aria-selected="true"]::before {
+  opacity: 1;
 }
 .tabs button .ic {
   width: var(--icon-m);
@@ -691,10 +709,6 @@ body.athena {
 .tabs button[aria-selected="true"] {
   background: rgba(34, 211, 238, 0.16);
   color: #e0f2fe;
-  box-shadow: inset 2px 0 0 var(--h-info);
-}
-.aw[data-side="right"] .tabs button[aria-selected="true"] {
-  box-shadow: inset -2px 0 0 var(--h-info);
 }
 .tabs button:focus-visible {
   outline: 2px solid var(--h-focus);

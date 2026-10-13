@@ -26,3 +26,10 @@ test("the icon buttons (pin, put away) ease their hover and their pressed state 
   expect(t).not.toBeNull();
   for (const prop of ["background", "color", "border-color"]) expect(t![1]).toContain(`${prop} var(--dur-fast)`);
 });
+
+test("the selected tab's edge fades in as a bar; no box-shadow snaps, and colour eases with the background", () => {
+  expect(rule('.tabs button[aria-selected="true"]')).not.toMatch(/box-shadow/);
+  expect(rule(".tabs button::before")).toContain("transition: opacity var(--dur-fast)");
+  expect(rule('.tabs button[aria-selected="true"]::before')).toContain("opacity: 1");
+  expect(rule(".tabs button")).toContain("color var(--dur-fast)");
+});
