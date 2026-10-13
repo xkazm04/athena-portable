@@ -18,7 +18,7 @@
  * alone. A pure function of `{ model, path, go }` plus the view's own state (what is hovered, what
  * is typed).
  */
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { AccountArt, StandingMark } from "@/art/accounts";
 import Button from "@/components/Button";
@@ -707,20 +707,30 @@ function Connect({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) 
 /** Two presses, on purpose: the second names what the first meant. */
 export function Disconnect({ row, onDisconnect }: { row: ConnectorRow; onDisconnect: () => void }) {
   const [asked, setAsked] = useState(false);
+  const slot = useRef<HTMLSpanElement>(null);
+  const moved = useRef(false);
+  // The pressed button is replaced by the question, so focus would fall to the document: the safe
+  // answer (Keep it) takes it, and Disconnect takes it back when the question is withdrawn.
+  useEffect(() => {
+    if (!moved.current) return;
+    const buttons = slot.current?.querySelectorAll("button");
+    (asked ? buttons?.[buttons.length - 1] : buttons?.[0])?.focus();
+  }, [asked]);
+  const ask = (next: boolean) => {
+    moved.current = true;
+    setAsked(next);
+  };
   if (!asked) {
     return (
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => setAsked(true)}
-        disabledReason={row.busy ? `${row.busy}…` : undefined}
-      >
-        Disconnect
-      </Button>
+      <span ref={slot}>
+        <Button size="sm" variant="ghost" onClick={() => ask(true)} disabledReason={row.busy ? `${row.busy}…` : undefined}>
+          Disconnect
+        </Button>
+      </span>
     );
   }
   return (
-    <span className="confirm" role="group" aria-label="Confirm disconnect">
+    <span ref={slot} className="confirm" role="group" aria-label="Confirm disconnect">
       <span className="typo-caption">Disconnect? The stored credential is destroyed.</span>
       <Button
         size="sm"
@@ -732,7 +742,7 @@ export function Disconnect({ row, onDisconnect }: { row: ConnectorRow; onDisconn
       >
         Yes, disconnect
       </Button>
-      <Button size="sm" variant="ghost" onClick={() => setAsked(false)}>
+      <Button size="sm" variant="ghost" onClick={() => ask(false)}>
         Keep it
       </Button>
     </span>

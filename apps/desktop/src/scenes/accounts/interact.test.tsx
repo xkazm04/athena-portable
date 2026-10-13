@@ -96,6 +96,14 @@ describe("disconnect takes two presses", () => {
     expect(a.disconnect).not.toHaveBeenCalled();
   });
 
+  it("keeps the keyboard where it was: Keep it takes focus when asked, Disconnect again after", () => {
+    mount("typical", item("notion"));
+    click(button("Disconnect"));
+    expect(document.activeElement).toBe(button("Keep it"));
+    click(button("Keep it"));
+    expect(document.activeElement).toBe(button("Disconnect"));
+  });
+
   it("the second press disconnects that account, once", () => {
     const a = mount("typical", item("notion"));
     click(button("Disconnect"));
