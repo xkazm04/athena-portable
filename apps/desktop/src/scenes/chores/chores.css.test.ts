@@ -18,3 +18,10 @@ test("small text is set in the primary, which clears 4.5:1 in both themes, never
     expect(rule(sel), sel).toMatch(/color:\s*var\(--primary\)/);
   }
 });
+
+test("a card of the grid is not clipped by its own content-visibility box: it holds room for the lift and the focus ring", () => {
+  const item = rule(".ch-grid__item");
+  expect(item).toMatch(/content-visibility:\s*auto/);
+  expect(item).toMatch(/padding:\s*4px/);
+  expect(item).toMatch(/margin:\s*-4px/);
+});

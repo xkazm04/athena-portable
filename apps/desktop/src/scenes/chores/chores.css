@@ -406,9 +406,14 @@ h4.ch-title {
   grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
   gap: 14px;
 }
+/* `content-visibility: auto` paints inside the item's box, so the tile's 2px lift and its focus
+ * ring (2px line, 2px offset) would be cut off at the card's own edge. The item carries 4px of
+ * room for them and gives the same 4px back in its margin, so the cards do not move. */
 .ch-grid__item {
   content-visibility: auto;
   contain-intrinsic-size: auto 420px;
+  padding: 4px;
+  margin: -4px;
 }
 .ch-card-tile {
   --tone: var(--status-neutral);
