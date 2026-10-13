@@ -147,7 +147,7 @@ phase names the proof it must carry.
 
 Phases 5 to 8 are independent once 1 to 4 are in and can run in parallel branches.
 
-**Progress:** phase 0 done (the gate, the clock, Calm, the tokens); phase 1 done (`src/depth/model.ts`: a fixed path grammar, the reducer, hash, crumbs, `shapeOf`); phase 2 done (`src/stage/`, `preview.html?scene=stage`, `pnpm perf:stage` green).
+**Progress:** phase 0 done (the gate, the clock, Calm, the tokens); phase 1 done (`src/depth/model.ts`: a fixed path grammar, the reducer, hash, crumbs, `shapeOf`); phase 2 done (`src/stage/`, `preview.html?scene=stage`, `pnpm perf:stage` green); phase 3 done (`src/bell/`, `pnpm perf:bell` green). Two deviations from the table: the companion's seal does not reuse the bell (its drawing and its closed size table stay), and the bell's tendrils are compositor CSS, not a per-frame driver, because a settled window must request no frames.
 
 ## 7. How it is checked
 

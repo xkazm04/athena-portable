@@ -23,3 +23,5 @@ export default async function drive(page) {
   await page.click('[data-go="mind"]');
   await page.waitForTimeout(MOVE + 300);
 }
+
+drive.title = "dive, dive, rise, rise, interrupted dive";

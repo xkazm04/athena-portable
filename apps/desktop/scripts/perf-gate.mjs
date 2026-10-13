@@ -3,7 +3,8 @@
  *
  *   pnpm perf                                     prove the gate can pass and can fail
  *   pnpm perf --url <url> --drive <module.mjs>    run a scenario against a page
- *   pnpm perf:stage                               build, serve and drive the depth stage preview
+ *   pnpm perf:stage | perf:bell                   build, serve and drive a preview scene
+ *                                                 (scripts/perf-<scene>.drive.mjs)
  *
  * A scenario module's default export is `async (page) => void`: it performs the one fixed path
  * (dive, rise, interrupt) and returns when the motion has finished. The gate watches the page
@@ -150,13 +151,13 @@ async function main() {
   let failed = false;
   try {
     const url = arg("--url");
-    if (args.includes("--stage")) {
+    const scene = args.includes("--stage") ? "stage" : arg("--scene");
+    if (scene) {
       const { base, stop } = await serveBuild();
       try {
-        const drive = (await import(pathToFileURL(path.resolve("scripts/perf-stage.drive.mjs")).href)).default;
-        const target = `${base}/preview.html?scene=stage`;
-        const r = await runPage(browser, (page) => page.goto(target), drive);
-        show("depth stage: dive, dive, rise, rise, interrupted dive", r);
+        const drive = (await import(pathToFileURL(path.resolve(`scripts/perf-${scene}.drive.mjs`)).href)).default;
+        const r = await runPage(browser, (page) => page.goto(`${base}/preview.html?scene=${scene}`), drive);
+        show(`${scene} (${drive.title ?? "scenario"})`, r);
         failed = !r.ok;
       } finally {
         stop();

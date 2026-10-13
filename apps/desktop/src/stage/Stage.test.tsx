@@ -14,7 +14,7 @@ function render(path: Path, over: Partial<StageProps> = {}): string {
       state={at(path)}
       calm
       renderScene={(p) => <p data-scene={JSON.stringify(p)}>scene</p>}
-      presence={{ text: "resting", tone: "idle", waiting: 0 }}
+      presence={{ pose: "resting", text: "resting", waiting: 0 }}
       onGo={vi.fn()}
       onRise={vi.fn()}
       onSurface={vi.fn()}
@@ -53,9 +53,10 @@ describe("a depth", () => {
     expect(html).toMatch(/aria-current="true">Apps</);
   });
   it("says how many cards wait and takes its tone from her", () => {
-    const waiting = render(path, { presence: { text: "1 waiting", tone: "human", waiting: 1 } });
+    const waiting = render(path, { presence: { pose: "asking", text: "1 waiting", waiting: 1 } });
     expect(waiting).toContain("1 waiting");
-    expect(waiting).toContain('data-tone="human"');
+    expect(waiting).toContain('data-pose="asking"');
+    expect(waiting).toContain('class="bell" data-pose="asking"');
   });
   it("records the depth for the gauge and the water", () => {
     expect(html).toContain('data-depth="2"');
@@ -86,7 +87,7 @@ describe("a stage mounted after a move", () => {
         state={moved}
         calm={false}
         renderScene={() => <p>x</p>}
-        presence={{ text: "resting", tone: "idle", waiting: 0 }}
+        presence={{ pose: "resting", text: "resting", waiting: 0 }}
         onGo={vi.fn()}
         onRise={vi.fn()}
         onSurface={vi.fn()}

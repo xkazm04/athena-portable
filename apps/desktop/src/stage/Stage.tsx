@@ -28,13 +28,17 @@ import {
   type Path,
 } from "@/depth/model";
 
+import Bell from "@/bell/Bell";
+import type { Pose } from "@/bell/pose";
+
 import Backdrop from "./Backdrop";
 import { initLayers, isSettled, reduceLayers, type Layer } from "./layers";
 import "./stage.css";
 
 export interface Presence {
+  /** How she is carrying herself; the dock's bell wears it (`bell/pose.ts`). */
+  pose: Pose;
   text: string;
-  tone: "idle" | "work" | "human";
   /** Cards waiting on the person. */
   waiting: number;
 }
@@ -118,7 +122,7 @@ export default function Stage(props: StageProps) {
       data-depth={depth}
       data-shape={shape}
       data-move={state.move}
-      data-tone={presence.tone}
+      data-pose={presence.pose}
     >
       {shape === "scene" && <Backdrop depth={depth} move={state.move} seq={state.seq} calm={calm} />}
 
@@ -189,7 +193,9 @@ export default function Stage(props: StageProps) {
           {depth > 0 && (
             <footer className="stage__dock">
               <button type="button" className="stage__dock-athena focus-ring" onClick={onSurface}>
-                <i className="stage__dock-bell" aria-hidden="true" />
+                <span className="stage__dock-bell">
+                  <Bell pose={presence.pose} reach={[]} size={34} />
+                </span>
                 <span>
                   <b>Athena</b>
                   <small>{presence.text}</small>

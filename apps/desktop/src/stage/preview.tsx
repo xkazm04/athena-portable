@@ -103,7 +103,7 @@ export default function StagePreview() {
         state={state}
         calm={calm}
         renderScene={(path) => <Placeholder path={path} onGo={onGo} />}
-        presence={{ tone: "idle", text: "resting", waiting: 0 }}
+        presence={{ pose: "resting", text: "resting", waiting: 0 }}
         onGo={onGo}
         onRise={onRise}
         onSurface={onSurface}

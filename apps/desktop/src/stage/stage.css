@@ -314,7 +314,7 @@
   background: color-mix(in srgb, var(--card-bg) 82%, transparent);
   text-align: left;
 }
-.stage__dock-athena span {
+.stage__dock-athena > span:not(.stage__dock-bell) {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
@@ -332,17 +332,10 @@
   border: 1px solid var(--role-human);
 }
 .stage__dock-bell {
-  width: 26px;
-  height: 22px;
-  border-radius: 13px 13px 6px 6px;
-  background: radial-gradient(circle at 50% 35%, var(--accent), var(--btn-primary));
-  box-shadow: 0 0 14px var(--glow);
-}
-.stage[data-tone="human"] .stage__dock-bell {
-  background: radial-gradient(circle at 50% 35%, var(--role-human), var(--btn-primary));
-}
-.stage[data-tone="work"] .stage__dock-bell {
-  background: radial-gradient(circle at 50% 35%, var(--status-pending), var(--btn-primary));
+  display: block;
+  width: 34px;
+  height: 36px;
+  flex: none;
 }
 .stage__roots {
   display: flex;
