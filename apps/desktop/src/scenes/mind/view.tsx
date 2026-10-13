@@ -100,7 +100,7 @@ function lineOf(model: SetupModel, which: Instrument): { word: string | null; to
         line: model.brainPath ? "Episodes, facts and playbooks are written to a folder of your own." : "Episodes go to Athena's own folder.",
       };
     case "look":
-      return { word: model.theme, tone: "neutral", line: `${THEME_HINTS[model.theme]} Text: ${model.typeScale}. Motion: ${model.motion}.` };
+      return { word: `${model.theme} theme`, tone: "neutral", line: `${THEME_HINTS[model.theme]} Text: ${model.typeScale}. Motion: ${model.motion}.` };
     case "data":
       return { word: model.storePath ? "local" : null, tone: "neutral", line: "One SQLite file holds this machine's Athena." };
     case "mic":

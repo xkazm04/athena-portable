@@ -132,3 +132,13 @@ describe("an instrument's badge carries the hue of how it stands", () => {
     expect(h).toMatch(/status-dot--neutral[^>]*><\/span>local</);
   });
 });
+
+describe("the Look tile names what its word is", () => {
+  it("says which theme, not a bare system, light or dark", () => {
+    for (const theme of ["system", "light", "dark"] as const) {
+      const h = renderToStaticMarkup(<MindView model={{ ...fixtures.typical!, theme }} path={PATHS.field!} go={go} />);
+      expect(h).toContain(`</span>${theme} theme<`);
+    }
+    expect(html("typical", PATHS.look!)).toContain("theme</p>");
+  });
+});
