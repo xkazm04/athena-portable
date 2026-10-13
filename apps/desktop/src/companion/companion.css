@@ -2163,7 +2163,7 @@ body.athena {
 
 .lg-plan__eyebrow {
   margin: 0;
-  font-size: calc(11px + var(--type-step));
+  font-size: var(--t-label);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
