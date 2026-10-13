@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(desktop): the engine section's busy label says Checking… with the ellipsis the other busy labels use.` README 3.5, ADR 0087 (scan-sweep, copy-auditor): the Check again button read "Checking..." while the companion's twin and the accounts scene use the single character. Tests: scenes/shared/EngineSection.test.tsx, scenes/waking/view.test.tsx.
 - `fix(apps): pressing Forget no longer drops the keyboard's place.` README 3.5, ADR 0089 (scan-sweep, accessibility-checker): the pressed button was replaced by the question, so focus fell to the document; Keep now takes it, and Forget this app takes it back when Keep is pressed. Tests: scenes/apps/interact.test.
 - `fix(stage): the light shafts stand still on a machine that asks for less motion, even with Motion set to Full.` README 3.1, ADR 0089 (scan-sweep, accessibility-checker): the sheet's global 1 ms reduced-motion duration turned four infinite sways into a flicker; the shafts now carry `animation: none` under the media query too.
 - `fix(desktop): the engine summary line carries its standing on a dot, not in the colour of its words.` README 3.5, ADR 0087 (scan-sweep, ui-perfectionist): `.engines__fact` turned the whole sentence success/warning green or amber at 14px; it now shows the setup module's own `STANDING_TONE` as a `StatusDot` and keeps the words muted. Tests: scenes/shared/EngineSection.test.tsx.

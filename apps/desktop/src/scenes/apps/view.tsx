@@ -13,7 +13,7 @@
  * hovered, what is typed and whether Forget has been pressed once. Every word the old module said
  * that was a fact or a promise is kept verbatim.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
@@ -339,8 +339,21 @@ function AppLevel({ model, item, go }: { model: AppsModel; item: string; go: (to
 /** Forget asks once more: a forgotten origin, its switch and its pinned classes are a first sight again. */
 function Forget({ app, onForget }: { app: RegisteredApp; onForget: () => void }) {
   const [confirming, setConfirming] = useState(false);
+  const section = useRef<HTMLElement>(null);
+  const moved = useRef(false);
+  // The pressed button is replaced by the question, so focus would fall to the document: the safe
+  // answer (Keep) takes it, and the way in takes it back when the question is withdrawn.
+  useEffect(() => {
+    if (!moved.current) return;
+    const buttons = section.current?.querySelectorAll("button");
+    (confirming ? buttons?.[buttons.length - 1] : buttons?.[0])?.focus();
+  }, [confirming]);
+  const ask = (next: boolean) => {
+    moved.current = true;
+    setConfirming(next);
+  };
   return (
-    <section className="apps__section" aria-labelledby="apps-forget">
+    <section ref={section} className="apps__section" aria-labelledby="apps-forget">
       <h2 id="apps-forget" className="apps__section-title">
         Forget
       </h2>
@@ -351,12 +364,12 @@ function Forget({ app, onForget }: { app: RegisteredApp; onForget: () => void })
           <Button size="sm" variant="primary" onClick={onForget}>
             Yes, forget
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
+          <Button size="sm" variant="ghost" onClick={() => ask(false)}>
             Keep
           </Button>
         </span>
       ) : (
-        <Button size="sm" variant="ghost" aria-label={`Forget ${app.host}`} onClick={() => setConfirming(true)}>
+        <Button size="sm" variant="ghost" aria-label={`Forget ${app.host}`} onClick={() => ask(true)}>
           Forget this app
         </Button>
       )}

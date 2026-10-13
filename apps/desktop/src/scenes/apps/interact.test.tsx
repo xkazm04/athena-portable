@@ -83,6 +83,14 @@ describe("forgetting an app takes two presses", () => {
     expect(a.forget).not.toHaveBeenCalled();
   });
 
+  it("keeps the keyboard where it was: Keep takes focus when asked, the first button again after", () => {
+    mount("typical", PATHS.app!);
+    click(button("Forget this app"));
+    expect(document.activeElement).toBe(button("Keep"));
+    click(button("Keep"));
+    expect(document.activeElement).toBe(button("Forget this app"));
+  });
+
   it("the second press forgets that origin, and the depth rises out to the field", () => {
     const go = vi.fn();
     const a = mount("typical", PATHS.app!, go);
