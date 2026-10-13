@@ -45,3 +45,9 @@ test("the hero waveform arrives on the same rise as the head and the card, and i
   expect(css).toMatch(/:root\[data-motion="calm"\] \.vsc-hero,/);
   expect(css).toMatch(/\.vsc-head__words,\s*\.vsc-hero,\s*\.vsc-card \{\s*animation: none/);
 });
+
+test("the take card pads like its twin, the voice card", () => {
+  const pad = (selector: string) => /padding:\s*([^;]+);/.exec(rule(selector))?.[1];
+  expect(pad(".vsc-take")).toBe("14px 16px");
+  expect(pad(".vsc-take")).toBe(pad(".vsc-voice"));
+});
