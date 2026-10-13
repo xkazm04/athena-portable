@@ -83,6 +83,15 @@
   animation: none;
   will-change: auto;
 }
+/* `full` chosen in Look on a machine that asks for less motion leaves data-motion at full, and the
+ * sheet's global reduced-motion rule then shortens every duration to 1 ms: an infinite 1 ms sway
+ * is a flicker, not a calm. The shafts stand still instead. */
+@media (prefers-reduced-motion: reduce) {
+  .backdrop__shafts i {
+    animation: none;
+    will-change: auto;
+  }
+}
 
 .backdrop__snow {
   position: absolute;

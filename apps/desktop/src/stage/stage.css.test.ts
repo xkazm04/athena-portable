@@ -17,6 +17,14 @@ function decls(selector: string): string {
   return out.join("\n");
 }
 
+describe("the light shafts under a reduced-motion machine", () => {
+  it("stand still, because the global 1 ms duration would turn an infinite sway into a flicker", () => {
+    expect(css).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) \{\s*\.backdrop__shafts i \{[^}]*animation: none/,
+    );
+  });
+});
+
 describe("the current depth root", () => {
   it("does not grow: every root already holds the border the current one is drawn with", () => {
     expect(decls(".stage__roots button")).toMatch(/border:\s*1px solid transparent/);
