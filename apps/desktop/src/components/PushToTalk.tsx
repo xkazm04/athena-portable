@@ -56,7 +56,6 @@ export default function PushToTalk({
       aria-pressed={held}
       aria-disabled={disabled}
       title={title}
-      aria-label={title}
       onPointerDown={(e) => {
         if (disabled) return;
         e.currentTarget.setPointerCapture(e.pointerId);
