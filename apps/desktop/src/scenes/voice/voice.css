@@ -288,6 +288,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--recessed) 70%, transparent);
+  transition: border-color var(--duration-fast);
 }
 .vsc-wave {
   position: relative;
@@ -393,6 +394,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--recessed);
+  transition: border-color var(--duration-fast);
 }
 .vsc-voice[data-playing="true"] {
   border-color: var(--accent);
@@ -413,15 +415,30 @@ li[data-status="done"] > .vsc-step > span:first-child {
   display: grid;
   align-content: start;
   gap: 8px;
+  position: relative;
   min-width: 0;
   padding: 14px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-card);
   background: var(--recessed);
+  transition: border-color var(--duration-fast), opacity var(--duration-fast);
 }
 .vsc-take[data-picked="true"] {
   border-color: var(--accent);
+}
+/* The picked ring is a layer that fades (opacity), as the engine option's is. */
+.vsc-take::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
   box-shadow: 0 0 0 1px var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast);
+}
+.vsc-take[data-picked="true"]::after {
+  opacity: 1;
 }
 .vsc-take[data-muted="true"] {
   opacity: 0.75;

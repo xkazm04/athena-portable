@@ -26,3 +26,11 @@ test("the chosen option's ring is a layer that fades, not a box-shadow that swap
   expect(rule(".vsc-opt::after")).toMatch(/transition:\s*opacity var\(--duration-fast\)/);
   expect(rule('.vsc-opt[aria-pressed="true"]::after')).toMatch(/opacity:\s*1/);
 });
+
+test("the take, the voice card and the wave frame ease the state that changes their border", () => {
+  expect(rule(".vsc-take")).toMatch(/transition:[^;]*border-color var\(--duration-fast\)[^;]*opacity var\(--duration-fast\)/);
+  expect(rule('.vsc-take[data-picked="true"]')).not.toMatch(/box-shadow/);
+  expect(rule(".vsc-take::after")).toMatch(/transition:\s*opacity var\(--duration-fast\)/);
+  expect(rule(".vsc-voice")).toMatch(/transition:\s*border-color var\(--duration-fast\)/);
+  expect(rule(".vsc-wave")).toMatch(/transition:\s*border-color var\(--duration-fast\)/);
+});

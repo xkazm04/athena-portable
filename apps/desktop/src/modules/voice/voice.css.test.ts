@@ -46,3 +46,7 @@ test("the install bar fills by scale, not width, and stills under Calm", () => {
 test("a chip that ends a button's label does not leave its leading margin on the trailing edge", () => {
   expect(rule(".btn .vs-kbd:last-child")).toMatch(/margin-right:\s*0/);
 });
+
+test("a wave bar that changes colour (idle to live, voice to microphone) eases it beside its height", () => {
+  expect(rule(".vs-wave span")).toMatch(/background var\(--duration-fast\)/);
+});
