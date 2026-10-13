@@ -35,3 +35,8 @@ test("every control the pointer can press eases its hover on the fast duration",
 test("the map mark eases its fill with its lift, so the hot chore does not flash", () => {
   expect(rule(".ch-mark")).toMatch(/background var\(--duration-fast\)/);
 });
+
+test("a turn dot answers the pointer: it lifts to full strength and takes the wash", () => {
+  expect(css).toMatch(/\.ch-dot:hover\s*\{[^}]*background:\s*var\(--wash\)/);
+  expect(css).toMatch(/\.ch-dot:hover,[^{]*\{[^}]*opacity:\s*1/);
+});

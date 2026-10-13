@@ -1029,8 +1029,12 @@ button.ch-glance:hover {
   border: 0;
   border-radius: 50%;
   opacity: 0.7;
-  transition: opacity var(--duration-fast);
+  transition: opacity var(--duration-fast), background var(--duration-fast);
 }
+.ch-dot:hover {
+  background: var(--wash);
+}
+.ch-dot:hover,
 .ch-dot[data-past],
 .ch-dot[aria-current] {
   opacity: 1;
