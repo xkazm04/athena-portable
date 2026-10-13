@@ -4,6 +4,14 @@ import { expect, test } from "vitest";
 
 const css = readFileSync(new URL("./companion.css", import.meta.url), "utf8");
 
+/** The declarations of the rule whose selector is exactly `selector`. */
+function rule(selector: string): string {
+  const head = "\n" + selector + " {";
+  const at = css.indexOf(head);
+  if (at === -1) throw new Error(`no rule ${selector}`);
+  return css.slice(at, css.indexOf("\n}", at));
+}
+
 test("nothing readable is set under 12px, at either text-size step", () => {
   const sizes = [
     ...css.matchAll(/font-size:\s*(?:calc\()?(\d+(?:\.\d+)?)px/g),
@@ -11,4 +19,10 @@ test("nothing readable is set under 12px, at either text-size step", () => {
   ].map((m) => Number(m[1]));
   expect(sizes.length).toBeGreaterThan(10);
   for (const px of sizes) expect(px).toBeGreaterThanOrEqual(12);
+});
+
+test("the icon buttons (pin, put away) ease their hover and their pressed state on the fast duration", () => {
+  const t = rule(".aw .ico-btn").match(/transition:([^;]*);/);
+  expect(t).not.toBeNull();
+  for (const prop of ["background", "color", "border-color"]) expect(t![1]).toContain(`${prop} var(--dur-fast)`);
 });
