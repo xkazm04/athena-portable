@@ -311,7 +311,7 @@
   will-change: auto;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .apps--app { grid-template-columns: 1fr; }
   .apps__art { padding-top: 0; }
 }

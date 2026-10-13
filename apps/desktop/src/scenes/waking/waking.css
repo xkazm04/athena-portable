@@ -152,7 +152,7 @@
   color: var(--muted-foreground);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .waking { grid-template-columns: 1fr; gap: 16px; padding-top: 2vh; }
   .waking__her .bell { width: min(60%, 30vh); }
 }

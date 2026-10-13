@@ -58,6 +58,10 @@ describe("a depth", () => {
     expect(waiting).toContain('data-pose="asking"');
     expect(waiting).toContain('class="bell" data-pose="asking"');
   });
+  it("says where you are once, in a status region that is not the scene", () => {
+    expect(html).toContain('role="status" aria-live="polite">Athena, Apps, host-1</p>');
+    expect(html).not.toMatch(/<main[^>]*aria-live/);
+  });
   it("records the depth for the gauge and the water", () => {
     expect(html).toContain('data-depth="2"');
     expect(render({ root: "apps" })).toContain('data-depth="1"');

@@ -1192,7 +1192,7 @@ button.ch-glance:hover {
     grid-column: 1 / -1;
   }
 }
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .chores {
     padding: 12px 16px 120px 48px;
   }

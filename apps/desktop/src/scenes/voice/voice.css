@@ -519,7 +519,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
     width: 3px;
   }
 }
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .vsc--field {
     grid-template-columns: 1fr;
   }

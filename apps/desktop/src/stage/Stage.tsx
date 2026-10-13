@@ -131,6 +131,12 @@ export default function Stage(props: StageProps) {
     >
       {shape === "scene" && <Backdrop depth={depth} move={state.move} seq={state.seq} calm={calm} />}
 
+      {/* Where you are, said once per move. The scenes are not a live region: a whole scene read out
+          on every change is noise, and a person who has just dived wants to hear the place. */}
+      <p className="stage__announce" role="status" aria-live="polite">
+        {trail.map((c) => c.label).join(", ")}
+      </p>
+
       <header className="stage__top" data-tauri-drag-region>
         {rise !== null && (
           <button type="button" className="stage__rise focus-ring" onClick={onRise}>
@@ -183,7 +189,7 @@ export default function Stage(props: StageProps) {
             </div>
           </aside>
 
-          <main className="stage__scenes" aria-live="polite">
+          <main className="stage__scenes">
             {layers.map((l, i) => (
               <SceneLayer
                 key={l.key}

@@ -97,6 +97,18 @@
   background: radial-gradient(120% 120% at 50% 45%, transparent 55%, var(--vignette));
 }
 
+/* Read by a screen reader, never drawn. */
+.stage__announce {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* ---- the bar over it ---------------------------------------------------------------------- */
 
 .stage__top {

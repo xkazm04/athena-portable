@@ -176,7 +176,7 @@
   justify-self: start;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .mind--level { grid-template-columns: 1fr; }
   .mind__art { padding-top: 0; }
 }
