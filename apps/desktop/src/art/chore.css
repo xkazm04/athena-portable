@@ -1,0 +1,20 @@
+/* The chore drawings — README section 3.1, ADR 0087 and 0089. One slow float on the hero only,
+ * compositor only, off under Calm. */
+.chore-art {
+  display: block;
+  overflow: visible;
+  max-width: 100%;
+  height: auto;
+}
+.chore-art__float {
+  animation: chore-art-float 7s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes chore-art-float {
+  from { transform: translateY(0); }
+  to { transform: translateY(-3px); }
+}
+:root[data-motion="calm"] .chore-art__float {
+  animation: none;
+  will-change: auto;
+}

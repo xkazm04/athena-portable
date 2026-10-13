@@ -38,15 +38,15 @@ Status: `todo` until its phase lands, then `proved: <test or hand check>`.
 
 | Capability | Today | Depth | Status |
 |---|---|---|---|
-| Hero and totals: N of M benched, $X of $Y found | `modules/playbooks/view.tsx` | D1 chores | todo |
-| Map of difficulty against usefulness; points operable with Enter or Space | `view.tsx` | D1 chores | todo |
-| Audience filter and sort (hardest first, money, time) | `view.tsx` | D1 chores | todo |
-| Verdict per playbook, unbenched word, on the edge flag, speedup | `model.ts` verdictOf | D1 chores | todo |
-| Chore layer: chore, portals (each with Open), method, gates, result, runs, traps, replay, evidence | `FacetBody` | D2 chore | todo |
-| Replay: play or pause, Back and Next, ArrowLeft and ArrowRight, turn rail, show all | `view.tsx` | D3 run | todo |
-| Copy the command; hand it to her (offer + project); open a portal in the Browser | `index.ts` | D2 chore | todo |
-| The "simulated" line | `SIMULATED_LINE` | D1 chores | todo |
-| Evidence film or thumbnail with currency check | `view.tsx` | D2 chore | todo |
+| Hero and totals: N of M benched, $X of $Y found | `modules/playbooks/view.tsx` | D1 chores | proved: scenes/chores/view.test (the field: hero, totals, empty and degraded fixtures); preview checked 2026-10-13 |
+| Map of difficulty against usefulness; points operable with Enter or Space | `view.tsx` | D1 chores | proved: view.test (a labelled native button per chore, so Enter and Space click it), wired.test (click dives, hover and focus take the centre); changed: the plot is HTML over a drawn ground so its type never shrinks, a crowded cell is spread as a sunflower (ADR 0093), and the filter dims the marks it hides instead of leaving them |
+| Audience filter and sort (hardest first, money, time) | `view.tsx` | D1 chores | proved: view.test (two radio groups, counted), wired.test (filter narrows the cards and dims marks, sort reorders and says which) |
+| Verdict per playbook, unbenched word, on the edge flag, speedup | `model.ts` verdictOf | D1 chores | proved: view.test (verdict word per card, 'Not benched' claims nothing measured, edge flag, speedup), scenes/chores/model.test (marquee line, mark label); the model's own tests (modules/playbooks/model.test) are unchanged |
+| Chore layer: chore, portals (each with Open), method, gates, result, runs, traps, replay, evidence | `FacetBody` | D2 chore | proved: view.test (every part listed and opened: chore, portals with Open, method, gates, proof, traps folded past five, run teaser, film, lessons, money), wired.test (switching parts); changed: the old Layer is the chore scene, and its Watch the run opens the replay level instead of drawing it in place |
+| Replay: play or pause, Back and Next, ArrowLeft and ArrowRight, turn rail, show all | `view.tsx` | D3 run | proved: view.test (a dot per turn with its state in words, rail of visits, cards filed this turn, ledger folded with Show all), wired.test (Next and Back, arrows, dots, ledger rows, Play steps and Pause stops, an inert leaving layer does not answer); changed: the buttons read Back and Next and the turn is the place (ADR 0093), so each step is the stage's across move |
+| Copy the command; hand it to her (offer + project); open a portal in the Browser | `index.ts` | D2 chore | proved: wired.test (Copy reaches the clipboard action with the command, Hand reaches athenaOffer's action with the command and the chore as project, Open reaches the tab action), modules/playbooks/hook.test (the hook makes the tab and selects nothing when given afterOpen); changed: in the console Open makes the Browser tab and stays on the chore and says so, because Apps has not landed and apps/<app>/page does not exist yet (a Rust browser selection would show a page under the scene, ADR 0088); the Apps port passes afterOpen to move there |
+| The "simulated" line | `SIMULATED_LINE` | D1 chores | proved: view.test (said once under the totals, and again on a chore's bench glance, in the words the module used) |
+| Evidence film or thumbnail with currency check | `view.tsx` | D2 chore | proved: view.test (the film where served, the still where not, Current or Stale with its sentence, the card's thumbnail with length and stale mark); the film itself was not played in the preview (it is served only from a local evidence/ directory) |
 
 ## Connectors (Accounts)
 
