@@ -783,7 +783,7 @@ function Origins({ model }: { model: CompanionModel }) {
               <button
                 type="button"
                 className="aw-btn aw-btn-ghost aw-btn-toggle"
-                aria-pressed={k.enabled}
+                aria-label={`${k.enabled ? "Disable" : "Enable"} ${k.origin.replace(/^https?:\/\//, "")}`}
                 onClick={() => actions.setOrigin(k.origin, !k.enabled)}
               >
                 {k.enabled ? "Disable" : "Enable"}

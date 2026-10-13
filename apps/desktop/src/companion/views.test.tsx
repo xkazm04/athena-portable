@@ -339,3 +339,10 @@ test("each scrollable tab the keyboard can focus is a named region, as Talk's lo
   expect(html("ledger record")).toContain('role="region" aria-label="Record"');
   expect(html("ledger origins")).toContain('role="region" aria-label="Origins"');
 });
+
+test("each Enable or Disable button names its app and says its state once, in its name, not also as pressed", () => {
+  const out = html("ledger origins");
+  expect(out).toMatch(/aria-label="(Enable|Disable) calendar\.example"/);
+  expect(out).toMatch(/aria-label="(Enable|Disable) ledgerbox\.local"/);
+  expect(out).not.toMatch(/<button[^>]*aw-btn-toggle[^>]*aria-pressed/);
+});
