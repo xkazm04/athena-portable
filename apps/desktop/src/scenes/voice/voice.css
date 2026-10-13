@@ -205,6 +205,7 @@
   border: 0;
   border-radius: 4px;
   text-align: left;
+  transition: background var(--duration-fast), color var(--duration-fast);
 }
 button.vsc-step {
   cursor: pointer;
@@ -358,13 +359,28 @@ li[data-status="done"] > .vsc-step > span:first-child {
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-card);
   cursor: pointer;
+  position: relative;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
 }
 .vsc-opt:hover {
   background: var(--wash);
 }
 .vsc-opt[aria-pressed="true"] {
   border-color: var(--accent);
+}
+/* The chosen ring and its glow are a layer that fades in (opacity), not a shadow that pops. */
+.vsc-opt::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
   box-shadow: 0 0 0 1px var(--accent), 0 0 24px var(--glow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast);
+}
+.vsc-opt[aria-pressed="true"]::after {
+  opacity: 1;
 }
 .vsc-opt__state {
   flex-basis: 100%;

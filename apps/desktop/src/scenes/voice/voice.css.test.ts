@@ -15,3 +15,14 @@ function rule(selector: string): string {
 test("the field's line, which changes on every hover, holds two lines so the places stay put", () => {
   expect(rule(".vsc--field .vsc-lead")).toMatch(/min-height:\s*3\.1em/);
 });
+
+test("the engine option and the rail's steps ease their hover and choice on the fast duration", () => {
+  expect(rule(".vsc-opt")).toMatch(/transition:[^;]*background var\(--duration-fast\)[^;]*border-color var\(--duration-fast\)/);
+  expect(rule(".vsc-step")).toMatch(/transition:[^;]*background var\(--duration-fast\)/);
+});
+
+test("the chosen option's ring is a layer that fades, not a box-shadow that swaps", () => {
+  expect(rule('.vsc-opt[aria-pressed="true"]')).not.toMatch(/box-shadow/);
+  expect(rule(".vsc-opt::after")).toMatch(/transition:\s*opacity var\(--duration-fast\)/);
+  expect(rule('.vsc-opt[aria-pressed="true"]::after')).toMatch(/opacity:\s*1/);
+});
