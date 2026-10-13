@@ -290,9 +290,9 @@ h4.ch-title {
   cursor: pointer;
   transform: translate(-50%, 50%);
   transition:
-    transform var(--duration-fast),
-    opacity var(--duration-fast),
-    background var(--duration-fast);
+    transform var(--duration-fast) var(--ease-fast),
+    opacity var(--duration-fast) var(--ease-fast),
+    background var(--duration-fast) var(--ease-fast);
 }
 .ch-mark::before {
   content: "";
@@ -445,8 +445,8 @@ h4.ch-title {
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--card-bg) 90%, transparent);
   transition:
-    transform var(--duration-fast),
-    border-color var(--duration-fast);
+    transform var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast);
 }
 .ch-card-tile[data-verdict="exceeds"] { --tone: var(--status-success); }
 .ch-card-tile[data-verdict="meets"] { --tone: var(--status-info); }
@@ -611,7 +611,7 @@ h4.ch-title {
 }
 button.ch-glance {
   cursor: pointer;
-  transition: border-color var(--duration-fast);
+  transition: border-color var(--duration-fast) var(--ease-fast);
 }
 button.ch-glance:hover {
   border-color: var(--accent);
@@ -696,7 +696,7 @@ button.ch-glance:hover {
   border: 1px solid transparent;
   border-left: 3px solid var(--line-strong);
   border-radius: var(--radius-interactive);
-  transition: background var(--duration-fast), border-color var(--duration-fast);
+  transition: background var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast);
 }
 .ch-facet:hover {
   background: var(--wash);
@@ -1061,7 +1061,7 @@ button.ch-glance:hover {
   border: 0;
   border-radius: 50%;
   opacity: 0.7;
-  transition: opacity var(--duration-fast), background var(--duration-fast);
+  transition: opacity var(--duration-fast) var(--ease-fast), background var(--duration-fast) var(--ease-fast);
 }
 .ch-dot:hover {
   background: var(--wash);
@@ -1207,7 +1207,7 @@ button.ch-glance:hover {
   background: transparent;
   border: 0;
   border-bottom: 1px solid var(--line);
-  transition: background var(--duration-fast);
+  transition: background var(--duration-fast) var(--ease-fast);
 }
 .ch-ledger__row:hover {
   background: var(--wash);

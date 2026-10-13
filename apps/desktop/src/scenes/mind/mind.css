@@ -81,7 +81,7 @@
   border: 1px solid transparent;
   border-radius: var(--radius-card);
   cursor: pointer;
-  transition: background var(--duration-fast), border-color var(--duration-fast);
+  transition: background var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast);
 }
 .mind__instrument:hover,
 .mind__instrument[data-focused="true"] {
@@ -167,7 +167,7 @@
   color: var(--foreground);
   border: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--recessed) 70%, transparent);
-  transition: border-color var(--duration-fast);
+  transition: border-color var(--duration-fast) var(--ease-fast);
 }
 .mind__input:hover {
   border-color: var(--foreground);

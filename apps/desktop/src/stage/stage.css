@@ -143,9 +143,9 @@
   cursor: pointer;
   /* The same ease the scenes' own buttons use, so a hover is never a jump. */
   transition:
-    color var(--duration-fast),
-    background var(--duration-fast),
-    border-color var(--duration-fast);
+    color var(--duration-fast) var(--ease-fast),
+    background var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast);
 }
 .stage__brand {
   display: inline-flex;

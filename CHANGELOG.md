@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(styles): the 47 fast transitions outside app.css name --ease-fast beside --duration-fast.` README 3.1, ADR 0089 (scan-sweep, ui-perfectionist): they used the default ease while app.css's hovers used the pair; every sheet now agrees, and `source-guards.test.ts` fails a bare `var(--duration-fast)`.
 - `fix(styles): every text colour that was --accent is --accent-text, and a source guard forbids the old spelling.` README 3.1, ADR 0026 (scan-sweep, accessibility-checker): ten `color: var(--accent)` in accounts, apps, voice and the stage were 3.2:1 on the light theme; dark is unchanged. `source-guards.test.ts` scans every stylesheet.
 - `fix(companion): the Speak button's accessible name contains the word it shows.` README 3.5, ADR 0026 (scan-sweep, accessibility-checker): the button reads "Speak" and was named "Hold and say approve or decline", so a voice user saying "click Speak" found nothing; it is "Speak: hold and say approve or decline".
 - `fix(halo): the caption lingers its 4 seconds after her reply, instead of fading with the edges in 400 ms.` README 3.1, ADR 0027 (scan-sweep, ui-perfectionist): the idle phase set `opacity: 0` on the page and the caption is inside it, so the model's 4 s linger showed for 400 ms; the fade is now a `--live` factor on the edges' opacity, and the page stays opaque.

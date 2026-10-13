@@ -27,3 +27,14 @@ test("text is never coloured with --accent, which is 3.2:1 on the light theme; -
     expect(text, path).not.toMatch(/(^|[\s;{])color:\s*var\(--accent\)/);
   }
 });
+
+test("every use of --duration-fast names --ease-fast beside it", () => {
+  let uses = 0;
+  for (const { path, text } of all) {
+    for (const m of text.matchAll(/var\(--duration-fast\)(?! var\(--ease-fast\))/g)) {
+      expect(m[0], `${path} at ${m.index}`).toBe("");
+    }
+    uses += (text.match(/var\(--duration-fast\)/g) ?? []).length;
+  }
+  expect(uses).toBeGreaterThan(40);
+});

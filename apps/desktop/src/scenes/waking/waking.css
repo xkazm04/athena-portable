@@ -56,7 +56,7 @@
   background: transparent;
   border: 1px solid var(--line);
   cursor: pointer;
-  transition: background var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast);
+  transition: background var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast), color var(--duration-fast) var(--ease-fast);
 }
 .waking__step:hover {
   color: var(--foreground);
@@ -75,7 +75,7 @@
   border-radius: 50%;
   font-size: 0.8125rem;
   border: 1px solid var(--line-strong);
-  transition: background var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast);
+  transition: background var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast), color var(--duration-fast) var(--ease-fast);
 }
 .waking__step[data-done="true"] .waking__step-n {
   color: var(--primary-fg);
@@ -134,7 +134,7 @@
   color: var(--foreground);
   border: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--recessed) 70%, transparent);
-  transition: border-color var(--duration-fast);
+  transition: border-color var(--duration-fast) var(--ease-fast);
 }
 .waking__input:hover {
   border-color: var(--foreground);
@@ -154,7 +154,7 @@
   border: 0;
   text-decoration: underline;
   cursor: pointer;
-  transition: color var(--duration-fast);
+  transition: color var(--duration-fast) var(--ease-fast);
 }
 .waking__later:hover {
   color: var(--foreground);

@@ -173,10 +173,10 @@
   border-radius: calc(var(--radius-card) * 1.8);
   cursor: pointer;
   transition:
-    transform var(--duration-fast),
-    opacity var(--duration-fast),
-    border-color var(--duration-fast),
-    background var(--duration-fast);
+    transform var(--duration-fast) var(--ease-fast),
+    opacity var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast),
+    background var(--duration-fast) var(--ease-fast);
   content-visibility: auto;
   contain-intrinsic-size: auto 19rem 18rem;
 }
@@ -426,7 +426,7 @@
   border-radius: 999px;
   color: var(--muted-foreground);
   border: 1px solid var(--line);
-  transition: color var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
+  transition: color var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast), background var(--duration-fast) var(--ease-fast);
 }
 .stages__n {
   display: inline-grid;
@@ -436,7 +436,7 @@
   border-radius: 50%;
   font-size: 0.75rem;
   border: 1px solid var(--line-strong);
-  transition: color var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
+  transition: color var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast), background var(--duration-fast) var(--ease-fast);
 }
 .stages__step[data-state="now"] {
   color: var(--foreground);

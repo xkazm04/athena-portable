@@ -89,7 +89,7 @@
   background: color-mix(in srgb, var(--primary) 70%, transparent);
   transition:
     height 80ms linear,
-    background var(--duration-fast);
+    background var(--duration-fast) var(--ease-fast);
 }
 
 .vs-wave[data-active="false"] span {

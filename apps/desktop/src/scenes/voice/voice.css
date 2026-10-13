@@ -114,7 +114,7 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   cursor: pointer;
-  transition: background var(--duration-fast), border-color var(--duration-fast);
+  transition: background var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast);
 }
 .vsc-place:hover,
 .vsc-place[data-focused="true"] {
@@ -175,7 +175,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted-foreground);
-  transition: color var(--duration-fast);
+  transition: color var(--duration-fast) var(--ease-fast);
 }
 .vsc-stage[data-status="now"] .vsc-stage__label {
   color: var(--accent-text);
@@ -190,7 +190,7 @@
   padding-left: 10px;
   margin-left: -1px;
   border-left: 2px solid transparent;
-  transition: border-color var(--duration-fast);
+  transition: border-color var(--duration-fast) var(--ease-fast);
 }
 .vsc-steps > li[data-status="current"] {
   border-left-color: var(--accent);
@@ -207,7 +207,7 @@
   border: 0;
   border-radius: 4px;
   text-align: left;
-  transition: background var(--duration-fast), color var(--duration-fast);
+  transition: background var(--duration-fast) var(--ease-fast), color var(--duration-fast) var(--ease-fast);
 }
 button.vsc-step {
   cursor: pointer;
@@ -291,7 +291,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--recessed) 70%, transparent);
-  transition: border-color var(--duration-fast);
+  transition: border-color var(--duration-fast) var(--ease-fast);
   position: relative;
   overflow: hidden;
 }
@@ -362,7 +362,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
   border-radius: var(--radius-card);
   cursor: pointer;
   position: relative;
-  transition: background var(--duration-fast), border-color var(--duration-fast);
+  transition: background var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast);
 }
 .vsc-opt:hover {
   background: var(--wash);
@@ -379,7 +379,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
   box-shadow: 0 0 0 1px var(--accent), 0 0 24px var(--glow);
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--duration-fast);
+  transition: opacity var(--duration-fast) var(--ease-fast);
 }
 .vsc-opt[aria-pressed="true"]::after {
   opacity: 1;
@@ -395,7 +395,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--recessed);
-  transition: border-color var(--duration-fast);
+  transition: border-color var(--duration-fast) var(--ease-fast);
 }
 .vsc-voice[data-playing="true"] {
   border-color: var(--accent);
@@ -422,7 +422,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-card);
   background: var(--recessed);
-  transition: border-color var(--duration-fast), opacity var(--duration-fast);
+  transition: border-color var(--duration-fast) var(--ease-fast), opacity var(--duration-fast) var(--ease-fast);
 }
 .vsc-take[data-picked="true"] {
   border-color: var(--accent);
@@ -436,7 +436,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
   box-shadow: 0 0 0 1px var(--accent);
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--duration-fast);
+  transition: opacity var(--duration-fast) var(--ease-fast);
 }
 .vsc-take[data-picked="true"]::after {
   opacity: 1;
