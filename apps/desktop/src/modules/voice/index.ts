@@ -14,7 +14,7 @@ import { endpoint, useDaemon } from "@/stores/daemon";
 
 import { fixtureIds, fixtures } from "./fixtures";
 import { useVoiceSetup } from "./live";
-import { selectVoice, type DaemonStanding } from "./model";
+import { selectVoice, type DaemonStanding, type VoiceModel } from "./model";
 import VoiceView from "./view";
 
 export function standingOf(health: string, loaded: boolean): DaemonStanding {
@@ -23,7 +23,12 @@ export function standingOf(health: string, loaded: boolean): DaemonStanding {
   return "starting";
 }
 
-function Live() {
+/**
+ * The model, built from the daemon store and the module's own voice-setup store. A hook so the
+ * Voice module and its depth scene share one selector, one connect and one set of actions; the old
+ * view and the new one differ only in what they draw.
+ */
+export function useVoiceModel(): VoiceModel {
   const daemon = useDaemon();
   const found = endpoint(daemon);
   const url = found?.url ?? null;
@@ -34,7 +39,7 @@ function Live() {
     void useVoiceSetup.getState().connect(url && token ? { url, token } : null);
   }, [url, token]);
 
-  const model = selectVoice({
+  return selectVoice({
     daemon: standingOf(daemon.health, daemon.loaded),
     // Until the "studio done" row is read the mood is unknown, so the body waits rather than
     // flashing the studio at a person who finished it.
@@ -54,7 +59,10 @@ function Live() {
     actions: state.actions,
     meters: state.meters,
   });
-  return createElement(VoiceView, { model });
+}
+
+function Live() {
+  return createElement(VoiceView, { model: useVoiceModel() });
 }
 
 export const entry: ModuleEntry = {

@@ -83,16 +83,16 @@ Status: `todo` until its phase lands, then `proved: <test or hand check>`.
 
 | Capability | Today | Depth | Status |
 |---|---|---|---|
-| Daemon standing: ready, starting, offline, with the plain sentences | `modules/voice/index.ts` | D1 voice | todo |
-| Studio steps: engine, install, pick, hear, ready; clickable rail; Restart | `studio.tsx` | D2 studio | todo |
-| Kokoro install with progress and error; manual option | `installView` | D2 studio | todo |
-| Voice pick with preview toggle | `togglePreview` | D2 studio | todo |
-| Hear: record takes through Whisper and OpenAI side by side; pick one | `sttColumns` | D2 studio | todo |
-| OpenAI key field: Enter saves, never shown back; replace, remove, keep | `KeyField` | D2 settings | todo |
-| Whisper models install list | `install("whisper:id")` | D2 settings | todo |
-| Live meters (spectrum, level, mic) | `waveform.tsx` | D2 studio | todo |
-| Studio keys: Enter, B, S, 1, 2, Space (hold to record) | `keyAction` | D2 studio | todo |
-| Settings: output and input cards, Test take, Refresh, Reopen studio, hotkey hint | `view.tsx` | D2 settings | todo |
+| Daemon standing: ready, starting, offline, with the plain sentences | `modules/voice/index.ts` | D1 voice | proved: scenes/voice/view.test (the field says ready, off with the config's reason, starting, loading, offline with "Athena's daemon is not running, so her voice cannot be set up yet.", "Athena could not read her voice setup." with Ask again, and the gates stand in front of both places); the selector and connect are `useVoiceModel`, shared with the module |
+| Studio steps: engine, install, pick, hear, ready; clickable rail; Restart | `studio.tsx` | D2 studio | proved: scenes/voice/view.test (every step renders with its number, title, her line and dock; the rail goes back to every answered step and not ahead; Restart), interact.test (rail and Restart are wired); changed: "Her card" (the right-hand summary) is folded into the rail's per-step notes and the Ready card, and Start over is called Restart |
+| Kokoro install with progress and error; manual option | `installView` | D2 studio | proved: scenes/voice/view.test (64% with its phase and a progress ring round the drawing, the failure with its reason and Try again, manual with both links and Check again, a refused install request) |
+| Voice pick with preview toggle | `togglePreview` | D2 studio | proved: scenes/voice/view.test (Play with Space, Stop while playing, her first words, the error phase), keys.test (Space toggles only once her voice is installed), interact.test (one frame loop while she plays, none at rest) |
+| Hear: record takes through Whisper and OpenAI side by side; pick one | `sttColumns` | D2 studio | proved: scenes/voice/view.test (both columns with text and milliseconds, pending, failed, refused microphone, a listener that is not ready muted with its reason and a key field, Use this one, "is picked. Press Enter to keep it."), keys.test (1 and 2 pick only a ready listener), interact.test (hold button and Space start and stop a take) |
+| OpenAI key field: Enter saves, never shown back; replace, remove, keep | `KeyField` | D2 settings | proved: scenes/voice/interact.test (Replace opens the field, Keep the stored key closes it without saving, Enter saves the trimmed key and the key is never in the page again, Remove is disabled with "Removing the key..." while busy), view.test (a stored key shows no key, an absent one a password field) |
+| Whisper models install list | `install("whisper:id")` | D2 settings | proved: scenes/voice/view.test (every model with its standing, Install small.en when the chosen one is missing, the running download with its megabytes) |
+| Live meters (spectrum, level, mic) | `waveform.tsx` | D2 studio | proved: scenes/voice/interact.test (no frame is requested by any fixture at rest; a recording take or a playing voice runs exactly one loop and it is cancelled when it ends), view.test (micBins); changed: the hero is the existing Waveform, fed by her spectrum or by the microphone's level (labelled stylised), so the orb's level glow is not drawn separately and the window never runs two loops at once; settings keeps the module's MicMeter on the Test take |
+| Studio keys: Enter, B, S, 1, 2, Space (hold to record) | `keyAction` | D2 studio | proved: scenes/voice/keys.test (each key on each step through the module's own table, Space holds and release stops, a text field keeps every key, a button its own Enter and Space, chords and repeats ignored, Escape left to the stage), interact.test (the document takes the keys, stops when the studio goes away and stops a take in progress), model.test (the table); the dock chips are the same keys as buttons |
+| Settings: output and input cards, Test take, Refresh, Reopen studio, hotkey hint | `view.tsx` | D2 settings | proved: scenes/voice/view.test (Output and Input panels, Refresh, Reopen studio, the test take naming its listener or saying it is not ready, "hold Ctrl+Shift+Space"), interact.test (Reopen studio reopens and dives, Refresh asks again, the test take's hold button); changed: "Run the studio again" is called Reopen studio and "Check again" on the engine is the one Refresh in the header |
 
 ## Companion window (stays its own window; the bell is shared)
 

@@ -84,7 +84,7 @@ function openai(over: Partial<VoiceEngine> = {}): VoiceEngine {
   };
 }
 
-function config(over: Partial<VoiceConfig> = {}): VoiceConfig {
+export function config(over: Partial<VoiceConfig> = {}): VoiceConfig {
   return {
     tts: { engine: "kokoro", voice: "af_heart" },
     stt: { engine: "whisper", model: "base.en" },
@@ -105,7 +105,7 @@ const install = (over: Partial<InstallState>): InstallState => ({
   ...over,
 });
 
-function model(over: Partial<VoiceSources>): VoiceModel {
+export function model(over: Partial<VoiceSources>): VoiceModel {
   return selectVoice({
     daemon: "ready",
     config: config(),
@@ -127,7 +127,7 @@ function model(over: Partial<VoiceSources>): VoiceModel {
   });
 }
 
-const studio = (over: Partial<StudioState>): StudioState => ({ ...STUDIO_START, ...over });
+export const studio = (over: Partial<StudioState>): StudioState => ({ ...STUDIO_START, ...over });
 
 /** A machine with nothing installed: Kokoro absent, Whisper absent, no key. */
 const BARE = config({
