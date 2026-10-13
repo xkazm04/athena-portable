@@ -39,3 +39,9 @@ test("the rail's current-step bar and stage label ease as the studio moves on", 
   expect(rule(".vsc-steps > li")).toMatch(/transition:\s*border-color var\(--duration-fast\)/);
   expect(rule(".vsc-stage__label")).toMatch(/transition:\s*color var\(--duration-fast\)/);
 });
+
+test("the hero waveform arrives on the same rise as the head and the card, and is dropped with them", () => {
+  expect(rule(".vsc-hero")).toMatch(/animation:\s*vsc-in 320ms var\(--vs-ease\) both/);
+  expect(css).toMatch(/:root\[data-motion="calm"\] \.vsc-hero,/);
+  expect(css).toMatch(/\.vsc-head__words,\s*\.vsc-hero,\s*\.vsc-card \{\s*animation: none/);
+});

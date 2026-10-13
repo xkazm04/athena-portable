@@ -279,6 +279,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
 .vsc-hero {
   display: grid;
   gap: 6px;
+  animation: vsc-in 320ms var(--vs-ease) both;
 }
 .vsc-hero__note {
   margin: 0;
@@ -528,6 +529,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
   }
 }
 :root[data-motion="calm"] .vsc-head__words,
+:root[data-motion="calm"] .vsc-hero,
 :root[data-motion="calm"] .vsc-card,
 :root[data-motion="calm"] .voice-art {
   animation: none;
@@ -538,6 +540,7 @@ li[data-status="done"] > .vsc-step > span:first-child {
 }
 @media (prefers-reduced-motion: reduce) {
   .vsc-head__words,
+  .vsc-hero,
   .vsc-card {
     animation: none;
   }
