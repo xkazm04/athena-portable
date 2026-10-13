@@ -284,7 +284,8 @@ h4.ch-title {
   transform: translate(-50%, 50%);
   transition:
     transform var(--duration-fast),
-    opacity var(--duration-fast);
+    opacity var(--duration-fast),
+    background var(--duration-fast);
 }
 .ch-mark::before {
   content: "";
@@ -590,6 +591,7 @@ h4.ch-title {
 }
 button.ch-glance {
   cursor: pointer;
+  transition: border-color var(--duration-fast);
 }
 button.ch-glance:hover {
   border-color: var(--accent);
@@ -674,6 +676,7 @@ button.ch-glance:hover {
   border: 1px solid transparent;
   border-left: 3px solid var(--line-strong);
   border-radius: var(--radius-interactive);
+  transition: background var(--duration-fast), border-color var(--duration-fast);
 }
 .ch-facet:hover {
   background: var(--wash);
@@ -1026,6 +1029,7 @@ button.ch-glance:hover {
   border: 0;
   border-radius: 50%;
   opacity: 0.7;
+  transition: opacity var(--duration-fast);
 }
 .ch-dot[data-past],
 .ch-dot[aria-current] {
@@ -1167,6 +1171,7 @@ button.ch-glance:hover {
   background: transparent;
   border: 0;
   border-bottom: 1px solid var(--line);
+  transition: background var(--duration-fast);
 }
 .ch-ledger__row:hover {
   background: var(--wash);

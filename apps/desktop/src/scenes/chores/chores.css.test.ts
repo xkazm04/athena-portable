@@ -25,3 +25,13 @@ test("a card of the grid is not clipped by its own content-visibility box: it ho
   expect(item).toMatch(/padding:\s*4px/);
   expect(item).toMatch(/margin:\s*-4px/);
 });
+
+test("every control the pointer can press eases its hover on the fast duration", () => {
+  const blocks = css.split("}").filter((b) => /cursor:\s*pointer/.test(b));
+  expect(blocks.length).toBeGreaterThanOrEqual(6);
+  for (const b of blocks) expect(b, b.trim().split("{")[0]).toMatch(/transition:[^;]*var\(--duration-fast\)/);
+});
+
+test("the map mark eases its fill with its lift, so the hot chore does not flash", () => {
+  expect(rule(".ch-mark")).toMatch(/background var\(--duration-fast\)/);
+});
