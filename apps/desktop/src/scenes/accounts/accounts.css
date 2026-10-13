@@ -542,16 +542,6 @@
 .entries:empty {
   display: none;
 }
-.list__add {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-}
-.list__add > .btn,
-.list__add > span {
-  margin-top: 1.65rem;
-}
 
 /* ---- calm and narrow ------------------------------------------------------------------------------------------------------ */
 
@@ -579,12 +569,5 @@
   }
   .reach__words {
     min-height: 0;
-  }
-  .list__add {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .list__add > .btn,
-  .list__add > span {
-    margin-top: 0;
   }
 }

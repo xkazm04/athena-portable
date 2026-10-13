@@ -490,56 +490,56 @@ export function Allowlist({ row, model, go }: { row: ConnectorRow; model: Connec
           ))}
         </ul>
 
-        <div className="list__add">
-          <FormField
-            label={`Add ${noun === "recipients" ? "a recipient" : "a page id"}`}
-            hint={
-              draft.trim() !== ""
-                ? "Not on the list until you press Add. Escape drops what you typed."
-                : "A draft until you press Add; separate several with commas."
-            }
-          >
-            {(input) => (
-              <TextInput
-                {...input}
-                autoComplete="off"
-                value={draft}
-                disabled={locked}
-                title={locked ? row.disabledReason : undefined}
-                placeholder={noun === "recipients" ? "ap@northwind.example" : "32 hex characters"}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    add();
-                  } else if (e.key === "Escape") {
-                    // The first Escape drops the draft; with nothing to drop the field lets go, so
-                    // the next Escape is the stage's and rises a level.
-                    if (draft !== "") setDraft("");
-                    else e.currentTarget.blur();
-                  }
-                }}
-              />
-            )}
-          </FormField>
-          <Button
-            variant="primary"
-            onClick={add}
-            disabledReason={
-              locked
-                ? row.disabledReason
-                : busy
-                  ? `${row.busy}…`
-                  : fresh.length
-                    ? undefined
-                    : draft.trim()
-                      ? "That is already on the list."
-                      : "Type something first."
-            }
-          >
-            Add
-          </Button>
-        </div>
+        <FormField
+          label={`Add ${noun === "recipients" ? "a recipient" : "a page id"}`}
+          hint={
+            draft.trim() !== ""
+              ? "Not on the list until you press Add. Escape drops what you typed."
+              : "A draft until you press Add; separate several with commas."
+          }
+          action={
+            <Button
+              variant="primary"
+              onClick={add}
+              disabledReason={
+                locked
+                  ? row.disabledReason
+                  : busy
+                    ? `${row.busy}…`
+                    : fresh.length
+                      ? undefined
+                      : draft.trim()
+                        ? "That is already on the list."
+                        : "Type something first."
+              }
+            >
+              Add
+            </Button>
+          }
+        >
+          {(input) => (
+            <TextInput
+              {...input}
+              autoComplete="off"
+              value={draft}
+              disabled={locked}
+              title={locked ? row.disabledReason : undefined}
+              placeholder={noun === "recipients" ? "ap@northwind.example" : "32 hex characters"}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  add();
+                } else if (e.key === "Escape") {
+                  // The first Escape drops the draft; with nothing to drop the field lets go, so
+                  // the next Escape is the stage's and rises a level.
+                  if (draft !== "") setDraft("");
+                  else e.currentTarget.blur();
+                }
+              }}
+            />
+          )}
+        </FormField>
 
         <span>
           <Button variant="ghost" size="sm" onClick={() => go({ root: "accounts", item: row.id })}>

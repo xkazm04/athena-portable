@@ -531,6 +531,14 @@ select:focus-visible {
   gap: 8px;
 }
 
+/* A disabled action hangs its reason on a focusable span (Button); the span stretches and the button fills it. */
+.field__row > span {
+  display: flex;
+}
+.field__row > span > .btn {
+  flex: 1;
+}
+
 .field__input {
   width: 100%;
   padding: 5px 9px;

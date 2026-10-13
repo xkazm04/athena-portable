@@ -91,6 +91,9 @@ test("a field's action row is a two-column grid stretched to the control, not a 
   expect(row).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\) auto/);
   expect(row).toMatch(/align-items:\s*stretch/);
   expect(row).not.toMatch(/margin/);
+  // The disabled-reason wrapper is a span: it must stretch and its button must fill it.
+  expect(rule(".field__row > span")).toMatch(/display:\s*flex/);
+  expect(rule(".field__row > span > .btn")).toMatch(/flex:\s*1/);
 });
 
 test("the controls ease every state they change: press, disabled, primary hover, input edge, row wash", () => {
