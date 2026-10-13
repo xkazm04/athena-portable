@@ -61,3 +61,11 @@ test("the seal, her one button at rest, answers a pointer by scaling its face, w
   expect(rule('.aw[data-cards="0"]:not([data-mood="hear"]) .aw-seal:hover .aw-face')).toContain("scale: 1.08");
   expect(rule(".aw-face")).toContain("scale 260ms");
 });
+
+test("every data attribute the sheet selects on is written by the view (or the preview harness), and no class has no user", () => {
+  const sources = ["views.tsx", "drawing.tsx", "preview.tsx"].map((f) => readFileSync(new URL(`./${f}`, import.meta.url), "utf8")).join("\n");
+  const attrs = [...new Set([...css.matchAll(/\[(data-[a-z-]+)/g)].map((m) => m[1]))];
+  expect(attrs.length).toBeGreaterThan(10);
+  for (const attr of attrs) expect(sources, attr).toContain(attr);
+  for (const dead of [".wl-sim", ".aw-fact"]) expect(css.includes(dead), dead).toBe(false);
+});

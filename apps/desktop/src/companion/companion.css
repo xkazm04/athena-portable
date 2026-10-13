@@ -1370,9 +1370,6 @@ body.athena {
 .slip[data-decision] {
   animation: press var(--dur-stamp) var(--ease-thump) both;
 }
-.slip[data-decision] .sl-why {
-  transition: opacity 400ms;
-}
 @keyframes stamp-down {
   0% {
     opacity: 0;
@@ -1594,10 +1591,6 @@ body.athena {
 .wl-facts .ic {
   margin-top: 1px;
 }
-.wl-sim {
-  font-size: var(--t-label);
-  color: var(--paper-ink-2);
-}
 .wl-act {
   margin-top: auto;
   display: flex;
@@ -1614,29 +1607,6 @@ body.athena {
 }
 .wl-stamp .bleed {
   animation: bleed 900ms var(--ease-out) calc(var(--stamp-delay, 0ms) + 340ms) both;
-}
-/* first launch: the copy fades in after the paper unrolls; the stamp and the buttons come last */
-.wl > p,
-.wl-facts {
-  transition: opacity 500ms var(--ease-soft);
-}
-.aw[data-intro="1"] .wl > p:not(.eyebrow),
-.aw[data-intro="1"] .wl-facts,
-.aw[data-intro="1"] .wl-sim {
-  opacity: 0;
-}
-.aw[data-intro="1"] .wl-act,
-.aw[data-intro="2"] .wl-act {
-  visibility: hidden;
-}
-.aw[data-intro="1"] .wl-stamp,
-.aw[data-intro="2"] .wl-stamp {
-  animation: none;
-  opacity: 0;
-}
-.aw[data-intro="1"] .wl h2,
-.aw[data-intro="1"] .wl .eyebrow {
-  animation: line-in 500ms var(--ease-out) 300ms both;
 }
 
 /* ---------------------------------------------------------------- the ledger (expanded) */
@@ -1802,31 +1772,6 @@ body.athena {
   font-style: normal;
   font-size: var(--t-label);
   color: var(--paper-ink-2);
-}
-.aw-fact {
-  padding: 12px;
-  border: 1.5px dashed var(--paper-ink-2);
-  border-radius: 4px;
-}
-.aw-fact-t {
-  margin: 0;
-  font-size: var(--t-title);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.aw-fact-c {
-  margin: 4px 0 0;
-  font-size: calc(13px + var(--type-step));
-  color: var(--paper-ink-2);
-}
-.aw-fact-c b {
-  font-size: var(--t-label);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--paper-agent);
-}
-.aw-fact-c em {
-  font-style: normal;
 }
 
 @media (prefers-reduced-motion: reduce) {
