@@ -10,7 +10,7 @@
  *
  * A store a *view* starts stops being true (the day-zero rule of 0013), so `Live` only reads.
  */
-import React, { useEffect } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 
 import Live from "@/companion/live";
@@ -26,6 +26,9 @@ import { startVoice } from "@/stores/voice";
 
 import "@/styles/app.css";
 import "@/companion/companion.css";
+
+// The dev inspector (ADR 0086): dropped from a build with the rest of the DEV branch.
+const Inspector = import.meta.env.DEV ? lazy(() => import("@/lib/dev/inspector")) : null;
 
 function Root() {
   useEffect(() => {
@@ -47,7 +50,16 @@ function Root() {
       stopRun();
     };
   }, []);
-  return <Live />;
+  return (
+    <>
+      <Live />
+      {Inspector && (
+        <Suspense fallback={null}>
+          <Inspector />
+        </Suspense>
+      )}
+    </>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

@@ -27,6 +27,8 @@ import { fileURLToPath } from "node:url";
 
 import react from "@vitejs/plugin-react";
 import type { Plugin } from "vite";
+// @ts-expect-error a plain .mjs build helper, no declarations
+import { devSourceLocPlugin } from "./scripts/dev-source-loc.mjs";
 import { defineConfig } from "vitest/config";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -75,7 +77,7 @@ function evidenceFilms(): Plugin {
 
 export default defineConfig({
   base: "./",
-  plugins: [react(), evidenceFilms()],
+  plugins: [devSourceLocPlugin(), react(), evidenceFilms()],
   resolve: {
     alias: { "@": path.resolve(root, "src") },
   },
