@@ -109,6 +109,7 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
             <button
               type="button"
               className="surface__light focus-ring"
+              aria-label={`${l.label}, ${l.stat}${l.attention ? ", needs you" : ""}`}
               data-attention={l.attention}
               data-focused={focused === l.root}
               onMouseEnter={() => setFocused(l.root)}

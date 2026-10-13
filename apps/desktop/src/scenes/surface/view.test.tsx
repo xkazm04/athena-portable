@@ -58,3 +58,12 @@ describe("the ask box is the hand-over, and says so", () => {
     expect(h).toContain("only there in the app");
   });
 });
+
+describe("a light that needs the person says so in its name, not only in a dot", () => {
+  it("names the standing and adds needs you only where the model says attention", () => {
+    const h = html("typical");
+    expect(h).toContain('aria-label="Mind, ');
+    expect(h.match(/aria-label="[^"]*needs you"/g)).toHaveLength(h.match(/data-attention="true"/g)!.length);
+    expect(h.match(/data-attention="true"/g)!.length).toBeGreaterThan(0);
+  });
+});
