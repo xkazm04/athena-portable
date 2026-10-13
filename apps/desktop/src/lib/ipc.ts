@@ -160,8 +160,8 @@ export const onTabsChanged = (f: (tabs: Tab[]) => void): Promise<UnlistenFn> =>
   listen<Tab[]>("tabs:changed", (e) => f(e.payload));
 
 /** Emitted whenever the selected module changes, whoever changed it. */
-export const onLayoutChanged = (f: (module: string) => void): Promise<UnlistenFn> =>
-  listen<{ module: string }>("layout:changed", (e) => f(e.payload.module));
+export const onLayoutChanged = (f: (module: string, shape?: string) => void): Promise<UnlistenFn> =>
+  listen<{ module: string; shape?: string }>("layout:changed", (e) => f(e.payload.module, e.payload.shape));
 
 /**
  * A table changed under another window's hand (ADR 0026): `{table, key}`. The settings, origins

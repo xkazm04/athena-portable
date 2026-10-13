@@ -17,6 +17,7 @@ import Stage from "@/stage/Stage";
 import { pillText, useAthena } from "@/stores/athena";
 import { useSettings } from "@/stores/settings";
 
+import { useFollowShell } from "./follow";
 import { DEPTH_SCENES, sceneFor } from "./scenes";
 
 const SCENES = Object.values(DEPTH_SCENES);
@@ -51,6 +52,7 @@ export default function Console() {
   const onboarded = useSettings((s) => s.onboarded);
   const motion = useSettings((s) => s.motion);
   const label = useLabeller();
+  useFollowShell();
 
   const pose = poseOf(athena);
   const render = useCallback(

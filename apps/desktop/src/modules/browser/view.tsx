@@ -49,27 +49,9 @@ export default function BrowserView({
 }) {
   const { actions, apps, appsLoaded, appsProblem, firstRun, focused, problem, tabs, tools } = model;
 
-  const go = (typed: string) => {
-    const url = normaliseUrl(typed);
-    if (!url) return;
-    if (focused) actions.navigate(focused.id, url);
-    else actions.open(url);
-  };
-
   return (
     <div className="module-browser">
-      <div className="tab-strip" data-tauri-drag-region>
-        <TabStrip tabs={tabs} onFocus={actions.focus} onClose={actions.close} />
-        {/* Outside the rail on purpose: with twenty tabs open, the way to open a twenty-first
-            must not itself be something you have to scroll to. */}
-        <Button size="sm" variant="ghost" title="New tab" onClick={() => actions.open(NEW_TAB_URL)}>
-          +
-        </Button>
-        <UrlField key={`${focused?.id ?? "none"}:${focused?.url ?? ""}`} url={focused?.url ?? ""} onGo={go} />
-        {/* The strip is the only band of this view a page does not cover, so the one fact about
-            the page that is worth a permanent 6rem lives here: does the relay see anything. */}
-        <ToolCount tools={tools} />
-      </div>
+      <StripView model={model} />
 
       <div className="module-browser__body">
         <PageShell fill>
@@ -119,6 +101,35 @@ export default function BrowserView({
           ) : null}
         </PageShell>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The strip: the tabs, the way to open another, the address field and the tools pill. It is the
+ * only part of this module a page does not cover, so it is its own component: the module bar's
+ * Browser draws it above the ledger, and the depth stage draws it as the band above a page.
+ */
+export function StripView({ model }: { model: BrowserModel }) {
+  const { actions, focused, tabs, tools } = model;
+  const go = (typed: string) => {
+    const url = normaliseUrl(typed);
+    if (!url) return;
+    if (focused) actions.navigate(focused.id, url);
+    else actions.open(url);
+  };
+  return (
+    <div className="tab-strip" data-tauri-drag-region>
+      <TabStrip tabs={tabs} onFocus={actions.focus} onClose={actions.close} />
+      {/* Outside the rail on purpose: with twenty tabs open, the way to open a twenty-first
+          must not itself be something you have to scroll to. */}
+      <Button size="sm" variant="ghost" title="New tab" onClick={() => actions.open(NEW_TAB_URL)}>
+        +
+      </Button>
+      <UrlField key={`${focused?.id ?? "none"}:${focused?.url ?? ""}`} url={focused?.url ?? ""} onGo={go} />
+      {/* The strip is the only band of this view a page does not cover, so the one fact about
+          the page that is worth a permanent 6rem lives here: does the relay see anything. */}
+      <ToolCount tools={tools} />
     </div>
   );
 }

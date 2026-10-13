@@ -23,16 +23,16 @@ Status: `todo` until its phase lands, then `proved: <test or hand check>`.
 
 | Capability | Today | Depth | Status |
 |---|---|---|---|
-| Tab chips with per-tab close; New tab; address field (Enter navigates, Escape discards) | `modules/browser/view.tsx` | page shape band | todo |
-| Tools indicator: count, transport, relay problem verbatim, asking | `modules/browser/view.tsx` | page shape band | todo |
-| Register an app by URL; trusts the origin before the page is read | `modules/browser/model.ts` register | D1 apps | todo |
-| Standing per app: closed, reading, ready, read only, disabled | `model.ts` appOf | D1 apps | todo |
-| Open (focus the existing tab or open one), Details | `model.ts` openApp | D1/D2 app | todo |
-| App layer: on/off, Open, Forget with two presses, per-tool overrides pinned GATED, last seen | `view.tsx` | D2 app | todo |
-| Tool level of one app | new (depth 3) | D3 tool | todo |
-| First-run lead with the engine's standing, opens the register form | `FirstRun.engineLine` | D0 / D1 apps | todo |
-| Empty state with no tab owns the whole window | `layout.rs` | scene shape | todo |
-| Degraded: tabs not loaded; origins unreadable | `problem`, `appsProblem` | D1 apps | todo |
+| Tab chips with per-tab close; New tab; address field (Enter navigates, Escape discards) | `modules/browser/view.tsx` | page shape band | proved: StripView is the module's own strip moved out of its view and drawn as the page band (browser view/model tests unchanged, Stage.test band cases, apps/interact.test chip focus and close); hand check in the shell pending |
+| Tools indicator: count, transport, relay problem verbatim, asking | `modules/browser/view.tsx` | page shape band | proved: part of StripView, unchanged; hand check in the shell pending |
+| Register an app by URL; trusts the origin before the page is read | `modules/browser/model.ts` register | D1 apps | proved: apps/interact.test (Enter registers a normalised address and clears the field; empty is refused with its reason), apps/view.test (honest copy); register still writes the row before the tab (hook unchanged), then moves to the page |
+| Standing per app: closed, reading, ready, read only, disabled | `model.ts` appOf | D1 apps | proved: apps/view.test (every standing by word and by shape: ready, read only, reading, not acting, not opened) |
+| Open (focus the existing tab or open one), Details | `model.ts` openApp | D1/D2 app | proved: apps/interact.test (Show the page calls openApp with the origin; an unregistered page focuses its tab and moves to its page) |
+| App layer: on/off, Open, Forget with two presses, per-tool overrides pinned GATED, last seen | `view.tsx` | D2 app | proved: apps/interact.test (switch writes origin and value; Forget needs two presses, Keep takes it back), apps/view.test (the old words verbatim) |
+| Tool level of one app | new (depth 3) | D3 tool | proved: apps/model.test and apps/view.test (what the page said, pins, no class; read-only by decision, ADR 0091) |
+| First-run lead with the engine's standing, opens the register form | `FirstRun.engineLine` | D0 / D1 apps | proved: apps/view.test (the sentence, the Enter hint and the engine line verbatim) |
+| Empty state with no tab owns the whole window | `layout.rs` | scene shape | changed: the scene owns the window always, and the empty field is the same scene; the page shape only ever has a page (ADR 0088) |
+| Degraded: tabs not loaded; origins unreadable | `problem`, `appsProblem` | D1 apps | proved: apps/view.test (the shell's words verbatim; the origins table's words verbatim) |
 
 ## Playbooks (Chores)
 

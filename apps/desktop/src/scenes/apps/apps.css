@@ -1,0 +1,317 @@
+/* The Apps depth — README section 3.4 and 3.5, ADR 0087, 0088 and 0089. Tokens only; no text under
+ * 12px; transform and opacity are all that move. The item under attention is display type. */
+
+.apps {
+  height: 100%;
+  overflow: auto;
+  padding: 4vh 6vw 14vh 5vw;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+.apps--page {
+  display: none;
+}
+
+.apps__head {
+  display: grid;
+  gap: 8px;
+  max-width: 56rem;
+}
+.apps__eyebrow {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.apps__marquee {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
+  font-weight: 300;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.apps__marquee--app {
+  font-size: clamp(2rem, 4.2vw, 3.4rem);
+}
+.apps__line {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  min-height: 1.5em;
+}
+.apps__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- the field ------------------------------------------------------------------------------ */
+
+.apps__orbs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+.apps__orbs > li {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 232px;
+}
+.apps__orb {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 8px 14px;
+  font: inherit;
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+.apps__orb:hover {
+  background: var(--wash);
+  border-color: var(--line-strong);
+}
+.apps__orb-host {
+  max-width: 100%;
+  font-size: 1rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.apps__orb-standing {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+.apps__orb-tools {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.apps__orb[data-standing="disabled"] .apps__orb-host {
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+  text-decoration-color: var(--status-warning);
+}
+
+.apps__problem {
+  display: grid;
+  gap: 6px;
+}
+
+.apps__register {
+  display: grid;
+  gap: 8px;
+  max-width: 44rem;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card-bg) 70%, transparent);
+}
+.apps__register--lead {
+  max-width: 52rem;
+  padding: 22px 24px;
+  border-color: var(--accent);
+  box-shadow: 0 0 28px var(--glow);
+}
+.apps__register-title {
+  margin: 0;
+  font-size: 1rem;
+}
+.apps__register--lead .apps__register-title {
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+.apps__register-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.apps__input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  font: inherit;
+  padding: 9px 14px;
+  border-radius: 999px;
+  color: var(--foreground);
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--recessed) 70%, transparent);
+}
+.apps__first {
+  display: grid;
+  gap: 4px;
+}
+.apps__example {
+  font-family: var(--font-mono);
+}
+
+.apps__pages {
+  display: grid;
+  gap: 8px;
+}
+.apps__pages-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.apps__pages ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.apps__chip {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card-bg) 70%, transparent);
+  max-width: 22rem;
+}
+.apps__chip[data-focused="true"] {
+  border-color: var(--accent);
+}
+.apps__chip button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.apps__chip-main {
+  padding: 5px 6px 5px 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.apps__chip-close {
+  padding: 0 10px 0 4px;
+  color: var(--muted-foreground);
+}
+
+/* ---- one app -------------------------------------------------------------------------------- */
+
+.apps--app {
+  grid-template-columns: minmax(220px, 34%) 1fr;
+  gap: 0 4vw;
+  align-content: start;
+}
+.apps__art {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  padding-top: 4vh;
+}
+.apps__stylised {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.apps__detail {
+  display: grid;
+  gap: 14px;
+  max-width: 50rem;
+  min-width: 0;
+}
+.apps__origin {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+.apps__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.apps__section {
+  display: grid;
+  gap: 6px;
+}
+.apps__section-title {
+  margin: 0;
+  font-size: 1rem;
+}
+.apps__section > .btn {
+  justify-self: start;
+}
+.apps__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.apps__tools {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.apps__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  padding: 6px 14px;
+  color: var(--foreground);
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--card-raised) 70%, transparent);
+  cursor: pointer;
+}
+.apps__tool:hover {
+  background: var(--wash);
+}
+.apps__tool-name {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.orb__float {
+  animation: orb-float 6s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.orb__spin {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: orb-spin 2.4s linear infinite;
+}
+@keyframes orb-float {
+  from { transform: translateY(0); }
+  to { transform: translateY(-3px); }
+}
+@keyframes orb-spin {
+  to { transform: rotate(360deg); }
+}
+:root[data-motion="calm"] .orb__float,
+:root[data-motion="calm"] .orb__spin {
+  animation: none;
+  will-change: auto;
+}
+
+@media (max-width: 900px) {
+  .apps--app { grid-template-columns: 1fr; }
+  .apps__art { padding-top: 0; }
+}

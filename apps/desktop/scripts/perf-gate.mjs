@@ -16,6 +16,7 @@
  * still not the shipped shell, so the cutover phase adds a hand pass in the real window.
  */
 import { spawn, spawnSync } from "node:child_process";
+import { createServer } from "node:net";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 
@@ -112,8 +113,20 @@ const JANKY = `<!doctype html><body><p>janky</p><script>
  * Build the preview and serve it with `vite preview`: a production bundle, which is what ships,
  * not the dev server with its hot-reload client. Returns the base URL and a stop function.
  */
+/** A free port, asked of the OS, so two gate runs at once (two worktrees) never share a server. */
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const probe = createServer();
+    probe.once("error", reject);
+    probe.listen(0, "127.0.0.1", () => {
+      const { port } = probe.address();
+      probe.close(() => resolve(port));
+    });
+  });
+}
+
 async function serveBuild() {
-  const port = 1434;
+  const port = await freePort();
   const build = spawnSync("pnpm exec vite build --outDir dist-perf --emptyOutDir", {
     stdio: "ignore",
     shell: true,
@@ -156,7 +169,7 @@ async function main() {
       const { base, stop } = await serveBuild();
       try {
         const drive = (await import(pathToFileURL(path.resolve(`scripts/perf-${scene}.drive.mjs`)).href)).default;
-        const r = await runPage(browser, (page) => page.goto(`${base}/preview.html?scene=${scene}`), drive);
+        const r = await runPage(browser, (page) => page.goto(`${base}/preview.html?scene=${scene}${drive.query ?? ""}`), drive);
         show(`${scene} (${drive.title ?? "scenario"})`, r);
         failed = !r.ok;
       } finally {

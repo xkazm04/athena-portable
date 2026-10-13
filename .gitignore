@@ -55,3 +55,6 @@ proving-runs/
 # Playbook evidence media: narration, capture and film (ADR 0055). Only the index and the
 # thumbnail beside each playbook are committed.
 evidence/
+
+# Parallel agent worktrees (not for commits)
+.claude/worktrees/

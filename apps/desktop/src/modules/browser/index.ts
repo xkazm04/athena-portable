@@ -21,10 +21,25 @@ import { useTools } from "@/stores/tools";
 import type { ModuleEntry } from "@/modules/types";
 
 import { fixtureIds, fixtures, initialAppFor } from "./fixtures";
-import { originOf, selectBrowser, tabOn, type BrowserActions } from "./model";
+import { originOf, selectBrowser, tabOn, type BrowserActions, type BrowserModel } from "./model";
 import BrowserView from "./view";
 
-function Live() {
+export interface BrowserModelOptions {
+  /**
+   * Called once a tab for an app is focused or opened by `openApp` or `register`. The module bar
+   * has nothing to do then (the Browser module is already showing it); the depth scene moves to the
+   * page. It is called after the tab exists, never before, so the page shape is never asked for
+   * with no page to show.
+   */
+  onShown?: (origin: string) => void;
+}
+
+/**
+ * The model, built from the stores. A hook so the Browser module and the Apps depth scene share one
+ * selector and one set of actions; the old view and the new ones differ only in what they draw.
+ */
+export function useBrowserModel(options: BrowserModelOptions = {}): BrowserModel {
+  const { onShown } = options;
   const tabs = useTabs((s) => s.tabs);
   const loaded = useTabs((s) => s.loaded);
   const create = useTabs((s) => s.create);
@@ -60,30 +75,34 @@ function Live() {
         .getState()
         .save(origin, { enabled: true })
         .then(() => create(url))
+        .then(() => onShown?.(origin))
         .catch(report("register"));
     },
     openApp: (origin) => {
       const open = tabOn(origin, useTabs.getState().tabs);
-      if (open) void focus(open.id).catch(report("show"));
-      else void create(origin).catch(report("open app"));
+      if (open) void focus(open.id).then(() => onShown?.(origin)).catch(report("show"));
+      else void create(origin).then(() => onShown?.(origin)).catch(report("open app"));
     },
     setEnabled: (origin, enabled) =>
       void useOrigins.getState().setEnabled(origin, enabled).catch(report("switch")),
     forget: (origin) => void useOrigins.getState().forget(origin).catch(report("forget")),
   };
 
-  return createElement(BrowserView, {
-    model: selectBrowser(tabs, loaded, byTab, actions, {
-      records,
-      known,
-      loaded: originsLoaded,
-      problem: originsProblem,
-    },
+  return selectBrowser(
+    tabs,
+    loaded,
+    byTab,
+    actions,
+    { records, known, loaded: originsLoaded, problem: originsProblem },
     // The welcome has been answered and nothing is open: lead with the way in (UAT backlog B5).
     onboarded && loaded && tabs.length === 0
       ? { engineLine: engineLine(engine, probes, engineProblem, checking) }
-      : null),
-  });
+      : null,
+  );
+}
+
+function Live() {
+  return createElement(BrowserView, { model: useBrowserModel() });
 }
 
 export const entry: ModuleEntry = {
