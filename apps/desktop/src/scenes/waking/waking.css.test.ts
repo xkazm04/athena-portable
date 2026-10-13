@@ -24,3 +24,9 @@ test("every control the pointer can press eases its hover on the fast duration",
   expect(css).toMatch(/\.waking__step:hover\s*\{/);
   expect(css).toMatch(/\.waking__later:hover\s*\{/);
 });
+
+test("the act hangs from the top, so the steps do not move when a taller step is swapped for a shorter one", () => {
+  expect(rule(".waking")).toMatch(/align-items:\s*start/);
+  expect(rule(".waking")).not.toMatch(/align-items:\s*center/);
+  expect(rule(".waking__her")).toMatch(/padding-top:\s*4vh/);
+});

@@ -6,11 +6,12 @@
   display: grid;
   grid-template-columns: minmax(280px, 38%) 1fr;
   gap: 0 4vw;
-  align-items: center;
+  align-items: start;
   padding: 4vh 6vw 8vh 4vw;
   overflow: auto;
 }
 .waking__her {
+  padding-top: 4vh;
   display: grid;
   justify-items: center;
   gap: 8px;
@@ -164,5 +165,6 @@
 
 @media (max-width: 899px) {
   .waking { grid-template-columns: 1fr; gap: 16px; padding-top: 2vh; }
+  .waking__her { padding-top: 0; }
   .waking__her .bell { width: min(60%, 30vh); }
 }
