@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Athena — Fathom</title>
+<link rel="stylesheet" href="fathom.css">
+</head>
+<body data-depth="0">
+<canvas id="snow" aria-hidden="true"></canvas>
+<div id="shafts" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<div id="vignette" aria-hidden="true"></div>
+
+<div id="stage">
+  <header id="top">
+    <button id="rise" class="rise" type="button" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+      <span>Rise to <b id="rise-to">the surface</b></span>
+    </button>
+    <a id="brand" href="#/" aria-label="Athena — back to the surface">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="#06b6d4"/><g fill="none" stroke="#04222a" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.6 24.4 16 7.4l7.4 17"/><path d="M11.9 19.2l3.2 3 5.2-6.2" stroke-width="2.3"/></g></svg>
+      <span>Athena</span>
+    </a>
+    <nav id="crumbs" aria-label="Where you are"></nav>
+    <div id="top-right">
+      <span id="sim-note">Demo data · nothing leaves this page</span>
+      <button id="motion-toggle" class="ghost" type="button" aria-pressed="false" title="Calm motion">Calm</button>
+    </div>
+  </header>
+
+  <aside id="gauge" aria-hidden="true">
+    <div class="gauge-rail"><i data-d="0"></i><i data-d="1"></i><i data-d="2"></i><i data-d="3"></i><b id="gauge-mark"></b></div>
+    <span id="gauge-label">Surface</span>
+  </aside>
+
+  <main id="scenes" aria-live="polite"></main>
+
+  <div id="dock" hidden>
+    <button id="dock-athena" type="button" aria-label="Talk to Athena — rise to the surface">
+      <span class="dock-bell" aria-hidden="true"></span>
+      <span class="dock-text"><b>Athena</b><span id="dock-state">resting</span></span>
+      <span id="dock-wait" class="wait-pill" hidden></span>
+    </button>
+  </div>
+
+  <div id="toast" role="status" hidden></div>
+</div>
+
+<p id="skip-intro" hidden><button type="button" class="ghost">Skip intro</button></p>
+
+<script src="data.js"></script>
+<script src="fathom.js"></script>
+</body>
+</html>
