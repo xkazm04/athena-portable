@@ -1888,7 +1888,7 @@ body.athena {
 }
 .aw .offers li .aw-btn-toggle {
   margin-left: auto;
-  min-height: 30px;
+  min-height: 32px;
   border-color: var(--paper-rule);
   color: var(--paper-ink);
 }

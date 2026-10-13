@@ -81,3 +81,10 @@ test("a parameter's key on the decision card grows or breaks inside its column; 
 test("the engine line breaks inside a long word, since its reason is the daemon's own text", () => {
   expect(rule(".aw .wl-engine")).toContain("overflow-wrap: anywhere");
 });
+
+test("the small outlined buttons (Disable, Check again) are one height, with the icon buttons", () => {
+  const heights = [rule(".aw .offers li .aw-btn-toggle"), rule(".aw .wl-engine-act .aw-btn"), rule(".aw .ico-btn")].map(
+    (r) => r.match(/(?:min-)?height:\s*(\d+)px/)![1],
+  );
+  expect(new Set(heights).size).toBe(1);
+});
