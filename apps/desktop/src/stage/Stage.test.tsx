@@ -66,6 +66,13 @@ describe("a depth", () => {
 
 describe("the page shape (ADR 0088)", () => {
   const html = render({ root: "apps", item: "host-1", sub: { kind: "page" } });
+  it("holds the strip in a band the height layout.rs reserves, only in this shape", () => {
+    const strip = <b>strip</b>;
+    const withBand = render({ root: "apps", item: "host-1", sub: { kind: "page" } }, { band: strip });
+    expect(withBand).toContain('class="stage__band"');
+    expect(withBand).toContain("<b>strip</b>");
+    expect(render({ root: "apps", item: "host-1" }, { band: strip })).not.toContain("stage__band");
+  });
   it("is only the band: Rise and the breadcrumb, no water, no scenes, no dock", () => {
     expect(html).toContain('data-shape="page"');
     expect(html).toContain("Rise to <b>host-1</b>");

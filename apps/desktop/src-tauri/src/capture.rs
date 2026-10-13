@@ -165,11 +165,11 @@ mod windows_capture {
         };
 
         // Asked before the bitmap is drawn, so a call with nothing to photograph costs nothing.
-        // `layout` shows a page only in the Browser module and only with a tab focused; in any
-        // other module the main area is the panel, and a picture of Athena's own words is not
+        // `layout` shows a page only in the page shape and only with a tab focused; in any
+        // other shape the main area is the panel, and a picture of Athena's own words is not
         // evidence about the thing being approved.
         let page_shown =
-            app.state::<Selection>().is_browser() && app.state::<Tabs>().focused().is_some();
+            app.state::<Selection>().is_page() && app.state::<Tabs>().focused().is_some();
         let (x, y, w, h) = page_rect_physical(
             client.width as f64 / scale,
             client.height as f64 / scale,

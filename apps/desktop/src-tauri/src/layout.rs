@@ -55,9 +55,17 @@ pub const CHROME_HEIGHT: f64 = BAR_HEIGHT + STRIP_HEIGHT;
 /// The module the window comes up on. `registry.ts` spells the same id as `DEFAULT_MODULE_ID`.
 pub const DEFAULT_MODULE: &str = "browser";
 
-/// The one module id Rust knows, because the rectangles depend on it. Every other id is a string
-/// this file passes through untouched — adding a module is a TypeScript change, not a Rust one.
+/// The old module bar's one id Rust knows. It means the page shape until the depth stage replaces
+/// the bar (redesign phase 9, which deletes this constant); every other id is a string this file
+/// passes through untouched.
 pub const BROWSER_MODULE: &str = "browser";
+
+/// The two shapes the window can be in (ADR 0088), spelled as the depth stage tells them. `page`
+/// is `apps/<app>/page`: the chrome keeps its band and a page webview owns the rest. `scene` is
+/// everything else. `src/depth/shape.ts` spells the same two ids, and a test reads this file to
+/// keep them equal.
+pub const PAGE_SHAPE: &str = "page";
+pub const SCENE_SHAPE: &str = "scene";
 
 /// Which module is showing. Managed state, so the layout and the chrome cannot disagree.
 #[derive(Debug)]
@@ -82,8 +90,11 @@ impl Selection {
         *self.module.lock().expect("selection poisoned") = module.to_string();
     }
 
-    pub fn is_browser(&self) -> bool {
-        self.get() == BROWSER_MODULE
+    /// Is the selection the page shape (or the old Browser module, which meant the same)? Whether
+    /// a page is then *shown* also needs a focused tab; see `apply`.
+    pub fn is_page(&self) -> bool {
+        let selected = self.get();
+        selected == PAGE_SHAPE || selected == BROWSER_MODULE
     }
 }
 
@@ -109,8 +120,8 @@ pub struct Rects {
 
 /// The arithmetic, with no window in it — which is what makes it testable (see the tests below).
 ///
-/// `page_shown` is "the Browser module is selected **and** a tab is focused". Both halves matter:
-/// selecting Browser with nothing open must not blank the window.
+/// `page_shown` is "the page shape is selected **and** a tab is focused". Both halves matter:
+/// selecting it with nothing open must not blank the window.
 pub fn rects(width: f64, height: f64, page_shown: bool) -> Rects {
     let width = width.max(1.0);
     let height = height.max(1.0);
@@ -152,7 +163,7 @@ pub fn apply(app: &AppHandle) {
     };
 
     let tabs = app.state::<Tabs>();
-    let page_shown = app.state::<Selection>().is_browser() && tabs.focused().is_some();
+    let page_shown = app.state::<Selection>().is_page() && tabs.focused().is_some();
     let r = rects(
         size.width as f64 / scale,
         size.height as f64 / scale,
@@ -188,7 +199,19 @@ pub fn apply(app: &AppHandle) {
 pub fn select(app: &AppHandle, module: &str) {
     app.state::<Selection>().set(module);
     apply(app);
-    crate::ui_emit(app, "layout:changed", serde_json::json!({ "module": module }));
+    // The shape rides along so a window that mirrors the selection (the depth stage, when Rust
+    // moves it: a first app opened from the welcome) can tell a page from a scene without knowing
+    // which ids mean which.
+    let shape = if app.state::<Selection>().is_page() {
+        PAGE_SHAPE
+    } else {
+        SCENE_SHAPE
+    };
+    crate::ui_emit(
+        app,
+        "layout:changed",
+        serde_json::json!({ "module": module, "shape": shape }),
+    );
 }
 
 #[cfg(test)]
@@ -238,13 +261,33 @@ mod tests {
     fn the_selection_starts_on_the_browser_and_is_whatever_the_chrome_last_said() {
         let selection = Selection::default();
         assert_eq!(selection.get(), DEFAULT_MODULE);
-        assert!(selection.is_browser());
+        assert!(selection.is_page());
 
         selection.set("settings");
         assert_eq!(selection.get(), "settings");
         assert!(
-            !selection.is_browser(),
-            "an id Rust has never heard of is still not the browser"
+            !selection.is_page(),
+            "an id Rust has never heard of is still not the page"
         );
+    }
+
+    /// ADR 0088: the depth stage names the shape, and `page` is the one that lets a page show. The
+    /// old `browser` id means the same until the module bar is deleted.
+    #[test]
+    fn the_page_shape_shows_a_page_and_the_scene_shape_does_not() {
+        let selection = Selection::default();
+        selection.set(PAGE_SHAPE);
+        assert!(selection.is_page());
+        selection.set(SCENE_SHAPE);
+        assert!(!selection.is_page(), "the scene owns the window");
+        selection.set(BROWSER_MODULE);
+        assert!(selection.is_page(), "the old id still means the page shape");
+    }
+
+    #[test]
+    fn the_two_shape_ids_are_distinct_from_each_other_and_from_a_module() {
+        assert_ne!(PAGE_SHAPE, SCENE_SHAPE);
+        assert_ne!(PAGE_SHAPE, BROWSER_MODULE);
+        assert_ne!(SCENE_SHAPE, BROWSER_MODULE);
     }
 }

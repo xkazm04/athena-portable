@@ -172,8 +172,20 @@
   color: var(--muted-foreground);
 }
 
-/* the page shape: this document is the band and nothing else */
+/* the page shape: this document is the band and nothing else. The bar is 36 and the strip under
+ * it 40, together the 76 px `layout.rs` gives the chrome. */
 .stage[data-shape="page"] {
+  background: var(--card-bg);
+}
+.stage__band {
+  position: absolute;
+  inset: var(--bar-height) 0 auto;
+  height: var(--strip-height);
+  z-index: 3;
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   background: var(--card-bg);
 }
 

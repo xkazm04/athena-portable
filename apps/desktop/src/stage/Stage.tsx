@@ -53,6 +53,11 @@ export interface StageProps {
   onRise: () => void;
   onSurface: () => void;
   onSettle: (seq: number) => void;
+  /**
+   * In the page shape, the second row of the band above the page: the tab strip, the address
+   * field and the tools indicator (the 40 px `--strip-height` that `layout.rs` reserves).
+   */
+  band?: ReactNode;
   /** Right-hand controls (a note, the window buttons). Anything that must stay out of the way. */
   trailing?: ReactNode;
 }
@@ -71,7 +76,7 @@ function isTyping(t: EventTarget | null): boolean {
 }
 
 export default function Stage(props: StageProps) {
-  const { state, renderScene, label, presence, calm, onGo, onRise, onSurface, onSettle, trailing } = props;
+  const { state, renderScene, label, presence, calm, onGo, onRise, onSurface, onSettle, band, trailing } = props;
   const shape = shapeOf(state.path);
   const depth = depthOf(state.path);
 
@@ -164,6 +169,8 @@ export default function Stage(props: StageProps) {
         </nav>
         <div className="stage__trailing">{trailing}</div>
       </header>
+
+      {shape === "page" && band !== undefined && <div className="stage__band">{band}</div>}
 
       {shape === "scene" && (
         <>
