@@ -41,6 +41,7 @@
   --primary: #06b6d4;
   --primary-fg: #04222a;
   --accent: #22d3ee;
+  --accent-text: var(--accent);
   --btn-primary: #0e7490;
   --on-primary: #ffffff;
   --border-subtle: rgba(148, 197, 212, 0.09);
@@ -91,7 +92,10 @@
   /* 4.6:1 on the recessed rung, where the title tier and tiles sit. */
   --primary: #0c6a84;
   --primary-fg: #ffffff;
+  /* A line, a ring, a fill: 3.2:1 on the canvas, which is enough for a shape and not for a word. */
   --accent: #0891b2;
+  /* The accent as ink: 4.96:1 on the recessed rung, the weakest. Text uses this, never `--accent`. */
+  --accent-text: #0b6a85;
   --btn-primary: #0e7490;
   --on-primary: #ffffff;
   --border-subtle: rgba(15, 23, 42, 0.08);
