@@ -10,7 +10,7 @@ knows exactly one module id, `browser`, because the rectangles depend on it.
 
 A depth path has a **shape**: `scene` (the chrome webview owns the window below the 36 px bar) or
 `page` (a tab is focused: the chrome keeps a 76 px band and the page webview owns the rest).
-`shape(path)` is a pure function in `src/depth/` and is the only thing Rust is told, through the
+`shapeOf(path)` is a pure function in `src/depth/model.ts`: the shape is `page` exactly at `apps/<app>/page`, the third level under Apps, and `scene` everywhere else. Opening an app from its layer moves there; one rise returns to the layer and the page webview is hidden. It is the only thing Rust is told, through the
 existing `layout_select`, with the `browser` id kept as an alias for `page` so the Rust side
 changes by one match arm and its tests.
 

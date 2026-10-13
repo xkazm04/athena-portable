@@ -55,7 +55,7 @@ mirrors it so a depth is a link.
 D0  surface        her, the conversation (mirror, see D1), the waiting slips, the dock
 D1  apps | chores | accounts | voice | mind        the five lights on the seabed
 D2  app/<id> | chore/<id> | account/<id> | engine | brain | look | data
-D3  app/<id>/tool/<name> | chore/<id>/run/<n> | account/<id>/allowlist
+D3  apps/<id>/tool/<name> | apps/<id>/page | chores/<id>/run/<n> | accounts/<id>/allowlist
 ```
 
 - Every capability is at most three moves from D0 (the contest's own rule, and the bar here).
@@ -147,7 +147,7 @@ phase names the proof it must carry.
 
 Phases 5 to 8 are independent once 1 to 4 are in and can run in parallel branches.
 
-**Progress:** phase 0 done (the gate, the clock, Calm, the tokens).
+**Progress:** phase 0 done (the gate, the clock, Calm, the tokens); phase 1 done (`src/depth/model.ts`: a fixed path grammar, the reducer, hash, crumbs, `shapeOf`).
 
 ## 7. How it is checked
 
