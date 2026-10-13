@@ -75,6 +75,17 @@ describe("the animation rule (ADR 0089)", () => {
     }
   });
 
+  it("eases a tendril lighting up: a lit overlay and its dot fade on opacity, on the settle clock", () => {
+    const html = renderToStaticMarkup(<Bell pose="resting" reach={reach} />);
+    expect(html.match(/class="bell__lit"/g)).toHaveLength(3);
+    const bare = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(bare).toMatch(/\.bell__lit\s*\{[^}]*transition:\s*opacity var\(--dur-settle\) var\(--ease-depth\)/);
+    expect(bare).toMatch(/\.bell__tendril circle\s*\{[^}]*transition:\s*opacity var\(--dur-settle\) var\(--ease-depth\)/);
+    expect(bare).toMatch(/\.bell__tendril\s*\{[^}]*transition:\s*rotate var\(--dur-settle\) var\(--ease-depth\)/);
+    expect(bare).not.toMatch(/data-lit="true"\]\s*\{[^}]*stroke-/);
+    expect(bare).not.toMatch(/transition:[^;]*\b\d+ms/);
+  });
+
   it("turns every animation off under Calm", () => {
     expect(css).toMatch(/\[data-motion="calm"\] \.bell[\s\S]*animation: none/);
   });

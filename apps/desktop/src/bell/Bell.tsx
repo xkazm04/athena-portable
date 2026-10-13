@@ -39,6 +39,8 @@ const H = 420;
 const ROOT_Y = 206;
 const SPREAD_FROM = 96;
 const SPREAD_TO = 304;
+/** One tendril's curve, drawn twice: resting, and the heavier stroke that fades in when lit. */
+const TENDRIL = "M0 0 C 4 52, -8 98, 0 150";
 
 /** Where tendril `i` of `n` is rooted along the skirt of the bell. */
 export function rootX(i: number, n: number): number {
@@ -85,7 +87,8 @@ export default function Bell({ pose, reach, lean = 0, size = 360, label }: BellP
             >
               <g className="bell__sway">
                 <g className="bell__sway bell__sway--tip">
-                  <path d="M0 0 C 4 52, -8 98, 0 150" />
+                  <path d={TENDRIL} />
+                  <path className="bell__lit" d={TENDRIL} />
                   <circle cx="0" cy="150" r="4.5" />
                 </g>
               </g>

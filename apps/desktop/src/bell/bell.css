@@ -79,16 +79,24 @@
   stroke-width: 1.4;
   stroke-opacity: 0.3;
   rotate: calc(var(--lean, 0) * (0.6 + var(--k, 0) * 0.2) * 12deg);
-  transition: rotate 600ms var(--ease-depth);
+  transition: rotate var(--dur-settle) var(--ease-depth);
 }
-.bell__tendril[data-lit="true"] {
+/* A lit tendril is a second, heavier stroke over the resting one that fades in on opacity, so
+ * switching an app on eases instead of snapping its weight (stroke-width cannot animate here). */
+.bell__lit {
   stroke-width: 2.8;
   stroke-opacity: 1;
+  opacity: 0;
+  transition: opacity var(--dur-settle) var(--ease-depth);
+}
+.bell__tendril[data-lit="true"] .bell__lit {
+  opacity: 1;
 }
 .bell__tendril circle {
   fill: var(--accent);
   stroke: none;
   opacity: 0;
+  transition: opacity var(--dur-settle) var(--ease-depth);
 }
 .bell__tendril[data-lit="true"] circle {
   opacity: 0.9;
