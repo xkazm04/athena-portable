@@ -237,15 +237,24 @@
   justify-content: space-between;
 }
 .stage__rail i {
+  position: relative;
   display: block;
   width: 10px;
   height: 2px;
   margin-left: -4px;
-  background: var(--muted);
-  opacity: 0.5;
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
 }
-.stage__rail i[data-reached="true"] {
+/* A tick lights by the opacity of an accent layer over it, on the clock the mark travels on, so the
+ * ticks the mark passes are lit as it passes and not before it arrives. */
+.stage__rail i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   background: var(--accent);
+  opacity: 0;
+  transition: opacity var(--dur-depth) var(--ease-depth);
+}
+.stage__rail i[data-reached="true"]::after {
   opacity: 1;
 }
 .stage__rail b {

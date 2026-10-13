@@ -25,6 +25,15 @@ describe("the light shafts under a reduced-motion machine", () => {
   });
 });
 
+describe("the gauge's ticks", () => {
+  it("light by opacity on the mark's own clock, not by a background swap that jumps", () => {
+    expect(decls(".stage__rail i::after")).toMatch(/transition:\s*opacity var\(--dur-depth\) var\(--ease-depth\)/);
+    expect(decls('.stage__rail i[data-reached="true"]::after')).toMatch(/opacity:\s*1/);
+    expect(decls('.stage__rail i')).not.toMatch(/opacity:/);
+    expect(css).not.toMatch(/\.stage__rail i\[data-reached="true"\]\s*\{/);
+  });
+});
+
 describe("the current depth root", () => {
   it("does not grow: every root already holds the border the current one is drawn with", () => {
     expect(decls(".stage__roots button")).toMatch(/border:\s*1px solid transparent/);
