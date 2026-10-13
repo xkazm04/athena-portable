@@ -17,6 +17,14 @@ function decls(selector: string): string {
   return out.join("\n");
 }
 
+describe("the current depth root", () => {
+  it("does not grow: every root already holds the border the current one is drawn with", () => {
+    expect(decls(".stage__roots button")).toMatch(/border:\s*1px solid transparent/);
+    expect(decls('.stage__roots button[aria-current="true"]')).not.toMatch(/border:\s*1px solid/);
+    expect(decls('.stage__roots button[aria-current="true"]')).toMatch(/border-color:\s*var\(--line-strong\)/);
+  });
+});
+
 describe("hover and current states ease like the scenes' do", () => {
   for (const sel of [".stage__rise", ".stage__crumb button", ".stage__roots button", ".stage__dock-athena"]) {
     it(`${sel} carries a colour transition on the shared fast duration`, () => {

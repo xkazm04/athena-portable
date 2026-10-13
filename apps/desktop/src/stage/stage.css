@@ -386,6 +386,9 @@
 .stage__roots button {
   padding: 4px 12px;
   border-radius: 999px;
+  /* Every root holds the border the current one is drawn with, so naming one does not widen it by
+   * 2 px and push its neighbours. */
+  border: 1px solid transparent;
   color: var(--muted-foreground);
 }
 .stage__roots button:hover {
@@ -394,7 +397,7 @@
 }
 .stage__roots button[aria-current="true"] {
   color: var(--accent);
-  border: 1px solid var(--line-strong);
+  border-color: var(--line-strong);
 }
 
 /* Narrow windows: the scene becomes one scrolling column and the gauge steps aside. */
