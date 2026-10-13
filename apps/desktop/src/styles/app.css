@@ -320,6 +320,7 @@ select:focus-visible {
   padding: 4px 8px;
   vertical-align: baseline;
   border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--duration-fast) var(--ease-fast);
 }
 
 .table tbody tr:hover td {
@@ -353,7 +354,9 @@ select:focus-visible {
   transition:
     background var(--duration-fast) var(--ease-fast),
     border-color var(--duration-fast) var(--ease-fast),
-    color var(--duration-fast) var(--ease-fast);
+    color var(--duration-fast) var(--ease-fast),
+    opacity var(--duration-fast) var(--ease-fast),
+    transform var(--duration-fast) var(--ease-fast);
 }
 
 .btn:active:not(:disabled) {
@@ -368,6 +371,10 @@ select:focus-visible {
 .btn--primary {
   background: var(--primary);
   color: var(--primary-fg);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 88%, var(--foreground));
 }
 
 .btn--secondary {
@@ -403,6 +410,11 @@ select:focus-visible {
   background: var(--card-bg);
   color: var(--foreground);
   font: inherit;
+  transition: border-color var(--duration-fast) var(--ease-fast);
+}
+
+.input:hover:not(:disabled):not([aria-invalid="true"]) {
+  border-color: var(--border-emphasis);
 }
 
 .input::placeholder {

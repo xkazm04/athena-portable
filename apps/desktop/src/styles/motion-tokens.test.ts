@@ -92,3 +92,12 @@ test("a field's action row is a two-column grid stretched to the control, not a 
   expect(row).toMatch(/align-items:\s*stretch/);
   expect(row).not.toMatch(/margin/);
 });
+
+test("the controls ease every state they change: press, disabled, primary hover, input edge, row wash", () => {
+  expect(rule(".btn")).toMatch(/transition:[^;]*transform var\(--duration-fast\)[^;]*opacity var\(--duration-fast\)|transition:[^;]*opacity var\(--duration-fast\)[^;]*transform var\(--duration-fast\)/);
+  expect(rule(".btn--primary:hover:not(:disabled)")).toMatch(/background:\s*color-mix/);
+  expect(rule(".input")).toMatch(/transition:\s*border-color var\(--duration-fast\)/);
+  expect(rule(".input:hover:not(:disabled):not([aria-invalid=\"true\"])")).toMatch(/border-color:\s*var\(--border-emphasis\)/);
+  expect(rule(".table td")).toMatch(/transition:\s*background var\(--duration-fast\)/);
+  expect(css).not.toMatch(/transition:\s*all/);
+});
