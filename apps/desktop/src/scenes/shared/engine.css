@@ -1,0 +1,87 @@
+/* Choosing the engine — README section 3.5, ADR 0087. Tokens only; no text under 12px. */
+.engines {
+  display: grid;
+  gap: 12px;
+}
+.engines__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.engines__card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card-bg) 80%, transparent);
+}
+.engines__card[data-chosen="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 24px var(--glow);
+}
+.engines__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.engines__head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.engines__badge {
+  font-size: 0.8125rem;
+  padding: 1px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  color: var(--muted-foreground);
+}
+.engines__badge[data-state="found"] {
+  color: var(--status-success);
+  border-color: var(--status-success);
+}
+.engines__badge[data-state="not_found"],
+.engines__badge[data-state="not_logged_in"] {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+}
+.engines__line {
+  margin: 0;
+  color: var(--muted-foreground);
+  line-height: 1.45;
+}
+.engines__mono {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+.engines__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.engines__fact {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+.engines__fact[data-standing="done"] { color: var(--status-success); }
+.engines__fact[data-standing="missing"] { color: var(--status-warning); }
+.engines__notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--status-warning);
+}
+.engines__notice p {
+  margin: 0;
+}

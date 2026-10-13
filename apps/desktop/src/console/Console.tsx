@@ -15,6 +15,7 @@ import { useDepth } from "@/depth/store";
 import { resolveMotion, systemPrefersReduced } from "@/lib/motion";
 import Stage from "@/stage/Stage";
 import { pillText, useAthena } from "@/stores/athena";
+import { useReopened } from "@/scenes/waking/reopen";
 import { useSettings } from "@/stores/settings";
 
 import { useFollowShell } from "./follow";
@@ -51,13 +52,14 @@ export default function Console() {
   const hydrated = useSettings((s) => s.hydrated);
   const onboarded = useSettings((s) => s.onboarded);
   const motion = useSettings((s) => s.motion);
+  const reopened = useReopened((s) => s.on);
   const label = useLabeller();
   useFollowShell();
 
   const pose = poseOf(athena);
   const render = useCallback(
-    (p: Path) => sceneFor(p, { hydrated, onboarded, go }),
-    [hydrated, onboarded, go],
+    (p: Path) => sceneFor(p, { hydrated, onboarded, reopened, go }),
+    [hydrated, onboarded, reopened, go],
   );
   const Band = shapeOf(path) === "page" && path.root !== null ? DEPTH_SCENES[path.root]?.Band : undefined;
 

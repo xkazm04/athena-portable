@@ -20,6 +20,7 @@
 import type { DaemonHealth } from "@/lib/daemon";
 import { engineLabel, probeOf, remedyFor, type EngineProbe } from "@/lib/engines";
 import type { MicStanding } from "@/lib/voice";
+import type { MotionChoice } from "@/lib/motion";
 import type { ThemeChoice, TypeScale } from "@/stores/settings";
 
 export type SetupMode = "onboarding" | "settings";
@@ -48,6 +49,8 @@ export interface SetupActions {
   restart: () => void;
   setTheme: (theme: ThemeChoice) => void;
   setTypeScale: (scale: TypeScale) => void;
+  /** Calm motion: `system` follows the OS, the others override it (ADR 0089). */
+  setMotion: (motion: MotionChoice) => void;
   setBrainPath: (path: string) => void;
   /** Opens a tab. The one act of onboarding that changes the world. */
   openPage: (url: string) => void;
@@ -83,6 +86,7 @@ export interface SetupModel {
   checking: boolean;
   theme: ThemeChoice;
   typeScale: TypeScale;
+  motion: MotionChoice;
   /** The brain directory. Empty means the daemon's own default, which is a real answer. */
   brainPath: string;
   tabs: readonly SetupTab[];
@@ -118,6 +122,8 @@ export interface SetupSources {
   theme: ThemeChoice;
   /** Comfortable where a fixture does not say. */
   typeScale?: TypeScale;
+  /** System where a fixture does not say. */
+  motion?: MotionChoice;
   brainPath: string;
   /** The raw tab list, as `stores/tabs.ts` holds it. */
   tabs: readonly { id: number; title: string; url: string }[];
@@ -176,6 +182,7 @@ export function selectSetup(source: SetupSources): SetupModel {
     checking: source.checking ?? false,
     theme: source.theme,
     typeScale: source.typeScale ?? "comfortable",
+    motion: source.motion ?? "system",
     brainPath: source.brainPath,
     tabs: source.tabs.map((t) => ({
       id: t.id,
@@ -231,6 +238,7 @@ export const INERT_ACTIONS: SetupActions = {
   restart: () => {},
   setTheme: () => {},
   setTypeScale: () => {},
+  setMotion: () => {},
   setBrainPath: () => {},
   openPage: () => {},
   checkMic: () => {},

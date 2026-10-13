@@ -18,6 +18,7 @@ import { moduleFor } from "@/modules/registry";
 import { entry as accounts } from "@/scenes/accounts";
 import { entry as apps } from "@/scenes/apps";
 import { entry as chores } from "@/scenes/chores";
+import { entry as mind } from "@/scenes/mind";
 import { entry as surface } from "@/scenes/surface";
 import type { DepthScene } from "@/scenes/types";
 import { entry as voice } from "@/scenes/voice";
@@ -29,6 +30,7 @@ export const DEPTH_SCENES: Readonly<Partial<Record<Root, DepthScene>>> = {
   chores,
   accounts,
   voice,
+  mind,
 };
 
 export const PORTED: ReadonlySet<Root> = new Set(Object.keys(DEPTH_SCENES) as Root[]);
@@ -37,6 +39,8 @@ export interface SceneContext {
   /** The settings have been read: before that the first act and the surface are both unknown. */
   hydrated: boolean;
   onboarded: boolean;
+  /** The first act is being shown again from the Mind depth, though the machine is set up. */
+  reopened: boolean;
   /** Move, for the scenes that link to a deeper place. */
   go: (to: Path) => void;
 }
@@ -44,7 +48,7 @@ export interface SceneContext {
 export function sceneFor(path: Path, ctx: SceneContext): ReactNode {
   if (path.root === null) {
     if (!ctx.hydrated) return null; // a returning person must not see the first act flash by
-    return createElement((ctx.onboarded ? surface : waking).Live);
+    return createElement((ctx.onboarded && !ctx.reopened ? surface : waking).Live);
   }
   const scene = DEPTH_SCENES[path.root];
   if (scene) return createElement(scene.Live, { path, go: ctx.go });

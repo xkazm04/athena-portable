@@ -13,6 +13,7 @@
 import { createElement, useMemo, useState } from "react";
 
 import { ENGINE_IDS, isEngineId } from "@/lib/engines";
+import type { MotionChoice } from "@/lib/motion";
 import { checkMicrophone, type MicStanding } from "@/lib/voice";
 import type { ModuleEntry } from "@/modules/types";
 import { useDaemon } from "@/stores/daemon";
@@ -31,12 +32,15 @@ import SetupView from "./view";
  * work (the first act, the Mind depth) share one selector and one set of actions; the old view and
  * the new ones differ only in what they draw.
  */
-export function useSetupModel(options: { afterFinish?: () => void } = {}): SetupModel {
-  const { afterFinish } = options;
+export function useSetupModel(
+  options: { afterFinish?: () => void; onReopen?: () => void } = {},
+): SetupModel {
+  const { afterFinish, onReopen } = options;
   const hydrated = useSettings((s) => s.hydrated);
   const engine = useSettings((s) => s.engine);
   const theme = useSettings((s) => s.theme);
   const typeScale = useSettings((s) => s.typeScale);
+  const motion = useSettings((s) => s.motion);
   const brainPath = useSettings((s) => s.brainPath);
   const onboarded = useSettings((s) => s.onboarded);
   const storePath = useSettings((s) => s.storePath);
@@ -74,6 +78,8 @@ export function useSetupModel(options: { afterFinish?: () => void } = {}): Setup
         void useSettings.getState().setTheme(next).catch(report("theme")),
       setTypeScale: (next: TypeScale) =>
         void useSettings.getState().setTypeScale(next).catch(report("text size")),
+      setMotion: (next: MotionChoice) =>
+        void useSettings.getState().setMotion(next).catch(report("motion")),
       setBrainPath: (path) =>
         void useSettings.getState().setBrainPath(path).catch(report("brain path")),
       openPage: (url) => void useTabs.getState().create(url).catch(report("open")),
@@ -89,9 +95,10 @@ export function useSetupModel(options: { afterFinish?: () => void } = {}): Setup
         if (afterFinish) afterFinish();
         else void useShell.getState().select("browser").catch(report("leave"));
       },
-      reopenOnboarding: () => setReopened(true),
+      // The module bar re-shows its own welcome; a scene says where the first act is shown instead.
+      reopenOnboarding: () => (onReopen ? onReopen() : setReopened(true)),
     };
-  }, [afterFinish]);
+  }, [afterFinish, onReopen]);
 
   const model = useMemo(
     () =>
@@ -105,6 +112,7 @@ export function useSetupModel(options: { afterFinish?: () => void } = {}): Setup
         checking,
         theme,
         typeScale,
+        motion,
         brainPath,
         tabs,
         mic: mic.standing,
@@ -125,6 +133,7 @@ export function useSetupModel(options: { afterFinish?: () => void } = {}): Setup
       engine,
       theme,
       typeScale,
+      motion,
       brainPath,
       tabs,
       mic,

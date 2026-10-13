@@ -13,15 +13,20 @@ import { fixtures as setupFixtures } from "@/modules/setup/fixtures";
 import { useSetupModel } from "@/modules/setup/index";
 import type { ModuleEntry } from "@/modules/types";
 
+import { useReopened } from "./reopen";
+
 import { INITIAL_STEPS, fixtureIds, fixtures } from "./fixtures";
 import WakingView from "./view";
 
 const later = () => useDepth.getState().go({ root: "apps" });
-/** Waking her ends on the surface, where the scene is already. It selects no module (ADR 0088). */
-const stay = () => {};
+/**
+ * Waking her ends on the surface, where the scene is already. It selects no module (ADR 0088); it
+ * only stops showing the act, which matters when it was shown again from the Mind depth.
+ */
+const done = () => useReopened.getState().set(false);
 
 function Live() {
-  const model = useSetupModel({ afterFinish: stay });
+  const model = useSetupModel({ afterFinish: done });
   return createElement(WakingView, { model, onLater: later });
 }
 

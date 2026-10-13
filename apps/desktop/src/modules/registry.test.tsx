@@ -56,4 +56,6 @@ test("every module renders against every fixture with no shell", () => {
       expect(html.length, `${entry.id}/${fixture} rendered nothing`).toBeGreaterThan(0);
     }
   }
-});
+  // It renders every fixture of every module (several hundred static renders): about four seconds
+  // on this machine, which is too near the 5 s default to be a test that never flakes under load.
+}, 30_000);

@@ -70,14 +70,14 @@ Status: `todo` until its phase lands, then `proved: <test or hand check>`.
 | Onboarding letter: engine, first app, microphone, each with a standing | `modules/setup/view.tsx`, `readiness.ts` | D0 setup | proved: waking/view.test (engine remedy, first app address, microphone with its own fact) |
 | Finish gated by readiness and explains itself | `isReady`, `notReadyBecause` | D0 setup | proved: waking/view.test (Wake her disabled with the reason; open with an engine and a page, with or without a microphone) |
 | Finish selects the Browser and opens the first app | `index.ts`, `companion.rs` after_onboarded | D0 setup | changed: Wake her ends on the surface and selects no module (a stray `browser` would show a page under the scene, ADR 0088); the first app is the one opened in step 2. The welcome in her own window still asks Rust to select `browser`: phase 6 makes the stage follow layout:changed |
-| Reopen onboarding from settings | `reopenOnboarding` | D2 | todo |
-| Engine: choose (with the probe's remedy as disabled reason), Check again, probe table | `chooseSetupEngine`, `checkEngines` | D2 engine | proved for the first act: waking/view.test; the settings depth is phase 9 |
-| Restart notice when the stored engine differs from the running one; Restart | `pendingEngine` | D2 engine | proved for the first act: same note as the letter; settings depth is phase 9 |
-| Start-failure card with the reason and Try again on X | `StartFailure` | D2 engine | proved for the first act: waking/view.test renders the model's failure with Try again; settings depth is phase 9 |
-| Theme: system, light, dark; text size; miniatures | `ThemePreview` | D2 look | todo |
-| Brain path | `setBrainPath` | D2 brain | todo |
-| Microphone check (getUserMedia) | `checkMic` | D2 / voice | proved for the first act: waking/view.test (checkMic, its standing); settings depth is phase 9 |
-| Store path | `view.tsx` Data | D2 data | todo |
+| Reopen onboarding from settings | `reopenOnboarding` | D2 | proved: mind/interact.test (Show the welcome again reaches reopenOnboarding), scenes.test (the first act is shown again when reopened and the rows are untouched), waking/reopen.ts (cleared by Wake her) |
+| Engine: choose (with the probe's remedy as disabled reason), Check again, probe table | `chooseSetupEngine`, `checkEngines` | D2 engine | proved: first act waking/view.test; Mind scenes/mind/interact.test (choose by id, Check again, an engine not installed is disabled with the probe's remedy on the control) |
+| Restart notice when the stored engine differs from the running one; Restart | `pendingEngine` | D2 engine | proved: mind/interact.test (the field's Restart on X reaches restart); shared EngineSection in the first act and the engine level |
+| Start-failure card with the reason and Try again on X | `StartFailure` | D2 engine | proved: mind/interact.test (Try again on X reaches restart), mind/view.test (the reason verbatim) |
+| Theme: system, light, dark; text size; miniatures | `ThemePreview` | D2 look | proved: mind/interact.test (theme, text size and the new Calm motion choice each reach their action by value), mind/view.test (the old hints, the two previews, the system sentence) |
+| Brain path | `setBrainPath` | D2 brain | proved: mind/interact.test (a draft until committed; Enter writes the trimmed path; Escape drops the draft; the button commits it) |
+| Microphone check (getUserMedia) | `checkMic` | D2 / voice | proved: mind/interact.test (asks once when pressed), mind/view.test (the old words) |
+| Store path | `view.tsx` Data | D2 data | proved: mind/view.test (the file, or "the shell has not answered store_path yet") |
 
 ## Voice
 

@@ -14,19 +14,18 @@ import { useState } from "react";
 
 import Bell from "@/bell/Bell";
 import Button from "@/components/Button";
-import ProblemNote from "@/components/ProblemNote";
-import { engineLabel, remedyFor } from "@/lib/engines";
+import { engineLabel } from "@/lib/engines";
 import {
   engineFact,
   isReady,
   micFact,
   notReadyBecause,
   pageFact,
-  restartNotice,
   voiceFact,
   type Fact,
 } from "@/modules/setup/readiness";
 import type { SetupModel } from "@/modules/setup/model";
+import EngineSection from "@/scenes/shared/EngineSection";
 
 import "./waking.css";
 
@@ -60,7 +59,6 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
   const mic = micFact(model);
   const voice = voiceFact(model);
   const ready = isReady(model);
-  const notice = restartNotice(model);
 
   const lit = [engine.standing === "done", page.standing === "done", mic.standing === "done" || voice.standing === "done"];
   const reach = STEPS.map((s, i) => ({ id: s.key, lit: lit[i]! }));
@@ -111,62 +109,7 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
               Athena borrows a mind from an engine already on this computer. No key is typed here.
               {model.probes === null ? " She is looking." : " She looked; this is what answered."}
             </p>
-            {model.startFailure && (
-              <ProblemNote
-                title={model.startFailure.title}
-                reason={model.startFailure.reason}
-                tone="error"
-                onRetry={model.actions.restart}
-                retryLabel={model.startFailure.actionLabel}
-              />
-            )}
-            {notice && (
-              <div className="waking__notice" role="status">
-                <p>
-                  <b>{notice.title}</b> {notice.detail}
-                </p>
-                <Button variant="primary" size="sm" onClick={model.actions.restart}>
-                  {notice.actionLabel}
-                </Button>
-              </div>
-            )}
-            <ul className="waking__engines">
-              {model.engines.map((e) => {
-                const chosen = model.engine === e.id;
-                const state = e.probe?.state ?? "unknown";
-                return (
-                  <li key={e.id} className="waking__engine" data-chosen={chosen} data-state={state}>
-                    <div className="waking__engine-head">
-                      <h2>{e.label}</h2>
-                      <span className="waking__badge" data-state={state}>
-                        {state === "found" ? "found" : state === "not_logged_in" ? "not signed in" : state === "not_found" ? "not found" : "checking"}
-                      </span>
-                    </div>
-                    <p className="waking__engine-line">
-                      {e.probe ? remedyFor(e.probe) : "Athena has not heard back about this engine yet."}
-                    </p>
-                    {e.probe?.detail && state === "found" && <p className="waking__mono">{e.probe.detail}</p>}
-                    <Button
-                      variant={chosen ? "primary" : "secondary"}
-                      size="sm"
-                      disabledReason={e.disabledReason}
-                      onClick={() => model.actions.chooseEngine(e.id)}
-                      aria-pressed={chosen}
-                    >
-                      {chosen ? "Chosen" : `Use ${e.label}`}
-                    </Button>
-                  </li>
-                );
-              })}
-            </ul>
-            <div className="waking__row">
-              <Button size="sm" onClick={model.actions.checkEngines} disabled={model.checking}>
-                {model.checking ? "Checking..." : "Check again"}
-              </Button>
-              <span className="waking__fact" data-standing={engine.standing}>
-                {engine.summary}
-              </span>
-            </div>
+            <EngineSection model={model} />
           </>
         )}
 

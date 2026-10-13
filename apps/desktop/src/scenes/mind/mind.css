@@ -1,0 +1,182 @@
+/* The Mind depth — README section 3.1 and 3.5, ADR 0087 and 0089. Tokens only; no text under 12px;
+ * nothing here moves but the glyphs' slow float, which Calm stops. */
+
+.mind {
+  height: 100%;
+  overflow: auto;
+  padding: 4vh 6vw 14vh 5vw;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+.mind__head {
+  display: grid;
+  gap: 8px;
+  max-width: 56rem;
+}
+.mind__eyebrow {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.mind__marquee {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
+  font-weight: 300;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+.mind__marquee--level {
+  font-size: clamp(2rem, 4.2vw, 3.4rem);
+}
+.mind__line {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  min-height: 1.5em;
+}
+
+.mind__notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--status-warning);
+  max-width: 56rem;
+}
+.mind__notice p {
+  margin: 0;
+}
+
+.mind__instruments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  max-width: 64rem;
+}
+.mind__instrument {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 10px 8px 14px;
+  font: inherit;
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+.mind__instrument:hover,
+.mind__instrument[data-focused="true"] {
+  background: var(--wash);
+  border-color: var(--line-strong);
+}
+.mind__instrument-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.mind__elsewhere {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  max-width: 64rem;
+}
+.mind__elsewhere > div {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card-bg) 70%, transparent);
+}
+.mind__elsewhere h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.mind__elsewhere p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+.mind__elsewhere .btn {
+  justify-self: start;
+}
+
+.mind--level {
+  grid-template-columns: minmax(200px, 30%) 1fr;
+  gap: 0 4vw;
+}
+.mind__art {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  padding-top: 4vh;
+}
+.mind__stylised {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.mind__body {
+  display: grid;
+  gap: 14px;
+  max-width: 52rem;
+  min-width: 0;
+  align-content: start;
+}
+.mind__section {
+  display: grid;
+  gap: 8px;
+}
+.mind__section h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.mind__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.mind__input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  font: inherit;
+  padding: 9px 14px;
+  border-radius: 999px;
+  color: var(--foreground);
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--recessed) 70%, transparent);
+}
+.mind__path {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  padding: 8px 12px;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--line);
+  background: var(--recessed);
+  overflow-wrap: anywhere;
+}
+.mind__body > .btn {
+  justify-self: start;
+}
+
+@media (max-width: 900px) {
+  .mind--level { grid-template-columns: 1fr; }
+  .mind__art { padding-top: 0; }
+}

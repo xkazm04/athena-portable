@@ -51,13 +51,13 @@ import {
 
 import "./setup.css";
 
-const THEME_HINTS: Record<ThemeChoice, string> = {
+export const THEME_HINTS: Record<ThemeChoice, string> = {
   system: "Follow the operating system, and switch when it does.",
   light: "Always light.",
   dark: "Always dark.",
 };
 
-const TYPE_SCALE_HINTS: Record<TypeScale, string> = {
+export const TYPE_SCALE_HINTS: Record<TypeScale, string> = {
   comfortable: "Every size under the headings, two pixels larger.",
   compact: "The original sizes, for more on one screen.",
 };
@@ -441,7 +441,7 @@ function SettingsLayer({ topic, line, model }: { topic: Topic; line: string; mod
 }
 
 /** A miniature of the app in one theme: the tokens re-scoped by `data-theme` on its own root. */
-function ThemePreview({ theme, chosen }: { theme: "light" | "dark"; chosen: boolean }) {
+export function ThemePreview({ theme, chosen }: { theme: "light" | "dark"; chosen: boolean }) {
   return (
     <figure className="theme-preview" data-theme={theme} data-chosen={chosen ? "1" : undefined}>
       <div className="theme-preview__bar">
@@ -466,7 +466,7 @@ function ThemePreview({ theme, chosen }: { theme: "light" | "dark"; chosen: bool
 
 // -- the sentences -------------------------------------------------------------------------------
 
-function engineSentence(model: SetupModel): string {
+export function engineSentence(model: SetupModel): string {
   if (model.probes === null) {
     if (model.startFailure) return model.startFailure.title;
     if (model.checking) return "Checking which engines are installed...";
@@ -483,13 +483,13 @@ function engineSentence(model: SetupModel): string {
   return `${engineLabel(model.engine)} is chosen and cannot run a turn yet.`;
 }
 
-function pageSentence(model: SetupModel): string {
+export function pageSentence(model: SetupModel): string {
   if (model.tabs.length === 0) return "No page is open. Athena works inside one.";
   if (model.tabs.length === 1) return `One page is open, on ${model.tabs[0].host}.`;
   return `${model.tabs.length} pages are open.`;
 }
 
-function micSentence(model: SetupModel): string {
+export function micSentence(model: SetupModel): string {
   switch (model.mic) {
     case "granted":
       return "The microphone answered. Hold Ctrl+Space in her window to talk.";
@@ -502,7 +502,7 @@ function micSentence(model: SetupModel): string {
   }
 }
 
-function voiceSentence(model: SetupModel): string {
+export function voiceSentence(model: SetupModel): string {
   if (model.voiceAvailable) return "Athena can hear you and speak back.";
   if (model.daemonHealth === "starting") return "Athena is still starting, so nothing is known yet.";
   if (model.daemonHealth === "failed") return "Athena could not start, so nothing is known yet.";
