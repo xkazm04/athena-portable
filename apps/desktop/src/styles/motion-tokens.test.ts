@@ -41,3 +41,13 @@ test("the light theme steps the water paler, not darker, and still from the pale
   }
   expect(light).toMatch(/--vignette:/);
 });
+
+test("a reduced-motion machine plays every animation once, so an infinite loop cannot flicker", () => {
+  const at = css.indexOf("@media (prefers-reduced-motion: reduce) {");
+  expect(at).toBeGreaterThan(-1);
+  const block = css.slice(at, css.indexOf("\n}\n", at));
+  expect(block).toMatch(/animation-duration:\s*1ms\s*!important/);
+  expect(block).toMatch(/animation-iteration-count:\s*1\s*!important/);
+  expect(block).toMatch(/\*::before/);
+  expect(block).toMatch(/\*::after/);
+});

@@ -883,10 +883,16 @@ select:focus-visible {
   overflow-y: auto;
 }
 
+/* A 1 ms duration alone turns an `infinite` loop (the bell's breathing, the shafts, a scene's
+ * pulse) into a 1 kHz flicker, so the loop is also cut to a single pass. Pseudo-elements are not
+ * matched by `*`. */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     transition-duration: 1ms !important;
     animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
 
