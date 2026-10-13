@@ -352,7 +352,7 @@ function Tape({ model }: { model: CompanionModel }) {
   if (tape.done) {
     return (
       <div className="tape" data-done="1">
-        <div className="tp-line on">
+        <div key="done" className="tp-line on in">
           <b>{tape.done.text}</b>
           <span>{tape.done.detail}</span>
         </div>

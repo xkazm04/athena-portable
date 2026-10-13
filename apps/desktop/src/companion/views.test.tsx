@@ -117,6 +117,8 @@ test("the tape has the previous step dim and the current one live, each with its
   expect(html("tape thinking")).toContain("thinking");
   const done = html("tape done");
   expect(done).toContain("done");
+  // the finished line comes in as the working line did, not by replacing it in one frame
+  expect(done).toContain('class="tp-line on in"');
   expect(done).toContain("The record has every call");
 });
 
