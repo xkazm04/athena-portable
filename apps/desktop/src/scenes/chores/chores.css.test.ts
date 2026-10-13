@@ -64,3 +64,10 @@ test("the film's box has the shape of the committed stills before they load, so 
   expect(rule(".ch-film__media")).toMatch(/aspect-ratio:\s*960 \/ 710/);
   expect(rule(".ch-film__media")).toMatch(/object-fit:\s*contain/);
 });
+
+test("the on-the-edge flag and the chip are the same pill: one padding, one size", () => {
+  const pad = (sel: string) => /padding:\s*([^;]+);/.exec(rule(sel))?.[1];
+  const size = (sel: string) => /font-size:\s*([^;]+);/.exec(rule(sel))?.[1];
+  expect(pad(".ch-edge-flag")).toBe(pad(".ch-chip"));
+  expect(size(".ch-edge-flag")).toBe(size(".ch-chip"));
+});
