@@ -56,3 +56,8 @@ test("the stamp and primary buttons darken their own token on hover, not a secon
     expect(rule(sel), sel).toMatch(/background:\s*color-mix\(in srgb, var\(--[\w-]+\) 85%, #000\)/);
   }
 });
+
+test("the seal, her one button at rest, answers a pointer by scaling its face, which the face already eases", () => {
+  expect(rule('.aw[data-cards="0"]:not([data-mood="hear"]) .aw-seal:hover .aw-face')).toContain("scale: 1.08");
+  expect(rule(".aw-face")).toContain("scale 260ms");
+});

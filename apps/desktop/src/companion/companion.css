@@ -280,6 +280,11 @@ body.athena {
   width: 22px;
   height: 22px;
 }
+/* the seal answers a pointer: the face leans in (scale rides the face's own transition). A raised
+ * stamp (a card waits) and the hearing face already stand higher, so they keep their own scale. */
+.aw[data-cards="0"]:not([data-mood="hear"]) .aw-seal:hover .aw-face {
+  scale: 1.08;
+}
 .aw[data-state="seal"] .aw-face {
   animation: stamp-breathe 9s ease-in-out infinite;
 }

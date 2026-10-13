@@ -4,6 +4,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(chores): a filter that leaves no chore says which kind and offers all of them back in one press.` README 3.5, ADR 0087 (scan-sweep, copy-auditor): "No chore here is of that kind." was a dead end; it now reads "No chore here is meant for home." (or work) with a "Show all N" button. `wired.test.tsx` pins it.
+- `fix(voice): the listener take pads like the voice card beside it.` README 3.5, ADR 0087 (scan-sweep, ui-perfectionist): `.vsc-take` padded 14px all round against `.vsc-voice`'s 14px 16px, so the nested cards' text started 2px apart across steps.
 - `fix(companion): the seal answers a pointer, so her one button at rest no longer looks inert.` README 3.1, ADR 0026 and 0089 (scan-sweep, ux-reviewer): the seal had a focus ring and no hover while every other control in her window had one; the face scales to 1.08 on its existing transition, and a raised stamp or the hearing face keeps its own scale.
 - `fix(voice): the hero waveform rises in with the head and the card instead of appearing under them.` README 3.1, ADR 0087 and 0089 (scan-sweep, ui-perfectionist): Pick and Hear mount `.vsc-hero` between two parts that rise 8px over 320ms and it popped; it now uses `vsc-in`, and Calm and reduced motion drop it with them.
 - `fix(companion): the Approve and teal buttons darken their own token on hover, not a second hex.` README 3.1, ADR 0026 (scan-sweep, ui-perfectionist): the hovers were `#831343` and `#0c6178`, written beside bases that are tokens (`--paper-stamp`, the app's `--btn-primary`); they are a 15% mix to black of the base now, within 2 per channel of the old values.
