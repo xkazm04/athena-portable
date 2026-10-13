@@ -169,7 +169,7 @@ function Field({ model, go }: { model: AppsModel; go: (to: Path) => void }) {
 function PageChip({ page, onShow, onClose }: { page: PageEntry; onShow: () => void; onClose: () => void }) {
   return (
     <li className="apps__chip" data-focused={page.focused}>
-      <button type="button" className="apps__chip-main focus-ring" title={page.url} onClick={onShow}>
+      <button type="button" className="apps__chip-main focus-ring" title={page.url} aria-current={page.focused ? "true" : undefined} onClick={onShow}>
         {page.title}
       </button>
       <button

@@ -186,9 +186,11 @@
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--card-bg) 70%, transparent);
   max-width: 22rem;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
 }
 .apps__chip[data-focused="true"] {
   border-color: var(--accent);
+  background: var(--wash);
 }
 .apps__chip button {
   font: inherit;
@@ -202,10 +204,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  border-radius: 999px 0 0 999px;
+  transition: background var(--duration-fast);
+}
+.apps__chip-main:hover {
+  background: var(--wash);
 }
 .apps__chip-close {
   padding: 0 10px 0 4px;
   color: var(--muted-foreground);
+  border-radius: 0 999px 999px 0;
+  transition: color var(--duration-fast);
+}
+.apps__chip-close:hover {
+  color: var(--status-error);
 }
 
 /* ---- one app -------------------------------------------------------------------------------- */
@@ -280,6 +292,7 @@
   border: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--card-raised) 70%, transparent);
   cursor: pointer;
+  transition: background var(--duration-fast);
 }
 .apps__tool:hover {
   background: var(--wash);

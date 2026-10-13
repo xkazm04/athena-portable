@@ -41,6 +41,13 @@ describe("the field", () => {
     expect(h).toContain('aria-label="Close Invoices — March"');
   });
 
+  it("marks the focused page for a reader who cannot see the border, and only that one", () => {
+    const h = html("typical");
+    const focused = (h.match(/data-focused="true"/g) ?? []).length;
+    expect(focused).toBeGreaterThan(0);
+    expect(h.match(/aria-current="true"/g) ?? []).toHaveLength(focused);
+  });
+
   it("leads with one sentence, an Enter hint and the engine's standing on a first run", () => {
     const h = html("first-run");
     expect(h).toContain("Type the address of an app you use, for example your invoicing tool.");
