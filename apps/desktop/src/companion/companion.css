@@ -1696,6 +1696,10 @@ body.athena {
   color: var(--paper-ink);
   font: inherit;
   font-size: calc(14px + var(--type-step));
+  transition: background var(--dur-fast), border-color var(--dur-fast);
+}
+.lg-compose textarea:hover:not(:disabled) {
+  border-color: var(--paper-ink-2);
 }
 .lg-compose textarea::placeholder {
   color: var(--paper-ink-2);

@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(companion): the composer answers a pointer, and its blocked state eases in and out.` README 3.1, ADR 0026 and 0089 (scan-sweep, ui-perfectionist, state-coverage): the Talk textarea had no hover and no transition, so it snapped to the blocked wash when a turn began; it eases background and border on the fast duration and darkens its border under the pointer.
 - `fix(companion): the Enable and Disable buttons are the same 32px as the other small outlined buttons.` README 3.1, ADR 0026 (scan-sweep, ui-perfectionist): `.aw-btn-toggle` was 30px beside the engine line's buttons and the icon buttons at 32px.
 - `fix(companion): the welcome's engine line breaks a long reason instead of pushing the paper's edge out.` README 3.1 and 3.5, ADR 0026 (scan-sweep, state-coverage): the failed-start state prints the daemon's error verbatim, often a path with no space in it, and `.wl-engine` had no `overflow-wrap`.
 - `fix(companion): a long parameter key on the decision card no longer runs over its value.` README 3.1 and 3.5, ADR 0026 (scan-sweep, visual-craft): `.sl-params dt` was a fixed 64px box that holds about seven uppercase characters, so a host tool's `recipient_email` overflowed onto the value; it grows to 45% of the row and then breaks inside the word.

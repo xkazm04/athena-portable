@@ -88,3 +88,8 @@ test("the small outlined buttons (Disable, Check again) are one height, with the
   );
   expect(new Set(heights).size).toBe(1);
 });
+
+test("the composer answers a pointer, and goes in and out of its blocked state on the fast duration", () => {
+  expect(rule(".lg-compose textarea")).toContain("transition: background var(--dur-fast), border-color var(--dur-fast)");
+  expect(rule(".lg-compose textarea:hover:not(:disabled)")).toContain("border-color: var(--paper-ink-2)");
+});
