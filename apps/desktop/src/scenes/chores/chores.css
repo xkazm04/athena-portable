@@ -29,7 +29,7 @@
   font-size: 0.8125rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--primary);
 }
 .ch-marquee {
   margin: 0;
@@ -145,7 +145,7 @@ h4.ch-title {
   margin: 0 0 8px;
 }
 .ch-link {
-  color: var(--accent);
+  color: var(--primary);
   font-size: 0.875rem;
 }
 .ch-prose-list {
@@ -226,7 +226,7 @@ h4.ch-title {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--primary);
   pointer-events: none;
 }
 .ch-map__tick {
@@ -645,7 +645,7 @@ button.ch-glance:hover {
   font-size: 0.8125rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--primary);
 }
 .ch-facets__list {
   list-style: none;
@@ -1118,7 +1118,7 @@ button.ch-glance:hover {
   align-items: baseline;
 }
 .ch-turn__who {
-  color: var(--accent);
+  color: var(--primary);
 }
 .ch-turn__her {
   font-size: 1.0625rem;
