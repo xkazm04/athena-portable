@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(scenes): a depth's lazy chunk shows a calm "Opening…" instead of a blank depth.` README 3.5, ADR 0087 and 0089 (scan-sweep, state-coverage): the five `live.tsx` Suspense fallbacks were `null`; `.depth-pending` in app.css is silent for 150 ms, then fades in on opacity alone, holds 40vh so the view does not shift anything, and is hidden under Calm. No new import, so the first-paint graph is unchanged.
 - `fix(accounts): the allowlist's Add sits in FormField's action slot, and the 1.65rem margin that lined it up is gone.` README 3.1, ADR 0087 (scan-sweep, ui-perfectionist): `.list__add` guessed the label's height with a margin; the field row now stretches the button to the input, and a disabled Add's reason wrapper (a span) stretches and fills too.
 - `fix(styles): the 47 fast transitions outside app.css name --ease-fast beside --duration-fast.` README 3.1, ADR 0089 (scan-sweep, ui-perfectionist): they used the default ease while app.css's hovers used the pair; every sheet now agrees, and `source-guards.test.ts` fails a bare `var(--duration-fast)`.
 - `fix(styles): every text colour that was --accent is --accent-text, and a source guard forbids the old spelling.` README 3.1, ADR 0026 (scan-sweep, accessibility-checker): ten `color: var(--accent)` in accounts, apps, voice and the stage were 3.2:1 on the light theme; dark is unchanged. `source-guards.test.ts` scans every stylesheet.

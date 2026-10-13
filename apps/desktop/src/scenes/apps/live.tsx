@@ -36,7 +36,8 @@ function useAppsModel(go: SceneProps["go"]): AppsModel {
 
 function Live({ path, go }: SceneProps) {
   const model = useAppsModel(go);
-  return createElement(Suspense, { fallback: null }, createElement(AppsView, { model, path, go }));
+  const waiting = createElement("div", { className: "depth-pending typo-caption", role: "status" }, "Opening…");
+  return createElement(Suspense, { fallback: waiting }, createElement(AppsView, { model, path, go }));
 }
 
 /** What a place under Apps is called in the breadcrumb. */

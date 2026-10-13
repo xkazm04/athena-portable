@@ -34,7 +34,8 @@ function Live({ path, go }: SceneProps) {
     reopened.current = true;
     if (model.mode === "settings") model.actions.reopenStudio();
   }, [studio, model.loading, model.mode, model.actions]);
-  return createElement(Suspense, { fallback: null }, createElement(VoiceScene, { model, path, go }));
+  const waiting = createElement("div", { className: "depth-pending typo-caption", role: "status" }, "Opening…");
+  return createElement(Suspense, { fallback: waiting }, createElement(VoiceScene, { model, path, go }));
 }
 
 export const live: LiveScene = { root: "voice", Live, useLabeller: () => NAMES };

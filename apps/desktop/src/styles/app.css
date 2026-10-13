@@ -1019,3 +1019,24 @@ select:focus-visible {
     opacity: 0;
   }
 }
+
+/* A depth's lazy chunk is on its way (Suspense fallback in scenes/*/live.tsx). Silent for the first
+ * 150 ms, so a warm chunk never flashes it; then an opacity-only fade. It takes the space the view
+ * will, so nothing shifts when the view arrives, and Calm shows nothing, as before. */
+.depth-pending {
+  display: grid;
+  place-items: center;
+  min-height: 40vh;
+  color: var(--muted-foreground);
+  animation: depth-pending-in 240ms var(--ease-fast) 150ms both;
+}
+
+@keyframes depth-pending-in {
+  from {
+    opacity: 0;
+  }
+}
+
+:root[data-motion="calm"] .depth-pending {
+  display: none;
+}

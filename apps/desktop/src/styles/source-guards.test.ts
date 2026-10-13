@@ -38,3 +38,19 @@ test("every use of --duration-fast names --ease-fast beside it", () => {
   }
   expect(uses).toBeGreaterThan(40);
 });
+
+test("a lazy depth shows a calm placeholder, not nothing: delayed, opacity only, gone under Calm", () => {
+  const app = all.find((s) => s.path.endsWith("app.css"))!.text;
+  const rule = /\n\.depth-pending \{([^}]*)\}/.exec(app)?.[1] ?? "";
+  expect(rule).toMatch(/animation:\s*depth-pending-in 240ms var\(--ease-fast\) 150ms both/);
+  expect(rule).toMatch(/min-height:/);
+  const frames = /@keyframes depth-pending-in \{([^]*?)\n\}/.exec(app)?.[1] ?? "";
+  expect(frames).toMatch(/opacity: 0/);
+  expect(frames).not.toMatch(/transform|height|margin|top|left/);
+  expect(app).toMatch(/:root\[data-motion="calm"\] \.depth-pending \{\s*display: none;/);
+  for (const depth of ["accounts", "apps", "mind", "voice", "chores"]) {
+    const live = readFileSync(join(decodeURIComponent(root), "scenes", depth, "live.tsx"), "utf8");
+    expect(live, depth).toContain("depth-pending");
+    expect(live, depth).not.toMatch(/fallback:\s*null/);
+  }
+});

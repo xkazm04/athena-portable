@@ -26,7 +26,8 @@ export function labeller(labelOf: (id: string) => string | undefined): Labeller 
 
 function Live({ path, go }: SceneProps) {
   const model = useConnectorsModel();
-  return createElement(Suspense, { fallback: null }, createElement(AccountsView, { model, path, go }));
+  const waiting = createElement("div", { className: "depth-pending typo-caption", role: "status" }, "Opening…");
+  return createElement(Suspense, { fallback: waiting }, createElement(AccountsView, { model, path, go }));
 }
 
 export const live: LiveScene = {

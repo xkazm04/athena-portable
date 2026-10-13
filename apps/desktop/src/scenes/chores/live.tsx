@@ -30,7 +30,8 @@ function Live({ path, go }: SceneProps) {
     [go],
   );
   const model = usePlaybooksModel(afterOpen);
-  return createElement(Suspense, { fallback: null }, createElement(ChoresView, { model, path, go }));
+  const waiting = createElement("div", { className: "depth-pending typo-caption", role: "status" }, "Opening…");
+  return createElement(Suspense, { fallback: waiting }, createElement(ChoresView, { model, path, go }));
 }
 
 /** Crumb names: a chore is called by its title, a turn by its number. */

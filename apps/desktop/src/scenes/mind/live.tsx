@@ -35,7 +35,8 @@ const reopen = () => {
 
 function Live({ path, go }: SceneProps) {
   const model = useSetupModel({ onReopen: reopen });
-  return createElement(Suspense, { fallback: null }, createElement(MindView, { model, path, go }));
+  const waiting = createElement("div", { className: "depth-pending typo-caption", role: "status" }, "Opening…");
+  return createElement(Suspense, { fallback: waiting }, createElement(MindView, { model, path, go }));
 }
 
 export const live: LiveScene = { root: "mind", Live, useLabeller: () => labeller };
