@@ -55,6 +55,11 @@
   background: transparent;
   border: 1px solid var(--line);
   cursor: pointer;
+  transition: background var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast);
+}
+.waking__step:hover {
+  color: var(--foreground);
+  border-color: var(--line-strong);
 }
 .waking__step[aria-current="step"] {
   color: var(--foreground);
@@ -69,6 +74,7 @@
   border-radius: 50%;
   font-size: 0.8125rem;
   border: 1px solid var(--line-strong);
+  transition: background var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast);
 }
 .waking__step[data-done="true"] .waking__step-n {
   color: var(--primary-fg);
@@ -143,6 +149,10 @@
   border: 0;
   text-decoration: underline;
   cursor: pointer;
+  transition: color var(--duration-fast);
+}
+.waking__later:hover {
+  color: var(--foreground);
 }
 .waking__why,
 .waking__engine-now {

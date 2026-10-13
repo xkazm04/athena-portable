@@ -16,3 +16,11 @@ test("the eyebrow is set in the primary, which clears 4.5:1 in both themes, not 
   expect(rule(".waking__eyebrow")).toMatch(/color:\s*var\(--primary\)/);
   expect(rule(".waking__eyebrow")).not.toMatch(/--accent/);
 });
+
+test("every control the pointer can press eases its hover on the fast duration", () => {
+  const blocks = css.split("}").filter((b) => /cursor:\s*pointer/.test(b));
+  expect(blocks.length).toBeGreaterThan(0);
+  for (const b of blocks) expect(b, b.trim().split("{")[0]).toMatch(/transition:[^;]*var\(--duration-fast\)/);
+  expect(css).toMatch(/\.waking__step:hover\s*\{/);
+  expect(css).toMatch(/\.waking__later:hover\s*\{/);
+});
