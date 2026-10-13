@@ -197,6 +197,13 @@
   color: var(--foreground);
   font-weight: 600;
 }
+/* The text alone is a 16px target in a 36px bar. The padding is the hit area and the negative margin
+ * gives it back, so the crumbs sit exactly where they did. */
+.stage__crumb button {
+  padding: 8px 6px;
+  margin: -8px -6px;
+  border-radius: var(--radius-interactive);
+}
 .stage__crumb button:hover {
   color: var(--accent-text);
 }

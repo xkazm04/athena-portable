@@ -71,3 +71,11 @@ describe("hover and current states ease like the scenes' do", () => {
     expect(decls(".stage__dock-athena:hover")).toMatch(/border-color:\s*var\(--accent\)/);
   });
 });
+
+describe("the crumb buttons", () => {
+  it("hold a hit area taller than their text and give it back as margin, so the bar does not move", () => {
+    const d = decls(".stage__crumb button");
+    expect(d).toMatch(/padding:\s*8px 6px/);
+    expect(d).toMatch(/margin:\s*-8px -6px/);
+  });
+});
