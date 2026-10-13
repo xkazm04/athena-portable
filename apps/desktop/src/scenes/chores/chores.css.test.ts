@@ -71,3 +71,9 @@ test("the on-the-edge flag and the chip are the same pill: one padding, one size
   expect(pad(".ch-edge-flag")).toBe(pad(".ch-chip"));
   expect(size(".ch-edge-flag")).toBe(size(".ch-chip"));
 });
+
+test("the hero's words column keeps its height while the sentence under the pointer changes", () => {
+  expect(rule(".ch-words .ch-line")).toMatch(/min-height:\s*3em/);
+  expect(rule(".ch-hint")).toMatch(/line-height:\s*1\.45/);
+  expect(rule(".ch-hint")).toMatch(/min-height:\s*2\.9em/);
+});

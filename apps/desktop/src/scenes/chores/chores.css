@@ -118,8 +118,15 @@ h4.ch-title {
 .ch-hint {
   margin: 0;
   font-size: 0.8125rem;
+  line-height: 1.45;
   color: var(--muted-foreground);
-  min-height: 1.4em;
+  min-height: 2.9em;
+}
+/* The words column is centred in the hero and its sentence changes under the pointer, from the
+ * field's line to a chore's. It holds two lines of each (the hint wraps in a 280px column too), so
+ * the column keeps its height and the title does not shift as marks are crossed. */
+.ch-words .ch-line {
+  min-height: 3em;
 }
 .ch-flag {
   display: flex;
