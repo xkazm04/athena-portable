@@ -3,6 +3,7 @@
  *
  *   pnpm perf                                     prove the gate can pass and can fail
  *   pnpm perf --url <url> --drive <module.mjs>    run a scenario against a page
+ *   pnpm perf:stage                               build, serve and drive the depth stage preview
  *
  * A scenario module's default export is `async (page) => void`: it performs the one fixed path
  * (dive, rise, interrupt) and returns when the motion has finished. The gate watches the page
@@ -13,6 +14,7 @@
  * executable named by `ATHENA_BROWSER`. Playwright's own download is not needed. A browser is
  * still not the shipped shell, so the cutover phase adds a hand pass in the real window.
  */
+import { spawn, spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 
@@ -105,6 +107,37 @@ const JANKY = `<!doctype html><body><p>janky</p><script>
   const burn = (ms) => { const e = performance.now() + ms; while (performance.now() < e); };
   for (let i = 0; i < 3; i++) { const loop = () => { burn(i === 0 ? 70 : 1); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
 </script>`;
+/**
+ * Build the preview and serve it with `vite preview`: a production bundle, which is what ships,
+ * not the dev server with its hot-reload client. Returns the base URL and a stop function.
+ */
+async function serveBuild() {
+  const port = 1434;
+  const build = spawnSync("pnpm exec vite build --outDir dist-perf --emptyOutDir", {
+    stdio: "ignore",
+    shell: true,
+  });
+  if (build.status !== 0) throw new Error("vite build failed; run `pnpm build` to see why");
+  const server = spawn(`pnpm exec vite preview --outDir dist-perf --port ${port} --strictPort`, {
+    stdio: "ignore",
+    shell: true,
+  });
+  const base = `http://127.0.0.1:${port}`;
+  for (let i = 0; i < 120; i++) {
+    try {
+      if ((await fetch(`${base}/preview.html`)).ok) break;
+    } catch {
+      /* not up yet */
+    }
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  const stop = () => {
+    if (process.platform === "win32") spawnSync("taskkill", ["/pid", String(server.pid), "/T", "/F"], { stdio: "ignore" });
+    else server.kill();
+  };
+  return { base, stop };
+}
+
 const wait = (ms) => async (page) => page.waitForTimeout(ms);
 
 async function main() {
@@ -117,7 +150,18 @@ async function main() {
   let failed = false;
   try {
     const url = arg("--url");
-    if (url) {
+    if (args.includes("--stage")) {
+      const { base, stop } = await serveBuild();
+      try {
+        const drive = (await import(pathToFileURL(path.resolve("scripts/perf-stage.drive.mjs")).href)).default;
+        const target = `${base}/preview.html?scene=stage`;
+        const r = await runPage(browser, (page) => page.goto(target), drive);
+        show("depth stage: dive, dive, rise, rise, interrupted dive", r);
+        failed = !r.ok;
+      } finally {
+        stop();
+      }
+    } else if (url) {
       const driveFile = arg("--drive");
       if (!driveFile) throw new Error("--url needs --drive <module.mjs>");
       const drive = (await import(pathToFileURL(path.resolve(driveFile)).href)).default;

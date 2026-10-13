@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "perf": "node scripts/perf-gate.mjs",
+    "perf:stage": "node scripts/perf-gate.mjs --stage",
     "test:e2e": "vitest run --config e2e/vitest.e2e.config.ts"
   },
   "dependencies": {

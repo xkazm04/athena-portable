@@ -1,0 +1,45 @@
+/* Placeholder scenes for the stage preview (ADR 0087). Preview only: no product view uses these. */
+.preview-scene {
+  height: 100%;
+  padding: 56px 8vw 120px;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+.preview-scene h1 {
+  margin: 0;
+  font-size: 3rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+.preview-scene__go {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.preview-scene__go button {
+  font: inherit;
+  color: var(--foreground);
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--card-raised) 80%, transparent);
+  cursor: pointer;
+}
+.preview-scene__go button:hover {
+  background: var(--wash);
+}
+.preview-scene__field {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.preview-scene__field i {
+  display: block;
+  height: 96px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: linear-gradient(160deg, var(--card-raised), var(--card-bg));
+  box-shadow: 0 6px 18px color-mix(in srgb, black 35%, transparent);
+}

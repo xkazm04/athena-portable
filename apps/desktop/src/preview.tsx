@@ -23,6 +23,7 @@ import ReactDOM from "react-dom/client";
 
 import ModuleBar from "@/components/ModuleBar";
 import AthenaPreview from "@/companion/preview";
+import StagePreview from "@/stage/preview";
 import { MODULE_ENTRIES, moduleFor } from "@/modules/registry";
 import { THEMES, applyTheme, isTheme, type Theme } from "@/stores/shell";
 
@@ -174,10 +175,13 @@ function Picker({
  * follows the same contract — a pure view, a fixture, inert actions — and `companion/preview.tsx`
  * renders it. Every other query is the module harness above.
  */
-const surface = new URLSearchParams(window.location.search).get("surface");
+const params = new URLSearchParams(window.location.search);
+const surface = params.get("surface");
+// `?scene=stage` is the depth stage over placeholder scenes (ADR 0087), likewise not a module.
+const scene = params.get("scene");
 
 // No `StrictMode` here, deliberately: the harness exists to look at a render, and a
 // double-invoked render of a pure component is noise in a screenshot rather than a signal.
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  surface === "athena" ? <AthenaPreview /> : <Preview />,
+  scene === "stage" ? <StagePreview /> : surface === "athena" ? <AthenaPreview /> : <Preview />,
 );
