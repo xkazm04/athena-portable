@@ -2111,6 +2111,10 @@ body.athena {
   text-decoration: underline;
   text-align: left;
   cursor: pointer;
+  transition: color var(--dur-fast);
+}
+.aw .aw-textbtn:hover {
+  color: var(--paper-ink);
 }
 .aw .aw-textbtn:focus-visible {
   outline: 2px solid var(--paper-ink);

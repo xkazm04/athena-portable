@@ -38,3 +38,8 @@ test("a button that is answered or sending dims on the fast duration, instead of
   expect(rule(".aw .aw-btn:disabled")).toContain("opacity: 0.45");
   expect(rule(".aw .aw-btn")).toContain("opacity var(--dur-fast)");
 });
+
+test("the text buttons (Main is hidden, done) answer a pointer and ease the change", () => {
+  expect(rule(".aw .aw-textbtn")).toContain("transition: color var(--dur-fast)");
+  expect(rule(".aw .aw-textbtn:hover")).toContain("color: var(--paper-ink)");
+});
