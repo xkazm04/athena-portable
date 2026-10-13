@@ -35,7 +35,7 @@ function Plinth({ lit }: { lit: boolean }) {
         cy="108"
         rx="46"
         ry="7"
-        fill={lit ? "color-mix(in srgb, var(--accent) 22%, transparent)" : "none"}
+        fill={`color-mix(in srgb, var(--accent) ${lit ? 22 : 0}%, transparent)`}
         stroke={lit ? "var(--accent)" : "var(--muted)"}
         strokeWidth="1.5"
         strokeDasharray={lit ? undefined : "3 5"}
@@ -79,7 +79,7 @@ function Plug({ lit }: { lit: boolean }) {
       <rect x="52" y="40" width="56" height="38" rx="10" fill={WASH(lit)} stroke={ink} strokeWidth="2.5" />
       <path d="M66 40 V24 M94 40 V24" stroke="var(--focus)" strokeWidth="3" />
       <path d="M80 78 V96" stroke={ink} strokeWidth="3" />
-      <circle cx="80" cy="59" r="5" fill={lit ? "var(--accent)" : "none"} stroke={ink} strokeWidth="2" />
+      <circle cx="80" cy="59" r="5" fill={`color-mix(in srgb, var(--accent) ${lit ? 100 : 0}%, transparent)`} stroke={ink} strokeWidth="2" />
     </g>
   );
 }

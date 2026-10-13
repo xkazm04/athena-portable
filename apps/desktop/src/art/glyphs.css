@@ -11,7 +11,15 @@
   from { transform: translateY(0); }
   to { transform: translateY(-4px); }
 }
+/* An account's drawing is inked while it is in use: connecting one eases its strokes and washes
+ * from the muted outline over the depth clock (0 ms under Calm) instead of snapping. */
+.account-art :is(path, rect, ellipse, circle) {
+  transition: stroke var(--dur-depth) var(--ease-depth), fill var(--dur-depth) var(--ease-depth);
+}
 :root[data-motion="calm"] .glyph__float {
   animation: none;
   will-change: auto;
+}
+:root[data-motion="calm"] .account-art :is(path, rect, ellipse, circle) {
+  transition: none;
 }
