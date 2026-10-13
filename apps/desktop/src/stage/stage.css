@@ -162,7 +162,7 @@
   border-radius: 999px;
   border: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--card-bg) 70%, transparent);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 /* Rise and each crumb are mounted by the dive that makes them, so they fade in on its clock. */
 .stage__rise,
@@ -198,7 +198,7 @@
   font-weight: 600;
 }
 .stage__crumb button:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .stage__trailing {
   margin-left: auto;
@@ -430,7 +430,7 @@
   background: var(--wash);
 }
 .stage__roots button[aria-current="true"] {
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: var(--line-strong);
 }
 

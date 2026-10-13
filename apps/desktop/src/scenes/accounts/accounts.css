@@ -20,7 +20,7 @@
   font-size: 0.8125rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .accounts__marquee {
   margin: 0;
@@ -445,7 +445,7 @@
 }
 .stages__step[data-state="now"] .stages__n {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .stages__step[data-state="done"] {
   color: var(--foreground);
@@ -476,7 +476,7 @@
   min-width: 0;
 }
 .consent__link {
-  color: var(--accent);
+  color: var(--accent-text);
   overflow-wrap: anywhere;
 }
 .consent__pulse {
