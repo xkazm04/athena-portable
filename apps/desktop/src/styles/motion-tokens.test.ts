@@ -85,3 +85,10 @@ test("--duration-fast has its easing pair, and every use of it in the sheet name
   expect(uses.length).toBeGreaterThan(0);
   for (const use of uses) expect(use).toMatch(/var\(--ease-fast\)/);
 });
+
+test("a field's action row is a two-column grid stretched to the control, not a margin", () => {
+  const row = rule(".field__row");
+  expect(row).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\) auto/);
+  expect(row).toMatch(/align-items:\s*stretch/);
+  expect(row).not.toMatch(/margin/);
+});

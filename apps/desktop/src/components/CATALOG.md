@@ -11,7 +11,7 @@ and each file's header carries the argument for its own shape.
 | `Table` | The app's one table. A `columns` array with a `render` per column and a **required** `empty` sentence. Never a `<table>`, never a grid of divs. |
 | `Button` | `primary` / `secondary` / `ghost`, two sizes, and `disabledReason` — a disabled control is never silent. |
 | `PillGroup` | The one value picker on a rail: a `radiogroup` with one tab stop and arrow keys. A rail that sets a *setting*, not one that switches a view. |
-| `FormField` | A labelled field — label, hint **or** error, `aria-invalid` and `aria-describedby` wired by the wrapper. `TextInput` is the input it wraps. |
+| `FormField` | A labelled field — label, hint **or** error, `aria-invalid` and `aria-describedby` wired by the wrapper. `TextInput` is the input it wraps; `action` seats a button level with the control. |
 | `Facts` | A term and its value, a few at a time — the `<dl>` a surface would otherwise hand-roll. `value="code"` for a machine's own spelling. |
 | `WindowControls` | The title bar's right end: the theme flip and the minimise, maximise and close buttons, the close asking first when a decision waits. Used by the module bar and the depth stage. |
 | `ProblemNote` | A surface that could not be read, with the reason verbatim. Never the same component as `EmptyState`: "nothing here" and "could not be read" are different facts. |

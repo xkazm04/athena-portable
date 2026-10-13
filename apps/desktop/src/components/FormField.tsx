@@ -26,6 +26,7 @@ export default function FormField({
   label,
   hint,
   error,
+  action,
   children,
 }: {
   label: ReactNode;
@@ -33,6 +34,9 @@ export default function FormField({
   hint?: ReactNode;
   /** A blocking message. Replaces the hint and marks the control invalid. */
   error?: string | null;
+  /** A button that acts on this field (an "Add" beside its draft). It sits level with the control,
+   * not with the hint under it, so no caller needs a magic margin to line it up. */
+  action?: ReactNode;
   children: ReactNode | ((input: FieldInputProps) => ReactNode);
 }) {
   const id = `field-${useId()}`;
@@ -51,7 +55,16 @@ export default function FormField({
       <label htmlFor={id} className="typo-heading">
         {label}
       </label>
-      {typeof children === "function" ? children(input) : children}
+      {action ? (
+        <div className="field__row">
+          {typeof children === "function" ? children(input) : children}
+          {action}
+        </div>
+      ) : typeof children === "function" ? (
+        children(input)
+      ) : (
+        children
+      )}
       {error ? (
         <p id={errorId} role="alert" className="typo-caption field__error">
           {error}

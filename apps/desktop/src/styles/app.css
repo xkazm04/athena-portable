@@ -512,6 +512,13 @@ select:focus-visible {
   gap: 4px;
 }
 
+.field__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 8px;
+}
+
 .field__input {
   width: 100%;
   padding: 5px 9px;
