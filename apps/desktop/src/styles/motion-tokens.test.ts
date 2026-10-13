@@ -103,7 +103,7 @@ test("the controls ease every state they change: press, disabled, primary hover,
 });
 
 test("the window chrome eases its hovers, and push-to-talk uses the palette and honours Calm", () => {
-  for (const sel of [".window-btn", ".ptt", ".tab-chip", ".tab-chip__close"]) {
+  for (const sel of [".window-btn", ".ptt", ".tab-chip", ".tab-chip__close", ".close-confirm__btn"]) {
     expect(rule(sel), sel).toMatch(/transition:[^;]*var\(--duration-fast\) var\(--ease-fast\)/);
   }
   expect(css).not.toMatch(/\.ptt[^{]*\{[^}]*#e81123/);

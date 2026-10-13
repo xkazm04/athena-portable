@@ -992,6 +992,7 @@ select:focus-visible {
   font: inherit;
   font-size: calc(12px + var(--type-step));
   cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-fast);
 }
 
 .close-confirm__btn:hover {
