@@ -1,12 +1,8 @@
-/* The console's frame — README section 3.5, ADR 0087. The stage fills the window; a bridged module
- * view scrolls inside its depth, as it did inside the old window's body. */
+/* The console's frame — README section 3.5, ADR 0087. The stage fills the window; each scene
+ * scrolls inside its own depth layer. */
 .console {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
   background: var(--background);
-}
-.console__bridge {
-  height: 100%;
-  overflow: auto;
 }
