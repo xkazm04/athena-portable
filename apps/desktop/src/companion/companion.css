@@ -1076,7 +1076,7 @@ body.athena {
   font-size: calc(14px + var(--type-step));
   font-weight: 650;
   white-space: nowrap;
-  transition: background var(--dur-fast), transform var(--dur-fast), color var(--dur-fast);
+  transition: background var(--dur-fast), transform var(--dur-fast), color var(--dur-fast), opacity var(--dur-fast);
 }
 .aw .aw-btn:hover:not(:disabled) {
   background: rgba(10, 18, 20, 0.08);

@@ -33,3 +33,8 @@ test("the selected tab's edge fades in as a bar; no box-shadow snaps, and colour
   expect(rule('.tabs button[aria-selected="true"]::before')).toContain("opacity: 1");
   expect(rule(".tabs button")).toContain("color var(--dur-fast)");
 });
+
+test("a button that is answered or sending dims on the fast duration, instead of jumping to 0.45", () => {
+  expect(rule(".aw .aw-btn:disabled")).toContain("opacity: 0.45");
+  expect(rule(".aw .aw-btn")).toContain("opacity var(--dur-fast)");
+});
