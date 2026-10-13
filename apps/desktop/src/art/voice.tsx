@@ -128,6 +128,7 @@ export default function VoiceArt({
         <g transform="rotate(-90 80 70)">
           <circle cx="80" cy="70" r="62" fill="none" stroke="var(--line)" strokeWidth="3" />
           <circle
+            className="voice-art__ring"
             cx="80"
             cy="70"
             r="62"
