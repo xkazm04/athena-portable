@@ -683,7 +683,7 @@ function RecordLine({ row }: { row: RecordRow }) {
 function Record({ model }: { model: CompanionModel }) {
   const { session, earlier, ledger, header } = model.record;
   return (
-    <div className="lg-scroll" tabIndex={0}>
+    <div className="lg-scroll" tabIndex={0} role="region" aria-label="Record">
       <p className="lg-lead" data-complete={model.record.complete ? "1" : "0"}>
         {header}
       </p>
@@ -751,7 +751,7 @@ function Record({ model }: { model: CompanionModel }) {
 function Origins({ model }: { model: CompanionModel }) {
   const { origins, actions } = model;
   return (
-    <div className="lg-scroll" tabIndex={0}>
+    <div className="lg-scroll" tabIndex={0} role="region" aria-label="Origins">
       <p className="lg-lead">
         {origins.host ? `What ${origins.host} offers her, and who she may act for.` : "No page is open."}
       </p>

@@ -333,3 +333,9 @@ test("welcome: a failed start shows the reason and a Try again button that resta
   expect(out).toContain("Use Codex");
   expect(out).not.toContain("Check again in a moment");
 });
+
+test("each scrollable tab the keyboard can focus is a named region, as Talk's log is", () => {
+  expect(html("ledger")).toContain('role="log" aria-label="Conversation"');
+  expect(html("ledger record")).toContain('role="region" aria-label="Record"');
+  expect(html("ledger origins")).toContain('role="region" aria-label="Origins"');
+});
