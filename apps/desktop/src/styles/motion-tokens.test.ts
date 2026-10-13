@@ -78,3 +78,10 @@ test("--accent-text is the accent as ink: 4.5:1 on all three light surfaces, and
   }
   expect(rule(':root,\n[data-theme="dark"]').replace(/\s+/g, " ")).toMatch(/--accent-text:\s*var\(--accent\)/);
 });
+
+test("--duration-fast has its easing pair, and every use of it in the sheet names the pair", () => {
+  expect(rule(":root")).toMatch(/--ease-fast:\s*cubic-bezier/);
+  const uses = css.match(/var\(--duration-fast\)[^,;]*/g) ?? [];
+  expect(uses.length).toBeGreaterThan(0);
+  for (const use of uses) expect(use).toMatch(/var\(--ease-fast\)/);
+});

@@ -140,6 +140,9 @@
   --radius-card: 10px;
 
   --duration-fast: 150ms;
+  /* The easing that pairs with it: a hover or focus change starts quickly and settles, rather than
+   * the browser default ease, which starts slow. */
+  --ease-fast: cubic-bezier(0.2, 0, 0, 1);
 
   /* The reading step (Setup, Theme, "Text size"): added to every size under the heading tiers,
    * never to a heading. Comfortable is the default; compact is the original ramp. */
@@ -348,9 +351,9 @@ select:focus-visible {
   font-weight: 500;
   cursor: pointer;
   transition:
-    background var(--duration-fast),
-    border-color var(--duration-fast),
-    color var(--duration-fast);
+    background var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast),
+    color var(--duration-fast) var(--ease-fast);
 }
 
 .btn:active:not(:disabled) {
@@ -479,9 +482,9 @@ select:focus-visible {
   color: var(--muted-foreground);
   cursor: pointer;
   transition:
-    background var(--duration-fast),
-    color var(--duration-fast),
-    border-color var(--duration-fast);
+    background var(--duration-fast) var(--ease-fast),
+    color var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast);
 }
 
 .pill:hover:not(:disabled) {
@@ -682,7 +685,7 @@ select:focus-visible {
   height: 8px;
   border-radius: 50%;
   background: var(--muted-foreground);
-  transition: background var(--duration-fast);
+  transition: background var(--duration-fast) var(--ease-fast);
 }
 
 .ptt[data-phase="listening"] {
