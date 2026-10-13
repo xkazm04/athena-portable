@@ -1099,7 +1099,7 @@ body.athena {
   color: #fff;
 }
 .aw .aw-btn-stamp:hover:not(:disabled) {
-  background: #831343;
+  background: color-mix(in srgb, var(--paper-stamp) 85%, #000);
 }
 .aw .aw-btn-primary {
   background: var(--btn-primary-ink);
@@ -1107,7 +1107,7 @@ body.athena {
   color: #fff;
 }
 .aw .aw-btn-primary:hover:not(:disabled) {
-  background: #0c6178;
+  background: color-mix(in srgb, var(--btn-primary-ink) 85%, #000);
 }
 .aw .aw-btn-ghost,
 .aw .aw-btn-ghost-ink {

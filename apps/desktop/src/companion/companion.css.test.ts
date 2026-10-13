@@ -50,3 +50,9 @@ test("a count badge centres its figure: the line is as tall as the badge, at eit
   expect(rule(".aw-badge")).toContain("height: 20px");
   expect(rule(".aw-badge")).toContain("line-height: 20px");
 });
+
+test("the stamp and primary buttons darken their own token on hover, not a second hex that drifts from it", () => {
+  for (const sel of [".aw .aw-btn-stamp:hover:not(:disabled)", ".aw .aw-btn-primary:hover:not(:disabled)"]) {
+    expect(rule(sel), sel).toMatch(/background:\s*color-mix\(in srgb, var\(--[\w-]+\) 85%, #000\)/);
+  }
+});
