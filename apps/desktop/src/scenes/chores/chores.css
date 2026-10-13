@@ -903,6 +903,11 @@ button.ch-glance:hover {
 .ch-film__media {
   width: 100%;
   max-width: 720px;
+  /* The committed stills are 960 by 710. The box is that shape before the still or the film's
+   * metadata arrives, so neither pushes the text beneath it down; a film of another shape is
+   * letterboxed on the recessed ground. */
+  aspect-ratio: 960 / 710;
+  object-fit: contain;
   border-radius: var(--radius-card);
   border: 1px solid var(--line);
   background: var(--recessed);

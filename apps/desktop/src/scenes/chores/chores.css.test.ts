@@ -59,3 +59,8 @@ test("gaps and pads are the density tokens, not 14px one-offs between the 12 and
   expect(rule(".ch-numbers")).toMatch(/gap:\s*var\(--density-gap\)/);
   expect(rule(".ch-card-tile")).toMatch(/padding:\s*var\(--density-pad-sm\)/);
 });
+
+test("the film's box has the shape of the committed stills before they load, so the text under it holds still", () => {
+  expect(rule(".ch-film__media")).toMatch(/aspect-ratio:\s*960 \/ 710/);
+  expect(rule(".ch-film__media")).toMatch(/object-fit:\s*contain/);
+});

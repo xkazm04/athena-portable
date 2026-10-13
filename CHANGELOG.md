@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(voice): the hero waveform rises in with the head and the card instead of appearing under them.` README 3.1, ADR 0087 and 0089 (scan-sweep, ui-perfectionist): Pick and Hear mount `.vsc-hero` between two parts that rise 8px over 320ms and it popped; it now uses `vsc-in`, and Calm and reduced motion drop it with them.
 - `fix(companion): the Approve and teal buttons darken their own token on hover, not a second hex.` README 3.1, ADR 0026 (scan-sweep, ui-perfectionist): the hovers were `#831343` and `#0c6178`, written beside bases that are tokens (`--paper-stamp`, the app's `--btn-primary`); they are a 15% mix to black of the base now, within 2 per channel of the old values.
 - `fix(chores): the film part holds the shape of its still before the still or the film arrives.` README 3.5, ADR 0055 and 0087 (scan-sweep, ui-perfectionist): `.ch-film__media` had a width and no height, so the still (0px) and the film (150px) jumped to full height when they loaded and pushed the text beneath; it is `aspect-ratio: 960 / 710` (the committed stills) with `object-fit: contain`. `chores.css.test.ts` pins it.
 - `fix(voice): the rail's current-step bar and stage label ease as the studio moves on.` README 3.1, ADR 0087 and 0089 (scan-sweep, ui-perfectionist): the 2px bar and the stage label swapped to the accent in the frame the step changed; both ease colour on `--duration-fast`.
