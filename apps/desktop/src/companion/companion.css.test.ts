@@ -77,3 +77,7 @@ test("a parameter's key on the decision card grows or breaks inside its column; 
   expect(dt).toContain("max-width: 45%");
   expect(dt).toContain("overflow-wrap: anywhere");
 });
+
+test("the engine line breaks inside a long word, since its reason is the daemon's own text", () => {
+  expect(rule(".aw .wl-engine")).toContain("overflow-wrap: anywhere");
+});

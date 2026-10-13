@@ -2023,6 +2023,11 @@ body.athena {
   padding-left: 8px;
   border-left: 3px solid var(--paper-warn);
 }
+/* the daemon's own error text (a path, a command line) is one long word; it breaks, it does not push the
+ * paper's edge out */
+.aw .wl-engine {
+  overflow-wrap: anywhere;
+}
 .aw .wl-engine-act {
   display: flex;
   flex-wrap: wrap;

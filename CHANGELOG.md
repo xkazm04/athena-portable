@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(companion): the welcome's engine line breaks a long reason instead of pushing the paper's edge out.` README 3.1 and 3.5, ADR 0026 (scan-sweep, state-coverage): the failed-start state prints the daemon's error verbatim, often a path with no space in it, and `.wl-engine` had no `overflow-wrap`.
 - `fix(companion): a long parameter key on the decision card no longer runs over its value.` README 3.1 and 3.5, ADR 0026 (scan-sweep, visual-craft): `.sl-params dt` was a fixed 64px box that holds about seven uppercase characters, so a host tool's `recipient_email` overflowed onto the value; it grows to 45% of the row and then breaks inside the word.
 - `fix(companion): a switched-off app is told to be switched back on under Apps in Main, not at a button that is gone.` README 3.5, ADR 0026 (scan-sweep, copy-auditor): the stopped-turn sentence said "Press Act here again in Main", a control no surface has any more; it names the Apps depth, where the on/off switch is.
 - `fix(companion): each Enable or Disable button on Origins names its app, and its state is said once.` README 3.5, ADR 0026 (scan-sweep, accessibility-checker): every row's button read just Disable or Enable and also carried `aria-pressed` beside a label that flips with the state; the name is "Disable <host>" now and `aria-pressed` is gone.
