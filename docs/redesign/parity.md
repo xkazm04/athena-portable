@@ -12,12 +12,12 @@ Status: `todo` until its phase lands, then `proved: <test or hand check>`.
 
 | Capability | Today | Depth | Status |
 |---|---|---|---|
-| Presence pill: "N waiting", resting, the one-line step; click summons her | `components/ModuleBar.tsx`, `stores/athena.ts` | D0 dock | todo |
-| Theme toggle writing a definite choice | `app.tsx`, `stores/settings.ts` | D2 look | todo |
-| Window buttons (only with a shell); minimise, maximise | `app.tsx` WindowButtons | stage chrome | todo |
-| Close asks only when a card waits; Escape cancels; focus on keep | `app.tsx` | stage chrome | todo |
-| App-wide stores started once by the root | `app.tsx` | `chrome.tsx` | todo |
-| Drag region on every non-control | `app.tsx`, `ModuleBar.tsx` | stage chrome | todo |
+| Presence pill: "N waiting", resting, the one-line step; click summons her | `components/ModuleBar.tsx`, `stores/athena.ts` | D0 dock | proved: Stage.test (dock shows her state and waiting count), surface/view.test (summon to her window); hand check pending |
+| Theme toggle writing a definite choice | `app.tsx`, `stores/settings.ts` | D2 look | proved: components/WindowControls, the code the bar used, moved unchanged; hand check pending |
+| Window buttons (only with a shell); minimise, maximise | `app.tsx` WindowButtons | stage chrome | proved: components/WindowControls moved unchanged; hand check pending |
+| Close asks only when a card waits; Escape cancels; focus on keep | `app.tsx` | stage chrome | proved: moved unchanged; its Escape now marks the key handled so the stage does not also rise; hand check pending |
+| App-wide stores started once by the root | `app.tsx` | `chrome.tsx` | proved: console/root.tsx starts the same nine plus depth and the shape seam |
+| Drag region on every non-control | `app.tsx`, `ModuleBar.tsx` | stage chrome | proved: Stage top bar and crumbs carry data-tauri-drag-region; hand check pending |
 
 ## Browser (Apps)
 
@@ -67,16 +67,16 @@ Status: `todo` until its phase lands, then `proved: <test or hand check>`.
 
 | Capability | Today | Depth | Status |
 |---|---|---|---|
-| Onboarding letter: engine, first app, microphone, each with a standing | `modules/setup/view.tsx`, `readiness.ts` | D0 setup | todo |
-| Finish gated by readiness and explains itself | `isReady`, `notReadyBecause` | D0 setup | todo |
-| Finish selects the Browser and opens the first app | `index.ts`, `companion.rs` after_onboarded | D0 setup | todo |
+| Onboarding letter: engine, first app, microphone, each with a standing | `modules/setup/view.tsx`, `readiness.ts` | D0 setup | proved: waking/view.test (engine remedy, first app address, microphone with its own fact) |
+| Finish gated by readiness and explains itself | `isReady`, `notReadyBecause` | D0 setup | proved: waking/view.test (Wake her disabled with the reason; open with an engine and a page, with or without a microphone) |
+| Finish selects the Browser and opens the first app | `index.ts`, `companion.rs` after_onboarded | D0 setup | changed: Wake her ends on the surface and selects no module (a stray `browser` would show a page under the scene, ADR 0088); the first app is the one opened in step 2. The welcome in her own window still asks Rust to select `browser`: phase 6 makes the stage follow layout:changed |
 | Reopen onboarding from settings | `reopenOnboarding` | D2 | todo |
-| Engine: choose (with the probe's remedy as disabled reason), Check again, probe table | `chooseSetupEngine`, `checkEngines` | D2 engine | todo |
-| Restart notice when the stored engine differs from the running one; Restart | `pendingEngine` | D2 engine | todo |
-| Start-failure card with the reason and Try again on X | `StartFailure` | D2 engine | todo |
+| Engine: choose (with the probe's remedy as disabled reason), Check again, probe table | `chooseSetupEngine`, `checkEngines` | D2 engine | proved for the first act: waking/view.test; the settings depth is phase 9 |
+| Restart notice when the stored engine differs from the running one; Restart | `pendingEngine` | D2 engine | proved for the first act: same note as the letter; settings depth is phase 9 |
+| Start-failure card with the reason and Try again on X | `StartFailure` | D2 engine | proved for the first act: waking/view.test renders the model's failure with Try again; settings depth is phase 9 |
 | Theme: system, light, dark; text size; miniatures | `ThemePreview` | D2 look | todo |
 | Brain path | `setBrainPath` | D2 brain | todo |
-| Microphone check (getUserMedia) | `checkMic` | D2 / voice | todo |
+| Microphone check (getUserMedia) | `checkMic` | D2 / voice | proved for the first act: waking/view.test (checkMic, its standing); settings depth is phase 9 |
 | Store path | `view.tsx` Data | D2 data | todo |
 
 ## Voice
@@ -112,9 +112,9 @@ Status: `todo` until its phase lands, then `proved: <test or hand check>`.
 | Capability | Proof wanted | Status |
 |---|---|---|
 | Light and dark both render every scene from tokens only | token test + both-theme screenshots | todo |
-| `prefers-reduced-motion` and Calm give the final state, not a faster animation | perf gate + test | todo |
+| `prefers-reduced-motion` and Calm give the final state, not a faster animation | perf gate + test | proved: layers.test (calm is one layer), bell.test (animation off), motion.test; perf gate under calm pending |
 | Every scene renders every fixture in `preview.html` with no Tauri | view tests over `fixtureIds` | todo |
-| Hash deep link reaches any depth; unknown ids fall back to D0 | depth tests | todo |
-| Escape rises exactly one level from any depth and never closes the window | depth tests | todo |
-| Rust rectangles for both shapes; `--bar-height` and `--strip-height` match | `layout.rs` tests, tokens test | todo |
+| Hash deep link reaches any depth; unknown ids fall back to D0 | depth tests | proved: depth/model.test (round trip, fallback) and depth/store.test (hash mirror) |
+| Escape rises exactly one level from any depth and never closes the window | depth tests | proved: depth/model.test (rise from every place), Stage.test (escapeRises) |
+| Rust rectangles for both shapes; `--bar-height` and `--strip-height` match | `layout.rs` tests, tokens test | proved: layout.rs tests (both shapes, shape ids), depth/shape.test (ids equal Rust's) |
 | Perf budgets of `fathom.md` section 5 | `pnpm perf` | todo |

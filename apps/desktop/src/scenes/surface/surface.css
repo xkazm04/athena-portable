@@ -1,0 +1,167 @@
+/* The surface — README section 3.1, ADR 0087 and 0089. Tokens only; no text under 12px. The
+ * marquee is display type: the thing under attention takes the centre of the frame. */
+
+.surface {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(280px, 40%) 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 0 4vw;
+  padding: 4vh 6vw 16vh 4vw;
+  overflow: auto;
+}
+
+.surface__bell {
+  grid-row: 1;
+  align-self: center;
+  justify-self: center;
+  width: min(100%, 44vh);
+}
+.surface__bell .bell {
+  width: 100%;
+  height: auto;
+}
+
+.surface__words {
+  grid-row: 1;
+  align-self: center;
+  display: grid;
+  gap: 12px;
+  max-width: 44rem;
+}
+.surface__eyebrow {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.surface__marquee {
+  margin: 0;
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+  min-height: 1.1em;
+}
+.surface__line {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  min-height: 3em;
+}
+
+.surface__summon {
+  justify-self: start;
+  font: inherit;
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: var(--role-human);
+  border: 1px solid var(--role-human);
+  background: color-mix(in srgb, var(--role-human) 10%, transparent);
+  cursor: pointer;
+}
+
+.surface__ask {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+.surface__ask-label {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.surface__ask-row {
+  display: flex;
+  gap: 8px;
+}
+.surface__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font: inherit;
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: var(--foreground);
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--recessed) 70%, transparent);
+}
+.surface__input:disabled {
+  opacity: 0.55;
+}
+.surface__send {
+  font: inherit;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 0;
+  color: var(--on-primary);
+  background: var(--btn-primary);
+  cursor: pointer;
+}
+.surface__send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.surface__ask-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  min-height: 1.4em;
+}
+
+.surface__lights {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  align-self: end;
+}
+.surface__light {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 6px 12px;
+  font: inherit;
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+.surface__light:hover,
+.surface__light[data-focused="true"] {
+  background: var(--wash);
+  border-color: var(--line-strong);
+}
+.surface__light[data-attention="true"] .surface__light-name::after {
+  content: " •";
+  color: var(--status-warning);
+}
+.surface__light-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.surface__light-stat {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .surface {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    padding-bottom: 22vh;
+  }
+  .surface__bell { grid-row: 1; width: min(70%, 32vh); }
+  .surface__words { grid-row: 2; }
+  .surface__lights { grid-row: 3; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+}

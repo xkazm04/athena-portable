@@ -1,0 +1,143 @@
+/**
+ * The surface's view-model — README section 3.1 and 3.5, ADR 0026, 0087.
+ *
+ * The surface is Athena and the five lights beneath her. It is a **mirror** (decision D1, ADR 0087):
+ * Main holds no run and no microphone, so what it shows of her is what `athena:status` reports,
+ * and talking to her is handing text to her own window. Nothing here pretends otherwise: the ask
+ * box says it hands the words over, and the cards waiting are answered in her window.
+ *
+ * Pure, as every module model is: `selectSurface` takes plain facts and returns what to draw, and
+ * the selector's caller (`index.tsx`) is the only file that knows a store exists.
+ */
+import type { Reach } from "@/bell/Bell";
+import { POSE_WORDS, poseOf, type Pose } from "@/bell/pose";
+import { ROOTS, ROOT_LABEL, type Root } from "@/depth/model";
+import { pillText } from "@/stores/athena";
+
+export interface SurfaceActions {
+  /** Hand a sentence to her window. Rejects with a sentence when it cannot (no shell). */
+  ask: (text: string) => Promise<void>;
+  /** Bring her own window forward: the cards waiting are answered there. */
+  summon: () => void;
+  dive: (root: Root) => void;
+}
+
+export interface SurfaceSources {
+  athena: { state: string; cards: number; line: string };
+  /** Apps she has been told about, switched on or off. */
+  apps: readonly { id: string; host: string; enabled: boolean }[];
+  openTabs: number;
+  accounts: readonly { id: string; label: string; connected: boolean; attention: boolean }[];
+  chores: { total: number; benched: number; foundUsd: number };
+  voiceAvailable: boolean;
+  engine: { label: string; ready: boolean | null };
+  /** False in a plain browser, where there is no window of hers to hand anything to. */
+  inShell: boolean;
+  actions: SurfaceActions;
+}
+
+export interface Light {
+  root: Root;
+  label: string;
+  /** One short line of what is live in it: a count, a standing. */
+  stat: string;
+  /** What diving in is for, shown when the light is under attention. */
+  hint: string;
+  /** True when it needs the person: an account that wants reconnecting, an engine that is not ready. */
+  attention: boolean;
+}
+
+export interface SurfaceModel {
+  pose: Pose;
+  /** What she is doing, in a line. */
+  headline: string;
+  /** The pose in words, for a screen reader. */
+  poseWord: string;
+  waiting: number;
+  reach: readonly Reach[];
+  lights: readonly Light[];
+  canAsk: boolean;
+  /** Why the ask box is off, or null. */
+  askReason: string | null;
+  actions: SurfaceActions;
+}
+
+const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+export function selectSurface(s: SurfaceSources): SurfaceModel {
+  const onApps = s.apps.filter((a) => a.enabled);
+  const connected = s.accounts.filter((a) => a.connected);
+  const reach: Reach[] = [
+    ...s.apps.map((a) => ({ id: `app:${a.id}`, lit: a.enabled })),
+    ...s.accounts.map((a) => ({ id: `account:${a.id}`, lit: a.connected })),
+  ];
+
+  const lights: Record<Root, Omit<Light, "root">> = {
+    apps: {
+      label: ROOT_LABEL.apps,
+      stat:
+        s.apps.length === 0
+          ? s.openTabs > 0
+            ? `${plural(s.openTabs, "page")} open`
+            : "none yet"
+          : `${onApps.length} of ${s.apps.length} on` + (s.openTabs > 0 ? ` · ${s.openTabs} open` : ""),
+      hint: "The web apps she works in: open one, switch one on or off.",
+      attention: false,
+    },
+    chores: {
+      label: ROOT_LABEL.chores,
+      stat:
+        s.chores.total === 0
+          ? "none in this build"
+          : `${s.chores.benched} of ${s.chores.total} benched · ${usd(s.chores.foundUsd)} found`,
+      hint: "Chores worth starting, with what they save and the proof.",
+      attention: false,
+    },
+    accounts: {
+      label: ROOT_LABEL.accounts,
+      stat:
+        s.accounts.length === 0
+          ? "none connected"
+          : `${connected.length} of ${s.accounts.length} connected`,
+      hint: "The accounts she can reach, and what she may do in them.",
+      attention: s.accounts.some((a) => a.attention),
+    },
+    voice: {
+      label: ROOT_LABEL.voice,
+      stat: s.voiceAvailable ? "ready to talk" : "not set up",
+      hint: "Her voice and how she hears you.",
+      attention: false,
+    },
+    mind: {
+      label: ROOT_LABEL.mind,
+      stat:
+        s.engine.ready === null
+          ? "checking the engine"
+          : s.engine.ready
+            ? `${s.engine.label} is ready`
+            : `${s.engine.label} is not ready`,
+      hint: "The engine she thinks with, and how she looks.",
+      attention: s.engine.ready === false,
+    },
+  };
+
+  const pose = poseOf(s.athena);
+  return {
+    pose,
+    headline: s.athena.cards > 0 || pose !== "resting" ? pillText(s.athena) : "Athena is resting",
+    poseWord: POSE_WORDS[pose],
+    waiting: s.athena.cards,
+    reach,
+    lights: ROOTS.map((root) => ({ root, ...lights[root] })),
+    canAsk: s.inShell,
+    askReason: s.inShell ? null : "Her window is only there in the app, so there is no one to hand this to here.",
+    actions: s.actions,
+  };
+}
+
+export const INERT_ACTIONS: SurfaceActions = {
+  ask: () => Promise.resolve(),
+  summon: () => {},
+  dive: () => {},
+};

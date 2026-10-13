@@ -8,6 +8,7 @@
     "dev": "vite",
     "dev:inspect": "cross-env ATHENA_INSPECTOR=1 vite",
     "tauri:inspect": "cross-env ATHENA_INSPECTOR=1 tauri dev",
+    "tauri:console": "cross-env VITE_ATHENA_UI=console tauri dev",
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
@@ -17,6 +18,8 @@
     "perf": "node scripts/perf-gate.mjs",
     "perf:stage": "node scripts/perf-gate.mjs --scene stage",
     "perf:bell": "node scripts/perf-gate.mjs --scene bell",
+    "perf:surface": "node scripts/perf-gate.mjs --scene surface",
+    "perf:all": "pnpm perf && pnpm perf:stage && pnpm perf:bell && pnpm perf:surface",
     "test:e2e": "vitest run --config e2e/vitest.e2e.config.ts"
   },
   "dependencies": {

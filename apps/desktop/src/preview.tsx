@@ -24,6 +24,8 @@ import ReactDOM from "react-dom/client";
 import ModuleBar from "@/components/ModuleBar";
 import AthenaPreview from "@/companion/preview";
 import BellPreview from "@/bell/preview";
+import ConsoleRoot from "@/console/root";
+import { ScenePreview, isSceneName } from "@/console/preview";
 import StagePreview from "@/stage/preview";
 import { MODULE_ENTRIES, moduleFor } from "@/modules/registry";
 import { THEMES, applyTheme, isTheme, type Theme } from "@/stores/shell";
@@ -184,5 +186,5 @@ const scene = params.get("scene");
 // No `StrictMode` here, deliberately: the harness exists to look at a render, and a
 // double-invoked render of a pure component is noise in a screenshot rather than a signal.
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  scene === "bell" ? <BellPreview /> : scene === "stage" ? <StagePreview /> : surface === "athena" ? <AthenaPreview /> : <Preview />,
+  scene === "console" ? <ConsoleRoot /> : isSceneName(scene) ? <ScenePreview name={scene} /> : scene === "bell" ? <BellPreview /> : scene === "stage" ? <StagePreview /> : surface === "athena" ? <AthenaPreview /> : <Preview />,
 );

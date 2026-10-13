@@ -1,0 +1,17 @@
+/* The depth glyphs — README section 3.1, ADR 0087 and 0089. One slow float, compositor only. */
+.glyph {
+  display: block;
+  overflow: visible;
+}
+.glyph__float {
+  animation: glyph-float 6s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes glyph-float {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px); }
+}
+:root[data-motion="calm"] .glyph__float {
+  animation: none;
+  will-change: auto;
+}

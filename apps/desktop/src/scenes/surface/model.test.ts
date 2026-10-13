@@ -1,0 +1,99 @@
+/** Tests for the surface's model — README section 3.1, ADR 0026 and 0087. */
+import { describe, expect, it } from "vitest";
+
+import { fixtures } from "./fixtures";
+import { INERT_ACTIONS, selectSurface, type SurfaceSources } from "./model";
+
+const typical = fixtures.typical!;
+
+describe("the pose and the headline come from her mirror", () => {
+  it("rests, works, hears and asks, and says what she is on", () => {
+    expect(typical.pose).toBe("resting");
+    expect(typical.headline).toBe("Athena is resting");
+    expect(fixtures.working!.pose).toBe("working");
+    expect(fixtures.working!.headline).toBe("Reading Invoices");
+    expect(fixtures.hearing!.pose).toBe("hearing");
+    expect(fixtures.asking!.pose).toBe("asking");
+    expect(fixtures.asking!.waiting).toBe(2);
+    expect(fixtures.asking!.headline).toBe("2 waiting");
+  });
+});
+
+describe("the reach", () => {
+  it("is one tendril per app and per account, lit when on or connected", () => {
+    expect(typical.reach).toHaveLength(8);
+    expect(typical.reach.filter((r) => r.lit)).toHaveLength(4); // 3 apps on, 1 account connected
+    expect(typical.reach[0]).toEqual({ id: "app:ledgerbox", lit: true });
+    expect(typical.reach.at(-1)).toEqual({ id: "account:calendar", lit: false });
+  });
+
+  it("is empty with nothing set up", () => {
+    expect(fixtures.empty!.reach).toEqual([]);
+  });
+});
+
+describe("the five lights", () => {
+  it("are the five depths, in order, each with a stat and a hint", () => {
+    expect(typical.lights.map((l) => l.root)).toEqual(["apps", "chores", "accounts", "voice", "mind"]);
+    expect(typical.lights.map((l) => l.label)).toEqual(["Apps", "Chores", "Accounts", "Voice", "Mind"]);
+    for (const l of typical.lights) {
+      expect(l.stat.length).toBeGreaterThan(0);
+      expect(l.hint.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("count what is live", () => {
+    const by = Object.fromEntries(typical.lights.map((l) => [l.root, l]));
+    expect(by.apps!.stat).toBe("3 of 5 on · 3 open");
+    expect(by.chores!.stat).toBe("12 of 16 benched · $551 found");
+    expect(by.accounts!.stat).toBe("1 of 3 connected");
+    expect(by.voice!.stat).toBe("ready to talk");
+    expect(by.mind!.stat).toBe("Claude Code is ready");
+  });
+
+  it("flag what needs the person: an account to reconnect, an engine that is not ready", () => {
+    const by = Object.fromEntries(typical.lights.map((l) => [l.root, l]));
+    expect(by.accounts!.attention).toBe(true);
+    expect(by.mind!.attention).toBe(false);
+    const down = Object.fromEntries(fixtures.degraded!.lights.map((l) => [l.root, l]));
+    expect(down.mind!.attention).toBe(true);
+    expect(down.mind!.stat).toBe("Claude Code is not ready");
+  });
+
+  it("say so when a count is not known yet or there is nothing", () => {
+    const by = Object.fromEntries(fixtures.empty!.lights.map((l) => [l.root, l]));
+    expect(by.apps!.stat).toBe("none yet");
+    expect(by.accounts!.stat).toBe("none connected");
+    expect(by.mind!.stat).toBe("checking the engine");
+    expect(by.voice!.stat).toBe("not set up");
+  });
+
+  it("count a page open before any app is registered", () => {
+    const m = selectSurface({ ...src(), apps: [], openTabs: 2 });
+    expect(m.lights[0]!.stat).toBe("2 pages open");
+    expect(selectSurface({ ...src(), apps: [], openTabs: 1 }).lights[0]!.stat).toBe("1 page open");
+  });
+});
+
+describe("asking her", () => {
+  it("is possible in the app and says why it is not in a plain browser", () => {
+    expect(typical.canAsk).toBe(true);
+    expect(typical.askReason).toBeNull();
+    expect(fixtures.degraded!.canAsk).toBe(false);
+    expect(fixtures.degraded!.askReason).toMatch(/only there in the app/);
+  });
+});
+
+function src(): SurfaceSources {
+  return {
+    athena: { state: "seal", cards: 0, line: "" },
+    apps: [],
+    openTabs: 0,
+    accounts: [],
+    chores: { total: 0, benched: 0, foundUsd: 0 },
+    voiceAvailable: false,
+    engine: { label: "Claude Code", ready: true },
+    inShell: true,
+    actions: INERT_ACTIONS,
+  };
+}

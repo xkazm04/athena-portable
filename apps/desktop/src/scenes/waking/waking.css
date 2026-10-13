@@ -1,0 +1,230 @@
+/* The first act — README section 3.1, ADR 0087. Tokens only, no text under 12px. Same split as
+ * every depth: her on the left, the thing to do on the right. */
+
+.waking {
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(280px, 38%) 1fr;
+  gap: 0 4vw;
+  align-items: center;
+  padding: 4vh 6vw 8vh 4vw;
+  overflow: auto;
+}
+.waking__her {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.waking__her .bell {
+  width: min(100%, 42vh);
+  height: auto;
+}
+.waking__caption {
+  margin: 8px 0 0;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+.waking__sub {
+  margin: 0;
+  max-width: 28rem;
+  color: var(--muted-foreground);
+}
+
+.waking__act {
+  display: grid;
+  gap: 14px;
+  max-width: 46rem;
+}
+.waking__steps {
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+.waking__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  padding: 5px 14px 5px 6px;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  background: transparent;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.waking__step[aria-current="step"] {
+  color: var(--foreground);
+  border-color: var(--accent);
+  background: var(--wash);
+}
+.waking__step-n {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.8125rem;
+  border: 1px solid var(--line-strong);
+}
+.waking__step[data-done="true"] .waking__step-n {
+  color: var(--primary-fg);
+  background: var(--status-success);
+  border-color: var(--status-success);
+}
+.waking__eyebrow {
+  margin: 6px 0 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.waking__ask {
+  margin: 0;
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+.waking__lead {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+}
+
+.waking__engines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.waking__engine {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card-bg) 80%, transparent);
+}
+.waking__engine[data-chosen="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 24px var(--glow);
+}
+.waking__engine-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.waking__engine-head h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.waking__badge {
+  font-size: 0.8125rem;
+  padding: 1px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  color: var(--muted-foreground);
+}
+.waking__badge[data-state="found"] {
+  color: var(--status-success);
+  border-color: var(--status-success);
+}
+.waking__badge[data-state="not_found"],
+.waking__badge[data-state="not_logged_in"] {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+}
+.waking__engine-line {
+  margin: 0;
+  color: var(--muted-foreground);
+  line-height: 1.45;
+}
+.waking__mono {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.waking__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.waking__fact {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+.waking__fact[data-standing="done"] { color: var(--status-success); }
+.waking__fact[data-standing="missing"] { color: var(--status-warning); }
+
+.waking__notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--status-warning);
+}
+.waking__notice p {
+  margin: 0;
+}
+
+.waking__open {
+  display: grid;
+  gap: 6px;
+}
+.waking__open label {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.waking__input {
+  flex: 1 1 18rem;
+  min-width: 0;
+  font: inherit;
+  padding: 9px 14px;
+  border-radius: 999px;
+  color: var(--foreground);
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--recessed) 70%, transparent);
+}
+
+.waking__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px;
+}
+.waking__later {
+  font: inherit;
+  color: var(--muted-foreground);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.waking__why,
+.waking__engine-now {
+  margin: 0;
+  flex-basis: 100%;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 900px) {
+  .waking { grid-template-columns: 1fr; gap: 16px; padding-top: 2vh; }
+  .waking__her .bell { width: min(60%, 30vh); }
+}

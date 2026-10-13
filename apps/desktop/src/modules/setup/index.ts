@@ -23,10 +23,16 @@ import { useTabs } from "@/stores/tabs";
 import { useVoice } from "@/stores/voice";
 
 import { fixtureIds, fixtures, initialOpenFor } from "./fixtures";
-import { selectSetup, type SetupActions } from "./model";
+import { selectSetup, type SetupActions, type SetupModel } from "./model";
 import SetupView from "./view";
 
-function Live() {
+/**
+ * The model, built from the stores. A hook so the Setup module and the depth scenes that carry its
+ * work (the first act, the Mind depth) share one selector and one set of actions; the old view and
+ * the new ones differ only in what they draw.
+ */
+export function useSetupModel(options: { afterFinish?: () => void } = {}): SetupModel {
+  const { afterFinish } = options;
   const hydrated = useSettings((s) => s.hydrated);
   const engine = useSettings((s) => s.engine);
   const theme = useSettings((s) => s.theme);
@@ -78,11 +84,14 @@ function Live() {
       finish: () => {
         setReopened(false);
         void useSettings.getState().setOnboarded(true).catch(report("onboarded"));
-        void useShell.getState().select("browser").catch(report("leave"));
+        // The module bar leaves into the Browser. The depth scenes pass their own destination: a
+        // stray `browser` selection would tell Rust a page is wanted under a scene.
+        if (afterFinish) afterFinish();
+        else void useShell.getState().select("browser").catch(report("leave"));
       },
       reopenOnboarding: () => setReopened(true),
     };
-  }, []);
+  }, [afterFinish]);
 
   const model = useMemo(
     () =>
@@ -134,7 +143,11 @@ function Live() {
     ],
   );
 
-  return createElement(SetupView, { model });
+  return model;
+}
+
+function Live() {
+  return createElement(SetupView, { model: useSetupModel() });
 }
 
 export const entry: ModuleEntry = {
