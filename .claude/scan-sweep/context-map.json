@@ -1,0 +1,263 @@
+{
+  "groups": [
+    {
+      "name": "console",
+      "contexts": [
+        {
+          "name": "console-root",
+          "description": "The depth console root: Console, hash mirror, preview",
+          "file_paths": [
+            "apps/desktop/src/console/console.css",
+            "apps/desktop/src/console/Console.tsx",
+            "apps/desktop/src/console/follow.ts",
+            "apps/desktop/src/console/root.tsx",
+            "apps/desktop/src/console/scenes.tsx"
+          ]
+        },
+        {
+          "name": "stage",
+          "description": "The stage: layers, backdrop, depth transitions",
+          "file_paths": [
+            "apps/desktop/src/stage/Backdrop.tsx",
+            "apps/desktop/src/stage/layers.ts",
+            "apps/desktop/src/stage/stage.css",
+            "apps/desktop/src/stage/Stage.tsx"
+          ]
+        },
+        {
+          "name": "bell",
+          "description": "The bell: Athena's jellyfish drawing and its states",
+          "file_paths": [
+            "apps/desktop/src/bell/bell.css",
+            "apps/desktop/src/bell/Bell.tsx",
+            "apps/desktop/src/bell/pose.ts"
+          ]
+        },
+        {
+          "name": "depth-model",
+          "description": "Depth path grammar and navigation",
+          "file_paths": [
+            "apps/desktop/src/depth/model.ts",
+            "apps/desktop/src/depth/shape.ts",
+            "apps/desktop/src/depth/store.ts"
+          ]
+        },
+        {
+          "name": "art",
+          "description": "Illustrations and glyphs shared by the scenes",
+          "file_paths": [
+            "apps/desktop/src/art/accounts.tsx",
+            "apps/desktop/src/art/chore.css",
+            "apps/desktop/src/art/chore.tsx",
+            "apps/desktop/src/art/glyphs.css",
+            "apps/desktop/src/art/glyphs.tsx",
+            "apps/desktop/src/art/mind.tsx",
+            "apps/desktop/src/art/voice.tsx"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scenes",
+      "contexts": [
+        {
+          "name": "scene-surface",
+          "description": "The surface scene: marquee, ask row, lights",
+          "file_paths": [
+            "apps/desktop/src/scenes/surface/index.tsx",
+            "apps/desktop/src/scenes/surface/live.tsx",
+            "apps/desktop/src/scenes/surface/model.ts",
+            "apps/desktop/src/scenes/surface/surface.css",
+            "apps/desktop/src/scenes/surface/view.tsx"
+          ]
+        },
+        {
+          "name": "scene-waking",
+          "description": "The first act: setup steps",
+          "file_paths": [
+            "apps/desktop/src/scenes/waking/index.tsx",
+            "apps/desktop/src/scenes/waking/live.tsx",
+            "apps/desktop/src/scenes/waking/reopen.ts",
+            "apps/desktop/src/scenes/waking/view.tsx",
+            "apps/desktop/src/scenes/waking/waking.css"
+          ]
+        },
+        {
+          "name": "scene-apps",
+          "description": "Apps depth: origins, page band, tools",
+          "file_paths": [
+            "apps/desktop/src/scenes/apps/apps.css",
+            "apps/desktop/src/scenes/apps/index.tsx",
+            "apps/desktop/src/scenes/apps/live.tsx",
+            "apps/desktop/src/scenes/apps/model.ts",
+            "apps/desktop/src/scenes/apps/orb.tsx",
+            "apps/desktop/src/scenes/apps/strip.tsx",
+            "apps/desktop/src/scenes/apps/view.tsx"
+          ]
+        },
+        {
+          "name": "scene-chores",
+          "description": "Chores depth: playbooks, runs, replay",
+          "file_paths": [
+            "apps/desktop/src/scenes/chores/chore.tsx",
+            "apps/desktop/src/scenes/chores/chores.css",
+            "apps/desktop/src/scenes/chores/field.tsx",
+            "apps/desktop/src/scenes/chores/index.tsx",
+            "apps/desktop/src/scenes/chores/live.tsx",
+            "apps/desktop/src/scenes/chores/model.ts",
+            "apps/desktop/src/scenes/chores/parts.tsx",
+            "apps/desktop/src/scenes/chores/replay.tsx",
+            "apps/desktop/src/scenes/chores/view.tsx"
+          ]
+        },
+        {
+          "name": "scene-accounts",
+          "description": "Accounts depth: connectors and allowlists",
+          "file_paths": [
+            "apps/desktop/src/scenes/accounts/accounts.css",
+            "apps/desktop/src/scenes/accounts/index.tsx",
+            "apps/desktop/src/scenes/accounts/live.tsx",
+            "apps/desktop/src/scenes/accounts/view.tsx"
+          ]
+        },
+        {
+          "name": "scene-voice",
+          "description": "Voice depth: studio, settings, frame loop",
+          "file_paths": [
+            "apps/desktop/src/scenes/voice/index.tsx",
+            "apps/desktop/src/scenes/voice/keys.ts",
+            "apps/desktop/src/scenes/voice/live.tsx",
+            "apps/desktop/src/scenes/voice/parts.tsx",
+            "apps/desktop/src/scenes/voice/settings.tsx",
+            "apps/desktop/src/scenes/voice/studio.tsx",
+            "apps/desktop/src/scenes/voice/view.tsx",
+            "apps/desktop/src/scenes/voice/voice.css",
+            "apps/desktop/src/modules/voice/audio.ts",
+            "apps/desktop/src/modules/voice/index.ts",
+            "apps/desktop/src/modules/voice/live.ts",
+            "apps/desktop/src/modules/voice/model.ts",
+            "apps/desktop/src/modules/voice/parts.tsx",
+            "apps/desktop/src/modules/voice/pieces.tsx",
+            "apps/desktop/src/modules/voice/voice.css",
+            "apps/desktop/src/modules/voice/waveform.tsx"
+          ]
+        },
+        {
+          "name": "scene-mind",
+          "description": "Mind depth: engine, brain, look, data, mic",
+          "file_paths": [
+            "apps/desktop/src/scenes/mind/index.tsx",
+            "apps/desktop/src/scenes/mind/live.tsx",
+            "apps/desktop/src/scenes/mind/mind.css",
+            "apps/desktop/src/scenes/mind/shared.tsx",
+            "apps/desktop/src/scenes/mind/view.tsx"
+          ]
+        },
+        {
+          "name": "scene-shared",
+          "description": "Pieces shared by the scenes",
+          "file_paths": [
+            "apps/desktop/src/scenes/shared/engine.css",
+            "apps/desktop/src/scenes/shared/EngineSection.tsx",
+            "apps/desktop/src/scenes/registry.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "windows",
+      "contexts": [
+        {
+          "name": "companion",
+          "description": "Her own window: conversation, captures, drawing",
+          "file_paths": [
+            "apps/desktop/src/companion/capture.ts",
+            "apps/desktop/src/companion/companion.css",
+            "apps/desktop/src/companion/drawing.tsx",
+            "apps/desktop/src/companion/driver.ts",
+            "apps/desktop/src/companion/live.tsx",
+            "apps/desktop/src/companion/machine.ts",
+            "apps/desktop/src/companion/model.ts",
+            "apps/desktop/src/companion/plain.ts",
+            "apps/desktop/src/companion/runtime.ts",
+            "apps/desktop/src/companion/tools.ts",
+            "apps/desktop/src/companion/views.tsx"
+          ]
+        },
+        {
+          "name": "halo",
+          "description": "The halo overlay window",
+          "file_paths": [
+            "apps/desktop/src/halo/halo.css",
+            "apps/desktop/src/halo/main.ts",
+            "apps/desktop/src/halo/model.ts"
+          ]
+        },
+        {
+          "name": "components",
+          "description": "Shared components catalog",
+          "file_paths": [
+            "apps/desktop/src/components/Badge.tsx",
+            "apps/desktop/src/components/Button.tsx",
+            "apps/desktop/src/components/EmptyState.tsx",
+            "apps/desktop/src/components/Facts.tsx",
+            "apps/desktop/src/components/FormField.tsx",
+            "apps/desktop/src/components/PillGroup.tsx",
+            "apps/desktop/src/components/ProblemNote.tsx",
+            "apps/desktop/src/components/PushToTalk.tsx",
+            "apps/desktop/src/components/StatusDot.tsx",
+            "apps/desktop/src/components/Table.tsx",
+            "apps/desktop/src/components/WindowControls.tsx"
+          ]
+        },
+        {
+          "name": "styles-tokens",
+          "description": "App-wide tokens, themes and motion tokens",
+          "file_paths": [
+            "apps/desktop/src/styles/app.css"
+          ]
+        },
+        {
+          "name": "lib-motion",
+          "description": "Animation clock, ids, helpers, stores that drive the UI",
+          "file_paths": [
+            "apps/desktop/src/lib/api.ts",
+            "apps/desktop/src/lib/bridge.ts",
+            "apps/desktop/src/lib/companion.ts",
+            "apps/desktop/src/lib/daemon.ts",
+            "apps/desktop/src/lib/dev/inspector.tsx",
+            "apps/desktop/src/lib/dev/locate.ts",
+            "apps/desktop/src/lib/engines.ts",
+            "apps/desktop/src/lib/events.ts",
+            "apps/desktop/src/lib/halo-rehearsal.ts",
+            "apps/desktop/src/lib/halo-signal.ts",
+            "apps/desktop/src/lib/halo.ts",
+            "apps/desktop/src/lib/hands.ts",
+            "apps/desktop/src/lib/ipc.ts",
+            "apps/desktop/src/lib/manifest.ts",
+            "apps/desktop/src/lib/motion.ts",
+            "apps/desktop/src/lib/playbooks.shipped.ts",
+            "apps/desktop/src/lib/playbooks.ts",
+            "apps/desktop/src/lib/store.ts",
+            "apps/desktop/src/lib/time.ts",
+            "apps/desktop/src/lib/url.ts",
+            "apps/desktop/src/lib/voice-setup.ts",
+            "apps/desktop/src/lib/voice.ts",
+            "apps/desktop/src/stores/athena.ts",
+            "apps/desktop/src/stores/connectors.ts",
+            "apps/desktop/src/stores/daemon.ts",
+            "apps/desktop/src/stores/engines.ts",
+            "apps/desktop/src/stores/origins.ts",
+            "apps/desktop/src/stores/playbooks.ts",
+            "apps/desktop/src/stores/run.ts",
+            "apps/desktop/src/stores/settings.ts",
+            "apps/desktop/src/stores/shell.ts",
+            "apps/desktop/src/stores/tabs.ts",
+            "apps/desktop/src/stores/tools.ts",
+            "apps/desktop/src/stores/voice.ts"
+          ]
+        }
+      ]
+    }
+  ]
+}
