@@ -346,3 +346,10 @@ test("each Enable or Disable button names its app and says its state once, in it
   expect(out).toMatch(/aria-label="(Enable|Disable) ledgerbox\.local"/);
   expect(out).not.toMatch(/<button[^>]*aw-btn-toggle[^>]*aria-pressed/);
 });
+
+test("the Speak button's accessible name contains its visible word, and says what holding it does", () => {
+  const out = html("slip");
+  expect(out).toContain('aria-label="Speak: hold and say approve or decline"');
+  expect(out).toContain("<span>Speak</span>");
+  expect(out).not.toContain('aria-label="Hold and say');
+});

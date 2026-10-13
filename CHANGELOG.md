@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(companion): the Speak button's accessible name contains the word it shows.` README 3.5, ADR 0026 (scan-sweep, accessibility-checker): the button reads "Speak" and was named "Hold and say approve or decline", so a voice user saying "click Speak" found nothing; it is "Speak: hold and say approve or decline".
 - `fix(halo): the caption lingers its 4 seconds after her reply, instead of fading with the edges in 400 ms.` README 3.1, ADR 0027 (scan-sweep, ui-perfectionist): the idle phase set `opacity: 0` on the page and the caption is inside it, so the model's 4 s linger showed for 400 ms; the fade is now a `--live` factor on the edges' opacity, and the page stays opaque.
 - `fix(companion): the composer answers a pointer, and its blocked state eases in and out.` README 3.1, ADR 0026 and 0089 (scan-sweep, ui-perfectionist, state-coverage): the Talk textarea had no hover and no transition, so it snapped to the blocked wash when a turn began; it eases background and border on the fast duration and darkens its border under the pointer.
 - `fix(companion): the Enable and Disable buttons are the same 32px as the other small outlined buttons.` README 3.1, ADR 0026 (scan-sweep, ui-perfectionist): `.aw-btn-toggle` was 30px beside the engine line's buttons and the icon buttons at 32px.

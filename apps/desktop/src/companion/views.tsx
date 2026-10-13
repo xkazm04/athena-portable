@@ -288,7 +288,7 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
           type="button"
           className="aw-btn aw-btn-ghost"
           data-act="mic"
-          aria-label="Hold and say approve or decline"
+          aria-label="Speak: hold and say approve or decline"
           title={model.micAvailable ? "Hold and say approve or decline" : "Voice is not available on this computer yet"}
           disabled={!model.micAvailable || decided}
           onPointerDown={(e) => {
