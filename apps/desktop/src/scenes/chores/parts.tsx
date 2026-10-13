@@ -46,7 +46,12 @@ export function Glance({ view, onOpen }: { view: PlaybookView; onOpen: () => voi
   }
   const share = b.valueTotalUsd ? Math.round((b.valueFoundUsd / b.valueTotalUsd) * 100) : 0;
   return (
-    <button type="button" className="ch-glance focus-ring" onClick={onOpen} aria-label="Open what she filed">
+    <button
+      type="button"
+      className="ch-glance focus-ring"
+      onClick={onOpen}
+      aria-label={`Bench, ${b.runAt.slice(0, 10)}: ${usd(b.valueFoundUsd)} of ${usd(b.valueTotalUsd)} planted in its world. Open what she filed`}
+    >
       <span className="ch-glance__head">
         <span className="ch-label">{`Bench, ${b.runAt.slice(0, 10)}`}</span>
         <Badge tone={view.verdict.tone}>{view.verdict.label}</Badge>

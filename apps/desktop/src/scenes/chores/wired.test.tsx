@@ -168,7 +168,7 @@ describe("a chore", () => {
     click(qa(".ch-facet").find((f) => f.textContent?.includes("Where she stops for you")) ?? null);
     expect(q(".ch-panel")!.textContent).toContain("GATED");
     expect(q('[aria-current="page"]')!.textContent).toContain("Where she stops for you");
-    click(q('[aria-label="Open what she filed"]'));
+    click(q('[aria-label$="Open what she filed"]'));
     expect(q(".ch-panel")!.textContent).toContain("Claims right");
   });
 

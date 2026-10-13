@@ -162,7 +162,8 @@ describe("a chore", () => {
   });
 
   it("states the bench at a glance with the standing line, and opens the result from it", () => {
-    expect(open).toContain('aria-label="Open what she filed"');
+    // The name starts with the visible label and carries the figures: it replaces the button's text.
+    expect(open).toMatch(/aria-label="Bench, \d{4}-\d{2}-\d{2}: \$[\d,.]+ of \$[\d,.]+ planted in its world\. Open what she filed"/);
     expect(open).toContain(SIMULATED_LINE);
     expect(open).toContain("planted in its world");
     expect(open).not.toContain("there to find");
@@ -270,7 +271,7 @@ describe("a chore", () => {
     expect(proof).not.toContain('aria-label="The cards the gate filed"');
     const open = html("open-unbenched");
     expect(open).toContain("Not benched");
-    expect(open).not.toContain('aria-label="Open what she filed"');
+    expect(open).not.toContain("Open what she filed");
   });
 
   it("reads the money, why it is on the edge, the lessons and the sources", () => {

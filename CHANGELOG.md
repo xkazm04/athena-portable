@@ -4,6 +4,7 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 ## [Unreleased]
 
+- `fix(companion): the Record and Origins tabs are named regions, as Talk's conversation is.` README 3.5, ADR 0026 (scan-sweep, accessibility-checker): both bodies were focusable divs with no role and no name; they are `role="region"` with `aria-label` Record and Origins.
 - `fix(chores): the bench glance is announced by its label and its figures, not only "Open what she filed".` README 3.5, ADR 0087 (scan-sweep, accessibility-checker): its `aria-label` replaced the button's text, so a screen reader lost the date, the money found and the visible label; the name is now "Bench, <date>: $X of $Y planted in its world. Open what she filed". `view.test.tsx` pins it.
 - `fix(companion): the tape's finished line comes in the way its working line did, instead of swapping in one frame.` README 3.1, ADR 0026 and 0089 (scan-sweep, ui-perfectionist): each working step slid in on `line-in`, then the result replaced it bare; it carries the same class and a key now.
 - `fix(voice): the scene sheet writes .vsc-wave and the narrow studio once each.` README 3.5, ADR 0087 (scan-sweep, code-optimizer): two rule blocks for `.vsc-wave` and two back-to-back `.vsc--studio` blocks in the 899px query are merged; a source guard fails on a top-level selector written twice.
