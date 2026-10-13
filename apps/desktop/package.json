@@ -21,7 +21,8 @@
     "perf:surface": "node scripts/perf-gate.mjs --scene surface",
     "perf:apps": "node scripts/perf-gate.mjs --scene apps",
     "perf:accounts": "node scripts/perf-gate.mjs --scene accounts",
-    "perf:all": "pnpm perf && pnpm perf:stage && pnpm perf:bell && pnpm perf:surface && pnpm perf:apps && pnpm perf:accounts",
+    "perf:voice": "node scripts/perf-gate.mjs --scene voice",
+    "perf:all": "pnpm perf && pnpm perf:stage && pnpm perf:bell && pnpm perf:surface && pnpm perf:apps && pnpm perf:accounts && pnpm perf:voice",
     "test:e2e": "vitest run --config e2e/vitest.e2e.config.ts"
   },
   "dependencies": {

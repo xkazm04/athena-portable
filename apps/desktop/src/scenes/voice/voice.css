@@ -1,0 +1,563 @@
+/* The Voice depth — README section 3.1, ADR 0028, 0087 and 0089. Tokens and mixes of them only;
+ * no text under 12px; motion is opacity and transform and nothing else, and none of it under
+ * Calm. The pieces borrowed from the module (`vs-*`: the key chip, the install bar, the waveform,
+ * the hold button) read three line variables that the module defined on its own root, so the scene
+ * root defines them again. */
+
+.vsc {
+  --vs-line: var(--border-subtle);
+  --vs-line-2: var(--border-default);
+  --vs-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  height: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 3vh 5vw 132px 4.5vw;
+  color: var(--foreground);
+}
+
+/* -- type ---------------------------------------------------------------------------------------- */
+
+.vsc-eyebrow {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.vsc-marquee {
+  margin: 0;
+  font-size: clamp(2.4rem, 5.6vw, 4.6rem);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  min-height: 1.1em;
+}
+.vsc-title {
+  margin: 0;
+  font-size: clamp(1.9rem, 3.8vw, 3.1rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+.vsc-title--sm {
+  font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+}
+.vsc-lead {
+  margin: 0;
+  max-width: 40rem;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+}
+.vsc-wait {
+  color: var(--muted-foreground);
+}
+.vsc-stylised {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.vsc-link {
+  font: inherit;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* -- the field ----------------------------------------------------------------------------------- */
+
+.vsc--field {
+  display: grid;
+  grid-template-columns: minmax(260px, 36%) 1fr;
+  gap: 0 4vw;
+  align-items: center;
+}
+.vsc-field__bell {
+  justify-self: center;
+  width: min(100%, 42vh);
+}
+.vsc-field__bell .bell {
+  width: 100%;
+  height: auto;
+}
+.vsc-field__words {
+  display: grid;
+  gap: 12px;
+  max-width: 46rem;
+}
+.vsc-places {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.vsc-place {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  padding: 12px 10px 14px;
+  font: inherit;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--card-bg) 70%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+.vsc-place:hover,
+.vsc-place[data-focused="true"] {
+  background: var(--wash);
+  border-color: var(--accent);
+}
+.vsc-place__name {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+.vsc-place__stat {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+
+/* -- the studio ---------------------------------------------------------------------------------- */
+
+.vsc--studio {
+  overflow: hidden;
+  padding-bottom: 116px;
+  display: grid;
+  grid-template-columns: minmax(200px, 17rem) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 0 3vw;
+  align-items: start;
+}
+
+.vsc-rail {
+  max-height: 100%;
+  overflow: auto;
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+.vsc-rail__her {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.vsc-rail__her .bell {
+  flex: none;
+}
+.vsc-path,
+.vsc-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.vsc-path {
+  display: grid;
+  gap: 14px;
+}
+.vsc-stage__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.vsc-stage[data-status="now"] .vsc-stage__label {
+  color: var(--accent);
+}
+.vsc-steps {
+  display: grid;
+  gap: 2px;
+  border-left: 1px solid var(--line);
+}
+.vsc-steps > li {
+  display: grid;
+  padding-left: 10px;
+  margin-left: -1px;
+  border-left: 2px solid transparent;
+}
+.vsc-steps > li[data-status="current"] {
+  border-left-color: var(--accent);
+}
+.vsc-step {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 4px;
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--muted-foreground);
+  background: none;
+  border: 0;
+  border-radius: 4px;
+  text-align: left;
+}
+button.vsc-step {
+  cursor: pointer;
+  color: var(--foreground);
+}
+button.vsc-step:hover {
+  background: var(--wash);
+}
+li[data-status="current"] > .vsc-step {
+  color: var(--foreground);
+  font-weight: 600;
+}
+li[data-status="done"] > .vsc-step > span:first-child {
+  color: var(--status-success);
+}
+.vsc-step__note {
+  padding: 0 4px 4px 22px;
+  color: var(--muted-foreground);
+}
+.vsc-rail__foot {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+/* A column that fits the window: the head and the keys keep their size, the card takes what is
+ * left and scrolls inside itself, so the keys are never under the stage's dock. */
+.vsc-act {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  max-width: 62rem;
+}
+.vsc-act > * {
+  flex: none;
+}
+.vsc-act > .vsc-card {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+.vsc-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.vsc-head__art {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+.vsc-head__words {
+  display: grid;
+  gap: 8px;
+  animation: vsc-in 320ms var(--vs-ease) both;
+}
+.voice-art[data-speaking="true"] {
+  transform: scale(1.04);
+}
+.voice-art {
+  overflow: visible;
+  transition: transform 240ms var(--vs-ease);
+}
+
+.vsc-hero {
+  display: grid;
+  gap: 6px;
+}
+.vsc-hero__note {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.vsc-wave {
+  padding: 6px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--recessed) 70%, transparent);
+}
+.vsc-wave {
+  position: relative;
+  overflow: hidden;
+}
+.vsc-wave__idle {
+  position: absolute;
+  inset: auto 0 6px;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.vsc-wave[data-active="true"] .vsc-wave__idle {
+  display: none;
+}
+.vsc-wave .vs-wave {
+  height: 64px;
+  gap: 3px;
+}
+.vsc-wave .vs-wave span {
+  width: 5px;
+}
+.vsc--studio[data-step="hear"] .vsc-wave .vs-wave {
+  height: 72px;
+}
+.vsc--studio[data-step="hear"] .vsc-card {
+  padding: 14px 18px;
+}
+.vsc--studio[data-step="hear"] .vsc-title,
+.vsc--studio[data-step="pick"] .vsc-title {
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+.vsc-wave[data-source="mic"][data-active="true"] .vs-wave span {
+  background: var(--status-error);
+}
+.vsc-wave[data-source="mic"][data-active="true"] {
+  border-color: color-mix(in srgb, var(--status-error) 55%, transparent);
+}
+
+.vsc-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--card-bg) 82%, transparent);
+  animation: vsc-in 320ms var(--vs-ease) both;
+}
+.vsc-keys {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.vsc-opts {
+  display: grid;
+}
+.vsc-opt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 14px 16px;
+  font: inherit;
+  color: var(--foreground);
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+}
+.vsc-opt:hover {
+  background: var(--wash);
+}
+.vsc-opt[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 24px var(--glow);
+}
+.vsc-opt__state {
+  flex-basis: 100%;
+}
+
+.vsc-voice {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--recessed);
+}
+.vsc-voice[data-playing="true"] {
+  border-color: var(--accent);
+}
+.vsc-voice__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.vsc-takes {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+.vsc-take {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-card);
+  background: var(--recessed);
+}
+.vsc-take[data-picked="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.vsc-take[data-muted="true"] {
+  opacity: 0.75;
+}
+.vsc-take__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.vsc-take__body {
+  min-height: 2.8em;
+  overflow-wrap: anywhere;
+}
+.vsc-take__body[data-state="failed"] {
+  color: var(--status-error);
+}
+
+/* -- settings ------------------------------------------------------------------------------------ */
+
+.vsc--settings,
+.vsc--gate {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+.vsc-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.vsc-bar__acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.vsc-instruments {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+.vsc-panel {
+  padding: 16px 20px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--card-bg) 82%, transparent);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 520px;
+}
+.vsc-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.vsc-rows {
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+}
+.vsc-row {
+  display: grid;
+  gap: 8px 16px;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+  padding: 14px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.vsc-hotkey {
+  margin: 6px 0 0;
+}
+
+/* -- motion and small windows ------------------------------------------------------------------- */
+
+@keyframes vsc-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+:root[data-motion="calm"] .vsc-head__words,
+:root[data-motion="calm"] .vsc-card,
+:root[data-motion="calm"] .voice-art {
+  animation: none;
+  transition: none;
+}
+:root[data-motion="calm"] .voice-art[data-speaking="true"] {
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vsc-head__words,
+  .vsc-card {
+    animation: none;
+  }
+  .voice-art {
+    transition: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .vsc-instruments {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .vsc-wave .vs-wave {
+    gap: 2px;
+  }
+  .vsc-wave .vs-wave span {
+    width: 3px;
+  }
+}
+@media (max-width: 900px) {
+  .vsc--field {
+    grid-template-columns: 1fr;
+  }
+  .vsc-field__bell {
+    width: min(70%, 30vh);
+  }
+  .vsc--studio {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .vsc--studio {
+    overflow: auto;
+    grid-template-rows: none;
+  }
+  .vsc-act {
+    height: auto;
+  }
+  .vsc-rail {
+    max-height: none;
+    overflow: visible;
+  }
+  .vsc-rail__her .bell {
+    width: 72px;
+    height: auto;
+  }
+  .vsc-path {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+  .vsc-step__note {
+    display: none;
+  }
+  .vsc-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vsc-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vsc-places {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
