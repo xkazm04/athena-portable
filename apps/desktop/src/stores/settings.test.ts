@@ -95,7 +95,7 @@ test("a value written is the value read back, under the key store.rs describes",
   // Every read named its table, and every key is one of the named set rather than a spelling
   // invented at the call site.
   const reads = harness.calls.filter((c) => c.command === "store_get");
-  expect(reads).toHaveLength(6);
+  expect(reads).toHaveLength(7);
   const named: string[] = Object.values(SETTING_KEYS);
   for (const read of reads) {
     expect(read.args.table).toBe("settings");
@@ -113,6 +113,19 @@ test("the text size is painted before it is stored, and an unknown row reads as 
   harness.rows.set("settings/type_scale", "huge");
   await readRows();
   expect(useSettings.getState().typeScale).toBe("comfortable");
+});
+
+test("motion is painted before it is stored, a choice beats the OS, and an unknown row reads as system", async () => {
+  await useSettings.getState().setMotion("full");
+  expect(painted.get("data-motion")).toBe("full");
+  expect(harness.rows.get("settings/motion")).toBe("full");
+
+  await useSettings.getState().setMotion("calm");
+  expect(painted.get("data-motion")).toBe("calm");
+
+  harness.rows.set("settings/motion", "frantic");
+  await readRows();
+  expect(useSettings.getState().motion).toBe("system");
 });
 
 test("writing the engine sends the value, not a patch object", async () => {

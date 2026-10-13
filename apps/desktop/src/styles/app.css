@@ -1156,6 +1156,29 @@ select:focus-visible {
   }
 }
 
+/* Motion and depth tokens (ADR 0087, 0089). Theme-independent, so one block. A depth move is
+ * `--dur-depth` on `--ease-depth` and animates transform and opacity only. `data-motion` is
+ * written by `lib/motion.ts` from the person's choice and the OS, and is the only thing read here:
+ * under `calm` a move lands on its final state at once, it is not played faster. The depth
+ * colours are mixes of the palette above and nothing else; they step from the lit surface to the
+ * seabed. */
+:root {
+  --dur-depth: 360ms;
+  --dur-settle: 600ms;
+  --ease-depth: cubic-bezier(0.22, 0.8, 0.2, 1);
+  --ease-settle: cubic-bezier(0.3, 0.9, 0.3, 1);
+
+  --depth-0: color-mix(in srgb, var(--primary) 16%, var(--background));
+  --depth-1: color-mix(in srgb, var(--primary) 9%, var(--background));
+  --depth-2: var(--background);
+  --depth-3: color-mix(in srgb, black 35%, var(--background));
+}
+
+:root[data-motion="calm"] {
+  --dur-depth: 0ms;
+  --dur-settle: 0ms;
+}
+
 /* The one-line close confirm (UAT backlog B3): in place of the close button, never a modal. */
 .close-confirm {
   display: inline-flex;

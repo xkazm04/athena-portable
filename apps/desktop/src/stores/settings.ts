@@ -20,6 +20,13 @@
 import { create } from "zustand";
 
 import { hasShell, onStoreChanged } from "@/lib/ipc";
+import {
+  applyMotion,
+  isMotionChoice,
+  resolveMotion,
+  systemPrefersReduced,
+  type MotionChoice,
+} from "@/lib/motion";
 import { DEFAULT_ENGINE, isEngineId, type EngineId } from "@/lib/engines";
 import { SETTING_KEYS, settingRead, settingWrite, storePath } from "@/lib/store";
 import { useDaemon } from "@/stores/daemon";
@@ -66,6 +73,8 @@ export interface SettingsState {
   engine: EngineId;
   theme: ThemeChoice;
   typeScale: TypeScale;
+  /** Calm motion: `system` follows the OS, the others override it (ADR 0089). */
+  motion: MotionChoice;
   /** The project every turn is filed under (c25), or null. */
   activeProjectId: string | null;
   /** The brain directory. Empty means the daemon's own default, which is not the same as unset. */
@@ -76,6 +85,7 @@ export interface SettingsState {
   setEngine: (engine: EngineId) => Promise<void>;
   setTheme: (theme: ThemeChoice) => Promise<void>;
   setTypeScale: (scale: TypeScale) => Promise<void>;
+  setMotion: (motion: MotionChoice) => Promise<void>;
   setActiveProject: (id: string | null) => Promise<void>;
   setBrainPath: (path: string) => Promise<void>;
   setOnboarded: (onboarded: boolean) => Promise<void>;
@@ -86,6 +96,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   engine: DEFAULT_ENGINE,
   theme: "system",
   typeScale: "comfortable",
+  motion: "system",
   activeProjectId: null,
   brainPath: "",
   onboarded: false,
@@ -111,6 +122,13 @@ export const useSettings = create<SettingsState>((set, get) => ({
     applyTypeScale(typeScale);
     set({ typeScale });
     await settingWrite(SETTING_KEYS.typeScale, typeScale);
+  },
+
+  // Painted before the write, for the theme's reason: the person is looking at the result.
+  setMotion: async (motion) => {
+    applyMotion(resolveMotion(motion, systemPrefersReduced()));
+    set({ motion });
+    await settingWrite(SETTING_KEYS.motion, motion);
   },
 
   setActiveProject: async (id) => {
@@ -170,6 +188,7 @@ export async function startSettings(): Promise<void> {
   if (!hasShell()) {
     applyTheme(resolveTheme(useSettings.getState().theme));
     applyTypeScale(useSettings.getState().typeScale);
+    applyMotion(resolveMotion(useSettings.getState().motion, systemPrefersReduced()));
     useSettings.setState({ hydrated: true });
     return;
   }
@@ -184,10 +203,11 @@ export async function startSettings(): Promise<void> {
 
 /** Read every row, paint the resolved theme and publish. Startup and `store:changed` share it. */
 export async function readRows(): Promise<void> {
-  const [engine, theme, typeScale, activeProjectId, brainPath, onboarded, path] = await Promise.all([
+  const [engine, theme, typeScale, motionRow, activeProjectId, brainPath, onboarded, path] = await Promise.all([
     settingRead<string>(SETTING_KEYS.engine),
     settingRead<string>(SETTING_KEYS.theme),
     settingRead<string>(SETTING_KEYS.typeScale),
+    settingRead<string>(SETTING_KEYS.motion),
     settingRead<string>(SETTING_KEYS.activeProjectId),
     settingRead<string>(SETTING_KEYS.brainPath),
     settingRead<boolean>(SETTING_KEYS.onboarded),
@@ -199,11 +219,14 @@ export async function readRows(): Promise<void> {
   useShell.setState({ theme: resolveTheme(choice) });
   const scale: TypeScale = isTypeScale(typeScale) ? typeScale : "comfortable";
   applyTypeScale(scale);
+  const motion: MotionChoice = isMotionChoice(motionRow) ? motionRow : "system";
+  applyMotion(resolveMotion(motion, systemPrefersReduced()));
   useSettings.setState({
     hydrated: true,
     engine: isEngineId(engine) ? engine : DEFAULT_ENGINE,
     theme: choice,
     typeScale: scale,
+    motion,
     activeProjectId: activeProjectId ?? null,
     brainPath: brainPath ?? "",
     onboarded: onboarded ?? false,
@@ -227,4 +250,10 @@ function watchSystemTheme(): void {
   };
   // `addEventListener` on a MediaQueryList is the modern form; WebView2 has had it for years.
   query.addEventListener("change", onChange);
+
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  reduced.addEventListener("change", () => {
+    const choice = useSettings.getState().motion;
+    applyMotion(resolveMotion(choice, systemPrefersReduced()));
+  });
 }

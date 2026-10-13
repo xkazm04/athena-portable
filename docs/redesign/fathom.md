@@ -147,6 +147,8 @@ phase names the proof it must carry.
 
 Phases 5 to 8 are independent once 1 to 4 are in and can run in parallel branches.
 
+**Progress:** phase 0 done (the gate, the clock, Calm, the tokens).
+
 ## 7. How it is checked
 
 - `src/depth/*.test.ts`: the reducer, exhaustively.
@@ -173,10 +175,15 @@ Phases 5 to 8 are independent once 1 to 4 are in and can run in parallel branche
 | Two copies of the palette | tokens only in `app.css`; the contest's literal hexes are replaced by variables at port time |
 | A decision card and the depth scene fight for focus | arrival never takes focus (already the rule, `takes_focus(Arrival)=false`); the dock shows the waiting count and a slip rises into the surface only on request |
 
-## 9. Open decisions for the owner
+## 9. Decisions
 
-1. **D1**: mirror in v1 (recommended) versus a Main-hosted conversation.
-2. **Naming**: keep "Fathom" as the internal codename and the five depth names (Apps, Chores,
-   Accounts, Voice, Mind), or rename to the app's own words (Browser, Playbooks, Connectors,
-   Setup, Voice) so users of today's build are not re-taught.
-3. **Close behaviour** (backlog B3/C5) is untouched here and still owed.
+Decided by the owner on 2026-10-13:
+
+1. **D1: mirror in v1.** Main's surface mirrors her and hands text to her window. A Main-hosted
+   conversation is a separate, ADR-gated project, not part of this one.
+2. **Names: the contest's.** The depths are **Apps, Chores, Accounts, Voice, Mind**, because they
+   sound friendlier than Browser, Playbooks, Connectors and Setup. The module ids stay as they are
+   in code (`browser`, `playbooks`, `connectors`, `setup`, `voice`) so Rust and the stores do not
+   move; only the words a user reads change.
+
+Still owed and untouched here: close behaviour (backlog B3/C5).

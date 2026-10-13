@@ -108,6 +108,11 @@ export default defineConfig({
     // exception opts in with a `@vitest-environment jsdom` comment: `src-tauri/src/hands.test.ts`
     // drives the page-world hands script, which is a DOM and nothing else.
     environment: "node",
-    include: ["src/**/*.test.ts", "src/**/*.test.tsx", "src-tauri/src/*.test.ts"],
+    include: [
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx",
+      "src-tauri/src/*.test.ts",
+      "scripts/*.test.ts",
+    ],
   },
 });

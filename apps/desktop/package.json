@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
+    "perf": "node scripts/perf-gate.mjs",
     "test:e2e": "vitest run --config e2e/vitest.e2e.config.ts"
   },
   "dependencies": {
@@ -35,6 +36,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.12.0",
     "jsdom": "^27.0.0",
+    "playwright-core": "^1.64.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.0",
     "vite": "^8.3.0",

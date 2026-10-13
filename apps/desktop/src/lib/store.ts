@@ -42,6 +42,8 @@ export const SETTING_KEYS = {
   theme: "theme",
   /** `comfortable` | `compact`: the reading step on every size under the headings. */
   typeScale: "type_scale",
+  /** `system` | `calm` | `full`: whether motion lands on its final state (ADR 0089). */
+  motion: "motion",
   /** The project every turn is filed under, or `null` for none (c25). */
   activeProjectId: "active_project_id",
   /** The brain directory. Empty means "the daemon's own default". */
