@@ -3,6 +3,8 @@
   "title": "Crop damage noticed inside 72 hours, and the claims filed with the yields",
   "domain": "Agriculture",
   "audience": "work",
+  "category": "public",
+  "job": "recover",
   "promise": "Every unit of a farm's crop insurance read against the weather, the field notes and the scale tickets: notice given on each freshly damaged unit before its 72 hours run out, a claim filed on each harvested unit the policy pays at the production and indemnity the policy sets, and nothing given or claimed for an uninsured cause, an uninsured field, an undamaged crop or a unit that made its guarantee.",
   "persona": "Ines and Carl Brandt, who farm about a thousand acres of corn and soybeans in central Iowa, the morning after an early freeze",
   "chore": "Read the policy, the insured units and their guarantees, and the notices already given in the agent's portal; every field's stage, harvest and bushels, and the agronomist's notes in the farm records; what the farm's weather station recorded and when; and the agent's and neighbors' mail. Then apply the policy: notice by unit within 72 hours of discovering damage; only units on the acreage report; insured causes only, not drift, a skipped weed pass or a broken pivot; and an indemnity of the guarantee less the production to count, at the projected price. Give each notice and file each claim on the agent's portal, which shares nothing with the farm records or the station.",

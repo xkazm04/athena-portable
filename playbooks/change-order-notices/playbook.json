@@ -3,6 +3,8 @@
   "title": "Every field change priced and noticed inside the contract's claim window",
   "domain": "Construction",
   "audience": "work",
+  "category": "construction",
+  "job": "recover",
   "promise": "Every RFI answer, instruction, directive and field event of the month is read against the subcontract's scope and the general conditions it incorporates: each real change is priced from its estimate with the subcontract's markup and noticed with the right date before its 21 days run out, and nothing is noticed that is base scope, Corvane's own rework or delay, a price rise, already a change order or already noticed, or past its window.",
   "persona": "The project manager of a forty-person electrical subcontractor on a medical office building, under a subcontract that incorporates AIA A201-2017",
   "chore": "Read the subcontract's terms on claims, changes, markup and scope, and the change orders and notices already on file, in the general contractor's portal; every RFI, instruction and directive in the project platform; the foremen's daily logs; and each potential change order's cost in the estimating system. Then apply the general conditions as the subcontract states them: notice within 21 days after the event or after first recognizing the condition, whichever is later, with a direction dated the day it was given; a concealed condition within 14 days of observing that it differs; base scope, 'as shown' answers, own rework, own delay and price escalation are not changes; nothing noticed twice. Price each at cost plus 15% on Corvane's own work and 5% on a lower-tier sub's, and give notice on the GC's portal. None of the four systems shares data with another.",

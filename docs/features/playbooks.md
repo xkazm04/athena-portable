@@ -11,16 +11,46 @@ Each one is data, and earns its place on the desktop by a run on the bench.
 
 | File | Contents |
 |---|---|
-| `playbook.json` | the showcase: persona, chore, the command the person gives, portals, gates, traps, memory, economics with sources, edge scores, audience (home or work), the expectation it is held to, lessons, a caveat |
+| `playbook.json` | the showcase: persona, chore, the command the person gives, portals, gates, traps, memory, economics with sources, edge scores, audience (home or work), its area and its job (`category`, `job`), the expectation it is held to, lessons, a caveat |
 | `world.json` | the portals as data: apps with origins, views, aliases and tools with honest flags; tables the reads answer from (exact, `contains` or `words` matching, paging, required ids); the phases of a run |
 | `truth.json` | what a perfect run files and what looks eligible but is not, per tool: eligible items with value and expected parameters (an item can be `required`), traps with the reason, fair-either-way items; only the scorer reads it |
 | `bench.json` | the latest measured run, committed: score, cards, the trap ledger, the turn-by-turn trace, closing words and every earlier run's headline |
+| `evidence.json`, `thumb.jpg` | the film's index and its still, written by `evidence` (below) |
+
+One file sits beside the directories and belongs to the whole library: `playbooks/taxonomy.json`,
+the areas and jobs a playbook may name (below).
 
 ```bash
-uv run python -m athena.proving.playbooks check          # every playbook loads; fails on a read the cap would cut, <2 portals, <8 traps, no times_per_year (ADR 0057 rule 1; not the nine older ones), a per outside ADR 0056's table, or $0 with no weighted truth
+uv run python -m athena.proving.playbooks check          # every playbook loads; fails on a missing or unknown category or job (ADR 0096), a read the cap would cut, <2 portals, <8 traps, no times_per_year (ADR 0057 rule 1; not the nine older ones), a per outside ADR 0056's table, or $0 with no weighted truth
 uv run python -m athena.proving.playbooks bench <id> --model sonnet --cap 8 --note "what changed"
 uv run python -m athena.proving.playbooks rescore <id> proving-runs/<ts>/playbook-<id>/report.json
 ```
+
+## Categories and jobs
+
+Every playbook names one area and one job ([ADR 0096](../adr/0096-a-playbook-names-its-area-and-its-job-and-the-ledger-reads-the-library-by-them.md)),
+as ids from `playbooks/taxonomy.json`, the one list the bench and the desktop both read:
+
+```json
+"audience": "work",
+"category": "health",
+"job": "contest",
+```
+
+- **Ten areas**: `health`, `freight`, `commerce`, `employment`, `consumer`, `benefits`,
+  `housing`, `public`, `construction`, `family`, with labels in the file ("Health & clinics",
+  "Freight & trade", ...). `domain` stays as the playbook's own finer name and is not grouped on.
+- **Four jobs**, what it does for the person: `recover` (money owed back), `claim` (apply for or
+  keep a benefit), `contest` (dispute or appeal a decision, a charge or a denial) and `comply`
+  (meet an obligation on time).
+- `check` refuses a playbook with either missing or not in the list, the nine older ones included,
+  and a library with no `taxonomy.json` or a malformed one. The rows of `ranking.json` carry both.
+- A test fails if an area or a job holds no playbook. Today: health 14, freight 12, benefits 12,
+  commerce 11, employment 11, consumer 11, housing 9, public 8, construction 7, family 5; comply
+  36, recover 28, claim 19, contest 17. The full table and every borderline call are in the ADR.
+
+To add an id, amend ADR 0096 and the file together; the desktop shows a playbook whose id it does
+not know under "Uncategorised" rather than hiding it, but the bench refuses it.
 
 ## The bench
 
@@ -164,6 +194,8 @@ leave alone"), **Watch the run** (a rail of tab visits, a dot per turn coloured 
 play, step and arrow keys, the money found so far; her closing words; the runs over time), what it
 taught Athena, and the economics against the incumbent. Back steps one level.
 
+<!-- WP4 ledger section -->
+
 ## Evidence
 
 A benched playbook can be filmed (ADR 0055): a narration of its latest run, spoken by the local
@@ -195,6 +227,8 @@ On the desktop the still sits on the playbook's tile with the film's length, and
 *The run, filmed*: the film where the dev server serves `evidence/` (with byte ranges, so it
 seeks), the still elsewhere, its length, when it was captured, the voice, the narration's words,
 and whether it is current against the bench or stale.
+
+<!-- WP2 evidence section -->
 
 ## Ranking
 

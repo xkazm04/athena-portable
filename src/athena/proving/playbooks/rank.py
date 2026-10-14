@@ -113,6 +113,10 @@ def _row(
         "playbook": pid,
         "domain": playbook.get("domain"),
         "audience": playbook.get("audience"),
+        # ADR 0096: the ledger's two axes, carried so a reader of the ranking can group it the
+        # way the desktop does without opening every playbook. They play no part in the score.
+        "category": playbook.get("category"),
+        "job": playbook.get("job"),
         "score": _num(money_pts + time_pts + edge_pts),
         "points": {"money": _num(money_pts), "time": _num(time_pts), "edge": _num(edge_pts)},
         "money": {

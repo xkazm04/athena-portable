@@ -3,6 +3,8 @@
   "title": "Weekly certified payroll filed on a prevailing-wage job, so the held pay estimates are released",
   "domain": "Construction",
   "audience": "work",
+  "category": "construction",
+  "job": "comply",
   "promise": "Every week the City is missing is worked out from the timesheets and the payroll against the wage determination: anyone paid below the class of work they actually did, short on overtime or short on fringe is made whole first, and then each week is certified with the right workers and hours, or a no-work statement where nobody was on the job. Nothing is certified twice, early or for a week that had no work, and nobody is paid back who was paid right.",
   "persona": "The payroll and compliance administrator of a twenty-person site and concrete contractor, prime on a city bridge job paid with federal-aid funds",
   "chore": "Read the City's certified payroll rules, every week's status and the two pay estimates it is holding in its compliance portal; the contract, the wage determination, the fringe plan and the apprentice's registration in the document store; who worked on the bridge each week, for how long and doing what in the timesheets; and what each worker was paid in the payroll system. Then apply the Davis-Bacon rules: the rate of the class of work actually done, the fringe met by plan and cash together, overtime over 40 hours at one and a half times the base, a registered apprentice at the program's rate, only hours on the project. Restore each underpayment with one adjustment check, then certify each week that is due, or file a no-work statement. None of the four systems shares data with another.",

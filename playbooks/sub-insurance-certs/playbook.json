@@ -3,6 +3,8 @@
   "title": "Every subcontractor's insurance checked on the policy, not the certificate, before it mobilizes",
   "domain": "Construction",
   "audience": "work",
+  "category": "construction",
+  "job": "comply",
   "promise": "Each subcontractor on the look-ahead is checked against the subcontract's insurance exhibit on the policy itself: the limits, a policy in force, and both additional insured endorsements, CG 20 10 for the work in progress and CG 20 37 for the finished work, naming the general contractor and the owner at this job's address. A subcontractor whose policy carries them is cleared to mobilize, whatever its certificate's boxes say; every other one gets one deficiency notice naming what is wrong, before its mobilization day. Nothing is approved on a certificate's say-so, and nobody already approved or already cured is noticed again.",
   "persona": "The project administrator of a general contractor building a three-storey medical office building, with ten subcontractors mobilizing over six weeks",
   "chore": "Read the subcontract's insurance exhibit and the look-ahead in the project site, each subcontractor's uploaded ACORD 25 certificate and notices in the vendor compliance portal, the forms schedule each agent posts for the policy in the agents' portal, and what the subcontractors and their agents have written. Then apply the exhibit: limits of $1,000,000 and $2,000,000 on a policy in force, CG 20 10 and CG 20 37 both naming the general contractor and the owner, at 1180 Alder Street or with no location; a certificate is information only. Approve each subcontractor that meets it, and send each one that does not a deficiency notice that names the gap. None of the four systems shares data with another.",

@@ -3,6 +3,8 @@
   "title": "The interest federal agencies owe on late payments, claimed with the penalty",
   "domain": "Government contracting",
   "audience": "work",
+  "category": "public",
+  "job": "recover",
   "promise": "Every federal invoice's due date worked out from its receipt, its acceptance and the contract's terms, and checked against the day the money landed: the Prompt Payment interest requested to the cent on each one paid late without it, the additional penalty asked for wherever it is still owed, and nothing asked for a disputed, on-time, already-paid, too-small or not-yet-due invoice.",
   "persona": "The office manager of a forty-person facility services contractor in Kansas City that bills three federal contracts",
   "chore": "Read every invoice's receipt date, returns as improper and status in the invoicing portal; each contract's acceptance terms and each job's completion and acceptance dates in the contract portal; the day each Treasury payment settled and what it included at the bank; and the agencies' returns, a dispute and a payment advice in the mail. Then apply the Prompt Payment rules: due 30 days after the later of a proper invoice and acceptance, a weekend's grace, the clock restarted by a corrected invoice, nothing during a dispute, interest at the rate of the day after the due date on a 360-day year, nothing under a dollar, and the additional penalty of at least $25 only inside 40 days. Request each on the invoicing portal; none of the four systems shares data with another.",

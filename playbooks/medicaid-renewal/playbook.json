@@ -3,6 +3,8 @@
   "title": "The Medicaid renewal, answered before coverage lapses",
   "domain": "Public benefits",
   "audience": "home",
+  "category": "benefits",
+  "job": "claim",
   "promise": "The renewal form's income corrected to what the rule counts this month, the household as the tax rules define it, and only the proof the state asked for, sent before the due date, so a family's coverage does not lapse on stale data.",
   "persona": "A pharmacy technician raising two children, whose mother lives with them, and whose hours were cut in August",
   "chore": "Read the state's prefilled renewal form, which found income from last winter's wage and benefit data. Check each line against this month's pay stubs, the bank and the mail, and correct it to current monthly income as the rule counts it. Then fix the household to the tax filer and her dependents, and upload the proof the form asks for and nothing that is not income. The form is answered only in the state's portal, and the facts are in three other places.",

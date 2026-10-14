@@ -3,6 +3,8 @@
   "title": "City inspections booked in sequence on two cities' portals, on the first day each can happen",
   "domain": "Construction",
   "audience": "work",
+  "category": "construction",
+  "job": "comply",
   "promise": "Every inspection that is ready is booked on its own city's portal for the first day it can actually happen: after a city holiday, on a day someone is on site to meet the inspector, before a pour that would cover it, and only once the corrections are done. Nothing is booked out of sequence, twice, before its work is ready, or as a re-inspection of a correction still being fabricated.",
   "persona": "The project coordinator of a general contractor building townhomes in one city and a store addition and canopy in the next",
   "chore": "Read each city's inspection rules and calendar and every inspection on every permit in its own portal; what the superintendents report as complete, ready or corrected in the field status; and who is on site each day next week in the crew calendar. Then apply section 110 of the International Building Code as each city adopts it: request an inspection when the work is ready, never carry work past an inspection point before approval, framing only after every rough trade is approved, a slab pre-pour only after the under-slab trades, a re-inspection only after the corrections. Pick the first day the city inspects, the work is ready and the site contact is there, and book each on the city's own portal. None of the four systems shares data with another.",

@@ -3,6 +3,8 @@
   "title": "A bookkeeper's repair invoices are claimed under a fuel pump recall: the labour and shop fee of one repair and a part she bought herself, with its tax, while a relay fixed before the window opens, a valve, an oil change and a rotation, a warranty repair, a tow, a refunded deposit and her husband's car outside the recall are left alone",
   "domain": "Vehicles",
   "audience": "home",
+  "category": "housing",
+  "job": "recover",
   "promise": "A bookkeeper in Boise has a recall letter for her 2022 Kestrel's fuel pump and a drawer of repair paper. Four items are claimed from the carmaker's reimbursement plan: the shop's labour and its shop fee for replacing the fuel pump module in November 2025, and the module she bought separately and its sales tax. Left out are a fuel pump relay she had fixed in May 2025, before the plan's window opens in July, a different valve, an oil change and a tire rotation on the same invoice, a second pump replacement her parts warranty covered, a tow her roadside cover paid, a core deposit refunded, and her husband's older Kestrel, whose VIN is not in the recall.",
   "persona": "A bookkeeper in Boise, Idaho, with a recall letter for her car and a drawer of repair invoices and receipts",
   "chore": "Read her mail, the recall and its population, the VINs of both household cars, nine invoice lines and the carmaker's plan. Apply 49 CFR 573.13 as it stands on 9 October 2026: claim each line that is the recall's own repair, for a vehicle in the recall, inside the plan's period from 20 July 2025 to 15 September 2026 and paid by her, and leave out the rest.",

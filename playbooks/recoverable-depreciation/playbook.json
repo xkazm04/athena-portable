@@ -3,6 +3,8 @@
   "title": "The insurer's depreciation holdback, collected",
   "domain": "Home insurance",
   "audience": "home",
+  "category": "housing",
+  "job": "recover",
   "promise": "Every line of the adjuster's estimate matched to the contractor's invoice, the bank's payment and the receipts: the depreciation held back on finished repairs claimed at what was actually spent, inside the window the law gives, and nothing claimed for work not done, money already paid or a window that closed.",
   "persona": "A California household with a windstorm claim and an older water claim, a contractor still at work, and a replacement cost policy",
   "chore": "Read the adjuster's estimate line by line: replacement cost, depreciation held back, actual cash value paid. Match each line to the contractor's invoice and completion date, the bank's payment and any receipt, and work out what was actually spent. Then claim the holdback on each finished line at the lesser of the replacement cost and the cost, minus what was paid, inside the window the law gives, which for a state of emergency is three years.",

@@ -3,6 +3,8 @@
   "title": "The escrow analysis checked against the real tax and insurance bills, and the surplus claimed",
   "domain": "Mortgage",
   "audience": "home",
+  "category": "housing",
+  "job": "recover",
   "promise": "Each line of the servicer's annual escrow analysis is checked against the tax collector's bills and the insurer's premiums: a stale tax figure, last year's premium and a cushion over the one-sixth limit are disputed with the amount each should be, the late penalty the servicer charged to escrow is disputed, the surplus the analysis kept is claimed within its 30 days, and a premium paid twice is refunded to the card that paid it second. Lines that are right are left alone, and no audit or tax-relief service is answered.",
   "persona": "A homeowner whose mortgage payment just went up after the servicer's annual escrow analysis, though the tax bill went down and the insurance got cheaper",
   "chore": "Read the servicer's escrow rules, the analysis line by line and what the escrow actually paid last year; the tax collector's bills and the payments it received, with their dates; the insurer's policies, premiums and payments; and the servicer's, insurer's and others' mail. Then apply RESPA section 10 and Regulation X: disbursements projected from the bills the servicer has, a cushion of no more than a sixth of them, bills paid on time from escrow, and a surplus of $50 or more refunded within 30 days. Dispute each wrong line with the amount it should be, claim the surplus, and ask the insurer to refund the duplicate payment. None of the four systems shares data with another.",

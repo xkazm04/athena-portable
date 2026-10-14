@@ -3,6 +3,8 @@
   "title": "A retiree's bank account is checked under Regulation E: four unauthorised transfers reported at their capped liability and a late claim chased for its credit, while a payment she sent a scammer herself, her son's fuel, a refunded and a pending charge, a subscription, a credit card charge and two claims not yet late are left alone",
   "domain": "Consumer banking",
   "audience": "home",
+  "category": "consumer",
+  "job": "recover",
   "promise": "A retired schoolteacher's checking account, payment app, credit card and mail are read for the charges she did not make. Four unauthorised transfers are reported, each with what she is liable for under Regulation E: an ACH debit and an online purchase with a copied card number, a cash machine withdrawal with a card lost two days before she told the bank, and a payment-app top-up made with a code a caller talked her out of. A claim the bank let run past its ten business days is chased for its provisional credit. A payment she made herself to a scammer, her son's fuel, a refunded and a pending charge, a subscription she signed up for, a credit card charge, and two claims that are not yet late are left alone.",
   "persona": "A retired schoolteacher in Roanoke, Virginia, with a checking account, a payment app, a credit card and a small pile of charges she does not recognise",
   "chore": "Read her mail, the bank's rules, its statements, transactions and claims, the payment app's activity and the credit card's charges. Then apply 12 CFR 1005.2(m), 1005.6(b) and 1005.11 and Supplement I as they stand on 9 October 2026: report each transfer she did not authorise with her liability, ask for the provisional credit on the one claim the bank is late on, and nothing else.",

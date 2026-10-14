@@ -3,6 +3,8 @@
   "title": "Every line paid short of the payer contract found and disputed, and the bundled lines left alone",
   "domain": "Clinics",
   "audience": "work",
+  "category": "health",
+  "job": "recover",
   "promise": "Every remittance line from two commercial payers is checked against the contract's fee schedule in force on its date of service, its payment terms and its amendment. The lines paid short are disputed with the amount short, inside each payer's window: a rate the amendment raised, a surgeon paid as non-participating, an X-ray cut as a multiple procedure, and last year's rate. A line bundled under an NCCI edit, the patient's deductible, a sequestration cut, the lesser-of-billed rule, a line already in dispute and a window already closed are left alone.",
   "persona": "The billing manager of a three-clinician orthopedic clinic contracted with two commercial payers, one of which also runs a Medicare Advantage plan",
   "chore": "Read every posted remittance line in the practice management system; the 835 remittances behind them, with each adjustment's group and reason code; both payer agreements, their fee schedules, the amendment and who is participating from when; and each payer's dispute window and the disputes already open. Then compare each line's allowed amount with the rate the contract gives on its date of service, after the contract's own rules: the lesser of billed and schedule, the multiple-procedure reduction for surgical codes only, NCCI bundling, cost-sharing, sequestration on the Medicare Advantage schedule. Dispute each line paid short, one line a dispute, with the contracted amount and the amount short, before its window closes. None of the four systems shares data with another.",

@@ -3,6 +3,8 @@
   "title": "A family's delayed flights, claimed under EU 261",
   "domain": "Air travel",
   "audience": "home",
+  "category": "consumer",
+  "job": "recover",
   "promise": "Every delayed or cancelled flight of the year checked against EU Regulation 261/2004: the ones the rule compensates claimed with each airline at the fixed amount for the right number of passengers, and the ones it excludes left alone.",
   "persona": "A family of four in Lisbon that flew fourteen times this year, two airlines, one baby on a lap",
   "chore": "Pull every booking from the travel organiser, find each delay and cancellation in the airlines' emails, and read the real arrival time and the cause on each airline's own status page. Then apply the rule: departing from the EU or on an EU airline, three hours late at the gate or cancelled inside 14 days, no extraordinary circumstance, a fixed 250, 400 or 600 euros by distance for every passenger who paid a fare, and nothing claimed twice. Each airline has its own claim form, and none of them shares data with the others.",

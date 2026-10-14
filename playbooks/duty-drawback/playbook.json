@@ -3,6 +3,8 @@
   "title": "Duties refunded on what was exported: drawback, matched export by export",
   "domain": "Customs & trade",
   "audience": "work",
+  "category": "freight",
+  "job": "recover",
   "promise": "Every export of the year traced back to the import lines it came from, through the work orders and the bills of materials: a drawback claim filed for each one that qualifies, at 99% of the duty to the cent, and nothing claimed on a used, domestic, duty-free, already-designated, out-of-time or unshipped good.",
   "persona": "The controller of a pump maker of about 140 people in Dayton, Ohio, that imports motors, housings and controllers and exports a fifth of what it makes",
   "chore": "Read every import entry line and what earlier claims already designated in the customs portal, every export and its proof at the forwarder, and what each export shipped and where each part came from in the ERP's traceability and bills of materials. Then apply the rule: a manufacturing claim for pumps made from imported parts, an unused-merchandise claim for parts exported as they came, five years from the import to file, each imported unit designated once, an export that left the country, and 99% of what was paid. File each claim on the customs portal; none of the four systems shares data with another.",

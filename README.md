@@ -822,6 +822,12 @@ uv run python -m athena.proving.playbooks rescore fba-reimbursements proving-run
   layer on the desktop plays it turn by turn, with the money found so far.
 - **The traps by name.** The score keeps a ledger of every trap the world held, why it was one and
   whether she filed it, and the layer lists them: what she was right to leave alone.
+- **Area and job.** Every playbook names one of ten areas (`category`: health, freight, commerce,
+  employment, consumer, benefits, housing, public, construction, family) and one of four jobs
+  (`job`: recover money owed, claim a benefit, contest a decision, comply on time), both ids from
+  `playbooks/taxonomy.json`, the one list the bench and the desktop read. `check` refuses a
+  playbook without them, `ranking.json` carries them, and the desktop's ledger is filtered by
+  them (ADR 0096).
 
 | Playbook | Portals | Edge (difficulty / usefulness) | Latest bench (Claude Sonnet; 2026-10-07 unless dated) |
 |---|---|---|---|

@@ -3,6 +3,8 @@
   "title": "A freelancer's receivables, collected",
   "domain": "Freelance",
   "audience": "work",
+  "category": "employment",
+  "job": "recover",
   "promise": "Every unpaid invoice traced through the client's own portal and your bank. The fixable ones are fixed in that portal, and the late ones get a demand under New York's freelancer law. What the contract says you are not owed is left alone.",
   "persona": "A solo product designer in Brooklyn, trading as a one-person LLC, with seven clients: three force a supplier portal (Coupa, Ariba, Tipalti), the rest pay by email invoice",
   "chore": "The invoice leaves QuickBooks, and then it disappears. One client's Coupa rejects it because the purchase order is short. Another's Ariba approves it on payment terms the contract overrides. A third's Tipalti holds it over a tax form. Email clients pay late or keep part of it. To collect, she has to check each portal, the bank and the contracts. She also has to know when New York's Freelance Isn't Free Act applies: $800, counting a client's contracts across 120 days, and 30 days after completion when the contract names no date. Freelancers spend about 36 hours chasing each unpaid invoice, and invoicing apps cannot see inside a client's portal.",

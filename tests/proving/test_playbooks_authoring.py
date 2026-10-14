@@ -16,7 +16,7 @@ import pytest
 from athena.proving.playbooks.__main__ import main
 from athena.proving.playbooks.spec import BEFORE_ADR_0057, PlaybookError, load_playbook
 
-from .test_playbooks import REPO, make_playbook
+from .test_playbooks import REPO, library, make_playbook
 
 SECOND_APP = {
     "app_id": "mailnest",
@@ -192,8 +192,7 @@ def test_check_exits_2_and_names_the_rule_for_a_bad_playbook(
 ) -> None:
     root = compliant(tmp_path)
     put(root, "world.json", lambda v: v["apps"].pop())
-    base = tmp_path / "playbooks"
-    base.mkdir()
+    base = library(tmp_path / "playbooks")
     root.rename(base / "late-parcels")
     assert main(["--dir", str(base), "check"]) == 2
     assert "ADR 0057 rule 1" in capsys.readouterr().err
@@ -224,8 +223,7 @@ def test_check_exits_2_for_a_playbook_without_a_caveat(
 ) -> None:
     root = compliant(tmp_path)
     put(root, "playbook.json", lambda v: v.pop("caveat"))
-    base = tmp_path / "playbooks"
-    base.mkdir()
+    base = library(tmp_path / "playbooks")
     root.rename(base / "late-parcels")
     assert main(["--dir", str(base), "check"]) == 2
     assert "wants a caveat" in capsys.readouterr().err

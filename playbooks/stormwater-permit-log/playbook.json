@@ -3,6 +3,8 @@
   "title": "The site's stormwater inspections and corrective actions kept on the permit's schedule",
   "domain": "Construction",
   "audience": "work",
+  "category": "construction",
+  "job": "comply",
   "promise": "The permit log is brought up to date against the rain gauge, the inspection reports and the dated site photos: the storm inspection the schedule requires is assigned for the day it is due, a corrective action is opened for each finding that needs one, due 7 days from its discovery, and each corrective action the photos show finished is closed with the day it was finished. Nothing is opened for routine maintenance, closed before the fix is done, or assigned for rain that never reached the trigger.",
   "persona": "The compliance coordinator of a site contractor grading a retail pad under EPA's Construction General Permit",
   "chore": "Read the site's stormwater plan: the inspection schedule, the working hours, the controls, and the maintenance, corrective action and record rules. Read every storm on the site's rain gauge, every inspection report and corrective action in the permit log, and the dated photos of the controls. Then apply the 2022 Construction General Permit as the plan states it: a storm inspection within 24 hours of 0.25 inches falling within 24 hours, or by the end of the next business day when the window is all weekend; routine maintenance by the next business day and not a corrective action, unless it is the third time at the same place; a corrective action for a replacement, a missing control or a discharge, due 7 calendar days from discovery; a closure dated when the photos show the fix finished. None of the four systems shares data with another.",

@@ -3,6 +3,8 @@
   "title": "Every therapy authorisation renewed before visits run past it, each on its own payer's clock",
   "domain": "Clinics",
   "audience": "work",
+  "category": "health",
+  "job": "comply",
   "promise": "Each patient in ongoing therapy is checked for the first scheduled visit past the current authorisation, by date or by visits used, and the renewal is sent on the last Friday its payer's clock allows: the 7 calendar days of CMS-0057-F for the Medicare Advantage and Medicaid managed care plans it covers, 15 days for the employer plan and the exchange plan it does not, and 10 business days around a holiday for the payer that only takes faxes. Requests a portal would not yet accept, a renewal already pending, a patient being discharged, Original Medicare, and faxes to payers that take portal requests only are left alone.",
   "persona": "The authorisation coordinator of an outpatient physical and occupational therapy group with eleven patients in ongoing care across five payers",
   "chore": "Read the group's authorisation policy and every patient's authorisation, schedule and plan of care in the EHR; each payer portal's decision clock, its acceptance window and what is already on file; and the fax directory and the fax-only payer's sheet. Then find, for each patient, the first visit the current authorisation does not cover, and decide whether waiting a week would let the payer's own clock run past it: CMS-0057-F's 7 days only for the payer types it names, the plan's own 15 days for the others, and 10 business days for the fax payer. Send each renewal that is due today, in the payer's own channel, for the visits the plan of care still needs. None of the four systems shares data with another.",

@@ -1,16 +1,23 @@
 """A playbook directory, read and checked (README §14; ADR 0040).
 
-Four files, one directory per use case under ``playbooks/<id>/``:
+One directory per use case under ``playbooks/<id>/``, six files in it, three of them authored:
 
-- ``playbook.json`` — the showcase: who it is for, the command, the portals, the gates, the
-  economics with their sources, and where it sits between difficulty and usefulness. The desktop's
-  Playbooks module renders it; the bench reads only ``id``, ``command`` and ``expectation``.
+- ``playbook.json`` — the showcase: who it is for, its area and its job, the command, the portals,
+  the gates, the economics with their sources, and where it sits between difficulty and usefulness.
+  The desktop's Playbooks module renders it; the bench reads only ``id``, ``command`` and
+  ``expectation``; this loader also checks ``category`` and ``job`` against the library's list.
 - ``world.json`` — the portals as data: each app's origin, its tools with their honest flags, the
   view the bridge would post as ``host_state``, the tables its reads answer from, and the phases
   of the run (which app, what the user says).
 - ``truth.json`` — what a perfect run files and what it must never file. Athena never sees it; the
   page never reads it; only the scorer does.
 - ``bench.json`` — the latest measured run, written by the bench (absent until one ran).
+- ``evidence.json`` and ``thumb.jpg`` — the film's index and its still, written by ``evidence``
+  (ADR 0055) from a bench that passed; absent until then. This module never reads them.
+
+Beside the directories, one file the whole library shares: ``playbooks/taxonomy.json``, the ten
+areas and four jobs a playbook's ``category`` and ``job`` may name (ADR 0096). It is the one list;
+the desktop imports the same file, so the bench and the ledger cannot disagree about an id.
 
 A problem is reported as a list of sentences, every one of them, rather than the first: a
 playbook is authored by hand and a fix-one-rerun loop over a JSON file is a slow way to learn
@@ -187,6 +194,16 @@ class Playbook:
     forbidden: tuple[str, ...] = ()
 
     @property
+    def category(self) -> str:
+        """The area the ledger files this playbook under; the loader checked it (ADR 0096)."""
+        return str(self.showcase.get("category", ""))
+
+    @property
+    def job(self) -> str:
+        """What it does for the person (recover, claim, contest, comply); checked (ADR 0096)."""
+        return str(self.showcase.get("job", ""))
+
+    @property
     def expectation(self) -> dict[str, Any]:
         value = self.showcase.get("expectation")
         return dict(value) if isinstance(value, Mapping) else {}
@@ -266,11 +283,24 @@ def _tool(app_id: str, raw: Any, tables: Mapping[str, Any], problems: list[str])
     )
 
 
-def load_playbook(root: str | Path) -> Playbook:
-    """Read ``root`` into a :class:`Playbook`; raise :class:`PlaybookError` with every problem."""
+def load_playbook(root: str | Path, taxonomy: Taxonomy | None = None) -> Playbook:
+    """Read ``root`` into a :class:`Playbook`; raise :class:`PlaybookError` with every problem.
+
+    ``category`` and ``job`` are checked against ``taxonomy``, or, when none is given, against the
+    ``taxonomy.json`` beside the playbook (its parent directory, the library). There is no default
+    list in the code: a library is read by its own file, so a copied-out playbook is refused until
+    the list travels with it, rather than quietly checked against a list it was never written for.
+    """
     root = Path(root)
     problems: list[str] = []
     showcase = _json(root / "playbook.json", problems)
+    if taxonomy is None:
+        try:
+            taxonomy = load_taxonomy(root.parent)
+        except PlaybookError as exc:
+            problems.extend(exc.problems)
+    if showcase and taxonomy is not None:
+        problems.extend(_taxonomy_problems(showcase, taxonomy))
     world = _json(root / "world.json", problems)
     truth = _json(root / "truth.json", problems)
     pid = str(showcase.get("id", ""))
@@ -455,6 +485,26 @@ def _authoring_problems(
     return found
 
 
+def _taxonomy_problems(showcase: Mapping[str, Any], taxonomy: Taxonomy) -> list[str]:
+    """ADR 0096: a playbook names one area and one job, each an id in the library's list.
+
+    No playbook is exempt, the nine before ADR 0057 included: the ledger files every playbook by
+    both, and one left out would show under "Uncategorised" in the desktop, which is a fallback for
+    a library mid-edit, not a place a shipped playbook lives.
+    """
+    found: list[str] = []
+    for key, ids in (("category", taxonomy.categories), ("job", taxonomy.jobs)):
+        value = showcase.get(key)
+        if value is None:
+            found.append(f"playbook.json needs {key!r}, one of {', '.join(ids)} (ADR 0096)")
+        elif not isinstance(value, str) or value not in ids:
+            found.append(
+                f"playbook.json {key} {value!r} is not in {TAXONOMY_FILENAME}: "
+                f"one of {', '.join(ids)} (ADR 0096)"
+            )
+    return found
+
+
 @dataclass(frozen=True)
 class Taxonomy:
     """The ledger's two axes, id -> label, in the order the file lists them (ADR 0096)."""
@@ -466,15 +516,20 @@ class Taxonomy:
 def load_taxonomy(base: str | Path = PLAYBOOKS_DIRNAME) -> Taxonomy:
     """``<base>/taxonomy.json``: the areas and jobs a playbook's ``category`` and ``job`` name."""
     path = Path(base) / TAXONOMY_FILENAME
+    name = TAXONOMY_FILENAME
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise PlaybookError(
+            str(path), [f"{name} is missing from {path.parent.as_posix()}"]
+        ) from exc
     except (OSError, json.JSONDecodeError) as exc:
-        raise PlaybookError(str(path), [str(exc)]) from exc
+        raise PlaybookError(str(path), [f"{name} is not readable JSON: {exc}"]) from exc
 
     def axis(key: str) -> dict[str, str]:
         rows = raw.get(key) if isinstance(raw, dict) else None
         if not isinstance(rows, list) or not rows:
-            raise PlaybookError(str(path), [f"'{key}' must be a non-empty list"])
+            raise PlaybookError(str(path), [f"{name} '{key}' must be a non-empty list"])
         out: dict[str, str] = {}
         for row in rows:
             if not (
@@ -482,9 +537,11 @@ def load_taxonomy(base: str | Path = PLAYBOOKS_DIRNAME) -> Taxonomy:
                 and isinstance(row.get("id"), str)
                 and isinstance(row.get("label"), str)
             ):
-                raise PlaybookError(str(path), [f"every '{key}' row needs a string id and label"])
+                raise PlaybookError(
+                    str(path), [f"{name}: every '{key}' row needs a string id and label"]
+                )
             if row["id"] in out:
-                raise PlaybookError(str(path), [f"'{key}' repeats {row['id']!r}"])
+                raise PlaybookError(str(path), [f"{name} '{key}' repeats {row['id']!r}"])
             out[row["id"]] = row["label"]
         return out
 
@@ -492,9 +549,16 @@ def load_taxonomy(base: str | Path = PLAYBOOKS_DIRNAME) -> Taxonomy:
 
 
 def load_all(base: str | Path = PLAYBOOKS_DIRNAME) -> list[Playbook]:
-    """Every playbook under ``base``, in directory order. One bad playbook fails the lot."""
+    """Every playbook under ``base``, in directory order. One bad playbook fails the lot.
+
+    The library's ``taxonomy.json`` is read once here, not once per playbook; a bad one fails
+    before any playbook is read, since every one of them would report the same problem.
+    """
+    taxonomy = load_taxonomy(base)
     return [
-        load_playbook(d) for d in sorted(Path(base).iterdir()) if (d / "playbook.json").is_file()
+        load_playbook(d, taxonomy)
+        for d in sorted(Path(base).iterdir())
+        if (d / "playbook.json").is_file()
     ]
 
 

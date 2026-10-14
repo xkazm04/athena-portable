@@ -8,6 +8,7 @@ files, so a run that *says* it filed a claim and filed none scores zero.
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,7 @@ from athena.proving.world import TurnRecord, World
 from .conftest import frame_of, op_line, scripted_model
 
 REPO = Path(__file__).resolve().parents[2]
+TAXONOMY = REPO / "playbooks" / spec.TAXONOMY_FILENAME
 
 
 @pytest.fixture(autouse=True)
@@ -50,12 +52,21 @@ def _write(root: Path, name: str, value: Any) -> None:
     (root / name).write_text(json.dumps(value), encoding="utf-8")
 
 
+def library(base: Path) -> Path:
+    """``base`` as a playbook library: the directory, and the shipped taxonomy.json in it."""
+    base.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(TAXONOMY, base / spec.TAXONOMY_FILENAME)
+    return base
+
+
 def make_playbook(tmp_path: Path, **overrides: Any) -> Path:
-    root = tmp_path / "late-parcels"
+    root = library(tmp_path) / "late-parcels"
     root.mkdir()
     showcase = {
         "id": "late-parcels",
         "title": "Late parcels",
+        "category": "freight",
+        "job": "recover",
         "promise": "Refunds for late parcels, filed for signature.",
         "command": "File a refund claim for every late parcel.",
         "persona": "a small online shop",
