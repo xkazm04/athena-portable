@@ -146,7 +146,7 @@ LEASE_CARD = {
             "text": "Do Torvane's letters come to Postwren, or somewhere else?",
             "options": [{"id": "a", "label": "Postwren"}, {"id": "b", "label": "Gmail"}],
         },
-        {"slot_ids": ["g1"], "text": "Should I ask you before I send each dispute?"},
+        {"slot_ids": ["p2"], "text": "Is the return inspection in Linestone Inspect?"},
     ],
 }
 
@@ -157,7 +157,7 @@ LEASE_DERIVE = {
         {"kind": "trap", "label": "Whether the mileage charge is right", "value": ""},
     ],
     "updates": [],
-    "open_slot_ids": ["p1", "g1", "f1"],
+    "open_slot_ids": ["p1", "p2", "f1"],
 }
 
 LEASE_CLEAR = {
@@ -166,7 +166,6 @@ LEASE_CLEAR = {
         {"slot_id": "p2", "value": "Linestone Inspect", "status": "confirmed"},
         {"slot_id": "p3", "value": "Google Photos", "status": "confirmed"},
         {"slot_id": "p4", "value": "Torvane Finance", "status": "confirmed"},
-        {"slot_id": "g1", "value": "Ask her first, each dispute", "status": "confirmed"},
         {"slot_id": "f1", "value": "12 September 2026", "status": "confirmed"},
         {"slot_id": "f2", "value": "Yes, every panel", "status": "confirmed"},
         {"slot_id": "t1", "value": "About 1,900 over; fair", "status": "confirmed"},
@@ -177,7 +176,7 @@ LEASE_CLEAR = {
 PERSONA_ANSWERS = {
     "answers": [
         {"question_id": "r1q1", "choice_ids": ["b"], "text": ""},
-        {"question_id": "r1q2", "choice_ids": [], "text": "Yes, ask me first."},
+        {"question_id": "r1q2", "choice_ids": [], "text": "Yes, Linestone Inspect."},
     ]
 }
 

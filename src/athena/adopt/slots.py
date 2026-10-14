@@ -56,6 +56,9 @@ MAX_SLOTS = 12
 LABEL_CAP = 200
 VALUE_CAP = 400
 
+#: What every gate slot holds: approval before each act is fixed, so it is shown, not asked.
+GATE_VALUE = "She asks you first, every time"
+
 SLOT_PREFIX: dict[str, str] = {"portal": "p", "gate": "g", "fact": "f", "trap": "t"}
 _KINDS: tuple[SlotKind, ...] = ("portal", "gate", "fact", "trap")
 _STATUSES: tuple[SlotStatus, ...] = ("open", "guessed", "confirmed")
@@ -141,13 +144,15 @@ def mechanical_slots(playbook: Mapping[str, Any]) -> list[Slot]:
         label = _text(gate.get("label")) or _text(gate.get("action"))
         if not label:
             continue
-        why = _first_sentence(_text(gate.get("why")))
         slots.append(
             Slot(
                 id=f"g{_count(slots, 'gate') + 1}",
                 kind="gate",
-                label=_cap(f"Before “{label}”: {why}" if why else label, LABEL_CAP),
-                status="open",
+                label=_cap(f"Asks you before: {label}", LABEL_CAP),
+                # A gate is the catalog's policy, never the person's choice or a model's
+                # (AGENTS.md "The gate is the policy"): settled from the start, never asked.
+                status="confirmed",
+                value=GATE_VALUE,
                 source="default",
             )
         )
@@ -219,7 +224,7 @@ def apply_updates(
     changed = False
     for raw in updates:
         slot = by_id.get(_text(raw.get("slot_id")) or _text(raw.get("id")))
-        if slot is None:
+        if slot is None or slot.kind == "gate":
             continue
         status = raw.get("status", "guessed")
         if status not in _STATUSES:

@@ -56,14 +56,13 @@ def test_wrong_missed_and_unconfirmed() -> None:
         _slots(
             p1=("Postwren", "guessed"),  # her mail is Gmail: a guessed playbook default is wrong
             p3=("Google Photos", "guessed"),  # right value, only guessed: missed
-            g1=("Go ahead, no need to ask", "confirmed"),  # she wants to be asked: wrong
             f1=("", "open"),  # nothing known: missed
             t1=("Dispute it, it is wrong", "confirmed"),  # contradicts her
         )
     )
     assert verdicts["p1"] == "wrong"
     assert verdicts["p3"] == "missed"
-    assert verdicts["g1"] == "wrong"
+    assert "g1" not in verdicts  # approval is policy, never scored
     assert verdicts["f-return-date"] == "missed"
     assert verdicts["t-mileage"] == "wrong"
     assert verdicts["p2"] == "right"
@@ -167,8 +166,8 @@ def test_score_interview_counts() -> None:
         {"role": "adopt.interview", "cost_usd": 0.01, "input_tokens": 1, "output_tokens": 2}
     ]
     score = score_interview(record, LEASE)
-    assert (score["right"], score["wrong"], score["missed"]) == (7, 0, 1)
-    assert score["accuracy"] == 87.5
+    assert (score["right"], score["wrong"], score["missed"]) == (6, 0, 1)
+    assert score["accuracy"] == 85.7
     assert score["questions"] == 1
     assert score["first_text_ms"] == [50]
     assert score["usage"]["interview"]["cost_usd"] == 0.01

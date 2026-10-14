@@ -27,8 +27,9 @@ def test_the_library_is_found_in_the_checkout_and_a_real_playbook_loads() -> Non
     slots = mechanical_slots(playbook)
     assert [s.id for s in slots] == ["p1", "p2", "p3", "p4", "g1", "g2"]
     assert slots[0].label == "Do you use Payroll Harbor for the payroll firm, or something else?"
-    assert slots[4].label.startswith("Before “Pay lost earnings into the plan”: Money leaves")
-    assert all(s.status == "open" for s in slots)
+    assert slots[4].label == "Asks you before: Pay lost earnings into the plan"
+    assert all(s.status == "open" for s in slots if s.kind == "portal")
+    assert all(s.status == "confirmed" and s.value for s in slots if s.kind == "gate")
 
 
 def test_an_explicit_library_is_the_only_candidate(tmp_path: Path) -> None:
@@ -81,7 +82,7 @@ def test_research_never_overrules_what_the_person_confirmed() -> None:
     by_id = {s.id: s for s in slots}
     assert by_id["p1"].value == "Gusto" and by_id["p1"].source == "user"
     assert by_id["p2"].status == "open" and by_id["p2"].source == "default"
-    assert by_id["g1"].status == "guessed" and by_id["g1"].source == "research"
+    assert by_id["g1"].status == "confirmed" and by_id["g1"].source == "default"  # policy
 
 
 def test_portal_swaps_name_only_what_differs() -> None:
@@ -116,3 +117,19 @@ def test_slot_values_reach_a_prompt_only_inside_a_fence() -> None:
     head, values = text.split("\n\nVALUES\n")
     assert attack not in head
     assert attack in values and is_fenced(values, label="slot-values")
+
+
+def test_a_gate_is_settled_policy_that_no_answer_or_lane_changes() -> None:
+    from athena.adopt.slots import GATE_VALUE, apply_updates
+    from athena.contracts.adopt import Slot
+
+    gate = Slot(
+        id="g1", kind="gate", label="Asks you before: Send", status="confirmed", value=GATE_VALUE
+    )
+    for source in ("user", "research"):
+        slots, changed = apply_updates(
+            [gate],
+            [{"slot_id": "g1", "value": "send without asking", "status": "confirmed"}],
+            source=source,
+        )
+        assert not changed and slots == [gate]

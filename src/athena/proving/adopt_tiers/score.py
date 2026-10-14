@@ -90,10 +90,11 @@ def slot_verdicts(scenario: Scenario, slots: Sequence[Slot]) -> list[dict[str, A
     taken: set[str] = set()
     out: list[dict[str, Any]] = []
     for entry in scenario.sheet:
-        if entry.kind in ("portal", "gate"):
-            slot = by_id.get(entry.id)
-        else:
-            slot = _find_derived(entry, slots, taken)
+        if entry.kind == "gate":
+            # Approval before a gated act is policy, settled before the first card (ADR 0097):
+            # nothing a tier does can make it right or wrong, so it is not scored.
+            continue
+        slot = by_id.get(entry.id) if entry.kind == "portal" else _find_derived(entry, slots, taken)
         if slot is not None:
             taken.add(slot.id)
         out.append(
@@ -240,7 +241,9 @@ def _stated_slots(scenario: Scenario, snapshot: Sequence[Slot]) -> dict[str, str
     ids = {s.id for s in snapshot}
     for stated in scenario.stated_up_front:
         entry = scenario.entry(stated.entry)
-        if entry.kind in ("portal", "gate"):
+        if entry.kind == "gate":
+            continue
+        if entry.kind == "portal":
             if entry.id in ids:
                 out[entry.id] = entry.id
             continue

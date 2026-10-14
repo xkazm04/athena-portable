@@ -317,15 +317,17 @@ def _write_brief(session: AdoptSession, *, cleared: bool) -> None:
     claim_default, left_default = _brief_sections(str(session.playbook.get("brief") or ""))
     if result.ok and result.value is not None:
         lead = str(result.value.get("lead") or "").strip()
+        setup = _strs(result.value.get("setup"))
         claim = _strs(result.value.get("claim")) or claim_default
         left = _strs(result.value.get("left_alone")) or left_default
     else:
         session.count("malformed_brief" if result.malformed else "failed_brief")
-        lead, claim, left = "", claim_default, left_default
+        lead, setup, claim, left = "", [], claim_default, left_default
     if not lead:
         lead = _first_sentence(str(session.playbook.get("promise") or ""))
     open_ids = tuple(s.id for s in slots if s.status != "confirmed")
-    md = _brief_md(lead, _setup_lines(session.playbook, slots), claim, left)
+    # The model's setup lines read as one voice; the mechanical ones are the floor.
+    md = _brief_md(lead, setup or _setup_lines(session.playbook, slots), claim, left)
     with session.lock:
         session.rev += 1
         rev = session.rev

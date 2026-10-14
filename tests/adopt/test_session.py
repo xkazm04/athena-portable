@@ -110,11 +110,11 @@ def test_session_closed_is_an_adopt_error_reason_beside_the_closed_set() -> None
 
 def test_apply_findings_emits_slots_only_on_change(rig: Rig) -> None:
     session = rig.store.create(PLAYBOOK_ID)
-    session.apply_findings([{"slot_id": "g1", "value": "allowed", "status": "guessed"}])
-    session.apply_findings([{"slot_id": "g1", "value": "allowed", "status": "guessed"}])
+    session.apply_findings([{"slot_id": "p1", "value": "Gusto", "status": "guessed"}])
+    session.apply_findings([{"slot_id": "p1", "value": "Gusto", "status": "guessed"}])
     slots_events = [e for e in session.events_after(0) if e.kind == "adopt.slots"]
     assert len(slots_events) == 1
-    assert next(s for s in session.slots if s.id == "g1").source == "research"
+    assert next(s for s in session.slots if s.id == "p1").source == "research"
 
 
 def test_leftover_session_dirs_of_a_dead_process_are_swept(tmp_path: Path) -> None:

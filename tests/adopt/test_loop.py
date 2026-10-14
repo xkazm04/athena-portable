@@ -195,7 +195,7 @@ def test_enough_drafts_the_brief_with_open_slots_and_guesses_marked(rig: Rig) ->
     session.drain()
 
     brief = last(session, "adopt.brief")
-    assert brief["open_slot_ids"] == ["p1", "p2", "g1", "f1", "t1"]
+    assert brief["open_slot_ids"] == ["p1", "p2", "f1", "t1"]  # g1 is policy, settled
     assert "People in the plan: 38 (my guess)" in brief["md"]
     assert "Deposits on the seventh day: not known yet" in brief["md"]
     assert "- People in the plan: 38 (my guess)" in brief["command"]
