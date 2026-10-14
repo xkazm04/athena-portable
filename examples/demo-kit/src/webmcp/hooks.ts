@@ -29,6 +29,7 @@
  */
 import { useEffect, useMemo, useRef } from "react";
 import { parametersToJsonSchema, type HostParameter, type SideEffects } from "./types";
+import { runTool } from "./door";
 import { ensureModelContext, type JsonSchemaObject, type WebMCPAnnotations } from "./modelContext";
 
 export interface WebMCPToolSpec {
@@ -60,11 +61,6 @@ export function annotationsFor(spec: Pick<WebMCPToolSpec, "reversible" | "sideEf
   };
 }
 
-function asText(result: unknown): string {
-  if (result === undefined || result === null) return "ok";
-  return typeof result === "string" ? result : JSON.stringify(result);
-}
-
 export function useWebMCPTool(spec: WebMCPToolSpec): void {
   // The handler closes over live state (the 3D nav, the router). Read it through a ref so the
   // registration is stable and the latest closure still runs; re-register only when the schema
@@ -90,7 +86,7 @@ export function useWebMCPTool(spec: WebMCPToolSpec): void {
         annotations: annotationsFor(spec),
         // Non-standard, ignored by a native implementation, read by the polyfill and the panel.
         ...({ athena: { reversible: spec.reversible, side_effects: spec.sideEffects } } as object),
-        execute: async (params) => asText(await handler.current(params ?? {})),
+        execute: (params) => runTool(inputSchema, params, (args) => handler.current(args)),
       },
       { signal: controller.signal },
     );
