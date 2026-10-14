@@ -7,7 +7,7 @@ from typing import Any
 
 from athena.adopt import loop
 from athena.adopt.prompts import MAX_ROUNDS
-from athena.adopt.session import AdoptSession
+from athena.adopt.session import UNASKED, AdoptSession
 from athena.contracts.adopt import Answer
 
 from .conftest import PLAYBOOK_ID, Rig, clear_script
@@ -257,6 +257,55 @@ def test_what_she_cannot_answer_is_read_during_the_run_not_asked_as_a_label(rig:
     cards = [wire(e) for e in session.events_after(0) if e.kind == "adopt.questions"]
     assert len(cards) == 1  # no bare-label card after the interviewer found nothing to ask
     p1 = next(s for s in session.slots if s.id == "p1")
-    assert (p1.status, p1.value) == ("guessed", loop.RUN_LOOKUP)
+    # A held value (here the playbook's own app) stays, as a guess: the run-lookup line would
+    # read as a rename to "I'll read this during the run".
+    assert (p1.status, p1.value) == ("guessed", "Payroll Harbor")
     assert "adopt.clear" in kinds(session)
     assert session.counters.get("deferred_to_run") == 1
+
+
+def test_an_empty_slot_deferred_to_the_run_says_so(rig: Rig) -> None:
+    script = clear_script()
+    script["audit"] = [
+        {
+            "new_slots": [{"kind": "fact", "label": "When did the plan year end?"}],
+            "open_slot_ids": ["f1"],
+        },
+    ]
+    script["interview"] = [
+        {"questions": [{"slot_ids": ["p2"], "text": "Is the plan at Retireline?"}]},
+        {"questions": []},
+    ]
+    rig.model.script = script
+    session = started(rig)
+    answer_all(session)
+
+    f1 = next(s for s in session.slots if s.id == "f1")
+    assert (f1.status, f1.value) == ("guessed", loop.RUN_LOOKUP)
+
+
+def test_words_said_to_no_question_are_kept_and_start_a_round(rig: Rig) -> None:
+    rig.model.script = clear_script()
+    session = started(rig)
+    remark = Answer(question_id="", text="It's my dad's plan, not mine.")
+    assert loop.check_answers(session, [remark]) == ""
+    assert "cannot choose" in loop.check_answers(
+        session, [Answer(question_id="", choice_ids=("a",), text="x")]
+    )
+    assert "must say" in loop.check_answers(session, [Answer(question_id="", text="  ")])
+    loop.receive_answers(session, [remark], "text")
+    session.drain(timeout=5)
+    said = [a for a in session.answers if not a.question_id]
+    assert [(a.question, a.text) for a in said] == [(UNASKED, "It's my dad's plan, not mine.")]
+
+
+def test_what_she_says_up_front_reaches_the_first_audit_and_card(rig: Rig) -> None:
+    rig.model.script = clear_script()
+    session = rig.store.create(PLAYBOOK_ID, "  We moved payroll to Gusto last spring.  ")
+    loop.start(session)
+    session.drain()
+
+    first = [c for c in rig.model.calls if c.kind in ("audit", "interview")][:2]
+    assert {c.kind for c in first} == {"audit", "interview"}
+    assert all("We moved payroll to Gusto last spring." in c.prompt for c in first)
+    assert session.answers[0].round == 0 and session.answers[0].question_id == ""

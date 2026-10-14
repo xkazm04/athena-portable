@@ -183,6 +183,12 @@ class GivenAnswer:
     via: str
 
 
+#: The question an answer stands under when the person said it without being asked: in the
+#: first message (``POST /adopt`` ``intro``) or typed beside a card (``question_id`` ``""``).
+UP_FRONT = "(said up front, before any card)"
+UNASKED = "(said on their own, not to a question)"
+
+
 @dataclass(eq=False)
 class AdoptSession:
     """One adopt conversation. Thread-safe; every mutation is under :attr:`lock`."""
@@ -423,8 +429,11 @@ class SessionStore:
         self._stop = threading.Event()
         self._swept = False
 
-    def create(self, playbook_id: str) -> AdoptSession:
-        """A new session, or :class:`Busy`, or :class:`~athena.adopt.slots.PlaybookMissing`."""
+    def create(self, playbook_id: str, intro: str = "") -> AdoptSession:
+        """A new session, or :class:`Busy`, or :class:`~athena.adopt.slots.PlaybookMissing`.
+
+        ``intro`` is what the person said before the first card; it is kept as an answer to no
+        question (round 0), so the first audit and the first card both read it."""
         playbook = self.load_playbook(playbook_id)
         self.reap()
         with self._lock:
@@ -443,6 +452,18 @@ class SessionStore:
                 hooks=self.hooks(),
                 clock=self.clock,
             )
+            if intro.strip():
+                session.answers.append(
+                    GivenAnswer(
+                        round=0,
+                        question_id="",
+                        question=UP_FRONT,
+                        slot_ids=(),
+                        choices=(),
+                        text=intro.strip(),
+                        via="text",
+                    )
+                )
             self._sessions[sid] = session
             self._start_reaper()
         return session

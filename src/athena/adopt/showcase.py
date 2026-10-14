@@ -365,13 +365,47 @@ def _renames(portals: Mapping[str, str], world: Mapping[str, Any]) -> dict[str, 
         if not theirs or theirs.lower() == old.lower():
             continue
         out[old] = theirs
-        for app in apps:
-            names = [str(app.get("name", "")), *(str(a) for a in app.get("aliases", []))]
-            if any(n.lower() == old.lower() for n in names):
-                own = str(app.get("name", ""))
-                if own and own.lower() != theirs.lower():
-                    out.setdefault(own, theirs)
+        own = _world_app(old, apps)
+        if own and own.lower() != theirs.lower():
+            out.setdefault(own, theirs)
     return out
+
+
+#: Words that name no app in particular ("Mom's bank (POA access)" vs "Grace's bank (POA access)").
+_PLAIN_WORDS = frozenset({"the", "and", "of", "a", "an", "for", "with", "to", "in", "my", "s"})
+
+
+def _world_app(old: str, apps: Sequence[Mapping[str, Any]]) -> str:
+    """The world's own name for the playbook's app ``old``: the app whose name or alias is
+    ``old``, else the one app that shares the most of its words (at least half, either way
+    round, and strictly more than any other app) — the playbook and the world may name one app
+    for different people. ``""`` when none is sure."""
+    for app in apps:
+        names = [str(app.get("name", "")), *(str(a) for a in app.get("aliases", []))]
+        if any(n.lower() == old.lower() for n in names):
+            return str(app.get("name", ""))
+    want = _app_words(old)
+    scored: list[tuple[float, str]] = []
+    for app in apps:
+        best = 0.0
+        for name in [str(app.get("name", "")), *(str(a) for a in app.get("aliases", []))]:
+            have = _app_words(name)
+            if want and have:
+                shared = len(want & have)
+                best = max(best, shared / len(want), shared / len(have))
+        scored.append((best, str(app.get("name", ""))))
+    scored.sort(key=lambda row: row[0], reverse=True)
+    if not scored or scored[0][0] < 0.5:
+        return ""
+    if len(scored) > 1 and scored[1][0] >= scored[0][0]:
+        return ""
+    return scored[0][1]
+
+
+def _app_words(name: str) -> set[str]:
+    return {
+        w for w in re.findall(r"[a-z0-9]+", name.lower().replace("'s", "")) if w not in _PLAIN_WORDS
+    }
 
 
 def _renamed(value: Any, renames: Mapping[str, str], *, keys: bool) -> Any:

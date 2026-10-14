@@ -101,9 +101,11 @@ def test_an_interview_runs_to_clear_on_the_configs_tier(tmp_path: Path) -> None:
         if leg["kind"] == "persona":
             assert (leg["model"], leg["effort"]) == ("claude-sonnet-5-5", "medium")
     assert any(leg["role"] == "brief" for leg in record["legs"])
-    # What she said up front rode on her first answer.
-    assert "All my lease mail comes to my Gmail" in record["answers"][0]["text"]
-    assert record["stated_round"] == 1
+    # What she said up front was the session's intro, read by the first audit and card.
+    assert "All my lease mail comes to my Gmail" in record["intro"]
+    assert "All my lease mail comes to my Gmail" not in record["answers"][0]["text"]
+    assert "All my lease mail comes to my Gmail" in model.prompts("interview")[0]
+    assert record["stated_round"] == 0
     # The persona saw the card fenced, and never the playbook's own answers.
     persona = model.prompts("persona")[0]
     assert "<<<card:" in persona and "Dana Whitcombe" in persona

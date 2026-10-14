@@ -14,6 +14,7 @@ from typing import Any
 
 import pytest
 
+from athena.adopt import showcase
 from athena.adopt.legs import LegResult
 from athena.adopt.session import AdoptSession, SessionStore
 from athena.adopt.showcase import (
@@ -371,3 +372,25 @@ def test_the_real_bench_runs_in_the_daemon_process_without_the_writer_lock(
         assert all(e.turn is not None for e in showcases(session)[1:])
         rows = [r for r in rig.ledger.rows if r["trigger"] == "adopt.showcase"]
         assert len(rows) == len(last.trace)
+
+
+def test_a_portal_the_world_names_for_another_person_is_still_renamed() -> None:
+    # ltc-claims: the playbook's "Mom's bank (POA access)" is the world's "Grace's bank".
+    world = {
+        "apps": [
+            {"name": "Harbor Mutual policyholder portal", "aliases": ["Harbor Mutual"]},
+            {"name": "Grace's bank (POA access)", "aliases": ["the bank", "bank", "checking"]},
+        ]
+    }
+    renames = showcase._renames({"Mom's bank (POA access)": "Wells Fargo"}, world)
+    assert renames == {
+        "Mom's bank (POA access)": "Wells Fargo",
+        "Grace's bank (POA access)": "Wells Fargo",
+    }
+
+
+def test_no_world_app_is_renamed_on_a_tie_or_a_thin_match() -> None:
+    world = {"apps": [{"name": "Harbor State Life"}, {"name": "Keystone Mutual claims portal"}]}
+    assert showcase._world_app("Life insurer and group-life insurer", world["apps"]) == ""
+    tie = [{"name": "Beacon IRA"}, {"name": "Northgate IRA"}]
+    assert showcase._world_app("IRA custodian", tie) == ""

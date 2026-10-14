@@ -44,6 +44,7 @@ __all__ = [
     "open_slot_ids",
     "playbooks_root",
     "portal_swaps",
+    "portal_value",
 ]
 
 PLAYBOOKS_DIRNAME = "playbooks"
@@ -170,9 +171,43 @@ def portal_swaps(playbook: Mapping[str, Any], slots: Sequence[Slot]) -> dict[str
     swaps: dict[str, str] = {}
     for index, name in enumerate(names, start=1):
         slot = by_id.get(f"p{index}")
-        value = slot.value.strip() if slot is not None else ""
-        swaps[name] = "" if not value or value.lower() == name.lower() else value
+        swaps[name] = portal_value(name, slot.value) if slot is not None else ""
     return swaps
+
+
+#: A portal value that names the playbook's own app in words instead of by name.
+_SAME_APP = re.compile(r"\b(the )?same\b|as in the playbook|as listed", re.I)
+#: What a value says it is NOT ("Gmail, not Postwren"): never read as the app it names.
+_NEGATED = re.compile(r"[,;]?\s*\b(not|instead of|rather than)\b[^,;.]*", re.I)
+#: What an auditor appends to an app's name ("RTS Pro, as you said").
+_NAME_TAIL = re.compile(
+    r"\s*[,;:(]\s*(as you (said|use it)|as in the playbook|as listed)\b.*$", re.I
+)
+
+
+def portal_value(name: str, value: str) -> str:
+    """The app she uses in place of the playbook's ``name``, read from a portal slot's
+    ``value``; ``""`` when it is the playbook's own app.
+
+    The auditor is asked for a bare app name, but a value may still read "RTS Pro, as in the
+    playbook", "Proton Mail" or "Gmail, not Postwren". What the value says it is *not* is cut
+    first; then a value that holds the playbook's name (spaces, case and punctuation aside,
+    with or without its parenthetical) or says "same" is the same app, and anything else is
+    hers, trimmed of the auditor's tail — so "Gmail, not Postwren" renames Postwren to Gmail and
+    never reads as Postwren.
+    """
+    text = _NEGATED.sub("", " ".join(value.split())).strip(" ,;:.")
+    if not text:
+        return ""
+    held = _compact(text)
+    bare = re.sub(r"\s*\([^)]*\)", "", name)
+    if any(c and c in held for c in (_compact(name), _compact(bare))) or _SAME_APP.search(text):
+        return ""
+    return _NAME_TAIL.sub("", text).strip(" ,;:.")
+
+
+def _compact(text: str) -> str:
+    return re.sub(r"[\W_]+", "", text.lower())
 
 
 # --- growing and updating -----------------------------------------------------------------------

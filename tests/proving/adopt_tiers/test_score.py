@@ -51,6 +51,19 @@ def test_all_right() -> None:
     assert set(_verdicts(_slots()).values()) == {"right"}
 
 
+def test_a_portal_is_read_as_the_product_reads_it() -> None:
+    # "Gmail, not Postwren" names Gmail (never Postwren); "Linestone Inspect, as you said" is
+    # the playbook's own app; "Postwren, as in the playbook" is not her Gmail.
+    verdicts = _verdicts(
+        _slots(
+            p1=("Gmail, not Postwren", "confirmed"),
+            p2=("Linestone Inspect, as you said", "confirmed"),
+            p3=("Postwren, as in the playbook", "confirmed"),
+        )
+    )
+    assert (verdicts["p1"], verdicts["p2"], verdicts["p3"]) == ("right", "right", "wrong")
+
+
 def test_wrong_missed_and_unconfirmed() -> None:
     verdicts = _verdicts(
         _slots(

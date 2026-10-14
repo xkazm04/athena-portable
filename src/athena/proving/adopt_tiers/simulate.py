@@ -11,9 +11,8 @@ config's — the session's :class:`~athena.adopt.legs.LegRunner` is built with `
 **The person** is a ``persona`` leg at a fixed tier (Sonnet 5.5, medium; not under test). It sees
 who she is, her fact sheet in plain words and Athena's card (fenced: the card is model output, data
 to her, never instructions) and answers each question from the sheet alone — "I don't know" when
-the sheet lacks it. What she says up front rides on her first answer: the studio has no first
-message before card 1 (``POST /adopt`` carries only the playbook id), so card 1 cannot be a repeat
-and the repeat check starts at card 2.
+the sheet lacks it. What she says up front is the session's ``intro`` (``POST /adopt``'s first
+message), so card 1 already knows it and the repeat check starts at card 1.
 
 **Stops** at ``adopt.clear``, at the loop's own eight-card cap (a brief without a clear), or at a
 ten-minute wall. Every event, every leg (ms, first text, warm or cold, attempts) and every ledger
@@ -513,16 +512,6 @@ def _answers_from(value: Mapping[str, Any], card: Questions) -> list[Answer]:
     return out
 
 
-def _with_stated(answers: list[Answer], scenario: Scenario) -> list[Answer]:
-    """What she says up front, said with her first answer (the studio has no earlier message)."""
-    said = " ".join(s.text for s in scenario.stated_up_front)
-    if not answers or not said:
-        return answers
-    first = answers[0]
-    text = f"{said} {first.text}".strip()[:ANSWER_CAP]
-    return [Answer(first.question_id, first.choice_ids, text), *answers[1:]]
-
-
 # --- one interview ---------------------------------------------------------------------------
 
 
@@ -552,6 +541,7 @@ def run_interview(rig: Rig, scenario: Scenario, config: str, rep: int) -> dict[s
         "effort": tier.effort,
         "rep": rep,
         "stated_round": 0,
+        "intro": " ".join(s.text for s in scenario.stated_up_front)[:ANSWER_CAP],
         "answers": [],
         "round_ms": [],
         "judge": None,
@@ -561,7 +551,7 @@ def run_interview(rig: Rig, scenario: Scenario, config: str, rep: int) -> dict[s
     started = clock()
     deadline = started + rig.wall_s
     ended = ""
-    session = store.create(scenario.playbook_id)
+    session = store.create(scenario.playbook_id, record["intro"])
     try:
         mark = clock()
         loop.start(session)
@@ -605,9 +595,6 @@ def run_interview(rig: Rig, scenario: Scenario, config: str, rep: int) -> dict[s
                 )
                 break
             answers = _answers_from(result.value, card)
-            if not record["stated_round"]:
-                answers = _with_stated(answers, scenario)
-                record["stated_round"] = card.round
             problem = loop.check_answers(session, answers)
             if problem:
                 record["failure"] = f"answers refused: {problem}"

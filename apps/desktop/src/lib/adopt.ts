@@ -120,10 +120,10 @@ export const ADOPT_EVENT_KINDS: readonly AdoptEventKind[] = [
 
 /** Routes (all carry the daemon token header, like every other route). */
 export const ADOPT_ROUTES = {
-  start: "/adopt", // POST {playbook_id} -> {ok, session_id, slots}
+  start: "/adopt", // POST {playbook_id, intro?} -> {ok, session_id, slots}
   events: (sid: string, after: number) =>
     `/adopt/${encodeURIComponent(sid)}/events?after=${after}`, // GET SSE
-  answer: (sid: string) => `/adopt/${encodeURIComponent(sid)}/answer`, // POST {answers, via}
+  answer: (sid: string) => `/adopt/${encodeURIComponent(sid)}/answer`, // POST {answers, via}; question_id "" = said to no question
   documents: (sid: string) => `/adopt/${encodeURIComponent(sid)}/documents`, // POST {name, mime, data_b64} -> {ok, doc_id}
   enough: (sid: string) => `/adopt/${encodeURIComponent(sid)}/enough`, // POST
   approve: (sid: string) => `/adopt/${encodeURIComponent(sid)}/approve`, // POST {rev}

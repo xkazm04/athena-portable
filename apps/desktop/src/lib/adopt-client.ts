@@ -39,7 +39,8 @@ export interface AdoptDocument {
 }
 
 export interface AdoptClient {
-  start(playbookId: string): Promise<StartReply>;
+  /** A new session; `intro` is what the person says before the first card (optional). */
+  start(playbookId: string, intro?: string): Promise<StartReply>;
   /** The session's events after `after`, as they arrive; ends when the daemon closes the stream. */
   events(sid: string, after: number, signal: AbortSignal): AsyncGenerator<AdoptEvent>;
   answer(sid: string, answers: readonly Answer[], via: AnswerVia): Promise<void>;
@@ -60,8 +61,13 @@ export class AdoptApi implements AdoptClient {
     private readonly fetchImpl: FetchLike = globalFetch,
   ) {}
 
-  async start(playbookId: string): Promise<StartReply> {
-    const reply = await this.json<Partial<StartReply>>("POST", ADOPT_ROUTES.start, { playbook_id: playbookId });
+  async start(playbookId: string, intro?: string): Promise<StartReply> {
+    const words = intro?.trim() ?? "";
+    const reply = await this.json<Partial<StartReply>>(
+      "POST",
+      ADOPT_ROUTES.start,
+      words ? { playbook_id: playbookId, intro: words } : { playbook_id: playbookId },
+    );
     return {
       ok: true,
       session_id: String(reply.session_id ?? ""),

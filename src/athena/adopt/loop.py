@@ -44,7 +44,7 @@ from athena.adopt.prompts import (
     interview_prompt,
     opening,
 )
-from athena.adopt.session import AdoptSession, AskedQuestion, GivenAnswer
+from athena.adopt.session import UNASKED, AdoptSession, AskedQuestion, GivenAnswer
 from athena.adopt.slots import add_slots, apply_updates, portal_swaps
 from athena.contracts.adopt import (
     Answer,
@@ -94,6 +94,20 @@ def receive_answers(session: AdoptSession, answers: Sequence[Answer], via: str) 
     """Record ``answers`` now (so a stale brief is stale at once) and queue the round."""
     with session.lock:
         for answer in answers:
+            if not answer.question_id:
+                # Said beside the card, to no question: kept as their words all the same.
+                session.answers.append(
+                    GivenAnswer(
+                        round=session.round,
+                        question_id="",
+                        question=UNASKED,
+                        slot_ids=(),
+                        choices=(),
+                        text=answer.text.strip(),
+                        via=via,
+                    )
+                )
+                continue
             asked = session.asked[answer.question_id]
             labels = {o.id: o.label for o in asked.question.options}
             session.answers.append(
@@ -132,13 +146,22 @@ def approve(session: AdoptSession, rev: int) -> str:
 
 
 def check_answers(session: AdoptSession, answers: Sequence[Answer]) -> str:
-    """``""`` when every answer names a question that was asked and options it offered."""
+    """``""`` when every answer names a question that was asked and options it offered, or
+    is free text to no question (``question_id`` ``""``)."""
     if not answers:
         return "answers: at least one answer"
     if len(answers) > MAX_ANSWERS:
         return f"answers: {len(answers)} is more than {MAX_ANSWERS}"
     with session.lock:
         for answer in answers:
+            if not answer.question_id:
+                if answer.choice_ids:
+                    return "answers: an answer to no question cannot choose options"
+                if not answer.text.strip():
+                    return "answers: an answer to no question must say something"
+                if len(answer.text) > ANSWER_TEXT_CAP:
+                    return f"answers: {len(answer.text)} characters is more than {ANSWER_TEXT_CAP}"
+                continue
             asked = session.asked.get(answer.question_id)
             if asked is None:
                 return f"answers: no question {answer.question_id!r} was asked"
@@ -287,8 +310,10 @@ def _defer_to_run(session: AdoptSession, open_ids: list[str] | None) -> None:
     """Mark what is still open as looked up during the run (a guess, said so), then the brief."""
     with session.lock:
         wanted = set(open_ids) if open_ids else {s.id for s in session.slots if s.status == "open"}
+        # A value already held (their own half-answer) stays, marked a guess; only an empty
+        # slot gets the run-lookup line.
         updates = [
-            {"slot_id": s.id, "value": RUN_LOOKUP, "status": "guessed"}
+            {"slot_id": s.id, "value": s.value.strip() or RUN_LOOKUP, "status": "guessed"}
             for s in session.slots
             if s.id in wanted and s.status == "open"
         ]

@@ -15,6 +15,7 @@ from athena.adopt.slots import (
     mechanical_slots,
     playbooks_root,
     portal_swaps,
+    portal_value,
 )
 
 from .conftest import PLAYBOOK
@@ -133,3 +134,27 @@ def test_a_gate_is_settled_policy_that_no_answer_or_lane_changes() -> None:
             source=source,
         )
         assert not changed and slots == [gate]
+
+
+@pytest.mark.parametrize(
+    ("value", "theirs"),
+    [
+        ("Postwren", ""),
+        ("postwren", ""),
+        ("same", ""),
+        ("Postwren, as in the playbook", ""),
+        ("Gmail", "Gmail"),
+        ("Gmail, not Postwren", "Gmail"),
+        ("Gmail, not Postwren: you keep lease mail there", "Gmail"),
+        ("Outlook, as you said, not Postwren", "Outlook"),
+        ("Shopify, instead of Postwren", "Shopify"),
+        ("not Postwren", ""),
+    ],
+)
+def test_a_portal_value_is_read_as_the_app_it_names(value: str, theirs: str) -> None:
+    assert portal_value("Postwren", value) == theirs
+
+
+def test_a_portal_name_matches_without_spacing_or_its_parenthetical() -> None:
+    assert portal_value("RTS Pro (factor)", "RTS Pro, as you said") == ""
+    assert portal_value("ProtonMail", "Proton Mail") == ""

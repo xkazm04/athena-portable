@@ -4,8 +4,10 @@ Every route is behind the token like every other, refuses in the one error shape
 takes** ``daemon.writing()``: an adopt session runs while a chat turn runs, and a chat turn never
 waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still answered).
 
-``POST /adopt`` ``{playbook_id}``
-    A new session -> ``{ok, session_id, slots}``. The opening, the first card and the research
+``POST /adopt`` ``{playbook_id, intro?}``
+    A new session -> ``{ok, session_id, slots}``. ``intro`` is what the person says before the
+    first card (at most ``loop.ANSWER_TEXT_CAP`` characters); the first audit and card read
+    it. The opening, the first card and the research
     lanes follow on the event stream. A fourth live session is refused: ``reason``
     ``budget_exhausted``, ``detail`` starting ``busy:`` (``busy`` is not in ``ERROR_REASONS``).
 ``GET /adopt/<sid>/events?after=<seq>``
@@ -14,6 +16,7 @@ waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still
     ends (DELETE, idle expiry, shutdown) the last frame is ``adopt.error`` with reason
     ``session_closed`` and then the stream closes: a surface stops reconnecting on that reason.
 ``POST /adopt/<sid>/answer`` ``{answers: [{question_id, choice_ids, text}], via}``
+    ``question_id`` ``""`` is free text to no question (the composer beside a card).
 ``POST /adopt/<sid>/documents`` ``{name, mime, data_b64}`` -> ``{ok, doc_id}``
     The bytes are kept in the session's temp dir and handed to ``on_document``; nothing else.
 ``POST /adopt/<sid>/enough``
@@ -101,8 +104,17 @@ def start(studio: AdoptStudio, request: Request) -> Reply:
     playbook_id = request.body.get("playbook_id")
     if not isinstance(playbook_id, str) or not playbook_id:
         return error(400, "validator_failed", "playbook_id is required")
+    intro = request.body.get("intro", "")
+    if not isinstance(intro, str):
+        return error(400, "validator_failed", "intro must be a string")
+    if len(intro) > loop.ANSWER_TEXT_CAP:
+        return error(
+            400,
+            "validator_failed",
+            f"intro: {len(intro)} characters is more than {loop.ANSWER_TEXT_CAP}",
+        )
     try:
-        session = studio.store.create(playbook_id)
+        session = studio.store.create(playbook_id, intro)
     except PlaybookMissing as exc:
         return error(404, "unknown_ref", str(exc))
     except Busy as exc:

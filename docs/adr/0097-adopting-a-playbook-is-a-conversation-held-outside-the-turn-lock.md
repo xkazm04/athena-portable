@@ -36,11 +36,15 @@ draft-preview-apply (what is approved is exactly what runs).
    answer the auditor checks each value against the person's literal words and lists what is still
    open, while the next card is written in parallel; an empty open list is clear. "Good enough" is
    always available, and eight cards is the most. Only the person's words confirm a slot; research
-   never overrules her.
+   never overrules her. Their words need not answer a card: what they say before the first card
+   (`POST /adopt` `intro`) or beside one (`question_id` `""`) is kept as an answer to no question,
+   and both legs read it. A portal slot is read for the app it names (`portal_value`: "Gmail, not
+   Postwren" is Gmail, "RTS Pro, as you said" is the playbook's own), so a sentence never becomes
+   a rename.
 3. **Legs by kind, tiers by bench.** Every model call goes through one door,
    `LegRunner.run_leg(kind, ...)`, with the kind required (`interview`, `audit`, `research`,
    `shape`, `persona`, `judge`). Which Claude 5.5 model and effort serves a kind is
-   `src/athena/adopt/tiers.json`, interim until the tier bench writes it. Each invocation is one
+   `src/athena/adopt/tiers.json`, written from the tier bench (item 9). Each invocation is one
    ledger row and one `adopt.usage` event, failures and malformed answers included; a malformed
    JSON answer is sent back once and then degrades (a plain free-text question; or the slots kept)
    so the conversation never stalls. The interviewer keeps one warm stream-json process per
@@ -82,6 +86,11 @@ draft-preview-apply (what is approved is exactly what runs).
    is benched on its own. A config is out on any false clear or repeated question, accuracy more
    than 5 points under the best, or a judge mean under 3.5; of the rest the fastest p50 wins (first
    text for the interviewer), usage breaking ties within 5%. `pick --write` rewrites `tiers.json`.
+   The first full run (2026-10-14) disqualified every config, mostly on scorer and studio defects
+   since fixed (portal values read literally, a deferred slot losing its value, the up-front
+   statement riding on the first answer); `tiers.json` holds its hand-confirmed picks: Opus low for
+   `interview` and `audit` (within 5 points of the best accuracy and the fastest), Haiku low for
+   `shape` (every world valid; the one rename miss was the shaper's name lookup, now fuzzy).
 
 ## Consequences
 

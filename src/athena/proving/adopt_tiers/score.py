@@ -22,6 +22,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
 from athena.adopt.prompts import playbook_block
+from athena.adopt.slots import portal_names, portal_value
 from athena.contracts.adopt import Slot
 from athena.core.fence import fresh_nonce, wrap_untrusted
 from athena.proving.adopt_tiers.scenarios import Entry, Scenario
@@ -97,6 +98,11 @@ def slot_verdicts(scenario: Scenario, slots: Sequence[Slot]) -> list[dict[str, A
         slot = by_id.get(entry.id) if entry.kind == "portal" else _find_derived(entry, slots, taken)
         if slot is not None:
             taken.add(slot.id)
+        verdict = (
+            _portal_verdict(scenario, entry, slot)
+            if entry.kind == "portal"
+            else _verdict(entry, slot)
+        )
         out.append(
             {
                 "entry": entry.id,
@@ -104,7 +110,7 @@ def slot_verdicts(scenario: Scenario, slots: Sequence[Slot]) -> list[dict[str, A
                 "slot_id": slot.id if slot is not None else "",
                 "status": slot.status if slot is not None else "",
                 "value": slot.value if slot is not None else "",
-                "verdict": _verdict(entry, slot),
+                "verdict": verdict,
             }
         )
     return out
@@ -118,6 +124,25 @@ def _find_derived(entry: Entry, slots: Sequence[Slot], taken: set[str]) -> Slot 
         if _any(entry.keys, slot.label):
             return slot
     return None
+
+
+def _portal_verdict(scenario: Scenario, entry: Entry, slot: Slot | None) -> str:
+    """Read as the product reads it (:func:`~athena.adopt.slots.portal_value`, which the brief,
+    the command and the shaped world all use): right when the app it yields is hers and the
+    slot is confirmed; wrong when it yields another app and the slot is not open."""
+    if slot is None or not slot.value.strip():
+        return "missed"
+    names = portal_names(scenario.playbook)
+    index = int(entry.id[1:]) - 1
+    name = names[index] if 0 <= index < len(names) else ""
+    theirs = portal_value(name, slot.value)
+    if entry.truth.lower() == "same":
+        right = theirs == ""
+    else:
+        right = theirs != "" and portal_value(entry.truth, theirs) == ""
+    if right:
+        return "right" if slot.status == "confirmed" else "missed"
+    return "wrong" if slot.status != "open" else "missed"
 
 
 def _verdict(entry: Entry, slot: Slot | None) -> str:
@@ -185,7 +210,10 @@ def repeats(record: Mapping[str, Any], scenario: Scenario) -> list[dict[str, Any
         str(a.get("question_id")) for a in answers if _DONT_KNOW.search(str(a.get("text", "")))
     }
     answered = {str(a.get("question_id")) for a in answers}
+    # Said up front as the session's intro: known before card 1. An older record carried it on
+    # the first answer instead (``stated_round``), known only after that card.
     stated_round = int(record.get("stated_round") or 0)
+    stated_from = 1 if record.get("intro") else stated_round + 1 if stated_round else 0
     snapshot: list[Slot] = []
     earlier: list[tuple[str, set[str]]] = []
     out: list[dict[str, Any]] = []
@@ -199,7 +227,7 @@ def repeats(record: Mapping[str, Any], scenario: Scenario) -> list[dict[str, Any
         round_no = int(event.get("round") or 0)
         by_id = {s.id: s for s in snapshot}
         stated_slots = (
-            _stated_slots(scenario, snapshot) if stated_round and round_no > stated_round else {}
+            _stated_slots(scenario, snapshot) if stated_from and round_no >= stated_from else {}
         )
         card: list[tuple[str, set[str]]] = []
         for question in event.get("questions") or []:
@@ -340,6 +368,9 @@ def transcript(record: Mapping[str, Any]) -> str:
         if isinstance(answer, Mapping):
             by_round.setdefault(int(answer.get("round") or 0), []).append(answer)
     lines: list[str] = []
+    intro = str(record.get("intro") or "").strip()
+    if intro:
+        lines.append(f"Person, up front: {intro}")
     for event in _events(record):
         kind = event.get("kind")
         if kind == "adopt.say":
