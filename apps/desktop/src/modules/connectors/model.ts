@@ -89,9 +89,8 @@ export interface ConnectorsModel {
   actions: ConnectorActions;
 }
 
-/** One source: `HostTool.default_class` (src/athena/contracts/manifest.py:129), GATED unless reversible is True. */
 export function isWrite(tool: ConnectorToolView): boolean {
-  return tool.reversible !== true || tool.side_effects === "external";
+  return tool.reversible === false || tool.side_effects === "external";
 }
 
 /** "3 min ago" from an ISO stamp, or the raw string when it cannot be read. */
