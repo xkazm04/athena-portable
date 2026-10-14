@@ -7,7 +7,8 @@
  * are the bench's and are never imported here — a surface that could read the answers would be
  * tempted to show them. `evidence.json` and `thumb.jpg` are the run filmed (ADR 0055): the index of
  * a narrated recording that lives in the repository's gitignored `evidence/`, and a still of the
- * result that is committed beside it.
+ * result that is committed beside it. Schema 2 adds the storyboard (ADR 0096): up to six stills of
+ * the run under `story/`, also committed, each with a caption and the turn it shows.
  *
  * The files are bundled at build time (`import.meta.glob`, eager), so the module needs no daemon
  * and no route: a playbook is something the app ships, like the constitution. `parsePlaybook`
@@ -15,7 +16,7 @@
  * field is worse than one that shows the rest and names the gap.
  */
 
-import type { CategoryId, JobId } from "./playbook-taxonomy";
+import { isCategoryId, isJobId, type CategoryId, type JobId } from "./playbook-taxonomy";
 
 export interface PlaybookApp {
   name: string;
@@ -336,11 +337,43 @@ function parseBench(raw: unknown): Bench | null {
   };
 }
 
+/** A storyboard still's repo-relative path: two digits under its playbook's own `story/`. */
+const STILL_PATH = /^playbooks\/([\w.-]+)\/story\/\d{2}\.webp$/;
+
+/**
+ * Schema 2's storyboard (ADR 0096), in the file's order. A row is kept only when it has a caption
+ * and a path of the one shape the capture writes, under the playbook the index names when it names
+ * one: a caption is what the strip reads aloud, and a path that points anywhere else is not a still
+ * of this run. `still` turns a kept path into the bundled URL, "" when this build lacks the file —
+ * the same rule as the thumbnail, so a row the stills step listed but the build did not carry
+ * still says what it was rather than vanishing. Schema 1 has no storyboard, whatever it holds.
+ */
+function parseStory(raw: Raw, still: (path: string) => string): StoryStill[] {
+  if (num(raw.schema) < 2) return [];
+  const owner = str(raw.playbook);
+  return list(raw.story)
+    .filter(isRaw)
+    .flatMap((row) => {
+      const path = str(row.path);
+      const caption = str(row.caption).trim();
+      const m = STILL_PATH.exec(path);
+      if (!caption || !m || (owner && m[1] !== owner)) return [];
+      const turn = numOrNull(row.turn);
+      return [{ url: still(path), caption, turn: turn !== null && Number.isInteger(turn) && turn >= 1 ? turn : null }];
+    });
+}
+
 /**
  * One `evidence.json` into an `Evidence`, or `null` when there is none. `thumbnailUrl` is the
- * bundled still; `serve` says whether a dev server is there to hand out the film itself.
+ * bundled still; `serve` says whether a dev server is there to hand out the film itself; `still`
+ * resolves a storyboard row's repo-relative path to its bundled URL ("" when it is not bundled).
  */
-export function parseEvidence(raw: unknown, thumbnailUrl = "", serve = false): Evidence | null {
+export function parseEvidence(
+  raw: unknown,
+  thumbnailUrl = "",
+  serve = false,
+  still: (path: string) => string = () => "",
+): Evidence | null {
   if (!isRaw(raw)) return null;
   const narration = isRaw(raw.narration) ? raw.narration : {};
   const video = isRaw(raw.video) ? raw.video : {};
@@ -367,7 +400,7 @@ export function parseEvidence(raw: unknown, thumbnailUrl = "", serve = false): E
     thumbnailUrl,
     // Only a repo-relative path under `evidence/` is ever turned into a URL.
     videoUrl: serve && /^evidence\/[\w.-]+\/[\w.-]+\.mp4$/.test(videoPath) ? `/${videoPath}` : null,
-    story: [],
+    story: parseStory(raw, still),
   };
 }
 
@@ -386,8 +419,10 @@ export function parsePlaybook(
     title: str(raw.title, str(raw.id)),
     promise: str(raw.promise),
     domain: str(raw.domain),
-    category: null,
-    job: null,
+    // An area or a job the taxonomy does not list reads as none, never as a dropped playbook: the
+    // ledger shows it under "Uncategorised" and the bench's loader is where a typo is refused.
+    category: isCategoryId(raw.category) ? raw.category : null,
+    job: isJobId(raw.job) ? raw.job : null,
     audience: str(raw.audience) === "home" ? "home" : "work",
     persona: str(raw.persona),
     chore: str(raw.chore),
@@ -445,17 +480,23 @@ export function loadPlaybooks(
   evidences: Record<string, unknown> = {},
   thumbnails: Record<string, unknown> = {},
   serve = false,
+  stories: Record<string, unknown> = {},
 ): Playbook[] {
   const beside = (path: string, name: string) => path.replace(/playbook\.json$/, name);
   const benchFor = (path: string) => benches[beside(path, "bench.json")] ?? null;
-  const evidenceFor = (path: string) => {
-    const thumb = unwrap(thumbnails[beside(path, "thumb.jpg")]);
-    return parseEvidence(
-      unwrap(evidences[beside(path, "evidence.json")] ?? null),
-      typeof thumb === "string" ? thumb : "",
-      serve,
-    );
+  const urlOf = (value: unknown) => {
+    const url = unwrap(value);
+    return typeof url === "string" ? url : "";
   };
+  const evidenceFor = (path: string) =>
+    parseEvidence(
+      unwrap(evidences[beside(path, "evidence.json")] ?? null),
+      urlOf(thumbnails[beside(path, "thumb.jpg")]),
+      serve,
+      // A still is looked up beside its playbook.json, like the thumbnail: the row's own
+      // `playbooks/<id>/` is the directory the glob already keys, so only `story/NN.webp` is read.
+      (still) => urlOf(stories[beside(path, still.replace(/^playbooks\/[^/]+\//, ""))]),
+    );
   return Object.entries(showcases)
     .map(([path, raw]) => parsePlaybook(unwrap(raw), unwrap(benchFor(path)), evidenceFor(path)))
     .filter((p): p is Playbook => p !== null)
@@ -515,6 +556,12 @@ const THUMBNAILS = import.meta.glob<string>("../../../../playbooks/*/thumb.jpg",
   query: "?url",
   import: "default",
 });
+// The storyboard stills (ADR 0096): up to six small WebPs a playbook, as URLs, fetched with the
+// rest. A build with none — the stills not yet captured — is an empty glob, and every story reads [].
+const STORIES = import.meta.glob<string>("../../../../playbooks/*/story/*.webp", {
+  query: "?url",
+  import: "default",
+});
 
 /** Await every module a lazy glob names, keeping its path as the key. */
 async function resolved(glob: Record<string, () => Promise<unknown>>): Promise<Record<string, unknown>> {
@@ -524,13 +571,14 @@ async function resolved(glob: Record<string, () => Promise<unknown>>): Promise<R
 
 /** What this build ships, fetched on demand. The film plays only where the dev server serves `evidence/`. */
 export async function loadShipped(): Promise<readonly Playbook[]> {
-  const [showcases, benches, evidences, thumbnails] = await Promise.all([
+  const [showcases, benches, evidences, thumbnails, stories] = await Promise.all([
     resolved(SHOWCASES),
     resolved(BENCHES),
     resolved(EVIDENCES),
     resolved(THUMBNAILS),
+    resolved(STORIES),
   ]);
-  return loadPlaybooks(showcases, benches, evidences, thumbnails, import.meta.env.DEV);
+  return loadPlaybooks(showcases, benches, evidences, thumbnails, import.meta.env.DEV, stories);
 }
 
 /** Whether the evidence films the bench run it is filed against, or an earlier one. */

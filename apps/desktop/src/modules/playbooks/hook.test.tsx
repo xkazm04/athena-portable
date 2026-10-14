@@ -58,17 +58,31 @@ describe("opening a portal", () => {
   });
 
   it("says it is loading while the shipped set has not arrived, and is not an empty build", () => {
-    usePlaybooks.setState({ items: null });
+    usePlaybooks.setState({ items: null, problem: null });
     const m = modelWith();
     expect(m.loading).toBe(true);
+    expect(m.problem).toBeNull();
     expect(m.items).toEqual([]);
   });
 
   it("is the same model the module's view uses once the set is here: the verdicts and the totals", () => {
-    usePlaybooks.setState({ items: PLAYBOOKS });
+    usePlaybooks.setState({ items: PLAYBOOKS, problem: null });
     const m = modelWith();
     expect(m.loading).toBe(false);
+    expect(m.problem).toBeNull();
     expect(m.items.length).toBe(m.totals.count);
     expect(m.items.length).toBeGreaterThan(0);
+  });
+
+  it("says why the set could not be read, and is then no longer loading", () => {
+    const sentence = "the playbooks could not be read: Error: offline";
+    // `load` is stubbed so the mount's ask does not fetch over the failure this test sets.
+    const load = usePlaybooks.getState().load;
+    usePlaybooks.setState({ items: null, problem: sentence, load: async () => {} });
+    const m = modelWith();
+    expect(m.problem).toBe(sentence);
+    expect(m.loading).toBe(false);
+    expect(m.items).toEqual([]);
+    usePlaybooks.setState({ problem: null, load });
   });
 });

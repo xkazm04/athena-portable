@@ -3,7 +3,7 @@
  * `playbooks/` directory, the same files the Python bench reads, so these tests also pin that the
  * glob reaches them.
  */
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { PLAYBOOKS } from "./playbooks.shipped";
 
@@ -118,12 +118,104 @@ test("a film is a URL only where a dev server serves it, and only under evidence
 
 test("the shipped evidence names the bench run it filmed and a repo-relative film", () => {
   for (const p of PLAYBOOKS.filter((b) => b.evidence !== null)) {
-    expect(p.evidence?.schema, p.id).toBe(1);
+    expect([1, 2], p.id).toContain(p.evidence?.schema);
+    // A still the index lists is a still this build carries.
+    for (const s of p.evidence?.story ?? []) expect(s.url, `${p.id}: ${s.caption}`).not.toBe("");
     expect(p.evidence?.benchRunAt, p.id).not.toBe("");
     expect(p.evidence?.video.path, p.id).toBe(`evidence/${p.id}/evidence.mp4`);
     expect(p.evidence?.thumbnail.path, p.id).toBe(`playbooks/${p.id}/thumb.jpg`);
     expect(p.evidence?.thumbnailUrl, p.id).not.toBe("");
   }
+});
+
+test("a playbook names its area and its job from the taxonomy; a missing or unknown one reads as none", () => {
+  const tagged = parsePlaybook({ id: "x", category: "freight", job: "recover" });
+  expect(tagged?.category).toBe("freight");
+  expect(tagged?.job).toBe("recover");
+  const bare = parsePlaybook({ id: "x" });
+  expect(bare?.category).toBeNull();
+  expect(bare?.job).toBeNull();
+  // Unknown or the wrong type: none, and the playbook is still read.
+  for (const [category, job] of [["shipping", "refund"], [3, ["recover"]], ["Freight", "RECOVER"]]) {
+    const odd = parsePlaybook({ id: "x", title: "X", category, job });
+    expect(odd?.title).toBe("X");
+    expect(odd?.category).toBeNull();
+    expect(odd?.job).toBeNull();
+  }
+});
+
+describe("the storyboard", () => {
+  const dir = "../../../../playbooks/x/";
+  const index = (over: Record<string, unknown>) => ({
+    schema: 2,
+    playbook: "x",
+    bench_run_at: "2026-10-07T00:00:00Z",
+    video: { path: "evidence/x/evidence.mp4" },
+    ...over,
+  });
+  const load = (evidence: unknown, stories: Record<string, unknown> = {}) =>
+    loadPlaybooks(
+      { [`${dir}playbook.json`]: { id: "x", title: "X" } },
+      {},
+      { [`${dir}evidence.json`]: evidence },
+      {},
+      false,
+      stories,
+    )[0].evidence?.story;
+
+  test("schema 2 reads each still in order, with its bundled URL, caption and turn", () => {
+    const story = load(
+      index({
+        story: [
+          { path: "playbooks/x/story/01.webp", caption: "Abstract", turn: null, bytes: 9 },
+          { path: "playbooks/x/story/02.webp", caption: "Turn 3 - Portal: find the invoices", turn: 3 },
+          { path: "playbooks/x/story/03.webp", caption: "What she filed" },
+        ],
+      }),
+      {
+        [`${dir}story/01.webp`]: "/assets/01-x.webp",
+        [`${dir}story/02.webp`]: { default: "/assets/02-x.webp" },
+        [`${dir}story/03.webp`]: "/assets/03-x.webp",
+      },
+    );
+    expect(story).toEqual([
+      { url: "/assets/01-x.webp", caption: "Abstract", turn: null },
+      { url: "/assets/02-x.webp", caption: "Turn 3 - Portal: find the invoices", turn: 3 },
+      { url: "/assets/03-x.webp", caption: "What she filed", turn: null },
+    ]);
+  });
+
+  test("a still the build does not carry keeps its row with an empty URL, like the thumbnail", () => {
+    const story = load(index({ story: [{ path: "playbooks/x/story/01.webp", caption: "Abstract" }] }));
+    expect(story).toEqual([{ url: "", caption: "Abstract", turn: null }]);
+  });
+
+  test("a row with no caption, or a path that is not this playbook's story/NN.webp, is dropped", () => {
+    const story = load(
+      index({
+        story: [
+          { path: "playbooks/x/story/01.webp", caption: "" },
+          { path: "playbooks/x/story/02.webp" },
+          { path: "playbooks/y/story/03.webp", caption: "Another playbook's" },
+          { path: "playbooks/x/thumb.jpg", caption: "Not a still" },
+          { path: "playbooks/x/story/4.webp", caption: "One digit" },
+          { path: "playbooks/x/story/../05.webp", caption: "Climbs out" },
+          { path: "/playbooks/x/story/06.webp", caption: "Absolute" },
+          "nope",
+          { path: "playbooks/x/story/07.webp", caption: "Kept", turn: 0 },
+        ],
+      }),
+    );
+    expect(story).toEqual([{ url: "", caption: "Kept", turn: null }]);
+  });
+
+  test("schema 1, or an index without a story, reads as no storyboard", () => {
+    const rows = [{ path: "playbooks/x/story/01.webp", caption: "Abstract" }];
+    expect(load(index({ schema: 1, story: rows }))).toEqual([]);
+    expect(load(index({}))).toEqual([]);
+    expect(load(index({ story: "nope" }))).toEqual([]);
+    expect(parseEvidence({ schema: 2, story: rows })?.story).toEqual([{ url: "", caption: "Abstract", turn: null }]);
+  });
 });
 
 test("a film's length reads as a clock", () => {

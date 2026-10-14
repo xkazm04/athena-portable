@@ -337,6 +337,76 @@ select:focus-visible {
   color: var(--muted-foreground);
 }
 
+/* A sortable head: the whole head is the button, its words keep the head's ink, and the mark beside
+   them says which way the column runs. An unsorted column shows a faint double mark on hover only. */
+.table th.is-sortable {
+  padding: 0;
+}
+
+.table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--radius-interactive);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-fast);
+}
+
+.table th.is-right .table__sort {
+  justify-content: flex-end;
+}
+
+.table__sort:hover,
+.table th[aria-sort="ascending"] .table__sort,
+.table th[aria-sort="descending"] .table__sort {
+  color: var(--foreground);
+}
+
+.table__sort-mark {
+  display: inline-block;
+  width: 0.75em;
+  text-align: center;
+}
+
+.table__sort-mark[data-dir="asc"]::after {
+  content: "\25B2";
+}
+
+.table__sort-mark[data-dir="desc"]::after {
+  content: "\25BC";
+}
+
+.table__sort:hover .table__sort-mark:not([data-dir])::after {
+  content: "\2195";
+  color: var(--muted-foreground);
+}
+
+/* A selectable table (a `grid`): the row is the control. The picked row is raised like a chosen
+   pill and carries a bar on its leading edge, so the pick reads without colour on the words. */
+.table.is-selectable tbody tr {
+  cursor: pointer;
+}
+
+.table.is-selectable tbody tr:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.table tbody tr[aria-selected="true"] td {
+  background: var(--card-raised);
+}
+
+.table tbody tr[aria-selected="true"] td:first-child {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
 /* -- Controls -------------------------------------------------------------------------------
  * Weight is a signal (catalog rule 2): a label pinned smaller than the prose around it gives the
  * control no rank, so the size falls through to the document and only the weight is set.

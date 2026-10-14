@@ -16,6 +16,11 @@ const THUMBNAILS = import.meta.glob<string>("../../../../playbooks/*/thumb.jpg",
   query: "?url",
   import: "default",
 });
+const STORIES = import.meta.glob<string>("../../../../playbooks/*/story/*.webp", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
 
 export const PLAYBOOKS: readonly Playbook[] = loadPlaybooks(
   SHOWCASES,
@@ -23,4 +28,5 @@ export const PLAYBOOKS: readonly Playbook[] = loadPlaybooks(
   EVIDENCES,
   THUMBNAILS,
   import.meta.env.DEV,
+  STORIES,
 );

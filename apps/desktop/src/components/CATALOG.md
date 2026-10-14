@@ -8,7 +8,7 @@ and each file's header carries the argument for its own shape.
 
 | Component | What it's for |
 |---|---|
-| `Table` | The app's one table. A `columns` array with a `render` per column and a **required** `empty` sentence. Never a `<table>`, never a grid of divs. |
+| `Table` | The app's one table. A `columns` array with a `render` per column and a **required** `empty` sentence. Never a `<table>`, never a grid of divs. `onSelect` + `selectedKey` make the rows pickable (a `grid`: one tab stop, ↑/↓/Home/End move the pick and the focus, Enter/Space/click pick, `aria-selected`); `sortable` columns with `sort` + `onSort` get a head button and `aria-sort`. Both states are the caller's. |
 | `Button` | `primary` / `secondary` / `ghost`, two sizes, and `disabledReason` — a disabled control is never silent. |
 | `PillGroup` | The one value picker on a rail: a `radiogroup` with one tab stop and arrow keys. A rail that sets a *setting*, not one that switches a view. |
 | `FormField` | A labelled field — label, hint **or** error, `aria-invalid` and `aria-describedby` wired by the wrapper. `TextInput` is the input it wraps; `action` seats a button level with the control. |

@@ -17,6 +17,7 @@
 import type { Tone } from "@/components/StatusDot";
 import {
   clock,
+  edgeRank,
   evidenceCurrent,
   minutes,
   onTheEdge,
@@ -28,6 +29,7 @@ import {
   type TraceTurn,
   type VerdictWord,
 } from "@/lib/playbooks";
+import { CATEGORIES, type CategoryId, type JobId } from "@/lib/playbook-taxonomy";
 
 export interface PlaybookActions {
   /** Put the command on the clipboard. */
@@ -115,6 +117,9 @@ export interface PlaybooksModel {
   };
   /** The shipped set has not arrived yet (it loads lazily): an empty list is then not "none ship". */
   loading: boolean;
+  /** Why the shipped set could not be read, as a sentence; `null` while nothing failed. A failed
+   *  load is not `loading`: the set is no longer on its way, and the view says why instead. */
+  problem: string | null;
   actions: PlaybookActions;
 }
 
@@ -236,6 +241,7 @@ export function selectPlaybooks(
   playbooks: readonly Playbook[],
   actions: PlaybookActions,
   loading = false,
+  problem: string | null = null,
 ): PlaybooksModel {
   const points = layoutPoints(playbooks);
   const items = playbooks.map((p, i): PlaybookView => {
@@ -277,6 +283,7 @@ export function selectPlaybooks(
       costUsd: sumBench(benched, (b) => b.costUsd ?? 0),
     },
     loading,
+    problem,
     actions,
   };
 }
@@ -366,6 +373,95 @@ export function arrange(
         ? r.view.playbook.economics.manualMinutes
         : -r.rank;
   return [...shown].sort((a, b) => key(b) - key(a) || a.rank - b.rank);
+}
+
+// -- the ledger (ADR 0096) -------------------------------------------------------------------------
+//
+// The ledger reads the same `PlaybookView`s the map and the grid do — `PlaybooksModel.items`, in
+// the edge's order — so a row, its preview and its mark are one object and the scene keeps one key.
+
+export type CategoryFilter = CategoryId | "all";
+export type JobFilter = JobId | "all";
+/** The ledger's three orders. `asc` on the edge is best first: rank one at the top. */
+export type LedgerSort = { key: "edge" | "value" | "time"; dir: "asc" | "desc" };
+export interface LedgerFilter {
+  category: CategoryFilter;
+  job: JobFilter;
+}
+
+const jobMatches = (v: PlaybookView, job: JobFilter) => job === "all" || v.playbook.job === job;
+
+/**
+ * The rail's counts, each what a click on it would show under the job filter in force. Pure. Every
+ * area the taxonomy lists has a count, zero included, so the rail never reflows when a job hides
+ * one; `uncategorised` counts the playbooks that name none, which the rail lists only when there
+ * are some — a playbook is never hidden for lacking an area.
+ */
+export function categoryCounts(
+  items: readonly PlaybookView[],
+  job: JobFilter,
+): { all: number; uncategorised: number; byCategory: Record<CategoryId, number> } {
+  const byCategory = Object.fromEntries(CATEGORIES.map((c) => [c.id, 0])) as Record<CategoryId, number>;
+  let all = 0;
+  let uncategorised = 0;
+  for (const v of items) {
+    if (!jobMatches(v, job)) continue;
+    all += 1;
+    const c = v.playbook.category;
+    if (c === null) uncategorised += 1;
+    else byCategory[c] += 1;
+  }
+  return { all, uncategorised, byCategory };
+}
+
+/** The ledger's rows under the rail's area and the toolbar's job, in the order they came. Pure. */
+export function filterLedger(items: readonly PlaybookView[], f: LedgerFilter): PlaybookView[] {
+  return items.filter((v) => (f.category === "all" || v.playbook.category === f.category) && jobMatches(v, f.job));
+}
+
+/** The edge's own order, as `loadPlaybooks` lays it down: hardest-and-most-useful, then by title. */
+const byEdge = (a: PlaybookView, b: PlaybookView): number =>
+  edgeRank(b.playbook) - edgeRank(a.playbook) || a.title.localeCompare(b.title) || a.id.localeCompare(b.id);
+
+/**
+ * The ledger's rows in one of its three orders. Pure, and total: `edge` is the map's order (`asc`
+ * best first, `desc` its exact reverse); `value` is the money a year (`annualValue`, so a month
+ * counts twelve times); `time` is the hours the chore takes by hand, the measure the grid's "time"
+ * uses. On value and time, a tie keeps the edge's order best first whichever way the column runs,
+ * so two playbooks worth the same never swap places when the person flips the arrow.
+ */
+export function sortLedger(items: readonly PlaybookView[], s: LedgerSort): PlaybookView[] {
+  const sign = s.dir === "asc" ? 1 : -1;
+  if (s.key === "edge") return [...items].sort((a, b) => sign * byEdge(a, b));
+  const measure = (v: PlaybookView) =>
+    s.key === "value" ? annualValue(v.playbook) : v.playbook.economics.manualMinutes;
+  return [...items].sort((a, b) => sign * (measure(a) - measure(b)) || byEdge(a, b));
+}
+
+/**
+ * The guided fit: the person's own portals and case, said to Athena after the playbook's command.
+ * `portals` is keyed by a `PlaybookApp.name`; "" means "I use this one", anything else is the tool
+ * the person uses instead. `note` is the case in their words.
+ */
+export interface Fit {
+  portals: Record<string, string>;
+  note: string;
+}
+
+/**
+ * The command a fitted playbook hands Athena. Pure. Unchanged when nothing was fitted: the command
+ * is the playbook's, measured on the bench, and a rewrite of it would be a different chore. What the
+ * person changed is appended as their own case, one line a swapped portal (in the playbook's order)
+ * and their note last, so she reads the playbook first and the person's differences after it.
+ */
+export function fitCommand(p: Playbook, fit: Fit): string {
+  const lines = p.apps.flatMap((a) => {
+    const mine = (fit.portals[a.name] ?? "").trim();
+    return mine ? [`- Instead of ${a.name}, I use ${mine}.`] : [];
+  });
+  const note = fit.note.trim();
+  if (note) lines.push(`- ${note}`);
+  return lines.length ? `${p.command}\n\nMy case:\n${lines.join("\n")}` : p.command;
 }
 
 // -- the layer's abstract --------------------------------------------------------------------------

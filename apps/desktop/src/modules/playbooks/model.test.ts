@@ -2,12 +2,27 @@
  * The replay's pure helpers — README section 14; ADR 0040. A bench run's trace is grouped into
  * portal visits for the rail, each turn coloured by what it did, and the money tallied as it plays.
  */
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 
-import type { TraceTurn } from "@/lib/playbooks";
+import { edgeRank, parsePlaybook, type TraceTurn } from "@/lib/playbooks";
+import { CATEGORIES } from "@/lib/playbook-taxonomy";
 
 import { fixtures } from "./fixtures";
-import { arrange, facetsOf, foundBy, readsOf, turnState, visitsOf } from "./model";
+import {
+  arrange,
+  categoryCounts,
+  facetsOf,
+  filterLedger,
+  fitCommand,
+  foundBy,
+  readsOf,
+  selectPlaybooks,
+  sortLedger,
+  turnState,
+  visitsOf,
+  type PlaybookActions,
+  type PlaybookView,
+} from "./model";
 import { fixtureIds, initialOpenFor } from "./fixtures";
 import { PLAYBOOKS } from "@/lib/playbooks.shipped";
 
@@ -142,4 +157,121 @@ test("every shipped playbook has a fixture that opens its layer, generated from 
     expect(initialOpenFor(`shipped:${p.id}`)).toBe(p.id);
   }
   expect(initialOpenFor("shipped:no-such-playbook")).toBeNull();
+});
+
+// -- the ledger (ADR 0096) -------------------------------------------------------------------------
+
+const NOOP: PlaybookActions = { copy: () => {}, open: () => {}, hand: () => {} };
+
+/** Views through the same reader and selector the shipped set goes through, in the edge's order. */
+function ledger(...raws: Record<string, unknown>[]): PlaybookView[] {
+  const books = raws.map((r) => parsePlaybook({ title: String(r.id), ...r })!);
+  books.sort((a, b) => edgeRank(b) - edgeRank(a) || a.title.localeCompare(b.title));
+  return [...selectPlaybooks(books, NOOP).items];
+}
+
+const ITEMS = ledger(
+  { id: "a", category: "freight", job: "recover", edge: { difficulty: 5, usefulness: 5 }, economics: { value_usd: 100, per: "month", manual_minutes: 60 } },
+  { id: "b", category: "freight", job: "contest", edge: { difficulty: 4, usefulness: 4 }, economics: { value_usd: 1200, per: "year", manual_minutes: 300 } },
+  { id: "c", category: "health", job: "recover", edge: { difficulty: 3, usefulness: 3 }, economics: { value_usd: 5000, per: "year", manual_minutes: 60 } },
+  { id: "d", job: "recover", edge: { difficulty: 2, usefulness: 2 }, economics: { value_usd: 1200, per: "year", manual_minutes: 10 } },
+  { id: "e", category: "nowhere", job: "nothing", edge: { difficulty: 1, usefulness: 1 }, economics: { value_usd: 1, per: "run", manual_minutes: 5 } },
+);
+const ids = (views: readonly PlaybookView[]) => views.map((v) => v.id);
+
+test("the rail counts every area, zero included, plus all and the uncategorised", () => {
+  const all = categoryCounts(ITEMS, "all");
+  expect(all.all).toBe(5);
+  expect(all.uncategorised).toBe(2);
+  expect(all.byCategory.freight).toBe(2);
+  expect(all.byCategory.health).toBe(1);
+  expect(Object.keys(all.byCategory).sort()).toEqual(CATEGORIES.map((c) => c.id).sort());
+  expect(all.byCategory.family).toBe(0);
+  expect(categoryCounts([], "all")).toEqual({ all: 0, uncategorised: 0, byCategory: Object.fromEntries(CATEGORIES.map((c) => [c.id, 0])) });
+});
+
+test("the rail's counts are what a click would show under the job in force", () => {
+  const recover = categoryCounts(ITEMS, "recover");
+  expect(recover.all).toBe(3);
+  expect(recover.byCategory.freight).toBe(1);
+  expect(recover.byCategory.health).toBe(1);
+  expect(recover.uncategorised).toBe(1);
+  for (const c of CATEGORIES) {
+    expect(recover.byCategory[c.id], c.id).toBe(filterLedger(ITEMS, { category: c.id, job: "recover" }).length);
+  }
+  expect(categoryCounts(ITEMS, "comply").all).toBe(0);
+});
+
+test("the ledger filters by area and job, keeping the order it was given", () => {
+  expect(ids(filterLedger(ITEMS, { category: "all", job: "all" }))).toEqual(["a", "b", "c", "d", "e"]);
+  expect(ids(filterLedger(ITEMS, { category: "freight", job: "all" }))).toEqual(["a", "b"]);
+  expect(ids(filterLedger(ITEMS, { category: "all", job: "recover" }))).toEqual(["a", "c", "d"]);
+  expect(ids(filterLedger(ITEMS, { category: "freight", job: "contest" }))).toEqual(["b"]);
+  expect(filterLedger(ITEMS, { category: "family", job: "all" })).toEqual([]);
+});
+
+test("the edge order is the map's, best first ascending and its exact reverse descending", () => {
+  const shuffled = [ITEMS[3], ITEMS[0], ITEMS[4], ITEMS[2], ITEMS[1]];
+  expect(ids(sortLedger(shuffled, { key: "edge", dir: "asc" }))).toEqual(["a", "b", "c", "d", "e"]);
+  expect(ids(sortLedger(shuffled, { key: "edge", dir: "desc" }))).toEqual(["e", "d", "c", "b", "a"]);
+  expect(ids(shuffled)).toEqual(["d", "a", "e", "c", "b"]);
+});
+
+test("value is the money a year, a month counting twelve; a tie keeps the edge's order either way", () => {
+  // a: 1,200 a year from 100 a month, tied with b and d at 1,200.
+  expect(ids(sortLedger(ITEMS, { key: "value", dir: "desc" }))).toEqual(["c", "a", "b", "d", "e"]);
+  expect(ids(sortLedger(ITEMS, { key: "value", dir: "asc" }))).toEqual(["e", "a", "b", "d", "c"]);
+});
+
+test("time is the hours by hand, the grid's measure; a tie keeps the edge's order either way", () => {
+  expect(ids(sortLedger(ITEMS, { key: "time", dir: "desc" }))).toEqual(["b", "a", "c", "d", "e"]);
+  expect(ids(sortLedger(ITEMS, { key: "time", dir: "asc" }))).toEqual(["e", "d", "a", "c", "b"]);
+  const grid = arrange(ITEMS, "all", "time").map((r) => r.view.id);
+  expect(grid).toEqual(ids(sortLedger(ITEMS, { key: "time", dir: "desc" })));
+});
+
+test("sorting is stable over equal playbooks and never touches its input", () => {
+  const twins = ledger(
+    { id: "t2", title: "Twin", edge: { difficulty: 3, usefulness: 3 } },
+    { id: "t1", title: "Twin", edge: { difficulty: 3, usefulness: 3 } },
+  );
+  for (const key of ["edge", "value", "time"] as const) {
+    expect(ids(sortLedger(twins, { key, dir: "asc" })), key).toEqual(["t1", "t2"]);
+  }
+  expect(ids(twins)).toEqual(["t2", "t1"]);
+});
+
+describe("the guided fit", () => {
+  const p = parsePlaybook({
+    id: "f",
+    command: "Find the overcharges.",
+    apps: [{ name: "Carrier portal" }, { name: "Bank" }, { name: "Mail" }],
+  })!;
+
+  test("nothing fitted hands the playbook's own command, unchanged", () => {
+    expect(fitCommand(p, { portals: {}, note: "" })).toBe("Find the overcharges.");
+    expect(fitCommand(p, { portals: { "Carrier portal": "", Bank: "  " }, note: "  \n" })).toBe("Find the overcharges.");
+  });
+
+  test("a swapped portal is a line of the person's case, in the playbook's order", () => {
+    expect(fitCommand(p, { portals: { Mail: "Fastmail", "Carrier portal": "UPS My Choice", Bank: "" }, note: "" })).toBe(
+      "Find the overcharges.\n\nMy case:\n- Instead of Carrier portal, I use UPS My Choice.\n- Instead of Mail, I use Fastmail.",
+    );
+  });
+
+  test("the note is the last line, trimmed; a portal the playbook lacks is not said", () => {
+    expect(fitCommand(p, { portals: { Nowhere: "X" }, note: "  Only 2025 invoices.  " })).toBe(
+      "Find the overcharges.\n\nMy case:\n- Only 2025 invoices.",
+    );
+    expect(fitCommand(p, { portals: { Bank: "Revolut" }, note: "Two accounts." })).toBe(
+      "Find the overcharges.\n\nMy case:\n- Instead of Bank, I use Revolut.\n- Two accounts.",
+    );
+  });
+});
+
+test("the model carries the load's problem, none by default", () => {
+  expect(selectPlaybooks([], NOOP).problem).toBeNull();
+  const failed = selectPlaybooks([], NOOP, false, "the playbooks could not be read: offline");
+  expect(failed.problem).toBe("the playbooks could not be read: offline");
+  expect(failed.loading).toBe(false);
 });

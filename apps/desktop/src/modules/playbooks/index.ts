@@ -37,14 +37,17 @@ const failed = (error: unknown) => console.error(`[playbooks] open: ${String(err
 export function usePlaybooksModel(afterOpen: (url: string) => void): PlaybooksModel {
   // The shipped set is about 2.7 MB of JSON and loads on first ask, not in the first frame.
   const items = usePlaybooks((s) => s.items);
+  // A failed load is said, not spun: the set is no longer on its way, so it is not "loading".
+  const problem = usePlaybooks((s) => s.problem);
   useEffect(() => void usePlaybooks.getState().load(), []);
   return useMemo(
     () =>
       selectPlaybooks(
         items ?? [],
         { ...BASE, open: (url) => void tabsCreate(url).then(() => afterOpen(url)).catch(failed) },
-        items === null,
+        items === null && problem === null,
+        problem,
       ),
-    [items, afterOpen],
+    [items, problem, afterOpen],
   );
 }
