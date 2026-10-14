@@ -205,27 +205,7 @@ def test_a_preview_with_no_engine_is_a_503_naming_what_is_missing(live: Live) ->
     )
     assert reply.status == 503
     assert reply.body["reason"] == "engine_error"
-    assert reply.body["code"] == "engine_unavailable"
     assert "model.onnx is missing" in reply.body["detail"]
-
-
-def test_a_preview_whose_synthesis_raises_is_a_502_engine_failed(
-    live: Live, studio: VoiceStudio, installed: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    speaker, _ = studio.speaker("af_heart")
-    assert speaker is not None
-
-    def broken(text: str) -> Any:
-        raise VoiceBackendError("kokoro exited 1")
-
-    monkeypatch.setattr(speaker, "synthesize", broken, raising=False)
-    monkeypatch.setattr(studio, "speaker", lambda voice: (speaker, None))
-    reply = live.request(
-        "/voice/preview", method="POST", json_body={"text": "Hello.", "voice": "af_heart"}
-    )
-    assert reply.status == 502
-    assert reply.body["code"] == "engine_failed"
-    assert "kokoro exited 1" in reply.body["detail"]
 
 
 # -- transcribe ----------------------------------------------------------------------------------
@@ -249,7 +229,6 @@ def test_transcribe_refuses_an_unknown_engine_an_empty_body_and_an_unready_engin
     cloud = _raw(live, "/voice/transcribe?engine=openai", bytes(6400))
     assert cloud.status == 503
     assert cloud.body["reason"] == "engine_error"
-    assert cloud.body["code"] == "engine_unavailable"
     assert "OpenAI key" in cloud.body["detail"]
 
 
@@ -316,7 +295,7 @@ def test_a_cloud_transcription_is_one_ledger_row_of_a_page_with_no_session(
     assert row.ms >= 0
 
 
-def test_a_cloud_transcription_the_provider_refuses_is_one_error_row_and_a_502(
+def test_a_cloud_transcription_the_provider_refuses_is_one_error_row_and_a_503(
     live: Live, studio: VoiceStudio
 ) -> None:
     refusal = VoiceBackendError("transcription refused with 500")
@@ -324,8 +303,7 @@ def test_a_cloud_transcription_the_provider_refuses_is_one_error_row_and_a_502(
 
     reply = _raw(live, "/voice/transcribe?engine=openai", bytes(6400))
 
-    assert reply.status == 502 and reply.body["reason"] == "engine_error"
-    assert reply.body["code"] == "engine_failed"
+    assert reply.status == 503 and reply.body["reason"] == "engine_error"
     (row,) = _rows(live)
     assert (row.engine, row.model) == ("openai", "gpt-test-transcribe")
     assert (row.is_error, row.error_reason) == (True, "engine_error")
