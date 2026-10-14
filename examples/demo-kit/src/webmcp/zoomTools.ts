@@ -155,7 +155,7 @@ export function useZoomTools(spec: ZoomToolsSpec): void {
     description: text.openItem,
     parameters: [
       { name: "id", type: "string", required: true, description: `The ${itemNoun}'s id` },
-      { name: "group", type: "string", description: `Optional ${groupNoun} id to look in` },
+      { name: "group", type: "string", required: false, description: `Optional ${groupNoun} id to look in` },
     ],
     reversible: true,
     sideEffects: "none",
