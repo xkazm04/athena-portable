@@ -320,25 +320,33 @@ function parseBench(raw: unknown): Bench | null {
       .filter(isRaw)
       .map((m) => ({ action: str(m.action), key: str(m.key), valueUsd: numOrNull(m.value_usd) })),
     closingWords: str(raw.closing_words),
-    trace: list(raw.trace)
-      .filter(isRaw)
-      .map((t) => ({
-        portal: str(t.portal),
-        user: str(t.user),
-        continued: t.continued === true,
-        said: str(t.said),
-        saidChars: num(t.said_chars, str(t.said).length),
-        reads: strings(t.reads),
-        cards: list(t.cards)
-          .filter(isRaw)
-          .map((c) => ({
-            action: str(c.action),
-            key: str(c.key),
-            outcome: outcome(c.outcome),
-            valueUsd: numOrNull(c.value_usd),
-          })),
-      })),
+    trace: parseTrace(raw.trace),
   };
+}
+
+/**
+ * A run's turns in bench.json's trace shape — the recorded run's, and the Adopt studio's tailored
+ * rehearsal's, which streams the same shape (ADR 0097). Anything that is not a turn is dropped.
+ */
+export function parseTrace(raw: unknown): TraceTurn[] {
+  return list(raw)
+    .filter(isRaw)
+    .map((t) => ({
+      portal: str(t.portal),
+      user: str(t.user),
+      continued: t.continued === true,
+      said: str(t.said),
+      saidChars: num(t.said_chars, str(t.said).length),
+      reads: strings(t.reads),
+      cards: list(t.cards)
+        .filter(isRaw)
+        .map((c) => ({
+          action: str(c.action),
+          key: str(c.key),
+          outcome: outcome(c.outcome),
+          valueUsd: numOrNull(c.value_usd),
+        })),
+    }));
 }
 
 /** A storyboard still's repo-relative path: two digits under its playbook's own `story/`. */

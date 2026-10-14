@@ -3,7 +3,8 @@
  *
  * A pure function of `{ model, path, go }`: the place says which level is drawn. The root is the
  * catalogue (`catalogue.tsx`), a chore is its topic page (`topic.tsx`), a turn of its run is the
- * replay (`replay.tsx`). The catalogue's filters, order and last pick live here, so coming back
+ * replay (`replay.tsx`), and its "Make it yours" is the Adopt studio (`adopt/studio.tsx`, ADR 0097),
+ * the one level that talks to the daemon, through the deps it is handed. The catalogue's filters, order and last pick live here, so coming back
  * from a topic finds them as they were. A load that failed, a set on its way, an empty build, an id
  * this build does not ship, a chore with no recorded run, a turn that is not in the run: each is
  * said in words with the way back, never a crash and never a blank. Nothing here fetches or
@@ -17,6 +18,8 @@ import ProblemNote from "@/components/ProblemNote";
 import type { Path } from "@/depth/model";
 import type { PlaybooksModel } from "@/modules/playbooks/model";
 
+import type { AdoptDeps } from "./adopt/deps";
+import Studio from "./adopt/studio";
 import Catalogue, { type CatalogueState } from "./catalogue";
 import "./chores.css";
 import { EDGE_ORDER, choreAt, chorePath, runPath, turnAt } from "./model";
@@ -27,9 +30,11 @@ export interface ChoresViewProps {
   model: PlaybooksModel;
   path: Path;
   go: (to: Path) => void;
+  /** The Adopt studio's client and dictation; absent, the studio says it needs the daemon. */
+  adopt?: AdoptDeps;
 }
 
-export default function ChoresView({ model, path, go }: ChoresViewProps) {
+export default function ChoresView({ model, path, go, adopt }: ChoresViewProps) {
   const [state, setState] = useState<CatalogueState>({ category: "all", job: "all", sort: EDGE_ORDER, last: null });
   const set = useCallback((s: Partial<CatalogueState>) => setState((old) => ({ ...old, ...s })), []);
   const back = useCallback(() => go({ root: "chores" }), [go]);
@@ -88,6 +93,10 @@ export default function ChoresView({ model, path, go }: ChoresViewProps) {
         />
       </Centre>
     );
+  }
+
+  if (path.sub?.kind === "adopt") {
+    return <Studio key={view.id} view={view} model={model} deps={adopt} back={() => go(chorePath(view.id))} />;
   }
 
   if (path.sub?.kind === "run") {

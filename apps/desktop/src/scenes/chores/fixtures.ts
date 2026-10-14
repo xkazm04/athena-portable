@@ -19,7 +19,8 @@ import {
 } from "@/modules/playbooks/fixtures";
 import type { FixtureId } from "@/modules/types";
 
-import { chorePath, runPath } from "./model";
+import { ADOPT_FIXTURES, ADOPT_PLAYBOOK } from "./adopt/fixtures";
+import { adoptPath, chorePath, runPath } from "./model";
 
 /** The module's fixtures minus the one per shipped playbook, which the evidence capture films. */
 const IDS: readonly FixtureId[] = [
@@ -85,12 +86,15 @@ function ledgerFixture(): PlaybooksModel {
 export const fixtures: Readonly<Record<string, PlaybooksModel>> = {
   ...Object.fromEntries(IDS.map((id) => [id, moduleFixtures[id]!])),
   ledger: ledgerFixture(),
+  // The Adopt studio plays a scripted session over a shipped playbook (ADR 0097).
+  ...Object.fromEntries(ADOPT_FIXTURES.map((id) => [id, moduleFixtures.shipped!])),
 };
 
-export const fixtureIds: readonly FixtureId[] = [...IDS, "ledger"];
+export const fixtureIds: readonly FixtureId[] = [...IDS, "ledger", ...ADOPT_FIXTURES];
 
-/** Where a fixture is meant to be looked at: the catalogue, a chore's topic page, or a turn of its replay. */
+/** Where a fixture is meant to be looked at: the catalogue, a chore's topic page, a turn of its replay, or its studio. */
 export function pathFor(fixture: FixtureId): Path {
+  if ((ADOPT_FIXTURES as readonly string[]).includes(fixture)) return adoptPath(ADOPT_PLAYBOOK);
   const id = initialOpenFor(fixture);
   if (id === null) return { root: "chores" };
   return initialFacetFor(fixture) === "run" ? runPath(id, initialTurnFor(fixture)) : chorePath(id);

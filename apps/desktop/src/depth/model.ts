@@ -41,7 +41,7 @@ export const ROOT_MODULE: Readonly<Record<Root, string>> = {
   mind: "setup",
 };
 
-export type SubKind = "page" | "tool" | "run" | "allowlist";
+export type SubKind = "page" | "tool" | "run" | "adopt" | "allowlist";
 
 export interface Sub {
   kind: SubKind;
@@ -64,7 +64,7 @@ const GRAMMAR: Readonly<
 > = {
   // A boolean says whether the sub-level takes an argument.
   apps: { items: "open", subs: { page: false, tool: true } },
-  chores: { items: "open", subs: { run: true } },
+  chores: { items: "open", subs: { run: true, adopt: false } },
   accounts: { items: "open", subs: { allowlist: false } },
   voice: { items: ["studio", "settings"], subs: {} },
   mind: { items: ["engine", "brain", "look", "data", "mic"], subs: {} },

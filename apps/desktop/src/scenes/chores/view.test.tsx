@@ -197,9 +197,9 @@ describe("a chore's topic page", () => {
     expect(none).toContain("No screens captured for this run yet.");
   });
 
-  it("offers the fit, the replay where there is a run, and the command", () => {
+  it("offers the studio, the replay where there is a run, and the command", () => {
     expect(t).toContain(">Make it yours</h2>");
-    expect(t).toContain(">Fit it to me</button>");
+    expect(t).toContain(">Talk it through with her</button>");
     expect(t).toContain(">Watch the run turn by turn</button>");
     expect(t).toContain(">Copy the command</button>");
     expect(html("ledger", chorePath("chargeback-evidence"))).not.toContain("Watch the run turn by turn");

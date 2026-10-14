@@ -13,7 +13,7 @@
  * therefore kept in a tiny store beside it, which goes stale on its own if the person leaves.
  * No timer here asks for animation frames.
  */
-import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import Button from "@/components/Button";
 import StatusDot from "@/components/StatusDot";
@@ -22,7 +22,6 @@ import { usd } from "@/lib/playbooks";
 import {
   OUTCOME_WORDS,
   foundBy,
-  readsOf,
   turnState,
   visitsOf,
   type PlaybookView,
@@ -30,6 +29,7 @@ import {
 } from "@/modules/playbooks/model";
 
 import { runPath } from "./model";
+import TurnView from "./turn";
 
 /** How long the replay holds a turn before the next, when it plays on its own. */
 export const REPLAY_STEP_MS = 2800;
@@ -142,7 +142,6 @@ export default function Replay({
   if (t === undefined) return null;
   const visits = visitsOf(trace);
   const found = foundBy(trace, at);
-  const reads = readsOf(t);
   const play = () => {
     if (at >= last) {
       setPlaying(view.id);
@@ -232,57 +231,7 @@ export default function Replay({
       </div>
 
       <div className="ch-run__stage">
-        <article className="ch-turn" key={at} aria-live="polite" aria-label={`Turn ${at + 1} of ${trace.length}`}>
-          {t.user ? (
-            <p className="ch-turn__line ch-body">
-              <span className="ch-turn__who ch-label">You</span>
-              {t.user}
-            </p>
-          ) : t.continued ? (
-            <p className="ch-turn__line ch-note">
-              <span className="ch-turn__who ch-label">Page</span>
-              The tools she called answered, and the run loop handed her their results.
-            </p>
-          ) : null}
-          {t.said ? (
-            <div className="ch-turn__line ch-turn__her ch-body">
-              <span className="ch-turn__who ch-label">Athena</span>
-              <div className="ch-turn__words">
-                <Prose text={t.said} />
-                {t.saidChars > t.said.length ? (
-                  <span className="ch-note">{`… (showing ${t.said.length} of ${t.saidChars} characters)`}</span>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-          {reads.length ? (
-            <p className="ch-turn__line ch-turn__reads">
-              <span className="ch-turn__who ch-label">Read</span>
-              {reads.map((r) => (
-                <span key={r.name} className="ch-chip">
-                  {r.times > 1 ? `${r.name} ×${r.times}` : r.name}
-                </span>
-              ))}
-            </p>
-          ) : null}
-          {t.cards.length ? (
-            <ul className="ch-cards ch-cards--turn" aria-label="Cards filed this turn">
-              {t.cards.map((c, i) => {
-                const o = OUTCOME_WORDS[c.outcome];
-                return (
-                  <li key={`${c.key}-${i}`} className="ch-card" data-outcome={c.outcome}>
-                    <StatusDot tone={o.tone} />
-                    <span className="ch-code">{c.key || c.action}</span>
-                    <span className="ch-note">{`${c.action.replace(/_/g, " ")} · ${o.word}`}</span>
-                    <span className="ch-card__v ch-data">{c.valueUsd ? usd(c.valueUsd) : ""}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className="ch-note">No card was filed on this turn.</p>
-          )}
-        </article>
+        <TurnView key={at} turn={t} at={at} total={trace.length} />
 
         <section className="ch-ledger" aria-label="Every card of this run">
           <h2 className="ch-title">The cards, turn by turn</h2>
@@ -314,47 +263,5 @@ export default function Replay({
       </div>
 
     </div>
-  );
-}
-
-/**
- * Her words, with the two marks a model's prose leans on — `**bold**` and `- ` bullets — read as
- * what they mean. Built as nodes, never as HTML: the words are model output.
- */
-function Prose({ text }: { text: string }) {
-  const out: ReactNode[] = [];
-  let bullets: string[] = [];
-  const flush = () => {
-    if (bullets.length) {
-      out.push(
-        <ul key={`ul-${out.length}`} className="ch-prose-list">
-          {bullets.map((b, i) => (
-            <li key={i}>{inline(b)}</li>
-          ))}
-        </ul>,
-      );
-      bullets = [];
-    }
-  };
-  for (const line of text.split("\n")) {
-    const t = line.trim();
-    if (/^[-*] /.test(t)) {
-      bullets.push(t.slice(2));
-      continue;
-    }
-    flush();
-    if (t) out.push(<p key={`p-${out.length}`}>{inline(t)}</p>);
-  }
-  flush();
-  return <>{out}</>;
-}
-
-function inline(text: string): ReactNode[] {
-  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
-    part.startsWith("**") && part.endsWith("**") && part.length > 4 ? (
-      <strong key={i}>{part.slice(2, -2)}</strong>
-    ) : (
-      part
-    ),
   );
 }

@@ -2,7 +2,7 @@
  * The replay's pure helpers — README section 14; ADR 0040. A bench run's trace is grouped into
  * portal visits for the rail, each turn coloured by what it did, and the money tallied as it plays.
  */
-import { describe, expect, test } from "vitest";
+import { expect, test } from "vitest";
 
 import { edgeRank, parsePlaybook, type TraceTurn } from "@/lib/playbooks";
 import { CATEGORIES } from "@/lib/playbook-taxonomy";
@@ -12,7 +12,6 @@ import {
   arrange,
   categoryCounts,
   filterLedger,
-  fitCommand,
   foundBy,
   readsOf,
   selectPlaybooks,
@@ -206,34 +205,6 @@ test("sorting is stable over equal playbooks and never touches its input", () =>
     expect(ids(sortLedger(twins, { key, dir: "asc" })), key).toEqual(["t1", "t2"]);
   }
   expect(ids(twins)).toEqual(["t2", "t1"]);
-});
-
-describe("the guided fit", () => {
-  const p = parsePlaybook({
-    id: "f",
-    command: "Find the overcharges.",
-    apps: [{ name: "Carrier portal" }, { name: "Bank" }, { name: "Mail" }],
-  })!;
-
-  test("nothing fitted hands the playbook's own command, unchanged", () => {
-    expect(fitCommand(p, { portals: {}, note: "" })).toBe("Find the overcharges.");
-    expect(fitCommand(p, { portals: { "Carrier portal": "", Bank: "  " }, note: "  \n" })).toBe("Find the overcharges.");
-  });
-
-  test("a swapped portal is a line of the person's case, in the playbook's order", () => {
-    expect(fitCommand(p, { portals: { Mail: "Fastmail", "Carrier portal": "UPS My Choice", Bank: "" }, note: "" })).toBe(
-      "Find the overcharges.\n\nMy case:\n- Instead of Carrier portal, I use UPS My Choice.\n- Instead of Mail, I use Fastmail.",
-    );
-  });
-
-  test("the note is the last line, trimmed; a portal the playbook lacks is not said", () => {
-    expect(fitCommand(p, { portals: { Nowhere: "X" }, note: "  Only 2025 invoices.  " })).toBe(
-      "Find the overcharges.\n\nMy case:\n- Only 2025 invoices.",
-    );
-    expect(fitCommand(p, { portals: { Bank: "Revolut" }, note: "Two accounts." })).toBe(
-      "Find the overcharges.\n\nMy case:\n- Instead of Bank, I use Revolut.\n- Two accounts.",
-    );
-  });
 });
 
 test("the model carries the load's problem, none by default", () => {

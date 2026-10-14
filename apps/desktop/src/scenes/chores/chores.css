@@ -5,8 +5,8 @@
  *
  * Two families. `pa-` is the catalogue and a chore's topic page (catalogue.tsx, topic.tsx,
  * flow.tsx): each page is its own scroll container and a size container, laid out by the depth
- * frame's width. `ch-` is the replay of a run (replay.tsx), the fit (fit.tsx) and a place that is
- * not there; `.rich` is the brief and `.lbx` the lightbox. */
+ * frame's width. `ch-` is the replay of a run (replay.tsx, turn.tsx) and a place that is not there;
+ * the Adopt studio has its own sheet (adopt/adopt.css); `.rich` is the brief and `.lbx` the lightbox. */
 
 /* ---- the catalogue and the topic page ----------------------------------------------------- */
 
@@ -1067,7 +1067,7 @@
   outline-offset: 2px;
 }
 
-/* ---- the replay, the fit and a place that is not there ------------------------------------ */
+/* ---- the replay and a place that is not there ------------------------------------ */
 
 .chores {
   height: 100%;
@@ -1173,7 +1173,7 @@ h4.ch-title {
   padding-left: 20px;
 }
 
-/* ---- shared by the replay and the fit ------------------------------------------------------ */
+/* ---- shared by the replay and the studio ------------------------------------------------------ */
 
 .ch-legend {
   display: flex;
@@ -1183,11 +1183,6 @@ h4.ch-title {
   padding-top: 0;
   font-size: 0.8125rem;
   color: var(--muted-foreground);
-}
-.ch-pane__title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
 }
 .ch-cards {
   list-style: none;
@@ -1205,63 +1200,6 @@ h4.ch-title {
 }
 .ch-card__v {
   text-align: right;
-}
-.ch-adopt__row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-}
-
-/* the fit: one row a portal, the case, the command as it will be read */
-.ch-fit {
-  display: grid;
-  gap: var(--density-gap);
-  padding-top: var(--density-pad-sm);
-  border-top: 1px solid var(--line);
-}
-.ch-fit__portals {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
-}
-.ch-fit__portal {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 6px 12px;
-}
-.ch-fit__who {
-  display: grid;
-}
-.ch-fit__choice {
-  display: flex;
-  gap: 4px;
-}
-.ch-fit__mine {
-  grid-column: 1 / -1;
-}
-.ch-fit__note {
-  resize: vertical;
-}
-.ch-fit__said {
-  display: grid;
-  gap: 4px;
-}
-.ch-fit__command {
-  margin: 0;
-  max-height: 12rem;
-  overflow: auto;
-  padding: 8px 10px;
-  border-radius: 6px;
-  background: var(--recessed);
-  color: var(--muted-foreground);
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
 }
 
 /* ---- the replay -------------------------------------------------------------------------- */

@@ -19,8 +19,8 @@ function block(head: string): string {
   return css.slice(at, css.indexOf("\n}\n", at));
 }
 
-/** The replay's, the fit's and the not-found's part of the sheet: the `ch-` family. */
-const chPart = css.slice(css.indexOf("/* ---- the replay, the fit and a place that is not there"));
+/** The replay's and the not-found's part of the sheet: the `ch-` family. */
+const chPart = css.slice(css.indexOf("/* ---- the replay and a place that is not there"));
 
 test("small text is never set in the accent, which is 3.2:1 on the light theme; the accent's ink is", () => {
   expect(css).not.toMatch(/(^|[\s;{])color:\s*var\(--accent\)/);
@@ -103,11 +103,10 @@ test("a turn dot answers the pointer: it lifts to full strength and takes the wa
 test("the replay's part keeps its gaps and pads on the density tokens, not 14px one-offs", () => {
   expect(chPart).not.toMatch(/(padding|gap|margin)[a-z-]*:[^;]*\b14px/);
   expect(rule(".ch-gone", chPart)).toMatch(/gap:\s*var\(--density-gap\)/);
-  expect(rule(".ch-fit", chPart)).toMatch(/padding-top:\s*var\(--density-pad-sm\)/);
 });
 
 test("the sheet holds no rule for the field, the map, the preview or the old chore it replaced", () => {
-  for (const gone of ["ch-field", "ch-led", "ch-map", "ch-mark", "ch-pane", "ch-story", "ch-facets", "ch-panel", "proto-host"]) {
+  for (const gone of ["ch-fit", "ch-field", "ch-led", "ch-map", "ch-mark", "ch-pane", "ch-story", "ch-facets", "ch-panel", "proto-host"]) {
     expect(css, gone).not.toMatch(new RegExp(`\\.${gone}(?![a-z_-])`));
   }
 });

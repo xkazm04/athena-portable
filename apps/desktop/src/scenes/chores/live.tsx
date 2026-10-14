@@ -18,7 +18,7 @@ import { pagePath } from "@/scenes/apps/model";
 import type { LiveScene, SceneProps } from "@/scenes/types";
 import { usePlaybooks } from "@/stores/playbooks";
 
-const ChoresView = lazy(() => import("./view"));
+const ChoresView = lazy(() => import("./live-view"));
 
 function Live({ path, go }: SceneProps) {
   // The tab exists by the time this runs; the Apps depth names the page it opened by its origin.
@@ -34,11 +34,12 @@ function Live({ path, go }: SceneProps) {
   return createElement(Suspense, { fallback: waiting }, createElement(ChoresView, { model, path, go }));
 }
 
-/** Crumb names: a chore is called by its title, a turn by its number. */
+/** Crumb names: a chore is called by its title, a turn by its number, its studio "Make it yours". */
 export function labeller(titles: ReadonlyMap<string, string>): Labeller {
   return (path: Path) => {
     if (path.root !== "chores" || path.item === undefined) return undefined;
     if (path.sub?.kind === "run") return `Turn ${path.sub.arg ?? ""}`.trim();
+    if (path.sub?.kind === "adopt") return "Make it yours";
     return titles.get(path.item);
   };
 }

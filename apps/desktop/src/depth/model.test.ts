@@ -32,6 +32,7 @@ function everyPath(): Path[] {
     out.push({ root: "apps", item: id, sub: { kind: "tool", arg: "x/y z" } });
     out.push({ root: "chores", item: id });
     out.push({ root: "chores", item: id, sub: { kind: "run", arg: "2" } });
+    out.push({ root: "chores", item: id, sub: { kind: "adopt" } });
     out.push({ root: "accounts", item: id });
     out.push({ root: "accounts", item: id, sub: { kind: "allowlist" } });
   }
@@ -52,6 +53,8 @@ describe("the grammar", () => {
       { root: "voice", item: "nope" },
       { root: "mind", item: "engine", sub: { kind: "tool", arg: "x" } },
       { root: "apps", item: "a", sub: { kind: "run", arg: "1" } },
+      { root: "apps", item: "a", sub: { kind: "adopt" } }, // the studio is a chore's
+      { root: "chores", item: "a", sub: { kind: "adopt", arg: "x" } }, // the studio takes none
       { root: "apps", item: "a", sub: { kind: "tool" } }, // a tool needs a name
       { root: "apps", item: "a", sub: { kind: "page", arg: "x" } }, // a page takes none
       { root: "apps", sub: { kind: "page" } }, // a sub-level needs an item
@@ -98,6 +101,14 @@ describe("the hash", () => {
     expect(parseHash("#/nowhere")).toEqual(SURFACE);
     expect(parseHash("#/apps/%E0%A4%A")).toEqual(SURFACE);
     expect(parseHash("#/apps/a/tool")).toEqual(SURFACE);
+  });
+
+  it("reads a chore's Adopt studio from its link", () => {
+    expect(parseHash("#/chores/travel-credit-refunds/adopt")).toEqual({
+      root: "chores",
+      item: "travel-credit-refunds",
+      sub: { kind: "adopt" },
+    });
   });
 
   it("reads a deep link straight to the depth it names", () => {

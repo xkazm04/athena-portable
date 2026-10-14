@@ -12,8 +12,7 @@ import type { Path } from "@/depth/model";
 import { categoryLabel, jobLabel } from "@/lib/playbook-taxonomy";
 import type { PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
 
-import Fit from "./fit";
-import { beforeAfterOf, blueprintOf, lowerFirst, runPath, valueCell } from "./model";
+import { adoptPath, beforeAfterOf, blueprintOf, lowerFirst, runPath, valueCell } from "./model";
 import Lightbox from "./lightbox";
 import Rich from "./rich";
 import { stillsOf } from "./facts";
@@ -34,7 +33,6 @@ export default function Topic({
   const p = view.playbook;
   const stills = stillsOf(view);
   const [at, setAt] = useState<number | null>(null);
-  const [fitting, setFitting] = useState(false);
   const [said, setSaid] = useState("");
   const band = beforeAfterOf(view);
   const guard = blueprintOf(view).guard;
@@ -161,39 +159,27 @@ export default function Topic({
             <h2 id="pa-adopt-h" className="pa-h2">
               Make it yours
             </h2>
-            <p className="pa-muted">{`Worth ${view.value} ${view.per} for ${p.persona ? lowerFirst(p.persona.replace(/^(A|An|The) /, (w) => w.toLowerCase())) : "the playbook's own case"}. Fit the portals to yours, then hand it to Athena.`}</p>
+            <p className="pa-muted">{`Worth ${view.value} ${view.per} for ${p.persona ? lowerFirst(p.persona.replace(/^(A|An|The) /, (w) => w.toLowerCase())) : "the playbook's own case"}. Tell her what differs in yours; she looks up the rest and shows you the run before anything is real.`}</p>
           </div>
-          {fitting ? (
-            <Fit
-              view={view}
-              onHand={(command) => {
-                model.actions.hand(command, { id: p.id, title: view.title });
-                setFitting(false);
-                setSaid("Handed to her, fitted. It waits in her composer until you send it.");
+          <div className="pa-adopt__row">
+            <Button variant="primary" onClick={() => go(adoptPath(p.id))}>
+              Talk it through with her
+            </Button>
+            {trace.length ? (
+              <Button variant="secondary" onClick={() => go(runPath(p.id, 0))}>
+                Watch the run turn by turn
+              </Button>
+            ) : null}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                model.actions.copy(p.command);
+                setSaid("Sent the command to the clipboard.");
               }}
-              onCancel={() => setFitting(false)}
-            />
-          ) : (
-            <div className="pa-adopt__row">
-              <Button variant="primary" onClick={() => setFitting(true)}>
-                Fit it to me
-              </Button>
-              {trace.length ? (
-                <Button variant="secondary" onClick={() => go(runPath(p.id, 0))}>
-                  Watch the run turn by turn
-                </Button>
-              ) : null}
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  model.actions.copy(p.command);
-                  setSaid("Sent the command to the clipboard.");
-                }}
-              >
-                Copy the command
-              </Button>
-            </div>
-          )}
+            >
+              Copy the command
+            </Button>
+          </div>
           <p className="pa-muted pa-said" role="status">
             {said}
           </p>

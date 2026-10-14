@@ -6,8 +6,8 @@
  * into a DOM with the module's actions as spies and `go` as a spy, and a person's gestures are
  * played: the area tabs, the job chips and the order switch re-arrange the catalogue and the
  * filters survive a trip to a topic and back; a press on a row opens its topic while an arrow only
- * walks; on the topic page a still opens the lightbox, Escape closes it and then goes back, the fit
- * hands the fitted command, Copy reaches the module's own action; the replay steps by button, by
+ * walks; on the topic page a still opens the lightbox, Escape closes it and then goes back, "Talk it
+ * through with her" opens the Adopt studio, Copy reaches the module's own action; the replay steps by button, by
  * dot, by arrow and by itself, and stops when told.
  */
 import { act } from "react";
@@ -15,10 +15,10 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
 import type { Path } from "@/depth/model";
-import { fitCommand, type PlaybookActions, type PlaybooksModel } from "@/modules/playbooks/model";
+import { type PlaybookActions, type PlaybooksModel } from "@/modules/playbooks/model";
 
 import { fixtures } from "./fixtures";
-import { chorePath, runPath } from "./model";
+import { adoptPath, chorePath, runPath } from "./model";
 import { REPLAY_STEP_MS, stopPlaying } from "./replay";
 import ChoresView from "./view";
 
@@ -58,13 +58,6 @@ const click = (el: Element | null) => {
   });
 };
 const button = (text: string) => qa("button").find((b) => b.textContent?.trim() === text) ?? null;
-/** Type into a controlled field: React listens for `input` and reads the value the native setter set. */
-const type = (el: HTMLInputElement | HTMLTextAreaElement, value: string) =>
-  act(() => {
-    const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-    Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(el, value);
-    el.dispatchEvent(new Event("input", { bubbles: true }));
-  });
 const key = (k: string, target: EventTarget = document.body) =>
   act(() => {
     target.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
@@ -236,33 +229,10 @@ describe("a chore's topic page", () => {
     expect(q(".lbx")).toBeNull();
   });
 
-  it("fits the playbook to the person's portals and case, shows the command live, and hands that", () => {
-    const a = actions();
-    show(withActions(fixtures.ledger!, a), at);
-    const p = refunds();
-    click(button("Fit it to me"));
-    expect(button("Copy the command")).toBeNull();
-    expect(q(".ch-fit__command")!.textContent).toBe(p.command);
-    click(qa("button").filter((b) => b.textContent === "Mine is…")[0]!);
-    type(q<HTMLInputElement>(".ch-fit__mine input")!, "ShipCo portal");
-    type(q<HTMLTextAreaElement>(".ch-fit__note")!, "We ship from two warehouses.");
-    const fitted = fitCommand(p, { portals: { [p.apps[0]!.name]: "ShipCo portal" }, note: "We ship from two warehouses." });
-    expect(fitted).not.toBe(p.command);
-    expect(q(".ch-fit__command")!.textContent).toBe(fitted);
-    click(button("Hand it to Athena"));
-    expect(a.hand).toHaveBeenCalledWith(fitted, { id: p.id, title: p.title });
-    expect(q(".ch-fit")).toBeNull();
-    expect(q(".pa-said")!.textContent).toContain("It waits in her composer until you send it.");
-  });
-
-  it("closes the fit on Cancel without handing anything", () => {
-    const a = actions();
-    show(withActions(fixtures.ledger!, a), at);
-    click(button("Fit it to me"));
-    click(button("Cancel"));
-    expect(q(".ch-fit")).toBeNull();
-    expect(a.hand).not.toHaveBeenCalled();
-    expect(button("Fit it to me")).not.toBeNull();
+  it("opens the Adopt studio from \"Make it yours\"", () => {
+    show(fixtures.ledger!, at);
+    click(button("Talk it through with her"));
+    expect(go).toHaveBeenLastCalledWith(adoptPath("carrier-refunds"));
   });
 
   it("copies the playbook's own command, and goes down to the replay at its first turn", () => {

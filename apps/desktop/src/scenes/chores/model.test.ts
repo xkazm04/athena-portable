@@ -7,6 +7,7 @@ import { compact, gateSlots, stillsOf, timeCell } from "./facts";
 import { fixtureIds, fixtures, pathFor } from "./fixtures";
 import { labeller } from "./index";
 import {
+  adoptPath,
   beforeAfterOf,
   blueprintOf,
   choreAt,
@@ -103,9 +104,10 @@ describe("the catalogue's and the topic's words", () => {
 
 describe("the crumbs", () => {
   const names = labeller(new Map([["carrier-refunds", "Late-parcel refunds"]]));
-  it("names a chore by its title and a turn by its number, and nothing else", () => {
+  it("names a chore by its title, a turn by its number, its studio by its door, and nothing else", () => {
     expect(names(chorePath("carrier-refunds"))).toBe("Late-parcel refunds");
     expect(names(runPath("carrier-refunds", 2))).toBe("Turn 3");
+    expect(names(adoptPath("carrier-refunds"))).toBe("Make it yours");
     expect(names({ root: "chores" })).toBeUndefined();
     expect(names(chorePath("unknown"))).toBeUndefined();
     expect(names({ root: "apps", item: "carrier-refunds" })).toBeUndefined();

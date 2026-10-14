@@ -438,32 +438,6 @@ export function sortLedger(items: readonly PlaybookView[], s: LedgerSort): Playb
   return [...items].sort((a, b) => sign * (measure(a) - measure(b)) || byEdge(a, b));
 }
 
-/**
- * The guided fit: the person's own portals and case, said to Athena after the playbook's command.
- * `portals` is keyed by a `PlaybookApp.name`; "" means "I use this one", anything else is the tool
- * the person uses instead. `note` is the case in their words.
- */
-export interface Fit {
-  portals: Record<string, string>;
-  note: string;
-}
-
-/**
- * The command a fitted playbook hands Athena. Pure. Unchanged when nothing was fitted: the command
- * is the playbook's, measured on the bench, and a rewrite of it would be a different chore. What the
- * person changed is appended as their own case, one line a swapped portal (in the playbook's order)
- * and their note last, so she reads the playbook first and the person's differences after it.
- */
-export function fitCommand(p: Playbook, fit: Fit): string {
-  const lines = p.apps.flatMap((a) => {
-    const mine = (fit.portals[a.name] ?? "").trim();
-    return mine ? [`- Instead of ${a.name}, I use ${mine}.`] : [];
-  });
-  const note = fit.note.trim();
-  if (note) lines.push(`- ${note}`);
-  return lines.length ? `${p.command}\n\nMy case:\n${lines.join("\n")}` : p.command;
-}
-
 // -- the fixtures' places --------------------------------------------------------------------------
 
 /** One part of a playbook a fixture opens on (ADR 0053); the Chores depth reads `run` as the replay. */

@@ -1,0 +1,236 @@
+/**
+ * The Adopt studio's session, held for as long as the studio is open — ADR 0097.
+ *
+ * On mount: `POST /adopt` for the playbook, then follow its events from `after=0`. A stream that
+ * drops is followed again from the last `seq` drawn, after 1, 2, then 4 s, five times at most;
+ * then the studio says so and offers Retry. An event that arrives resets the count. On unmount
+ * the session is closed (`DELETE`, fire and forget) — a session whose start was still in flight is
+ * closed the moment its id arrives, so a quick leave never strands one on the daemon (which keeps
+ * at most three).
+ *
+ * The person's acts are optimistic: an answered card collapses at once and reopens with the
+ * daemon's reason if the send is refused.
+ */
+import { useCallback, useEffect, useReducer, useRef } from "react";
+
+import { ApiError } from "@/lib/api";
+import type { Answer, AnswerVia } from "@/lib/adopt";
+import { documentRefusal, toBase64 } from "@/lib/adopt-client";
+
+import { realWait, type AdoptDeps } from "./deps";
+import { INITIAL, SESSION_CLOSED, reduce, type StudioState } from "./state";
+
+/** The pause before each reconnect, by attempt; the last one repeats. */
+export const BACKOFF_MS: readonly number[] = [1000, 2000, 4000];
+export const MAX_TRIES = 5;
+
+const why = (error: unknown) =>
+  error instanceof ApiError
+    ? {
+        reason: error.reason,
+        detail: error.message === error.reason ? "" : error.message,
+      }
+    : {
+        reason: "unknown",
+        detail: error instanceof Error ? error.message : String(error),
+      };
+
+export interface StudioActions {
+  answer: (cardKey: string, answers: Answer[], via: AnswerVia) => void;
+  say: (text: string, via: AnswerVia) => void;
+  drop: (file: File) => void;
+  enough: () => void;
+  approve: (rev: number) => void;
+  /** Follow the stream again after it was given up, or start again after a failed start. */
+  retry: () => void;
+}
+
+export function useAdoptSession(
+  deps: AdoptDeps | undefined,
+  playbookId: string,
+): [StudioState, StudioActions] {
+  const [state, dispatch] = useReducer(reduce, INITIAL);
+  const sid = useRef("");
+  const seq = useRef(0);
+  const life = useRef<AbortController | null>(null);
+  const counter = useRef(0);
+  const nextKey = () => `l${(counter.current += 1)}`;
+  const [epoch, bump] = useReducer((n: number) => n + 1, 0);
+
+  const follow = useCallback(
+    async (id: string, signal: AbortSignal) => {
+      if (!deps) return;
+      const wait = deps.wait ?? realWait;
+      let tries = 0;
+      for (;;) {
+        let failure: unknown = null;
+        try {
+          for await (const e of deps.client.events(id, seq.current, signal)) {
+            tries = 0;
+            if (e.seq > seq.current) seq.current = e.seq;
+            dispatch({ t: "event", e });
+            if (e.kind === "adopt.error" && e.reason === SESSION_CLOSED) {
+              dispatch({
+                t: "conn",
+                conn: "closed",
+                tries: 0,
+                reason: e.reason,
+                detail: e.detail,
+              });
+              return;
+            }
+          }
+        } catch (error) {
+          failure = error;
+        }
+        if (signal.aborted) return;
+        tries += 1;
+        if (tries > MAX_TRIES) {
+          const w = failure
+            ? why(failure)
+            : { reason: "offline", detail: "The daemon closed the stream." };
+          dispatch({ t: "conn", conn: "lost", tries, ...w });
+          return;
+        }
+        dispatch({ t: "conn", conn: "retrying", tries });
+        await wait(
+          BACKOFF_MS[Math.min(tries - 1, BACKOFF_MS.length - 1)]!,
+          signal,
+        );
+        if (signal.aborted) return;
+      }
+    },
+    [deps],
+  );
+
+  useEffect(() => {
+    if (!deps) return;
+    const ctl = new AbortController();
+    life.current = ctl;
+    seq.current = 0;
+    sid.current = "";
+    dispatch({ t: "restart" });
+    let started = "";
+    void deps.client.start(playbookId).then(
+      (reply) => {
+        started = reply.session_id;
+        if (ctl.signal.aborted) {
+          void deps.client.close(started).catch(() => {});
+          return;
+        }
+        sid.current = started;
+        dispatch({ t: "started", sid: started, slots: reply.slots });
+        void follow(started, ctl.signal);
+      },
+      (error: unknown) => {
+        if (!ctl.signal.aborted) dispatch({ t: "start_failed", ...why(error) });
+      },
+    );
+    return () => {
+      ctl.abort();
+      if (started) void deps.client.close(started).catch(() => {});
+    };
+  }, [deps, playbookId, follow, epoch]);
+
+  const fail = useCallback(
+    (error: unknown) => dispatch({ t: "error", key: nextKey(), ...why(error) }),
+    [],
+  );
+
+  const actions: StudioActions = {
+    answer: (cardKey, answers, via) => {
+      if (!deps || !sid.current) return;
+      dispatch({ t: "answered", key: cardKey, answers });
+      deps.client.answer(sid.current, answers, via).catch((error: unknown) => {
+        dispatch({ t: "unanswered", key: cardKey });
+        fail(error);
+      });
+    },
+    say: (text, via) => {
+      const words = text.trim();
+      if (!deps || !sid.current || !words) return;
+      dispatch({ t: "said", key: nextKey(), text: words, via });
+      deps.client
+        .answer(
+          sid.current,
+          [{ question_id: "", choice_ids: [], text: words }],
+          via,
+        )
+        .catch(fail);
+    },
+    drop: (file) => {
+      if (!deps || !sid.current) return;
+      const key = nextKey();
+      const refused = documentRefusal(file);
+      if (refused) {
+        dispatch({
+          t: "doc",
+          key,
+          name: file.name,
+          status: "failed",
+          detail: refused,
+        });
+        return;
+      }
+      dispatch({
+        t: "doc",
+        key,
+        name: file.name,
+        status: "sending",
+        detail: "",
+      });
+      const at = sid.current;
+      void file
+        .arrayBuffer()
+        .then((buf) =>
+          deps.client.document(at, {
+            name: file.name,
+            mime: file.type,
+            data_b64: toBase64(new Uint8Array(buf)),
+          }),
+        )
+        .then(
+          () =>
+            dispatch({
+              t: "doc",
+              key,
+              name: file.name,
+              status: "sent",
+              detail: "",
+            }),
+          (error: unknown) => {
+            const w = why(error);
+            dispatch({
+              t: "doc",
+              key,
+              name: file.name,
+              status: "failed",
+              detail: w.detail || w.reason,
+            });
+          },
+        );
+    },
+    enough: () => {
+      if (!deps || !sid.current) return;
+      dispatch({ t: "enough" });
+      deps.client.enough(sid.current).catch(fail);
+    },
+    approve: (rev) => {
+      if (!deps || !sid.current) return;
+      dispatch({ t: "approved", rev });
+      deps.client.approve(sid.current, rev).catch((error: unknown) => {
+        dispatch({ t: "approved", rev: null });
+        fail(error);
+      });
+    },
+    retry: () => {
+      if (!deps) return;
+      if (state.conn === "lost" && sid.current && life.current) {
+        dispatch({ t: "conn", conn: "retrying", tries: 0 });
+        void follow(sid.current, life.current.signal);
+      } else bump();
+    },
+  };
+
+  return [state, actions];
+}
