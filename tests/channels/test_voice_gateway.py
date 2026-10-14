@@ -164,25 +164,6 @@ def test_silence_starts_no_turn(
     assert voiced.transport.requests == []
 
 
-def test_speech_the_engine_read_no_words_from_is_answered_not_dropped(
-    voiced: Live, backend: ScriptedBackend, client: VoiceClient
-) -> None:
-    import struct
-
-    voiced.register()
-    backend.utterances = ["   "]
-
-    client.start()
-    for _ in range(3):
-        client.ws.send_binary(struct.pack("<320h", *([12000, -12000] * 160)))
-    client.stop()
-    client.until("voice.transcript", final=True)
-    spoken = client.until("voice.speaking")
-
-    assert "could not make out" in spoken["text"]
-    assert voiced.transport.requests == []
-
-
 def test_an_origin_with_no_session_is_refused_in_the_gates_word(client: VoiceClient) -> None:
     client.say("hello", origin="https://nowhere.example")
     refused = client.until("turn.error")

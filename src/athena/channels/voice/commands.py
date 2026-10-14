@@ -19,7 +19,6 @@ actually says to a yes/no card, and an option whose label is spoken is matched b
 from __future__ import annotations
 
 import re
-import struct
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Literal
@@ -27,22 +26,12 @@ from typing import Literal
 __all__ = [
     "APPROVE_WORDS",
     "DECLINE_WORDS",
-    "SPEECH_PEAK",
     "STOP_WORDS",
-    "UNHEARD_PROMPT",
     "Card",
     "Spoken",
     "normalise",
-    "peak_level",
     "recognise",
 ]
-
-#: A capture whose loudest sample is at or above this (of 32767) held a voice, not a quiet room.
-SPEECH_PEAK = 1500
-
-#: Said when something was spoken and the engine read no words from it: not silence, and not a
-#: message to send on (voice-io/stt-pipeline: no speech and speech without words are two facts).
-UNHEARD_PROMPT = "I heard you, but I could not make out any words. Please say that again."
 
 #: Barge-in words. Only meaningful while something is being spoken; otherwise they are a message.
 STOP_WORDS: frozenset[str] = frozenset(
@@ -75,7 +64,7 @@ class Card:
 class Spoken:
     """What one utterance turned out to be."""
 
-    kind: Literal["stop", "answer", "message", "silence", "unheard"]
+    kind: Literal["stop", "answer", "message", "silence"]
     text: str = ""
     approval_id: str = ""
     choice: str = ""
@@ -86,22 +75,8 @@ def normalise(text: str) -> str:
     return _SPACES.sub(" ", _PUNCT.sub(" ", text.lower().replace("'", ""))).strip()
 
 
-def peak_level(pcm: bytes) -> int:
-    """The loudest sample of PCM16LE mono audio, 0 to 32768."""
-    count = len(pcm) // 2
-    if not count:
-        return 0
-    samples: tuple[int, ...] = struct.unpack(f"<{count}h", pcm[: count * 2])
-    return max(abs(sample) for sample in samples)
-
-
 def recognise(
-    text: str,
-    cards: Sequence[Card],
-    *,
-    speaking: bool,
-    inbox: Sequence[Card] = (),
-    audible: bool = False,
+    text: str, cards: Sequence[Card], *, speaking: bool, inbox: Sequence[Card] = ()
 ) -> Spoken:
     """Say what ``text`` is: a barge-in, an answer to the newest card, a message, or nothing.
 
@@ -110,12 +85,11 @@ def recognise(
     first: a bare "yes" never answers one (the user was not asked); its own option id or label does,
     and only when exactly one such card fits (ADR 0073). ``speaking`` is whether a reply is playing
     right now, because a stop word only means stop while there is something to stop; said into
-    silence it is a message like any other. ``audible`` is whether the capture held a voice: an
-    empty transcript of one is ``unheard``, an empty transcript of a quiet room is ``silence``.
+    silence it is a message like any other.
     """
     spoken = normalise(text)
     if not spoken:
-        return Spoken("unheard" if audible else "silence")
+        return Spoken("silence")
     if speaking and spoken in STOP_WORDS:
         return Spoken("stop", text=text)
     for card in cards:
