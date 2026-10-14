@@ -335,7 +335,9 @@ def build_local(
     _wire_voice(daemon, studio, voice, voice_off)
     if vault is not None:
         _wire_connectors(daemon, catalog, vault)
-    adopt_studio = _wire_adopt(daemon, adopt, brain.root.parent / ADOPT_DIRNAME, ledger)
+    adopt_studio = _wire_adopt(
+        daemon, adopt, brain.root.parent / ADOPT_DIRNAME, ledger, brain=brain, vault=vault
+    )
     return AthenaLocal(
         brain=brain,
         catalog=catalog,
@@ -392,15 +394,36 @@ def _wire_connectors(daemon: AthenaDaemon, catalog: Catalog, vault: Vault) -> No
 
 
 def _wire_adopt(
-    daemon: AthenaDaemon, studio: AdoptStudio | None, root: Path, ledger: Ledger
+    daemon: AthenaDaemon,
+    studio: AdoptStudio | None,
+    root: Path,
+    ledger: Ledger,
+    *,
+    brain: Brain,
+    vault: Vault | None,
 ) -> AdoptStudio:
     """The adopt studio's routes, outside the writer lock (ADR 0097). Its legs always run on the
-    ``claude`` CLI, whatever engine the daemon's turns use (ADR 0007)."""
-    from athena.adopt.routes import adopt_routes, default_studio
+    ``claude`` CLI, whatever engine the daemon's turns use (ADR 0007).
 
-    chosen = studio or default_studio(root, ledger)
+    The built studio's sessions get the research lanes and the showcase over *this* daemon's
+    brain and vault, bound to its store rather than registered process-wide: the showcase builds
+    a second Athena in this process (``build_local`` again), which must not rebind the first's
+    hooks. An injected studio keeps the hooks it came with. The documents route alone may take a
+    body past the 1 MiB JSON cap (a base64 document, ADR 0097).
+    """
+    from athena.adopt.documents import DOCUMENT_BODY_BYTES, DOCUMENT_SUFFIX
+    from athena.adopt.research import studio_hooks
+    from athena.adopt.routes import ADOPT_PREFIX, adopt_routes, default_studio
+    from athena.daemon.server import BodyCap
+
+    chosen = studio
+    if chosen is None:
+        chosen = default_studio(root, ledger)
+        hooks = studio_hooks(brain=brain, vault=vault)
+        chosen.store.hooks = lambda: hooks
     for route in adopt_routes(daemon, chosen):
         daemon.routes.add(route)
+    daemon.body_caps.append(BodyCap(ADOPT_PREFIX, DOCUMENT_SUFFIX, DOCUMENT_BODY_BYTES))
     return chosen
 
 

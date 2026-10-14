@@ -103,6 +103,7 @@ __all__ = [
     "TOKEN_FILENAME",
     "TOKEN_HEADER",
     "AthenaDaemon",
+    "BodyCap",
     "DaemonConfig",
     "DaemonServer",
     "SocketFn",
@@ -200,6 +201,23 @@ class DaemonConfig:
         )
 
 
+@dataclass(frozen=True)
+class BodyCap:
+    """A larger JSON body cap for the paths that start with ``prefix`` and end with ``suffix``.
+
+    Every route is held to :data:`MAX_BODY_BYTES` except where wiring registers one of these:
+    the adopt studio's ``/adopt/<sid>/documents``, whose body is a base64 document (ADR 0097).
+    Prefix *and* suffix, so the session's other routes under ``/adopt/`` keep the 1 MiB cap.
+    """
+
+    prefix: str
+    suffix: str
+    limit: int
+
+    def covers(self, path: str) -> bool:
+        return path.startswith(self.prefix) and path.endswith(self.suffix)
+
+
 @dataclass
 class AthenaDaemon:
     """One Athena, behind a socket: the brain, the catalog, the gate, the lane and the ledger.
@@ -235,6 +253,8 @@ class AthenaDaemon:
     sockets: SocketTable = field(default_factory=SocketTable)
     #: Exact paths whose body is bytes rather than JSON (:class:`RawRequest`).
     raw_paths: set[str] = field(default_factory=set)
+    #: Paths allowed a JSON body larger than :data:`MAX_BODY_BYTES` (:class:`BodyCap`).
+    body_caps: list[BodyCap] = field(default_factory=list)
     #: Per-engine binary overrides for ``GET /engines`` (tests; a non-default install).
     engine_executables: Mapping[str, str] = field(default_factory=dict)
     #: Taken only around the engine probe and its cache -- never the writer lock, so a probe
@@ -244,6 +264,10 @@ class AthenaDaemon:
 
     def __post_init__(self) -> None:
         self.routes = RouteTable(base_routes(self))
+
+    def body_limit(self, path: str) -> int:
+        """The JSON body cap for ``path``: :data:`MAX_BODY_BYTES` unless a cap covers it."""
+        return max([MAX_BODY_BYTES, *(c.limit for c in self.body_caps if c.covers(path))])
 
     @property
     def uptime_s(self) -> float:
@@ -463,7 +487,7 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
                 with suppress(Exception):
                     ws.close()
 
-        def _body(self) -> dict[str, Any] | None:
+        def _body(self, limit: int = MAX_BODY_BYTES) -> dict[str, Any] | None:
             """The decoded JSON object, ``{}`` for no body, ``None`` for anything else."""
             try:
                 length = int(self.headers.get("Content-Length") or 0)
@@ -471,7 +495,7 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
                 return None
             if length <= 0:
                 return {}
-            if length > MAX_BODY_BYTES:
+            if length > limit:
                 # Refused, but *read past* first. A handler that answers an oversized body and
                 # closes without draining it leaves the caller still sending: the write fails
                 # (``ConnectionAbortedError`` on Windows) and the caller never reads the
@@ -568,7 +592,7 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
                     method=method, path=url.path, query=query, origin=origin, raw=raw
                 )
             else:
-                body = self._body()
+                body = self._body(daemon.body_limit(url.path))
                 if body is None:
                     self._fail(error(400, "parse_error", "body must be a JSON object"))
                     return

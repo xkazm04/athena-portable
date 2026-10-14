@@ -63,11 +63,58 @@ HIDDEN_IMPORTS = [
 #: The dev toolchain never goes inside a shipped binary.
 EXCLUDES = ["pytest", "mypy", "ruff", "IPython", "tkinter", "matplotlib", "numpy"]
 
-#: ``(source, destination inside the bundle)``. The constitution is the whole of it. A one-file
-#: binary unpacks into ``sys._MEIPASS``, and ``athena.core.constitution`` looks there *first*
-#: (``Source("frozen", ...)``) precisely so a frozen daemon carries its own law and can never read
-#: a sibling's. Ship it under the loader's ``DIRNAME`` and nothing else has to know.
+#: ``(source, destination inside the bundle)``. A one-file binary unpacks into ``sys._MEIPASS``,
+#: and ``athena.core.constitution`` looks there *first* (``Source("frozen", ...)``) precisely so a
+#: frozen daemon carries its own law and can never read a sibling's. Ship it under the loader's
+#: ``DIRNAME`` and nothing else has to know.
 DATAS = [(ROOT / "constitution", "constitution")]
+
+#: The playbook library's JSON, which the adopt studio reads (``athena.adopt.slots`` looks in
+#: ``_MEIPASS/playbooks`` first) and its showcase shapes and benches (ADR 0097). Only these
+#: files: the stills, thumbnails, films and story media stay out of the binary.
+PLAYBOOK_FILES = ("playbook.json", "world.json", "truth.json")
+LIBRARY_FILES = ("taxonomy.json",)
+
+#: Package data that lives beside its module: ``athena.adopt.legs`` reads ``tiers.json`` from its
+#: own directory, which in a frozen binary is ``_MEIPASS/athena/adopt``. Without it the daemon
+#: answers ``POST /adopt`` with 503 ``engine_error`` naming the missing file.
+PACKAGE_FILES = [(ROOT / "src" / "athena" / "adopt" / "tiers.json", "athena/adopt")]
+
+
+def data_files(root: Path = ROOT) -> list[tuple[Path, str]]:
+    """Every single file shipped as data, ``(source, destination directory in the bundle)``.
+
+    PyInstaller's ``--add-data`` takes a directory whole or one file at a time, and a glob would
+    flatten ``playbooks/<id>/world.json`` into one directory; so the library is listed file by
+    file, each into ``playbooks/<id>``.
+    """
+    library = root / "playbooks"
+    files: list[tuple[Path, str]] = [(library / name, "playbooks") for name in LIBRARY_FILES]
+    for directory in sorted(p for p in library.iterdir() if p.is_dir()):
+        if not (directory / "playbook.json").is_file():
+            continue
+        files += [
+            (directory / name, f"playbooks/{directory.name}")
+            for name in PLAYBOOK_FILES
+            if (directory / name).is_file()
+        ]
+    package = [(root / src.relative_to(ROOT), dest) for src, dest in PACKAGE_FILES]
+    return files + package
+
+
+def add_data_args(root: Path = ROOT) -> list[str]:
+    """The ``--add-data`` arguments: the data directories, then every data file."""
+    args: list[str] = []
+    for source, dest in DATAS:
+        source = root / source.relative_to(ROOT)
+        if not source.is_dir():
+            raise SystemExit(f"{source} is missing; the frozen daemon would ship without its law")
+        args += ["--add-data", f"{source}{os.pathsep}{dest}"]
+    for source, dest in data_files(root):
+        if not source.is_file():
+            raise SystemExit(f"{source} is missing; the frozen daemon would ship without it")
+        args += ["--add-data", f"{source}{os.pathsep}{dest}"]
+    return args
 
 
 def target_triple(override: str | None) -> tuple[str, str]:
@@ -133,10 +180,7 @@ def build(triple: str, out_dir: Path, clean: bool) -> Path:
     ]
     if clean:
         args.append("--clean")
-    for source, dest in DATAS:
-        if not source.is_dir():
-            raise SystemExit(f"{source} is missing; the frozen daemon would ship without its law")
-        args += ["--add-data", f"{source}{os.pathsep}{dest}"]
+    args += add_data_args()
     for name in HIDDEN_IMPORTS:
         args += ["--hidden-import", name]
     for name in EXCLUDES:
@@ -155,7 +199,18 @@ def main() -> int:
     parser.add_argument("--target-triple", default=None, help="override the Rust host triple")
     parser.add_argument("--out", default=None, help="output directory (default: binaries/)")
     parser.add_argument("--clean", action="store_true", help="clear PyInstaller's cache first")
+    parser.add_argument(
+        "--list-data", action="store_true", help="print what ships as data, and build nothing"
+    )
     args = parser.parse_args()
+
+    if args.list_data:
+        shipped = data_files()
+        size = sum(source.stat().st_size for source, _ in shipped if source.is_file())
+        for source, dest in shipped:
+            print(f"{source.relative_to(ROOT).as_posix()} -> {dest}")
+        print(f"{len(shipped)} files, {size / (1024 * 1024):.1f} MB, plus: constitution/")
+        return 0
 
     triple, how = target_triple(args.target_triple)
     out_dir = Path(args.out).resolve() if args.out else OUT_DIR

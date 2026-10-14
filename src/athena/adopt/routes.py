@@ -60,8 +60,8 @@ __all__ = [
 ADOPT_PATH = "/adopt"
 ADOPT_PREFIX = "/adopt/"
 HEARTBEAT_S = 15.0
-#: The most a dropped document may be, decoded. The daemon's JSON body cap (1 MiB,
-#: ``server.MAX_BODY_BYTES``) is lower today, so a document past ~750 KB is refused before here.
+#: The most a dropped document may be, decoded. The documents route has its own 14 MiB body cap
+#: (``server.BodyCap``, registered in wiring) so a 10 MB file fits once base64 adds its third.
 DOCUMENT_CAP = 10 * 1024 * 1024
 NAME_CAP = 80
 MIME_CAP = 100
