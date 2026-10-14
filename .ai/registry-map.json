@@ -3032,7 +3032,11 @@
           "revision": 3,
           "changedAt": "2026-09-26",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/bell/Bell.tsx:4 is a pure SVG view of a pose inside a desktop app, not an explanatory scroll page; motion is CSS loops Calm turns off (apps/desktop/src/art/chore.tsx:15), not scroll-bound - name collision on art/illustration",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:e93abcf9f70a6c36",
+          "evaluatedRevision": 3
         },
         {
           "subject": "voice-io",
@@ -3049,6 +3053,14 @@
           "changedAt": "2026-10-12",
           "confidence": "probable",
           "state": "unknown"
+        },
+        {
+          "subject": "motion",
+          "bundle": "software-engineering",
+          "source": "conform",
+          "confidence": "strong",
+          "state": "unknown",
+          "evidence": "added by /conform: the context is ambient self-starting CSS motion (Bell pulse, tendril sway, glyph/chore float) that Calm turns off (apps/desktop/src/art/chore.tsx:15); the matcher ranked narrative-scroll-surface on art/illustration vocabulary instead"
         }
       ],
       "governance": "governed"
@@ -3131,7 +3143,11 @@
           "revision": 7,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src-tauri/tauri.conf.json:22 bundles targets \"all\" with no OS/arch matrix, installer or signing config, and the only smoke drives a dev/debug binary (apps/desktop/scripts/smoke.mjs:17): no installed-tree acceptance, so a missing or mis-tripled sidecar (apps/desktop/src-tauri/tauri.bundle.conf.json:4) ships unnoticed; 5 of 7 techniques unrealized",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:e3584aae3c68e668",
+          "evaluatedRevision": 7
         },
         {
           "subject": "supply-chain",
@@ -3980,7 +3996,11 @@
           "revision": 3,
           "changedAt": "2026-09-30",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/scripts/perf-gate.mjs:15 is a pre-merge Playwright lab gate over preview scenes (\"A browser is still not the shipped shell\"), while the subject governs in-production self-instrumentation, not lab benchmarks; quality-gates governs this context",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:9c3f9bf41bb5df33",
+          "evaluatedRevision": 3
         },
         {
           "subject": "quality-gates",
@@ -5095,7 +5115,11 @@
           "revision": 17,
           "changedAt": "2026-10-07",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/stage/preview.tsx:34 re-encodes the private GRAMMAR items of apps/desktop/src/depth/model.ts:70 and preview.tsx:61 casts sub kinds `as never`, so one grammar decision lives in 3+ places and a drifted preview emits paths reduce() silently drops (locality-and-leverage, marked-unverifiable-region); the pure reducer, layer machine and shape seam are realized",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:7c8008f2207b1946",
+          "evaluatedRevision": 18
         },
         {
           "subject": "guest-execution-bounding",
@@ -8780,7 +8804,11 @@
           "revision": 26,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "uat/driver/drive-script.mjs:36 attaches to whatever owns CDP :9222 with no check that the throwaway ATHENA_STORE was used (a run against the real profile goes green), and uat/driver/crop.ps1:16 \"no process\" is parsed into an empty window list at uat/driver/drive-script.mjs:56 with no error; isolation-lanes, platform-quirk-absorption, live-app-harness and context-starved-executor unrealized",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:5521806124d93882",
+          "evaluatedRevision": 26
         },
         {
           "subject": "docs-sync",
@@ -8993,7 +9021,11 @@
           "revision": 8,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src-tauri/tauri.bundle.conf.json:4 bundles the daemon as a Tauri externalBin built by scripts/build-sidecar.py:6 (PyInstaller one-file): the sidecar ships inside the installer, nothing is provisioned after install, so the subject precondition fails; build-time bundling belongs to packaging",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:25f000a9ae879947",
+          "evaluatedRevision": 8
         },
         {
           "subject": "test-harness",
