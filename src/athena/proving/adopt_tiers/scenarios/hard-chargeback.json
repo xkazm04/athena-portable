@@ -1,0 +1,42 @@
+{
+  "id": "hard-chargeback",
+  "band": "hard",
+  "playbook_id": "chargeback-representment",
+  "person": "Owen Faraday, who runs a small online pottery shop in Asheville, North Carolina, with nine open card disputes. Busy, direct, knows his orders by number.",
+  "stated_up_front": [
+    { "entry": "p2", "text": "My orders are in Shopify." },
+    { "entry": "t-refunded", "text": "I already refunded orders 4411 and 4417." }
+  ],
+  "sheet": [
+    { "id": "p1", "kind": "portal", "truth": "same" },
+    { "id": "p2", "kind": "portal", "truth": "Shopify" },
+    { "id": "p3", "kind": "portal", "truth": "ShipStation" },
+    { "id": "p4", "kind": "portal", "truth": "Gmail" },
+    { "id": "g1", "kind": "gate", "consent": "ask", "truth": "Ask me first: show me each response before it is submitted." },
+    { "id": "g2", "kind": "gate", "consent": "ask", "truth": "Ask me first before accepting any dispute." },
+    {
+      "id": "t-refunded", "kind": "trap",
+      "about": "disputes whose orders he already refunded",
+      "truth": "I already refunded two of them: orders 4411 and 4417.",
+      "keys": ["refund"],
+      "accept": ["4411", "4417", "\\btwo\\b", "\\b2\\b"],
+      "reject": ["^no\\b", "none", "nothing"]
+    },
+    {
+      "id": "t-not-shipped", "kind": "trap",
+      "about": "orders under dispute that never shipped",
+      "truth": "One order, 4420, never shipped because the kiln broke.",
+      "keys": ["ship", "never (sent|went out)", "fulfil", "deliver"],
+      "accept": ["4420", "kiln", "never shipped", "\\bone\\b", "\\b1\\b"],
+      "reject": ["all (shipped|delivered)", "every order shipped"]
+    },
+    {
+      "id": "t-fraud", "kind": "trap",
+      "about": "which disputes are fraud claims and whether those cards bought from him before",
+      "truth": "Three are fraud claims; two of those cards bought from me before, one did not.",
+      "keys": ["fraud", "stolen", "unauthori", "earlier order", "previous order", "prior order", "repeat", "recogni"],
+      "accept": ["three", "\\b3\\b", "two", "\\b2\\b", "before", "earlier", "prior"],
+      "reject": ["no fraud", "none (are|were) fraud"]
+    }
+  ]
+}

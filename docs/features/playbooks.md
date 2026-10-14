@@ -287,6 +287,33 @@ then live, heartbeats, last frame `adopt.error {reason: "session_closed"}`), `..
 `contracts/adopt.py` and `apps/desktop/src/lib/adopt.ts`, kept equal by
 `tests/contracts/test_adopt_parity.py`.
 
+**Research.** While she answers, four lanes work beside the conversation, at most four at once,
+each with its own timeout, a failed lane failing alone and the harvest said in one line ("3 of 4
+lanes done · 1 failed (rules: timeout)"): the public rule (one leg with only web search and fetch,
+every finding with its source or dropped), her connected mail or Notion (a leg plans up to three
+searches and the daemon runs them itself, read-only), what Athena already remembers, and each
+document she drops in (a leg that may only read that file; documents up to 10 MB, the one route
+whose body cap is 14 MiB). Lanes fill slots as guesses she can correct; only her answers confirm,
+and every value reaches a later prompt inside a fence.
+
+**The showcase.** Approving the brief plays the recorded run at once with her portals' names, and
+starts a rehearsal on a world shaped like her case: one `shape` leg proposes the date and up to
+twenty row edits to a copy of the world, portal renames come from the approved brief and not the
+model, the copy is validated by the playbook loader, and the bench runs on it in the daemon's
+process (its own temp brain, lock and ledger; Sonnet 5.5, the bench's $5 cap), streaming each
+turn, then replaces the recorded run. The sidecar ships the playbooks' JSON and `tiers.json` so a
+built daemon can do this.
+
+**Which model.** Every leg names its kind, and `src/athena/adopt/tiers.json` says which Claude 5.5
+tier and effort serves it. The tier bench sets that file from measurements:
+
+```bash
+uv run python -m athena.proving.adopt_tiers --dry              # the plan: 108 interviews, nothing spent
+uv run python -m athena.proving.adopt_tiers run --parallel 3   # resumable; results in proving-runs/adopt-tiers/<date>/
+uv run python -m athena.proving.adopt_tiers report             # report.md: a table per role
+uv run python -m athena.proving.adopt_tiers pick --write       # the picks into tiers.json
+```
+
 ## Evidence
 
 A benched playbook can be filmed (ADR 0055): a narration of its latest run, spoken by the local

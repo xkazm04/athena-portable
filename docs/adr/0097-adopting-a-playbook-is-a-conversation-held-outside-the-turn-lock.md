@@ -57,6 +57,32 @@ draft-preview-apply (what is approved is exactly what runs).
    block built mechanically from the slots, not rewritten by a model. Every brief has a `rev`, an
    answer after it makes it stale, and approval names the rev it approves.
 
+7. **Research lanes beside the conversation.** Four kinds fill slots while she answers — rules
+   (only WebSearch and WebFetch; a finding without an http(s) source is dropped and counted),
+   accounts (a leg plans at most three searches; the daemon runs them through the connector
+   service's READ tools, so the model never holds a connector), memory (`core.recall`, distilled
+   facts only) and document (only `Read`, in the session temp dir). `lanes.run_lanes` is a bounded
+   fan-out: four at once, a per-lane timeout, a lane's failure is its own, results harvested in
+   order with one harvest line, stopped by `session.cancelled`. Research never confirms a slot, and
+   slot values reach later prompts only inside a `slot-values` fence. The hooks bind to each
+   daemon's session store, not process-wide, because the showcase builds a second Athena in the
+   same process. The documents route alone has a 14 MiB body cap (`server.BodyCap`).
+8. **The showcase is a rehearsal, not a replay.** `showcase.shape_world` copies the playbook, takes
+   a `shape` leg's spec (the date, at most twenty row edits on existing columns, checked against
+   the world before it is applied) and applies it mechanically; portal renames come from the
+   approved brief, and truth changes only by those renames because the rehearsal is unscored.
+   `run_bench(approve="none")` runs it on a background thread in the daemon process — `World` is
+   its own temp brain, daemon, lock and ledger — with every turn streamed and its ledger row copied
+   to the live ledger under the session's conversation.
+
+9. **Tiers are measured, not chosen.** `proving/adopt_tiers` runs 9 scenarios (3 easy, 3
+   typical, 3 hard, each a hidden fact sheet for a person unlike the playbook's own) against 6
+   configs (Haiku, Sonnet and Opus 5.5 at low and medium effort), 2 reps each, with a fixed Sonnet
+   person and a fixed, blind Opus judge. One config drives `interview` and `audit` together; `shape`
+   is benched on its own. A config is out on any false clear or repeated question, accuracy more
+   than 5 points under the best, or a judge mean under 3.5; of the rest the fastest p50 wins (first
+   text for the interviewer), usage breaking ties within 5%. `pick --write` rewrites `tiers.json`.
+
 ## Consequences
 
 - An adopt session costs nothing a chat turn waits on, and a chat turn costs it nothing; the price

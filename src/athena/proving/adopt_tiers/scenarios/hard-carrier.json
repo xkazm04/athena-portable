@@ -1,0 +1,30 @@
+{
+  "id": "hard-carrier",
+  "band": "hard",
+  "playbook_id": "carrier-accessorials",
+  "person": "Rosa Delgado, who runs a two-truck carrier out of El Paso hauling for C.H. Robinson, TQL and Uber Freight, factored through RTS. Talks like a dispatcher: short, specific, no patience for forms.",
+  "stated_up_front": [
+    { "entry": "p1", "text": "Our ELD is Samsara, not Motive." }
+  ],
+  "sheet": [
+    { "id": "p1", "kind": "portal", "truth": "Samsara" },
+    { "id": "p2", "kind": "portal", "truth": "Outlook" },
+    { "id": "p3", "kind": "portal", "truth": "same" },
+    { "id": "p4", "kind": "portal", "truth": "same" },
+    { "id": "p5", "kind": "portal", "truth": "same" },
+    { "id": "p6", "kind": "portal", "truth": "same" },
+    { "id": "g1", "kind": "gate", "consent": "go", "truth": "Go ahead and request detention when the BOL times back it, no need to ask." },
+    { "id": "g2", "kind": "gate", "consent": "ask", "truth": "Ask me first before any lumper refund request." },
+    { "id": "g3", "kind": "gate", "consent": "go", "truth": "Go ahead and submit lumper paperwork, no need to ask." },
+    { "id": "g4", "kind": "gate", "consent": "ask", "truth": "Ask me first before contacting the factor." },
+    { "id": "g5", "kind": "gate", "consent": "ask", "truth": "Ask me first before emailing any broker." },
+    {
+      "id": "f-free-time", "kind": "fact",
+      "about": "the usual detention terms on her rate confirmations",
+      "truth": "Most of my rate cons give 2 hours free, then $50 an hour.",
+      "keys": ["free time", "detention (rate|pay|terms)", "per hour", "hourly", "rate con"],
+      "accept": ["2 ?h", "two hours", "\\$?50"],
+      "reject": ["\\$?75", "3 hours", "three hours"]
+    }
+  ]
+}

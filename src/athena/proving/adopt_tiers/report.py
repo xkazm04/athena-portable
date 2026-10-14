@@ -1,0 +1,193 @@
+"""ADR 0097 (tier bench, the report): the plan before spending, and the tables and picks after.
+
+``--dry`` prints what a run would do and how many model legs it would cost, and spends nothing.
+``report`` writes ``report.md`` beside the results: one table per role (config, accuracy, false
+clears, repeats, judge, p50/p95, first text, usage), the pick and why, and the disqualified with
+their reasons. A number that was not measured is "-", never 0.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+
+from athena.adopt.prompts import MAX_ROUNDS
+from athena.proving.adopt_tiers.pick import (
+    ACCURACY_MARGIN,
+    JUDGE_FLOOR,
+    TIE_BAND,
+    ConfigStats,
+    Pick,
+    ShapeStats,
+)
+from athena.proving.adopt_tiers.simulate import (
+    ASSUMED_ROUNDS,
+    CONFIGS,
+    JUDGE_TIER,
+    PERSONA_TIER,
+    WALL_S,
+    Plan,
+)
+
+__all__ = ["dry_text", "report_md", "write_report"]
+
+
+def _n(value: int) -> str:
+    return f"{value:,}"
+
+
+def dry_text(plan: Plan) -> str:
+    bands: dict[str, int] = {}
+    for s in plan.scenarios:
+        bands[s.band] = bands.get(s.band, 0) + 1
+    lines = [
+        "adopt tier bench: the plan (nothing is spent)",
+        "",
+        f"scenarios: {len(plan.scenarios)} ("
+        + ", ".join(f"{b} {n}" for b, n in bands.items())
+        + ")",
+    ]
+    for s in plan.scenarios:
+        lines.append(
+            f"  {s.band:<8} {s.id:<22} {s.playbook_id:<30} difficulty {s.difficulty}, "
+            f"{s.portal_count} portals, {len(s.mechanical())} mechanical slots, "
+            f"sheet {len(s.sheet)}, stated up front {len(s.stated_up_front)}"
+        )
+    lines.append(f"configs: {len(plan.configs)}")
+    for name in plan.configs:
+        tier = CONFIGS[name]
+        lines.append(f"  {name:<14} {tier.model} --effort {tier.effort}")
+    lines += [
+        f"reps: {plan.reps}",
+        "roles under test: interview, audit (and the brief writer, an audit-kind leg); "
+        "shape benched apart",
+        f"fixed: persona {PERSONA_TIER.model} {PERSONA_TIER.effort}, "
+        f"judge {JUDGE_TIER.model} {JUDGE_TIER.effort} (blind)",
+        "research lanes: off (hooks are no-ops)",
+        "",
+        f"interviews: {len(plan.scenarios)} x {len(plan.configs)} x {plan.reps} = "
+        f"{_n(plan.interviews)} (stop at clear, at card {MAX_ROUNDS}, or at {WALL_S / 60:g} min)",
+        f"judge legs: {_n(plan.judges)} (one per transcript)",
+        f"shape legs: {_n(plan.shapes)} ({plan.shape_note})",
+        f"estimated legs: ~{_n(plan.legs(ASSUMED_ROUNDS))} at {ASSUMED_ROUNDS} cards per "
+        f"interview; range {_n(plan.legs(1))} (1 card) to {_n(plan.legs(MAX_ROUNDS))} "
+        f"({MAX_ROUNDS} cards); schema retries not counted",
+        "",
+        f"results: {plan.run_dir.as_posix()}/",
+        f"on disk: {plan.interviews_done} of {plan.interviews} interviews, "
+        f"{plan.judged} judged, {plan.shapes_done} of {plan.shapes} shape runs",
+        f"to run: {len(plan.jobs)} jobs ("
+        + ", ".join(
+            f"{sum(1 for j in plan.jobs if j.kind == k)} {k}"
+            for k in ("interview", "judge", "shape")
+        )
+        + ")",
+    ]
+    return "\n".join(lines)
+
+
+def _f(value: float | None, digits: int = 0, unit: str = "") -> str:
+    if value is None:
+        return "-"
+    return f"{value:,.{digits}f}{unit}"
+
+
+def _usage(value: float | None, unit: str) -> str:
+    if value is None:
+        return "-"
+    return f"${value:.4f}" if unit == "usd" else f"{value:,.0f} tok"
+
+
+def _role_usage(role: str, s: ConfigStats) -> float | None:
+    return s.usage_interview if role == "interview" else s.usage_audit
+
+
+def _role_table(role: str, stats: Mapping[str, ConfigStats]) -> list[str]:
+    lines = [
+        "| config | runs | accuracy % | right/wrong/missed | false clears | repeats | judge | "
+        "round p50 | round p95 | first text p50 | audit p50 | usage/run | ended |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for name, s in stats.items():
+        ended = ", ".join(f"{k} {v}" for k, v in sorted(s.ended.items())) or "-"
+        lines.append(
+            f"| {name} | {s.runs} | {_f(s.accuracy, 1)} | {s.right}/{s.wrong}/{s.missed} | "
+            f"{s.false_clears} | {s.repeats} | {_f(s.judge, 2)} ({s.judged}) | "
+            f"{_f(s.round_p50, 0, ' ms')} | {_f(s.round_p95, 0, ' ms')} | "
+            f"{_f(s.first_text_p50, 0, ' ms')} | {_f(s.audit_p50, 0, ' ms')} | "
+            f"{_usage(_role_usage(role, s), s.usage_unit)} | {ended} |"
+        )
+    return lines
+
+
+def _pick_lines(pick: Pick) -> list[str]:
+    head = f"**Pick: {pick.config or 'none'}**"
+    if pick.config:
+        tier = CONFIGS[pick.config]
+        head += f" ({tier.model}, effort {tier.effort})"
+    lines = [head + f" - {pick.why}."]
+    if pick.fallback:
+        lines.append("")
+        lines.append("> Every config was disqualified; this is the best-accuracy fallback.")
+    if pick.disqualified:
+        lines.append("")
+        lines.append("Disqualified:")
+        for name, reasons in pick.disqualified.items():
+            lines.append(f"- {name}: {'; '.join(reasons)}")
+    return lines
+
+
+def report_md(
+    stats: Mapping[str, ConfigStats],
+    shape: Mapping[str, ShapeStats],
+    picks: Sequence[Pick],
+    *,
+    run_dir: Path,
+    scenarios: int,
+    shape_note: str,
+) -> str:
+    by_role = {p.role: p for p in picks}
+    lines = [
+        "# Adopt tier bench",
+        "",
+        f"Results: `{run_dir.as_posix()}`, {scenarios} scenarios, "
+        f"{sum(s.runs for s in stats.values())} complete interviews.",
+        "",
+        "Rule: disqualify any false clear or repeat, accuracy more than "
+        f"{ACCURACY_MARGIN:g} points under the best, or judge mean under {JUDGE_FLOOR}; then the "
+        f"fastest p50 (interview: first text; audit: round), configs within {TIE_BAND:.0%} of it "
+        "broken by usage. One config sets interview and audit together, so both roles read the "
+        "same runs' quality.",
+        "",
+        "Caveat: gate and fact/trap verdicts are matched by patterns (the fact sheet's keys, "
+        "accept and reject); a derived slot whose label matches no key is counted missed for "
+        "every config alike.",
+    ]
+    for role in ("interview", "audit"):
+        lines += ["", f"## {role}", "", *_role_table(role, stats), ""]
+        if role in by_role:
+            lines += _pick_lines(by_role[role])
+    lines += ["", "## shape", ""]
+    pick = by_role.get("shape")
+    if pick is None or (pick.config is None and not any(s.runs for s in shape.values())):
+        lines.append(f"Not measured: {shape_note or (pick.why if pick else 'no runs')}.")
+    else:
+        lines += [
+            "| config | runs | valid | portals substituted | wall p50 | wall p95 | usage/run |",
+            "|---|---|---|---|---|---|---|",
+        ]
+        for name, s in shape.items():
+            lines.append(
+                f"| {name} | {s.runs} | {s.valid} | {s.portals_ok} | {_f(s.ms_p50, 0, ' ms')} | "
+                f"{_f(s.ms_p95, 0, ' ms')} | {_usage(s.usage, s.usage_unit)} |"
+            )
+        lines.append("")
+        lines += _pick_lines(pick)
+    return "\n".join(lines) + "\n"
+
+
+def write_report(run_dir: Path, text: str) -> Path:
+    path = run_dir / "report.md"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path

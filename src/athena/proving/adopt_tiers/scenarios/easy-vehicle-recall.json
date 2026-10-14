@@ -1,0 +1,40 @@
+{
+  "id": "easy-vehicle-recall",
+  "band": "easy",
+  "playbook_id": "vehicle-recall-reimbursement",
+  "person": "Marcus Lindqvist, a retired machinist in Duluth whose 2019 Kestrel pickup is in the fuel pump recall. He keeps every receipt in a folder and answers in a few words.",
+  "stated_up_front": [
+    { "entry": "f-repair-date", "text": "The pump was replaced on 3 March this year, 2026." }
+  ],
+  "sheet": [
+    { "id": "p1", "kind": "portal", "truth": "Outlook" },
+    { "id": "p2", "kind": "portal", "truth": "same" },
+    { "id": "p3", "kind": "portal", "truth": "same" },
+    { "id": "p4", "kind": "portal", "truth": "same" },
+    { "id": "g1", "kind": "gate", "consent": "ask", "truth": "Ask me first: show me the claim before it goes in." },
+    {
+      "id": "f-repair-date", "kind": "fact",
+      "about": "when the fuel pump was replaced",
+      "truth": "The fuel pump was replaced on 3 March 2026 at Garrowby Service.",
+      "keys": ["repair", "replac", "fix", "when", "date"],
+      "accept": ["mar(ch)?\\.? ?3", "3(rd)? mar", "2026-03-03", "3/3"],
+      "reject": ["feb", "apr"]
+    },
+    {
+      "id": "t-warranty", "kind": "trap",
+      "about": "whether a warranty or roadside cover paid any part of the fuel pump repair",
+      "truth": "No. Nothing on the fuel pump went through a warranty or roadside cover; I paid it all myself.",
+      "keys": ["warrant", "roadside", "cover", "insur", "someone else", "paid by"],
+      "accept": ["^no\\b", "nothing", "none", "himself", "myself", "out of pocket", "he paid", "paid (it )?all"],
+      "reject": ["^yes", "warranty (paid|covered) (it|the|for|part)"]
+    },
+    {
+      "id": "t-other-car", "kind": "trap",
+      "about": "whether any other vehicle in the household is in the recall",
+      "truth": "Only my 2019 Kestrel pickup. My wife's car is a different make and is not in the recall.",
+      "keys": ["other (car|vehicle)", "second (car|vehicle)", "household", "(wife|husband|spouse|partner|family).{0,20}(car|vehicle)", "which (car|vehicle)", "vin"],
+      "accept": ["only", "just", "one", "single", "not in", "kestrel", "pickup"],
+      "reject": ["both", "two cars", "also in the recall"]
+    }
+  ]
+}

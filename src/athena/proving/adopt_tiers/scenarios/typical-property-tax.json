@@ -1,0 +1,43 @@
+{
+  "id": "typical-property-tax",
+  "band": "typical",
+  "playbook_id": "property-tax-appeal",
+  "person": "Elena Ortiz, who with her husband Rafael owns their home and one rental house in San Antonio and has two appraisal notices this spring. Organised, keeps a folder per property.",
+  "stated_up_front": [
+    { "entry": "p3", "text": "I look up home sales on Redfin." },
+    { "entry": "f-properties", "text": "We own two places: our home and one rental house." }
+  ],
+  "sheet": [
+    { "id": "p1", "kind": "portal", "truth": "Gmail" },
+    { "id": "p2", "kind": "portal", "truth": "same" },
+    { "id": "p3", "kind": "portal", "truth": "Redfin" },
+    { "id": "p4", "kind": "portal", "truth": "same" },
+    { "id": "g1", "kind": "gate", "consent": "ask", "truth": "Ask me first before filing each protest." },
+    { "id": "g2", "kind": "gate", "consent": "go", "truth": "Go ahead and submit the comparable sales, no need to ask me." },
+    { "id": "g3", "kind": "gate", "consent": "ask", "truth": "Ask me first before any document goes in as evidence." },
+    {
+      "id": "f-properties", "kind": "fact",
+      "about": "which properties they own on January 1",
+      "truth": "We own two: our home on Alamo Heights Drive and a rental house on Nogalitos Street. We sold an empty lot in 2025.",
+      "keys": ["propert", "own", "parcel", "which (homes|houses)"],
+      "accept": ["two\\b", "\\b2\\b", "rental", "nogalitos", "alamo"],
+      "reject": ["three", "four", "\\b3\\b", "\\b4\\b", "duplex", "condo"]
+    },
+    {
+      "id": "f-notice-date", "kind": "fact",
+      "about": "when the appraisal notices arrived",
+      "truth": "Both notices came in the mail on 18 April 2026.",
+      "keys": ["notice", "deliver", "receiv", "arriv", "deadline"],
+      "accept": ["apr(il)?\\.? ?18", "18(th)? apr", "4/18", "2026-04-18"],
+      "reject": ["may", "march"]
+    },
+    {
+      "id": "t-defect", "kind": "trap",
+      "about": "whether the home had a defect on January 1 that lowers its value",
+      "truth": "Yes. Our home has a cracked foundation slab; we have an engineer's report from March and a repair estimate.",
+      "keys": ["defect", "condition", "damage", "foundation", "repair", "problem", "roof"],
+      "accept": ["foundation", "crack", "slab", "engineer", "yes"],
+      "reject": ["^no\\b", "no (defect|problem|damage)", "none"]
+    }
+  ]
+}
