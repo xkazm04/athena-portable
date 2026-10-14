@@ -18,11 +18,12 @@ never told about, rather than one it is told about and then refused.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import unicodedata
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from athena.connectors.port import ConnectorPort
@@ -91,6 +92,53 @@ _WHITESPACE = re.compile(r"\s+")
 
 class CatalogError(ValueError):
     """A registration or a lookup the gate refuses."""
+
+
+def _digest(description: str) -> str:
+    return hashlib.sha256(description.encode("utf-8")).hexdigest()[:16]
+
+
+@dataclass(frozen=True)
+class HeldChange:
+    """A re-merge the catalog did not apply: the pinned entry stays until a person decides.
+
+    A tool is pinned at first sight, class and description hash. A re-merge that keeps or
+    tightens the class and keeps the description applies; one that loosens the class (``GATED``
+    to ``AUTO``) or rewrites the description keeps the pinned entry and leaves this behind, which
+    :meth:`card` renders as the decision card (mcp-tools/client-integration: which calls stop for
+    a human is decided at install and at call, not silently re-derived on every merge).
+    """
+
+    name: str
+    origin: str
+    pinned: ToolEntry
+    offered: ToolEntry
+
+    @property
+    def pinned_class(self) -> ToolClass:
+        return self.pinned.cls
+
+    @property
+    def offered_class(self) -> ToolClass:
+        return self.offered.cls
+
+    def card(self) -> dict[str, Any]:
+        """The decision card: what is pinned, what the origin now offers, and the two answers."""
+        lines = []
+        if self.pinned.cls is not self.offered.cls:
+            lines.append(f"class: {self.pinned.cls.value} -> {self.offered.cls.value}")
+        if self.pinned.description != self.offered.description:
+            lines.append(
+                f"description: {_quoted(self.pinned.description, DESCRIPTION_CAP)} -> "
+                f"{_quoted(self.offered.description, DESCRIPTION_CAP)}"
+            )
+        return {
+            "action": "catalog.accept_change",
+            "origin": self.origin,
+            "params": {"name": self.name},
+            "summary": f"{self.name} re-registered differently: " + "; ".join(lines),
+            "options": ["keep", "accept"],
+        }
 
 
 # --- what the core tools need ----------------------------------------------------------------
@@ -229,6 +277,12 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
     ]
 
 
+def _worth_holding(pinned: ToolEntry, offered: ToolEntry) -> bool:
+    """Does the re-merge loosen the class or change the description the tool was pinned with?"""
+    loosened = _CLASS_ORDER.index(offered.cls) > _CLASS_ORDER.index(pinned.cls)
+    return loosened or _digest(offered.description) != _digest(pinned.description)
+
+
 def _connector_executor(port: ConnectorPort, tool_name: str) -> ExecutorFn:
     """Bind one of a connector's tools to its port.
 
@@ -256,6 +310,11 @@ class Catalog:
     core: dict[str, ToolEntry] = field(default_factory=dict)
     host: dict[str, dict[str, ToolEntry]] = field(default_factory=dict)
     connector: dict[str, dict[str, ToolEntry]] = field(default_factory=dict)
+    #: Each foreign tool as first seen or last accepted, by namespaced name. It outlives
+    #: :meth:`drop_origin`: a page that leaves and comes back is still held to what it pinned.
+    pins: dict[str, ToolEntry] = field(default_factory=dict)
+    #: Re-merges not applied, by tool name, waiting for a decision.
+    held_changes: dict[str, HeldChange] = field(default_factory=dict)
 
     # -- the flat view ---------------------------------------------------------------------------
 
@@ -366,9 +425,49 @@ class Catalog:
                     f"manifest {manifest.app_id!r} is refused whole: {exc}"
                 ) from None
 
+        # A tool seen before keeps its pinned entry when the re-merge loosens its class or
+        # rewrites its description; a tool that tightens or stays the same applies and re-pins.
+        pins = dict(self.pins)
+        held = dict(self.held_changes)
+        for name, offered in list(staged.items()):
+            pinned = pins.get(name)
+            if pinned is None or not _worth_holding(pinned, offered):
+                pins[name] = offered
+                held.pop(name, None)
+                continue
+            # The pinned entry, rebound to this merge's executor (a connector's port is live).
+            staged[name] = replace(pinned, executor=offered.executor)
+            held[name] = HeldChange(name, origin, pinned, offered)
+        # A tool this merge no longer offers has nothing waiting on it.
+        for name in [n for n, c in held.items() if c.origin == origin and n not in staged]:
+            del held[name]
+
         # One assignment, so there is no moment at which this origin is half-merged.
         registry[origin] = staged
+        self.pins = pins
+        self.held_changes = held
         return sorted(staged)
+
+    def pending_changes(self) -> list[HeldChange]:
+        """The re-merges held for a decision, in name order."""
+        return [self.held_changes[name] for name in sorted(self.held_changes)]
+
+    def accept_change(self, name: str) -> None:
+        """Adopt what a held tool now offers: the person approved the card. Re-pins it."""
+        change = self.held_changes.get(name)
+        if change is None:
+            raise CatalogError(f"no change is held for {name!r}")
+        registry, key = self._registry_of(change.origin)
+        current = registry.get(key, {}).get(name)
+        adopted = (
+            change.offered
+            if current is None
+            else replace(change.offered, executor=current.executor)
+        )
+        if current is not None:
+            registry[key] = {**registry[key], name: adopted}
+        self.pins[name] = adopted
+        del self.held_changes[name]
 
     def _owner_of(self, name: str) -> str | None:
         if name in self.core:

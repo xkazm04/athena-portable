@@ -210,6 +210,88 @@ def test_a_re_merge_replaces_that_origin_and_leaves_every_other_alone() -> None:
     assert "host.support.send_reminder" in catalog
 
 
+def _one_tool(
+    *, reversible: bool, side_effects: str, description: str = "Email a chase."
+) -> HostManifest:
+    return manifest(
+        tools=[
+            {
+                "name": "send_reminder",
+                "description": description,
+                "reversible": reversible,
+                "side_effects": side_effects,
+            }
+        ]
+    )
+
+
+NAME = "host.invoices.send_reminder"
+
+
+def test_a_re_merge_that_keeps_the_class_and_description_applies() -> None:
+    catalog = build_catalog(services(), _one_tool(reversible=False, side_effects="external"))
+    again = _one_tool(reversible=False, side_effects="external")
+
+    catalog.merge_manifest(again)
+
+    assert catalog.classify(NAME) is ToolClass.GATED
+    assert catalog.pending_changes() == []
+
+
+def test_a_re_merge_that_tightens_the_class_applies() -> None:
+    catalog = build_catalog(services(), _one_tool(reversible=True, side_effects="none"))
+    assert catalog.classify(NAME) is ToolClass.AUTO
+
+    catalog.merge_manifest(_one_tool(reversible=False, side_effects="external"))
+
+    assert catalog.classify(NAME) is ToolClass.GATED
+    assert catalog.pending_changes() == []
+    # The tighter class is the new pin: loosening it again is a change to hold.
+    catalog.merge_manifest(_one_tool(reversible=True, side_effects="none"))
+    assert catalog.classify(NAME) is ToolClass.GATED
+    assert [c.name for c in catalog.pending_changes()] == [NAME]
+
+
+def test_a_re_merge_that_loosens_the_class_is_held_with_a_card_showing_the_diff() -> None:
+    catalog = build_catalog(services(), _one_tool(reversible=False, side_effects="external"))
+
+    catalog.merge_manifest(_one_tool(reversible=True, side_effects="none"))
+
+    assert catalog.classify(NAME) is ToolClass.GATED, "the pinned class still gates the call"
+    (change,) = catalog.pending_changes()
+    assert (change.name, change.pinned_class, change.offered_class) == (
+        NAME,
+        ToolClass.GATED,
+        ToolClass.AUTO,
+    )
+    card = change.card()
+    assert card["action"] == "catalog.accept_change"
+    assert "GATED" in card["summary"] and "AUTO" in card["summary"]
+    assert card["options"] == ["keep", "accept"]
+
+    # A later merge that offers the pinned shape again withdraws the card.
+    catalog.merge_manifest(_one_tool(reversible=False, side_effects="external"))
+    assert catalog.pending_changes() == []
+
+
+def test_a_re_merge_that_changes_the_description_is_held_and_accepting_adopts_it() -> None:
+    catalog = build_catalog(services(), _one_tool(reversible=False, side_effects="external"))
+    original = catalog.get(NAME).description
+
+    catalog.merge_manifest(
+        _one_tool(reversible=False, side_effects="external", description="Email a chase now.")
+    )
+
+    assert catalog.get(NAME).description == original
+    (change,) = catalog.pending_changes()
+    assert "Email a chase now." in change.card()["summary"]
+
+    catalog.accept_change(NAME)
+
+    assert catalog.get(NAME).description == "Email a chase now."
+    assert catalog.pending_changes() == []
+
+
 def test_drop_origin_returns_what_it_removed_and_refuses_a_name_that_is_not_an_origin() -> None:
     catalog = build_catalog(services(), manifest())
     assert catalog.drop_origin("host:invoices") == 2
