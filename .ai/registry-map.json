@@ -6154,7 +6154,11 @@
           "revision": 10,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/components/board/Dossier.tsx:177 branches reduced motion at the call site off motion/react's read-once useReducedMotion, with a universal .bd-root * reset on top (style/base/reduced-motion.css:33); style/chrome/mast.css:41 animates font-size, a layout property (reduced-motion-mechanics, performance-discipline)",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:8d9b3eabe2f3b534",
+          "evaluatedRevision": 10
         },
         {
           "subject": "repository-landing-document",
@@ -6481,7 +6485,11 @@
           "revision": 6,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/app/page.tsx:21 is the only page (the Lanes IS the app) and app/layout.tsx:74 is a bare container-query div: no navigable sections inside a persistent frame, so the app-shell precondition is unmet",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:62a9a7fc993ea8b5",
+          "evaluatedRevision": 6
         },
         {
           "subject": "test-harness",
@@ -7016,7 +7024,11 @@
           "revision": 7,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/ledgerbox/eslint.config.mjs:8 has no raw-value gate and raw literals already shadow tokens (style/chrome/mast.css:118 rgb(69 211 162/22%) = --ln-auto; level0/l0-swarm-2.css:177 = --ln-ground); type is size steps with call-site weights, not recipes (token-enforcement, token-taxonomy)",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:165125b7a54d0de3",
+          "evaluatedRevision": 7
         },
         {
           "subject": "repository-landing-document",
@@ -7824,6 +7836,20 @@
           "changedAt": "2026-09-23",
           "confidence": "probable",
           "state": "unknown"
+        },
+        {
+          "subject": "eval-harness",
+          "bundle": "software-engineering",
+          "source": "conform",
+          "confidence": "strong",
+          "digest": "sha256-b2:7ccead00b7f92aba",
+          "revision": 37,
+          "changedAt": "2026-09-29",
+          "state": "deviation",
+          "evidence": "src/athena/proving/playbooks/rank.py:165 sorts playbooks by a single bench run's score (bench.py:154 runs each playbook once); no N, within-condition spread or attempt count travels with ranking.json, so the published order is a sorted draw (reliability-aggregation, resolution-precondition, selection-over-noise)",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:7ccead00b7f92aba",
+          "evaluatedRevision": 37
         }
       ],
       "governance": "governed"
@@ -8006,7 +8032,11 @@
           "revision": 7,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/style/base/the-sheet.css:97 consumes the numbered ramp (var(--bk-graphite-3)) with one semantic colour role in tokens.css; --bk-label-w:132px (tokens.css:179) mirrors LABEL_W (field/useProjector.ts:53) by comment only; no raw-value gate (eslint.config.mjs:6); this context's own generator and tc-scales.css reach no page",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:165125b7a54d0de3",
+          "evaluatedRevision": 7
         },
         {
           "subject": "scale-investment-timing",
@@ -8203,7 +8233,11 @@
           "revision": 1,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/lib/db.ts:98 fills the store from buildSeed() only and lib/csv.ts:1 is the export serializer: tidycrm reads no foreign-format input, so the import pipeline's precondition is unmet (normalization here is in-store cleanup, lib/normalize.ts:33)",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:4981ff0ea8a59c1b",
+          "evaluatedRevision": 1
         },
         {
           "subject": "multi-provider-gateway-plane",
