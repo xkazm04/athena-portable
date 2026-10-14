@@ -160,13 +160,24 @@ def playbook_block(playbook: Mapping[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def slots_block(slots: Sequence[Slot]) -> str:
+def slots_block(slots: Sequence[Slot], nonce: str | None = None) -> str:
+    """The slots, with every held value fenced as data.
+
+    A value is the person's words, or what a research lane read on the web, in mail or in a
+    document (ADR 0097), so it is never instructions: the rows name the slot and where its value
+    came from, and the values themselves stand in one fenced block keyed by slot id.
+    """
     rows = [
         f"- {s.id} [{s.kind}, {s.status}{', from ' + s.source if s.value else ''}] {s.label}"
-        + (f" = {s.value}" if s.value else "")
+        + (" = (see VALUES)" if s.value else "")
         for s in slots
     ]
-    return "SLOTS\n" + ("\n".join(rows) if rows else "(none)")
+    out = "SLOTS\n" + ("\n".join(rows) if rows else "(none)")
+    held = [f"{s.id} = {s.value}" for s in slots if s.value]
+    if held:
+        fenced = wrap_untrusted("\n".join(held), label="slot-values", nonce=nonce or fresh_nonce())
+        out += "\n\nVALUES\n" + fenced
+    return out
 
 
 def answers_block(answers: Sequence[Mapping[str, Any]], nonce: str) -> str:
