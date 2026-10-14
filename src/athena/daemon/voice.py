@@ -11,12 +11,15 @@ error shape, and an absent value on the wire is ``null``, never a missing key.
 
 ``POST /voice/preview``
     ``{"text", "voice"}`` → raw PCM16LE mono, ``Content-Type: audio/L16;rate=<n>``, with
-    ``X-Tts-Provider``, ``X-Tts-Voice`` and ``X-Tts-Elapsed-Ms``. 503 while Kokoro is not ready.
+    ``X-Tts-Provider``, ``X-Tts-Voice`` and ``X-Tts-Elapsed-Ms``.
+    503 ``engine_unavailable`` while Kokoro is not ready, 502
+    ``engine_failed`` if it raises.
     It speaks through the engine directly, so a voice can be picked before a listener exists.
 
 ``POST /voice/transcribe?engine=whisper|openai``
     Raw PCM16LE mono 16 kHz → ``{"engine", "text", "elapsed_ms"}``. The engine defaults to the
-    chosen one; 503 while it is not ready. This is how the studio compares listeners by ear.
+    chosen one; 503 ``engine_unavailable`` while it is not ready, 502 ``engine_failed`` if it
+    raises. This is how the studio compares listeners by ear.
 
 ``POST /voice/install``, ``GET /voice/install``
     ``{"component": "kokoro" | "whisper:<model>"}`` → 202 and the install state; 409 while one is
@@ -62,6 +65,26 @@ KEY_PATH = "/voice/key"
 RAW_PATHS: frozenset[str] = frozenset({TRANSCRIBE_PATH})
 
 
+#: Typed engine outcomes, and the one place they become statuses
+#: (voice-io/portable-provider-package):
+#: invalid input is a 400 ``validator_failed`` made elsewhere; an engine that is absent or not
+#: ready is a 503, one that ran too long a 504, and one that raised while working a 502. ``reason``
+#: stays in the closed refusal vocabulary (``contracts.harness.ERROR_REASONS``); ``code`` is the
+#: typed answer a studio branches on: unavailable offers setup, failed offers a retry.
+ENGINE_OUTCOMES: dict[str, tuple[int, str]] = {
+    "engine_unavailable": (503, "engine_error"),
+    "engine_timeout": (504, "timeout"),
+    "engine_failed": (502, "engine_error"),
+}
+
+
+def engine_refusal(code: str, detail: str) -> Reply:
+    """A refusal for an engine outcome: its status, its closed ``reason`` and its typed ``code``."""
+    status, reason = ENGINE_OUTCOMES[code]
+    _, body = error(status, reason, detail)
+    return status, {**body, "code": code}
+
+
 def get_config(studio: VoiceStudio) -> Reply:
     return 200, {"ok": True, **studio.view()}
 
@@ -83,12 +106,12 @@ def preview(studio: VoiceStudio, request: Request) -> Reply | BinaryReply:
         return error(400, "validator_failed", f"unknown voice {voice!r}")
     speaker, reason = studio.speaker(voice)
     if speaker is None:
-        return error(503, "engine_error", reason or "Kokoro is not ready.")
+        return engine_refusal("engine_unavailable", reason or "Kokoro is not ready.")
     started = time.monotonic()
     try:
         pcm = b"".join(speaker.synthesize(text))
     except VoiceBackendError as exc:
-        return error(503, "engine_error", str(exc))
+        return engine_refusal("engine_failed", str(exc))
     elapsed = int((time.monotonic() - started) * 1000)
     return BinaryReply(
         200,
@@ -112,7 +135,7 @@ def transcribe(studio: VoiceStudio, request: Request, ledger: Any) -> Reply:
     model = studio.choice.stt_model if studio.choice.stt_engine == "whisper" else None
     listener, reason = studio.listener(engine, model)
     if listener is None:
-        return error(503, "engine_error", reason or f"{engine} is not ready.")
+        return engine_refusal("engine_unavailable", reason or f"{engine} is not ready.")
     meter = hearing_meter(listener)
     started = time.monotonic()
     heard: object = None
@@ -134,7 +157,7 @@ def transcribe(studio: VoiceStudio, request: Request, ledger: Any) -> Reply:
         text = transcriber.finish()
     except VoiceBackendError as exc:
         bill("engine_error")
-        return error(503, "engine_error", str(exc))
+        return engine_refusal("engine_failed", str(exc))
     except Exception:
         bill("unknown")
         raise
@@ -166,7 +189,7 @@ def put_key(studio: VoiceStudio, request: Request) -> Reply | BinaryReply:
     except ConfigError as exc:
         return error(400, "validator_failed", str(exc))
     except SealUnavailable as exc:
-        return error(503, "engine_error", str(exc))
+        return engine_refusal("engine_unavailable", str(exc))
     return BinaryReply(204)
 
 
@@ -176,7 +199,7 @@ def delete_key(studio: VoiceStudio, request: Request) -> Reply | BinaryReply:
     except ConfigError as exc:
         return error(400, "validator_failed", str(exc))
     except SealUnavailable as exc:
-        return error(503, "engine_error", str(exc))
+        return engine_refusal("engine_unavailable", str(exc))
     return BinaryReply(204)
 
 
