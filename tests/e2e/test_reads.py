@@ -54,7 +54,10 @@ def test_a_recall_past_the_cap_packs_whole_episodes_and_announces_the_rest(spawn
     assert announced is not None
     shown, total = int(announced[1]), int(announced[2])
     assert 0 < shown < total, "the episodes that did not fit are counted, not dropped silently"
-    assert output.count(LONG_MESSAGE.strip()) == shown, "every shown episode is whole"
+    # A long episode that does not fit is skipped, not a wall: the short question that asked for
+    # this recall matched too, and is packed behind them.
+    asked = output.count("what do you remember about the invoice?")
+    assert output.count(LONG_MESSAGE.strip()) + asked == shown, "every shown episode is whole"
 
 
 def test_a_summary_written_in_one_origin_is_recalled_whole_from_another(spawn: Spawn) -> None:

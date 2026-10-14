@@ -84,6 +84,10 @@ ALWAYS_IMPORTANCE = 4
 #: The frontmatter key that records that approval. Written last, and only when true, so a fact
 #: without it is the seven keys it was before ADR 0071, byte for byte.
 EVERY_TURN_KEY = "every_turn"
+#: The frontmatter key a fact carries when it closed earlier facts of the same scope and key: a
+#: list of their ids, written before ``every_turn``. The old files are never rewritten, so a
+#: rebuild learns which facts are closed from the file that closed them.
+SUPERSEDES_KEY = "supersedes"
 DEFAULT_CONFIDENCE = 0.7
 
 #: Five seconds is the whole budget a read route has; waiting longer for a lock is a timeout the
@@ -185,8 +189,11 @@ class Brain:
                     self._con.execute(statement)
                 # Read before the stamp below overwrites it: an older index is migrated in this same
                 # transaction, so no reader ever sees it half re-keyed.
-                if _stored_version(self._con) < 2:
+                stored = _stored_version(self._con)
+                if stored < 2:
                     _rekey_fts(self._con)
+                if stored < 3:
+                    _add_superseded_by(self._con)
                 self._con.execute(
                     "INSERT OR REPLACE INTO companion_meta (key, value) "
                     "VALUES ('schema_version', ?)",
@@ -419,6 +426,45 @@ class Brain:
             raise ValueError("refusing to write an empty fact")
         cited = self._require_provenance(sources)
 
+        with self.write_txn() as con:
+            # A new value under the same (scope, key) closes the live ones: they stay on disk and
+            # in the index for provenance, and recall stops serving them (agent-memory/
+            # consolidation: supersede, do not replace). The lookup shares the write's lock.
+            closes = [
+                str(row[0])
+                for row in con.execute(
+                    """SELECT id FROM companion_fact
+                       WHERE scope = ? AND fact_key = ? AND superseded_by IS NULL ORDER BY id""",
+                    (scope, key),
+                )
+            ]
+            return self._write_fact_locked(
+                con,
+                key=key,
+                body=body,
+                scope=scope,
+                cited=cited,
+                closes=closes,
+                confidence=confidence,
+                importance=importance,
+                tags=tags,
+                every_turn=every_turn,
+            )
+
+    def _write_fact_locked(
+        self,
+        con: sqlite3.Connection,
+        *,
+        key: str,
+        body: str,
+        scope: str,
+        cited: list[str],
+        closes: list[str],
+        confidence: float,
+        importance: int,
+        tags: Sequence[str] | None,
+        every_turn: bool,
+    ) -> MemoryRef:
         node_id = ids.mint("fact")
         created_at = _now_iso()
         rel = f"semantic/{scope}/{node_id}_{text.slug(key)}.md"
@@ -431,30 +477,33 @@ class Brain:
             ("created", created_at),
             ("sources", cited),
         ]
+        if closes:
+            header.append((SUPERSEDES_KEY, closes))
         if every_turn:
             header.append((EVERY_TURN_KEY, True))
             importance = ALWAYS_IMPORTANCE
         file_text = frontmatter.render(header, body)
         self._write_file(rel, file_text)
 
-        with self.write_txn() as con:
-            self.index_node(
-                con,
-                node_id=node_id,
-                kind="fact",
-                rel=rel,
-                file_text=file_text,
-                body=body,
-                importance=importance,
-                created_at=created_at,
-                tags=list(tags or []),
-            )
-            con.execute(
-                """INSERT INTO companion_fact (id, scope, fact_key, confidence)
-                   VALUES (?, ?, ?, ?)""",
-                (node_id, scope, key, confidence),
-            )
-            self.index_provenance(con, node_id, cited, created_at)
+        self.index_node(
+            con,
+            node_id=node_id,
+            kind="fact",
+            rel=rel,
+            file_text=file_text,
+            body=body,
+            importance=importance,
+            created_at=created_at,
+            tags=list(tags or []),
+        )
+        con.execute(
+            """INSERT INTO companion_fact (id, scope, fact_key, confidence)
+               VALUES (?, ?, ?, ?)""",
+            (node_id, scope, key, confidence),
+        )
+        for old in closes:
+            con.execute("UPDATE companion_fact SET superseded_by = ? WHERE id = ?", (node_id, old))
+        self.index_provenance(con, node_id, cited, created_at)
         return MemoryRef(node_id, rel, "fact")
 
     def write_procedural(
@@ -665,6 +714,13 @@ def _stored_version(con: sqlite3.Connection) -> int:
         return int(row[0]) if row is not None else 0
     except ValueError:
         return 0
+
+
+def _add_superseded_by(con: sqlite3.Connection) -> None:
+    """Give a version-2 ``companion_fact`` its ``superseded_by`` column; every fact stays live."""
+    columns = {str(row[1]) for row in con.execute("PRAGMA table_info(companion_fact)")}
+    if "superseded_by" not in columns:
+        con.execute("ALTER TABLE companion_fact ADD COLUMN superseded_by TEXT")
 
 
 def _rekey_fts(con: sqlite3.Connection) -> None:
