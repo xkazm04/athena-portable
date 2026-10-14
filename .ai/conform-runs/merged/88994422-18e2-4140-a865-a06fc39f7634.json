@@ -1,0 +1,128 @@
+{
+ "schema": "conform-run/1",
+ "worker": "88994422-18e2-4140-a865-a06fc39f7634",
+ "subject": "test-harness",
+ "evaluatedAt": "2026-10-14T23:50:59.815091+00:00",
+ "provider": "agy",
+ "model": "gemini-3.8-flash-high",
+ "pairs": [
+  {
+   "context": "daemon-e2e-tests",
+   "subject": "test-harness",
+   "bundle": "software-engineering",
+   "state": "conformant",
+   "evidence": "tests/e2e/conftest.py:5 Spawning the real athena serve process over real sockets in an isolated ephemeral environment verifies true startup, network handshake, and exit hygiene as required by client hosts.",
+   "techniques": [
+    {
+     "technique": "live-app-harness",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/conftest.py:5 The e2e suite is constructed as a live-app harness spawning the actual athena serve process over real sockets to verify true startup, port binding, and exit hygiene."
+    },
+    {
+     "technique": "isolation-lanes",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/conftest.py:18 Every spawned daemon runs in an isolated ephemeral lane: port 0, per-instance token, dedicated ATHENA_HOME in tmp_path, and stripped credentials prevent external network leakage."
+    },
+    {
+     "technique": "platform-quirk-absorption",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/conftest.py:217 The harness absorbs Windows console launcher process-tree quirks via _kill_tree (taskkill /F /T) to prevent orphaned child interpreters from leaking open ports."
+    },
+    {
+     "technique": "recorded-interaction-fixtures",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/conftest.py:112 Tests use deterministic recorded provider interaction transcripts formatted as synthetic NDJSON rounds rather than making non-deterministic live API calls."
+    },
+    {
+     "technique": "assert-through-the-reader",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/conftest.py:97 Process assertions are verified through the public console script entry point and parsed using external readers (json and SSE stream parsers) rather than internal Python state."
+    },
+    {
+     "technique": "negative-control-tests",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/test_spawn_and_handshake.py:210 The test harness validates its own orphan-detection probe via a deliberate negative control that spawns a real sleeping descendant to prove the check fails when an orphan exists."
+    },
+    {
+     "technique": "gate-scope-is-not-report-scope",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/test_spawn_and_handshake.py:80 Authentication gate verification dynamically enumerates every route reported by /health rather than asserting against an arbitrary scoped subset of endpoints."
+    },
+    {
+     "technique": "unreached-decisions-pin-nothing",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/test_decisions.py:104 Documents that internal defensive branches (such as validator_failed in GateHook._check_grant) are unreachable by construction and avoids pinning unreachable internal branches."
+    },
+    {
+     "technique": "fixture-economics",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/conftest.py:383 Lightweight per-test ephemeral homes provide full filesystem isolation without the cost of heavy infrastructure provisioning."
+    },
+    {
+     "technique": "suite-partitioning",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/conftest.py:3 Partitions fast in-process unit/integration daemon testing (tests/daemon/) from full out-of-process process-spawning testing (tests/e2e/) into separate suites."
+    },
+    {
+     "technique": "far-side-oracle",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/test_connectors_journey.py:76 Uses a far-side oracle verifying the external provider fake request log (sent entries) to confirm that actions were actually dispatched to remote hosts."
+    },
+    {
+     "technique": "configuration-axes-cross-the-ladder",
+     "verdict": "conformant",
+     "evidence": "tests/e2e/conftest.py:408 The Spawn.flags helper treats configuration options (voice backend, connectors enabled, token auth) as orthogonal axes across the e2e test ladder rather than conflating them with suite rungs."
+    }
+   ]
+  }
+ ],
+ "declined": [
+  {
+   "subject": "test-harness",
+   "context": "harness-engines",
+   "reason": "Athena's runtime LLM turn execution engine (src/athena/harness/) and its unit tests, not a software test execution harness."
+  },
+  {
+   "subject": "test-harness",
+   "context": "browser-lane",
+   "reason": "Athena's browser interaction and event streaming lane (src/athena/lane/) and its unit tests, not a software test execution harness."
+  },
+  {
+   "subject": "test-harness",
+   "context": "atlas-lanes-drawing",
+   "reason": "Interactive architectural SVG diagramming canvas (examples/atlas/), not a software test execution harness."
+  },
+  {
+   "subject": "test-harness",
+   "context": "desktop-app-shell-ui",
+   "reason": "Tauri desktop UI frontend application and components (apps/desktop/src/), not a software test execution harness."
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-14T23:50:59.815091+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "test-harness"
+   ],
+   "techniques": [
+    "assert-through-the-reader",
+    "configuration-axes-cross-the-ladder",
+    "far-side-oracle",
+    "fixture-economics",
+    "gate-scope-is-not-report-scope",
+    "isolation-lanes",
+    "live-app-harness",
+    "negative-control-tests",
+    "platform-quirk-absorption",
+    "recorded-interaction-fixtures",
+    "suite-partitioning",
+    "unreached-decisions-pin-nothing"
+   ],
+   "deviations": 0,
+   "context": "daemon-e2e-tests",
+   "via": "curator-multi:agy",
+   "model": "gemini-3.8-flash-high"
+  }
+ ]
+}

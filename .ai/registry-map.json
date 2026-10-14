@@ -2219,7 +2219,11 @@
           "revision": 26,
           "changedAt": "2026-10-06",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "tests/e2e/conftest.py:5 Spawning the real athena serve process over real sockets in an isolated ephemeral environment verifies true startup, network handshake, and exit hygiene as required by client hosts.",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:5521806124d93882",
+          "evaluatedRevision": 26
         },
         {
           "subject": "voice-io",
