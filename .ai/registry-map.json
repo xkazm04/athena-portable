@@ -850,7 +850,11 @@
           "revision": 7,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/lanes.css:635 hard-codes 1.1s beside --al-dur-dwell (lanes.css:33), so reduced motion must list it by hand; examples/atlas/design/check-tokens.mjs:44 bans only px/ms, a unit list not a token allow-list; text.ts:26 type size hand-copied to lanes.css:41",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:165125b7a54d0de3",
+          "evaluatedRevision": 7
         },
         {
           "subject": "mcp-tools",
@@ -2602,7 +2606,11 @@
           "revision": 31,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/demo-kit/src/webmcp/hooks.ts:93 is the one execute door and passes raw params to the handler with no inputSchema check, no fault catch and no size cap (asText, hooks.ts:65), so wrong-typed args coerce through, a throw fails the call and read_view's detail is unbounded",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:afba7a2b8c938ae1",
+          "evaluatedRevision": 31
         },
         {
           "subject": "prompt-assembly",
@@ -2736,7 +2744,11 @@
           "revision": 5,
           "changedAt": "2026-09-26",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/demo-kit/src/zoom/useCameraRig.ts:459 captures the pointer at press and :501 pans from the first move, with no click/drag threshold or trailing-click suppression, so child-button clicks jitter the camera and a pan released over a button opens it",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:98dcec8d04236b95",
+          "evaluatedRevision": 6
         },
         {
           "subject": "mcp-tools",
@@ -5988,7 +6000,11 @@
           "revision": 31,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/lib/manifest.ts:205 publishes set_filter's role without required:false and examples/demo-kit/src/webmcp/types.ts:119 marks it required, so every optional filter reads required - contradicting 'Call with no arguments' (BoardTools.tsx:148); out-of-enum args return empty success (roster.ts:94)",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:afba7a2b8c938ae1",
+          "evaluatedRevision": 31
         },
         {
           "subject": "generated-workflow-candidates",
@@ -6286,7 +6302,11 @@
           "revision": 4,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/journey/scripts/shoot.mjs:2 'this is a camera, not a test': the context drives and films planes owned by the example apps and desktop preview fixtures (capture-playbook.mjs:224); no plane is declared, dispatched or seeded here",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:952fe6652c22027d",
+          "evaluatedRevision": 4
         },
         {
           "subject": "agent-memory",
@@ -6385,7 +6405,11 @@
           "revision": 26,
           "changedAt": "2026-10-06",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": ".github/workflows/ci.yml:84 filters @athena/journey out of the gate and nothing schedules it (ci.yml:80 'run by hand before a demo'), so the only assembled-product lane has no tier, never shows green or red on CI, and wiring regressions surface at demo time",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:5521806124d93882",
+          "evaluatedRevision": 26
         },
         {
           "subject": "demo-data-plane",
