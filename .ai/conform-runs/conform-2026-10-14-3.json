@@ -1,0 +1,80 @@
+{
+  "schema": "rkb-run-result/1",
+  "run_id": "conform-2026-10-14-3",
+  "skill": "conform",
+  "skill_version": "1.8.3",
+  "mode": "named",
+  "domain": null,
+  "started_at": "2026-10-14T16:01:00Z",
+  "ended_at": "2026-10-14T16:03:06Z",
+  "exit": 0,
+  "counts": {
+    "dispatched": 0,
+    "landed": 5,
+    "declined": 1,
+    "idled": 0,
+    "contended": 0
+  },
+  "subjects": [
+    {
+      "id": "conversation-orchestration",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "native-shell-integration",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "test-harness",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "module-design",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "voice-io",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    }
+  ],
+  "verdicts": [],
+  "files": [
+    ".ai/registry-map.json"
+  ],
+  "commits": [
+    {
+      "sha": "82c6979",
+      "branch": "main",
+      "pathspec": ".ai/registry-map.json"
+    }
+  ],
+  "pr": null,
+  "declined": [
+    {
+      "subject": "test-harness",
+      "reason": "desktop-scenes-chores: 3 of 24 techniques anchored, below the half evidence floor; left unknown"
+    }
+  ],
+  "failure_signature": null,
+  "notes": "6 pairs judged inside lens-scan step 1 of com.xkazm04.registry (r-20261014155956-6287), one per scoped feature: 4 deviations, 1 not-applicable, 1 left unknown."
+}

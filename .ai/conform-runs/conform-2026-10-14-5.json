@@ -1,0 +1,75 @@
+{
+  "schema": "rkb-run-result/1",
+  "run_id": "conform-2026-10-14-5",
+  "skill": "conform",
+  "skill_version": "1.8.3",
+  "mode": "named",
+  "domain": null,
+  "started_at": "2026-10-14T16:08:40Z",
+  "ended_at": "2026-10-14T16:13:47Z",
+  "exit": 0,
+  "counts": {
+    "dispatched": 0,
+    "landed": 6,
+    "declined": 0,
+    "idled": 0,
+    "contended": 0
+  },
+  "subjects": [
+    {
+      "id": "eval-harness",
+      "at": "2026-10-14",
+      "engine": "conform",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "design-tokens",
+      "at": "2026-10-14",
+      "engine": "conform",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "app-shell",
+      "at": "2026-10-14",
+      "engine": "conform",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "import-normalization",
+      "at": "2026-10-14",
+      "engine": "conform",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "motion",
+      "at": "2026-10-14",
+      "engine": "conform",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    }
+  ],
+  "verdicts": [],
+  "files": [
+    ".ai/registry-map.json"
+  ],
+  "commits": [
+    {
+      "sha": "da3871d",
+      "branch": "main",
+      "pathspec": ".ai/registry-map.json"
+    }
+  ],
+  "pr": null,
+  "declined": [],
+  "failure_signature": null,
+  "notes": "lens-scan r-20261014160833-5488 conform step, one pair per scoped feature; 6 judged (4 deviation, 2 not-applicable); eval-harness added to proving-playbooks-bench (source conform)"
+}
