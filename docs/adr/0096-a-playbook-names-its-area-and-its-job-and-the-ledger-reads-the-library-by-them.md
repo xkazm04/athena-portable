@@ -139,7 +139,20 @@ Chosen first, the runner-up second, and why.
 
 <!-- WP2: storyboard amendment to ADR 0055 merges here -->
 
-<!-- WP4: ledger UI notes merge here -->
+### The ledger, as built
+
+- The edge is the ledger's default order and has no column; Value and Time saved are sortable heads
+  that cycle most-first, reversed, then back to the edge.
+- Time saved reads as the hours the chore takes by hand with the measured speed-up under it; the
+  before-and-after band's "With Athena" figure is her measured run, so the ratio matches the table.
+- The blueprint ends its spine with the result rather than a third column: at the pane's ~440px a
+  third column leaves about twenty characters a step. It draws at most six steps, five portals and
+  four gates, each with "and N more".
+- The rail, the ledger and the preview scroll on their own inside the depth frame; the adopt row is
+  held at the foot of the preview.
+- Job and Portals hide under 1560px of field width, because the preview says both; under 1100px the
+  preview goes, Job returns, and a row opens the chore.
+- The bench-numbers block is one totals line now; the audience filter is gone, the areas replace it.
 
 ## Consequences
 

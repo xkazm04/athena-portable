@@ -194,7 +194,53 @@ leave alone"), **Watch the run** (a rail of tab visits, a dot per turn coloured 
 play, step and arrow keys, the money found so far; her closing words; the runs over time), what it
 taught Athena, and the economics against the incumbent. Back steps one level.
 
-<!-- WP4 ledger section -->
+### The ledger
+
+The Chores depth's root is a ledger you pick from, not a gallery. Three regions share the depth
+frame:
+
+- **The rail** lists "All" and the ten areas of `playbooks/taxonomy.json` in its order, each with
+  the count a press would show under the job in force. "Uncategorised" appears only while some
+  playbook names no area; nothing is hidden for lacking one. It is a list of buttons with
+  `aria-current`, not a `PillGroup`, because it switches what is read rather than setting a
+  preference.
+- **The centre** holds the bench's totals in one line, the simulated-world line, the job chips
+  (every job, or one of the four; pressed buttons), and the view switch, Ledger or Map. The Ledger
+  is the catalog `Table`: thumbnail, playbook (title and domain), job, portals, time saved (hours
+  by hand, with the measured speed-up), value (on the year's scale where it has one) and verdict.
+  It is in the edge's order (hardest for anyone else and most useful first) until a head orders it:
+  Value and Time saved start with the most first, a second press turns them round, a third gives
+  the edge's order back. The Map is the edge map (difficulty for anyone else against usefulness)
+  over the same rows; a mark and a row are one pick, and Enter on a mark opens the chore.
+- **The preview** shows the picked playbook (the first row by default, and again whenever a filter
+  hides the pick): its area and job, its name and promise, then:
+  - the **blueprint**, its process drawn flat from its own data: the portals it reads (up to five)
+    joined by a bus to a numbered spine of its steps (up to six, one line each, the full sentence
+    on hover), the gates as diamond checkpoints where she stops for a signature (up to four), and
+    the end of the flow, what she filed on the bench with the traps she walked past, or, unbenched,
+    the bar it will be held to;
+  - the **storyboard**, the real screens of the bench run (the evidence pipeline's stills), one large
+    with its caption and a strip to pick another (Left, Right, Home, End); a run with no stills yet
+    shows its thumbnail as what she filed and says no step screens were captured;
+  - the **before-and-after band**, the chore by hand (the author's estimate and the incumbent) against
+    her measured run (with your review time, the turns and the model's cost), and the speed-up;
+  - the **adopt row**, held at the pane's foot: "Fit it to me", "Copy the command" and "Open the full
+    playbook", which goes down to the chore and its replay.
+
+**The fit** asks only what differs: for each portal "I use this" or "Mine is…" with the name of the
+person's own, and an optional note on their case. It hands Athena the playbook's own command with
+those differences appended after it (`fitCommand`), shown live as it will be read; the command is
+never rewritten, because a rewrite would be a different chore from the one the bench measured. The
+value stays the author's estimate for the playbook's persona and is never rescaled.
+
+**Narrow frames.** Under 1100px of the field's own width (a container query, and the same number
+in `LEDGER_WIDE` for behaviour) there is no preview: the rail becomes a row of areas over the
+centre, the table shows the job again, and a click, Enter or Space on a row opens the chore, while
+the arrows still only walk the rows.
+
+**States.** Loading and an empty build are the `EmptyState`; a set that could not be read is a
+`ProblemNote` with the reason verbatim; a filter that leaves nothing names the area and the job
+("No playbook in Freight & trade whose job is to win a dispute.") and offers "Show all" in one press.
 
 ## Evidence
 
