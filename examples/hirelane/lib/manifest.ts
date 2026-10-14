@@ -162,7 +162,7 @@ export const BOARD_CAPABILITIES = [
     sideEffects: "none",
     parameters: [
       { name: "id", type: "string", required: true, description: "The candidate's id" },
-      { name: "group", type: "string", description: "Optional group id to look in" },
+      { name: "group", type: "string", required: false, description: "Optional group id to look in" },
     ],
   },
   { name: "zoom_out", reversible: true, sideEffects: "none", parameters: [] },
@@ -173,28 +173,28 @@ export const BOARD_CAPABILITIES = [
     parameters: [
       {
         name: "text",
-        type: "string",
+        type: "string", required: false,
         description: "Matched against name, headline, summary and their written answer",
       },
-      { name: "role", type: "string", description: "A role id from read_view, or omit for both" },
+      { name: "role", type: "string", required: false, description: "A role id from read_view, or omit for both" },
       {
         name: "employer",
-        type: "string",
+        type: "string", required: false,
         description: "Current employer, by company name or email domain",
       },
-      { name: "stage", type: "string", enum: STAGES, description: "One pipeline stage" },
+      { name: "stage", type: "string", required: false, enum: STAGES, description: "One pipeline stage" },
       {
         name: "scored_at_least",
-        type: "number",
+        type: "number", required: false,
         description: "Weighted 0-4 floor; scored candidates only",
       },
       {
         name: "scored_at_most",
-        type: "number",
+        type: "number", required: false,
         description: "Weighted 0-4 ceiling; scored candidates only",
       },
-      { name: "arguable", type: "boolean", description: "Only the ones a person flagged" },
-      { name: "unscored", type: "boolean", description: "Only the ones nobody has scored yet" },
+      { name: "arguable", type: "boolean", required: false, description: "Only the ones a person flagged" },
+      { name: "unscored", type: "boolean", required: false, description: "Only the ones nobody has scored yet" },
     ],
   },
   {
@@ -202,8 +202,8 @@ export const BOARD_CAPABILITIES = [
     reversible: true,
     sideEffects: "none",
     parameters: [
-      { name: "role", type: "string", description: "A role id from read_view, or 'all'" },
-      { name: "arguable", type: "boolean", description: "Show only the candidates a person flagged" },
+      { name: "role", type: "string", required: false, description: "A role id from read_view, or 'all'" },
+      { name: "arguable", type: "boolean", required: false, description: "Show only the candidates a person flagged" },
     ],
   },
   {
@@ -212,8 +212,8 @@ export const BOARD_CAPABILITIES = [
     sideEffects: "none",
     parameters: [
       ROLE_ID,
-      { name: "stage", type: "string", enum: STAGES, description: "One pipeline stage, or omit for all five" },
-      { name: "borderline", type: "boolean", description: "Only the applicants a person flagged as borderline" },
+      { name: "stage", type: "string", required: false, enum: STAGES, description: "One pipeline stage, or omit for all five" },
+      { name: "borderline", type: "boolean", required: false, description: "Only the applicants a person flagged as borderline" },
     ],
   },
   {
