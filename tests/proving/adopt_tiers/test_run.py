@@ -7,6 +7,8 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from athena.adopt.slots import playbooks_root
 from athena.contracts.adopt import Brief
 from athena.proving.adopt_tiers.__main__ import main
@@ -227,3 +229,11 @@ def test_report_and_pick_read_the_results(tmp_path: Path) -> None:
     assert any(line.startswith("interview: ") for line in out)
     picks = json.loads((run_dir / "picks.json").read_text(encoding="utf-8"))
     assert [p["role"] for p in picks] == ["interview", "audit", "shape"]
+
+
+def test_a_relative_run_dir_becomes_absolute_so_legs_in_temp_dirs_find_their_prompts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    rig = make_rig(Path("proving-runs/x"), FakeModel(clearing_script()))
+    assert rig.run_dir.is_absolute() and rig.prompt_dir.is_absolute()

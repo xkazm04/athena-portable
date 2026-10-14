@@ -394,6 +394,9 @@ class Rig:
     library: Path | None = None
 
     def __post_init__(self) -> None:
+        # Absolute: every leg's CLI runs in its session's temp dir, so a relative prompt file
+        # (`--system-prompt-file proving-runs/...`) would not be found and the CLI answers nothing.
+        self.run_dir = Path(self.run_dir).resolve()
         if self.runlog is None:
             self.runlog = RunLog(self.run_dir / "ledger.jsonl")
 
