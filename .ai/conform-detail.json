@@ -1,0 +1,51 @@
+{
+  "schema": "conform-detail/1",
+  "pairs": {
+    "97da7e8d-8b3a-41fd-bcfe-326d41a66565/quality-gates": {
+      "context": "desktop-app-shell-ui",
+      "subject": "quality-gates",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-14",
+      "evaluatedTs": "2026-10-14T23:13:53.294Z",
+      "worker": "65dd366f-cb65-4319-9395-7a0c11ff3812",
+      "techniques": [
+        {
+          "technique": "waiver-names-its-finding",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/styles/source-guards.test.ts:26 Blanket path exemption in source guard skips app.css without identifying the specific finding or occurrence."
+        },
+        {
+          "technique": "match-the-resolved-artifact",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/styles/source-guards.test.ts:27 Matches raw source text with regex without comment stripping or CSS AST parsing, exposing comments to false positives."
+        },
+        {
+          "technique": "refusal-names-a-reachable-remedy",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/styles/source-guards.test.ts:35 Assertion failure outputs index without providing an actionable remedy command or instruction to the author."
+        },
+        {
+          "technique": "gate-liveness",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/styles/source-guards.test.ts:21 Asserts the stylesheet discovery walk found files before evaluating style rule assertions."
+        },
+        {
+          "technique": "decidable-in-a-window",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/styles/source-guards.test.ts:34 Evaluates duration/easing pairing via a bounded negative-lookahead regex scan on the call site."
+        },
+        {
+          "technique": "blocking-by-input-determinism",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/styles/source-guards.test.ts:18 Evaluates checks strictly over repository disk files without network or external mutable inputs."
+        },
+        {
+          "technique": "prose-rule-drift",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/styles/source-guards.test.ts:1 Translates documented design rules from README §3.1 and ADRs 0026/0089 into automated test gates."
+        }
+      ]
+    }
+  }
+}

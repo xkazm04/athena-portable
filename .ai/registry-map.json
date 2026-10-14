@@ -2872,7 +2872,11 @@
           "revision": 54,
           "changedAt": "2026-10-14",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/styles/source-guards.test.ts:26 A blanket file-level exclusion skips stylesheet color checking for app.css without naming the finding or providing an attributable waiver identity.",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:0d8378dd13155e59",
+          "evaluatedRevision": 54
         },
         {
           "subject": "concurrency-guards",
