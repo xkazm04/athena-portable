@@ -32,7 +32,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from athena.channels.voice.backends import VoiceBackend
 from athena.channels.voice.config import VoiceStudio
@@ -57,7 +57,11 @@ from athena.harness.transports import SubprocessTransport, Transport
 from athena.lane.browser_lane import BrowserLane
 from athena.lane.turn_frame import FrameBuilder
 
+if TYPE_CHECKING:
+    from athena.adopt.routes import AdoptStudio
+
 __all__ = [
+    "ADOPT_DIRNAME",
     "ENGINE_DIRNAME",
     "VOICE_DIRNAME",
     "AthenaLocal",
@@ -76,6 +80,10 @@ ENGINE_DIRNAME = "engine"
 #: Where the voice studio keeps its choice (``config.json``) and the sealed provider key — a sibling
 #: of the brain under ``$ATHENA_HOME``, like the engine's directory (ADR 0028).
 VOICE_DIRNAME = "voice"
+
+#: Where adopt sessions keep their temp dirs and the legs their prompt files — a sibling of the
+#: brain under ``$ATHENA_HOME``; a dead process's sessions are cleared on the next one (ADR 0097).
+ADOPT_DIRNAME = "adopt"
 
 TransportFactory = Callable[[CliDialect], Transport]
 """How a dialect is actually run. ``SubprocessTransport`` in production, a scripted one in a test.
@@ -184,9 +192,13 @@ class AthenaLocal:
     vault: Vault | None = None
     #: The voice studio behind ``/voice`` and the ``/voice/*`` routes (ADR 0028).
     voice: VoiceStudio | None = None
+    #: The adopt studio behind the ``/adopt`` routes (ADR 0097).
+    adopt: AdoptStudio | None = None
 
     def close(self) -> None:
-        """Close the brain and cancel any consent flow. Everything else holds no handle."""
+        """Close the brain, cancel any consent flow, end every adopt session."""
+        if self.adopt is not None:
+            self.adopt.close()
         if self.vault is not None:
             self.vault.close()
         self.brain.close()
@@ -214,6 +226,7 @@ def build_local(
     voice_studio: VoiceStudio | None = None,
     voice_off: bool = False,
     model_fn: ModelFn | None = None,
+    adopt: AdoptStudio | None = None,
 ) -> AthenaLocal:
     """Assemble one local Athena: brain, tables, law, catalog, gate, engine, lane, daemon.
 
@@ -241,6 +254,9 @@ def build_local(
     into the catalog under ``connector:<id>``, the ``/connectors`` routes are served, and a
     connect or disconnect re-merges at once. ``None`` — a test's default — is a deployment with
     no connector it may ever call, which is what rule 4 refuses closed.
+
+    ``adopt`` is the adopt studio behind ``/adopt`` (ADR 0097); ``None`` builds the real one, its
+    legs on the ``claude`` CLI whatever ``engine`` is, its sessions under ``$ATHENA_HOME/adopt``.
     """
     dialect = DIALECTS.get(engine)
     if dialect is None and engine not in API_ENGINES:
@@ -319,6 +335,7 @@ def build_local(
     _wire_voice(daemon, studio, voice, voice_off)
     if vault is not None:
         _wire_connectors(daemon, catalog, vault)
+    adopt_studio = _wire_adopt(daemon, adopt, brain.root.parent / ADOPT_DIRNAME, ledger)
     return AthenaLocal(
         brain=brain,
         catalog=catalog,
@@ -334,6 +351,7 @@ def build_local(
         daemon=daemon,
         vault=vault,
         voice=studio,
+        adopt=adopt_studio,
     )
 
 
@@ -371,6 +389,19 @@ def _wire_connectors(daemon: AthenaDaemon, catalog: Catalog, vault: Vault) -> No
     vault.on_change(merge)
     for route in connector_routes(daemon, vault):
         daemon.routes.add(route)
+
+
+def _wire_adopt(
+    daemon: AthenaDaemon, studio: AdoptStudio | None, root: Path, ledger: Ledger
+) -> AdoptStudio:
+    """The adopt studio's routes, outside the writer lock (ADR 0097). Its legs always run on the
+    ``claude`` CLI, whatever engine the daemon's turns use (ADR 0007)."""
+    from athena.adopt.routes import adopt_routes, default_studio
+
+    chosen = studio or default_studio(root, ledger)
+    for route in adopt_routes(daemon, chosen):
+        daemon.routes.add(route)
+    return chosen
 
 
 def _default_args(dialect: CliDialect) -> tuple[str, ...]:

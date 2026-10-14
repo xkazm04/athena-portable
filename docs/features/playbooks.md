@@ -246,6 +246,47 @@ value stays the author's estimate for the playbook's persona and is never rescal
 ("No playbook in Freight & trade whose job is to win a dispute.") and offers "Show all" in one press;
 an id this build does not ship says so with "All playbooks".
 
+## Adopt
+
+Adopting a playbook is a conversation, not a form
+([ADR 0097](../adr/0097-adopting-a-playbook-is-a-conversation-held-outside-the-turn-lock.md)).
+The daemon holds an adopt session in memory (`src/athena/adopt/`), outside the turn lock, so it
+runs while a chat turn runs; at most three are live, each expires after two hours idle, and its
+dropped documents live in a temp directory under `$ATHENA_HOME/adopt/` deleted with it.
+
+**Slots.** What the run depends on for this person: one `portal` slot per app ("Do you use
+Payroll Harbor for the payroll firm, or something else?") and one `gate` slot per gate come
+straight from `playbook.json`; the first audit adds `fact` slots (the dates, places, amounts and
+thresholds the rules turn on) and `trap` slots, twelve at most. Each is `open`, `guessed` or
+`confirmed`, with its source. Research, memory, documents and accounts may fill a slot; only the
+person's own words confirm one, and nothing overrules what she confirmed.
+
+**The loop.** The opening line and the slots arrive at once; the first card (up to four
+questions, each tied to slots, with two to five options and free text) is written while the
+auditor derives the fact slots. After each answer the auditor checks every value against her
+literal words while the next card is written; when the auditor finds nothing open the card is
+dropped and the brief is written. "Good enough" drafts the brief at any time, guesses marked "(my
+guess)" and the open slots listed; eight cards is the most.
+
+**The brief.** A lead, **Your setup** (her apps and the facts, guesses marked), **What I'll
+claim** and **Left alone**, plus the command that will run: the playbook's command and a "My
+case:" block built mechanically from the slots. Every brief has a `rev`; an answer after it makes
+it stale; approval names the rev and only the current one is taken.
+
+**Legs.** Every model call names its kind (`interview`, `audit`, `research`, `shape`, `persona`,
+`judge`) and runs on the `claude` CLI on the subscription at the tier `src/athena/adopt/tiers.json`
+gives that kind (interim values until the tier bench sets them), with no tools unless the leg
+names them. The interviewer keeps one warm stream-json process per session. Each invocation is one
+ledger row (surface `adopt`, trigger `adopt.<kind>`), failures and malformed answers included, and
+one `adopt.usage` event with its milliseconds and time to first text. A malformed answer is sent
+back once; a second one degrades (a plain free-text question, or the slots kept) and never stalls.
+
+**The wire.** `POST /adopt`, `GET /adopt/<sid>/events?after=<seq>` (Server-Sent Events, replay
+then live, heartbeats, last frame `adopt.error {reason: "session_closed"}`), `.../answer`,
+`.../documents`, `.../enough`, `.../approve {rev}`, `DELETE /adopt/<sid>`. The shapes are
+`contracts/adopt.py` and `apps/desktop/src/lib/adopt.ts`, kept equal by
+`tests/contracts/test_adopt_parity.py`.
+
 ## Evidence
 
 A benched playbook can be filmed (ADR 0055): a narration of its latest run, spoken by the local

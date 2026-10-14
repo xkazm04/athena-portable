@@ -1,0 +1,251 @@
+"""ADR 0097 (studio outside the turn lock): the Adopt studio's routes.
+
+Every route is behind the token like every other, refuses in the one error shape, and **never
+takes** ``daemon.writing()``: an adopt session runs while a chat turn runs, and a chat turn never
+waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still answered).
+
+``POST /adopt`` ``{playbook_id}``
+    A new session -> ``{ok, session_id, slots}``. The opening, the first card and the research
+    lanes follow on the event stream. A fourth live session is refused: ``reason``
+    ``budget_exhausted``, ``detail`` starting ``busy:`` (``busy`` is not in ``ERROR_REASONS``).
+``GET /adopt/<sid>/events?after=<seq>``
+    Server-Sent Events: every event past ``after``, then live, ``event: <kind>`` / ``data:
+    <json>``, a ``: heartbeat`` comment every :data:`HEARTBEAT_S` of quiet. When the session
+    ends (DELETE, idle expiry, shutdown) the last frame is ``adopt.error`` with reason
+    ``session_closed`` and then the stream closes: a surface stops reconnecting on that reason.
+``POST /adopt/<sid>/answer`` ``{answers: [{question_id, choice_ids, text}], via}``
+``POST /adopt/<sid>/documents`` ``{name, mime, data_b64}`` -> ``{ok, doc_id}``
+    The bytes are kept in the session's temp dir and handed to ``on_document``; nothing else.
+``POST /adopt/<sid>/enough``
+``POST /adopt/<sid>/approve`` ``{rev}``
+    A rev that is not the current, unanswered brief is refused: ``reason`` ``validator_failed``,
+    ``detail`` starting ``stale_rev:``.
+``DELETE /adopt/<sid>``
+    Lanes told, ``session_closed`` appended, warm process killed, temp dir deleted, streams
+    ended.
+"""
+
+from __future__ import annotations
+
+import base64
+import binascii
+import json
+import re
+from collections.abc import Iterator, Mapping
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
+
+from athena.adopt import loop
+from athena.adopt.legs import LedgerSink, LegRunner, load_tiers
+from athena.adopt.session import AdoptSession, Busy, SessionStore
+from athena.adopt.slots import PlaybookMissing
+from athena.contracts.adopt import AdoptEvent, Answer
+from athena.daemon.routes import EventStream, Reply, Request, Route, error
+
+if TYPE_CHECKING:
+    from athena.daemon.server import AthenaDaemon
+
+__all__ = [
+    "ADOPT_PATH",
+    "ADOPT_PREFIX",
+    "DOCUMENT_CAP",
+    "HEARTBEAT_S",
+    "AdoptStudio",
+    "adopt_routes",
+    "adopt_sse_frame",
+    "default_studio",
+]
+
+ADOPT_PATH = "/adopt"
+ADOPT_PREFIX = "/adopt/"
+HEARTBEAT_S = 15.0
+#: The most a dropped document may be, decoded. The daemon's JSON body cap (1 MiB,
+#: ``server.MAX_BODY_BYTES``) is lower today, so a document past ~750 KB is refused before here.
+DOCUMENT_CAP = 10 * 1024 * 1024
+NAME_CAP = 80
+MIME_CAP = 100
+_UNSAFE = re.compile(r"[^A-Za-z0-9._-]+")
+
+
+@dataclass
+class AdoptStudio:
+    """The session store, and why the studio cannot start sessions if it cannot."""
+
+    store: SessionStore
+    heartbeat_s: float = HEARTBEAT_S
+    #: Non-empty when the studio is unusable (no tiers file): ``POST /adopt`` says so.
+    problem: str = ""
+
+    def close(self) -> None:
+        self.store.close_all()
+
+
+def default_studio(root: Path, ledger: LedgerSink | None) -> AdoptStudio:
+    """The production studio: real CLI legs, sessions under ``root``, rows in ``ledger``."""
+    try:
+        tiers = load_tiers()
+    except (OSError, ValueError) as exc:
+        runner = LegRunner(ledger=ledger, tiers={}, prompt_dir=root / "prompts")
+        return AdoptStudio(SessionStore(root, runner), problem=f"tiers.json: {exc}")
+    runner = LegRunner(ledger=ledger, tiers=tiers, prompt_dir=root / "prompts")
+    return AdoptStudio(SessionStore(root, runner))
+
+
+# --- the routes ---------------------------------------------------------------------------------
+
+
+def start(studio: AdoptStudio, request: Request) -> Reply:
+    if studio.problem:
+        return error(503, "engine_error", studio.problem)
+    playbook_id = request.body.get("playbook_id")
+    if not isinstance(playbook_id, str) or not playbook_id:
+        return error(400, "validator_failed", "playbook_id is required")
+    try:
+        session = studio.store.create(playbook_id)
+    except PlaybookMissing as exc:
+        return error(404, "unknown_ref", str(exc))
+    except Busy as exc:
+        return error(429, "budget_exhausted", f"busy: {exc}")
+    loop.start(session)
+    return 200, {
+        "ok": True,
+        "session_id": session.id,
+        "slots": [asdict(slot) for slot in session.slots],
+    }
+
+
+def act(studio: AdoptStudio, request: Request, tail: str) -> Reply | EventStream:
+    sid, _, verb = tail.partition("/")
+    session = studio.store.get(sid)
+    if session is None:
+        return error(404, "unknown_ref", f"no adopt session {sid!r}")
+    session.touch()
+    if request.method == "DELETE":
+        if verb:
+            return error(404, "unknown", f"no route for DELETE {ADOPT_PREFIX}{tail}")
+        studio.store.delete(sid)
+        return 200, {"ok": True}
+    if request.method == "GET":
+        if verb != "events":
+            return error(404, "unknown", f"no route for GET {ADOPT_PREFIX}{tail}")
+        return events(studio, session, request)
+    if verb == "answer":
+        return answer(session, request.body)
+    if verb == "documents":
+        return document(session, request.body)
+    if verb == "enough":
+        loop.enough(session)
+        return 200, {"ok": True}
+    if verb == "approve":
+        return approve(session, request.body)
+    return error(404, "unknown", f"no route for POST {ADOPT_PREFIX}{tail}")
+
+
+def events(studio: AdoptStudio, session: AdoptSession, request: Request) -> Reply | EventStream:
+    raw = request.query.get("after", "0")
+    try:
+        after = int(raw)
+    except ValueError:
+        return error(400, "validator_failed", f"after must be a whole number, got {raw!r}")
+    if after < 0:
+        return error(400, "validator_failed", "after must be 0 or more")
+    return EventStream(_frames(session, after, studio.heartbeat_s))
+
+
+def answer(session: AdoptSession, body: Mapping[str, Any]) -> Reply:
+    via = body.get("via", "text")
+    if via not in ("text", "voice"):
+        return error(400, "validator_failed", "via is 'text' or 'voice'")
+    raw = body.get("answers")
+    if not isinstance(raw, list):
+        return error(400, "validator_failed", "answers must be a list")
+    answers: list[Answer] = []
+    for index, row in enumerate(raw):
+        if not isinstance(row, Mapping):
+            return error(400, "validator_failed", f"answers[{index}] must be an object")
+        question_id = row.get("question_id")
+        choices = row.get("choice_ids", [])
+        text = row.get("text", "")
+        if not isinstance(question_id, str) or not isinstance(text, str):
+            return error(400, "validator_failed", f"answers[{index}]: question_id and text")
+        if not isinstance(choices, list) or not all(isinstance(c, str) for c in choices):
+            return error(400, "validator_failed", f"answers[{index}].choice_ids: strings")
+        answers.append(Answer(question_id=question_id, choice_ids=tuple(choices), text=text))
+    problem = loop.check_answers(session, answers)
+    if problem:
+        return error(400, "validator_failed", problem)
+    loop.receive_answers(session, answers, via)
+    return 200, {"ok": True}
+
+
+def document(session: AdoptSession, body: Mapping[str, Any]) -> Reply:
+    name, mime, data = body.get("name"), body.get("mime"), body.get("data_b64")
+    if not isinstance(name, str) or not name.strip():
+        return error(400, "validator_failed", "name is required")
+    if not isinstance(mime, str) or not mime or len(mime) > MIME_CAP:
+        return error(400, "validator_failed", "mime is required")
+    if not isinstance(data, str) or not data:
+        return error(400, "validator_failed", "data_b64 is required")
+    if len(data) > (DOCUMENT_CAP * 4) // 3 + 4:
+        return error(400, "validator_failed", f"a document is at most {DOCUMENT_CAP} bytes")
+    try:
+        content = base64.b64decode(data, validate=True)
+    except (binascii.Error, ValueError):
+        return error(400, "validator_failed", "data_b64 is not base64")
+    if not content or len(content) > DOCUMENT_CAP:
+        return error(400, "validator_failed", f"a document is 1 to {DOCUMENT_CAP} bytes")
+    safe = _UNSAFE.sub("_", Path(name).name).strip("._")[:NAME_CAP] or "document"
+    with session.lock:
+        doc_id = f"doc{len(session.docs) + 1}"
+        folder = session.temp_dir / "docs"
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / f"{doc_id}-{safe}"
+        path.write_bytes(content)
+        session.docs[doc_id] = path
+    session.submit(lambda: session.call_hook("on_document", doc_id, path))
+    return 200, {"ok": True, "doc_id": doc_id}
+
+
+def approve(session: AdoptSession, body: Mapping[str, Any]) -> Reply:
+    rev = body.get("rev")
+    if not isinstance(rev, int) or isinstance(rev, bool):
+        return error(400, "validator_failed", "rev must be a whole number")
+    problem = loop.approve(session, rev)
+    if problem:
+        return error(409, "validator_failed", problem)
+    return 200, {"ok": True, "rev": rev}
+
+
+# --- the stream ---------------------------------------------------------------------------------
+
+
+def adopt_sse_frame(event: AdoptEvent) -> str:
+    """One adopt event as one SSE frame; ``json.dumps`` keeps ``data:`` on one line."""
+    return f"event: {event.kind}\ndata: {json.dumps(event.to_dict(), sort_keys=True)}\n\n"
+
+
+def _frames(session: AdoptSession, after: int, heartbeat_s: float) -> Iterator[str]:
+    cursor = after
+    while True:
+        for event in session.events_after(cursor):
+            cursor = event.seq
+            yield adopt_sse_frame(event)
+        if session.closed:
+            return
+        if not session.wait_after(cursor, heartbeat_s):
+            yield ": heartbeat\n\n"
+
+
+def adopt_routes(daemon: AthenaDaemon, studio: AdoptStudio) -> list[Route]:
+    """The studio's routes, exact before prefix, for :meth:`RouteTable.add`."""
+
+    def tail(request: Request) -> str:
+        return request.path[len(ADOPT_PREFIX) :]
+
+    return [
+        Route("POST", ADOPT_PATH, lambda request: start(studio, request)),
+        Route("GET", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),
+        Route("POST", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),
+        Route("DELETE", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),
+    ]
