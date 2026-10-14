@@ -1,6 +1,8 @@
 {
   "id": "escrow-analysis-check",
   "title": "The escrow analysis checked against the real tax and insurance bills, and the surplus claimed",
+  "short_title": "Mortgage escrow overcharges disputed",
+  "brief": "A homeowner's escrow analysis raised the payment and holds **$4,440** in errors and overpayments.\n\n**Disputed or claimed — $4,440:**\n- Tax line projected from a stale bill\n- Insurance projected at last year's premium\n- Cushion over the one-sixth limit\n- Late penalty the servicer charged to escrow\n- $214.60 surplus kept past its 30 days\n- $1,980 premium paid twice, refunded to the card\n\n**Left alone:**\n- Flood premium, pool tax bill, yearly waste fee\n- Last year's on-time, correct payments\n- An umbrella premium never escrowed\n- An audit firm's 35% and a paid tax-relief pitch",
   "domain": "Mortgage",
   "audience": "home",
   "category": "housing",

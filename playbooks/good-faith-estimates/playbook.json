@@ -1,6 +1,8 @@
 {
   "id": "good-faith-estimates",
   "title": "Every uninsured and self-pay patient's good faith estimate sent on time, and every bill 400 dollars over its estimate caught before it goes out",
+  "short_title": "Self-pay estimates issued and overbills held",
+  "brief": "A family practice's billing lead faces **self-pay estimates** due and statements over them.\n\n**Done by the rule's dates:**\n- Each self-pay estimate by its business day\n- A new estimate when a service is added\n- Statements $400 or more over estimate held\n- Dispute papers sent inside 10 business days\n- The disputed bill kept out of collections\n\n**Left alone:**\n- Reissuing an estimate after a visit to match a bill\n- An estimate for a cancelled visit\n- Bills under $400 over, or over by a lab's charge\n- A bill over an estimate revised before the visit\n- An insured patient's bill, a 3% vendor",
   "domain": "Clinics",
   "audience": "work",
   "category": "health",

@@ -1,6 +1,8 @@
 {
   "id": "part-d-exception",
   "title": "A parent's drug plan asked for every formulary and tier exception his history supports, with the prescriber's statement, and none it does not",
+  "short_title": "Drug plan exceptions asked for a parent",
+  "brief": "A daughter manages her father's Medicare drug plan, where **three drugs** cost more than they should.\n\n**Saved this plan year — $799:**\n- Exceptions only where every alternative failed\n- Each with the doctor's signed statement\n- Expedited only when waiting risks his health\n- The doctor asked for the one missing statement\n\n**Left alone:**\n- A drug whose step therapy was never tried\n- Tier exceptions the rules don't allow\n- An exception already approved for the year\n- A hair-growth drug the law excludes\n- Cash fills while a decision is days away",
   "domain": "Patient health",
   "audience": "home",
   "category": "health",

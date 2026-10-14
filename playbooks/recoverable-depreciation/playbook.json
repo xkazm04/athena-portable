@@ -1,6 +1,8 @@
 {
   "id": "recoverable-depreciation",
   "title": "The insurer's depreciation holdback, collected",
+  "short_title": "Insurer's depreciation holdback collected",
+  "brief": "A California household with a windstorm claim has **$15,190** held back on finished repairs.\n\n**Claimed — 4 finished repairs, $15,190:**\n- Each estimate line matched to invoice and payment\n- Holdback on the four repairs that are done\n- At what was actually spent, never more\n- Inside the three-year disaster window\n\n**Left alone:**\n- A quoted fence and cabinets not yet installed\n- Gutters already released by the insurer\n- A shed paid at cash value only\n- A cheaper laptop and a pre-storm furniture receipt\n- Water-claim lines past their window",
   "domain": "Home insurance",
   "audience": "home",
   "category": "housing",

@@ -1,6 +1,8 @@
 {
   "id": "federal-prompt-pay-interest",
   "title": "The interest federal agencies owe on late payments, claimed with the penalty",
+  "short_title": "Interest on late federal payments claimed",
+  "brief": "A Kansas City contractor bills **3 federal contracts**, and some agencies paid late without interest.\n\n**Requested — $440 on 4 invoices:**\n- Due dates from receipt, acceptance and terms\n- Checked against the day the money landed\n- Interest to the cent on each late payment\n- The extra penalty where still inside 40 days\n\n**Left alone:**\n- An invoice in a quantity dispute\n- On time after a weekend, acceptance or reissue\n- A late payment that came with its interest\n- Eight cents of interest, under a dollar\n- August's invoice and a lapsed June penalty",
   "domain": "Government contracting",
   "audience": "work",
   "category": "public",

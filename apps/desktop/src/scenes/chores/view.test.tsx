@@ -1,12 +1,12 @@
 /**
- * Tests for the Chores depth's view — README section 3.5, ADR 0040, 0053, 0055, 0087, 0090 and 0096.
+ * Tests for the Chores depth's view — README section 3.5, ADR 0040, 0053, 0087, 0090 and 0096.
  *
- * Every fixture renders at the place it is meant to be seen, and every capability the Playbooks
- * module's own view had is asserted present at its depth: the field (the ledger's rail, job chips,
- * table, totals, verdicts, the simulated line, the preview with its blueprint, storyboard,
- * before-and-after band and adopt row; the empty, loading and problem states), a chore (facets,
- * portals with Open, method, gates, proof, traps, run, film with its currency, lessons, money,
- * Copy, Hand) and a turn of the replay. Their wiring (a click does what it says) is in
+ * Every fixture renders at the place it is meant to be seen, and every level is asserted drawn:
+ * the catalogue (the totals, the area tabs with their counts, the job chips, the order switch, the
+ * rows with a still or a glyph, the time and the value; the empty, loading and problem states), a
+ * chore's topic page (the crumb, the eyebrow, the title, the brief as simple markdown or the
+ * promise, the figures, the flow with its portals, steps, gate and result, the gallery and the
+ * adopt row) and a turn of the replay. Their wiring (a click does what it says) is in
  * `wired.test.tsx`.
  */
 import { renderToStaticMarkup } from "react-dom/server";
@@ -14,160 +14,128 @@ import { describe, expect, it } from "vitest";
 
 import type { Path } from "@/depth/model";
 import { CATEGORIES, JOBS } from "@/lib/playbook-taxonomy";
+import type { PlaybooksModel } from "@/modules/playbooks/model";
 
-import { facetFor, fixtureIds, fixtures, pathFor } from "./fixtures";
-import { SIMULATED_LINE, SPINE_STEPS, chorePath, runPath } from "./model";
+import { fixtureIds, fixtures, pathFor } from "./fixtures";
+import { chorePath, runPath } from "./model";
 import ChoresView from "./view";
 
 const noop = () => {};
 
-function html(fixture: string, path: Path = pathFor(fixture), initialFacet = facetFor(fixture)): string {
-  return renderToStaticMarkup(
-    <ChoresView model={fixtures[fixture]!} path={path} go={noop} initialFacet={initialFacet} />,
-  );
+function render(model: PlaybooksModel, path: Path): string {
+  return renderToStaticMarkup(<ChoresView model={model} path={path} go={noop} />);
+}
+
+function html(fixture: string, path: Path = pathFor(fixture)): string {
+  return render(fixtures[fixture]!, path);
 }
 
 const count = (h: string, needle: string | RegExp) =>
   typeof needle === "string" ? h.split(needle).length - 1 : (h.match(needle) ?? []).length;
 
-describe("every fixture renders at its own place, and its field too", () => {
+/** The ledger fixture with a brief written for the refunds playbook, so the topic has markdown to read. */
+function withBrief(brief: string): PlaybooksModel {
+  const m = fixtures.ledger!;
+  return {
+    ...m,
+    items: m.items.map((v) => (v.id === "carrier-refunds" ? { ...v, playbook: { ...v.playbook, brief } } : v)),
+  };
+}
+
+describe("every fixture renders at its own place, and its catalogue too", () => {
   for (const id of fixtureIds) {
     it(id, () => {
       const here = html(id);
-      expect(here).toContain('class="chores');
-      const field = html(id, { root: "chores" });
-      expect(field).toContain('class="chores ch-field');
+      expect(here).toMatch(/class="(pa-page|chores)/);
+      expect(html(id, { root: "chores" })).toContain('class="pa-page');
     });
   }
 });
 
-describe("the field: the ledger", () => {
+describe("the catalogue", () => {
   const h = html("typical", { root: "chores" });
   const l = html("ledger", { root: "chores" });
 
-  it("heads the ledger with its title, the bench's totals in one line and the simulated line", () => {
-    expect(h).toContain("What only Athena does");
+  it("heads the catalogue with its title and the bench's totals in one line", () => {
+    expect(l).toContain(">Playbooks</h1>");
     expect(h).toContain("3 playbooks · 1 of 2 benched exceed the bar · $551.40 found on the bench");
-    expect(h).toContain(SIMULATED_LINE);
-    expect(h.indexOf(SIMULATED_LINE)).toBeGreaterThan(h.indexOf("found on the bench"));
   });
 
-  it("lists every area on the rail with its count, the one in force current, and names none twice", () => {
+  it("lists every area as a tab with its count, All current, an empty area disabled", () => {
     expect(l).toContain('aria-label="Areas"');
-    expect(count(l, /class="ch-area focus-ring"/g)).toBe(1 + CATEGORIES.length);
-    expect(l).toMatch(/aria-current="true"[^>]*><span class="ch-area__name">All<\/span><span class="ch-area__n ch-data">3</);
-    expect(l).toContain('Freight &amp; trade</span><span class="ch-area__n ch-data">1<');
-    expect(l).toContain('Health &amp; clinics</span><span class="ch-area__n ch-data">0<');
-    expect(l).not.toContain("Uncategorised");
+    expect(count(l, /class="pa-tab focus-ring"/g)).toBe(1 + CATEGORIES.length);
+    expect(l).toMatch(/aria-current="page"[^>]*aria-label="All, 3"/);
+    expect(l).toContain('aria-label="Freight &amp; trade, 1"');
+    expect(l).toMatch(/disabled=""[^>]*aria-label="Health &amp; clinics, 0"/);
+    // The tab says the area's first word; its full name is its title.
+    expect(l).toContain('<span class="pa-tab__label">Freight</span>');
   });
 
-  it("lists the playbooks that name no area under Uncategorised, never hiding them", () => {
-    expect(h).toContain('Uncategorised</span><span class="ch-area__n ch-data">3<');
+  it("offers the job as pressed chips and the order as a three-way switch, edge first", () => {
+    expect(l).toContain('aria-label="Job"');
+    for (const j of ["All jobs", ...JOBS.map((x) => x.label)]) expect(l).toMatch(new RegExp(`>${j}</button>`));
+    expect(l).toMatch(/aria-pressed="true"[^>]*>All jobs</);
+    expect(l).toContain('aria-label="Order"');
+    expect(l).toMatch(/aria-pressed="true"[^>]*>Best edge</);
+    expect(l).toMatch(/aria-pressed="false"[^>]*>Most value</);
+    expect(l).toMatch(/aria-pressed="false"[^>]*>Most time saved</);
+    expect(l).toContain("3 playbooks in all areas");
   });
 
-  it("offers the job as pressed buttons and the view as Ledger or Map, the ledger first", () => {
-    expect(h).toContain('aria-label="Job"');
-    for (const j of ["Every job", ...JOBS.map((x) => x.label)]) expect(h).toContain(`>${j}</button>`);
-    expect(h).toMatch(/aria-pressed="true"[^>]*>Every job</);
-    expect(h).toMatch(/aria-pressed="true"[^>]*>Ledger</);
-    expect(h).toMatch(/aria-pressed="false"[^>]*>Map</);
-    expect(h).not.toContain('role="radiogroup"');
+  it("is a pickable table of every row in the edge's order, none picked until one is opened", () => {
+    expect(l).toContain('role="grid"');
+    expect(count(l, /<tr aria-selected=/g)).toBe(3);
+    expect(count(l, /aria-selected="true"/g)).toBe(0);
+    const titles = [...l.matchAll(/class="pa-name__title">([^<]+)</g)].map((m) => m[1]);
+    expect(titles).toEqual(fixtures.ledger!.items.map((v) => v.playbook.shortTitle));
   });
 
-  it("is a pickable table in the edge's order, the first row picked, money and hours the sortable heads", () => {
-    expect(h).toContain('role="grid"');
-    expect(count(h, /<tr aria-selected=/g)).toBe(3);
-    expect(count(h, /aria-selected="true"/g)).toBe(1);
-    const titles = [...h.matchAll(/class="ch-row__title">([^<]+)</g)].map((m) => m[1]);
-    expect(titles).toEqual(["Late-parcel refunds", "Chargeback evidence packs", "Delayed-flight compensation"]);
-    expect(count(h, 'aria-sort="none"')).toBe(2);
-    expect(h).toContain(">Time saved<");
-    expect(h).toContain(">Value<");
+  it("leads a filmed row with its first still, lazy, and the others with their area's glyph", () => {
+    expect(count(l, /<img class="pa-thumb"[^>]*loading="lazy"/g)).toBe(1);
+    expect(count(l, /class="pa-thumb pa-thumb--none"/g)).toBe(2);
   });
 
-  it("gives each row its domain, job, portals, hours by hand, value on the year's scale and verdict", () => {
-    expect(l).toContain("E-commerce</span>");
-    expect(l).toContain("Recover money</span>");
-    expect(h).toContain("Unsorted</span>");
-    expect(h).toContain("$21,600");
-    expect(h).toContain("3 h");
-    expect(h).toContain("29× faster");
-    for (const word of ["Exceeds", "Falls short", "Not benched"]) expect(h).toContain(word);
+  it("gives each row its job, its portals, its time by hand against hers and its value on the year's scale", () => {
+    expect(l).toContain(">Recover money</span>");
+    expect(l).toContain('<span class="pa-chip">Carrier billing centre</span>');
+    expect(l).toContain('<span class="pa-time__hand">3h</span>');
+    expect(l).toContain('<span class="pa-time__athena">6m</span>');
+    expect(l).toContain('<span class="pa-time__athena">not run</span>');
+    expect(l).toContain('<span class="pa-value__n">$4,940</span><span class="pa-value__per">a year</span>');
   });
 
-  it("carries a filmed row's still as a small lazy thumbnail, and a quiet box where there is none", () => {
-    expect(count(h, /<img class="ch-row__thumb"[^>]*alt=""[^>]*loading="lazy"[^>]*decoding="async"/g)).toBe(2);
-    expect(count(h, /<span class="ch-row__thumb" aria-hidden="true">/g)).toBe(1);
+  it("teases a row with its brief's lead line, or its promise when it has no brief", () => {
+    expect(l).toContain(fixtures.ledger!.items[1]!.playbook.promise.replace(/'/g, "&#x27;"));
+    const b = render(withBrief("Late parcels, **refunded**.\n\n- one\n- two"), { root: "chores" });
+    expect(b).toContain('<span class="pa-name__lead">Late parcels, refunded.</span>');
   });
 
-  it("previews the first row: its area and job, its name, its promise and its value as the author's estimate", () => {
-    expect(l).toContain('aria-label="Preview: Late-parcel refunds"');
-    expect(l).toContain("Freight &amp; trade · Recover money");
-    expect(l).toContain("Every late parcel&#x27;s refund found");
-    expect(l).toContain("author&#x27;s estimate");
-  });
-
-  it("draws the blueprint from the playbook: its portals, its numbered steps, its gates, what she filed", () => {
-    const refunds = fixtures.typical!.items[0]!.playbook;
-    expect(l).toContain('<figure class="ch-plan">');
-    for (const a of refunds.apps) expect(l).toContain(`class="ch-plan__name">${a.name}<`);
-    expect(count(l, /class="ch-plan__step"/g)).toBe(Math.min(refunds.steps.length, SPINE_STEPS));
-    expect(count(l, /class="ch-plan__step ch-plan__gate"/g)).toBe(refunds.gates.length);
-    expect(l).toContain("You sign");
-    expect(l).toContain("Filed on the bench");
-    expect(l).toContain("2 of 2 traps walked past");
-    expect(l).toContain("<figcaption");
-  });
-
-  it("shows the run's real screens with a strip to pick from, or the thumbnail and a line saying none were captured", () => {
-    expect(l).toContain("1 of 3 · Abstract");
-    expect(count(l, /class="ch-story__pick focus-ring"/g)).toBe(3);
-    expect(count(l, /class="ch-story__pick focus-ring" aria-pressed="true"/g)).toBe(1);
-    expect(h).toContain("No step screens captured for this run yet.");
-    expect(h).toContain("What she filed</figcaption>");
-  });
-
-  it("sets the chore by hand against her measured run, with the ratio between them", () => {
-    expect(l).toContain(">By hand<");
-    expect(l).toContain(">With Athena<");
-    expect(l).toContain("29× faster");
-    expect(l).toContain("of model time");
-  });
-
-  it("offers the fit, the command and the full playbook at the pane's foot", () => {
-    expect(l).toContain(">Fit it to me</button>");
-    expect(l).toContain(">Copy the command</button>");
-    expect(l).toContain(">Open the full playbook</button>");
-  });
-
-  it("is an empty state of its own when the build ships nothing, with no totals and no simulated line", () => {
+  it("is an empty state of its own when the build ships nothing, with no totals", () => {
     const e = html("empty", { root: "chores" });
     expect(e).toContain("No playbooks in this build");
-    expect(e).not.toContain(SIMULATED_LINE);
-    expect(e).not.toContain("ch-led");
+    expect(e).not.toContain("pa-tabs");
   });
 
-  it("says a load that failed as a problem, the reason verbatim, never as an empty ledger", () => {
+  it("says a load that failed as a problem, the reason verbatim, never as an empty catalogue", () => {
     const model = { ...fixtures.typical!, items: [], loading: false, problem: "ENOENT playbooks/x/bench.json" };
-    const p = renderToStaticMarkup(<ChoresView model={model} path={{ root: "chores" }} go={noop} />);
-    expect(p).toContain('role="alert"');
-    expect(p).toContain("The playbooks could not be read.");
-    expect(p).toContain("ENOENT playbooks/x/bench.json");
-    expect(p).not.toContain("No playbooks in this build");
+    for (const path of [{ root: "chores" } as Path, chorePath("carrier-refunds")]) {
+      const p = render(model, path);
+      expect(p).toContain('role="alert"');
+      expect(p).toContain("The playbooks could not be read.");
+      expect(p).toContain("ENOENT playbooks/x/bench.json");
+      expect(p).not.toContain("No playbooks in this build");
+    }
   });
 
   it("says it is loading while the set is on its way", () => {
-    const model = { ...fixtures.typical!, items: [], loading: true };
-    const p = renderToStaticMarkup(<ChoresView model={model} path={{ root: "chores" }} go={noop} />);
+    const p = render({ ...fixtures.typical!, items: [], loading: true }, { root: "chores" });
     expect(p).toContain("Loading the playbooks");
   });
 
-  it("copes with a half-written playbook: a row, a word for it, nothing invented", () => {
+  it("copes with a half-written playbook: a row, nothing invented", () => {
     const d = html("degraded", { root: "chores" });
-    expect(d).toContain("A half-written playbook");
-    expect(d).toContain("Not benched");
     expect(d).toContain("1 playbook · none benched yet");
-    expect(d).toContain("Not benched, so nothing is measured.");
+    expect(count(d, /<tr aria-selected=/g)).toBe(1);
   });
 
   it("shows the whole shipped set as rows", () => {
@@ -176,159 +144,72 @@ describe("the field: the ledger", () => {
   });
 });
 
-describe("a chore", () => {
-  const open = html("open");
+describe("a chore's topic page", () => {
+  const t = html("ledger", chorePath("carrier-refunds"));
 
-  it("is its own scene: the drawing labelled stylised, the name in display type, the promise, the caveat", () => {
-    expect(open).toContain("ch-marquee ch-marquee--chore");
-    expect(open).toContain("Late-parcel refunds</h1>");
-    expect(open).toContain("Stylised drawing of this chore");
-    expect(open).toContain("Not a screenshot");
-    expect(open).toContain("Every late parcel&#x27;s refund found");
-    expect(open).toContain('role="note"');
-    expect(open).toContain("$4,940");
-    expect(open).toContain("a year, author&#x27;s estimate");
+  it("has a way back, the area and job, and the short title as the page's heading", () => {
+    expect(t).toContain("All playbooks</button>");
+    expect(t).toContain("Freight &amp; trade · Recover money");
+    expect(t).toContain('<h1 id="pa-title" class="pa-title">Late-parcel refunds</h1>');
   });
 
-  it("offers the command two ways: copy it, or hand it to Athena", () => {
-    expect(open).toContain("Copy the command");
-    expect(open).toContain("Hand it to Athena");
-  });
-
-  it("states the bench at a glance with the standing line, and opens the result from it", () => {
-    // The name starts with the visible label and carries the figures: it replaces the button's text.
-    expect(open).toMatch(/aria-label="Bench, \d{4}-\d{2}-\d{2}: \$[\d,.]+ of \$[\d,.]+ planted in its world\. Open what she filed"/);
-    expect(open).toContain(SIMULATED_LINE);
-    expect(open).toContain("planted in its world");
-    expect(open).not.toContain("there to find");
-  });
-
-  it("lists every part of the chore and of the proof, one row each, with its one line", () => {
-    expect(open).toContain('aria-label="Parts of this playbook"');
-    for (const part of [
-      "The chore today",
-      "Where it happens",
-      "How she works it",
-      "Where she stops for you",
-      "What she filed",
-      "Traps",
-      "Watch the run",
-      "The run, filmed",
-      "Why it is worth it",
-    ])
-      expect(open, part).toContain(part);
-    expect(open).toContain('aria-current="page"');
-    expect(open).toContain("The chore</h2>");
-    expect(open).toContain("The proof</h2>");
-  });
-
-  it("opens on the chore and tells Athena in the person's words", () => {
-    expect(open).toContain("Tell Athena");
-    expect(open).toContain("Go through this week&#x27;s carrier invoice");
-    expect(open).toContain("waits in her composer until you send it");
-  });
-
-  it("opens on the part a fixture names", () => {
-    const proof = html("open-short-proof");
-    expect(proof).toContain('aria-label="The cards the gate filed"');
-    expect(proof).toContain("Claims right");
-    expect(proof).toContain("Falls short");
-    expect(proof).toContain("Missed");
-  });
-
-  it("lists the portals each with its Open where it has an address, and the method and the gates", () => {
-    const shipped = fixtures.shipped!;
-    const withUrl = shipped.items.find((v) => v.playbook.apps.some((a) => a.url))!;
-    const h = renderToStaticMarkup(
-      <ChoresView model={shipped} path={chorePath(withUrl.id)} go={noop} initialFacet="portals" />,
+  it("reads the brief as simple markdown: paragraphs, bullets and bold, never HTML", () => {
+    const b = render(
+      withBrief("A store **owed refunds**.\n\nWhat she does:\n- reads the invoices\n- files the claims\n\n<b>not markup</b>"),
+      chorePath("carrier-refunds"),
     );
-    const urls = withUrl.playbook.apps.filter((a) => a.url).length;
-    expect(count(h, /class="btn btn--ghost focus-ring btn--sm"/g)).toBe(urls);
-    expect(h).toContain(">Open</button>");
-    const method = renderToStaticMarkup(
-      <ChoresView model={shipped} path={chorePath(withUrl.id)} go={noop} initialFacet="method" />,
-    );
-    expect(method).toContain("ch-steps");
-    const gates = renderToStaticMarkup(
-      <ChoresView model={shipped} path={chorePath(withUrl.id)} go={noop} initialFacet="gates" />,
-    );
-    expect(gates).toContain("GATED");
+    expect(b).toContain('<div class="rich pa-brief"><p>A store <strong>owed refunds</strong>.</p>');
+    expect(b).toContain("<ul><li>reads the invoices</li><li>files the claims</li></ul>");
+    expect(b).toContain("&lt;b&gt;not markup&lt;/b&gt;");
   });
 
-  it("lists the traps by id, a filed one first, folded past five and saying how many it shows", () => {
-    const clean = html("open-traps");
-    expect(clean).toContain("2 of 2 traps walked past");
-    expect(clean).toContain("1Z88B7");
-    const short = html("open-short-traps");
-    expect(short).toContain("6 of 7 traps walked past");
-    const first = short.indexOf('class="ch-trap"');
-    expect(short.slice(first - 60, first + 400)).toContain("DP-124");
-    expect(short).toContain("Filed anyway.");
-    expect(short).toContain("Show all 7 (showing 5 of 7)");
-    expect(short).not.toContain("DP-129");
+  it("falls back to the promise when the playbook has no brief", () => {
+    expect(t).toContain('<p class="pa-brief pa-brief--promise">');
+    expect(t).toContain(fixtures.ledger!.items[0]!.playbook.promise.replace(/'/g, "&#x27;"));
   });
 
-  it("points the run at the replay, never draws it here, and keeps her closing words and the run history", () => {
-    const run = html("open", chorePath("carrier-refunds"), "run");
-    expect(run).toContain(">Watch the run</button>");
-    expect(run).toContain("4 turns across 3 tab visits");
-    expect(run).toContain('aria-label="Tab visits, in order"');
-    expect(run).toContain("Athena, at the end of the run");
-    expect(run).not.toContain("ch-rail");
+  it("states the value, the time by hand against hers, and the traps she walked past", () => {
+    expect(t).toContain('<span class="pa-kpi__label">Value</span><span class="pa-kpi__n">$4,940</span>');
+    expect(t).toContain(">Time saved</span>");
+    expect(t).toContain(">Traps avoided</span>");
   });
 
-  it("plays the film where it is served and shows its still where it is not, each with its currency", () => {
-    const served = html("open-evidence");
-    expect(served).toContain('<video class="ch-film__media"');
-    expect(served).toContain('src="/evidence/carrier-refunds/evidence.mp4"');
-    expect(served).toContain("Current");
-    expect(served).toContain("narrated for the preview");
-    expect(served).toContain("kokoro af_heart");
-    const still = html("open-short-evidence");
-    expect(still).not.toContain("<video");
-    expect(still).toContain('<img class="ch-film__media"');
-    expect(still).toContain("Stale");
-    expect(still).toContain("the dev server plays it there");
-    expect(still).toContain("so the figures may differ");
+  it("draws how it runs: the portals she reads, the numbered steps, the gate before its step, what she filed", () => {
+    const p = fixtures.ledger!.items[0]!.playbook;
+    expect(t).toContain(">How it runs</h2>");
+    expect(count(t, /class="pa-source"/g)).toBe(p.apps.length);
+    expect(count(t, /class="pa-step"/g)).toBe(p.steps.length);
+    expect(count(t, /class="pa-gate"/g)).toBe(p.gates.length);
+    expect(t).toContain('<span class="pa-gate__label">File a refund claim</span>');
+    expect(t).toContain("Filed on the bench");
+    const un = html("ledger", chorePath("flight-compensation"));
+    expect(un).toContain("Not benched yet");
+    expect(un).toContain("the bar it will be held to");
   });
 
-  it("shows no film part and no replay for a chore that has none", () => {
-    const h = html("open-unbenched");
-    expect(h).not.toContain("The run, filmed");
-    expect(h).not.toContain("Watch the run");
+  it("shows every still of the run large, each with its caption and a way to enlarge it", () => {
+    expect(t).toContain(">See it run</h2>");
+    expect(count(t, /class="pa-frame focus-ring"/g)).toBe(3);
+    expect(t).toContain('aria-label="Enlarge: Turn 2 - Carrier billing centre: list the invoice"');
+    expect(t).not.toContain('role="dialog"');
+    const none = html("ledger", chorePath("chargeback-evidence"));
+    expect(none).toContain("No step screens captured for this run yet.");
+    expect(none).toContain("No screens captured for this run yet.");
   });
 
-  it("says a chore that was never benched claims nothing measured, and holds it to its bar", () => {
-    const proof = html("open-unbenched", chorePath("flight-compensation"), "result");
-    expect(proof).toContain("No run on the bench yet, so nothing here is measured.");
-    expect(proof).toContain("The bar it will be held to");
-    expect(proof).not.toContain('aria-label="The cards the gate filed"');
-    const open = html("open-unbenched");
-    expect(open).toContain("Not benched");
-    expect(open).not.toContain("Open what she filed");
+  it("offers the fit, the replay where there is a run, and the command", () => {
+    expect(t).toContain(">Make it yours</h2>");
+    expect(t).toContain(">Fit it to me</button>");
+    expect(t).toContain(">Watch the run turn by turn</button>");
+    expect(t).toContain(">Copy the command</button>");
+    expect(html("ledger", chorePath("chargeback-evidence"))).not.toContain("Watch the run turn by turn");
   });
 
-  it("reads the money, why it is on the edge, the lessons and the sources", () => {
-    const money = html("open", chorePath("carrier-refunds"), "money");
-    expect(money).toContain("Why it is on the edge");
-    expect(money).toContain("Difficulty for anyone else");
-    expect(money).toContain('aria-label="4 of 5"');
-    expect(money).toContain("Carrier service guarantee terms");
-    expect(money).toContain("by hand.");
-    const shipped = fixtures.shipped!;
-    const taught = shipped.items.find((v) => v.playbook.lessons.length > 0)!;
-    const lessons = renderToStaticMarkup(
-      <ChoresView model={shipped} path={chorePath(taught.id)} go={noop} initialFacet="lessons" />,
-    );
-    expect(lessons).toContain("Fixes its runs uncovered");
-    expect(lessons).toContain(taught.playbook.lessons[0]!.title.replace(/'/g, "&#x27;"));
-  });
-
-  it("scores every card with the scorer's word and says nothing was sent", () => {
-    const result = html("open", chorePath("carrier-refunds"), "result");
-    expect(result).toContain("Right claim");
-    expect(result).toContain("Nothing was sent");
-    expect(result).toContain("every card waited for a signature");
+  it("draws a shipped playbook from its own brief and its own stills", () => {
+    const s = html("shipped", chorePath("travel-credit-refunds"));
+    expect(s).toContain("Airline credits turned back into card refunds");
+    expect(s).toContain("<strong>15 airline credits and fees</strong>");
+    expect(count(s, /class="pa-frame focus-ring"/g)).toBe(6);
   });
 });
 
@@ -393,20 +274,15 @@ describe("the replay", () => {
     expect(count(first, /class="ch-ledger__row focus-ring"/g)).toBe(5);
     const shipped = fixtures.shipped!;
     const long = shipped.items.find((v) => (v.playbook.bench?.trace ?? []).flatMap((t) => t.cards).length > 6);
-    if (long) {
-      const h = renderToStaticMarkup(
-        <ChoresView model={shipped} path={runPath(long.id, 0)} go={noop} />,
-      );
-      expect(h).toMatch(/Show all \d+ \(showing 6 of \d+\)/);
-    }
+    if (long) expect(render(shipped, runPath(long.id, 0))).toMatch(/Show all \d+ \(showing 6 of \d+\)/);
   });
 });
 
 describe("a place that is not there is said, with the way back", () => {
   it("an unknown chore", () => {
     const h = html("typical", chorePath("nope"));
-    expect(h).toContain("That chore is not in this build");
-    expect(h).toContain("All chores");
+    expect(h).toContain("That playbook is not in this build");
+    expect(h).toContain("All playbooks");
   });
   it("a replay of a chore that was never benched", () => {
     const h = html("open-unbenched", runPath("flight-compensation", 0));

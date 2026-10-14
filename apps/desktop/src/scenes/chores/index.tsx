@@ -11,13 +11,13 @@ import type { PlaybooksModel } from "@/modules/playbooks/model";
 import type { FixtureId } from "@/modules/types";
 import type { DepthScene, SceneProps } from "@/scenes/types";
 
-import { facetFor, fixtureIds, fixtures } from "./fixtures";
+import { fixtureIds, fixtures } from "./fixtures";
 import { labeller, live } from "./live";
 import ChoresView from "./view";
 
 export { labeller };
 
-const titlesOf = (model: PlaybooksModel) => new Map(model.items.map((v) => [v.id, v.title]));
+const titlesOf = (model: PlaybooksModel) => new Map(model.items.map((v) => [v.id, v.playbook.shortTitle]));
 
 export const entry: DepthScene = {
   ...live,
@@ -25,7 +25,6 @@ export const entry: DepthScene = {
   preview: (fixture: FixtureId, props: SceneProps) =>
     createElement(ChoresView, {
       model: fixtures[fixture] ?? fixtures.typical!,
-      initialFacet: facetFor(fixture),
       ...props,
     }),
   previewLabeller: (fixture: FixtureId) => labeller(titlesOf(fixtures[fixture] ?? fixtures.typical!)),

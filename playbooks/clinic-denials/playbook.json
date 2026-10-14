@@ -1,6 +1,8 @@
 {
   "id": "clinic-denials",
   "title": "Denied claims, reworked",
+  "short_title": "Denied claims corrected, appealed or written off",
+  "brief": "A three-doctor family practice has **15 denied claims** across four payers.\n\n**Recovered — $2,120:**\n- 3 claims corrected with modifier 25\n- One corrected to the rendering doctor's NPI\n- A reconsideration proving timely filing\n- A reconsideration citing the missed authorisation\n- Write-offs only where nothing can win\n\n**Left alone:**\n- An intake rejection taken as proof of filing\n- A duplicate whose original is in process\n- A secondary claim before the primary paid\n- Fixes that would land past the limit\n- Claims already resubmitted and pending",
   "domain": "Clinics",
   "audience": "work",
   "category": "health",

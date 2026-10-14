@@ -1,6 +1,8 @@
 {
   "id": "freight-claims",
   "title": "A lighting maker's freight claims filed with the carriers that moved the goods, inside nine months: concealed damage behind a clean receipt proved, a released-value crate claimed at its limit, and a pallet lost in January claimed three days before its time runs out, while damage its own packing or its customer caused is left alone",
+  "short_title": "Damaged and lost freight claimed from carriers",
+  "brief": "A light-fixture maker's logistics coordinator has LTL shipments with **damage, shortage and loss**.\n\n**Claimed in the carriers' portals — $6,920:**\n- Two crushed cartons noted at delivery\n- Hidden damage the carrier traced to a forklift\n- A chandelier at its $170 released value\n- A short carton\n- A lost pallet, filed before its nine months end\n\n**Left alone:**\n- A shortage whose nine months already ran out\n- Damage from the maker's own packing\n- Damage the customer's forklift did\n- Another carrier's load, claims already open\n- A service keeping 30% of what's recovered",
   "domain": "Logistics",
   "audience": "work",
   "category": "freight",

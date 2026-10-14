@@ -1,6 +1,8 @@
 {
   "id": "change-order-notices",
   "title": "Every field change priced and noticed inside the contract's claim window",
+  "short_title": "Field changes priced and noticed in time",
+  "brief": "An electrical subcontractor's PM has a month of RFIs, directives and field logs on a **21-day** clock.\n\n**Noticed in time — 6 changes, $33,255:**\n- Added receptacles and a dedicated circuit\n- A panel moved by an RFI answer\n- Live circuits the drawings called abandoned\n- Temporary power the contract excludes\n- Added GFCI protection and transfer switch work\n- Cost plus 15%, or 5% on a lower-tier sub\n\n**Left alone:**\n- Changes already ordered or noticed\n- \"As shown\" answers and its own Division 28 work\n- Its own rework, and delay from a failed inspection\n- Items past their 21 days\n- Copper up 14% on a fixed price",
   "domain": "Construction",
   "audience": "work",
   "category": "construction",

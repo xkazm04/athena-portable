@@ -1,6 +1,8 @@
 {
   "id": "subscription-audit",
   "title": "A household's recurring charges are audited: a second streaming account on the bank, a trial that became a charge, an add-on raised without notice and an unused storage plan cancelled, two refunded, while a son's and a partner's weekly use, a service used this week, a one-time purchase and a plan renewed after its reminder are left alone",
+  "short_title": "Unused subscriptions cancelled and refunds asked",
+  "brief": "A San Diego dental office manager pays **nine recurring charges** across three online services.\n\n**Cancelled and refunded — $613:**\n- A duplicate streaming account billed to her bank\n- A sports add-on whose free trial ended silently\n- A coaching add-on that rose with no notice\n- A storage plan unused since November\n- Refunds of $19.98 and $6 under the services' terms\n\n**Left alone:**\n- Plans her son, her partner or she still use\n- A one-time scanner licence\n- A refund on a renewal after its reminder\n- A charge already refunded",
   "domain": "Subscriptions",
   "audience": "home",
   "category": "consumer",

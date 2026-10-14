@@ -1,6 +1,8 @@
 {
   "id": "inspection-scheduling",
   "title": "City inspections booked in sequence on two cities' portals, on the first day each can happen",
+  "short_title": "Inspections booked for the first possible day",
+  "brief": "A contractor's coordinator books inspections for jobs in **two cities**, on two portals.\n\n**Booked for the first day each can happen:**\n- After a city holiday\n- On a day someone is on site\n- Before a pour that would cover it\n- Only once corrections are done\n\n**Left alone:**\n- Anything out of sequence or not ready\n- A gas inspection already booked\n- A foundation that already passed\n- A re-inspection while a guardrail is being made",
   "domain": "Construction",
   "audience": "work",
   "category": "construction",

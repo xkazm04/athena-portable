@@ -1,6 +1,8 @@
 {
   "id": "prior-auth-renewals",
   "title": "Every therapy authorisation renewed before visits run past it, each on its own payer's clock",
+  "short_title": "Therapy authorisations renewed on time",
+  "brief": "A therapy group tracks authorisations for **11 patients** across five payers.\n\n**Renewed on time — 5, $3,664 of visits:**\n- First visit past each authorisation found\n- Sent the last Friday each payer's clock allows\n- 7 days, 15 days or 10 business days by payer\n- Each in the payer's own channel, portal or fax\n\n**Left alone:**\n- Renewals too early, or with time next week\n- A renewal already pending\n- A patient discharged inside the authorisation\n- Original Medicare, which needs none\n- Faxes to portal-only payers",
   "domain": "Clinics",
   "audience": "work",
   "category": "health",

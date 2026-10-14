@@ -46,7 +46,7 @@ export function labeller(titles: ReadonlyMap<string, string>): Labeller {
 /** Crumb names from the shipped set, once it has arrived; until then a chore is called by its id. */
 function useLabeller(): Labeller {
   const items = usePlaybooks((s) => s.items);
-  return useMemo(() => labeller(new Map((items ?? []).map((p) => [p.id, p.title]))), [items]);
+  return useMemo(() => labeller(new Map((items ?? []).map((p) => [p.id, p.shortTitle]))), [items]);
 }
 
 export const live: LiveScene = { root: "chores", Live, useLabeller };

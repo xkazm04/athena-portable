@@ -1,6 +1,8 @@
 {
   "id": "medical-bills",
   "title": "Medical bills against the EOBs",
+  "short_title": "Medical bills checked against the EOBs",
+  "brief": "A family on a PPO faces bills from **an ER visit, a surgery** and follow-up care.\n\n**Disputed, appealed or refunded — $3,423:**\n- Bills matched to EOBs by date of service\n- $2,138.50 of overcharges and surprise bills\n- Out-of-network anesthesia held to in-network share\n- A $1,240 denial appealed with therapy records\n- A $45 refund from a reduced payment\n\n**Left alone:**\n- A January bill that is right after the deductible reset\n- Bills whose EOB is still pending\n- A reminder repeating a disputed balance\n- A denial past its 180-day appeal window",
   "domain": "Daily life",
   "audience": "home",
   "category": "health",

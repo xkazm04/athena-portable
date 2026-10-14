@@ -1,6 +1,8 @@
 {
   "id": "duty-drawback",
   "title": "Duties refunded on what was exported: drawback, matched export by export",
+  "short_title": "Import duties refunded on exported goods",
+  "brief": "A Dayton pump maker exports a fifth of what it makes, much of it from **duty-paid parts**.\n\n**Claimed — 4 exports, $13,747:**\n- Exports traced to their import lines\n- Through work orders and bills of materials\n- Unused spare motors and controllers\n- Pumps built from imported housings and motors\n- 99% of the duty, to the cent\n\n**Left alone:**\n- Imports past their five years\n- Exports or imports already claimed\n- Used rental motors and US-bought motors\n- Domestic-only pumps and duty-free seal kits\n- A shipment cancelled before it left",
   "domain": "Customs & trade",
   "audience": "work",
   "category": "freight",

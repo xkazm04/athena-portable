@@ -1,6 +1,8 @@
 {
   "id": "provider-revalidation",
   "title": "Every clinician's Medicare revalidation, credentialing attestation and license kept current, on four clocks in four portals",
+  "short_title": "Clinician enrollments and licenses kept current",
+  "brief": "A family clinic's credentialing coordinator keeps **four clinicians** current across four portals.\n\n**Kept current — 8 tasks:**\n- Medicare revalidations inside the seven-month window\n- The clinic's supplier enrollment on its three-year cycle\n- Renewed liability certificate put on a profile\n- Profiles at or near 120 days re-attested\n- Licenses renewed on the CME hours actually done\n\n**Left alone:**\n- Revalidations TBD, too far out or already in review\n- Anything for the physician who left\n- A license short on CME hours or not yet open\n- An expired certificate or an unbound quote as cover",
   "domain": "Clinics",
   "audience": "work",
   "category": "health",

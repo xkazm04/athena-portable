@@ -1,6 +1,8 @@
 {
   "id": "sub-insurance-certs",
   "title": "Every subcontractor's insurance checked on the policy, not the certificate, before it mobilizes",
+  "short_title": "Subcontractor insurance checked on the policy",
+  "brief": "A general contractor has **ten subcontractors** mobilizing on a medical office build.\n\n**Cleared or noticed — 9 subcontractors:**\n- Cleared when the policy carries both endorsements\n- Cleared even with a blank box on the certificate\n- One notice each to the six that fall short\n- Each notice names the gap, before mobilization\n\n**Left alone:**\n- Approving on a certificate's word alone\n- Expired policies, wrong names or project address\n- Low limits topped up by an umbrella\n- Re-noticing a sub already approved or cured",
   "domain": "Construction",
   "audience": "work",
   "category": "construction",

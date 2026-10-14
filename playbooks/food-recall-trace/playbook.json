@@ -1,6 +1,8 @@
 {
   "id": "food-recall-trace",
   "title": "A snack maker's recall of a supplier's almond butter is traced: three lots held and five customers told, one for a batch reworked into another product, while the lots either side of the range, batches made from them, a customer given only other batches, an order not yet shipped and the distributor's own customers are left alone",
+  "short_title": "Recalled almond butter traced to every customer",
+  "brief": "A Duluth snack-bar maker gets a supplier's **almond butter recall** and must trace where it went.\n\n**Held and told — 3 lots, 5 customers:**\n- Recalled lots traced to the batches made from them\n- Batches traced to the customers who got them\n- Affected lots still on hand held\n- Five direct customers told, the distributor too\n- A customer whose batch took affected rework\n\n**Left alone:**\n- Lots just outside the range, and their batches\n- A batch with no almond butter\n- Customers given only unaffected batches\n- An affected order not yet shipped\n- The distributor's own customers",
   "domain": "Food & beverage",
   "audience": "work",
   "category": "commerce",

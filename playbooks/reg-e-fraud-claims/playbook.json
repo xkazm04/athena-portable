@@ -1,6 +1,8 @@
 {
   "id": "reg-e-fraud-claims",
   "title": "A retiree's bank account is checked under Regulation E: four unauthorised transfers reported at their capped liability and a late claim chased for its credit, while a payment she sent a scammer herself, her son's fuel, a refunded and a pending charge, a subscription, a credit card charge and two claims not yet late are left alone",
+  "short_title": "Fraudulent bank charges reported and credited",
+  "brief": "A retired Roanoke teacher finds **four transfers** she never made, and a claim the bank let run late.\n\n**Back to her account — $1,312:**\n- An ACH debit she never authorised\n- Online purchase on a copied card number\n- Cash withdrawal on a lost card, less her $50\n- App top-up on a code a caller tricked out of her\n- Provisional credit on the claim the bank let run late\n\n**Left alone:**\n- A payment she sent a scammer herself\n- Her son's fuel, a subscription she chose\n- Refunded or pending charges\n- A credit card charge, and claims not yet late",
   "domain": "Consumer banking",
   "audience": "home",
   "category": "consumer",

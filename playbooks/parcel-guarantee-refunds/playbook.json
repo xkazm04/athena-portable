@@ -1,6 +1,8 @@
 {
   "id": "parcel-guarantee-refunds",
   "title": "A lens maker's late overnight parcels claimed under each carrier's money-back guarantee, inside each carrier's own window, for the transportation charge alone, while the services whose guarantee is suspended, a storm, a missing suite number, a late drop-off, a signature nobody could give and a parcel that was on time are left alone",
+  "short_title": "Late parcel refunds claimed from carriers",
+  "brief": "A small lens maker ships overnight on **two parcel carriers** and checks the late ones herself.\n\n**Refunds claimed — 6 parcels, $270:**\n- Three late parcels with each carrier\n- Each inside that carrier's own window\n- Transportation charge only, no fuel surcharge\n\n**Left alone:**\n- Services whose guarantee is suspended\n- Storm delays and a missing suite number\n- A late drop-off, or no one to sign\n- On time as committed, or already credited\n- Claims past their windows",
   "domain": "Logistics",
   "audience": "work",
   "category": "freight",

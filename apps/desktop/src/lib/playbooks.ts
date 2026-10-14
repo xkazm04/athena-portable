@@ -166,6 +166,10 @@ export type Audience = "home" | "work";
 export interface Playbook {
   id: string;
   title: string;
+  /** The ledger's name for it, at most ~56 characters; `title` when the file has none. */
+  shortTitle: string;
+  /** The playbook told in simple markdown (a lead line, `- ` bullets, `**bold**`); "" when none. */
+  brief: string;
   promise: string;
   domain: string;
   /** The ledger's area (ADR 0096); `null` when the file names none or one the taxonomy lacks. */
@@ -417,6 +421,8 @@ export function parsePlaybook(
   return {
     id: str(raw.id),
     title: str(raw.title, str(raw.id)),
+    shortTitle: str(raw.short_title, str(raw.title, str(raw.id))),
+    brief: str(raw.brief),
     promise: str(raw.promise),
     domain: str(raw.domain),
     // An area or a job the taxonomy does not list reads as none, never as a dropped playbook: the

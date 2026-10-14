@@ -11,7 +11,6 @@ import { fixtures } from "./fixtures";
 import {
   arrange,
   categoryCounts,
-  facetsOf,
   filterLedger,
   fitCommand,
   foundBy,
@@ -106,26 +105,6 @@ test("the totals add the latest runs' traps, false claims, minutes and cost", ()
   expect(t.costUsd).toBeCloseTo(0.41 + 1.12);
 });
 
-test("the abstract lists only the parts a playbook has, each in one line, the chore before the proof", () => {
-  for (const view of fixtures.heavy.items) {
-    const facets = facetsOf(view);
-    const groups = facets.map((f) => f.group);
-    expect(groups.indexOf("proof"), view.id).toBeGreaterThan(groups.lastIndexOf("chore"));
-    expect(new Set(facets.map((f) => f.id)).size, view.id).toBe(facets.length);
-    for (const f of facets) expect(f.summary.includes("\n"), `${view.id}/${f.id}`).toBe(false);
-    expect(facets.some((f) => f.id === "run"), view.id).toBe(Boolean(view.playbook.bench?.trace.length));
-    expect(facets.some((f) => f.id === "gates"), view.id).toBe(view.playbook.gates.length > 0);
-  }
-});
-
-test("an unbenched playbook's result line is its verdict sentence, with no figure", () => {
-  const unbenched = fixtures.typical.items.find((v) => v.playbook.bench === null);
-  expect(unbenched).toBeDefined();
-  const result = facetsOf(unbenched!).find((f) => f.id === "result");
-  expect(result?.summary).toBe(unbenched!.verdict.sentence);
-  expect(result?.figure).toBe("");
-});
-
 test("a film is current while it films the bench's run, stale once the bench moved on", () => {
   const byId = (id: string) => fixtures.typical.items.find((v) => v.id === id)!;
   const current = byId("carrier-refunds").evidence;
@@ -137,18 +116,6 @@ test("a film is current while it films the bench's run, stale once the bench mov
   expect(stale?.standing.label).toBe("Stale");
   expect(stale?.standing.sentence).toContain("the latest is of 2026-10-07");
   expect(byId("flight-compensation").evidence).toBeNull();
-});
-
-test("the abstract lists the film as a part of the proof only when there is one", () => {
-  for (const view of fixtures.heavy.items) {
-    const film = facetsOf(view).find((f) => f.id === "evidence");
-    expect(Boolean(film), view.id).toBe(view.evidence !== null);
-    if (film) {
-      expect(film.group).toBe("proof");
-      expect(film.figure).toBe(view.evidence?.length);
-      expect(film.summary).toContain(view.evidence?.current ? "current" : "stale");
-    }
-  }
 });
 
 test("every shipped playbook has a fixture that opens its layer, generated from the shipped set", () => {

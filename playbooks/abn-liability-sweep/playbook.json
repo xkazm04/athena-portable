@@ -1,6 +1,8 @@
 {
   "id": "abn-liability-sweep",
   "title": "Every Medicare denial billed to the patient only where a valid ABN was signed, and refunded where it was not",
+  "short_title": "Medicare denials billed to patients or refunded",
+  "brief": "A two-doctor practice's billing manager checks this month's **denied Medicare lines** against their ABNs.\n\n**Settled rightly — $539:**\n- $352 billed on three lines patients owe\n- Two valid ABNs and a routine physical\n- $187 refunded on four payments\n- Refunds where the ABN was generic, late or outdated\n\n**Left alone:**\n- Lines Medicare paid, and units over the MUE\n- Lines with no ABN at all\n- Lines the patient already paid in full\n- Coinsurance owed and payments already refunded",
   "domain": "Clinics",
   "audience": "work",
   "category": "health",

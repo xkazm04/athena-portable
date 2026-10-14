@@ -1,6 +1,8 @@
 {
   "id": "crop-insurance-notice",
   "title": "Crop damage noticed inside 72 hours, and the claims filed with the yields",
+  "short_title": "Freeze damage noticed and crop claims filed",
+  "brief": "An Iowa corn and soybean farm wakes to an early freeze, with **72 hours** to give notice.\n\n**Noticed and claimed — $34,527:**\n- Notice on two frozen bean units in time\n- A hail claim and a drought claim on corn\n- A hail claim on beans\n- Each at guarantee less production times price\n\n**Left alone:**\n- Units harvested, undamaged or over guarantee\n- A hailed unit already noticed\n- Rented acres added after the acreage report\n- A worn gearbox and a neighbor's drift\n- Weeds from a skipped herbicide pass",
   "domain": "Agriculture",
   "audience": "work",
   "category": "public",

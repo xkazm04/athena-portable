@@ -11,7 +11,7 @@ Each one is data, and earns its place on the desktop by a run on the bench.
 
 | File | Contents |
 |---|---|
-| `playbook.json` | the showcase: persona, chore, the command the person gives, portals, gates, traps, memory, economics with sources, edge scores, audience (home or work), its area and its job (`category`, `job`), the expectation it is held to, lessons, a caveat |
+| `playbook.json` | the showcase: persona, chore, the command the person gives, portals, gates, traps, memory, economics with sources, edge scores, audience (home or work), its area and its job (`category`, `job`), a `short_title` (at most 48 characters) and a `brief` in simple markdown (a lead line, a bold label with bullets, "Left alone" bullets) that the catalogue and topic page show instead of the long title and promise, the expectation it is held to, lessons, a caveat |
 | `world.json` | the portals as data: apps with origins, views, aliases and tools with honest flags; tables the reads answer from (exact, `contains` or `words` matching, paging, required ids); the phases of a run |
 | `truth.json` | what a perfect run files and what looks eligible but is not, per tool: eligible items with value and expected parameters (an item can be `required`), traps with the reason, fair-either-way items; only the scorer reads it |
 | `bench.json` | the latest measured run, committed: score, cards, the trap ledger, the turn-by-turn trace, closing words and every earlier run's headline |
@@ -194,38 +194,46 @@ leave alone"), **Watch the run** (a rail of tab visits, a dot per turn coloured 
 play, step and arrow keys, the money found so far; her closing words; the runs over time), what it
 taught Athena, and the economics against the incumbent. Back steps one level.
 
-### The ledger
+### The catalogue and the topic page
 
-The Chores depth's root is a ledger you pick from, not a gallery. Three regions share the depth
-frame:
+The Chores depth has two full-width levels and the replay under them
+([ADR 0096](../adr/0096-a-playbook-names-its-area-and-its-job-and-the-ledger-reads-the-library-by-them.md),
+amendment *The catalogue*).
 
-- **The rail** lists "All" and the ten areas of `playbooks/taxonomy.json` in its order, each with
-  the count a press would show under the job in force. "Uncategorised" appears only while some
-  playbook names no area; nothing is hidden for lacking one. It is a list of buttons with
-  `aria-current`, not a `PillGroup`, because it switches what is read rather than setting a
-  preference.
-- **The centre** holds the bench's totals in one line, the simulated-world line, the job chips
-  (every job, or one of the four; pressed buttons), and the view switch, Ledger or Map. The Ledger
-  is the catalog `Table`: thumbnail, playbook (title and domain), job, portals, time saved (hours
-  by hand, with the measured speed-up), value (on the year's scale where it has one) and verdict.
-  It is in the edge's order (hardest for anyone else and most useful first) until a head orders it:
-  Value and Time saved start with the most first, a second press turns them round, a third gives
-  the edge's order back. The Map is the edge map (difficulty for anyone else against usefulness)
-  over the same rows; a mark and a row are one pick, and Enter on a mark opens the chore.
-- **The preview** shows the picked playbook (the first row by default, and again whenever a filter
-  hides the pick): its area and job, its name and promise, then:
-  - the **blueprint**, its process drawn flat from its own data: the portals it reads (up to five)
-    joined by a bus to a numbered spine of its steps (up to six, one line each, the full sentence
-    on hover), the gates as diamond checkpoints where she stops for a signature (up to four), and
-    the end of the flow, what she filed on the bench with the traps she walked past, or, unbenched,
-    the bar it will be held to;
-  - the **storyboard**, the real screens of the bench run (the evidence pipeline's stills), one large
-    with its caption and a strip to pick another (Left, Right, Home, End); a run with no stills yet
-    shows its thumbnail as what she filed and says no step screens were captured;
-  - the **before-and-after band**, the chore by hand (the author's estimate and the incumbent) against
-    her measured run (with your review time, the turns and the model's cost), and the speed-up;
-  - the **adopt row**, held at the pane's foot: "Fit it to me", "Copy the command" and "Open the full
-    playbook", which goes down to the chore and its replay.
+**The catalogue** (`#/chores`) heads itself "Playbooks" with the bench's totals in one line, then:
+
+- **the area tabs**: "All" and the ten areas of `playbooks/taxonomy.json` in its order, each a line
+  glyph, the area's first word (its full name is the tab's title and accessible name) and the count a
+  press would show under the job in force; an area with nothing under that job is disabled. A
+  playbook that names no area is listed under "All" only.
+- **the job chips** (all jobs, or one of the four; pressed buttons, each in its job's hue) and **the
+  order switch**: Best edge (the default: hardest for anyone else and most useful first), Most
+  value (on the year's scale), Most time saved (the hours by hand).
+- **the ledger**, the catalog `Table` with a line saying how many playbooks it shows and where: each
+  row led by the first still of its run (or its area's glyph), its short title over the lead line
+  of its brief (the promise when it has none), its job, up to three portals, the time by hand
+  against her measured run ("3h → 6m", "not run" when unbenched) and its value. A click, Enter or
+  Space on a row opens its topic page; the arrows only walk the rows. The filters, the order and
+  the row last opened live in the depth's view, so coming back finds them as they were, the row in
+  view and focused. Under 1060px of the page's own width the Portals column goes, under 760px Job.
+
+**The topic page** (`#/chores/<id>`) is one playbook as a product page, with "All playbooks" and
+Escape as the way back:
+
+- **the hero**: area and job, the short title, the brief (`brief` in `playbook.json`, a lead line,
+  `- ` bullets and `**bold**`, rendered as text nodes and never HTML; the promise when there is no
+  brief), the first still large, and three figures: value for the persona, time by hand against her
+  measured run with the speed-up, and the traps she walked past on the bench.
+- **How it runs**, the playbook drawn as a blueprint from its own data: the portals she reads down
+  the left, the steps as a numbered spine that wraps past three or four, each gate an amber
+  "Athena asks you first" diamond before the step that shares the most words with it (only its
+  place is inferred), and the result: what she filed on the bench and the traps she avoided, or,
+  unbenched, the bar it will be held to.
+- **See it run**: every still of the bench run (the evidence pipeline's storyboard) large in a grid
+  with its caption. A still opens the lightbox: the image as large as fits, "n / N", Left and Right
+  step, Escape or the backdrop closes it, and focus returns to the still.
+- **Make it yours**: "Fit it to me", "Watch the run turn by turn" (where the bench kept a trace)
+  and "Copy the command".
 
 **The fit** asks only what differs: for each portal "I use this" or "Mine is…" with the name of the
 person's own, and an optional note on their case. It hands Athena the playbook's own command with
@@ -233,14 +241,10 @@ those differences appended after it (`fitCommand`), shown live as it will be rea
 never rewritten, because a rewrite would be a different chore from the one the bench measured. The
 value stays the author's estimate for the playbook's persona and is never rescaled.
 
-**Narrow frames.** Under 1100px of the field's own width (a container query, and the same number
-in `LEDGER_WIDE` for behaviour) there is no preview: the rail becomes a row of areas over the
-centre, the table shows the job again, and a click, Enter or Space on a row opens the chore, while
-the arrows still only walk the rows.
-
 **States.** Loading and an empty build are the `EmptyState`; a set that could not be read is a
 `ProblemNote` with the reason verbatim; a filter that leaves nothing names the area and the job
-("No playbook in Freight & trade whose job is to win a dispute.") and offers "Show all" in one press.
+("No playbook in Freight & trade whose job is to win a dispute.") and offers "Show all" in one press;
+an id this build does not ship says so with "All playbooks".
 
 ## Evidence
 

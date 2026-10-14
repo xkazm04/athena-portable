@@ -1,6 +1,8 @@
 {
   "id": "clinic-underpayments",
   "title": "Every line paid short of the payer contract found and disputed, and the bundled lines left alone",
+  "short_title": "Underpaid insurance lines found and disputed",
+  "brief": "An orthopedic clinic's billing manager checks every remittance line from **two commercial payers**.\n\n**Disputed — 5 lines, $565:**\n- A surgeon paid as out of network after credentialing\n- Two lines missing the amendment's raised rate\n- An X-ray cut as a multiple procedure\n- A line paid at last year's rate\n\n**Left alone:**\n- Lines bundled under NCCI edits\n- Deductibles, sequestration, billed-charge pay\n- Short lines whose windows have closed\n- A line already in dispute\n- Lines paid right before and after the amendment",
   "domain": "Clinics",
   "audience": "work",
   "category": "health",

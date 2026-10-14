@@ -163,6 +163,28 @@ film was recorded from, so the stills frame `.stage__layer`, not the old `.layer
   preview goes, Job returns, and a row opens the chore.
 - The bench-numbers block is one totals line now; the audience filter is gone, the areas replace it.
 
+### Amendment (catalogue)
+
+The ledger above (rail, ledger and preview side by side, with a map view and the old chore page
+under it) was compared with two other layouts behind a prototype switch and replaced by the first
+of them, a catalogue and a topic page, each full width:
+
+- **The catalogue** puts the areas in a tab bar (a line glyph, the area's first word and its count
+  under the job in force), the jobs in chips under it and the order in a three-way switch: Best
+  edge (still the default), Most value, Most time saved. Its rows are led by the first still of the
+  run and read the playbook's `short_title` and the lead line of its `brief`, two optional fields of
+  `playbook.json` (`title` and the promise when absent). A press on a row opens the topic page; the
+  arrows only walk. The filters and the last row opened are kept in the depth's view, so the way
+  back finds them. There is no map view and no preview pane, and no `LEDGER_WIDE`: the page is a
+  size container and its narrow rules only drop columns.
+- **The topic page** replaces the chore's own scene and its facets: a hero (the brief as simple
+  markdown, the first still, value, time by hand against her run, traps avoided), *How it runs*
+  (portals, a numbered spine, each gate as an "asks you first" diamond before the step it guards,
+  the result), every still of the run in a grid that opens a lightbox, and *Make it yours* (fit,
+  the replay, copy). The replay of a run (`#/chores/<id>/run/<n>`) is unchanged.
+- A playbook that names no area is listed under "All" only; the "Uncategorised" rail entry went with
+  the rail. Nothing is hidden from "All", and the bench still refuses an untagged playbook.
+
 ## Consequences
 
 - A person can find a playbook by area and by what she needs done, and the counts in the rail

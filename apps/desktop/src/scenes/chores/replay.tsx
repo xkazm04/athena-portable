@@ -13,7 +13,7 @@
  * therefore kept in a tiny store beside it, which goes stale on its own if the person leaves.
  * No timer here asks for animation frames.
  */
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import Button from "@/components/Button";
 import StatusDot from "@/components/StatusDot";
@@ -30,7 +30,6 @@ import {
 } from "@/modules/playbooks/model";
 
 import { runPath } from "./model";
-import { Prose } from "./parts";
 
 /** How long the replay holds a turn before the next, when it plays on its own. */
 export const REPLAY_STEP_MS = 2800;
@@ -318,3 +317,44 @@ export default function Replay({
   );
 }
 
+/**
+ * Her words, with the two marks a model's prose leans on — `**bold**` and `- ` bullets — read as
+ * what they mean. Built as nodes, never as HTML: the words are model output.
+ */
+function Prose({ text }: { text: string }) {
+  const out: ReactNode[] = [];
+  let bullets: string[] = [];
+  const flush = () => {
+    if (bullets.length) {
+      out.push(
+        <ul key={`ul-${out.length}`} className="ch-prose-list">
+          {bullets.map((b, i) => (
+            <li key={i}>{inline(b)}</li>
+          ))}
+        </ul>,
+      );
+      bullets = [];
+    }
+  };
+  for (const line of text.split("\n")) {
+    const t = line.trim();
+    if (/^[-*] /.test(t)) {
+      bullets.push(t.slice(2));
+      continue;
+    }
+    flush();
+    if (t) out.push(<p key={`p-${out.length}`}>{inline(t)}</p>);
+  }
+  flush();
+  return <>{out}</>;
+}
+
+function inline(text: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith("**") && part.endsWith("**") && part.length > 4 ? (
+      <strong key={i}>{part.slice(2, -2)}</strong>
+    ) : (
+      part
+    ),
+  );
+}

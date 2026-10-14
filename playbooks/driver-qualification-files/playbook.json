@@ -1,6 +1,8 @@
 {
   "id": "driver-qualification-files",
   "title": "A small carrier's driver qualification files kept current on four clocks: a full Clearinghouse query run before its twenty-four hours run out, an overdue annual query, two overdue driving records from the right states, one record ordered for a new medical status before the paper exemption ends, and an annual review signed, while a driver with no CDL is kept out of the Clearinghouse, a driver who left is left alone and nothing done this year is done twice",
+  "short_title": "Driver qualification files brought current",
+  "brief": "A small trucking firm's safety manager keeps files for **8 drivers** on four clocks.\n\n**Reset before they lapse:**\n- A full Clearinghouse query inside 24 hours\n- An annual query a month overdue\n- 2 overdue driving records, one from two states\n- A record for a new medical status\n- An annual review signed on a new record\n\n**Left alone:**\n- Clearinghouse queries for a non-CDL driver\n- A driver who left in September\n- Anything done inside its twelve months\n- Reviews on last year's record",
   "domain": "Trucking",
   "audience": "work",
   "category": "freight",

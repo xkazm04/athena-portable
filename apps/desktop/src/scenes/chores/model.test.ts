@@ -1,36 +1,26 @@
-/** Tests for the Chores scene's pure helpers — README section 3.5, ADR 0040 and 0090. */
+/** Tests for the Chores scene's pure helpers — README section 3.5, ADR 0040, 0090 and 0096. */
 import { describe, expect, it } from "vitest";
 
 import { isValid, parseHash, formatHash, type Path } from "@/depth/model";
 
-import { facetFor, fixtureIds, fixtures, pathFor } from "./fixtures";
+import { compact, gateSlots, stillsOf, timeCell } from "./facts";
+import { fixtureIds, fixtures, pathFor } from "./fixtures";
 import { labeller } from "./index";
 import {
-  EDGE_FROM,
-  EDGE_ORDER,
-  LEDGER_WIDE,
-  SPINE_STEPS,
-  artFor,
   beforeAfterOf,
   blueprintOf,
   choreAt,
   chorePath,
   emptyLine,
-  firstSentence,
-  markLabel,
-  markPoints,
-  markSize,
-  nextSort,
-  pct,
-  pickedRow,
+  lowerFirst,
   runPath,
   shortLine,
-  stillStep,
   totalsLine,
   turnAt,
   valueCell,
 } from "./model";
 import { REPLAY_STEP_MS, isPlaying, setPlaying, stopPlaying } from "./replay";
+import { blocks, lead } from "./rich";
 
 const typical = fixtures.typical!;
 const refunds = typical.items.find((v) => v.id === "carrier-refunds")!;
@@ -62,58 +52,12 @@ describe("places", () => {
   });
 });
 
-describe("the marks", () => {
-  it("labels a mark for a screen reader with its value, verdict and edge", () => {
-    expect(markLabel(refunds)).toBe("Late-parcel refunds: $4,940 a year, Exceeds, on the edge");
-  });
-
-  it("sizes marks smaller when the map is crowded, and bigger for more value", () => {
-    expect(markSize(1, true)).toBeLessThan(markSize(0, false));
-    expect(markSize(1, false)).toBeGreaterThan(markSize(0, false));
-  });
-
-  it("keeps a few chores in a cell as the module rings them, and spreads a crowd over a disc", () => {
-    const few = markPoints(typical.items);
-    typical.items.forEach((v, i) => expect(few[i]).toEqual({ x: v.point.x, y: v.point.y }));
-
-    const heavy = fixtures.shipped!;
-    const pts = markPoints(heavy.items);
-    expect(pts).toHaveLength(heavy.items.length);
-    // No two marks share a place, and none strays more than half a step from its own cell.
-    const seen = new Set(pts.map((p) => `${p.x.toFixed(4)}:${p.y.toFixed(4)}`));
-    expect(seen.size).toBe(pts.length);
-    heavy.items.forEach((v, i) => {
-      expect(Math.abs(pts[i]!.x - v.playbook.edge.difficulty)).toBeLessThanOrEqual(0.5);
-      expect(Math.abs(pts[i]!.y - v.playbook.edge.usefulness)).toBeLessThanOrEqual(0.5);
-    });
-    expect(markPoints(heavy.items)).toEqual(pts);
-  });
-
-  it("puts the edge zone where the module says a chore is on the edge", () => {
-    expect(EDGE_FROM).toBe(3.5);
-    expect(pct(0.5)).toBe(0);
-    expect(pct(5.5)).toBe(100);
-    expect(pct(EDGE_FROM)).toBeGreaterThan(pct(3));
-    expect(pct(EDGE_FROM)).toBeLessThan(pct(4));
-  });
-});
-
-describe("the ledger's words", () => {
+describe("the catalogue's and the topic's words", () => {
   const unbenched = typical.items.find((v) => v.verdict.word === "unbenched")!;
 
   it("says the bench's totals in one line, and claims nothing when nothing is benched", () => {
     expect(totalsLine(typical)).toBe("3 playbooks · 1 of 2 benched exceed the bar · $551.40 found on the bench");
     expect(totalsLine(fixtures.degraded!)).toBe("1 playbook · none benched yet");
-  });
-
-  it("cycles a column's head: most first, then turned round, then the edge's order back", () => {
-    let s = EDGE_ORDER;
-    s = nextSort(s, "value");
-    expect(s).toEqual({ key: "value", dir: "desc" });
-    s = nextSort(s, "value");
-    expect(s).toEqual({ key: "value", dir: "asc" });
-    expect(nextSort(s, "value")).toEqual(EDGE_ORDER);
-    expect(nextSort(s, "time")).toEqual({ key: "time", dir: "desc" });
   });
 
   it("names the area and the job a filter that leaves nothing was set to", () => {
@@ -122,12 +66,6 @@ describe("the ledger's words", () => {
     );
     expect(emptyLine({ category: "family", job: "all" })).toBe("No playbook in Family & estate.");
     expect(emptyLine({ category: "all", job: "comply" })).toBe("No playbook in any area whose job is to stay compliant.");
-  });
-
-  it("keeps the pick while the rows show it, and falls back to the first row when they do not", () => {
-    expect(pickedRow(typical.items, "flight-compensation")?.id).toBe("flight-compensation");
-    expect(pickedRow(typical.items, "gone")?.id).toBe(typical.items[0]!.id);
-    expect(pickedRow([], "gone")).toBeNull();
   });
 
   it("puts a month's value on the year's scale and leaves a claim's in its own unit", () => {
@@ -143,12 +81,8 @@ describe("the ledger's words", () => {
     expect(cut.endsWith("…")).toBe(true);
   });
 
-  it("draws the blueprint from the playbook alone: its portals, at most six steps, its gates, its result", () => {
+  it("draws the flow's result and its guard from the playbook alone, the bar where it is unbenched", () => {
     const plan = blueprintOf(refunds);
-    expect(plan.portals.map((a) => a.name)).toEqual(refunds.playbook.apps.map((a) => a.name));
-    expect(plan.steps.length).toBeLessThanOrEqual(SPINE_STEPS);
-    expect(plan.steps.length + plan.more).toBe(refunds.playbook.steps.length);
-    expect(plan.gates).toHaveLength(refunds.playbook.gates.length);
     expect(plan.result.measured).toBe(true);
     expect(plan.guard).toEqual({ avoided: 2, of: 2 });
     const bar = blueprintOf(unbenched);
@@ -165,35 +99,6 @@ describe("the ledger's words", () => {
     expect(band.ratio).toBe(refunds.speed);
     expect(beforeAfterOf(unbenched).athena).toBeNull();
   });
-
-  it("steps along the strip and holds at its ends", () => {
-    expect(stillStep(0, "ArrowRight", 3)).toBe(1);
-    expect(stillStep(2, "ArrowRight", 3)).toBe(2);
-    expect(stillStep(0, "ArrowLeft", 3)).toBe(0);
-    expect(stillStep(1, "End", 3)).toBe(2);
-    expect(stillStep(1, "Home", 3)).toBe(0);
-    expect(stillStep(1, "a", 3)).toBeNull();
-    expect(stillStep(0, "ArrowRight", 0)).toBeNull();
-  });
-
-  it("collapses at the width the stylesheet's container query names", () => {
-    expect(LEDGER_WIDE).toBe(1100);
-  });
-});
-
-describe("words", () => {
-  it("takes the first sentence", () => {
-    expect(firstSentence("One. Two.")).toBe("One.");
-    expect(firstSentence("No full stop")).toBe("No full stop");
-  });
-});
-
-describe("a chore's drawing is made from the chore", () => {
-  it("reads its own portals, gates, traps, audience and weight", () => {
-    const f = artFor(refunds);
-    expect(f).toMatchObject({ id: "carrier-refunds", portals: 2, gates: 1, traps: 2, audience: "work", verdict: "exceeds" });
-    expect(f.weight).toBeGreaterThan(0);
-  });
 });
 
 describe("the crumbs", () => {
@@ -207,8 +112,68 @@ describe("the crumbs", () => {
   });
 });
 
+describe("the topic page's facts", () => {
+  it("keeps a duration to a few characters for a cell", () => {
+    expect(compact(0)).toBe("–");
+    expect(compact(0.5)).toBe("30s");
+    expect(compact(45)).toBe("45m");
+    expect(compact(180)).toBe("3h");
+    expect(compact(150)).toBe("2.5h");
+    expect(compact(60 * 12.4)).toBe("12h");
+  });
+
+  it("sets the time by hand against her measured run, and says nothing measured when unbenched", () => {
+    expect(timeCell(refunds)).toEqual({ hand: "3h", athena: "6m" });
+    expect(timeCell(typical.items.find((v) => v.playbook.bench === null)!).athena).toBeNull();
+  });
+
+  it("keeps only the stills this build carries, in order", () => {
+    const withStory = fixtures.ledger!.items.find((v) => v.id === "carrier-refunds")!;
+    expect(stillsOf(withStory).map((s) => s.caption)).toEqual([
+      "Abstract",
+      "Turn 2 - Carrier billing centre: list the invoice",
+      "What she filed",
+    ]);
+    const story = [{ url: "", caption: "x", turn: null }];
+    const blank = { ...withStory, playbook: { ...withStory.playbook, evidence: { ...withStory.playbook.evidence!, story } } };
+    expect(stillsOf(blank)).toEqual([]);
+  });
+
+  it("puts a gate before the step that shares the most words with it, or last when none does", () => {
+    const steps = [
+      "Read the carrier invoices.",
+      "Match each late parcel to an order.",
+      "File the refund claims for signature.",
+    ];
+    expect(gateSlots(steps, [{ label: "File a refund claim", action: "file_claim" }])).toEqual([2]);
+    expect(gateSlots(steps, [{ label: "Pay the vendor", action: "send_payment" }])).toEqual([-1]);
+    expect(gateSlots([], [{ label: "File a refund claim", action: "file_claim" }])).toEqual([-1]);
+  });
+
+  it("reads a persona mid-sentence, leaving an acronym as it is", () => {
+    expect(lowerFirst("Store owners shipping parcels")).toBe("store owners shipping parcels");
+    expect(lowerFirst("EU travellers")).toBe("EU travellers");
+  });
+});
+
+describe("the brief's simple markdown", () => {
+  it("splits paragraphs on blank lines, joins a paragraph's lines, and lists the `- ` lines", () => {
+    expect(blocks("One\ntwo.\n\n- a\n- b\nAfter")).toEqual([
+      { kind: "p", lines: ["One two."] },
+      { kind: "ul", lines: ["a", "b"] },
+      { kind: "p", lines: ["After"] },
+    ]);
+    expect(blocks("")).toEqual([]);
+  });
+
+  it("teases a row with the first paragraph, its bold marks dropped", () => {
+    expect(lead("- a list first\n\nA **bold** lead.\n\nMore.")).toBe("A bold lead.");
+    expect(lead("- only a list")).toBe("");
+  });
+});
+
 describe("the fixtures", () => {
-  it("lead with typical (the perf gate renders the first) and each opens where its old layer did", () => {
+  it("lead with typical (the perf gate renders the first) and each opens at its own place", () => {
     expect(fixtureIds[0]).toBe("typical");
     for (const id of fixtureIds) {
       const p = pathFor(id);
@@ -221,13 +186,6 @@ describe("the fixtures", () => {
     expect(pathFor("open-turn-2")).toEqual(runPath("carrier-refunds", 1));
     expect(pathFor("open-traps")).toEqual(chorePath("carrier-refunds"));
     expect(pathFor("open-short")).toEqual(chorePath("chargeback-evidence"));
-  });
-  it("opens a chore on the facet the old layer opened on, and the replay is a place not a facet", () => {
-    expect(facetFor("open-traps")).toBe("traps");
-    expect(facetFor("open-short-proof")).toBe("result");
-    expect(facetFor("open-evidence")).toBe("evidence");
-    expect(facetFor("open-run")).toBeNull();
-    expect(facetFor("open")).toBeNull();
   });
 });
 

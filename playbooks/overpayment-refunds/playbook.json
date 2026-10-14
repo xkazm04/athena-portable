@@ -1,6 +1,8 @@
 {
   "id": "overpayment-refunds",
   "title": "Every credit balance traced to whose money it is: Medicare overpayments returned inside 60 days, patients refunded, and posting errors corrected rather than refunded",
+  "short_title": "Credit balances returned to their owners",
+  "brief": "A three-clinician family practice has **credit balances** to trace to the bank and Medicare.\n\n**Returned or refunded — $866:**\n- Medicare duplicate payment returned on time\n- Coding-audit overpayment returned within 60 days\n- $64.80 for an ECG not performed\n- Three patients refunded, $153.10\n- Posting errors corrected, not refunded\n\n**Left alone:**\n- A payment Medicare already took back by offset\n- Payments posted twice or to the wrong account\n- A deposit for next week's procedure\n- Patient money sent to Medicare instead",
   "domain": "Clinics",
   "audience": "work",
   "category": "health",

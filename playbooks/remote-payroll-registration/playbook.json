@@ -1,6 +1,8 @@
 {
   "id": "remote-payroll-registration",
   "title": "A software company's remote hires registered before their payrolls: Colorado withholding and unemployment accounts for a Denver engineer, Minnesota ones for a support lead whose move shows only in the HR change log, and a Texas unemployment account, while Washington, Virginia, a withdrawn offer and a contractor are left alone",
+  "short_title": "Remote hires' state payroll accounts opened",
+  "brief": "A Portland software firm's next three payrolls need **five state tax accounts** opened first.\n\n**Opened — 5 accounts:**\n- Colorado withholding and unemployment, new engineer\n- Minnesota both, for a move seen only in the HR log\n- Texas unemployment only, as Texas taxes no wages\n\n**Left alone:**\n- Washington, for a commuter and a trade-show trip\n- Virginia, where both accounts already exist\n- A withdrawn offer and a contractor\n- A vendor's offer to register every state",
   "domain": "Payroll",
   "audience": "work",
   "category": "employment",

@@ -10,7 +10,7 @@
 import type { Path } from "@/depth/model";
 import type { Playbook } from "@/lib/playbooks";
 import type { CategoryId, JobId } from "@/lib/playbook-taxonomy";
-import { selectPlaybooks, type FacetId, type PlaybooksModel } from "@/modules/playbooks/model";
+import { selectPlaybooks, type PlaybooksModel } from "@/modules/playbooks/model";
 import {
   fixtures as moduleFixtures,
   initialFacetFor,
@@ -89,15 +89,9 @@ export const fixtures: Readonly<Record<string, PlaybooksModel>> = {
 
 export const fixtureIds: readonly FixtureId[] = [...IDS, "ledger"];
 
-/** Where a fixture is meant to be looked at: the field, a chore, or a turn of its replay. */
+/** Where a fixture is meant to be looked at: the catalogue, a chore's topic page, or a turn of its replay. */
 export function pathFor(fixture: FixtureId): Path {
   const id = initialOpenFor(fixture);
   if (id === null) return { root: "chores" };
   return initialFacetFor(fixture) === "run" ? runPath(id, initialTurnFor(fixture)) : chorePath(id);
-}
-
-/** The facet a fixture's chore opens on; the replay is a place of its own, not a facet. */
-export function facetFor(fixture: FixtureId): FacetId | null {
-  const facet = initialFacetFor(fixture);
-  return facet === "run" ? null : facet;
 }

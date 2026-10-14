@@ -1,6 +1,8 @@
 {
   "id": "medical-records-gather",
   "title": "Every record a second opinion needs requested from five providers, at the fee the rule allows, and the late one chased",
+  "short_title": "Records gathered for a second opinion",
+  "brief": "A patient with a spine problem needs records from **five providers** within three weeks.\n\n**Gathered before the second opinion:**\n- Notes and labs from her doctor's portal\n- Her own images, matched by birth date\n- Orthopedic notes by fax to the new number\n- Hospital overcharge disputed to the $6.50 flat fee\n- A fair itemized paper copy paid\n- Therapy clinic chased, past its 30 days\n\n**Left alone:**\n- Her spouse's record and a namesake's images\n- The insurer's copy, which the fee cap doesn't reach\n- The old fax number, now another business\n- A $199 retrieval service and a look-alike request",
   "domain": "Patient health",
   "audience": "home",
   "category": "health",

@@ -1,6 +1,8 @@
 {
   "id": "stormwater-permit-log",
   "title": "The site's stormwater inspections and corrective actions kept on the permit's schedule",
+  "short_title": "Stormwater permit log brought up to date",
+  "brief": "A site contractor grading a retail pad has **a week of storms and findings** to log.\n\n**Brought up to date:**\n- Storm inspection assigned for the day it is due\n- Corrective actions opened, due in 7 days\n- Finished fixes closed on the day the photos show\n\n**Left alone:**\n- Storms under the trigger or already inspected\n- Routine cleanouts and a cover re-secured\n- A fix still half done, an action already open\n- An action already closed",
   "domain": "Construction",
   "audience": "work",
   "category": "construction",

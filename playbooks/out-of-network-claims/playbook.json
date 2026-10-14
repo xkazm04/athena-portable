@@ -1,6 +1,8 @@
 {
   "id": "out-of-network-claims",
   "title": "Every out-of-network therapy session claimed with the right code, every overdue claim chased, and every one processed wrong appealed in time",
+  "short_title": "Therapy sessions claimed and chased",
+  "brief": "An employee pays **a weekly out-of-network therapist** up front and claims it back herself.\n\n**Claimed, chased or appealed — $921:**\n- Three unclaimed sessions inside the 12-month limit\n- One with the corrected shorter-session code\n- A $360 claim past 30 days with no decision\n- A claim allowed at last year's rates appealed\n- A claim charged a deductible already met appealed\n\n**Left alone:**\n- Sessions past the limit or already claimed\n- A late-cancellation fee and couples counseling\n- Claims paid right, pending, or past appeal\n- Surprise-billing complaints that don't apply",
   "domain": "Patient health",
   "audience": "home",
   "category": "health",

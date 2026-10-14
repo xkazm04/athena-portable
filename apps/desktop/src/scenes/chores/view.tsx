@@ -1,45 +1,92 @@
 /**
- * The Chores depth — README section 3.5, ADR 0040, 0053, 0087, 0089 and 0090.
+ * The Chores depth — README section 3.5, ADR 0040, 0053, 0087, 0089, 0090 and 0096.
  *
  * A pure function of `{ model, path, go }`: the place says which level is drawn. The root is the
- * field of chores (`field.tsx`), a chore is its own composed scene (`chore.tsx`), a turn of its run
- * is the replay (`replay.tsx`). An id this build does not ship, a chore with no recorded run, a
- * turn that is not in the run: each is said in words with the way back, never a crash and never a
- * blank. The module's model is the behaviour; nothing here fetches or reaches a store.
+ * catalogue (`catalogue.tsx`), a chore is its topic page (`topic.tsx`), a turn of its run is the
+ * replay (`replay.tsx`). The catalogue's filters, order and last pick live here, so coming back
+ * from a topic finds them as they were. A load that failed, a set on its way, an empty build, an id
+ * this build does not ship, a chore with no recorded run, a turn that is not in the run: each is
+ * said in words with the way back, never a crash and never a blank. Nothing here fetches or
+ * reaches a store.
  */
-import Button from "@/components/Button";
-import type { Path } from "@/depth/model";
-import type { FacetId, PlaybooksModel } from "@/modules/playbooks/model";
+import { useCallback, useState } from "react";
 
-import Chore from "./chore";
+import Button from "@/components/Button";
+import EmptyState from "@/components/EmptyState";
+import ProblemNote from "@/components/ProblemNote";
+import type { Path } from "@/depth/model";
+import type { PlaybooksModel } from "@/modules/playbooks/model";
+
+import Catalogue, { type CatalogueState } from "./catalogue";
 import "./chores.css";
-import Field from "./field";
-import { choreAt, chorePath, runPath, turnAt } from "./model";
+import { EDGE_ORDER, choreAt, chorePath, runPath, turnAt } from "./model";
 import Replay from "./replay";
+import Topic from "./topic";
 
 export interface ChoresViewProps {
   model: PlaybooksModel;
   path: Path;
   go: (to: Path) => void;
-  /** Preview only: the facet a chore opens on. */
-  initialFacet?: FacetId | null;
 }
 
-export default function ChoresView({ model, path, go, initialFacet = null }: ChoresViewProps) {
-  if (path.item === undefined) return <Field model={model} go={go} />;
+export default function ChoresView({ model, path, go }: ChoresViewProps) {
+  const [state, setState] = useState<CatalogueState>({ category: "all", job: "all", sort: EDGE_ORDER, last: null });
+  const set = useCallback((s: Partial<CatalogueState>) => setState((old) => ({ ...old, ...s })), []);
+  const back = useCallback(() => go({ root: "chores" }), [go]);
+
+  if (model.problem !== null) {
+    return (
+      <Centre>
+        <ProblemNote title="The playbooks could not be read." reason={model.problem} />
+      </Centre>
+    );
+  }
+  if (model.loading) {
+    return (
+      <Centre>
+        <EmptyState title="Loading the playbooks" line="They are fetched the first time they are asked for." />
+      </Centre>
+    );
+  }
+  if (model.items.length === 0) {
+    return (
+      <Centre>
+        <EmptyState
+          title="No playbooks in this build"
+          line="A playbook is a directory under playbooks/; the bench writes its proof beside it."
+        />
+      </Centre>
+    );
+  }
+
+  if (path.item === undefined) {
+    return (
+      <Catalogue
+        model={model}
+        state={state}
+        set={set}
+        open={(v) => {
+          set({ last: v.id });
+          go(chorePath(v.id));
+        }}
+      />
+    );
+  }
 
   const view = choreAt(model, path);
   if (view === null) {
     return (
-      <Gone
-        title="That chore is not in this build"
-        line={`There is no playbook called "${path.item}" here. It may have been renamed, or it ships in a different build.`}
-        action={
-          <Button variant="primary" onClick={() => go({ root: "chores" })}>
-            All chores
-          </Button>
-        }
-      />
+      <Centre>
+        <EmptyState
+          title="That playbook is not in this build"
+          line={`There is no playbook called "${path.item}" here. It may have been renamed.`}
+          action={
+            <Button variant="primary" onClick={back}>
+              All playbooks
+            </Button>
+          }
+        />
+      </Centre>
     );
   }
 
@@ -79,7 +126,11 @@ export default function ChoresView({ model, path, go, initialFacet = null }: Cho
     return <Replay view={view} turn={turn} go={go} />;
   }
 
-  return <Chore key={view.id} view={view} model={model} go={go} initialFacet={initialFacet} />;
+  return <Topic key={view.id} view={view} model={model} go={go} back={back} />;
+}
+
+function Centre({ children }: { children: React.ReactNode }) {
+  return <div className="pa-page pa-page--center">{children}</div>;
 }
 
 function Gone({ title, line, action }: { title: string; line: string; action: React.ReactNode }) {

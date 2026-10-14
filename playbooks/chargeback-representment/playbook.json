@@ -1,6 +1,8 @@
 {
   "id": "chargeback-representment",
   "title": "A woodworker's ten open card disputes answered with the evidence each reason code needs, five contested and won on delivery, Compelling Evidence 3.0, a matching listing, a credit already issued and a registered device, and two accepted because the board never shipped and the refund was never paid, while disputes that cannot be won and one past its processor's date are left alone",
+  "short_title": "Card disputes answered or accepted on evidence",
+  "brief": "An Idaho woodworking shop has **10 open card disputes** with its processor.\n\n**Settled — 7 disputes, $957:**\n- Contested with proof of delivery to the address\n- Two matching earlier orders on the same card\n- A listing that matched what shipped\n- A credit already issued, a registered device\n- Accepted where nothing shipped or no refund came\n\n**Left alone:**\n- Fraud claims with one earlier order or IP only\n- A dispute past the processor's date\n- Disputes already refunded",
   "domain": "Payments",
   "audience": "work",
   "category": "commerce",

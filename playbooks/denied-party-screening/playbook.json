@@ -1,6 +1,8 @@
 {
   "id": "denied-party-screening",
   "title": "A sensor maker's export orders screened before they ship: two near-matches to listed names cleared on address, country and identifier, and an unverified buyer with a sound statement released, while a buyer listed under another name, a denied company, an unverified one whose statement falls short, a company its sanctioned owner blocks and a forwarder that will not name its buyer are held",
+  "short_title": "Export orders released or held after screening",
+  "brief": "A sensor maker's compliance coordinator has **11 export orders** to clear before the 3 pm cut-off.\n\n**Cleared or held — 10 orders:**\n- 2 name-alikes cleared on address and ID\n- An unverified buyer with a sound statement shipped\n- An Entity List buyer under another name held\n- A denied company and a weak statement held\n- A firm 60% owned by a sanctioned company, held\n- A forwarder that won't name its buyer, held\n\n**Left alone:**\n- Holds on a resembling name alone\n- An affiliate the stayed rule doesn't reach",
   "domain": "Customs & trade",
   "audience": "work",
   "category": "freight",

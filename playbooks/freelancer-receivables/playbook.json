@@ -1,6 +1,8 @@
 {
   "id": "freelancer-receivables",
   "title": "A freelancer's receivables, collected",
+  "short_title": "Unpaid freelance invoices chased and unstuck",
+  "brief": "A Brooklyn product designer has **$21,550** stuck across five invoices from seven clients.\n\n**Unstuck or demanded — $21,550:**\n- A $6,000 invoice reissued within its PO\n- Her W-9 fixed in a portal, freeing $4,200\n- Demands under New York's freelancer law\n- Contract's 30 days over a portal's Net 120\n- Two small contracts counted together past $800\n\n**Left alone:**\n- A $500 credit the contract allows\n- An invoice the bank shows already paid\n- An approved invoice not yet due",
   "domain": "Freelance",
   "audience": "work",
   "category": "employment",

@@ -1,6 +1,8 @@
 {
   "id": "fba-reimbursements",
   "title": "Amazon FBA reimbursements",
+  "short_title": "Amazon's lost and short units reimbursed",
+  "brief": "An Amazon seller doing **$500k a year** has units lost, short-received or overcharged in FBA.\n\n**Filed as cases for the seller to sign:**\n- Units Amazon received short or lost\n- Refunded returns never sent back\n- A removal with no scan since\n- A fee overcharge from a wrong size tier\n- Each valued at cost, net of credits applied\n\n**Left alone:**\n- The supplier's own short shipment\n- AWD transfers, shipments still receiving\n- Windows not yet open or already closed\n- Units Amazon already reimbursed itself\n- An item remeasured twice in 60 days",
   "domain": "E-commerce",
   "audience": "work",
   "category": "commerce",

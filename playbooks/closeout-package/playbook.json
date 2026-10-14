@@ -1,6 +1,8 @@
 {
   "id": "closeout-package",
   "title": "The closeout package assembled, so the general contractor releases the retainage",
+  "short_title": "Closeout package done, retainage released",
+  "brief": "A plumbing and HVAC subcontractor's retainage waits on **9 open closeout items** for a library job.\n\n**Answered to release $48,600:**\n- Final lien waivers, not progress ones\n- The insurance certificate now in force\n- Compressor warranties matched by serial number\n- The manual for the faucet actually installed\n- The signed record set and the owner's receipt\n\n**Left alone:**\n- Three progress waivers and an expired certificate\n- Items already accepted\n- A warranty for a unit on another job\n- The manual for a substituted-out faucet\n- An unsigned markup and delivery ticket",
   "domain": "Construction",
   "audience": "work",
   "category": "construction",
