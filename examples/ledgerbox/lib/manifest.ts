@@ -86,36 +86,38 @@ export const VIEW_CAPABILITIES = [
     name: "open_item",
     parameters: [
       { name: "id", type: "string", required: true, description: "The invoice's id" },
-      { name: "group", type: "string", description: "Optional area id to look in" },
+      { name: "group", type: "string", required: false, description: "Optional area id to look in" },
     ],
   },
   { name: "zoom_out", parameters: [] },
   {
     name: "search_invoices",
     parameters: [
-      { name: "text", type: "string", description: "Matched against number, client and the waiting-on clause" },
-      { name: "area", type: "string", description: "One area of the practice, or omit for all" },
-      { name: "state", type: "string", enum: STATE_FILTERS, description: "One invoice state" },
+      { name: "text", type: "string", required: false, description: "Matched against number, client and the waiting-on clause" },
+      { name: "area", type: "string", required: false, description: "One area of the practice, or omit for all" },
+      { name: "state", type: "string", required: false, enum: STATE_FILTERS, description: "One invoice state" },
       {
         name: "overdue_by",
         type: "number",
+        required: false,
         description:
           "Only invoices at least this many days past due; 0 and 1 both mean overdue at all — omit the parameter for no filter",
       },
       {
         name: "balance_over",
         type: "number",
+        required: false,
         description:
           "Only invoices with at least this much still owed, in units; 0 means anything still owed — omit the parameter for no filter",
       },
-      { name: "unmatched", type: "boolean", description: "Only invoices carrying an unapplied credit that might fit" },
+      { name: "unmatched", type: "boolean", required: false, description: "Only invoices carrying an unapplied credit that might fit" },
     ],
   },
   {
     name: "set_filter",
     parameters: [
-      { name: "state", type: "string", enum: STATE_FILTERS, description: "Invoice state, or 'all'" },
-      { name: "client", type: "string", description: "A client id from read_view, or 'all'" },
+      { name: "state", type: "string", required: false, enum: STATE_FILTERS, description: "Invoice state, or 'all'" },
+      { name: "client", type: "string", required: false, description: "A client id from read_view, or 'all'" },
     ],
   },
 ] as const satisfies readonly Capability[];

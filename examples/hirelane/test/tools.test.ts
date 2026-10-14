@@ -155,3 +155,31 @@ test("the two gated sends name the applicant and the thing being sent, and nothi
     ["applicant_id", "template"],
   );
 });
+
+test("each tool publishes as required only the arguments it truly cannot run without", async () => {
+  const { parametersToJsonSchema } = await import("../../demo-kit/src/webmcp/types");
+  const { registration } = await import("../lib/manifest");
+  const expected: Record<string, string[]> = {
+    navigate: ["view"],
+    score_against_rubric: ["applicant_id"],
+    add_note: ["applicant_id", "text"],
+    move_stage: ["applicant_id", "stage"],
+    decide_stage: ["applicant_id", "stage"],
+    propose_slots: ["applicant_id"],
+    send_scheduling_email: ["applicant_id", "slot_id"],
+    send_rejection: ["applicant_id", "template"],
+    read_view: [],
+    open_group: ["id"],
+    open_item: ["id"],
+    zoom_out: [],
+    search_candidates: [],
+    set_filter: [],
+    read_applicants: ["role_id"],
+    read_shortlist: ["role_id"],
+  };
+  assert.deepEqual(CAPABILITIES.map((c) => c.name).sort(), Object.keys(expected).sort());
+  for (const c of CAPABILITIES) {
+    const schema = parametersToJsonSchema(registration(c.name).parameters);
+    assert.deepEqual([...(schema.required ?? [])].sort(), expected[c.name], c.name);
+  }
+});

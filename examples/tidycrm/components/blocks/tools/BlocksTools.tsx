@@ -102,16 +102,17 @@ export function BlocksTools({
     description:
       `Search all ${sheet.tableCount} tables across ${sheet.databases.length} databases at once, at any level, without opening a database first. Every result carries the database it lives in, so its id can be passed straight to open_item. Sorted worst first: the tables a person is waiting on, then the most outstanding deviations. A table awaiting a person is counted separately from its deviations and never folded into them — a rule may repair a deviation, but only a person may settle an identity pair.`,
     parameters: [
-      { name: "text", type: "string", description: "Matched against the table's id, name, domain and why-clause" },
+      { name: "text", type: "string", required: false, description: "Matched against the table's id, name, domain and why-clause" },
       {
         name: "database",
         type: "string",
+        required: false,
         enum: [...DATABASE_IDS],
         description: "One database, or omit for all nine",
       },
-      { name: "deviations_over", type: "number", description: "Only tables with at least this many outstanding" },
-      { name: "coverage_under", type: "number", description: "Only tables checked this percentage or less" },
-      { name: "awaiting_a_person", type: "boolean", description: "Only tables holding an unadjudicated identity pair" },
+      { name: "deviations_over", type: "number", required: false, description: "Only tables with at least this many outstanding" },
+      { name: "coverage_under", type: "number", required: false, description: "Only tables checked this percentage or less" },
+      { name: "awaiting_a_person", type: "boolean", required: false, description: "Only tables holding an unadjudicated identity pair" },
     ],
     reversible: true,
     sideEffects: "none",
@@ -138,6 +139,7 @@ export function BlocksTools({
       {
         name: "database",
         type: "string",
+        required: false,
         enum: [...DATABASE_IDS],
         description: "One database, or omit for all nine",
       },
@@ -152,7 +154,7 @@ export function BlocksTools({
     name: "show_breakdown",
     description:
       "Open or close the deviation breakdown in the sheet head, which splits the outstanding total into duplicate, conflict, phone and stale. Call with no argument to read whether it is open.",
-    parameters: [{ name: "open", type: "boolean", description: "Open it, or close it" }],
+    parameters: [{ name: "open", type: "boolean", required: false, description: "Open it, or close it" }],
     reversible: true,
     sideEffects: "none",
     handler: ({ open }) => {
