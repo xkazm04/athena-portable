@@ -1,4 +1,4 @@
-# 0087 — Main is one scene with depths, and Fathom is the chosen design
+# 0087. Main is one scene with depths, and Fathom is the chosen design
 
 ## Context
 

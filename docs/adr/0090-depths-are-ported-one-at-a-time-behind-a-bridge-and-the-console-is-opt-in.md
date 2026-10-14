@@ -1,4 +1,4 @@
-# 0090 — Depths are ported one at a time behind a bridge, and the console is opt-in
+# 0090. Depths are ported one at a time behind a bridge, and the console is opt-in
 
 **Status: carried out.** Every depth is ported and ADR 0095 records the cutover that deleted the bar,
 the bridge and the flag.

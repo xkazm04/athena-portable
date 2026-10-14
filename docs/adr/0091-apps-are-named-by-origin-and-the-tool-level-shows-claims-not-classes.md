@@ -1,4 +1,4 @@
-# 0091 — Apps are named by origin, and the tool level shows claims, not classes
+# 0091. Apps are named by origin, and the tool level shows claims, not classes
 
 ## Context
 

@@ -1,4 +1,4 @@
-# 0086 — A dev-only inspector copies the source of the component under the cursor
+# 0086. A dev-only inspector copies the source of the component under the cursor
 
 ## Context
 

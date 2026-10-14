@@ -1,4 +1,4 @@
-# 0095 — The cutover deletes the bar and the old views, and the first paint is a budget
+# 0095. The cutover deletes the bar and the old views, and the first paint is a budget
 
 ## Context
 

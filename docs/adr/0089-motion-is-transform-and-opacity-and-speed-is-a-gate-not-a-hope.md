@@ -1,4 +1,4 @@
-# 0089 — Motion is transform and opacity, and speed is a gate, not a hope
+# 0089. Motion is transform and opacity, and speed is a gate, not a hope
 
 ## Context
 

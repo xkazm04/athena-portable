@@ -1,4 +1,4 @@
-# 0094 — The first act is reshown by a flag, and Calm is a choice in Look
+# 0094. The first act is reshown by a flag, and Calm is a choice in Look
 
 ## Context
 

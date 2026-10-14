@@ -1,4 +1,4 @@
-# 0093 — A replay turn is a place, and "playing" outlives the remount in a small store
+# 0093. A replay turn is a place, and "playing" outlives the remount in a small store
 
 ## Context
 

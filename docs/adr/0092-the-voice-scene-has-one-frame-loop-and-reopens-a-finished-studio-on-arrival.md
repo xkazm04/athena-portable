@@ -1,4 +1,4 @@
-# 0092 — The Voice scene has one frame loop, and reopens a finished studio on arrival
+# 0092. The Voice scene has one frame loop, and reopens a finished studio on arrival
 
 ## Context
 

@@ -1,4 +1,4 @@
-# 0088 — Depth has two shapes, because the page webview is native
+# 0088. Depth has two shapes, because the page webview is native
 
 ## Context
 
