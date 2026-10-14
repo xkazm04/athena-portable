@@ -3269,7 +3269,11 @@
           "revision": 31,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/lib/bridge.ts:83 bridge:toolchange re-lists and rebuilds with no pin/diff of descriptions and consent is per origin on first sight only (untrusted-result-handling); a page that passed first review can rewrite a tool description into a prompt injection the model reads on the next listing with no human seeing the change",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:afba7a2b8c938ae1",
+          "evaluatedRevision": 31
         },
         {
           "subject": "multi-provider-gateway-plane",
@@ -4470,7 +4474,11 @@
           "revision": 48,
           "changedAt": "2026-10-14",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:4 the Mind depth is the Setup surface (engine, brain folder, look, data, mic); its only memory touch is a folder-path setting (view.tsx:309); no capture, consolidation, recall or governance of memory items exists in this context",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:7770d30ff5df3c25",
+          "evaluatedRevision": 48
         },
         {
           "subject": "mcp-tools",
@@ -4518,7 +4526,11 @@
           "revision": 26,
           "changedAt": "2026-10-06",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css.test.ts:26 pins hover by css.includes(\".mind__input:hover\") on comment-unstripped CSS (also apps/desktop/src/scenes/surface/surface.css.test.ts:25) (pin-the-call-not-the-name); a CSS comment naming the selector or an empty hover rule keeps the pin green with no hover behaviour",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:5521806124d93882",
+          "evaluatedRevision": 26
         },
         {
           "subject": "motion",
@@ -7331,7 +7343,11 @@
           "revision": 37,
           "changedAt": "2026-09-29",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/proving/characters/judges.py:90 read_rubric loads uat/rubric.md live and src/athena/proving/characters/run.py:753 stamps only the judge model id, no rubric/judge-prompt version (judge-stability); a rubric edit silently starts a new series that reports compare as one",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:7ccead00b7f92aba",
+          "evaluatedRevision": 37
         },
         {
           "subject": "agent-cli-transport",
@@ -7433,7 +7449,11 @@
           "revision": 26,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "tests/proving/test_live.py:21 @pytest.mark.provider puts a live provider test in the default suite by marker and .github/workflows/ci.yml:46 collects it, so \"never run in CI\" (pyproject.toml:101) holds only because the key is unset (test_live.py:22 skipif) (suite-partitioning); the live lane has no config or schedule of its own and its skip folds into the commit-tier green",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:5521806124d93882",
+          "evaluatedRevision": 26
         },
         {
           "subject": "quality-gates",
@@ -7578,6 +7598,14 @@
           "changedAt": "2026-09-03",
           "confidence": "probable",
           "state": "unknown"
+        },
+        {
+          "subject": "eval-harness",
+          "bundle": "software-engineering",
+          "source": "conform",
+          "confidence": "strong",
+          "state": "unknown",
+          "evidence": "added by /conform: the matcher missed it; budget.py/roles.py/report.py run agents against worlds with a pinned judge control, per-engine dollar caps and partial-run reporting"
         }
       ],
       "governance": "governed"
@@ -7611,7 +7639,11 @@
           "revision": 31,
           "changedAt": "2026-10-06",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/proving/server/app.py:32 the trigger page is a stdlib ThreadingHTTPServer, a human-facing JSON/HTML API with one bearer-gated POST (app.py:278); no MCP host/client/server or model-read tool surface, and src/athena/proving/gauntlet/__init__.py:12 records \"no MCP channel exists\"; mcp-tools excludes generic RPC no model reads",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:afba7a2b8c938ae1",
+          "evaluatedRevision": 31
         },
         {
           "subject": "test-harness",
