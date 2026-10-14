@@ -633,6 +633,7 @@ pub fn show_with(app: &AppHandle, focus: bool) {
 /// `SW_SHOWNOACTIVATE` does not. Hers on a card's arrival, and every halo's (ADR 0027).
 #[cfg(windows)]
 pub fn show_no_activate(window: &Window) {
+    debug_assert_eq!(show_plan(std::env::consts::OS), ShowPlan::NativeNoActivate);
     use windows_sys::Win32::UI::WindowsAndMessaging::{ShowWindow, SW_SHOWNOACTIVATE};
     match window.hwnd() {
         Ok(hwnd) => unsafe {
@@ -644,9 +645,36 @@ pub fn show_no_activate(window: &Window) {
     }
 }
 
+/// How a window is shown without taking the keyboard, per host.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ShowPlan {
+    /// `SW_SHOWNOACTIVATE`.
+    NativeNoActivate,
+    /// Mark the window unfocusable for the show (macOS: it cannot become key; Linux: GTK
+    /// `accept_focus` off), then make it focusable again so a click can still reach her.
+    UnfocusableShow,
+    /// A plain `show`, which activates. Never the answer for an arrival; it exists so the test can
+    /// name what no host may be given.
+    #[allow(dead_code)]
+    Plain,
+}
+
+/// The no-activate path for a host named as `std::env::consts::OS` spells it.
+pub fn show_plan(os: &str) -> ShowPlan {
+    match os {
+        "windows" => ShowPlan::NativeNoActivate,
+        _ => ShowPlan::UnfocusableShow,
+    }
+}
+
 #[cfg(not(windows))]
 pub fn show_no_activate(window: &Window) {
+    // Focus is deliberately not taken: a card arriving must not pull the user out of whatever
+    // they are typing in (non-stealing-overlay). A plain `show` activates on macOS and Linux.
+    debug_assert_eq!(show_plan(std::env::consts::OS), ShowPlan::UnfocusableShow);
+    let _ = window.set_focusable(false);
     let _ = window.show();
+    let _ = window.set_focusable(true);
 }
 
 /// Put her away. Hiding stops drawing, not listening: the webview lives on and the daemon's
@@ -904,6 +932,15 @@ pub async fn athena_report(
 
 #[cfg(test)]
 mod tests {
+    /// An arrival must never use a plain, activating show on any host.
+    #[test]
+    fn no_host_shows_an_arrival_with_a_plain_activating_show() {
+        for os in ["windows", "macos", "linux"] {
+            assert_ne!(show_plan(os), ShowPlan::Plain, "{os} would steal focus on an arrival");
+        }
+        assert_eq!(show_plan("windows"), ShowPlan::NativeNoActivate);
+    }
+
     use super::*;
 
     const WORK: Rect = Rect { x: 0.0, y: 0.0, width: 1920.0, height: 1040.0 };
