@@ -1694,7 +1694,11 @@
           "revision": 37,
           "changedAt": "2026-09-29",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/contracts/harness.py:183 Harness is a turn-runtime Protocol, not an eval harness; contracts-seam runs no scenarios, judges or scores (src/athena/contracts/__init__.py:3 'no I/O'); eval lives in src/athena/proving",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:7ccead00b7f92aba",
+          "evaluatedRevision": 37
         },
         {
           "subject": "data-access",
@@ -1812,7 +1816,11 @@
           "revision": 48,
           "changedAt": "2026-10-14",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/core/brain/store.py:422 mints a new fact per write and src/athena/core/brain/schema.py:52 has no supersede link, so a corrected fact and its predecessor both stay live; src/athena/core/recall.py:418 stops packing at the first oversized episode",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:7770d30ff5df3c25",
+          "evaluatedRevision": 48
         },
         {
           "subject": "companion-identity",
@@ -2010,7 +2018,11 @@
           "revision": 31,
           "changedAt": "2026-10-06",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/core/catalog.py:370 re-merge silently adopts a page's changed descriptions and reversible/side_effects flags (class re-derived at :349), so a tool can move GATED->AUTO with no pin, diff or human review",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:afba7a2b8c938ae1",
+          "evaluatedRevision": 31
         },
         {
           "subject": "quality-gates",
@@ -4909,7 +4921,11 @@
           "revision": 3,
           "changedAt": "2026-09-04",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/companion.rs:652 assumes daemon events reach the hidden webview (stream owned by the webview, no throttling opt-out); apps/desktop/src-tauri/src/companion.rs:649 non-Windows show_no_activate activates, so arrivals steal focus",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:0ab230f2977430e7",
+          "evaluatedRevision": 3
         },
         {
           "subject": "agent-memory",
@@ -7770,7 +7786,11 @@
           "revision": 6,
           "changedAt": "2026-10-05",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/proving/sandbox/__main__.py:29 packs the team's own repo for a rented remote microVM run from a CLI; no third-party code, admin install path, extension API or grant exists, so the subject's precondition is unmet",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:a23407994bc4b9db",
+          "evaluatedRevision": 6
         },
         {
           "subject": "agent-runtime-assembly",
@@ -8684,7 +8704,11 @@
           "revision": 20,
           "changedAt": "2026-10-12",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/channels/voice/tts.py:41 speaks visible reply text with no markup door, so markdown/URLs are voiced; src/athena/channels/voice/commands.py:91 collapses every empty transcript to silent 'silence', so words-less speech is never surfaced",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:fa1c8ca716f872dc",
+          "evaluatedRevision": 20
         },
         {
           "subject": "multi-provider-gateway-plane",
