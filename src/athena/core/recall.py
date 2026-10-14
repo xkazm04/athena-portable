@@ -322,9 +322,8 @@ def recall_whole(
 
     The keyword lane of distilled memory comes first, then the episodes the query matches, ranked
     by BM25 with the newer first on a tie, each with its full stored body. There is no always tier
-    and no recency tail: the frame's window already carries both. An episode that would pass
-    ``cap`` is skipped and packing goes on with the shorter ones behind it, and the block's M
-    counts every episode that matched. The one
+    and no recency tail: the frame's window already carries both. Packing stops before the first
+    episode that would pass ``cap``, and the block's M counts every episode that matched. The one
     episode ever left to the gate's cut is one longer than the cap on its own. Machine-written
     episodes take at most :data:`MACHINE_EPISODE_SLOTS` of the answer (ref §8), as in the frame
     window: one past that limit is skipped and packing goes on, so fleet chatter never fills
@@ -404,7 +403,6 @@ def _whole_episodes(
     room = cap - spent - overhead
     items: list[Memory] = []
     machine_taken = 0
-    oversized: Memory | None = None
     for row in rows:
         if limit is not None and len(items) >= limit:
             break
@@ -415,17 +413,11 @@ def _whole_episodes(
             machine_taken += 1
         cost = len(memory.render()) + 1
         if cost > room:
-            # One memory too long for what is left must not hide the shorter ones behind it
-            # (agent-memory/recall-injection): it is skipped and packing goes on.
-            if oversized is None and cost + overhead > cap:
-                oversized = memory
-            continue
+            if not items and spent == 0 and cost + overhead > cap:
+                items.append(memory)
+            break
         items.append(memory)
         room -= cost
-    if not items and spent == 0 and oversized is not None:
-        # The one episode ever left to the gate's cut: nothing else fit, and it is longer than
-        # the cap on its own.
-        items.append(oversized)
     return RecallBlock(EPISODE_BLOCK, tuple(items), total)
 
 
@@ -470,9 +462,6 @@ def _count(con: sqlite3.Connection, sql: str, params: tuple[Any, ...]) -> int:
     return int(rows[0][0]) if rows else 0
 
 
-#: A fact a later write closed (``superseded_by``) stays in the index for provenance and is never
-#: recalled: the successor is what recall serves.
-_CLOSED = "(SELECT id FROM companion_fact WHERE superseded_by IS NOT NULL)"
 _NODE_SELECT = """SELECT n.id, n.kind, n.body_excerpt, n.file_path, n.created_at, n.machine"""
 
 
@@ -495,8 +484,7 @@ def _always_block(con: sqlite3.Connection) -> RecallBlock:
     total = _count(
         con,
         f"""SELECT COUNT(*) FROM companion_node
-            WHERE importance >= ? AND kind IN ({marks})
-              AND id NOT IN {_CLOSED}""",
+            WHERE importance >= ? AND kind IN ({marks})""",
         (ALWAYS_IMPORTANCE_FLOOR, *DISTILLED_KINDS),
     )
     items: list[Memory] = []
@@ -507,7 +495,6 @@ def _always_block(con: sqlite3.Connection) -> RecallBlock:
                 con,
                 f"""{_NODE_SELECT}, n.importance FROM companion_node n
                     WHERE n.importance >= ? AND n.kind = ?
-                      AND n.id NOT IN {_CLOSED}
                     ORDER BY n.importance DESC, n.created_at DESC LIMIT ?""",
                 (ALWAYS_IMPORTANCE_FLOOR, kind, cap),
             )
@@ -535,7 +522,7 @@ def _keyword_block(
         con,
         f"""SELECT COUNT(*) FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
             WHERE companion_fts MATCH ? AND n.importance > 0 AND n.kind IN ({kind_marks})
-              AND n.id NOT IN ({skip_marks}) AND n.id NOT IN {_CLOSED}""",
+              AND n.id NOT IN ({skip_marks})""",
         params,
     )
     rows = _rows(
@@ -543,7 +530,7 @@ def _keyword_block(
         f"""{_NODE_SELECT}, bm25(companion_fts)
             FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
             WHERE companion_fts MATCH ? AND n.importance > 0 AND n.kind IN ({kind_marks})
-              AND n.id NOT IN ({skip_marks}) AND n.id NOT IN {_CLOSED}
+              AND n.id NOT IN ({skip_marks})
             ORDER BY bm25(companion_fts) ASC LIMIT ?""",
         (*params, slots),
     )

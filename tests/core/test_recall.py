@@ -319,20 +319,6 @@ def test_packing_stops_before_an_episode_that_would_pass_the_cap_and_counts_all(
         assert sum(len(block.render()) for block in trace.blocks) <= 2000
 
 
-def test_an_oversized_episode_is_skipped_and_packing_goes_on(tmp_path: Path) -> None:
-    with Brain(tmp_path / "brain") as brain:
-        best = brain.append_episode(
-            "invoice invoice invoice " + "x" * 3000, "user", created=BASE
-        ).id
-        small = brain.append_episode("invoice note", "user", created=BASE).id
-
-        episodes = recall_whole(brain, "invoice", cap=2000).block(EPISODE_BLOCK)
-
-        assert [m.id for m in episodes.items] == [small], "the long one is skipped, not a wall"
-        assert best not in [m.id for m in episodes.items]
-        assert episodes.total == 2
-
-
 def test_the_best_match_comes_first_and_a_tie_goes_to_the_newer(tmp_path: Path) -> None:
     with Brain(tmp_path / "brain") as brain:
         old = brain.append_episode("duplex notes", "user", created=BASE).id
@@ -833,9 +819,8 @@ def _rendered(trace: RecallTrace) -> str:
 def _reference_episodes(brain: Brain, query: str, cap: int, limit: int | None) -> RecallBlock:
     """The episode block as recall_whole built it before the page: every match read, then packed.
 
-    A copy of the code at 60d9024 (an oversized episode now skipped, not a stop), kept so the
-    paged read is checked against it, not against itself. The keyword lane it was packed after
-    is the same in both.
+    A copy of the code at 60d9024, kept so the paged read is checked against it, not against
+    itself. The keyword lane it was packed after is the same in both.
     """
     keyword = recall_whole(brain, query, cap=cap, limit=limit).block(KEYWORD_BLOCK)
     spent = len("### " + keyword.name + "\n" + keyword.render()) + 2
@@ -878,7 +863,9 @@ def _reference_episodes(brain: Brain, query: str, cap: int, limit: int | None) -
             machine_taken += 1
         cost = len(memory.render()) + 1
         if cost > room:
-            continue
+            if not items and spent == 0 and cost + overhead > cap:
+                items.append(memory)
+            break
         items.append(memory)
         room -= cost
     return RecallBlock(EPISODE_BLOCK, tuple(items), int(total))

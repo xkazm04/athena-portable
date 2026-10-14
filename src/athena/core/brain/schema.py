@@ -15,10 +15,7 @@ from __future__ import annotations
 #: can tell an old index from a new one instead of guessing from the presence of a column.
 #: Version 2 keys each ``companion_fts`` row by its node's rowid (ADR 0077); an index stamped 1, or
 #: not stamped, is re-keyed when a :class:`~athena.core.brain.store.Brain` opens it.
-#: Version 3 adds ``companion_fact.superseded_by``: the id of the fact that closed this one. An
-#: index stamped lower gains the column (nullable, so every stored fact stays live) when a Brain
-#: opens it.
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 2
 
 SCHEMA: tuple[str, ...] = (
     # -- index core: one row per memory, derivable from its file ------------------------------
@@ -57,8 +54,7 @@ SCHEMA: tuple[str, ...] = (
         scope TEXT NOT NULL,
         fact_key TEXT NOT NULL,
         confidence REAL NOT NULL DEFAULT 0.7,
-        expires_at TEXT,
-        superseded_by TEXT
+        expires_at TEXT
     )""",
     "CREATE INDEX IF NOT EXISTS idx_fact_scope ON companion_fact(scope, fact_key)",
     """CREATE TABLE IF NOT EXISTS companion_procedural (

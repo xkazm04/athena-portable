@@ -31,7 +31,6 @@ from athena.core.brain.store import (
     DEFAULT_IMPORTANCE,
     EVERY_TURN_KEY,
     MACHINE_IMPORTANCE,
-    SUPERSEDES_KEY,
     Brain,
 )
 
@@ -110,7 +109,6 @@ def reconcile_from_disk(brain: Brain) -> ReconcileStats:
         for table in INDEX_TABLES:
             con.execute(f"DELETE FROM {table}")
         seen: set[str] = set()
-        supersedes: list[tuple[str, str]] = []
         for subdir, kind in WALK:
             base = brain.root / subdir
             if not base.is_dir():
@@ -153,14 +151,6 @@ def reconcile_from_disk(brain: Brain) -> ReconcileStats:
                 _index_file(brain, con, node_id, kind, rel, file_text, body, meta, confidence)
                 stats.files += 1
                 stats.by_kind[kind] = stats.by_kind.get(kind, 0) + 1
-                closed = meta.get(SUPERSEDES_KEY)
-                if kind == "fact" and isinstance(closed, list):
-                    supersedes.extend((str(old), node_id) for old in closed)
-    # After the walk, so a closing fact read before the one it closes still finds its row.
-    for old, new in supersedes:
-        con.execute(
-            "UPDATE companion_fact SET superseded_by = ? WHERE id = ? AND id != ?", (new, old, new)
-        )
     return stats
 
 
