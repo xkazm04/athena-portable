@@ -74,6 +74,81 @@ def test_a_fact_citing_a_live_episode_is_written_with_its_provenance(tmp_path: P
         assert f'  - "{episode.id}"' in text
 
 
+def _live_fact_ids(brain: Brain, query: str) -> list[str]:
+    block = recall(brain, query).block("keyword")
+    return [m.id for m in block.items if m.kind == "fact"]
+
+
+def _closed(brain: Brain) -> list[tuple[str, str]]:
+    with closing(brain.read_connection()) as con:
+        return [
+            (str(a), str(b))
+            for a, b in con.execute(
+                "SELECT id, superseded_by FROM companion_fact "
+                "WHERE superseded_by IS NOT NULL ORDER BY id"
+            )
+        ]
+
+
+def test_a_fact_written_under_an_existing_key_supersedes_the_old_one(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("Acme terms", role="user")
+        old = brain.write_fact("acme terms", "Acme pays in thirty days", sources=[episode.id])
+        new = brain.write_fact("acme terms", "Acme pays in sixty days", sources=[episode.id])
+
+        assert _live_fact_ids(brain, "Acme pays") == [new.id]
+        with closing(brain.read_connection()) as con:
+            row = con.execute(
+                "SELECT superseded_by FROM companion_fact WHERE id = ?", (old.id,)
+            ).fetchone()
+        assert row == (new.id,)
+        # Kept for provenance: the old file and its row are still there.
+        assert (brain.root / old.path).is_file()
+        assert brain.node(old.id) is not None
+
+
+def test_a_fact_under_another_key_or_scope_does_not_supersede(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("Acme terms", role="user")
+        a = brain.write_fact("acme terms", "Acme pays in thirty days", sources=[episode.id])
+        b = brain.write_fact("acme contact", "Acme pays via Dana", sources=[episode.id])
+        c = brain.write_fact(
+            "acme terms", "Acme pays in ninety days", scope="project", sources=[episode.id]
+        )
+
+        assert sorted(_live_fact_ids(brain, "Acme pays")) == sorted([a.id, b.id, c.id])
+
+
+def test_a_rebuild_keeps_a_fact_superseded(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        episode = brain.append_episode("Acme terms", role="user")
+        brain.write_fact("acme terms", "Acme pays in thirty days", sources=[episode.id])
+        new = brain.write_fact("acme terms", "Acme pays in sixty days", sources=[episode.id])
+        before = _closed(brain)
+        fingerprint = index_fingerprint(brain)
+
+        reconcile_from_disk(brain)
+
+        assert index_fingerprint(brain) == fingerprint
+        assert _closed(brain) == before != []
+        assert _live_fact_ids(brain, "Acme pays") == [new.id]
+
+
+def test_an_index_without_the_supersede_column_is_migrated_in_place(tmp_path: Path) -> None:
+    root = tmp_path / "brain"
+    with Brain(root) as brain:
+        episode = brain.append_episode("Acme terms", role="user")
+        kept = brain.write_fact("acme terms", "Acme pays in thirty days", sources=[episode.id])
+        with brain.write_txn() as con:
+            con.execute("ALTER TABLE companion_fact DROP COLUMN superseded_by")
+            con.execute("UPDATE companion_meta SET value = '2' WHERE key = 'schema_version'")
+
+    with Brain(root) as brain:
+        assert _live_fact_ids(brain, "Acme pays") == [kept.id]
+        new = brain.write_fact("acme terms", "Acme pays in sixty days", sources=[episode.id])
+        assert _live_fact_ids(brain, "Acme pays") == [new.id]
+
+
 def test_provenance_refuses_a_dead_source(tmp_path: Path) -> None:
     """The invariant with no bypass: a source that is not a live episode of *this* brain."""
     with Brain(tmp_path / "brain") as brain, Brain(tmp_path / "other") as elsewhere:
@@ -229,8 +304,9 @@ def test_an_every_turn_fact_carries_one_more_key_last_and_the_always_importance(
         episode = brain.append_episode("Northwind paid 40 days late", role="user")
 
         plain = brain.write_fact("northwind", "Northwind pays late", sources=[episode.id])
+        # A second key: the same key would supersede the plain fact and add a header key of its own.
         always = brain.write_fact(
-            "northwind", "Northwind pays late", sources=[episode.id], every_turn=True
+            "northwind terms", "Northwind pays late", sources=[episode.id], every_turn=True
         )
 
         plain_header = _header((brain.root / plain.path).read_text(encoding="utf-8"))
@@ -391,7 +467,7 @@ def test_a_version_1_index_is_rekeyed_by_node_rowid_when_opened(tmp_path: Path) 
         assert index_fingerprint(brain) == fingerprint, "the re-keyed index is the rebuilt one"
 
     pairs, orphans, version = _fts_keys(db)
-    assert version == str(SCHEMA_VERSION) == "2"
+    assert version == str(SCHEMA_VERSION) == "3"
     assert orphans == 0
     assert len(pairs) == 8 and all(node == fts for node, fts in pairs)
     assert after == before
