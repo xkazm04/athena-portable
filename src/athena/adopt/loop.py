@@ -265,6 +265,10 @@ def _offer_card(
                 if questions:
                     _emit_card(session, round_no, questions)
                     return
+                # Twice nothing she could answer: what is still open is read during the run
+                # (her lease, a statement, a portal), not asked as a bare slot label.
+                _defer_to_run(session, open_ids)
+                return
         elif not open_ids:
             _write_brief(session, cleared=True)
             return
@@ -273,6 +277,27 @@ def _offer_card(
     else:
         session.emit(Error(reason=result.error_reason or "unknown", detail=result.detail))
     _plain_question(session, round_no, open_ids)
+
+
+#: What a slot holds when the interviewer found nothing the person could answer about it.
+RUN_LOOKUP = "I'll read this during the run"
+
+
+def _defer_to_run(session: AdoptSession, open_ids: list[str] | None) -> None:
+    """Mark what is still open as looked up during the run (a guess, said so), then the brief."""
+    with session.lock:
+        wanted = set(open_ids) if open_ids else {s.id for s in session.slots if s.status == "open"}
+        updates = [
+            {"slot_id": s.id, "value": RUN_LOOKUP, "status": "guessed"}
+            for s in session.slots
+            if s.id in wanted and s.status == "open"
+        ]
+        updated, changed = apply_updates(session.slots, updates, source="default")
+        if changed:
+            session.set_slots(updated)
+    session.count("deferred_to_run")
+    session.emit(Say(text="That's all I need from you. The rest I'll read during the run."))
+    _write_brief(session, cleared=True)
 
 
 def _plain_question(session: AdoptSession, round_no: int, open_ids: list[str] | None) -> None:

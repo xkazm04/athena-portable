@@ -241,3 +241,22 @@ def test_check_answers_refuses_what_was_not_asked(rig: Rig) -> None:
     )
     assert "nothing" in loop.check_answers(session, [Answer(question_id="r1q1")])
     assert loop.check_answers(session, []) != ""
+
+
+def test_what_she_cannot_answer_is_read_during_the_run_not_asked_as_a_label(rig: Rig) -> None:
+    script = clear_script()
+    script["audit"] = [{"updates": [], "open_slot_ids": ["p1"]}]
+    script["interview"] = [
+        {"questions": [{"slot_ids": ["p2"], "text": "Is the plan at Retireline?"}]},
+        {"questions": []},
+    ]
+    rig.model.script = script
+    session = started(rig)
+    answer_all(session)
+
+    cards = [wire(e) for e in session.events_after(0) if e.kind == "adopt.questions"]
+    assert len(cards) == 1  # no bare-label card after the interviewer found nothing to ask
+    p1 = next(s for s in session.slots if s.id == "p1")
+    assert (p1.status, p1.value) == ("guessed", loop.RUN_LOOKUP)
+    assert "adopt.clear" in kinds(session)
+    assert session.counters.get("deferred_to_run") == 1
