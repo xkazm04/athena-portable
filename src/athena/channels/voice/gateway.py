@@ -65,7 +65,14 @@ from athena.channels.voice.backends import (
     hearing_meter,
     speaking_meter,
 )
-from athena.channels.voice.commands import Card, Spoken, recognise
+from athena.channels.voice.commands import (
+    SPEECH_PEAK,
+    UNHEARD_PROMPT,
+    Card,
+    Spoken,
+    peak_level,
+    recognise,
+)
 from athena.channels.voice.tts import SpokenLine, spoken_line
 from athena.channels.voice.ws import FrameTooLarge, WebSocket, WebSocketError
 from athena.contracts.channel import (
@@ -259,6 +266,8 @@ class _Utterance:
     interrupted: bool = False
     #: Bytes of PCM fed so far. The ceiling is on this count, before ``feed`` (ADR 0072).
     heard: int = 0
+    #: The loudest sample fed so far.
+    peak: int = 0
     #: Set when the ceiling was crossed: the transcriber is released, later frames are ignored.
     refused: bool = False
     #: What the transcriber's request bills under, taken with it at key-down (ADR 0083).
@@ -285,6 +294,9 @@ class _Job:
     transcriber: Any = None
     #: What that transcriber's request bills under, or ``None`` when it costs no request.
     meter: Meter | None = None
+    #: Whether the capture held a voice (its loudest sample), so an empty transcript of it is
+    #: speech the engine could not read and not silence.
+    audible: bool = False
 
 
 @dataclass(frozen=True)
@@ -478,6 +490,7 @@ class VoiceSession:
             )
             return
         current.heard += len(pcm)
+        current.peak = max(current.peak, peak_level(pcm))
         for partial in current.transcriber.feed(pcm):
             if self.speaking:
                 current.interrupted = True
@@ -571,6 +584,7 @@ class VoiceSession:
                 text="",
                 transcriber=current.transcriber,
                 meter=current.meter,
+                audible=current.peak >= SPEECH_PEAK,
                 origin=current.origin,
                 host_state=current.host_state,
                 project_id=current.project_id,
@@ -838,9 +852,16 @@ class VoiceSession:
         self.send(VoiceTranscript(text=job.text, final=True))
         presented, inbox = self._known_cards()
         spoken = recognise(
-            job.text, presented, speaking=job.interrupted or self.speaking, inbox=inbox
+            job.text,
+            presented,
+            speaking=job.interrupted or self.speaking,
+            inbox=inbox,
+            audible=job.audible,
         )
         if spoken.kind == "silence":
+            return
+        if spoken.kind == "unheard":
+            self.say(SpokenLine(UNHEARD_PROMPT))
             return
         if spoken.kind == "stop":
             self.interrupt()
