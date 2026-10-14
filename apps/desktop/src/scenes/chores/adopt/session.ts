@@ -24,16 +24,35 @@ import { INITIAL, SESSION_CLOSED, reduce, type StudioState } from "./state";
 export const BACKOFF_MS: readonly number[] = [1000, 2000, 4000];
 export const MAX_TRIES = 5;
 
-const why = (error: unknown) =>
-  error instanceof ApiError
-    ? {
-        reason: error.reason,
-        detail: error.message === error.reason ? "" : error.message,
-      }
-    : {
-        reason: "unknown",
-        detail: error instanceof Error ? error.message : String(error),
-      };
+/**
+ * A refusal in words. The daemon carries two adopt refusals in its closed reason vocabulary with a
+ * prefix on the detail (ADR 0097): `busy:` (three conversations already open, 429) and `stale_rev:`
+ * (an approve for a brief that has since changed, 409); both are said plainly here.
+ */
+export const why = (error: unknown): { reason: string; detail: string } => {
+  if (!(error instanceof ApiError)) {
+    return {
+      reason: "unknown",
+      detail: error instanceof Error ? error.message : String(error),
+    };
+  }
+  const detail = error.message === error.reason ? "" : error.message;
+  if (detail.startsWith("busy:")) {
+    return {
+      reason: "busy",
+      detail:
+        "Three conversations are already open with her. Close one, then try again.",
+    };
+  }
+  if (detail.startsWith("stale_rev:")) {
+    return {
+      reason: "stale_rev",
+      detail:
+        "The brief changed after you pressed Approve. Read the newest draft and approve that.",
+    };
+  }
+  return { reason: error.reason, detail };
+};
 
 export interface StudioActions {
   answer: (cardKey: string, answers: Answer[], via: AnswerVia) => void;
