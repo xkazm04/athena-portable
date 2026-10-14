@@ -111,6 +111,22 @@ pub fn hide_still_due(scheduled: u64, current: u64) -> bool {
     scheduled == current
 }
 
+/// Where a hidden halo is parked: a point no monitor covers, far enough left and above every
+/// monitor that even a window as large as the largest one cannot reach back onto a display.
+pub fn park_point(monitors: &[MonitorRect]) -> (i32, i32) {
+    const MARGIN: i64 = 10_000;
+    let left = monitors.iter().map(|m| m.0 as i64).min().unwrap_or(0);
+    let top = monitors.iter().map(|m| m.1 as i64).min().unwrap_or(0);
+    let widest = monitors.iter().map(|m| m.2 as i64).max().unwrap_or(0);
+    let tallest = monitors.iter().map(|m| m.3 as i64).max().unwrap_or(0);
+    let x = (left - widest - MARGIN).max(i32::MIN as i64) as i32;
+    let y = (top - tallest - MARGIN).max(i32::MIN as i64) as i32;
+    (x, y)
+}
+
+/// A monitor's physical rectangle: left, top, width, height.
+pub type MonitorRect = (i32, i32, u32, u32);
+
 /// The halo's managed state: the signal generation and whether the overlays are up.
 #[derive(Debug, Default)]
 pub struct Halo {
@@ -188,14 +204,54 @@ fn pass_through(label: &str, window: &Window) {
 #[cfg(not(all(windows, target_pointer_width = "64")))]
 fn pass_through(_label: &str, _window: &Window) {}
 
+/// The monitors as physical rectangles, in the order `build` numbered the halos by.
+fn monitor_list(app: &AppHandle) -> Vec<tauri::Monitor> {
+    match app.available_monitors() {
+        Ok(m) if !m.is_empty() => m,
+        _ => app.primary_monitor().ok().flatten().into_iter().collect(),
+    }
+}
+
+/// Put a halo back onto its monitor. A parked window has no current display, so the monitor is
+/// the one the label numbers, and where that has no answer (a monitor unplugged while parked) the
+/// primary: a show that assumed a current display would leave the halo parked in the void.
+fn place(app: &AppHandle, label: &str, window: &Window) {
+    let monitors = monitor_list(app);
+    let index = label.strip_prefix(HALO_PREFIX).and_then(|i| i.parse::<usize>().ok());
+    let monitor = index
+        .and_then(|i| monitors.get(i).cloned())
+        .or_else(|| app.primary_monitor().ok().flatten())
+        .or_else(|| monitors.first().cloned());
+    let Some(monitor) = monitor else { return };
+    let (p, s) = (monitor.position(), monitor.size());
+    let _ = window.set_position(PhysicalPosition::new(p.x, p.y));
+    let _ = window.set_size(PhysicalSize::new(s.width, s.height));
+}
+
 fn show_all(app: &AppHandle) {
-    for (_, window) in halos(app) {
+    for (label, window) in halos(app) {
+        place(app, &label, &window);
+        // Shown without activating: taking focus would pull the user out of whatever they are
+        // typing in, the opposite of what an ambient overlay is for.
         crate::companion::show_no_activate(&window);
     }
 }
 
+/// Hiding is three acts, in this order, while the window is still addressable: suppress hit
+/// testing, park it off every display, then hide. A window manager's hide is a request, not an
+/// effect; on a host that only half-honours it the halo survives as an invisible click target
+/// that brings Athena to the front with nothing visible. Each act backs up the next one's
+/// failure. `show_all` re-places the window onto a display afterwards.
 fn hide_all(app: &AppHandle) {
-    for (_, window) in halos(app) {
+    let rects: Vec<MonitorRect> = monitor_list(app)
+        .iter()
+        .map(|m| (m.position().x, m.position().y, m.size().width, m.size().height))
+        .collect();
+    let (x, y) = park_point(&rects);
+    for (label, window) in halos(app) {
+        pass_through(&label, &window);
+        let _ = window.set_ignore_cursor_events(true);
+        let _ = window.set_position(PhysicalPosition::new(x, y));
         let _ = window.hide();
     }
 }
@@ -302,5 +358,26 @@ mod tests {
     #[test]
     fn the_idle_hide_outlasts_the_pages_caption_hold_and_fade() {
         assert!(HIDE_AFTER >= Duration::from_millis(4000 + 400));
+    }
+
+    /// The park point must lie outside every monitor, even for a window as large as the largest one.
+    #[test]
+    fn the_park_point_is_outside_the_union_of_the_monitors() {
+        let sets: [Vec<MonitorRect>; 3] = [
+            vec![(0, 0, 1920, 1080)],
+            vec![(0, 0, 2560, 1440), (2560, -200, 1920, 1080), (-1920, 0, 1920, 1080)],
+            vec![],
+        ];
+        for set in sets {
+            let (x, y) = park_point(&set);
+            let (w, h) = set.iter().fold((0i64, 0i64), |a, m| (a.0.max(m.2 as i64), a.1.max(m.3 as i64)));
+            for (l, t, mw, mh) in &set {
+                let disjoint = (x as i64 + w) <= *l as i64
+                    || x as i64 >= *l as i64 + *mw as i64
+                    || (y as i64 + h) <= *t as i64
+                    || y as i64 >= *t as i64 + *mh as i64;
+                assert!(disjoint, "a halo parked at ({x},{y}) still overlaps monitor {l},{t} {mw}x{mh}");
+            }
+        }
     }
 }
