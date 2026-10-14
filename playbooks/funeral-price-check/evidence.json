@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "funeral-price-check",
   "captured_at": "2026-10-10T04:54:59Z",
   "bench_run_at": "2026-10-10T04:51:25Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/funeral-price-check/thumb.jpg",
     "bytes": 85684,
     "sha256": "76b1d4fb3196d745f72c41196c4468efefadabb2cf0922173ef046abc46c569b"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/funeral-price-check/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23248,
+      "sha256": "47748ebafa32982c11bd067a0c6f084990beb13124ae3073bda0b68f96252f18"
+    },
+    {
+      "path": "playbooks/funeral-price-check/story/02.webp",
+      "caption": "Turn 1 - Docshelf: Mom died on Tuesday and I have three funeral homes' quotes",
+      "turn": 1,
+      "bytes": 22284,
+      "sha256": "fd074f324f14305c8ef741fa0d0c62ddffb238b5deb8f4a6128999417691edc0"
+    },
+    {
+      "path": "playbooks/funeral-price-check/story/03.webp",
+      "caption": "Turn 5 - Mailnest, Athena: Five messages are in the inbox",
+      "turn": 5,
+      "bytes": 22298,
+      "sha256": "f6480e6492e387df7b734badbcb5cae3174a078748cd18312410cb9f4f518d99"
+    },
+    {
+      "path": "playbooks/funeral-price-check/story/04.webp",
+      "caption": "Turn 9 - Greenmeadow: Greenmeadow",
+      "turn": 9,
+      "bytes": 22038,
+      "sha256": "bc33eefb77311601fa9964766a695a0d6ba5b376afbf619101997b753f8e25f1"
+    },
+    {
+      "path": "playbooks/funeral-price-check/story/05.webp",
+      "caption": "Turn 13 - Greenmeadow: I've switched to Greenmeadow as you asked",
+      "turn": 13,
+      "bytes": 23678,
+      "sha256": "d6a22793fda152731ae259c0f40fb472b2c06c95ca314b29d5b8a061b4ec3ecc"
+    },
+    {
+      "path": "playbooks/funeral-price-check/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22806,
+      "sha256": "e2047a18a9d0fa4ab3ad8c143468983bc61405a18c35f26135c540a9f7e93f74"
+    }
+  ]
 }

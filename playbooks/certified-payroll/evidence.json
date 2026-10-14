@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "certified-payroll",
   "captured_at": "2026-10-09T22:48:59Z",
   "bench_run_at": "2026-10-09T22:44:28Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/certified-payroll/thumb.jpg",
     "bytes": 82007,
     "sha256": "ceb3baba3dd83836cbdb84a6930c658c542ea70818c702872969a10e7da01f4c"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/certified-payroll/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22012,
+      "sha256": "bd0ff1f7ee99096cc1e7f9f3212236794cbc26085bc6ae7ce2f116395a1b4b4d"
+    },
+    {
+      "path": "playbooks/certified-payroll/story/02.webp",
+      "caption": "Turn 1 - Wagecheck: The City is holding our pay estimates on Larkin Street because the certified…",
+      "turn": 1,
+      "bytes": 22752,
+      "sha256": "a6fe22c313d8691bcdb682d78facdc4b7504314c06b48fab417bc25f17fd0455"
+    },
+    {
+      "path": "playbooks/certified-payroll/story/03.webp",
+      "caption": "Turn 4 - Docshelf: Now Docshelf",
+      "turn": 4,
+      "bytes": 20688,
+      "sha256": "77cca89ef45cbfb34e89f7b1df00154ecfc197f35c2ab42fbd18c0eb0b0447c8"
+    },
+    {
+      "path": "playbooks/certified-payroll/story/04.webp",
+      "caption": "Turn 8 - Clockyard, Athena: Clockyard is read",
+      "turn": 8,
+      "bytes": 23460,
+      "sha256": "60cd60bc9fead7357fadf3036d10ab89f5264c05fd27e39ac2ff844f8c4b6f4f"
+    },
+    {
+      "path": "playbooks/certified-payroll/story/05.webp",
+      "caption": "Turn 11 - Wagecheck: Back in Wagecheck",
+      "turn": 11,
+      "bytes": 22720,
+      "sha256": "ffa273d60944324cd11ae43c919be56d7dc8259ed89f2886679496f411dae72b"
+    },
+    {
+      "path": "playbooks/certified-payroll/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23590,
+      "sha256": "5e6d7e846ee00905c34a4b66b60afc964d33663f08e0a42c6e78512037deb1a3"
+    }
+  ]
 }

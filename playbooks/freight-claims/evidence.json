@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "freight-claims",
   "captured_at": "2026-10-10T07:13:45Z",
   "bench_run_at": "2026-10-10T07:09:31Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/freight-claims/thumb.jpg",
     "bytes": 80172,
     "sha256": "9ad9ee575003eff21df69ff9409c3437e06d2ec876cb5bc69bee8a3be387cb65"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/freight-claims/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23578,
+      "sha256": "8c84619ac44ace1ee5359496900b967cacc3e6326b0d288707117c35d67c1ee7"
+    },
+    {
+      "path": "playbooks/freight-claims/story/02.webp",
+      "caption": "Turn 1 - Tracklog TMS: I'm Rosa, I run freight claims at Thistlewood Lighting",
+      "turn": 1,
+      "bytes": 23594,
+      "sha256": "d2d16b681f424b68e7669c5e7114c94f4b0f60fe7e4257444a5918b437aa037d"
+    },
+    {
+      "path": "playbooks/freight-claims/story/03.webp",
+      "caption": "Turn 6 - Mailnest, Athena: Page 1 of 2 is listed (6 of 9 messages), so I'm reading those six and fetching…",
+      "turn": 6,
+      "bytes": 22958,
+      "sha256": "ba73b40dc708d639c2a60da881d93b25d8b8e5b70370732291f8f43e6718eba0"
+    },
+    {
+      "path": "playbooks/freight-claims/story/04.webp",
+      "caption": "Turn 11 - Docshelf, Athena: Docshelf is read",
+      "turn": 11,
+      "bytes": 22184,
+      "sha256": "4162e59789b9e14464c8cdcf4751232c3aa0059bd0307e52f4283a55e14b759d"
+    },
+    {
+      "path": "playbooks/freight-claims/story/05.webp",
+      "caption": "Turn 16 - Larkfield LTL claims, Athena: I'm filing two claims with Larkfield",
+      "turn": 16,
+      "bytes": 22022,
+      "sha256": "41d60e4eb94eee5f5daeccbf3d0cfcff14a4d99f0d487f121c7154a22229bc51"
+    },
+    {
+      "path": "playbooks/freight-claims/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22588,
+      "sha256": "cb36ee906ead6ce6480d0b9f6fea1ec18518cb36acfcc9cea4749b06bfef094e"
+    }
+  ]
 }

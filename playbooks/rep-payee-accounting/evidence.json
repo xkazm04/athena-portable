@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "rep-payee-accounting",
   "captured_at": "2026-10-10T05:08:22Z",
   "bench_run_at": "2026-10-10T05:04:16Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/rep-payee-accounting/thumb.jpg",
     "bytes": 87340,
     "sha256": "01608f113f38f85e30c955a8420090a0695d9b5a44760086bd429e9de5daa4b7"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/rep-payee-accounting/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22574,
+      "sha256": "c88ac3cdbbd4994990bb605ae19f7135db1aadd2238941dc7a2a5b07213cb737"
+    },
+    {
+      "path": "playbooks/rep-payee-accounting/story/02.webp",
+      "caption": "Turn 1 - Docshelf: I'm Mom's representative payee and Social Security wants my yearly report",
+      "turn": 1,
+      "bytes": 23580,
+      "sha256": "a33bf9c032a067326918e26d4967be5c6ab9f202139fd58dd4b5ee089a493a71"
+    },
+    {
+      "path": "playbooks/rep-payee-accounting/story/03.webp",
+      "caption": "Turn 4 - Oakview Care: Oakview Care",
+      "turn": 4,
+      "bytes": 23272,
+      "sha256": "cea798c2432a118937f84925b492c9c720fe25f47eafd12b1253fe3091a2b65b"
+    },
+    {
+      "path": "playbooks/rep-payee-accounting/story/04.webp",
+      "caption": "Turn 8 - Ledgerline bank, Athena: Of everything in the Ledgerline answers, one debit came out of Agnes's account…",
+      "turn": 8,
+      "bytes": 22836,
+      "sha256": "53e4b804ae409ab775adeb8c0b313357889974136beed4e5fd00e1ffb42174f6"
+    },
+    {
+      "path": "playbooks/rep-payee-accounting/story/05.webp",
+      "caption": "Turn 11 - Benefitline, Athena: I'm proposing the filing for RPR-2026-10 with the figures below",
+      "turn": 11,
+      "bytes": 22722,
+      "sha256": "4ad62eeafc940e898545427886be542576bbd8f568ee5eb8f9d90e66fb3028db"
+    },
+    {
+      "path": "playbooks/rep-payee-accounting/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 21970,
+      "sha256": "1264f1b6b39d6158d61930bc33d6d8550afeae2b8171706776112cafc75e2c13"
+    }
+  ]
 }

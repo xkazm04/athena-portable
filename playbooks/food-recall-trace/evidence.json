@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "food-recall-trace",
   "captured_at": "2026-10-10T18:32:00Z",
   "bench_run_at": "2026-10-10T18:29:47Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/food-recall-trace/thumb.jpg",
     "bytes": 82056,
     "sha256": "76e1874d583b932fa0bbf49260e5040bdb895852266bed02c6b062f78aa32905"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/food-recall-trace/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23004,
+      "sha256": "c3a305024e8f644d8baf8cb753e8a555390a6859fc48d54c8e542e82d79d214e"
+    },
+    {
+      "path": "playbooks/food-recall-trace/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Odalys Brennick, Brennick & Daughters",
+      "turn": 1,
+      "bytes": 22728,
+      "sha256": "72a3c81d63bcaa0618d7b37bce2874e60f3ec8871a72ffdbfb7974a11c18480a"
+    },
+    {
+      "path": "playbooks/food-recall-trace/story/03.webp",
+      "caption": "Turn 5 - Binderwell, Athena: Four papers are listed",
+      "turn": 5,
+      "bytes": 22334,
+      "sha256": "fc0656db9a69f856a4e8ec1b5ba54770707108b6017305eae8565c646ffc9dc6"
+    },
+    {
+      "path": "playbooks/food-recall-trace/story/04.webp",
+      "caption": "Turn 9 - Shelfwick: This is the portal where our retail customers order",
+      "turn": 9,
+      "bytes": 23664,
+      "sha256": "3afa170eb254ac02de3e5f0a29cfcf034dcd8f6b3b322087ca494b7541e77f55"
+    },
+    {
+      "path": "playbooks/food-recall-trace/story/05.webp",
+      "caption": "Turn 13 - Ledgerwren ERP: Back at our order system",
+      "turn": 13,
+      "bytes": 22712,
+      "sha256": "9be9fe67f1624fd61f899e41ee35afce44ff1e41dacf275a3b115921dfff6ca4"
+    },
+    {
+      "path": "playbooks/food-recall-trace/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22414,
+      "sha256": "075a18a064b17bf7228109b296699389c0fa4ea07f19cd2178ddae68b70818f0"
+    }
+  ]
 }

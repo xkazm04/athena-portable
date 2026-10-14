@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "change-order-notices",
   "captured_at": "2026-10-09T22:57:31Z",
   "bench_run_at": "2026-10-09T22:54:28Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/change-order-notices/thumb.jpg",
     "bytes": 97212,
     "sha256": "8803204707c9cd98b7f0afef1641f4bad369b12e03c883b4bb46654215e34a3a"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/change-order-notices/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23726,
+      "sha256": "8c1949ca8e163d9709eb1ff506f844da342362d484c6f58da8b6191aa5612dab"
+    },
+    {
+      "path": "playbooks/change-order-notices/story/02.webp",
+      "caption": "Turn 1 - Primeline GC: I'm worried we're letting changes slide on Westfold",
+      "turn": 1,
+      "bytes": 22294,
+      "sha256": "2e290ebf3e7b332db21115b05c50796eb4f7ade48c873beaf909253f2c2cc67d"
+    },
+    {
+      "path": "playbooks/change-order-notices/story/03.webp",
+      "caption": "Turn 5 - Sitegrid, Athena: Nine items, and five are still open",
+      "turn": 5,
+      "bytes": 23610,
+      "sha256": "f9cb5327cd095e0039215a611172ed08fb2645a441ddf27030fbcd8254479532"
+    },
+    {
+      "path": "playbooks/change-order-notices/story/04.webp",
+      "caption": "Turn 9 - Estimato: Now Estimato",
+      "turn": 9,
+      "bytes": 19846,
+      "sha256": "d5dec5749d0e9f4ecacad82541ff52de39f6b09124e9cded8bfd990a880f103c"
+    },
+    {
+      "path": "playbooks/change-order-notices/story/05.webp",
+      "caption": "Turn 13 - Primeline GC: Back in Primeline GC. Give notice on every change we're still entitled to…",
+      "turn": 13,
+      "bytes": 23448,
+      "sha256": "35707c4d9ac4b09c72b1c5ebe35396e7ed9214dace3ab66b8c069e85e7e8098d"
+    },
+    {
+      "path": "playbooks/change-order-notices/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22588,
+      "sha256": "f54df0c4481df2767e5b1df579f8ef833e79f8a9b798ab79a17a127a175cf902"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "baggage-delay-claims",
   "captured_at": "2026-10-10T20:37:58Z",
   "bench_run_at": "2026-10-10T20:35:04Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/baggage-delay-claims/thumb.jpg",
     "bytes": 88672,
     "sha256": "c492834ecf2f2dd544e9ea9c9e1c169206595a37bcf7a373cecbbcecc5bb8028"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/baggage-delay-claims/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22484,
+      "sha256": "53542a28080e408660e0ce78a006995f48fa2eff34256a4c257f1406ac10afbc"
+    },
+    {
+      "path": "playbooks/baggage-delay-claims/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Imani Boateng",
+      "turn": 1,
+      "bytes": 23000,
+      "sha256": "4a9c421dabf3ada9c7e036b671fec4e80d123a1e3b96a8b8aece9f3257510572"
+    },
+    {
+      "path": "playbooks/baggage-delay-claims/story/03.webp",
+      "caption": "Turn 4 - Cardhollow: This is my Cardhollow card",
+      "turn": 4,
+      "bytes": 23908,
+      "sha256": "85cf6e10491ec07f70688f66a1fccd7f4e25783d0e672b2dedd0ecfc77d4c9d3"
+    },
+    {
+      "path": "playbooks/baggage-delay-claims/story/04.webp",
+      "caption": "Turn 6 - Tripcairn: This is Tripcairn, my trips",
+      "turn": 6,
+      "bytes": 23884,
+      "sha256": "8effc1180cfded47fd7cc6d383961dbdae4d1d2361a802ab6db544785cd7fcb9"
+    },
+    {
+      "path": "playbooks/baggage-delay-claims/story/05.webp",
+      "caption": "Turn 9 - Aerolark baggage claims, Athena: Six filings are going to you for approval",
+      "turn": 9,
+      "bytes": 22680,
+      "sha256": "ce718ea78dc86278e35e1ad4566f30b6e146295031b24cf1905af6ccfc62bc86"
+    },
+    {
+      "path": "playbooks/baggage-delay-claims/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22638,
+      "sha256": "a46b0adf0ad57d0d42cb1693f3c1629763915281b73ede0a5f9274708a203b30"
+    }
+  ]
 }

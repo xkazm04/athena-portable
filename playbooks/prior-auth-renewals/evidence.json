@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "prior-auth-renewals",
   "captured_at": "2026-10-10T01:18:01Z",
   "bench_run_at": "2026-10-10T01:15:06Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/prior-auth-renewals/thumb.jpg",
     "bytes": 83904,
     "sha256": "1b58d56db1baaac5e7ce97ee5348292cba586425bcff11dd200d6dcdea4ff8a6"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/prior-auth-renewals/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 21954,
+      "sha256": "aab4ab54c2c54ba1d7de9ef50797c0eeec1ddf3ce2f3664570ead2e51a3faae2"
+    },
+    {
+      "path": "playbooks/prior-auth-renewals/story/02.webp",
+      "caption": "Turn 1 - Chartleaf EHR: Friday authorisation run",
+      "turn": 1,
+      "bytes": 19642,
+      "sha256": "17fd1a91fbc7811a3c04bfab8e859423b5a7d007ee514595a5a3e7f774af845c"
+    },
+    {
+      "path": "playbooks/prior-auth-renewals/story/03.webp",
+      "caption": "Turn 4 - Authgate: Now Authgate, for Larkhaven and Statewell",
+      "turn": 4,
+      "bytes": 22624,
+      "sha256": "0fb3f2bb66969b65df05c07346ed09004ba44e8cbb956a482329d278327c62d3"
+    },
+    {
+      "path": "playbooks/prior-auth-renewals/story/04.webp",
+      "caption": "Turn 6 - Authwise: This is Authwise, for Pinecrest and Bluehaven",
+      "turn": 6,
+      "bytes": 23944,
+      "sha256": "7a4ac4a7e95e87b3237e99fbc33022e8c7e8efb3ad038d5128ae495e78a77e36"
+    },
+    {
+      "path": "playbooks/prior-auth-renewals/story/05.webp",
+      "caption": "Turn 9 - Faxline, Athena: P-09 (Corbel Mutual) has to go today, so I'm filing the one fax card",
+      "turn": 9,
+      "bytes": 23292,
+      "sha256": "a2725af43d08e3bc4b90f870bebcb95c7106488db13ac1d6e801c47b209f323f"
+    },
+    {
+      "path": "playbooks/prior-auth-renewals/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22676,
+      "sha256": "c432bd9126de6658cda37af209a050fb501267f8d92b5eb93aa383d53063febd"
+    }
+  ]
 }

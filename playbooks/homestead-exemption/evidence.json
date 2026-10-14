@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "homestead-exemption",
   "captured_at": "2026-10-09T23:59:45Z",
   "bench_run_at": "2026-10-09T23:56:12Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/homestead-exemption/thumb.jpg",
     "bytes": 94584,
     "sha256": "129369e1b510e9a33b9aa343d2bac2678eb7929e728191e237efb2f882c3cc61"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/homestead-exemption/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22762,
+      "sha256": "41eb4d0f8739b6fce4196ecb8452b35a56ca96c908b0c5615a76e445f60a9cde"
+    },
+    {
+      "path": "playbooks/homestead-exemption/story/02.webp",
+      "caption": "Turn 1 - Countyline Appraisal: A neighbour says we've been overpaying school taxes for years because we never…",
+      "turn": 1,
+      "bytes": 23516,
+      "sha256": "1f8fb0842a35953e141b270f4dadb2a1eeb674f3151d090c53b7abbe314eaeda"
+    },
+    {
+      "path": "playbooks/homestead-exemption/story/03.webp",
+      "caption": "Turn 5 - Deedvault, Athena: Deedvault shows you own three properties, and 4410 Juniper Draw was bought by…",
+      "turn": 5,
+      "bytes": 22820,
+      "sha256": "0fcb657dbd982b021b80d70deb523d7d0f44f891f3041add2cdbe4b7e214a800"
+    },
+    {
+      "path": "playbooks/homestead-exemption/story/04.webp",
+      "caption": "Turn 9 - Mailnest, Athena: Five messages",
+      "turn": 9,
+      "bytes": 19122,
+      "sha256": "a16c8002ebb72c6ed2138d3edb1013c7a3a30524006d6d2d8acdd5f753b04542"
+    },
+    {
+      "path": "playbooks/homestead-exemption/story/05.webp",
+      "caption": "Turn 13 - IDway, Athena: The address change hasn't gone through",
+      "turn": 13,
+      "bytes": 22424,
+      "sha256": "4dc88195bc10e66e87b282a3e54cd6797fb29ce0f18e7d5fefa0db3a30c94325"
+    },
+    {
+      "path": "playbooks/homestead-exemption/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23680,
+      "sha256": "27444ebf6ebae7fd560cecd56c0887121a044590251350577619b33da7b72189"
+    }
+  ]
 }

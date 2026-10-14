@@ -274,7 +274,44 @@ On the desktop the still sits on the playbook's tile with the film's length, and
 seeks), the still elsewhere, its length, when it was captured, the voice, the narration's words,
 and whether it is current against the bench or stale.
 
-<!-- WP2 evidence section -->
+### Evidence: the storyboard
+
+The film stays on the machine that made it, so a person who never ran it would see only a thumbnail
+of the end. The storyboard is the process instead, committed: three to six still screens of the run
+beside the index, in `playbooks/<id>/story/01.webp` to `06.webp`.
+
+```bash
+uv run python -m athena.proving.playbooks evidence <id>|--all --stills-only   # stills + index, nothing spoken
+uv run python -m athena.proving.playbooks evidence --all --stills-only --dry   # the plan; runs no tool
+uv run python -m athena.proving.playbooks evidence --all --stills-only --desktop <checkout>/apps/desktop
+```
+
+`capture-playbook.mjs --stills` starts the desktop's Vite on a free port and opens the Chores depth
+in `preview.html` (`scene=chores`, `calm=1`, dark) at a 1280 x 800 viewport, one place at a time by
+its address: the chore (`#/chores/<id>`), each sampled turn of its replay (`#/chores/<id>/run/<n>`),
+and the chore opened on *What she filed* (the `shipped-proof` fixture), scrolled so the facets and
+the panel stand at the top. Every still is the same element, `.stage__layer`: the scene, without the
+crumbs above it or the dock below. The turns are up to four of the run's, spread evenly, always the
+first and the last (`sample_turns`: nine turns give 1, 4, 6 and 9). `--desktop` serves the walk from
+another checkout, so a capture never photographs somebody's half-saved edit through hot reload.
+
+ffmpeg shrinks each still to 960 px wide (bilinear: lanczos rings around small text, and the ringing
+costs bytes) and encodes WebP, stepping the quality down from 75 until the still is at most 24,000
+bytes. A still that does not fit even at quality 30 is cut shorter instead, to 480, 440 or 400 px
+tall at qualities 36 and 30: what goes is the tail of a long list of cards, never the legibility of
+what stays. One that still does not fit fails its playbook, by name. The whole storyboard is held to
+15 MB by a test.
+
+Each still is named from the record, with no model: "The abstract"; "Turn N - <portal>: " and the
+first clause of what the person said on that turn, cut at a word with an ellipsis past 80
+characters; "What she filed". A turn the run loop continued has no words from the person, so it
+carries the first clause of hers and says so: "Turn N - <portal>, Athena: ...".
+
+The index is schema 2: everything schema 1 had, unchanged (`--stills-only` does not touch
+`captured_at`, which stays the film's date, or `bench_run_at`), plus `story`, a list of `{path,
+caption, turn, bytes, sha256}` with `turn` null for the abstract and the result. A schema 1 index
+still reads and verifies. `--verify` holds every still, being committed, to its recorded bytes and
+hash, and calls a schema 2 index without a story a fault.
 
 ## Ranking
 

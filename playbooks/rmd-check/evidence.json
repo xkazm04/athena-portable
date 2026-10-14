@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "rmd-check",
   "captured_at": "2026-10-10T06:10:01Z",
   "bench_run_at": "2026-10-10T06:06:10Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/rmd-check/thumb.jpg",
     "bytes": 96435,
     "sha256": "8febb93561d2883280a20d84167548335e1ea9b0ad69a12817471a1af887bd0e"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/rmd-check/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23386,
+      "sha256": "be5754654bf49e4f3d1894004fc054ae7dd5e3c85b32dfa6eb50786f17b959dd"
+    },
+    {
+      "path": "playbooks/rmd-check/story/02.webp",
+      "caption": "Turn 1 - Mailnest: I hold Mom's power of attorney and I look after her retirement accounts",
+      "turn": 1,
+      "bytes": 23742,
+      "sha256": "f8dc6f51d9256eace9d22b7a1ef942598272a59d8b234698fb607ff16df46828"
+    },
+    {
+      "path": "playbooks/rmd-check/story/03.webp",
+      "caption": "Turn 5 - Pinebrook Investments, Athena: Next I'll read every rules topic and open each account",
+      "turn": 5,
+      "bytes": 23444,
+      "sha256": "99eb9c1207e05c0e287765a36ef8b6c5e8434a51d3078f15fa6d5c664da9873e"
+    },
+    {
+      "path": "playbooks/rmd-check/story/04.webp",
+      "caption": "Turn 9 - Harborline IRA, Athena: Harborline's figures are below",
+      "turn": 9,
+      "bytes": 22688,
+      "sha256": "362f8e1eb7bd4c34d6b9ef9196cac91ff8898df6afe0746982fd082f0ec3be12"
+    },
+    {
+      "path": "playbooks/rmd-check/story/05.webp",
+      "caption": "Turn 13 - Pinebrook Investments: I've switched to Pinebrook Investments as you asked",
+      "turn": 13,
+      "bytes": 21932,
+      "sha256": "c57fcbcaa5fa6808f3f42177769aeede6c03099c21dfbed9af7d5f98c5174de3"
+    },
+    {
+      "path": "playbooks/rmd-check/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23370,
+      "sha256": "6ec60b2fb60ccac2db25063fa730922330e1408e4cbc5dd9e0526a4e5ba7c1dc"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "erate-applications",
   "captured_at": "2026-10-11T06:56:11Z",
   "bench_run_at": "2026-10-11T06:53:20Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/erate-applications/thumb.jpg",
     "bytes": 79115,
     "sha256": "6960f6893cc9e0870a120861496bb97986db1bcad35e2394db3bdbde6fe18ff8"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/erate-applications/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22700,
+      "sha256": "98d038764ae9269a203739eb96747872ed735f665db8465d5ee693460c3b243a"
+    },
+    {
+      "path": "playbooks/erate-applications/story/02.webp",
+      "caption": "Turn 1 - Rateline: I'm the technology director of Larchmoor Unified School District",
+      "turn": 1,
+      "bytes": 23328,
+      "sha256": "e3ea4964e069aeeb7d9b8b057ac3917bbdc149044cdd0feb19e8f5d5e3f9cf9c"
+    },
+    {
+      "path": "playbooks/erate-applications/story/03.webp",
+      "caption": "Turn 4 - Binderwell, Athena: I've read all 4 Binderwell documents (4 of 4) and filed nothing",
+      "turn": 4,
+      "bytes": 23018,
+      "sha256": "0481379d561beef0b956807d9e44d92a6e7d63e2008898168644848a1771d0cf"
+    },
+    {
+      "path": "playbooks/erate-applications/story/04.webp",
+      "caption": "Turn 7 - Postwren: Postwren is our mail",
+      "turn": 7,
+      "bytes": 23888,
+      "sha256": "83cee715f1087c99d5cf10c062533a929322cb8ac81f697a6781fc6aec651381"
+    },
+    {
+      "path": "playbooks/erate-applications/story/05.webp",
+      "caption": "Turn 10 - Rateline: Back in Rateline, file the FCC Form 471 for each service the rules let us file…",
+      "turn": 10,
+      "bytes": 23282,
+      "sha256": "255d1476095d64f85b62ebbbfd8c612dae484ab87f82a1d68b0fcfb58cfad26f"
+    },
+    {
+      "path": "playbooks/erate-applications/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23816,
+      "sha256": "33f7b49b97a4f098d94b0bbb84924f0ce11e524d7ffd0f925343657aea998e32"
+    }
+  ]
 }

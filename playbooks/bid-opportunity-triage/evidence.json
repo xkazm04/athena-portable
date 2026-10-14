@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "bid-opportunity-triage",
   "captured_at": "2026-10-11T07:55:48Z",
   "bench_run_at": "2026-10-11T07:51:10Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/bid-opportunity-triage/thumb.jpg",
     "bytes": 89226,
     "sha256": "b9ba64d1d80c6a77805a0e2ddb33a7be423d54a3835f96895ecce7dbd37343ae"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/bid-opportunity-triage/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23714,
+      "sha256": "f6828c5640d76618315064204b441bc5c699dff393eea7b1be530f8a7324ef69"
+    },
+    {
+      "path": "playbooks/bid-opportunity-triage/story/02.webp",
+      "caption": "Turn 1 - Noticewick: I'm Marian Oyelaran",
+      "turn": 1,
+      "bytes": 23194,
+      "sha256": "d422e64bc17f8978095b6311af4bda0a882d4be3f7501d7f487e5e5f53d5b496"
+    },
+    {
+      "path": "playbooks/bid-opportunity-triage/story/03.webp",
+      "caption": "Turn 6 - Bidmoor, Athena: Three notices are listed",
+      "turn": 6,
+      "bytes": 22384,
+      "sha256": "ef9732a071e4029959ec80709c38dfbf6ad2270925a83df70b816391203d4a0b"
+    },
+    {
+      "path": "playbooks/bid-opportunity-triage/story/04.webp",
+      "caption": "Turn 11 - Postwren: Postwren is our mail",
+      "turn": 11,
+      "bytes": 22970,
+      "sha256": "a6ea040f04da28a559574d629ab56b5b4d103104c29ce0d60ee6cca14a834e7e"
+    },
+    {
+      "path": "playbooks/bid-opportunity-triage/story/05.webp",
+      "caption": "Turn 16 - Bidmoor: In Bidmoor, send the worksheet's open question for a county notice we can win…",
+      "turn": 16,
+      "bytes": 22934,
+      "sha256": "6ccf17d0fc996d67994b5bd8b1215879b72185a58888267b8878ba50529e8d6f"
+    },
+    {
+      "path": "playbooks/bid-opportunity-triage/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22980,
+      "sha256": "b3dc2f6b07a0e3b5b672ecdac60cb9289629706451cb3ce559551630ef4daff0"
+    }
+  ]
 }

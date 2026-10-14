@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "fsa-claims-substantiation",
   "captured_at": "2026-10-10T22:16:30Z",
   "bench_run_at": "2026-10-10T22:14:23Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/fsa-claims-substantiation/thumb.jpg",
     "bytes": 86031,
     "sha256": "7433aaa0a20fc69cbebd902ded7ae07a1ae6fb399868357360b80dd96c1d917a"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/fsa-claims-substantiation/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22894,
+      "sha256": "867a43177a1ed7ed381e47fa02194a5a9d08b440ed538dbe655fa4e811389b56"
+    },
+    {
+      "path": "playbooks/fsa-claims-substantiation/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Dana Whitcombe",
+      "turn": 1,
+      "bytes": 23740,
+      "sha256": "3b36bf0d8da9221da3a06f1113b53160748581a43d49e775ba3d2a7396d0dab2"
+    },
+    {
+      "path": "playbooks/fsa-claims-substantiation/story/03.webp",
+      "caption": "Turn 4 - Ledgerwren bank: This is my bank, Ledgerwren",
+      "turn": 4,
+      "bytes": 23924,
+      "sha256": "b28f93e625c27ba160d754fb8d1764e1abdbcfa866826b7817b5ce39c0020e6b"
+    },
+    {
+      "path": "playbooks/fsa-claims-substantiation/story/04.webp",
+      "caption": "Turn 8 - Fennimoor Pharmacy: This is my pharmacy, Fennimoor",
+      "turn": 8,
+      "bytes": 23744,
+      "sha256": "8b8a65f567899ce47fe59b74f51b3fca4fff2050834f47f42720adb5a1e2764a"
+    },
+    {
+      "path": "playbooks/fsa-claims-substantiation/story/05.webp",
+      "caption": "Turn 11 - Flexwell, Athena: I need the exact invoice, EOB and receipt details from the earlier tabs before…",
+      "turn": 11,
+      "bytes": 23332,
+      "sha256": "0b914f40b51708cc4ebd74dd3b3d3a560d076ff7d672178cf3b1cad0f38a4b10"
+    },
+    {
+      "path": "playbooks/fsa-claims-substantiation/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23844,
+      "sha256": "9041e50e6ec13f87b75e6b9507c4c0f37d5b6c7a564e8b62046b8f5ce13d5654"
+    }
+  ]
 }

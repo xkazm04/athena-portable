@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "oversize-permits",
   "captured_at": "2026-10-10T12:00:20Z",
   "bench_run_at": "2026-10-10T11:48:55Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/oversize-permits/thumb.jpg",
     "bytes": 84372,
     "sha256": "700c985e2d643a83f85898b9ff7da5c0b852e61d2aa1817393b543240d824d35"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/oversize-permits/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23430,
+      "sha256": "c9c5b8d170c4712d3c749645d37fcab8e27aa25265cbf6e6cefcbfe548c7e47d"
+    },
+    {
+      "path": "playbooks/oversize-permits/story/02.webp",
+      "caption": "Turn 1 - Postwren dispatch inbox: I'm Joel, I do the permits at Kettle Ridge Heavy Haul",
+      "turn": 1,
+      "bytes": 23364,
+      "sha256": "993b9ad317860d9ffdbf0f8a5a720f4a615ede70cf4fc86971adebba0e26f469"
+    },
+    {
+      "path": "playbooks/oversize-permits/story/03.webp",
+      "caption": "Turn 6 - Pathcairn route planner, Athena: Pathcairn has all four loads and routes",
+      "turn": 6,
+      "bytes": 23182,
+      "sha256": "233fac420633969d4eaa543437d09acd26651d093ab4f74302211c3fa4f74e62"
+    },
+    {
+      "path": "playbooks/oversize-permits/story/04.webp",
+      "caption": "Turn 12 - Halvern Permit Desk (Arkansas), Athena: I'm filing one purchase, AR-5501 for L-1 with no escorts",
+      "turn": 12,
+      "bytes": 22826,
+      "sha256": "1a34db2f71657bfae6ae243b8d267736469138673137d517f4ff68d4d17bd3a2"
+    },
+    {
+      "path": "playbooks/oversize-permits/story/05.webp",
+      "caption": "Turn 17 - Halvern Permit Desk (Arkansas): I've switched to Halvern Permit Desk (Arkansas) as you asked",
+      "turn": 17,
+      "bytes": 22408,
+      "sha256": "47c0dee525067cee98ea522f1aff67cc20ca6d0df74866df7cd6d2576764fb1c"
+    },
+    {
+      "path": "playbooks/oversize-permits/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23190,
+      "sha256": "eb6a29901a4f544ee39f12b73ed2de0226ecce8dcb5da04f2f5b6a7cc952d973"
+    }
+  ]
 }

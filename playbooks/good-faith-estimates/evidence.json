@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "good-faith-estimates",
   "captured_at": "2026-10-10T01:39:23Z",
   "bench_run_at": "2026-10-10T01:31:31Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/good-faith-estimates/thumb.jpg",
     "bytes": 80293,
     "sha256": "3976c78cc7a8adc121a59365593d82ddbbf099e8f96c1f020cd711145e984139"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/good-faith-estimates/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23814,
+      "sha256": "2d35148a9df182445b5403848b7648fa14a718829ea44e361d28319e335a9469"
+    },
+    {
+      "path": "playbooks/good-faith-estimates/story/02.webp",
+      "caption": "Turn 1 - Chartmend PM: Self-pay desk for today",
+      "turn": 1,
+      "bytes": 22136,
+      "sha256": "49587feb0a2f06018b8a6b8dde70db4ff2b975edbfda081c662989bfd8f824c6"
+    },
+    {
+      "path": "playbooks/good-faith-estimates/story/03.webp",
+      "caption": "Turn 4 - Chartleaf scheduling: Now Chartleaf scheduling",
+      "turn": 4,
+      "bytes": 23316,
+      "sha256": "2cc486f8ac016287b773d3597167663eaf8baf72c7d85aa7fe72b68883f90633"
+    },
+    {
+      "path": "playbooks/good-faith-estimates/story/04.webp",
+      "caption": "Turn 8 - Mailnest, Athena: I'll read the four messages in full",
+      "turn": 8,
+      "bytes": 19194,
+      "sha256": "6d4eaa9eff267bfeac160bda29b0d2d198ac1b8d6748736b286adfa274b5127b"
+    },
+    {
+      "path": "playbooks/good-faith-estimates/story/05.webp",
+      "caption": "Turn 11 - Chartmend PM, Athena: Five estimates are due by Monday 12 October",
+      "turn": 11,
+      "bytes": 23620,
+      "sha256": "88485cea2f0b9cffea967d19326744303bafcebba8c06c124d2498ba6a8a0bda"
+    },
+    {
+      "path": "playbooks/good-faith-estimates/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22772,
+      "sha256": "6cffdc16c1820bb0da4077444312f838f5297b5632b57b7899f186a8e6c76301"
+    }
+  ]
 }

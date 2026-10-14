@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "vehicle-recall-reimbursement",
   "captured_at": "2026-10-10T19:46:06Z",
   "bench_run_at": "2026-10-10T19:42:49Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/vehicle-recall-reimbursement/thumb.jpg",
     "bytes": 93172,
     "sha256": "fe2153ededb167075632a59d55cb7f92c6b6aacd028214375092de900e372016"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/vehicle-recall-reimbursement/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22654,
+      "sha256": "d394bd9fdb1f1ece109e3e9415887703e3a3415831157571711cfb4562263bb9"
+    },
+    {
+      "path": "playbooks/vehicle-recall-reimbursement/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Tamsin Okafor",
+      "turn": 1,
+      "bytes": 22888,
+      "sha256": "bee607cae3dd0cc4843a2b0d8c3510103517a3777e8d143c40441ca0ec76b9df"
+    },
+    {
+      "path": "playbooks/vehicle-recall-reimbursement/story/03.webp",
+      "caption": "Turn 4 - Recallmoor: This is Recallmoor",
+      "turn": 4,
+      "bytes": 23988,
+      "sha256": "34aeb0a894ef2e7a48c3b0daaa8d6923ff0f6632c3b8edc1abf51e2679733cce"
+    },
+    {
+      "path": "playbooks/vehicle-recall-reimbursement/story/04.webp",
+      "caption": "Turn 6 - Garrowby Service: This is Garrowby Service, my repair shop",
+      "turn": 6,
+      "bytes": 23416,
+      "sha256": "c3970e21a0bb2653173906fa44c21e25699816ae3142e78cc800453e3e9ae4b8"
+    },
+    {
+      "path": "playbooks/vehicle-recall-reimbursement/story/05.webp",
+      "caption": "Turn 9 - Torvane Owners, Athena: Nothing in the plan excludes the four items you expected to be claimable, so…",
+      "turn": 9,
+      "bytes": 21976,
+      "sha256": "189c0fa492e0e54534fdc212c60323fd86d5f7da1b41775e29d45c6c221e4eb0"
+    },
+    {
+      "path": "playbooks/vehicle-recall-reimbursement/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22594,
+      "sha256": "7d04307100d16484d8a65d1d3daf7293607507b7d5144223cab8b9c29f251b5e"
+    }
+  ]
 }

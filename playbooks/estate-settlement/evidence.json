@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "estate-settlement",
   "captured_at": "2026-10-09T16:00:42Z",
   "bench_run_at": "2026-10-08T01:25:59Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/estate-settlement/thumb.jpg",
     "bytes": 94695,
     "sha256": "8c224bf6082b28875ce4fcc2cb4cb34be3d7d697d52bbe316a5548aba38e3ff1"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/estate-settlement/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23124,
+      "sha256": "6706b92cb680f28288a2875317456e141577e2f22a54fc7c331510bfe4a603ae"
+    },
+    {
+      "path": "playbooks/estate-settlement/story/02.webp",
+      "caption": "Turn 1 - Gmail (Dana's, with Mom's mail forwarded): I need help settling Mom's estate",
+      "turn": 1,
+      "bytes": 23708,
+      "sha256": "edab021984865efe0da7c9aa5a4cc5e177e762cc1cc553081b68b81e48f2903d"
+    },
+    {
+      "path": "playbooks/estate-settlement/story/03.webp",
+      "caption": "Turn 12 - Keystone Mutual claims portal, Athena: Keystone owes late-payment interest of $978.08 on the $50,000 benefit, and I'm…",
+      "turn": 12,
+      "bytes": 23780,
+      "sha256": "fc5f403088745929650708a2dfd8aece2cafde5994ba938a76d3ef08076124b5"
+    },
+    {
+      "path": "playbooks/estate-settlement/story/04.webp",
+      "caption": "Turn 22 - Social Security (survivors), Athena: The $2,140 overpayment is already repaid, so the estate shouldn't pay it again",
+      "turn": 22,
+      "bytes": 22946,
+      "sha256": "192ec9a5958593c01fd03314418a8072b8040ee304e90d57e4b1438d432ba382"
+    },
+    {
+      "path": "playbooks/estate-settlement/story/05.webp",
+      "caption": "Turn 33 - IRS Direct Pay: I've switched to IRS Direct Pay as you asked",
+      "turn": 33,
+      "bytes": 23548,
+      "sha256": "4b85bffdeeb9a5f397aafd39c4602116286d30842a9885a5bb4b8ab3e168e57d"
+    },
+    {
+      "path": "playbooks/estate-settlement/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23846,
+      "sha256": "7a350083a90b8b7f543597117a1a2bd661430587cd350564d7460174f3ee1d43"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "tenant-deposit-return",
   "captured_at": "2026-10-10T19:41:06Z",
   "bench_run_at": "2026-10-10T19:38:29Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/tenant-deposit-return/thumb.jpg",
     "bytes": 88474,
     "sha256": "b30fc12d337a6a7aa4b2ada3cbe6bc274be58d2536bffaf39bf1be3127464da1"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/tenant-deposit-return/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23448,
+      "sha256": "3edc24faf8e9598e89d0c4ed2f6ddf900ed6e53696a6317f586533764bd328e1"
+    },
+    {
+      "path": "playbooks/tenant-deposit-return/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Noor Haddad",
+      "turn": 1,
+      "bytes": 23108,
+      "sha256": "d196ac896fe049f3b96dc35134cb4259f3ae75e458f91a1f02efe94fe3c822f1"
+    },
+    {
+      "path": "playbooks/tenant-deposit-return/story/03.webp",
+      "caption": "Turn 4 - Latchwick tenant portal: This is my tenant portal, Latchwick",
+      "turn": 4,
+      "bytes": 22820,
+      "sha256": "8a09a848e0498850660b9a3a4eb8701d2077c2a33884c447ab4fe1123bc68584"
+    },
+    {
+      "path": "playbooks/tenant-deposit-return/story/04.webp",
+      "caption": "Turn 7 - Lenswick photos, Athena: I've read all 20 photos (showing 20 of 20) and contested nothing",
+      "turn": 7,
+      "bytes": 23448,
+      "sha256": "003ab836fbe2f723fef2044dbfbac6cd69d392a155b0e42c91ec3cf3a498e669"
+    },
+    {
+      "path": "playbooks/tenant-deposit-return/story/05.webp",
+      "caption": "Turn 10 - Latchwick tenant portal: Back in Latchwick",
+      "turn": 10,
+      "bytes": 22436,
+      "sha256": "4eb23f10929dfb465695e8eb173fc8ecb1d9b612530ed374589d6cd5a8a3d7b8"
+    },
+    {
+      "path": "playbooks/tenant-deposit-return/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22280,
+      "sha256": "82df358a156791d91fa73a0355c7821b4a0a765845156835df8c76452529d4d3"
+    }
+  ]
 }

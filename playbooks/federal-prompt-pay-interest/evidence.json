@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "federal-prompt-pay-interest",
   "captured_at": "2026-10-09T19:04:39Z",
   "bench_run_at": "2026-10-09T19:01:44Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/federal-prompt-pay-interest/thumb.jpg",
     "bytes": 80020,
     "sha256": "2994f8d332e7e7b2340cd9ad58ca52c51af0a7a8a58e588f54293ee0275e3b4e"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/federal-prompt-pay-interest/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23598,
+      "sha256": "e618d92a9c1ce571c84ded5ad79b05351b5c3a4ceaa18064f009660d617e0f3f"
+    },
+    {
+      "path": "playbooks/federal-prompt-pay-interest/story/02.webp",
+      "caption": "Turn 1 - Invoicepoint: I think the agencies have been paying us late and skipping the interest",
+      "turn": 1,
+      "bytes": 23318,
+      "sha256": "1968642f9ca254ad43f84eef80526efdfa90a0003902694b8204c6a59dc79da0"
+    },
+    {
+      "path": "playbooks/federal-prompt-pay-interest/story/03.webp",
+      "caption": "Turn 5 - Contractdesk: Now Contractdesk",
+      "turn": 5,
+      "bytes": 20706,
+      "sha256": "2b69e00b0a3785f4666d5ed54f98663df402244d725efcd00b5b8e7bbb420599"
+    },
+    {
+      "path": "playbooks/federal-prompt-pay-interest/story/04.webp",
+      "caption": "Turn 9 - Ledgerline bank, Athena: Ledgerline shows 10 Treasury deposits since 1 July (showing 10 of 10)",
+      "turn": 9,
+      "bytes": 23070,
+      "sha256": "4e656be823d5d2a12aff65593afd47aba6b12b798567e073ca04b01009080ec5"
+    },
+    {
+      "path": "playbooks/federal-prompt-pay-interest/story/05.webp",
+      "caption": "Turn 13 - Invoicepoint: Back in Invoicepoint",
+      "turn": 13,
+      "bytes": 23962,
+      "sha256": "f8db2e665bdb45e33de856b18d225b5f123230820a357f2a08b2f01d2ac7bd07"
+    },
+    {
+      "path": "playbooks/federal-prompt-pay-interest/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23598,
+      "sha256": "18dea3c77eb4488fa211a9dced89b7803c3e43745e2ce548c59c911b18633ae1"
+    }
+  ]
 }

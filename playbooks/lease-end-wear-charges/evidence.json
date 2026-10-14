@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "lease-end-wear-charges",
   "captured_at": "2026-10-10T19:50:36Z",
   "bench_run_at": "2026-10-10T19:47:29Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/lease-end-wear-charges/thumb.jpg",
     "bytes": 77780,
     "sha256": "05973f8e72a2817bb612b129ed742c5978292fa1c5cabdc2f2ed59d7a7dff215"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/lease-end-wear-charges/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22370,
+      "sha256": "d98d4d4873028789974c421229299e798f0991a49541ebff7fc571787975ba4d"
+    },
+    {
+      "path": "playbooks/lease-end-wear-charges/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Anselm Rowe",
+      "turn": 1,
+      "bytes": 23210,
+      "sha256": "857e208fd70ccb23d95910292d15d1b1b50c96ef87bcc744deee05708186c4dc"
+    },
+    {
+      "path": "playbooks/lease-end-wear-charges/story/03.webp",
+      "caption": "Turn 4 - Linestone Inspect: This is Linestone Inspect",
+      "turn": 4,
+      "bytes": 22710,
+      "sha256": "f2917952e6bf59e72ef24417ab21d5946a233825ee0e4d241cb686bab5d23062"
+    },
+    {
+      "path": "playbooks/lease-end-wear-charges/story/04.webp",
+      "caption": "Turn 6 - Lenswick photos: These are the photos I took before I returned the car, at Lenswick",
+      "turn": 6,
+      "bytes": 22226,
+      "sha256": "9366a967276a84fae96890e9ac44a07bd89a3f571d2af2f3e597ea25ac6f5d44"
+    },
+    {
+      "path": "playbooks/lease-end-wear-charges/story/05.webp",
+      "caption": "Turn 9 - Torvane Finance, Athena: Four charges are plainly inside the lease limits, so I'm filing those disputes…",
+      "turn": 9,
+      "bytes": 23862,
+      "sha256": "3a0aedfe21edb06ec18fd52d9cfba833e7d69cfa708b1e0e1cd123b5b59b2a19"
+    },
+    {
+      "path": "playbooks/lease-end-wear-charges/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22332,
+      "sha256": "6f3b5ec75df166fab3d68408538b35af26da77025661a4de9aa14b4026f2cdc2"
+    }
+  ]
 }

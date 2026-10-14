@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "medical-records-gather",
   "captured_at": "2026-10-10T03:03:46Z",
   "bench_run_at": "2026-10-10T03:01:31Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/medical-records-gather/thumb.jpg",
     "bytes": 84071,
     "sha256": "f84657b82b2060fb8c8ac32c6753faf8984f3e3ba929f97f9c2d57d00982ba67"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/medical-records-gather/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22236,
+      "sha256": "e588b17b24b108ecf8e34ded6257e7558d7b8c9cb464bc1a2491f65d70dc6a3c"
+    },
+    {
+      "path": "playbooks/medical-records-gather/story/02.webp",
+      "caption": "Turn 1 - Mailnest: I have a second opinion at Westbrook Spine on 30 October and need all my…",
+      "turn": 1,
+      "bytes": 22482,
+      "sha256": "0f898f7fa33aab4754b8bcc2630cfdfe335dd80774542c6311e290491170866f"
+    },
+    {
+      "path": "playbooks/medical-records-gather/story/03.webp",
+      "caption": "Turn 5 - Carenook, Athena: Two of Alder Creek's record sets cover what Westbrook asked for",
+      "turn": 5,
+      "bytes": 23506,
+      "sha256": "f68ae250201af7000dbe4b8abcb02aa9f61081d31080e67f10f993e1abfb9c36"
+    },
+    {
+      "path": "playbooks/medical-records-gather/story/04.webp",
+      "caption": "Turn 9 - Patientry: Patientry has Brightline's MRI images",
+      "turn": 9,
+      "bytes": 19908,
+      "sha256": "7239f0e40e5e44369530875eddb08b8ff238af56acf2c67b67b0597dcc3cf0d4"
+    },
+    {
+      "path": "playbooks/medical-records-gather/story/05.webp",
+      "caption": "Turn 13 - Mailnest: Back in my inbox",
+      "turn": 13,
+      "bytes": 23624,
+      "sha256": "c9920aab0634a1073f7b226ea4e42e536f2a19a1e4529551aa80a7eb9e63ccbb"
+    },
+    {
+      "path": "playbooks/medical-records-gather/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23970,
+      "sha256": "130fa4dd9af9fe82023c69c259cad4c61681211537e325d86119337034d0c3b3"
+    }
+  ]
 }

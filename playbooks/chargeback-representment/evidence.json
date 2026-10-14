@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "chargeback-representment",
   "captured_at": "2026-10-10T15:18:34Z",
   "bench_run_at": "2026-10-10T15:16:40Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/chargeback-representment/thumb.jpg",
     "bytes": 84761,
     "sha256": "8c401bbfa057f918c73b50cd2e2da3b751138a9558ba1d867742c0364fbb483d"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/chargeback-representment/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23206,
+      "sha256": "3147312cb34984f105b7260eb0d292e9674bc941b78d0c06a44962733d1a6dc5"
+    },
+    {
+      "path": "playbooks/chargeback-representment/story/02.webp",
+      "caption": "Turn 1 - Paycurrent dashboard: I'm Maya, Lowfield Joinery",
+      "turn": 1,
+      "bytes": 23854,
+      "sha256": "ccb875b478c3c26939e17fefc373cdb81f9f9707a3cff27e35b2fe09b5aafd17"
+    },
+    {
+      "path": "playbooks/chargeback-representment/story/03.webp",
+      "caption": "Turn 5 - Storeline, Athena: The disputed orders are read",
+      "turn": 5,
+      "bytes": 22960,
+      "sha256": "b78c1b6508a73de364d384327abab5c0085723c2e1339371f005992bdc8fb5a1"
+    },
+    {
+      "path": "playbooks/chargeback-representment/story/04.webp",
+      "caption": "Turn 9 - Parcelwick, Athena: I read all ten delivery records",
+      "turn": 9,
+      "bytes": 23664,
+      "sha256": "8af5c0c85cd7f0b383c64ed0a6ee1f9c49d58c9511d5c2cd773621d5539d345d"
+    },
+    {
+      "path": "playbooks/chargeback-representment/story/05.webp",
+      "caption": "Turn 13 - Paycurrent dashboard: Back in Paycurrent",
+      "turn": 13,
+      "bytes": 23600,
+      "sha256": "e8494148db0054ff0a7451d3a11d2366a996f75a695ffafe7efc80b2e8bfdcd1"
+    },
+    {
+      "path": "playbooks/chargeback-representment/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23160,
+      "sha256": "bb6eb184f6de8a086208c0bbc51b4820c50eae764af66c1ff1f53b6db1cd7fd0"
+    }
+  ]
 }

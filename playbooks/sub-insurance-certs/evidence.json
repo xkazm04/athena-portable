@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "sub-insurance-certs",
   "captured_at": "2026-10-10T03:23:48Z",
   "bench_run_at": "2026-10-10T03:20:28Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/sub-insurance-certs/thumb.jpg",
     "bytes": 85940,
     "sha256": "f549bab9d7cd19b54f37b9cc67cad88f30b65b3901bbbe908f97fd9f288ff3c7"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/sub-insurance-certs/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23886,
+      "sha256": "6dcbfaf3e6510b321f083b0a328082bb51e4fb67144871eb22e8a6b4479dacaf"
+    },
+    {
+      "path": "playbooks/sub-insurance-certs/story/02.webp",
+      "caption": "Turn 1 - Sitegrid: Subs are starting to mobilize on Alder Street and I don't trust our insurance…",
+      "turn": 1,
+      "bytes": 23510,
+      "sha256": "6cab1f6d0d69268c042a5ca35d5f72c91ab3d71e15811e97ed6f2511a75e2426"
+    },
+    {
+      "path": "playbooks/sub-insurance-certs/story/03.webp",
+      "caption": "Turn 5 - Subhub, Athena: Subhub is read",
+      "turn": 5,
+      "bytes": 23956,
+      "sha256": "569df983667bf14282d33c249acff1506f0cbdc645af3a5ff63bc5ec7852e674"
+    },
+    {
+      "path": "playbooks/sub-insurance-certs/story/04.webp",
+      "caption": "Turn 8 - Coverwell, Athena: Coverwell is read",
+      "turn": 8,
+      "bytes": 23312,
+      "sha256": "ba1f7b04bb94e3031c44112ebea344a9209ee829058a9afebedf642b4324f5cf"
+    },
+    {
+      "path": "playbooks/sub-insurance-certs/story/05.webp",
+      "caption": "Turn 12 - Subhub: Back in Subhub",
+      "turn": 12,
+      "bytes": 23560,
+      "sha256": "a9417345e794266318a625a4d21621a96c0ea6d0c518ff6310d38268e0e7dec4"
+    },
+    {
+      "path": "playbooks/sub-insurance-certs/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22200,
+      "sha256": "b86343cbf3515241a2857d798680442276b2ce4f48705e9d0ce3d0c239ca37f1"
+    }
+  ]
 }

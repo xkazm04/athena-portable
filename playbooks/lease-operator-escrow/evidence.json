@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "lease-operator-escrow",
   "captured_at": "2026-10-10T11:37:25Z",
   "bench_run_at": "2026-10-10T11:33:42Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/lease-operator-escrow/thumb.jpg",
     "bytes": 83365,
     "sha256": "e7e785c360a83e2598df3f4d43963595d4948db751b0f46adef8f2c98ffad418"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/lease-operator-escrow/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22584,
+      "sha256": "dafbe2d4eb9610f5a600c7ce57be40f92ab578c9b525f0525244cd770af4ced5"
+    },
+    {
+      "path": "playbooks/lease-operator-escrow/story/02.webp",
+      "caption": "Turn 1 - Sheafbox: I'm Marcus, Okafor Trucking",
+      "turn": 1,
+      "bytes": 22782,
+      "sha256": "58e4bbb6660e119a6c6926e49325be7e6b42bcf8e74701627dbe74f7e857b7b9"
+    },
+    {
+      "path": "playbooks/lease-operator-escrow/story/03.webp",
+      "caption": "Turn 4 - Settlewick settlements: This is Vessmoor's settlements portal",
+      "turn": 4,
+      "bytes": 21846,
+      "sha256": "b7a481f7e8d84d7c56c15836c0a57d92e4510575d6361ae5167e7c975a4366d7"
+    },
+    {
+      "path": "playbooks/lease-operator-escrow/story/04.webp",
+      "caption": "Turn 8 - Ledgerwren bank, Athena: Nothing has come in from Vessmoor since 28 August, and nothing has come in…",
+      "turn": 8,
+      "bytes": 21660,
+      "sha256": "21634f43fa85b29183d196ea9ca8f9ee4aa75a1ef178058d31deefe9d9e7ee61"
+    },
+    {
+      "path": "playbooks/lease-operator-escrow/story/05.webp",
+      "caption": "Turn 11 - Postwren, Athena: Nothing in the three messages changes the figures",
+      "turn": 11,
+      "bytes": 23704,
+      "sha256": "16048a19c1849ccebc0c9b955739d3a92c380f484135d0469bf181d73fe0da45"
+    },
+    {
+      "path": "playbooks/lease-operator-escrow/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 21614,
+      "sha256": "cae9aa62fc85d3503906de6424029193a448224a64a30f2b13abd3ac67c21a2c"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "fafsa-verification",
   "captured_at": "2026-10-11T05:50:58Z",
   "bench_run_at": "2026-10-11T05:47:10Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/fafsa-verification/thumb.jpg",
     "bytes": 82687,
     "sha256": "8af85a39c4f84db1b782d943f59133ba04a136d6e1eec4bd807fb0f2f3b73d7a"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/fafsa-verification/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23956,
+      "sha256": "5268730be060ea00af515abda7c98e2e0d1f42e8bfdd74e545d83767a183fdab"
+    },
+    {
+      "path": "playbooks/fafsa-verification/story/02.webp",
+      "caption": "Turn 1 - Aidcenter: I'm Delia Okoro",
+      "turn": 1,
+      "bytes": 22948,
+      "sha256": "92244959b0299f91ec3400103819dfee95dab1863edf1503414bc352c36acba6"
+    },
+    {
+      "path": "playbooks/fafsa-verification/story/03.webp",
+      "caption": "Turn 5 - Taxmoor Federal Account, Athena: Three transcripts are in the account, and I'm reading all three now",
+      "turn": 5,
+      "bytes": 22742,
+      "sha256": "ec6b4dd1f3c37594942ccbade41a1dcc8f3232c92fbf2af73db90f9fd1bac54a"
+    },
+    {
+      "path": "playbooks/fafsa-verification/story/04.webp",
+      "caption": "Turn 8 - Postwren, Athena: I've read all 14 messages on 5 pages",
+      "turn": 8,
+      "bytes": 23260,
+      "sha256": "c7cdf63606f13c1ab2b345c4ce181913aaaa2af3f02c06e0e20f9d38bb0505c6"
+    },
+    {
+      "path": "playbooks/fafsa-verification/story/05.webp",
+      "caption": "Turn 12 - Aidcenter: Back in Aidcenter, send the Verification Unit, for each item the request…",
+      "turn": 12,
+      "bytes": 22988,
+      "sha256": "525a6e922d29967d7bc08d669d22328687628fc43c11e4e5821f578e474025da"
+    },
+    {
+      "path": "playbooks/fafsa-verification/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 21996,
+      "sha256": "d823e20dd374b8d3ede16cf2736a5761c9807d64f43d47f4af499594c3507c8d"
+    }
+  ]
 }

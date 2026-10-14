@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "public-records-requests",
   "captured_at": "2026-10-11T07:58:43Z",
   "bench_run_at": "2026-10-11T07:55:10Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/public-records-requests/thumb.jpg",
     "bytes": 89626,
     "sha256": "5031b844022c71d060f2da5aaada2e9804114cbe8b133aedd06770a6e7d24f18"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/public-records-requests/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23114,
+      "sha256": "e2b79a02eff4d946cff81f4b0c4ad09eedec87d4e4b5f6d032767b2de39a9731"
+    },
+    {
+      "path": "playbooks/public-records-requests/story/02.webp",
+      "caption": "Turn 1 - Filerecords: I'm the records coordinator at Cinderlake Civic Project",
+      "turn": 1,
+      "bytes": 22586,
+      "sha256": "1259db52f7cb37d16464db88a71e6563113f7c9a84a6e79efcb85d93f5b59686"
+    },
+    {
+      "path": "playbooks/public-records-requests/story/03.webp",
+      "caption": "Turn 5 - Agencydesk, Athena: Page 1 of 2 is read (3 of 4 city requests)",
+      "turn": 5,
+      "bytes": 22308,
+      "sha256": "c60507152aed90cb0d96516c9c95471bf36fd643aeca44eca78b8d03adaeb702"
+    },
+    {
+      "path": "playbooks/public-records-requests/story/04.webp",
+      "caption": "Turn 9 - Binderwell, Athena: I've read all four Binderwell documents and all four drafts, and I've filed…",
+      "turn": 9,
+      "bytes": 23930,
+      "sha256": "97c693c06d3ad5bcc874ca15a9e5510cdba72728416d98b581d25e54065495f8"
+    },
+    {
+      "path": "playbooks/public-records-requests/story/05.webp",
+      "caption": "Turn 13 - Agencydesk: Now Agencydesk",
+      "turn": 13,
+      "bytes": 23026,
+      "sha256": "43217b9a30be64c044e01705acee3ad88756f37bb215dc8347ae759b1e1d808e"
+    },
+    {
+      "path": "playbooks/public-records-requests/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22694,
+      "sha256": "f5fb1519055f0f1347603d656eca7418be9398b7ba8fa00efbe3ee46c88abe50"
+    }
+  ]
 }

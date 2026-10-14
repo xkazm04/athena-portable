@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "sales-tax-exemption-certs",
   "captured_at": "2026-10-10T15:00:47Z",
   "bench_run_at": "2026-10-10T14:58:47Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/sales-tax-exemption-certs/thumb.jpg",
     "bytes": 83172,
     "sha256": "6dafed1406b36ac78edfd8753c1c8bff6e14cd2ac95becf0168d3a6b6c271031"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/sales-tax-exemption-certs/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23216,
+      "sha256": "48849bba66a6d125cd6adcf4878d75e55b2e244649f5c1004d65f02b4ea7bc3a"
+    },
+    {
+      "path": "playbooks/sales-tax-exemption-certs/story/02.webp",
+      "caption": "Turn 1 - Storeline admin: I'm Dana, Alderkeep Candle Works",
+      "turn": 1,
+      "bytes": 22598,
+      "sha256": "253167d13c3411ce5d81f43c0e0b845f32c5cc00bdbb5e5ba8964879a5f7461f"
+    },
+    {
+      "path": "playbooks/sales-tax-exemption-certs/story/03.webp",
+      "caption": "Turn 5 - Postwren, Athena: Three messages are in the mail",
+      "turn": 5,
+      "bytes": 23390,
+      "sha256": "1f61502712c35c02de84a7647ec9eb3d8a001ec3b70680f4e509029a6e87ecdb"
+    },
+    {
+      "path": "playbooks/sales-tax-exemption-certs/story/04.webp",
+      "caption": "Turn 8 - Clientwren CRM, Athena: Thirteen certificates are on file",
+      "turn": 8,
+      "bytes": 22868,
+      "sha256": "7446a1e90beff34d7c8fbe1cae5d54f6b4a50023e704f0f6c7b3e513f2da56fa"
+    },
+    {
+      "path": "playbooks/sales-tax-exemption-certs/story/05.webp",
+      "caption": "Turn 12 - Taxline State, Athena: The rules are in, and they support the three answers I filed",
+      "turn": 12,
+      "bytes": 22288,
+      "sha256": "609eca4e1421fa07e9cf3abbf1063ee74e67fd72e7c5d58f373da9e9c0bec7a2"
+    },
+    {
+      "path": "playbooks/sales-tax-exemption-certs/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23480,
+      "sha256": "51e75d1cfb70657945b35463a4fdb7ec1f78c0d3a24b74db4a98598985074f93"
+    }
+  ]
 }

@@ -1,8 +1,10 @@
 """A benched playbook's evidence: the narration, the plan, the tools and the index (ADR 0055).
 
 Nothing here speaks, records or encodes: the narration is pure, ``--dry`` runs no tool, and
-:func:`verify` is read against indexes written by hand into a copy of a shipped playbook. The
-committed indexes are held to schema 1 and their thumbnails to the size bound.
+:func:`verify` is read against indexes written by hand into a copy of a shipped playbook, and the
+storyboard's encoder is driven by a stand-in for ffmpeg that writes a file of a chosen size. The
+committed indexes are held to schema 1 or 2, their thumbnails and stills to the size bounds, and
+the whole storyboard to its budget.
 """
 
 from __future__ import annotations
@@ -16,20 +18,29 @@ from typing import Any
 import pytest
 
 from athena.channels.voice.home import EXE_SUFFIX, EngineHomes
+from athena.proving.playbooks import evidence
 from athena.proving.playbooks.__main__ import main
 from athena.proving.playbooks.evidence import (
     MAX_SECONDS,
     MIN_SECONDS,
     SCHEMA,
+    STORY_MAX_BYTES,
+    STORY_TOTAL_MAX_BYTES,
     THUMB_MAX_BYTES,
     EvidenceError,
+    Tools,
     choose_voice,
+    clause,
+    encode_still,
     estimate_seconds,
     find_tools,
     fixture_for,
     narration,
+    sample_turns,
     sha256,
+    story_caption,
     verify,
+    write_story,
 )
 from athena.proving.playbooks.spec import load_all, load_playbook
 
@@ -48,11 +59,17 @@ def _benched() -> list[Path]:
 
 
 def _copy(tmp_path: Path, playbook_id: str = "lien-desk") -> Path:
-    """A repository of one shipped playbook, its bench kept and its evidence dropped."""
+    """A repository of one shipped playbook, its bench kept and its evidence (index, thumbnail,
+    storyboard) dropped.
+
+    The library's taxonomy comes along: a playbook is loaded against the one beside it.
+    """
     target = tmp_path / "playbooks" / playbook_id
     shutil.copytree(SHIPPED / playbook_id, target)
+    shutil.copyfile(SHIPPED / "taxonomy.json", tmp_path / "playbooks" / "taxonomy.json")
     for name in ("evidence.json", "thumb.jpg"):
         (target / name).unlink(missing_ok=True)
+    shutil.rmtree(target / "story", ignore_errors=True)
     return target
 
 
@@ -196,8 +213,9 @@ def _index(root: Path, run_at: str) -> None:
     showcase, bench = _json(root / "playbook.json"), _json(root / "bench.json")
     thumb = root / "thumb.jpg"
     thumb.write_bytes(b"\xff\xd8 a still \xff\xd9")
+    # Schema 1, the index as it was before the storyboard: it must keep verifying as it is.
     index = {
-        "schema": SCHEMA,
+        "schema": 1,
         "playbook": root.name,
         "captured_at": "2026-10-09T10:00:00Z",
         "bench_run_at": run_at,
@@ -273,10 +291,34 @@ def _repo_relative(path: str) -> bool:
 @pytest.mark.parametrize(
     "index_path", sorted(SHIPPED.glob("*/evidence.json")), ids=lambda p: p.parent.name
 )
-def test_every_committed_index_is_schema_1_with_a_small_thumbnail(index_path: Path) -> None:
+def test_every_committed_index_has_a_small_thumbnail_and_a_small_storyboard(
+    index_path: Path,
+) -> None:
     index = _json(index_path)
     playbook_id = index_path.parent.name
-    assert index["schema"] == SCHEMA
+    assert index["schema"] in (1, SCHEMA)
+    if index["schema"] >= 2:
+        story = index["story"]
+        assert 3 <= len(story) <= 6
+        assert [s["path"] for s in story] == [
+            f"playbooks/{playbook_id}/story/{i:02d}.webp" for i in range(1, len(story) + 1)
+        ]
+        assert (story[0]["caption"], story[0]["turn"]) == ("The abstract", None)
+        assert (story[-1]["caption"], story[-1]["turn"]) == ("What she filed", None)
+        turns = [s["turn"] for s in story[1:-1]]
+        bench = _json(index_path.parent / "bench.json")
+        # A stale index may show an earlier run (ADR 0055); only a current one must match the trace.
+        if index["bench_run_at"] == bench["run_at"]:
+            assert turns == sample_turns(len(bench["trace"]))
+        for s in story[1:-1]:
+            assert s["caption"].startswith(f"Turn {s['turn']} - "), s["caption"]
+        for s in story:
+            file = REPO / s["path"]
+            assert file.is_file(), f"{s['path']} is committed beside its index"
+            assert file.stat().st_size == s["bytes"] <= STORY_MAX_BYTES
+            assert sha256(file) == s["sha256"]
+        on_disk = sorted(p.name for p in (index_path.parent / "story").glob("*.webp"))
+        assert on_disk == [Path(s["path"]).name for s in story], "no still left over"
     assert index["playbook"] == playbook_id
     assert index["bench_run_at"], "an index names the bench run it filmed"
     for key in ("text", "engine", "voice", "duration_s", "sha256"):
@@ -291,6 +333,11 @@ def test_every_committed_index_is_schema_1_with_a_small_thumbnail(index_path: Pa
     assert file.is_file(), f"{thumb['path']} is committed beside its index"
     assert file.stat().st_size == thumb["bytes"] < THUMB_MAX_BYTES
     assert sha256(file) == thumb["sha256"]
+
+
+def test_the_whole_storyboard_stays_inside_its_budget() -> None:
+    total = sum(p.stat().st_size for p in SHIPPED.glob("*/story/*.webp"))
+    assert total <= STORY_TOTAL_MAX_BYTES, f"{total:,} bytes of stills"
 
 
 def test_the_shipped_playbooks_still_load_with_their_evidence_beside_them() -> None:
@@ -340,3 +387,187 @@ def test_verify_still_reports_the_other_playbooks_and_exits_nonzero(
     assert main(["--dir", str(tmp_path / "playbooks"), "evidence", "--all", "--verify"]) == 1
     out = capsys.readouterr().out
     assert "lien-desk: unreadable" in out and f"{other}: " in out
+
+
+# --- the storyboard --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("count", "turns"),
+    [(0, []), (1, [1]), (2, [1, 2]), (3, [1, 2, 3]), (4, [1, 2, 3, 4]), (9, [1, 4, 6, 9])],
+)
+def test_turns_are_sampled_evenly_with_the_first_and_the_last(count: int, turns: list[int]) -> None:
+    assert sample_turns(count) == turns
+
+
+def test_a_sample_never_repeats_a_turn_and_never_takes_more_than_four() -> None:
+    for count in range(1, 40):
+        picked = sample_turns(count)
+        assert len(picked) == len(set(picked)) == min(count, 4)
+        assert picked[0] == 1 and picked[-1] == count
+
+
+def test_a_turn_caption_is_the_portal_and_the_first_clause_of_what_was_said() -> None:
+    trace: list[dict[str, Any]] = [
+        {"portal": "Office", "user": "Lien desk for the week. Start here in the office."},
+        {
+            "portal": "Procore",
+            "user": "",
+            "continued": True,
+            "said": "I have all **five** jobs; next",
+        },
+        {"portal": "GCPay", "user": "", "said": ""},
+    ]
+    assert story_caption(None, trace, result=False) == "The abstract"
+    assert story_caption(None, trace, result=True) == "What she filed"
+    assert story_caption(1, trace, result=False) == "Turn 1 - Office: Lien desk for the week"
+    assert story_caption(2, trace, result=False) == "Turn 2 - Procore, Athena: I have all five jobs"
+    assert story_caption(3, trace, result=False) == "Turn 3 - GCPay"
+
+
+def test_a_long_clause_is_cut_at_a_word_with_an_ellipsis() -> None:
+    long = "Deal with every waiver request across the four portals " * 3
+    cut = clause(long)
+    assert len(cut) <= 80 and cut.endswith("…")
+    assert long.startswith(cut[:-1]) and long[len(cut) - 1] == " ", "cut between two words"
+    assert clause("Serve C.H. Robinson the $6.5M notice. Then stop") == (
+        "Serve C.H. Robinson the $6.5M notice"
+    )
+    assert clause("Read the rules — all of them") == "Read the rules"
+
+
+def _fake_ffmpeg(monkeypatch: pytest.MonkeyPatch, size_at: dict[int, int]) -> list[str]:
+    """ffmpeg that writes ``size_at[quality]`` bytes (a default otherwise); returns the filters."""
+    filters: list[str] = []
+
+    def run(argv: list[str], _what: str, **_kwargs: Any) -> str:
+        quality = int(argv[argv.index("-quality") + 1])
+        filters.append(argv[argv.index("-vf") + 1])
+        Path(argv[-1]).write_bytes(b"w" * size_at.get(quality, STORY_MAX_BYTES + 5_000))
+        return ""
+
+    monkeypatch.setattr(evidence, "_run", run)
+    return filters
+
+
+def test_a_still_steps_down_in_quality_until_it_fits(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _fake_ffmpeg(monkeypatch, {48: STORY_MAX_BYTES})
+    tools = Tools(ffmpeg="ffmpeg", ffprobe="ffprobe", node="node")
+    out = tmp_path / "01.webp"
+    assert encode_still(tools, tmp_path / "still-01.png", out) == (STORY_MAX_BYTES, 48, None)
+    assert out.stat().st_size == STORY_MAX_BYTES
+
+
+def test_a_still_too_heavy_at_its_full_height_is_cut_shorter(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    filters = _fake_ffmpeg(monkeypatch, {})
+    sizes = iter([STORY_MAX_BYTES + 1] * 9 + [20_000])
+
+    def run(argv: list[str], _what: str, **_kwargs: Any) -> str:
+        filters.append(argv[argv.index("-vf") + 1])
+        Path(argv[-1]).write_bytes(b"w" * next(sizes))
+        return ""
+
+    monkeypatch.setattr(evidence, "_run", run)
+    tools = Tools(ffmpeg="ffmpeg", ffprobe="ffprobe", node="node")
+    size, quality, height = encode_still(tools, tmp_path / "s.png", tmp_path / "s.webp")
+    assert (size, quality, height) == (20_000, 36, 440)
+    assert "crop=960:'min(ih,440)'" in filters[-1] and "crop" not in filters[0]
+
+
+def test_an_oversize_still_fails_and_leaves_no_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _fake_ffmpeg(monkeypatch, {})
+    tools = Tools(ffmpeg="ffmpeg", ffprobe="ffprobe", node="node")
+    out = tmp_path / "01.webp"
+    with pytest.raises(EvidenceError, match="no WebP under 24,000 bytes even at quality 30"):
+        encode_still(tools, tmp_path / "still-01.png", out)
+    assert not out.exists()
+
+
+def _story(root: Path) -> list[dict[str, Any]]:
+    """Three stills written by hand into ``root/story`` and their entries."""
+    story = []
+    for i, (caption, turn) in enumerate(
+        [("The abstract", None), ("Turn 1 - Office: Lien desk", 1), ("What she filed", None)],
+        start=1,
+    ):
+        still = root / "story" / f"{i:02d}.webp"
+        still.parent.mkdir(exist_ok=True)
+        still.write_bytes(b"RIFF a still %d" % i)
+        story.append(
+            {
+                "path": f"playbooks/{root.name}/story/{still.name}",
+                "caption": caption,
+                "turn": turn,
+                "bytes": still.stat().st_size,
+                "sha256": sha256(still),
+            }
+        )
+    return story
+
+
+def test_the_storyboard_rewrites_the_index_to_schema_2_and_keeps_every_other_key(
+    tmp_path: Path,
+) -> None:
+    root = _copy(tmp_path)
+    _index(root, str(_json(root / "bench.json")["run_at"]))
+    before = _json(root / "evidence.json")
+    assert before["schema"] == 1
+    story = _story(root)
+    write_story(load_playbook(root), tmp_path, story)
+    after = _json(root / "evidence.json")
+    assert after["schema"] == SCHEMA == 2
+    assert after["story"] == story
+    assert {k: v for k, v in after.items() if k not in ("schema", "story")} == {
+        k: v for k, v in before.items() if k != "schema"
+    }
+    assert list(after)[: len(before)] == list(before), "the keys keep their order"
+    assert b"\r\n" not in (root / "evidence.json").read_bytes()
+    [standing] = verify([load_playbook(root)], tmp_path)
+    assert (standing.state, standing.notes) == ("current", ())
+
+
+def test_a_storyboard_needs_an_index_to_join(tmp_path: Path) -> None:
+    root = _copy(tmp_path)
+    with pytest.raises(EvidenceError, match=r"has no evidence\.json"):
+        write_story(load_playbook(root), tmp_path, _story(root))
+
+
+def test_verify_holds_the_storyboard_to_its_bytes_and_hashes(tmp_path: Path) -> None:
+    root = _copy(tmp_path)
+    _index(root, str(_json(root / "bench.json")["run_at"]))
+    write_story(load_playbook(root), tmp_path, _story(root))
+    (root / "story" / "02.webp").write_bytes(b"RIFF a still 9")
+    (root / "story" / "03.webp").unlink()
+    [standing] = verify([load_playbook(root)], tmp_path)
+    assert standing.notes == (
+        f"playbooks/{root.name}/story/02.webp does not match its sha256",
+        f"playbooks/{root.name}/story/03.webp is missing",
+    )
+    index = _json(root / "evidence.json")
+    del index["story"]
+    (root / "evidence.json").write_text(json.dumps(index), encoding="utf-8")
+    [standing] = verify([load_playbook(root)], tmp_path)
+    assert standing.notes == ("a schema 2 index has no story",)
+
+
+def test_stills_only_dry_prints_the_storyboard_plan_and_runs_no_tool(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _copy(tmp_path)
+
+    def refuse(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("--dry ran a tool")
+
+    monkeypatch.setattr(subprocess, "run", refuse)
+    base = str(tmp_path / "playbooks")
+    assert main(["--dir", base, "evidence", "lien-desk", "--stills-only", "--dry"]) == 0
+    out = capsys.readouterr().out
+    assert "--stills --fixture shipped:lien-desk --turns 1,5,9,13" in out
+    assert "playbooks/lien-desk/story/01..06.webp" in out
+    assert "schema 2, story added, the rest kept" in out

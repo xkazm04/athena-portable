@@ -3,7 +3,7 @@
 ``bench.json`` is the measured run as numbers. The evidence is the same run as something a person
 watches: a narration that says what the chore is, what Athena found and walked past, and the
 verdict; spoken by the local voice; laid over a recording of the desktop's own Playbooks layer
-replaying that run. Five steps per playbook, each a tool the machine already has:
+replaying that run. Six steps per playbook, each a tool the machine already has:
 
 1. **Narration** — :func:`narration`, a pure function of ``playbook.json`` and ``bench.json``.
    No model writes it, so the same run always says the same words, and 45 to 90 s of them.
@@ -15,13 +15,26 @@ replaying that run. Five steps per playbook, each a tool the machine already has
    abstract, every turn of *Watch the run*, then *What she filed*, paced to the narration.
 4. **Mux** — ffmpeg (``$FFMPEG`` else PATH) writes H.264 + AAC, and a JPEG thumbnail of the
    result view, shrunk until it is under :data:`THUMB_MAX_BYTES`.
-5. **Index** — ``playbooks/<id>/evidence.json`` (schema 1), repo-relative paths only.
+5. **Stills** — the storyboard: the same capture script with ``--stills`` photographs the abstract,
+   up to :data:`STORY_TURNS` turns of the replay spread evenly (:func:`sample_turns`) and *What
+   she filed*; ffmpeg encodes each as a 960 px WebP under :data:`STORY_MAX_BYTES` into
+   ``playbooks/<id>/story/NN.webp``, and :func:`story_caption` names each one from the record, no
+   model involved. The film is not committed and a person who never ran it still wants to see the
+   process; three to six screens committed beside the index are that.
+6. **Index** — ``playbooks/<id>/evidence.json`` (schema 2, with ``story``), repo-relative paths.
 
-The media lives under ``evidence/`` at the repository root, which is gitignored: the index and the
-thumbnail are committed, the film is not. :func:`verify` says whether each index is still current
-against its ``bench.json`` (``bench_run_at`` equal to ``run_at``) and re-hashes whatever media is
-present on this machine. Every ``sha256`` in the index is of a file's bytes: ``narration.sha256`` is
-the spoken WAV, since the text it was spoken from is already in the index word for word.
+``--stills-only`` (:func:`build_story`) runs step 5 on its own and rewrites the existing index to
+schema 2 with every other key as it was: a storyboard does not need the narration spoken again or
+the film recorded again, and ``captured_at`` stays the date of the film. A schema 1 index, which
+has no ``story``, still reads and verifies.
+
+The media lives under ``evidence/`` at the repository root, which is gitignored: the index, the
+thumbnail and the storyboard are committed, the film is not. :func:`verify` says whether each
+index is still current against its ``bench.json`` (``bench_run_at`` equal to ``run_at``),
+re-hashes whatever media is present on this machine, and holds the storyboard, being committed,
+to its recorded bytes and hashes. Every ``sha256`` in the index is of a file's bytes:
+``narration.sha256`` is the spoken WAV, since the text it was spoken from is already in the index
+word for word.
 
 A rescore keeps ``run_at`` (``bench.write_bench``), and an edit to ``playbook.json`` changes no date
 at all, so either can leave an index "current" whose narration no longer says what the record says.
@@ -62,23 +75,60 @@ __all__ = [
     "MAX_SECONDS",
     "MIN_SECONDS",
     "SCHEMA",
+    "STORY_MAX_BYTES",
+    "STORY_TOTAL_MAX_BYTES",
+    "STORY_TURNS",
     "THUMB_MAX_BYTES",
     "EvidenceError",
     "Tools",
     "Voice",
     "build_evidence",
+    "build_story",
     "choose_voice",
+    "clause",
+    "encode_still",
     "estimate_seconds",
     "find_tools",
     "fixture_for",
     "media_paths",
     "narration",
     "plan",
+    "plan_story",
+    "sample_turns",
+    "story_caption",
     "verify",
+    "write_story",
 ]
 
-SCHEMA = 1
+#: 2 added ``story``; a schema 1 index is still read and verified as it is.
+SCHEMA = 2
 EVIDENCE_DIRNAME = "evidence"
+#: Inside ``playbooks/<id>/``: the storyboard's stills, ``01.webp`` to ``06.webp``.
+STORY_DIRNAME = "story"
+#: The most replay turns a storyboard samples (``STORY_TURNS`` in the capture script too).
+STORY_TURNS = 4
+#: Every still's width; its height follows the capture's aspect.
+STORY_WIDTH = 960
+#: Per still, read strictly like the thumbnail's bound: a hundred playbooks of six stays near 15 MB.
+STORY_MAX_BYTES = 24_000
+#: The whole storyboard across every shipped playbook.
+STORY_TOTAL_MAX_BYTES = 15_000_000
+#: libwebp qualities, tried in order until a still is under :data:`STORY_MAX_BYTES`; below 30 the
+#: small text of a turn stops reading, so a still that needs less fails instead.
+STORY_QUALITIES: tuple[int, ...] = (75, 65, 55, 48, 42, 36, 30)
+#: A still that does not fit at its full height even at the lowest quality loses its bottom edge
+#: instead, cut to each of these heights in turn at the two lowest qualities: what is cut is the
+#: tail of a long list, never the legibility of what stays. On the hundred shipped playbooks at
+#: 1280 x 800 (2026-10-14), 54 of 600 stills needed it: 48 a *What she filed* thick with the prose
+#: of its cards, 6 a turn; 480 px fitted 28, 440 px 25, 400 px one.
+STORY_CROPS: tuple[int, ...] = (480, 440, 400)
+#: Bilinear, not lanczos: lanczos rings around small text, and the ringing costs bytes. On those 96
+#: stills at quality 30, 34 were over :data:`STORY_MAX_BYTES` with lanczos and 4 with bilinear.
+STORY_SCALE_FLAGS = "bilinear"
+#: A turn caption's own words, after "Turn N - <portal>: ", ellipsis included.
+CAPTION_CHARS = 80
+ABSTRACT_CAPTION = "The abstract"
+RESULT_CAPTION = "What she filed"
 #: Repo-relative: the recorder the capture step runs with Node.
 CAPTURE_SCRIPT = "examples/journey/scripts/capture-playbook.mjs"
 #: "Under 100 KB", read strictly: 100,000 bytes, not 102,400.
@@ -473,6 +523,10 @@ class MediaPaths:
     video: Path
     thumb: Path
     index: Path
+    #: The capture's ``[{file, turn}]`` for the stills it wrote beside it as ``still-NN.png``.
+    stills_log: Path
+    #: Committed: ``playbooks/<id>/story/``.
+    story: Path
 
 
 def media_paths(repo: Path, playbook_id: str) -> MediaPaths:
@@ -487,6 +541,8 @@ def media_paths(repo: Path, playbook_id: str) -> MediaPaths:
         video=media / "evidence.mp4",
         thumb=book / "thumb.jpg",
         index=book / "evidence.json",
+        stills_log=media / "stills.json",
+        story=book / STORY_DIRNAME,
     )
 
 
@@ -639,6 +695,251 @@ def thumbnail(tools: Tools, media: MediaPaths) -> int:
     )
 
 
+# --- 5. stills: the storyboard -------------------------------------------------------------------
+
+
+def sample_turns(count: int, most: int = STORY_TURNS) -> list[int]:
+    """Up to ``most`` of ``count`` turns, 1-based, spread evenly, always the first and the last.
+
+    Nine turns give 1, 4, 6 and 9; four or fewer give every one. Rounded half up, as the capture
+    script's own copy of this rule rounds, so a run by hand photographs the same turns.
+    """
+    k = min(count, most)
+    if k <= 1:
+        return [1] if count >= 1 else []
+    return sorted({int(i * (count - 1) / (k - 1) + 0.5) + 1 for i in range(k)})
+
+
+#: The end of a clause: a stop, a semicolon or a colon after a word (not the one in "C.H." or
+#: "$6.5M"), or an em or en dash standing between spaces.
+_DASHES = chr(0x2014) + chr(0x2013)
+_CLAUSE = re.compile(rf"^(.+?[a-z0-9)\]'\"%])(?:[.!?;:](?=\s|$)|\s[{_DASHES}]\s)")
+
+
+def clause(text: str, limit: int = CAPTION_CHARS) -> str:
+    """The first clause of ``text`` as plain words, at most ``limit`` characters.
+
+    Longer than that, it is cut at the last whole word that fits and ends in an ellipsis, which is
+    counted in the limit. Markdown emphasis and code ticks go, so a turn reads the way it is shown.
+    """
+    plain = " ".join(re.sub(r"[*`]+", "", text).split()).lstrip("#> ")
+    m = _CLAUSE.match(plain)
+    head = (m.group(1) if m else plain).strip()
+    if len(head) <= limit:
+        return head
+    cut = head[: limit - 1]
+    if " " in cut:
+        cut = cut[: cut.rfind(" ")]
+    return cut.rstrip(f" ,;:-{_DASHES}") + "…"
+
+
+def story_caption(turn: int | None, trace: Sequence[Mapping[str, Any]], *, result: bool) -> str:
+    """What a still is called, from the record alone: no model names it.
+
+    The first still is :data:`ABSTRACT_CAPTION`, the last :data:`RESULT_CAPTION`. A turn is
+    "Turn N - <portal>: " and the first clause of what the person said to her on it. A turn the run
+    loop continued (the tools answered and she went on; about a third of the turns a storyboard
+    samples) has no words from the person, so it carries the first clause of hers instead, and says
+    so: "Turn N - <portal>, Athena: ...".
+    """
+    if turn is None:
+        return RESULT_CAPTION if result else ABSTRACT_CAPTION
+    entry = trace[turn - 1] if 1 <= turn <= len(trace) else {}
+    portal = str(entry.get("portal") or "").strip()
+    head = f"Turn {turn} - {portal}" if portal else f"Turn {turn}"
+    user = str(entry.get("user") or "").strip()
+    said = str(entry.get("said") or "").strip()
+    if user:
+        return f"{head}: {clause(user)}"
+    if said:
+        return f"{head}, Athena: {clause(said)}"
+    return head
+
+
+def capture_stills(
+    tools: Tools,
+    repo: Path,
+    playbook_id: str,
+    turns: Sequence[int],
+    media: MediaPaths,
+    *,
+    desktop: Path | None = None,
+) -> list[tuple[Path, int | None]]:
+    """Photograph the abstract, ``turns`` of the replay and the result; return each PNG in order."""
+    media.dir.mkdir(parents=True, exist_ok=True)
+    for old in media.dir.glob("still-*.png"):
+        old.unlink()
+    media.stills_log.unlink(missing_ok=True)
+    argv = [
+        tools.node,
+        str(repo / CAPTURE_SCRIPT),
+        "--stills",
+        "--fixture",
+        fixture_for(playbook_id),
+        "--turns",
+        ",".join(str(n) for n in turns),
+        "--out",
+        str(media.dir),
+    ]
+    if desktop is not None:
+        argv += ["--desktop", str(desktop)]
+    _run(argv, "the stills capture (node)", cwd=repo, timeout=300)
+    if not media.stills_log.is_file():
+        raise EvidenceError(f"the stills capture wrote no {media.stills_log.name}")
+    log = json.loads(media.stills_log.read_text(encoding="utf-8"))
+    shots: list[tuple[Path, int | None]] = []
+    for shot in log if isinstance(log, list) else []:
+        png = media.dir / str(shot.get("file", ""))
+        if not png.is_file():
+            raise EvidenceError(f"the stills capture named {png.name} and did not write it")
+        turn = shot.get("turn")
+        shots.append((png, int(turn) if turn is not None else None))
+    if [t for _p, t in shots] != [None, *turns, None]:
+        raise EvidenceError(
+            f"the stills capture took turns {[t for _p, t in shots]}, not {[None, *turns, None]}"
+        )
+    return shots
+
+
+def story_ladder() -> list[tuple[int, int | None]]:
+    """The encodings :func:`encode_still` tries, in order: ``(quality, height or None)``.
+
+    Every quality at the full height first, then each of :data:`STORY_CROPS` at the two lowest.
+    """
+    full: list[tuple[int, int | None]] = [(q, None) for q in STORY_QUALITIES]
+    return full + [(q, h) for h in STORY_CROPS for q in STORY_QUALITIES[-2:]]
+
+
+def encode_still(tools: Tools, png: Path, out: Path) -> tuple[int, int, int | None]:
+    """``png`` as a :data:`STORY_WIDTH` px WebP at ``out`` under :data:`STORY_MAX_BYTES`.
+
+    Each step of :func:`story_ladder` in turn until one fits; returns the bytes, the quality and
+    the height it was cut to (``None`` for the whole still). None fitting is an error and leaves no
+    file: a still that would only fit illegible is not committed.
+    """
+    out.parent.mkdir(parents=True, exist_ok=True)
+    size = 0
+    for quality, height in story_ladder():
+        scale = f"scale={STORY_WIDTH}:-2:flags={STORY_SCALE_FLAGS}"
+        crop = f",crop={STORY_WIDTH}:'min(ih,{height})':0:0" if height else ""
+        _run(
+            [
+                tools.ffmpeg,
+                "-y",
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-i",
+                str(png),
+                "-vf",
+                scale + crop,
+                "-frames:v",
+                "1",
+                "-c:v",
+                "libwebp",
+                "-quality",
+                str(quality),
+                "-compression_level",
+                "6",
+                str(out),
+            ],
+            "ffmpeg",
+        )
+        size = out.stat().st_size
+        if size <= STORY_MAX_BYTES:
+            return size, quality, height
+    out.unlink(missing_ok=True)
+    raise EvidenceError(
+        f"{png.name}: no WebP under {STORY_MAX_BYTES:,} bytes even at quality "
+        f"{STORY_QUALITIES[-1]} cut to {STORY_CROPS[-1]} px ({size:,} bytes)"
+    )
+
+
+def build_story(
+    book: Playbook,
+    repo: Path,
+    tools: Tools,
+    *,
+    desktop: Path | None = None,
+    echo: Callable[[str], None] = lambda _line: None,
+) -> list[dict[str, Any]]:
+    """Capture, encode and commit-place one playbook's storyboard; return its ``story`` entries.
+
+    Every still is encoded beside the capture first and moves into ``playbooks/<id>/story/`` only
+    when all of them fit, so a failure leaves the storyboard that was there before; a still left
+    over from a longer one is removed.
+    """
+    bench = _bench(book)
+    trace = [t for t in bench.get("trace", []) or [] if isinstance(t, Mapping)]
+    turns = sample_turns(len(trace))
+    media = media_paths(repo, book.id)
+    echo(f"{book.id}: photographing the abstract, turns {turns} and the result")
+    shots = capture_stills(tools, repo, book.id, turns, media, desktop=desktop)
+    staged: list[tuple[Path, int | None, int]] = []
+    for i, (png, turn) in enumerate(shots, start=1):
+        webp = media.dir / f"story-{i:02d}.webp"
+        size, quality, height = encode_still(tools, png, webp)
+        staged.append((webp, turn, quality))
+        cut = f", cut to {height} px" if height else ""
+        echo(f"{book.id}: {i:02d}.webp {size:,} bytes at quality {quality}{cut}")
+    media.story.mkdir(parents=True, exist_ok=True)
+    names = {f"{i:02d}.webp" for i in range(1, len(staged) + 1)}
+    for old in media.story.glob("*.webp"):
+        if old.name not in names:
+            old.unlink()
+    story: list[dict[str, Any]] = []
+    for i, (webp, turn, _quality) in enumerate(staged, start=1):
+        target = media.story / f"{i:02d}.webp"
+        shutil.copyfile(webp, target)
+        story.append(
+            {
+                "path": _rel(repo, target),
+                "caption": story_caption(turn, trace, result=i == len(staged)),
+                "turn": turn,
+                "bytes": target.stat().st_size,
+                "sha256": sha256(target),
+            }
+        )
+    return story
+
+
+def _write_index(path: Path, index: Mapping[str, Any]) -> None:
+    # LF on every machine, as git keeps it: the index is the same bytes wherever it was written.
+    path.write_text(
+        json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
+    )
+
+
+def write_story(book: Playbook, repo: Path, story: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """The existing index at schema 2 with ``story``; every other key and value as it was."""
+    path = media_paths(repo, book.id).index
+    if not path.is_file():
+        raise EvidenceError(f"{book.id} has no evidence.json: film it before its storyboard")
+    index, fault = _read_object(path)
+    if index is None:
+        raise EvidenceError(f"{book.id}: {fault}")
+    index["schema"] = SCHEMA
+    index["story"] = [dict(s) for s in story]
+    _write_index(path, index)
+    return index
+
+
+def plan_story(book: Playbook, repo: Path) -> list[str]:
+    """What ``--stills-only`` would do for one playbook, running nothing."""
+    bench = _bench(book)
+    turns = sample_turns(len(bench.get("trace", []) or []))
+    media = media_paths(repo, book.id)
+    n = len(turns) + 2
+    return [
+        f"{book.id}: {len(bench.get('trace', []) or [])} turns; stills of turns {turns}",
+        f"  capture: node {CAPTURE_SCRIPT} --stills --fixture {fixture_for(book.id)} "
+        f"--turns {','.join(map(str, turns))} -> {_rel(repo, media.dir)}/still-01..{n:02d}.png",
+        f"  encode: ffmpeg -> {_rel(repo, media.story)}/01..{n:02d}.webp "
+        f"({STORY_WIDTH} px WebP, <= {STORY_MAX_BYTES:,} bytes each)",
+        f"  index: {_rel(repo, media.index)} (schema {SCHEMA}, story added, the rest kept)",
+    ]
+
+
 def _bench(book: Playbook) -> dict[str, Any]:
     path = book.root / "bench.json"
     if not path.is_file():
@@ -664,6 +965,8 @@ def plan(book: Playbook, repo: Path) -> list[str]:
         f"{_rel(repo, media.capture)}",
         f"  mux: ffmpeg -> {_rel(repo, media.video)} (H.264 + AAC)",
         f"  thumbnail: ffmpeg -> {_rel(repo, media.thumb)} (< {THUMB_MAX_BYTES:,} bytes)",
+        f"  stills: turns {sample_turns(turns)} -> {_rel(repo, media.story)}/NN.webp "
+        f"(<= {STORY_MAX_BYTES:,} bytes each)",
         f"  index: {_rel(repo, media.index)} (schema {SCHEMA})",
     ]
 
@@ -676,8 +979,9 @@ def build_evidence(
     *,
     echo: Callable[[str], None] = lambda _line: None,
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
+    desktop: Path | None = None,
 ) -> dict[str, Any]:
-    """Narrate, speak, capture, mux, thumbnail and index one benched playbook."""
+    """Narrate, speak, capture, mux, thumbnail, photograph and index one benched playbook."""
     bench = _bench(book)
     text = narration(book.showcase, bench)
     media = media_paths(repo, book.id)
@@ -694,6 +998,7 @@ def build_evidence(
     echo(f"{book.id}: muxing from {lead:.2f} s into the capture")
     mux(tools, media, lead, spoken)
     thumb_bytes = thumbnail(tools, media)
+    story = build_story(book, repo, tools, desktop=desktop, echo=echo)
     index: dict[str, Any] = {
         "schema": SCHEMA,
         "playbook": book.id,
@@ -717,11 +1022,9 @@ def build_evidence(
             "bytes": thumb_bytes,
             "sha256": sha256(media.thumb),
         },
+        "story": story,
     }
-    # LF on every machine, as git keeps it: the index is the same bytes wherever it was written.
-    media.index.write_text(
-        json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
-    )
+    _write_index(media.index, index)
     echo(f"{book.id}: {_rel(repo, media.index)}")
     return index
 
@@ -751,6 +1054,32 @@ def _read_object(path: Path) -> tuple[dict[str, Any] | None, str]:
     if not isinstance(data, dict):
         return None, f"{path.name} is not a JSON object (found {type(data).__name__})"
     return data, ""
+
+
+def _story_notes(repo: Path, index: Mapping[str, Any]) -> list[str]:
+    """The storyboard against its index: committed like the thumbnail, so an absent still is a
+    fault, and so is one whose bytes or hash are not the ones recorded. Schema 1 has none to check.
+    """
+    story = index.get("story")
+    if story is None:
+        schema = index.get("schema")
+        return ["a schema 2 index has no story"] if isinstance(schema, int) and schema >= 2 else []
+    if not isinstance(story, list):
+        return ["story is not a list"]
+    notes: list[str] = []
+    for i, entry in enumerate(story, start=1):
+        where = str(entry.get("path", "")) if isinstance(entry, dict) else ""
+        if not where:
+            notes.append(f"story still {i} names no path")
+            continue
+        path = repo / where
+        if not path.is_file():
+            notes.append(f"{where} is missing")
+        elif path.stat().st_size != entry.get("bytes"):
+            notes.append(f"{where} is {path.stat().st_size:,} bytes, not {entry.get('bytes')}")
+        elif sha256(path) != entry.get("sha256"):
+            notes.append(f"{where} does not match its sha256")
+    return notes
 
 
 def verify(books: Iterable[Playbook], repo: Path) -> list[Standing]:
@@ -788,6 +1117,7 @@ def verify(books: Iterable[Playbook], repo: Path) -> list[Standing]:
                     notes.append(f"{where} does not match its sha256")
             elif required:
                 notes.append(f"{where or part} is missing")
+        notes += _story_notes(repo, index)
         if state == "current" and index.get("narration", {}).get("text") != narration(
             book.showcase, bench
         ):

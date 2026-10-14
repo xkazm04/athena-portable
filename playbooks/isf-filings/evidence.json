@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "isf-filings",
   "captured_at": "2026-10-10T10:53:15Z",
   "bench_run_at": "2026-10-10T10:48:28Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/isf-filings/thumb.jpg",
     "bytes": 91580,
     "sha256": "5f18064b3b755a433e724b1bb011c843abe2747f00165deaa4663a72ab46ce52"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/isf-filings/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22650,
+      "sha256": "b10905b2c4eb1498555ebea8a88839dc319eef9b53fec5609b582531de1c34da"
+    },
+    {
+      "path": "playbooks/isf-filings/story/02.webp",
+      "caption": "Turn 1 - Sourcewick supplier portal: I'm Ines, the import coordinator at Larchwick Home & Garden",
+      "turn": 1,
+      "bytes": 23854,
+      "sha256": "ee907b0f992e0f2051f92bbe0e4eb189a5da7b67b048f4e5c4afbcd49417c959"
+    },
+    {
+      "path": "playbooks/isf-filings/story/03.webp",
+      "caption": "Turn 5 - Forwarden, Athena: Page 1 of 2 is in (showing 6 of 10)",
+      "turn": 5,
+      "bytes": 22494,
+      "sha256": "bb7c0da5806fcfbee1b28532fd81873605bc60125b0e8d810483d1b57360c996"
+    },
+    {
+      "path": "playbooks/isf-filings/story/04.webp",
+      "caption": "Turn 9 - Postwren, Athena: Six messages this week (showing 6 of 6)",
+      "turn": 9,
+      "bytes": 23914,
+      "sha256": "1e950f5275bc316de1a88f6d9cfec79ee6a4358de109582837bb1f2d1dfaf445"
+    },
+    {
+      "path": "playbooks/isf-filings/story/05.webp",
+      "caption": "Turn 13 - Quayloft ISF desk, Athena: 41610 is filed with Joliet as ship-to, and M-4 says it goes to Memphis",
+      "turn": 13,
+      "bytes": 23640,
+      "sha256": "42e1adb92f661859a76ff2fd321dd8ff2ec91b7f6f3c97bd8ac298f967f9b873"
+    },
+    {
+      "path": "playbooks/isf-filings/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23528,
+      "sha256": "4fb2021c75a0bce652024ad9a048395f45aac057cbf65e5b35c55b05beca90f0"
+    }
+  ]
 }

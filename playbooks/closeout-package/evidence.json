@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "closeout-package",
   "captured_at": "2026-10-09T23:00:21Z",
   "bench_run_at": "2026-10-09T22:57:26Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/closeout-package/thumb.jpg",
     "bytes": 79105,
     "sha256": "1641dd0361ac044744aa8ee502c8b39f551aa1b02ef93ea8acfeaca72e4bc2dd"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/closeout-package/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23300,
+      "sha256": "a5bf273d0ead46c26dde7695d153aa67ee6ffe96f9d641be599ded051df3af88"
+    },
+    {
+      "path": "playbooks/closeout-package/story/02.webp",
+      "caption": "Turn 1 - Primeline GC: Primeline won't release our $48,600 retainage on Harbor Point until the…",
+      "turn": 1,
+      "bytes": 22870,
+      "sha256": "b487aa4f17988335019ca6a7859d207db92f4ba9b14d57fed4e725108d229ea3"
+    },
+    {
+      "path": "playbooks/closeout-package/story/03.webp",
+      "caption": "Turn 5 - Partsmith: This is Partsmith",
+      "turn": 5,
+      "bytes": 20376,
+      "sha256": "d50319df414fdf71167705e7620c8899d9c349ec52677d235481dabc87e4baea"
+    },
+    {
+      "path": "playbooks/closeout-package/story/04.webp",
+      "caption": "Turn 8 - Fixturely, Athena: Fixturely settles CL-07",
+      "turn": 8,
+      "bytes": 23138,
+      "sha256": "08aca40b3bc732e1f2503153f022385baed1156adf56712ef04ca9a792b3714e"
+    },
+    {
+      "path": "playbooks/closeout-package/story/05.webp",
+      "caption": "Turn 12 - Primeline GC: Back in Primeline",
+      "turn": 12,
+      "bytes": 22782,
+      "sha256": "4596626219c3d49318d82efe8aa28f2038ada9ff3e7eb3c06ebcfc18fef5fe83"
+    },
+    {
+      "path": "playbooks/closeout-package/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22260,
+      "sha256": "2247d43e9bc455a902eb47b08f7e284206db42276c999571acb55013825aeba6"
+    }
+  ]
 }

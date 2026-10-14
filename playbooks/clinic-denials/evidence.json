@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "clinic-denials",
   "captured_at": "2026-10-09T15:54:36Z",
   "bench_run_at": "2026-10-08T00:15:18Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/clinic-denials/thumb.jpg",
     "bytes": 81567,
     "sha256": "886fe8b90933fdb42f77ef3819a95c930b3aa8060048b35077e3892d240fe27d"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/clinic-denials/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23086,
+      "sha256": "f4bfa1a4ad98b362a2d7999dfa73dd97a9c23ff521f79f1f1ef26233d35d133b"
+    },
+    {
+      "path": "playbooks/clinic-denials/story/02.webp",
+      "caption": "Turn 1 - Ridgeview practice management: Let's work this week's denial worklist",
+      "turn": 1,
+      "bytes": 23312,
+      "sha256": "40ec8991fe8bda7d321a92ae87701dfbbd4880ac099d39af1af173b8f9228391"
+    },
+    {
+      "path": "playbooks/clinic-denials/story/03.webp",
+      "caption": "Turn 4 - Ridgeview practice management, Athena: I've read all 14 denials",
+      "turn": 4,
+      "bytes": 22972,
+      "sha256": "53b6a97078f682bd7d3883b1dccd47f13d541727ea0ad2ce18d4b764a05c0ee5"
+    },
+    {
+      "path": "playbooks/clinic-denials/story/04.webp",
+      "caption": "Turn 8 - Availity: Now Availity",
+      "turn": 8,
+      "bytes": 23068,
+      "sha256": "314ce9dac0ddf4bb0bba7c0ea1a65b67166be44f12a1693ef6bc694d1b5b1d9f"
+    },
+    {
+      "path": "playbooks/clinic-denials/story/05.webp",
+      "caption": "Turn 11 - Ridgeview practice management: Back in the practice system",
+      "turn": 11,
+      "bytes": 23534,
+      "sha256": "4e0f54fda75ec1600dd02a50a78038607f90afbc8f0b77e71517aa2e319f22ad"
+    },
+    {
+      "path": "playbooks/clinic-denials/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23870,
+      "sha256": "9aedeb3e24befd3f29d2665e6fafff41e9db7ad407f003ace6d1a791c6322d63"
+    }
+  ]
 }

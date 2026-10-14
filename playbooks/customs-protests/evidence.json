@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "customs-protests",
   "captured_at": "2026-10-10T07:35:38Z",
   "bench_run_at": "2026-10-10T07:33:31Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/customs-protests/thumb.jpg",
     "bytes": 87586,
     "sha256": "ebd45fb61ee14887b1c755bc8d76c3c9d7acc126385e93b01cdc5c1980f42313"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/customs-protests/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22850,
+      "sha256": "ad659e01ebbe2a3c7ac0e88718922a3b227080f92040428b25d027bf58bd0e9c"
+    },
+    {
+      "path": "playbooks/customs-protests/story/02.webp",
+      "caption": "Turn 1 - Ledgerline ERP: I'm Lucia, trade compliance at Ashby Kitchenworks",
+      "turn": 1,
+      "bytes": 23616,
+      "sha256": "de76d4ad0be5ba9d4bf89c9fb0a65592e88b0b989e10df16dc4974b04ba24063"
+    },
+    {
+      "path": "playbooks/customs-protests/story/03.webp",
+      "caption": "Turn 4 - Docshelf, Athena: Six documents are in the folder",
+      "turn": 4,
+      "bytes": 23496,
+      "sha256": "8f577bd2597063ae793cd20d3fb445adab4da20c8a9f46b595bfd4652794b48e"
+    },
+    {
+      "path": "playbooks/customs-protests/story/04.webp",
+      "caption": "Turn 6 - Forwarden: Forwarden is our customs broker",
+      "turn": 6,
+      "bytes": 23948,
+      "sha256": "5f0746aae19b68077746d6337f1e4d5cd4d9c5d72d4c542ff4a7009c4112d5dc"
+    },
+    {
+      "path": "playbooks/customs-protests/story/05.webp",
+      "caption": "Turn 9 - Portline Entries, Athena: Portline's rules and records confirm the plan",
+      "turn": 9,
+      "bytes": 23980,
+      "sha256": "5e680b11646b1452d99e250f92318d461308b3ad268698678124c7b247a30d7b"
+    },
+    {
+      "path": "playbooks/customs-protests/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23822,
+      "sha256": "d926ff5bad0aa9a228f77830f01b2026f5105a17b4e0f1851bde3960676fbab4"
+    }
+  ]
 }

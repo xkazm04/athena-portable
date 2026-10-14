@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "pslf-employment-certification",
   "captured_at": "2026-10-09T17:33:30Z",
   "bench_run_at": "2026-10-09T17:30:28Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/pslf-employment-certification/thumb.jpg",
     "bytes": 85368,
     "sha256": "ccaa7d99fe1784b192656afb832cfd62a0b55b838b105e1cdd9e578801d33c07"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/pslf-employment-certification/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23798,
+      "sha256": "483c9e08ae5f867db26ee3d7c9e39ac67da027036aded49ba75c6bfed729013a"
+    },
+    {
+      "path": "playbooks/pslf-employment-certification/story/02.webp",
+      "caption": "Turn 1 - Loanbridge servicer: My PSLF count looks too low",
+      "turn": 1,
+      "bytes": 20540,
+      "sha256": "e78a27ce4cf18573a745a00706ff5c04286ca631615cf028689491cfb17a00e9"
+    },
+    {
+      "path": "playbooks/pslf-employment-certification/story/03.webp",
+      "caption": "Turn 5 - Payroll Harbor, Athena: Payroll Harbor is done",
+      "turn": 5,
+      "bytes": 22982,
+      "sha256": "c9f78213d23380973cccaaa9fbf979ede7e37c0828492259ef02e2a6c1f910e4"
+    },
+    {
+      "path": "playbooks/pslf-employment-certification/story/04.webp",
+      "caption": "Turn 9 - Mailnest, Athena: Three new messages bear on the job dates",
+      "turn": 9,
+      "bytes": 18116,
+      "sha256": "fd5ad16324badaca498518611ad2a4f49b04805029352ee473179e2d4a26499c"
+    },
+    {
+      "path": "playbooks/pslf-employment-certification/story/05.webp",
+      "caption": "Turn 13 - AidPath, Athena: Three employers are clear, and I'm filing them now",
+      "turn": 13,
+      "bytes": 23238,
+      "sha256": "95372505f0bc5257772bccd8a3f97c7b8873658b6f1edbab635e128dd090b164"
+    },
+    {
+      "path": "playbooks/pslf-employment-certification/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23116,
+      "sha256": "4300c4803b3ae4ab5c92b929ec8e5102c7fb769de41b8f9520c3a81ef9ecb1b8"
+    }
+  ]
 }

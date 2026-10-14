@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "household-employer-tax",
   "captured_at": "2026-10-10T06:05:49Z",
   "bench_run_at": "2026-10-10T06:01:21Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/household-employer-tax/thumb.jpg",
     "bytes": 80185,
     "sha256": "655044c3a8a43ebd04a73e82775f4dbc4316c7eefb197d2f2c2d3bf99817e260"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/household-employer-tax/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23926,
+      "sha256": "d2ad4dc4b2f7c0d5c9ee3c36111a002efe444332d3d6e071ca4a6c1a99923067"
+    },
+    {
+      "path": "playbooks/household-employer-tax/story/02.webp",
+      "caption": "Turn 1 - Hourquill: I employ people to look after Dad at home, and I want this quarter's payroll…",
+      "turn": 1,
+      "bytes": 22728,
+      "sha256": "ce0ecc39f2ad2369f2ae8027e123644fe0eebc9118a96211054eb06f225937ef"
+    },
+    {
+      "path": "playbooks/household-employer-tax/story/03.webp",
+      "caption": "Turn 4 - Hearthpay: Hearthpay runs my payroll",
+      "turn": 4,
+      "bytes": 23988,
+      "sha256": "71c8d923ff76b102961a4914eef53a60696b6525a0f334e7b0a7e16d26b1ed62"
+    },
+    {
+      "path": "playbooks/household-employer-tax/story/04.webp",
+      "caption": "Turn 8 - Ledgerline bank, Athena: Nothing in Ledgerline needs paying today, so I'm filing no card here",
+      "turn": 8,
+      "bytes": 22078,
+      "sha256": "d173bb399e610d4e2acc2f36a76e18fa3e2e7309fab917edf3e5189a0354b2c7"
+    },
+    {
+      "path": "playbooks/household-employer-tax/story/05.webp",
+      "caption": "Turn 11 - Taxline State, Athena: The rules settle the Q3 numbers",
+      "turn": 11,
+      "bytes": 22584,
+      "sha256": "ef8e9121290a5da87ec085d18ebcbad9b54e4d5f6ff698311f8289f853850570"
+    },
+    {
+      "path": "playbooks/household-employer-tax/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23098,
+      "sha256": "c51716cb3dde0cce74d56fbce2d85f42e55fd0502d9eecf5ba1037890d6e314f"
+    }
+  ]
 }

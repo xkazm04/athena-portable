@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "cobra-notices",
   "captured_at": "2026-10-11T03:48:36Z",
   "bench_run_at": "2026-10-11T03:46:20Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/cobra-notices/thumb.jpg",
     "bytes": 83310,
     "sha256": "1147cdc2c6c27fa6fd0fb0af9027b90e25e555e2190940c00d908e536a9c0df0"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/cobra-notices/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23082,
+      "sha256": "45f6dcf3ace418110286dca57f30ef4f4b6a6473d87a86bf916f2fc5b9d56cc3"
+    },
+    {
+      "path": "playbooks/cobra-notices/story/02.webp",
+      "caption": "Turn 1 - Crewmarrow HR: I'm Bea, benefits at Brindlemoor Fabrication",
+      "turn": 1,
+      "bytes": 22706,
+      "sha256": "6a42e7fce01833273d506f5d0b6453ebc1308f8d8fb7bacbbbd28caa13a2c4f9"
+    },
+    {
+      "path": "playbooks/cobra-notices/story/03.webp",
+      "caption": "Turn 3 - Carriercore: Carriercore is the plan",
+      "turn": 3,
+      "bytes": 23732,
+      "sha256": "27f70712edb26e02a83b62e67492de485f4eaf0bcf7b583c97ecce22f6589bb0"
+    },
+    {
+      "path": "playbooks/cobra-notices/story/04.webp",
+      "caption": "Turn 4 - Carriercore, Athena: Carriercore is read",
+      "turn": 4,
+      "bytes": 23886,
+      "sha256": "7d202274caf49c1c487115988c0f1302790a4ae6b81c6a2270440cae1b6cc581"
+    },
+    {
+      "path": "playbooks/cobra-notices/story/05.webp",
+      "caption": "Turn 6 - Postwren, Athena: The inbox is read, and I'm filing seven election notices now",
+      "turn": 6,
+      "bytes": 23428,
+      "sha256": "c9ca63188332435c54a5504e8333dde0652fad6247b52a603d185d352f59bdec"
+    },
+    {
+      "path": "playbooks/cobra-notices/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 21992,
+      "sha256": "e925140f2dcfec44298471bf569dc015ed92f39426e65669d698e85c328ef8b6"
+    }
+  ]
 }

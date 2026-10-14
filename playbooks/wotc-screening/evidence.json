@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "wotc-screening",
   "captured_at": "2026-10-09T18:41:06Z",
   "bench_run_at": "2026-10-09T18:36:50Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/wotc-screening/thumb.jpg",
     "bytes": 73108,
     "sha256": "d3dcf6ba9c31c8ecb48be8f837d749f4b87410783608c0d76374cf20ed189363"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/wotc-screening/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23586,
+      "sha256": "11a4b853a814137d2ab4bed32c829b5980fd2418dc4e8d93a26f18851a9a8761"
+    },
+    {
+      "path": "playbooks/wotc-screening/story/02.webp",
+      "caption": "Turn 1 - Talentry ATS: It's holiday hiring and I'm behind on WOTC. Start here in Talentry",
+      "turn": 1,
+      "bytes": 23476,
+      "sha256": "c89ef4e8a22f05ce17237238756ba5b73e60d8399bb4d6f197e7df412669ffb0"
+    },
+    {
+      "path": "playbooks/wotc-screening/story/03.webp",
+      "caption": "Turn 5 - Payroll Harbor: Now Payroll Harbor",
+      "turn": 5,
+      "bytes": 18790,
+      "sha256": "acf5199d748e1a6d63ef0873f66a5a29e42ff2b71dab47b69017525370794fc4"
+    },
+    {
+      "path": "playbooks/wotc-screening/story/04.webp",
+      "caption": "Turn 8 - Mailnest, Athena: Nine messages are in the folder",
+      "turn": 8,
+      "bytes": 18924,
+      "sha256": "79b44f64f8a75003c89c7b4e43c9259eda50c2cf028a2b8a9338e4bdbd7482ed"
+    },
+    {
+      "path": "playbooks/wotc-screening/story/05.webp",
+      "caption": "Turn 12 - WorkCredit Online, Athena: Most hires can now be decided against the rules",
+      "turn": 12,
+      "bytes": 23518,
+      "sha256": "be1d69bef54b334d7cadabef7338e77e7ffa16db9f6646f3fcf89954ef9370ec"
+    },
+    {
+      "path": "playbooks/wotc-screening/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 21952,
+      "sha256": "8ad3d60648952a81b6f33101563680e0d6d9980cf30f22127c0e638be5a82825"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "duty-drawback",
   "captured_at": "2026-10-09T18:47:11Z",
   "bench_run_at": "2026-10-09T18:44:23Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/duty-drawback/thumb.jpg",
     "bytes": 93802,
     "sha256": "4b5677315a124830e13e31c080abf526bbae5eb34aedd84bef24728dee5c84f5"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/duty-drawback/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23074,
+      "sha256": "acb74f6d9256294677f985db3e638bc18fb4c8fff454399948090ead27c5393e"
+    },
+    {
+      "path": "playbooks/duty-drawback/story/02.webp",
+      "caption": "Turn 1 - Portline Entries: We've never kept up with drawback",
+      "turn": 1,
+      "bytes": 19174,
+      "sha256": "7caddc9a7d137887051273b8d9bd57659a9a120f3b60cc0a0e7b708fa4df0e8c"
+    },
+    {
+      "path": "playbooks/duty-drawback/story/03.webp",
+      "caption": "Turn 5 - Forwarden broker, Athena: Page 1 of 2 is back (6 of 12 exports)",
+      "turn": 5,
+      "bytes": 22526,
+      "sha256": "4b7f720840079abf615736444b93fcc8f67f50fc5e222994732f41ab8377a539"
+    },
+    {
+      "path": "playbooks/duty-drawback/story/04.webp",
+      "caption": "Turn 9 - Ledgerline ERP, Athena: I've traced all 11 exports with proof",
+      "turn": 9,
+      "bytes": 23574,
+      "sha256": "5a3a1f72f5c2fe8021ab9a05e9bf8f0b1cef938c12c8e2201082a4140b58577e"
+    },
+    {
+      "path": "playbooks/duty-drawback/story/05.webp",
+      "caption": "Turn 13 - Portline Entries: Back in Portline",
+      "turn": 13,
+      "bytes": 23646,
+      "sha256": "2e544e80bfbc2ede52d34ffd8ed305f28e66aef4f7ec5e4d302496c9f501f7e0"
+    },
+    {
+      "path": "playbooks/duty-drawback/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23672,
+      "sha256": "e3e5b2fd534a5688b44913ef9b80ca1e0344cd5faaeac43754963b0fc92f7ba7"
+    }
+  ]
 }

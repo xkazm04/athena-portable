@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "adverse-action-notices",
   "captured_at": "2026-10-11T05:47:12Z",
   "bench_run_at": "2026-10-11T05:43:21Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/adverse-action-notices/thumb.jpg",
     "bytes": 84513,
     "sha256": "28b2d6aec5f6963f1da72a2cea3d13162eb600d92d12ceb6af8020235dbb2e72"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/adverse-action-notices/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23972,
+      "sha256": "780309ef8757b1ba66ff2242c61c6cf3a3a4acfcc43af44fce91944ce506c4a1"
+    },
+    {
+      "path": "playbooks/adverse-action-notices/story/02.webp",
+      "caption": "Turn 1 - Applyrook ATS: I'm Odalys, HR at Brackenmere Distribution",
+      "turn": 1,
+      "bytes": 23608,
+      "sha256": "b276741304db8e7c9a90f39abb38fce71535c29775435a84f00d9008bc5d87d9"
+    },
+    {
+      "path": "playbooks/adverse-action-notices/story/03.webp",
+      "caption": "Turn 3 - Applyrook ATS, Athena: Applyrook is read, and 6 of the 16 candidates need no notice",
+      "turn": 3,
+      "bytes": 23640,
+      "sha256": "e5ecbf58a651aee16dcd4ce14d9287848f616d6fb21d5daa49e3a19c87e4f5bf"
+    },
+    {
+      "path": "playbooks/adverse-action-notices/story/04.webp",
+      "caption": "Turn 5 - Veritarn Screening, Athena: Veritarn is read",
+      "turn": 5,
+      "bytes": 23962,
+      "sha256": "7436df98546274b8cc459f4d0c664df0a67bdf515e05e4069d35df1f92e33d0a"
+    },
+    {
+      "path": "playbooks/adverse-action-notices/story/05.webp",
+      "caption": "Turn 7 - Postwren, Athena: Eight cards are going to you for approval",
+      "turn": 7,
+      "bytes": 23838,
+      "sha256": "8b6580c95bbb15d927ebc42e2bff8b42eb09e1c5f2ec43ccdaa707efc1b231dc"
+    },
+    {
+      "path": "playbooks/adverse-action-notices/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22140,
+      "sha256": "e526f094f841a83eadb28327d9cf8941404f973dfe4cfc2de9a5a38858112747"
+    }
+  ]
 }

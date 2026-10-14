@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "section8-landlord",
   "captured_at": "2026-10-10T00:22:18Z",
   "bench_run_at": "2026-10-10T00:19:13Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/section8-landlord/thumb.jpg",
     "bytes": 77594,
     "sha256": "bc155f9588bd85c5471053b2c9a7591e0334ce0e4369359dc9a02a96f8f1b54d"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/section8-landlord/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22460,
+      "sha256": "fb277bf324f115ce89168fcfce308ffa508fc07530b6587b646d2d5f5bb78b5c"
+    },
+    {
+      "path": "playbooks/section8-landlord/story/02.webp",
+      "caption": "Turn 1 - Landlord Link: I've got voucher units failing inspections and a HAP payment missing",
+      "turn": 1,
+      "bytes": 23470,
+      "sha256": "1fc3ce54307827651e0efdae2d1c53f35978472d4f275f324a45ed6e55fff2d6"
+    },
+    {
+      "path": "playbooks/section8-landlord/story/03.webp",
+      "caption": "Turn 4 - Rentroll: Now Rentroll",
+      "turn": 4,
+      "bytes": 22352,
+      "sha256": "6fb31262c4976e48141ac5f16f933a417d56ce8f50661e74235bc30a58aa6247"
+    },
+    {
+      "path": "playbooks/section8-landlord/story/04.webp",
+      "caption": "Turn 8 - Repairly, Athena: F-8 is the urgent one",
+      "turn": 8,
+      "bytes": 23090,
+      "sha256": "32a8f5cba3a3be4628c431e92e85ee994fb7047e6d1e534e2330c9777fb47569"
+    },
+    {
+      "path": "playbooks/section8-landlord/story/05.webp",
+      "caption": "Turn 11 - Landlord Link: Back in Landlord Link",
+      "turn": 11,
+      "bytes": 22534,
+      "sha256": "65223833981de7d590ebb0790f1a03fd7654e41c251002f0720b033d2dbf2380"
+    },
+    {
+      "path": "playbooks/section8-landlord/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22598,
+      "sha256": "197eb2e3e0889921ca41c2677a1adc7915a44885a6c94000bec035bee033b0fa"
+    }
+  ]
 }

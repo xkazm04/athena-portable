@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "driver-qualification-files",
   "captured_at": "2026-10-10T11:29:13Z",
   "bench_run_at": "2026-10-10T11:26:16Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/driver-qualification-files/thumb.jpg",
     "bytes": 84751,
     "sha256": "16393c952bab1acb3d381f6f9c3a3bb3c2e1dabdcb3906ad34351c9e98bbb3b3"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/driver-qualification-files/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23132,
+      "sha256": "ce44cb48ac8c66b51b9cce648a02d8fc57b23e7e905d6275df657882c9c22222"
+    },
+    {
+      "path": "playbooks/driver-qualification-files/story/02.webp",
+      "caption": "Turn 1 - Logmarrow ELD: I'm Marisa, safety and compliance at Pell Ridge Transport",
+      "turn": 1,
+      "bytes": 23568,
+      "sha256": "b04d0d0ad2a8f12d85df2bb5dabc314769d9f910ca288bb9c5065dc54710e81e"
+    },
+    {
+      "path": "playbooks/driver-qualification-files/story/03.webp",
+      "caption": "Turn 3 - Crewmarrow HR: Crewmarrow has the driver qualification files and the rules we work to",
+      "turn": 3,
+      "bytes": 22266,
+      "sha256": "a55b5d3c93bbb1b30cdd80a60cd1d26336a12f8925eb86005906dc21457b8c58"
+    },
+    {
+      "path": "playbooks/driver-qualification-files/story/04.webp",
+      "caption": "Turn 6 - Screenmoor MVR, Athena: Three orders are due, and I'm filing a card for each",
+      "turn": 6,
+      "bytes": 22546,
+      "sha256": "901f0784fa855c739723c8f12b11107f6ece6f4ef375b40255afc5c272b4d9f1"
+    },
+    {
+      "path": "playbooks/driver-qualification-files/story/05.webp",
+      "caption": "Turn 8 - Specimoor Clearinghouse desk, Athena: Two queries are due, and I'm filing a card for each",
+      "turn": 8,
+      "bytes": 23526,
+      "sha256": "0727a9c2b064922bf09008cb6aed8be996093ac54f3ac13e9599335fcdecd614"
+    },
+    {
+      "path": "playbooks/driver-qualification-files/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 21606,
+      "sha256": "7f662276965999c99eff0f9674a28c8faeca5b88ef8fb6c740f75b6c6eecb32a"
+    }
+  ]
 }

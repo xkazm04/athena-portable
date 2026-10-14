@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "data-broker-deletion",
   "captured_at": "2026-10-09T18:00:15Z",
   "bench_run_at": "2026-10-09T17:56:03Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/data-broker-deletion/thumb.jpg",
     "bytes": 80755,
     "sha256": "5b5a91144dfdbc870913063664c71e27e2ed9df242d46c1d5055b4cb3268dcaa"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/data-broker-deletion/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23902,
+      "sha256": "3ef896c1965fe9965b47fd4ce5a9a0ea21b598b81cf20ee23197abe5f295396a"
+    },
+    {
+      "path": "playbooks/data-broker-deletion/story/02.webp",
+      "caption": "Turn 1 - Mailnest: I asked the state's Erasepoint to make data brokers delete me back in January…",
+      "turn": 1,
+      "bytes": 18740,
+      "sha256": "1da076bf0f02156603807876e5964054ad6c98745e263e1fdbf206c53fb7a40e"
+    },
+    {
+      "path": "playbooks/data-broker-deletion/story/03.webp",
+      "caption": "Turn 5 - Erasepoint registry, Athena: Findwho, Lookabout and Peoplegrid have answered",
+      "turn": 5,
+      "bytes": 21674,
+      "sha256": "ba1308af1d14570cd7d1edb70de1869ec8eb8ab5e93f826d5951cac37937f052"
+    },
+    {
+      "path": "playbooks/data-broker-deletion/story/04.webp",
+      "caption": "Turn 8 - Findwho, Athena: Five listings came back",
+      "turn": 8,
+      "bytes": 17260,
+      "sha256": "98e0a1928068ac85a8c61f1623c1d15a51e1b3f4e79613179f15e296640afabc"
+    },
+    {
+      "path": "playbooks/data-broker-deletion/story/05.webp",
+      "caption": "Turn 12 - Lookabout, Athena: LA-81 is yours, and I'm filing a removal for it",
+      "turn": 12,
+      "bytes": 23254,
+      "sha256": "4f6ecb6e314e0bcfbe9eb62dfd21528ab126a8300070826e4c0cb30cef7d531e"
+    },
+    {
+      "path": "playbooks/data-broker-deletion/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23324,
+      "sha256": "dce2c70d8f176d550dccee458e227e917ad51abe42d854dd3b5f358da1614a31"
+    }
+  ]
 }

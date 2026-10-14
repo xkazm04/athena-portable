@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "parental-leave-claims",
   "captured_at": "2026-10-11T02:37:02Z",
   "bench_run_at": "2026-10-11T02:34:26Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/parental-leave-claims/thumb.jpg",
     "bytes": 78294,
     "sha256": "6df8e8660bc19ba65f1c6f89063f7e9b1d66bd4e7497edd412bf102cb00888e9"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/parental-leave-claims/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23766,
+      "sha256": "139e8dd1b6045f0f6435784750ce91482da411b6fb14a9ad4beb3a918622d889"
+    },
+    {
+      "path": "playbooks/parental-leave-claims/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Noor Haddad",
+      "turn": 1,
+      "bytes": 22802,
+      "sha256": "6a87bc15b0c72f355c1226e375c0d2ad89fdd429bc828d49e8c357f11c6cc5a9"
+    },
+    {
+      "path": "playbooks/parental-leave-claims/story/03.webp",
+      "caption": "Turn 4 - Larkhollow Women's Health: This is my doctor's portal, Larkhollow",
+      "turn": 4,
+      "bytes": 22754,
+      "sha256": "939f7aa0a762f2217daf0c62cd599edbde3349a321a152c73431caa5380430a5"
+    },
+    {
+      "path": "playbooks/parental-leave-claims/story/04.webp",
+      "caption": "Turn 8 - Crewmarrow HR: This is my HR, Crewmarrow",
+      "turn": 8,
+      "bytes": 22598,
+      "sha256": "f92a65f828abf4c380e91683c5bcd1a4a5c9c8a4937d6fbc49bf25674a072128"
+    },
+    {
+      "path": "playbooks/parental-leave-claims/story/05.webp",
+      "caption": "Turn 11 - Shieldline, Athena: I've read your account and all seven forms",
+      "turn": 11,
+      "bytes": 22700,
+      "sha256": "50778051a7cc35306649d04de19bc8f58232a8e277c4481c2f8c334dfbab0172"
+    },
+    {
+      "path": "playbooks/parental-leave-claims/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23242,
+      "sha256": "40f495f48857422235a2dc0f3a52f75bb17ef87ad1cfc844890c1661e8653315"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "401k-late-deposits",
   "captured_at": "2026-10-11T04:01:11Z",
   "bench_run_at": "2026-10-11T03:59:14Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/401k-late-deposits/thumb.jpg",
     "bytes": 98871,
     "sha256": "8fa6d174b9bd17540ae5f6cb1f3b7858a1fcb8854e72063c32dea5864cd723f0"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/401k-late-deposits/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23834,
+      "sha256": "6633e6192c42c592faf15a00e0b6d3d2e2cc52c442b9fcbc282a3f961ceb5949"
+    },
+    {
+      "path": "playbooks/401k-late-deposits/story/02.webp",
+      "caption": "Turn 1 - Payroll Harbor: I'm Neil, owner of Wexcombe Packaging and trustee of our 401(k)",
+      "turn": 1,
+      "bytes": 23000,
+      "sha256": "32ec88542213acbd188478a186ab750da171b96f1adb83aafc38668891cbd0b0"
+    },
+    {
+      "path": "playbooks/401k-late-deposits/story/03.webp",
+      "caption": "Turn 4 - Retireline: Retireline is our recordkeeper",
+      "turn": 4,
+      "bytes": 22478,
+      "sha256": "c1600f3d444c8f186102328f66d708ce3e1421f064391376d2009578e6784c41"
+    },
+    {
+      "path": "playbooks/401k-late-deposits/story/04.webp",
+      "caption": "Turn 8 - Correctcalc, Athena: I have all five figures",
+      "turn": 8,
+      "bytes": 22020,
+      "sha256": "f9eab4259f3425913cb09a2897eddf2bf57c65b74c175c0d1401173458bc93f0"
+    },
+    {
+      "path": "playbooks/401k-late-deposits/story/05.webp",
+      "caption": "Turn 11 - Ledgerwren bank, Athena: The bank agrees with Retireline on all five late deposits",
+      "turn": 11,
+      "bytes": 23808,
+      "sha256": "d706d23a49f0b3f078c32db6aab98c6a78a06d07aca82defbb333b99aaff58fb"
+    },
+    {
+      "path": "playbooks/401k-late-deposits/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23508,
+      "sha256": "624b5b93b8dc7c258a762ab7b34e25f040fb6067dfd232139f067ad698f8ffed"
+    }
+  ]
 }

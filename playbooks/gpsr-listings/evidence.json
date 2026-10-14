@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "gpsr-listings",
   "captured_at": "2026-10-10T15:09:48Z",
   "bench_run_at": "2026-10-10T15:07:49Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/gpsr-listings/thumb.jpg",
     "bytes": 83727,
     "sha256": "ae6642b5b61d962ca7d2ce2b5170f480c708fe6a863c79eef244b6aacb0fab3c"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/gpsr-listings/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22824,
+      "sha256": "56ea6e177c93123e13a5daffb160e90884e2a96203f9cc3793c2120e689b7bf0"
+    },
+    {
+      "path": "playbooks/gpsr-listings/story/02.webp",
+      "caption": "Turn 1 - Binderwell: I'm Hollis, Fennhollow Home",
+      "turn": 1,
+      "bytes": 22596,
+      "sha256": "e91efaa8e79ad0320fd50fc4703387c2b575ed944a77ca27127cec9ca60d2136"
+    },
+    {
+      "path": "playbooks/gpsr-listings/story/03.webp",
+      "caption": "Turn 5 - Postwren: This is my mail",
+      "turn": 5,
+      "bytes": 22188,
+      "sha256": "fecb44a8768dee93e1d73aae4795572925118f08fca2f26f21d9da6e5e250434"
+    },
+    {
+      "path": "playbooks/gpsr-listings/story/04.webp",
+      "caption": "Turn 9 - Stallwick seller, Athena: The Stallwick list shows 8 listings",
+      "turn": 9,
+      "bytes": 23036,
+      "sha256": "54b76ffab51ae3c6ea37fe92dc175f4da69617f28348e363327b11a5beb1b8ef"
+    },
+    {
+      "path": "playbooks/gpsr-listings/story/05.webp",
+      "caption": "Turn 13 - Hawkerbrook seller, Athena: Three of the five in-scope listings are missing something, so I'm filing three…",
+      "turn": 13,
+      "bytes": 22070,
+      "sha256": "1ec9c59af53c2db9b686f7f3e03f9b1b217411f8113bd7465313d8a37c7d0ed4"
+    },
+    {
+      "path": "playbooks/gpsr-listings/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23138,
+      "sha256": "ac73b1ca4f8ee1a6c81ec15e7c3dd3b3696cd744c818e9db327869cf5ee2c457"
+    }
+  ]
 }

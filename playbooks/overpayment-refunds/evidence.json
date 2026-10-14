@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "overpayment-refunds",
   "captured_at": "2026-10-10T01:07:17Z",
   "bench_run_at": "2026-10-10T01:04:35Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/overpayment-refunds/thumb.jpg",
     "bytes": 77580,
     "sha256": "ddf7305bab3cdcb6cc164a3580409b0e39c2088ccc67d9d3a0d35785eb02ae0e"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/overpayment-refunds/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23900,
+      "sha256": "8734cf6504ec81e259fa4992955406f6b689e93a0c1f50916502489692e4e3e4"
+    },
+    {
+      "path": "playbooks/overpayment-refunds/story/02.webp",
+      "caption": "Turn 1 - Chartmend PM: Our credit balance report has gotten long",
+      "turn": 1,
+      "bytes": 22500,
+      "sha256": "e1573850ae07fcc9cc30338b81ab768de18b794fd3bbe6074c40806f852a277e"
+    },
+    {
+      "path": "playbooks/overpayment-refunds/story/03.webp",
+      "caption": "Turn 4 - Ledgerline: Now Ledgerline",
+      "turn": 4,
+      "bytes": 21446,
+      "sha256": "9e7a0a7ec03757a09bb022075555a2bec888552c37fded2e25aad9d9826a28d6"
+    },
+    {
+      "path": "playbooks/overpayment-refunds/story/04.webp",
+      "caption": "Turn 7 - Novabridge MAC, Athena: I'm filing three Medicare refund cards",
+      "turn": 7,
+      "bytes": 23992,
+      "sha256": "8f8a354ca036044f4535f1d37d63480ccbcf6e2e02d612b94a69c6353ceab93d"
+    },
+    {
+      "path": "playbooks/overpayment-refunds/story/05.webp",
+      "caption": "Turn 10 - Chartmend PM: Back in Chartmend",
+      "turn": 10,
+      "bytes": 23826,
+      "sha256": "c7e158292219db7a7681468cc83a3444acf458dfff6b74f79d500a4852f2d432"
+    },
+    {
+      "path": "playbooks/overpayment-refunds/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22822,
+      "sha256": "c82ddde4539481399dfdf001f99cf1b1beae1adeec87c665be94a321f2cdb9e8"
+    }
+  ]
 }

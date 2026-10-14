@@ -137,7 +137,16 @@ Chosen first, the runner-up second, and why.
 | data-broker-deletion | contest | claim | the brokers that did not delete are pressed; no money moves |
 | funeral-price-check | contest | recover | charges a home cannot require are declined |
 
-<!-- WP2: storyboard amendment to ADR 0055 merges here -->
+### The storyboard, an amendment to ADR 0055
+
+The index also commits a storyboard: three to six WebP stills of the run
+(`playbooks/<id>/story/NN.webp`: the abstract, up to four replay turns spread evenly, *What she
+filed*), each 960 px wide and at most 24,000 bytes, about 14 MB across the hundred playbooks, and
+indexed as `story` in `evidence.json` schema 2 with a caption written from the record and each
+file's bytes and sha256. This does not reverse "the media stay local": the film, the WAV and the
+capture are still uncommitted; a still is the size of a thumbnail and is the only view of the process
+a fresh clone has. It is captured from the Chores depth (ADR 0090), whose layer replaced the one the
+film was recorded from, so the stills frame `.stage__layer`, not the old `.layer__sheet`.
 
 ### The ledger, as built
 

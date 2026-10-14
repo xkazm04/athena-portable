@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "cpg-deductions",
   "captured_at": "2026-10-10T04:10:24Z",
   "bench_run_at": "2026-10-07T23:28:15Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/cpg-deductions/thumb.jpg",
     "bytes": 82688,
     "sha256": "468514d5e39ff55b8bd5b2b6b668d18305e81d1a4f58e97f6531841b60b82370"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/cpg-deductions/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22738,
+      "sha256": "f4040381567ae3422a0fc3e251cba7dd7e88d2814a8dbda692050607e3988b45"
+    },
+    {
+      "path": "playbooks/cpg-deductions/story/02.webp",
+      "caption": "Turn 1 - myUNFI Dispute Center: Deductions day",
+      "turn": 1,
+      "bytes": 22272,
+      "sha256": "fdf67c43f3fabbaf85cea48fc40073d057275c0b5e46fd917b70c035aa25a3a1"
+    },
+    {
+      "path": "playbooks/cpg-deductions/story/03.webp",
+      "caption": "Turn 6 - myUNFI Dispute Center, Athena: I have the backup on all 9 deductions",
+      "turn": 6,
+      "bytes": 23276,
+      "sha256": "173fb08a26dee5f7c9bc53e39c8b8a1e4a3a4ca42eccd16289c0b22582f00a32"
+    },
+    {
+      "path": "playbooks/cpg-deductions/story/04.webp",
+      "caption": "Turn 10 - Brand Drive, Athena: Drive settled six deductions",
+      "turn": 10,
+      "bytes": 23638,
+      "sha256": "e91a1eaad1877531e54f59fa4725aa42647f6b6107806691c155a02a7938fd22"
+    },
+    {
+      "path": "playbooks/cpg-deductions/story/05.webp",
+      "caption": "Turn 15 - KeHE K-Solve, Athena: K-Solve has six deductions, all shown (6 of 6)",
+      "turn": 15,
+      "bytes": 22492,
+      "sha256": "ad71e6c24153516b5994cbe4ddef4fd6ec22f8e6ab2289fde06c61a741b29b48"
+    },
+    {
+      "path": "playbooks/cpg-deductions/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22424,
+      "sha256": "4a4573d634c7b0d84e1a188552fbaf9cb1fa84cf2f2a007d148df92605031ade"
+    }
+  ]
 }

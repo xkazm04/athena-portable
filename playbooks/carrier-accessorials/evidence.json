@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "carrier-accessorials",
   "captured_at": "2026-10-09T15:51:56Z",
   "bench_run_at": "2026-10-07T23:40:31Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/carrier-accessorials/thumb.jpg",
     "bytes": 98615,
     "sha256": "288bae07cf325f1ce2cdcad8c9fee3e96dc2002b0898d6a050b5998cf8afb1f1"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/carrier-accessorials/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23784,
+      "sha256": "bc0e7a6d2dde0c9c8d48b65a8097f0226a502d652e6c46ccf40d6fc9b562aa75"
+    },
+    {
+      "path": "playbooks/carrier-accessorials/story/02.webp",
+      "caption": "Turn 1 - Motive: Accessorials day",
+      "turn": 1,
+      "bytes": 22524,
+      "sha256": "66504f824341691323dd4c0a5af23e2829c549a952b303218c758d680c027b6b"
+    },
+    {
+      "path": "playbooks/carrier-accessorials/story/03.webp",
+      "caption": "Turn 9 - C.H. Robinson Navisphere Carrier: Navisphere",
+      "turn": 9,
+      "bytes": 23006,
+      "sha256": "89cd5637926ed18bf69101823360aabef6c8aaeb8fb59c111a560ebcec392d5f"
+    },
+    {
+      "path": "playbooks/carrier-accessorials/story/04.webp",
+      "caption": "Turn 17 - Dispatch inbox: Back in the inbox",
+      "turn": 17,
+      "bytes": 23888,
+      "sha256": "5ef7ca5ad8b5190e4f4eeb3dd9c02f467eb3ca4476924a2226c84d9929754c21"
+    },
+    {
+      "path": "playbooks/carrier-accessorials/story/05.webp",
+      "caption": "Turn 25 - C.H. Robinson Navisphere Carrier, Athena: CHR-1188 qualifies for $250, and I'm filing it on the BOL times, 06:00 to…",
+      "turn": 25,
+      "bytes": 23914,
+      "sha256": "dda0a01f4be37bfedd07ddb660cce5c64dc58242ffa03ff49ed8008c8faa2592"
+    },
+    {
+      "path": "playbooks/carrier-accessorials/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22366,
+      "sha256": "e834c7f5e2f2a652d709a033d8d7e5026924604da1d3be7657400b346a82d02d"
+    }
+  ]
 }

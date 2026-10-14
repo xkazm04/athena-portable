@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "hospital-financial-assistance",
   "captured_at": "2026-10-10T02:41:48Z",
   "bench_run_at": "2026-10-10T02:39:10Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/hospital-financial-assistance/thumb.jpg",
     "bytes": 79379,
     "sha256": "cd65d62fbf03f73bb97a3dae225b13af50bdc6994cd7e708ba3ea23e388a7056"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/hospital-financial-assistance/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23618,
+      "sha256": "2a54ace3a3453da6b9e84a0f761244b932fe65efa19fac5c271b6fbb0576614a"
+    },
+    {
+      "path": "playbooks/hospital-financial-assistance/story/02.webp",
+      "caption": "Turn 1 - Saint Ardent billing: We can't pay these Saint Ardent bills",
+      "turn": 1,
+      "bytes": 20572,
+      "sha256": "3f2428642acc1ddd2a3666a6e513c05030076f2b3891708eb9dc0d5894cd7c85"
+    },
+    {
+      "path": "playbooks/hospital-financial-assistance/story/03.webp",
+      "caption": "Turn 5 - Mailnest, Athena: Five messages",
+      "turn": 5,
+      "bytes": 19508,
+      "sha256": "22e5a667af0b9fe4d9cb2cb29aa38f34ced8f589ccf169264e7e8d553dda7ec7"
+    },
+    {
+      "path": "playbooks/hospital-financial-assistance/story/04.webp",
+      "caption": "Turn 9 - Ledgerline bank: Ledgerline, our joint checking",
+      "turn": 9,
+      "bytes": 20102,
+      "sha256": "0ee39ee5ffcb2e5c11471ba7a482dc8631bfcb82fd96402b08e06b5bd2f5f116"
+    },
+    {
+      "path": "playbooks/hospital-financial-assistance/story/05.webp",
+      "caption": "Turn 13 - Mailnest: Back in my inbox",
+      "turn": 13,
+      "bytes": 23668,
+      "sha256": "f25cde8809aff862bc87df86e2490ba2510dea4869c925abf614482b80b92f9c"
+    },
+    {
+      "path": "playbooks/hospital-financial-assistance/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23110,
+      "sha256": "9437e45afb20d6ab86e499196c5b6591916f5b8b023f6a94f68d981cdeda57c5"
+    }
+  ]
 }

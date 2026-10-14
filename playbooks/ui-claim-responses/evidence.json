@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "ui-claim-responses",
   "captured_at": "2026-10-11T03:05:51Z",
   "bench_run_at": "2026-10-11T03:03:21Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/ui-claim-responses/thumb.jpg",
     "bytes": 85113,
     "sha256": "2ce0db7b6604757059311de9c3b08af6c8616ef159f1f83ec4988192fdab26b0"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/ui-claim-responses/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23466,
+      "sha256": "e74695f7ca7cd4fa15934122e096098ff28e8b6b825fdb252abb2144c72f936d"
+    },
+    {
+      "path": "playbooks/ui-claim-responses/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Marguerite Aldous",
+      "turn": 1,
+      "bytes": 22736,
+      "sha256": "c7aea602278244db38304a4b44d6db7a23a56717c8b5173c2df9441d0368b25a"
+    },
+    {
+      "path": "playbooks/ui-claim-responses/story/03.webp",
+      "caption": "Turn 5 - Crewmarrow HR, Athena: Crewmarrow lists 9 people, and none of them is Gideon Park",
+      "turn": 5,
+      "bytes": 22832,
+      "sha256": "c4c9c08773901bd7d22a0e9c844a4c518430b1d57f1c0c4a738d2eedbd896079"
+    },
+    {
+      "path": "playbooks/ui-claim-responses/story/04.webp",
+      "caption": "Turn 10 - Sutterwick Claim Desk (California): This is Sutterwick, the California desk",
+      "turn": 10,
+      "bytes": 23652,
+      "sha256": "b74be01670cd3d1a370ef731486c255fd3927063c1199c706b79ad924b830576"
+    },
+    {
+      "path": "playbooks/ui-claim-responses/story/05.webp",
+      "caption": "Turn 14 - Postwren: Back to my mail",
+      "turn": 14,
+      "bytes": 23156,
+      "sha256": "3564a3f1d9d5249dcb9ce6f9ed24dfd86aa8ec0c7aadfb922e39150e2c556bd9"
+    },
+    {
+      "path": "playbooks/ui-claim-responses/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22670,
+      "sha256": "d950a9a9dd0723abbb41b3f4c480d0935d0b821b9dc59405912e54578a307cd7"
+    }
+  ]
 }

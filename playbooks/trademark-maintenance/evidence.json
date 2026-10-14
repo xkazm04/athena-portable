@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "trademark-maintenance",
   "captured_at": "2026-10-10T16:34:53Z",
   "bench_run_at": "2026-10-10T16:25:40Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/trademark-maintenance/thumb.jpg",
     "bytes": 88158,
     "sha256": "5c5f428d0a51f55ebef690aa65cfb979e53885637c18d2698eacf1fb23096dd5"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/trademark-maintenance/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23202,
+      "sha256": "9d537d47ea2f53c2ab0ae2098ebd45cc455b6435bec788205a3727547cbed56a"
+    },
+    {
+      "path": "playbooks/trademark-maintenance/story/02.webp",
+      "caption": "Turn 1 - Markwick filing desk: I'm Marit, Tarnbrook Outfitters",
+      "turn": 1,
+      "bytes": 22800,
+      "sha256": "f9dea49247978b9aa28367904f0fbccf9e352dfcd2ca0093d4a02aacba4c86bc"
+    },
+    {
+      "path": "playbooks/trademark-maintenance/story/03.webp",
+      "caption": "Turn 5 - Storeline, Athena: Sixteen products, so I'll read all of them in full",
+      "turn": 5,
+      "bytes": 23456,
+      "sha256": "03c2174f0a308ed1636cf7f0d7e2ea09e2b116b9287f391b7ca76bb157a0c0b2"
+    },
+    {
+      "path": "playbooks/trademark-maintenance/story/04.webp",
+      "caption": "Turn 9 - Binderwell, Athena: I've read all four Binderwell papers, and nothing is filed yet",
+      "turn": 9,
+      "bytes": 22348,
+      "sha256": "d6101be5e7ab3f2847b264f0e7ac591d9f4b0849690fc79d29b4b80eacd4cf88"
+    },
+    {
+      "path": "playbooks/trademark-maintenance/story/05.webp",
+      "caption": "Turn 13 - Markwick filing desk: Back at the filing desk",
+      "turn": 13,
+      "bytes": 22382,
+      "sha256": "c47f6c229d6ba23e7a2f41c9666f6c2aca280c34b4517a5b76116d7895aa1c33"
+    },
+    {
+      "path": "playbooks/trademark-maintenance/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 21682,
+      "sha256": "9551f339c026e1cd8e5508420d13bafec438b1265b8bf8f32659c9586c24fd11"
+    }
+  ]
 }

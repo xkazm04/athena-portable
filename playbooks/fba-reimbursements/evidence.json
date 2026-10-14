@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "fba-reimbursements",
   "captured_at": "2026-10-10T04:12:21Z",
   "bench_run_at": "2026-10-07T23:06:39Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/fba-reimbursements/thumb.jpg",
     "bytes": 87124,
     "sha256": "e860ae6a72a86fab4dbe52efaf7dae14acb9f35b18643086679017dc23e62401"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/fba-reimbursements/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22958,
+      "sha256": "a036ff29f3793e8dc208ff34674bf094f60ccb9a5ff363375d1ccfaa0fdf0234"
+    },
+    {
+      "path": "playbooks/fba-reimbursements/story/02.webp",
+      "caption": "Turn 1 - Seller Central: It's reimbursement day",
+      "turn": 1,
+      "bytes": 22992,
+      "sha256": "02019877dd6fe1c2570cc183347fe8455a746a0df2898fe08eca764bbcd9a9d0"
+    },
+    {
+      "path": "playbooks/fba-reimbursements/story/03.webp",
+      "caption": "Turn 3 - Seller Central, Athena: Both reminders are set",
+      "turn": 3,
+      "bytes": 23852,
+      "sha256": "4d20e9345f69f65b949231003beb23094de49d9e4e50b550ef3dcf63857b5ea3"
+    },
+    {
+      "path": "playbooks/fba-reimbursements/story/04.webp",
+      "caption": "Turn 6 - Supplier inbox, Athena: One inbound claim holds up and I'm filing it",
+      "turn": 6,
+      "bytes": 23640,
+      "sha256": "d30f50cac0184a08bb59f89c660c4a79b72cda019f24139cc80e48dfeccf29ae"
+    },
+    {
+      "path": "playbooks/fba-reimbursements/story/05.webp",
+      "caption": "Turn 8 - Seller Central, Athena: Two more cases hold up, and I'm filing both for your approval",
+      "turn": 8,
+      "bytes": 23568,
+      "sha256": "ee5b9e5f85adb1c24fb2f8a90c610bbc9d6eb1650215b90fc8314e178f5e9165"
+    },
+    {
+      "path": "playbooks/fba-reimbursements/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23852,
+      "sha256": "0d27ecc7bdd23451917e0c28f4a9536bfafb1fe974cdd33a60f073bceced5777"
+    }
+  ]
 }

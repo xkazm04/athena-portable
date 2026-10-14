@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "ssdi-work-reporting",
   "captured_at": "2026-10-11T06:42:24Z",
   "bench_run_at": "2026-10-11T06:39:05Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/ssdi-work-reporting/thumb.jpg",
     "bytes": 79202,
     "sha256": "4c95557698e4d3ed7037132722d81120680ca1c4396d94db28e07edb45948930"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/ssdi-work-reporting/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23082,
+      "sha256": "f4050623bd0f5f1069d5253c18ed278ce4d00015110ea72505cba106206fe07e"
+    },
+    {
+      "path": "playbooks/ssdi-work-reporting/story/02.webp",
+      "caption": "Turn 1 - Benefitline: I'm Marguerite Tolland",
+      "turn": 1,
+      "bytes": 23762,
+      "sha256": "edc5f303e9ea0c06d5b60b3d4ed56e0837135f38b1f012c40798f69ce0be15ad"
+    },
+    {
+      "path": "playbooks/ssdi-work-reporting/story/03.webp",
+      "caption": "Turn 3 - Benefitline, Athena: The Benefitline rules are read, and nothing has been reported",
+      "turn": 3,
+      "bytes": 23100,
+      "sha256": "9f2358734c08acb5c1baf8a35b680a01e3df258f4c78e153891b90bc6374b729"
+    },
+    {
+      "path": "playbooks/ssdi-work-reporting/story/04.webp",
+      "caption": "Turn 6 - Postwren: Postwren is my mail",
+      "turn": 6,
+      "bytes": 23262,
+      "sha256": "68e2dc9e7bc1b7fce6a4dcb26e4a1f9efac54e5248c784209cd9f4eec0ccbaf9"
+    },
+    {
+      "path": "playbooks/ssdi-work-reporting/story/05.webp",
+      "caption": "Turn 8 - Benefitline: Back in Benefitline, report to Social Security what the rules require of me",
+      "turn": 8,
+      "bytes": 23240,
+      "sha256": "ab568de71be9b276ec3f8d7207f9d8415721d1773590ffd9931d736ca34a4360"
+    },
+    {
+      "path": "playbooks/ssdi-work-reporting/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23376,
+      "sha256": "c3e572aaf3ef813094e63b72863d2e09e7b0f4ea366fd2c793924d5e55bdd765"
+    }
+  ]
 }

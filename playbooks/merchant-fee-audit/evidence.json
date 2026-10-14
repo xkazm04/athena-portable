@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "merchant-fee-audit",
   "captured_at": "2026-10-10T16:10:22Z",
   "bench_run_at": "2026-10-10T16:07:36Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/merchant-fee-audit/thumb.jpg",
     "bytes": 78207,
     "sha256": "497ff920f2da8c1cfeab4f194220da8a227ec48f9772c9a699d8c61ead41dff3"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/merchant-fee-audit/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23036,
+      "sha256": "01c785ab74e1367614e2bc5c0cfcb2d67cf42339e4b9b7bd62d68525836deff2"
+    },
+    {
+      "path": "playbooks/merchant-fee-audit/story/02.webp",
+      "caption": "Turn 1 - Paycurrent: I'm Nora, Wrenfield Ceramics",
+      "turn": 1,
+      "bytes": 23876,
+      "sha256": "d5b03bfa339bda3f2c57390e68c87530eec16428d2d52ae6096c1dfd75afd7f8"
+    },
+    {
+      "path": "playbooks/merchant-fee-audit/story/03.webp",
+      "caption": "Turn 4 - Paycurrent, Athena: All 18 lines, both notices and all five guide rules are read",
+      "turn": 4,
+      "bytes": 23156,
+      "sha256": "0ad377506f7579b09e6f2c3a9cdc65a25d7800e56eae829ec2696cf299ceb80e"
+    },
+    {
+      "path": "playbooks/merchant-fee-audit/story/04.webp",
+      "caption": "Turn 8 - Ledgerwren bank: This is our bank",
+      "turn": 8,
+      "bytes": 22320,
+      "sha256": "ad5172e670fea6e2f47297d71c8d69b4eeb32175b1277099d045439eafc8df9c"
+    },
+    {
+      "path": "playbooks/merchant-fee-audit/story/05.webp",
+      "caption": "Turn 11 - Paycurrent: Back in Paycurrent",
+      "turn": 11,
+      "bytes": 23980,
+      "sha256": "0e10490499bdc7896048c9f2376d92f500c9ad4ef4da44883c3efc5ce14eda41"
+    },
+    {
+      "path": "playbooks/merchant-fee-audit/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23252,
+      "sha256": "b9931f907de1ea43bdff1aa914295172c0524d5ad499dc4b3091131568bbdf0d"
+    }
+  ]
 }

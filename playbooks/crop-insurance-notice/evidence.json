@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "crop-insurance-notice",
   "captured_at": "2026-10-09T18:59:49Z",
   "bench_run_at": "2026-10-09T18:54:11Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/crop-insurance-notice/thumb.jpg",
     "bytes": 85762,
     "sha256": "79a4cdce630b7b690435e3394238448d6c22b237f1875201adbb2a6e3b89a4fa"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/crop-insurance-notice/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23632,
+      "sha256": "7bba3cb85656b14dffef2f77b1652ed92fd228b26859eee0b61c0fdbb9e77b64"
+    },
+    {
+      "path": "playbooks/crop-insurance-notice/story/02.webp",
+      "caption": "Turn 1 - Fieldmark agent portal: That freeze hit the beans and we have corn claims to file",
+      "turn": 1,
+      "bytes": 21814,
+      "sha256": "35f2c9ec71c81bce93686334bc5d24d91ac4803de3a77776a59dddf34da24f12"
+    },
+    {
+      "path": "playbooks/crop-insurance-notice/story/03.webp",
+      "caption": "Turn 6 - Acrelog farm records, Athena: Page 2 is in, so all 12 fields are listed",
+      "turn": 6,
+      "bytes": 20604,
+      "sha256": "fc5f8d47a1548ec68509ae8d21f72c8679b44bc5957a5ae876b2174d674fd056"
+    },
+    {
+      "path": "playbooks/crop-insurance-notice/story/04.webp",
+      "caption": "Turn 10 - Mailnest: And my Mailnest farm folder",
+      "turn": 10,
+      "bytes": 19096,
+      "sha256": "fab941182d9b84567c453b5e91daf38e971b92c25d202dad324ed63ac590916e"
+    },
+    {
+      "path": "playbooks/crop-insurance-notice/story/05.webp",
+      "caption": "Turn 15 - Fieldmark agent portal: I've switched to Fieldmark agent portal as you asked",
+      "turn": 15,
+      "bytes": 23392,
+      "sha256": "57d8a7d0d4288980c67cd48e515a6f51dd44dff67e54371650883393ec7a0701"
+    },
+    {
+      "path": "playbooks/crop-insurance-notice/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22790,
+      "sha256": "acc1fe5f456de86d3e211e68c0ae57770b3955bf84ac21c7dd9d65ca3bfa3eaa"
+    }
+  ]
 }

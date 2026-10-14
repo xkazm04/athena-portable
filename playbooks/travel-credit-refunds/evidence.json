@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "travel-credit-refunds",
   "captured_at": "2026-10-10T20:47:40Z",
   "bench_run_at": "2026-10-10T20:44:01Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/travel-credit-refunds/thumb.jpg",
     "bytes": 86479,
     "sha256": "f50d113cfb4ad046495f609a22293aed77312d2f81066c87a020404fdf152f52"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/travel-credit-refunds/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22854,
+      "sha256": "21baecd3c7ff4415bb246831aad3683c9d9d3714408ed9f0e25a0e6c33a93d4a"
+    },
+    {
+      "path": "playbooks/travel-credit-refunds/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Lucia Ferreira",
+      "turn": 1,
+      "bytes": 23092,
+      "sha256": "6e0b52cc0ab1fb6095b5a2dd4f364da5f921757cfa7ee4405fabbbf03d996706"
+    },
+    {
+      "path": "playbooks/travel-credit-refunds/story/03.webp",
+      "caption": "Turn 4 - Cardhollow: This is my Cardhollow card",
+      "turn": 4,
+      "bytes": 23078,
+      "sha256": "ab26500f8ffbd6501cbba8ce12e3fff543703098a48b99518c5b6fb16c107acb"
+    },
+    {
+      "path": "playbooks/travel-credit-refunds/story/04.webp",
+      "caption": "Turn 8 - Skylindle: This is Skylindle, my second airline",
+      "turn": 8,
+      "bytes": 23222,
+      "sha256": "0a8b06f9b7db77f93a961b6400c53171b2c518dc30309db9afbf427dc5834d53"
+    },
+    {
+      "path": "playbooks/travel-credit-refunds/story/05.webp",
+      "caption": "Turn 11 - Tripcairn, Athena: I'm filing one Tripcairn refund, C-12, and nothing else is owed there",
+      "turn": 11,
+      "bytes": 22126,
+      "sha256": "4a247911a44c26b1e6f5aee4c834f4b5028813ce54389ab2901649662e47ae4e"
+    },
+    {
+      "path": "playbooks/travel-credit-refunds/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23310,
+      "sha256": "f680c79bee40f4192bd43f39f979e792bb4bdc8b6c063677d50a42097f61318e"
+    }
+  ]
 }

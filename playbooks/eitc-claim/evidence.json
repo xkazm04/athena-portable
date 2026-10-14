@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "eitc-claim",
   "captured_at": "2026-10-11T06:40:13Z",
   "bench_run_at": "2026-10-11T06:37:27Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/eitc-claim/thumb.jpg",
     "bytes": 96065,
     "sha256": "346928db95088ce33b1b00cd417b7c3847360e5f62b50155abbb57d1ba58e4f7"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/eitc-claim/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22440,
+      "sha256": "d71cf93e3fadf9f8dd8b64a7a53f63e749adb850b614cb09ea6c1220c6b93a0b"
+    },
+    {
+      "path": "playbooks/eitc-claim/story/02.webp",
+      "caption": "Turn 1 - Taxfold: I'm Rosalind Pruitt",
+      "turn": 1,
+      "bytes": 22496,
+      "sha256": "9ea0427624c2b0505b8214e861f625366118e206556c3ebcf3bece528dec6358"
+    },
+    {
+      "path": "playbooks/eitc-claim/story/03.webp",
+      "caption": "Turn 4 - Slatewick school records: Slatewick holds the children's school and college records",
+      "turn": 4,
+      "bytes": 23168,
+      "sha256": "0b5f8abdb44554cf16a4c050321fb593ed5e174d8f3446aa17da06fc9d686bf1"
+    },
+    {
+      "path": "playbooks/eitc-claim/story/04.webp",
+      "caption": "Turn 7 - Payroll Harbor, Athena: Payroll Harbor lists two 2025 W-2s for you and Everett",
+      "turn": 7,
+      "bytes": 22344,
+      "sha256": "7deb5b9d1eefa49d324481774085f0c7eddb22db20bede2ad2bab389ae79829d"
+    },
+    {
+      "path": "playbooks/eitc-claim/story/05.webp",
+      "caption": "Turn 10 - Taxfold: Back in Taxfold, claim the earned income credit on the 2025 return for each…",
+      "turn": 10,
+      "bytes": 23640,
+      "sha256": "c9a18f8cabe980f1d264560c607394c301bf602bda0e000801965b1b8b2021d6"
+    },
+    {
+      "path": "playbooks/eitc-claim/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22848,
+      "sha256": "e5af979a6d0a68c0b2b8c4fcb42994c9342aad30c813dddb7b1e46631243c316"
+    }
+  ]
 }

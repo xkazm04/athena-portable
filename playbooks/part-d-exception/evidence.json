@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "part-d-exception",
   "captured_at": "2026-10-10T02:52:06Z",
   "bench_run_at": "2026-10-10T02:49:45Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/part-d-exception/thumb.jpg",
     "bytes": 74958,
     "sha256": "1e33e3c3a02d5e6fb24e500737b94759f1a8afbe98eb8658d9d4a5244a029a36"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/part-d-exception/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22880,
+      "sha256": "406fa61e07a2f0a426175fce608048eaf49a937c7f2a69dab010763ea503297a"
+    },
+    {
+      "path": "playbooks/part-d-exception/story/02.webp",
+      "caption": "Turn 1 - Rxmeadow plan: Dad's drug plan is costing him a fortune",
+      "turn": 1,
+      "bytes": 20240,
+      "sha256": "07ee095a0db0802b07ec4cf7a7aa4a02f739520c3b0164e592784d7e7d9cee3c"
+    },
+    {
+      "path": "playbooks/part-d-exception/story/03.webp",
+      "caption": "Turn 4 - Carenook: This is Dr",
+      "turn": 4,
+      "bytes": 19208,
+      "sha256": "de1a6bdb3fa52e9a1438b7893cc0363c9e7ded6a950316f70afebaa80d739c1c"
+    },
+    {
+      "path": "playbooks/part-d-exception/story/04.webp",
+      "caption": "Turn 6 - Carenook, Athena: Page 2 is read, and it settles three of the drugs",
+      "turn": 6,
+      "bytes": 22266,
+      "sha256": "bf1d6b670edacd2775cdc6ddec482c70d45c703aa102f4f1eade2617e07a85f9"
+    },
+    {
+      "path": "playbooks/part-d-exception/story/05.webp",
+      "caption": "Turn 9 - Rxmeadow plan: Back in Rxmeadow",
+      "turn": 9,
+      "bytes": 23594,
+      "sha256": "8a91764258cec46a695d15bf20135649f2373d30c286078dd5d6d58f5a840707"
+    },
+    {
+      "path": "playbooks/part-d-exception/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 21982,
+      "sha256": "70ee141b0b174b8e201cd884c74a8aa9f8a43861026ddf9ba14059cc5041a680"
+    }
+  ]
 }

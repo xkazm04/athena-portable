@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "eu261-flight-compensation",
   "captured_at": "2026-10-09T17:20:45Z",
   "bench_run_at": "2026-10-09T17:18:02Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/eu261-flight-compensation/thumb.jpg",
     "bytes": 89302,
     "sha256": "3560f2aab471ceb2de1c6c111bf3e26e6fcd057229aa7f9f0e7110701fab96cd"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/eu261-flight-compensation/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23040,
+      "sha256": "b9e9e2401f8ccae6735e54ba884f9e24dab238b0d2535e8dc90cc6456cdd8942"
+    },
+    {
+      "path": "playbooks/eu261-flight-compensation/story/02.webp",
+      "caption": "Turn 1 - Tripfold itineraries: Our flights this year were a mess and I want what we're owed",
+      "turn": 1,
+      "bytes": 20092,
+      "sha256": "2dad32f3ace6d26675a89a0c345aece819456f5b91d29fbd765964322e079575"
+    },
+    {
+      "path": "playbooks/eu261-flight-compensation/story/03.webp",
+      "caption": "Turn 5 - Mailnest: Now my Mailnest travel folder",
+      "turn": 5,
+      "bytes": 18290,
+      "sha256": "46bf300e32f71148467af8e6e4e40b021aab471b8f3faa940707fcb9beb32f7d"
+    },
+    {
+      "path": "playbooks/eu261-flight-compensation/story/04.webp",
+      "caption": "Turn 8 - Mailnest, Athena: The folder has 14 messages, and I've read all of them",
+      "turn": 8,
+      "bytes": 23978,
+      "sha256": "e4a709c04652d01692385c4b3b09767e672a68d2fccaab9aba67b647b6e1d6ad"
+    },
+    {
+      "path": "playbooks/eu261-flight-compensation/story/05.webp",
+      "caption": "Turn 12 - Skyrail claims, Athena: I'm filing one Skyrail claim, SR 89, for 1,800 euros",
+      "turn": 12,
+      "bytes": 23308,
+      "sha256": "becf299adee83b39e65c4c69a75024f10f68e62592e0e510d22c7bef9df8962f"
+    },
+    {
+      "path": "playbooks/eu261-flight-compensation/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23726,
+      "sha256": "cb57f29b65754aa9f76e96254451734d31aac7f8d841e3aa18b2f3036a5c97a6"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "medicare-plan-review",
   "captured_at": "2026-10-10T05:12:01Z",
   "bench_run_at": "2026-10-10T05:08:16Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/medicare-plan-review/thumb.jpg",
     "bytes": 84789,
     "sha256": "a5a1cba2c6f986359e386f8b7484c3aee85c3b69f5383034d35fc5bf5f7bdc81"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/medicare-plan-review/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23848,
+      "sha256": "79a1d8f1c81708111a579297320fdeea1ec6f9d5965526632e0df781036d7fa5"
+    },
+    {
+      "path": "playbooks/medicare-plan-review/story/02.webp",
+      "caption": "Turn 1 - Carenook: It's open enrollment and I'm doing Mom and Dad's drug plans",
+      "turn": 1,
+      "bytes": 20532,
+      "sha256": "6206dd771336aded12d048ded0f6ea5008b4b7d999dac534cf718a0c7426b170"
+    },
+    {
+      "path": "playbooks/medicare-plan-review/story/03.webp",
+      "caption": "Turn 4 - Corner Pharmacy, Athena: Corner Pharmacy fills all seven drugs every 30 days and delivers them to the…",
+      "turn": 4,
+      "bytes": 22426,
+      "sha256": "55c2ad927ff6340c12205fc1afb25f9cddb07ab4d8fbd41db78457ee29fdb02e"
+    },
+    {
+      "path": "playbooks/medicare-plan-review/story/04.webp",
+      "caption": "Turn 7 - PlanCompass: PlanCompass",
+      "turn": 7,
+      "bytes": 22714,
+      "sha256": "ca13a9b09a98d6d09ed95ce4cffb01b4838415b66386076e710069b771bdc712"
+    },
+    {
+      "path": "playbooks/medicare-plan-review/story/05.webp",
+      "caption": "Turn 10 - Carenook: I've switched to Carenook as you asked",
+      "turn": 10,
+      "bytes": 23162,
+      "sha256": "1110fff168474283c64319ee9eecc20a7bd3d6bc1dbc3d377fa88375a98cc088"
+    },
+    {
+      "path": "playbooks/medicare-plan-review/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23568,
+      "sha256": "6e7c1e63971a8164d664675ec9280166e081f165bc9cfec2743fd41efcfe82d2"
+    }
+  ]
 }

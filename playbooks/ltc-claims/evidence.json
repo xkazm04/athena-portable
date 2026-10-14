@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "ltc-claims",
   "captured_at": "2026-10-09T16:11:21Z",
   "bench_run_at": "2026-10-08T00:04:41Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/ltc-claims/thumb.jpg",
     "bytes": 76653,
     "sha256": "5c6ac7f8f4e65ae038b2dd06511ec51581e01082ac94f723190145f56b0183bd"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/ltc-claims/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22488,
+      "sha256": "8a6ec89c5df00ed6f7a9a1b5654415f40035bd827b2b2eb9db6df51fdd64f203"
+    },
+    {
+      "path": "playbooks/ltc-claims/story/02.webp",
+      "caption": "Turn 1 - Harbor Mutual policyholder portal: I need to catch up on Mom's long-term-care claims",
+      "turn": 1,
+      "bytes": 23862,
+      "sha256": "f25e7a0df01f92ef97f6561cc285f085cdaac8bf9e8b6c08d1537bfc37a8056a"
+    },
+    {
+      "path": "playbooks/ltc-claims/story/03.webp",
+      "caption": "Turn 9 - Adaeze's email: My email, where the adult day center, the contractor and everyone else send…",
+      "turn": 9,
+      "bytes": 23594,
+      "sha256": "afc8fc748c3db72732a7d331bd00ee6ed88e44d39f016f16f7cecd7d48235526"
+    },
+    {
+      "path": "playbooks/ltc-claims/story/04.webp",
+      "caption": "Turn 16 - Grace's bank (POA access): Mom's checking account",
+      "turn": 16,
+      "bytes": 23674,
+      "sha256": "b0ea851affcc9186049cd0e7de04b7f91bc31a15ff8ae43bc0c5f3d2b349faff"
+    },
+    {
+      "path": "playbooks/ltc-claims/story/05.webp",
+      "caption": "Turn 24 - Harbor Mutual policyholder portal: I've switched to Harbor Mutual policyholder portal as you asked",
+      "turn": 24,
+      "bytes": 23892,
+      "sha256": "66c4526321b91f894cf8a52e4e99617e6f5fc30818940413af92a4526a04b60d"
+    },
+    {
+      "path": "playbooks/ltc-claims/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22794,
+      "sha256": "e485e7acae65ffdecf30aaec457207b7c7f520d9dc6ee81f6feb21e06908d930"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "fema-individual-assistance",
   "captured_at": "2026-10-11T06:51:40Z",
   "bench_run_at": "2026-10-11T06:49:38Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/fema-individual-assistance/thumb.jpg",
     "bytes": 93143,
     "sha256": "c69e0fde9c7e33dc4ff6bea1ffa26b6747f136c377c9a2f15f460c3bef87c5e3"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/fema-individual-assistance/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22904,
+      "sha256": "07c40ae8f2c3ad6605e69ebc2eced5563de0b9225e9dbcffb01b684beb42639d"
+    },
+    {
+      "path": "playbooks/fema-individual-assistance/story/02.webp",
+      "caption": "Turn 1 - Reliefmoor: I'm Calla Rourke",
+      "turn": 1,
+      "bytes": 22968,
+      "sha256": "6f4d634494636ce6f5436c59201a17264bf921c540152a61ba5b20e086904ff1"
+    },
+    {
+      "path": "playbooks/fema-individual-assistance/story/03.webp",
+      "caption": "Turn 4 - Hearthguard: Hearthguard is our insurer",
+      "turn": 4,
+      "bytes": 21094,
+      "sha256": "c6a8a5502e5cc362364a41a6cbb094814082f9da16fd9d2bb4a2cc00e15bd3b6"
+    },
+    {
+      "path": "playbooks/fema-individual-assistance/story/04.webp",
+      "caption": "Turn 7 - Lenswick photos, Athena: I've read all 9 Lenswick items across 3 pages (showing 9 of 9)",
+      "turn": 7,
+      "bytes": 22946,
+      "sha256": "ac86ce5f6a066d54e91e1427817682aa8bb1231137c537c74ca091eec7f7f6ee"
+    },
+    {
+      "path": "playbooks/fema-individual-assistance/story/05.webp",
+      "caption": "Turn 10 - Reliefmoor: Back in Reliefmoor, appeal to FEMA, inside the 60 days, each decision that the…",
+      "turn": 10,
+      "bytes": 23126,
+      "sha256": "39afa2e7b846b35605693bf68be21ec477682993aa1ea42593ab24bc21c5a511"
+    },
+    {
+      "path": "playbooks/fema-individual-assistance/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23420,
+      "sha256": "46ed095ea5a16686d25a3b0c5d5c41abd345405b9f04cdc9867a63c4ae1c3714"
+    }
+  ]
 }

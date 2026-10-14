@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "class-action-claims",
   "captured_at": "2026-10-10T21:55:15Z",
   "bench_run_at": "2026-10-10T21:52:57Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/class-action-claims/thumb.jpg",
     "bytes": 77710,
     "sha256": "7229038fb66788bb9f4585e35e7c77c50367086504e0675f0c98a539e25b7ac0"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/class-action-claims/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22822,
+      "sha256": "2a3dc80dc02dd942ec910d28b67e1d6ca683f082ce8cd083b56253d40d5a9f8d"
+    },
+    {
+      "path": "playbooks/class-action-claims/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Marta Ilves",
+      "turn": 1,
+      "bytes": 23904,
+      "sha256": "4ed0f3a27648f24955a37f0492a02215c0e9422b80b74c51daefacd683d345e3"
+    },
+    {
+      "path": "playbooks/class-action-claims/story/03.webp",
+      "caption": "Turn 4 - Cardhollow: This is my Cardhollow card",
+      "turn": 4,
+      "bytes": 22488,
+      "sha256": "0b1b3a2aec85e754e11aba9f87d2c1b2b1dc0fa74dae3c69ec151b5af1c6c9d5"
+    },
+    {
+      "path": "playbooks/class-action-claims/story/04.webp",
+      "caption": "Turn 8 - Awardhelm Payout Desk: One email sent me to this site",
+      "turn": 8,
+      "bytes": 23750,
+      "sha256": "bf75204e73eb790890b0fa4ea9826a45469a1047c9b3354434b92529527c0f9f"
+    },
+    {
+      "path": "playbooks/class-action-claims/story/05.webp",
+      "caption": "Turn 11 - Claimsadmin, Athena: I have the Claimsadmin rules and settlements",
+      "turn": 11,
+      "bytes": 23964,
+      "sha256": "4aa99394f3adba69bee02f9a34ebf88068ee7fafb5db8b34e16a072fa478d5c4"
+    },
+    {
+      "path": "playbooks/class-action-claims/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23566,
+      "sha256": "bfeffc355ba5fa52327a7bdcfb5ba7493e8be6bfd9dfc1e687c36d83d7d4e5b5"
+    }
+  ]
 }

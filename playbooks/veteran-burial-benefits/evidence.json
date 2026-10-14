@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "veteran-burial-benefits",
   "captured_at": "2026-10-10T04:59:24Z",
   "bench_run_at": "2026-10-10T04:56:26Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/veteran-burial-benefits/thumb.jpg",
     "bytes": 98443,
     "sha256": "254ceff53ef21e68f7309fa358f48824d424c3f848d2054fa564f825460f6e66"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/veteran-burial-benefits/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23968,
+      "sha256": "cef4e7953c5ded7fc6d9561e90699b088c137f0aafb178509de1af5e255738a9"
+    },
+    {
+      "path": "playbooks/veteran-burial-benefits/story/02.webp",
+      "caption": "Turn 1 - Docshelf: Dad died two years ago and we never claimed anything from the VA for his burial",
+      "turn": 1,
+      "bytes": 21466,
+      "sha256": "1917f673018430f07a6e2e1876eb152f9bbb02dbd48b59e005a6cb051f538ad4"
+    },
+    {
+      "path": "playbooks/veteran-burial-benefits/story/03.webp",
+      "caption": "Turn 4 - Wrenfield Funeral Home: Wrenfield did Dad's funeral",
+      "turn": 4,
+      "bytes": 20174,
+      "sha256": "8de6bbcb71006e76fb4916b6dfa4ec96f04342daf7618ce7fcc4ac6adb4f3e74"
+    },
+    {
+      "path": "playbooks/veteran-burial-benefits/story/04.webp",
+      "caption": "Turn 6 - Ledgerline bank: My checking at Ledgerline",
+      "turn": 6,
+      "bytes": 20946,
+      "sha256": "d1d88d0086c4bcaefe69a0e0b2051750fd459a5fc31edd963307e836fcfe7582"
+    },
+    {
+      "path": "playbooks/veteran-burial-benefits/story/05.webp",
+      "caption": "Turn 9 - Vetserve, Athena: The burial allowance has to be received by 11 October 2026, which is two days…",
+      "turn": 9,
+      "bytes": 22564,
+      "sha256": "f03ca785427f5fe773af664a9f6a2fcf6777dedae58ef41796c581f5e4b65756"
+    },
+    {
+      "path": "playbooks/veteran-burial-benefits/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23972,
+      "sha256": "30186a859cbd8f2db72be412ee5822a97a058dd321e39c98d44ca7eb0b149330"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "medical-bills",
   "captured_at": "2026-10-10T04:14:31Z",
   "bench_run_at": "2026-10-07T23:06:25Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/medical-bills/thumb.jpg",
     "bytes": 82451,
     "sha256": "8b2686278a442525ffdecd5b9da56315db17b4f9c8afe494243c2c3211b5fac3"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/medical-bills/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22964,
+      "sha256": "e4eec126266d8dccb992e75340418d8f42663ba556690f8b59e28c5c58ce1ecc"
+    },
+    {
+      "path": "playbooks/medical-bills/story/02.webp",
+      "caption": "Turn 1 - Bluepoint Health member portal: My medical bills are a mess",
+      "turn": 1,
+      "bytes": 22708,
+      "sha256": "857d1ab30c7c9a8cb57af4a06a9dbd9c46288cb2ecf0ac262a2dff46b89c96ea"
+    },
+    {
+      "path": "playbooks/medical-bills/story/03.webp",
+      "caption": "Turn 4 - Bluepoint Health member portal, Athena: Here's what I can establish from the insurance portal",
+      "turn": 4,
+      "bytes": 23544,
+      "sha256": "ef1a8cec833d2665cfcfba5ed8fb7f7a8aac55a9b02a9a3a229bc0a5e15fd704"
+    },
+    {
+      "path": "playbooks/medical-bills/story/04.webp",
+      "caption": "Turn 7 - MyChart (Valley Medical), Athena: Three of the five bills I opened match their EOBs, and two don't",
+      "turn": 7,
+      "bytes": 23222,
+      "sha256": "a11e1c923e90a024a91ceebf164c35abcce2451786bb765bda90b0aa3d5e6a2d"
+    },
+    {
+      "path": "playbooks/medical-bills/story/05.webp",
+      "caption": "Turn 10 - Bluepoint Health member portal: Back in the insurance portal",
+      "turn": 10,
+      "bytes": 22578,
+      "sha256": "3eb80152533fafb9ec3c869dbe680b8b8418f818874d16df30ea7f6436464c84"
+    },
+    {
+      "path": "playbooks/medical-bills/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22792,
+      "sha256": "f44ac19f67089fcc2851d9ebdb847289ad97e230612815c1ec9b027e58936529"
+    }
+  ]
 }

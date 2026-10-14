@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "medicare-enrollment-timing",
   "captured_at": "2026-10-10T05:14:14Z",
   "bench_run_at": "2026-10-10T05:11:28Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/medicare-enrollment-timing/thumb.jpg",
     "bytes": 92958,
     "sha256": "e5000d626d190e5c05323d94cf1223e73bd999cda3eb03d6235d51e273070f7f"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/medicare-enrollment-timing/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22690,
+      "sha256": "99475b765f8571329e2e7dcad544fb74cb6c7bc32f702a3ede0cc34a29b201ce"
+    },
+    {
+      "path": "playbooks/medicare-enrollment-timing/story/02.webp",
+      "caption": "Turn 1 - Mailnest: I retire at the end of this month and I've never signed up for Part B. Start…",
+      "turn": 1,
+      "bytes": 19376,
+      "sha256": "37188d97e301bca3c31273b82648f3800631eb1a47b0f7ee6a339a4cce90c77b"
+    },
+    {
+      "path": "playbooks/medicare-enrollment-timing/story/03.webp",
+      "caption": "Turn 4 - Staffnest HR: Staffnest, Halberd's HR portal",
+      "turn": 4,
+      "bytes": 18758,
+      "sha256": "021b9c0dfe03f7b60c02851c64b79630b40f6bab0f3549eb79fe556c3c67ba01"
+    },
+    {
+      "path": "playbooks/medicare-enrollment-timing/story/04.webp",
+      "caption": "Turn 6 - Thistlewood Health: Thistlewood, our insurer",
+      "turn": 6,
+      "bytes": 19102,
+      "sha256": "a5fa265f40561ee911aa0851754bd67748bec74fde38ca370444c61bbc49b4a5"
+    },
+    {
+      "path": "playbooks/medicare-enrollment-timing/story/05.webp",
+      "caption": "Turn 9 - Benefitline, Athena: Your Part B enrollment is filed as a card for you to answer",
+      "turn": 9,
+      "bytes": 23522,
+      "sha256": "c2f817661243b64d69d0ab6c1d017020e314c4c258055a969254550b98aaa23f"
+    },
+    {
+      "path": "playbooks/medicare-enrollment-timing/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22334,
+      "sha256": "02302c4f0a80b1d8b227352c6e071c8a8b1128d7e9d4293c169c6eb219a3e490"
+    }
+  ]
 }

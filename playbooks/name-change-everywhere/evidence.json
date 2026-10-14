@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "name-change-everywhere",
   "captured_at": "2026-10-10T06:18:54Z",
   "bench_run_at": "2026-10-10T06:16:38Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/name-change-everywhere/thumb.jpg",
     "bytes": 93320,
     "sha256": "b5fa0c8869262a7dd60f45cacb1d938b181b16efb503d62eab0fecd4a678a4bc"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/name-change-everywhere/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22276,
+      "sha256": "ddeec9fe33231ae58bc2f76e8b88a2ad3f2fadbf98ae9a9ac3ff37acb2abefa1"
+    },
+    {
+      "path": "playbooks/name-change-everywhere/story/02.webp",
+      "caption": "Turn 1 - Benefitline: Elias and I married on Saturday 5 September and we both took the name…",
+      "turn": 1,
+      "bytes": 23982,
+      "sha256": "2884f1de9243b50375db42582a79065fc2a2bc77329603f63b1204fce6e98f31"
+    },
+    {
+      "path": "playbooks/name-change-everywhere/story/03.webp",
+      "caption": "Turn 5 - IDway, Athena: I'm booking Nadia's name change with the REAL ID upgrade for Tuesday 13 October",
+      "turn": 5,
+      "bytes": 23654,
+      "sha256": "25f08c7ee4ae58de3535b6f79a61aa1dfc7fd6b20361298ec25b971606eb9127"
+    },
+    {
+      "path": "playbooks/name-change-everywhere/story/04.webp",
+      "caption": "Turn 8 - Ledgerline bank: Ledgerline, our bank",
+      "turn": 8,
+      "bytes": 23502,
+      "sha256": "89bfc10128af5af254f372ca639e4d086b8d5985542d6df15a382fb8b8a92f73"
+    },
+    {
+      "path": "playbooks/name-change-everywhere/story/05.webp",
+      "caption": "Turn 12 - IDway: I've switched to IDway as you asked",
+      "turn": 12,
+      "bytes": 22596,
+      "sha256": "5003325e8a59a8f3a393f26352b951758641ec6924c58b2070b186b70e8b85bb"
+    },
+    {
+      "path": "playbooks/name-change-everywhere/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22382,
+      "sha256": "e6414152abebd0e6d6fc41a89e48e2a226caca999c3588590a42064b5222ab55"
+    }
+  ]
 }

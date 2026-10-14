@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "layoff-sixty-days",
   "captured_at": "2026-10-11T02:49:38Z",
   "bench_run_at": "2026-10-11T02:47:20Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/layoff-sixty-days/thumb.jpg",
     "bytes": 89806,
     "sha256": "b3f0f3d980aa22314f43a36f12894f9ba09c8f9bfdb5bf6b556a22bd0e0b8cd8"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/layoff-sixty-days/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22438,
+      "sha256": "9534cce0efc344399d7339d3307ee1b04f0bfca190d85eba0afda55057d3962d"
+    },
+    {
+      "path": "playbooks/layoff-sixty-days/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Lena Okafor",
+      "turn": 1,
+      "bytes": 23918,
+      "sha256": "d6f58d9587c7c711d19569005315eecc4d87acf6483262c6370890b65fc42341"
+    },
+    {
+      "path": "playbooks/layoff-sixty-days/story/03.webp",
+      "caption": "Turn 4 - Fernhollow Unemployment Desk: This is the Fernhollow Unemployment Desk",
+      "turn": 4,
+      "bytes": 23676,
+      "sha256": "ed0053a8bb7aa6d44b47dfae35bf8500b462837f705ba6286a80cd3570d98e22"
+    },
+    {
+      "path": "playbooks/layoff-sixty-days/story/04.webp",
+      "caption": "Turn 7 - Coverfind, Athena: Coverfind is read and nothing is chosen or applied",
+      "turn": 7,
+      "bytes": 22580,
+      "sha256": "c887f45ab47fedcf3637d8a4529e55503b5615f80e17cdbf6bd0d84f4078975f"
+    },
+    {
+      "path": "playbooks/layoff-sixty-days/story/05.webp",
+      "caption": "Turn 10 - Coverfind: Back to Coverfind",
+      "turn": 10,
+      "bytes": 23868,
+      "sha256": "5cecc55ff48a4b4a576f9f21b23c4d239ea618fd7563a20e4738e46add737251"
+    },
+    {
+      "path": "playbooks/layoff-sixty-days/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23738,
+      "sha256": "1a6e41f3b60b33172323e953f73f2232fd351d3bed9705a87b69a7d0ef5bb5ab"
+    }
+  ]
 }

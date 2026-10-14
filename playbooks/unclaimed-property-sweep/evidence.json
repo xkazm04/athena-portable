@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "unclaimed-property-sweep",
   "captured_at": "2026-10-10T22:05:58Z",
   "bench_run_at": "2026-10-10T22:03:39Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/unclaimed-property-sweep/thumb.jpg",
     "bytes": 81552,
     "sha256": "5486a8451590a1d4a07ec6ee018f714c8c8ff192156359c153ed9efe4736e3fd"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/unclaimed-property-sweep/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23580,
+      "sha256": "cb72b75edf3bf375cd39b10c07a0dcd3dc76f165f986d5f6221375489ba184df"
+    },
+    {
+      "path": "playbooks/unclaimed-property-sweep/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Nadia Pellegrin",
+      "turn": 1,
+      "bytes": 22716,
+      "sha256": "1e0c367c3ada4bf8a1efbdfba00e0e92980e8074c7dd5e070740171848f257da"
+    },
+    {
+      "path": "playbooks/unclaimed-property-sweep/story/03.webp",
+      "caption": "Turn 4 - Binderwell: This is Binderwell, my papers",
+      "turn": 4,
+      "bytes": 22550,
+      "sha256": "404cd25269f672b9e02d95219db49e5b0d25d0177396f011b4f4cd9f7a9ed03f"
+    },
+    {
+      "path": "playbooks/unclaimed-property-sweep/story/04.webp",
+      "caption": "Turn 8 - Brackenholt Vermont: This is the Vermont site, Brackenholt",
+      "turn": 8,
+      "bytes": 23980,
+      "sha256": "00292e99354f0e829d2d391295b467df5b59416669ded3568e37ea2c7b47b586"
+    },
+    {
+      "path": "playbooks/unclaimed-property-sweep/story/05.webp",
+      "caption": "Turn 11 - Lostfunds, Athena: I filed six claims for you, $1,016.43 in all, and you still need to sign each…",
+      "turn": 11,
+      "bytes": 23428,
+      "sha256": "e716d850fb21d8aa18d8fb45cc89f317bbee9d28b599eb651e378ad68900560f"
+    },
+    {
+      "path": "playbooks/unclaimed-property-sweep/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23296,
+      "sha256": "7821925a4c6331b07e43885a27f0ae7f843c2fdffaf28ad3c183f7d245c1790e"
+    }
+  ]
 }

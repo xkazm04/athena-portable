@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "msp-extra-help",
   "captured_at": "2026-10-10T06:13:13Z",
   "bench_run_at": "2026-10-10T06:08:16Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/msp-extra-help/thumb.jpg",
     "bytes": 93152,
     "sha256": "58f925337afcb148b99bae166293c8731ea869feee8f21f3f5cf49ed9d93113f"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/msp-extra-help/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22836,
+      "sha256": "aeda7e279b06fcebdb8f9e8857a0e0a352c5e964bc33798acbb830498ec8e900"
+    },
+    {
+      "path": "playbooks/msp-extra-help/story/02.webp",
+      "caption": "Turn 1 - Mailnest: Mom lives on her Social Security and I think she can get help with her…",
+      "turn": 1,
+      "bytes": 22658,
+      "sha256": "eca2809e7f210971aee887fef84e64bdf27e47d931c82579ff2ab958f4efd1a2"
+    },
+    {
+      "path": "playbooks/msp-extra-help/story/03.webp",
+      "caption": "Turn 4 - Ledgerline bank: Ledgerline, Mom's bank",
+      "turn": 4,
+      "bytes": 20600,
+      "sha256": "084c9a37d43713908cf4dc789f281908fb38ab8ca130ca08d469296fa6fa2e44"
+    },
+    {
+      "path": "playbooks/msp-extra-help/story/04.webp",
+      "caption": "Turn 6 - Benefitline: Benefitline, Mom's and Dad's Social Security and Medicare",
+      "turn": 6,
+      "bytes": 23372,
+      "sha256": "78f42ed2bce3d64a058f117c834d164e79c9271f5040df0be36e1ef04ff19b4a"
+    },
+    {
+      "path": "playbooks/msp-extra-help/story/05.webp",
+      "caption": "Turn 9 - Statecare Benefits, Athena: Mom qualifies for QMB. I'm filing cards for the three resource lines that…",
+      "turn": 9,
+      "bytes": 22438,
+      "sha256": "7b6b4db8dd70436abeb5cc0be49832f9085871444265f14fd2ad249e552b7811"
+    },
+    {
+      "path": "playbooks/msp-extra-help/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23384,
+      "sha256": "5b4898421a6ba47c590590bb0d8094de542b5d9b844c5dcb14e40bedf217e353"
+    }
+  ]
 }

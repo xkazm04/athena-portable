@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "remote-payroll-registration",
   "captured_at": "2026-10-11T05:41:47Z",
   "bench_run_at": "2026-10-11T05:39:09Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/remote-payroll-registration/thumb.jpg",
     "bytes": 89975,
     "sha256": "16635b41ebcff0f1aa98b377391a100d21be48c4fa0029f81af706afee591b4a"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/remote-payroll-registration/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23476,
+      "sha256": "4b0f8b0a5a75dc8a3ecda7d3001704a2bba593789f369a8c6f62db0082f462fd"
+    },
+    {
+      "path": "playbooks/remote-payroll-registration/story/02.webp",
+      "caption": "Turn 1 - Crewmarrow HR: I'm Odalys, payroll and HR at Kestrelwick Software",
+      "turn": 1,
+      "bytes": 22046,
+      "sha256": "2f9c808923f64e560052fc2003c719aa1f4b58f27b5e626f574d0b9cb67f0562"
+    },
+    {
+      "path": "playbooks/remote-payroll-registration/story/03.webp",
+      "caption": "Turn 4 - Postwren, Athena: Postwren is read",
+      "turn": 4,
+      "bytes": 22112,
+      "sha256": "ee69f52e3b613bbc09424a59a6d75b179dcf4458cb2579144f8091d9101674fb"
+    },
+    {
+      "path": "playbooks/remote-payroll-registration/story/04.webp",
+      "caption": "Turn 7 - Taxline State: Taxline State is where we open state withholding accounts",
+      "turn": 7,
+      "bytes": 22460,
+      "sha256": "93ff4d6e44876bbb9baf1233031a9f1c6fffcf72a7e1ac366b98868f48577922"
+    },
+    {
+      "path": "playbooks/remote-payroll-registration/story/05.webp",
+      "caption": "Turn 10 - Rollmark State, Athena: The Rollmark rules are in",
+      "turn": 10,
+      "bytes": 23484,
+      "sha256": "1ffccf3265b707ce082b3dd18b942ab6a24ee4e51d018e11853a729fd3f32f7f"
+    },
+    {
+      "path": "playbooks/remote-payroll-registration/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23504,
+      "sha256": "cca1429c520165668a92f85688ad35e0770e73026c8843450047bd3d59c751af"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "recoverable-depreciation",
   "captured_at": "2026-10-09T19:53:38Z",
   "bench_run_at": "2026-10-09T19:51:42Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/recoverable-depreciation/thumb.jpg",
     "bytes": 75813,
     "sha256": "64e6baed9cee8c7ed1cce8578dd2da14502aa5340e97e6f08386c5c709916e74"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/recoverable-depreciation/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22952,
+      "sha256": "2bf247b2f657d4f38b719e9fb20985a2b9217f82fe96e326de72e7445994d21f"
+    },
+    {
+      "path": "playbooks/recoverable-depreciation/story/02.webp",
+      "caption": "Turn 1 - Hearthguard claims: Hearthguard still holds back depreciation on our claims",
+      "turn": 1,
+      "bytes": 20094,
+      "sha256": "17ee0c355190b5f153093a3dc2e7daf695dc80d1441a8821a185f7a01636bbaf"
+    },
+    {
+      "path": "playbooks/recoverable-depreciation/story/03.webp",
+      "caption": "Turn 5 - Buildmark contractor: This is Buildmark's portal",
+      "turn": 5,
+      "bytes": 17562,
+      "sha256": "38606cdb71c3a2617b8547495088404f80166c09656eb918240e975029672dc7"
+    },
+    {
+      "path": "playbooks/recoverable-depreciation/story/04.webp",
+      "caption": "Turn 8 - Ledgerline bank, Athena: The bank confirms all three contractor payments, so L1, L2 and L4 now have…",
+      "turn": 8,
+      "bytes": 23680,
+      "sha256": "628e92f7bfc251de85d36d9ad8a3c6bafd309f45484f9b0f4c82cfcdc2f70d35"
+    },
+    {
+      "path": "playbooks/recoverable-depreciation/story/05.webp",
+      "caption": "Turn 12 - Hearthguard claims: Back in Hearthguard",
+      "turn": 12,
+      "bytes": 23864,
+      "sha256": "01e424ffb92954cab099a1a7725173372e2f1a69edffe603c6ff595a80dad6c7"
+    },
+    {
+      "path": "playbooks/recoverable-depreciation/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23790,
+      "sha256": "6f091213eeabb302c8612262536f18c5b9b479f4f6847b9233ce51760aafe4fa"
+    }
+  ]
 }

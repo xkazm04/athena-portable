@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "property-tax-appeal",
   "captured_at": "2026-10-09T19:49:00Z",
   "bench_run_at": "2026-10-09T19:46:50Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/property-tax-appeal/thumb.jpg",
     "bytes": 99251,
     "sha256": "a2de7368546380babb2ed5aace9a04de1272fd014e4edee88f08ddfc0d9b386f"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/property-tax-appeal/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23088,
+      "sha256": "53cf703ad57375a4c3a75f3b550226b5c57bc7726f5f20d0350e847792b7c354"
+    },
+    {
+      "path": "playbooks/property-tax-appeal/story/02.webp",
+      "caption": "Turn 1 - Mailnest: Our appraisal notices came",
+      "turn": 1,
+      "bytes": 23748,
+      "sha256": "06a7ad382d85f41e5448ed5520e58ebeaa1b6f5ec4386563bb79f479905db673"
+    },
+    {
+      "path": "playbooks/property-tax-appeal/story/03.webp",
+      "caption": "Turn 4 - Deedvault: This is Deedvault, the county's deed records",
+      "turn": 4,
+      "bytes": 21570,
+      "sha256": "7f2d08a4a84498774885d63cca8d21de9332c0256e3ffc4cef81bebd2cdd1259"
+    },
+    {
+      "path": "playbooks/property-tax-appeal/story/04.webp",
+      "caption": "Turn 8 - Compsmith sales, Athena: Two of the three properties you still own look over-assessed, so I'd protest…",
+      "turn": 8,
+      "bytes": 22650,
+      "sha256": "e55d6a50e06bb217f806ed7b5fecb458a33be264ed6c517bbc34fbbbd79214a1"
+    },
+    {
+      "path": "playbooks/property-tax-appeal/story/05.webp",
+      "caption": "Turn 11 - Countyline Appraisal, Athena: Two protests are ready to file, and the district's rules settle both opinions…",
+      "turn": 11,
+      "bytes": 23076,
+      "sha256": "90a0a4669653403570a6e9ddc4e022f58b3a5b354a3cad8b9f3576e8b794c1d3"
+    },
+    {
+      "path": "playbooks/property-tax-appeal/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23864,
+      "sha256": "310d8b25cbbec7479eb45bb54391431b8770207e9c6d1bb637046640f5f65f91"
+    }
+  ]
 }

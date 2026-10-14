@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "abn-liability-sweep",
   "captured_at": "2026-10-10T02:27:26Z",
   "bench_run_at": "2026-10-10T02:23:12Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/abn-liability-sweep/thumb.jpg",
     "bytes": 83677,
     "sha256": "18cff0e91c499fc5f4a1419ca9e27356c774d0cca481c10f26b2881dca6fdfd9"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/abn-liability-sweep/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23920,
+      "sha256": "c367c27f4c7a898b99950f5f2ba4177c8be7e3fc428c569cf5b2c12f8ab55264"
+    },
+    {
+      "path": "playbooks/abn-liability-sweep/story/02.webp",
+      "caption": "Turn 1 - Chartmend PM: ABN sweep for this month's Medicare denials",
+      "turn": 1,
+      "bytes": 23794,
+      "sha256": "c7bd1dc1ab770279c7196c37800e78c11121a6b756d537b64dd150044ec41fa1"
+    },
+    {
+      "path": "playbooks/abn-liability-sweep/story/03.webp",
+      "caption": "Turn 4 - Relaywave: Now Relaywave",
+      "turn": 4,
+      "bytes": 22024,
+      "sha256": "fa33d22a1221df8a667a52a87b8716dd91afd12c9be31d6c805b9a9829822d01"
+    },
+    {
+      "path": "playbooks/abn-liability-sweep/story/04.webp",
+      "caption": "Turn 7 - Chartleaf EHR, Athena: I have all 10 ABNs",
+      "turn": 7,
+      "bytes": 22684,
+      "sha256": "dd0e5bb872cd8aff609e4d6cec31d0a1417454070010c7d518b45ca258576f39"
+    },
+    {
+      "path": "playbooks/abn-liability-sweep/story/05.webp",
+      "caption": "Turn 10 - Chartmend PM: Back in Chartmend",
+      "turn": 10,
+      "bytes": 22712,
+      "sha256": "f611f38e05b260ec17229e87c56ccb3819f2fe2d8b9752699a487edd4ec0dd7c"
+    },
+    {
+      "path": "playbooks/abn-liability-sweep/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23720,
+      "sha256": "a883c55ab6de822134ebf03843e5031c7891f42f1445c48e36ac283255f109b7"
+    }
+  ]
 }

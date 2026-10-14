@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "lien-desk",
   "captured_at": "2026-10-09T16:08:43Z",
   "bench_run_at": "2026-10-07T23:43:59Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/lien-desk/thumb.jpg",
     "bytes": 74473,
     "sha256": "8930cea76ff5c08752f3e68de0674bbd9c0fa896e157fe5cad587eb81ddd27ba"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/lien-desk/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23306,
+      "sha256": "182ef1e7c9ef85eefefc1825fffdcb7c2efa2ffb9dc92bf8b31e9bae99bd6637"
+    },
+    {
+      "path": "playbooks/lien-desk/story/02.webp",
+      "caption": "Turn 1 - Office: Lien desk for the week",
+      "turn": 1,
+      "bytes": 23060,
+      "sha256": "cdb1431921de59eca78a9f976143b375d380f549f6724dc85962e9ce0c96da92"
+    },
+    {
+      "path": "playbooks/lien-desk/story/03.webp",
+      "caption": "Turn 5 - Procore: I'm in Procore Pay",
+      "turn": 5,
+      "bytes": 23510,
+      "sha256": "a84852624163bab3332f0f038230aa31ae53c860c97f95b5c4197acbb24aa2c0"
+    },
+    {
+      "path": "playbooks/lien-desk/story/04.webp",
+      "caption": "Turn 9 - GCPay: Now GCPay for the Texas jobs",
+      "turn": 9,
+      "bytes": 23130,
+      "sha256": "1866e8dbea18e892bb925ca5dee9feb636f4be8c6ae136d44d0e3f019738f7bc"
+    },
+    {
+      "path": "playbooks/lien-desk/story/05.webp",
+      "caption": "Turn 13 - Office, Athena: I'm filing the Mission Bay preliminary notice with an estimated price of…",
+      "turn": 13,
+      "bytes": 23214,
+      "sha256": "ba81cb3dd508c587243f1215afe603e839553abd62c8b40025150bc2ed54c5b8"
+    },
+    {
+      "path": "playbooks/lien-desk/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22976,
+      "sha256": "45320c3d36bf4ca6caa8cde8fd406d8bf47c1f415edfd5e14203267c0ce80263"
+    }
+  ]
 }

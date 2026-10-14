@@ -7,6 +7,7 @@
         [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write]
     uv run python -m athena.proving.playbooks rescore <id> <run>/report.json
     uv run python -m athena.proving.playbooks evidence <id>|--all [--dry] [--verify]
+        [--stills-only] [--desktop apps/desktop]
     uv run python -m athena.proving.playbooks rank [--check]
 
 ``bench`` runs a real Athena on the user's own ``claude`` CLI (no key needed) and writes the full
@@ -17,7 +18,10 @@ or ``exceeds``, 1 when it is ``short``, 2 when the playbook could not be loaded.
 ``evidence`` films a benched playbook (ADR 0055, :mod:`.evidence`): the media under the gitignored
 ``evidence/<id>/``, the index and thumbnail into ``playbooks/<id>/``. ``--dry`` prints the plan and
 runs no tool; ``--verify`` reports each index as current, stale, missing or unreadable (a
-``bench.json`` or ``evidence.json`` that is not a JSON object) against its bench.
+``bench.json`` or ``evidence.json`` that is not a JSON object) against its bench, and re-hashes
+its storyboard. ``--stills-only`` runs the storyboard step alone: the stills into
+``playbooks/<id>/story/`` and the index rewritten to schema 2 with every other key kept; no voice
+is needed. ``--desktop`` serves the capture from another checkout's ``apps/desktop``.
 Exit 0 when every step ran (or, with ``--verify``, every benched playbook is current), 1 when one
 did not, 2 when a playbook could not be loaded or has no bench to film.
 
@@ -44,14 +48,23 @@ from athena.proving.playbooks.bench import (
 from athena.proving.playbooks.evidence import (
     EvidenceError,
     build_evidence,
+    build_story,
     choose_voice,
     find_tools,
     plan,
+    plan_story,
     verify,
+    write_story,
 )
 from athena.proving.playbooks.page import SimulatedPortals
 from athena.proving.playbooks.rank import run_rank
-from athena.proving.playbooks.spec import PLAYBOOKS_DIRNAME, PlaybookError, load_all, load_playbook
+from athena.proving.playbooks.spec import (
+    PLAYBOOKS_DIRNAME,
+    Playbook,
+    PlaybookError,
+    load_all,
+    load_playbook,
+)
 from athena.proving.report import RUNS_DIRNAME, new_run_dir
 
 
@@ -80,6 +93,12 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument(
         "--verify", action="store_true", help="current, stale, missing or unreadable, re-hashed"
     )
+    e.add_argument(
+        "--stills-only",
+        action="store_true",
+        help="only the storyboard: stills into playbooks/<id>/story/, the index to schema 2",
+    )
+    e.add_argument("--desktop", default=None, help="the apps/desktop the capture serves")
     k = verbs.add_parser("rank", help="rank every playbook by ADR 0056")
     k.add_argument("--check", action="store_true", help="exit 1 if ranking.json would change")
     return parser
@@ -113,8 +132,11 @@ def evidence(args: argparse.Namespace) -> int:
             print(f"{book.id}: not benched, no evidence to film")
     if args.dry:
         for book in benched:
-            print("\n".join(plan(book, repo)))
+            print("\n".join((plan_story if args.stills_only else plan)(book, repo)))
         return 0
+    desktop = Path(args.desktop).resolve() if args.desktop else None
+    if args.stills_only:
+        return stills(benched, repo, desktop)
     try:
         tools = find_tools()
         voice = choose_voice()
@@ -124,10 +146,44 @@ def evidence(args: argparse.Namespace) -> int:
     failed = 0
     for book in benched:
         try:
-            build_evidence(book, repo, tools, voice, echo=lambda line: print(line, flush=True))
+            build_evidence(
+                book,
+                repo,
+                tools,
+                voice,
+                echo=lambda line: print(line, flush=True),
+                desktop=desktop,
+            )
         except EvidenceError as exc:
             failed += 1
             print(f"{book.id}: failed: {exc}", file=sys.stderr, flush=True)
+    return 1 if failed else 0
+
+
+def stills(books: Sequence[Playbook], repo: Path, desktop: Path | None) -> int:
+    """``--stills-only``: each playbook's storyboard, and its index at schema 2 with the rest kept.
+
+    The voice is not looked for: nothing is spoken. One playbook failing does not stop the others;
+    the exit says whether any did, and its line says why.
+    """
+    try:
+        tools = find_tools()
+    except EvidenceError as exc:
+        print(f"missing: {exc}", file=sys.stderr)
+        return 1
+    failed = 0
+    for book in books:
+        try:
+            story = build_story(
+                book, repo, tools, desktop=desktop, echo=lambda line: print(line, flush=True)
+            )
+            write_story(book, repo, story)
+        except EvidenceError as exc:
+            failed += 1
+            print(f"{book.id}: failed: {exc}", file=sys.stderr, flush=True)
+            continue
+        total = sum(int(s["bytes"]) for s in story)
+        print(f"{book.id}: {len(story)} stills, {total:,} bytes", flush=True)
     return 1 if failed else 0
 
 

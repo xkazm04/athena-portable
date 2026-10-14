@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "denied-party-screening",
   "captured_at": "2026-10-10T09:48:47Z",
   "bench_run_at": "2026-10-10T09:45:28Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/denied-party-screening/thumb.jpg",
     "bytes": 87513,
     "sha256": "559d7e9da0fb65efa10f91693ab1d9966ddd8f35b51c028e2cc3d5f68cedeae8"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/denied-party-screening/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22998,
+      "sha256": "49e3ba54a6c1adf17205dc7a02c7b9d807a64589850f092b2b04f8ee1c938757"
+    },
+    {
+      "path": "playbooks/denied-party-screening/story/02.webp",
+      "caption": "Turn 1 - Orderwick storefront: I'm Aiko, I do export compliance at Quillmont Sensors",
+      "turn": 1,
+      "bytes": 22576,
+      "sha256": "be17fb584e34c5ccf7daac34fe3c4cd71e40c0fe71b784eb83055a01a15db94d"
+    },
+    {
+      "path": "playbooks/denied-party-screening/story/03.webp",
+      "caption": "Turn 5 - Screenlist: Screenlist has the screening of every party to these orders and the searches I…",
+      "turn": 5,
+      "bytes": 22368,
+      "sha256": "35e38e3164eb27090f0635c013790714a132db5bbdfea98c0ba3d30f3ecb550f"
+    },
+    {
+      "path": "playbooks/denied-party-screening/story/04.webp",
+      "caption": "Turn 8 - Mailnest: Mailnest is our export compliance inbox",
+      "turn": 8,
+      "bytes": 22054,
+      "sha256": "16c189626164ea33363677b316ec2284834ad746c8ffaf11702b84463a448b82"
+    },
+    {
+      "path": "playbooks/denied-party-screening/story/05.webp",
+      "caption": "Turn 12 - Ledgerline ERP, Athena: I can file eight of the eleven now",
+      "turn": 12,
+      "bytes": 22292,
+      "sha256": "9e44261fa4fcfb27443cd9353de733108c0c380d4f4188ad20cfd75e09d27265"
+    },
+    {
+      "path": "playbooks/denied-party-screening/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23526,
+      "sha256": "7f5b2818911e657448b001d8858bfe704ad6db141bb3467f4e3cc91e9d2710d5"
+    }
+  ]
 }

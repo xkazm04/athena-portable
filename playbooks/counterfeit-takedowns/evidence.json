@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "counterfeit-takedowns",
   "captured_at": "2026-10-10T16:19:52Z",
   "bench_run_at": "2026-10-10T16:17:34Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/counterfeit-takedowns/thumb.jpg",
     "bytes": 84169,
     "sha256": "41912faa954534e384a3ed122b3c569515a59dc7f418bb4a5c59c363a3bc3a6f"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/counterfeit-takedowns/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23648,
+      "sha256": "86ab5bc3af2315f997f663ee2a9b233ed183b2253d3d8397c524abd2b25534ce"
+    },
+    {
+      "path": "playbooks/counterfeit-takedowns/story/02.webp",
+      "caption": "Turn 1 - Brandwick registry: I'm Ines, Marrowby Linen",
+      "turn": 1,
+      "bytes": 22928,
+      "sha256": "515c2f0eb208db1275c4035368ca2b07ae0f90416207e4d81e215978c864e097"
+    },
+    {
+      "path": "playbooks/counterfeit-takedowns/story/03.webp",
+      "caption": "Turn 5 - Binderwell, Athena: Six documents are listed",
+      "turn": 5,
+      "bytes": 23090,
+      "sha256": "18df2ea3111a7591aa808ff44b30cbe01be631d96cd573ef654df83c790f2cec"
+    },
+    {
+      "path": "playbooks/counterfeit-takedowns/story/04.webp",
+      "caption": "Turn 8 - Stallwick seller, Athena: Both listing pages are read",
+      "turn": 8,
+      "bytes": 23844,
+      "sha256": "efc551aaf5ef5bd51ad9abc4af898470e8a9b57afb434d1eddfac957871c7d61"
+    },
+    {
+      "path": "playbooks/counterfeit-takedowns/story/05.webp",
+      "caption": "Turn 12 - Stallwick seller: I've switched to Stallwick seller as you asked",
+      "turn": 12,
+      "bytes": 22320,
+      "sha256": "379022d583a0e8b96b3205b7f92e9446686169c43ab9106037b2d4c5ac8908b7"
+    },
+    {
+      "path": "playbooks/counterfeit-takedowns/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23864,
+      "sha256": "92ed00e0cf391905e790f7c8c275103b80b3be15cd2c072ba1e9b166ab13a265"
+    }
+  ]
 }

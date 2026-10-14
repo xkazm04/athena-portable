@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "stormwater-permit-log",
   "captured_at": "2026-10-09T23:13:54Z",
   "bench_run_at": "2026-10-09T23:10:09Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/stormwater-permit-log/thumb.jpg",
     "bytes": 83593,
     "sha256": "476553a91d2aab70a787a47dfe8fecb64362fab9caa0bb3573ee5f8f7ce57e03"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/stormwater-permit-log/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23650,
+      "sha256": "d7f74d6efef735141a4e65b441daa850518899d626d2e34bd4286220f44e04c8"
+    },
+    {
+      "path": "playbooks/stormwater-permit-log/story/02.webp",
+      "caption": "Turn 1 - Docshelf: I think the stormwater log on Fenwick Crossing has fallen behind",
+      "turn": 1,
+      "bytes": 22294,
+      "sha256": "eba68baabda91bd339643dc4edf1d756ecff30a3836c37e3c9b6648e5edaa976"
+    },
+    {
+      "path": "playbooks/stormwater-permit-log/story/03.webp",
+      "caption": "Turn 4 - Rainlog: Now Rainlog",
+      "turn": 4,
+      "bytes": 18656,
+      "sha256": "be58d52e774fd3460d4852cd4ab51ca966f5d20e9271a06625e3f039c280d214"
+    },
+    {
+      "path": "playbooks/stormwater-permit-log/story/04.webp",
+      "caption": "Turn 7 - Permitflow, Athena: Permitflow is read",
+      "turn": 7,
+      "bytes": 23650,
+      "sha256": "9816793a45f17ee7f670ade236b26af21e2d04388b5e53ea8826069cede7655c"
+    },
+    {
+      "path": "playbooks/stormwater-permit-log/story/05.webp",
+      "caption": "Turn 10 - Permitflow: Back in Permitflow",
+      "turn": 10,
+      "bytes": 23150,
+      "sha256": "c2e01a9fe890512a1cd7be458d28e63e2c74ee54389f805c553c5858fc1464a1"
+    },
+    {
+      "path": "playbooks/stormwater-permit-log/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22592,
+      "sha256": "6d0c14879d585f39a0f5c2c3216d7a9ed2dfca7bb89ee0d7422fa46a3cd8318d"
+    }
+  ]
 }

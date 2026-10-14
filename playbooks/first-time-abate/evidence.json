@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "first-time-abate",
   "captured_at": "2026-10-10T17:52:56Z",
   "bench_run_at": "2026-10-10T17:50:35Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/first-time-abate/thumb.jpg",
     "bytes": 95316,
     "sha256": "ff73a9f2166934262809e385f67e0b76292c72dc964b5e701aacc1c05601028d"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/first-time-abate/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23262,
+      "sha256": "b635a6eb754a68731b624f8098a3b99ea7f3f09e9e0e49225dd8eec0e510e93a"
+    },
+    {
+      "path": "playbooks/first-time-abate/story/02.webp",
+      "caption": "Turn 1 - Taxline Federal: I'm Bram Halvering",
+      "turn": 1,
+      "bytes": 23492,
+      "sha256": "ff3ab4f96d26fa83fc11a52d9c745959558c74d4cb89351821698b700eba7369"
+    },
+    {
+      "path": "playbooks/first-time-abate/story/03.webp",
+      "caption": "Turn 5 - Binderwell, Athena: The list has 15 papers",
+      "turn": 5,
+      "bytes": 21932,
+      "sha256": "18494457838e11392f3a0b90f424532f651b248a9953f5ef54f559ca1cece8ad"
+    },
+    {
+      "path": "playbooks/first-time-abate/story/04.webp",
+      "caption": "Turn 8 - Ledgerwren bank, Athena: All 12 IRS payments are read, both pages (12 of 12)",
+      "turn": 8,
+      "bytes": 23736,
+      "sha256": "135dfdf0904aa739e392dda079af9429a1c2ffd0ded0a3a166b3fad2d2151c1c"
+    },
+    {
+      "path": "playbooks/first-time-abate/story/05.webp",
+      "caption": "Turn 12 - Taxline Federal: Back at Taxline Federal",
+      "turn": 12,
+      "bytes": 22682,
+      "sha256": "52156e27a0fcaa8e622f79275d294daf8b6a25233c3dccfbc92df646fe6f2d6d"
+    },
+    {
+      "path": "playbooks/first-time-abate/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23646,
+      "sha256": "4e9980f0390fc8ff67bbfc850df0acb77dbac41f6b774584d839604d1dc09737"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "clinic-underpayments",
   "captured_at": "2026-10-10T01:02:45Z",
   "bench_run_at": "2026-10-10T00:58:27Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/clinic-underpayments/thumb.jpg",
     "bytes": 79156,
     "sha256": "30777fa58a467d175b57ea0d9e02217e93381145c4b82255b8cd8f106689f7b7"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/clinic-underpayments/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23518,
+      "sha256": "e5a3cde143fc9d52dc744a9b7c54a42fc4986d5d0dca6e092355fa47582ec3b8"
+    },
+    {
+      "path": "playbooks/clinic-underpayments/story/02.webp",
+      "caption": "Turn 1 - Chartmend PM: Month-end check on what Tallowbrook and Cindermoor paid us",
+      "turn": 1,
+      "bytes": 23540,
+      "sha256": "f87548b29b4865ea8a9020e835503b5d70c71fb747f31a55da729214094de8d1"
+    },
+    {
+      "path": "playbooks/clinic-underpayments/story/03.webp",
+      "caption": "Turn 4 - Relaywave: Now Relaywave",
+      "turn": 4,
+      "bytes": 23280,
+      "sha256": "28cfaa2fe7b917cf9ff5cef97e19a1298f87b4e36cea3bbea7cd8b02d9cdbf61"
+    },
+    {
+      "path": "playbooks/clinic-underpayments/story/04.webp",
+      "caption": "Turn 8 - Docshelf, Athena: Reading the six contract documents now",
+      "turn": 8,
+      "bytes": 22754,
+      "sha256": "3cb3d235cc7ecd209ea31c05bceb6820fa26302282469bf9d95e8461e6986e4c"
+    },
+    {
+      "path": "playbooks/clinic-underpayments/story/05.webp",
+      "caption": "Turn 11 - Paylance payer hub, Athena: I've checked the five lines against both payers' rules",
+      "turn": 11,
+      "bytes": 23564,
+      "sha256": "46954cd4780cd06ca82d925262fc0b4e708601541ac1b8750bccfeaa066723dc"
+    },
+    {
+      "path": "playbooks/clinic-underpayments/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23030,
+      "sha256": "54d9c6839201551ac04e965afaa25ece5135ad97b3336c7b8f4824acc72e248f"
+    }
+  ]
 }

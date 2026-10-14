@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "inspection-scheduling",
   "captured_at": "2026-10-09T23:09:53Z",
   "bench_run_at": "2026-10-09T23:06:21Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/inspection-scheduling/thumb.jpg",
     "bytes": 98839,
     "sha256": "18004075afb3edbbaa09109ff3d5ac237499deeda4cf15e03ef0a5240354dcbb"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/inspection-scheduling/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23460,
+      "sha256": "f75840a5a0d7ff935ad777eade7f36cb7573b445e2d917e9c75c0ddffb02fbb6"
+    },
+    {
+      "path": "playbooks/inspection-scheduling/story/02.webp",
+      "caption": "Turn 1 - Permitway: Inspections are slipping on both cities' jobs",
+      "turn": 1,
+      "bytes": 22224,
+      "sha256": "8297ab318fd069e15c36bda1631417221e716cb81fd41f3dd1dab3ed318c01a1"
+    },
+    {
+      "path": "playbooks/inspection-scheduling/story/03.webp",
+      "caption": "Turn 5 - Civicdesk, Athena: Merrow's index and five permits are read",
+      "turn": 5,
+      "bytes": 21868,
+      "sha256": "289b51ef2a60f1ee0d69b09b4d2964f27f08a110c2ac82f1d2d93ce7c943566b"
+    },
+    {
+      "path": "playbooks/inspection-scheduling/story/04.webp",
+      "caption": "Turn 9 - Crew calendar: And the crew calendar for next week",
+      "turn": 9,
+      "bytes": 18850,
+      "sha256": "04a1728d14c185f51369d7903734bbbb4f5fb62f17eaccdaee43d218728af84f"
+    },
+    {
+      "path": "playbooks/inspection-scheduling/story/05.webp",
+      "caption": "Turn 13 - Sitegrid: I've switched to Sitegrid as you asked",
+      "turn": 13,
+      "bytes": 23810,
+      "sha256": "df1a6dde6cc798413bc9cbb6a2b42c4ce1e489610ce914592d6e1b5e33d2424e"
+    },
+    {
+      "path": "playbooks/inspection-scheduling/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 21650,
+      "sha256": "e70da7c97ca49d21e920c5236b8fbaae50da6134f8734a7cb422ceb91062be4b"
+    }
+  ]
 }

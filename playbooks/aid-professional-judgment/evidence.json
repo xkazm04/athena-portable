@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "aid-professional-judgment",
   "captured_at": "2026-10-11T05:54:37Z",
   "bench_run_at": "2026-10-11T05:51:01Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/aid-professional-judgment/thumb.jpg",
     "bytes": 95919,
     "sha256": "79976aafa5dc9241f14692d2abd21e49d6b2676cb628537e0fc8ed6953d81a59"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/aid-professional-judgment/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22986,
+      "sha256": "d5f9974be765b367c9d239c491ac7fef3fc413786a73a33f66a1f572d00e4b73"
+    },
+    {
+      "path": "playbooks/aid-professional-judgment/story/02.webp",
+      "caption": "Turn 1 - Aidcenter: I'm Leona Ashdown",
+      "turn": 1,
+      "bytes": 22014,
+      "sha256": "8c4405f1640d02be2debb894c0f03a5a7f6371b130c6da8ec5928d1d298ef52a"
+    },
+    {
+      "path": "playbooks/aid-professional-judgment/story/03.webp",
+      "caption": "Turn 4 - Fernhollow Unemployment Desk: Fernhollow Unemployment Desk is Gareth's claim",
+      "turn": 4,
+      "bytes": 20698,
+      "sha256": "8779e011db9893b57f4aa36f67df1ce9517d778fa6c4b270281ffb7a907fcc2d"
+    },
+    {
+      "path": "playbooks/aid-professional-judgment/story/04.webp",
+      "caption": "Turn 8 - Postwren: Postwren is my mail",
+      "turn": 8,
+      "bytes": 22334,
+      "sha256": "0922aaa7e082984a40a3bebfc22a392fe7f65a1e96aec2338ae00497eedd88a4"
+    },
+    {
+      "path": "playbooks/aid-professional-judgment/story/05.webp",
+      "caption": "Turn 11 - Aidcenter: Back in Aidcenter, file a special-circumstances request with Thornbury Hollow…",
+      "turn": 11,
+      "bytes": 23626,
+      "sha256": "4b955d9e8469feda07453a13985915e5995b7d94c3e971408d01708f823b23c4"
+    },
+    {
+      "path": "playbooks/aid-professional-judgment/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23686,
+      "sha256": "856bd3bf77cf27c3f0b1982f03c0e82a62f7aa56c2271b23fc73e65e92dec5cf"
+    }
+  ]
 }

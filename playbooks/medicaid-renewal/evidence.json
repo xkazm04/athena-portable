@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "medicaid-renewal",
   "captured_at": "2026-10-09T17:58:18Z",
   "bench_run_at": "2026-10-09T17:47:16Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/medicaid-renewal/thumb.jpg",
     "bytes": 99991,
     "sha256": "cff736476ae7f0b5af57e6f8d844c00a8cfb15c7426f5db9b16d7b569f34b964"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/medicaid-renewal/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23492,
+      "sha256": "d2e9acb73c25abffa94259dc9f31950734ad13687ce6de3126a1689b907dda74"
+    },
+    {
+      "path": "playbooks/medicaid-renewal/story/02.webp",
+      "caption": "Turn 1 - Mailnest: My Medicaid renewal is due on the 20th and the form has old numbers",
+      "turn": 1,
+      "bytes": 20774,
+      "sha256": "78ed733534694fa623057677aa3dafadbf0f414326d4ae0c37ccb78ee48f5b2e"
+    },
+    {
+      "path": "playbooks/medicaid-renewal/story/03.webp",
+      "caption": "Turn 4 - Payroll Harbor: This is Payroll Harbor with my pay stubs",
+      "turn": 4,
+      "bytes": 23464,
+      "sha256": "08252ef0d6831beb6f6c23e1818f40e98b991504ac2f3589a00836611f087346"
+    },
+    {
+      "path": "playbooks/medicaid-renewal/story/04.webp",
+      "caption": "Turn 6 - Ledgerline bank: Now my Ledgerline account",
+      "turn": 6,
+      "bytes": 17892,
+      "sha256": "420b2b412a1efa77d6122a27e21d0f89ea1cf1f160f1b9c574ab2a7ca8dd12ad"
+    },
+    {
+      "path": "playbooks/medicaid-renewal/story/05.webp",
+      "caption": "Turn 9 - Statecare Benefits, Athena: I'm filing eight cards",
+      "turn": 9,
+      "bytes": 23472,
+      "sha256": "3f40c88079eb5a80ed52dedd5ad43611a6012bf61108525cbfff57f782e8874d"
+    },
+    {
+      "path": "playbooks/medicaid-renewal/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23198,
+      "sha256": "10166bc48bde36df1d0bb29e46b2b4a0d1e6b518bc9c48a6d37484819aa670a0"
+    }
+  ]
 }

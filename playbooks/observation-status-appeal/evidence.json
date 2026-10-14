@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "observation-status-appeal",
   "captured_at": "2026-10-10T06:16:11Z",
   "bench_run_at": "2026-10-10T06:12:09Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/observation-status-appeal/thumb.jpg",
     "bytes": 79023,
     "sha256": "0671db5fe51094f8bcabc9ece0a446626423799b44155000aab3b4b08ccfb872"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/observation-status-appeal/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22408,
+      "sha256": "2bf36fbfdd892b9d403cfe955df9d902322dca099188389b0ec027618110c8bb"
+    },
+    {
+      "path": "playbooks/observation-status-appeal/story/02.webp",
+      "caption": "Turn 1 - Carenook: Mom has been at Oakview since her hospital stay in September, and they're…",
+      "turn": 1,
+      "bytes": 23976,
+      "sha256": "b479e7d361b80c20ff03bf09180af0c8604ee64428b3efa075f0c2cea7ed3a3a"
+    },
+    {
+      "path": "playbooks/observation-status-appeal/story/03.webp",
+      "caption": "Turn 4 - Saint Ardent billing: Saint Ardent's billing portal",
+      "turn": 4,
+      "bytes": 21530,
+      "sha256": "1b7222bc6f2a2bece11fbe11a29a36cec8cb69530190dce0098af574e01515ef"
+    },
+    {
+      "path": "playbooks/observation-status-appeal/story/04.webp",
+      "caption": "Turn 8 - Myline Medicare, Athena: The September stay (MC-2609) qualifies for a standard QIO appeal, and I'm…",
+      "turn": 8,
+      "bytes": 22852,
+      "sha256": "fe1f5c0b23972ef85dcf4880984286eec10647d246c3d145f15791c0c2380436"
+    },
+    {
+      "path": "playbooks/observation-status-appeal/story/05.webp",
+      "caption": "Turn 11 - Oakview Care, Athena: I'm asking Oakview to hold OV-2610, the $10,200 statement, which is the only…",
+      "turn": 11,
+      "bytes": 23668,
+      "sha256": "ae5baf6c3854866460ab45dfaf586caf4bd0670a411da8c1714ea71f7cdf2863"
+    },
+    {
+      "path": "playbooks/observation-status-appeal/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23794,
+      "sha256": "224c34fdef28a7109aea774153340a15444e581028333bfd4f7512e5c46207ee"
+    }
+  ]
 }

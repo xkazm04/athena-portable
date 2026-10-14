@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "reg-e-fraud-claims",
   "captured_at": "2026-10-10T18:45:20Z",
   "bench_run_at": "2026-10-10T18:43:11Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/reg-e-fraud-claims/thumb.jpg",
     "bytes": 79483,
     "sha256": "1b99df3bb5abd74ee68dd7aa2f39908f028d64f806cbe70b35b3a966efa6d47e"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/reg-e-fraud-claims/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23908,
+      "sha256": "20192bb5dba3fddb8a06a38327ab8ff950f92a8b4b0c6fa7200a63c4a6576172"
+    },
+    {
+      "path": "playbooks/reg-e-fraud-claims/story/02.webp",
+      "caption": "Turn 1 - Postwren: I'm Marisol Teague",
+      "turn": 1,
+      "bytes": 22800,
+      "sha256": "8a012028fe28ccf62341bc0c3f1a20635dfa729c4aebf976ca7de2bcecb58be5"
+    },
+    {
+      "path": "playbooks/reg-e-fraud-claims/story/03.webp",
+      "caption": "Turn 4 - Ledgerwren bank: This is my bank",
+      "turn": 4,
+      "bytes": 23234,
+      "sha256": "1cb932141b1ab3a8a76b4194ca19c580652fe34f119efbca9e5aef144b52c2b9"
+    },
+    {
+      "path": "playbooks/reg-e-fraud-claims/story/04.webp",
+      "caption": "Turn 7 - Sendwren, Athena: The Sendwren activity settles two things",
+      "turn": 7,
+      "bytes": 22478,
+      "sha256": "4814d07534e1dae6a47a77d3f5270d42acfe8bd8af557156ae43d521f20a46ed"
+    },
+    {
+      "path": "playbooks/reg-e-fraud-claims/story/05.webp",
+      "caption": "Turn 10 - Ledgerwren bank: Back at my bank",
+      "turn": 10,
+      "bytes": 23532,
+      "sha256": "f93f2f4b44864b42d4456b2361280872092f7d1551e2d1756744c1483b933a91"
+    },
+    {
+      "path": "playbooks/reg-e-fraud-claims/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23602,
+      "sha256": "6dd491b98f9e25c7300fc38fa3be0420a701fa8132513674ba05b651774d9dc7"
+    }
+  ]
 }

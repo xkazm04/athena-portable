@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "grant-drawdown-reporting",
   "captured_at": "2026-10-09T19:02:14Z",
   "bench_run_at": "2026-10-09T18:54:03Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/grant-drawdown-reporting/thumb.jpg",
     "bytes": 87453,
     "sha256": "91d5b08ddb118028f009426e0a336951537367d71f50aceb57e7081f5fec6444"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/grant-drawdown-reporting/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23860,
+      "sha256": "10f158c5243d7a40dae741a34299bb74d9d97f5a9f1e763a9c19660e95d08643"
+    },
+    {
+      "path": "playbooks/grant-drawdown-reporting/story/02.webp",
+      "caption": "Turn 1 - Grantflow Payments: The quarter closed on 30 September and I need to draw on our federal award and…",
+      "turn": 1,
+      "bytes": 22732,
+      "sha256": "882766fcd857404650afd326b8d9d32b90590763925cf4e2bedd2b3d7087ccd5"
+    },
+    {
+      "path": "playbooks/grant-drawdown-reporting/story/03.webp",
+      "caption": "Turn 5 - Docshelf, Athena: The folder has four documents",
+      "turn": 5,
+      "bytes": 20442,
+      "sha256": "b8c2605e74fc6d251bc62071f97c25ca2a01c215b1e83fa299909090765a2e95"
+    },
+    {
+      "path": "playbooks/grant-drawdown-reporting/story/04.webp",
+      "caption": "Turn 9 - Ledgerline accounting, Athena: Page 2 lists five more entries",
+      "turn": 9,
+      "bytes": 21234,
+      "sha256": "a1aa71a66705d58b644337ed724796482288a76e092a8fcb1f0ddb1f9aef2009"
+    },
+    {
+      "path": "playbooks/grant-drawdown-reporting/story/05.webp",
+      "caption": "Turn 13 - Grantflow Payments: Back in Grantflow",
+      "turn": 13,
+      "bytes": 22842,
+      "sha256": "494063272c68edd6be6c14f9d6c9ede08ade0683bb1a0cfb5ea868769bca9cd4"
+    },
+    {
+      "path": "playbooks/grant-drawdown-reporting/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23228,
+      "sha256": "1dd21120c9d01dd7bf2abe63220cc28e06fed36ae5f11a94eeaf6c0029f080e2"
+    }
+  ]
 }

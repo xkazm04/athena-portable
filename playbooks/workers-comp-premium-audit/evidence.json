@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "workers-comp-premium-audit",
   "captured_at": "2026-10-11T04:20:40Z",
   "bench_run_at": "2026-10-11T04:18:40Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/workers-comp-premium-audit/thumb.jpg",
     "bytes": 81670,
     "sha256": "f998ffcbab271131fee905b6e8f48a56dcffe6819bd0371d3da3616b538f9470"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/workers-comp-premium-audit/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22652,
+      "sha256": "8a1c0345ea1a340af7fc2166edb33ebe7470dfbbc6317cf77c30adfb8d18276b"
+    },
+    {
+      "path": "playbooks/workers-comp-premium-audit/story/02.webp",
+      "caption": "Turn 1 - Auditwell: I'm Joan Delaplane, president of Delaplane Renovation",
+      "turn": 1,
+      "bytes": 23970,
+      "sha256": "351f413a8ea427f2c68b6079a0f0637f2fb8213acf7d1a4021c3d751fd460ee4"
+    },
+    {
+      "path": "playbooks/workers-comp-premium-audit/story/03.webp",
+      "caption": "Turn 4 - Payroll Harbor, Athena: Payroll Harbor is read",
+      "turn": 4,
+      "bytes": 23574,
+      "sha256": "59bf00abc2cdd7c7224c80deb3a4aa177c5ebc12a0fbb95ea3fb8262b113a53c"
+    },
+    {
+      "path": "playbooks/workers-comp-premium-audit/story/04.webp",
+      "caption": "Turn 6 - Binderwell, Athena: Binderwell's files settle Tarrow Decks (W-11) in your favour",
+      "turn": 6,
+      "bytes": 22502,
+      "sha256": "52b0f666b6e60cba014cfae0e424ab06de83c0f899a909ab8505bf3d2ef6999b"
+    },
+    {
+      "path": "playbooks/workers-comp-premium-audit/story/05.webp",
+      "caption": "Turn 9 - Auditwell: Back in Auditwell",
+      "turn": 9,
+      "bytes": 23578,
+      "sha256": "7e278fb46e4407053f3920cd7f7697e628365e46f5ad0c2f8bd7db191423d87b"
+    },
+    {
+      "path": "playbooks/workers-comp-premium-audit/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23972,
+      "sha256": "07f993c442c1c5c6b1d8a7322f12cda9e98bb1f67fadc81fe39c1b5c43be56c8"
+    }
+  ]
 }

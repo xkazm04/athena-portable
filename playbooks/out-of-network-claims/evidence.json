@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "out-of-network-claims",
   "captured_at": "2026-10-10T03:15:32Z",
   "bench_run_at": "2026-10-10T03:12:42Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/out-of-network-claims/thumb.jpg",
     "bytes": 83191,
     "sha256": "0505dc516ae9caa4b29fdec3370c34598bcc661b4b3b7729bd035ca616d8ec34"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/out-of-network-claims/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22668,
+      "sha256": "941c60ba2da2950c80a831a81b5e3ac777cb157cc1b7ecc2d215b6f15694e37c"
+    },
+    {
+      "path": "playbooks/out-of-network-claims/story/02.webp",
+      "caption": "Turn 1 - Paylance member portal: My therapy claims are a mess",
+      "turn": 1,
+      "bytes": 23808,
+      "sha256": "d0535a930a7d95a54954c0d1725d47ad22ff00fd91f3adcb1e80b90a7305291e"
+    },
+    {
+      "path": "playbooks/out-of-network-claims/story/03.webp",
+      "caption": "Turn 6 - Ledgerline bank: Ledgerline, my checking",
+      "turn": 6,
+      "bytes": 22160,
+      "sha256": "b7a7e93c5ae7ea3ae377f4bc4f4f518a2c9add86fefbdaab387689ff991d9b4e"
+    },
+    {
+      "path": "playbooks/out-of-network-claims/story/04.webp",
+      "caption": "Turn 10 - Paylance member portal: Back in Paylance",
+      "turn": 10,
+      "bytes": 23474,
+      "sha256": "8b0fdb3234b6e781eefb772d63b09a28c9e2672f8d6af364a1397ac0920e7031"
+    },
+    {
+      "path": "playbooks/out-of-network-claims/story/05.webp",
+      "caption": "Turn 15 - Mailnest: I've switched to Mailnest as you asked",
+      "turn": 15,
+      "bytes": 22918,
+      "sha256": "e181b3570e1eeace56c78423a4d302db990d558900ba560975ede831c9b764b2"
+    },
+    {
+      "path": "playbooks/out-of-network-claims/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 23740,
+      "sha256": "c4426d975fc5293796ccbccae5f037d0c2892368d12bfd39ce7cfac7c87da5dc"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "fsa-acreage-reporting",
   "captured_at": "2026-10-11T07:47:51Z",
   "bench_run_at": "2026-10-11T07:42:31Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/fsa-acreage-reporting/thumb.jpg",
     "bytes": 86847,
     "sha256": "6527cec7bf8e61568a77df94738d542bfd0c19a666006b57570f0fe71e8c4f5e"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/fsa-acreage-reporting/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 22562,
+      "sha256": "e20d77768c77f4726f7c63202347abf7f3604adba90482f7b728e234897b6167"
+    },
+    {
+      "path": "playbooks/fsa-acreage-reporting/story/02.webp",
+      "caption": "Turn 1 - Farmgate: I'm Joanne Pellham, Pellham Ridge Farm",
+      "turn": 1,
+      "bytes": 22608,
+      "sha256": "add7c14cdb285615a5b50fb3c6c1bb84bb0164a8bcb26d52082268dd65908f7e"
+    },
+    {
+      "path": "playbooks/fsa-acreage-reporting/story/03.webp",
+      "caption": "Turn 4 - Acrelog: These are our field records",
+      "turn": 4,
+      "bytes": 23972,
+      "sha256": "415802f005258f424bd83aedec6db5d11dfb2327bfb3567b093d97515c5f24cf"
+    },
+    {
+      "path": "playbooks/fsa-acreage-reporting/story/04.webp",
+      "caption": "Turn 8 - Fieldmark, Athena: Fieldmark is read and nothing is filed",
+      "turn": 8,
+      "bytes": 22150,
+      "sha256": "ae5643e26ab823da4ee3444185edee9146ee20afabecf6f80f9a03625a7b2838"
+    },
+    {
+      "path": "playbooks/fsa-acreage-reporting/story/05.webp",
+      "caption": "Turn 11 - Farmgate: Back at Farmgate",
+      "turn": 11,
+      "bytes": 23878,
+      "sha256": "d29525233559e5acb3525021d49e917fb75e5649305048505fb72cf9da0158a5"
+    },
+    {
+      "path": "playbooks/fsa-acreage-reporting/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 21946,
+      "sha256": "b61578b2165dcb14e3bd06114e6b3dc4ae0834d54e073845e10bdd0eb550a1a4"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "playbook": "ifta-quarterly",
   "captured_at": "2026-10-10T11:18:36Z",
   "bench_run_at": "2026-10-10T11:14:54Z",
@@ -20,5 +20,49 @@
     "path": "playbooks/ifta-quarterly/thumb.jpg",
     "bytes": 87222,
     "sha256": "75ecc75146b6609673a961d3bd3c77649448b38a4cd838721cb1f4eb91a8e5aa"
-  }
+  },
+  "story": [
+    {
+      "path": "playbooks/ifta-quarterly/story/01.webp",
+      "caption": "The abstract",
+      "turn": null,
+      "bytes": 23494,
+      "sha256": "1b0613ad60b54a6a572663dee454e7d7809b6f044aa24b79cab5af5052a1f9c5"
+    },
+    {
+      "path": "playbooks/ifta-quarterly/story/02.webp",
+      "caption": "Turn 1 - Odowren ELD: I'm Rosa, I run the office at Brackmoor Line Haul",
+      "turn": 1,
+      "bytes": 23480,
+      "sha256": "6c7b22ce21d19786fdd7a5c992933d8596b6ed6814848f4797cec017d5608790"
+    },
+    {
+      "path": "playbooks/ifta-quarterly/story/03.webp",
+      "caption": "Turn 4 - Pumpline fuel card: This is our Pumpline fuel card",
+      "turn": 4,
+      "bytes": 22766,
+      "sha256": "ccdebff8f9f36cdb8802e1597139971be3c7efe9536d99841f6e01c91a84d6a4"
+    },
+    {
+      "path": "playbooks/ifta-quarterly/story/04.webp",
+      "caption": "Turn 8 - Binderwell, Athena: Binderwell is read, and it settles the open items",
+      "turn": 8,
+      "bytes": 23988,
+      "sha256": "0732ed1ef35a29ba5ea57ab97cedf9cde4668005330fabd8382944340a7ef31f"
+    },
+    {
+      "path": "playbooks/ifta-quarterly/story/05.webp",
+      "caption": "Turn 11 - Tallyquart IFTA filing, Athena: Here are the figures",
+      "turn": 11,
+      "bytes": 23794,
+      "sha256": "ce6de264b4f27c185228ce4fca931445dde4d66de737f0906e7e3f5ba5234b24"
+    },
+    {
+      "path": "playbooks/ifta-quarterly/story/06.webp",
+      "caption": "What she filed",
+      "turn": null,
+      "bytes": 22680,
+      "sha256": "7878dd04e2e05297f65ee4336c9b2effa130b5b7a4aa50d7795c6d8550052c71"
+    }
+  ]
 }
