@@ -1,0 +1,3492 @@
+{
+  "contexts": [
+    {
+      "api_surface": "",
+      "business_feature": "Atlas Data",
+      "category": "data",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Atlas app routes, system/component/ADR data model, design token check, docs and project config.",
+      "entry_points": [
+        "examples/atlas/app/page.tsx",
+        "examples/atlas/data/index.ts"
+      ],
+      "file_paths": [
+        "examples/atlas/app/globals.css",
+        "examples/atlas/app/layout.tsx",
+        "examples/atlas/app/page.tsx",
+        "examples/atlas/app/providers.tsx",
+        "examples/atlas/data/adrs.ts",
+        "examples/atlas/data/components.ts",
+        "examples/atlas/data/concepts.ts",
+        "examples/atlas/data/edges.ts",
+        "examples/atlas/data/index.ts",
+        "examples/atlas/data/systems.ts",
+        "examples/atlas/data/types.ts",
+        "examples/atlas/design/check-tokens.mjs",
+        "examples/atlas/eslint.config.mjs",
+        "examples/atlas/lib/constants.ts",
+        "examples/atlas/next.config.ts",
+        "examples/atlas/postcss.config.mjs"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "ed8d99d2-56e3-402c-898b-a4a6c4b73c7b",
+      "keywords": [
+        "atlas",
+        "systems",
+        "adrs",
+        "components",
+        "edges",
+        "concepts"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.223922600+00:00",
+      "name": "atlas-data-and-app",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Atlas Drawing",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Atlas architecture drawing: the archify-lanes variant with geometry, routing, poses, scene, sigils and story/script, plus model/routing/pose tests. A 2D blueprint of the system.",
+      "entry_points": [
+        "examples/atlas/components/atlas/variants/archify-lanes/index.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/routing.ts"
+      ],
+      "file_paths": [
+        "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/Scene.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/Sigil.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/Tools.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/copy.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/geometry.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/index.tsx",
+        "examples/atlas/components/atlas/variants/archify-lanes/kinds.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/lanes.css",
+        "examples/atlas/components/atlas/variants/archify-lanes/poses.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/primitives.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/routing.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/script.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/story.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/text.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/turn.ts",
+        "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts",
+        "examples/atlas/test/lanes.model.test.ts",
+        "examples/atlas/test/lanes.poses.test.ts",
+        "examples/atlas/test/lanes.routing.test.ts",
+        "examples/atlas/test/model.test.ts",
+        "examples/atlas/test/presets.test.ts",
+        "examples/atlas/test/register.mjs",
+        "examples/atlas/test/tools.test.ts"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "736379fb-8f9b-4617-be12-64b20b25e73c",
+      "keywords": [
+        "atlas",
+        "lanes",
+        "drawing",
+        "routing",
+        "poses",
+        "geometry",
+        "blueprint"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.223308900+00:00",
+      "name": "atlas-lanes-drawing",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Atlas Shell",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Atlas shell: Atlas, mast, pane, claims, tools, variant contract/chooser, editorial and signal variants, and style sheets.",
+      "entry_points": [
+        "examples/atlas/components/atlas/Atlas.tsx",
+        "examples/atlas/components/atlas/variants/contract.ts"
+      ],
+      "file_paths": [
+        "examples/atlas/components/atlas/Atlas.tsx",
+        "examples/atlas/components/atlas/Mast.tsx",
+        "examples/atlas/components/atlas/chrome/Claims.tsx",
+        "examples/atlas/components/atlas/lanes.ts",
+        "examples/atlas/components/atlas/motion.ts",
+        "examples/atlas/components/atlas/pane/Pane.tsx",
+        "examples/atlas/components/atlas/style/base/sheet.css",
+        "examples/atlas/components/atlas/style/base/tokens.css",
+        "examples/atlas/components/atlas/style/chrome/mast.css",
+        "examples/atlas/components/atlas/style/chrome/rails.css",
+        "examples/atlas/components/atlas/style/index.css",
+        "examples/atlas/components/atlas/style/level2/l2-pane.css",
+        "examples/atlas/components/atlas/tools/AtlasTools.tsx",
+        "examples/atlas/components/atlas/tools/read.ts",
+        "examples/atlas/components/atlas/variants/Shell.tsx",
+        "examples/atlas/components/atlas/variants/archify-editorial/index.tsx",
+        "examples/atlas/components/atlas/variants/archify-signal/index.tsx",
+        "examples/atlas/components/atlas/variants/contract.ts",
+        "examples/atlas/components/atlas/variants/useChoice.ts",
+        "examples/atlas/components/atlas/variants/viewBus.ts"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "52d712c5-d73a-4ce4-b53d-e581d78fbef6",
+      "keywords": [
+        "atlas",
+        "mast",
+        "pane",
+        "variants",
+        "tools",
+        "styles"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.223603900+00:00",
+      "name": "atlas-shell-and-styles",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Browser Lane",
+      "category": "lib",
+      "cross_refs": [
+        "harness-engines",
+        "page-bridge"
+      ],
+      "db_tables": [],
+      "description": "The lane between the agent and the web page the user has open: turn frames and ports translate model operations into browser actions on the user's tab.",
+      "entry_points": [
+        "src/athena/lane/browser_lane.py",
+        "src/athena/lane/turn_frame.py"
+      ],
+      "file_paths": [
+        "src/athena/lane/__init__.py",
+        "src/athena/lane/browser_lane.py",
+        "src/athena/lane/ports.py",
+        "src/athena/lane/turn_frame.py",
+        "tests/lane/__init__.py",
+        "tests/lane/conftest.py",
+        "tests/lane/test_browser_lane.py",
+        "tests/lane/test_turn_frame.py"
+      ],
+      "group": "Model Harness",
+      "group_id": "09a26b8d-51b6-4ccc-b14d-955f945aac9a",
+      "id": "f152c182-5811-458c-a43b-56fbce7a81e5",
+      "keywords": [
+        "lane",
+        "browser",
+        "turn frame",
+        "ports",
+        "tab",
+        "page state"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.217845200+00:00",
+      "name": "browser-lane",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "CLI and Wiring",
+      "category": "lib",
+      "cross_refs": [
+        "daemon-service",
+        "harness-engines"
+      ],
+      "db_tables": [],
+      "description": "Composition root and command line: wiring assembles the core, harness, daemon and connectors; the CLI exposes commands; smoke, ADR numbering and refusal-parity tests guard repo-wide invariants.",
+      "entry_points": [
+        "src/athena/wiring.py",
+        "src/athena/cli.py"
+      ],
+      "file_paths": [
+        "src/athena/__init__.py",
+        "src/athena/cli.py",
+        "src/athena/wiring.py",
+        "tests/test_adr_numbering.py",
+        "tests/test_cli.py",
+        "tests/test_refusal_parity.py",
+        "tests/test_smoke.py",
+        "tests/test_wiring.py"
+      ],
+      "group": "Agent Core",
+      "group_id": "d5035657-33c5-441a-b405-45a2207b4ac9",
+      "id": "5059ed32-0465-4c97-bf66-5d4c9442e96f",
+      "keywords": [
+        "cli",
+        "wiring",
+        "composition",
+        "doctor",
+        "smoke",
+        "adr numbering",
+        "refusal parity"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.217494200+00:00",
+      "name": "cli-and-wiring",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "OAuth start/callback, connector list/connect/disconnect routes",
+      "business_feature": "Connectors",
+      "category": "api",
+      "cross_refs": [
+        "daemon-service",
+        "core-gate-and-ledger"
+      ],
+      "db_tables": [],
+      "description": "Third-party connectors (Gmail, Notion): declarative specs and builtin JSON, OAuth and grant flow, sealed token vault, recipient address handling, a port abstraction and provider adapters, exposed to the daemon by a connectors module.",
+      "entry_points": [
+        "src/athena/connectors/service.py",
+        "src/athena/connectors/port.py"
+      ],
+      "file_paths": [
+        "src/athena/connectors/__init__.py",
+        "src/athena/connectors/addresses.py",
+        "src/athena/connectors/oauth.py",
+        "src/athena/connectors/port.py",
+        "src/athena/connectors/providers/__init__.py",
+        "src/athena/connectors/providers/gmail.py",
+        "src/athena/connectors/providers/notion.py",
+        "src/athena/connectors/seal.py",
+        "src/athena/connectors/service.py",
+        "src/athena/connectors/spec.py",
+        "src/athena/connectors/vault.py",
+        "src/athena/daemon/connectors.py",
+        "tests/connectors/__init__.py",
+        "tests/connectors/conftest.py",
+        "tests/connectors/test_grant.py",
+        "tests/connectors/test_port.py",
+        "tests/connectors/test_providers.py",
+        "tests/connectors/test_routes.py",
+        "tests/connectors/test_seal.py",
+        "tests/connectors/test_service.py",
+        "tests/connectors/test_spec_and_oauth.py",
+        "tests/connectors/test_vault.py"
+      ],
+      "group": "Connectors",
+      "group_id": "981edc64-c819-451f-b7e6-497122f81fda",
+      "id": "1aff3b77-8fa5-45ac-93ae-941206f3ed16",
+      "keywords": [
+        "connector",
+        "gmail",
+        "notion",
+        "oauth",
+        "vault",
+        "seal",
+        "spec"
+      ],
+      "last_written_at": "2026-10-14T10:47:40.800661300+00:00",
+      "name": "connector-service",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Shared Contracts",
+      "category": "lib",
+      "cross_refs": [
+        "core-gate-and-ledger",
+        "harness-engines"
+      ],
+      "db_tables": [],
+      "description": "The contract types shared between packages: ids, channel, harness, manifest and registry. Changes require a test; ids have a parity rule with the TypeScript side.",
+      "entry_points": [
+        "src/athena/contracts/ids.py",
+        "src/athena/contracts/harness.py"
+      ],
+      "file_paths": [
+        "src/athena/contracts/__init__.py",
+        "src/athena/contracts/channel.py",
+        "src/athena/contracts/harness.py",
+        "src/athena/contracts/ids.py",
+        "src/athena/contracts/manifest.py",
+        "src/athena/contracts/registry.py",
+        "tests/contracts/test_channel.py",
+        "tests/contracts/test_harness.py",
+        "tests/contracts/test_ids.py",
+        "tests/contracts/test_manifest.py",
+        "tests/contracts/test_registry.py"
+      ],
+      "group": "Agent Core",
+      "group_id": "d5035657-33c5-441a-b405-45a2207b4ac9",
+      "id": "645f955f-74d6-44ae-a966-70f6ed2ece17",
+      "keywords": [
+        "contract",
+        "ids",
+        "manifest",
+        "registry",
+        "channel",
+        "seam"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.217305800+00:00",
+      "name": "contracts-seam",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Memory and Recall",
+      "category": "lib",
+      "cross_refs": [
+        "core-gate-and-ledger",
+        "contracts-seam"
+      ],
+      "db_tables": [],
+      "description": "Disk-backed memory (the brain): episodes, facts and procedural notes with provenance enforced at write time. A single writer reconciles frontmatter markdown files on disk, and recall assembles bounded, announced-truncation context. Stdlib-only core.",
+      "entry_points": [
+        "src/athena/core/brain/store.py",
+        "src/athena/core/recall.py"
+      ],
+      "file_paths": [
+        "src/athena/core/brain/__init__.py",
+        "src/athena/core/brain/frontmatter.py",
+        "src/athena/core/brain/paths.py",
+        "src/athena/core/brain/reconcile.py",
+        "src/athena/core/brain/schema.py",
+        "src/athena/core/brain/store.py",
+        "src/athena/core/brain/text.py",
+        "src/athena/core/recall.py",
+        "tests/core/test_brain_connections.py",
+        "tests/core/test_brain_frontmatter.py",
+        "tests/core/test_brain_reconcile.py",
+        "tests/core/test_brain_store.py",
+        "tests/core/test_recall.py"
+      ],
+      "group": "Agent Core",
+      "group_id": "d5035657-33c5-441a-b405-45a2207b4ac9",
+      "id": "045f6ffb-7c64-4cbd-8925-89d25221d459",
+      "keywords": [
+        "brain",
+        "episode",
+        "fact",
+        "procedural",
+        "provenance",
+        "recall",
+        "frontmatter",
+        "reconcile"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.215508500+00:00",
+      "name": "core-brain-memory",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Gate, Approvals and Ledger",
+      "category": "lib",
+      "cross_refs": [
+        "harness-engines",
+        "contracts-seam"
+      ],
+      "db_tables": [],
+      "description": "The policy layer: tool catalog and validators decide what is gated, approvals record user decisions, the ledger writes one row per model invocation, and prompt/fence code wraps untrusted content. The constitution files define identity and law injected into prompts.",
+      "entry_points": [
+        "src/athena/core/catalog.py",
+        "src/athena/core/approvals.py"
+      ],
+      "file_paths": [
+        "src/athena/core/__init__.py",
+        "src/athena/core/approvals.py",
+        "src/athena/core/catalog.py",
+        "src/athena/core/constitution.py",
+        "src/athena/core/fence.py",
+        "src/athena/core/ledger.py",
+        "src/athena/core/prompt.py",
+        "src/athena/core/validators.py",
+        "tests/core/test_approvals.py",
+        "tests/core/test_catalog.py",
+        "tests/core/test_catalog_connectors.py",
+        "tests/core/test_constitution.py",
+        "tests/core/test_fence.py",
+        "tests/core/test_ledger.py",
+        "tests/core/test_prompt.py",
+        "tests/core/test_validators.py"
+      ],
+      "group": "Agent Core",
+      "group_id": "d5035657-33c5-441a-b405-45a2207b4ac9",
+      "id": "b22cae8a-16ec-45ac-b2a6-3a502a91c895",
+      "keywords": [
+        "gate",
+        "approval",
+        "ledger",
+        "fence",
+        "untrusted",
+        "validator",
+        "constitution",
+        "prompt"
+      ],
+      "last_written_at": "2026-10-14T10:47:40.801297900+00:00",
+      "name": "core-gate-and-ledger",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Daemon E2E",
+      "category": "test",
+      "cross_refs": [
+        "daemon-service"
+      ],
+      "db_tables": [],
+      "description": "End-to-end Python tests that spawn the real daemon with a scripted engine and fake providers, covering handshake, turns, decisions, reads, connectors (including a connectors journey), manifest, voice and doctor.",
+      "entry_points": [
+        "tests/e2e/conftest.py",
+        "tests/e2e/serve_scripted.py"
+      ],
+      "file_paths": [
+        "tests/e2e/__init__.py",
+        "tests/e2e/conftest.py",
+        "tests/e2e/fake_providers.py",
+        "tests/e2e/serve_scripted.py",
+        "tests/e2e/test_connectors.py",
+        "tests/e2e/test_connectors_journey.py",
+        "tests/e2e/test_decisions.py",
+        "tests/e2e/test_doctor.py",
+        "tests/e2e/test_manifest.py",
+        "tests/e2e/test_reads.py",
+        "tests/e2e/test_spawn_and_handshake.py",
+        "tests/e2e/test_turn.py",
+        "tests/e2e/test_voice.py"
+      ],
+      "group": "Daemon and Channels",
+      "group_id": "56572968-53ad-4a18-aee8-5fe511fa9c1e",
+      "id": "82a06da0-9acf-4ef5-bfd0-0d1a761fca83",
+      "keywords": [
+        "e2e",
+        "spawn",
+        "handshake",
+        "scripted engine",
+        "doctor"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.909974800+00:00",
+      "name": "daemon-e2e-tests",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "HTTP routes for run, decisions, reads, engines, manifest, voice, connectors; WebSocket events",
+      "business_feature": "Local Daemon",
+      "category": "api",
+      "cross_refs": [
+        "harness-engines",
+        "voice-channel",
+        "connector-service",
+        "core-brain-memory"
+      ],
+      "db_tables": [],
+      "description": "Local HTTP/WebSocket daemon that serves the desktop app: sessions, routes, readiness, decisions, manifest, hands manifest, gated origins, engine endpoints and voice routes.",
+      "entry_points": [
+        "src/athena/daemon/server.py",
+        "src/athena/daemon/routes.py"
+      ],
+      "file_paths": [
+        "src/athena/daemon/__init__.py",
+        "src/athena/daemon/ready.py",
+        "src/athena/daemon/routes.py",
+        "src/athena/daemon/server.py",
+        "src/athena/daemon/sessions.py",
+        "src/athena/daemon/voice.py",
+        "tests/daemon/__init__.py",
+        "tests/daemon/conftest.py",
+        "tests/daemon/test_decisions.py",
+        "tests/daemon/test_disabled_origins.py",
+        "tests/daemon/test_engines.py",
+        "tests/daemon/test_gated_origins.py",
+        "tests/daemon/test_hands_manifest.py",
+        "tests/daemon/test_manifest.py",
+        "tests/daemon/test_reads.py",
+        "tests/daemon/test_ready.py",
+        "tests/daemon/test_routes.py",
+        "tests/daemon/test_run.py",
+        "tests/daemon/test_server.py",
+        "tests/daemon/test_sessions.py",
+        "tests/daemon/test_voice_routes.py"
+      ],
+      "group": "Daemon and Channels",
+      "group_id": "56572968-53ad-4a18-aee8-5fe511fa9c1e",
+      "id": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "keywords": [
+        "daemon",
+        "http",
+        "sessions",
+        "routes",
+        "ready",
+        "decisions",
+        "manifest"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.909841600+00:00",
+      "name": "daemon-service",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Demo App Template",
+      "category": "ui",
+      "cross_refs": [
+        "demo-kit-ui-webmcp"
+      ],
+      "db_tables": [],
+      "description": "Next.js template for a new demo app built on the kit: pages, actions, host capabilities, levels, records table and db.",
+      "entry_points": [
+        "examples/demo-kit/template/app/page.tsx",
+        "examples/demo-kit/template/components/Levels.tsx"
+      ],
+      "file_paths": [
+        "examples/demo-kit/template/app/[id]/page.tsx",
+        "examples/demo-kit/template/app/actions.ts",
+        "examples/demo-kit/template/app/activity/page.tsx",
+        "examples/demo-kit/template/app/globals.css",
+        "examples/demo-kit/template/app/layout.tsx",
+        "examples/demo-kit/template/app/page.tsx",
+        "examples/demo-kit/template/app/providers.tsx",
+        "examples/demo-kit/template/components/HostCapabilities.tsx",
+        "examples/demo-kit/template/components/Levels.tsx",
+        "examples/demo-kit/template/components/RecordsTable.tsx",
+        "examples/demo-kit/template/components/Shell.tsx",
+        "examples/demo-kit/template/eslint.config.mjs",
+        "examples/demo-kit/template/lib/constants.ts",
+        "examples/demo-kit/template/lib/db.ts",
+        "examples/demo-kit/template/lib/types.ts",
+        "examples/demo-kit/template/next.config.ts",
+        "examples/demo-kit/template/postcss.config.mjs"
+      ],
+      "group": "Page Bridge and Demo Kit",
+      "group_id": "929fea9f-573f-4bbd-8b3c-167d384ec818",
+      "id": "d3ab2f33-be6a-482d-ad36-b6dae11d2ea0",
+      "keywords": [
+        "template",
+        "next",
+        "levels",
+        "records",
+        "host capabilities"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.223040200+00:00",
+      "name": "demo-kit-template",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Demo Kit Tests",
+      "category": "test",
+      "cross_refs": [
+        "demo-kit-zoom-engine"
+      ],
+      "db_tables": [],
+      "description": "Unit tests for the demo kit zoom engine, bounded output and template navigation.",
+      "entry_points": [
+        "examples/demo-kit/test/camera.test.ts",
+        "examples/demo-kit/test/flight.test.ts"
+      ],
+      "file_paths": [
+        "examples/demo-kit/test/abort.test.ts",
+        "examples/demo-kit/test/bounded.test.ts",
+        "examples/demo-kit/test/camera.test.ts",
+        "examples/demo-kit/test/echo.test.ts",
+        "examples/demo-kit/test/escape.test.ts",
+        "examples/demo-kit/test/flight.test.ts",
+        "examples/demo-kit/test/identity.test.ts",
+        "examples/demo-kit/test/overlay.test.ts",
+        "examples/demo-kit/test/presence.test.ts",
+        "examples/demo-kit/test/roving.test.ts",
+        "examples/demo-kit/test/semantic.test.ts",
+        "examples/demo-kit/test/template-navigate.test.ts",
+        "examples/demo-kit/test/tokens.test.ts"
+      ],
+      "group": "Page Bridge and Demo Kit",
+      "group_id": "929fea9f-573f-4bbd-8b3c-167d384ec818",
+      "id": "2ad7599e-f1ae-4aa8-ab84-ad38e38cb285",
+      "keywords": [
+        "tests",
+        "camera",
+        "flight",
+        "overlay",
+        "bounded"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.222806700+00:00",
+      "name": "demo-kit-tests",
+      "pinned": false,
+      "tech_stack": [
+        "TypeScript",
+        "node:test"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Demo Kit UI and WebMCP",
+      "category": "lib",
+      "cross_refs": [
+        "page-bridge"
+      ],
+      "db_tables": [],
+      "description": "Shared demo kit for example apps: AppShell/DataTable UI, WebMCP tool registration with bounded output, activity log, local db and seed data.",
+      "entry_points": [
+        "examples/demo-kit/src/webmcp/index.ts",
+        "examples/demo-kit/src/ui/AppShell.tsx"
+      ],
+      "file_paths": [
+        "examples/demo-kit/src/activity/ActivityLog.tsx",
+        "examples/demo-kit/src/activity/index.ts",
+        "examples/demo-kit/src/activity/types.ts",
+        "examples/demo-kit/src/db/index.ts",
+        "examples/demo-kit/src/index.ts",
+        "examples/demo-kit/src/seed/companies.ts",
+        "examples/demo-kit/src/seed/index.ts",
+        "examples/demo-kit/src/ui/AppShell.tsx",
+        "examples/demo-kit/src/ui/DataTable.tsx",
+        "examples/demo-kit/src/ui/DetailPane.tsx",
+        "examples/demo-kit/src/ui/EmptyState.tsx",
+        "examples/demo-kit/src/ui/Toast.tsx",
+        "examples/demo-kit/src/ui/demo-kit.css",
+        "examples/demo-kit/src/ui/index.ts",
+        "examples/demo-kit/src/ui/theme.tsx",
+        "examples/demo-kit/src/webmcp/bounded.ts",
+        "examples/demo-kit/src/webmcp/hooks.ts",
+        "examples/demo-kit/src/webmcp/index.ts",
+        "examples/demo-kit/src/webmcp/modelContext.ts",
+        "examples/demo-kit/src/webmcp/types.ts",
+        "examples/demo-kit/src/webmcp/zoomTools.ts"
+      ],
+      "group": "Page Bridge and Demo Kit",
+      "group_id": "929fea9f-573f-4bbd-8b3c-167d384ec818",
+      "id": "9e179811-457d-4d43-865e-87faad968f56",
+      "keywords": [
+        "webmcp",
+        "modelContext",
+        "bounded",
+        "appshell",
+        "datatable",
+        "activity"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.222388300+00:00",
+      "name": "demo-kit-ui-webmcp",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Semantic Zoom Engine",
+      "category": "lib",
+      "cross_refs": [
+        "demo-kit-tests"
+      ],
+      "db_tables": [],
+      "description": "Semantic-zoom engine: camera, level flight, shared identity, overlay and escape handling, roving focus, echo and design tokens used for layered UIs.",
+      "entry_points": [
+        "examples/demo-kit/src/zoom/index.ts",
+        "examples/demo-kit/src/zoom/camera.ts"
+      ],
+      "file_paths": [
+        "examples/demo-kit/src/zoom/Echo.tsx",
+        "examples/demo-kit/src/zoom/camera.ts",
+        "examples/demo-kit/src/zoom/echo-rule.ts",
+        "examples/demo-kit/src/zoom/escape.ts",
+        "examples/demo-kit/src/zoom/flight.ts",
+        "examples/demo-kit/src/zoom/identity.ts",
+        "examples/demo-kit/src/zoom/index.ts",
+        "examples/demo-kit/src/zoom/nav.ts",
+        "examples/demo-kit/src/zoom/overlay.ts",
+        "examples/demo-kit/src/zoom/presence.ts",
+        "examples/demo-kit/src/zoom/roving.ts",
+        "examples/demo-kit/src/zoom/semantic.ts",
+        "examples/demo-kit/src/zoom/state.ts",
+        "examples/demo-kit/src/zoom/tokens.ts",
+        "examples/demo-kit/src/zoom/useCameraRig.ts",
+        "examples/demo-kit/src/zoom/useEcho.ts",
+        "examples/demo-kit/src/zoom/useLevelFlight.ts",
+        "examples/demo-kit/src/zoom/useOverlayEscape.ts",
+        "examples/demo-kit/src/zoom/useRoving.ts",
+        "examples/demo-kit/src/zoom/useSemanticZoom.ts",
+        "examples/demo-kit/src/zoom/useSharedIdentity.ts",
+        "examples/demo-kit/src/zoom/useTokens.ts"
+      ],
+      "group": "Page Bridge and Demo Kit",
+      "group_id": "929fea9f-573f-4bbd-8b3c-167d384ec818",
+      "id": "caa9de8e-e922-457c-9839-14cf7fa6b2e2",
+      "keywords": [
+        "semantic zoom",
+        "camera",
+        "flight",
+        "overlay",
+        "roving",
+        "echo",
+        "tokens"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.222622+00:00",
+      "name": "demo-kit-zoom-engine",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "App Shell UI",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-modules-registry"
+      ],
+      "db_tables": [],
+      "description": "Window entry points (athena, chrome, preview) and the shared design-system primitives. The old app shell, page shell, layer, tile, module bar and emblem were deleted in the scene cutover (ADR 0095). What remains is buttons, badges, tables, form fields, push-to-talk, window controls, the component catalog and the global stylesheet with its motion-token and source-guard tests.",
+      "entry_points": [
+        "apps/desktop/src/app.tsx",
+        "apps/desktop/src/components/CATALOG.md"
+      ],
+      "file_paths": [
+        "apps/desktop/src/athena.tsx",
+        "apps/desktop/src/chrome.tsx",
+        "apps/desktop/src/preview.tsx",
+        "apps/desktop/src/components/Badge.tsx",
+        "apps/desktop/src/components/Button.tsx",
+        "apps/desktop/src/components/EmptyState.tsx",
+        "apps/desktop/src/components/Facts.tsx",
+        "apps/desktop/src/components/FormField.tsx",
+        "apps/desktop/src/components/FormField.test.tsx",
+        "apps/desktop/src/components/PillGroup.tsx",
+        "apps/desktop/src/components/ProblemNote.tsx",
+        "apps/desktop/src/components/PushToTalk.tsx",
+        "apps/desktop/src/components/PushToTalk.test.tsx",
+        "apps/desktop/src/components/StatusDot.tsx",
+        "apps/desktop/src/components/Table.tsx",
+        "apps/desktop/src/components/WindowControls.tsx",
+        "apps/desktop/src/styles/app.css",
+        "apps/desktop/src/styles/motion-tokens.test.ts",
+        "apps/desktop/src/styles/source-guards.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "97da7e8d-8b3a-41fd-bcfe-326d41a66565",
+      "keywords": [
+        "design system",
+        "primitives",
+        "push-to-talk",
+        "window controls",
+        "motion tokens",
+        "css guards"
+      ],
+      "last_written_at": "2026-10-14T10:47:40.801698500+00:00",
+      "name": "desktop-app-shell-ui",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Scene Art and Bell",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-scenes-chores",
+        "desktop-scenes-mind-surface"
+      ],
+      "db_tables": [],
+      "description": "Illustration and notification art for the scenes: glyph set, chore, accounts, mind and voice drawings, and the Bell, a posed notification element with its pose logic and preview.",
+      "entry_points": [
+        "apps/desktop/src/art/glyphs.tsx",
+        "apps/desktop/src/bell/Bell.tsx"
+      ],
+      "file_paths": [
+        "apps/desktop/src/art/accounts.tsx",
+        "apps/desktop/src/art/chore.css",
+        "apps/desktop/src/art/chore.test.tsx",
+        "apps/desktop/src/art/chore.tsx",
+        "apps/desktop/src/art/glyphs.css",
+        "apps/desktop/src/art/glyphs.test.tsx",
+        "apps/desktop/src/art/glyphs.tsx",
+        "apps/desktop/src/art/mind.tsx",
+        "apps/desktop/src/art/voice.tsx",
+        "apps/desktop/src/bell/Bell.test.tsx",
+        "apps/desktop/src/bell/Bell.tsx",
+        "apps/desktop/src/bell/bell.css",
+        "apps/desktop/src/bell/pose.test.ts",
+        "apps/desktop/src/bell/pose.ts",
+        "apps/desktop/src/bell/preview.tsx"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "83c99463-f300-42a8-b1a4-7b8e1c5c06f0",
+      "keywords": [
+        "glyphs",
+        "bell",
+        "art",
+        "pose",
+        "svg"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.803233900+00:00",
+      "name": "desktop-art-bell",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Desktop Build",
+      "category": "config",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Desktop build and packaging: package manifest, Vite, TypeScript, ESLint, Cargo and Tauri configs with capability files, sidecar notes, icon and smoke scripts. Also holds the dev-only source inspector that copies the source location of the component under the cursor (ADR 0086).",
+      "entry_points": [
+        "apps/desktop/package.json",
+        "apps/desktop/src-tauri/tauri.conf.json"
+      ],
+      "file_paths": [
+        "apps/desktop/vite.config.ts",
+        "apps/desktop/eslint.config.js",
+        "apps/desktop/scripts/make-icon.mjs",
+        "apps/desktop/scripts/smoke.mjs",
+        "apps/desktop/scripts/dev-source-loc.mjs",
+        "apps/desktop/src-tauri/build.rs",
+        "apps/desktop/src/lib/dev/inspector.tsx",
+        "apps/desktop/src/lib/dev/locate.ts",
+        "apps/desktop/src/lib/dev/locate.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "6099214d-afb1-49fe-b67b-346df665a89f",
+      "keywords": [
+        "vite",
+        "tauri",
+        "cargo",
+        "capabilities",
+        "sidecar",
+        "inspector"
+      ],
+      "last_written_at": "2026-10-14T10:47:40.801953200+00:00",
+      "name": "desktop-build-config",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "Consumes daemon HTTP and Tauri IPC",
+      "business_feature": "Client Library",
+      "category": "lib",
+      "cross_refs": [
+        "daemon-service",
+        "desktop-shell-rust"
+      ],
+      "db_tables": [],
+      "description": "Client libraries: daemon API client, IPC, event stream, bridge, hands (page actions), engines, manifest, motion helpers, URL and time helpers, and the companion adapter. Halo, voice and playbook helpers live in their own contexts.",
+      "entry_points": [
+        "apps/desktop/src/lib/api.ts",
+        "apps/desktop/src/lib/ipc.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/lib/api.ts",
+        "apps/desktop/src/lib/api.test.ts",
+        "apps/desktop/src/lib/bridge.ts",
+        "apps/desktop/src/lib/companion.ts",
+        "apps/desktop/src/lib/companion.test.ts",
+        "apps/desktop/src/lib/daemon.ts",
+        "apps/desktop/src/lib/engines.ts",
+        "apps/desktop/src/lib/engines.test.ts",
+        "apps/desktop/src/lib/events.ts",
+        "apps/desktop/src/lib/hands.ts",
+        "apps/desktop/src/lib/hands.test.ts",
+        "apps/desktop/src/lib/ipc.ts",
+        "apps/desktop/src/lib/ipc.test.ts",
+        "apps/desktop/src/lib/manifest.ts",
+        "apps/desktop/src/lib/manifest.test.ts",
+        "apps/desktop/src/lib/motion.ts",
+        "apps/desktop/src/lib/motion.test.ts",
+        "apps/desktop/src/lib/store.ts",
+        "apps/desktop/src/lib/time.ts",
+        "apps/desktop/src/lib/time.test.ts",
+        "apps/desktop/src/lib/url.ts",
+        "apps/desktop/src/lib/url.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "c2e060d5-a15b-46fc-8a10-55188c2d50d2",
+      "keywords": [
+        "api client",
+        "ipc",
+        "events",
+        "hands",
+        "manifest",
+        "motion"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.907781200+00:00",
+      "name": "desktop-client-lib",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Companion",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-client-lib",
+        "desktop-stores"
+      ],
+      "db_tables": [],
+      "description": "The companion: a state machine, model, runtime and views showing Athena's presence, plain-language narration, drawing, tab capture and tools alongside the user's page, with live and preview drivers.",
+      "entry_points": [
+        "apps/desktop/src/companion/machine.ts",
+        "apps/desktop/src/companion/runtime.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/companion/companion.css",
+        "apps/desktop/src/companion/companion.css.test.ts",
+        "apps/desktop/src/companion/capture.ts",
+        "apps/desktop/src/companion/capture.test.ts",
+        "apps/desktop/src/companion/drawing.tsx",
+        "apps/desktop/src/companion/driver.ts",
+        "apps/desktop/src/companion/fixtures.ts",
+        "apps/desktop/src/companion/live.tsx",
+        "apps/desktop/src/companion/machine.test.ts",
+        "apps/desktop/src/companion/machine.ts",
+        "apps/desktop/src/companion/model.test.ts",
+        "apps/desktop/src/companion/model.ts",
+        "apps/desktop/src/companion/plain.test.ts",
+        "apps/desktop/src/companion/plain.ts",
+        "apps/desktop/src/companion/preview.tsx",
+        "apps/desktop/src/companion/runtime.test.ts",
+        "apps/desktop/src/companion/runtime.ts",
+        "apps/desktop/src/companion/tools.ts",
+        "apps/desktop/src/companion/views.test.tsx",
+        "apps/desktop/src/companion/views.tsx"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "8eda71be-d611-4429-8363-be69f12b3c83",
+      "keywords": [
+        "companion",
+        "capture",
+        "narration",
+        "state machine"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.908026400+00:00",
+      "name": "desktop-companion-pane",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Connectors Panel",
+      "category": "ui",
+      "cross_refs": [
+        "connector-service"
+      ],
+      "db_tables": [],
+      "description": "Connectors module model and the connectors store for connecting Gmail and Notion. The module's view and stylesheet were removed in the scene cutover; the Accounts scene now renders it.",
+      "entry_points": [
+        "apps/desktop/src/modules/connectors/view.tsx",
+        "apps/desktop/src/stores/connectors.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/modules/connectors/fixtures.ts",
+        "apps/desktop/src/modules/connectors/index.ts",
+        "apps/desktop/src/modules/connectors/model.ts",
+        "apps/desktop/src/modules/connectors/model.test.ts",
+        "apps/desktop/src/stores/connectors.ts",
+        "apps/desktop/src/stores/connectors.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "5358fc95-e827-4820-a853-43a083ccf9c9",
+      "keywords": [
+        "connectors",
+        "gmail",
+        "notion",
+        "oauth",
+        "panel"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.908245500+00:00",
+      "name": "desktop-connectors-panel",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Console Window",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-stage-depth"
+      ],
+      "db_tables": [],
+      "description": "The opt-in console window (ADR 0090): scenes laid out as a followable graph with follow logic, root and preview, ported depth by depth behind a bridge.",
+      "entry_points": [
+        "apps/desktop/src/console/root.tsx",
+        "apps/desktop/src/console/Console.tsx"
+      ],
+      "file_paths": [
+        "apps/desktop/src/console/Console.tsx",
+        "apps/desktop/src/console/console.css",
+        "apps/desktop/src/console/console.css.test.ts",
+        "apps/desktop/src/console/follow.test.ts",
+        "apps/desktop/src/console/follow.ts",
+        "apps/desktop/src/console/graph.test.ts",
+        "apps/desktop/src/console/preview.tsx",
+        "apps/desktop/src/console/root.tsx",
+        "apps/desktop/src/console/scenes.test.tsx",
+        "apps/desktop/src/console/scenes.tsx"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "41fb4245-53a6-4ccd-8a5c-123c93d7fa65",
+      "keywords": [
+        "console",
+        "graph",
+        "follow",
+        "scenes"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.803518700+00:00",
+      "name": "desktop-console",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Desktop E2E",
+      "category": "test",
+      "cross_refs": [
+        "daemon-service"
+      ],
+      "db_tables": [],
+      "description": "Desktop end-to-end tests with a daemon harness and recorded NDJSON transcripts covering run, client, connectors and voice flows.",
+      "entry_points": [
+        "apps/desktop/e2e/support/daemon.ts",
+        "apps/desktop/e2e/run.e2e.test.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/e2e/client.e2e.test.ts",
+        "apps/desktop/e2e/connectors.e2e.test.ts",
+        "apps/desktop/e2e/run.e2e.test.ts",
+        "apps/desktop/e2e/support/daemon.ts",
+        "apps/desktop/e2e/support/page.ts",
+        "apps/desktop/e2e/support/setup.ts",
+        "apps/desktop/e2e/support/wire.ts",
+        "apps/desktop/e2e/vitest.e2e.config.ts",
+        "apps/desktop/e2e/voice.e2e.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "dd8607f2-702e-4816-ba8d-01cc24596b96",
+      "keywords": [
+        "e2e",
+        "transcripts",
+        "daemon",
+        "vitest"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.222054300+00:00",
+      "name": "desktop-e2e",
+      "pinned": false,
+      "tech_stack": [
+        "Vitest",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Halo Overlay",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-shell-rust"
+      ],
+      "db_tables": [],
+      "description": "The halo overlay: a small always-on-top signal showing Athena's state, with rehearsal and signal logic, model, styles and tests.",
+      "entry_points": [
+        "apps/desktop/src/halo/main.ts",
+        "apps/desktop/src/lib/halo.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/halo/halo.css",
+        "apps/desktop/src/halo/halo.css.test.ts",
+        "apps/desktop/src/halo/main.ts",
+        "apps/desktop/src/halo/model.test.ts",
+        "apps/desktop/src/halo/model.ts",
+        "apps/desktop/src/lib/halo-rehearsal.test.ts",
+        "apps/desktop/src/lib/halo-rehearsal.ts",
+        "apps/desktop/src/lib/halo-signal.test.ts",
+        "apps/desktop/src/lib/halo-signal.ts",
+        "apps/desktop/src/lib/halo.test.ts",
+        "apps/desktop/src/lib/halo.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "42ac1c25-8a07-450d-a03a-c3ac5d50f5fe",
+      "keywords": [
+        "halo",
+        "overlay",
+        "signal",
+        "rehearsal",
+        "indicator"
+      ],
+      "last_written_at": "2026-10-14T10:47:40.802339300+00:00",
+      "name": "desktop-halo",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Modules and Browser",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-app-shell-ui"
+      ],
+      "db_tables": [],
+      "description": "Module types plus the browser module's model and fixtures. The module registry and the browser view and stylesheet were deleted when the scenes replaced the module-first window (ADR 0087, 0095).",
+      "entry_points": [
+        "apps/desktop/src/modules/registry.ts",
+        "apps/desktop/src/modules/browser/view.tsx"
+      ],
+      "file_paths": [
+        "apps/desktop/src/modules/types.ts",
+        "apps/desktop/src/modules/browser/fixtures.ts",
+        "apps/desktop/src/modules/browser/index.ts",
+        "apps/desktop/src/modules/browser/model.ts",
+        "apps/desktop/src/modules/browser/model.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "16e21bc2-d34a-4cae-95d3-2a7234889176",
+      "keywords": [
+        "module",
+        "registry",
+        "browser",
+        "tabs",
+        "panel"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.908662300+00:00",
+      "name": "desktop-modules-registry",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Performance Gate",
+      "category": "test",
+      "cross_refs": [
+        "desktop-stage-depth"
+      ],
+      "db_tables": [],
+      "description": "Performance gate for the desktop scenes: budgets with a test, a gate runner and per-scene drive scripts (accounts, apps, bell, chores, mind, stage, surface, voice). Speed is a gate, not a hope (ADR 0089).",
+      "entry_points": [
+        "apps/desktop/scripts/perf-gate.mjs",
+        "apps/desktop/scripts/perf-budgets.mjs"
+      ],
+      "file_paths": [
+        "apps/desktop/scripts/perf-accounts.drive.mjs",
+        "apps/desktop/scripts/perf-apps.drive.mjs",
+        "apps/desktop/scripts/perf-bell.drive.mjs",
+        "apps/desktop/scripts/perf-budgets.mjs",
+        "apps/desktop/scripts/perf-budgets.test.ts",
+        "apps/desktop/scripts/perf-chores.drive.mjs",
+        "apps/desktop/scripts/perf-gate.mjs",
+        "apps/desktop/scripts/perf-mind.drive.mjs",
+        "apps/desktop/scripts/perf-stage.drive.mjs",
+        "apps/desktop/scripts/perf-surface.drive.mjs",
+        "apps/desktop/scripts/perf-voice.drive.mjs"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "47d94d0e-5b94-4d54-ae48-fb5811498a38",
+      "keywords": [
+        "performance",
+        "budget",
+        "gate",
+        "drive",
+        "first paint"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.804062800+00:00",
+      "name": "desktop-perf-gate",
+      "pinned": false,
+      "tech_stack": [
+        "Node.js",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Playbooks Panel",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Playbook model, client helpers, the shipped playbook index and the playbooks store. The panel view and stylesheet were removed in the scene cutover.",
+      "entry_points": [
+        "apps/desktop/src/modules/playbooks/view.tsx",
+        "apps/desktop/src/lib/playbooks.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/lib/playbooks.ts",
+        "apps/desktop/src/lib/playbooks.test.ts",
+        "apps/desktop/src/lib/playbooks.shipped.ts",
+        "apps/desktop/src/modules/playbooks/fixtures.ts",
+        "apps/desktop/src/modules/playbooks/hook.test.tsx",
+        "apps/desktop/src/modules/playbooks/index.ts",
+        "apps/desktop/src/modules/playbooks/model.ts",
+        "apps/desktop/src/modules/playbooks/model.test.ts",
+        "apps/desktop/src/stores/playbooks.ts",
+        "apps/desktop/src/stores/playbooks.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "c891bd97-7471-467d-9b4b-6ec6c26d083e",
+      "keywords": [
+        "playbooks",
+        "panel",
+        "launch",
+        "catalog"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.908879500+00:00",
+      "name": "desktop-playbooks-panel",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "Consumes the daemon connectors and manifest endpoints via stores",
+      "business_feature": "Accounts and Apps Scenes",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-stores",
+        "desktop-stage-depth",
+        "desktop-connectors-panel"
+      ],
+      "db_tables": [],
+      "description": "The Accounts and Apps scenes of the one-window Fathom design, with the scene registry and types. Each scene has a fixture-driven view, a live wiring to the stores and interaction tests. Apps are named by origin and show claims rather than tool classes (ADR 0091).",
+      "entry_points": [
+        "apps/desktop/src/scenes/registry.ts",
+        "apps/desktop/src/scenes/apps/index.tsx"
+      ],
+      "file_paths": [
+        "apps/desktop/src/scenes/accounts/accounts.css",
+        "apps/desktop/src/scenes/accounts/fixtures.ts",
+        "apps/desktop/src/scenes/accounts/index.tsx",
+        "apps/desktop/src/scenes/accounts/interact.test.tsx",
+        "apps/desktop/src/scenes/accounts/live.tsx",
+        "apps/desktop/src/scenes/accounts/view.test.tsx",
+        "apps/desktop/src/scenes/accounts/view.tsx",
+        "apps/desktop/src/scenes/apps/apps.css",
+        "apps/desktop/src/scenes/apps/apps.css.test.ts",
+        "apps/desktop/src/scenes/apps/fixtures.ts",
+        "apps/desktop/src/scenes/apps/index.tsx",
+        "apps/desktop/src/scenes/apps/interact.test.tsx",
+        "apps/desktop/src/scenes/apps/live.tsx",
+        "apps/desktop/src/scenes/apps/model.test.ts",
+        "apps/desktop/src/scenes/apps/model.ts",
+        "apps/desktop/src/scenes/apps/orb.tsx",
+        "apps/desktop/src/scenes/apps/strip.tsx",
+        "apps/desktop/src/scenes/apps/view.test.tsx",
+        "apps/desktop/src/scenes/apps/view.tsx",
+        "apps/desktop/src/scenes/registry.ts",
+        "apps/desktop/src/scenes/types.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "fe808407-91f4-4b85-8688-1125db0aec71",
+      "keywords": [
+        "scene",
+        "accounts",
+        "apps",
+        "fathom",
+        "registry",
+        "origin"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.801175500+00:00",
+      "name": "desktop-scenes-accounts-apps",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript",
+        "Vite",
+        "Tauri"
+      ]
+    },
+    {
+      "api_surface": "Consumes run and playbook stores",
+      "business_feature": "Chores Scene",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-art-bell",
+        "desktop-playbooks-panel"
+      ],
+      "db_tables": [],
+      "description": "The Chores scene: the user's recurring jobs shown as a field of chores with parts, replay of a past turn as a place, and the live wiring. Replay playing outlives remounts in a small store (ADR 0093).",
+      "entry_points": [
+        "apps/desktop/src/scenes/chores/index.tsx",
+        "apps/desktop/src/scenes/chores/view.tsx"
+      ],
+      "file_paths": [
+        "apps/desktop/src/scenes/chores/chore.tsx",
+        "apps/desktop/src/scenes/chores/chores.css",
+        "apps/desktop/src/scenes/chores/chores.css.test.ts",
+        "apps/desktop/src/scenes/chores/field.tsx",
+        "apps/desktop/src/scenes/chores/fixtures.ts",
+        "apps/desktop/src/scenes/chores/index.tsx",
+        "apps/desktop/src/scenes/chores/live.tsx",
+        "apps/desktop/src/scenes/chores/model.test.ts",
+        "apps/desktop/src/scenes/chores/model.ts",
+        "apps/desktop/src/scenes/chores/parts.tsx",
+        "apps/desktop/src/scenes/chores/replay.tsx",
+        "apps/desktop/src/scenes/chores/view.test.tsx",
+        "apps/desktop/src/scenes/chores/view.tsx",
+        "apps/desktop/src/scenes/chores/wired.test.tsx"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "27c95b34-cf14-43fa-9546-1f290fdd7368",
+      "keywords": [
+        "chores",
+        "replay",
+        "field",
+        "scene"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.801699500+00:00",
+      "name": "desktop-scenes-chores",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript",
+        "Vite"
+      ]
+    },
+    {
+      "api_surface": "Consumes engines, origins and tools stores",
+      "business_feature": "Mind and Surface Scenes",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-stores",
+        "desktop-art-bell"
+      ],
+      "db_tables": [],
+      "description": "The Mind scene (what Athena remembers and has approved), the Surface scene (the pages and tools she can reach) and the shared engine section used by both. Fixture-driven views with live wiring and CSS guard tests.",
+      "entry_points": [
+        "apps/desktop/src/scenes/mind/index.tsx",
+        "apps/desktop/src/scenes/surface/index.tsx"
+      ],
+      "file_paths": [
+        "apps/desktop/src/scenes/mind/fixtures.ts",
+        "apps/desktop/src/scenes/mind/index.tsx",
+        "apps/desktop/src/scenes/mind/interact.test.tsx",
+        "apps/desktop/src/scenes/mind/live.tsx",
+        "apps/desktop/src/scenes/mind/mind.css",
+        "apps/desktop/src/scenes/mind/mind.css.test.ts",
+        "apps/desktop/src/scenes/mind/shared.tsx",
+        "apps/desktop/src/scenes/mind/view.test.tsx",
+        "apps/desktop/src/scenes/mind/view.tsx",
+        "apps/desktop/src/scenes/shared/EngineSection.test.tsx",
+        "apps/desktop/src/scenes/shared/EngineSection.tsx",
+        "apps/desktop/src/scenes/shared/engine.css",
+        "apps/desktop/src/scenes/surface/fixtures.ts",
+        "apps/desktop/src/scenes/surface/index.tsx",
+        "apps/desktop/src/scenes/surface/interact.test.tsx",
+        "apps/desktop/src/scenes/surface/live.tsx",
+        "apps/desktop/src/scenes/surface/model.test.ts",
+        "apps/desktop/src/scenes/surface/model.ts",
+        "apps/desktop/src/scenes/surface/surface.css",
+        "apps/desktop/src/scenes/surface/surface.css.test.ts",
+        "apps/desktop/src/scenes/surface/view.test.tsx",
+        "apps/desktop/src/scenes/surface/view.tsx"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "ec3c6a55-2ad9-47a0-8616-02544fcd0f1e",
+      "keywords": [
+        "mind",
+        "memory",
+        "surface",
+        "engine",
+        "scene"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.802571300+00:00",
+      "name": "desktop-scenes-mind-surface",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript",
+        "Vite"
+      ]
+    },
+    {
+      "api_surface": "Consumes voice routes and settings stores",
+      "business_feature": "Voice and Waking Scenes",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-voice-ui",
+        "desktop-setup-module"
+      ],
+      "db_tables": [],
+      "description": "The Voice scene (studio, settings, push-to-talk key capture; one frame loop and reopening a finished studio, ADR 0092) and the Waking scene for first-run arrival, where the first act is reshown by a flag (ADR 0094).",
+      "entry_points": [
+        "apps/desktop/src/scenes/voice/index.tsx",
+        "apps/desktop/src/scenes/waking/index.tsx"
+      ],
+      "file_paths": [
+        "apps/desktop/src/scenes/voice/fixtures.ts",
+        "apps/desktop/src/scenes/voice/index.tsx",
+        "apps/desktop/src/scenes/voice/interact.test.tsx",
+        "apps/desktop/src/scenes/voice/keys.test.ts",
+        "apps/desktop/src/scenes/voice/keys.ts",
+        "apps/desktop/src/scenes/voice/live.tsx",
+        "apps/desktop/src/scenes/voice/parts.tsx",
+        "apps/desktop/src/scenes/voice/settings.tsx",
+        "apps/desktop/src/scenes/voice/studio.tsx",
+        "apps/desktop/src/scenes/voice/view.test.tsx",
+        "apps/desktop/src/scenes/voice/view.tsx",
+        "apps/desktop/src/scenes/voice/voice.css",
+        "apps/desktop/src/scenes/voice/voice.css.test.ts",
+        "apps/desktop/src/scenes/waking/fixtures.ts",
+        "apps/desktop/src/scenes/waking/index.tsx",
+        "apps/desktop/src/scenes/waking/live.tsx",
+        "apps/desktop/src/scenes/waking/reopen.ts",
+        "apps/desktop/src/scenes/waking/view.test.tsx",
+        "apps/desktop/src/scenes/waking/view.tsx",
+        "apps/desktop/src/scenes/waking/waking.css",
+        "apps/desktop/src/scenes/waking/waking.css.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "d92a466e-000a-4519-a875-0c28dbec7f12",
+      "keywords": [
+        "voice studio",
+        "waking",
+        "first run",
+        "push-to-talk",
+        "keys"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.802886200+00:00",
+      "name": "desktop-scenes-voice-waking",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript",
+        "Vite"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "First-Run Setup",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "First-run setup model: readiness checks and the first-run engine choice that moves the daemon (ADR 0085). The glyphs, view and stylesheet were removed in the scene cutover.",
+      "entry_points": [
+        "apps/desktop/src/modules/setup/view.tsx",
+        "apps/desktop/src/modules/setup/readiness.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/modules/setup/fixtures.ts",
+        "apps/desktop/src/modules/setup/index.ts",
+        "apps/desktop/src/modules/setup/model.ts",
+        "apps/desktop/src/modules/setup/model.test.ts",
+        "apps/desktop/src/modules/setup/readiness.ts",
+        "apps/desktop/src/modules/setup/readiness.test.ts",
+        "apps/desktop/src/stores/first-run-engine.test.ts",
+        "apps/desktop/src/stores/first-run-engine-inflight.test.ts",
+        "apps/desktop/src/stores/first-run-engine-late-status.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "9773ec7e-b7ea-4dda-a063-fd912a72a012",
+      "keywords": [
+        "setup",
+        "readiness",
+        "onboarding",
+        "first launch"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.909079900+00:00",
+      "name": "desktop-setup-module",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "Tauri IPC commands",
+      "business_feature": "Native Shell",
+      "category": "lib",
+      "cross_refs": [
+        "page-bridge",
+        "daemon-service"
+      ],
+      "db_tables": [],
+      "description": "Tauri native shell: window layout, tabs, tray, hotkeys, halo and companion windows, screen capture, page bridge injection, hands script and daemon sidecar management, with capability files.",
+      "entry_points": [
+        "apps/desktop/src-tauri/src/lib.rs",
+        "apps/desktop/src-tauri/src/daemon.rs"
+      ],
+      "file_paths": [
+        "apps/desktop/src-tauri/src/bridge.rs",
+        "apps/desktop/src-tauri/src/capture.rs",
+        "apps/desktop/src-tauri/src/companion.rs",
+        "apps/desktop/src-tauri/src/daemon.rs",
+        "apps/desktop/src-tauri/src/halo.rs",
+        "apps/desktop/src-tauri/src/hands.js",
+        "apps/desktop/src-tauri/src/hands.rs",
+        "apps/desktop/src-tauri/src/hands.test.ts",
+        "apps/desktop/src-tauri/src/hotkeys.rs",
+        "apps/desktop/src-tauri/src/layout.rs",
+        "apps/desktop/src-tauri/src/lib.rs",
+        "apps/desktop/src-tauri/src/main.rs",
+        "apps/desktop/src-tauri/src/store.rs",
+        "apps/desktop/src-tauri/src/tabs.rs",
+        "apps/desktop/src-tauri/src/tray.rs"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "29de8ade-bf7f-481c-9aa7-94bef87aab94",
+      "keywords": [
+        "tauri",
+        "tray",
+        "hotkeys",
+        "tabs",
+        "capture",
+        "bridge",
+        "hands",
+        "sidecar",
+        "halo"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.219967200+00:00",
+      "name": "desktop-shell-rust",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "Rust"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Stage and Depth Navigation",
+      "category": "ui",
+      "cross_refs": [
+        "desktop-scenes-accounts-apps",
+        "desktop-console"
+      ],
+      "db_tables": [],
+      "description": "The Stage that hosts the main window's one scene and the depth model that moves between depths. Depth has two shapes because the page webview is native (ADR 0088); motion is transform and opacity only (ADR 0089).",
+      "entry_points": [
+        "apps/desktop/src/stage/Stage.tsx",
+        "apps/desktop/src/depth/model.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/depth/model.test.ts",
+        "apps/desktop/src/depth/model.ts",
+        "apps/desktop/src/depth/shape.test.ts",
+        "apps/desktop/src/depth/shape.ts",
+        "apps/desktop/src/depth/store.test.ts",
+        "apps/desktop/src/depth/store.ts",
+        "apps/desktop/src/stage/Backdrop.tsx",
+        "apps/desktop/src/stage/Stage.test.tsx",
+        "apps/desktop/src/stage/Stage.tsx",
+        "apps/desktop/src/stage/layers.test.ts",
+        "apps/desktop/src/stage/layers.ts",
+        "apps/desktop/src/stage/preview.css",
+        "apps/desktop/src/stage/preview.tsx",
+        "apps/desktop/src/stage/stage.css",
+        "apps/desktop/src/stage/stage.css.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "c11bdae5-0012-4b41-a287-4ad262191093",
+      "keywords": [
+        "stage",
+        "depth",
+        "layers",
+        "backdrop",
+        "hash"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.803763900+00:00",
+      "name": "desktop-stage-depth",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Client State",
+      "category": "lib",
+      "cross_refs": [
+        "desktop-client-lib"
+      ],
+      "db_tables": [],
+      "description": "Client state stores: athena, daemon, engines, origins, run, settings, shell, tabs and tools, with tests. Connectors, playbooks and voice stores sit with their features.",
+      "entry_points": [
+        "apps/desktop/src/stores/run.ts",
+        "apps/desktop/src/stores/daemon.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/stores/athena.ts",
+        "apps/desktop/src/stores/athena.test.ts",
+        "apps/desktop/src/stores/daemon.ts",
+        "apps/desktop/src/stores/daemon.test.ts",
+        "apps/desktop/src/stores/engines.ts",
+        "apps/desktop/src/stores/origins.ts",
+        "apps/desktop/src/stores/run.ts",
+        "apps/desktop/src/stores/run.test.ts",
+        "apps/desktop/src/stores/settings.ts",
+        "apps/desktop/src/stores/settings.test.ts",
+        "apps/desktop/src/stores/shell.ts",
+        "apps/desktop/src/stores/tabs.ts",
+        "apps/desktop/src/stores/tools.ts",
+        "apps/desktop/src/stores/tools.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "a7dc73bb-f8b4-4b57-8fb0-f8032842f356",
+      "keywords": [
+        "store",
+        "run",
+        "settings",
+        "tabs",
+        "origins",
+        "tools",
+        "engines"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.909263800+00:00",
+      "name": "desktop-stores",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Voice UI",
+      "category": "ui",
+      "cross_refs": [
+        "voice-channel"
+      ],
+      "db_tables": [],
+      "description": "Voice module model, audio capture, live session, waveform, shared pieces, voice store and setup helpers. The old studio and view were replaced by the voice scene.",
+      "entry_points": [
+        "apps/desktop/src/modules/voice/view.tsx",
+        "apps/desktop/src/modules/voice/live.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/lib/voice.ts",
+        "apps/desktop/src/lib/voice.test.ts",
+        "apps/desktop/src/lib/voice-setup.ts",
+        "apps/desktop/src/lib/voice-setup.test.ts",
+        "apps/desktop/src/modules/voice/audio.ts",
+        "apps/desktop/src/modules/voice/fixtures.ts",
+        "apps/desktop/src/modules/voice/index.ts",
+        "apps/desktop/src/modules/voice/live.ts",
+        "apps/desktop/src/modules/voice/live.test.ts",
+        "apps/desktop/src/modules/voice/model.ts",
+        "apps/desktop/src/modules/voice/model.test.ts",
+        "apps/desktop/src/modules/voice/parts.tsx",
+        "apps/desktop/src/modules/voice/pieces.tsx",
+        "apps/desktop/src/modules/voice/voice.css",
+        "apps/desktop/src/modules/voice/voice.css.test.ts",
+        "apps/desktop/src/modules/voice/waveform.tsx",
+        "apps/desktop/src/stores/voice.ts",
+        "apps/desktop/src/stores/voice.test.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "0bc9110e-4cfa-484e-a71a-1adfa3f013be",
+      "keywords": [
+        "voice",
+        "waveform",
+        "audio",
+        "push to talk",
+        "studio"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.909408200+00:00",
+      "name": "desktop-voice-ui",
+      "pinned": false,
+      "tech_stack": [
+        "Tauri 2",
+        "React",
+        "TypeScript",
+        "Vite",
+        "Vitest"
+      ]
+    },
+    {
+      "api_surface": "Nebius TokenFactory chat API; CLI subprocess transports",
+      "business_feature": "Model Harness",
+      "category": "lib",
+      "cross_refs": [
+        "core-gate-and-ledger",
+        "browser-lane",
+        "contracts-seam"
+      ],
+      "db_tables": [],
+      "description": "Drives model turns through API and CLI engines: round loop, op grammar, hook-enforced gating policy, transports and ports. Tests now also cover page-understated writes, capture on cards and round failures.",
+      "entry_points": [
+        "src/athena/harness/engines.py",
+        "src/athena/harness/hooks.py",
+        "src/athena/harness/rounds.py"
+      ],
+      "file_paths": [
+        "src/athena/harness/__init__.py",
+        "src/athena/harness/api_harness.py",
+        "src/athena/harness/cli_harness.py",
+        "src/athena/harness/engines.py",
+        "src/athena/harness/hooks.py",
+        "src/athena/harness/op_grammar.py",
+        "src/athena/harness/policy.py",
+        "src/athena/harness/ports.py",
+        "src/athena/harness/rounds.py",
+        "src/athena/harness/tokenfactory.py",
+        "src/athena/harness/transports.py",
+        "tests/harness/__init__.py",
+        "tests/harness/conftest.py",
+        "tests/harness/test_a_page_that_understates_a_write.py",
+        "tests/harness/test_capture_on_card.py",
+        "tests/harness/test_cli_harness.py",
+        "tests/harness/test_engines.py",
+        "tests/harness/test_hooks.py",
+        "tests/harness/test_op_grammar.py",
+        "tests/harness/test_policy.py",
+        "tests/harness/test_ports.py",
+        "tests/harness/test_rounds_failures.py",
+        "tests/harness/test_tokenfactory.py"
+      ],
+      "group": "Model Harness",
+      "group_id": "09a26b8d-51b6-4ccc-b14d-955f945aac9a",
+      "id": "1cd39491-5acf-4229-b227-ae8068800d9b",
+      "keywords": [
+        "engine",
+        "tokenfactory",
+        "nebius",
+        "claude code",
+        "codex",
+        "hooks",
+        "op grammar",
+        "policy",
+        "rounds"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.909703600+00:00",
+      "name": "harness-engines",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Hirelane App",
+      "category": "test",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Hirelane Next.js app routes, server actions, project config and tests.",
+      "entry_points": [
+        "examples/hirelane/app/page.tsx",
+        "examples/hirelane/app/actions.ts"
+      ],
+      "file_paths": [
+        "examples/hirelane/app/actions.ts",
+        "examples/hirelane/app/globals.css",
+        "examples/hirelane/app/layout.tsx",
+        "examples/hirelane/app/page.tsx",
+        "examples/hirelane/app/providers.tsx",
+        "examples/hirelane/eslint.config.mjs",
+        "examples/hirelane/next.config.ts",
+        "examples/hirelane/postcss.config.mjs",
+        "examples/hirelane/test/actions.test.ts",
+        "examples/hirelane/test/board.test.ts",
+        "examples/hirelane/test/brief.test.ts",
+        "examples/hirelane/test/motion.test.ts",
+        "examples/hirelane/test/nav.test.ts",
+        "examples/hirelane/test/register.mjs",
+        "examples/hirelane/test/roster.test.ts",
+        "examples/hirelane/test/seed.test.ts",
+        "examples/hirelane/test/tools.test.ts"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "6a5f981e-5b12-4c14-bd25-689defdd2f16",
+      "keywords": [
+        "hirelane",
+        "actions",
+        "tests",
+        "next"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.225120+00:00",
+      "name": "hirelane-app-and-tests",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Hirelane Board",
+      "category": "ui",
+      "cross_refs": [
+        "hirelane-model-and-lib"
+      ],
+      "db_tables": [],
+      "description": "Hirelane hiring board UI: board, carousel, columns and dossier levels with candidate marks/portraits, shell and presence.",
+      "entry_points": [
+        "examples/hirelane/components/board/Board.tsx",
+        "examples/hirelane/components/board/Dossier.tsx"
+      ],
+      "file_paths": [
+        "examples/hirelane/components/HostCapabilities.tsx",
+        "examples/hirelane/components/board/Board.tsx",
+        "examples/hirelane/components/board/Carousel.tsx",
+        "examples/hirelane/components/board/Columns.tsx",
+        "examples/hirelane/components/board/Dossier.tsx",
+        "examples/hirelane/components/board/carousel/Slide.tsx",
+        "examples/hirelane/components/board/carousel/StageMeta.tsx",
+        "examples/hirelane/components/board/carousel/pose.ts",
+        "examples/hirelane/components/board/columns/facts.tsx",
+        "examples/hirelane/components/board/columns/stacking.ts",
+        "examples/hirelane/components/board/dossier/Acts.tsx",
+        "examples/hirelane/components/board/dossier/Bench.tsx",
+        "examples/hirelane/components/board/dossier/Evidence.tsx",
+        "examples/hirelane/components/board/dossier/Gate.tsx",
+        "examples/hirelane/components/board/dossier/Verdict.tsx",
+        "examples/hirelane/components/board/dossier/parts.tsx",
+        "examples/hirelane/components/board/format.ts",
+        "examples/hirelane/components/board/marks/Face.tsx",
+        "examples/hirelane/components/board/marks/Marks.tsx",
+        "examples/hirelane/components/board/marks/Portrait.tsx",
+        "examples/hirelane/components/board/marks/recipe.ts",
+        "examples/hirelane/components/board/motion.ts",
+        "examples/hirelane/components/board/presence.ts",
+        "examples/hirelane/components/board/register.ts",
+        "examples/hirelane/components/board/shell/Foot.tsx",
+        "examples/hirelane/components/board/shell/Mast.tsx"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "89c7e4c9-2ecd-4131-9ac7-7ff647d041c1",
+      "keywords": [
+        "hirelane",
+        "board",
+        "carousel",
+        "dossier",
+        "candidate",
+        "pipeline"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.224186300+00:00",
+      "name": "hirelane-board-ui",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Hirelane Design Law",
+      "category": "config",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Hirelane design law: tokens, scale/contrast/law checks, and briefs for design passes.",
+      "entry_points": [
+        "examples/hirelane/DESIGN-LAW.md",
+        "examples/hirelane/design/check-law.mjs"
+      ],
+      "file_paths": [
+        "examples/hirelane/design/build-tokens.mjs",
+        "examples/hirelane/design/check-contrast.mjs",
+        "examples/hirelane/design/check-law.mjs",
+        "examples/hirelane/design/hl-scales.css"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "2c7d08b8-f9aa-4b85-908f-99e34042a011",
+      "keywords": [
+        "design law",
+        "tokens",
+        "contrast",
+        "brief",
+        "scales"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.224944200+00:00",
+      "name": "hirelane-design-law",
+      "pinned": false,
+      "tech_stack": [
+        "Node.js",
+        "JSON tokens"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Hirelane Domain",
+      "category": "lib",
+      "cross_refs": [
+        "page-bridge"
+      ],
+      "db_tables": [],
+      "description": "Hirelane board model, WebMCP tools, run hook, and domain lib: candidates, scoring, insights, queries, mail, seed and db.",
+      "entry_points": [
+        "examples/hirelane/lib/scoring.ts",
+        "examples/hirelane/components/board/tools/BoardTools.tsx"
+      ],
+      "file_paths": [
+        "examples/hirelane/components/board/model.ts",
+        "examples/hirelane/components/board/model/candidates.ts",
+        "examples/hirelane/components/board/model/fit.ts",
+        "examples/hirelane/components/board/model/groups.ts",
+        "examples/hirelane/components/board/model/order.ts",
+        "examples/hirelane/components/board/model/stages.ts",
+        "examples/hirelane/components/board/tools/BoardTools.tsx",
+        "examples/hirelane/components/board/tools/index.ts",
+        "examples/hirelane/components/board/tools/read.ts",
+        "examples/hirelane/components/board/tools/roster.ts",
+        "examples/hirelane/components/board/tools/search.ts",
+        "examples/hirelane/components/board/useRun.ts",
+        "examples/hirelane/lib/board/index.ts",
+        "examples/hirelane/lib/board/read.ts",
+        "examples/hirelane/lib/constants.ts",
+        "examples/hirelane/lib/db.ts",
+        "examples/hirelane/lib/insights.ts",
+        "examples/hirelane/lib/mail.ts",
+        "examples/hirelane/lib/manifest.ts",
+        "examples/hirelane/lib/queries.ts",
+        "examples/hirelane/lib/scoring.ts",
+        "examples/hirelane/lib/seed-content.ts",
+        "examples/hirelane/lib/types.ts"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "6c17278c-ed66-4d70-8a4f-4202662f1613",
+      "keywords": [
+        "candidate",
+        "scoring",
+        "fit",
+        "roster",
+        "insights",
+        "mail",
+        "seed",
+        "webmcp"
+      ],
+      "last_written_at": "2026-10-10T00:56:12.800733100+00:00",
+      "name": "hirelane-model-and-lib",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Hirelane Styles",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Hirelane board stylesheets: base tokens, chrome, and level 0/1/2 sheets.",
+      "entry_points": [
+        "examples/hirelane/components/board/style/index.css",
+        "examples/hirelane/components/board/style/base/tokens.css"
+      ],
+      "file_paths": [
+        "examples/hirelane/components/board/style/base/reduced-motion.css",
+        "examples/hirelane/components/board/style/base/stage.css",
+        "examples/hirelane/components/board/style/base/the-room.css",
+        "examples/hirelane/components/board/style/base/tokens.css",
+        "examples/hirelane/components/board/style/chrome/mast.css",
+        "examples/hirelane/components/board/style/chrome/responsive.css",
+        "examples/hirelane/components/board/style/chrome/the-foot.css",
+        "examples/hirelane/components/board/style/chrome/toast.css",
+        "examples/hirelane/components/board/style/index.css",
+        "examples/hirelane/components/board/style/level0/l0-board-2.css",
+        "examples/hirelane/components/board/style/level0/l0-board.css",
+        "examples/hirelane/components/board/style/level1/l1-carousel-2.css",
+        "examples/hirelane/components/board/style/level1/l1-carousel-3.css",
+        "examples/hirelane/components/board/style/level1/l1-carousel.css",
+        "examples/hirelane/components/board/style/level1/l1-ledger.css",
+        "examples/hirelane/components/board/style/level2/l2-dossier-2.css",
+        "examples/hirelane/components/board/style/level2/l2-dossier-3.css",
+        "examples/hirelane/components/board/style/level2/l2-dossier.css"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "5f577ad0-7081-4566-be34-04f5b359bb2e",
+      "keywords": [
+        "css",
+        "tokens",
+        "level",
+        "carousel",
+        "dossier",
+        "responsive"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.224721400+00:00",
+      "name": "hirelane-style",
+      "pinned": false,
+      "tech_stack": [
+        "CSS"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Demo Capture",
+      "category": "config",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Journey capture: outside demo site, narration scripts, and screenshot/record/compose tooling for demo video.",
+      "entry_points": [
+        "examples/journey/scripts/compose.mjs",
+        "examples/journey/script/journey.en.json"
+      ],
+      "file_paths": [
+        "examples/journey/outside/style.css",
+        "examples/journey/playwright.config.ts",
+        "examples/journey/scripts/capture-playbook.mjs",
+        "examples/journey/scripts/compose.mjs",
+        "examples/journey/scripts/narrate.mjs",
+        "examples/journey/scripts/placeholders.mjs",
+        "examples/journey/scripts/record-desktop.mjs",
+        "examples/journey/scripts/serve-outside.mjs",
+        "examples/journey/scripts/shoot-hirelane-r3.mjs",
+        "examples/journey/scripts/shoot-hirelane.mjs",
+        "examples/journey/scripts/shoot-ledgerbox.mjs",
+        "examples/journey/scripts/shoot-tidycrm.mjs",
+        "examples/journey/scripts/shoot.mjs"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "b772acf0-36d8-42d5-9d91-32df4c35ea84",
+      "keywords": [
+        "capture",
+        "narrate",
+        "record",
+        "compose",
+        "screenshots"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.228160900+00:00",
+      "name": "journey-capture",
+      "pinned": false,
+      "tech_stack": [
+        "Node.js",
+        "Playwright"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Journey Stage",
+      "category": "lib",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Journey demo source: staged apps, brain, approvals, ledger, relay, fake connectors and recorded-take specs that drive the desktop-to-page journey.",
+      "entry_points": [
+        "examples/journey/src/stage.ts",
+        "examples/journey/src/boot.ts"
+      ],
+      "file_paths": [
+        "examples/journey/src/approvals.ts",
+        "examples/journey/src/apps.ts",
+        "examples/journey/src/boot.ts",
+        "examples/journey/src/brain.ts",
+        "examples/journey/src/bridge-gate.d.ts",
+        "examples/journey/src/card-page.ts",
+        "examples/journey/src/connector-surface.ts",
+        "examples/journey/src/connectors/fake-mail.ts",
+        "examples/journey/src/connectors/fake-notes.ts",
+        "examples/journey/src/connectors/port.ts",
+        "examples/journey/src/contracts.ts",
+        "examples/journey/src/ledger.ts",
+        "examples/journey/src/onboard.ts",
+        "examples/journey/src/proving.ts",
+        "examples/journey/src/record-page.ts",
+        "examples/journey/src/relay.ts",
+        "examples/journey/src/script.ts",
+        "examples/journey/src/segment-take.ts",
+        "examples/journey/src/stage.ts",
+        "examples/journey/src/strip.ts",
+        "examples/journey/src/surface.ts",
+        "examples/journey/tests/cards.take.spec.ts",
+        "examples/journey/tests/journey.spec.ts",
+        "examples/journey/tests/proving.take.spec.ts",
+        "examples/journey/tests/take.spec.ts"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "c43e44e3-3408-409e-821f-ccdb2ebe8f50",
+      "keywords": [
+        "journey",
+        "stage",
+        "relay",
+        "approvals",
+        "fake connectors",
+        "take"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.227962900+00:00",
+      "name": "journey-stage-src",
+      "pinned": false,
+      "tech_stack": [
+        "TypeScript",
+        "Playwright"
+      ]
+    },
+    {
+      "api_surface": "GET/POST /api/invoices, /api/invoices/[id]",
+      "business_feature": "Ledgerbox App",
+      "category": "api",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Ledgerbox Next.js app routes, invoice API, actions and project config.",
+      "entry_points": [
+        "examples/ledgerbox/app/page.tsx",
+        "examples/ledgerbox/app/api/invoices/route.ts"
+      ],
+      "file_paths": [
+        "examples/ledgerbox/app/actions.ts",
+        "examples/ledgerbox/app/api/invoices/[id]/route.ts",
+        "examples/ledgerbox/app/api/invoices/route.ts",
+        "examples/ledgerbox/app/globals.css",
+        "examples/ledgerbox/app/layout.tsx",
+        "examples/ledgerbox/app/page.tsx",
+        "examples/ledgerbox/app/providers.tsx",
+        "examples/ledgerbox/eslint.config.mjs",
+        "examples/ledgerbox/next.config.ts",
+        "examples/ledgerbox/postcss.config.mjs"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "cdabe24c-7b1e-4074-85e9-725d4414eab3",
+      "keywords": [
+        "invoices api",
+        "actions",
+        "next",
+        "layout"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.226122400+00:00",
+      "name": "ledgerbox-app-shell",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Ledgerbox Domain",
+      "category": "lib",
+      "cross_refs": [],
+      "db_tables": [
+        "invoices"
+      ],
+      "description": "Ledgerbox domain lib: invoices, matching, reminders, export, filters, seed fixtures, tool classes and lane heat.",
+      "entry_points": [
+        "examples/ledgerbox/lib/db.ts",
+        "examples/ledgerbox/lib/tool-classes.ts"
+      ],
+      "file_paths": [
+        "examples/ledgerbox/lib/constants.ts",
+        "examples/ledgerbox/lib/db.ts",
+        "examples/ledgerbox/lib/export.ts",
+        "examples/ledgerbox/lib/filter-period.ts",
+        "examples/ledgerbox/lib/filter.ts",
+        "examples/ledgerbox/lib/format.ts",
+        "examples/ledgerbox/lib/invoice-ref.ts",
+        "examples/ledgerbox/lib/lanes/constants.ts",
+        "examples/ledgerbox/lib/lanes/heat.ts",
+        "examples/ledgerbox/lib/lanes/index.ts",
+        "examples/ledgerbox/lib/lanes/read.ts",
+        "examples/ledgerbox/lib/manifest.ts",
+        "examples/ledgerbox/lib/match.ts",
+        "examples/ledgerbox/lib/reminder.ts",
+        "examples/ledgerbox/lib/seed-fixtures.ts",
+        "examples/ledgerbox/lib/seed.ts",
+        "examples/ledgerbox/lib/tool-classes.ts",
+        "examples/ledgerbox/lib/types.ts"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "3c4969f8-b87d-4ccd-bcab-2ebbcf35526c",
+      "keywords": [
+        "invoice",
+        "match",
+        "reminder",
+        "export",
+        "seed",
+        "tool classes",
+        "heat"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.225768+00:00",
+      "name": "ledgerbox-domain-lib",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Ledgerbox Lanes",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Ledgerbox invoice lanes UI: lanes, cards, spread, swarm, shell, gate and presence.",
+      "entry_points": [
+        "examples/ledgerbox/components/lanes/Lanes.tsx",
+        "examples/ledgerbox/components/lanes/Card.tsx"
+      ],
+      "file_paths": [
+        "examples/ledgerbox/components/lanes/Card.tsx",
+        "examples/ledgerbox/components/lanes/Gate.tsx",
+        "examples/ledgerbox/components/lanes/Lanes.tsx",
+        "examples/ledgerbox/components/lanes/PresenceLine.tsx",
+        "examples/ledgerbox/components/lanes/Spread.tsx",
+        "examples/ledgerbox/components/lanes/Swarm.tsx",
+        "examples/ledgerbox/components/lanes/card/Aside.tsx",
+        "examples/ledgerbox/components/lanes/card/Decide.tsx",
+        "examples/ledgerbox/components/lanes/card/Evidence.tsx",
+        "examples/ledgerbox/components/lanes/card/Foot.tsx",
+        "examples/ledgerbox/components/lanes/card/Head.tsx",
+        "examples/ledgerbox/components/lanes/card/read.ts",
+        "examples/ledgerbox/components/lanes/card/tilt.ts",
+        "examples/ledgerbox/components/lanes/model.ts",
+        "examples/ledgerbox/components/lanes/motion.ts",
+        "examples/ledgerbox/components/lanes/presence.ts",
+        "examples/ledgerbox/components/lanes/shell/Foot.tsx",
+        "examples/ledgerbox/components/lanes/shell/Mast.tsx",
+        "examples/ledgerbox/components/lanes/spread/Glyph.tsx",
+        "examples/ledgerbox/components/lanes/spread/Head.tsx",
+        "examples/ledgerbox/components/lanes/swarm/Lane.tsx",
+        "examples/ledgerbox/components/lanes/swarm/Tip.tsx",
+        "examples/ledgerbox/components/lanes/swarm/marks.ts",
+        "examples/ledgerbox/components/lanes/useRun.ts"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "f4f6bafa-bef4-426d-9731-16357fffa1ee",
+      "keywords": [
+        "ledgerbox",
+        "invoice",
+        "lanes",
+        "card",
+        "swarm",
+        "spread"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.225339900+00:00",
+      "name": "ledgerbox-lanes-ui",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Ledgerbox Model and Tools",
+      "category": "lib",
+      "cross_refs": [
+        "page-bridge"
+      ],
+      "db_tables": [],
+      "description": "Ledgerbox lanes model (attention, books, filters, packing) and WebMCP tools, with tests.",
+      "entry_points": [
+        "examples/ledgerbox/components/lanes/tools/LanesTools.tsx",
+        "examples/ledgerbox/components/lanes/model/books.ts"
+      ],
+      "file_paths": [
+        "examples/ledgerbox/components/lanes/model/attention.ts",
+        "examples/ledgerbox/components/lanes/model/books.ts",
+        "examples/ledgerbox/components/lanes/model/filters.ts",
+        "examples/ledgerbox/components/lanes/model/legend.ts",
+        "examples/ledgerbox/components/lanes/model/packing.ts",
+        "examples/ledgerbox/components/lanes/model/sheet.ts",
+        "examples/ledgerbox/components/lanes/model/status.ts",
+        "examples/ledgerbox/components/lanes/tools/BooksTools.tsx",
+        "examples/ledgerbox/components/lanes/tools/LanesTools.tsx",
+        "examples/ledgerbox/components/lanes/tools/index.ts",
+        "examples/ledgerbox/components/lanes/tools/read.ts",
+        "examples/ledgerbox/components/lanes/tools/search.ts",
+        "examples/ledgerbox/test/books.test.ts",
+        "examples/ledgerbox/test/invoice-ref.test.ts",
+        "examples/ledgerbox/test/journey.test.ts",
+        "examples/ledgerbox/test/lanes.test.ts",
+        "examples/ledgerbox/test/register.mjs",
+        "examples/ledgerbox/test/tools.test.ts"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "b2b5a52a-1543-4808-bba2-6ef1fc46740b",
+      "keywords": [
+        "attention",
+        "books",
+        "filters",
+        "packing",
+        "tools",
+        "webmcp"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.225571600+00:00",
+      "name": "ledgerbox-model-tools",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Ledgerbox Styles",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Ledgerbox stylesheets and design tokens/briefs.",
+      "entry_points": [
+        "examples/ledgerbox/components/lanes/style/index.css",
+        "examples/ledgerbox/design/build-tokens.mjs"
+      ],
+      "file_paths": [
+        "examples/ledgerbox/components/lanes/style/base/heat-in-one-place.css",
+        "examples/ledgerbox/components/lanes/style/base/reduced-motion.css",
+        "examples/ledgerbox/components/lanes/style/base/stage.css",
+        "examples/ledgerbox/components/lanes/style/base/the-sheet.css",
+        "examples/ledgerbox/components/lanes/style/base/tokens.css",
+        "examples/ledgerbox/components/lanes/style/chrome/foot.css",
+        "examples/ledgerbox/components/lanes/style/chrome/mast.css",
+        "examples/ledgerbox/components/lanes/style/chrome/rail-and-toolbar.css",
+        "examples/ledgerbox/components/lanes/style/chrome/responsive-2.css",
+        "examples/ledgerbox/components/lanes/style/chrome/responsive-3.css",
+        "examples/ledgerbox/components/lanes/style/chrome/responsive.css",
+        "examples/ledgerbox/components/lanes/style/chrome/ticked.css",
+        "examples/ledgerbox/components/lanes/style/chrome/toast.css",
+        "examples/ledgerbox/components/lanes/style/index.css",
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm-2.css",
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm-3.css",
+        "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css",
+        "examples/ledgerbox/components/lanes/style/level1/l1-spread-2.css",
+        "examples/ledgerbox/components/lanes/style/level1/l1-spread.css",
+        "examples/ledgerbox/components/lanes/style/level2/l2-the-card-2.css",
+        "examples/ledgerbox/components/lanes/style/level2/l2-the-card-3.css",
+        "examples/ledgerbox/components/lanes/style/level2/l2-the-card.css",
+        "examples/ledgerbox/design/build-tokens.mjs",
+        "examples/ledgerbox/design/lb-scales.css"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "f9349ce6-a48d-4abe-9bb1-412a99b45907",
+      "keywords": [
+        "css",
+        "tokens",
+        "design",
+        "level",
+        "chrome"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.225967300+00:00",
+      "name": "ledgerbox-style-design",
+      "pinned": false,
+      "tech_stack": [
+        "CSS",
+        "Node.js"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Page Bridge",
+      "category": "lib",
+      "cross_refs": [
+        "desktop-shell-rust",
+        "demo-kit-ui-webmcp"
+      ],
+      "db_tables": [],
+      "description": "The in-page bridge: gate and injection scripts that expose a page's WebMCP tools to the agent and enforce the gated-tool protocol.",
+      "entry_points": [
+        "packages/athena-bridge/inject.js",
+        "packages/athena-bridge/gate.js"
+      ],
+      "file_paths": [
+        "packages/athena-bridge/bridge.d.ts",
+        "packages/athena-bridge/eslint.config.js",
+        "packages/athena-bridge/gate.js",
+        "packages/athena-bridge/inject.js",
+        "packages/athena-bridge/test/gate.test.js",
+        "packages/athena-bridge/test/inject.test.js"
+      ],
+      "group": "Page Bridge and Demo Kit",
+      "group_id": "929fea9f-573f-4bbd-8b3c-167d384ec818",
+      "id": "7076f51c-f417-4251-9384-eb06228b684a",
+      "keywords": [
+        "bridge",
+        "webmcp",
+        "inject",
+        "gate",
+        "protocol"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.222223300+00:00",
+      "name": "page-bridge",
+      "pinned": false,
+      "tech_stack": [
+        "JavaScript",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Characters and Gauntlet",
+      "category": "lib",
+      "cross_refs": [
+        "proving-core"
+      ],
+      "db_tables": [],
+      "description": "Characters (personas, scenes, judges) and the adversarial gauntlet (attacks, delivery, approval, verdicts) that test whether the agent behaves and resists injection.",
+      "entry_points": [
+        "src/athena/proving/gauntlet/run.py",
+        "src/athena/proving/characters/run.py"
+      ],
+      "file_paths": [
+        "src/athena/proving/characters/__init__.py",
+        "src/athena/proving/characters/judges.py",
+        "src/athena/proving/characters/persona.py",
+        "src/athena/proving/characters/run.py",
+        "src/athena/proving/characters/scene.py",
+        "src/athena/proving/gauntlet/__init__.py",
+        "src/athena/proving/gauntlet/approve.py",
+        "src/athena/proving/gauntlet/attacks.py",
+        "src/athena/proving/gauntlet/delivery.py",
+        "src/athena/proving/gauntlet/run.py",
+        "src/athena/proving/gauntlet/verdict.py",
+        "tests/proving/test_characters.py",
+        "tests/proving/test_gauntlet.py"
+      ],
+      "group": "Proving Ground",
+      "group_id": "9296a478-43a1-4d91-8d38-f66645b44010",
+      "id": "63aafb7d-7b5c-4d41-a254-fe57017fdb35",
+      "keywords": [
+        "character",
+        "persona",
+        "judge",
+        "gauntlet",
+        "attack",
+        "injection",
+        "verdict"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.219025200+00:00",
+      "name": "proving-characters-gauntlet",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Proving Core",
+      "category": "lib",
+      "cross_refs": [
+        "harness-engines",
+        "core-gate-and-ledger"
+      ],
+      "db_tables": [],
+      "description": "Proving ground core: world model, manifests, roles, token budget, run log and reports used to evaluate the agent against simulated worlds, with the matching tests.",
+      "entry_points": [
+        "src/athena/proving/world.py",
+        "src/athena/proving/runlog.py"
+      ],
+      "file_paths": [
+        "src/athena/proving/__init__.py",
+        "src/athena/proving/__main__.py",
+        "src/athena/proving/budget.py",
+        "src/athena/proving/manifests.py",
+        "src/athena/proving/report.py",
+        "src/athena/proving/roles.py",
+        "src/athena/proving/runlog.py",
+        "src/athena/proving/world.py",
+        "tests/proving/__init__.py",
+        "tests/proving/conftest.py",
+        "tests/proving/test_cards.py",
+        "tests/proving/test_live.py",
+        "tests/proving/test_roles_and_budget.py",
+        "tests/proving/test_world_and_verdict.py"
+      ],
+      "group": "Proving Ground",
+      "group_id": "9296a478-43a1-4d91-8d38-f66645b44010",
+      "id": "82024321-4b38-4a9a-b360-154b5349e47b",
+      "keywords": [
+        "proving",
+        "world",
+        "budget",
+        "roles",
+        "report",
+        "run log",
+        "manifest"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.218849900+00:00",
+      "name": "proving-core",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "Run submission and results HTTP API with static index",
+      "business_feature": "Hosted Proving",
+      "category": "api",
+      "cross_refs": [
+        "proving-core"
+      ],
+      "db_tables": [],
+      "description": "Hosted proving server (app, runner, runs, seed, static trigger page) with container images for the image and serverless deployments.",
+      "entry_points": [
+        "src/athena/proving/server/app.py",
+        "src/athena/proving/server/runner.py"
+      ],
+      "file_paths": [
+        "src/athena/proving/server/__init__.py",
+        "src/athena/proving/server/__main__.py",
+        "src/athena/proving/server/app.py",
+        "src/athena/proving/server/runner.py",
+        "src/athena/proving/server/runs.py",
+        "src/athena/proving/server/seed.py",
+        "tests/proving/test_hosted.py",
+        "tests/proving/test_server.py"
+      ],
+      "group": "Proving Ground",
+      "group_id": "9296a478-43a1-4d91-8d38-f66645b44010",
+      "id": "b5d94170-12ef-41ee-af0a-902add774f7d",
+      "keywords": [
+        "server",
+        "hosted",
+        "serverless",
+        "docker",
+        "runs",
+        "seed"
+      ],
+      "last_written_at": "2026-10-14T10:47:40.803233400+00:00",
+      "name": "proving-hosted-server",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest",
+        "Docker"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Playbook Bench",
+      "category": "lib",
+      "cross_refs": [
+        "proving-core"
+      ],
+      "db_tables": [],
+      "description": "The playbook bench: loads playbook specs, builds evidence and pages, ranks the best use of Athena (ADR 0056), and benches agent performance against each playbook's world and truth.",
+      "entry_points": [
+        "src/athena/proving/playbooks/bench.py",
+        "src/athena/proving/playbooks/spec.py"
+      ],
+      "file_paths": [
+        "src/athena/proving/playbooks/__init__.py",
+        "src/athena/proving/playbooks/__main__.py",
+        "src/athena/proving/playbooks/bench.py",
+        "src/athena/proving/playbooks/evidence.py",
+        "src/athena/proving/playbooks/page.py",
+        "src/athena/proving/playbooks/rank.py",
+        "src/athena/proving/playbooks/spec.py",
+        "tests/proving/test_evidence.py",
+        "tests/proving/test_playbooks.py",
+        "tests/proving/test_playbooks_authoring.py",
+        "tests/proving/test_playbooks_rank.py"
+      ],
+      "group": "Proving Ground",
+      "group_id": "9296a478-43a1-4d91-8d38-f66645b44010",
+      "id": "97743df6-7a6a-4c80-94c5-75d8872b6e12",
+      "keywords": [
+        "playbook",
+        "bench",
+        "evidence",
+        "truth",
+        "world",
+        "spec"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.910260600+00:00",
+      "name": "proving-playbooks-bench",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Proving Sandbox",
+      "category": "lib",
+      "cross_refs": [
+        "proving-core"
+      ],
+      "db_tables": [],
+      "description": "Sandbox client and spike for running proving worlds in an isolated environment, with fakes and tests.",
+      "entry_points": [
+        "src/athena/proving/sandbox/client.py",
+        "src/athena/proving/sandbox/spike.py"
+      ],
+      "file_paths": [
+        "src/athena/proving/sandbox/__init__.py",
+        "src/athena/proving/sandbox/__main__.py",
+        "src/athena/proving/sandbox/client.py",
+        "src/athena/proving/sandbox/spike.py",
+        "tests/proving/sandbox/__init__.py",
+        "tests/proving/sandbox/conftest.py",
+        "tests/proving/sandbox/fakes.py",
+        "tests/proving/sandbox/test_sandbox_client.py",
+        "tests/proving/sandbox/test_sandbox_spike.py"
+      ],
+      "group": "Proving Ground",
+      "group_id": "9296a478-43a1-4d91-8d38-f66645b44010",
+      "id": "f6744886-efbb-462e-827c-4987256cbceb",
+      "keywords": [
+        "sandbox",
+        "client",
+        "spike",
+        "isolation",
+        "fakes"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.219591+00:00",
+      "name": "proving-sandbox",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "TidyCRM Blocks",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "TidyCRM blocks UI: world, cluster, field, dossier, stat, level-0 octant scene and sheet.",
+      "entry_points": [
+        "examples/tidycrm/components/blocks/Blocks.tsx",
+        "examples/tidycrm/components/blocks/World.tsx"
+      ],
+      "file_paths": [
+        "examples/tidycrm/components/blocks/Blocks.tsx",
+        "examples/tidycrm/components/blocks/Cluster.tsx",
+        "examples/tidycrm/components/blocks/Dossier.tsx",
+        "examples/tidycrm/components/blocks/Field.tsx",
+        "examples/tidycrm/components/blocks/Stat.tsx",
+        "examples/tidycrm/components/blocks/World.tsx",
+        "examples/tidycrm/components/blocks/dossier/Checks.tsx",
+        "examples/tidycrm/components/blocks/dossier/Gate.tsx",
+        "examples/tidycrm/components/blocks/dossier/Head.tsx",
+        "examples/tidycrm/components/blocks/dossier/Pair.tsx",
+        "examples/tidycrm/components/blocks/dossier/parts.tsx",
+        "examples/tidycrm/components/blocks/field/Head.tsx",
+        "examples/tidycrm/components/blocks/field/useProjector.ts",
+        "examples/tidycrm/components/blocks/l0/Keys.tsx",
+        "examples/tidycrm/components/blocks/l0/L0.tsx",
+        "examples/tidycrm/components/blocks/l0/cells.ts",
+        "examples/tidycrm/components/blocks/l0/contract.ts",
+        "examples/tidycrm/components/blocks/l0/octants/Scene.tsx",
+        "examples/tidycrm/components/blocks/l0/useReduced.ts",
+        "examples/tidycrm/components/blocks/sheet/Foot.tsx",
+        "examples/tidycrm/components/blocks/sheet/Head.tsx",
+        "examples/tidycrm/components/shell/HostCapabilities.tsx"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "0769ade7-991a-4984-b4ec-0fc87a1ac287",
+      "keywords": [
+        "tidycrm",
+        "blocks",
+        "dossier",
+        "cluster",
+        "octants",
+        "sheet"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.226333100+00:00",
+      "name": "tidycrm-blocks-ui",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "TidyCRM Design",
+      "category": "config",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "TidyCRM design system: token sets, scale briefs and design docs.",
+      "entry_points": [
+        "examples/tidycrm/DESIGN.md",
+        "examples/tidycrm/design/build-tokens.mjs"
+      ],
+      "file_paths": [
+        "examples/tidycrm/design/build-tokens.mjs",
+        "examples/tidycrm/design/tc-scales.css"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "8a40a6b6-386e-4a37-a60e-595a898ba5f9",
+      "keywords": [
+        "design",
+        "tokens",
+        "broadsheet",
+        "signal",
+        "brief"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.227439400+00:00",
+      "name": "tidycrm-design",
+      "pinned": false,
+      "tech_stack": [
+        "Node.js",
+        "JSON tokens"
+      ]
+    },
+    {
+      "api_surface": "GET /api/export",
+      "business_feature": "TidyCRM Domain",
+      "category": "lib",
+      "cross_refs": [],
+      "db_tables": [
+        "contacts"
+      ],
+      "description": "TidyCRM domain lib and app: CSV import, normalization, matching, mutations, summaries, blocks data and the Next.js routes and config.",
+      "entry_points": [
+        "examples/tidycrm/lib/mutations.ts",
+        "examples/tidycrm/lib/matching.ts"
+      ],
+      "file_paths": [
+        "examples/tidycrm/app/actions.ts",
+        "examples/tidycrm/app/api/export/route.ts",
+        "examples/tidycrm/app/globals.css",
+        "examples/tidycrm/app/layout.tsx",
+        "examples/tidycrm/app/page.tsx",
+        "examples/tidycrm/app/providers.tsx",
+        "examples/tidycrm/eslint.config.mjs",
+        "examples/tidycrm/lib/blocks/databases.ts",
+        "examples/tidycrm/lib/blocks/index.ts",
+        "examples/tidycrm/lib/blocks/rows.ts",
+        "examples/tidycrm/lib/blocks/totals.ts",
+        "examples/tidycrm/lib/constants.ts",
+        "examples/tidycrm/lib/csv.ts",
+        "examples/tidycrm/lib/db.ts",
+        "examples/tidycrm/lib/matching.ts",
+        "examples/tidycrm/lib/mutations.ts",
+        "examples/tidycrm/lib/normalize.ts",
+        "examples/tidycrm/lib/seed-data.ts",
+        "examples/tidycrm/lib/summary.ts",
+        "examples/tidycrm/lib/types.ts",
+        "examples/tidycrm/next.config.ts",
+        "examples/tidycrm/postcss.config.mjs"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "046526ec-f0cc-4de8-b68b-37271969bd74",
+      "keywords": [
+        "csv",
+        "normalize",
+        "matching",
+        "mutations",
+        "dedupe",
+        "export"
+      ],
+      "last_written_at": "2026-10-10T00:56:12.801214200+00:00",
+      "name": "tidycrm-domain-lib",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "TidyCRM Model and Tools",
+      "category": "lib",
+      "cross_refs": [
+        "page-bridge"
+      ],
+      "db_tables": [],
+      "description": "TidyCRM block model, spatial camera/geometry, motion tokens, arrival and run hooks, and WebMCP tools.",
+      "entry_points": [
+        "examples/tidycrm/components/blocks/model.ts",
+        "examples/tidycrm/components/blocks/tools/BlocksTools.tsx"
+      ],
+      "file_paths": [
+        "examples/tidycrm/components/blocks/beats.ts",
+        "examples/tidycrm/components/blocks/model.ts",
+        "examples/tidycrm/components/blocks/model/databases.ts",
+        "examples/tidycrm/components/blocks/model/deviations.ts",
+        "examples/tidycrm/components/blocks/model/keys.ts",
+        "examples/tidycrm/components/blocks/model/lens.ts",
+        "examples/tidycrm/components/blocks/model/rows.ts",
+        "examples/tidycrm/components/blocks/model/tables.ts",
+        "examples/tidycrm/components/blocks/model/vocabulary.ts",
+        "examples/tidycrm/components/blocks/motion-tokens.ts",
+        "examples/tidycrm/components/blocks/presence.ts",
+        "examples/tidycrm/components/blocks/space/camera.ts",
+        "examples/tidycrm/components/blocks/space/geometry.ts",
+        "examples/tidycrm/components/blocks/space/useWheelZoom.ts",
+        "examples/tidycrm/components/blocks/tools/BlocksTools.tsx",
+        "examples/tidycrm/components/blocks/tools/index.ts",
+        "examples/tidycrm/components/blocks/tools/read.ts",
+        "examples/tidycrm/components/blocks/tools/search.ts",
+        "examples/tidycrm/components/blocks/useArrival.ts",
+        "examples/tidycrm/components/blocks/useRun.ts"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "b96add2f-57d0-4373-8741-748e5560658e",
+      "keywords": [
+        "beats",
+        "camera",
+        "geometry",
+        "lens",
+        "deviations",
+        "tools",
+        "webmcp"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.226661500+00:00",
+      "name": "tidycrm-spatial-model-tools",
+      "pinned": false,
+      "tech_stack": [
+        "Next.js",
+        "React",
+        "TypeScript"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "TidyCRM Styles",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "TidyCRM stylesheets: base, chrome and level 0/1/2 sheets.",
+      "entry_points": [
+        "examples/tidycrm/components/blocks/style/index.css"
+      ],
+      "file_paths": [
+        "examples/tidycrm/components/blocks/style/base/reduced-motion.css",
+        "examples/tidycrm/components/blocks/style/base/the-sheet.css",
+        "examples/tidycrm/components/blocks/style/base/tokens.css",
+        "examples/tidycrm/components/blocks/style/chrome/rail-and-bar.css",
+        "examples/tidycrm/components/blocks/style/chrome/responsive.css",
+        "examples/tidycrm/components/blocks/style/chrome/sheet-foot.css",
+        "examples/tidycrm/components/blocks/style/chrome/the-sheet-head.css",
+        "examples/tidycrm/components/blocks/style/chrome/toast.css",
+        "examples/tidycrm/components/blocks/style/index.css",
+        "examples/tidycrm/components/blocks/style/level0/l0.css",
+        "examples/tidycrm/components/blocks/style/level1/l1-cells.css",
+        "examples/tidycrm/components/blocks/style/level1/l1-dress.css",
+        "examples/tidycrm/components/blocks/style/level1/l1-grid.css",
+        "examples/tidycrm/components/blocks/style/level2/body-2.css",
+        "examples/tidycrm/components/blocks/style/level2/body.css",
+        "examples/tidycrm/components/blocks/style/level2/foot-2.css",
+        "examples/tidycrm/components/blocks/style/level2/foot.css",
+        "examples/tidycrm/components/blocks/style/level2/head.css",
+        "examples/tidycrm/components/blocks/style/level2/l2-dossier.css",
+        "examples/tidycrm/components/blocks/style/level2/the-identity-pair-beside-the-rest.css"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "67f42245-132f-4a4e-bef9-35f7748e9fea",
+      "keywords": [
+        "css",
+        "level",
+        "dossier",
+        "chrome",
+        "tokens"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.227159100+00:00",
+      "name": "tidycrm-style",
+      "pinned": false,
+      "tech_stack": [
+        "CSS"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "TidyCRM Tests",
+      "category": "test",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "TidyCRM tests: arrival, beats, bounds, campaign, conflicts, databases, liveness, motion tokens, mutations, tools.",
+      "entry_points": [
+        "examples/tidycrm/test/tools.test.ts",
+        "examples/tidycrm/test/mutations.test.ts"
+      ],
+      "file_paths": [
+        "examples/tidycrm/test/arrival.test.ts",
+        "examples/tidycrm/test/beats.test.ts",
+        "examples/tidycrm/test/bounds.test.ts",
+        "examples/tidycrm/test/campaign.test.ts",
+        "examples/tidycrm/test/conflict-flag.test.ts",
+        "examples/tidycrm/test/databases.test.ts",
+        "examples/tidycrm/test/l0-fill.test.ts",
+        "examples/tidycrm/test/liveness.test.ts",
+        "examples/tidycrm/test/memory.test.ts",
+        "examples/tidycrm/test/motion-tokens.test.ts",
+        "examples/tidycrm/test/mutations.test.ts",
+        "examples/tidycrm/test/pairs.test.ts",
+        "examples/tidycrm/test/register.mjs",
+        "examples/tidycrm/test/sheet.test.ts",
+        "examples/tidycrm/test/space.test.ts",
+        "examples/tidycrm/test/tokens.test.ts",
+        "examples/tidycrm/test/tools.test.ts"
+      ],
+      "group": "Example Apps",
+      "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "id": "b6cf415b-c532-4798-a974-7a9a30477484",
+      "keywords": [
+        "tests",
+        "mutations",
+        "conflict",
+        "bounds",
+        "liveness"
+      ],
+      "last_written_at": "2026-10-10T00:56:06.227677300+00:00",
+      "name": "tidycrm-tests",
+      "pinned": false,
+      "tech_stack": [
+        "TypeScript",
+        "node:test"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "UAT Overlay",
+      "category": "test",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "UAT overlay: characters, journeys J1-J6, rubric, environment, accepted gaps and the Windows driver scripts. Run reports under uat/runs are deliberately left unmapped.",
+      "entry_points": [
+        "uat/README.md",
+        "uat/rubric.md"
+      ],
+      "file_paths": [
+        "uat/driver/drive-script.mjs"
+      ],
+      "group": "Docs, UAT and Build",
+      "group_id": "14f5a011-c736-4fda-8287-7c450fbf704e",
+      "id": "d282a392-f7cb-4a89-886a-f7401e0583e6",
+      "keywords": [
+        "uat",
+        "character",
+        "journey",
+        "rubric",
+        "driver"
+      ],
+      "last_written_at": "2026-10-14T10:47:40.803595500+00:00",
+      "name": "uat-characters-journeys",
+      "pinned": false,
+      "tech_stack": [
+        "Markdown",
+        "PowerShell"
+      ]
+    },
+    {
+      "api_surface": "WebSocket voice stream",
+      "business_feature": "Voice Channel",
+      "category": "lib",
+      "cross_refs": [
+        "daemon-service"
+      ],
+      "db_tables": [],
+      "description": "Voice in and out: speech-to-text (Whisper), text-to-speech (Kokoro, OpenAI), a voice gateway, WebSocket transport, spoken commands, install and config helpers.",
+      "entry_points": [
+        "src/athena/channels/voice/gateway.py",
+        "src/athena/channels/voice/backends.py"
+      ],
+      "file_paths": [
+        "src/athena/channels/__init__.py",
+        "src/athena/channels/voice/__init__.py",
+        "src/athena/channels/voice/backends.py",
+        "src/athena/channels/voice/commands.py",
+        "src/athena/channels/voice/config.py",
+        "src/athena/channels/voice/gateway.py",
+        "src/athena/channels/voice/home.py",
+        "src/athena/channels/voice/install.py",
+        "src/athena/channels/voice/kokoro.py",
+        "src/athena/channels/voice/tts.py",
+        "src/athena/channels/voice/whisper.py",
+        "src/athena/channels/voice/ws.py",
+        "tests/channels/__init__.py",
+        "tests/channels/conftest.py",
+        "tests/channels/fake_engine.py",
+        "tests/channels/test_commands.py",
+        "tests/channels/test_voice_config.py",
+        "tests/channels/test_voice_engines.py",
+        "tests/channels/test_voice_gateway.py",
+        "tests/channels/test_voice_install.py",
+        "tests/channels/test_voice_openai.py",
+        "tests/channels/test_ws.py"
+      ],
+      "group": "Daemon and Channels",
+      "group_id": "56572968-53ad-4a18-aee8-5fe511fa9c1e",
+      "id": "a4c21bac-6dbe-41a3-b6ad-e7bec7001865",
+      "keywords": [
+        "voice",
+        "whisper",
+        "kokoro",
+        "tts",
+        "stt",
+        "gateway",
+        "websocket",
+        "commands"
+      ],
+      "last_written_at": "2026-10-14T10:47:16.910108300+00:00",
+      "name": "voice-channel",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest",
+        "Whisper",
+        "Kokoro"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Workspace Build",
+      "category": "config",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Workspace and CI config: pnpm/uv manifests, pyproject, GitHub Actions workflow, project guidance files and sidecar build scripts.",
+      "entry_points": [
+        "pyproject.toml",
+        "package.json"
+      ],
+      "file_paths": [
+        "scripts/build-sidecar.py",
+        "scripts/sidecar_entry.py"
+      ],
+      "group": "Docs, UAT and Build",
+      "group_id": "14f5a011-c736-4fda-8287-7c450fbf704e",
+      "id": "ba5a181a-6d9e-4738-9ee3-81470d93525b",
+      "keywords": [
+        "pnpm",
+        "uv",
+        "ci",
+        "sidecar",
+        "pyinstaller"
+      ],
+      "last_written_at": "2026-10-14T10:47:40.803816700+00:00",
+      "name": "workspace-build-config",
+      "pinned": false,
+      "tech_stack": [
+        "pnpm",
+        "uv",
+        "GitHub Actions"
+      ]
+    }
+  ],
+  "generated_at": "2026-10-14T10:47:40.941161600+00:00",
+  "generator": "personas-context-scan",
+  "groups": [
+    {
+      "color": "amber",
+      "context_count": 4,
+      "domain": "shared",
+      "id": "d5035657-33c5-441a-b405-45a2207b4ac9",
+      "name": "Agent Core"
+    },
+    {
+      "color": "blue",
+      "context_count": 2,
+      "domain": "infrastructure",
+      "id": "09a26b8d-51b6-4ccc-b14d-955f945aac9a",
+      "name": "Model Harness"
+    },
+    {
+      "color": "indigo",
+      "context_count": 3,
+      "domain": "infrastructure",
+      "id": "56572968-53ad-4a18-aee8-5fe511fa9c1e",
+      "name": "Daemon and Channels"
+    },
+    {
+      "color": "pink",
+      "context_count": 1,
+      "domain": "integration",
+      "id": "981edc64-c819-451f-b7e6-497122f81fda",
+      "name": "Connectors"
+    },
+    {
+      "color": "violet",
+      "context_count": 5,
+      "domain": "feature",
+      "id": "9296a478-43a1-4d91-8d38-f66645b44010",
+      "name": "Proving Ground"
+    },
+    {
+      "color": "emerald",
+      "context_count": 0,
+      "domain": "data",
+      "id": "9ea7797c-3270-446a-a4f5-05f516ac3414",
+      "name": "Playbook Library"
+    },
+    {
+      "color": "orange",
+      "context_count": 21,
+      "domain": "feature",
+      "id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "name": "Desktop Companion"
+    },
+    {
+      "color": "red",
+      "context_count": 5,
+      "domain": "shared",
+      "id": "929fea9f-573f-4bbd-8b3c-167d384ec818",
+      "name": "Page Bridge and Demo Kit"
+    },
+    {
+      "color": "blue",
+      "context_count": 21,
+      "domain": "feature",
+      "id": "761597ed-4b30-4aca-8723-56d045fbb507",
+      "name": "Example Apps"
+    },
+    {
+      "color": "emerald",
+      "context_count": 2,
+      "domain": "infrastructure",
+      "id": "14f5a011-c736-4fda-8287-7c450fbf704e",
+      "name": "Docs, UAT and Build"
+    }
+  ],
+  "project": {
+    "id": "121880ff-b6b1-4363-8280-9e7dda7794c5",
+    "name": "athena-portable",
+    "root": "C:\\Users\\kazda\\kiro\\athena-portable"
+  },
+  "provenance": {
+    "git_commit": "b2e185a0068f2430c5c160e786c6289731c6ab7d",
+    "git_commit_count": 576
+  },
+  "stats": {
+    "contexts": 64,
+    "files": 974,
+    "groups": 10,
+    "use_cases": 12
+  },
+  "taxonomy": {
+    "context_categories": [
+      "ui",
+      "api",
+      "lib",
+      "data",
+      "test",
+      "config"
+    ],
+    "group_domains": [
+      "feature",
+      "infrastructure",
+      "shared",
+      "integration",
+      "data"
+    ]
+  },
+  "use_cases": [
+    {
+      "contexts": [
+        "proving-core",
+        "proving-playbooks-bench",
+        "proving-characters-gauntlet",
+        "proving-sandbox",
+        "proving-hosted-server",
+        "harness-engines"
+      ],
+      "description": "The agent is evaluated against simulated worlds, with run logs, token budgets, reports and a hosted runner, to produce verdicts on behavior.",
+      "id": "cabd77b0-86cd-4015-b966-ce9ba137bc74",
+      "kind": "capability",
+      "name": "Agent proving ground",
+      "pinned": false,
+      "primary_context": "proving-core",
+      "slug": "agent-proving-ground",
+      "tier": "major"
+    },
+    {
+      "contexts": [
+        "harness-engines",
+        "daemon-service",
+        "core-gate-and-ledger",
+        "contracts-seam",
+        "cli-and-wiring",
+        "desktop-companion-pane",
+        "desktop-client-lib"
+      ],
+      "description": "A user asks Athena for something and the model engine (API or CLI) runs the turn: round loop, op grammar, tool calls, narration streamed back to the desktop companion.",
+      "id": "67996fcd-9b24-43bd-aed3-b749891fcc0b",
+      "kind": "user_flow",
+      "name": "Agent turn execution",
+      "pinned": false,
+      "primary_context": "harness-engines",
+      "slug": "agent-turn-execution",
+      "tier": "major"
+    },
+    {
+      "contexts": [
+        "desktop-setup-module",
+        "daemon-service",
+        "desktop-shell-rust",
+        "desktop-build-config",
+        "workspace-build-config"
+      ],
+      "description": "Guided onboarding checks readiness of the daemon, engines and voice, and walks the user to a working install.",
+      "id": "69bf4085-5146-452e-80e3-3fe44451e563",
+      "kind": "user_flow",
+      "name": "First-run setup",
+      "pinned": false,
+      "primary_context": "desktop-setup-module",
+      "slug": "first-run-setup",
+      "tier": "major"
+    },
+    {
+      "contexts": [
+        "core-gate-and-ledger",
+        "page-bridge",
+        "daemon-service",
+        "desktop-companion-pane",
+        "harness-engines",
+        "desktop-stores"
+      ],
+      "description": "Risky tool calls are gated, the user approves or denies them in the companion, the decision is recorded, and every model invocation is written to the ledger.",
+      "id": "cc00ecbe-ef38-4582-b445-85cd99e922ef",
+      "kind": "user_flow",
+      "name": "Gated action approval",
+      "pinned": false,
+      "primary_context": "core-gate-and-ledger",
+      "slug": "gated-action-approval",
+      "tier": "major"
+    },
+    {
+      "contexts": [
+        "connector-service",
+        "desktop-connectors-panel",
+        "daemon-service",
+        "daemon-e2e-tests"
+      ],
+      "description": "The user connects Gmail and Notion through OAuth. Tokens are stored in a sealed vault and the agent uses the connectors through ports.",
+      "id": "95d2c7f3-1459-4017-9118-9e366b0d3ad3",
+      "kind": "integration",
+      "name": "Gmail and Notion connectors",
+      "pinned": false,
+      "primary_context": "connector-service",
+      "slug": "gmail-and-notion-connectors",
+      "tier": "major"
+    },
+    {
+      "contexts": [
+        "proving-characters-gauntlet",
+        "core-gate-and-ledger",
+        "page-bridge",
+        "harness-engines"
+      ],
+      "description": "Adversarial attacks delivered through page content are tested to confirm that gated tools and refusal rules hold.",
+      "id": "9bb2d0f0-1f4d-4771-b7a1-ab4ab9884c65",
+      "kind": "capability",
+      "name": "Injection resistance",
+      "pinned": false,
+      "primary_context": "proving-characters-gauntlet",
+      "slug": "injection-resistance",
+      "tier": "major"
+    },
+    {
+      "contexts": [
+        "demo-kit-zoom-engine",
+        "hirelane-board-ui",
+        "tidycrm-blocks-ui",
+        "ledgerbox-lanes-ui",
+        "atlas-lanes-drawing",
+        "demo-kit-tests"
+      ],
+      "description": "Example apps (Hirelane, TidyCRM, Ledgerbox, Atlas) use the shared zoom engine to move between levels while keeping identity, and expose the same view to the agent.",
+      "id": "6e776203-18e7-4866-a025-cae42cb71937",
+      "kind": "capability",
+      "name": "Layered semantic-zoom UI",
+      "pinned": false,
+      "primary_context": "demo-kit-zoom-engine",
+      "slug": "layered-semantic-zoom-ui",
+      "tier": "standard"
+    },
+    {
+      "contexts": [
+        "page-bridge",
+        "browser-lane",
+        "demo-kit-ui-webmcp",
+        "desktop-modules-registry",
+        "desktop-shell-rust",
+        "harness-engines"
+      ],
+      "description": "The agent reads and acts on the user's open web page through the page bridge and browser lane, using the tools the page registers.",
+      "id": "08137a05-bea8-4c31-ad0b-71fa4dd7052a",
+      "kind": "capability",
+      "name": "Page operation via WebMCP",
+      "pinned": false,
+      "primary_context": "page-bridge",
+      "slug": "page-operation-via-webmcp",
+      "tier": "major"
+    },
+    {
+      "contexts": [
+        "desktop-playbooks-panel",
+        "proving-playbooks-bench",
+        "daemon-service",
+        "harness-engines",
+        "core-brain-memory"
+      ],
+      "description": "The user browses playbooks, launches one, and the agent carries it out against a portal. The bench grades the result against the playbook's truth.",
+      "id": "2bb7c896-a396-49a0-9ca9-38dcd9ff2890",
+      "kind": "user_flow",
+      "name": "Playbook execution",
+      "pinned": false,
+      "primary_context": "desktop-playbooks-panel",
+      "slug": "playbook-execution",
+      "tier": "major"
+    },
+    {
+      "contexts": [
+        "desktop-halo",
+        "desktop-companion-pane",
+        "desktop-stores",
+        "desktop-shell-rust"
+      ],
+      "description": "A halo overlay and companion narration show Athena's state (idle, working, awaiting approval) in plain language alongside the user's page.",
+      "id": "bab7a6bf-d366-4d4d-a260-d1fda0e46321",
+      "kind": "user_flow",
+      "name": "Presence and halo signal",
+      "pinned": false,
+      "primary_context": "desktop-halo",
+      "slug": "presence-and-halo-signal",
+      "tier": "standard"
+    },
+    {
+      "contexts": [
+        "core-brain-memory",
+        "core-gate-and-ledger",
+        "contracts-seam",
+        "harness-engines"
+      ],
+      "description": "Athena remembers episodes, facts and procedural notes, each with provenance enforced at write time, and recalls them in later turns.",
+      "id": "bceaf777-7d81-4163-a382-aabd45d4e7c8",
+      "kind": "capability",
+      "name": "Provenance-backed memory",
+      "pinned": false,
+      "primary_context": "core-brain-memory",
+      "slug": "provenance-backed-memory",
+      "tier": "major"
+    },
+    {
+      "contexts": [
+        "voice-channel",
+        "desktop-voice-ui",
+        "daemon-service",
+        "harness-engines",
+        "desktop-e2e"
+      ],
+      "description": "The user speaks to Athena and hears replies, using Whisper speech-to-text, Kokoro text-to-speech, a voice gateway and spoken commands.",
+      "id": "71b29faa-9a7e-4484-8a6f-4a33064030c6",
+      "kind": "user_flow",
+      "name": "Voice conversation",
+      "pinned": false,
+      "primary_context": "voice-channel",
+      "slug": "voice-conversation",
+      "tier": "major"
+    }
+  ],
+  "version": 2
+}

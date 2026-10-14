@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-10-14T10:47:18.349690600+00:00",
+  "library_commit": null,
+  "library_kind": "home",
+  "library_path": "C:/Users/kazda/.claude/skills",
+  "library_remote": null,
+  "note": "Snapshot written by the Personas app; may be up to one scan old. Compare `version` fields (major.minor; null = unversioned, treat as 1.0) to judge staleness — not hashes. `library: null` means the skill is not in the workspace library. See docs/skill-standard.md for the reflection and sync contract that consumes this file.",
+  "project": {
+    "id": "121880ff-b6b1-4363-8280-9e7dda7794c5",
+    "name": "athena-portable",
+    "root_path": "C:/Users/kazda/kiro/athena-portable"
+  },
+  "skills": [
+    {
+      "invokes_30d": 0,
+      "library": null,
+      "name": "scan-sweep",
+      "siblings": [],
+      "sync_state": "local_only",
+      "version": "4.6"
+    },
+    {
+      "invokes_30d": 0,
+      "library": null,
+      "name": "spark",
+      "siblings": [],
+      "sync_state": "in_sync",
+      "version": "1.7"
+    },
+    {
+      "invokes_30d": 0,
+      "library": null,
+      "name": "uat",
+      "siblings": [],
+      "sync_state": "in_sync",
+      "version": "1.11"
+    }
+  ],
+  "version": 1,
+  "workspace": null
+}

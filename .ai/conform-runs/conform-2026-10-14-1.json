@@ -1,0 +1,83 @@
+{
+  "schema": "rkb-run-result/1",
+  "run_id": "conform-2026-10-14-1",
+  "skill": "conform",
+  "skill_version": "1.8.3",
+  "mode": "unknown",
+  "domain": null,
+  "started_at": "2026-10-14T11:24:00Z",
+  "ended_at": "2026-10-14T11:28:55Z",
+  "exit": 0,
+  "counts": {
+    "dispatched": 0,
+    "landed": 6,
+    "declined": 0,
+    "idled": 0,
+    "contended": 0
+  },
+  "subjects": [
+    {
+      "id": "agent-memory",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "mcp-tools",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "voice-io",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "native-shell-integration",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "untrusted-extension-host",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    },
+    {
+      "id": "eval-harness",
+      "at": "2026-10-14",
+      "engine": "claude-opus-5-5",
+      "outcome": "landed",
+      "points_before": null,
+      "points_after": null
+    }
+  ],
+  "verdicts": [],
+  "files": [
+    ".ai/registry-map.json"
+  ],
+  "commits": [
+    {
+      "sha": "4e3b57d",
+      "branch": "main",
+      "pathspec": ".ai/registry-map.json"
+    }
+  ],
+  "pr": null,
+  "declined": [],
+  "failure_signature": null,
+  "notes": "6 pairs judged inside lens-scan step 1 of com.xkazm04.registry: 4 deviations, 2 not-applicable; budget 6 of 43 strong unknown pairs."
+}
