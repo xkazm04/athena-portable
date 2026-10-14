@@ -74,7 +74,11 @@ test("a write is what the flags say, exactly as the catalog derives it", () => {
   const row = selectConnectors([view()], true, null, true, {}, {}, INERT_ACTIONS, NOW).rows[0];
   expect(row.reads.map((t) => t.name)).toEqual(["search"]);
   expect(row.writes.map((t) => t.name)).toEqual(["append_to_page", "rename"]);
-  expect(isWrite({ name: "x", description: "", reversible: null, side_effects: "internal" })).toBe(false);
+  // manifest.py default_class: GATED unless reversible is True and nothing leaves the app.
+  expect(isWrite({ name: "x", description: "", reversible: null, side_effects: "internal" })).toBe(true);
+  expect(isWrite({ name: "x", description: "", side_effects: "none" } as never)).toBe(true);
+  expect(isWrite({ name: "x", description: "", reversible: true, side_effects: "internal" })).toBe(false);
+  expect(isWrite({ name: "x", description: "", reversible: true, side_effects: "external" })).toBe(true);
 });
 
 test("the seal is a sentence only while something is sealed, and busy and errors ride the row", () => {
