@@ -7,18 +7,28 @@ import { facetFor, fixtureIds, fixtures, pathFor } from "./fixtures";
 import { labeller } from "./index";
 import {
   EDGE_FROM,
+  EDGE_ORDER,
+  LEDGER_WIDE,
+  SPINE_STEPS,
   artFor,
+  beforeAfterOf,
+  blueprintOf,
   choreAt,
   chorePath,
+  emptyLine,
   firstSentence,
-  foundLine,
   markLabel,
   markPoints,
   markSize,
-  marqueeOf,
+  nextSort,
   pct,
+  pickedRow,
   runPath,
+  shortLine,
+  stillStep,
+  totalsLine,
   turnAt,
+  valueCell,
 } from "./model";
 import { REPLAY_STEP_MS, isPlaying, setPlaying, stopPlaying } from "./replay";
 
@@ -52,18 +62,7 @@ describe("places", () => {
   });
 });
 
-describe("the marquee and the marks", () => {
-  it("says a chore's verdict and that its value is an estimate, never more", () => {
-    const m = marqueeOf(refunds);
-    expect(m.title).toBe("Late-parcel refunds");
-    expect(m.eyebrow).toBe("E-commerce");
-    expect(m.line).toContain("Exceeds");
-    expect(m.line).toContain("author's estimate");
-    const unbenched = typical.items.find((v) => v.verdict.word === "unbenched")!;
-    expect(marqueeOf(unbenched).line).toContain("Not benched");
-    expect(marqueeOf(unbenched).line).not.toMatch(/found|measured/);
-  });
-
+describe("the marks", () => {
   it("labels a mark for a screen reader with its value, verdict and edge", () => {
     expect(markLabel(refunds)).toBe("Late-parcel refunds: $4,940 a year, Exceeds, on the edge");
   });
@@ -99,11 +98,90 @@ describe("the marquee and the marks", () => {
   });
 });
 
-describe("words", () => {
-  it("states the money found only when something is benched", () => {
-    expect(foundLine(typical)).toBe("$551.40 of $708.40 found");
-    expect(foundLine(fixtures.empty!)).toBe("");
+describe("the ledger's words", () => {
+  const unbenched = typical.items.find((v) => v.verdict.word === "unbenched")!;
+
+  it("says the bench's totals in one line, and claims nothing when nothing is benched", () => {
+    expect(totalsLine(typical)).toBe("3 playbooks · 1 of 2 benched exceed the bar · $551.40 found on the bench");
+    expect(totalsLine(fixtures.degraded!)).toBe("1 playbook · none benched yet");
   });
+
+  it("cycles a column's head: most first, then turned round, then the edge's order back", () => {
+    let s = EDGE_ORDER;
+    s = nextSort(s, "value");
+    expect(s).toEqual({ key: "value", dir: "desc" });
+    s = nextSort(s, "value");
+    expect(s).toEqual({ key: "value", dir: "asc" });
+    expect(nextSort(s, "value")).toEqual(EDGE_ORDER);
+    expect(nextSort(s, "time")).toEqual({ key: "time", dir: "desc" });
+  });
+
+  it("names the area and the job a filter that leaves nothing was set to", () => {
+    expect(emptyLine({ category: "health", job: "contest" })).toBe(
+      "No playbook in Health & clinics whose job is to win a dispute.",
+    );
+    expect(emptyLine({ category: "family", job: "all" })).toBe("No playbook in Family & estate.");
+    expect(emptyLine({ category: "all", job: "comply" })).toBe("No playbook in any area whose job is to stay compliant.");
+  });
+
+  it("keeps the pick while the rows show it, and falls back to the first row when they do not", () => {
+    expect(pickedRow(typical.items, "flight-compensation")?.id).toBe("flight-compensation");
+    expect(pickedRow(typical.items, "gone")?.id).toBe(typical.items[0]!.id);
+    expect(pickedRow([], "gone")).toBeNull();
+  });
+
+  it("puts a month's value on the year's scale and leaves a claim's in its own unit", () => {
+    const chargebacks = typical.items.find((v) => v.id === "chargeback-evidence")!;
+    expect(valueCell(chargebacks)).toEqual({ figure: "$21,600", per: "a year" });
+    expect(valueCell(refunds)).toEqual({ figure: "$4,940", per: "a year" });
+  });
+
+  it("keeps a long sentence to its first clause, cut at a word", () => {
+    expect(shortLine("Agencies charge 25 percent; some charge more.")).toBe("Agencies charge 25 percent");
+    const cut = shortLine("word ".repeat(40), 30);
+    expect(cut.length).toBeLessThanOrEqual(31);
+    expect(cut.endsWith("…")).toBe(true);
+  });
+
+  it("draws the blueprint from the playbook alone: its portals, at most six steps, its gates, its result", () => {
+    const plan = blueprintOf(refunds);
+    expect(plan.portals.map((a) => a.name)).toEqual(refunds.playbook.apps.map((a) => a.name));
+    expect(plan.steps.length).toBeLessThanOrEqual(SPINE_STEPS);
+    expect(plan.steps.length + plan.more).toBe(refunds.playbook.steps.length);
+    expect(plan.gates).toHaveLength(refunds.playbook.gates.length);
+    expect(plan.result.measured).toBe(true);
+    expect(plan.guard).toEqual({ avoided: 2, of: 2 });
+    const bar = blueprintOf(unbenched);
+    expect(bar.result.measured).toBe(false);
+    expect(bar.result.line).toContain("not benched");
+    expect(bar.guard).toBeNull();
+  });
+
+  it("sets the chore by hand against her measured run, and says nothing measured when unbenched", () => {
+    const band = beforeAfterOf(refunds);
+    expect(band.manual.figure).toBe("3 h");
+    expect(band.athena?.figure).toMatch(/min$/);
+    expect(band.athena?.line).toContain("turns");
+    expect(band.ratio).toBe(refunds.speed);
+    expect(beforeAfterOf(unbenched).athena).toBeNull();
+  });
+
+  it("steps along the strip and holds at its ends", () => {
+    expect(stillStep(0, "ArrowRight", 3)).toBe(1);
+    expect(stillStep(2, "ArrowRight", 3)).toBe(2);
+    expect(stillStep(0, "ArrowLeft", 3)).toBe(0);
+    expect(stillStep(1, "End", 3)).toBe(2);
+    expect(stillStep(1, "Home", 3)).toBe(0);
+    expect(stillStep(1, "a", 3)).toBeNull();
+    expect(stillStep(0, "ArrowRight", 0)).toBeNull();
+  });
+
+  it("collapses at the width the stylesheet's container query names", () => {
+    expect(LEDGER_WIDE).toBe(1100);
+  });
+});
+
+describe("words", () => {
   it("takes the first sentence", () => {
     expect(firstSentence("One. Two.")).toBe("One.");
     expect(firstSentence("No full stop")).toBe("No full stop");

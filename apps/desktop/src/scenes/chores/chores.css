@@ -41,9 +41,6 @@
   overflow-wrap: anywhere;
   min-height: 2.1em;
 }
-.ch-marquee[data-hot] {
-  color: color-mix(in srgb, var(--accent) 38%, var(--foreground));
-}
 .ch-marquee--chore {
   font-size: clamp(2rem, 3.2vw, 3.4rem);
   min-height: 0;
@@ -115,19 +112,6 @@ h4.ch-title {
   line-height: 1.45;
   color: var(--muted-foreground);
 }
-.ch-hint {
-  margin: 0;
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: var(--muted-foreground);
-  min-height: 2.9em;
-}
-/* The words column is centred in the hero and its sentence changes under the pointer, from the
- * field's line to a chore's. It holds two lines of each (the hint wraps in a 280px column too), so
- * the column keeps its height and the title does not shift as marks are crossed. */
-.ch-words .ch-line {
-  min-height: 3em;
-}
 .ch-flag {
   display: flex;
   gap: 8px;
@@ -160,38 +144,155 @@ h4.ch-title {
   padding-left: 20px;
 }
 
-/* ---- the field --------------------------------------------------------------------------- */
+/* ---- the ledger ---------------------------------------------------------------------------- */
 
+/* The field is a container: the ledger is laid out by the width of the depth frame, not of the
+ * window, and `LEDGER_WIDE` in model.ts spells the same 1100px for the pick's behaviour. Its three
+ * columns scroll on their own inside the field's height, so the preview stays in view however far
+ * the table runs; the field's padding still keeps them clear of the gauge and the dock. */
 .ch-field {
-  display: grid;
-  gap: 40px;
-  align-content: start;
-  /* rows are their content's height: a definite container height must not squeeze them */
-  grid-auto-rows: max-content;
+  container: ch-field / inline-size;
+  overflow: hidden;
+  padding-right: 24px;
 }
 .ch-field__empty {
-  min-height: 60%;
+  height: 100%;
   display: grid;
   place-items: center;
 }
-.ch-hero {
+.ch-led {
+  height: 100%;
   display: grid;
-  grid-template-columns: minmax(280px, 34%) minmax(0, 1fr);
-  gap: 3vw;
-  align-items: center;
-  min-height: min(560px, 68vh);
+  grid-template-columns: 196px minmax(0, 1fr) clamp(380px, 32%, 440px);
+  gap: var(--density-gap) 24px;
+  min-height: 0;
 }
-.ch-words {
+.ch-led > * {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* the rail: the areas, each a button with its count, the one in force raised */
+.ch-areas {
+  padding: 4px 4px 4px 0;
+}
+.ch-areas__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  gap: 12px;
-  align-content: center;
-  max-width: 34rem;
+  gap: 2px;
+}
+.ch-area {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-interactive);
+  background: none;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast);
+}
+.ch-area:hover {
+  background: var(--hover-wash);
+}
+.ch-area[aria-current] {
+  background: var(--card-raised);
+  border-color: var(--line);
+  box-shadow: inset 2px 0 0 var(--accent);
+  font-weight: 600;
+}
+.ch-area[data-none] {
+  color: var(--muted-foreground);
+}
+.ch-area__n {
+  color: var(--muted-foreground);
+}
+
+/* the centre: the words, the toolbar, then the table or the map */
+.ch-centre {
+  display: grid;
+  gap: var(--density-gap);
+  align-content: start;
+  padding: 0 4px 4px;
+}
+.ch-centre__head {
+  display: grid;
+  gap: 4px;
+}
+.ch-centre__title {
+  margin: 0;
+  font-size: clamp(1.75rem, 2.4vw, 2.4rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 .ch-totals {
+  font-variant-numeric: tabular-nums;
+}
+.ch-toolbar {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px var(--density-gap);
+}
+.ch-toolbar__group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.ch-toolbar .btn[aria-pressed="true"] {
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+.ch-none {
+  display: grid;
   gap: 8px;
-  margin-top: 4px;
+  justify-items: start;
+}
+
+/* the table's rows: a thumbnail, the name over its domain, figures that align */
+.ch-roster .table td {
+  vertical-align: middle;
+}
+.ch-row__thumb {
+  display: block;
+  width: 64px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--recessed) 70%, transparent);
+}
+.ch-row__name,
+.ch-row__fig {
+  display: grid;
+  gap: 0;
+}
+.ch-row__title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.ch-row__job {
+  white-space: nowrap;
+}
+.ch-row__fig .ch-note {
+  white-space: nowrap;
 }
 
 /* the map: an HTML plot over a drawn ground, so its type is the same size at every width */
@@ -202,7 +303,7 @@ h4.ch-title {
 .ch-map__frame {
   position: relative;
   width: 100%;
-  height: clamp(320px, 58vh, 620px);
+  height: clamp(280px, 46vh, 560px);
   margin-bottom: 66px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-card);
@@ -308,19 +409,18 @@ h4.ch-title {
   background: color-mix(in srgb, var(--card-bg) 88%, transparent);
 }
 .ch-mark:hover,
-.ch-mark:focus-visible,
-.ch-mark[data-hot] {
+.ch-mark:focus-visible {
   z-index: 2;
   transform: translate(-50%, 50%) scale(1.22);
   background: color-mix(in srgb, var(--tone) 38%, var(--card-bg));
 }
-.ch-mark[data-dim] {
-  opacity: 0.25;
-}
-.ch-mark[data-dim]:hover,
-.ch-mark[data-dim]:focus-visible,
-.ch-mark[data-dim][data-hot] {
-  opacity: 1;
+/* the picked mark: a ring outside its own, so the pick reads without a colour of its own */
+.ch-mark[aria-pressed="true"] {
+  z-index: 3;
+  transform: translate(-50%, 50%) scale(1.22);
+  box-shadow:
+    0 0 0 3px var(--background),
+    0 0 0 5px var(--foreground);
 }
 
 .ch-legend {
@@ -342,199 +442,459 @@ h4.ch-title {
   background: color-mix(in srgb, var(--accent) 13%, transparent);
 }
 
-/* the bench in numbers */
-.ch-bench {
-  display: grid;
-  gap: 16px;
-}
-.ch-lede {
-  margin: 0;
-  max-width: 52rem;
-  font-size: 1.0625rem;
-  line-height: 1.55;
-  color: var(--foreground);
-}
-.ch-numbers {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--density-gap);
-  margin: 0;
-}
-.ch-number {
-  display: grid;
-  gap: 2px;
-  align-content: start;
-  padding: var(--density-pad-sm) var(--density-pad);
+/* ---- the preview ----------------------------------------------------------------------------- */
+
+/* The pane scrolls on its own; its foot (the adopt row) is sticky at the bottom of that scroll,
+ * so what to do with a playbook is in reach wherever the reading stopped. */
+.ch-pane {
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
-  background: color-mix(in srgb, var(--card-bg) 86%, transparent);
+  background: color-mix(in srgb, var(--card-bg) 92%, transparent);
 }
-.ch-number dt {
-  font-size: 0.8125rem;
-  font-weight: 600;
+.ch-pane__body {
+  display: grid;
+  gap: 20px;
+  padding: var(--density-pad);
+}
+.ch-pane__head {
+  display: grid;
+  gap: 6px;
+}
+.ch-pane__head .ch-body {
+  font-size: 0.875rem;
+  line-height: 1.5;
   color: var(--muted-foreground);
 }
-.ch-number dd {
+.ch-pane__name {
   margin: 0;
+  font-size: 1.375rem;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
 }
-.ch-number__n {
-  font-size: 1.875rem;
+.ch-pane__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.ch-pane__worth {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* the blueprint: a plan on ruled paper, sources on the left joined by a bus to the spine */
+.ch-plan {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.ch-plan__sheet {
+  --rule: color-mix(in srgb, var(--primary) 9%, transparent);
+  --ink: color-mix(in srgb, var(--primary) 70%, var(--foreground));
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.25fr);
+  gap: 0 28px;
+  padding: var(--density-pad-sm);
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--line));
+  border-radius: var(--radius-card);
+  background-color: color-mix(in srgb, var(--recessed) 80%, transparent);
+  background-image:
+    linear-gradient(var(--rule) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.ch-plan__head {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.ch-plan__in {
+  position: relative;
+}
+/* the bus: one line down the sources' right edge, each source a tick into it */
+.ch-plan__portals {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.ch-plan__portals::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  right: -14px;
+  border-right: 2px solid var(--ink);
+}
+.ch-plan__portal {
+  position: relative;
+  display: grid;
+  padding: 6px 8px;
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  background: var(--card-bg);
+}
+.ch-plan__portal::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: -15px;
+  width: 14px;
+  border-top: 2px solid var(--ink);
+}
+.ch-plan__name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.ch-plan__role {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--muted-foreground);
+}
+.ch-plan__portal .ch-plan__role {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.ch-plan__portal--more {
+  border-style: dashed;
+  background: none;
+}
+/* the spine: numbered nodes on one line, the bus arriving at its first */
+.ch-plan__run {
+  position: relative;
+  display: grid;
+  align-content: start;
+}
+.ch-plan__run::before {
+  content: "";
+  position: absolute;
+  top: 37px;
+  left: -14px;
+  width: 14px;
+  border-top: 2px solid var(--ink);
+}
+.ch-plan__spine {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.ch-plan__spine::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  bottom: -18px;
+  left: 10px;
+  border-left: 2px solid var(--ink);
+}
+.ch-plan__step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+}
+.ch-plan__n {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--card-bg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.ch-plan__text {
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ch-plan__step--more .ch-plan__text {
+  color: var(--muted-foreground);
+}
+/* a gate: a diamond checkpoint on the spine, in the warning's hue, where she stops for you */
+.ch-plan__gate .ch-plan__n {
+  width: 16px;
+  height: 16px;
+  margin-left: 3px;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  border-color: var(--status-warning);
+  background: color-mix(in srgb, var(--status-warning) 30%, var(--card-bg));
+}
+.ch-plan__ask {
+  font-weight: 600;
+}
+/* the end: what the flow produced, the guard against the traps beside it */
+.ch-plan__end {
+  position: relative;
+  margin-top: 18px;
+  padding: 8px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--card-bg);
+}
+.ch-plan__end:not([data-measured]) {
+  border-style: dashed;
+}
+.ch-plan__end .ch-plan__head {
+  margin-bottom: 2px;
+}
+.ch-plan__figure {
+  margin: 0;
+  font-size: 1.5rem;
   font-weight: 300;
   line-height: 1.15;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums lining-nums;
 }
+.ch-plan__guard {
+  display: inline-block;
+  margin: 6px 0 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--status-success);
+  background: color-mix(in srgb, var(--status-success) 14%, transparent);
+}
 
-/* the chores */
-.ch-roll {
-  display: grid;
-  gap: var(--density-gap);
-}
-.ch-roll__head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--density-gap);
-  flex-wrap: wrap;
-}
-.ch-roll__title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 400;
-}
-.ch-none {
+/* the storyboard: the still in hand at 16:10, a strip of every still under it */
+.ch-story {
   display: grid;
   gap: 8px;
-  justify-items: start;
 }
-.ch-toolbar {
+.ch-story__frame {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+.ch-story__still {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--recessed);
+}
+.ch-story__strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px;
+}
+.ch-story__pick {
+  flex: 1 1 0;
+  min-width: 48px;
+  max-width: 96px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: var(--recessed);
+  cursor: pointer;
+  opacity: 0.7;
+  transition:
+    opacity var(--duration-fast) var(--ease-fast),
+    border-color var(--duration-fast) var(--ease-fast);
+}
+.ch-story__pick:hover,
+.ch-story__pick[aria-pressed="true"] {
+  opacity: 1;
+}
+.ch-story__pick[aria-pressed="true"] {
+  border-color: var(--foreground);
+}
+.ch-story__pick img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* the before-and-after band: two sides, one big figure each, the ratio between them */
+.ch-band {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.ch-band__side {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  padding: var(--density-pad-sm);
+}
+.ch-band__side p {
+  margin: 0;
+}
+.ch-band__side[data-athena] {
+  border-left: 1px solid var(--line);
+  background: color-mix(in srgb, var(--status-success) 8%, transparent);
+}
+.ch-band__n {
+  font-size: 1.75rem;
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.ch-band__ratio {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 6px var(--density-pad-sm);
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+
+/* the adopt row, held at the foot of the pane's scroll */
+.ch-adopt {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: var(--density-pad-sm) var(--density-pad);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: var(--card-bg);
+}
+.ch-adopt__row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 24px;
+  align-items: center;
+  gap: 8px 12px;
 }
-.ch-grid {
+.ch-adopt__open {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) var(--ease-fast);
+}
+.ch-adopt__open:hover {
+  opacity: 0.8;
+}
+.ch-adopt .ch-said {
+  margin-top: 4px;
+}
+
+/* the fit: one row a portal, the case, the command as it will be read */
+.ch-fit {
+  display: grid;
+  gap: var(--density-gap);
+  padding-top: var(--density-pad-sm);
+  border-top: 1px solid var(--line);
+}
+.ch-fit__portals {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
-  gap: var(--density-gap);
-}
-/* `content-visibility: auto` paints inside the item's box, so the tile's 2px lift and its focus
- * ring (2px line, 2px offset) would be cut off at the card's own edge. The item carries 4px of
- * room for them and gives the same 4px back in its margin, so the cards do not move. */
-.ch-grid__item {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 420px;
-  padding: 4px;
-  margin: -4px;
-}
-.ch-card-tile {
-  --tone: var(--status-neutral);
-  width: 100%;
-  height: 100%;
-  display: grid;
-  gap: 6px;
-  align-content: start;
-  justify-items: start;
-  text-align: left;
-  padding: var(--density-pad-sm);
-  font: inherit;
-  color: var(--foreground);
-  cursor: pointer;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: color-mix(in srgb, var(--card-bg) 90%, transparent);
-  transition:
-    transform var(--duration-fast) var(--ease-fast),
-    border-color var(--duration-fast) var(--ease-fast);
-}
-.ch-card-tile[data-verdict="exceeds"] { --tone: var(--status-success); }
-.ch-card-tile[data-verdict="meets"] { --tone: var(--status-info); }
-.ch-card-tile[data-verdict="short"] { --tone: var(--status-warning); }
-.ch-card-tile[data-edge] {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
-}
-.ch-card-tile:hover,
-.ch-card-tile[data-hot] {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-}
-.ch-card-tile__art {
-  justify-self: stretch;
-  padding: 8px;
-  border-radius: calc(var(--radius-card) - 2px);
-  background: color-mix(in srgb, var(--recessed) 70%, transparent);
-  border-bottom: 3px solid color-mix(in srgb, var(--tone) 70%, transparent);
-}
-.ch-card-tile__art svg {
-  width: 100%;
-  height: auto;
-}
-.ch-card-tile__head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.ch-rank {
-  display: inline-grid;
-  place-items: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 4px;
-  border-radius: 50%;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  border: 2px solid var(--tone);
-}
-.ch-card-tile__title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.25;
-}
-.ch-card-tile__verdict {
-  display: flex;
-  align-items: center;
   gap: 10px;
 }
-.ch-card-tile__figure {
-  font-size: 1.75rem;
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-}
-.ch-card-tile__foot {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.ch-fit__portal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  margin-top: 4px;
+  gap: 6px 12px;
 }
-.ch-thumb {
-  position: relative;
-  display: block;
-  width: 100%;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid var(--line);
+.ch-fit__who {
+  display: grid;
 }
-.ch-thumb img {
-  display: block;
-  width: 100%;
-  height: 84px;
-  object-fit: cover;
+.ch-fit__choice {
+  display: flex;
+  gap: 4px;
 }
-.ch-thumb[data-stale] img {
-  opacity: 0.6;
+.ch-fit__mine {
+  grid-column: 1 / -1;
 }
-.ch-thumb__len {
-  position: absolute;
-  right: 6px;
-  bottom: 6px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  color: var(--foreground);
-  background: color-mix(in srgb, var(--background) 82%, transparent);
+.ch-fit__note {
+  resize: vertical;
+}
+.ch-fit__said {
+  display: grid;
+  gap: 4px;
+}
+.ch-fit__command {
+  margin: 0;
+  max-height: 12rem;
+  overflow: auto;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--recessed);
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* ---- the ledger, narrower --------------------------------------------------------------------- */
+
+/* Under 1560px the table gives up the Job and Portals columns (both are in the preview), so a
+ * playbook's name keeps the room to be read. */
+@container ch-field (max-width: 1560px) {
+  .ch-roster .table th:nth-child(3),
+  .ch-roster .table td:nth-child(3),
+  .ch-roster .table th:nth-child(4),
+  .ch-roster .table td:nth-child(4) {
+    display: none;
+  }
+}
+/* Under 1100px there is no preview: the rail becomes a row of areas over the centre, which scrolls. */
+@container ch-field (max-width: 1099.98px) {
+  .ch-led {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .ch-led > .ch-pane {
+    display: none;
+  }
+  .ch-areas {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 2px 0 6px;
+  }
+  .ch-areas__list {
+    display: flex;
+    gap: 4px;
+  }
+  .ch-area {
+    white-space: nowrap;
+    gap: 8px;
+  }
+  /* no preview says the job here, so the table does */
+  .ch-roster .table th:nth-child(3),
+  .ch-roster .table td:nth-child(3) {
+    display: table-cell;
+  }
 }
 
 /* ---- one chore --------------------------------------------------------------------------- */
@@ -1241,23 +1601,6 @@ button.ch-glance:hover {
 @media (max-width: 899px) {
   .chores {
     padding: 12px 16px 120px 48px;
-  }
-  .ch-hero {
-    grid-template-columns: 1fr;
-    min-height: 0;
-  }
-  .ch-marquee {
-    min-height: 0;
-  }
-  .ch-map {
-    padding-left: 44px;
-  }
-  .ch-map__frame {
-    height: auto;
-    aspect-ratio: 1 / 1;
-  }
-  .ch-map__axis--y {
-    left: -46px;
   }
   .ch-chore__top,
   .ch-chore__body,

@@ -1,6 +1,8 @@
-/** The Chores stylesheet's rules — README section 3.5, ADR 0087 and 0089. */
+/** The Chores stylesheet's rules — README section 3.5, ADR 0087, 0089 and 0096. */
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
+
+import { LEDGER_WIDE } from "./model";
 
 const css = readFileSync(new URL("./chores.css", import.meta.url), "utf8");
 
@@ -17,13 +19,6 @@ test("small text is set in the primary, which clears 4.5:1 in both themes, never
   for (const sel of [".ch-eyebrow", ".ch-link", ".ch-map__zone", ".ch-facets__title", ".ch-turn__who"]) {
     expect(rule(sel), sel).toMatch(/color:\s*var\(--primary\)/);
   }
-});
-
-test("a card of the grid is not clipped by its own content-visibility box: it holds room for the lift and the focus ring", () => {
-  const item = rule(".ch-grid__item");
-  expect(item).toMatch(/content-visibility:\s*auto/);
-  expect(item).toMatch(/padding:\s*4px/);
-  expect(item).toMatch(/margin:\s*-4px/);
 });
 
 test("every control the pointer can press eases its hover on the fast duration", () => {
@@ -55,9 +50,9 @@ test("the line that says what a press did is reserved, so the words arriving mov
 
 test("gaps and pads are the density tokens, not 14px one-offs between the 12 and the 16", () => {
   expect(css).not.toMatch(/(padding|gap|margin)[a-z-]*:[^;]*\b14px/);
-  expect(rule(".ch-grid")).toMatch(/gap:\s*var\(--density-gap\)/);
-  expect(rule(".ch-numbers")).toMatch(/gap:\s*var\(--density-gap\)/);
-  expect(rule(".ch-card-tile")).toMatch(/padding:\s*var\(--density-pad-sm\)/);
+  expect(rule(".ch-centre")).toMatch(/gap:\s*var\(--density-gap\)/);
+  expect(rule(".ch-pane__body")).toMatch(/padding:\s*var\(--density-pad\)/);
+  expect(rule(".ch-band__side")).toMatch(/padding:\s*var\(--density-pad-sm\)/);
 });
 
 test("the film's box has the shape of the committed stills before they load, so the text under it holds still", () => {
@@ -72,8 +67,37 @@ test("the on-the-edge flag and the chip are the same pill: one padding, one size
   expect(size(".ch-edge-flag")).toBe(size(".ch-chip"));
 });
 
-test("the hero's words column keeps its height while the sentence under the pointer changes", () => {
-  expect(rule(".ch-words .ch-line")).toMatch(/min-height:\s*3em/);
-  expect(rule(".ch-hint")).toMatch(/line-height:\s*1\.45/);
-  expect(rule(".ch-hint")).toMatch(/min-height:\s*2\.9em/);
+test("the ledger is laid out by the field's own width: a container, three columns, each its own scroll", () => {
+  expect(rule(".ch-field")).toMatch(/container:\s*ch-field \/ inline-size/);
+  const led = rule(".ch-led");
+  expect(led).toMatch(/grid-template-columns:\s*196px minmax\(0, 1fr\) clamp\(380px, 32%, 440px\)/);
+  expect(rule(".ch-led > *")).toMatch(/overflow:\s*auto/);
+});
+
+test("the adopt row is held at the foot of the preview's own scroll", () => {
+  const adopt = rule(".ch-adopt");
+  expect(adopt).toMatch(/position:\s*sticky/);
+  expect(adopt).toMatch(/bottom:\s*0/);
+  expect(adopt).toMatch(/background:\s*var\(--card-bg\)/);
+});
+
+test("under the width the view names, the preview goes and the rail becomes a row", () => {
+  const at = css.indexOf(`@container ch-field (max-width: ${LEDGER_WIDE - 0.02}px)`);
+  expect(at, "the collapse spells LEDGER_WIDE").toBeGreaterThan(-1);
+  const block = css.slice(at, css.indexOf("\n}\n", at));
+  expect(block).toMatch(/\.ch-led > \.ch-pane \{\s*display:\s*none/);
+  expect(block).toMatch(/\.ch-areas__list \{\s*display:\s*flex/);
+  expect(block).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\)/);
+});
+
+test("the picked area and the picked mark read without a colour of their own", () => {
+  expect(rule(".ch-area[aria-current]")).toMatch(/box-shadow:\s*inset 2px 0 0 var\(--accent\)/);
+  expect(rule('.ch-mark[aria-pressed="true"]')).toMatch(/0 0 0 5px var\(--foreground\)/);
+});
+
+test("a storyboard still holds its 16:10 box before it loads, so the band under it does not move", () => {
+  expect(rule(".ch-story__still")).toMatch(/aspect-ratio:\s*16 \/ 10/);
+  expect(rule(".ch-story__still")).toMatch(/object-fit:\s*contain/);
+  expect(rule(".ch-row__thumb")).toMatch(/width:\s*64px/);
+  expect(rule(".ch-row__thumb")).toMatch(/height:\s*40px/);
 });
