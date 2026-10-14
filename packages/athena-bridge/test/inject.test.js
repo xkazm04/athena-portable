@@ -170,50 +170,11 @@ test("a throw inside execute is a result, not a dropped promise", async () => {
   p.send({ id: "e4", type: "wat" });
   await p.settle();
 
-  assert.deepEqual(p.replyTo("e1"), {
-    __ns: NS,
-    dir: "to-ext",
-    id: "e1",
-    ok: false,
-    reason: "tool_error",
-    error: "the invoice is locked",
-  });
+  assert.deepEqual(p.replyTo("e1"), { __ns: NS, dir: "to-ext", id: "e1", ok: false, error: "the invoice is locked" });
   assert.equal(p.replyTo("e2").ok, false);
   assert.equal(p.replyTo("e2").error, "async no");
   assert.equal(p.replyTo("e3").error, "No tool named nope");
-  assert.equal(p.replyTo("e3").reason, "unknown_tool");
-  assert.equal(p.replyTo("e2").reason, "tool_error");
   assert.equal(p.replyTo("e4").error, "Unknown request wat");
-});
-
-test("a call whose input breaks the published inputSchema is refused before the tool runs", async () => {
-  const p = page();
-  let ran = 0;
-  register(p.window, "file_invoice", () => (ran++, "filed"), {
-    inputSchema: {
-      type: "object",
-      properties: { id: { type: "string" }, label: { type: "string", enum: ["travel", "meals"] }, n: { type: "number" } },
-      required: ["id"],
-      additionalProperties: false,
-    },
-  });
-
-  p.send({ id: "v1", type: "call", name: "file_invoice", input: {} });
-  p.send({ id: "v2", type: "call", name: "file_invoice", input: { id: 7 } });
-  p.send({ id: "v3", type: "call", name: "file_invoice", input: { id: "a", label: "fun" } });
-  p.send({ id: "v4", type: "call", name: "file_invoice", input: { id: "a", invented: 1 } });
-  p.send({ id: "v5", type: "call", name: "file_invoice", input: { id: "a", label: "travel", n: 2 } });
-  await p.settle();
-
-  for (const id of ["v1", "v2", "v3", "v4"]) {
-    assert.equal(p.replyTo(id).ok, false, id);
-    assert.equal(p.replyTo(id).reason, "invalid_arguments", id);
-  }
-  assert.match(p.replyTo("v1").error, /"id"/);
-  assert.match(p.replyTo("v3").error, /"label".*travel.*meals/);
-  assert.match(p.replyTo("v4").error, /"invented"/);
-  assert.equal(p.replyTo("v5").ok, true);
-  assert.equal(ran, 1, "only the valid call reached the handler");
 });
 
 test("a call is given its input and its output is rendered as text", async () => {

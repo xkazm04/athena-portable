@@ -124,7 +124,7 @@ Two, layered, so a page that never answers cannot wedge the surface:
 `timeout_ms` is clamped into `1 … 30000`: the relay may shorten the page's deadline and can never
 extend it. The abort is passed to the tool as `options.signal`, but the *race* is what guarantees
 the reply — a tool that ignores its signal and never settles must not be able to hold the surface
-open. `"timeout"` is joined by three coded refusals from `call`: `"invalid_arguments"` (the input broke the tool's published `inputSchema`; the tool never ran), `"unknown_tool"` and `"tool_error"` (the tool threw). `"timeout"` is a member of the one
+open. `"timeout"` is the only refusal reason this half mints, and it is a member of the one
 vocabulary the ledger stores (`ERROR_REASONS`, `src/athena/contracts/harness.py`).
 
 The relay's window is deliberately the longer of the two, so the page's own abort wins and produces

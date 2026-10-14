@@ -54,8 +54,8 @@ export type ListReply =
 
 /**
  * What `bridge_call` answers. `output` is always a string — a WebMCP content array flattened to
- * its text parts, anything else as JSON. `reason` is present when the page minted one: `timeout`,
- * `invalid_arguments`, `unknown_tool` or `tool_error`.
+ * its text parts, anything else as JSON. `reason` is present when the page minted one; the only
+ * one it mints itself is `timeout`.
  */
 export type CallReply =
   | { ok: true; output: string }

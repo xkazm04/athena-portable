@@ -26,14 +26,6 @@
   /** The only refusal reason this half mints. The vocabulary itself lives in gate.js. */
   const TIMEOUT = "timeout";
 
-  /**
-   * The other refusal reasons this half mints, so a relay and a model can tell a wrong call from a
-   * page failure: the arguments broke the published schema, no such tool, or the tool itself threw.
-   */
-  const INVALID_ARGUMENTS = "invalid_arguments";
-  const UNKNOWN_TOOL = "unknown_tool";
-  const TOOL_ERROR = "tool_error";
-
   try {
     install();
   } catch {
@@ -103,10 +95,7 @@
     async function call(name, input, requestedMs) {
       const tools = await toolsOf();
       const tool = tools.find((t) => t && t.name === name);
-      if (!tool) return { ok: false, reason: UNKNOWN_TOOL, error: `No tool named ${name}` };
-
-      const invalid = checkInput(tool.inputSchema, input);
-      if (invalid) return { ok: false, reason: INVALID_ARGUMENTS, error: `${name}: ${invalid}` };
+      if (!tool) return { ok: false, error: `No tool named ${name}` };
 
       const budgetMs = deadline(requestedMs);
       const controller = new AbortController();
@@ -124,69 +113,10 @@
         if (expired) {
           return { ok: false, reason: TIMEOUT, error: `${name} did not answer within ${budgetMs} ms` };
         }
-        return { ok: false, reason: TOOL_ERROR, error: messageOf(error) };
+        return { ok: false, error: messageOf(error) };
       } finally {
         clearTimeout(timer);
       }
-    }
-
-    /**
-     * Check a call's input against the schema the bridge publishes for the tool: type, enum,
-     * required, and (only when the schema says `additionalProperties: false`) unknown keys. No
-     * dependencies, so it is small on purpose; a schema keyword it does not know is not enforced.
-     * @param {unknown} schema
-     * @param {unknown} input
-     * @returns {string | null} what was wrong and what was allowed, or null
-     */
-    function checkInput(schema, input) {
-      if (!schema || typeof schema !== "object") return null;
-      return checkValue(/** @type {any} */ (schema), input === undefined || input === null ? {} : input, "input");
-    }
-
-    /**
-     * @param {any} schema
-     * @param {unknown} value
-     * @param {string} path
-     * @returns {string | null}
-     */
-    function checkValue(schema, value, path) {
-      if (!schema || typeof schema !== "object") return null;
-      const actual = value === null ? "null" : Array.isArray(value) ? "array" : typeof value;
-      const wanted = schema.type;
-      if (typeof wanted === "string") {
-        const ok = wanted === "integer" ? Number.isInteger(value) : wanted === actual;
-        if (!ok) return `argument "${path}" must be ${wanted}, got ${actual}`;
-      }
-      if (Array.isArray(schema.enum) && !schema.enum.some((/** @type {unknown} */ e) => e === value)) {
-        return `argument "${path}" must be one of ${schema.enum.map((/** @type {unknown} */ e) => JSON.stringify(e)).join(", ")}, got ${JSON.stringify(value)}`;
-      }
-      if (actual === "array" && schema.items) {
-        const list = /** @type {unknown[]} */ (value);
-        for (let i = 0; i < list.length; i++) {
-          const bad = checkValue(schema.items, list[i], `${path}[${i}]`);
-          if (bad) return bad;
-        }
-      }
-      if (actual === "object") {
-        const obj = /** @type {Record<string, unknown>} */ (value);
-        const props = schema.properties && typeof schema.properties === "object" ? schema.properties : {};
-        const at = (/** @type {string} */ k) => (path === "input" ? k : `${path}.${k}`);
-        for (const k of Array.isArray(schema.required) ? schema.required : []) {
-          if (obj[k] === undefined) return `missing required argument "${at(k)}"`;
-        }
-        for (const k of Object.keys(obj)) {
-          if (!(k in props)) {
-            if (schema.additionalProperties === false) {
-              return `unknown argument "${at(k)}"; allowed: ${Object.keys(props).join(", ") || "(none)"}`;
-            }
-            continue;
-          }
-          if (obj[k] === undefined) continue;
-          const bad = checkValue(props[k], obj[k], at(k));
-          if (bad) return bad;
-        }
-      }
-      return null;
     }
 
     /**
