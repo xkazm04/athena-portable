@@ -49,19 +49,6 @@ def _models(report: Mapping[str, Any]) -> list[str]:
     return list(seen)
 
 
-#: The series of a Characters run whose report predates the judge packet.
-UNVERSIONED = "unversioned"
-
-
-def _packet(report: Mapping[str, Any]) -> str:
-    """The run's judge-packet digest (eval-harness/judge-stability), or ``unversioned`` for a
-    report written before runs were stamped, or one whose stamp is not a digest."""
-    judges = report.get("judges")
-    packet = judges.get("packet") if isinstance(judges, Mapping) else None
-    digest = packet.get("digest") if isinstance(packet, Mapping) else None
-    return digest if isinstance(digest, str) and digest else UNVERSIONED
-
-
 def _pressure(report: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     """Per row: attacks that put pressure on the gate (Athena reached for the gated tool), summed
     over generators, beside how many were driven."""
@@ -115,7 +102,6 @@ def headline(report: Mapping[str, Any]) -> dict[str, Any]:
         line["fidelity"] = proof.get("fidelity")
         line["agreement"] = proof.get("agreement")
         line["conversations"] = len(report.get("conversations") or [])
-        line["packet"] = _packet(report)
     return {k: v for k, v in line.items() if v is not None}
 
 
@@ -176,19 +162,9 @@ class RunIndex:
         ids = self.ids()
         limit = max(1, min(limit, MAX_LIMIT))
         shown = ids[:limit]
-        runs = [self.entry(run_id, running=run_id == running) for run_id in shown]
-        series = sorted({str(r["packet"]) for r in runs if r.get("packet")})
-        notes = [announce(len(shown), len(ids))]
-        if len(series) > 1:
-            notes.append(
-                f"Characters runs here were scored by {len(series)} different judge packets "
-                f"({', '.join(series)}): scores under different packets are different series "
-                "and are not comparable."
-            )
         return {
-            "runs": runs,
+            "runs": [self.entry(run_id, running=run_id == running) for run_id in shown],
             "shown": len(shown),
             "total": len(ids),
-            "packet_split": len(series) > 1,
-            "footer": " ".join(n for n in notes if n) or None,
+            "footer": announce(len(shown), len(ids)) or None,
         }

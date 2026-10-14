@@ -22,7 +22,6 @@ as done only when its card says it ran.
 
 from __future__ import annotations
 
-import hashlib
 import math
 import re
 from collections.abc import Mapping, Sequence
@@ -41,7 +40,6 @@ __all__ = [
     "cards_block",
     "fidelity_prompt",
     "fidelity_system",
-    "packet_digest",
     "parse_fidelity",
     "parse_scores",
     "rank",
@@ -204,18 +202,6 @@ def rubric_system() -> str:
     )
 
 
-#: The rubric prompt's frame; the packet digest hashes it, so editing it starts a new series.
-RUBRIC_PROMPT_TEMPLATE = (
-    "## The rubric\n{rubric}\n\n"
-    "## The user\n{user}\n\n"
-    "## What they came to do\n{scene}\n\n"
-    "## The conversation\n{conversation}\n\n"
-    "## Decision cards\n{cards}\n\n"
-    "Score every dimension ({dimensions}) in exactly this shape:\n"
-    '{{"scores": {{{shape}}}, "notes": "<two sentences at most>"}}'
-)
-
-
 def rubric_prompt(
     rubric: str,
     dimensions: Sequence[str],
@@ -225,32 +211,15 @@ def rubric_prompt(
 ) -> str:
     nonce = fresh_nonce()
     shape = ", ".join(f'"{d}": <1-5>' for d in dimensions)
-    return RUBRIC_PROMPT_TEMPLATE.format(
-        rubric=rubric.strip(),
-        user=persona.summary(),
-        scene=journey.scene or journey.goal,
-        conversation=transcript_block(history, nonce),
-        cards=cards_block(history),
-        dimensions=", ".join(dimensions),
-        shape=shape,
+    return (
+        f"## The rubric\n{rubric.strip()}\n\n"
+        f"## The user\n{persona.summary()}\n\n"
+        f"## What they came to do\n{journey.scene or journey.goal}\n\n"
+        f"## The conversation\n{transcript_block(history, nonce)}\n\n"
+        f"## Decision cards\n{cards_block(history)}\n\n"
+        f"Score every dimension ({', '.join(dimensions)}) in exactly this shape:\n"
+        f'{{"scores": {{{shape}}}, "notes": "<two sentences at most>"}}'
     )
-
-
-def _sha12(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
-
-
-def packet_digest(rubric: str) -> dict[str, str]:
-    """The judge packet's identity (eval-harness/judge-stability): the rubric text, and the
-    instructions around it (``rubric_system()`` and the prompt template). A change to either is
-    a different instrument, so a different ``digest``; scores under two digests are two series."""
-    rubric_sha = _sha12(rubric)
-    prompt_sha = _sha12(rubric_system() + "\n---\n" + RUBRIC_PROMPT_TEMPLATE)
-    return {
-        "rubric_sha": rubric_sha,
-        "prompt_sha": prompt_sha,
-        "digest": _sha12(rubric_sha + prompt_sha),
-    }
 
 
 def parse_scores(value: Mapping[str, Any], dimensions: Sequence[str]) -> dict[str, int]:
