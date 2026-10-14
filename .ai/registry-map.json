@@ -1173,7 +1173,11 @@
           "revision": 3,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/lane/ports.py:3 the lane never spawns a process and src/athena/lane/browser_lane.py:21 an allowed call leaves as a tool.call event the page runs; no browser driver, daemon or selector surface, so the subject precondition (agent controls a browser) does not hold",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:0d439bfcafe8cabd",
+          "evaluatedRevision": 3
         },
         {
           "subject": "retrieval",
@@ -1451,7 +1455,11 @@
           "revision": 4,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/connectors/vault.py:828 marks a credential broken on any VaultError incl. unreachable provider/429/5xx (health-probing collapse); src/athena/connectors/seal.py:150 DPAPI with null entropy, ciphertext not bound to its record (encryption-at-rest)",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:1c57e44b947c96ef",
+          "evaluatedRevision": 4
         },
         {
           "subject": "node-boot-and-declarative-bootstrap",
@@ -2258,7 +2266,11 @@
           "revision": 20,
           "changedAt": "2026-10-12",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/daemon/voice.py:86 and :91 return the same 503 engine_error for not-ready and synthesis-failed (also :115/:137); portable-provider-package needs four distinct answers, so the studio cannot tell install-it from it-broke",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:fa1c8ca716f872dc",
+          "evaluatedRevision": 20
         },
         {
           "subject": "test-harness",
@@ -5429,7 +5441,11 @@
           "revision": 9,
           "changedAt": "2026-10-02",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/harness/engines.py:175 treats a credential file existing as logged_in (availability-probe); src/athena/harness/transports.py:56 strips only ANTHROPIC_API_KEY so OPENAI_API_KEY reaches codex (subscription-auth-selection); src/athena/harness/cli_harness.py:192 undated capability constants; src/athena/harness/transports.py:131 per-line timeout, :137 hard kill with no graceful stop",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:5791230ffb7d9fad",
+          "evaluatedRevision": 9
         },
         {
           "subject": "mcp-tools",
@@ -7110,7 +7126,11 @@
           "revision": 31,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "packages/athena-bridge/inject.js:129 dispatches without validating input against the inputSchema it publishes at :205, and :98 returns unknown-tool in the same uncoded {ok:false,error} shape as a handler fault at :116; invented arguments reach page handlers and protocol vs domain errors are indistinguishable",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:afba7a2b8c938ae1",
+          "evaluatedRevision": 31
         },
         {
           "subject": "prompt-assembly",
