@@ -15,6 +15,8 @@
  * field is worse than one that shows the rest and names the gap.
  */
 
+import type { CategoryId, JobId } from "./playbook-taxonomy";
+
 export interface PlaybookApp {
   name: string;
   /** What the portal is to this chore: "the invoices", "the order history". */
@@ -165,6 +167,10 @@ export interface Playbook {
   title: string;
   promise: string;
   domain: string;
+  /** The ledger's area (ADR 0096); `null` when the file names none or one the taxonomy lacks. */
+  category: CategoryId | null;
+  /** What it does for the person (ADR 0096); `null` like `category`. */
+  job: JobId | null;
   /** Whose chore it is: a household's, or a business's (a sole trader's counts as work). */
   audience: Audience;
   persona: string;
@@ -186,7 +192,16 @@ export interface Playbook {
   evidence: Evidence | null;
 }
 
-/** One playbook's `evidence.json` (schema 1, ADR 0055), read leniently. */
+/** One still of the run's storyboard (ADR 0096): the abstract, a turn, or what she filed. */
+export interface StoryStill {
+  /** The bundled still's URL; "" when the file is not in this build. */
+  url: string;
+  caption: string;
+  /** The replay turn it shows, from 1; `null` for the abstract and the result. */
+  turn: number | null;
+}
+
+/** One playbook's `evidence.json` (schema 1 or 2, ADR 0055 and 0096), read leniently. */
 export interface Evidence {
   schema: number;
   capturedAt: string;
@@ -200,6 +215,8 @@ export interface Evidence {
   thumbnailUrl: string;
   /** Where the dev server serves the film; `null` in a build, which carries no media. */
   videoUrl: string | null;
+  /** Schema 2's storyboard, in order; `[]` for schema 1 or before the stills were captured. */
+  story: readonly StoryStill[];
 }
 
 // -- reading -------------------------------------------------------------------------------------
@@ -350,6 +367,7 @@ export function parseEvidence(raw: unknown, thumbnailUrl = "", serve = false): E
     thumbnailUrl,
     // Only a repo-relative path under `evidence/` is ever turned into a URL.
     videoUrl: serve && /^evidence\/[\w.-]+\/[\w.-]+\.mp4$/.test(videoPath) ? `/${videoPath}` : null,
+    story: [],
   };
 }
 
@@ -368,6 +386,8 @@ export function parsePlaybook(
     title: str(raw.title, str(raw.id)),
     promise: str(raw.promise),
     domain: str(raw.domain),
+    category: null,
+    job: null,
     audience: str(raw.audience) === "home" ? "home" : "work",
     persona: str(raw.persona),
     chore: str(raw.chore),

@@ -1,0 +1,20 @@
+{
+  "categories": [
+    { "id": "health", "label": "Health & clinics" },
+    { "id": "freight", "label": "Freight & trade" },
+    { "id": "commerce", "label": "Commerce & payments" },
+    { "id": "employment", "label": "Employment & payroll" },
+    { "id": "consumer", "label": "Consumer & money" },
+    { "id": "benefits", "label": "Benefits & aid" },
+    { "id": "housing", "label": "Housing & vehicles" },
+    { "id": "public", "label": "Public funding & compliance" },
+    { "id": "construction", "label": "Construction & trades" },
+    { "id": "family", "label": "Family & estate" }
+  ],
+  "jobs": [
+    { "id": "recover", "label": "Recover money" },
+    { "id": "claim", "label": "Claim a benefit" },
+    { "id": "contest", "label": "Win a dispute" },
+    { "id": "comply", "label": "Stay compliant" }
+  ]
+}

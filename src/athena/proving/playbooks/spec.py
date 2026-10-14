@@ -30,14 +30,17 @@ __all__ = [
     "KINDS",
     "PER_TABLE",
     "PLAYBOOKS_DIRNAME",
+    "TAXONOMY_FILENAME",
     "AppSpec",
     "Phase",
     "Playbook",
     "PlaybookError",
     "Target",
+    "Taxonomy",
     "ToolSpec",
     "load_all",
     "load_playbook",
+    "load_taxonomy",
 ]
 
 PLAYBOOKS_DIRNAME = "playbooks"
@@ -71,6 +74,9 @@ BEFORE_ADR_0057: frozenset[str] = frozenset(
 
 #: ADR 0056 section (a): the values ``economics.per`` may take. Adding one takes an amendment.
 PER_TABLE: tuple[str, ...] = ("year", "quarter", "month", "week", "estate", "episode")
+
+#: The one list of areas and jobs a playbook may name (ADR 0096), read by the bench and the desktop.
+TAXONOMY_FILENAME = "taxonomy.json"
 
 MIN_PORTALS = 2  # ADR 0057 rule 1
 MIN_TRAPS = 8  # ADR 0057 rule 1
@@ -447,6 +453,42 @@ def _authoring_problems(
                 "or its bench can only come back short"
             )
     return found
+
+
+@dataclass(frozen=True)
+class Taxonomy:
+    """The ledger's two axes, id -> label, in the order the file lists them (ADR 0096)."""
+
+    categories: dict[str, str]
+    jobs: dict[str, str]
+
+
+def load_taxonomy(base: str | Path = PLAYBOOKS_DIRNAME) -> Taxonomy:
+    """``<base>/taxonomy.json``: the areas and jobs a playbook's ``category`` and ``job`` name."""
+    path = Path(base) / TAXONOMY_FILENAME
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise PlaybookError(str(path), [str(exc)]) from exc
+
+    def axis(key: str) -> dict[str, str]:
+        rows = raw.get(key) if isinstance(raw, dict) else None
+        if not isinstance(rows, list) or not rows:
+            raise PlaybookError(str(path), [f"'{key}' must be a non-empty list"])
+        out: dict[str, str] = {}
+        for row in rows:
+            if not (
+                isinstance(row, dict)
+                and isinstance(row.get("id"), str)
+                and isinstance(row.get("label"), str)
+            ):
+                raise PlaybookError(str(path), [f"every '{key}' row needs a string id and label"])
+            if row["id"] in out:
+                raise PlaybookError(str(path), [f"'{key}' repeats {row['id']!r}"])
+            out[row["id"]] = row["label"]
+        return out
+
+    return Taxonomy(categories=axis("categories"), jobs=axis("jobs"))
 
 
 def load_all(base: str | Path = PLAYBOOKS_DIRNAME) -> list[Playbook]:
