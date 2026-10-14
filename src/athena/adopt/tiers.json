@@ -1,0 +1,9 @@
+{
+  "_note": "Interim tiers per leg kind (ADR 0097). The adopt tier bench (proving/adopt_tiers) rewrites this file from measurements; edit by hand only to override a measured pick, and say why in the commit.",
+  "interview": { "model": "claude-sonnet-5-5", "effort": "low" },
+  "audit": { "model": "claude-sonnet-5-5", "effort": "medium" },
+  "research": { "model": "claude-sonnet-5-5", "effort": "low" },
+  "shape": { "model": "claude-sonnet-5-5", "effort": "medium" },
+  "persona": { "model": "claude-sonnet-5-5", "effort": "medium" },
+  "judge": { "model": "claude-opus-5-5", "effort": "medium" }
+}
