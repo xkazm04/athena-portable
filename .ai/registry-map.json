@@ -3339,7 +3339,11 @@
           "revision": 6,
           "changedAt": "2026-09-29",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/companion/views.tsx:268 the ambient slip offers only Approve/Decline/Speak, no reserved explain-and-recommend option (two-surface-doctrine); apps/desktop/src/companion/machine.ts:270 `working` has no timeout back to rest, so a missed end-of-turn pins the presence (layered-avatar-state-machine)",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:f3ecee1630629b34",
+          "evaluatedRevision": 6
         },
         {
           "subject": "companion-identity",
@@ -3577,7 +3581,11 @@
           "revision": 17,
           "changedAt": "2026-10-07",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/modules/connectors/model.ts:93 re-derives the tool write class and has drifted from the catalog's rule (src/athena/contracts/manifest.py:129 `reversible is not True`): a tool with reversible omitted is GATED by the catalog but listed as a read on the panel (locality-and-leverage)",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:7c8008f2207b1946",
+          "evaluatedRevision": 18
         },
         {
           "subject": "companion-identity",
@@ -3775,7 +3783,11 @@
           "revision": 3,
           "changedAt": "2026-09-04",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/halo.rs:199 hide_all only calls window.hide() - no park-off-viewport layer, so where hide() is a request a full-monitor topmost window survives with click-through as its only defence (non-stealing-overlay)",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:0ab230f2977430e7",
+          "evaluatedRevision": 4
         },
         {
           "subject": "companion-runtime",
@@ -4186,7 +4198,11 @@
           "revision": 26,
           "changedAt": "2026-10-06",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/vite.config.ts:105 holds the suite config and apps/desktop/package.json:16 the lanes; this context only carries colocated tests that run inside that machinery (apps/desktop/src/scenes/registry.ts:2), so the harness subject's precondition fails - a lexical 'test' match",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:5521806124d93882",
+          "evaluatedRevision": 26
         },
         {
           "subject": "agent-memory",
@@ -5291,7 +5307,11 @@
           "revision": 20,
           "changedAt": "2026-10-12",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/stores/voice.ts:246 plays every reply frame with no global voice mute anywhere; apps/desktop/src/lib/voice.ts:393 creates the live AudioContext without resuming a suspended one, and stores/voice.ts:302 still shows 'speaking' - a refused playback is a silent success (voice-ux-integration)",
+          "evaluatedAt": "2026-10-14",
+          "evaluatedAgainst": "sha256-b2:fa1c8ca716f872dc",
+          "evaluatedRevision": 20
         },
         {
           "subject": "agent-memory",
