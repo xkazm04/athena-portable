@@ -47,6 +47,7 @@ from athena.contracts.adopt import (
     SlotSource,
     Tier,
     Usage,
+    Verdict,
 )
 from athena.contracts.harness import ERROR_REASONS
 from athena.contracts.ids import mint
@@ -60,6 +61,7 @@ __all__ = [
     "AdoptSession",
     "Busy",
     "Hooks",
+    "IntakeSession",
     "SessionStore",
     "current_hooks",
     "register_hooks",
@@ -405,6 +407,34 @@ class AdoptSession:
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
 
+@dataclass(eq=False)
+class IntakeSession(AdoptSession):
+    """The Chores front door's conversation (ADR 0098): an adopt session with no playbook.
+
+    It is the same machine (event log, SSE, one actor, warm process, idle expiry, ledgered
+    legs, a place in :data:`MAX_LIVE`); it has no slots and its hooks are the no-ops, so no
+    research lane ever starts for it. What it adds is the state of its three rounds.
+    """
+
+    #: ``() -> [{id, title, area, job, summary}]``: the library as the model is told of it.
+    library: Callable[[], list[dict[str, str]]] = field(default=lambda: [])
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        #: Model rounds started (not retries): the third is always asked for a verdict.
+        self.legs = 0
+        #: The verdict emitted, once; the session idles after it.
+        self.verdict: Verdict | None = None
+        self._library: list[dict[str, str]] | None = None
+
+    def library_rows(self) -> list[dict[str, str]]:
+        """The library summary, read once per session."""
+        with self.lock:
+            if self._library is None:
+                self._library = self.library()
+            return self._library
+
+
 # --- the store ----------------------------------------------------------------------------------
 
 
@@ -461,6 +491,46 @@ class SessionStore:
                         slot_ids=(),
                         choices=(),
                         text=intro.strip(),
+                        via="text",
+                    )
+                )
+            self._sessions[sid] = session
+            self._start_reaper()
+        return session
+
+    def create_intake(
+        self, need: str, library: Callable[[], list[dict[str, str]]]
+    ) -> IntakeSession:
+        """A new intake session (no playbook), or :class:`Busy`: it takes one of the same
+        :attr:`max_live` places an adopt session does. ``need`` is kept as the person's first
+        words (round 0)."""
+        self.reap()
+        with self._lock:
+            if len(self._sessions) >= self.max_live:
+                raise Busy(f"{len(self._sessions)} adopt sessions are live; close one first")
+            self._sweep_leftovers()
+            sid = mint("session")
+            temp_dir = self.root / sid
+            temp_dir.mkdir(parents=True, exist_ok=True)
+            session = IntakeSession(
+                id=sid,
+                playbook_id="",
+                playbook={},
+                temp_dir=temp_dir,
+                runner=self.runner,
+                hooks=Hooks(),
+                clock=self.clock,
+                library=library,
+            )
+            if need.strip():
+                session.answers.append(
+                    GivenAnswer(
+                        round=0,
+                        question_id="",
+                        question=UP_FRONT,
+                        slot_ids=(),
+                        choices=(),
+                        text=need.strip(),
                         via="text",
                     )
                 )

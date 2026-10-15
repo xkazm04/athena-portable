@@ -111,6 +111,11 @@ def test_the_table_ships_every_route_the_daemon_answers(daemon: AthenaDaemon) ->
         "GET /adopt/<id>",
         "POST /adopt/<id>",
         "DELETE /adopt/<id>",
+        # The Chores front door, the same machine without a playbook (ADR 0098).
+        "POST /intake",
+        "GET /intake/<id>",
+        "POST /intake/<id>",
+        "DELETE /intake/<id>",
     ]
 
 

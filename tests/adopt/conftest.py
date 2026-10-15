@@ -21,7 +21,7 @@ from typing import Any
 import pytest
 
 from athena.adopt.legs import LegRunner, load_tiers
-from athena.adopt.prompts import AUDIT_SYSTEM, BRIEF_SYSTEM, INTERVIEW_SYSTEM
+from athena.adopt.prompts import AUDIT_SYSTEM, BRIEF_SYSTEM, INTAKE_SYSTEM, INTERVIEW_SYSTEM
 from athena.adopt.routes import AdoptStudio
 from athena.adopt.session import Hooks, SessionStore, reset_hooks
 from athena.adopt.slots import PlaybookMissing
@@ -88,7 +88,12 @@ def stream_lines(text: str, *, is_error: bool = False) -> list[str]:
     ]
 
 
-SYSTEMS = {INTERVIEW_SYSTEM: "interview", AUDIT_SYSTEM: "audit", BRIEF_SYSTEM: "brief"}
+SYSTEMS = {
+    INTERVIEW_SYSTEM: "interview",
+    AUDIT_SYSTEM: "audit",
+    BRIEF_SYSTEM: "brief",
+    INTAKE_SYSTEM: "intake",
+}
 
 
 @dataclass

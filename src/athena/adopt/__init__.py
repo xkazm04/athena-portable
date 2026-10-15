@@ -13,6 +13,7 @@ from athena.adopt.legs import LegResult, LegRunner, WarmSession, cli_argv, load_
 from athena.adopt.session import (
     AdoptSession,
     Hooks,
+    IntakeSession,
     SessionStore,
     current_hooks,
     register_hooks,
@@ -23,6 +24,7 @@ from athena.adopt.slots import PlaybookMissing, load_playbook_json, mechanical_s
 __all__ = [
     "AdoptSession",
     "Hooks",
+    "IntakeSession",
     "LegResult",
     "LegRunner",
     "PlaybookMissing",

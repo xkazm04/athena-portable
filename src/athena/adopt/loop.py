@@ -65,6 +65,7 @@ __all__ = [
     "ANSWER_TEXT_CAP",
     "MAX_ANSWERS",
     "approve",
+    "card_questions",
     "check_answers",
     "enough",
     "fitted_command",
@@ -484,9 +485,14 @@ def _interview_problem(value: dict[str, Any], known: set[str]) -> str:
     return ""
 
 
-def _questions(value: Mapping[str, Any], slots: Sequence[Slot], round_no: int) -> list[Question]:
+def _questions(
+    value: Mapping[str, Any], slots: Sequence[Slot], round_no: int, *, slotless: bool = False
+) -> list[Question]:
     """The card as the person will see it: at most four questions, each about a slot that is not
-    confirmed, 2 to 5 options or none, free text always allowed, ids minted here."""
+    confirmed, 2 to 5 options or none, free text always allowed, ids minted here.
+
+    ``slotless`` (the intake conversation, ADR 0098, which has no slots) keeps every question
+    that has text and gives it no slot ids."""
     unconfirmed = {s.id for s in slots if s.status != "confirmed"}
     out: list[Question] = []
     for raw in _dicts(value.get("questions")):
@@ -495,7 +501,7 @@ def _questions(value: Mapping[str, Any], slots: Sequence[Slot], round_no: int) -
         named = raw.get("slot_ids", [])
         slot_ids = tuple(dict.fromkeys(i for i in named if isinstance(i, str) and i in unconfirmed))
         text = " ".join(str(raw.get("text") or "").split())
-        if not slot_ids or not text:
+        if not text or not (slot_ids or slotless):
             continue
         options: list[Option] = []
         seen: set[str] = set()
@@ -512,7 +518,7 @@ def _questions(value: Mapping[str, Any], slots: Sequence[Slot], round_no: int) -
         out.append(
             Question(
                 id=f"r{round_no}q{len(out) + 1}",
-                slot_ids=slot_ids,
+                slot_ids=slot_ids if not slotless else (),
                 text=text[:QUESTION_CAP],
                 options=tuple(options),
                 multi=bool(raw.get("multi")) and len(options) >= 2,
@@ -520,6 +526,11 @@ def _questions(value: Mapping[str, Any], slots: Sequence[Slot], round_no: int) -
             )
         )
     return out
+
+
+def card_questions(value: Mapping[str, Any], round_no: int) -> list[Question]:
+    """:func:`_questions` for a conversation with no slots (the intake, ADR 0098)."""
+    return _questions(value, (), round_no, slotless=True)
 
 
 # --- helpers ------------------------------------------------------------------------------------

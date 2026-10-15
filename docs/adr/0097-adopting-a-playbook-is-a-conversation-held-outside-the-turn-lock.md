@@ -105,3 +105,5 @@ draft-preview-apply (what is approved is exactly what runs).
   why in its commit.
 - The daemon's JSON body cap (1 MiB) bounds a dropped document today well below the studio's own
   10 MB cap; raising it for the documents route is a server change of its own.
+
+See also [0098](0098-the-chores-front-door-is-an-intake-leg-on-the-adopt-machinery.md): the Chores front door is this machine with no playbook.

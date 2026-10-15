@@ -26,6 +26,12 @@ waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still
 ``DELETE /adopt/<sid>``
     Lanes told, ``session_closed`` appended, warm process killed, temp dir deleted, streams
     ended.
+
+The Chores front door (ADR 0098) is the same machine without a playbook, under ``/intake``:
+``POST /intake`` ``{need?}`` -> ``{ok, session_id}`` (the same budget; a fourth live session of
+either kind is ``busy:``), ``GET /intake/<sid>/events``, ``POST /intake/<sid>/answer``,
+``POST /intake/<sid>/decide`` (force the verdict now) and ``DELETE /intake/<sid>``. An adopt id
+is not an intake id: each prefix answers 404 for the other's sessions.
 """
 
 from __future__ import annotations
@@ -34,14 +40,14 @@ import base64
 import binascii
 import json
 import re
-from collections.abc import Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from athena.adopt import loop
+from athena.adopt import intake, loop
 from athena.adopt.legs import LedgerSink, LegRunner, load_tiers
-from athena.adopt.session import AdoptSession, Busy, SessionStore
+from athena.adopt.session import AdoptSession, Busy, IntakeSession, SessionStore
 from athena.adopt.slots import PlaybookMissing
 from athena.contracts.adopt import AdoptEvent, Answer
 from athena.daemon.routes import EventStream, Reply, Request, Route, error
@@ -54,6 +60,8 @@ __all__ = [
     "ADOPT_PREFIX",
     "DOCUMENT_CAP",
     "HEARTBEAT_S",
+    "INTAKE_PATH",
+    "INTAKE_PREFIX",
     "AdoptStudio",
     "adopt_routes",
     "adopt_sse_frame",
@@ -62,6 +70,8 @@ __all__ = [
 
 ADOPT_PATH = "/adopt"
 ADOPT_PREFIX = "/adopt/"
+INTAKE_PATH = "/intake"
+INTAKE_PREFIX = "/intake/"
 HEARTBEAT_S = 15.0
 #: The most a dropped document may be, decoded. The documents route has its own 14 MiB body cap
 #: (``server.BodyCap``, registered in wiring) so a 10 MB file fits once base64 adds its third.
@@ -79,6 +89,9 @@ class AdoptStudio:
     heartbeat_s: float = HEARTBEAT_S
     #: Non-empty when the studio is unusable (no tiers file): ``POST /adopt`` says so.
     problem: str = ""
+    #: The library the intake reads, as ``[{id, title, area, job, summary}]``; ``None`` is the
+    #: shipped one (:func:`athena.adopt.intake.library_summary`). Tests inject a fixture.
+    library: Callable[[], list[dict[str, str]]] | None = None
 
     def close(self) -> None:
         self.store.close_all()
@@ -130,7 +143,7 @@ def start(studio: AdoptStudio, request: Request) -> Reply:
 def act(studio: AdoptStudio, request: Request, tail: str) -> Reply | EventStream:
     sid, _, verb = tail.partition("/")
     session = studio.store.get(sid)
-    if session is None:
+    if session is None or isinstance(session, IntakeSession):
         return error(404, "unknown_ref", f"no adopt session {sid!r}")
     session.touch()
     if request.method == "DELETE":
@@ -165,7 +178,11 @@ def events(studio: AdoptStudio, session: AdoptSession, request: Request) -> Repl
     return EventStream(_frames(session, after, studio.heartbeat_s))
 
 
-def answer(session: AdoptSession, body: Mapping[str, Any]) -> Reply:
+def answer(
+    session: AdoptSession,
+    body: Mapping[str, Any],
+    receive: Callable[[Any, list[Answer], str], None] = loop.receive_answers,
+) -> Reply:
     via = body.get("via", "text")
     if via not in ("text", "voice"):
         return error(400, "validator_failed", "via is 'text' or 'voice'")
@@ -187,7 +204,7 @@ def answer(session: AdoptSession, body: Mapping[str, Any]) -> Reply:
     problem = loop.check_answers(session, answers)
     if problem:
         return error(400, "validator_failed", problem)
-    loop.receive_answers(session, answers, via)
+    receive(session, answers, via)
     return 200, {"ok": True}
 
 
@@ -249,15 +266,71 @@ def _frames(session: AdoptSession, after: int, heartbeat_s: float) -> Iterator[s
             yield ": heartbeat\n\n"
 
 
+# --- the intake (ADR 0098) ----------------------------------------------------------------------
+
+
+def intake_start(studio: AdoptStudio, request: Request) -> Reply:
+    if studio.problem:
+        return error(503, "engine_error", studio.problem)
+    need = request.body.get("need", "")
+    if not isinstance(need, str):
+        return error(400, "validator_failed", "need must be a string")
+    if len(need) > loop.ANSWER_TEXT_CAP:
+        return error(
+            400,
+            "validator_failed",
+            f"need: {len(need)} characters is more than {loop.ANSWER_TEXT_CAP}",
+        )
+    try:
+        session = studio.store.create_intake(need, studio.library or intake.library_summary)
+    except Busy as exc:
+        return error(429, "budget_exhausted", f"busy: {exc}")
+    intake.start(session)
+    return 200, {"ok": True, "session_id": session.id}
+
+
+def intake_act(studio: AdoptStudio, request: Request, tail: str) -> Reply | EventStream:
+    sid, _, verb = tail.partition("/")
+    found = studio.store.get(sid)
+    if not isinstance(found, IntakeSession):
+        return error(404, "unknown_ref", f"no intake session {sid!r}")
+    session = found
+    session.touch()
+    if request.method == "DELETE":
+        if verb:
+            return error(404, "unknown", f"no route for DELETE {INTAKE_PREFIX}{tail}")
+        studio.store.delete(sid)
+        return 200, {"ok": True}
+    if request.method == "GET":
+        if verb != "events":
+            return error(404, "unknown", f"no route for GET {INTAKE_PREFIX}{tail}")
+        return events(studio, session, request)
+    if verb == "answer":
+        if session.verdict is not None:
+            return error(409, "validator_failed", "decided: the verdict was already given")
+        return answer(session, request.body, intake.receive_answers)
+    if verb == "decide":
+        intake.decide(session)
+        return 200, {"ok": True}
+    return error(404, "unknown", f"no route for POST {INTAKE_PREFIX}{tail}")
+
+
 def adopt_routes(daemon: AthenaDaemon, studio: AdoptStudio) -> list[Route]:
     """The studio's routes, exact before prefix, for :meth:`RouteTable.add`."""
 
     def tail(request: Request) -> str:
         return request.path[len(ADOPT_PREFIX) :]
 
+    def itail(request: Request) -> str:
+        return request.path[len(INTAKE_PREFIX) :]
+
     return [
         Route("POST", ADOPT_PATH, lambda request: start(studio, request)),
         Route("GET", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),
         Route("POST", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),
         Route("DELETE", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),
+        Route("POST", INTAKE_PATH, lambda request: intake_start(studio, request)),
+        Route("GET", INTAKE_PREFIX, lambda r: intake_act(studio, r, itail(r)), prefix=True),
+        Route("POST", INTAKE_PREFIX, lambda r: intake_act(studio, r, itail(r)), prefix=True),
+        Route("DELETE", INTAKE_PREFIX, lambda r: intake_act(studio, r, itail(r)), prefix=True),
     ]
