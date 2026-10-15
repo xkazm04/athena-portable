@@ -122,6 +122,15 @@ export interface ConnectionView {
   account?: string;
   /** The account key the switches were set under. Not read here. */
   switches_account?: string;
+  /**
+   * The last check that reached no verdict (the provider unreachable, a rate limit, a refresh that
+   * failed this time) and its obstacle; "" once a verdict came after it. Never written over
+   * `health`. Optional: a daemon from before it sends neither.
+   */
+  attempt_at?: string;
+  attempt_detail?: string;
+  /** The vault's word at the last connect (writes reset for another account, ADR 0062); a probe keeps it. */
+  notice?: string;
 }
 
 /** `OAuthFlow.view()`: where a consent flow stands. */

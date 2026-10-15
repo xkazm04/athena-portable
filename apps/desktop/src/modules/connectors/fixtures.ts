@@ -8,7 +8,7 @@
  * itself refusing. `needs-reauth` and `flow-failed` are the two moods a person meets mid-way.
  * `records-unreadable` is the vault saying its connections file could not be read, with a row the
  * record still calls connected; `reconnected` is a connect as another account, whose own word
- * stands on the layer until the next probe.
+ * (the record's `notice`) stands on the layer, a probe after it included.
  */
 import type { ConnectorView } from "@/lib/api";
 
@@ -246,7 +246,7 @@ const reconnected = model([
       connected_at: "2026-09-12T11:59:00Z",
       health: "healthy",
       health_at: "2026-09-12T11:59:00Z",
-      health_detail: RECONNECTED_DETAIL,
+      notice: RECONNECTED_DETAIL,
       seal: "dpapi",
     }),
   }),

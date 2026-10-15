@@ -44,8 +44,10 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, ClassVar, Protocol
 
+from athena.connectors import health
+from athena.connectors.health import is_quota_refusal, refresh_is_terminal
 from athena.connectors.oauth import FlowManager, OAuthFlow
 from athena.connectors.seal import SealPort, SealUnavailable, select_seal
 from athena.connectors.spec import ConnectorSpec, load_builtin
@@ -73,16 +75,11 @@ REQUEST_TIMEOUT_S = 20.0
 MAX_RESPONSE_BYTES = 1_048_576
 #: Refresh ahead when under five minutes of a grant remain.
 REFRESH_FLOOR_S = 300.0
-#: Health is three-valued, rendered with its age, probed on events and never on render.
+#: Health is three-valued, rendered with its age, probed on events and never on render. A check
+#: that reached no verdict is an attempt beside it, never a fourth value (connectors/health.py).
 HEALTH: tuple[str, ...] = ("healthy", "broken", "unknown")
 #: A ``Retry-After`` the model is told is an integer of seconds, at most a day.
 RETRY_AFTER_CAP_S = 86_400
-#: The token endpoint's errors that mean the grant itself is gone (RFC 6749 §5.2).
-TERMINAL_GRANT_ERRORS = frozenset({"invalid_grant", "invalid_client", "unauthorized_client"})
-#: The reasons Google gives on a 403 that is a rate or a quota, not a lost grant.
-QUOTA_REASONS = frozenset(
-    {"rateLimitExceeded", "userRateLimitExceeded", "quotaExceeded", "dailyLimitExceeded"}
-)
 RECORDS_FILENAME = "connections.json"
 UNREADABLE_INFIX = ".unreadable-"
 
@@ -90,7 +87,14 @@ logger = logging.getLogger(__name__)
 
 
 class VaultError(RuntimeError):
-    """Something the vault refuses. Safe to show a model: never a value."""
+    """Something the vault refuses. Safe to show a model: never a value.
+
+    ``verdict`` and ``worded`` are read by :func:`athena.connectors.health.classify`: whether
+    meeting this error is the provider's word on the credential, and whether its sentence already
+    names the obstacle (otherwise the provider is taken as not reached)."""
+
+    verdict: ClassVar[bool] = False
+    worded: ClassVar[bool] = False
 
 
 class HostRefused(VaultError):
@@ -104,13 +108,19 @@ class NotConnected(VaultError):
 class NeedsReauth(VaultError):
     """The grant is gone. A caller cannot widen its own grant; the person reconnects."""
 
+    verdict = True
+
 
 class RefreshFailed(VaultError):
     """The grant could not be refreshed this time; it stays connected. The sentence names why."""
 
+    worded = True
+
 
 class RateLimited(VaultError):
     """The provider is rate limiting the calls. The grant stays connected and nothing retries."""
+
+    worded = True
 
     def __init__(self, message: str, *, status: int, retry_after: int | None = None) -> None:
         super().__init__(message)
@@ -132,29 +142,6 @@ def retry_after_of(headers: Mapping[str, str]) -> int | None:
     if not value.isascii() or not value.isdigit():
         return None
     return min(int(value), RETRY_AFTER_CAP_S)
-
-
-def is_quota_refusal(body: Any) -> bool:
-    """A Google error body that names a rate or a quota reason rather than a lost grant."""
-    error = body.get("error") if isinstance(body, Mapping) else None
-    if not isinstance(error, Mapping):
-        return False
-    if error.get("status") == "RESOURCE_EXHAUSTED":
-        return True
-    items = error.get("errors")
-    return isinstance(items, list) and any(
-        isinstance(item, Mapping) and item.get("reason") in QUOTA_REASONS for item in items
-    )
-
-
-def refresh_is_terminal(status: int, body: Any) -> bool:
-    """Whether a token endpoint's refusal means the grant is gone (and not just this attempt)."""
-    if not 400 <= status < 500 or status == 429:
-        return False
-    error = body.get("error") if isinstance(body, Mapping) else None
-    if isinstance(error, str) and error.strip():
-        return error.strip() in TERMINAL_GRANT_ERRORS
-    return status in (400, 401)
 
 
 def _expires_in(grant: Mapping[str, Any], label: str, error: type[VaultError]) -> int:
@@ -229,6 +216,13 @@ class ConnectionRecord:
     #: and the key the switches were set under. The key decides; the identity is for display.
     account: str = ""
     switches_account: str = ""
+    #: The last check that reached no verdict, and its obstacle; cleared by the next verdict, and
+    #: never written over ``health`` (connectors/health.py).
+    attempt_at: str = ""
+    attempt_detail: str = ""
+    #: The vault's word at the last connect (that the switches were reset, ADR 0062). A probe
+    #: never touches it; the next connect or a disconnect replaces it.
+    notice: str = ""
 
     def view(self) -> dict[str, Any]:
         return asdict(self)
@@ -517,11 +511,11 @@ class Vault:
                         f"{spec.label} was disconnected or reconnected while the call was out; "
                         "nothing was marked"
                     )
-                rec.status = "needs_reauth"
-                self._changed(connector_id)
-                raise NeedsReauth(
+                lost = NeedsReauth(
                     f"{spec.label} needs to be reconnected in Connectors (it answered {status})"
                 )
+                self._mark_reauth(spec, generation, lost)
+                raise lost
         return status, decoded
 
     def _decode(self, raw: bytes, token: str) -> Any:
@@ -541,12 +535,15 @@ class Vault:
             token = self._get(spec.id, "token")
             if token is None:
                 raise NotConnected(f"{spec.label} has no sealed credential; reconnect it")
-            rec = self.record(spec.id)
-            stale = False
-            if spec.auth.type == "oauth" and rec.expires_at:
-                expires = datetime.fromisoformat(rec.expires_at)
-                stale = (expires - _now()).total_seconds() < REFRESH_FLOOR_S
-            return token, self._generation(spec.id), stale
+            return token, self._generation(spec.id), self._stale(spec, self.record(spec.id))
+
+    @staticmethod
+    def _stale(spec: ConnectorSpec, rec: ConnectionRecord) -> bool:
+        """Whether an OAuth grant has less than :data:`REFRESH_FLOOR_S` left."""
+        if spec.auth.type != "oauth" or not rec.expires_at:
+            return False
+        expires = datetime.fromisoformat(rec.expires_at)
+        return (expires - _now()).total_seconds() < REFRESH_FLOOR_S
 
     def _fresh_token(self, spec: ConnectorSpec) -> tuple[str, int]:
         """A token good for the next call, and the generation of the grant it belongs to. A stale
@@ -560,18 +557,31 @@ class Vault:
                 return token, generation  # another caller refreshed it while this one waited
             return self._refresh(spec, generation), generation
 
-    def _refresh(self, spec: ConnectorSpec, generation: int) -> str:
+    def _refresh(self, spec: ConnectorSpec, generation: int, *, live_only: bool = True) -> str:
         """Called holding the connector's refresh guard, not the vault's lock. Reads under the
-        lock, posts with it released, and commits under it only onto the same ``generation``."""
+        lock, posts with it released, and commits under it only onto the same ``generation``.
+
+        Every outcome is written as health (connectors/health.py): a token the endpoint gave is a
+        healthy verdict, a terminal answer a broken one with ``needs_reauth``, and a refresh that
+        failed this time an attempt that leaves the verdict as it was. ``live_only=False`` (the
+        probe) also commits onto a grant that is switched off or needs reconnecting."""
+        try:
+            return self._refresh_once(spec, generation, live_only)
+        except (RefreshFailed, RateLimited) as exc:
+            self._note_attempt(spec, generation, exc)
+            raise
+
+    def _refresh_once(self, spec: ConnectorSpec, generation: int, live_only: bool) -> str:
         with self._lock:
             refresh = self._get(spec.id, "refresh")
             client_id = self._get(spec.id, "client_id") or ""
             client_secret = self._get(spec.id, "client_secret") or ""
             if not refresh:
-                self._mark_reauth(spec, generation)
-                raise NeedsReauth(
+                lost = NeedsReauth(
                     f"{spec.label} needs to be reconnected in Connectors (no refresh token is kept)"
                 )
+                self._mark_reauth(spec, generation, lost)
+                raise lost
         form = {
             "grant_type": "refresh_token",
             "refresh_token": refresh,
@@ -596,13 +606,14 @@ class Vault:
         if refresh_is_terminal(status, grant):
             error = grant.get("error") if isinstance(grant, Mapping) else None
             named = f" {error.strip()}" if isinstance(error, str) and error.strip() else ""
-            with self._lock:
-                self._still(spec, generation)
-                self._mark_reauth(spec, generation)
-            raise NeedsReauth(
+            lost = NeedsReauth(
                 f"{spec.label} needs to be reconnected in Connectors (the token endpoint "
                 f"answered {status}{named})"
             )
+            with self._lock:
+                self._still(spec, generation, live_only)
+                self._mark_reauth(spec, generation, lost)
+            raise lost
         if status == 429:
             raise self._rate_limited(spec, status, replied)
         if not 200 <= status < 300 or not isinstance(grant, Mapping):
@@ -619,39 +630,68 @@ class Vault:
         token = str(grant["access_token"])
         rotated = grant.get("refresh_token")
         with self._lock:
-            self._still(spec, generation)
+            self._still(spec, generation, live_only)
             self._put(spec.id, "token", token)
             if isinstance(rotated, str) and rotated.strip():
                 self._put(spec.id, "refresh", rotated.strip())
-            self.record(spec.id).expires_at = _iso(_now() + timedelta(seconds=seconds))
+            rec = self.record(spec.id)
+            rec.expires_at = _iso(_now() + timedelta(seconds=seconds))
+            health.record(rec, health.classify(status, grant, label=spec.label), _now())
             self._save()
         return token
 
-    def _still(self, spec: ConnectorSpec, generation: int) -> None:
-        """Refuse to commit a refresh onto a grant that is no longer the one it began under."""
-        if self._generation(spec.id) != generation or not self.is_live(spec.id):
+    def _still(self, spec: ConnectorSpec, generation: int, live_only: bool = True) -> None:
+        """Refuse to commit a refresh onto a grant that is no longer the one it began under (or,
+        with ``live_only``, onto one that is no longer live)."""
+        kept = (
+            self.is_live(spec.id)
+            if live_only
+            else self.record(spec.id).status in ("connected", "needs_reauth")
+        )
+        if self._generation(spec.id) != generation or not kept:
             raise NotConnected(
                 f"{spec.label} was disconnected or reconnected while its grant was refreshed; "
                 "nothing from the refresh was kept"
             )
 
-    def _mark_reauth(self, spec: ConnectorSpec, generation: int) -> None:
-        if self._generation(spec.id) == generation:
-            self.record(spec.id).status = "needs_reauth"
-            self._changed(spec.id)
+    def _mark_reauth(self, spec: ConnectorSpec, generation: int, lost: NeedsReauth) -> None:
+        """The grant is gone: ``needs_reauth``, and a broken verdict with its time."""
+        with self._lock:
+            if self._generation(spec.id) == generation:
+                rec = self.record(spec.id)
+                rec.status = "needs_reauth"
+                health.record(rec, health.classify(exc=lost, label=spec.label), _now())
+                self._changed(spec.id)
+
+    def _note_attempt(self, spec: ConnectorSpec, generation: int, exc: VaultError) -> None:
+        """A check that reached no verdict, onto the same grant only; the verdict is left."""
+        with self._lock:
+            rec = self.record(spec.id)
+            if self._generation(spec.id) == generation and rec.status != "disconnected":
+                health.record(rec, health.classify(exc=exc, label=spec.label), _now())
+                self._save()
 
     # -- admission --------------------------------------------------------------------------------
 
-    def _probe_with(self, spec: ConnectorSpec, token: str) -> tuple[str, str]:
-        """Ask the provider whether it accepts ``token``. Returns the identity to show and the
-        account key to compare (empty when the provider named none); raises otherwise."""
+    def _ask(self, spec: ConnectorSpec, token: str) -> tuple[int, Any]:
+        """The probe on the wire with ``token``: the provider's status and decoded body."""
         headers: dict[str, str] = {"Accept": "application/json", **spec.auth.extra_headers}
         name, value = spec.auth.credential_header(token)
         headers[name] = value
         status, raw, _ = self._raw(spec, spec.probe.method, spec.probe.url, headers, None)
-        body = self._decode(raw, token)
+        return status, self._decode(raw, token)
+
+    def _probe_with(self, spec: ConnectorSpec, token: str) -> tuple[str, str]:
+        """Ask the provider whether it accepts ``token``. Returns the identity to show and the
+        account key to compare (empty when the provider named none); raises otherwise."""
+        status, body = self._ask(spec, token)
         if status >= 300:
             raise VaultError(f"{spec.label} refused the credential with {status}")
+        return self._identity_of(spec, body)
+
+    @staticmethod
+    def _identity_of(spec: ConnectorSpec, body: Any) -> tuple[str, str]:
+        """The identity to show and the account key to compare, from an accepted probe's body."""
         if not isinstance(body, Mapping):
             return "", ""
         named = body.get(spec.probe.identity_field)
@@ -693,7 +733,8 @@ class Vault:
             rec.identity = identity
             rec.account = account
             rec.connected_at = _iso(_now())
-            rec.health, rec.health_at, rec.health_detail = "healthy", rec.connected_at, reset
+            rec.health, rec.health_at, rec.health_detail = "healthy", rec.connected_at, ""
+            rec.attempt_at, rec.attempt_detail, rec.notice = "", "", reset
             rec.seal = self._seal.kind if self._seal is not None else ""
             rec.expires_at = _iso(_now() + timedelta(seconds=expires_in)) if expires_in else ""
             self._changed(spec.id)
@@ -807,30 +848,68 @@ class Vault:
         )
 
     def probe(self, connector_id: str) -> ConnectionRecord:
-        """Re-check a connected credential and record the answer with its time."""
+        """Re-check a stored credential and record what was learnt (connectors/health.py): a
+        verdict with its time, or an attempt that reached none, beside the last verdict.
+
+        A stale OAuth token is refreshed first, with the token a call would use, on a record that
+        is switched off or needs reconnecting as well; a token the provider accepts returns a
+        ``needs_reauth`` record to connected. The notice from the last connect is never touched."""
         spec = self.spec(connector_id)
-        rec = self.record(connector_id)
-        token = self._get(connector_id, "token")
-        if rec.status == "disconnected" or token is None:
-            rec.health, rec.health_at, rec.health_detail = "unknown", _iso(_now()), "not connected"
-            self._save()
-            return rec
+        with self._lock:
+            rec = self.record(connector_id)
+            token = self._get(connector_id, "token")
+            if rec.status == "disconnected" or token is None:
+                rec.health, rec.health_at = "unknown", _iso(_now())
+                rec.health_detail = "not connected"
+                self._save()
+                return rec
+            generation = self._generation(connector_id)
+            stale = self._stale(spec, rec)
+        body: Any = None
         try:
-            identity, account = self._probe_with(spec, token)
-            with self._lock:
-                rec.health, rec.health_detail = "healthy", ""
+            if stale:
+                token = self._probe_token(spec, generation)
+            status, body = self._ask(spec, token)
+            outcome = health.classify(
+                status, body, label=spec.label, oauth=spec.auth.type == "oauth"
+            )
+        except NotConnected:
+            return rec  # disconnected or reconnected while the probe was out: nothing to say
+        except VaultError as exc:
+            outcome = health.classify(exc=exc, label=spec.label)
+        with self._lock:
+            if self._generation(connector_id) != generation or rec.status == "disconnected":
+                return rec
+            health.record(rec, outcome, _now())
+            rec.health_detail = redact(rec.health_detail, [token])
+            rec.attempt_detail = redact(rec.attempt_detail, [token])
+            if isinstance(outcome, health.Verdict) and outcome.health == "healthy":
+                identity, account = self._identity_of(spec, body)
                 if identity:
                     rec.identity = identity
                 if account:
                     rec.account = account
                 if rec.status == "needs_reauth":
                     rec.status = "connected"
-        except VaultError as exc:
-            with self._lock:
-                rec.health, rec.health_detail = "broken", redact(str(exc), [token])
-        rec.health_at = _iso(_now())
-        self._changed(connector_id)
+            self._changed(connector_id)
         return rec
+
+    def _probe_token(self, spec: ConnectorSpec, generation: int) -> str:
+        """The probe's own way to a fresh token: not :meth:`_fresh_token`, which refuses a record
+        that is not live. Under the connector's refresh guard, after its own disconnected check."""
+        with self._refresh_guard(spec.id):
+            with self._lock:
+                rec = self.record(spec.id)
+                token = self._get(spec.id, "token")
+                if (
+                    rec.status == "disconnected"
+                    or token is None
+                    or self._generation(spec.id) != generation
+                ):
+                    raise NotConnected(f"{spec.label} was disconnected while it was probed")
+                if not self._stale(spec, rec):
+                    return token  # another caller refreshed it while this one waited
+            return self._refresh(spec, generation, live_only=False)
 
     def disconnect(self, connector_id: str) -> ConnectionRecord:
         """Revoke upstream when the spec knows how; destroy every sealed value; keep the
@@ -858,6 +937,7 @@ class Vault:
             rec.connected_at = ""
             rec.expires_at = ""
             rec.health, rec.health_at, rec.health_detail = "unknown", _iso(_now()), "disconnected"
+            rec.attempt_at, rec.attempt_detail, rec.notice = "", "", ""
             self._changed(connector_id)
         return rec
 

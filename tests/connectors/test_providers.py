@@ -174,7 +174,7 @@ def test_two_workspaces_with_a_bot_of_the_same_name_are_not_one_account(tmp_path
     _arm(vault)
     record = vault.connect_token("notion", TOKEN)
     assert record.writes_enabled is False and record.allowlist == []
-    assert "set under Athena" in record.health_detail and "emptied" in record.health_detail
+    assert "set under Athena" in record.notice and "emptied" in record.notice
 
 
 def test_the_same_bot_id_keeps_the_switches_whatever_its_name_says(tmp_path: Path) -> None:
@@ -182,7 +182,7 @@ def test_the_same_bot_id_keeps_the_switches_whatever_its_name_says(tmp_path: Pat
     _arm(vault)
     record = vault.connect_token("notion", TOKEN)
     assert record.writes_enabled is True and record.allowlist == [PAGE]
-    assert record.identity == "Renamed" and record.health_detail == ""
+    assert record.identity == "Renamed" and record.notice == ""
 
 
 def test_the_workspace_name_is_shown_and_never_compared(tmp_path: Path) -> None:
@@ -201,7 +201,7 @@ def test_a_probe_with_no_id_resets_the_switches(tmp_path: Path) -> None:
     _arm(vault)
     record = vault.connect_token("notion", TOKEN)
     assert record.writes_enabled is False and record.allowlist == []
-    assert "could not be confirmed" in record.health_detail
+    assert "could not be confirmed" in record.notice
 
 
 def test_a_record_keyed_by_name_resets_once_and_says_why(tmp_path: Path) -> None:
@@ -217,7 +217,7 @@ def test_a_record_keyed_by_name_resets_once_and_says_why(tmp_path: Path) -> None
     vault = _bot(tmp_path, [{"id": "bot-1", "name": "Athena"}])
     record = vault.connect_token("notion", TOKEN)
     assert record.writes_enabled is False and record.allowlist == []
-    assert "known only by its name" in record.health_detail
+    assert "known only by its name" in record.notice
     vault.set_writes("notion", True)
     vault.disconnect("notion")
     assert vault.connect_token("notion", TOKEN).writes_enabled is True

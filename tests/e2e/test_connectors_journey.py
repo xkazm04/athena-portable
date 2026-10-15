@@ -326,8 +326,8 @@ def test_a_connect_as_a_second_account_turns_writes_off_and_a_send_to_the_first_
     record = connect_gmail(daemon)["connection"]
     assert record["identity"] == OTHER
     assert record["writes_enabled"] is False and record["allowlist"] == []
-    assert OTHER in record["health_detail"] and MIRA in record["health_detail"]
-    assert "writes are off" in record["health_detail"] and "emptied" in record["health_detail"]
+    assert OTHER in record["notice"] and MIRA in record["notice"]
+    assert "writes are off" in record["notice"] and "emptied" in record["notice"]
 
     filed = cards(daemon.run("reply to Dana"))
     assert len(filed) == 1

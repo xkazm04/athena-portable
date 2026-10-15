@@ -394,8 +394,8 @@ def test_a_connect_as_a_different_account_turns_writes_off_and_empties_the_list(
     record = vault.connect_token("notion", TOKEN)
     assert record.identity == "B"
     assert record.writes_enabled is False and record.allowlist == []
-    assert "Connected as B" in record.health_detail and "set under A" in record.health_detail
-    assert "writes are off" in record.health_detail and "emptied" in record.health_detail
+    assert "Connected as B" in record.notice and "set under A" in record.notice
+    assert "writes are off" in record.notice and "emptied" in record.notice
 
 
 def test_a_reconnect_as_the_same_account_keeps_the_switches(
@@ -408,7 +408,7 @@ def test_a_reconnect_as_the_same_account_keeps_the_switches(
     vault.disconnect("notion")
     record = vault.connect_token("notion", TOKEN)
     assert record.writes_enabled is True and record.allowlist == ["page1"]
-    assert record.health_detail == ""
+    assert record.notice == "" and record.health_detail == ""
 
 
 def test_the_identity_is_kept_across_a_restart_and_a_disconnect(
@@ -431,7 +431,7 @@ def test_switches_set_before_any_connect_have_no_identity_and_are_reset(
     vault.set_allowlist("notion", ["page1"])
     record = vault.connect_token("notion", TOKEN)
     assert record.writes_enabled is False and record.allowlist == []
-    assert "without a known account" in record.health_detail
+    assert "without a known account" in record.notice
 
 
 def test_a_legacy_record_is_adopted_when_loaded_live_and_reset_on_connect(
@@ -466,4 +466,4 @@ def test_a_probe_that_names_no_account_never_matches(
     vault.set_writes("notion", True)
     vault.disconnect("notion")
     record = vault.connect_token("notion", TOKEN)
-    assert record.writes_enabled is False and "did not name" in record.health_detail
+    assert record.writes_enabled is False and "did not name" in record.notice

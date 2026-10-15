@@ -214,6 +214,40 @@ test("the health detail is a note while connected and not broken, and never othe
   expect(probed.healthNote).toBe("");
 });
 
+// -- a check that reached no verdict is a warning, never broken (health ADR) -------------------------
+
+test("a healthy verdict with a newer attempt reads connected, as a warning that names the obstacle", () => {
+  const obstacle = "could not reach Gmail: the provider could not be reached: TimeoutError";
+  const s = standingOf(
+    view(
+      { id: "gmail", label: "Gmail" },
+      {
+        health: "healthy",
+        health_at: "2026-09-12T09:00:00Z",
+        attempt_at: "2026-09-12T11:55:00Z",
+        attempt_detail: obstacle,
+      },
+    ),
+    NOW,
+  );
+  expect(s.standing).toBe("connected");
+  expect(s.tone).toBe("warning");
+  expect(s.sentence).toBe(`Verified 3 h ago; could not check since 5 min ago: ${obstacle}`);
+  expect(`${s.word} ${s.sentence}`).not.toMatch(/broken/);
+  // An attempt older than the verdict is spent: the row reads as the verdict alone.
+  const spent = standingOf(view({}, { health_at: "2026-09-12T11:59:00Z", attempt_at: "2026-09-12T11:00:00Z", attempt_detail: obstacle }), NOW);
+  expect(spent.tone).toBe("success");
+  expect(spent.sentence).toBe("Connected as Test User.");
+});
+
+test("the switch-reset notice is the note, and survives a probe that cleared the health detail", () => {
+  const notice =
+    "Connected as B. The writes switch and the recipient list were set under A, so writes are off and the list was emptied.";
+  const [row] = rowsUnder("", [view({}, { notice, health_detail: "", health: "healthy" })]);
+  expect(row.healthNote).toBe(notice);
+  expect(row.tone).toBe("success");
+});
+
 // -- the switches wait for a connection (item 13) ----------------------------------------------------
 
 test("the switches carry a plain reason while not connected, and none once connected", () => {

@@ -50,9 +50,9 @@ export interface ConnectorRow {
   /** The record's own fact, unaffected by a records notice: the daemon has it as connected. */
   connected: boolean;
   /**
-   * The connector's health detail while it is connected and not broken, else "" — after a
-   * connect, the daemon's word on it (e.g. that writes were turned off for another account). A
-   * later probe overwrites it on the record. Information, never an error.
+   * The record's notice while it is connected and not broken, else "" — the daemon's word at the
+   * last connect (e.g. that writes were turned off for another account), which a probe keeps.
+   * Falls back to the health detail for a daemon that sends no notice. Information, never an error.
    */
   healthNote: string;
   /**
@@ -126,6 +126,18 @@ export function sealSentence(seal: ConnectorView["connection"]["seal"]): string 
   }
 }
 
+/**
+ * Whether the record carries a check that reached no verdict after its last verdict. The daemon
+ * clears the attempt on the next verdict; the comparison keeps an older one from reading as news.
+ */
+function attemptIsNewer(c: ConnectorView["connection"]): boolean {
+  if (!c.attempt_at) return false;
+  const tried = parseStamp(c.attempt_at);
+  if (tried === null) return false;
+  const judged = c.health_at ? parseStamp(c.health_at) : null;
+  return judged === null || tried.getTime() > judged.getTime();
+}
+
 export function standingOf(
   view: ConnectorView,
   now: number = Date.now(),
@@ -185,6 +197,18 @@ export function standingOf(
       tone: "error",
     };
   }
+  if (attemptIsNewer(c)) {
+    // A check that reached no verdict says "could not verify", never "broken": the last verdict
+    // stands with its age, and the obstacle is named beside it.
+    const since = `since ${ageOf(c.attempt_at ?? "", now)}: ${c.attempt_detail ?? ""}`;
+    const verified = c.health === "healthy" && c.health_at;
+    return {
+      standing: "connected",
+      word: "connected",
+      sentence: verified ? `Verified ${ageOf(c.health_at, now)}; could not check ${since}` : `Could not check ${since}`,
+      tone: "warning",
+    };
+  }
   return {
     standing: "connected",
     word: "connected",
@@ -216,7 +240,7 @@ export function rowOf(
     seal: c.status === "connected" || c.status === "needs_reauth" ? sealSentence(c.seal) : "",
     sealAvailable: view.seal_available,
     connected,
-    healthNote: connected && c.health !== "broken" ? c.health_detail : "",
+    healthNote: connected && c.health !== "broken" ? c.notice || c.health_detail : "",
     probedAge: connected && c.health_at ? ageOf(c.health_at, now) : "",
     disabledReason: connected
       ? ""
