@@ -20,7 +20,8 @@
  *
  * **Bounded output announces itself.** Page text is unbounded by nature — a long list view is a
  * megabyte — so every read is cut and says `(showing N of M)`, in the same words the Python side
- * uses (README section 2, invariant 4).
+ * uses (README section 2, invariant 4). A cut read is not a dead end: its first line names a
+ * cursor into a short-lived snapshot, and passing it back reads the next packet (ADR 0102).
  *
  * The class of each hand is not decided here. These are *capabilities*; the gate decides, and
  * README section 3.3 makes every hand `GATED` on first sight for a new origin whatever its flags
@@ -41,10 +42,24 @@
   // every request twice.
   if (window.__athenaHands) return;
 
-  /** How much text one read may return before it is cut and says so. */
-  const READ_CAP = 4000;
-  /** How many matches `page_find` returns before it announces the rest. */
+  /**
+   * The most one answer may be, cursor line and footer included (ADR 0102).
+   *
+   * The lane cuts every tool result at 1,600 characters (`RESULT_CAP`, `turn_frame.py`) and what
+   * it cuts is gone: no cursor can reach past a cut the page never saw. So a long read is packed
+   * here, under that wall with room to spare, and every packet arrives whole.
+   */
+  const PACKET_CAP = 1500;
+  /** How many matches one `page_find` packet carries, at most, before it hands back a cursor. */
   const FIND_CAP = 20;
+  /** The longest cursor token a hand takes; `hands.rs` declares the same bound in its schema. */
+  const CURSOR_MAX = 64;
+  /** How many snapshots one document keeps for continuing reads; the oldest is dropped first. */
+  const SNAPSHOT_MAX = 4;
+  /** How long a snapshot outlives its last use. Short: it is a copy of a page that keeps moving. */
+  const SNAPSHOT_TTL_MS = 3 * 60 * 1000;
+  /** The most page text one snapshot holds. A megabyte list view is read by ref, not by paging. */
+  const SNAPSHOT_TEXT_CAP = 200000;
   /** The longest a label may be in a find result, so one heading cannot fill the answer. */
   const LABEL_CAP = 120;
 
@@ -114,18 +129,150 @@
     return { el };
   }
 
+  // ---- snapshots, for continuing a long read (ADR 0102) ----------------------------------------
+
+  /**
+   * id → `{ kind, generation, at, text | elements }`, for this document only.
+   *
+   * A continuation reads the copy taken at the first call, never the live page, so an offset or a
+   * match index means the same thing on the third packet as on the first. The copy is bounded in
+   * number and in age: it is the page as it was, and the longer it is kept the less that is worth.
+   */
+  let snapshots = new Map();
+  /** Never reused, across documents too, so a cursor cannot name a later snapshot by accident. */
+  let snapshotSeq = 0;
+
+  function keep(snapshot) {
+    const now = Date.now();
+    for (const [id, held] of snapshots) if (now - held.at > SNAPSHOT_TTL_MS) snapshots.delete(id);
+    snapshotSeq += 1;
+    snapshots.set(snapshotSeq, { ...snapshot, generation, at: now });
+    while (snapshots.size > SNAPSHOT_MAX) snapshots.delete(snapshots.keys().next().value);
+    return snapshotSeq;
+  }
+
+  const cursorOf = (id, offset) => `cur_${generation}_${id}_${offset}`;
+
+  /**
+   * The snapshot and offset a cursor names, or a refusal that tells the model to read again.
+   *
+   * Every failure is `unknown_ref`, the reason a stale ref already answers: the cursor is a ref to
+   * a place in a copy, and the fix is the same — ask the page again.
+   */
+  function reopen(cursor, kind) {
+    const again = `; call ${kind} again without a cursor`;
+    const token = typeof cursor === "string" && cursor.length <= CURSOR_MAX ? cursor : "";
+    const parts = /^cur_(\d+)_(\d+)_(\d+)$/.exec(token);
+    if (!parts) return { error: "unknown_ref", detail: `a cursor is handed back by ${kind}${again}` };
+    if (Number(parts[1]) !== generation) {
+      return { error: "unknown_ref", detail: `that cursor belongs to a page that has been left${again}` };
+    }
+    const id = Number(parts[2]);
+    const held = snapshots.get(id);
+    if (held && Date.now() - held.at > SNAPSHOT_TTL_MS) snapshots.delete(id);
+    const live = snapshots.get(id);
+    if (!live) return { error: "unknown_ref", detail: `that cursor has expired${again}` };
+    if (live.kind !== kind) {
+      return { error: "unknown_ref", detail: `that cursor was handed back by ${live.kind}${again}` };
+    }
+    const offset = Number(parts[3]);
+    const size = kind === "page_read" ? live.text.length : live.elements.length;
+    if (offset <= 0 || offset >= size) {
+      return { error: "unknown_ref", detail: `that cursor points outside its snapshot${again}` };
+    }
+    // Used, so kept: it moves to the back of the eviction order and its clock starts again.
+    live.at = Date.now();
+    snapshots.delete(id);
+    snapshots.set(id, live);
+    return { id, snapshot: live, offset };
+  }
+
+  /**
+   * The first line of a packet: the cursor for the next one, or where the end is.
+   *
+   * `more` is false on the last packet, which then has no cursor to name — but it still says
+   * which snapshot it came from and that nothing follows, so a model does not ask for a part
+   * that is not there.
+   */
+  function headOf(unit, id, start, end, total, more, tail = "") {
+    const span = `${unit} ${start + 1}-${end} of ${total}, snapshot s${id}`;
+    return more
+      ? `cursor: ${cursorOf(id, end)} (${span}; pass it as cursor for the next part)`
+      : `${span}, the end${tail}`;
+  }
+
+  /**
+   * How much content a packet may carry once its first line and its footer are spelled.
+   *
+   * Both are sized for the widest numbers they could hold, cursor or not, before anything is cut,
+   * so the finished packet can only come out shorter than `PACKET_CAP`, never longer.
+   */
+  function roomFor(unit, id, total, tail) {
+    const wide = Number(String(total).replace(/\d/g, "9"));
+    const head = Math.max(
+      headOf(unit, id, wide, wide, wide, true).length,
+      headOf(unit, id, wide, wide, wide, false, tail).length,
+    );
+    return PACKET_CAP - head - `(showing ${wide} of ${wide})`.length - 2;
+  }
+
+  /** One packet of a snapshot's text: a first line, the text, the footer — under `PACKET_CAP`. */
+  function textPacket(id, snapshot, start) {
+    const { text, total } = snapshot;
+    const tail = text.length < total ? "; the rest is not kept, read a part of it by ref" : "";
+    const room = roomFor("chars", id, total, tail);
+    let end = Math.min(text.length, start + room);
+    // Back off to a space so a figure is not split across two packets, when one is near.
+    if (end < text.length) {
+      const space = text.lastIndexOf(" ", end);
+      if (space > start + room - 80) end = space;
+    }
+    const head = headOf("chars", id, start, end, total, end < text.length, tail);
+    const body = text.slice(start, end);
+    return { output: [head, body, `(showing ${body.length} of ${total})`].join("\n"), next: end };
+  }
+
+  /** One packet of a snapshot's matches, each minted a ref the ordinary way. */
+  function findPacket(id, snapshot, start) {
+    const { elements } = snapshot;
+    const total = elements.length;
+    const room = roomFor("matches", id, total, "");
+    const rows = [];
+    const lines = [];
+    let used = 0;
+    for (let at = start; at < total && rows.length < FIND_CAP; at += 1) {
+      const described = describeRow(elements[at]);
+      const line = lineOf(described);
+      if (rows.length && used + line.length + 1 > room) break;
+      const row = { ref: mint(elements[at]), ...described };
+      rows.push(row);
+      lines.push(lineOf(row));
+      used += line.length + 1;
+    }
+    const end = start + rows.length;
+    const head = headOf("matches", id, start, end, total, end < total);
+    const output = [head, ...lines, `(showing ${rows.length} of ${total})`].join("\n");
+    return { output, rows, next: end };
+  }
+
+  /** A row before its ref is minted, so a row that will not fit does not get one. */
+  function describeRow(el) {
+    return { role: roleOf(el), label: labelOf(el), disabled: Boolean(el.disabled) };
+  }
+
+  /** One match as the model reads it. A ref is always `ref_<generation>_<12 hex>`, so the length
+   * of a row before minting is the length after, give or take the generation's digits. */
+  function lineOf(r) {
+    const ref = r.ref ?? `ref_${generation}_000000000000`;
+    return `${ref}  ${r.role}  ${r.label}${r.disabled ? "  (disabled)" : ""}`;
+  }
+
   // ---- reading --------------------------------------------------------------------------------
 
   function squash(text) {
     return String(text ?? "")
       .replace(/\s+/g, " ")
       .trim();
-  }
-
-  function bounded(text) {
-    const whole = String(text ?? "");
-    if (whole.length <= READ_CAP) return whole;
-    return `${whole.slice(0, READ_CAP)}\n(showing ${READ_CAP} of ${whole.length})`;
   }
 
   /** Is this element actually on screen? A hidden node is not something a person could click. */
@@ -220,8 +367,10 @@
 
   /** One line each, for the capability block a model actually reads. */
   const DESCRIPTIONS = {
-    page_read: "The visible text of the page, or of one element you have a ref for.",
-    page_find: "Operable elements whose label matches a query, each with a ref to act on.",
+    page_read:
+      "The visible text of the page, or of one element you have a ref for. A long answer comes in parts; its first line names a cursor, pass it back as cursor for the next part.",
+    page_find:
+      "Operable elements whose label matches a query, each with a ref to act on. Many matches come in parts; the first line names a cursor, pass it back as cursor for the next part.",
     page_wait: "Wait, up to a bound, for text to appear on the page.",
     page_scroll: "Bring a ref into view, or move the page by one screen.",
     page_click: "Click the element a ref names.",
@@ -234,8 +383,21 @@
   const no = (reason, detail) => ({ ok: false, reason, error: detail || reason });
 
   const HANDS = {
-    /** The page, or one ref'd part of it, as text. Bounded and announced. */
+    /**
+     * The page, or one ref'd part of it, as text. Bounded and announced.
+     *
+     * An answer that fits one packet is the text itself, exactly as before cursors existed. One
+     * that does not is a snapshot read in packets, each starting with the cursor for the next
+     * (ADR 0102). A call with a cursor reads that snapshot and nothing else: its `ref` is the one
+     * the first call named, whatever this call says.
+     */
     page_read(input) {
+      if (input.cursor !== undefined && input.cursor !== null) {
+        const held = reopen(input.cursor, "page_read");
+        if (held.error) return no(held.error, held.detail);
+        const packet = textPacket(held.id, held.snapshot, held.offset);
+        return ok(packet.output, { title: document.title, url: location.href, next: packet.next });
+      }
       let root = document.body;
       if (input.ref !== undefined && input.ref !== null) {
         const found = resolve(input.ref);
@@ -243,7 +405,12 @@
         root = found.el;
       }
       if (!root) return no("unknown_ref", "this document has no body yet");
-      return ok(bounded(textOf(root)), { title: document.title, url: location.href });
+      const text = textOf(root);
+      if (text.length <= PACKET_CAP) return ok(text, { title: document.title, url: location.href });
+      const snapshot = { kind: "page_read", text: text.slice(0, SNAPSHOT_TEXT_CAP), total: text.length };
+      const id = keep(snapshot);
+      const packet = textPacket(id, snapshot, 0);
+      return ok(packet.output, { title: document.title, url: location.href, next: packet.next });
     },
 
     /**
@@ -251,9 +418,21 @@
      *
      * The query is matched against the label a person would read, not against markup: a model
      * that had to guess at class names would be writing selectors, which is the thing refs exist
-     * to prevent.
+     * to prevent. More matches than one packet holds come as a snapshot of the match list, read
+     * on with the cursor its first line names; each continued row is minted a ref the ordinary
+     * way, and no row is handed back twice (ADR 0102).
      */
     page_find(input) {
+      if (input.cursor !== undefined && input.cursor !== null) {
+        const held = reopen(input.cursor, "page_find");
+        if (held.error) return no(held.error, held.detail);
+        const packet = findPacket(held.id, held.snapshot, held.offset);
+        return ok(packet.output, {
+          matches: packet.rows,
+          shown: packet.rows.length,
+          total: held.snapshot.elements.length,
+        });
+      }
       const query = squash(input.query).toLowerCase();
       const wanted = squash(input.role).toLowerCase();
       // Asking for a structural role searches content; asking for anything else, or for nothing,
@@ -265,19 +444,22 @@
         if (!query) return true;
         return labelOf(el).toLowerCase().includes(query);
       });
-      const shownRows = matched.slice(0, FIND_CAP).map((el) => ({
-        ref: mint(el),
-        role: roleOf(el),
-        label: labelOf(el),
-        disabled: Boolean(el.disabled),
-      }));
-      const lines = shownRows.map((r) => `${r.ref}  ${r.role}  ${r.label}${r.disabled ? "  (disabled)" : ""}`);
-      if (matched.length > shownRows.length) {
-        lines.push(`(showing ${shownRows.length} of ${matched.length})`);
+      const described = matched.slice(0, FIND_CAP).map(describeRow);
+      const width = described.reduce((sum, row) => sum + lineOf(row).length + 1, 0);
+      if (described.length === matched.length && width <= PACKET_CAP) {
+        const whole = described.map((row, at) => ({ ref: mint(matched[at]), ...row }));
+        return ok(whole.map(lineOf).join("\n") || "nothing matched", {
+          matches: whole,
+          shown: whole.length,
+          total: matched.length,
+        });
       }
-      return ok(lines.join("\n") || "nothing matched", {
-        matches: shownRows,
-        shown: shownRows.length,
+      const snapshot = { kind: "page_find", elements: matched };
+      const id = keep(snapshot);
+      const packet = findPacket(id, snapshot, 0);
+      return ok(packet.output, {
+        matches: packet.rows,
+        shown: packet.rows.length,
         total: matched.length,
       });
     },
@@ -470,6 +652,7 @@
   function left() {
     generation += 1;
     refs = new Map();
+    snapshots = new Map();
   }
   addEventListener("popstate", left);
   addEventListener("pagehide", left);
@@ -504,6 +687,29 @@
   };
 
   /**
+   * The parameters of the two continuing reads, spelled as `hands.rs`'s `schema_for` spells them;
+   * a Rust test holds the cursor bound to the same number. The other hands keep the bare object
+   * they always had here, because `hands.rs` is the catalogue the daemon reads.
+   */
+  const SCHEMAS = {
+    page_read: {
+      type: "object",
+      properties: {
+        ref: { type: "string", maxLength: 64 },
+        cursor: { type: "string", maxLength: CURSOR_MAX },
+      },
+    },
+    page_find: {
+      type: "object",
+      properties: {
+        query: { type: "string", maxLength: 200 },
+        role: { type: "string", maxLength: 40 },
+        cursor: { type: "string", maxLength: CURSOR_MAX },
+      },
+    },
+  };
+
+  /**
    * The hands as WebMCP tool descriptors — the shape `inject.js` reports a page's own tools in.
    *
    * A surface appends these to whatever the page listed and hands the one list to `gate.js`'s
@@ -517,7 +723,7 @@
       name,
       title: name,
       description: DESCRIPTIONS[name] ?? "",
-      inputSchema: { type: "object" },
+      inputSchema: SCHEMAS[name] ?? { type: "object" },
       annotations: { readOnlyHint: sideEffects === "none", consequentialHint: !reversible },
       athena: { reversible, side_effects: sideEffects },
     };

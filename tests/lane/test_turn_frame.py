@@ -8,6 +8,7 @@ the two-output composer that the composer itself cannot own, because it is delib
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from athena.contracts.channel import ToolResult
@@ -38,6 +39,39 @@ def test_a_short_answer_is_left_exactly_as_it_is() -> None:
     (result,) = tool_results_from([{"name": "host.invoices.read", "output": "two late"}])
 
     assert (result.output, result.truncated) == ("two late", False)
+
+
+HANDS_JS = (
+    Path(__file__).resolve().parents[2].joinpath("apps", "desktop", "src-tauri", "src", "hands.js")
+)
+
+
+def _packet_cap() -> int:
+    match = re.search(r"const PACKET_CAP = (\d+);", HANDS_JS.read_text(encoding="utf-8"))
+    assert match is not None, "hands.js declares PACKET_CAP"
+    return int(match.group(1))
+
+
+def test_a_continued_page_read_packet_crosses_the_frame_whole() -> None:
+    # ADR 0102. hands.js packs a long read so the whole answer, cursor line and footer included,
+    # is at most PACKET_CAP; the frame must then leave it exactly as it is, or the cursor that
+    # reaches the next part is cut away with the tail.
+    cap = _packet_cap()
+    assert cap < RESULT_CAP
+    head = (
+        "cursor: cur_3_17_1402 (chars 1-1402 of 5230, snapshot s17;"
+        " pass it as cursor for the next part)"
+    )
+    foot = "(showing 1402 of 5230)"
+    body = ("row " * cap)[: cap - len(head) - len(foot) - 2]
+    packet = f"{head}\n{body}\n{foot}"
+    assert len(packet) == cap
+
+    (result,) = tool_results_from([{"name": "page_read", "output": packet, "tier": 2}])
+
+    assert result.truncated is False
+    assert result.output == packet
+    assert result.output.splitlines()[0].startswith("cursor: cur_3_17_1402 ")
 
 
 def test_the_tier_and_the_failure_survive_the_crossing() -> None:

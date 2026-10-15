@@ -35,7 +35,8 @@ use crate::{bridge, capture, store, tabs};
 
 /// What a page's own answer may carry back before the shell cuts it.
 ///
-/// `hands.js` bounds its reads at 4,000 characters and announces the cut; this is the second wall,
+/// `hands.js` packs its reads under 1,500 characters, so each survives the lane's 1,600-character
+/// cut (ADR 0102), and announces what it left for a cursor; this is the second wall,
 /// for a page that answered with something the script did not produce. Two bounds rather than one
 /// because only one of them is in code the shell controls.
 const OUTPUT_CAP: usize = 8_000;
@@ -77,14 +78,14 @@ pub struct Hand {
 pub const HANDS: &[Hand] = &[
     Hand {
         name: "page_read",
-        description: "The visible text of the page, or of one element you have a ref for.",
+        description: "The visible text of the page, or of one element you have a ref for. A long answer comes in parts; its first line names a cursor, pass it back as cursor for the next part.",
         reversible: true,
         side_effects: "none",
         runner: Runner::Page,
     },
     Hand {
         name: "page_find",
-        description: "Operable elements whose label matches a query, each with a ref to act on.",
+        description: "Operable elements whose label matches a query, each with a ref to act on. Many matches come in parts; the first line names a cursor, pass it back as cursor for the next part.",
         reversible: true,
         side_effects: "none",
         runner: Runner::Page,
@@ -189,19 +190,31 @@ pub fn webmcp_tools() -> Vec<Value> {
         .collect()
 }
 
+/// The longest cursor `page_read` and `page_find` take back. `hands.js` holds the same bound as
+/// `CURSOR_MAX`, and a test reads it out of the script. A cursor is
+/// `cur_<generation>_<snapshot>_<offset>`, three integers, so 64 is generous (ADR 0102).
+pub const CURSOR_MAX: usize = 64;
+
 /// The parameters each hand takes, as the capability block renders them.
 fn schema_for(name: &str) -> Value {
     let ref_param = json!({ "type": "string", "maxLength": 64 });
+    // Optional on both reads: a call without one is the read it always was, and only an answer
+    // too long for one packet hands one back.
+    let cursor_param = json!({ "type": "string", "maxLength": CURSOR_MAX });
     match name {
         // No parameters at all: the picture is of the page on screen, and there is nothing about
         // it for a caller to choose. A `ref` here would promise a crop the capture cannot do.
         SCREENSHOT => json!({ "type": "object", "properties": {} }),
-        "page_read" => json!({ "type": "object", "properties": { "ref": ref_param } }),
+        "page_read" => json!({
+            "type": "object",
+            "properties": { "ref": ref_param, "cursor": cursor_param },
+        }),
         "page_find" => json!({
             "type": "object",
             "properties": {
                 "query": { "type": "string", "maxLength": 200 },
                 "role": { "type": "string", "maxLength": 40 },
+                "cursor": cursor_param,
             },
         }),
         "page_wait" => json!({
@@ -873,6 +886,66 @@ mod tests {
                 hand(name).is_some(),
                 "hands.js declares {name}, which this module does not"
             );
+        }
+    }
+
+    #[test]
+    fn the_two_reads_take_an_optional_bounded_cursor_and_nothing_else_does() {
+        // ADR 0102. Optional, because a read without one is the read it always was; bounded,
+        // because the manifest validator refuses an unbounded string.
+        for name in ["page_read", "page_find"] {
+            let schema = schema_for(name);
+            assert_eq!(schema["properties"]["cursor"]["type"], "string", "{name}");
+            assert_eq!(
+                schema["properties"]["cursor"]["maxLength"], CURSOR_MAX,
+                "{name}"
+            );
+            assert!(schema.get("required").is_none(), "{name}");
+        }
+        for hand in HANDS
+            .iter()
+            .filter(|h| !matches!(h.name, "page_read" | "page_find"))
+        {
+            assert!(
+                schema_for(hand.name)["properties"].get("cursor").is_none(),
+                "{} takes no cursor",
+                hand.name
+            );
+        }
+    }
+
+    #[test]
+    fn the_script_bounds_a_cursor_where_this_module_does() {
+        // The schema promises a bound the script then enforces; two numbers for one bound would be
+        // a cursor the catalog accepts and the page refuses, or the other way round.
+        let script = crate::hands_script();
+        assert!(
+            script.contains(&format!("const CURSOR_MAX = {CURSOR_MAX};")),
+            "hands.js does not declare CURSOR_MAX = {CURSOR_MAX}"
+        );
+        assert!(script.contains("cursor: { type: \"string\", maxLength: CURSOR_MAX }"));
+    }
+
+    #[test]
+    fn every_description_fits_the_catalog_and_the_script_says_the_same() {
+        // ADR 0068: the catalog cuts a description at 240 characters, and a cut one would lose the
+        // half that tells a model how to continue. The script reports the same words, so a surface
+        // that reads its tools from there is told the same thing.
+        let script = crate::hands_script();
+        for hand in HANDS {
+            assert!(
+                hand.description.chars().count() <= 240,
+                "{} is {} characters",
+                hand.name,
+                hand.description.chars().count()
+            );
+            if hand.runner == Runner::Page {
+                assert!(
+                    script.contains(&format!("\"{}\"", hand.description)),
+                    "hands.js describes {} differently",
+                    hand.name
+                );
+            }
         }
     }
 
