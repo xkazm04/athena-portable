@@ -1,0 +1,185 @@
+{
+ "schema": "conform-run/1",
+ "worker": "02740591-b6a6-466a-8cc1-d2ebad31b56c",
+ "subject": "design-tokens",
+ "evaluatedAt": "2026-10-15T04:20:57.557201+00:00",
+ "provider": "codex",
+ "model": "gpt-6.1-sol",
+ "pairs": [
+  {
+   "context": "atlas-shell-and-styles",
+   "subject": "design-tokens",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "examples/atlas/components/atlas/style/base/sheet.css:73 The shell consumes a numbered spacing primitive directly instead of passing through a semantic layout role.",
+   "techniques": [
+    {
+     "technique": "cross-language-token-parity",
+     "verdict": "deviation",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:140 The story multiplier is independently repeated in lanes.css as calc(var(--at-dur-view) * 6); searches found no generation or parity comparison for these factors."
+    },
+    {
+     "technique": "motion-tokens",
+     "verdict": "deviation",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/lanes.css:635 The story pulse introduces a literal duration outside the declared motion ladder."
+    },
+    {
+     "technique": "theme-architecture",
+     "verdict": "deviation",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:169 Theme preference is binary component state initialized from the preset, without a persisted follow-platform state."
+    },
+    {
+     "technique": "token-enforcement",
+     "verdict": "deviation",
+     "evidence": "examples/atlas/design/check-tokens.mjs:44 The raw-value checker recognizes milliseconds but misses seconds, allowing the literal 1.1s animation through a successful check."
+    },
+    {
+     "technique": "token-taxonomy",
+     "verdict": "deviation",
+     "evidence": "examples/atlas/components/atlas/style/base/sheet.css:73 The readout consumes the raw numbered spacing scale directly, skipping semantic roles."
+    }
+   ]
+  },
+  {
+   "context": "demo-kit-zoom-engine",
+   "subject": "design-tokens",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "examples/demo-kit/src/zoom/camera.ts:80 The camera manually mirrors the template's CSS easing and separately repeats its sampled curve, leaving multiple editable authorities.",
+   "techniques": [
+    {
+     "technique": "cross-language-token-parity",
+     "verdict": "deviation",
+     "evidence": "examples/demo-kit/src/zoom/camera.ts:80 The comment identifies this as the template's --dk-ease curve, which globals.css authors independently; no generation or artifact-parity check was located."
+    },
+    {
+     "technique": "motion-tokens",
+     "verdict": "deviation",
+     "evidence": "examples/demo-kit/src/zoom/camera.ts:399 The sampled fallback curve repeats the FLY_EASE numbers instead of deriving from that named motion authority."
+    }
+   ]
+  },
+  {
+   "context": "hirelane-board-ui",
+   "subject": "design-tokens",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "examples/hirelane/components/board/motion.ts:72 The entrance distance manually copies a CSS spacing step, so retuning that step can leave the scripted motion behind.",
+   "techniques": [
+    {
+     "technique": "cross-language-token-parity",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/components/board/motion.ts:72 The preceding comment identifies RISE as --hl-space-2, independently defined as 8px in hl-scales.css; the runtime token list does not read this spacing value."
+    },
+    {
+     "technique": "motion-tokens",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/components/board/Dossier.tsx:168 Reduced-motion honoring depends on component-specific variant branches rather than rebinding the motion vocabulary for every consumer."
+    }
+   ]
+  },
+  {
+   "context": "hirelane-style",
+   "subject": "design-tokens",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "examples/hirelane/components/board/style/level1/l1-carousel-2.css:27 The carousel authors a raw font size equal to --bd-text-xs, and the design checker permits this bypass.",
+   "techniques": [
+    {
+     "technique": "cross-language-token-parity",
+     "verdict": "conformant",
+     "evidence": "examples/hirelane/components/board/style/base/tokens.css:177 Motion durations alias the CSS scale that useBoardMotion reads at runtime; motion.test.ts checks the shipped aliases and derived zoom budget."
+    },
+    {
+     "technique": "motion-tokens",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/components/board/style/base/reduced-motion.css:52 Delayed animations are cancelled through a hand-maintained selector list rather than compliance inherited through rebinding motion tokens."
+    },
+    {
+     "technique": "token-enforcement",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/components/board/style/level1/l1-carousel-2.css:27 This literal duplicates --bd-text-xs; check-law.mjs passes because its stylesheet length check targets px rather than raw typography values."
+    },
+    {
+     "technique": "token-taxonomy",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/components/board/style/base/the-room.css:20 --bd-s4 merely aliases --hl-space-4, so the rendered surface consumes a spacing primitive instead of a semantic layout role."
+    }
+   ]
+  }
+ ],
+ "declined": [
+  {
+   "subject": "design-tokens",
+   "context": "desktop-app-shell-ui",
+   "reason": "evidence leans on src-tauri/src/layout.rs, which is not a tracked file"
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-15T04:20:57.557201+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "design-tokens"
+   ],
+   "techniques": [
+    "cross-language-token-parity",
+    "motion-tokens",
+    "theme-architecture",
+    "token-enforcement",
+    "token-taxonomy"
+   ],
+   "deviations": 1,
+   "context": "atlas-shell-and-styles",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-15T04:20:57.557201+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "design-tokens"
+   ],
+   "techniques": [
+    "cross-language-token-parity",
+    "motion-tokens"
+   ],
+   "deviations": 1,
+   "context": "demo-kit-zoom-engine",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-15T04:20:57.557201+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "design-tokens"
+   ],
+   "techniques": [
+    "cross-language-token-parity",
+    "motion-tokens"
+   ],
+   "deviations": 1,
+   "context": "hirelane-board-ui",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-15T04:20:57.557201+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "design-tokens"
+   ],
+   "techniques": [
+    "cross-language-token-parity",
+    "motion-tokens",
+    "token-enforcement",
+    "token-taxonomy"
+   ],
+   "deviations": 1,
+   "context": "hirelane-style",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  }
+ ]
+}

@@ -1000,7 +1000,11 @@
           "revision": 7,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/atlas/components/atlas/style/base/sheet.css:73 The shell consumes a numbered spacing primitive directly instead of passing through a semantic layout role.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:165125b7a54d0de3",
+          "evaluatedRevision": 7
         },
         {
           "subject": "mcp-tools",
@@ -2838,7 +2842,11 @@
           "revision": 7,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/demo-kit/src/zoom/camera.ts:80 The camera manually mirrors the template's CSS easing and separately repeats its sampled curve, leaving multiple editable authorities.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:165125b7a54d0de3",
+          "evaluatedRevision": 7
         },
         {
           "subject": "quality-gates",
@@ -5868,7 +5876,11 @@
           "revision": 7,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/components/board/motion.ts:72 The entrance distance manually copies a CSS spacing step, so retuning that step can leave the scripted motion behind.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:165125b7a54d0de3",
+          "evaluatedRevision": 7
         },
         {
           "subject": "agent-instruction-files",
@@ -6333,7 +6345,11 @@
           "revision": 7,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/components/board/style/level1/l1-carousel-2.css:27 The carousel authors a raw font size equal to --bd-text-xs, and the design checker permits this bypass.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:165125b7a54d0de3",
+          "evaluatedRevision": 7
         },
         {
           "subject": "ui-controls",
