@@ -1,0 +1,30 @@
+{
+  "id": "2026-10-15-page-operation",
+  "root": "<repo>/",
+  "area": [
+    "packages/athena-bridge",
+    "src/athena/lane",
+    "examples/demo-kit/src/webmcp",
+    "apps/desktop/src/lib/hands.ts",
+    "apps/desktop/src/lib/bridge.ts",
+    "apps/desktop/src-tauri/src/bridge.rs",
+    "apps/desktop/src-tauri/src/hands.rs"
+  ],
+  "head": "9bd3cceb931d2531987524abc729e647a1258537",
+  "created": "2026-10-15T10:19:56.620Z",
+  "rounds": {
+    "1": {
+      "started": "2026-10-15T10:28:19.422Z",
+      "seats": {},
+      "finished": "2026-10-15T10:39:08.249Z",
+      "stray_changes": 0
+    },
+    "2": {
+      "started": "2026-10-15T10:39:28.230Z",
+      "seats": {},
+      "finished": "2026-10-15T10:50:05.515Z",
+      "stray_changes": 0
+    }
+  },
+  "seats": "agy:gemini-4-argon@high,codex:gpt-6.1-sol@xhigh,grok:grok-4.7@high,claude:claude-opus-5-5@xhigh"
+}
