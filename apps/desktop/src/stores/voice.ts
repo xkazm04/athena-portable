@@ -30,6 +30,14 @@ import { create } from "zustand";
 
 import { DaemonApi, type ExecuteRow } from "@/lib/api";
 import type { BridgeTool } from "@/lib/bridge";
+import {
+  forgetUnsure,
+  heldBefore,
+  rememberUnsure,
+  settleHostCall,
+  withUnsure,
+  type PageAnswer,
+} from "@/lib/execute";
 import { VoiceSetupApi, availabilityOf, refusalText } from "@/lib/voice-setup";
 import { TABS_READ, callOnPage, takeCapture, type Taken } from "@/lib/hands";
 import type { ChannelEvent, DecisionRequested, ToolCall, VoiceTranscript } from "@/lib/events";
@@ -52,6 +60,7 @@ import {
   routingTools,
   snapshotFrom,
   snapshotOf,
+  stampOf,
   useRun,
   withCaptureWhy,
   type GatedLists,
@@ -90,7 +99,7 @@ export interface VoiceDeps {
     input: Record<string, unknown>,
     /** The tool list the turn's snapshot holds for this tab (ADR 0067); live when omitted. */
     tools?: readonly BridgeTool[],
-  ) => Promise<{ ok: boolean; output: string; error?: string | null; tier?: number }>;
+  ) => Promise<PageAnswer>;
   /** Everything one turn reads about the focused tab, read once (ADR 0067); see `RunDeps`. */
   snapshot?: () => Snapshot;
   /**
@@ -283,9 +292,14 @@ export const useVoice = create<VoiceState>((set, get) => {
         }));
         void useRun.getState().describe(event as DecisionRequested);
         break;
-      case "decision.resolved":
+      case "decision.resolved": {
+        // A spoken answer is an answer to the card, as the panel's button is: the "may have run"
+        // hold on its tool has done its job (ADR 0101), and the call it approves runs next.
+        const card = useRun.getState().cards.find((c) => c.id === event.id);
+        if (card && event.by === "user") forgetUnsure(card.action);
         useRun.setState((s) => ({ cards: s.cards.filter((c) => c.id !== event.id) }));
         break;
+      }
       case "turn.summary":
         useRun.setState({ summary: event });
         break;
@@ -322,13 +336,18 @@ export const useVoice = create<VoiceState>((set, get) => {
     }
   }
 
-  /** Run one host call on the focused page and answer the daemon, as the run loop does. */
+  /**
+   * Run one host call on the focused page and answer the daemon, by the run loop's rules: the
+   * hold, the timeout reading and the unsure set are `lib/execute.ts`'s, the same for both (ADR
+   * 0101). A spoken turn has no approved `execute` of its own, so nothing here skips the hold.
+   */
   async function onPage(call: ToolCall): Promise<void> {
     const focused = deps.focused();
     const row = call as unknown as ExecuteRow;
-    let answer: { ok: boolean; output: string; error?: string | null; tier?: number };
+    const plain = (why: string) => ({ error: why, line: why });
+    let refused: { error: string; line: string } | null;
     if (!focused) {
-      answer = { ok: false, output: "", error: "unknown_ref: no page is open" };
+      refused = plain("unknown_ref: no page is open");
     } else if (
       // The same defence the run loop makes, one step before the daemon's: the page has said what
       // it calls itself, and a call for another app does not run here.
@@ -336,39 +355,47 @@ export const useVoice = create<VoiceState>((set, get) => {
       row.origin.startsWith("host:") &&
       row.origin !== `host:${focused.appId}`
     ) {
-      answer = { ok: false, output: "", error: `foreign_origin: ${row.origin} is not the focused page` };
-    } else if (bareName(row.name) === TABS_READ) {
+      refused = plain(`foreign_origin: ${row.origin} is not the focused page`);
+    } else {
+      // A call whose last run never answered, in this window and by either channel, waits for the
+      // user's answer to a card before it runs again: the page is not asked (ADR 0101).
+      refused = heldBefore(row.name, false);
       // A read of another tab holds the rest of the turn to cards, which only the panel's run loop
       // tracks (ADR 0105). Spoken turns do not read other tabs; nothing is asked of the shell.
-      answer = {
-        ok: false,
-        output: "",
-        error: "validator_failed: reading another tab is done from the panel, where the rest of the turn can be held to cards",
-      };
+      if (!refused && bareName(row.name) === TABS_READ) {
+        refused = plain(
+          "validator_failed: reading another tab is done from the panel, where the rest of the turn can be held to cards",
+        );
+      }
+    }
+    let answer: PageAnswer = { ok: false, output: "" };
+    let error: string | null;
+    let line: string;
+    if (refused || !focused) {
+      error = refused?.error ?? null;
+      line = refused?.line ?? "failed";
     } else {
       try {
-        answer = await deps.call(
-          focused.tabId,
-          bareName(row.name),
-          row.params,
-          routingTools(snap, focused.tabId),
-        );
+        answer = await deps.call(focused.tabId, bareName(row.name), row.params, routingTools(snap, focused.tabId));
       } catch (error) {
         answer = { ok: false, output: "", error: error instanceof Error ? error.message : String(error) };
       }
+      // What the answer means is the window's rule, read against the list the call was routed by.
+      const listed = routingTools(snap, focused.tabId) ?? useTools.getState().byTab[focused.tabId]?.tools ?? [];
+      const settled = settleHostCall(row.name, answer, listed);
+      if (settled.timeout === "outcome_unknown") {
+        rememberUnsure({ origin: focused.origin, tool: row.name, at: stampOf(new Date()) });
+      }
+      ({ error, line } = settled);
     }
-    runPush({
-      id: row.call_id,
-      kind: "tool",
-      text: `${row.name} → ${answer.ok ? answer.output : (answer.error ?? "failed")}`,
-    });
+    runPush({ id: row.call_id, kind: "tool", text: `${row.name} → ${line}` });
     socket?.send({
       type: "tool_result",
       call_id: row.call_id,
       name: row.name,
       ok: answer.ok,
       output: answer.output,
-      error: answer.error ?? null,
+      error,
       tier: answer.tier ?? row.tier ?? 1,
     });
     if (get().phase === "idle") set({ phase: "thinking" });
@@ -468,7 +495,8 @@ export const useVoice = create<VoiceState>((set, get) => {
         ...(taken.id ? { capture_id: taken.id } : {}),
         host_state: deps.hostState(),
         disabled_origins: taking.disabledOrigins,
-        ...taking.gated,
+        // Read per frame: a tool either channel left unsure is gated here too (ADR 0101).
+        ...withUnsure(taking.gated),
       });
       if (deps.openMic === null) {
         fail("this webview offers no microphone");
@@ -521,7 +549,8 @@ export const useVoice = create<VoiceState>((set, get) => {
         ...(taken.id ? { capture_id: taken.id } : {}),
         host_state: deps.hostState(),
         disabled_origins: taking.disabledOrigins,
-        ...taking.gated,
+        // Read per frame: a tool either channel left unsure is gated here too (ADR 0101).
+        ...withUnsure(taking.gated),
       });
     },
 

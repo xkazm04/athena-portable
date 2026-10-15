@@ -8,11 +8,12 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { DaemonApi } from "@/lib/api";
 import type { BridgeTool } from "@/lib/bridge";
 import { setHandsForTests } from "@/lib/hands";
 import { derivedIdOf } from "@/lib/manifest";
 import { Player as RealPlayer, type Player, type SocketLike } from "@/lib/voice";
-import { snapshotOf, useRun } from "@/stores/run";
+import { resetRunForTests, setRunDeps, snapshotOf, unsureTools, useRun } from "@/stores/run";
 import type { TabTools } from "@/stores/tools";
 
 import {
@@ -155,6 +156,8 @@ const finished = (text: string, tts: string | null = null): Event => ({
 
 beforeEach(() => {
   resetVoiceForTests();
+  // The run store holds the window's unsure tools (ADR 0101); a test starts with none.
+  resetRunForTests();
   useRun.setState({ transcript: [], cards: [], summary: null });
 });
 
@@ -368,6 +371,196 @@ describe("a spoken turn", () => {
     await socket.emit({ kind: "turn.error", reason: "engine_error", detail: "no engine" });
     expect(useVoice.getState().phase).toBe("error");
     expect(useVoice.getState().reason).toBe("engine_error: no engine");
+  });
+});
+
+// -- a spoken call that outlives its deadline (ADR 0101: the hold is the window's) ---------------
+
+describe("a spoken host call that outlives its deadline", () => {
+  const flagged = (name: string, athena: Record<string, unknown>): BridgeTool => ({
+    name,
+    title: name,
+    description: `${name}.`,
+    inputSchema: {},
+    annotations: null,
+    athena,
+  });
+  const PAY = flagged("pay", { reversible: false, side_effects: "external" });
+  const LIST = flagged("list_overdue", { reversible: true, side_effects: "none" });
+  const TIMED_OUT = { ok: false, output: "", error: "did not answer within 30000 ms", reason: "timeout" };
+  const FOCUSED = { tabId: 1, origin: "https://ledgerbox.local", appId: "ledgerbox" };
+  const NONE = { gated_origins: [] as string[], gated_tools: [] as string[] };
+  const hostCall = (callId: string, name: string): Event => ({
+    kind: "tool.call",
+    call_id: callId,
+    name,
+    params: { invoice: "INV-118" },
+    origin: "host:ledgerbox",
+    tier: 1,
+  });
+  const PAY_CARD = {
+    kind: "decision.requested",
+    id: "apr_pay",
+    decision_kind: "approve",
+    action: "host.ledgerbox.pay",
+    params: { invoice: "INV-118" },
+    rationale: "",
+    options: [
+      { id: "approve", label: "approve" },
+      { id: "decline", label: "decline" },
+    ],
+    expires_at: "",
+    origin: "host:ledgerbox",
+    surface: "panel",
+    capture_id: null,
+  };
+
+  /** A voice store whose page answers `answers[bare]`, else ok; the snapshot lists pay and list_overdue. */
+  function spoken(answers: Record<string, { ok: boolean; output: string; error?: string; reason?: string }> = {}) {
+    const calls: Array<{ name: string }> = [];
+    const harness = wire({
+      snapshot: () => ({ focused: FOCUSED, manifest: null, disabledOrigins: [], gated: NONE, tools: [PAY, LIST] }),
+      call: async (_tab, name) => {
+        calls.push({ name });
+        return answers[name] ?? { ok: true, output: `${name} ran` };
+      },
+    });
+    return { ...harness, calls };
+  }
+
+  /** A panel turn whose `pay` times out, through the real run store against a scripted daemon. */
+  async function panelLeavesPayUnsure(): Promise<void> {
+    const frame = (e: Event) => `event: ${String(e.kind)}\ndata: ${JSON.stringify(e)}\n\n`;
+    const runs: Event[][] = [[hostCall("p1", "host.ledgerbox.pay"), finished("")], [finished("")]];
+    let turn = 0;
+    const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
+    const fetchImpl = async (url: string): Promise<Response> => {
+      const path = url.replace("http://daemon", "");
+      if (path === "/run") {
+        const events = runs[turn++] ?? [finished("")];
+        return new Response(events.map(frame).join(""), { status: 200, headers: { "content-type": "text/event-stream" } });
+      }
+      if (path === "/decisions") return json({ ok: true, pending: [], showing: 0, total: 0, footer: "" });
+      if (path === "/decisions/apr_pay") {
+        return json({ ok: true, id: "apr_pay", status: "declined", choice: "decline", conversation_id: "c", execute: [], output: "", events: [] });
+      }
+      return json({ ok: true });
+    };
+    setRunDeps({
+      api: () => new DaemonApi({ url: "http://daemon", token: "t" }, fetchImpl),
+      focused: () => FOCUSED,
+      hostState: () => ({}),
+      call: async () => TIMED_OUT,
+      snapshot: () => ({ focused: FOCUSED, manifest: null, disabledOrigins: [], gated: NONE, tools: [PAY, LIST] }),
+    });
+    await useRun.getState().send("pay INV-118");
+    expect(unsureTools().map((u) => u.tool)).toEqual(["host.ledgerbox.pay"]);
+  }
+
+  it("a timed-out spoken write answers outcome_unknown and leaves the tool unsure", async () => {
+    const { socket, calls } = spoken({ pay: TIMED_OUT });
+    await startVoice();
+    await useVoice.getState().say("pay INV-118");
+    await socket.emit(hostCall("c1", "host.ledgerbox.pay"), finished("Paying."));
+
+    expect(calls.map((c) => c.name)).toEqual(["pay"]);
+    const result = socket.frames().find((f) => f.type === "tool_result");
+    expect(String(result?.error)).toMatch(/^outcome_unknown:/);
+    expect(result?.ok).toBe(false);
+    expect(unsureTools().map((u) => u.tool)).toEqual(["host.ledgerbox.pay"]);
+    expect(useRun.getState().transcript.find((e) => e.id === "c1")?.text).toBe(
+      "host.ledgerbox.pay → may have completed: no answer before the deadline",
+    );
+  });
+
+  it("a timed-out spoken read answers a plain timeout and holds nothing", async () => {
+    const { socket } = spoken({ list_overdue: TIMED_OUT });
+    await startVoice();
+    await useVoice.getState().say("what is overdue");
+    await socket.emit(hostCall("c1", "host.ledgerbox.list_overdue"), finished("Reading."));
+
+    const result = socket.frames().find((f) => f.type === "tool_result");
+    expect(String(result?.error)).toMatch(/^timeout:/);
+    expect(unsureTools()).toEqual([]);
+  });
+
+  it("a tool a panel turn left unsure rides gated_tools on the next start and text frames", async () => {
+    await panelLeavesPayUnsure();
+    const { socket } = spoken();
+    await startVoice();
+
+    await useVoice.getState().press();
+    useVoice.getState().release();
+    await useVoice.getState().say("pay it again");
+
+    expect(socket.frames().find((f) => f.type === "start")?.gated_tools).toContain("host.ledgerbox.pay");
+    expect(socket.frames().find((f) => f.type === "text")?.gated_tools).toContain("host.ledgerbox.pay");
+  });
+
+  it("a released call of an unsure tool is held: the page is never called", async () => {
+    await panelLeavesPayUnsure();
+    const { socket, calls } = spoken();
+    await startVoice();
+    await useVoice.getState().say("pay it again");
+    await socket.emit(hostCall("c1", "host.ledgerbox.pay"), finished("Paying."));
+
+    expect(calls).toEqual([]);
+    const result = socket.frames().find((f) => f.type === "tool_result");
+    expect(result?.ok).toBe(false);
+    expect(String(result?.error)).toMatch(/^outcome_unknown:/);
+    expect(useRun.getState().transcript.find((e) => e.id === "c1")?.text).toBe(
+      "host.ledgerbox.pay → held: it may already have run",
+    );
+  });
+
+  it("answering a card for the tool lifts the hold for the next spoken turn", async () => {
+    await panelLeavesPayUnsure();
+    const { socket } = spoken();
+    await startVoice();
+    await useVoice.getState().press();
+    useVoice.getState().release();
+
+    useRun.setState({ cards: [PAY_CARD as never] });
+    await useRun.getState().answer("apr_pay", "decline");
+    await useVoice.getState().press();
+
+    const starts = socket.frames().filter((f) => f.type === "start");
+    expect(starts.map((f) => f.gated_tools)).toEqual([["host.ledgerbox.pay"], []]);
+  });
+
+  it("a spoken answer to the tool's card lifts the hold too, so the approved call runs", async () => {
+    await panelLeavesPayUnsure();
+    const { socket, calls } = spoken();
+    await startVoice();
+    await useVoice.getState().say("pay it again");
+    await socket.emit({ ...PAY_CARD, surface: "voice" }, finished("Card filed."));
+    await socket.emit(
+      { kind: "decision.resolved", id: "apr_pay", choice: "approve", by: "user", at: "" },
+      hostCall("apr_pay_exec", "host.ledgerbox.pay"),
+      finished("Paid."),
+    );
+
+    expect(unsureTools()).toEqual([]);
+    expect(calls.map((c) => c.name)).toEqual(["pay"]);
+  });
+
+  it("guard: a host call that answers ok answers the daemon and the transcript as before", async () => {
+    const { socket } = spoken();
+    await startVoice();
+    await useVoice.getState().say("pay INV-118");
+    await socket.emit(hostCall("c1", "host.ledgerbox.pay"), finished("Paying."));
+
+    expect(socket.frames().find((f) => f.type === "tool_result")).toEqual({
+      type: "tool_result",
+      call_id: "c1",
+      name: "host.ledgerbox.pay",
+      ok: true,
+      output: "pay ran",
+      error: null,
+      tier: 1,
+    });
+    expect(useRun.getState().transcript.find((e) => e.id === "c1")?.text).toBe("host.ledgerbox.pay → pay ran");
+    expect(unsureTools()).toEqual([]);
   });
 });
 
