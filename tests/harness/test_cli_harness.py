@@ -430,13 +430,33 @@ def test_a_cli_that_reports_an_error_is_an_error_row(
 def test_a_clean_exit_with_no_text_is_an_error_row(
     catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger, tmp_path: Path
 ) -> None:
-    transport = ScriptedTransport([[json.dumps({"type": "system", "session_id": "s"})]])
+    """Exit 0 and a result record that is not an error: the CLI did finish, and said nothing."""
+    transport = ScriptedTransport(
+        [
+            [
+                json.dumps({"type": "system", "session_id": "s"}),
+                json.dumps({"type": "result", "is_error": False, "usage": {}}),
+            ]
+        ]
+    )
     harness = _harness(catalog, approvals, ledger, transport, tmp_path)
 
     events = _drain(harness, [])
     assert isinstance(events[-1], TurnError)
     assert events[-1].reason == "engine_error"
     assert "produced no text" in events[-1].detail
+
+
+def test_a_stream_with_no_result_record_is_not_a_clean_exit(
+    catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger, tmp_path: Path
+) -> None:
+    """Exit 0 with no result record is a CLI that stopped early, not one that said nothing."""
+    transport = ScriptedTransport([[json.dumps({"type": "system", "session_id": "s"})]])
+    harness = _harness(catalog, approvals, ledger, transport, tmp_path)
+
+    events = _drain(harness, [])
+    assert isinstance(events[-1], TurnError)
+    assert events[-1].detail == "the CLI stopped before it finished (exit code 0)"
 
 
 # --- the contract --------------------------------------------------------------------------------

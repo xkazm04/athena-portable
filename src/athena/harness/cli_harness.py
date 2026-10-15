@@ -17,6 +17,12 @@ into the system prompt would freeze host state on turn one and nothing would loo
 A dialect that cannot resume (``codex``) is handed the static half on stdin on every invocation
 instead, because a stateless CLI has no session to keep it in. The rule is unchanged either way:
 nothing that can move between turns is ever composed into the static half.
+
+**A round ends in a typed exit (ADR 0109).** The transport reports how the process ended beside
+its lines, and the dialect reads the exit, the result record and the stderr tail together into
+one of a few closed classes. A thread that is gone, or that is itself the cause (too long to
+continue), is released and the round is asked again once, unresumed, in the same turn; every
+other failure keeps the thread and ends the turn with that class's fixed sentence.
 """
 
 from __future__ import annotations
@@ -26,28 +32,50 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 from athena.contracts.harness import TurnResult
 from athena.harness.rounds import MAX_ROUNDS, TURN_TIMEOUT_S, Failure, RoundHarness
-from athena.harness.transports import CliRequest, SubprocessTransport, Transport
+from athena.harness.transports import CliRequest, ExitStatus, SubprocessTransport, Transport
 
 __all__ = [
     "CLAUDE",
     "CLAUDE_EXTRA_ARGS",
     "CODEX",
     "DIALECTS",
+    "FAILURE_SENTENCES",
     "MAX_ROUNDS",
     "TURN_TIMEOUT_S",
     "CliDialect",
     "CliHarness",
     "Decoded",
+    "FailureClass",
 ]
 
 #: The CLI's own tools stay off inside Athena: a page is operated through the gate, never through
 #: a shell. ``dontAsk`` denies whatever permission prompt remains rather than blocking on a
 #: terminal nobody is looking at.
 CLAUDE_EXTRA_ARGS: tuple[str, ...] = ("--restricted", "--permission-mode", "dontAsk")
+
+# --- how a round failed --------------------------------------------------------------------------
+
+FailureClass = Literal["gone", "poisoned", "auth", "limit", "transient", "unknown"]
+"""Why a CLI round failed, as far as its exit can tell. Closed: a person acts on each one."""
+
+#: A failed thread is released and the round asked again once only for these: the thread is
+#: gone, or the thread is itself the cause. Anything else would fail the same way on a new one.
+RESEED: frozenset[FailureClass] = frozenset({"gone", "poisoned"})
+
+#: The sentence a person reads for each class. Fixed text only: a CLI's own error can quote the
+#: request, so nothing it wrote reaches a ``TurnError`` or a ledger row. ``unknown`` has none
+#: here; it names the exit code instead (:meth:`CliDialect.classify`).
+FAILURE_SENTENCES: dict[FailureClass, str] = {
+    "gone": "the CLI lost this conversation's thread and could not start a fresh one",
+    "poisoned": "this conversation is too long for the CLI, even started afresh",
+    "auth": "the CLI is not signed in; sign in to it and try again",
+    "limit": "the CLI's usage limit is reached; try again when it resets",
+    "transient": "the CLI's service is busy or unreachable; try again in a moment",
+}
 
 # --- one decoded line ----------------------------------------------------------------------------
 
@@ -66,6 +94,10 @@ class Decoded:
     text: str = ""
     session_id: str | None = None
     is_error: bool = False
+    #: A failed result record's subtype and its own words, read only by
+    #: :meth:`CliDialect.classify`. Never shown and never stored: they can quote the request.
+    subtype: str = ""
+    said: str = ""
     input_tokens: int = 0
     output_tokens: int = 0
     cost_usd: float | None = None
@@ -87,6 +119,9 @@ class CliDialect:
     executable: str
     system_on_stdin: bool = False
     resumes: bool = True
+    #: What this CLI says when it fails, lowercased, first match wins. Dated: a CLI release can
+    #: reword any of these, and an unmatched failure is still a failure, read as ``unknown``.
+    signatures: tuple[tuple[str, FailureClass], ...] = ()
 
     def argv(
         self,
@@ -100,6 +135,63 @@ class CliDialect:
 
     def decode(self, record: Mapping[str, Any]) -> Decoded | None:
         raise NotImplementedError
+
+    def classify(
+        self, status: ExitStatus, outcome: Decoded | None
+    ) -> tuple[FailureClass, str] | None:
+        """``None`` for a round that finished, else its class and the sentence for a person.
+
+        A round finished when the CLI exited 0 *and* wrote a result record that is not an error.
+        A stream that stops without one is a crash, whatever it printed before.
+        """
+        failed_record = outcome is not None and outcome.is_error
+        if status.returncode == 0 and outcome is not None and not failed_record:
+            return None
+        said = [status.stderr_tail]
+        if outcome is not None and failed_record:
+            said += [outcome.subtype, outcome.said]
+        lowered = "\n".join(said).lower()
+        for signature, kind in self.signatures:
+            if signature in lowered:
+                return kind, FAILURE_SENTENCES[kind]
+        code = f"exit code {status.returncode}"
+        if outcome is None:
+            return "unknown", f"the CLI stopped before it finished ({code})"
+        return "unknown", f"the CLI reported an error and stopped ({code})"
+
+
+#: ``claude`` 2.x, as of 2026-10. Gone and poisoned come first: a "prompt is too long" can arrive
+#: inside an "API Error: 400" line, and it is the thread, not the service, that has to change.
+CLAUDE_SIGNATURES: tuple[tuple[str, FailureClass], ...] = (
+    ("no conversation found with session id", "gone"),
+    ("prompt is too long", "poisoned"),
+    ("exceed context limit", "poisoned"),
+    ("invalid api key", "auth"),
+    ("please run /login", "auth"),
+    ("oauth token has expired", "auth"),
+    ("authentication_error", "auth"),
+    ("usage limit", "limit"),
+    ("rate_limit_error", "limit"),
+    ("overloaded", "transient"),
+    ("api error: 5", "transient"),
+    ("connection error", "transient"),
+    ("econnreset", "transient"),
+    ("etimedout", "transient"),
+)
+
+#: ``codex exec`` 0.x, as of 2026-10. It never resumes, so it has no "gone".
+CODEX_SIGNATURES: tuple[tuple[str, FailureClass], ...] = (
+    ("context_length_exceeded", "poisoned"),
+    ("context window", "poisoned"),
+    ("not logged in", "auth"),
+    ("unauthorized", "auth"),
+    ("usage limit", "limit"),
+    ("rate limit", "limit"),
+    ("stream error", "transient"),
+    ("service unavailable", "transient"),
+    ("overloaded", "transient"),
+    ("error sending request", "transient"),
+)
 
 
 @dataclass(frozen=True)
@@ -134,12 +226,16 @@ class ClaudeDialect(CliDialect):
             usage = record.get("usage")
             usage = usage if isinstance(usage, Mapping) else {}
             cost = record.get("total_cost_usd")
+            is_error = bool(record.get("is_error"))
             return Decoded(
                 "result",
-                is_error=bool(record.get("is_error")),
+                is_error=is_error,
                 input_tokens=_int(usage.get("input_tokens")),
                 output_tokens=_int(usage.get("output_tokens")),
                 cost_usd=float(cost) if isinstance(cost, int | float) else None,
+                # On success ``result`` is the reply itself, which is nobody's error.
+                subtype=_text(record.get("subtype")) if is_error else "",
+                said=_text(record.get("result")) if is_error else "",
             )
         return None
 
@@ -185,12 +281,20 @@ class CodexDialect(CliDialect):
                 output_tokens=_int(usage.get("output_tokens")),
             )
         if kind in ("turn.failed", "error"):
-            return Decoded("result", is_error=True)
+            error = record.get("error")
+            message = error.get("message") if isinstance(error, Mapping) else record.get("message")
+            return Decoded("result", is_error=True, said=_text(message))
         return None
 
 
-CLAUDE = ClaudeDialect(name="claude_code", executable="claude")
-CODEX = CodexDialect(name="codex", executable="codex", system_on_stdin=True, resumes=False)
+CLAUDE = ClaudeDialect(name="claude_code", executable="claude", signatures=CLAUDE_SIGNATURES)
+CODEX = CodexDialect(
+    name="codex",
+    executable="codex",
+    system_on_stdin=True,
+    resumes=False,
+    signatures=CODEX_SIGNATURES,
+)
 DIALECTS: dict[str, CliDialect] = {CLAUDE.name: CLAUDE, CODEX.name: CODEX}
 
 # --- the harness ---------------------------------------------------------------------------------
@@ -243,16 +347,31 @@ class CliHarness(RoundHarness):
     ) -> tuple[str, Failure | None]:
         # ``replies`` is unused on purpose: a resumed session remembers what it said, and a
         # single-shot CLI is given the results of its rounds rather than its own words back.
+        resumed = self.dialect.resumes and conversation_id in self._sessions
         request = self._request(conversation_id, static_text, history)
-        return await self._invoke(request, conversation_id, result)
+        text, failure, kind = await self._invoke(request, conversation_id, result)
+        if resumed and kind in RESEED:
+            # The thread is gone, or it is the cause. Release it and ask once more, unresumed:
+            # the static half as the system prompt and the whole turn so far on stdin, which is
+            # what the first round of a conversation sends. The frame's recall is the reseed.
+            # The second answer is final whatever it is, because it resumed nothing.
+            self._sessions.pop(conversation_id, None)
+            request = self._request(conversation_id, static_text, history)
+            text, failure, _ = await self._invoke(request, conversation_id, result)
+        return text, failure
 
     # -- one invocation ---------------------------------------------------------------------------
 
     async def _invoke(
         self, request: CliRequest, conversation_id: str, result: TurnResult
-    ) -> tuple[str, Failure | None]:
-        """Run the CLI once. Returns ``(assistant text, failure)``; exactly one is meaningful."""
+    ) -> tuple[str, Failure | None, FailureClass | None]:
+        """Run the CLI once. Returns ``(assistant text, failure, its class)``.
+
+        The text is meaningful only when there is no failure; the class only when the exit was
+        read and classified (a timeout or a broken pipe has none, and is never reseeded).
+        """
         segments: list[str] = []
+        outcome: Decoded | None = None
         try:
             async for line in self.transport.run(request):
                 record = _decode(line)
@@ -265,19 +384,26 @@ class CliHarness(RoundHarness):
                     segments.append(decoded.text)
                 elif decoded.kind == "result":
                     _apply_usage(result, decoded)
-                    if decoded.is_error:
-                        return "", ("engine_error", "the CLI reported an error and stopped")
+                    # Read on to the end: the exit is reported after the last line. A failed
+                    # record stays the outcome even if a later one says otherwise.
+                    if outcome is None or not outcome.is_error:
+                        outcome = decoded
         except TimeoutError:
-            return "", ("timeout", f"the CLI produced no line for {request.timeout_s}s")
+            return "", ("timeout", f"the CLI produced no line for {request.timeout_s}s"), None
         except (ValueError, asyncio.LimitOverrunError):
             # StreamReader.readline raises one of these for a line over the reader limit.
-            return "", ("engine_error", "the CLI wrote a line longer than the reader's line limit")
+            failure = ("engine_error", "the CLI wrote a line longer than the reader's line limit")
+            return "", failure, None
         except OSError as exc:
             # argv is a list and never a shell string, so the message carries no user text and
             # no secret — and "engine_error" with nothing after it is a bug report nobody can act
             # on. The reason is the fixed-set ledger value; this is the sentence beside it.
-            return "", ("engine_error", f"{type(exc).__name__}: {exc}")
-        return "".join(segments), None
+            return "", ("engine_error", f"{type(exc).__name__}: {exc}"), None
+        verdict = self.dialect.classify(request.exit.status, outcome)
+        if verdict is not None:
+            kind, sentence = verdict
+            return "", ("engine_error", sentence), kind
+        return "".join(segments), None, None
 
     def _request(
         self, conversation_id: str, static_text: str, history: Sequence[str]
@@ -361,3 +487,7 @@ def _int(value: Any) -> int:
 
 def _str_or_none(value: Any) -> str | None:
     return str(value) if isinstance(value, str) and value else None
+
+
+def _text(value: Any) -> str:
+    return value if isinstance(value, str) else ""
