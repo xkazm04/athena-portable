@@ -943,6 +943,77 @@
         }
       ],
       "registryProposal": "None"
+    },
+    "b6cf415b-c532-4798-a974-7a9a30477484/test-input-generation": {
+      "context": "tidycrm-tests",
+      "subject": "test-input-generation",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T03:37:13.766Z",
+      "techniques": [
+        {
+          "technique": "exhaustive-when-bounded",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/test/space.test.ts:40 Arbitrary points chosen across continuous angle dimensions without computing, stating, or documenting a written bound."
+        },
+        {
+          "technique": "field-captured-operation-traces",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/test/memory.test.ts:108 Precondition absent; activity logs support local undo but are not exported in the generator vocabulary for regression replay."
+        },
+        {
+          "technique": "generator-bounds-the-space",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/test/l0-fill.test.ts:52 Explicitly analyzes what the seed generator cannot produce (clean tables / quiet state) and verifies reachability and synthetic fallbacks."
+        },
+        {
+          "technique": "inside-out-invariants",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/test/pairs.test.ts:29 Asserts internal cross-component consistency between open pairs in the database and duplicate deviations displayed on the sheet."
+        },
+        {
+          "technique": "liveness-needs-a-quiet-period",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/test/liveness.test.ts:20 Precondition absent; tests CRUD soft deletion filtering rather than fault injection chaos recovery and progress bounds."
+        },
+        {
+          "technique": "model-based-oracle",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/test/tools.test.ts:138 Predicts tool gating classes using an independent specification model from @athena/demo-kit/webmcp and compares exact verdicts."
+        },
+        {
+          "technique": "negative-space-generation",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/test/mutations.test.ts:48 Generates negative inputs by swapping and inventing IDs, asserting specific rejection reasons, state preservation, and positive controls."
+        },
+        {
+          "technique": "proof-cost-follows-the-circuit",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/test/bounds.test.ts:28 Precondition absent; tests run concrete loops and assertions with no symbolic SMT solver engine in the toolchain."
+        },
+        {
+          "technique": "seed-is-not-a-reproduction",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/test/conflict-flag.test.ts:23 Tests rely on figures from a PRNG seed and acknowledge that pinning them fails for the wrong reason when generator data drifts."
+        },
+        {
+          "technique": "stage-ordered-fuzz-targets",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/test/register.mjs:12 Precondition absent; test suite runs unit tests with node:test without a multi-stage compilation pipeline or fuzz targets."
+        },
+        {
+          "technique": "swarm-feature-sampling",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/test/databases.test.ts:140 Precondition absent; deterministic assignment and fixed runs with no randomized sequence generator sampling feature subsets."
+        }
+      ],
+      "withdrawn": {
+        "worker": "7b358c57-256b-44e2-81e6-925b5891a609",
+        "state": "deviation",
+        "at": "2026-10-15T03:37:36.220755+00:00",
+        "reason": "reviewer (sonnet): campaign.test.ts:37 only pins deliberate demo constants (800/60/43/17) over a deterministic seed, and I found no evidence of drift or wrong-reason failures; the technique anchors don't show what is claimed (memory.test.ts:108 exercises undo, not a missing generator vocabulary; l0-fill's drift messag"
+      }
     }
   }
 }

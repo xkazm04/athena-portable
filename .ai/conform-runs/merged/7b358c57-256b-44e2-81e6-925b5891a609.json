@@ -1,0 +1,62 @@
+{
+  "schema": "conform-run/1",
+  "worker": "7b358c57-256b-44e2-81e6-925b5891a609",
+  "subject": "test-input-generation",
+  "evaluatedAt": "2026-10-15T03:37:13.766902+00:00",
+  "provider": "agy",
+  "model": "gemini-3.8-flash-high",
+  "pairs": [],
+  "declined": [
+    {
+      "subject": "test-input-generation",
+      "context": "desktop-stage-depth",
+      "reason": "the seat returned unknown"
+    },
+    {
+      "subject": "test-input-generation",
+      "context": "tidycrm-spatial-model-tools",
+      "reason": "Context files comprise TidyCRM UI block models, spatial camera geometry, motion tokens, and WebMCP tools without test suites or test input generation."
+    },
+    {
+      "subject": "test-input-generation",
+      "context": "hirelane-board-ui",
+      "reason": "Context files comprise Hirelane hiring board React presentation components (board, carousel, columns, dossier) with no test files or test input generation."
+    },
+    {
+      "subject": "test-input-generation",
+      "context": "ledgerbox-lanes-ui",
+      "reason": "Context files comprise Ledgerbox invoice lanes React presentation components (lanes, cards, spread, swarm) with no test files or test input generation."
+    },
+    {
+      "subject": "test-input-generation",
+      "context": "tidycrm-tests",
+      "reason": "withdrawn after review: reviewer (sonnet): campaign.test.ts:37 only pins deliberate demo constants (800/60/43/17) over a deterministic seed, and I found no evidence of drift or wrong-reason failures; the technique anchors don't show what is claimed (memory.test.ts:108 exercises undo, not a missing generator vocabulary; l0-fill's drift messag"
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-15T03:37:13.766902+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "test-input-generation"
+      ],
+      "techniques": [
+        "exhaustive-when-bounded",
+        "field-captured-operation-traces",
+        "generator-bounds-the-space",
+        "inside-out-invariants",
+        "liveness-needs-a-quiet-period",
+        "model-based-oracle",
+        "negative-space-generation",
+        "proof-cost-follows-the-circuit",
+        "seed-is-not-a-reproduction",
+        "stage-ordered-fuzz-targets",
+        "swarm-feature-sampling"
+      ],
+      "deviations": 1,
+      "context": "tidycrm-tests",
+      "via": "curator-multi:agy",
+      "model": "gemini-3.8-flash-high"
+    }
+  ]
+}
