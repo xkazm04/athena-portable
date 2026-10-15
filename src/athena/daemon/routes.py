@@ -61,7 +61,7 @@ from athena.contracts import ids
 from athena.contracts.channel import ChannelEvent, DecisionRequested, TurnError
 from athena.contracts.harness import normalize_reason
 from athena.contracts.manifest import HostManifest
-from athena.contracts.registry import Lane, TurnContext, parse_origin
+from athena.contracts.registry import Lane, OpenApp, TurnContext, parse_origin
 from athena.core.approvals import ApprovalError, ApprovalRow
 from athena.core.catalog import CatalogError
 from athena.core.ledger import LedgerError
@@ -525,6 +525,7 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
             capture_id=capture_id_from(body),
             tab=tab_from(body),
             tainted_by=tainted_by_from(body),
+            open_apps=open_apps_from(body),
         )
     except ListTooLong as exc:
         return error(400, "validator_failed", str(exc))
@@ -625,6 +626,49 @@ def tainted_by_from(body: Mapping[str, Any]) -> frozenset[str]:
     return _names_from(body, "tainted_by", MAX_GATED_NAMES)
 
 
+def open_apps_from(body: Mapping[str, Any]) -> tuple[OpenApp, ...]:
+    """``open_apps`` off a request body: other open tabs whose app the user trusts (ADR 0106).
+
+    Each item is ``{"app": "host:<app_id>", "origin": "https://...", "tab_id": n, "tab_nav": m}``,
+    set by the surface from the shell's tab list and the origins table. This list is the one
+    request field that lets something through policy - a call of a listed app may be *proposed*,
+    and the gate files it as a card bound to that tab - so anything malformed is dropped rather
+    than guessed at: an item with no catalog-form ``app``, no web ``origin`` or no tab id is not
+    open, and an app named twice is ambiguous about its tab, so both are dropped. Dropping only
+    refuses more. A list past the cap is refused whole like the others.
+    """
+    raw = body.get("open_apps")
+    if not isinstance(raw, list):
+        return ()
+    if len(raw) > MAX_GATED_NAMES:
+        raise ListTooLong(
+            f"open_apps names {len(raw)} entries; the most one request may name is "
+            f"{MAX_GATED_NAMES}"
+        )
+
+    def count(value: Any) -> int | None:
+        if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
+            return value
+        return None
+
+    found: list[OpenApp] = []
+    for item in raw:
+        if not isinstance(item, Mapping):
+            continue
+        app, origin, tab_id = item.get("app"), item.get("origin"), count(item.get("tab_id"))
+        if not isinstance(app, str) or not isinstance(origin, str) or tab_id is None:
+            continue
+        try:
+            parsed = parse_origin(app.strip())
+        except ValueError:
+            continue
+        if parsed.kind != "host" or not origin.strip().startswith(("http://", "https://")):
+            continue
+        found.append(OpenApp(str(parsed), origin.strip(), tab_id, count(item.get("tab_nav"))))
+    named = [app.origin for app in found]
+    return tuple(app for app in found if named.count(app.origin) == 1)
+
+
 def _names_from(body: Mapping[str, Any], key: str, cap: int) -> frozenset[str]:
     """The non-empty strings of ``body[key]``, stripped; anything else is empty.
 
@@ -652,6 +696,7 @@ def turn_context(
     capture_id: str | None = None,
     tab: tuple[int | None, int | None] = (None, None),
     tainted_by: frozenset[str] = frozenset(),
+    open_apps: tuple[OpenApp, ...] = (),
 ) -> TurnContext:
     """The context one turn runs under, and the session refreshed for it.
 
@@ -677,6 +722,7 @@ def turn_context(
         tab_id=tab[0],
         tab_nav=tab[1],
         tainted_by=tainted_by,
+        open_apps=open_apps,
     )
     daemon.sessions.touch(session.origin, session.app_id, tools=session.tools)
     return ctx

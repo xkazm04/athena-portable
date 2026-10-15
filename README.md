@@ -192,6 +192,11 @@ may tighten a class per origin but never loosen one below what the flags imply. 
 | 2 | nine generic DOM hands with minted refs (`page_read`, `page_find`, `page_fill`, `page_click`, ...) | `host:<app_id>`: the page's published `athena:app`, else the id derived from its web origin (`https://ledger.test` is `host:web_https_sledger_dtest`, ADR 0065) | the shell's `hands_call`; the shell captures the focused tab before each request, and the gate files that capture only on a gated card for the session's own host origin (ADR 0066) |
 | 3 | third-party connectors (section 4) | `connector:<id>` | the vault, in the daemon's process |
 
+A session is pinned to its page's app (`origin_pinning`); another open tab's tools may only be
+proposed, never run unattended: while the surface lists that tab in `open_apps` (its origin an
+enabled row), the gate files every call of it as a card bound to that tab, and any other app's
+tool is `foreign_origin` (ADR 0106).
+
 Other agents queue at the same gate: the MCP server's `request_guidance` and `request_approval`
 file cards on the same approval table and block until the user answers.
 

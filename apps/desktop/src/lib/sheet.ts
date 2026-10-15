@@ -11,8 +11,8 @@ import type { DecisionRequested } from "@/lib/events";
 export const SHEET_CAP = 12;
 
 /**
- * Where a card that arrived on the stream belongs (ADR 0104). `key` names the request, the catalog
- * origin and the bound tab it arrived with; `row` is false for a card past {@link SHEET_CAP}, which
+ * Where a card that arrived on the stream belongs (ADR 0104, 0106). `key` names the request and,
+ * for a card that is not a page's bound card, its catalog origin and tab; `row` is false for a card past {@link SHEET_CAP}, which
  * stays a card of its own. A card the daemon reported later (reconcile) has no slot: it is a card.
  */
 export interface SheetSlot {
@@ -20,8 +20,14 @@ export interface SheetSlot {
   row: boolean;
 }
 
-/** The slot key for a card arriving in request `request`. */
+/**
+ * The slot key for a card arriving in request `request`. A page's card bound to a tab joins the one
+ * checklist of its request, whichever open app and tab it was proposed on (ADR 0106): each row
+ * still runs on its own bound tab with its own grant. A connector's, core's or an unbound card
+ * keeps a sheet of its own origin.
+ */
 export function sheetKeyOf(request: number, card: Pick<DecisionRequested, "origin" | "tab_id">): string {
+  if (card.origin.startsWith("host:") && card.tab_id !== undefined && card.tab_id !== null) return `${request}|tabs`;
   return `${request}|${card.origin}|${card.tab_id ?? ""}`;
 }
 

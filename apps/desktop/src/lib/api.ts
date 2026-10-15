@@ -203,6 +203,12 @@ export interface TurnBody {
    */
   tab_id?: number;
   tab_nav?: number;
+  /**
+   * Other open tabs whose app the user trusts, one per app, with each tab's id and document
+   * (ADR 0106). A call of a listed app may be proposed from this turn; the daemon's gate files it
+   * as a card bound to that tab. First-sight and switched-off apps are never listed.
+   */
+  open_apps?: Array<{ app: string; origin: string; tab_id: number; tab_nav?: number }>;
 }
 
 /** A refusal the daemon named. `reason` is a member of the one closed vocabulary. */

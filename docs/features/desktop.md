@@ -65,6 +65,14 @@ answer, each spending its own grant, stops at the first that is not ok (`ran k o
 rest wait unspent), and the model continues once. The acting hands take an optional `expect`, the
 label `page_find` gave, and do nothing (`validator_failed`) when the element reads otherwise (ADR 0104).
 
+Each exchange also publishes the manifest of every other open tab whose origin is an enabled row
+(one tab per app, the one focused last; first-sight and switched-off tabs never) and sends them as
+`open_apps` with their tab id and `nav`. A tool of one may be proposed from the focused tab: the
+gate makes every such call a card, `READ` and `AUTO` included, bound to that tab (no picture:
+proposed on another tab), and the answer is stated in that tab's name. One request's cards across
+apps are one checklist, rows labelled by app and tab in proposal order, each run on its own tab
+with its own grant; a tool of a tab not listed stays `foreign_origin` (ADR 0106).
+
 ## The halo
 
 A click-through light on the edges of every monitor, painted by phase (listening, working,

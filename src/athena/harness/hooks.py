@@ -19,7 +19,7 @@ from typing import Any
 
 from athena.contracts.channel import DecisionRequested
 from athena.contracts.harness import PromptBlock, TurnResult, normalize_reason
-from athena.contracts.registry import ExecResult, ToolClass, ToolEntry, TurnContext
+from athena.contracts.registry import ExecResult, OpenApp, ToolClass, ToolEntry, TurnContext
 from athena.harness.ports import (
     ApprovalsPort,
     CatalogPort,
@@ -37,6 +37,8 @@ __all__ = [
     "Proceed",
     "TruncationHook",
     "TurnFlag",
+    "another_tab",
+    "open_app_for",
 ]
 
 
@@ -101,19 +103,62 @@ def _capture_for(entry: ToolEntry, ctx: TurnContext) -> str | None:
 
 
 def _tab_for(entry: ToolEntry, ctx: TurnContext) -> dict[str, int]:
-    """The tab binding a card carries (ADR 0103): the surface's tab, for its own host origin only.
+    """The tab binding a card carries (ADR 0103, 0106).
 
     The surface said which tab and which document generation it ran the request against. A call
-    on that page's app is bound to them, so its approval runs there or not at all; a connector's,
-    core's or another app's call is not about that tab and stays unbound. Destination binding,
-    not a class change: whether the call files a card is decided before this is read.
+    on that page's app is bound to them, so its approval runs there or not at all. A call of
+    another open, trusted app is bound to *that* app's tab, as the surface listed it in
+    ``open_apps`` - never to anything a model said. A connector's or core's call is not about a
+    tab and stays unbound. Destination binding, not a class change: whether the call files a card
+    is decided before this is read.
     """
+    opened = open_app_for(entry, ctx)
+    if opened is not None:
+        bound = {"tab_id": opened.tab_id}
+        if opened.tab_nav is not None:
+            bound["tab_nav"] = opened.tab_nav
+        return bound
     if ctx.tab_id is None or not ctx.app_id or entry.origin != f"host:{ctx.app_id}":
         return {}
     bound = {"tab_id": ctx.tab_id}
     if ctx.tab_nav is not None:
         bound["tab_nav"] = ctx.tab_nav
     return bound
+
+
+def another_tab(entry: ToolEntry, ctx: TurnContext) -> bool:
+    """Is this a host tool of an app other than the one the session is pinned to (ADR 0106)?
+
+    Such a call is never run unattended, whatever its class: a ``READ`` or ``AUTO`` tool of
+    another tab is ``GATED`` here, so the only thing a session can do with another app's tools is
+    propose a card. A session with no pin (MCP) has no "other" app.
+    """
+    origin = entry.parsed_origin
+    return origin.kind == "host" and bool(ctx.app_id) and origin.id != ctx.app_id
+
+
+def open_app_for(entry: ToolEntry, ctx: TurnContext) -> OpenApp | None:
+    """The open, trusted tab of another app this call would be proposed on, or ``None``.
+
+    Read from ``ctx.open_apps``, which the surface sets from the shell's tab list and the origins
+    table. Fails closed twice over: an app the same request also names first sight
+    (``gated_origins``) or switched off (``disabled_origins``) is not open here, and an app listed
+    more than once is ambiguous about its tab and is not open either.
+    """
+    if not another_tab(entry, ctx):
+        return None
+    name = str(entry.parsed_origin)
+    if name in ctx.gated_origins or name in ctx.disabled_origins:
+        return None
+    found = [app for app in ctx.open_apps if app.origin == name]
+    return found[0] if len(found) == 1 else None
+
+
+def _cross_tab_line(entry: ToolEntry, ctx: TurnContext) -> str:
+    """The card's line for a proposal on another tab, or ``""`` (ADR 0106)."""
+    if not another_tab(entry, ctx):
+        return ""
+    return f"proposed from the host:{ctx.app_id} tab; it runs on the {entry.origin} tab"
 
 
 def _may_have_run(approvals: ApprovalsPort, action: str, params: Mapping[str, Any]) -> str:
@@ -174,7 +219,11 @@ class GateHook:
         capture = _capture_for(entry, ctx)
         notice = "\n".join(
             line
-            for line in (_may_have_run(self.approvals, entry.name, params), _taint_line(entry, ctx))
+            for line in (
+                _may_have_run(self.approvals, entry.name, params),
+                _taint_line(entry, ctx),
+                _cross_tab_line(entry, ctx),
+            )
             if line
         )
         # Only a card that has a capture names one, so a table that predates the column is asked
@@ -346,12 +395,19 @@ def _tightened(entry: ToolEntry, ctx: TurnContext) -> bool:
     origin: on first sight every host tool files a card, and a tool the user pinned ``GATED``
     files one whatever its flags say. Both lists ride on the context and can only tighten. Core
     and connector entries are not the page's to describe, so they are untouched. Text read from
-    another tab this exchange tightens the same way (:func:`_tainted`, ADR 0105).
+    another tab this exchange tightens the same way (:func:`_tainted`, ADR 0105), and so does any
+    call of an app other than the session's own (:func:`another_tab`, ADR 0106): structural policy
+    lets one through only to be proposed, and this is what makes it a proposal.
     """
     origin = entry.parsed_origin
     if origin.kind != "host":
         return False
-    return str(origin) in ctx.gated_origins or entry.name in ctx.gated_tools or _tainted(entry, ctx)
+    return (
+        str(origin) in ctx.gated_origins
+        or entry.name in ctx.gated_tools
+        or _tainted(entry, ctx)
+        or another_tab(entry, ctx)
+    )
 
 
 def _announced(result: ExecResult) -> ExecResult:

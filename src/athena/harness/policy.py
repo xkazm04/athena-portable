@@ -13,7 +13,9 @@ Four rules, evaluated in order, first refusal wins (Cedar's forbid-overrides-per
    disconnect or a Forget takes effect on the next call, not on the next restart.
 3. ``origin_pinning`` — a ``host:<app_id>`` tool may only be called from the session pinned to
    that app, and only while that session is still on the page origin the manifest was published
-   under. Refused ``foreign_origin``.
+   under. Refused ``foreign_origin``. The one exception (ADR 0106): a tool of another open tab
+   whose app the user trusts, as the surface listed it in ``open_apps``, may be *proposed* - the
+   gate makes every such call ``GATED`` and binds its card to that tab.
 4. ``connector_enabled`` — a ``connector:<id>`` entry is permitted only while the vault says the
    connection is live *now* (README §4). The state is read through :class:`ConnectorStatePort` on
    every call rather than captured at merge time, so switching a connector off is immediate. A
@@ -44,7 +46,7 @@ from typing import Any, Protocol, runtime_checkable
 
 from athena.contracts.harness import normalize_reason
 from athena.contracts.registry import Lane, ToolEntry, TurnContext
-from athena.harness.hooks import Cancel, GateHook, GateOutcome
+from athena.harness.hooks import Cancel, GateHook, GateOutcome, open_app_for
 from athena.harness.ports import ApprovalsPort, CatalogPort
 
 __all__ = [
@@ -204,14 +206,7 @@ class Policy:
             return PolicyDecision.permit()
         app_id = parsed.id
         if ctx.app_id is not None and ctx.app_id != app_id:
-            return PolicyDecision.forbid(
-                "origin_pinning",
-                "foreign_origin",
-                f"this session is pinned to host:{ctx.app_id} and {entry.name} belongs to "
-                f"host:{app_id}. Another tab's tools cannot be called from this one: read its "
-                f"text with tabs_read and its url, use core.recall for what you read there, or "
-                f"ask the person to switch to that tab to act there",
-            )
+            return self._another_tab(entry, ctx)
         expected = self.pinned_origins.get(app_id)
         if expected is not None and ctx.page_origin is not None and ctx.page_origin != expected:
             return PolicyDecision.forbid(
@@ -219,6 +214,38 @@ class Policy:
                 "foreign_origin",
                 f"host:{app_id} published its manifest from {expected!r} and this session is "
                 f"on {ctx.page_origin!r}",
+            )
+        return PolicyDecision.permit()
+
+    def _another_tab(self, entry: ToolEntry, ctx: TurnContext) -> PolicyDecision:
+        """A host tool of another app than the session's: proposed, or refused (ADR 0106).
+
+        Permitted only when the surface listed that app among the open tabs the user trusts
+        (``open_apps``), and only while that tab is on the page origin the app's manifest was
+        published from - the same second comparison the session's own app gets. Permitting here is
+        never permission to run: :func:`~athena.harness.hooks.another_tab` makes the gate file
+        every such call as a card, so this rule only decides between a card and a refusal. A
+        first-sight, switched-off or closed app's tool stays ``foreign_origin``.
+        """
+        app_id = entry.parsed_origin.id
+        opened = open_app_for(entry, ctx)
+        if opened is None:
+            return PolicyDecision.forbid(
+                "origin_pinning",
+                "foreign_origin",
+                f"this session is pinned to host:{ctx.app_id} and {entry.name} belongs to "
+                f"host:{app_id}, which is not an open tab the person trusts. Another tab's tools "
+                f"can be proposed only while that tab is open on a site the person trusts: read "
+                f"its text with tabs_read and its url, use core.recall for what you read there, "
+                f"or ask the person to switch to that tab to act there",
+            )
+        expected = self.pinned_origins.get(app_id)
+        if expected is not None and opened.page_origin != expected:
+            return PolicyDecision.forbid(
+                "origin_pinning",
+                "foreign_origin",
+                f"host:{app_id} published its manifest from {expected!r} and its open tab is "
+                f"on {opened.page_origin!r}",
             )
         return PolicyDecision.permit()
 
@@ -274,7 +301,12 @@ class Policy:
         parts.append(
             "forbid (principal, action, resource)\n"
             "when { resource has app_id && context has app_id && "
-            "context.app_id != resource.app_id };"
+            "context.app_id != resource.app_id && "
+            "!(resource.app_id in context.open_apps) };"
+        )
+        parts.append(
+            "// A call of an app in context.open_apps passes only to be proposed: the gate\n"
+            "// files it as a card bound to that app's tab (ADR 0106)."
         )
         for app_id, origin in sorted(self.pinned_origins.items()):
             parts.append(

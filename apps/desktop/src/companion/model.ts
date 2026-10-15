@@ -175,6 +175,12 @@ export interface CardView {
 /** One row of a sheet: the card whole, and whether its tick is on. */
 export interface SheetRow extends CardView {
   ticked: boolean;
+  /**
+   * The app and tab this row runs on - `TidyCRM - Contacts` - when it differs from the row above,
+   * so a checklist across tabs reads in groups (ADR 0106). `null` under a row of the same app and
+   * tab, and on every row of a sheet that is all one app and tab.
+   */
+  group: string | null;
 }
 
 /**
@@ -183,7 +189,7 @@ export interface SheetRow extends CardView {
  */
 export interface SheetView {
   key: string;
-  /** The app the rows are about, named for a person. */
+  /** The app the rows are about, named for a person: `Ledgerbox and TidyCRM` across apps. */
   app: string;
   rows: readonly SheetRow[];
   /** How many rows are ticked: what the approve button runs. */
@@ -657,15 +663,32 @@ function sheetView(run: CompanionInputs["run"], waiting: readonly CardView[]): S
   const sheet = sheetOf(run.cards, run.slots ?? {}, head.id);
   if (!sheet) return null;
   const unticked = run.unticked ?? {};
-  const rows = sheet.rows.flatMap((card): SheetRow[] => {
+  const built = sheet.rows.flatMap((card): CardView[] => {
     const view = waiting.find((c) => c.id === card.id);
-    return view ? [{ ...view, ticked: !unticked[card.id] }] : [];
+    return view ? [view] : [];
   });
+  // Rows keep proposal order, which is the order they run in; a label marks each change of app or
+  // tab rather than regrouping them (ADR 0106).
+  const placeOf = (v: CardView) => `${v.app}|${v.bound?.tabId ?? ""}`;
+  const spread = new Set(built.map(placeOf)).size > 1;
+  const rows = built.map(
+    (view, at): SheetRow => ({
+      ...view,
+      ticked: !unticked[view.id],
+      group:
+        spread && (at === 0 || placeOf(built[at - 1]) !== placeOf(view))
+          ? view.bound
+            ? `${view.app} - ${view.bound.label}`
+            : view.app
+          : null,
+    }),
+  );
+  const apps = [...new Set(rows.map((r) => r.app))];
   const ticked = rows.filter((r) => r.ticked).length;
   const shownRows = Math.min(rows.length, SHEET_CAP);
   return {
     key: sheet.key,
-    app: head.app,
+    app: apps.length > 1 ? `${apps.slice(0, -1).join(", ")} and ${apps[apps.length - 1]}` : head.app,
     rows,
     ticked,
     approve: `Approve ${ticked} of ${rows.length}`,

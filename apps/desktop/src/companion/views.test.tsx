@@ -460,6 +460,20 @@ test("a press that stopped early says what ran and why, on the rows still waitin
   expect(out).toContain("Approve 2 of 2");
 });
 
+test("one turn's cards in two apps are one checklist, labelled by app and tab in run order (ADR 0106)", () => {
+  const out = html("slip sheet tabs");
+  expect(out).toContain('data-rows="3"');
+  expect(out).toContain("3 requests in ledgerbox and tidycrm");
+  const groups = [...out.matchAll(/data-group="true">([^<]*)</g)].map((m) => m[1]);
+  expect(groups).toEqual(["ledgerbox - Invoices", "tidycrm - Contacts"]);
+  expect(out.indexOf("host.ledgerbox.send_reminder")).toBeLessThan(out.indexOf("host.tidycrm.add_note"));
+  expect(out).toContain("Approve 3 of 3");
+});
+
+test("a sheet all on one app and tab carries no group labels", () => {
+  expect(html("slip sheet")).not.toContain("data-group");
+});
+
 test("a single card is still the card it always was", () => {
   const out = html("slip");
   expect(out).not.toContain("data-sheet");

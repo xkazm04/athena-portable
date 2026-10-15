@@ -175,6 +175,23 @@ class ExecResult:
         return cls(ok=False, output=output, error=reason, tier=tier, ms=ms)
 
 
+@dataclass(frozen=True)
+class OpenApp:
+    """Another open tab whose app the user trusts, as the surface saw it this request (ADR 0106).
+
+    ``origin`` is the catalog origin (``host:<app_id>``), ``page_origin`` the web origin the tab is
+    on now, ``tab_id`` and ``tab_nav`` the shell's tab and its document generation (ADR 0103). Set
+    by the surface from the shell's tab list and the origins table - first-sight and switched-off
+    apps are never listed - and never by a model. It only lets a call of that app be *proposed*:
+    the gate files every such call as a card bound to this tab.
+    """
+
+    origin: str
+    page_origin: str
+    tab_id: int
+    tab_nav: int | None = None
+
+
 @dataclass
 class TurnContext:
     """Everything a validator or an executor may consult.
@@ -226,6 +243,11 @@ class TurnContext:
     #: them, whatever its class, except the reading hand itself (ADR 0105). Set by the surface from
     #: the tab it read, never by a model, and it only tightens.
     tainted_by: frozenset[str] = frozenset()
+    #: Other open tabs whose app is an enabled row of the user's origins table, one per app, each
+    #: with its tab binding (ADR 0106). A host tool of a listed app may be proposed from this
+    #: session; the gate makes every such call ``GATED`` and binds its card to that tab. Set by the
+    #: surface, never by a model; an app absent here is refused ``foreign_origin`` as before.
+    open_apps: tuple[OpenApp, ...] = ()
     extra: dict[str, Any] = field(default_factory=dict)
 
 

@@ -18,6 +18,12 @@ export interface TabsState {
   /** True once Rust has answered once. Before that the list is empty because nothing asked yet,
    *  which is a different fact from "no tabs are open". */
   loaded: boolean;
+  /**
+   * Tab ids, most recently focused first, as this window saw them (ADR 0106). Only the latest tab
+   * of each other app is offered to a turn, and this says which one that is. Tabs never seen
+   * focused are not in it; a closed tab leaves it.
+   */
+  recent: number[];
   create: (url: string) => Promise<void>;
   close: (id: number) => Promise<void>;
   focus: (id: number) => Promise<void>;
@@ -27,6 +33,7 @@ export interface TabsState {
 export const useTabs = create<TabsState>(() => ({
   tabs: [],
   loaded: false,
+  recent: [],
   create: async (url) => {
     await tabsCreate(url);
   },
@@ -48,6 +55,15 @@ export async function startTabs(): Promise<void> {
   started = true;
   // Subscribe before the first read, or a tab opened by `ATHENA_START_URL` between the two lands
   // in neither.
-  await onTabsChanged((tabs) => useTabs.setState({ tabs, loaded: true }));
-  useTabs.setState({ tabs: await tabsList(), loaded: true });
+  await onTabsChanged((tabs) => useTabs.setState((s) => ({ tabs, loaded: true, recent: recentOf(s.recent, tabs) })));
+  const tabs = await tabsList();
+  useTabs.setState((s) => ({ tabs, loaded: true, recent: recentOf(s.recent, tabs) }));
+}
+
+/** The focus order after a new tab list: the focused tab first, closed tabs gone (ADR 0106). Pure. */
+export function recentOf(recent: readonly number[], tabs: readonly Tab[]): number[] {
+  const open = new Set(tabs.map((t) => t.id));
+  const focused = tabs.find((t) => t.focused)?.id;
+  const kept = recent.filter((id) => open.has(id) && id !== focused);
+  return focused === undefined ? kept : [focused, ...kept];
 }

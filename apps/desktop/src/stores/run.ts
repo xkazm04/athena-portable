@@ -418,7 +418,8 @@ const LIVE: RunDeps = {
   // A hand the page did not register goes to the shell's `hands_call`; the rest to the page.
   call: (tabId, name, input, tools) =>
     callOnPage(tabId, name, input, tools ?? useTools.getState().byTab[tabId]?.tools ?? []),
-  snapshot: () => snapshotOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab),
+  snapshot: () =>
+    snapshotOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab, useTabs.getState().recent),
   manifest: () => {
     const tab = focusedTab();
     if (!tab) return null;
@@ -562,6 +563,99 @@ export interface Snapshot {
   gated: GatedLists;
   /** The tab's tool list the manifest was built from; `null` where the source cannot say. */
   tools: readonly BridgeTool[] | null;
+  /**
+   * Other open tabs whose app the user trusts, one per app, published beside the focused tab so a
+   * turn may propose their tools - every such call is a card bound to that tab (ADR 0106). Absent
+   * or empty: the turn is pinned to the focused app alone, as before.
+   */
+  others?: readonly OtherTab[];
+}
+
+/** Another open tab a turn may propose on (ADR 0106): where it is, what it publishes, its tools. */
+export interface OtherTab {
+  tab: TabRef;
+  /** Its catalog id, the `host:<app>` its tools are namespaced under. */
+  appId: string;
+  manifest: Record<string, unknown>;
+  tools: readonly BridgeTool[];
+}
+
+/** How many other apps one turn is offered. Host state lists 12 tabs; the focused one is one. */
+export const OTHER_APPS_CAP = 11;
+
+/**
+ * The catalog id of a tab whose origin is an enabled row of the origins table, or `null` (ADR
+ * 0106). The same rule the accepted contracts use (ADR 0100): the web origin's row, or the
+ * catalog-form row of the tab's own derived id, enabled; any row present and switched off refuses.
+ * An unread table trusts nothing.
+ */
+export function trustedAppOf(
+  origins: TrustTable,
+  tab: Tab,
+  byTab: Readonly<Record<number, TabTools>>,
+): string | null {
+  if (!origins.loaded || origins.problem !== null) return null;
+  const origin = originOf(tab.url);
+  const app = catalogIdOf(origin, byTab[tab.id]?.appId ?? null);
+  if (!app) return null;
+  const row = (key: string) => (origins.known.includes(key) ? origins.records[key] : undefined);
+  const keys = [origin, ...(app === derivedIdOf(origin) ? [`host:${app}`] : [])];
+  if ([origin, `host:${app}`].some((k) => row(k)?.enabled === false)) return null;
+  return keys.some((k) => row(k)?.enabled === true) ? app : null;
+}
+
+/**
+ * The other tabs a turn on `focused` may propose on (ADR 0106): open, trusted, of an app that is
+ * not the focused one, and - when an app has several tabs - only the one focused most recently
+ * (`recent`, else the first in strip order). A tab whose app is first sight or switched off is
+ * never listed, so its tools are never published. Pure.
+ */
+export function otherTabsOf(
+  origins: TrustTable,
+  tabs: readonly Tab[],
+  byTab: Readonly<Record<number, TabTools>>,
+  focused: Tab | undefined,
+  recent: readonly number[] = [],
+): OtherTab[] {
+  const focusedApp = focused ? catalogIdOf(originOf(focused.url), byTab[focused.id]?.appId ?? null) : null;
+  const rank = (t: Tab) => {
+    const at = recent.indexOf(t.id);
+    return at === -1 ? recent.length + tabs.indexOf(t) : at;
+  };
+  const byApp = new Map<string, Tab>();
+  for (const tab of [...tabs].sort((a, b) => rank(a) - rank(b))) {
+    if (tab.id === focused?.id) continue;
+    const app = trustedAppOf(origins, tab, byTab);
+    if (!app || app === focusedApp || byApp.has(app)) continue;
+    byApp.set(app, tab);
+  }
+  const out: OtherTab[] = [];
+  for (const [app, tab] of byApp) {
+    if (out.length >= OTHER_APPS_CAP) break;
+    const found = byTab[tab.id];
+    const manifest = manifestBodyOf({
+      origin: originOf(tab.url),
+      appId: found?.appId ?? null,
+      appVersion: found?.appVersion ?? null,
+      transport: found?.transport ?? null,
+      tools: found?.tools ?? [],
+    });
+    if (manifest === null) continue;
+    out.push({ tab: tabRefOf(tab, byTab), appId: app, manifest, tools: found?.tools ?? [] });
+  }
+  return out;
+}
+
+/** The `open_apps` a request names: the other tabs whose manifests the daemon took (ADR 0106). */
+export function openAppsOf(
+  others: readonly OtherTab[],
+): Array<{ app: string; origin: string; tab_id: number; tab_nav?: number }> {
+  return others.map((o) => ({
+    app: `host:${o.appId}`,
+    origin: o.tab.origin,
+    tab_id: o.tab.tabId,
+    ...(o.tab.nav !== undefined ? { tab_nav: o.tab.nav } : {}),
+  }));
 }
 
 /** The pure read behind {@link Snapshot}: the focused tab is the one flagged, else the first. */
@@ -569,13 +663,14 @@ export function snapshotOf(
   origins: TrustTable,
   tabs: readonly Tab[],
   byTab: Readonly<Record<number, TabTools>>,
+  recent: readonly number[] = [],
 ): Snapshot {
   const tab = tabs.find((t) => t.focused) ?? tabs[0];
   const lists = {
     disabledOrigins: disabledOriginsOf(origins.records, tabs, byTab),
     gated: gatedListsOf(origins, tabs, byTab),
   };
-  if (!tab) return { focused: null, manifest: null, tools: null, ...lists };
+  if (!tab) return { focused: null, manifest: null, tools: null, others: [], ...lists };
   const origin = originOf(tab.url);
   const found = byTab[tab.id];
   return {
@@ -588,6 +683,7 @@ export function snapshotOf(
       tools: found?.tools ?? [],
     }),
     tools: found?.tools ?? [],
+    others: otherTabsOf(origins, tabs.slice(0, 12), byTab, tab, recent),
     ...lists,
   };
 }
@@ -650,13 +746,16 @@ export function snapshotFrom(source: SnapshotSource): Snapshot {
 
 /**
  * The tool list a released call is routed by: the snapshot's, when the call lands on the tab the
- * snapshot was taken of. Another tab was never classified, so it is read live.
+ * snapshot was taken of, or one of the other trusted tabs it published (ADR 0106). A tab the
+ * snapshot did not publish was never classified, so it is read live.
  */
 export function routingTools(
-  snap: Pick<Snapshot, "focused" | "tools"> | null,
+  snap: Pick<Snapshot, "focused" | "tools" | "others"> | null,
   tabId: number,
 ): readonly BridgeTool[] | undefined {
-  return snap?.tools && snap.focused?.tabId === tabId ? snap.tools : undefined;
+  if (snap?.tools && snap.focused?.tabId === tabId) return snap.tools;
+  // Another tab the exchange published (ADR 0106): its card was proposed against this list.
+  return snap?.others?.find((o) => o.tab.tabId === tabId)?.tools;
 }
 
 /**
@@ -687,6 +786,14 @@ export function withCaptureWhy(
 }
 
 export const NOTHING_GATED: GatedLists = { gated_origins: [], gated_tools: [] };
+
+/** Why a card proposed on another tab carries no screenshot (ADR 0106). */
+export const OTHER_TAB_NO_PICTURE = "no picture: proposed on another tab";
+
+/** Is this card's catalog origin an app other than the focused tab's (ADR 0106)? */
+export function isOtherTab(origin: string, focused: TabRef | null): boolean {
+  return origin.startsWith("host:") && !!focused?.appId && origin !== `host:${focused.appId}`;
+}
 
 /** What the gate's lists are read from: the origins table and, beside it, the accepted contracts. */
 export type TrustTable = Pick<OriginsState, "records" | "known" | "loaded" | "problem"> & {
@@ -1140,6 +1247,9 @@ export const useRun = create<RunState>((set, get) => {
   /** Counts `POST /run` requests: the cards one request files are the ones a sheet may group. */
   let request = 0;
 
+  /** The other tabs this exchange registered with the daemon: its `open_apps` (ADR 0106). */
+  let published: OtherTab[] = [];
+
   async function apply(event: ChannelEvent): Promise<void> {
     switch (event.kind) {
       case "text.delta":
@@ -1166,7 +1276,12 @@ export const useRun = create<RunState>((set, get) => {
           cards: s.cards.some((c) => c.id === event.id)
             ? s.cards.map((c) => (c.id === event.id ? event : c))
             : [...s.cards, event],
-          captureWhy: withCaptureWhy(s.captureWhy, event, s.captureNow),
+          // The capture is the focused tab's; a card proposed on another tab has none (ADR 0106).
+          captureWhy: withCaptureWhy(
+            s.captureWhy,
+            event,
+            isOtherTab(event.origin, snap?.focused ?? null) ? OTHER_TAB_NO_PICTURE : s.captureNow,
+          ),
           // Cards of one request, one app and one tab form a sheet, in the order they arrive (ADR 0104).
           slots: s.slots[event.id] ? s.slots : { ...s.slots, [event.id]: slotFor(s.slots, request, event) },
         }));
@@ -1228,6 +1343,10 @@ export const useRun = create<RunState>((set, get) => {
         // Another tab's text was read since the user's last message: the gate holds every call on
         // the page to a card naming it (ADR 0105). Only ever tightens.
         ...(tainted.size ? { tainted_by: [...tainted].sort() } : {}),
+        // The other trusted tabs registered this exchange, each with its tab and document: a call
+        // of one may be proposed, and the gate files it as a card bound to that tab (ADR 0106).
+        // Set here from the shell's tab list, never by a model.
+        ...(published.length ? { open_apps: openAppsOf(published) } : {}),
         ...activeProject(get().project),
       })) {
         await apply(event);
@@ -1260,6 +1379,7 @@ export const useRun = create<RunState>((set, get) => {
    * The turn goes out and the daemon says what it thinks of it, in its own words.
    */
   async function publish(taking: Snapshot): Promise<boolean> {
+    published = [];
     const body = taking.manifest;
     if (body === null) return true;
     const api = deps.api();
@@ -1273,7 +1393,26 @@ export const useRun = create<RunState>((set, get) => {
       fail(error);
       return false;
     }
+    published = await publishOthers(api, taking);
     return true;
+  }
+
+  /**
+   * Register the other trusted tabs the snapshot lists (ADR 0106), and answer the ones the daemon
+   * took. A refused one is left out of `open_apps`, so its tools stay `foreign_origin`: a failure
+   * here only narrows the turn, it never fails it.
+   */
+  async function publishOthers(api: DaemonApi, taking: Snapshot): Promise<OtherTab[]> {
+    const took: OtherTab[] = [];
+    for (const other of taking.others ?? []) {
+      try {
+        await api.manifest(other.manifest);
+        took.push(other);
+      } catch (error) {
+        console.error(`[athena] manifest of tab ${other.tab.tabId}: ${String(error)}`);
+      }
+    }
+    return took;
   }
 
   async function exchange(first: string): Promise<void> {
@@ -1396,10 +1535,17 @@ export const useRun = create<RunState>((set, get) => {
     // The republish, the resolve and the routing of the rows it releases read the tab once.
     const taking = snapshotFrom(deps);
     snap = taking;
-    if (taking.manifest !== null) await api.manifest(taking.manifest).catch(() => undefined);
+    if (taking.manifest !== null) {
+      await api.manifest(taking.manifest).catch(() => undefined);
+      await publishOthers(api, taking);
+    }
+    // The page that answers is the tab the card is bound to (ADR 0103, 0106): a card proposed on
+    // another app's tab is answered in that app's name. A bound tab that is gone states nothing,
+    // and the row's own origin decides - a decline still goes through.
+    const stated = card?.tab_id != null ? boundTab(card.tab_id, taking.focused)?.origin : taking.focused?.origin;
     let resolution;
     try {
-      resolution = await api.resolve(id, choice, taking.focused?.origin, undefined, taking.disabledOrigins);
+      resolution = await api.resolve(id, choice, stated, undefined, taking.disabledOrigins);
     } catch (error) {
       return refuse(reasonOf(error));
     }

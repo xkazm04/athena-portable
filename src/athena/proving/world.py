@@ -231,11 +231,15 @@ class World:
         tool_results: Sequence[Mapping[str, Any]] = (),
         surface: str = "panel",
         active_project: Mapping[str, Any] | None = None,
+        fields: Mapping[str, Any] | None = None,
     ) -> TurnRecord:
         """``POST /run`` once and read back what the gate recorded.
 
         ``active_project`` is what the surface sends as the person's selected project — for a
         playbook run, its title and goal (ADR 0044) — and rides the frame of this turn.
+        ``fields`` are the surface's other per-request fields, sent as they are: the focused tab
+        (``tab_id``, ``tab_nav``), the open trusted tabs (``open_apps``, ADR 0106), the gate's
+        lists. A model never sets them, so a fixture sets them as the shell would.
         """
         record = TurnRecord(counts_before=self.local.brain.counts())
         rows_before = self.local.ledger.recent(1).total
@@ -250,6 +254,8 @@ class World:
         }
         if active_project:
             body["active_project"] = dict(active_project)
+        for key, value in (fields or {}).items():
+            body.setdefault(key, value)
         try:
             answer = routes.run(self.local.daemon, routes.Request("POST", "/run", body=body))
             if isinstance(answer, routes.EventStream):
@@ -274,16 +280,25 @@ class World:
 
     # -- one answer to a card ------------------------------------------------------------------
 
-    def decide(self, approval_id: str, choice: str, *, answer: str | None = None) -> DecisionRecord:
+    def decide(
+        self,
+        approval_id: str,
+        choice: str,
+        *,
+        answer: str | None = None,
+        origin: str | None = None,
+    ) -> DecisionRecord:
         """``POST /decisions/<id>`` once, as a surface sends it, and read back what ran.
 
         The route resolves the row and replays the gate with the approval id (README §3.2 step 6);
         nothing here touches the approval table or the gate directly. ``choice`` is one of the
         card's offered tokens (``approve`` / ``decline``); anything else is the route's to refuse.
+        ``origin`` is the page the surface answers from - the tab the card is bound to - and
+        defaults to the world's own page.
         """
         self._gate_log.clear()
         self._writes.clear()
-        body: dict[str, Any] = {"choice": choice, "origin": self.origin}
+        body: dict[str, Any] = {"choice": choice, "origin": origin or self.origin}
         if answer is not None:
             body["answer"] = answer
         request = routes.Request("POST", f"{routes.DECISION_PREFIX}{approval_id}", body=body)

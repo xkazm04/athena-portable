@@ -1971,12 +1971,17 @@ describe("a sheet", () => {
     expect(daemon.runs()).toHaveLength(2);
   });
 
-  it("cards of two requests, two apps or two tabs are different sheets", () => {
+  it("cards of two requests are different sheets; one request's bound page cards are one, whatever the app or tab (ADR 0106)", () => {
     const a = slotFor({}, 1, { id: "a", origin: "host:ledgerbox", tab_id: 1 });
     const b = slotFor({ a }, 2, { id: "b", origin: "host:ledgerbox", tab_id: 1 });
-    const c = slotFor({ a }, 1, { id: "c", origin: "host:portal", tab_id: 1 });
+    const c = slotFor({ a }, 1, { id: "c", origin: "host:portal", tab_id: 3 });
     const d = slotFor({ a }, 1, { id: "d", origin: "host:ledgerbox", tab_id: 2 });
-    expect(new Set([a.key, b.key, c.key, d.key]).size).toBe(4);
+    expect(b.key).not.toBe(a.key);
+    expect([c.key, d.key]).toEqual([a.key, a.key]);
+    // A connector's card and an unbound page card keep a sheet of their own origin.
+    const e = slotFor({ a }, 1, { id: "e", origin: "connector:gmail", tab_id: null });
+    const f = slotFor({ a }, 1, { id: "f", origin: "host:ledgerbox", tab_id: null });
+    expect(new Set([a.key, e.key, f.key]).size).toBe(3);
   });
 
   it("the one continuation after a sheet is still bounded by the budget", async () => {

@@ -437,6 +437,11 @@ function Sheet({
         <ol className="sh-rows">
           {sheet.rows.map((row, at) => (
             <li key={row.id} className="sh-row" data-card={row.id} data-ticked={row.ticked ? "1" : "0"} data-tier={row.tier}>
+              {row.group ? (
+                <p className="sh-group" data-group>
+                  {row.group}
+                </p>
+              ) : null}
               <label className="sh-tick">
                 <input
                   type="checkbox"

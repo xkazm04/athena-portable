@@ -12,6 +12,7 @@ import type { ToolRow } from "@/lib/api";
 import { PLAYBOOKS } from "@/lib/playbooks.shipped";
 import type { EngineProbe } from "@/lib/engines";
 import type { DecisionRequested } from "@/lib/events";
+import type { Tab } from "@/lib/ipc";
 import type { EarlierRecord, TranscriptEntry } from "@/stores/run";
 import { sheetKeyOf, slotFor, type SheetSlot } from "@/lib/sheet";
 
@@ -219,6 +220,8 @@ interface Setup {
   onboarded?: boolean;
   /** The cards arrived in one request, so they form a sheet (ADR 0104). */
   sheet?: boolean;
+  /** The open tabs, for the tab a card was proposed on (ADR 0103, 0106). */
+  tabs?: Tab[];
   unticked?: Record<string, true>;
   ran?: string;
 }
@@ -244,6 +247,7 @@ function model(setup: Setup): CompanionModel {
     origin: setup.origin === undefined ? ORIGIN : setup.origin,
     tools: TOOLS,
     held: setup.held ?? null,
+    ...(setup.tabs ? { tabs: setup.tabs } : {}),
     known: KNOWN,
     ledger: setup.ledger === undefined ? LEDGER : setup.ledger,
     decisions: DECISIONS,
@@ -311,6 +315,21 @@ export const fixtures: Record<string, () => CompanionModel> = {
       cards: reminderCards(3),
       sheet: true,
       unticked: { apr_00000000r002: true },
+    }),
+  /** One turn proposed in two open apps: one checklist, its rows labelled by app and tab (ADR 0106). */
+  "slip sheet tabs": () =>
+    model({
+      events: [INIT, { t: "cards", n: 3 }],
+      cards: [
+        { ...reminderCards(1)[0], id: "apr_00000000t001", action: "host.ledgerbox.mark_paid", tab_id: 1, tab_nav: 3 },
+        { ...reminderCards(1)[0], id: "apr_00000000t002", action: "host.ledgerbox.send_reminder", tab_id: 1, tab_nav: 3 },
+        { ...reminderCards(1)[0], id: "apr_00000000t003", action: "host.tidycrm.add_note", origin: "host:tidycrm", tab_id: 2, tab_nav: 5 },
+      ],
+      sheet: true,
+      tabs: [
+        { id: 1, label: "page-1", url: "https://ledgerbox.local/invoices", title: "Invoices", focused: true, nav: 3 },
+        { id: 2, label: "page-2", url: "https://tidycrm.local/contacts", title: "Contacts", focused: false, nav: 5 },
+      ],
     }),
   /** Thirteen in one turn: twelve rows, the thirteenth a card of its own, and the sheet says so. */
   "slip sheet long": () => model({ events: [INIT, { t: "cards", n: 13 }], cards: reminderCards(13), sheet: true }),
