@@ -5,8 +5,12 @@ from __future__ import annotations
 
 import json
 import threading
+import urllib.parse
+import urllib.request
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
@@ -28,14 +32,20 @@ def provider() -> FakeProvider:
 
 
 @pytest.fixture
-def live(tmp_path: Path, provider: FakeProvider) -> Iterator[Live]:
-    transport = ScriptedTransport([])
-    vault = Vault(
+def routed(tmp_path: Path, provider: FakeProvider) -> Vault:
+    """The vault behind the routes, so a test can put a grant in place before it asks."""
+    return Vault(
         tmp_path / "connectors",
         transport=provider,
         seal_preference="file",
         open_browser=lambda url: None,
     )
+
+
+@pytest.fixture
+def live(tmp_path: Path, routed: Vault) -> Iterator[Live]:
+    transport = ScriptedTransport([])
+    vault = routed
     with build_local(
         brain_root=tmp_path / "brain",
         engine=ENGINE,
@@ -138,3 +148,95 @@ def test_oauth_connect_answers_a_flow_with_the_authorize_url(live: Live) -> None
     assert "sec" not in json.dumps(reply.body).replace("secret", "")
     polled = live.request("/connectors/gmail/flow", method="POST")
     assert polled.body["flow"]["id"] == flow["id"]
+
+
+# -- reconnect through the kept client (ADR 0117) --------------------------------------------------
+
+KEPT_ID = "kept-client.apps.googleusercontent.com"
+KEPT_SECRET = "kept-secret-0451"
+
+
+def _lose(routed: Vault) -> None:
+    """Gmail admitted with a client pair, then marked as needing to be reconnected."""
+    routed._admit(
+        routed.spec("gmail"),
+        "ya29.live",
+        refresh="1//r",
+        expires_in=3600,
+        client=(KEPT_ID, KEPT_SECRET),
+    )
+    routed.record("gmail").status = "needs_reauth"
+
+
+def test_case_2_a_reconnect_route_starts_a_flow_and_no_client_value_crosses_it(
+    live: Live, routed: Vault
+) -> None:
+    refused = live.request(
+        "/connectors/gmail/connect",
+        method="POST",
+        json_body={"reuse_client": True, "open_browser": False},
+    )
+    assert refused.status == 409
+    assert refused.body["reason"] == "validator_failed"
+    assert "client id" in refused.body["detail"]
+
+    _lose(routed)
+    listed = live.request("/connectors")
+    assert listed.body["connectors"][0]["client_kept"] is True
+    reply = live.request(
+        "/connectors/gmail/connect",
+        method="POST",
+        json_body={"reuse_client": True, "open_browser": False},
+    )
+    assert reply.status == 200
+    assert reply.body["flow"]["phase"] == "awaiting_consent"
+    assert reply.body["connector"]["client_kept"] is True
+    polled = live.request("/connectors/gmail/flow", method="POST")
+    for said in (reply.text, polled.text, live.request("/connectors").text):
+        assert KEPT_ID not in said and KEPT_SECRET not in said
+    flow = routed.flows.for_connector("gmail")
+    try:
+        assert flow is not None
+        assert parse_qs(urlsplit(flow.authorize_url).query)["client_id"] == [KEPT_ID]
+    finally:
+        routed.close()
+
+
+def test_case_5_a_pasted_pair_in_the_body_wins_over_the_kept_one(
+    live: Live, routed: Vault, provider: FakeProvider
+) -> None:
+    _lose(routed)
+    posted: list[dict[str, str]] = []
+
+    def google(method: str, url: str, headers: Any, body: bytes | None) -> Any:
+        if urlsplit(url).path == "/token":
+            posted.append({k: v[0] for k, v in parse_qs((body or b"").decode("ascii")).items()})
+            return 200, {"access_token": "ya29.pasted", "expires_in": 3600}
+        return 200, {"emailAddress": "me@example.test"}
+
+    provider.script = google
+    reply = live.request(
+        "/connectors/gmail/connect",
+        method="POST",
+        json_body={
+            "client_id": "pasted.apps.googleusercontent.com",
+            "client_secret": "pasted-secret",
+            "reuse_client": True,
+            "open_browser": False,
+        },
+    )
+    assert reply.status == 200
+    url = reply.body["flow"]["authorize_url"]
+    asked = parse_qs(urlsplit(url).query)
+    assert asked["client_id"] == ["pasted.apps.googleusercontent.com"]
+    callback = (
+        f"{asked['redirect_uri'][0]}?state={urllib.parse.quote(asked['state'][0])}&code=the-code"
+    )
+    with urllib.request.urlopen(callback, timeout=5) as answered:
+        answered.read()
+    flow = routed.flows.for_connector("gmail")
+    assert flow is not None and flow.wait(5) and flow.phase == "done", flow and flow.detail
+    assert (posted[-1]["client_id"], posted[-1]["client_secret"]) == (
+        "pasted.apps.googleusercontent.com",
+        "pasted-secret",
+    )

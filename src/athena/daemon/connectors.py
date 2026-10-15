@@ -10,6 +10,10 @@
     ``{"token": "..."}`` for a pasted-token service, or ``{"client_id": "...",
     "client_secret": "..."}`` for an OAuth one, which starts the consent flow and answers with
     its authorize URL. The daemon opens the browser itself unless ``"open_browser": false``.
+    ``{"reuse_client": true}`` with no pasted pair reconnects with the client the vault sealed at
+    the last connect (ADR 0117): no client value comes in or goes out, so that flow's authorize
+    URL is left out of every answer, and a connector with no kept client is a 409 asking for the
+    client id. A pasted pair always wins. Each view says ``client_kept``, a yes or a no.
 
 ``POST /connectors/<id>/flow``
     Where the consent flow stands: ``awaiting_consent``, ``exchanging``, ``done`` or ``failed``
@@ -90,6 +94,7 @@ def _connect(daemon: AthenaDaemon, vault: Vault, connector_id: str, body: Any) -
         client_id=str(body.get("client_id", "")),
         client_secret=str(body.get("client_secret", "")),
         open_browser=bool(body.get("open_browser", True)),
+        reuse_client=body.get("reuse_client") is True,
     )
     return 200, {"ok": True, "flow": flow.view(), "connector": vault.view(connector_id)}
 

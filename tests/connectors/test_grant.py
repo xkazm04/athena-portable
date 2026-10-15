@@ -3,11 +3,12 @@ the client pair sealed only by a flow that succeeded (connectors/vault.py; READM
 
 from __future__ import annotations
 
+import json
 import threading
 import time
 import urllib.error
 import urllib.request
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -473,3 +474,154 @@ def test_a_flow_view_never_carries_the_client_secret(vault: Vault) -> None:
         assert "s3cret-v" not in str(flow.view()) and "s3cret-v" not in str(vault.views())
     finally:
         flow.cancel()
+
+
+# -- reconnect: a lost grant reuses the client the vault already sealed (ADR 0117) ----------------
+
+KEPT_ID = "kept-client.apps.googleusercontent.com"
+KEPT_SECRET = "kept-secret-0451"
+
+
+@pytest.fixture
+def lost(tmp_path: Path, specs: dict[str, ConnectorSpec], google: Google) -> Iterator[Vault]:
+    """Gmail admitted with a client pair, then lost: a 401 during a call marks it needs_reauth."""
+    vault = _vault(tmp_path, specs, google)
+    vault._admit(
+        specs["gmail"], "ya29.live", refresh="1//r", expires_in=3600, client=(KEPT_ID, KEPT_SECRET)
+    )
+    google.api = (401, {})
+    with pytest.raises(NeedsReauth):
+        vault.request("gmail", "GET", PROFILE)
+    google.api = (200, {"emailAddress": ME})
+    try:
+        yield vault
+    finally:
+        vault.close()
+
+
+def _consent(flow: Any) -> None:
+    _callback(flow.port, flow.state, "the-code")
+    assert flow.wait(5), "the flow never settled"
+
+
+def _kept_pair(vault: Vault) -> tuple[str | None, str | None]:
+    return vault._get("gmail", "client_id"), vault._get("gmail", "client_secret")
+
+
+def test_case_0_a_reconnect_reuses_the_sealed_client_for_consent_and_exchange(
+    lost: Vault, google: Google
+) -> None:
+    assert lost.record("gmail").status == "needs_reauth"
+    google.token = (200, {"access_token": "ya29.back", "refresh_token": "1//b", "expires_in": 60})
+    flow = lost.connect_oauth("gmail", client_id="", client_secret="", reuse_client=True)
+    asked = parse_qs(urlsplit(flow.authorize_url).query)
+    assert asked["client_id"] == [KEPT_ID]
+    _consent(flow)
+    assert flow.phase == "done", flow.detail
+    posted = google.posts[-1]
+    assert posted["grant_type"] == "authorization_code"
+    assert (posted["client_id"], posted["client_secret"]) == (KEPT_ID, KEPT_SECRET)
+    assert lost.record("gmail").status == "connected"
+
+
+def test_case_1_the_view_says_a_client_is_kept_and_never_carries_it(lost: Vault) -> None:
+    view = lost.view("gmail")
+    assert view["client_kept"] is True
+    flow = lost.connect_oauth("gmail", client_id="", client_secret="", reuse_client=True)
+    try:
+        for said in (json.dumps(lost.view("gmail")), json.dumps(lost.views())):
+            assert KEPT_ID not in said and KEPT_SECRET not in said
+    finally:
+        flow.cancel()
+    assert lost.view("notion")["client_kept"] is False
+    lost.disconnect("gmail")
+    after = lost.view("gmail")
+    assert after["client_kept"] is False
+    assert KEPT_ID not in json.dumps(after) and KEPT_SECRET not in json.dumps(after)
+
+
+def test_case_3_a_reconnect_as_the_same_account_keeps_the_switches(
+    tmp_path: Path, specs: dict[str, ConnectorSpec], google: Google
+) -> None:
+    vault = _vault(tmp_path, specs, google)
+    try:
+        vault._admit(
+            specs["gmail"],
+            "ya29.live",
+            refresh="1//r",
+            expires_in=3600,
+            client=(KEPT_ID, KEPT_SECRET),
+        )
+        vault.set_writes("gmail", True)
+        vault.set_allowlist("gmail", ["ap@northwind.example"])
+        google.token = (400, {"error": "invalid_grant"})
+        vault.record("gmail").expires_at = "2000-01-01T00:00:00+00:00"
+        with pytest.raises(NeedsReauth):
+            vault.request("gmail", "GET", PROFILE)
+        assert vault.record("gmail").status == "needs_reauth"
+        google.token = (200, {"access_token": "ya29.back", "expires_in": 3600})
+        flow = vault.connect_oauth(
+            "gmail", client_id="", client_secret="", reuse_client=True, open_browser=False
+        )
+        _consent(flow)
+        assert flow.phase == "done", flow.detail
+        rec = vault.record("gmail")
+        assert rec.status == "connected" and rec.identity == ME
+        assert rec.writes_enabled is True
+        assert rec.allowlist == ["ap@northwind.example"]
+        assert rec.notice == ""
+    finally:
+        vault.close()
+
+
+def test_case_4_a_reconnect_that_fails_or_is_cancelled_destroys_and_reseals_nothing(
+    lost: Vault, google: Google, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sealed: list[str] = []
+    original = lost._put
+
+    def watching(connector_id: str, kind: str, value: str) -> None:
+        sealed.append(kind)
+        original(connector_id, kind, value)
+
+    monkeypatch.setattr(lost, "_put", watching)
+    cancelled = lost.connect_oauth(
+        "gmail", client_id="", client_secret="", reuse_client=True, open_browser=False
+    )
+    cancelled.cancel()
+    assert lost.record("gmail").status == "needs_reauth"
+    assert _kept_pair(lost) == (KEPT_ID, KEPT_SECRET)
+
+    google.token = (400, {"error": "invalid_grant"})
+    refused = lost.connect_oauth(
+        "gmail", client_id="", client_secret="", reuse_client=True, open_browser=False
+    )
+    _consent(refused)
+    assert refused.phase == "failed"
+    assert lost.record("gmail").status == "needs_reauth"
+    assert _kept_pair(lost) == (KEPT_ID, KEPT_SECRET)
+    assert sealed == [], "a reconnect that did not complete sealed nothing"
+    assert lost.view("gmail")["client_kept"] is True
+
+
+def test_a_pasted_pair_wins_over_the_kept_one_in_the_vault(lost: Vault, google: Google) -> None:
+    google.token = (200, {"access_token": "ya29.other", "expires_in": 3600})
+    flow = lost.connect_oauth(
+        "gmail",
+        client_id="pasted.apps.googleusercontent.com",
+        client_secret="pasted-secret",
+        reuse_client=True,
+        open_browser=False,
+    )
+    assert parse_qs(urlsplit(flow.authorize_url).query)["client_id"] == [
+        "pasted.apps.googleusercontent.com"
+    ]
+    _consent(flow)
+    assert flow.phase == "done", flow.detail
+    assert google.posts[-1]["client_secret"] == "pasted-secret"
+    assert _kept_pair(lost) == ("pasted.apps.googleusercontent.com", "pasted-secret")
+
+
+def test_a_reconnect_with_no_kept_client_asks_for_the_client_id(vault: Vault) -> None:
+    with pytest.raises(VaultError, match="client id"):
+        vault.connect_oauth("gmail", client_id="", client_secret="", reuse_client=True)

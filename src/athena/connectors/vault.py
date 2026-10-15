@@ -228,6 +228,15 @@ class ConnectionRecord:
         return asdict(self)
 
 
+class _KeptClientFlow(OAuthFlow):
+    """A consent flow started with the vault's own sealed client (ADR 0117). Its authorize URL
+    names the client id, so its view leaves the URL out: the daemon opened the browser, and the
+    route and the surface learn the phase, never the client."""
+
+    def view(self) -> dict[str, Any]:
+        return {**super().view(), "authorize_url": ""}
+
+
 def redact(text: str, secrets: Iterable[str]) -> str:
     """Strip every secret value, and anything that looks like a bearer token, from a sentence."""
     out = text
@@ -393,12 +402,23 @@ class Vault:
             "connection": rec.view(),
             "live": self.is_live(connector_id),
             "seal_available": self._seal is not None,
+            "client_kept": self.client_kept(connector_id),
             "flow": flow.view() if flow is not None else None,
             "records_notice": self.records_notice,
         }
 
     def views(self) -> list[dict[str, Any]]:
         return [self.view(cid) for cid in sorted(self.specs)]
+
+    def client_kept(self, connector_id: str) -> bool:
+        """Whether an OAuth client pair is sealed for this connector, so a reconnect can reuse it
+        (ADR 0117). The answer is a yes or a no; the value never leaves the seal by this door."""
+        if self.spec(connector_id).auth.type != "oauth":
+            return False
+        try:
+            return bool(self._get(connector_id, "client_id"))
+        except VaultError:
+            return False
 
     # -- liveness (the policy port) ---------------------------------------------------------------
 
@@ -789,35 +809,62 @@ class Vault:
         return self.record(connector_id)
 
     def connect_oauth(
-        self, connector_id: str, *, client_id: str, client_secret: str, open_browser: bool = True
+        self,
+        connector_id: str,
+        *,
+        client_id: str = "",
+        client_secret: str = "",
+        open_browser: bool = True,
+        reuse_client: bool = False,
     ) -> OAuthFlow:
         """Start the consent flow. The flow's ``authorize_url`` is what the browser opens.
 
         The client pair rides on the flow and is sealed only once the exchange has been admitted:
         a flow that fails, is cancelled or runs out leaves the sealed pair and a live grant as
-        they were."""
+        they were.
+
+        ``reuse_client`` with no pasted pair starts the flow with the pair this vault sealed at the
+        last admission (ADR 0117): the caller names the act and never the value, and the flow's
+        view withholds its authorize URL, which carries the client id. A pasted pair always wins."""
         spec = self.spec(connector_id)
         if spec.auth.type != "oauth":
             raise VaultError(f"{spec.label} connects with a pasted token, not OAuth")
-        if not client_id.strip():
+        pasted = client_id.strip()
+        if pasted:
+            pair, kept = (pasted, client_secret.strip()), False
+        elif reuse_client:
+            pair, kept = self._kept_client(spec), True
+        else:
             raise VaultError("a client id is required")
         self._seal_or_refuse()
 
         def on_code(flow: OAuthFlow, code: str) -> str:
             return self._exchange(spec, flow, code)
 
+        made = _KeptClientFlow if kept else OAuthFlow
         flow = self.flows.add(
-            OAuthFlow(
+            made(
                 connector_id,
                 spec.auth,
-                client_id=client_id.strip(),
-                client_secret=client_secret.strip(),
+                client_id=pair[0],
+                client_secret=pair[1],
                 on_code=on_code,
             )
         )
         if open_browser:
             self._open_browser(flow.authorize_url)
         return flow
+
+    def _kept_client(self, spec: ConnectorSpec) -> tuple[str, str]:
+        """The client pair sealed at the last admission, or a refusal that asks for one."""
+        with self._lock:
+            kept_id = self._get(spec.id, "client_id") or ""
+            kept_secret = self._get(spec.id, "client_secret") or ""
+        if not kept_id:
+            raise VaultError(
+                f"no client is kept for {spec.label}; a client id is required to connect"
+            )
+        return kept_id, kept_secret
 
     def _exchange(self, spec: ConnectorSpec, flow: OAuthFlow, code: str) -> str:
         form = {
