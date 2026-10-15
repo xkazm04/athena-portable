@@ -18,7 +18,7 @@
  * `JOURNEY_KEEP_APPS=1` skips all of it and drives whatever is already listening.
  */
 import { spawn, type ChildProcess } from "node:child_process";
-import { existsSync, mkdirSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, rmdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -168,5 +168,14 @@ export async function shutdown(booted: Booted): Promise<void> {
     await delay(500);
   }
   // The scratch database is this run's; keeping it would make the next run's seed a no-op.
-  if (booted.cwd) rmSync(booted.cwd, { recursive: true, force: true });
+  if (booted.cwd) {
+    rmSync(booted.cwd, { recursive: true, force: true });
+    // The per-run parent (`athena-journey/<pid>`) is removed only if no other app of this run is
+    // still using it; rmdir refuses a non-empty directory.
+    try {
+      rmdirSync(dirname(booted.cwd));
+    } catch {
+      // Not empty, or already gone.
+    }
+  }
 }
