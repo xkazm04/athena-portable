@@ -285,13 +285,34 @@ describe("the scene moves the person where the model's own act ends", () => {
     const calls: string[] = [];
     const model = {
       ...fixtures.ready!,
-      actions: { ...fixtures.ready!.actions, finish: () => calls.push("finish"), reopenStudio: () => calls.push("reopen") },
+      actions: { ...fixtures.ready!.actions, finish: () => void calls.push("finish"), reopenStudio: () => calls.push("reopen") },
     };
     const wrapped = withMoves(model, (to) => moves.push(to));
     wrapped.actions.finish();
     wrapped.actions.reopenStudio();
     expect(calls).toEqual(["finish", "reopen"]);
     expect(moves).toEqual([SETTINGS, STUDIO]);
+  });
+
+  it("a refused finish is said on the ready step, where Enter was pressed", () => {
+    const out = renderToStaticMarkup(
+      <VoiceScene model={{ ...fixtures.ready!, finishError: "the store is read-only" }} path={STUDIO} go={go} />,
+    );
+    expect(out).toContain("Not kept: the store is read-only. The studio stays open; press Enter to try again.");
+  });
+
+  it("finishing lands in settings only once the row is stored; a refusal stays in the studio", async () => {
+    const moves: unknown[] = [];
+    const finishing = (stored: boolean) => ({
+      ...fixtures.ready!,
+      actions: { ...fixtures.ready!.actions, finish: () => Promise.resolve(stored) },
+    });
+    withMoves(finishing(false), (to) => moves.push(to)).actions.finish();
+    await Promise.resolve();
+    expect(moves).toEqual([]);
+    withMoves(finishing(true), (to) => moves.push(to)).actions.finish();
+    await Promise.resolve();
+    expect(moves).toEqual([SETTINGS]);
   });
 });
 

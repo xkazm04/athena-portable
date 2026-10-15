@@ -30,6 +30,7 @@ function daemon(initial: VoiceConfig) {
   const calls: Call[] = [];
   let config = initial;
   let installs: InstallState[] = [];
+  let refuseInstallState = false;
   let previewGate: Promise<void> = Promise.resolve();
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
   const fetchImpl = async (input: string, init?: RequestInit) => {
@@ -58,6 +59,7 @@ function daemon(initial: VoiceConfig) {
       return installs.length ? json(installs[0], 202) : json({ reason: "conflict", detail: "an install is running" }, 409);
     }
     if (path === "/voice/install" && method === "GET") {
+      if (refuseInstallState) return json({ reason: "unavailable", detail: "the daemon is restarting" }, 503);
       const next = installs.shift() ?? { component: null, state: "idle", received_bytes: 0, total_bytes: null, error: null };
       return json(next);
     }
@@ -68,6 +70,7 @@ function daemon(initial: VoiceConfig) {
     fetchImpl,
     setConfig: (next: VoiceConfig) => (config = next),
     queueInstalls: (list: InstallState[]) => (installs = list),
+    refuseInstallState: (refuse: boolean) => (refuseInstallState = refuse),
     holdPreviews: () => {
       let release = () => {};
       previewGate = new Promise((r) => (release = r));
@@ -108,7 +111,7 @@ const settle = async () => {
   for (let i = 0; i < 8; i += 1) await tick();
 };
 
-function wire(config: VoiceConfig, over: { done?: boolean | null } = {}) {
+function wire(config: VoiceConfig, over: { done?: boolean | null; refuseDone?: string } = {}) {
   const d = daemon(config);
   const p = fakePlayer();
   const waits: number[] = [];
@@ -117,7 +120,10 @@ function wire(config: VoiceConfig, over: { done?: boolean | null } = {}) {
   setVoiceSetupDeps({
     api: (at) => new VoiceSetupApi(at, d.fetchImpl),
     readDone: async () => (over.done === undefined ? false : over.done),
-    writeDone: async (done) => void written.push(done),
+    writeDone: async (done) => {
+      if (over.refuseDone) throw new Error(over.refuseDone);
+      written.push(done);
+    },
     player: () => p.player,
     recorder: () => fakeRecorder(new Int16Array([1, 2, 3])),
     wait: async (ms) => void waits.push(ms),
@@ -232,6 +238,33 @@ describe("install", () => {
     expect(S().studio.step).toBe("pick");
   });
 
+  it("a refused poll is said, and Check again asks the install again", async () => {
+    const { d } = wire(BARE_CONFIG);
+    await S().connect(AT);
+    const running: InstallState = {
+      component: "kokoro",
+      state: "downloading_engine",
+      received_bytes: 1,
+      total_bytes: 10,
+      error: null,
+    };
+    d.queueInstalls([running]);
+    S().actions.install("kokoro");
+    d.refuseInstallState(true);
+    await settle();
+    expect(S().install?.state).toBe("downloading_engine");
+    expect(S().installError).toBe("the daemon is restarting");
+
+    d.refuseInstallState(false);
+    d.queueInstalls([{ ...running, state: "completed", received_bytes: 10 }]);
+    d.setConfig(READY_CONFIG);
+    S().actions.refresh();
+    await settle();
+    expect(S().installError).toBeNull();
+    expect(S().install?.state).toBe("completed");
+    expect(S().config?.ready).toBe(true);
+  });
+
   it("a second install while one runs is said, not thrown", async () => {
     wire(BARE_CONFIG);
     await S().connect(AT);
@@ -279,12 +312,21 @@ describe("the studio row", () => {
   it("finishing writes the row and opens settings; reopening starts the studio over", async () => {
     const { written } = wire(READY_CONFIG);
     await S().connect(AT);
-    S().actions.finish();
+    await expect(S().actions.finish()).resolves.toBe(true);
     expect(S().studioDone).toBe(true);
     expect(written).toEqual([true]);
     S().actions.reopenStudio();
     expect(S().reopened).toBe(true);
     expect(S().studio.step).toBe("engine");
+  });
+
+  it("a refused row keeps the studio open and says why", async () => {
+    const { written } = wire(READY_CONFIG, { refuseDone: "the store is read-only" });
+    await S().connect(AT);
+    await expect(S().actions.finish()).resolves.toBe(false);
+    expect(S().studioDone).toBe(false);
+    expect(written).toEqual([]);
+    expect(S().finishError).toBe("the store is read-only");
   });
 
   it("a stored row opens on settings", async () => {

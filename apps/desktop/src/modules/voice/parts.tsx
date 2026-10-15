@@ -62,10 +62,29 @@ export function InstallBlock({
   sizeMb: number | null;
   onInstall: () => void;
   onCheck: () => void;
-  /** A refused install request (409: another one runs), in the daemon's words. */
+  /**
+   * A refused install request (409: another one runs), or a refused poll of a running one, in the
+   * daemon's words.
+   */
   refusal: string | null;
   label?: string;
 }) {
+  if (view.busy && refusal) {
+    // The poll was refused, so the last figure is stale: a still bar would claim progress nobody
+    // has seen. Say so, and let Check again ask where the install stands.
+    return (
+      <div className="stack">
+        <p className="typo-caption vs-error" role="alert">
+          Lost track of the install: {refusal}
+        </p>
+        <span className="row">
+          <Button size="sm" variant="secondary" onClick={onCheck}>
+            Check again
+          </Button>
+        </span>
+      </div>
+    );
+  }
   if (view.busy) {
     return (
       <div className="stack" role="status" aria-live="polite">
