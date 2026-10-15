@@ -23,7 +23,12 @@
  *   · POINTER. One pointer orbits (or pans, per `drag`); shift makes it pan while orbiting. Two
  *     pointers pinch, which is zoom and pan at once — the midpoint is the zoom anchor AND the
  *     pan handle, because a pinch that only zooms slides the scene out from under the fingers.
- *     Pointer capture is taken on down, so a drag that leaves the element keeps working.
+ *     Every decision is `./gesture.ts`, a pure machine this hook only carries out: a press is a
+ *     click until it travels `DRAG_SLOP` screen px, the pointer is captured at that threshold
+ *     (so a drag that leaves the element keeps working, and a click on a DOM control inside the
+ *     scene still reaches it), the click after a drag is swallowed once, and up, cancel and a lost
+ *     capture each release what is held. The swallow and the lost capture ride on `bind.ref`
+ *     beside the wheel, so a surface that spreads `bind` by hand gets them without a new member.
  *   · WHEEL. Anchored at the pointer (`zoomAt`) using the element's own bounding box as the
  *     frame. It is a NATIVE listener, not the `onWheel` in `bind`: React registers `wheel` on
  *     its root as passive, so `preventDefault` from a React handler cannot stop the page
@@ -65,6 +70,7 @@ import {
   type CameraPose,
   type CameraVelocity,
 } from "./camera";
+import { gestureStep, initialGesture, type GestureInput, type GestureState } from "./gesture";
 import { cssEase, cssMs } from "./tokens";
 
 export interface CameraRigOptions {
@@ -188,10 +194,10 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
   const el = useRef<HTMLElement | null>(null);
   const wheelBound = useRef<HTMLElement | null>(null);
 
-  const pointers = useRef(new Map<number, Pt>());
-  const last = useRef<Pt>({ x: 0, y: 0 });
-  const lastAt = useRef(0);
-  const pinch = useRef<{ dist: number; mid: Pt } | null>(null);
+  const gesture = useRef<GestureState>(initialGesture());
+  /* The swallow of a drag's trailing click lasts as long as the up's task: a drag that produced
+     no click (a touch pan) must not eat the click of the next ordinary press. */
+  const expiry = useRef(0);
 
   const raf = useRef(0);
   const fly = useRef<(() => void) | null>(null);
@@ -403,6 +409,94 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
     [apply, scheduleIdle, stopInertia, zoomBy],
   );
 
+  /* The pointer: one step of `./gesture.ts`, then its effects, in order. `target` is the element
+     that takes and gives back the capture; `shift` is the move's own modifier. Returns whether the
+     step swallowed a click. */
+  const runGesture = useCallback(
+    (input: GestureInput, target: HTMLElement | null, shift = false): boolean => {
+      const before = gesture.current;
+      const mode = opts.current.drag ?? "orbit";
+      const next = gestureStep(before, input, { drag: mode });
+      gesture.current = next.state;
+      let swallowed = false;
+      for (const effect of next.effects) {
+        switch (effect.type) {
+          case "halt":
+            stopInertia();
+            fly.current?.();
+            clearIdle();
+            break;
+          case "capture":
+            try {
+              target?.setPointerCapture?.(effect.id);
+            } catch {
+              // The pointer is no longer active; there is nothing to hold.
+            }
+            break;
+          case "release":
+            try {
+              if (target?.hasPointerCapture?.(effect.id)) target.releasePointerCapture(effect.id);
+            } catch {
+              // Already gone: a release is a no-op by then.
+            }
+            break;
+          case "drag":
+            dragBy(effect.dx, effect.dy, mode === "pan" || shift, effect.dt);
+            break;
+          case "pinch": {
+            if (effect.factor !== 1) zoomBy(effect.factor, effect.mid);
+            const d = panDelta(effect.pan.x, effect.pan.y, pose.current.zoom);
+            apply({ ...pose.current, pan: { x: pose.current.pan.x + d.x, y: pose.current.pan.y + d.y } });
+            velocity.current = ZERO_VELOCITY;
+            break;
+          }
+          case "moving":
+            setMoving(effect.value);
+            break;
+          case "coast":
+            coast();
+            break;
+          case "settle":
+            velocity.current = ZERO_VELOCITY;
+            setMoving(false);
+            scheduleIdle();
+            break;
+          case "swallowClick":
+            swallowed = true;
+            break;
+        }
+      }
+      if (next.state.swallow && !before.swallow && typeof window !== "undefined") {
+        if (expiry.current) window.clearTimeout(expiry.current);
+        expiry.current = window.setTimeout(() => {
+          expiry.current = 0;
+          const drag = opts.current.drag ?? "orbit";
+          gesture.current = gestureStep(gesture.current, { type: "expire" }, { drag }).state;
+        }, 0);
+      }
+      return swallowed;
+    },
+    [apply, clearIdle, coast, dragBy, scheduleIdle, setMoving, stopInertia, zoomBy],
+  );
+  const gestureRun = useRef(runGesture);
+  gestureRun.current = runGesture;
+
+  /* Native, capture phase, so the swallow runs before any child's `onClick` and stops it there. */
+  const nativeClick = useRef((event: MouseEvent) => {
+    if (!gestureRun.current({ type: "click" }, null)) return;
+    event.stopPropagation();
+    event.preventDefault();
+  });
+  /* Only the scene's OWN capture: a child's implicit touch capture, handed to the scene at the
+     threshold, also fires `lostpointercapture`, and it bubbles. */
+  const nativeLost = useRef((event: PointerEvent) => {
+    if (event.target !== event.currentTarget) return;
+    gestureRun.current(
+      { type: "lostcapture", id: event.pointerId },
+      event.currentTarget instanceof HTMLElement ? event.currentTarget : null,
+    );
+  });
+
   /* The non-passive listener. React's own `wheel` is registered passive on its root, so a
      `preventDefault` from `bind.onWheel` cannot stop the page scrolling behind the scene. */
   const nativeWheel = useRef((event: WheelEvent) => {
@@ -415,12 +509,24 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
   const wheelDelta = useRef(onWheelDelta);
   wheelDelta.current = onWheelDelta;
 
-  const attach = useCallback((node: HTMLElement | null) => {
-    if (wheelBound.current === node) return;
-    if (wheelBound.current) wheelBound.current.removeEventListener("wheel", nativeWheel.current);
-    wheelBound.current = node;
-    if (node) node.addEventListener("wheel", nativeWheel.current, { passive: false });
+  const detach = useCallback((node: HTMLElement) => {
+    node.removeEventListener("wheel", nativeWheel.current);
+    node.removeEventListener("click", nativeClick.current, { capture: true });
+    node.removeEventListener("lostpointercapture", nativeLost.current);
   }, []);
+
+  const attach = useCallback(
+    (node: HTMLElement | null) => {
+      if (wheelBound.current === node) return;
+      if (wheelBound.current) detach(wheelBound.current);
+      wheelBound.current = node;
+      if (!node) return;
+      node.addEventListener("wheel", nativeWheel.current, { passive: false });
+      node.addEventListener("click", nativeClick.current, { capture: true });
+      node.addEventListener("lostpointercapture", nativeLost.current);
+    },
+    [detach],
+  );
 
   const see = useCallback(
     (node: HTMLElement | null) => {
@@ -431,22 +537,14 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
   );
 
   useEffect(() => () => {
-    if (wheelBound.current) wheelBound.current.removeEventListener("wheel", nativeWheel.current);
+    if (wheelBound.current) detach(wheelBound.current);
+    if (expiry.current) window.clearTimeout(expiry.current);
     if (raf.current) cancelAnimationFrame(raf.current);
     if (idle.current) window.clearTimeout(idle.current);
     fly.current?.();
-  }, []);
+  }, [detach]);
 
   const bind = useMemo<CameraBind>(() => {
-    const two = (): [Pt, Pt] | null => {
-      const all = [...pointers.current.values()];
-      return all.length >= 2 && all[0] && all[1] ? [all[0], all[1]] : null;
-    };
-    const measure = (pair: [Pt, Pt]) => ({
-      dist: Math.hypot(pair[0].x - pair[1].x, pair[0].y - pair[1].y),
-      mid: { x: (pair[0].x + pair[1].x) / 2, y: (pair[0].y + pair[1].y) / 2 },
-    });
-
     return {
       ref: see,
       tabIndex: 0,
@@ -455,78 +553,26 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
 
       onPointerDown: (event) => {
         see(event.currentTarget);
-        if ((opts.current.drag ?? "orbit") === "none" && pointers.current.size === 0) return;
-        event.currentTarget.setPointerCapture?.(event.pointerId);
-        pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        stopInertia();
-        fly.current?.();
-        clearIdle();
-        last.current = { x: event.clientX, y: event.clientY };
-        lastAt.current = event.timeStamp;
-        const pair = two();
-        pinch.current = pair ? measure(pair) : null;
-        setMoving(true);
+        runGesture(
+          { type: "down", id: event.pointerId, x: event.clientX, y: event.clientY, t: event.timeStamp },
+          event.currentTarget,
+        );
       },
 
       onPointerMove: (event) => {
-        if (!pointers.current.has(event.pointerId)) return;
-        pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-
-        const pair = two();
-        if (pair) {
-          /* Two pointers: zoom AND pan, from the same midpoint. A pinch that only zoomed would
-             slide the scene out from under the fingers holding it. */
-          const now = measure(pair);
-          const base = pinch.current ?? now;
-          if (base.dist > 0 && now.dist > 0) zoomBy(now.dist / base.dist, now.mid);
-          const d = panDelta(now.mid.x - base.mid.x, now.mid.y - base.mid.y, pose.current.zoom);
-          apply({
-            ...pose.current,
-            pan: { x: pose.current.pan.x + d.x, y: pose.current.pan.y + d.y },
-          });
-          pinch.current = now;
-          velocity.current = ZERO_VELOCITY;
-          last.current = { ...now.mid };
-          lastAt.current = event.timeStamp;
-          return;
-        }
-
-        const mode = opts.current.drag ?? "orbit";
-        if (mode === "none") return;
-        const dx = event.clientX - last.current.x;
-        const dy = event.clientY - last.current.y;
-        const dt = event.timeStamp - lastAt.current;
-        last.current = { x: event.clientX, y: event.clientY };
-        lastAt.current = event.timeStamp;
-        dragBy(dx, dy, mode === "pan" || event.shiftKey, dt);
+        runGesture(
+          { type: "move", id: event.pointerId, x: event.clientX, y: event.clientY, t: event.timeStamp },
+          event.currentTarget,
+          event.shiftKey,
+        );
       },
 
       onPointerUp: (event) => {
-        if (!pointers.current.has(event.pointerId)) return;
-        event.currentTarget.releasePointerCapture?.(event.pointerId);
-        pointers.current.delete(event.pointerId);
-        const rest = [...pointers.current.values()][0];
-        if (rest) {
-          /* One finger lifted out of a pinch: the other one keeps dragging, from where it is —
-             not from where the midpoint was, which would jump the scene. */
-          pinch.current = null;
-          last.current = { ...rest };
-          lastAt.current = event.timeStamp;
-          velocity.current = ZERO_VELOCITY;
-          return;
-        }
-        pinch.current = null;
-        coast();
+        runGesture({ type: "up", id: event.pointerId, t: event.timeStamp }, event.currentTarget);
       },
 
       onPointerCancel: (event) => {
-        pointers.current.delete(event.pointerId);
-        if (pointers.current.size === 0) {
-          pinch.current = null;
-          velocity.current = ZERO_VELOCITY;
-          setMoving(false);
-          scheduleIdle();
-        }
+        runGesture({ type: "cancel", id: event.pointerId }, event.currentTarget);
       },
 
       onWheel: (event) => {
@@ -602,7 +648,7 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
         event.preventDefault();
       },
     };
-  }, [apply, clearIdle, coast, dragBy, flyTo, frame, scheduleIdle, see, setMoving, stopInertia, zoomBy]);
+  }, [apply, flyTo, frame, runGesture, scheduleIdle, see, stopInertia, zoomBy]);
 
   return useMemo<CameraRig>(() => {
     const rig: CameraRig = {

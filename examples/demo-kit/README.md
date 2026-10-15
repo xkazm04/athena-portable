@@ -25,6 +25,7 @@ kit file hot-reloads in a running app. `pnpm --filter @athena/demo-kit typecheck
 | `@athena/demo-kit/zoom` | client | the model: `useZoomNav`, `useStaticNav`, `navReducer`, `initialNavState`, `HOME`, `nodeId`, `sameFocus`, `escapeLeavesLevel`, `escapeAbortsFlight`, `MODAL_SELECTOR`, types `ZoomNav`, `Focus`, `Level`, `NavState`, `NavAction`, `EscapeEvent` |
 | | | the formula: `useLevelFlight` (+ `advanceFlight`, `settleFlight`, `isMoving`, `initialFlight`, `FLIGHT_FALLBACK_MS`, `ARMING_FLIGHT`), `emphasis`, `presenceOf`, `presenceStyle`, `PRESENCE_DEPTH`, `useSharedIdentity`, `sharedIdentity`, `UNCLAIMED`, `useTokens`, `cssMs`, `cssEase`, `parseMs`, `parseEase`, `parseBezier`, `readTokens`, `styleOf`, `tokenValue`, `secs`, `useOverlayEscape`, `escapeClosesOverlay`, `focusReturnTarget`, `isOpener`, `useRoving`, `rovingIndex`, `isRovingKey`, `ROVING_KEYS`, types `LevelFlight`, `FlightState`, `Presence`, `PresenceOpacity`, `SharedIdentity`, `TokenValue`, `StyleSource`, `OverlayEscape`, `FocusPreference`, `Roving`, `RovingOptions` |
 | | | the camera (round 3): `useCameraRig`, `REST_POSE`, `clampPose`, `zoomAt`, `stepInertia`, `nearestSnap`, `orbitDelta`, `panDelta`, `poseToTransform`, `mergePose`, `lerpPose`, `samePose`, `poseDistance`, `angleDelta`, `isNegligible`, `easeFromCss`, `FLY_MS`, `FLY_EASE`, `FRAME_MS`, `NEGLIGIBLE`, `ORBIT_SENSITIVITY`, `SNAP_WEIGHTS`, `ZERO_VELOCITY`, `WHEEL_SENSITIVITY`, `KEY_ORBIT`, `KEY_PAN`, `KEY_ZOOM`, `SNAP_IDLE_MS`, types `CameraPose`, `CameraBounds`, `CameraVelocity`, `CameraFrame`, `CameraRig`, `CameraRigOptions`, `CameraBind` |
+| | | the rig's pointer: `gestureStep`, `initialGesture`, `swallowsClick`, `DRAG_SLOP`, types `GestureState`, `GestureInput`, `GestureEffect`, `GestureOptions`, `GestureStep`, `GesturePoint`, `GesturePointer` |
 | | | semantic zoom: `useSemanticZoom`, `levelForZoom`, `bandProgress`, `SEMANTIC_HYSTERESIS`, types `SemanticZoom`, `SemanticZoomOptions`, `SemanticNav` |
 | | | the echo (rule 1): `useEcho`, `echoStages`, `echoOrigin`, `echoOriginVars`, `echoDirection`, `echoKey`, `levelChanged`, types `EchoState`, `EchoOptions`, `EchoHandle`, `EchoDirection`, `EchoOriginUnit`, `RectLike` |
 | `@athena/demo-kit/zoom/echo` | client | `Echo`, `ECHO_GRACE_MS`, type `EchoProps` — the component alone, on its own entry so the `zoom` barrel stays a `.ts` module that `node --test` can load |
@@ -73,7 +74,10 @@ the outgoing level carrying that move while the arriving one holds still.
   shift-drag, two-finger pinch, wheel anchored at the pointer, arrows, `+`/`-`, `Home`), inertia,
   snap-when-idle, and `flyTo` on a token-read duration. **It never re-renders its host.** The
   pose lives in a ref; `subscribe` is how a surface hears about it, and `rig.moving` is a getter
-  so it is never stale.
+  so it is never stale. Its pointer is the pure machine `gestureStep` (`zoom/gesture.ts`): a
+  press is a click until it travels `DRAG_SLOP` (4 screen px), the pointer is captured only at
+  that threshold, the click after a drag is swallowed once, and every exit releases. So a DOM
+  control inside the scene keeps its mouse click, with no `stopPropagation` on the control.
 - **`useSemanticZoom(nav, rig, options)`** — camera distance IS the level. Cross a band and the
   hook dispatches `nav.openGroup` / `openItem` / `up`, so a wheel and a click and an agent tool
   all go through the one model. When the nav moves for any other reason it flies the camera to

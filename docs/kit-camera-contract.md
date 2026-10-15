@@ -56,6 +56,16 @@ Pure pieces, tested: `clampPose(pose, bounds)`, `zoomAt(pose, factor, anchor: {x
 (zoom keeping the point under the pointer fixed), `stepInertia(pose, velocity, retain, dt)`,
 `nearestSnap(pose, snaps)`, `orbitDelta(dx, dy, sensitivity)`, `panDelta(dx, dy, zoom)`.
 
+The pointer (ADR 0112): `gestureStep(state, input, { drag }) -> { state, effects }` in
+`zoom/gesture.ts`, tested, and the hook only carries out its effects. A press is a click until it
+travels `DRAG_SLOP` (4) SCREEN px, measured before `panDelta` divides by the zoom; nothing is
+captured and nothing moves before that, so a DOM control inside the scene keeps its click. The
+move that crosses the slop captures the pointer and pans by the whole distance from the press
+origin. The click that follows a drag is swallowed once by a capture-phase listener, and that
+swallow is cleared by the next press or when the up's task ends. Up, `pointercancel` and
+`lostpointercapture` each release what is held, once. The `click` and `lostpointercapture`
+listeners attach through `bind.ref`, beside the wheel, so `bind` gains no member.
+
 Consumers: `poseToTransform(pose, opts?: { perspective?: number })` returns a CSS `transform`
 string for DOM scenes (`perspective` is applied by the consumer's parent); WebGL scenes read
 `rig.get()` in `useFrame` (or on `subscribe`) and set the camera themselves — the kit never

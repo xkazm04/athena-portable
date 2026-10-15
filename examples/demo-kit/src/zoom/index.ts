@@ -157,6 +157,21 @@ export {
   type CameraRig,
   type CameraRigOptions,
 } from "./useCameraRig";
+/* The rig's pointer, as a pure machine: a press is a click until DRAG_SLOP, capture at the
+   threshold, the trailing click of a drag swallowed once, release on every exit. */
+export {
+  DRAG_SLOP,
+  gestureStep,
+  initialGesture,
+  swallowsClick,
+  type GestureEffect,
+  type GestureInput,
+  type GestureOptions,
+  type GesturePoint,
+  type GesturePointer,
+  type GestureState,
+  type GestureStep,
+} from "./gesture";
 
 /* §3: camera distance is the level. */
 export { SEMANTIC_HYSTERESIS, bandProgress, levelForZoom } from "./semantic";
